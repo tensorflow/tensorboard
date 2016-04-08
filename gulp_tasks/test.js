@@ -13,35 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-suite("parser", () => {
-let assert = chai.assert;
+var gulp = require('gulp');
+var tester = require('web-component-tester').test;
 
-test("simple pbtxt", (done) => {
-  let pbtxt =
-    `node {
-       name: "Q"
-       op: "Input"
-     }
-     node {
-       name: "W"
-       op: "Input"
-     }
-     node {
-       name: "X"
-       op: "MatMul"
-       input: "Q"
-       input: "W"
-     }`;
-  tf.graph.parser.parseGraphPbTxt(new Blob([pbtxt])).then(nodes => {
-    assert.isTrue(nodes != null && nodes.length === 3);
-    done();
+module.exports = function(done) {
+  tester({}, function(error) {
+    if (error) {
+      // Pretty error for gulp.
+      error = new Error(error.message || error);
+      error.showStack = false;
+    }
+    done(error);
   });
-});
-
-test("d3 exists", () => {
-  assert.isTrue(d3 != null);
-});
-
-// TODO(bp): write tests.
-
-});
+}
