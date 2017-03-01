@@ -18,13 +18,13 @@ limitations under the License.
 
 <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
 <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-<link rel="import" href="../tf-scalar-dashboard.html">
+<link rel="import" href="../tf-distribution-dashboard.html">
 <link rel="import" href="../../paper-styles/typography.html">
 
-<title>Scalar Dashboard Demo</title>
+<title>Distribution Dashboard Demo</title>
 <style>
   #container {
-    height: 900px;
+    height: 800px;
     width: 100%;
     display: block;
   }
@@ -38,13 +38,13 @@ limitations under the License.
 </style>
 <demo-snippet>
   <template>
-    <dom-module id="scalar-dash-demo">
+    <dom-module id="distribution-dash-demo">
       <template>
-        <tf-scalar-dashboard id="demo" backend="[[backend]]"></tf-scalar-dashboard>
+        <tf-distribution-dashboard id="demo" backend="[[backend]]"></tf-distribution-dashboard>
       </template>
       <script>
         Polymer({
-          is: "scalar-dash-demo",
+          is: "distribution-dash-demo",
           properties: {
             backend: {
               type: Object,
@@ -57,6 +57,6 @@ limitations under the License.
         });
       </script>
     </dom-module>
-    <scalar-dash-demo id="container"></scalar-dash-demo>
+    <distribution-dash-demo id="container"></distribution-dash-demo>
   </template>
 </demo-snippet>
