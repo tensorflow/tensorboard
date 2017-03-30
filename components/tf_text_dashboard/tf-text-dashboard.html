@@ -1,6 +1,6 @@
 <!--
 @license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard.html">
 <link rel="import" href="../tf-dashboard-common/tf-panes-helper.html">
 <link rel="import" href="../tf-dashboard-common/tf-sidebar-helper.html">
-<link rel="import" href="tf-image-loader.html">
+<link rel="import" href="tf-text-loader.html">
 
 <!--
-tf-image-dashboard displays a dashboard that loads images from a TensorFlow run.
+tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 -->
-<dom-module id="tf-image-dashboard">
+<dom-module id="tf-text-dashboard">
   <template>
-    <paper-dialog with-backdrop id="actual-image-size-dialog"></paper-dialog>
+    <paper-dialog with-backdrop id="actual-text-size-dialog"></paper-dialog>
     <div id="plumbing">
       <tf-color-scale
         id="colorScale"
@@ -63,13 +63,7 @@ tf-image-dashboard displays a dashboard that loads images from a TensorFlow run.
           repeat-for-runs
           >
           <template>
-            <tf-image-loader color-scale="[[_colorScale]]"></tf-image-loader>
-            <paper-icon-button
-              class="actual-size-button"
-              icon="aspect-ratio"
-              on-tap="_showActualSize"
-              title="Show the image at its true pixel size"
-              ></paper-icon-button>
+            <tf-text-loader color-scale="[[_colorScale]]"></tf-text-loader>
           </template>
         </tf-panes-helper>
       </div>
@@ -77,42 +71,24 @@ tf-image-dashboard displays a dashboard that loads images from a TensorFlow run.
     <style include="dashboard-style"></style>
     <style>
       tf-panes-helper {
-        --card-width: 340px;
+        --card-width: 100%;
         --card-height: auto;
-        --card-expanded-width: 700px;
-        --card-expanded-height: auto;
+        --card-expanded-width: 100%;
+        --card-expanded-height: 1000px;
+        --card-padding: 0 5px 5px 5px;
+        --show-expand-button: none;
       }
 
-      .actual-size-button {
-        background: #fff;
-        border-radius: 100%;
-        bottom: -35px;
-        color: #2196f3;
-        height: 32px;
-        left: 35px;
-        padding: 4px;
-        pointer-events: auto;
-        position: absolute;
-        width: 32px;
-      }
-
-      .actual-size-button-selected {
-        background: var(--tb-ui-light-accent);
-      }
-
-      #actual-image-size-dialog {
-        overflow: auto;
-      }
     </style>
   </template>
   <script>
     Polymer({
-      is: "tf-image-dashboard",
+      is: "tf-text-dashboard",
       properties: {
         backend: Object,
         dataType: {
           type: String,
-          value: "image"
+          value: "text"
         },
       },
       behaviors: [
@@ -124,29 +100,7 @@ tf-image-dashboard displays a dashboard that loads images from a TensorFlow run.
           this.fire("rendered");
         });
       },
-      _showActualSize: function(e) {
-        var currentTarget = Polymer.dom(e.currentTarget);
-        var card = currentTarget.node.closest('.card');
 
-        // Create a full-size copy of the image.
-        var newImage = card.querySelector('#img').cloneNode();
-        newImage.style.height = 'auto';
-        newImage.style.width = 'auto';
-        newImage.style.margin = 0;
-        newImage.style.padding = 0;
-        newImage.classList.add("actual-size-image");
-
-        // When the user clicks on the image, empty and close the dialog.
-        var dialog = this.$$('#actual-image-size-dialog');
-        newImage.addEventListener('click', function() {
-          dialog.close();
-        });
-
-        // Update dialog content. Show the dialog.
-        dialog.innerHTML = '';
-        dialog.appendChild(newImage);
-        dialog.open();
-      }
     });
   </script>
 </dom-module>
