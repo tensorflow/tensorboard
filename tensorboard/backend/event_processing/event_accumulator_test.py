@@ -23,25 +23,25 @@ import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
-from tensorflow.core.framework import graph_pb2
-from tensorflow.core.framework import summary_pb2
-from tensorflow.core.framework import types_pb2
-from tensorflow.core.protobuf import config_pb2
-from tensorflow.core.util import event_pb2
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import tensor_util
-from tensorflow.python.ops import array_ops
-from tensorflow.python.platform import gfile
-from tensorflow.python.platform import googletest
-from tensorflow.python.platform import test
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.python.summary import summary as summary_lib
-from tensorflow.python.summary.writer import writer as writer_lib
-from tensorflow.python.summary.writer.writer import SummaryToEventTransformer
-from tensorflow.python.training import saver
-from tensorflow.tensorboard.backend.event_processing import event_accumulator as ea
+from google3.third_party.tensorflow.core.framework import graph_pb2
+from google3.third_party.tensorflow.core.framework import summary_pb2
+from google3.third_party.tensorflow.core.framework import types_pb2
+from google3.third_party.tensorflow.core.protobuf import config_pb2
+from google3.third_party.tensorflow.core.util import event_pb2
+from google3.third_party.tensorflow.python.framework import constant_op
+from google3.third_party.tensorflow.python.framework import dtypes
+from google3.third_party.tensorflow.python.framework import ops
+from google3.third_party.tensorflow.python.framework import tensor_util
+from google3.third_party.tensorflow.python.ops import array_ops
+from google3.third_party.tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import googletest
+from google3.third_party.tensorflow.python.platform import test
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from google3.third_party.tensorflow.python.summary import summary as summary_lib
+from google3.third_party.tensorflow.python.summary.writer import writer as writer_lib
+from google3.third_party.tensorflow.python.summary.writer.writer import SummaryToEventTransformer
+from google3.third_party.tensorflow.python.training import saver
+from tensorboard.backend.event_processing import event_accumulator as ea
 
 
 class _EventGenerator(object):

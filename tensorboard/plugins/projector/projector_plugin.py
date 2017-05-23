@@ -28,19 +28,19 @@ from six import BytesIO
 from werkzeug import wrappers
 from google.protobuf import json_format
 from google.protobuf import text_format
-from tensorflow.python.client import session
-from tensorflow.python.framework import errors
-from tensorflow.python.framework import ops
-from tensorflow.python.lib.io import file_io
-from tensorflow.python.ops import image_ops
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.python.pywrap_tensorflow import NewCheckpointReader
-from tensorflow.python.summary import plugin_asset
-from tensorflow.python.training.saver import checkpoint_exists
-from tensorflow.python.training.saver import latest_checkpoint
-from tensorflow.tensorboard.backend.http_util import Respond
-from tensorflow.tensorboard.plugins.base_plugin import TBPlugin
-from tensorflow.tensorboard.plugins.projector import projector_config_pb2
+from google3.third_party.tensorflow.python.client import session
+from google3.third_party.tensorflow.python.framework import errors
+from google3.third_party.tensorflow.python.framework import ops
+from google3.third_party.tensorflow.python.lib.io import file_io
+from google3.third_party.tensorflow.python.ops import image_ops
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from google3.third_party.tensorflow.python.pywrap_tensorflow import NewCheckpointReader
+from google3.third_party.tensorflow.python.summary import plugin_asset
+from google3.third_party.tensorflow.python.training.saver import checkpoint_exists
+from google3.third_party.tensorflow.python.training.saver import latest_checkpoint
+from tensorboard.backend.http_util import Respond
+from tensorboard.plugins.base_plugin import TBPlugin
+from tensorboard.plugins.projector import projector_config_pb2
 
 # The prefix of routes provided by this plugin.
 _PLUGIN_PREFIX_ROUTE = 'projector'

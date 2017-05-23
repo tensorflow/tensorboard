@@ -116,13 +116,13 @@ import collections
 import itertools
 import os
 
-from tensorflow.core.util.event_pb2 import SessionLog
-from tensorflow.python.platform import app
-from tensorflow.python.platform import flags
-from tensorflow.python.platform import gfile
-from tensorflow.tensorboard.backend.event_processing import event_accumulator
-from tensorflow.tensorboard.backend.event_processing import event_file_loader
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
+from google3.third_party.tensorflow.core.util.event_pb2 import SessionLog
+from google3.third_party.tensorflow.python.platform import app
+from google3.third_party.tensorflow.python.platform import flags
+from google3.third_party.tensorflow.python.platform import gfile
+from tensorboard.backend.event_processing import event_accumulator
+from tensorboard.backend.event_processing import event_file_loader
+from tensorboard.backend.event_processing import event_multiplexer
 
 FLAGS = flags.FLAGS
 

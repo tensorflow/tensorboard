@@ -19,8 +19,8 @@ from __future__ import print_function
 
 import os.path
 
-from tensorflow.python.framework import errors_impl
-from tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.framework import errors_impl
+from google3.third_party.tensorflow.python.platform import gfile
 
 _PLUGINS_DIR = "plugins"
 

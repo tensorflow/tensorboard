@@ -25,8 +25,8 @@ import gzip
 import six
 from werkzeug import test as wtest
 from werkzeug import wrappers
-from tensorflow.python.platform import test
-from tensorflow.tensorboard.backend import http_util
+from google3.third_party.tensorflow.python.platform import test
+from tensorboard.backend import http_util
 
 
 class RespondTest(test.TestCase):

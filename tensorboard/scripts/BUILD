@@ -1,7 +1,7 @@
 # Description:
 # Some useful scripts that are bundled with TensorBoard.
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -12,14 +12,14 @@ py_binary(
     srcs = ["generate_testdata.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python",  # TODO(b/34059704): remove when fixed
-        "//tensorflow/python:array_ops",
-        "//tensorflow/python:client",
-        "//tensorflow/python:logging_ops",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:summary",
-        "//third_party/py/numpy",
+        "//tensorboard:expect_numpy_installed",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python",  # TODO(b/34059704): remove when fixed
+        "//third_party/tensorflow/python:array_ops",
+        "//third_party/tensorflow/python:client",
+        "//third_party/tensorflow/python:logging_ops",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:summary",
         "@six_archive//:six",
     ],
 )
@@ -27,5 +27,5 @@ py_binary(
 filegroup(
     name = "all_files",
     srcs = glob(["*"]),
-    visibility = ["//tensorflow:__subpackages__"],
+    visibility = ["//third_party/tensorflow:__subpackages__"],
 )

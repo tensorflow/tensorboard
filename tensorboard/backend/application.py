@@ -36,12 +36,12 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 from six.moves.urllib import parse as urlparse
 from werkzeug import wrappers
 
-from tensorflow.python.platform import resource_loader
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.tensorboard.backend import http_util
-from tensorflow.tensorboard.backend import process_graph
-from tensorflow.tensorboard.backend.event_processing import event_accumulator
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
+from google3.third_party.tensorflow.python.platform import resource_loader
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from tensorboard.backend import http_util
+from tensorboard.backend import process_graph
+from tensorboard.backend.event_processing import event_accumulator
+from tensorboard.backend.event_processing import event_multiplexer
 
 
 DEFAULT_SIZE_GUIDANCE = {

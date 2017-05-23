@@ -1,13 +1,13 @@
 # Description:
 # TensorBoard plugin for the Text
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
-load("//tensorflow:tensorflow.bzl", "py_test")
+load("//third_party/tensorflow:tensorflow.bzl", "py_test")
 
 ## Text Plugin ##
 py_library(
@@ -15,12 +15,12 @@ py_library(
     srcs = ["text_plugin.py"],
     srcs_version = "PY2AND3",
     visibility = [
-        "//tensorboard:internal",
+        "//third_party/tensorflow:internal",
     ],
     deps = [
-        "//tensorflow/python:summary",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//third_party/tensorflow/python:summary",
         "@org_mozilla_bleach",
         "@org_pocoo_werkzeug//:werkzeug",
         "@org_pythonhosted_markdown",
@@ -36,13 +36,13 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
-        "//tensorflow/python:array_ops",
-        "//tensorflow/python:client",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:summary",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//third_party/tensorflow/python:array_ops",
+        "//third_party/tensorflow/python:client",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:summary",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -51,5 +51,5 @@ py_test(
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
-    visibility = ["//tensorflow:__pkg__"],
+    visibility = ["//third_party/tensorflow:__pkg__"],
 )

@@ -18,13 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.core.util import event_pb2
-from tensorflow.python import pywrap_tensorflow
-from tensorflow.python.framework import errors
-from tensorflow.python.platform import app
-from tensorflow.python.platform import resource_loader
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.python.util import compat
+from google3.third_party.tensorflow.core.util import event_pb2
+from google3.third_party.tensorflow.python import pywrap_tensorflow
+from google3.third_party.tensorflow.python.framework import errors
+from google3.third_party.tensorflow.python.platform import app
+from google3.third_party.tensorflow.python.platform import resource_loader
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from google3.third_party.tensorflow.python.util import compat
 
 
 class EventFileLoader(object):

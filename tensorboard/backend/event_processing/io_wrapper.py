@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import os
 
-from tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import gfile
 
 
 def IsGCSPath(path):

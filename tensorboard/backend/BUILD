@@ -1,13 +1,13 @@
 # Description:
 # TensorBoard, a dashboard for investigating TensorFlow
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
-load("//tensorflow:tensorflow.bzl", "py_test")
+load("//third_party/tensorflow:tensorflow.bzl", "py_test")
 
 py_library(
     name = "http_util",
@@ -16,7 +16,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":json_util",
-        "//tensorflow/python:util",
+        "//third_party/tensorflow/python:util",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -29,7 +29,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":http_util",
-        "//tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:client_testlib",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -40,7 +40,7 @@ py_library(
     srcs = ["json_util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//tensorflow/python:util"],
+    deps = ["//third_party/tensorflow/python:util"],
 )
 
 py_test(
@@ -50,7 +50,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":json_util",
-        "//tensorflow/python:platform_test",
+        "//third_party/tensorflow/python:platform_test",
     ],
 )
 
@@ -62,9 +62,9 @@ py_library(
     deps = [
         ":http_util",
         ":process_graph",
-        "//tensorflow/python:platform",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//third_party/tensorflow/python:platform",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -78,16 +78,16 @@ py_test(
     tags = ["manual"],
     deps = [
         ":application",
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python:client",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework_for_generated_wrappers",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:summary",
-        "//tensorflow/python:training",
         "//tensorboard",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python:client",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:framework_for_generated_wrappers",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:summary",
+        "//third_party/tensorflow/python:training",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )
@@ -97,7 +97,7 @@ py_library(
     srcs = ["process_graph.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//tensorflow/python:util"],
+    deps = ["//third_party/tensorflow/python:util"],
 )
 
 filegroup(
@@ -107,5 +107,5 @@ filegroup(
             "*",
         ],
     ),
-    visibility = ["//tensorflow:__subpackages__"],
+    visibility = ["//third_party/tensorflow:__subpackages__"],
 )

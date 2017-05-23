@@ -28,24 +28,24 @@ import numpy as np
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 from google.protobuf import text_format
-from tensorflow.core.framework import summary_pb2
-from tensorflow.core.protobuf import saver_pb2
-from tensorflow.core.util import event_pb2
-from tensorflow.python.client import session
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import image_ops
-from tensorflow.python.ops import init_ops
-from tensorflow.python.ops import variable_scope
-from tensorflow.python.ops import variables
-from tensorflow.python.platform import gfile
-from tensorflow.python.platform import test
-from tensorflow.python.summary import plugin_asset
-from tensorflow.python.summary.writer import writer
-from tensorflow.python.training import saver as saver_lib
-from tensorflow.tensorboard.backend import application
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
-from tensorflow.tensorboard.plugins.projector import projector_config_pb2
-from tensorflow.tensorboard.plugins.projector import projector_plugin
+from google3.third_party.tensorflow.core.framework import summary_pb2
+from google3.third_party.tensorflow.core.protobuf import saver_pb2
+from google3.third_party.tensorflow.core.util import event_pb2
+from google3.third_party.tensorflow.python.client import session
+from google3.third_party.tensorflow.python.framework import ops
+from google3.third_party.tensorflow.python.ops import image_ops
+from google3.third_party.tensorflow.python.ops import init_ops
+from google3.third_party.tensorflow.python.ops import variable_scope
+from google3.third_party.tensorflow.python.ops import variables
+from google3.third_party.tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import test
+from google3.third_party.tensorflow.python.summary import plugin_asset
+from google3.third_party.tensorflow.python.summary.writer import writer
+from google3.third_party.tensorflow.python.training import saver as saver_lib
+from tensorboard.backend import application
+from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.plugins.projector import projector_config_pb2
+from tensorboard.plugins.projector import projector_plugin
 
 
 class ProjectorAppTest(test.TestCase):

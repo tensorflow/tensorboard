@@ -17,8 +17,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.platform import googletest
-from tensorflow.tensorboard.backend import json_util
+from google3.third_party.tensorflow.python.platform import googletest
+from tensorboard.backend import json_util
 
 _INFINITY = float('inf')
 

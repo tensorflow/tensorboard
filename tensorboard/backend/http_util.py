@@ -29,8 +29,8 @@ import six
 
 from werkzeug import wrappers
 
-from tensorflow.python.util import compat
-from tensorflow.tensorboard.backend import json_util
+from google3.third_party.tensorflow.python.util import compat
+from tensorboard.backend import json_util
 
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')

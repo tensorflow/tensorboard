@@ -23,11 +23,11 @@ import threading
 
 import six
 
-from tensorflow.python.platform import gfile
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.tensorboard.backend.event_processing import directory_watcher
-from tensorflow.tensorboard.backend.event_processing import event_accumulator
-from tensorflow.tensorboard.backend.event_processing import io_wrapper
+from google3.third_party.tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from tensorboard.backend.event_processing import directory_watcher
+from tensorboard.backend.event_processing import event_accumulator
+from tensorboard.backend.event_processing import io_wrapper
 
 
 class EventMultiplexer(object):

@@ -1,18 +1,20 @@
 # Description:
 # Event processing logic for TensorBoard
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
+
+load("//third_party/tensorflow:tensorflow.bzl", "py_test")
 
 py_library(
     name = "io_wrapper",
     srcs = ["io_wrapper.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow/python:platform",
+        "//third_party/tensorflow/python:platform",
     ],
 )
 
@@ -22,8 +24,8 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":io_wrapper",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
     ],
 )
 
@@ -34,9 +36,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":directory_watcher",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
     ],
 )
 
@@ -53,7 +55,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":reservoir",
-        "//tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:client_testlib",
     ],
 )
 
@@ -62,11 +64,11 @@ py_library(
     srcs = ["event_file_loader.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:pywrap_tensorflow",
-        "//tensorflow/python:util",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:pywrap_tensorflow",
+        "//third_party/tensorflow/python:util",
     ],
 )
 
@@ -77,7 +79,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_file_loader",
-        "//tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:client_testlib",
     ],
 )
 
@@ -91,10 +93,10 @@ py_library(
         ":event_file_loader",
         ":plugin_asset_util",
         ":reservoir",
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:util",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:util",
     ],
 )
 
@@ -105,13 +107,13 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:summary",
-        "//tensorflow/python:training",
-        "//tensorflow/python:util",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:summary",
+        "//third_party/tensorflow/python:training",
+        "//third_party/tensorflow/python:util",
     ],
 )
 
@@ -124,9 +126,9 @@ py_library(
         ":directory_watcher",
         ":event_accumulator",
         ":io_wrapper",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:util",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:util",
         "@six_archive//:six",
     ],
 )
@@ -139,9 +141,9 @@ py_test(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
     ],
 )
 
@@ -150,7 +152,7 @@ py_library(
     srcs = ["plugin_asset_util.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow/python:platform",
+        "//third_party/tensorflow/python:platform",
     ],
 )
 
@@ -162,10 +164,10 @@ py_test(
     deps = [
         ":event_multiplexer",
         ":plugin_asset_util",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:summary",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:summary",
     ],
 )
 
@@ -176,10 +178,10 @@ py_library(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:util",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:util",
     ],
 )
 
@@ -190,11 +192,11 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_file_inspector",
-        "//tensorflow/core:protos_all_py",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework",
-        "//tensorflow/python:platform",
-        "//tensorflow/python:training",
+        "//third_party/tensorflow/core:protos_all_py",
+        "//third_party/tensorflow/python:client_testlib",
+        "//third_party/tensorflow/python:framework",
+        "//third_party/tensorflow/python:platform",
+        "//third_party/tensorflow/python:training",
     ],
 )
 
@@ -205,5 +207,5 @@ filegroup(
             "*",
         ],
     ),
-    visibility = ["//tensorflow:__subpackages__"],
+    visibility = ["//third_party/tensorflow:__subpackages__"],
 )

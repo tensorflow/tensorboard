@@ -19,12 +19,12 @@ from __future__ import print_function
 
 import os.path
 
-from tensorflow.python.framework import ops
-from tensorflow.python.platform import test
-from tensorflow.python.summary import plugin_asset
-from tensorflow.python.summary.writer import writer
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
-from tensorflow.tensorboard.backend.event_processing import plugin_asset_util
+from google3.third_party.tensorflow.python.framework import ops
+from google3.third_party.tensorflow.python.platform import test
+from google3.third_party.tensorflow.python.summary import plugin_asset
+from google3.third_party.tensorflow.python.summary.writer import writer
+from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_asset_util
 
 
 class GenericContentPlugin(plugin_asset.PluginAsset):
