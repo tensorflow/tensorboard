@@ -22,11 +22,11 @@ import os
 import os.path
 import shutil
 
-from tensorflow.python.framework import test_util
-from tensorflow.python.platform import gfile
-from tensorflow.python.platform import googletest
-from tensorflow.tensorboard.backend.event_processing import event_accumulator
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
+from google3.third_party.tensorflow.python.framework import test_util
+from google3.third_party.tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import googletest
+from tensorboard.backend.event_processing import event_accumulator
+from tensorboard.backend.event_processing import event_multiplexer
 
 
 def _AddEvents(path):

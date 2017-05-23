@@ -1,7 +1,7 @@
 # Description:
 # A plugin system for TensorBoard
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -16,5 +16,5 @@ py_library(
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
-    visibility = ["//tensorflow:__pkg__"],
+    visibility = ["//third_party/tensorflow:__pkg__"],
 )

@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:tensorboard.google.bzl", "tensorboard_webcomponent_library")
 
 licenses(["notice"])  # Apache 2.0
 

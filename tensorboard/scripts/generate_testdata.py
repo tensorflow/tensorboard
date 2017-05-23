@@ -28,17 +28,17 @@ import shutil
 
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
-from tensorflow.core.framework import graph_pb2
-from tensorflow.core.framework import summary_pb2
-from tensorflow.core.util import event_pb2
-from tensorflow.python.client import session as session_lib
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import logging_ops
-from tensorflow.python.platform import app
-from tensorflow.python.platform import flags
-from tensorflow.python.summary.writer import writer as writer_lib
+from google3.third_party.tensorflow.core.framework import graph_pb2
+from google3.third_party.tensorflow.core.framework import summary_pb2
+from google3.third_party.tensorflow.core.util import event_pb2
+from google3.third_party.tensorflow.python.client import session as session_lib
+from google3.third_party.tensorflow.python.ops import array_ops
+from google3.third_party.tensorflow.python.ops import logging_ops
+from google3.third_party.tensorflow.python.platform import app
+from google3.third_party.tensorflow.python.platform import flags
+from google3.third_party.tensorflow.python.summary.writer import writer as writer_lib
 
-tf.flags.DEFINE_string("target", None, """The directory where serialized data
+tf.flags.DEFINE_string("target", None, """The directoy where serialized data
 will be written""")
 
 flags.DEFINE_boolean("overwrite", False, """Whether to remove and overwrite

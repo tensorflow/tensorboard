@@ -27,13 +27,13 @@ import socket
 import sys
 from werkzeug import serving
 
-from tensorflow.python.platform import app
-from tensorflow.python.platform import flags
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.tensorboard.backend import application
-from tensorflow.tensorboard.backend.event_processing import event_file_inspector as efi
-from tensorflow.tensorboard.plugins.projector import projector_plugin
-from tensorflow.tensorboard.plugins.text import text_plugin
+from google3.third_party.tensorflow.python.platform import app
+from google3.third_party.tensorflow.python.platform import flags
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from tensorboard.backend import application
+from tensorboard.backend.event_processing import event_file_inspector as efi
+from tensorboard.plugins.projector import projector_plugin
+from tensorboard.plugins.text import text_plugin
 
 # TensorBoard flags
 

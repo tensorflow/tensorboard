@@ -1,4 +1,4 @@
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 
@@ -25,7 +25,7 @@ filegroup(
 ################################################################################
 # MARKED FOR DELETION
 
-load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:tensorboard.google.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",

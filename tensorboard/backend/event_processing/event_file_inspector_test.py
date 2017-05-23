@@ -20,13 +20,13 @@ from __future__ import print_function
 import os
 import shutil
 
-from tensorflow.core.framework.summary_pb2 import HistogramProto
-from tensorflow.core.framework.summary_pb2 import Summary
-from tensorflow.core.util.event_pb2 import SessionLog
-from tensorflow.python.framework import test_util
-from tensorflow.python.platform import googletest
-from tensorflow.python.training.summary_io import SummaryWriter
-from tensorflow.tensorboard.backend.event_processing import event_file_inspector as efi
+from google3.third_party.tensorflow.core.framework.summary_pb2 import HistogramProto
+from google3.third_party.tensorflow.core.framework.summary_pb2 import Summary
+from google3.third_party.tensorflow.core.util.event_pb2 import SessionLog
+from google3.third_party.tensorflow.python.framework import test_util
+from google3.third_party.tensorflow.python.platform import googletest
+from google3.third_party.tensorflow.python.training.summary_io import SummaryWriter
+from tensorboard.backend.event_processing import event_file_inspector as efi
 
 
 class EventFileInspectorTest(test_util.TensorFlowTestCase):

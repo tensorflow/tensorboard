@@ -34,10 +34,10 @@ import six
 # pylint: enable=g-bad-import-order
 from werkzeug import wrappers
 
-from tensorflow.python.framework import tensor_util
-from tensorflow.python.summary import text_summary
-from tensorflow.tensorboard.backend import http_util
-from tensorflow.tensorboard.plugins import base_plugin
+from google3.third_party.tensorflow.python.framework import tensor_util
+from google3.third_party.tensorflow.python.summary import text_summary
+from tensorboard.backend import http_util
+from tensorboard.plugins import base_plugin
 
 # The prefix of routes provided by this plugin.
 _PLUGIN_PREFIX_ROUTE = 'text'

@@ -20,10 +20,10 @@ from __future__ import print_function
 
 import bisect
 
-from tensorflow.python.framework import errors
-from tensorflow.python.platform import gfile
-from tensorflow.python.platform import tf_logging as logging
-from tensorflow.tensorboard.backend.event_processing import io_wrapper
+from google3.third_party.tensorflow.python.framework import errors
+from google3.third_party.tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import tf_logging as logging
+from tensorboard.backend.event_processing import io_wrapper
 
 
 class DirectoryWatcher(object):

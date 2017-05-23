@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//third_party/tensorflow:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:tensorboard.google.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -78,12 +78,13 @@ tensorboard_typescript_bundle(
         "VZ.Projector.ScatterPlotRectangleSelector": ["scatterPlotRectangleSelector.ts"],
         "VZ.Projector.AnalyticsLogger": ["analyticsLogger.ts"],
         "VZ.Projector.Util": ["util.ts"],
+        "VZ.Projector.Vector": ["vector.ts"],
+        "VZ.Projector.Knn": ["knn.ts"],
         "VZ.Projector.Data": ["data.ts"],
         "VZ.Projector.DataProvider": ["data-provider.ts"],
         "VZ.Projector.DataProviderDemo": ["data-provider-demo.ts"],
         "VZ.Projector.DataProviderProto": ["data-provider-proto.ts"],
         "VZ.Projector.DataProviderServer": ["data-provider-server.ts"],
-        "VZ.Projector.Knn": ["knn.ts"],
         "VZ.Projector.ProjectorEventContext": ["projectorEventContext.ts"],
         "VZ.Projector.ScatterPlot": ["scatterPlot.ts"],
         "VZ.Projector.ScatterPlotVisualizer3DLabels": ["scatterPlotVisualizer3DLabels.ts"],
@@ -92,7 +93,6 @@ tensorboard_typescript_bundle(
         "VZ.Projector.ScatterPlotVisualizerSprites": ["scatterPlotVisualizerSprites.ts"],
         "VZ.Projector.ScatterPlotVisualizer": ["scatterPlotVisualizer.ts"],
         "VZ.Projector.ProjectorScatterPlotAdapter": ["projectorScatterPlotAdapter.ts"],
-        "VZ.Projector.Vector": ["vector.ts"],
         "VZ.Projector.ProjectorUtil": ["vz-projector-util.ts"],
         "VZ.Projector.ProjectorBookmarkPanel": ["vz-projector-bookmark-panel.ts"],
         "VZ.Projector.ProjectorDataPanel": ["vz-projector-data-panel.ts"],
@@ -355,7 +355,7 @@ filegroup(
 
 #### Legacy for other consumers
 load(
-    "//tensorboard:defs.bzl",
+    "//tensorboard:tensorboard.google.bzl",
     "tensorboard_webcomponent_library",
     "tensorboard_ts_library",
     "tensorboard_ts_declaration",

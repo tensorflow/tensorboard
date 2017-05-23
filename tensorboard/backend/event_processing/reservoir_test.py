@@ -19,8 +19,8 @@ from __future__ import print_function
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
-from tensorflow.python.platform import test
-from tensorflow.tensorboard.backend.event_processing import reservoir
+from google3.third_party.tensorflow.python.platform import test
+from tensorboard.backend.event_processing import reservoir
 
 
 class ReservoirTest(test.TestCase):

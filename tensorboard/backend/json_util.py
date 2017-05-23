@@ -29,7 +29,7 @@ from __future__ import print_function
 
 import math
 
-from tensorflow.python.util import compat
+from google3.third_party.tensorflow.python.util import compat
 
 _INFINITY = float('inf')
 _NEGATIVE_INFINITY = float('-inf')

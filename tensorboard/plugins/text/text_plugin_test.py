@@ -23,15 +23,15 @@ import os
 import textwrap
 import numpy as np
 
-from tensorflow.python.client import session
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import array_ops
-from tensorflow.python.platform import test
-from tensorflow.python.summary import summary
-from tensorflow.python.summary import text_summary
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
-from tensorflow.tensorboard.plugins.text import text_plugin
+from google3.third_party.tensorflow.python.client import session
+from google3.third_party.tensorflow.python.framework import dtypes
+from google3.third_party.tensorflow.python.framework import ops
+from google3.third_party.tensorflow.python.ops import array_ops
+from google3.third_party.tensorflow.python.platform import test
+from google3.third_party.tensorflow.python.summary import summary
+from google3.third_party.tensorflow.python.summary import text_summary
+from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.plugins.text import text_plugin
 
 GEMS = ['garnet', 'amethyst', 'pearl', 'steven']
 

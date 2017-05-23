@@ -22,11 +22,11 @@ from __future__ import print_function
 import os
 import shutil
 
-from tensorflow.python.framework import test_util
-from tensorflow.python.platform import gfile
-from tensorflow.python.platform import googletest
-from tensorflow.tensorboard.backend.event_processing import directory_watcher
-from tensorflow.tensorboard.backend.event_processing import io_wrapper
+from google3.third_party.tensorflow.python.framework import test_util
+from google3.third_party.tensorflow.python.platform import gfile
+from google3.third_party.tensorflow.python.platform import googletest
+from tensorboard.backend.event_processing import directory_watcher
+from tensorboard.backend.event_processing import io_wrapper
 
 
 class _ByteLoader(object):

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 _DEFAULT_TYPINGS = [
-    "@com_microsoft_typescript//:lib.es6.d.ts",
+    "//third_party/javascript/node_modules/typescript/v2_3_1:lib/lib.es6.d.ts",
 ]
 
 def tensorboard_typescript_genrule(name, srcs, typings=[], **kwargs):
@@ -32,18 +32,18 @@ def tensorboard_typescript_genrule(name, srcs, typings=[], **kwargs):
   typings_out = [src[:-3] + ".d.ts" for src in srcs]
   inputs = _DEFAULT_TYPINGS + typings + srcs
   # These inputs are meant to work around a sandbox bug in Bazel. If we list
-  # @com_microsoft_typescript//:tsc.sh under tools, then its
+  # //third_party/javascript/node_modules/typescript:tsc under tools, then its
   # data attribute won't be considered when --genrule_strategy=sandboxed. See
   # https://github.com/bazelbuild/bazel/issues/1147 and its linked issues.
   data = [
       "@org_nodejs",
-      "@com_microsoft_typescript",
+      "//tensorboard/google:com_microsoft_typescript",
   ]
   native.genrule(
       name = name,
       srcs = inputs + data,
       outs = [src[:-3] + ".js" for src in srcs] + typings_out,
-      cmd = "$(location @com_microsoft_typescript//:tsc.sh)" +
+      cmd = "$(location //third_party/javascript/node_modules/typescript:tsc)" +
             " --inlineSourceMap" +
             " --inlineSources" +
             # Do not follow triple slash references within typings.
@@ -51,7 +51,7 @@ def tensorboard_typescript_genrule(name, srcs, typings=[], **kwargs):
             " --declaration" +
             " --outDir $(@D) " +
             " ".join(["$(locations %s)" % i for i in inputs]),
-      tools = ["@com_microsoft_typescript//:tsc.sh"],
+      tools = ["@com_microsoft_typescript//:tsc"],
       **kwargs
   )
   native.filegroup(

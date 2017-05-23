@@ -19,7 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.util import compat
+from google3.third_party.tensorflow.python.util import compat
 
 
 def prepare_graph_for_ui(graph, limit_attr_size=1024,

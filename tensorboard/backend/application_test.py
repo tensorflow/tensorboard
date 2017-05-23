@@ -38,17 +38,17 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
 from google.protobuf import text_format
 
-from tensorflow.core.framework import graph_pb2
-from tensorflow.core.framework import summary_pb2
-from tensorflow.core.protobuf import config_pb2
-from tensorflow.core.protobuf import meta_graph_pb2
-from tensorflow.core.util import event_pb2
-from tensorflow.python.platform import test
-from tensorflow.python.summary.writer import writer as writer_lib
-from tensorflow.tensorboard import tensorboard
-from tensorflow.tensorboard.backend import application
-from tensorflow.tensorboard.backend.event_processing import event_multiplexer
-from tensorflow.tensorboard.plugins import base_plugin
+from google3.third_party.tensorflow.core.framework import graph_pb2
+from google3.third_party.tensorflow.core.framework import summary_pb2
+from google3.third_party.tensorflow.core.protobuf import config_pb2
+from google3.third_party.tensorflow.core.protobuf import meta_graph_pb2
+from google3.third_party.tensorflow.core.util import event_pb2
+from google3.third_party.tensorflow.python.platform import test
+from google3.third_party.tensorflow.python.summary.writer import writer as writer_lib
+from tensorboard import tensorboard
+from tensorboard.backend import application
+from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.plugins import base_plugin
 
 
 class FakePlugin(base_plugin.TBPlugin):
