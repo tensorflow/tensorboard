@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -33,10 +33,10 @@ web_library(
     ],
     path = "/tf-dashboard-common",
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports:d3",
-        "//tensorflow/tensorboard/components/tf_imports:lodash",
-        "//tensorflow/tensorboard/components/tf_storage",
-        "//tensorflow/tensorboard/components/vz_sorting",
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_storage",
+        "//tensorboard/components/vz_sorting",
         "@org_polymer",
         "@org_polymer_iron_ajax",
         "@org_polymer_iron_collapse",
@@ -67,7 +67,7 @@ web_library(
     path = "/tf-dashboard-common",
     deps = [
         ":tf_dashboard_common",
-        "//tensorflow/tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_color_scale",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],
@@ -87,8 +87,8 @@ tensorboard_typescript_genrule(
         "@org_definitelytyped//:lodash.d.ts",
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:d3.d.ts",
-        "//tensorflow/tensorboard/components/vz_sorting:bundle.d.ts",
+        "//tensorboard/components/tf_imports:d3.d.ts",
+        "//tensorboard/components/vz_sorting:bundle.d.ts",
     ],
 )
 
@@ -105,7 +105,7 @@ tensorboard_typescript_genrule(
     typings = [
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_storage:bundle.d.ts",
+        "//tensorboard/components/tf_storage:bundle.d.ts",
     ],
 )
 
@@ -123,7 +123,7 @@ tensorboard_typescript_genrule(
         "@org_definitelytyped//:lodash.d.ts",
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_storage:bundle.d.ts",
+        "//tensorboard/components/tf_storage:bundle.d.ts",
     ],
 )
 
@@ -152,17 +152,17 @@ filegroup(
 ################################################################################
 # MARKED FOR DELETION
 
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_ts_library")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_ts_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = glob(["*.html"]) + [":legacy_ts"],
     destdir = "tf-dashboard-common",
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports_google:lib",
-        "//tensorflow/tensorboard/components/tf_storage:legacy",
-        "//tensorflow/tensorboard/components/vz_sorting:legacy",
+        "//tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/tf_storage:legacy",
+        "//tensorboard/components/vz_sorting:legacy",
         "//third_party/javascript/polymer/v1/iron-ajax:lib",
         "//third_party/javascript/polymer/v1/iron-collapse:lib",
         "//third_party/javascript/polymer/v1/iron-icons:lib",
@@ -192,7 +192,7 @@ tensorboard_ts_library(
     deps_mgmt = "off",
     runtime = "nodejs",
     deps = [
-        "//tensorflow/tensorboard/components/vz_sorting:legacy_ts",
+        "//tensorboard/components/vz_sorting:legacy_ts",
         "//third_party/javascript/typings/d3_v4:bundle",
         "//third_party/javascript/typings/lodash",
         "//third_party/javascript/typings/polymer:polymer_without_externs",

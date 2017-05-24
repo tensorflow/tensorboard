@@ -1,4 +1,4 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 
@@ -14,8 +14,8 @@ web_library(
     ],
     path = "/tf-graph-info",
     deps = [
-        "//tensorflow/tensorboard/components/tf_dashboard_common",
-        "//tensorflow/tensorboard/components/tf_graph_common",
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_graph_common",
         "@org_polymer",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_list",
@@ -35,7 +35,7 @@ filegroup(
 ################################################################################
 # MARKED FOR DELETION
 
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",
@@ -47,7 +47,7 @@ tensorboard_webcomponent_library(
     ],
     destdir = "tf-graph-info",
     deps = [
-        "//tensorflow/tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorflow/tensorboard/components/tf_graph_common:legacy",
+        "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_graph_common:legacy",
     ],
 )

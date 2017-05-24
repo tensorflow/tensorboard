@@ -1,4 +1,4 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 
@@ -10,9 +10,9 @@ web_library(
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-graph-board/demo",
     deps = [
-        "//tensorflow/tensorboard/components/tf_graph_board",
-        "//tensorflow/tensorboard/components/tf_graph_common",
-        "//tensorflow/tensorboard/components/tf_graph_loader",
+        "//tensorboard/components/tf_graph_board",
+        "//tensorboard/components/tf_graph_common",
+        "//tensorboard/components/tf_graph_loader",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
         "@org_polymer_webcomponentsjs",

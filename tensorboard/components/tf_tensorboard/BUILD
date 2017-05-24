@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -15,18 +15,18 @@ web_library(
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorflow/tensorboard/components/tf_audio_dashboard",
-        "//tensorflow/tensorboard/components/tf_backend",
-        "//tensorflow/tensorboard/components/tf_dashboard_common",
-        "//tensorflow/tensorboard/components/tf_distribution_dashboard",
-        "//tensorflow/tensorboard/components/tf_globals",
-        "//tensorflow/tensorboard/components/tf_graph_dashboard",
-        "//tensorflow/tensorboard/components/tf_histogram_dashboard",
-        "//tensorflow/tensorboard/components/tf_image_dashboard",
-        "//tensorflow/tensorboard/components/tf_scalar_dashboard",
-        "//tensorflow/tensorboard/components/tf_storage",
-        "//tensorflow/tensorboard/components/tf_text_dashboard",
-        "//tensorflow/tensorboard/components/vz_projector",
+        "//tensorboard/components/tf_audio_dashboard",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_distribution_dashboard",
+        "//tensorboard/components/tf_globals",
+        "//tensorboard/components/tf_graph_dashboard",
+        "//tensorboard/components/tf_histogram_dashboard",
+        "//tensorboard/components/tf_image_dashboard",
+        "//tensorboard/components/tf_scalar_dashboard",
+        "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_text_dashboard",
+        "//tensorboard/components/vz_projector",
         "@org_polymer",
         "@org_polymer_font_roboto",
         "@org_polymer_iron_icons",
@@ -46,7 +46,7 @@ web_library(
     path = "/tf-tensorboard",
     deps = [
         ":tf_tensorboard",
-        "//tensorflow/tensorboard/demo:demo_data",
+        "//tensorboard/demo:demo_data",
         "@org_polymer_webcomponentsjs",
     ],
 )

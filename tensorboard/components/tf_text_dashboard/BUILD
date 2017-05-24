@@ -1,4 +1,4 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 
@@ -12,11 +12,11 @@ web_library(
     ],
     path = "/tf-text-dashboard",
     deps = [
-        "//tensorflow/tensorboard/components/tf_backend",
-        "//tensorflow/tensorboard/components/tf_color_scale",
-        "//tensorflow/tensorboard/components/tf_dashboard_common",
-        "//tensorflow/tensorboard/components/tf_imports:d3",
-        "//tensorflow/tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:lodash",
         "@org_polymer",
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_icon_button",

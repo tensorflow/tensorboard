@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -27,11 +27,11 @@ web_library(
     path = "/vz-projector",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorflow/tensorboard/components/tf_dashboard_common",
-        "//tensorflow/tensorboard/components/tf_imports:d3",
-        "//tensorflow/tensorboard/components/tf_imports:numericjs",
-        "//tensorflow/tensorboard/components/tf_imports:threejs",
-        "//tensorflow/tensorboard/components/tf_imports:weblas",
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:numericjs",
+        "//tensorboard/components/tf_imports:threejs",
+        "//tensorboard/components/tf_imports:weblas",
         "@org_polymer",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icons",
@@ -61,7 +61,7 @@ tensorboard_typescript_genrule(
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:three.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:d3.d.ts",
+        "//tensorboard/components/tf_imports:d3.d.ts",
     ],
 )
 
@@ -355,7 +355,7 @@ filegroup(
 
 #### Legacy for other consumers
 load(
-    "//tensorflow/tensorboard:defs.bzl",
+    "//tensorboard:defs.bzl",
     "tensorboard_webcomponent_library",
     "tensorboard_ts_library",
     "tensorboard_ts_declaration",
