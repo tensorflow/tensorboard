@@ -14,6 +14,7 @@ py_binary(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/projector:projector_plugin",
+        "//tensorboard/plugins/scalars:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "//third_party/tensorflow/python:platform",
         "@org_pocoo_werkzeug//:werkzeug",
