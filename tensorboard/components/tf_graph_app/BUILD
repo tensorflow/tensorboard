@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -13,9 +13,9 @@ web_library(
     ],
     path = "/tf-graph-app",
     deps = [
-        "//tensorflow/tensorboard/components/tf_graph_board",
-        "//tensorflow/tensorboard/components/tf_graph_controls",
-        "//tensorflow/tensorboard/components/tf_graph_loader",
+        "//tensorboard/components/tf_graph_board",
+        "//tensorboard/components/tf_graph_controls",
+        "//tensorboard/components/tf_graph_loader",
         "@org_polymer",
         "@org_polymer_iron_component_page",
         "@org_polymer_webcomponentsjs",
@@ -39,9 +39,9 @@ tensorboard_webcomponent_library(
     ],
     destdir = "tf-graph-app",
     deps = [
-        "//tensorflow/tensorboard/components/tf_graph_board:legacy",
-        "//tensorflow/tensorboard/components/tf_graph_controls:legacy",
-        "//tensorflow/tensorboard/components/tf_graph_loader:legacy",
+        "//tensorboard/components/tf_graph_board:legacy",
+        "//tensorboard/components/tf_graph_controls:legacy",
+        "//tensorboard/components/tf_graph_loader:legacy",
         "//third_party/javascript/polymer/v1/iron-list:lib",
         "//third_party/javascript/polymer/v1/paper-radio-group:lib",
         "//third_party/javascript/polymer/v1/paper-tooltip:lib",

@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
 
 licenses(["notice"])  # Apache 2.0
 

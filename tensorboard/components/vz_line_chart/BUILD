@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -15,9 +15,9 @@ web_library(
     path = "/vz-line-chart",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports:d3",
-        "//tensorflow/tensorboard/components/tf_imports:lodash",
-        "//tensorflow/tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:plottable",
         "@org_polymer",
     ],
 )
@@ -41,8 +41,8 @@ tensorboard_typescript_genrule(
         "@org_definitelytyped//:lodash.d.ts",
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:d3.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:plottable.d.ts",
+        "//tensorboard/components/tf_imports:d3.d.ts",
+        "//tensorboard/components/tf_imports:plottable.d.ts",
     ],
 )
 
@@ -74,8 +74,8 @@ filegroup(
 ################################################################################
 # MARKED FOR DELETION
 
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_ts_library")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_ts_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",
@@ -87,8 +87,8 @@ tensorboard_webcomponent_library(
     visibility = ["//learning/vis/vz_elements/catalog:__pkg__"],
     destdir = "vz-line-chart",
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports_google:lib",
-        "//tensorflow/tensorboard/components/vz_sorting:legacy",
+        "//tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/vz_sorting:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

@@ -1,4 +1,4 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 
@@ -9,7 +9,7 @@ web_library(
     srcs = ["vz-histogram-timeseries.html"],
     path = "/vz-histogram-timeseries",
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:d3",
         "@org_polymer",
     ],
 )
@@ -36,7 +36,7 @@ filegroup(
 ################################################################################
 # MARKED FOR DELETION
 
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",
@@ -47,7 +47,7 @@ tensorboard_webcomponent_library(
     visibility = ["//learning/vis/vz_elements/catalog:__pkg__"],
     destdir = "vz-histogram-timeseries",
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/tf_imports_google:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

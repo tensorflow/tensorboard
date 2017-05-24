@@ -1,7 +1,7 @@
 # Description:
 # TensorBoard, a dashboard for investigating TensorFlow
 
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -12,10 +12,10 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow/python:platform",
-        "//tensorflow/tensorboard/backend:application",
-        "//tensorflow/tensorboard/backend/event_processing:event_file_inspector",
-        "//tensorflow/tensorboard/plugins/projector:projector_plugin",
-        "//tensorflow/tensorboard/plugins/text:text_plugin",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/plugins/projector:projector_plugin",
+        "//tensorboard/plugins/text:text_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )
@@ -24,7 +24,14 @@ filegroup(
     name = "assets",
     srcs = [
         "TAG",
-        "//tensorflow/tensorboard/components:index.html",
+        "//tensorboard/components:index.html",
+    ],
+)
+
+package_group(
+    name = "internal",
+    packages = [
+        "//tensorboard/...",
     ],
 )
 
@@ -40,3 +47,4 @@ filegroup(
     ),
     tags = ["notsan"],
 )
+

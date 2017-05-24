@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -15,9 +15,9 @@ web_library(
     path = "/vz-distribution-chart",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports:lodash",
-        "//tensorflow/tensorboard/components/tf_imports:plottable",
-        "//tensorflow/tensorboard/components/vz_line_chart",
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/vz_line_chart",
         "@org_polymer",
     ],
 )
@@ -38,12 +38,12 @@ tensorboard_typescript_genrule(
     name = "ts",
     srcs = ["bundle.ts"],
     typings = [
-        "//tensorflow/tensorboard/components/tf_imports:d3.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:plottable.d.ts",
+        "//tensorboard/components/tf_imports:d3.d.ts",
+        "//tensorboard/components/tf_imports:plottable.d.ts",
         "@org_definitelytyped//:lodash.d.ts",
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/vz_line_chart:bundle.d.ts",
+        "//tensorboard/components/vz_line_chart:bundle.d.ts",
     ],
 )
 

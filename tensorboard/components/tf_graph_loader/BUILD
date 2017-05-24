@@ -1,4 +1,4 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 
@@ -11,7 +11,7 @@ web_library(
     ],
     path = "/tf-graph-loader",
     deps = [
-        "//tensorflow/tensorboard/components/tf_graph_common",
+        "//tensorboard/components/tf_graph_common",
         "@org_polymer",
     ],
 )
@@ -25,7 +25,7 @@ filegroup(
 ################################################################################
 # MARKED FOR DELETION
 
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",
@@ -34,6 +34,6 @@ tensorboard_webcomponent_library(
     ],
     destdir = "tf-graph-loader",
     deps = [
-        "//tensorflow/tensorboard/components/tf_graph_common:legacy",
+        "//tensorboard/components/tf_graph_common:legacy",
     ],
 )

@@ -1,7 +1,7 @@
 # Description:
 # TensorBoard plugin for the Text
 
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -15,12 +15,12 @@ py_library(
     srcs = ["text_plugin.py"],
     srcs_version = "PY2AND3",
     visibility = [
-        "//tensorflow:internal",
+        "//tensorboard:internal",
     ],
     deps = [
         "//tensorflow/python:summary",
-        "//tensorflow/tensorboard/backend:http_util",
-        "//tensorflow/tensorboard/plugins:base_plugin",
+        "//tensorboard/backend:http_util",
+        "//tensorboard/plugins:base_plugin",
         "@org_mozilla_bleach",
         "@org_pocoo_werkzeug//:werkzeug",
         "@org_pythonhosted_markdown",
@@ -41,8 +41,8 @@ py_test(
         "//tensorflow/python:client_testlib",
         "//tensorflow/python:platform",
         "//tensorflow/python:summary",
-        "//tensorflow/tensorboard/backend:application",
-        "//tensorflow/tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],

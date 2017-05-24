@@ -86,7 +86,7 @@ tensorboard_html_binary = rule(
         "deps": attr.label_list(providers=["webfiles"], mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
         "_Vulcanize": attr.label(
-            default=Label("//tensorflow/tensorboard/java/org/tensorflow/tensorboard/vulcanize:Vulcanize"),
+            default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Vulcanize"),
             executable=True,
             cfg="host"),
         "_WebfilesServer": attr.label(

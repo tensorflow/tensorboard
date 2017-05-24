@@ -1,6 +1,6 @@
 # Embedding Projector plugin.
 
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -13,7 +13,7 @@ py_library(
     name = "projector_plugin",
     srcs = ["projector_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//tensorflow:internal"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":protos_all_py",
         "//tensorflow/python:errors",
@@ -21,8 +21,8 @@ py_library(
         "//tensorflow/python:lib",
         "//tensorflow/python:platform",
         "//tensorflow/python:training",
-        "//tensorflow/tensorboard/backend:http_util",
-        "//tensorflow/tensorboard/plugins:base_plugin",
+        "//tensorboard/backend:http_util",
+        "//tensorboard/plugins:base_plugin",
         "//third_party/py/numpy",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
@@ -45,8 +45,8 @@ py_test(
         "//tensorflow/python:training",
         "//tensorflow/python:variable_scope",
         "//tensorflow/python:variables",
-        "//tensorflow/tensorboard/backend:application",
-        "//tensorflow/tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//third_party/py/numpy",
         "@org_pocoo_werkzeug//:werkzeug",
     ],

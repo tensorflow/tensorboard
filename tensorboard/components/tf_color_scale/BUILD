@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -14,7 +14,7 @@ web_library(
     ],
     path = "/tf-color-scale",
     deps = [
-        "//tensorflow/tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:d3",
         "@org_polymer",
     ],
 )
@@ -25,7 +25,7 @@ web_library(
     path = "/tf-color-scale",
     deps = [
         ":tf_color_scale",
-        "//tensorflow/tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:d3",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_button",
         "@org_polymer_paper_styles",
@@ -39,7 +39,7 @@ tensorboard_typescript_genrule(
     typings = [
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:d3.d.ts",
+        "//tensorboard/components/tf_imports:d3.d.ts",
     ],
 )
 

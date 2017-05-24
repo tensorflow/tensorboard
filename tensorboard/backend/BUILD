@@ -1,7 +1,7 @@
 # Description:
 # TensorBoard, a dashboard for investigating TensorFlow
 
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -57,14 +57,14 @@ py_test(
 py_library(
     name = "application",
     srcs = ["application.py"],
-    data = ["//tensorflow/tensorboard:assets"],
+    data = ["//tensorboard:assets"],
     srcs_version = "PY2AND3",
     deps = [
         ":http_util",
         ":process_graph",
         "//tensorflow/python:platform",
-        "//tensorflow/tensorboard/backend/event_processing:event_accumulator",
-        "//tensorflow/tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -85,9 +85,9 @@ py_test(
         "//tensorflow/python:platform",
         "//tensorflow/python:summary",
         "//tensorflow/python:training",
-        "//tensorflow/tensorboard",
-        "//tensorflow/tensorboard/backend/event_processing:event_multiplexer",
-        "//tensorflow/tensorboard/plugins:base_plugin",
+        "//tensorboard",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )

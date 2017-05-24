@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -14,8 +14,8 @@ web_library(
     ],
     path = "/tf-storage",
     deps = [
-        "//tensorflow/tensorboard/components/tf_globals",
-        "//tensorflow/tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_globals",
+        "//tensorboard/components/tf_imports:lodash",
     ],
 )
 
@@ -26,8 +26,8 @@ tensorboard_typescript_genrule(
         "@org_definitelytyped//:lodash.d.ts",
         "@org_definitelytyped//:polymer.d.ts",
         "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorflow/tensorboard/components/tf_globals:bundle.d.ts",
-        "//tensorflow/tensorboard/components/tf_imports:d3.d.ts",
+        "//tensorboard/components/tf_globals:bundle.d.ts",
+        "//tensorboard/components/tf_imports:d3.d.ts",
     ],
 )
 
@@ -53,8 +53,8 @@ filegroup(
 
 ################################################################################
 # MARKED FOR DELETION
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_ts_library")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:defs.bzl", "tensorboard_ts_library")
+load("//tensorboard:defs.bzl", "tensorboard_webcomponent_library")
 
 tensorboard_webcomponent_library(
     name = "legacy",
@@ -64,8 +64,8 @@ tensorboard_webcomponent_library(
     ],
     destdir = "tf-storage",
     deps = [
-        "//tensorflow/tensorboard/components/tf_globals:legacy",
-        "//tensorflow/tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/tf_globals:legacy",
+        "//tensorboard/components/tf_imports_google:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
@@ -76,7 +76,7 @@ tensorboard_ts_library(
     deps_mgmt = "off",
     runtime = "nodejs",
     deps = [
-        "//tensorflow/tensorboard/components/tf_globals:legacy_ts",
+        "//tensorboard/components/tf_globals:legacy_ts",
         "//third_party/javascript/typings/lodash",
     ],
 )

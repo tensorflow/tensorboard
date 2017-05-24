@@ -1,11 +1,11 @@
 package(
     default_testonly = True,
-    default_visibility = ["//tensorflow:internal"],
+    default_visibility = ["//tensorboard:internal"],
 )
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorflow/tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorflow/tensorboard:defs.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:defs.bzl", "tensorboard_typescript_genrule")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -17,7 +17,7 @@ web_library(
     ],
     path = "/vz-sorting/test",
     deps = [
-        "//tensorflow/tensorboard/components/vz_sorting",
+        "//tensorboard/components/vz_sorting",
         "@org_npmjs_registry_web_component_tester",
     ],
 )
@@ -28,7 +28,7 @@ tensorboard_typescript_genrule(
     typings = [
         "@org_definitelytyped//:mocha.d.ts",
         "@org_definitelytyped//:chai.d.ts",
-        "//tensorflow/tensorboard/components/vz_sorting:bundle.d.ts",
+        "//tensorboard/components/vz_sorting:bundle.d.ts",
     ],
 )
 
