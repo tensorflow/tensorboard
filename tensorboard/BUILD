@@ -13,6 +13,7 @@ py_binary(
     deps = [
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/plugins/images:images_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalars:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
