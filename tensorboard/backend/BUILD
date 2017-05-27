@@ -16,7 +16,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":json_util",
-        "//third_party/tensorflow/python:util",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -29,7 +29,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":http_util",
-        "//third_party/tensorflow/python:client_testlib",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -40,7 +40,9 @@ py_library(
     srcs = ["json_util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//third_party/tensorflow/python:util"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_test(
@@ -50,7 +52,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":json_util",
-        "//third_party/tensorflow/python:platform_test",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -62,9 +64,9 @@ py_library(
     deps = [
         ":http_util",
         ":process_graph",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
-        "//third_party/tensorflow/python:platform",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -79,15 +81,9 @@ py_test(
     deps = [
         ":application",
         "//tensorboard",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:client",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:framework_for_generated_wrappers",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:summary",
-        "//third_party/tensorflow/python:training",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )
@@ -97,7 +93,9 @@ py_library(
     srcs = ["process_graph.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//third_party/tensorflow/python:util"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 filegroup(
