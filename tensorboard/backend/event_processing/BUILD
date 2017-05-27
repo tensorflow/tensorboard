@@ -14,7 +14,7 @@ py_library(
     srcs = ["io_wrapper.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//third_party/tensorflow/python:platform",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -24,8 +24,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":io_wrapper",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -36,9 +35,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":directory_watcher",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -55,7 +52,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":reservoir",
-        "//third_party/tensorflow/python:client_testlib",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -63,13 +60,7 @@ py_library(
     name = "event_file_loader",
     srcs = ["event_file_loader.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:pywrap_tensorflow",
-        "//third_party/tensorflow/python:util",
-    ],
+    deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
 py_test(
@@ -79,7 +70,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_file_loader",
-        "//third_party/tensorflow/python:client_testlib",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -93,10 +84,7 @@ py_library(
         ":event_file_loader",
         ":plugin_asset_util",
         ":reservoir",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:util",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -107,13 +95,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:summary",
-        "//third_party/tensorflow/python:training",
-        "//third_party/tensorflow/python:util",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -126,9 +108,7 @@ py_library(
         ":directory_watcher",
         ":event_accumulator",
         ":io_wrapper",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:util",
+        "//tensorboard:expect_tensorflow_installed",
         "@six_archive//:six",
     ],
 )
@@ -141,9 +121,7 @@ py_test(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -152,7 +130,7 @@ py_library(
     srcs = ["plugin_asset_util.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//third_party/tensorflow/python:platform",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -164,10 +142,7 @@ py_test(
     deps = [
         ":event_multiplexer",
         ":plugin_asset_util",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:summary",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -178,10 +153,7 @@ py_library(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:util",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -192,11 +164,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_file_inspector",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:framework",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:training",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 

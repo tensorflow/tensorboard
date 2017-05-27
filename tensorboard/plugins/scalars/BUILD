@@ -18,10 +18,10 @@ py_library(
         "//third_party/tensorflow:internal",
     ],
     deps = [
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
-        "//third_party/tensorflow/python:summary",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],

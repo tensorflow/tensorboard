@@ -17,13 +17,9 @@ py_library(
     deps = [
         ":protos_all_py",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
-        "//third_party/tensorflow/python:errors",
-        "//third_party/tensorflow/python:image_ops",
-        "//third_party/tensorflow/python:lib",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:training",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )
@@ -37,17 +33,9 @@ py_test(
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python:client",
-        "//third_party/tensorflow/python:client_testlib",
-        "//third_party/tensorflow/python:init_ops",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:summary",
-        "//third_party/tensorflow/python:training",
-        "//third_party/tensorflow/python:variable_scope",
-        "//third_party/tensorflow/python:variables",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )
