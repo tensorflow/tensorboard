@@ -13,13 +13,7 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_numpy_installed",
-        "//third_party/tensorflow/core:protos_all_py",
-        "//third_party/tensorflow/python",  # TODO(b/34059704): remove when fixed
-        "//third_party/tensorflow/python:array_ops",
-        "//third_party/tensorflow/python:client",
-        "//third_party/tensorflow/python:logging_ops",
-        "//third_party/tensorflow/python:platform",
-        "//third_party/tensorflow/python:summary",
+        "//tensorboard:expect_tensorflow_installed",
         "@six_archive//:six",
     ],
 )
