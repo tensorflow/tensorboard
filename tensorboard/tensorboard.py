@@ -33,6 +33,7 @@ from werkzeug import serving
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.histograms import histograms_plugin
+from tensorboard.plugins.images import images_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalars import scalars_plugin
 from tensorboard.plugins.text import text_plugin
@@ -202,8 +203,9 @@ def main(unused_argv=None):
     return 0
   else:
     plugins = [
-        scalars_plugin.ScalarsPlugin(),
         histograms_plugin.HistogramsPlugin(),
+        images_plugin.ImagesPlugin(),
+        scalars_plugin.ScalarsPlugin(),
         projector_plugin.ProjectorPlugin(),
         text_plugin.TextPlugin(),
     ]
