@@ -13,7 +13,7 @@
 # limitations under the License.
 
 _DEFAULT_TYPINGS = [
-    "//third_party/javascript/node_modules/typescript/v2_3_1:lib/lib.es6.d.ts",
+    "@com_microsoft_typescript//:lib.es6.d.ts",
 ]
 
 def tensorboard_typescript_genrule(name, srcs, typings=[], **kwargs):
