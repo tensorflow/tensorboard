@@ -24,7 +24,6 @@ import shutil
 
 import tensorflow as tf
 
-from google3.third_party.tensorflow.python.platform import googletest
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import io_wrapper
 
@@ -55,7 +54,7 @@ class DirectoryWatcherTest(tf.test.TestCase):
     os.mkdir(self._directory)
     self._watcher = directory_watcher.DirectoryWatcher(self._directory,
                                                        _ByteLoader)
-    self.stubs = googletest.StubOutForTesting()
+    self.stubs = tf.test.StubOutForTesting()
 
   def tearDown(self):
     self.stubs.CleanUp()
