@@ -1,4 +1,4 @@
-# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_closure//closure/compiler:legacy_js.bzl", "legacy_js")
-load("//third_party/javascript/polymer/build_defs:build_defs.bzl", "webcomponent_library")
+load("@protobuf//:protobuf.bzl", "py_proto_library")
 
-def tensorboard_webcomponent_library(strip_prefix="", **kwargs):
-  """Internal-only delegate for webcomponent_library."""
-  webcomponent_library(strip_prefix=strip_prefix, **kwargs)
+def tb_proto_library(name, srcs = [], visibility = []):
+  py_proto_library(
+    name = name + "_py",
+    srcs = srcs,
+    srcs_version = "PY2AND3",
+    deps = ["@protobuf//:protobuf_python"],
+    protoc = "@protobuf//:protoc",
+    visibility = visibility,
+    default_runtime = "@protobuf//:protobuf_python",
+    testonly = 0,
+  )

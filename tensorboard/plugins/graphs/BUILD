@@ -1,13 +1,11 @@
 # Description:
 # TensorBoard plugin for graphs
 
-package(default_visibility = ["//third_party/tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
-
-load("//third_party/tensorflow:tensorflow.bzl", "py_test")
 
 ## Graphs Plugin ##
 py_library(
@@ -15,7 +13,7 @@ py_library(
     srcs = ["graphs_plugin.py"],
     srcs_version = "PY2AND3",
     visibility = [
-        "//third_party/tensorflow:internal",
+        "//tensorboard:internal",
     ],
     deps = [
         "//tensorboard:expect_tensorflow_installed",

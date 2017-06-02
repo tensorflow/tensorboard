@@ -1,19 +1,18 @@
 # Embedding Projector plugin.
 
-package(default_visibility = ["//third_party/tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
-load("//third_party/tensorflow:tensorflow.bzl", "py_test")
-load("//third_party/tensorflow/core:platform/google/build_config.bzl", "tf_proto_library")
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 py_library(
     name = "projector_plugin",
     srcs = ["projector_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//third_party/tensorflow:internal"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":protos_all_py",
         "//tensorboard:expect_numpy_installed",
@@ -40,21 +39,14 @@ py_test(
     ],
 )
 
-tf_proto_library(
-    name = "protos_all",
-    srcs = glob(["*.proto"]),
-    visibility = ["//visibility:public"],
-)
-
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
     visibility = ["//third_party/tensorflow:__pkg__"],
 )
 
-py_proto_library(
-    name = "protos_all_py_pb2",
-    api_version = 2,
-    visibility = ["//visibility:public"],
-    deps = [":protos_all"],
+tb_proto_library(
+    name = "protos_all",
+    srcs = glob(["*.proto"]),
+    visibility = ["//tensorboard:internal"],
 )
