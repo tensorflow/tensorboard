@@ -1,16 +1,16 @@
 package(default_visibility = ["//third_party/tensorflow:internal"])
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
+load("//tensorboard:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-web_library(
+ts_web_library(
     name = "tf_option_selector",
     srcs = ["tf-option-selector.html"],
     path = "/tf-option-selector",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "@org_polymer",
+        "//tensorboard/components/tf_imports:polymer",
     ],
 )
 

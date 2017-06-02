@@ -1,16 +1,19 @@
 package(default_visibility = ["//third_party/tensorflow:internal"])
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorboard:tensorboard.google.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:tensorboard.google.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-web_library(
+ts_web_library(
     name = "tf_backend",
     srcs = [
-        "bundle.js",
+        "backend.ts",
+        "behavior.ts",
+        "requestManager.ts",
+        "router.ts",
         "tf-backend.html",
+        "urlPathHelpers.ts",
     ],
     path = "/tf-backend",
     visibility = ["//visibility:public"],
@@ -18,37 +21,20 @@ web_library(
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
-        "@org_polymer",
     ],
 )
 
-tensorboard_typescript_genrule(
-    name = "ts",
-    srcs = ["bundle.ts"],
-    typings = [
-        "@org_definitelytyped//:lodash.d.ts",
-        "@org_definitelytyped//:polymer.d.ts",
-        "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorboard/components/tf_imports:d3.d.ts",
-        "//tensorboard/components/tf_imports:plottable.d.ts",
-        "//tensorboard/components/vz_sorting:bundle.d.ts",
+tensorboard_webcomponent_library(
+    name = "legacy",
+    srcs = [":tf_backend"],
+    destdir = "tf-backend",
+    deps = [
+        "//tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/vz_sorting:legacy",
+        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
-)
-
-tensorboard_typescript_bundle(
-    name = "bundle",
-    out = "bundle.ts",
-    namespace_srcs = {"TF.Backend": [
-        "requestManager.ts",
-        "backend.ts",
-        "behavior.ts",
-        "urlPathHelpers.ts",
-        "router.ts",
-    ]},
-    namespace_symbol_aliases = {"TF.Backend": {
-        "compareTagNames": "VZ.Sorting.compareTagNames",
-    }},
 )
 
 filegroup(

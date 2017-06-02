@@ -1,28 +1,47 @@
 package(default_visibility = ["//third_party/tensorflow:internal"])
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
 load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
+load("//tensorboard:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-web_library(
+ts_web_library(
+    name = "webcomponentsjs",
+    srcs = ["@org_definitelytyped//:webcomponents.js.d.ts"],
+    path = "/webcomponentsjs",
+    exports = ["@org_polymer_webcomponentsjs"],
+)
+
+ts_web_library(
+    name = "polymer",
+    srcs = ["@org_definitelytyped//:polymer.d.ts"],
+    path = "/polymer",
+    exports = ["@org_polymer"],
+    deps = [":webcomponentsjs"],
+)
+
+ts_web_library(
     name = "lodash",
-    srcs = ["lodash.html"],
+    srcs = [
+        "lodash.html",
+        "@org_definitelytyped//:lodash.d.ts",
+    ],
     path = "/tf-imports",
     deps = ["@com_lodash"],
 )
 
-web_library(
+ts_web_library(
     name = "threejs",
     srcs = [
         "threejs.html",
+        "@org_definitelytyped//:three.d.ts",
         "@org_threejs//:OrbitControls.js",
         "@org_threejs//:three.js",
     ],
     path = "/tf-imports",
 )
 
-web_library(
+ts_web_library(
     name = "numericjs",
     srcs = [
         "numericjs.html",
@@ -31,7 +50,7 @@ web_library(
     path = "/tf-imports",
 )
 
-web_library(
+ts_web_library(
     name = "weblas",
     srcs = [
         "weblas.html",
@@ -40,7 +59,7 @@ web_library(
     path = "/tf-imports",
 )
 
-web_library(
+ts_web_library(
     name = "graphlib",
     srcs = [
         "graphlib.html",
@@ -50,7 +69,7 @@ web_library(
     deps = [":lodash"],
 )
 
-web_library(
+ts_web_library(
     name = "dagre",
     srcs = [
         "dagre.html",
@@ -63,33 +82,60 @@ web_library(
     ],
 )
 
-web_library(
+ts_web_library(
     name = "d3",
     srcs = [
+        "d3.d.ts",
         "d3.html",
-        "//third_party/javascript/d3/v4:d3.js",
+        "@org_d3js//:d3.min.js",
     ],
     path = "/tf-imports",
 )
 
-web_library(
+ts_web_library(
     name = "plottable",
-    srcs = ["plottable.html"],
-    path = "/tf-imports",
-    deps = [
-        ":d3",
-        ":plottable_js_css",
-    ],
-)
-
-web_library(
-    name = "plottable_js_css",
     srcs = [
+        "plottable.d.ts",
+        "plottable.html",
         "@com_palantir_plottable//:package/plottable.css",
         "@com_palantir_plottable//:package/plottable.js",
     ],
     path = "/tf-imports",
-    strip_prefix = "package",
+    deps = [":d3"],
+)
+
+ts_web_library(
+    name = "web_component_tester",
+    testonly = 1,
+    exports = [
+        ":chai_typings",
+        ":mocha_typings",
+        ":sinon_typings",
+        "@org_npmjs_registry_web_component_tester",
+    ],
+)
+
+ts_web_library(
+    name = "chai_typings",
+    testonly = 1,
+    srcs = ["@org_definitelytyped//:chai.d.ts"],
+    path = "/chai",
+    visibility = ["//visibility:private"],
+)
+
+ts_web_library(
+    name = "mocha_typings",
+    testonly = 1,
+    srcs = ["@org_definitelytyped//:mocha.d.ts"],
+    path = "/mocha",
+    visibility = ["//visibility:private"],
+)
+
+ts_web_library(
+    name = "sinon_typings",
+    testonly = 1,
+    srcs = ["@org_definitelytyped//:sinon.d.ts"],
+    path = "/sinonjs",
     visibility = ["//visibility:private"],
 )
 
