@@ -1,7 +1,7 @@
 # Description:
 # Some useful scripts that are bundled with TensorBoard.
 
-package(default_visibility = ["//third_party/tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 

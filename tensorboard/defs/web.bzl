@@ -14,7 +14,7 @@
 
 """Same as web_library but supports TypeScript."""
 
-load("//tensorboard:tensorboard.google.bzl", "legacy_js")
+load("//tensorboard/defs:defs.bzl", "legacy_js")
 
 load("//third_party:clutz.bzl",
      "CLUTZ_ATTRIBUTES",

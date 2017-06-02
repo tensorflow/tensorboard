@@ -1,9 +1,9 @@
 package(
     default_testonly = True,
-    default_visibility = ["//third_party/tensorflow:internal"],
+    default_visibility = ["//tensorboard:internal"],
 )
 
-load("//tensorboard:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
