@@ -14,6 +14,7 @@ py_binary(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/distributions:distributions_plugin",
         "//tensorboard/plugins/histograms:histograms_plugin",
         "//tensorboard/plugins/images:images_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
