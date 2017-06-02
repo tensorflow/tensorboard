@@ -3,49 +3,25 @@ package(
     default_visibility = ["//third_party/tensorflow:internal"],
 )
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorboard:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorboard:tensorboard.google.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-web_library(
+ts_web_library(
     name = "test",
     srcs = [
-        "bundle.js",
         "tests.html",
+        "backendTests.ts",
+        "behaviorTests.ts",
+        "requestManagerTests.ts",
     ] + glob(["data/**"]),
     path = "/tf-backend/test",
     deps = [
         "//tensorboard/components/tf_backend",
-        "@org_npmjs_registry_web_component_tester",
-        "@org_polymer",
-        "@org_polymer_webcomponentsjs",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_imports:web_component_tester",
+        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
-)
-
-tensorboard_typescript_genrule(
-    name = "ts",
-    srcs = ["bundle.ts"],
-    typings = [
-        "@org_definitelytyped//:chai.d.ts",
-        "@org_definitelytyped//:mocha.d.ts",
-        "@org_definitelytyped//:polymer.d.ts",
-        "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorboard/components/tf_backend:bundle.d.ts",
-        "//tensorboard/components/tf_imports:d3.d.ts",
-        "//tensorboard/components/tf_imports:plottable.d.ts",
-    ],
-)
-
-tensorboard_typescript_bundle(
-    name = "bundle",
-    out = "bundle.ts",
-    namespace_srcs = {"TF.Backend": [
-        "backendTests.ts",
-        "behaviorTests.ts",
-        "requestManagerTests.ts",
-    ]},
 )
 
 filegroup(

@@ -1,19 +1,18 @@
 package(default_visibility = ["//third_party/tensorflow:internal"])
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
+load("//tensorboard:tensorboard.google.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-web_library(
+ts_web_library(
     name = "tf_graph_controls",
-    srcs = [
-        "tf-graph-controls.html",
-    ],
+    srcs = ["tf-graph-controls.html"],
     path = "/tf-graph-controls",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_graph_common",
-        "@org_polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_menu",
@@ -23,25 +22,25 @@ web_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)
-
-################################################################################
-# MARKED FOR DELETION
-
-load("//tensorboard:tensorboard.google.bzl", "tensorboard_webcomponent_library")
-
 tensorboard_webcomponent_library(
     name = "legacy",
-    srcs = [
-        "tf-graph-controls.html",
-    ],
+    srcs = [":tf_graph_controls"],
     destdir = "tf-graph-controls",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/components/tf_graph_common:legacy",
+        "//third_party/javascript/polymer/v1/paper-button:lib",
+        "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-radio-group:lib",
+        "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
+        "//third_party/javascript/polymer/v1/paper-tooltip:lib",
+        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
+)
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+    tags = ["notsan"],
 )

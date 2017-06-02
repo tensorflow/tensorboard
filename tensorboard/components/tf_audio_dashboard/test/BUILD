@@ -3,15 +3,14 @@ package(
     default_visibility = ["//third_party/tensorflow:internal"],
 )
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")
-load("//tensorboard:tensorboard.google.bzl", "tensorboard_typescript_genrule")
+load("//tensorboard:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-web_library(
+ts_web_library(
     name = "test",
     srcs = [
-        "audioDashboardTests.js",
+        "audioDashboardTests.ts",
         "tests.html",
     ],
     path = "/tf-audio-dashboard/test",
@@ -19,24 +18,10 @@ web_library(
         "//tensorboard/components/tf_audio_dashboard",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_imports:web_component_tester",
+        "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/demo:demo_data",
-        "@org_npmjs_registry_web_component_tester",
-        "@org_polymer",
-        "@org_polymer_webcomponentsjs",
-    ],
-)
-
-tensorboard_typescript_genrule(
-    name = "ts",
-    srcs = ["audioDashboardTests.ts"],
-    typings = [
-        "@org_definitelytyped//:chai.d.ts",
-        "@org_definitelytyped//:mocha.d.ts",
-        "@org_definitelytyped//:sinon.d.ts",
-        "@org_definitelytyped//:polymer.d.ts",
-        "@org_definitelytyped//:webcomponents.js.d.ts",
-        "//tensorboard/components/tf_backend:bundle.d.ts",
-        "//tensorboard/components/tf_imports:d3.d.ts",
     ],
 )
 
