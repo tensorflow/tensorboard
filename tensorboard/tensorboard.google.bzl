@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@io_bazel_rules_closure//closure/compiler:legacy_js.bzl", "legacy_js")
 load("//third_party/javascript/polymer/build_defs:build_defs.bzl", "webcomponent_library")
 
 def tensorboard_webcomponent_library(strip_prefix="", **kwargs):
