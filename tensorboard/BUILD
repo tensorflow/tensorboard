@@ -30,6 +30,7 @@ filegroup(
     srcs = [
         "TAG",
         "//tensorboard/components:index.html",
+        "//tensorboard/components:trace_viewer_index.html",
     ],
 )
 
