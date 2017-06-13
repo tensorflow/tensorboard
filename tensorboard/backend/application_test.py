@@ -36,7 +36,7 @@ import tensorflow as tf
 
 from werkzeug import serving
 
-from tensorboard import tensorboard
+from tensorboard import main as tensorboard
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
