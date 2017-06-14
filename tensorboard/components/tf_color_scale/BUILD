@@ -13,22 +13,9 @@ ts_web_library(
     ],
     path = "/tf-color-scale",
     deps = [
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
-    ],
-)
-
-ts_web_library(
-    name = "demo",
-    srcs = ["index.html"],
-    path = "/tf-color-scale",
-    deps = [
-        ":tf_color_scale",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_iron_demo_helpers",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_styles",
     ],
 )
 
