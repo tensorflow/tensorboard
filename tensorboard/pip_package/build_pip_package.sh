@@ -17,24 +17,6 @@
 
 set -e
 
-function cp_external() {
-  local src_dir=$1
-  local dest_dir=$2
-  for f in `find "$src_dir" -maxdepth 1 -mindepth 1 ! -name '*local_config_cuda*'`; do
-    cp -R "$f" "$dest_dir"
-  done
-}
-
-PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
-function is_windows() {
-  # On windows, the shell script is actually running in msys
-  if [[ "${PLATFORM}" =~ msys_nt* ]]; then
-    true
-  else
-    false
-  fi
-}
-
 function main() {
   if [ $# -lt 1 ] ; then
     echo "No destination dir provided"
@@ -51,6 +33,8 @@ function main() {
     exit 1
   fi
 
+
+  bazel build //tensorboard/pip_package:build_pip_package
   cp -R bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard/external "${TMPDIR}"
   cp -R bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard/tensorboard "${TMPDIR}"
   echo $(ls $TMPDIR)

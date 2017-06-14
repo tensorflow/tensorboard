@@ -22,7 +22,6 @@ sh_binary(
         "//conditions:default": [
             ":licenses",
             "MANIFEST.in",
-            "README",
             "setup.py",
             "//tensorboard",
         ],

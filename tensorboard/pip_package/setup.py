@@ -17,16 +17,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-import re
 import sys
 
 from setuptools import find_packages, setup
+
 
 # This version string is semver compatible.
 # Backwards-incompatible changes to Python API or plugin compatibility will 
 # result in a change to the MAJOR version.
 _VERSION = '0.1.0'
+
 
 REQUIRED_PACKAGES = [
     'numpy >= 1.11.0',
@@ -39,29 +39,18 @@ REQUIRED_PACKAGES = [
     # Add TensorFlow once there is a compatible release.
 ]
 
-project_name = 'tensorboard'
-if '--project_name' in sys.argv:
-  project_name_idx = sys.argv.index('--project_name')
-  project_name = sys.argv[project_name_idx + 1]
-  sys.argv.remove('--project_name')
-  sys.argv.pop(project_name_idx)
-
 # python3 requires wheel 0.26
 if sys.version_info.major == 3:
   REQUIRED_PACKAGES.append('wheel >= 0.26')
 else:
   REQUIRED_PACKAGES.append('wheel')
-  # mock comes with unittest.mock for python3, need to install for python2
 
-# pylint: disable=line-too-long
 CONSOLE_SCRIPTS = [
-    'tensorboard = tensorboard:main',
+    'tensorboard = tensorboard.main:main',
 ]
-# pylint: enable=line-too-long
-
 
 setup(
-    name=project_name,
+    name='tensorflow-tensorboard',
     version=_VERSION.replace('-', ''),
     description='TensorBoard lets you watch Tensors Flow',
     long_description='',
