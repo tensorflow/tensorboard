@@ -41,6 +41,25 @@ py_test(
     ],
 )
 
+py_library(
+    name = "compressor",
+    srcs = ["compressor.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = ["//tensorboard:expect_numpy_installed"],
+)
+
+py_test(
+    name = "compressor_test",
+    size = "small",
+    srcs = ["compressor_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":compressor",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
