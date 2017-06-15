@@ -28,13 +28,13 @@ function main() {
 
   echo $(date) : "=== Using tmpdir: ${TMPDIR}"
 
+  bazel build //tensorboard/pip_package:build_pip_package
+
   if [ ! -d bazel-bin/tensorboard ]; then
     echo "Could not find bazel-bin.  Did you run from the root of the build tree?"
     exit 1
   fi
 
-
-  bazel build //tensorboard/pip_package:build_pip_package
   cp -R bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard/external "${TMPDIR}"
   cp -R bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard/tensorboard "${TMPDIR}"
   echo $(ls $TMPDIR)
@@ -42,10 +42,6 @@ function main() {
   cp tensorboard/pip_package/MANIFEST.in ${TMPDIR}
   cp README.md ${TMPDIR}
   cp tensorboard/pip_package/setup.py ${TMPDIR}
-
-  # # Before we leave the top-level directory, make sure we know how to
-  # # call python.
-  # source tools/python_bin_path.sh
 
   pushd ${TMPDIR}
   rm -f MANIFEST
