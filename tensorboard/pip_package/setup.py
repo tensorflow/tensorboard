@@ -62,6 +62,12 @@ setup(
     entry_points={
         'console_scripts': CONSOLE_SCRIPTS,
     },
+    package_data={
+        'tensorboard': [
+            'components/index.html',
+            'TAG',
+        ],
+    },
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
     # PyPI package information.
