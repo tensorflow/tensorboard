@@ -1,36 +1,48 @@
 language: python
+python:
+  - "2.7"
+  - "3.4"
 # trusty beta image has jdk8, gcc4.8.4
 dist: trusty
 sudo: required
-# xcode8 has jdk8
-osx_image: xcode8
-# Not technically required but suppresses 'Ruby' in Job status message.
 
 os:
   - linux
-  - osx
 
 env:
-  - V=0.5.1
+  - BAZEL=0.5.1 TF=1.2.0
+  - BAZEL=0.5.1 TF=RELEASE
+  - BAZEL=0.5.1 TF=NIGHTLY
 
 before_install:
   - |
-    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      OS=darwin
-    else
-      sysctl kernel.unprivileged_userns_clone=1
-      OS=linux
-    fi
-    if [[ "${V}" == "HEAD" ]]; then
-      URL="http://ci.bazel.io/job/Bazel/JAVA_VERSION=1.8,PLATFORM_NAME=${OS}-x86_64/lastSuccessfulBuild/artifact/output/ci/bazel--installer.sh"
-    else
-      URL="https://github.com/bazelbuild/bazel/releases/download/${V}/bazel-${V}-installer-${OS}-x86_64.sh"
-    fi
-    wget -O install.sh "${URL}"
+    set -eu
+
+    # On Linux, help bazel sandbox work
+    sysctl kernel.unprivileged_userns_clone=1
+
+    BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-${OS}-x86_64.sh"
+    wget -O install.sh "${BAZEL_URL}"
     chmod +x install.sh
     ./install.sh --user
     rm -f install.sh
-    pip install tensorflow
+    case "${TF}" in
+      RELEASE)
+        pip install tensorflow
+        ;;
+      NIGHTLY)
+        if [[ "${TRAVIS_PYTHON_VERSION}" == 2* ]]; then
+          NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON2,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.2.0rc2-cp27-none-linux_x86_64.whl'
+        else
+          NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON3,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.2.0rc2-cp34-cp34m-linux_x86_64.whl'
+        fi
+        pip install "${NIGHTLY_URL}"
+        ;;
+      *)
+        pip install tensorflow=="${TF}"
+        ;;
+    esac
+
 script:
   - |
     bazel \
