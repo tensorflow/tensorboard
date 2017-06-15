@@ -35,6 +35,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
