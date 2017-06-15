@@ -27,7 +27,7 @@ import tensorflow as tf
 LOGDIR = '/tmp/histograms_demo'
 
 
-def run(logdir):
+def run_all(logdir, verbose=False):
   """Generate a bunch of histogram data, and write it to logdir."""
   k = tf.placeholder(tf.float32)
 
@@ -80,7 +80,7 @@ def run(logdir):
 
 def main(unused_argv):
   print('Running histograms demo. Output saving to %s.' % LOGDIR)
-  run(LOGDIR)
+  run_all(LOGDIR)
   print('Done. Output saved to %s.' % LOGDIR)
 
 
