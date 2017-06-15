@@ -48,6 +48,7 @@ function main() {
   echo $(date) : "=== Building wheel"
   echo $(pwd)
   python setup.py bdist_wheel #>/dev/null
+  python3 setup.py bdist_wheel #>/dev/null
   mkdir -p ${DEST}
   cp dist/* ${DEST}
   popd
