@@ -377,5 +377,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
 
 def get_tensorboard_tag():
   """Read the TensorBoard TAG number, and return it or an empty string."""
-  tag = tf.resource_loader.load_resource('tensorboard/TAG').strip()
-  return tag
+  try:
+    return tf.resource_loader.load_resource('tensorboard/TAG').strip()
+  except IOError:
+    return tf.resource_loader.load_resource('../tensorboard/TAG').strip()
