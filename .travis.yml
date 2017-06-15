@@ -1,0 +1,61 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+# trusty beta image has jdk8, gcc4.8.4
+dist: trusty
+sudo: required
+
+os:
+  - linux
+
+env:
+  - BAZEL=0.5.1 TF=1.2.0
+  - BAZEL=0.5.1 TF=RELEASE
+  - BAZEL=0.5.1 TF=NIGHTLY
+
+before_install:
+  - |
+    set -e
+    BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
+    wget -O install.sh "${BAZEL_URL}"
+    chmod +x install.sh
+    ./install.sh --user
+    rm -f install.sh
+    case "${TF}" in
+      RELEASE)
+        pip install tensorflow
+        ;;
+      NIGHTLY)
+        if [[ "${TRAVIS_PYTHON_VERSION}" == 2* ]]; then
+          NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON2,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.2.0rc2-cp27-none-linux_x86_64.whl'
+        else
+          NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON3,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.2.0rc2-cp34-cp34m-linux_x86_64.whl'
+        fi
+        pip install "${NIGHTLY_URL}"
+        ;;
+      *)
+        pip install tensorflow=="${TF}"
+        ;;
+    esac
+
+script:
+  - |
+    bazel \
+      --output_base=$HOME/.cache/bazel \
+      --batch \
+      --host_jvm_args=-Xmx500m \
+      --host_jvm_args=-Xms500m \
+      test \
+      tensorboard/... \
+      --worker_verbose \
+      --verbose_failures \
+      --test_output=errors \
+      --spawn_strategy=sandboxed \
+      --genrule_strategy=sandboxed \
+      --local_resources=400,2,1.0 \
+      --strategy=Javac=worker \
+      --strategy=Closure=worker
+
+notifications:
+  email: false
