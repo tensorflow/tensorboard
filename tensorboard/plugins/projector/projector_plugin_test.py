@@ -33,6 +33,7 @@ from google.protobuf import text_format
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
 
@@ -199,7 +200,9 @@ class ProjectorAppTest(tf.test.TestCase):
     multiplexer = event_multiplexer.EventMultiplexer(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
-    self.plugin = projector_plugin.ProjectorPlugin()
+    context = base_plugin.TBContext(
+        logdir=self.log_dir, multiplexer=multiplexer)
+    self.plugin = projector_plugin.ProjectorPlugin(context)
     wsgi_app = application.TensorBoardWSGIApp(
         self.log_dir, [self.plugin], multiplexer, reload_interval=0)
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
