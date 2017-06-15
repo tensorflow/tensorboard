@@ -80,7 +80,7 @@ def run(logdir):
 
 def main(unused_argv):
   print('Running histograms demo. Output saving to %s.' % LOGDIR)
-  run(LOGDIR, verbose=True)
+  run(LOGDIR)
   print('Done. Output saved to %s.' % LOGDIR)
 
 
