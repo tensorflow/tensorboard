@@ -41,6 +41,16 @@ py_test(
     ],
 )
 
+py_binary(
+    name = "histograms_demo",
+    srcs = ["histograms_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "@six_archive//:six",
+    ],
+)
+
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
