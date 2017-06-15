@@ -14,6 +14,7 @@ ts_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/vz_histogram_timeseries",
         "@org_polymer_iron_collapse",
         "@org_polymer_paper_icon_button",
