@@ -18,9 +18,6 @@ before_install:
   - |
     set -eu
 
-    # On Linux, help bazel sandbox work
-    sysctl kernel.unprivileged_userns_clone=1
-
     BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-${OS}-x86_64.sh"
     wget -O install.sh "${BAZEL_URL}"
     chmod +x install.sh
