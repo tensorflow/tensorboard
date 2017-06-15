@@ -237,13 +237,7 @@ class TensorBoardWSGIApp(object):
     return http_util.Respond(request, run_names, 'application/json')
 
   def get_index_html(self):
-    INDEX_PATH = 'tensorboard/components/index.html'
-    try:
-      return tf.resource_loader.load_resource(INDEX_PATH)
-    except IOError:
-      # Hack around the fact that depending on context, tensorboard might
-      # or might not be nested under tensorflow/
-      return tf.resource_loader.load_resource('../' + INDEX_PATH)
+    return hacky_loader('components/index.html')
 
   @wrappers.Request.application
   def _serve_index(self, request):
@@ -377,7 +371,17 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
 
 def get_tensorboard_tag():
   """Read the TensorBoard TAG number, and return it or an empty string."""
+  return hacky_loader('TAG').strip()
+
+
+def hacky_loader(path):
+  """Load an asset from the tensorboard directory, in a platform-generic way."""
   try:
-    return tf.resource_loader.load_resource('tensorboard/TAG').strip()
+    return tf.resource_loader.load_resource(path)
   except IOError:
-    return tf.resource_loader.load_resource('../tensorboard/TAG').strip()
+    tensorboard_root = (os.path.join(
+      os.path.dirname(__file__), os.pardir))
+    path = os.path.join(tensorboard_root, path)
+    path = os.path.abspath(path)
+    with open(path, 'rb') as f:
+      return f.read()
