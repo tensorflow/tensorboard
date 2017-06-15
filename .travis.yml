@@ -16,7 +16,7 @@ env:
 
 before_install:
   - |
-    set -eu
+    set -e
     BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
     wget -O install.sh "${BAZEL_URL}"
     chmod +x install.sh
