@@ -236,11 +236,19 @@ class TensorBoardWSGIApp(object):
     run_names.sort(key=first_event_timestamps.get)
     return http_util.Respond(request, run_names, 'application/json')
 
+  def get_index_html(self):
+    INDEX_PATH = 'tensorboard/components/index.html'
+    try:
+      return tf.resource_loader.load_resource(INDEX_PATH)
+    except IOError:
+      # Hack around the fact that depending on context, tensorboard might
+      # or might not be nested under tensorflow/
+      return tf.resource_loader.load_resource('../' + INDEX_PATH)
+
   @wrappers.Request.application
   def _serve_index(self, request):
     """Serves the index page (i.e., the tensorboard app itself)."""
-    contents = tf.resource_loader.load_resource(
-        'tensorboard/components/index.html')
+    contents = self.get_index_html()
     return http_util.Respond(request, contents, 'text/html', expires=3600)
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name

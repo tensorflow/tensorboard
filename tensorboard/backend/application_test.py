@@ -408,6 +408,11 @@ class TensorBoardAssetsTest(tf.test.TestCase):
     app = application.standard_tensorboard_wsgi('', True, 60, [])
     self.assertEqual(app.tag, tag)
 
+  def testIndexFound(self):
+    app = application.standard_tensorboard_wsgi('', True, 60, [])
+    index = app.get_index_html()
+    self.assertTrue(index)
+
 
 class TensorBoardPluginsTest(tf.test.TestCase):
 
