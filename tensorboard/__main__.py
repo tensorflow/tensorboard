@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import sys
 
-from tensorboard.tensorboard import main
+from tensorboard.main import main
 
 if __name__ == '__main__':
   sys.exit(main())
