@@ -1,0 +1,53 @@
+language: python
+# trusty beta image has jdk8, gcc4.8.4
+dist: trusty
+sudo: required
+# xcode8 has jdk8
+osx_image: xcode8
+# Not technically required but suppresses 'Ruby' in Job status message.
+
+os:
+  - linux
+  - osx
+
+env:
+  - V=0.5.1
+
+before_install:
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+      OS=darwin
+    else
+      sysctl kernel.unprivileged_userns_clone=1
+      OS=linux
+    fi
+    if [[ "${V}" == "HEAD" ]]; then
+      URL="http://ci.bazel.io/job/Bazel/JAVA_VERSION=1.8,PLATFORM_NAME=${OS}-x86_64/lastSuccessfulBuild/artifact/output/ci/bazel--installer.sh"
+    else
+      URL="https://github.com/bazelbuild/bazel/releases/download/${V}/bazel-${V}-installer-${OS}-x86_64.sh"
+    fi
+    wget -O install.sh "${URL}"
+    chmod +x install.sh
+    ./install.sh --user
+    rm -f install.sh
+    pip install tensorflow
+script:
+  - |
+    bazel \
+      --output_base=$HOME/.cache/bazel \
+      --batch \
+      --host_jvm_args=-Xmx500m \
+      --host_jvm_args=-Xms500m \
+      test \
+      tensorboard/... \
+      --worker_verbose \
+      --verbose_failures \
+      --test_output=errors \
+      --spawn_strategy=sandboxed \
+      --genrule_strategy=sandboxed \
+      --local_resources=400,2,1.0 \
+      --strategy=Javac=worker \
+      --strategy=Closure=worker
+
+notifications:
+  email: false
