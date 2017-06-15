@@ -10,8 +10,6 @@ os:
   - linux
 
 env:
-  - BAZEL=0.5.1 TF=1.2.0
-  - BAZEL=0.5.1 TF=RELEASE
   - BAZEL=0.5.1 TF=NIGHTLY
 
 before_install:
