@@ -236,11 +236,13 @@ class TensorBoardWSGIApp(object):
     run_names.sort(key=first_event_timestamps.get)
     return http_util.Respond(request, run_names, 'application/json')
 
+  def get_index_html(self):
+    return hacky_loader('components/index.html')
+
   @wrappers.Request.application
   def _serve_index(self, request):
     """Serves the index page (i.e., the tensorboard app itself)."""
-    contents = tf.resource_loader.load_resource(
-        'tensorboard/components/index.html')
+    contents = self.get_index_html()
     return http_util.Respond(request, contents, 'text/html', expires=3600)
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
@@ -369,5 +371,16 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
 
 def get_tensorboard_tag():
   """Read the TensorBoard TAG number, and return it or an empty string."""
-  tag = tf.resource_loader.load_resource('tensorboard/TAG').strip()
-  return tag
+  return hacky_loader('TAG').strip()
+
+
+def hacky_loader(path):
+  """Load an asset from the tensorboard directory, in a platform-generic way."""
+  try:
+    return tf.resource_loader.load_resource(path)
+  except IOError:
+    tensorboard_root = os.path.join(os.path.dirname(__file__), os.pardir)
+    path = os.path.join(tensorboard_root, path)
+    path = os.path.abspath(path)
+    with open(path, 'rb') as f:
+      return f.read()
