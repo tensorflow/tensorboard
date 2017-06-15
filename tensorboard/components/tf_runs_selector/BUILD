@@ -1,4 +1,4 @@
-package(default_visibility = ["//third_party/tensorflow:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "ts_web_library")
 
