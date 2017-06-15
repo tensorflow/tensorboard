@@ -379,8 +379,7 @@ def hacky_loader(path):
   try:
     return tf.resource_loader.load_resource(path)
   except IOError:
-    tensorboard_root = (os.path.join(
-      os.path.dirname(__file__), os.pardir))
+    tensorboard_root = os.path.join(os.path.dirname(__file__), os.pardir)
     path = os.path.join(tensorboard_root, path)
     path = os.path.abspath(path)
     with open(path, 'rb') as f:
