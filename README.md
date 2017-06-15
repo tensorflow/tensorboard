@@ -37,8 +37,10 @@ tensorboard --logdir=path/to/logs
 Or, if you are building from source:
 
 ```
-bazel build tensorflow/tensorboard:tensorboard
-./bazel-bin/tensorflow/tensorboard/tensorboard --logdir=path/to/logs
+bazel build tensorboard:tensorboard
+./bazel-bin/tensorboard/tensorboard --logdir=path/to/logs
+# or even more succinctly
+bazel run tensorboard -- --logdir=path/to/logs
 ```
 
 This should print that TensorBoard has started. Next, connect to
