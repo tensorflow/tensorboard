@@ -11,7 +11,9 @@ For in-depth information on the Graph Visualizer, see this tutorial: [TensorBoar
 
 You may also want to watch
 [this video tutorial](https://www.youtube.com/watch?v=eBbEDRsCmv4) that walks
-through setting up and using TensorBoard.
+through setting up and using TensorBoard. There's an associated [tutorial with
+an end-to-end example of training TensorFlow and using TensorBoard]
+(https://github.com/dandelionmane/tf-dev-summit-tensorboard-tutorial).
 
 # Usage
 
@@ -35,8 +37,10 @@ tensorboard --logdir=path/to/logs
 Or, if you are building from source:
 
 ```
-bazel build tensorflow/tensorboard:tensorboard
-./bazel-bin/tensorflow/tensorboard/tensorboard --logdir=path/to/logs
+bazel build tensorboard:tensorboard
+./bazel-bin/tensorboard/tensorboard --logdir=path/to/logs
+# or even more succinctly
+bazel run tensorboard -- --logdir=path/to/logs
 ```
 
 This should print that TensorBoard has started. Next, connect to
@@ -340,19 +344,19 @@ This is because by default, TensorBoard serves on host `0.0.0.0` which is
 publicly accessible. You can stop the popups by specifying `--host=localhost` at
 startup.
 
-### How can I develop TensorBoard?
+### How can I contribute to TensorBoard development?
 
-See [tensorflow/tensorboard/DEVELOPMENT.md](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tensorboard/DEVELOPMENT.md).
+See [DEVELOPMENT.md](https://github.com/tensorflow/tensorboard/blob/master/DEVELOPMENT.md).
 
 ### I have a different issue that wasn't addressed here!
 
 First, try searching our [GitHub
-issues](https://github.com/tensorflow/tensorflow/issues) and [Stack
+issues](https://github.com/tensorflow/tensorboard/issues) and [Stack
 Overflow](https://stackoverflow.com/questions/tagged/tensorboard). It may be
 that someone else has already had the same issue or question.
 
 If you have a bug, please [file a GitHub
-issue](https://github.com/tensorflow/tensorflow/issues). If the bug is related
+issue](https://github.com/tensorflow/tensorboard/issues). If the bug is related
 to your specific data (e.g. the events aren't loading properly), please do both
 of the following things to make it easier for us to debug and fix:
 
@@ -360,7 +364,7 @@ of the following things to make it easier for us to debug and fix:
 - Upload some events files that will reproduce the issue.
 
 If you have a feature request, please [file a GitHub
-issue](https://github.com/tensorflow/tensorflow/issues).
+issue](https://github.com/tensorflow/tensorboard/issues).
 
 General usage questions should go to [Stack
 Overflow](http://stackoverflow.com/questions/tagged/tensorflow).
