@@ -26,60 +26,64 @@ import tempfile
 
 
 def run(inputs, program, outputs):
-  """Creates temp symlink tree, runs program, and copies back outputs.
+    """Creates temp symlink tree, runs program, and copies back outputs.
 
-  Args:
-    inputs: List of fake paths to real paths, which are used for symlink tree.
-    program: List containing real path of program and its arguments. The
-        execroot directory will be appended as the last argument.
-    outputs: List of fake outputted paths to copy back to real paths.
-  Returns:
-    0 if succeeded or nonzero if failed.
-  """
-  root = tempfile.mkdtemp()
-  try:
-    cwd = os.getcwd()
-    for fake, real in inputs:
-      parent = os.path.join(root, os.path.dirname(fake))
-      if not os.path.exists(parent):
-        os.makedirs(parent)
-      os.symlink(os.path.join(cwd, real), os.path.join(root, fake))
-    if subprocess.call(program + [root]) != 0:
-      return 1
-    for fake, real in outputs:
-      shutil.copyfile(os.path.join(root, fake), real)
-    return 0
-  finally:
-    shutil.rmtree(root)
+    Args:
+        inputs: List of fake paths to real paths, which are used for symlink
+            tree.
+        program: List containing real path of program and its arguments. The
+            execroot directory will be appended as the last argument.
+        outputs: List of fake outputted paths to copy back to real paths.
+
+    Returns:
+        0 if succeeded or nonzero if failed.
+    """
+    root = tempfile.mkdtemp()
+    try:
+        cwd = os.getcwd()
+        for fake, real in inputs:
+            parent = os.path.join(root, os.path.dirname(fake))
+            if not os.path.exists(parent):
+                os.makedirs(parent)
+            os.symlink(os.path.join(cwd, real), os.path.join(root, fake))
+        if subprocess.call(program + [root]) != 0:
+            return 1
+        for fake, real in outputs:
+            shutil.copyfile(os.path.join(root, fake), real)
+        return 0
+    finally:
+        shutil.rmtree(root)
 
 
 def main(args):
-  """Invokes run function using a JSON file config.
+    """Invokes run function using a JSON file config.
 
-  Args:
-    args: CLI args, which can be a JSON file containing an object whose
-        attributes are the parameters to the run function. If multiple JSON
-        files are passed, their contents are concatenated.
-  Returns:
-    0 if succeeded or nonzero if failed.
-  Raises:
-    Exception: If input data is missing.
-  """
-  if not args:
-    raise Exception('Please specify at least one JSON config path')
-  inputs = []
-  program = []
-  outputs = []
-  for arg in args:
-    with open(arg) as fd:
-      config = json.load(fd)
-    inputs.extend(config.get('inputs', []))
-    program.extend(config.get('program', []))
-    outputs.extend(config.get('outputs', []))
-  if not program:
-    raise Exception('Please specify a program')
-  return run(inputs, program, outputs)
+    Args:
+        args: CLI args, which can be a JSON file containing an object whose
+            attributes are the parameters to the run function. If multiple JSON
+            files are passed, their contents are concatenated.
+
+    Returns:
+        0 if succeeded or nonzero if failed.
+
+    Raises:
+        Exception: If input data is missing.
+    """
+    if not args:
+        raise Exception('Please specify at least one JSON config path')
+    inputs = []
+    program = []
+    outputs = []
+    for arg in args:
+        with open(arg) as fd:
+            config = json.load(fd)
+        inputs.extend(config.get('inputs', []))
+        program.extend(config.get('program', []))
+        outputs.extend(config.get('outputs', []))
+    if not program:
+        raise Exception('Please specify a program')
+    return run(inputs, program, outputs)
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

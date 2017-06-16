@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -21,12 +20,10 @@ import sys
 
 from setuptools import find_packages, setup
 
-
 # This version string is semver compatible.
-# Backwards-incompatible changes to Python API or plugin compatibility will 
+# Backwards-incompatible changes to Python API or plugin compatibility will
 # result in a change to the MAJOR version.
 _VERSION = '0.1.1'
-
 
 REQUIRED_PACKAGES = [
     'numpy >= 1.11.0',
@@ -41,9 +38,9 @@ REQUIRED_PACKAGES = [
 
 # python3 requires wheel 0.26
 if sys.version_info.major == 3:
-  REQUIRED_PACKAGES.append('wheel >= 0.26')
+    REQUIRED_PACKAGES.append('wheel >= 0.26')
 else:
-  REQUIRED_PACKAGES.append('wheel')
+    REQUIRED_PACKAGES.append('wheel')
 
 CONSOLE_SCRIPTS = [
     'tensorboard = tensorboard.main:main',

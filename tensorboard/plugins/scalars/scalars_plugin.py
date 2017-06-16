@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import csv
 
-from six import StringIO
+import six
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -31,64 +31,65 @@ _PLUGIN_PREFIX_ROUTE = event_accumulator.SCALARS
 
 
 class OutputFormat(object):
-  """An enum used to list the valid output formats for API calls."""
-  JSON = 'json'
-  CSV = 'csv'
+    """An enum used to list the valid output formats for API calls."""
+    JSON = 'json'
+    CSV = 'csv'
 
 
 class ScalarsPlugin(base_plugin.TBPlugin):
-  """Scalars Plugin for TensorBoard."""
+    """Scalars Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+    plugin_name = _PLUGIN_PREFIX_ROUTE
 
-  def __init__(self, context):
-    """Instantiates ScalarsPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates ScalarsPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
+        Args:
+            context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
 
-  def get_plugin_apps(self):
-    return {
-        '/scalars': self.scalars_route,
-        '/tags': self.tags_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            '/scalars': self.scalars_route,
+            '/tags': self.tags_route,
+        }
 
-  def is_active(self):
-    """The scalars plugin is active iff any run has at least one scalar tag."""
-    return bool(self._multiplexer) and any(self.index_impl().values())
+    def is_active(self):
+        """The scalars plugin is active iff any run has at least one scalar
+        tag."""
+        return bool(self._multiplexer) and any(self.index_impl().values())
 
-  def index_impl(self):
-    return {
-        run_name: run_data[event_accumulator.SCALARS]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.SCALARS in run_data
-    }
+    def index_impl(self):
+        return {
+            run_name: run_data[event_accumulator.SCALARS]
+            for (run_name, run_data) in self._multiplexer.Runs().items()
+            if event_accumulator.SCALARS in run_data
+        }
 
-  def scalars_impl(self, tag, run, output_format):
-    """Result of the form `(body, mime_type)`."""
-    values = self._multiplexer.Scalars(run, tag)
-    if output_format == OutputFormat.CSV:
-      string_io = StringIO()
-      writer = csv.writer(string_io)
-      writer.writerow(['Wall time', 'Step', 'Value'])
-      writer.writerows(values)
-      return (string_io.getvalue(), 'text/csv')
-    else:
-      return (values, 'application/json')
+    def scalars_impl(self, tag, run, output_format):
+        """Result of the form `(body, mime_type)`."""
+        values = self._multiplexer.Scalars(run, tag)
+        if output_format == OutputFormat.CSV:
+            string_io = six.StringIO()
+            writer = csv.writer(string_io)
+            writer.writerow(['Wall time', 'Step', 'Value'])
+            writer.writerows(values)
+            return (string_io.getvalue(), 'text/csv')
+        else:
+            return (values, 'application/json')
 
-  @wrappers.Request.application
-  def tags_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+    @wrappers.Request.application
+    def tags_route(self, request):
+        index = self.index_impl()
+        return http_util.Respond(request, index, 'application/json')
 
-  @wrappers.Request.application
-  def scalars_route(self, request):
-    """Given a tag and single run, return array of ScalarEvents."""
-    # TODO(cassandrax): return HTTP status code for malformed requests
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    output_format = request.args.get('format')
-    (body, mime_type) = self.scalars_impl(tag, run, output_format)
-    return http_util.Respond(request, body, mime_type)
+    @wrappers.Request.application
+    def scalars_route(self, request):
+        """Given a tag and single run, return array of ScalarEvents."""
+        # TODO(cassandrax): return HTTP status code for malformed requests
+        tag = request.args.get('tag')
+        run = request.args.get('run')
+        output_format = request.args.get('format')
+        (body, mime_type) = self.scalars_impl(tag, run, output_format)
+        return http_util.Respond(request, body, mime_type)

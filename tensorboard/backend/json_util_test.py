@@ -19,48 +19,47 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-
 from tensorboard.backend import json_util
 
 _INFINITY = float('inf')
 
 
 class FloatWrapperTest(tf.test.TestCase):
+    def _assertWrapsAs(self, to_wrap, expected):
+        """Asserts that |to_wrap| becomes |expected| when wrapped."""
+        actual = json_util.Cleanse(to_wrap)
+        for a, e in zip(actual, expected):
+            self.assertEqual(e, a)
 
-  def _assertWrapsAs(self, to_wrap, expected):
-    """Asserts that |to_wrap| becomes |expected| when wrapped."""
-    actual = json_util.Cleanse(to_wrap)
-    for a, e in zip(actual, expected):
-      self.assertEqual(e, a)
+    def testWrapsPrimitives(self):
+        self._assertWrapsAs(_INFINITY, 'Infinity')
+        self._assertWrapsAs(-_INFINITY, '-Infinity')
+        self._assertWrapsAs(float('nan'), 'NaN')
 
-  def testWrapsPrimitives(self):
-    self._assertWrapsAs(_INFINITY, 'Infinity')
-    self._assertWrapsAs(-_INFINITY, '-Infinity')
-    self._assertWrapsAs(float('nan'), 'NaN')
+    def testWrapsObjectValues(self):
+        self._assertWrapsAs({'x': _INFINITY}, {'x': 'Infinity'})
 
-  def testWrapsObjectValues(self):
-    self._assertWrapsAs({'x': _INFINITY}, {'x': 'Infinity'})
+    def testWrapsObjectKeys(self):
+        self._assertWrapsAs({_INFINITY: 'foo'}, {'Infinity': 'foo'})
 
-  def testWrapsObjectKeys(self):
-    self._assertWrapsAs({_INFINITY: 'foo'}, {'Infinity': 'foo'})
+    def testWrapsInListsAndTuples(self):
+        self._assertWrapsAs([_INFINITY], ['Infinity'])
+        # map() returns a list even if the argument is a tuple.
+        self._assertWrapsAs((_INFINITY,), ['Infinity', ])
 
-  def testWrapsInListsAndTuples(self):
-    self._assertWrapsAs([_INFINITY], ['Infinity'])
-    # map() returns a list even if the argument is a tuple.
-    self._assertWrapsAs((_INFINITY,), ['Infinity',])
+    def testWrapsRecursively(self):
+        self._assertWrapsAs({'x': [_INFINITY]}, {'x': ['Infinity']})
 
-  def testWrapsRecursively(self):
-    self._assertWrapsAs({'x': [_INFINITY]}, {'x': ['Infinity']})
+    def testTuple_turnsIntoList(self):
+        self.assertEqual(json_util.Cleanse(('a', 'b')), ['a', 'b'])
 
-  def testTuple_turnsIntoList(self):
-    self.assertEqual(json_util.Cleanse(('a', 'b')), ['a', 'b'])
+    def testSet_turnsIntoSortedList(self):
+        self.assertEqual(json_util.Cleanse(set(['b', 'a'])), ['a', 'b'])
 
-  def testSet_turnsIntoSortedList(self):
-    self.assertEqual(json_util.Cleanse(set(['b', 'a'])), ['a', 'b'])
-
-  def testByteString_turnsIntoUnicodeString(self):
-    self.assertEqual(json_util.Cleanse(b'\xc2\xa3'), u'\u00a3')  # is # sterling
+    def testByteString_turnsIntoUnicodeString(self):
+        self.assertEqual(json_util.Cleanse(b'\xc2\xa3'),
+                         u'\u00a3')  # is # sterling
 
 
 if __name__ == '__main__':
-  tf.test.main()
+    tf.test.main()

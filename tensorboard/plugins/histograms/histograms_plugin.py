@@ -28,49 +28,49 @@ _PLUGIN_PREFIX_ROUTE = event_accumulator.HISTOGRAMS
 
 
 class HistogramsPlugin(base_plugin.TBPlugin):
-  """Histograms Plugin for TensorBoard."""
+    """Histograms Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+    plugin_name = _PLUGIN_PREFIX_ROUTE
 
-  def __init__(self, context):
-    """Instantiates HistogramsPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates HistogramsPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
+        Args:
+            context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
 
-  def get_plugin_apps(self):
-    return {
-        '/histograms': self.histograms_route,
-        '/tags': self.tags_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            '/histograms': self.histograms_route,
+            '/tags': self.tags_route,
+        }
 
-  def is_active(self):
-    """This plugin is active iff any run has at least one histograms tag."""
-    return bool(self._multiplexer) and any(self.index_impl().values())
+    def is_active(self):
+        """This plugin is active iff any run has at least one histograms tag."""
+        return bool(self._multiplexer) and any(self.index_impl().values())
 
-  def index_impl(self):
-    return {
-        run_name: run_data[event_accumulator.HISTOGRAMS]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.HISTOGRAMS in run_data
-    }
+    def index_impl(self):
+        return {
+            run_name: run_data[event_accumulator.HISTOGRAMS]
+            for (run_name, run_data) in self._multiplexer.Runs().items()
+            if event_accumulator.HISTOGRAMS in run_data
+        }
 
-  def histograms_impl(self, tag, run):
-    """Result of the form `(body, mime_type)`."""
-    values = self._multiplexer.Histograms(run, tag)
-    return (values, 'application/json')
+    def histograms_impl(self, tag, run):
+        """Result of the form `(body, mime_type)`."""
+        values = self._multiplexer.Histograms(run, tag)
+        return (values, 'application/json')
 
-  @wrappers.Request.application
-  def tags_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+    @wrappers.Request.application
+    def tags_route(self, request):
+        index = self.index_impl()
+        return http_util.Respond(request, index, 'application/json')
 
-  @wrappers.Request.application
-  def histograms_route(self, request):
-    """Given a tag and single run, return array of histogram values."""
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    (body, mime_type) = self.histograms_impl(tag, run)
-    return http_util.Respond(request, body, mime_type)
+    @wrappers.Request.application
+    def histograms_route(self, request):
+        """Given a tag and single run, return array of histogram values."""
+        tag = request.args.get('tag')
+        run = request.args.get('run')
+        (body, mime_type) = self.histograms_impl(tag, run)
+        return http_util.Respond(request, body, mime_type)
