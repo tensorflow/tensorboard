@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Tests for event_file_loader."""
 
 from __future__ import absolute_import
@@ -24,70 +23,69 @@ import tempfile
 
 import tensorflow as tf
 
-
 from tensorboard.backend.event_processing import event_file_loader
 
 
 class EventFileLoaderTest(tf.test.TestCase):
-  # A record containing a simple event.
-  RECORD = (b'\x18\x00\x00\x00\x00\x00\x00\x00\xa3\x7fK"\t\x00\x00\xc0%\xddu'
-            b'\xd5A\x1a\rbrain.Event:1\xec\xf32\x8d')
+    # A record containing a simple event.
+    RECORD = (b'\x18\x00\x00\x00\x00\x00\x00\x00\xa3\x7fK"\t\x00\x00\xc0%\xddu'
+              b'\xd5A\x1a\rbrain.Event:1\xec\xf32\x8d')
 
-  def _WriteToFile(self, filename, data):
-    with open(filename, 'ab') as f:
-      f.write(data)
+    def _WriteToFile(self, filename, data):
+        with open(filename, 'ab') as f:
+            f.write(data)
 
-  def _LoaderForTestFile(self, filename):
-    return event_file_loader.EventFileLoader(
-        os.path.join(self.get_temp_dir(), filename))
+    def _LoaderForTestFile(self, filename):
+        return event_file_loader.EventFileLoader(
+            os.path.join(self.get_temp_dir(), filename))
 
-  def testEmptyEventFile(self):
-    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-    self._WriteToFile(filename, b'')
-    loader = self._LoaderForTestFile(filename)
-    self.assertEqual(len(list(loader.Load())), 0)
+    def testEmptyEventFile(self):
+        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+        self._WriteToFile(filename, b'')
+        loader = self._LoaderForTestFile(filename)
+        self.assertEqual(len(list(loader.Load())), 0)
 
-  def testSingleWrite(self):
-    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    loader = self._LoaderForTestFile(filename)
-    events = list(loader.Load())
-    self.assertEqual(len(events), 1)
-    self.assertEqual(events[0].wall_time, 1440183447.0)
-    self.assertEqual(len(list(loader.Load())), 0)
+    def testSingleWrite(self):
+        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        loader = self._LoaderForTestFile(filename)
+        events = list(loader.Load())
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].wall_time, 1440183447.0)
+        self.assertEqual(len(list(loader.Load())), 0)
 
-  def testMultipleWrites(self):
-    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    loader = self._LoaderForTestFile(filename)
-    self.assertEqual(len(list(loader.Load())), 1)
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    self.assertEqual(len(list(loader.Load())), 1)
+    def testMultipleWrites(self):
+        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        loader = self._LoaderForTestFile(filename)
+        self.assertEqual(len(list(loader.Load())), 1)
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        self.assertEqual(len(list(loader.Load())), 1)
 
-  def testMultipleLoads(self):
-    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    loader = self._LoaderForTestFile(filename)
-    loader.Load()
-    loader.Load()
-    self.assertEqual(len(list(loader.Load())), 1)
+    def testMultipleLoads(self):
+        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        loader = self._LoaderForTestFile(filename)
+        loader.Load()
+        loader.Load()
+        self.assertEqual(len(list(loader.Load())), 1)
 
-  def testMultipleWritesAtOnce(self):
-    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    loader = self._LoaderForTestFile(filename)
-    self.assertEqual(len(list(loader.Load())), 2)
+    def testMultipleWritesAtOnce(self):
+        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        loader = self._LoaderForTestFile(filename)
+        self.assertEqual(len(list(loader.Load())), 2)
 
-  def testMultipleWritesWithBadWrite(self):
-    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-    # Test that we ignore partial record writes at the end of the file.
-    self._WriteToFile(filename, b'123')
-    loader = self._LoaderForTestFile(filename)
-    self.assertEqual(len(list(loader.Load())), 2)
+    def testMultipleWritesWithBadWrite(self):
+        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+        # Test that we ignore partial record writes at the end of the file.
+        self._WriteToFile(filename, b'123')
+        loader = self._LoaderForTestFile(filename)
+        self.assertEqual(len(list(loader.Load())), 2)
 
 
 if __name__ == '__main__':
-  tf.test.main()
+    tf.test.main()

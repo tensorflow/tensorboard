@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """IO helper functions."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -23,30 +24,31 @@ import tensorflow as tf
 
 
 def IsGCSPath(path):
-  return path.startswith("gs://")
+    return path.startswith("gs://")
 
 
 def ListDirectoryAbsolute(directory):
-  """Yields all files in the given directory. The paths are absolute."""
-  return (os.path.join(directory, path)
-          for path in tf.gfile.ListDirectory(directory))
+    """Yields all files in the given directory. The paths are absolute."""
+    return (os.path.join(directory, path)
+            for path in tf.gfile.ListDirectory(directory))
 
 
 def ListRecursively(top):
-  """Walks a directory tree, yielding (dir_path, file_paths) tuples.
+    """Walks a directory tree, yielding (dir_path, file_paths) tuples.
 
-  For each of `top` and its subdirectories, yields a tuple containing the path
-  to the directory and the path to each of the contained files.  Note that
-  unlike os.Walk()/tf.gfile.Walk(), this does not list subdirectories and the
-  file paths are all absolute.
+    For each of `top` and its subdirectories, yields a tuple containing
+    the path to the directory and the path to each of the contained
+    files.  Note that unlike os.Walk()/tf.gfile.Walk(), this does not
+    list subdirectories and the file paths are all absolute.
 
-  If the directory does not exist, this yields nothing.
+    If the directory does not exist, this yields nothing.
 
-  Args:
-    top: A path to a directory..
-  Yields:
-    A list of (dir_path, file_paths) tuples.
-  """
-  for dir_path, _, filenames in tf.gfile.Walk(top):
-    yield (dir_path, (os.path.join(dir_path, filename)
-                      for filename in filenames))
+    Args:
+        top: A path to a directory.
+
+    Yields:
+        A list of (dir_path, file_paths) tuples.
+    """
+    for dir_path, _, filenames in tf.gfile.Walk(top):
+        yield (dir_path, (os.path.join(dir_path, filename)
+                          for filename in filenames))
