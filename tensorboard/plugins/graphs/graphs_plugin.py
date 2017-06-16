@@ -29,119 +29,125 @@ _PLUGIN_PREFIX_ROUTE = 'graphs'
 
 
 class GraphsPlugin(base_plugin.TBPlugin):
-  """Graphs Plugin for TensorBoard."""
+    """Graphs Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+    plugin_name = _PLUGIN_PREFIX_ROUTE
 
-  def __init__(self, context):
-    """Instantiates GraphsPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates GraphsPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
+        Args:
+            context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
 
-  def get_plugin_apps(self):
-    return {
-        '/graph': self.graph_route,
-        '/runs': self.runs_route,
-        '/run_metadata': self.run_metadata_route,
-        '/run_metadata_tags': self.run_metadata_tags_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            '/graph': self.graph_route,
+            '/runs': self.runs_route,
+            '/run_metadata': self.run_metadata_route,
+            '/run_metadata_tags': self.run_metadata_tags_route,
+        }
 
-  def is_active(self):
-    """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.index_impl())
+    def is_active(self):
+        """The graphs plugin is active iff any run has a graph."""
+        return bool(self._multiplexer and self.index_impl())
 
-  def index_impl(self):
-    """Returns a list of all runs that have a graph."""
-    return [run_name
+    def index_impl(self):
+        """Returns a list of all runs that have a graph."""
+        return [run_name
+                for (run_name, run_data) in self._multiplexer.Runs().items()
+                if run_data.get(event_accumulator.GRAPH)]
+
+    def run_metadata_index_impl(self):
+        """Returns a run-to-tag mapping for metadata."""
+        return {
+            run_name: run_data[event_accumulator.RUN_METADATA]
             for (run_name, run_data) in self._multiplexer.Runs().items()
-            if run_data.get(event_accumulator.GRAPH)]
+            if event_accumulator.RUN_METADATA in run_data
+        }
 
-  def run_metadata_index_impl(self):
-    """Returns a run-to-tag mapping for metadata."""
-    return {
-        run_name: run_data[event_accumulator.RUN_METADATA]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.RUN_METADATA in run_data
-    }
+    def graph_impl(self, run, limit_attr_size=None, large_attrs_key=None):
+        """Result of the form `(body, mime_type)`, or `None` if no graph
+        exists."""
+        try:
+            graph = self._multiplexer.Graph(run)
+        except ValueError:
+            return None
+        # This next line might raise a ValueError if the limit parameters
+        # are invalid (size is negative, size present but key absent, etc.).
+        process_graph.prepare_graph_for_ui(graph, limit_attr_size,
+                                           large_attrs_key)
+        return (str(graph), 'text/x-protobuf')  # pbtxt
 
-  def graph_impl(self, run, limit_attr_size=None, large_attrs_key=None):
-    """Result of the form `(body, mime_type)`, or `None` if no graph exists."""
-    try:
-      graph = self._multiplexer.Graph(run)
-    except ValueError:
-      return None
-    # This next line might raise a ValueError if the limit parameters
-    # are invalid (size is negative, size present but key absent, etc.).
-    process_graph.prepare_graph_for_ui(graph, limit_attr_size, large_attrs_key)
-    return (str(graph), 'text/x-protobuf')  # pbtxt
+    def run_metadata_impl(self, run, tag):
+        """Result of the form `(body, mime_type)`, or `None` if no data
+        exists."""
+        try:
+            run_metadata = self._multiplexer.RunMetadata(run, tag)
+        except ValueError:
+            return None
+        return (str(run_metadata), 'text/x-protobuf')  # pbtxt
 
-  def run_metadata_impl(self, run, tag):
-    """Result of the form `(body, mime_type)`, or `None` if no data exists."""
-    try:
-      run_metadata = self._multiplexer.RunMetadata(run, tag)
-    except ValueError:
-      return None
-    return (str(run_metadata), 'text/x-protobuf')  # pbtxt
+    @wrappers.Request.application
+    def runs_route(self, request):
+        index = self.index_impl()
+        return http_util.Respond(request, index, 'application/json')
 
-  @wrappers.Request.application
-  def runs_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+    @wrappers.Request.application
+    def run_metadata_tags_route(self, request):
+        index = self.run_metadata_index_impl()
+        return http_util.Respond(request, index, 'application/json')
 
-  @wrappers.Request.application
-  def run_metadata_tags_route(self, request):
-    index = self.run_metadata_index_impl()
-    return http_util.Respond(request, index, 'application/json')
+    @wrappers.Request.application
+    def graph_route(self, request):
+        """Given a single run, return the graph definition in protobuf
+        format."""
+        run = request.args.get('run')
+        if run is None:
+            return http_util.Respond(
+                request, 'query parameter "run" is required', 'text/plain', 400)
 
-  @wrappers.Request.application
-  def graph_route(self, request):
-    """Given a single run, return the graph definition in protobuf format."""
-    run = request.args.get('run')
-    if run is None:
-      return http_util.Respond(
-          request, 'query parameter "run" is required', 'text/plain', 400)
+        limit_attr_size = request.args.get('limit_attr_size', None)
+        if limit_attr_size is not None:
+            try:
+                limit_attr_size = int(limit_attr_size)
+            except ValueError:
+                return http_util.Respond(
+                    request,
+                    'query parameter `limit_attr_size` must be an integer',
+                    'text/plain', 400)
 
-    limit_attr_size = request.args.get('limit_attr_size', None)
-    if limit_attr_size is not None:
-      try:
-        limit_attr_size = int(limit_attr_size)
-      except ValueError:
-        return http_util.Respond(
-            request, 'query parameter `limit_attr_size` must be an integer',
-            'text/plain', 400)
+        large_attrs_key = request.args.get('large_attrs_key', None)
 
-    large_attrs_key = request.args.get('large_attrs_key', None)
+        try:
+            result = self.graph_impl(run, limit_attr_size, large_attrs_key)
+        except ValueError as e:
+            return http_util.Respond(request, e.message, 'text/plain', code=400)
+        else:
+            if result is not None:
+                (body,
+                 mime_type) = result  # pylint: disable=unpacking-non-sequence
+                return http_util.Respond(request, body, mime_type)
+            else:
+                return http_util.Respond(request, '404 Not Found', 'text/plain',
+                                         code=404)
 
-    try:
-      result = self.graph_impl(run, limit_attr_size, large_attrs_key)
-    except ValueError as e:
-      return http_util.Respond(request, e.message, 'text/plain', code=400)
-    else:
-      if result is not None:
-        (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
-        return http_util.Respond(request, body, mime_type)
-      else:
-        return http_util.Respond(request, '404 Not Found', 'text/plain',
-                                 code=404)
-
-  @wrappers.Request.application
-  def run_metadata_route(self, request):
-    """Given a tag and a run, return the session.run() metadata."""
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    if tag is None:
-      return http_util.Respond(
-          request, 'query parameter "tag" is required', 'text/plain', 400)
-    if run is None:
-      return http_util.Respond(
-          request, 'query parameter "run" is required', 'text/plain', 400)
-    result = self.run_metadata_impl(run, tag)
-    if result is not None:
-      (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
-      return http_util.Respond(request, body, mime_type)
-    else:
-      return http_util.Respond(request, '404 Not Found', 'text/plain',
-                               code=404)
+    @wrappers.Request.application
+    def run_metadata_route(self, request):
+        """Given a tag and a run, return the session.run() metadata."""
+        tag = request.args.get('tag')
+        run = request.args.get('run')
+        if tag is None:
+            return http_util.Respond(
+                request, 'query parameter "tag" is required', 'text/plain', 400)
+        if run is None:
+            return http_util.Respond(
+                request, 'query parameter "run" is required', 'text/plain', 400)
+        result = self.run_metadata_impl(run, tag)
+        if result is not None:
+            (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
+            return http_util.Respond(request, body, mime_type)
+        else:
+            return http_util.Respond(request, '404 Not Found', 'text/plain',
+                                     code=404)

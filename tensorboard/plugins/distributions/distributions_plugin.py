@@ -28,49 +28,49 @@ _PLUGIN_PREFIX_ROUTE = event_accumulator.COMPRESSED_HISTOGRAMS
 
 
 class DistributionsPlugin(base_plugin.TBPlugin):
-  """Distributions Plugin for TensorBoard."""
+    """Distributions Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+    plugin_name = _PLUGIN_PREFIX_ROUTE
 
-  def __init__(self, context):
-    """Instantiates DistributionsPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates DistributionsPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
+        Args:
+            context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
 
-  def get_plugin_apps(self):
-    return {
-        '/distributions': self.distributions_route,
-        '/tags': self.tags_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            '/distributions': self.distributions_route,
+            '/tags': self.tags_route,
+        }
 
-  def is_active(self):
-    """This plugin is active iff any run has at least one relevant tag."""
-    return bool(self._multiplexer) and any(self.index_impl().values())
+    def is_active(self):
+        """This plugin is active iff any run has at least one relevant tag."""
+        return bool(self._multiplexer) and any(self.index_impl().values())
 
-  def index_impl(self):
-    return {
-        run_name: run_data[event_accumulator.COMPRESSED_HISTOGRAMS]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.COMPRESSED_HISTOGRAMS in run_data
-    }
+    def index_impl(self):
+        return {
+            run_name: run_data[event_accumulator.COMPRESSED_HISTOGRAMS]
+            for (run_name, run_data) in self._multiplexer.Runs().items()
+            if event_accumulator.COMPRESSED_HISTOGRAMS in run_data
+        }
 
-  def distributions_impl(self, tag, run):
-    """Result of the form `(body, mime_type)`."""
-    values = self._multiplexer.CompressedHistograms(run, tag)
-    return (values, 'application/json')
+    def distributions_impl(self, tag, run):
+        """Result of the form `(body, mime_type)`."""
+        values = self._multiplexer.CompressedHistograms(run, tag)
+        return (values, 'application/json')
 
-  @wrappers.Request.application
-  def tags_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+    @wrappers.Request.application
+    def tags_route(self, request):
+        index = self.index_impl()
+        return http_util.Respond(request, index, 'application/json')
 
-  @wrappers.Request.application
-  def distributions_route(self, request):
-    """Given a tag and single run, return array of compressed histograms."""
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    (body, mime_type) = self.distributions_impl(tag, run)
-    return http_util.Respond(request, body, mime_type)
+    @wrappers.Request.application
+    def distributions_route(self, request):
+        """Given a tag and single run, return array of compressed histograms."""
+        tag = request.args.get('tag')
+        run = request.args.get('run')
+        (body, mime_type) = self.distributions_impl(tag, run)
+        return http_util.Respond(request, body, mime_type)
