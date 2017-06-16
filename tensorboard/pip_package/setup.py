@@ -23,8 +23,6 @@ from setuptools import find_packages, setup
 
 
 # This version string is semver compatible.
-# Backwards-incompatible changes to Python API or plugin compatibility will 
-# result in a change to the MAJOR version.
 _VERSION = '0.1.2'
 
 
