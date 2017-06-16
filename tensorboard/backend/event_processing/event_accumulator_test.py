@@ -54,17 +54,6 @@ class _EventGenerator(object):
             value=[tf.Summary.Value(tag=tag, simple_value=value)]))
     self.AddEvent(event)
 
-  def AddHealthPill(self, wall_time, step, device_name, op_name, output_slot,
-                    elements):
-    event = tf.Event(step=step, wall_time=wall_time)
-    value = event.summary.value.add(
-        tag=ea.HEALTH_PILL_EVENT_TAG_PREFIX + device_name,
-        node_name='%s:%d:DebugNumericSummary' % (op_name, output_slot))
-    value.tensor.tensor_shape.dim.add(size=len(elements))
-    value.tensor.dtype = 2  # DT_DOUBLE
-    value.tensor.tensor_content = np.array(elements, dtype=np.float64).tobytes()
-    self.AddEvent(event)
-
   def AddHistogram(self,
                    tag,
                    wall_time=0,
@@ -257,74 +246,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     acc.Reload()
     self.assertEqual(acc.Scalars('s1'), [s1])
     self.assertEqual(acc.Scalars('s2'), [s2])
-
-  def _compareHealthPills(self, expected_event, gotten_event):
-    """Compares 2 health pills.
-
-    Args:
-      expected_event: The expected HealthPillEvent.
-      gotten_event: The gotten HealthPillEvent.
-    """
-    self.assertEqual(expected_event.wall_time, gotten_event.wall_time)
-    self.assertEqual(expected_event.step, gotten_event.step)
-    self.assertEqual(expected_event.device_name, gotten_event.device_name)
-    self.assertEqual(expected_event.node_name, gotten_event.node_name)
-    self.assertEqual(expected_event.output_slot, gotten_event.output_slot)
-    self.assertEqual(len(expected_event.value), len(gotten_event.value))
-    for i, expected_value in enumerate(expected_event.value):
-      self.assertEqual(expected_value, gotten_event.value[i])
-
-  def testHealthPills(self):
-    """HealthPills should be properly inserted into EventAccumulator."""
-    gen = _EventGenerator(self)
-    acc = ea.EventAccumulator(gen)
-    health_pill_elements_1 = list(range(1, 13)) + [
-        float(1), 2.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0]
-    gen.AddHealthPill(13371337, 41, '/job:localhost/replica:0/task:0/cpu:0',
-                      'Add', 0, health_pill_elements_1)
-    health_pill_elements_2 = list(range(42, 54)) + [
-        float(2), 2.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0]
-    gen.AddHealthPill(13381338, 42, '/job:localhost/replica:0/task:0/gpu:0',
-                      'Add', 1, health_pill_elements_2)
-    acc.Reload()
-
-    # Retrieve the health pills for each node name.
-    gotten_events = acc.HealthPills('Add')
-    self.assertEqual(2, len(gotten_events))
-    self._compareHealthPills(
-        ea.HealthPillEvent(
-            wall_time=13371337,
-            step=41,
-            device_name='/job:localhost/replica:0/task:0/cpu:0',
-            node_name='Add',
-            output_slot=0,
-            dtype='tf.float32',
-            shape=[1, 2],
-            value=health_pill_elements_1), gotten_events[0])
-    self._compareHealthPills(
-        ea.HealthPillEvent(
-            wall_time=13381338,
-            device_name='/job:localhost/replica:0/task:0/gpu:0',
-            step=42,
-            node_name='Add',
-            output_slot=1,
-            dtype='tf.float64',
-            shape=[3, 4],
-            value=health_pill_elements_2), gotten_events[1])
-
-  def testGetOpsWithHealthPills(self):
-    gen = _EventGenerator(self)
-    acc = ea.EventAccumulator(gen)
-    health_pill_elements_1 = list(range(1, 13)) + [
-        float(1), 2.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0]
-    gen.AddHealthPill(13371337, 41, '/job:localhost/replica:0/task:0/cpu:0',
-                      'Add', 0, health_pill_elements_1)
-    health_pill_elements_2 = list(range(42, 54)) + [
-        float(2), 2.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0]
-    gen.AddHealthPill(13381338, 42, '/job:localhost/replica:0/task:0/cpu:0',
-                      'MatMul', 1, health_pill_elements_2)
-    acc.Reload()
-    self.assertItemsEqual(['Add', 'MatMul'], acc.GetOpsWithHealthPills())
 
   def testHistograms(self):
     """Tests whether histograms are inserted into EventAccumulator."""
@@ -781,9 +702,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     writer = tf.summary.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
-      tf.summary.tensor_summary('scalar', tf.constant(1.0))
-      tf.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
-      tf.summary.tensor_summary('string', tf.constant(six.b('foobar')))
+      tf.summary._tensor_summary_v2('scalar', tf.constant(1.0))
+      tf.summary._tensor_summary_v2('vector', tf.constant([1.0, 2.0, 3.0]))
+      tf.summary._tensor_summary_v2('string', tf.constant(six.b('foobar')))
       merged = tf.summary.merge_all()
       summ = sess.run(merged)
       writer.add_summary(summ, 0)

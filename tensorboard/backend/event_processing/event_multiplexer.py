@@ -269,38 +269,6 @@ class EventMultiplexer(object):
     accumulator = self._GetAccumulator(run)
     return accumulator.Scalars(tag)
 
-  def HealthPills(self, run, node_name):
-    """Retrieve the health pill events associated with a run and node name.
-
-    Args:
-      run: A string name of the run for which health pills are retrieved.
-      node_name: A string name of the node for which health pills are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the node name is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.HealthPillEvents`.
-    """
-    accumulator = self._GetAccumulator(run)
-    return accumulator.HealthPills(node_name)
-
-  def GetOpsWithHealthPills(self, run):
-    """Determines which ops have at least 1 health pill event for a given run.
-
-    Args:
-      run: The name of the run.
-
-    Raises:
-      KeyError: If the run is not found, or the node name is not available for
-        the given run.
-
-    Returns:
-      The list of names of ops with health pill events.
-    """
-    return self._GetAccumulator(run).GetOpsWithHealthPills()
-
   def Graph(self, run):
     """Retrieve the graph associated with the provided run.
 
@@ -434,6 +402,29 @@ class EventMultiplexer(object):
     """
     accumulator = self._GetAccumulator(run)
     return accumulator.Tensors(tag)
+
+  def PluginRunToTagToContent(self, plugin_name):
+    """Returns a 2-layer dictionary of the form {run: {tag: content}}.
+
+    The `content` referred above is the content field of the PluginData proto
+    for the specified plugin within a Summary.Value proto.
+
+    Args:
+      plugin_name: The name of the plugin for which to fetch content.
+
+    Returns:
+      A dictionary of the form {run: {tag: content}}.
+    """
+    mapping = {}
+    for run in self.Runs():
+      try:
+        tag_to_content = self._GetAccumulator(run).PluginTagToContent(
+            plugin_name)
+      except KeyError:
+        # This run lacks content for the plugin. Try the next run.
+        continue
+      mapping[run] = tag_to_content
+    return mapping
 
   def Runs(self):
     """Return all the run names in the `EventMultiplexer`.

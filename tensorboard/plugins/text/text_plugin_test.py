@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import json
 import os
 import textwrap
 import numpy as np
@@ -57,8 +58,28 @@ class TextPluginTest(tf.test.TestCase):
     sess = tf.Session()
     placeholder = tf.placeholder(tf.string)
     summary_tensor = tf.summary.text('message', placeholder)
-
     vector_summary = tf.summary.text('vector', placeholder)
+
+    # Previously, we had used a means of creating text summaries that used
+    # plugin assets (which loaded JSON files containing runs and tags). The
+    # plugin must continue to be able to load summaries of that format, so we
+    # create a summary using that old plugin asset-based method here.
+    plugin_asset_summary = tf.summary.tensor_summary('old_plugin_asset_summary',
+                                                     placeholder)
+    assets_directory = os.path.join(self.logdir, 'fry', 'plugins',
+                                    'tensorboard_text')
+    # Make the directory of assets if it does not exist.
+    if not os.path.isdir(assets_directory):
+      try:
+        os.makedirs(assets_directory)
+      except OSError as err:
+        self.assertFail('Could not make assets directory %r: %r',
+                        assets_directory, err)
+    json_path = os.path.join(assets_directory, 'tensors.json')
+    with open(json_path, 'w+') as tensors_json_file:
+      # Write the op name to a JSON file that the text plugin later uses to
+      # determine the tag names of tensors to fetch.
+      tensors_json_file.write(json.dumps([plugin_asset_summary.op.name]))
 
     run_names = ['fry', 'leela']
     for run_name in run_names:
@@ -69,7 +90,9 @@ class TextPluginTest(tf.test.TestCase):
       step = 0
       for gem in GEMS:
         message = run_name + ' *loves* ' + gem
-        feed_dict = {placeholder: message}
+        feed_dict = {
+            placeholder: message,
+        }
         summ = sess.run(summary_tensor, feed_dict=feed_dict)
         writer.add_summary(summ, global_step=step)
         step += 1
@@ -77,14 +100,22 @@ class TextPluginTest(tf.test.TestCase):
       vector_message = ['one', 'two', 'three', 'four']
       summ = sess.run(vector_summary, feed_dict={placeholder: vector_message})
       writer.add_summary(summ)
+
+      summ = sess.run(
+          plugin_asset_summary, feed_dict={
+              placeholder: 'I am deprecated.',
+          })
+      writer.add_summary(summ)
       writer.close()
 
   def testIndex(self):
     index = self.plugin.index_impl()
-    self.assertEqual(index, {
-        'fry': ['message', 'vector'],
-        'leela': ['message', 'vector'],
-    })
+    self.assertItemsEqual(['fry', 'leela'], index.keys())
+    # The summary made via plugin assets (the old method being phased out) is
+    # only available for run 'fry'.
+    self.assertItemsEqual(['old_plugin_asset_summary', 'message', 'vector'],
+                          index['fry'])
+    self.assertItemsEqual(['message', 'vector'], index['leela'])
 
   def testText(self):
     fry = self.plugin.text_impl('fry', 'message')
@@ -116,6 +147,12 @@ class TextPluginTest(tf.test.TestCase):
       </tr>
       </tbody>
       </table>"""))
+
+    # Test the text obtained from a summary produced via plugin assets.
+    # TensorBoard must continue to be able to load such summaries.
+    text_entries = self.plugin.text_impl('leela', 'old_plugin_asset_summary')
+    self.assertEqual(len(text_entries), 1)
+    self.assertEqual('<p>I am deprecated.</p>', text_entries[0]['text'])
 
   def assertTextConverted(self, actual, expected):
     self.assertEqual(text_plugin.markdown_and_sanitize(actual), expected)
