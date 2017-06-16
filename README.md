@@ -7,13 +7,13 @@ This README gives an overview of key concepts in TensorBoard, as well as how to
 interpret the visualizations TensorBoard provides. For an in-depth example of
 using TensorBoard, see the tutorial: [TensorBoard: Visualizing
 Learning](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
-For in-depth information on the Graph Visualizer, see this tutorial: [TensorBoard: Graph Visualization](https://www.tensorflow.org/get_started/graph_viz).
+For in-depth information on the Graph Visualizer, see this tutorial: 
+[TensorBoard: Graph Visualization](https://www.tensorflow.org/get_started/graph_viz).
 
 You may also want to watch
 [this video tutorial](https://www.youtube.com/watch?v=eBbEDRsCmv4) that walks
-through setting up and using TensorBoard. There's an associated [tutorial with
-an end-to-end example of training TensorFlow and using TensorBoard]
-(https://github.com/dandelionmane/tf-dev-summit-tensorboard-tutorial).
+through setting up and using TensorBoard. There's an associated 
+[tutorial with an end-to-end example of training TensorFlow and using TensorBoard](https://github.com/dandelionmane/tf-dev-summit-tensorboard-tutorial).
 
 # Usage
 
@@ -26,7 +26,8 @@ directory by creating a summary writer:
 file_writer = tf.summary.FileWriter('/path/to/logs', sess.graph)
 ```
 
-For more details, see [the TensorBoard tutorial](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
+For more details, see 
+[the TensorBoard tutorial](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 Once you have event files, run TensorBoard and provide the log directory. If
 you're using a precompiled TensorFlow package (e.g. you installed via pip), run:
 
@@ -57,7 +58,8 @@ work, but there may be bugs or performance issues.
 ### Summary Ops: How TensorBoard gets data from TensorFlow
 
 The first step in using TensorBoard is acquiring data from your TensorFlow run.
-For this, you need [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
+For this, you need 
+[summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
 Summary ops are ops, like
 [`tf.matmul`](https://www.tensorflow.org/versions/r1.2/api_docs/python/tf/matmul)
 or
