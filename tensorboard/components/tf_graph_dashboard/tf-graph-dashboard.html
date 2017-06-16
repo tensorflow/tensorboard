@@ -113,10 +113,6 @@ import {compareTagNames} from "../vz-sorting/sorting";
 
 Polymer({
   is: 'tf-graph-dashboard',
-  factoryImpl: function(backend, debuggerDataEnabled) {
-    this.backend = backend;
-    this.debuggerDataEnabled = debuggerDataEnabled;
-  },
   behaviors: [
     DashboardBehavior("graphs"),
     ReloadBehavior("tf-graph-dashboard"),

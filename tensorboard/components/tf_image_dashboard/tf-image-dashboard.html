@@ -106,9 +106,6 @@ tf-image-dashboard displays a dashboard that loads images from a TensorFlow run.
 
     Polymer({
       is: "tf-image-dashboard",
-      factoryImpl: function(backend) {
-        this.backend = backend;
-      },
       properties: {
         backend: Object,
         dataType: {

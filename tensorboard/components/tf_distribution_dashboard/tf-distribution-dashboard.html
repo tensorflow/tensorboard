@@ -101,9 +101,6 @@ contains vz-distribution-charts embedded inside tf-panes-helper's.
 
     Polymer({
       is: "tf-distribution-dashboard",
-      factoryImpl: function(backend) {
-        this.backend = backend;
-      },
       behaviors: [
         DashboardBehavior("distributions"),
         ReloadBehavior("tf-chart-scaffold"),

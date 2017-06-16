@@ -121,9 +121,6 @@ contains vz-histogram-timeseries embedded inside tf-panes-helper's.
 
     Polymer({
       is: "tf-histogram-dashboard",
-      factoryImpl: function(backend) {
-        this.backend = backend;
-      },
       behaviors: [
         DashboardBehavior("histograms"),
         ReloadBehavior("tf-chart-scaffold"),
