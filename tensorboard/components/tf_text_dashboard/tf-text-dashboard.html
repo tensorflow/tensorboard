@@ -79,9 +79,6 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 
     Polymer({
       is: "tf-text-dashboard",
-      factoryImpl: function(backend) {
-        this.backend = backend;
-      },
       properties: {
         backend: Object,
         dataType: {

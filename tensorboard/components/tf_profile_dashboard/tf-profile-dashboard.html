@@ -94,9 +94,6 @@ profile run can have multiple tools that present the performance profile as diff
 
   Polymer({
     is: "tf-profile-dashboard",
-    factoryImpl: function(backend) {
-      this.backend = backend;
-    },
     behaviors: [
       DashboardBehavior("profile"),
       ReloadBehavior("tf-profile-dashboard"),
