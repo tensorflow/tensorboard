@@ -1,0 +1,44 @@
+package(default_visibility = ["//tensorboard:internal"])
+
+load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard/defs:web.bzl", "ts_web_library")
+
+licenses(["notice"])  # Apache 2.0
+
+ts_web_library(
+    name = "tf_graph_dashboard",
+    srcs = ["tf-graph-dashboard.html"],
+    path = "/tf-graph-dashboard",
+    deps = [
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/plugins/graphs/tf_graph",
+        "//tensorboard/plugins/graphs/tf_graph_board",
+        "//tensorboard/plugins/graphs/tf_graph_controls",
+        "//tensorboard/plugins/graphs/tf_graph_loader",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_sorting",
+    ],
+)
+
+tensorboard_webcomponent_library(
+    name = "legacy",
+    srcs = [":tf_graph_dashboard"],
+    destdir = "tf-graph-dashboard",
+    deps = [
+        "//tensorboard/components/tf_backend:legacy",
+        "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/plugins/graphs/tf_graph:legacy",
+        "//tensorboard/plugins/graphs/tf_graph_board:legacy",
+        "//tensorboard/plugins/graphs/tf_graph_controls:legacy",
+        "//tensorboard/plugins/graphs/tf_graph_loader:legacy",
+        "//tensorboard/components/vz_sorting:legacy",
+        "//third_party/javascript/polymer/v1/polymer:lib",
+    ],
+)
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+    tags = ["notsan"],
+)
