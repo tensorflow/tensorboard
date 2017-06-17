@@ -31,7 +31,7 @@ ts_web_library(
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-image-dashboard",
     deps = [
-        "//tensorboard/components/tf_image_dashboard",
+        "//tensorboard/plugins/images/tf_image_dashboard",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",

@@ -4,13 +4,13 @@ load("//tensorboard/defs:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-# bazel run //third_party/tensorflow/tensorboard/components/tf_graph_app/demo
+# bazel run //third_party/tensorflow/tensorboard/plugins/graphs/tf_graph_app/demo
 ts_web_library(
     name = "demo",
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-graph-app/demo",
     deps = [
-        "//tensorboard/components/tf_graph_app",
+        "//tensorboard/plugins/graphs/tf_graph_app",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],

@@ -15,7 +15,7 @@ ts_web_library(
     ],
     path = "/tf-audio-dashboard/test",
     deps = [
-        "//tensorboard/components/tf_audio_dashboard",
+        "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",

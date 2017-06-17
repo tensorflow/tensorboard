@@ -4,13 +4,13 @@ load("//tensorboard/defs:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-# bazel run //third_party/tensorflow/tensorboard/components/tf_graph_controls/demo
+# bazel run //third_party/tensorflow/tensorboard/plugins/graphs/tf_graph_controls/demo
 ts_web_library(
     name = "demo",
     srcs = ["index.html"],
     path = "/tf-graph-controls/demo",
     deps = [
-        "//tensorboard/components/tf_graph_controls",
+        "//tensorboard/plugins/graphs/tf_graph_controls",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",

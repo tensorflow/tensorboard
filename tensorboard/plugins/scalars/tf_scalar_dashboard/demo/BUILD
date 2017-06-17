@@ -13,7 +13,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
-        "//tensorboard/components/tf_scalar_dashboard",
+        "//tensorboard/plugins/scalars/tf_scalar_dashboard",
         "//tensorboard/demo:demo_data",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",

@@ -13,7 +13,7 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_graph_controls",
+        "//tensorboard/plugins/graphs/tf_graph_controls",
         "@org_polymer",
     ],
 )

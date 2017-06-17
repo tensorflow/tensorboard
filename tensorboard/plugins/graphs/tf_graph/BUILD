@@ -15,7 +15,7 @@ ts_web_library(
     path = "/tf-graph",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_graph_common",
+        "//tensorboard/plugins/graphs/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_flex_layout",
         "@org_polymer_iron_icons",
@@ -35,7 +35,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/components/tf_graph_common:legacy",
+        "//tensorboard/plugins/graphs/tf_graph_common:legacy",
         "//third_party/javascript/polymer/v1/iron-flex-layout:lib",
         "//third_party/javascript/polymer/v1/iron-icons:lib",
         "//third_party/javascript/polymer/v1/paper-button:lib",

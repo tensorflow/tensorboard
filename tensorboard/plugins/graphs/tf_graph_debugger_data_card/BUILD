@@ -13,7 +13,7 @@ ts_web_library(
     path = "/tf-graph-debugger-data-card",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_graph_common",
+        "//tensorboard/plugins/graphs/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",
@@ -26,7 +26,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph-debugger-data-card",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/components/tf_graph_common:legacy",
+        "//tensorboard/plugins/graphs/tf_graph_common:legacy",
         "//third_party/javascript/polymer/v1/iron-collapse:lib",
         "//third_party/javascript/polymer/v1/iron-list:lib",
         "//third_party/javascript/polymer/v1/paper-icon-button:lib",

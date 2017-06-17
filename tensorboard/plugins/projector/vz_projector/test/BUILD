@@ -24,7 +24,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_imports:webcomponentsjs",
-        "//tensorboard/components/vz_projector",
+        "//tensorboard/plugins/projector/vz_projector",
     ],
 )
 

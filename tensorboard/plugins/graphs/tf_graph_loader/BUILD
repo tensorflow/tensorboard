@@ -10,7 +10,7 @@ ts_web_library(
     srcs = ["tf-graph-loader.html"],
     path = "/tf-graph-loader",
     deps = [
-        "//tensorboard/components/tf_graph_common",
+        "//tensorboard/plugins/graphs/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
     ],
 )
@@ -20,7 +20,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_loader"],
     destdir = "tf-graph-loader",
     deps = [
-        "//tensorboard/components/tf_graph_common:legacy",
+        "//tensorboard/plugins/graphs/tf_graph_common:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
