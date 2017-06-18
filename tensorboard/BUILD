@@ -3,6 +3,9 @@
 
 package(default_visibility = [":internal"])
 
+load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
+
 licenses(["notice"])  # Apache 2.0
 
 package_group(
@@ -13,13 +16,14 @@ package_group(
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
-    data = [":assets"],
+    data = ["TAG"],
     main = "main.py",
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/distributions:distributions_plugin",
         "//tensorboard/plugins/graphs:graphs_plugin",
         "//tensorboard/plugins/histograms:histograms_plugin",
@@ -29,6 +33,21 @@ py_binary(
         "//tensorboard/plugins/text:text_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
+)
+
+tensorboard_zip_file(
+    name = "webfiles",
+    deps = [":assets"],
+)
+
+ts_web_library(
+    name = "assets",
+    srcs = [
+        "TAG",
+        "//tensorboard/components:index.html",
+        "//tensorboard/components:trace_viewer_index.html",
+    ],
+    path = "/",
 )
 
 py_library(
@@ -43,15 +62,6 @@ py_library(
     # This is a dummy rule used as a numpy dependency in open-source.
     # We expect numpy to already be installed on the system, e.g. via
     # `pip install numpy`
-)
-
-filegroup(
-    name = "assets",
-    srcs = [
-        "TAG",
-        "//tensorboard/components:index.html",
-        "//tensorboard/components:trace_viewer_index.html",
-    ],
 )
 
 filegroup(
