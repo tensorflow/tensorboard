@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-imports/lodash.html">
@@ -39,11 +40,11 @@ limitations under the License.
       <div class="sidebar">
         <div class="sidebar-section">
           <!--
-            TODO(wchargin): Remove the categorizer. Replace it with a
+            TODO(wchargin): Remove tag groups. Replace them with a
             search/filter bar in the main content pane.
           -->
-          <tf-categorizer tags="[[_tags]]" categories="{{_categories}}">
-          </tf-categorizer>
+          <tf-regex-group regexes="{{_tagGroupRegexes}}">
+          </tf-regex-group>
           <div class="line-item">
             <paper-checkbox
               checked="{{_showDownloadLinks}}"
@@ -113,25 +114,15 @@ limitations under the License.
             and consider filing an issue on GitHub.
           </div>
         </template>
-        <!--
-          TODO(wchargin): Consider the extent to which this logic should
-          be extracted to framework code. I think that `_categoryCards`
-          should certainly be extracted and given a better name, but
-          perhaps we don't even need `tf-foreach-run` and
-          `tf-foreach-run-tag`: plugins can simply use a `dom-repeat`
-          over the output of the library-extracted `_categoryCards`
-          function.
-        -->
         <template is="dom-repeat" items="[[_categories]]" as="category">
           <tf-collapsable-pane
             name="[[category.name]]"
-            count="[[_count(category.tags, _selectedRuns.*)]]"
+            count="[[category.count]]"
           >
             <div class="layout horizontal wrap">
               <template
                 is="dom-repeat"
-                items="[[_categoryCards(
-                    category, _selectedRuns.*, _runToTag.*)]]"
+                items="[[category.items]]"
               >
                 <tf-scalar-chart
                   x-type="[[_xType]]"
@@ -184,6 +175,7 @@ limitations under the License.
     import {RequestManager} from '../tf-backend/requestManager';
     import {getTags} from '../tf-backend/backend';
     import {getRouter} from '../tf-backend/router';
+    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils';
     import * as storage from '../tf-storage/storage';
 
     /** @enum {string} */ const X_TYPE = {
@@ -223,9 +215,14 @@ limitations under the License.
         },
 
         _selectedRuns: Array,
-        _tags: Array,       // string[]
         _runToTag: Object,  // map<run: string, tags: string[]>
         _dataNotFound: Boolean,
+
+        _categories: {
+          type: Array,
+          computed:
+            '_makeCategories(_runToTag, _selectedRuns, _tagGroupRegexes)',
+        },
 
         _requestManager: {
           type: Object,
@@ -260,7 +257,6 @@ limitations under the License.
             return;
           }
           const tags = getTags(runToTag);
-          this.set('_tags', tags);
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTag', runToTag);
         });
@@ -271,19 +267,10 @@ limitations under the License.
         });
       },
 
-      // DESTINATION: To be pulled out into framework code.
-      _categoryCards(category) {
-        const cards = [];
-        category.tags.forEach(tag => {
-          const runs = this._selectedRuns.filter(r =>
-            (this._runToTag[r] || []).indexOf(tag) !== -1);
-          cards.push({tag, runs});
-        });
-        return cards;
+      _makeCategories(runToTag, selectedRuns, tagGroupRegexes) {
+        return categorizeTags(runToTag, selectedRuns, tagGroupRegexes);
       },
-      _count(tags) {
-        return tags.length;
-      },
+
     });
   </script>
 </dom-module>
