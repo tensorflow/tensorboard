@@ -94,6 +94,9 @@ tf.flags.DEFINE_string(
     'event_file', '',
     'The particular event file to query for. Only used if --inspect is present '
     'and --logdir is not specified.')
+tf.flags.DEFINE_string(
+    'base_url', '',
+    'Optional relative prefix to the path, e.g. "/service/tf"')
 
 FLAGS = tf.flags.FLAGS
 
@@ -119,7 +122,8 @@ def create_tb_app(plugins):
       logdir=logdir,
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
-      plugins=plugins)
+      plugins=plugins,
+      base_url=FLAGS.base_url)
 
 
 def make_simple_server(tb_app, host, port):
@@ -190,7 +194,7 @@ def run_simple_server(tb_app):
     # An error message was already logged
     # TODO(jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  msg = 'Starting TensorBoard %s at %s' % (tb_app.tag, url)
+  msg = 'Starting TensorBoard %s at %s%s' % (tb_app.tag, url, FLAGS.base_url)
   print(msg)
   tf.logging.info(msg)
   print('(Press CTRL+C to quit)')

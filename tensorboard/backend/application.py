@@ -64,7 +64,8 @@ def standard_tensorboard_wsgi(
     logdir,
     purge_orphaned_data,
     reload_interval,
-    plugins):
+    plugins,
+    base_url):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -73,6 +74,7 @@ def standard_tensorboard_wsgi(
     reload_interval: The interval at which the backend reloads more data in
         seconds.
     plugins: A list of constructor functions for TBPlugin subclasses.
+    base_url: A prefix of the path when app isn't served from root.
 
   Returns:
     The new TensorBoard WSGI application.
@@ -82,7 +84,7 @@ def standard_tensorboard_wsgi(
       purge_orphaned_data=purge_orphaned_data)
   context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
   plugins = [constructor(context) for constructor in plugins]
-  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval)
+  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url)
 
 
 class TensorBoardWSGIApp(object):
@@ -95,7 +97,7 @@ class TensorBoardWSGIApp(object):
   #                      responses using send_header.
   protocol_version = 'HTTP/1.1'
 
-  def __init__(self, logdir, plugins, multiplexer, reload_interval):
+  def __init__(self, logdir, plugins, multiplexer, reload_interval, base_url):
     """Constructs the TensorBoard application.
 
     Args:
@@ -105,6 +107,7 @@ class TensorBoardWSGIApp(object):
       plugins: A list of base_plugin.TBPlugin subclass instances.
       multiplexer: The EventMultiplexer with TensorBoard data to serve
       reload_interval: How often (in seconds) to reload the Multiplexer
+      base_url: A prefix of the path when app isn't served from root.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
@@ -120,6 +123,7 @@ class TensorBoardWSGIApp(object):
     self._logdir = logdir
     self._plugins = plugins
     self._multiplexer = multiplexer
+    self._base_url = base_url
     self.tag = get_tensorboard_tag()
 
     path_to_run = parse_event_files_spec(self._logdir)
@@ -268,6 +272,8 @@ class TensorBoardWSGIApp(object):
 
     # Remove a trailing slash, if present.
     clean_path = parsed_url.path
+    if len(self._base_url) > 0 and clean_path.startswith(self._base_url):
+      clean_path = clean_path[len(self._base_url):]
     if clean_path.endswith('/'):
       clean_path = clean_path[:-1]
     # pylint: disable=too-many-function-args
