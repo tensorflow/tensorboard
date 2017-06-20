@@ -254,6 +254,8 @@ visualization.
          * Scale that maps series names to colors. The default colors are from
          * d3.schemeCategory10() scale. Use this property to replace the default
          * line colors with colors of your own choice.
+         *
+         * @type {Function}
          */
         colorScale: {
           type: Object,
@@ -287,9 +289,6 @@ visualization.
       },
       detached: function() {
         this._attached = false;
-      },
-      setVisibleSeries: function(names) {
-        // Do nothing.
       },
       setSeriesData: function(name, data) {
         this._name = name;
