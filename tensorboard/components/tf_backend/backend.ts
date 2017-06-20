@@ -21,7 +21,6 @@ import {demoify, queryEncoder} from './urlPathHelpers';
 export interface RunEnumeration {
   histograms: string[];
   compressedHistogramTuples: string[];
-  scalars: string[];
   images: string[];
   audio: string[];
   graph: boolean;
@@ -40,9 +39,6 @@ export interface Datum {
   wall_time: Date;
   step: number;
 }
-
-export type ScalarDatum = Datum & Scalar;
-export interface Scalar { scalar: number; }
 
 export interface Text { text: string; }
 export type TextDatum = Datum & Text;
@@ -65,13 +61,6 @@ export interface HistogramBin {
 }
 export type HistogramSeriesDatum = HistogramSeries & Datum;
 export interface HistogramSeries { bins: HistogramBin[]; }
-
-export type ImageDatum = Datum & Image;
-export interface Image {
-  width: number;
-  height: number;
-  url: string;
-}
 
 export type AudioDatum = Datum & Audio;
 export interface Audio {
@@ -113,8 +102,7 @@ export interface DebuggerNumericsAlertReport {
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
 export const TYPES = [
-  'scalar', 'histogram', 'compressedHistogram', 'graph', 'image', 'audio',
-  'runMetadata', 'text'
+  'histogram', 'compressedHistogram', 'graph', 'audio', 'runMetadata', 'text'
 ];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
@@ -152,27 +140,11 @@ export class Backend {
   }
 
   /**
-   * Return a promise showing the Run-to-Tag mapping for scalar data.
-   */
-  public scalarTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('scalars', '/tags'));
-  }
-
-  /**
    * Return a promise showing the Run-to-Tag mapping for histogram data.
    */
   public histogramTags(): Promise<RunToTag> {
     return this.requestManager.request(
         getRouter().pluginRoute('histograms', '/tags'));
-  }
-
-  /**
-   * Return a promise showing the Run-to-Tag mapping for image data.
-   */
-  public imageTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('images', '/tags'));
   }
 
   /**
@@ -264,16 +236,6 @@ export class Backend {
   }
 
   /**
-   * Return a promise containing ScalarDatums for given run and tag.
-   */
-  public scalar(tag: string, run: string): Promise<Array<ScalarDatum>> {
-    let p: Promise<TupleData<number>[]>;
-    const url = getRouter().pluginRunTagRoute('scalars', '/scalars')(tag, run);
-    p = this.requestManager.request(url);
-    return p.then(map(detupler(createScalar)));
-  }
-
-  /**
    * Returns a promise for requesting the health pills for a list of nodes. This
    * route is used by the debugger plugin.
    */
@@ -329,16 +291,6 @@ export class Backend {
   }
 
   /**
-   * Return a promise containing ImageDatums for given run and tag.
-   */
-  public image(tag: string, run: string): Promise<Array<ImageDatum>> {
-    const url = (getRouter().pluginRunTagRoute('images', '/images')(tag, run));
-    let p: Promise<ImageMetadata[]>;
-    p = this.requestManager.request(url);
-    return p.then(map(this.createImage.bind(this)));
-  }
-
-  /**
    * Return a promise containing AudioDatums for given run and tag.
    */
   public audio(tag: string, run: string): Promise<Array<AudioDatum>> {
@@ -386,38 +338,6 @@ export class Backend {
     let p: Promise<TupleData<CompressedHistogramTuple>[]>;
     p = this.requestManager.request(url);
     return p.then(map(detupler((x) => x)));
-  }
-
-  private createImage(x: ImageMetadata): Image&Datum {
-    const pluginRoute = getRouter().pluginRoute('images', '/individualImage');
-
-    let query = x.query;
-    if (pluginRoute.indexOf('?') > -1) {
-      // The route already has GET parameters. Append our parameters to them.
-      query = '&' + query;
-    } else {
-      // The route lacks GET parameters. We append them.
-      query = '?' + query;
-    }
-
-    if (getRouter().isDemoMode()) {
-      query = demoify(query);
-    }
-
-    let individualImageUrl = pluginRoute + query;
-    // Include wall_time just to disambiguate the URL and force the browser
-    // to reload the image when the URL changes. The backend doesn't care
-    // about the value.
-    individualImageUrl +=
-        getRouter().isDemoMode() ? '.png' : '&ts=' + x.wall_time;
-
-    return {
-      width: x.width,
-      height: x.height,
-      wall_time: timeToDate(x.wall_time),
-      step: x.step,
-      url: individualImageUrl,
-    };
   }
 
   private createAudio(x: AudioMetadata): Audio&Datum {
@@ -499,10 +419,6 @@ function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
     return obj;
   };
 };
-
-function createScalar(x: number): Scalar {
-  return {scalar: x};
-}
 
 function createHistogram(x: HistogramTuple): Histogram {
   return {
@@ -593,13 +509,6 @@ type TupleData<T> = [number, number, T];  // wall_time, step
 type HistogramTuple =
     [number, number, number, number, number, number[], number[]];
 type CompressedHistogramTuple = [number, number][];  // percentile, value
-interface ImageMetadata {
-  width: number;
-  height: number;
-  wall_time: number;
-  step: number;
-  query: string;
-}
 interface AudioMetadata {
   content_type: string;
   wall_time: number;

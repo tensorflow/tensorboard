@@ -28,25 +28,6 @@ limitations under the License.
 -->
 <dom-module id="tf-scalar-chart">
   <template>
-    <!--
-      Uncomment these to test the behavior of tf-card-heading.
-      They render like this:
-          card expanded:  http://i.imgur.com/Q7lbvxk.png
-          not expanded:   http://i.imgur.com/M38yshU.png
-      (In the "not expanded" one, the vz-line-chart is way too small,
-      but that's just because the headings take up too much space. It
-      doesn't indicate any problems with the headings.)
-    -->
-    <!--
-    <tf-card-heading title="[[tag]]" color="red">
-      I'm a subtitle, for testing.
-    </tf-card-heading>
-    <tf-card-heading title="[[tag]]" color="blue">
-      Look, I'm like the image dashboard. It's also fine if my content becomes really exorbitantly wide. Nothing to see here.<br />
-      step <strong>500</strong><br />
-      <input type="range" style="width: 100%"></input>
-    </tf-card-heading>
-    -->
     <tf-card-heading title="[[tag]]"></tf-card-heading>
     <vz-line-chart
       x-type="[[xType]]"

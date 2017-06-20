@@ -36,6 +36,7 @@ from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.core import core_plugin
 
 
 DEFAULT_SIZE_GUIDANCE = {
@@ -48,11 +49,8 @@ DEFAULT_SIZE_GUIDANCE = {
 }
 
 DATA_PREFIX = '/data'
-LOGDIR_ROUTE = '/logdir'
-RUNS_ROUTE = '/runs'
 PLUGIN_PREFIX = '/plugin'
 PLUGINS_LISTING_ROUTE = '/plugins_listing'
-TAB_ROUTES = ['', '/events', '/images', '/audio', '/graphs', '/histograms']
 
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
@@ -80,34 +78,50 @@ def standard_tensorboard_wsgi(
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
-  context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+  context = base_plugin.TBContext(
+      assets_zip_provider=get_default_assets_zip_provider(),
+      logdir=logdir,
+      multiplexer=multiplexer)
   plugins = [constructor(context) for constructor in plugins]
   return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval)
 
 
-class TensorBoardWSGIApp(object):
-  """The TensorBoard application, conforming to WSGI spec."""
+def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
+  """Constructs the TensorBoard application.
 
-  # How many samples to include in sampling API calls by default.
-  DEFAULT_SAMPLE_COUNT = 10
+  Args:
+    logdir: the logdir spec that describes where data will be loaded.
+      may be a directory, or comma,separated list of directories, or colons
+      can be used to provide named directories
+    plugins: A list of base_plugin.TBPlugin subclass instances.
+    multiplexer: The EventMultiplexer with TensorBoard data to serve
+    reload_interval: How often (in seconds) to reload the Multiplexer
 
-  # NOTE TO MAINTAINERS: An accurate Content-Length MUST be specified on all
-  #                      responses using send_header.
-  protocol_version = 'HTTP/1.1'
+  Returns:
+    A WSGI application that implements the TensorBoard backend.
 
-  def __init__(self, logdir, plugins, multiplexer, reload_interval):
-    """Constructs the TensorBoard application.
+  Raises:
+    ValueError: If something is wrong with the plugin configuration.
+  """
+  path_to_run = parse_event_files_spec(logdir)
+  if reload_interval:
+    start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
+  else:
+    reload_multiplexer(multiplexer, path_to_run)
+  return TensorBoardWSGI(plugins)
+
+
+class TensorBoardWSGI(object):
+  """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
+
+  def __init__(self, plugins):
+    """Constructs TensorBoardWSGI instance.
 
     Args:
-      logdir: the logdir spec that describes where data will be loaded.
-        may be a directory, or comma,separated list of directories, or colons
-        can be used to provide named directories
       plugins: A list of base_plugin.TBPlugin subclass instances.
-      multiplexer: The EventMultiplexer with TensorBoard data to serve
-      reload_interval: How often (in seconds) to reload the Multiplexer
 
     Returns:
-      A WSGI application that implements the TensorBoard backend.
+      A WSGI application for the set of all TBPlugin instances.
 
     Raises:
       ValueError: If some plugin has no plugin_name
@@ -117,25 +131,12 @@ class TensorBoardWSGIApp(object):
       ValueError: If some plugin handles a route that does not start
           with a slash
     """
-    self._logdir = logdir
     self._plugins = plugins
-    self._multiplexer = multiplexer
-    self.tag = get_tensorboard_tag()
-
-    path_to_run = parse_event_files_spec(self._logdir)
-    if reload_interval:
-      start_reloading_multiplexer(self._multiplexer, path_to_run,
-                                  reload_interval)
-    else:
-      reload_multiplexer(self._multiplexer, path_to_run)
 
     self.data_applications = {
-        DATA_PREFIX + LOGDIR_ROUTE:
-            self._serve_logdir,
         # TODO(chizeng): Delete this RPC once we have skylark rules that obviate
         # the need for the frontend to determine which plugins are active.
         DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
-        DATA_PREFIX + RUNS_ROUTE: self._serve_runs,
     }
 
     # Serve the routes from the registered plugins using their name as the route
@@ -155,6 +156,8 @@ class TensorBoardWSGIApp(object):
       try:
         plugin_apps = plugin.get_plugin_apps()
       except Exception as e:  # pylint: disable=broad-except
+        if type(plugin) is core_plugin.CorePlugin:
+          raise e
         tf.logging.warning('Plugin %s failed. Exception: %s',
                            plugin.plugin_name, str(e))
         continue
@@ -163,32 +166,11 @@ class TensorBoardWSGIApp(object):
           raise ValueError('Plugin named %r handles invalid route %r: '
                            'route does not start with a slash' %
                            (plugin.plugin_name, route))
-        path = DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
+        if type(plugin) is core_plugin.CorePlugin:
+          path = route
+        else:
+          path = DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
         self.data_applications[path] = app
-
-  def _path_is_safe(self, path):
-    """Check path is safe (stays within current directory).
-
-    This is for preventing directory-traversal attacks.
-
-    Args:
-      path: The path to check for safety.
-
-    Returns:
-      True if the given path stays within the current directory, and false
-      if it would escape to a higher directory. E.g. _path_is_safe('index.html')
-      returns true, but _path_is_safe('../../../etc/password') returns false.
-    """
-    base = os.path.abspath(os.curdir)
-    absolute_path = os.path.abspath(path)
-    prefix = os.path.commonprefix([base, absolute_path])
-    return prefix == base
-
-  @wrappers.Request.application
-  def _serve_logdir(self, request):
-    """Respond with a JSON object containing this TensorBoard's logdir."""
-    return http_util.Respond(
-        request, {'logdir': self._logdir}, 'application/json')
 
   @wrappers.Request.application
   def _serve_plugins_listing(self, request):
@@ -204,48 +186,6 @@ class TensorBoardWSGIApp(object):
         request,
         {plugin.plugin_name: plugin.is_active() for plugin in self._plugins},
         'application/json')
-
-  @wrappers.Request.application
-  def _serve_runs(self, request):
-    """WSGI app serving a JSON object about runs and tags.
-
-    Returns a mapping from runs to tagType to list of tags for that run.
-
-    Args:
-      request: A werkzeug request
-
-    Returns:
-      A werkzeug Response with the following content:
-      {runName: {firstEventTimestamp: 123456.789}}
-    """
-    run_names = sorted(self._multiplexer.Runs())  # Why `sorted`? See below.
-    def get_first_event_timestamp(run_name):
-      try:
-        return self._multiplexer.FirstEventTimestamp(run_name)
-      except ValueError:
-        tf.logging.warning('Unable to get first event timestamp for run %s',
-                           run_name)
-        # Put runs without a timestamp at the end. Their internal
-        # ordering would be nondeterministic, but Python's sorts are
-        # stable, so `sorted`ing the initial list above provides a
-        # deterministic ordering. Of course, we cannot guarantee that
-        # this will be append-only for new event-less runs.
-        return float('inf')
-    first_event_timestamps = {
-        run_name: get_first_event_timestamp(run_name)
-        for run_name in run_names
-    }
-    run_names.sort(key=first_event_timestamps.get)
-    return http_util.Respond(request, run_names, 'application/json')
-
-  def get_index_html(self):
-    return hacky_loader('components/index.html')
-
-  @wrappers.Request.application
-  def _serve_index(self, request):
-    """Serves the index page (i.e., the tensorboard app itself)."""
-    contents = self.get_index_html()
-    return http_util.Respond(request, contents, 'text/html', expires=3600)
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
     """Central entry point for the TensorBoard application.
@@ -265,16 +205,10 @@ class TensorBoardWSGIApp(object):
     """
     request = wrappers.Request(environ)
     parsed_url = urlparse.urlparse(request.path)
-
-    # Remove a trailing slash, if present.
-    clean_path = parsed_url.path
-    if clean_path.endswith('/'):
-      clean_path = clean_path[:-1]
+    clean_path = _clean_path(parsed_url.path)
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
-    elif clean_path in TAB_ROUTES:
-      return self._serve_index(environ, start_response)
     else:
       tf.logging.warning('path %s not found, sending 404', clean_path)
       return http_util.Respond(request, 'Not found', 'text/plain', code=404)(
@@ -371,24 +305,25 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   return thread
 
 
-def get_tensorboard_tag():
-  """Read the TensorBoard TAG number, and return it or an empty string."""
-  return hacky_loader('TAG').strip()
+def get_default_assets_zip_provider():
+  """Opens stock TensorBoard web assets collection.
+
+  Returns:
+    Returns function that returns a newly opened file handle to zip file
+    containing static assets for stock TensorBoard, or None if webfiles.zip
+    could not be found. The value the callback returns must be closed. The
+    paths inside the zip file are considered absolute paths on the web server.
+  """
+  path = os.path.join(
+      tf.resource_loader.get_data_files_path(), os.pardir, 'webfiles.zip')
+  if not os.path.exists(path):
+    tf.logging.warning('webfiles.zip static assets not found: %s', path)
+    return None
+  return lambda: open(path, 'rb')
 
 
-def hacky_loader(path):
-  """Load an asset from the tensorboard directory, in a platform-generic way."""
-  try:
-    # load_resource fetches resources relative to the tensorflow directory.
-    # Thus, we must go down 1 level (into the tensorboard directory). This case
-    # usually applies for running within Google.
-    return tf.resource_loader.load_resource(os.path.join('tensorboard', path))
-  except IOError:
-    # We may be trying to load resources relative to the directory containing
-    # the TensorBoard binary (like in most of the open source world). Fetch the
-    # resource locally.
-    tensorboard_root = os.path.join(os.path.dirname(__file__), os.pardir)
-    path = os.path.join(tensorboard_root, path)
-    path = os.path.abspath(path)
-    with open(path, 'rb') as f:
-      return f.read()
+def _clean_path(path):
+  """Removes trailing slash if present, unless it's the root path."""
+  if len(path) > 1 and path.endswith('/'):
+    return path[:-1]
+  return path

@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Integration tests for TensorBoard.
-
-These tests start up a full-fledged TensorBoard server.
-"""
+"""Unit tests for application package."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import functools
-import gzip
 import json
 import os
 import shutil
 import socket
 import tempfile
-import threading
 
-from six import BytesIO
 from six.moves import http_client
 import tensorflow as tf
-
-from werkzeug import serving
+from werkzeug import test as werkzeug_test
+from werkzeug import wrappers
 
 from tensorboard import main as tensorboard
 from tensorboard.backend import application
@@ -80,197 +74,35 @@ class TensorboardServerTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
 
   def setUp(self):
-    self.logdir = self.get_temp_dir()
-
-    self._GenerateTestData(run_name='run1')
-    self._multiplexer = event_multiplexer.EventMultiplexer(
-        size_guidance=application.DEFAULT_SIZE_GUIDANCE,
-        purge_orphaned_data=True)
     plugins = [
         FakePlugin(
             None, plugin_name='foo', is_active_value=True, routes_mapping={}),
         FakePlugin(
             None, plugin_name='bar', is_active_value=False, routes_mapping={}),
     ]
-    app = application.TensorBoardWSGIApp(
-        self.logdir, plugins, self._multiplexer, reload_interval=0)
-    try:
-      self._server = serving.BaseWSGIServer('localhost', 0, app)
-      # 0 to pick an unused port.
-    except IOError:
-      # BaseWSGIServer has a preference for IPv4. If that didn't work, try again
-      # with an explicit IPv6 address.
-      self._server = serving.BaseWSGIServer('::1', 0, app)
-    self._server_thread = threading.Thread(target=self._server.serve_forever)
-    self._server_thread.daemon = True
-    self._server_thread.start()
-    self._connection = http_client.HTTPConnection(
-        'localhost', self._server.server_address[1])
+    app = application.TensorBoardWSGI(plugins)
+    self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
-  def tearDown(self):
-    self._connection.close()
-    self._server.shutdown()
-    self._server.server_close()
-
-  def _get(self, path, headers=None):
-    """Perform a GET request for the given path."""
-    if headers is None:
-      headers = {}
-    self._connection.request('GET', path, None, headers)
-    return self._connection.getresponse()
-
-  def _getJson(self, path):
-    """Perform a GET request and decode the result as JSON."""
-    self._connection.request('GET', path)
-    response = self._connection.getresponse()
-    self.assertEqual(response.status, 200)
-    data = response.read()
-    if response.getheader('Content-Encoding') == 'gzip':
-      data = gzip.GzipFile('', 'rb', 9, BytesIO(data)).read()
-    return json.loads(data.decode('utf-8'))
+  def _get_json(self, path):
+    response = self.server.get(path)
+    self.assertEqual(200, response.status_code)
+    self.assertEqual('application/json', response.headers.get('Content-Type'))
+    return json.loads(response.get_data().decode('utf-8'))
 
   def testBasicStartup(self):
     """Start the server up and then shut it down immediately."""
     pass
 
-  def testRequestMainPage(self):
-    """Navigate to the main page and verify that it returns a 200."""
-    response = self._get('/')
-    self.assertEqual(response.status, 200)
-
   def testRequestNonexistentPage(self):
     """Request a page that doesn't exist; it should 404."""
-    response = self._get('/asdf')
-    self.assertEqual(response.status, 404)
-
-  def testLogdir(self):
-    """Test the format of the data/logdir endpoint."""
-    parsed_object = self._getJson('/data/logdir')
-    self.assertEqual(parsed_object, {'logdir': self.logdir})
+    response = self.server.get('/asdf')
+    self.assertEqual(404, response.status_code)
 
   def testPluginsListing(self):
     """Test the format of the data/plugins_listing endpoint."""
-    parsed_object = self._getJson('/data/plugins_listing')
+    parsed_object = self._get_json('/data/plugins_listing')
     # Plugin foo is active. Plugin bar is not.
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
-
-  def testRuns(self):
-    """Test the format of the /data/runs endpoint."""
-    run_json = self._getJson('/data/runs')
-    self.assertEqual(run_json, ['run1'])
-
-  def testRunsAppendOnly(self):  # pylint: disable=invalid-name
-    """Test that new runs appear after old ones in /data/runs."""
-    # We use three runs: the 'run1' that we already created in our
-    # `setUp` method, plus runs with names lexicographically before and
-    # after it (so that just sorting by name doesn't have a chance of
-    # working).
-    fake_wall_times = {
-        'run1': 1234.0,
-        'avocado': 2345.0,
-        'zebra': 3456.0,
-        'mysterious': None,
-    }
-
-    stubs = tf.test.StubOutForTesting()
-    # pylint: disable=invalid-name
-    def FirstEventTimestamp_stub(multiplexer_self, run_name):
-      del multiplexer_self
-      matches = [candidate_name
-                 for candidate_name in fake_wall_times
-                 if run_name.endswith(candidate_name)]
-      self.assertEqual(len(matches), 1, '%s (%s)' % (matches, run_name))
-      wall_time = fake_wall_times[matches[0]]
-      if wall_time is None:
-        raise ValueError('No event timestamp could be found')
-      else:
-        return wall_time
-    # pylint: enable=invalid-name
-
-    stubs.SmartSet(self._multiplexer,
-                   'FirstEventTimestamp',
-                   FirstEventTimestamp_stub)
-
-    def add_run(run_name):
-      self._GenerateTestData(run_name)
-      self._multiplexer.AddRunsFromDirectory(self.logdir)
-      self._multiplexer.Reload()
-
-    # Add one run: it should come last.
-    add_run('avocado')
-    self.assertEqual(self._getJson('/data/runs'),
-                     ['run1', 'avocado'])
-
-    # Add another run: it should come last, too.
-    add_run('zebra')
-    self.assertEqual(self._getJson('/data/runs'),
-                     ['run1', 'avocado', 'zebra'])
-
-    # And maybe there's a run for which we somehow have no timestamp.
-    add_run('mysterious')
-    self.assertEqual(self._getJson('/data/runs'),
-                     ['run1', 'avocado', 'zebra', 'mysterious'])
-
-    stubs.UnsetAll()
-
-  def testApplicationPaths_getCached(self):
-    """Test the format of the /data/runs endpoint."""
-    for path in ('/',):  # TODO(jart): '/app.js' in open source
-      connection = http_client.HTTPConnection('localhost',
-                                              self._server.server_address[1])
-      connection.request('GET', path)
-      response = connection.getresponse()
-      self.assertEqual(response.status, 200, msg=path)
-      self.assertEqual(
-          response.getheader('Cache-Control'),
-          'private, max-age=3600',
-          msg=path)
-      connection.close()
-
-  def testDataPaths_disableAllCaching(self):
-    """Test the format of the /data/runs endpoint."""
-    for path in ('/data/runs', '/data/logdir'):
-      connection = http_client.HTTPConnection('localhost',
-                                              self._server.server_address[1])
-      connection.request('GET', path)
-      response = connection.getresponse()
-      self.assertEqual(response.status, 200, msg=path)
-      self.assertEqual(response.getheader('Expires'), '0', msg=path)
-      response.read()
-      connection.close()
-
-  def _GenerateTestData(self, run_name):
-    """Generates the test data directory.
-
-    The test data has a single run of the given name, containing:
-      - a graph definition and metagraph definition
-
-    Arguments:
-      run_name: the directory under self.logdir into which to write
-        events
-    """
-    run_path = os.path.join(self.logdir, run_name)
-    os.makedirs(run_path)
-
-    writer = tf.summary.FileWriter(run_path)
-
-    # Add a simple graph event.
-    graph_def = tf.GraphDef()
-    node1 = graph_def.node.add()
-    node1.name = 'a'
-    node2 = graph_def.node.add()
-    node2.name = 'b'
-    node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
-
-    meta_graph_def = tf.MetaGraphDef(graph_def=graph_def)
-
-    if self._only_use_meta_graph:
-      writer.add_meta_graph(meta_graph_def)
-    else:
-      writer.add_graph(graph_def)
-
-    writer.flush()
-    writer.close()
 
 
 class TensorboardServerPluginNameTest(tf.test.TestCase):
@@ -402,20 +234,6 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
     logdir = 'lol:gs://foo/path'
     expected = {'gs://foo/path': 'lol'}
     self.assertEqual(application.parse_event_files_spec(logdir), expected)
-
-
-class TensorBoardAssetsTest(tf.test.TestCase):
-
-  def testTagFound(self):
-    tag = application.get_tensorboard_tag()
-    self.assertTrue(tag)
-    app = application.standard_tensorboard_wsgi('', True, 60, [])
-    self.assertEqual(app.tag, tag)
-
-  def testIndexFound(self):
-    app = application.standard_tensorboard_wsgi('', True, 60, [])
-    index = app.get_index_html()
-    self.assertTrue(index)
 
 
 class TensorBoardPluginsTest(tf.test.TestCase):

@@ -29,10 +29,10 @@ import sys
 import tensorflow as tf
 from werkzeug import serving
 
-
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
+from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.distributions import distributions_plugin
 from tensorboard.plugins.graphs import graphs_plugin
 from tensorboard.plugins.histograms import histograms_plugin
@@ -190,13 +190,24 @@ def run_simple_server(tb_app):
     # An error message was already logged
     # TODO(jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  msg = 'Starting TensorBoard %s at %s' % (tb_app.tag, url)
+  msg = 'Starting TensorBoard %s at %s' % (get_tag(), url)
   print(msg)
   tf.logging.info(msg)
   print('(Press CTRL+C to quit)')
   sys.stdout.flush()
 
   server.serve_forever()
+
+
+def get_tag():
+  """Returns tag of current TensorBoard release.
+  
+  Returns:
+    String of stripped contents of TAG file.
+  """
+  path = os.path.join(tf.resource_loader.get_data_files_path(), 'TAG')
+  with open(path) as file_:
+    return file_.read().strip()
 
 
 def main(unused_argv=None):
@@ -207,6 +218,7 @@ def main(unused_argv=None):
     return 0
   else:
     plugins = [
+        core_plugin.CorePlugin,
         scalars_plugin.ScalarsPlugin,
         images_plugin.ImagesPlugin,
         audio_plugin.AudioPlugin,
@@ -218,6 +230,7 @@ def main(unused_argv=None):
     ]
     tb = create_tb_app(plugins)
     run_simple_server(tb)
+
 
 if __name__ == '__main__':
   tf.app.run()

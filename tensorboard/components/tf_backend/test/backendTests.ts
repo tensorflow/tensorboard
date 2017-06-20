@@ -63,18 +63,6 @@ describe('backend tests', () => {
     });
   });
 
-  it('scalars are loaded properly', (done) => {
-    backend.scalar('cross_entropy (1)', 'run1').then((s) => {
-      // just check the data got reformatted properly
-      const aScalar = s[s.length - 1];
-      assertIsDatum(aScalar);
-      chai.assert.isNumber(aScalar.scalar);
-      // verify date conversion works
-      chai.assert.equal(aScalar.wall_time.valueOf(), 40000);
-      done();
-    });
-  });
-
   it('histograms are loaded properly', (done) => {
     backend.histogram('histo1', 'run1').then((histos) => {
       const histo = histos[0];
@@ -88,16 +76,6 @@ describe('backend tests', () => {
     TYPES.forEach((t: string) => {
       chai.assert.isDefined(backend[t], t);
       chai.assert.isDefined(backend[t + 'Runs'], t + 'Runs');
-    });
-  });
-
-  it('images are loaded properly', (done) => {
-    backend.image('im1', 'run1').then((images) => {
-      const image = images[0];
-      assertIsDatum(image);
-      chai.assert.isNumber(image.width);
-      chai.assert.isNumber(image.height);
-      done();
     });
   });
 
@@ -116,8 +94,6 @@ describe('backend tests', () => {
   });
 
   it('run helper methods work', (done) => {
-    const scalar = {run1: ['cross_entropy (1)'], fake_run_no_data: ['scalar2']};
-    const image = {run1: ['im1'], fake_run_no_data: ['im1', 'im2']};
     const audio = {run1: ['audio1'], fake_run_no_data: ['audio1', 'audio2']};
     const runMetadata = {run1: ['step99'], fake_run_no_data: ['step99']};
     const graph = ['fake_run_no_data'];
@@ -128,14 +104,6 @@ describe('backend tests', () => {
         done();
       }
     }
-    backend.scalarTags().then((x) => {
-      chai.assert.deepEqual(x, scalar);
-      next();
-    });
-    backend.imageTags().then((x) => {
-      chai.assert.deepEqual(x, image);
-      next();
-    });
     backend.audioTags().then((x) => {
       chai.assert.deepEqual(x, audio);
       next();
