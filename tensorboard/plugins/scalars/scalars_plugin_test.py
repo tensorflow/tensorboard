@@ -42,7 +42,8 @@ class ScalarsPluginTest(tf.test.TestCase):
   _RUN_WITH_SCALARS = '_RUN_WITH_SCALARS'
   _RUN_WITH_HISTOGRAM = '_RUN_WITH_HISTOGRAM'
 
-  def __init__(self):
+  def __init__(self, *args, **kwargs):
+    super(ScalarsPluginTest, self).__init__(*args, **kwargs)
     self.logdir = None
     self.plugin = None
 

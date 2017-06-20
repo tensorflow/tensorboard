@@ -39,7 +39,8 @@ class GraphsPluginTest(tf.test.TestCase):
   _METADATA_TAG = 'secret-stats'
   _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024
 
-  def __init__(self):
+  def __init__(self, *args, **kwargs):
+    super(GraphsPluginTest, self).__init__(*args, **kwargs)
     self.logdir = None
     self.plugin = None
 

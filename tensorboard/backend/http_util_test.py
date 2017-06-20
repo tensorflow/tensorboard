@@ -30,6 +30,7 @@ from tensorboard.backend import http_util
 
 
 class RespondTest(tf.test.TestCase):
+  # pylint: disable=unsubscriptable-object
 
   def testHelloWorld(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())

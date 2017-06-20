@@ -29,6 +29,7 @@ LOGDIR = '/tmp/scalars_demo'
 # Duration of the simulation.
 STEPS = 1000
 
+# pylint: disable=not-context-manager
 
 def run(logdir, run_name,
         initial_temperature, ambient_temperature, heat_coefficient):

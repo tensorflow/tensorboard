@@ -41,7 +41,8 @@ class HistogramsPluginTest(tf.test.TestCase):
   _RUN_WITH_HISTOGRAM = '_RUN_WITH_HISTOGRAM'
   _RUN_WITH_SCALARS = '_RUN_WITH_SCALARS'
 
-  def __init__(self):
+  def __init__(self, *args, **kwargs):
+    super(HistogramsPluginTest, self).__init__(*args, **kwargs)
     self.logdir = None
     self.plugin = None
 

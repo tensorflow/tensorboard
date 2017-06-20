@@ -623,7 +623,7 @@ def _make_sprite_image(thumbnails, thumbnail_dim):
       raise ValueError('Each element of "thumbnails" must be a 3D `ndarray`')
     thumbnails = np.array(thumbnails)
 
-  with tf.Graph().as_default():
+  with tf.Graph().as_default():  # pylint: disable=not-context-manager
     s = tf.Session()
     resized_images = tf.image.resize_images(thumbnails, thumbnail_dim).eval(
         session=s)

@@ -24,6 +24,7 @@ import os.path
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+# pylint: disable=not-context-manager
 
 FLAGS = tf.flags.FLAGS
 

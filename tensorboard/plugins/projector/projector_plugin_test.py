@@ -37,10 +37,12 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
 
+# pylint: disable=not-context-manager
 
 class ProjectorAppTest(tf.test.TestCase):
 
-  def __init__(self):
+  def __init__(self, *args, **kwargs):
+    super(ProjectorAppTest, self).__init__(*args, **kwargs)
     self.logdir = None
     self.plugin = None
     self.server = None

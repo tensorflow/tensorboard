@@ -28,7 +28,7 @@ import threading
 import time
 
 import six
-from six.moves.urllib import parse as urlparse
+from six.moves.urllib import parse as urlparse  # pylint: disable=import-error
 import tensorflow as tf
 from werkzeug import wrappers
 

@@ -28,6 +28,8 @@ from tensorboard.backend.event_processing import event_accumulator as ea
 from tensorboard.plugins.distributions import compressor
 
 
+# pylint: disable=not-context-manager
+
 class _EventGenerator(object):
   """Class that can add_events and then yield them back.
 
