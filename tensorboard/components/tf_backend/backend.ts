@@ -21,7 +21,6 @@ import {demoify, queryEncoder} from './urlPathHelpers';
 export interface RunEnumeration {
   histograms: string[];
   compressedHistogramTuples: string[];
-  scalars: string[];
   images: string[];
   audio: string[];
   graph: boolean;
@@ -40,9 +39,6 @@ export interface Datum {
   wall_time: Date;
   step: number;
 }
-
-export type ScalarDatum = Datum & Scalar;
-export interface Scalar { scalar: number; }
 
 export interface Text { text: string; }
 export type TextDatum = Datum & Text;
@@ -113,7 +109,7 @@ export interface DebuggerNumericsAlertReport {
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
 export const TYPES = [
-  'scalar', 'histogram', 'compressedHistogram', 'graph', 'image', 'audio',
+  'histogram', 'compressedHistogram', 'graph', 'image', 'audio',
   'runMetadata', 'text'
 ];
 /**
@@ -149,14 +145,6 @@ export class Backend {
    */
   public runs(): Promise<RunsResponse> {
     return this.requestManager.request(getRouter().runs());
-  }
-
-  /**
-   * Return a promise showing the Run-to-Tag mapping for scalar data.
-   */
-  public scalarTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('scalars', '/tags'));
   }
 
   /**
@@ -261,16 +249,6 @@ export class Backend {
       Promise<string> {
     const url = this.graphUrl(run, limitAttrSize, largeAttrsKey);
     return this.requestManager.request(url);
-  }
-
-  /**
-   * Return a promise containing ScalarDatums for given run and tag.
-   */
-  public scalar(tag: string, run: string): Promise<Array<ScalarDatum>> {
-    let p: Promise<TupleData<number>[]>;
-    const url = getRouter().pluginRunTagRoute('scalars', '/scalars')(tag, run);
-    p = this.requestManager.request(url);
-    return p.then(map(detupler(createScalar)));
   }
 
   /**
@@ -499,10 +477,6 @@ function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
     return obj;
   };
 };
-
-function createScalar(x: number): Scalar {
-  return {scalar: x};
-}
 
 function createHistogram(x: HistogramTuple): Histogram {
   return {
