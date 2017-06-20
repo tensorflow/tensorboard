@@ -79,16 +79,6 @@ describe('backend tests', () => {
     });
   });
 
-  it('images are loaded properly', (done) => {
-    backend.image('im1', 'run1').then((images) => {
-      const image = images[0];
-      assertIsDatum(image);
-      chai.assert.isNumber(image.width);
-      chai.assert.isNumber(image.height);
-      done();
-    });
-  });
-
   it('audio is loaded properly', (done) => {
     backend.audio('audio1', 'run1').then((audioClips) => {
       const audio = audioClips[0];
@@ -104,7 +94,6 @@ describe('backend tests', () => {
   });
 
   it('run helper methods work', (done) => {
-    const image = {run1: ['im1'], fake_run_no_data: ['im1', 'im2']};
     const audio = {run1: ['audio1'], fake_run_no_data: ['audio1', 'audio2']};
     const runMetadata = {run1: ['step99'], fake_run_no_data: ['step99']};
     const graph = ['fake_run_no_data'];
@@ -115,10 +104,6 @@ describe('backend tests', () => {
         done();
       }
     }
-    backend.imageTags().then((x) => {
-      chai.assert.deepEqual(x, image);
-      next();
-    });
     backend.audioTags().then((x) => {
       chai.assert.deepEqual(x, audio);
       next();
