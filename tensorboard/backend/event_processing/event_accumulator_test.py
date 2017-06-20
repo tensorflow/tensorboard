@@ -292,7 +292,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
     # Retrieve the health pills for each node name.
     gotten_events = acc.HealthPills('Add')
-    self.assertEquals(2, len(gotten_events))
+    self.assertEqual(2, len(gotten_events))
     self._compareHealthPills(
         ea.HealthPillEvent(
             wall_time=13371337,

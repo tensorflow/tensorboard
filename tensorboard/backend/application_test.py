@@ -293,7 +293,7 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0)
     else:
-      with self.assertRaisesRegexp(ValueError, r'invalid name'):
+      with self.assertRaisesRegex(ValueError, r'invalid name'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0)
 
@@ -332,7 +332,7 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0)
     else:
-      with self.assertRaisesRegexp(ValueError, r'invalid route'):
+      with self.assertRaisesRegex(ValueError, r'invalid route'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0)
 
