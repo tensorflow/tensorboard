@@ -40,10 +40,12 @@ before_install:
         pip install tensorflow=="${TF}"
         ;;
     esac
-    
+
     pip install pylint
 
 script:
+  - |
+    pylint --version
   - |
     pylint tensorboard
   - |
