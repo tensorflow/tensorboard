@@ -40,6 +40,11 @@ from tensorboard.plugins.projector import projector_plugin
 
 class ProjectorAppTest(tf.test.TestCase):
 
+  def __init__(self):
+    self.logdir = None
+    self.plugin = None
+    self.server = None
+
   def setUp(self):
     self.log_dir = self.get_temp_dir()
 

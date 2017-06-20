@@ -809,9 +809,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
 class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
-  def setUp(self):
-    super(RealisticEventAccumulatorTest, self).setUp()
-
   def testScalarsRealistically(self):
     """Test accumulator by writing values and then reading them."""
 

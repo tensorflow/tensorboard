@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os.path
-
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
@@ -29,6 +27,8 @@ LOGDIR = '/tmp/histograms_demo'
 
 def run_all(logdir, verbose=False):
   """Generate a bunch of histogram data, and write it to logdir."""
+  del verbose
+
   k = tf.placeholder(tf.float32)
 
   # Make a normal distribution, with a shifting mean
@@ -37,12 +37,12 @@ def run_all(logdir, verbose=False):
   tf.summary.histogram("normal/moving_mean", mean_moving_normal)
 
   # Make a normal distribution with shrinking variance
-  variance_shrinking_normal = tf.random_normal(shape=[1000], mean=0, stddev=1-(k))
+  shrinking_normal = tf.random_normal(shape=[1000], mean=0, stddev=1-(k))
   # Record that distribution too
-  tf.summary.histogram("normal/shrinking_variance", variance_shrinking_normal)
+  tf.summary.histogram("normal/shrinking_variance", shrinking_normal)
 
   # Let's combine both of those distributions into one dataset
-  normal_combined = tf.concat([mean_moving_normal, variance_shrinking_normal], 0)
+  normal_combined = tf.concat([mean_moving_normal, shrinking_normal], 0)
   # We add another histogram summary to record the combined distribution
   tf.summary.histogram("normal/bimodal", normal_combined)
 
@@ -59,7 +59,7 @@ def run_all(logdir, verbose=False):
   tf.summary.histogram("uniform", uniform)
 
   # Finally, combine everything together!
-  all_distributions = [mean_moving_normal, variance_shrinking_normal,
+  all_distributions = [mean_moving_normal, shrinking_normal,
                        gamma, poisson, uniform]
   all_combined = tf.concat(all_distributions, 0)
   tf.summary.histogram("all_combined", all_combined)

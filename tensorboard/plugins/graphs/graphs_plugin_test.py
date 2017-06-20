@@ -39,6 +39,10 @@ class GraphsPluginTest(tf.test.TestCase):
   _METADATA_TAG = 'secret-stats'
   _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024
 
+  def __init__(self):
+    self.logdir = None
+    self.plugin = None
+
   def generate_run(self, run_name, include_graph):
     """Create a run with a text summary, metadata, and optionally a graph."""
     tf.reset_default_graph()

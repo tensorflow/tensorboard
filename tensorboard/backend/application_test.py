@@ -159,7 +159,7 @@ class TensorboardServerTest(tf.test.TestCase):
     run_json = self._getJson('/data/runs')
     self.assertEqual(run_json, ['run1'])
 
-  def testRunsAppendOnly(self):
+  def testRunsAppendOnly(self):  # pylint: disable=invalid-name
     """Test that new runs appear after old ones in /data/runs."""
     # We use three runs: the 'run1' that we already created in our
     # `setUp` method, plus runs with names lexicographically before and

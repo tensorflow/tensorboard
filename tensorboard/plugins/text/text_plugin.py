@@ -155,7 +155,7 @@ def make_table(contents, headers=None):
                      contents.ndim)
 
   if headers:
-    if isinstance(headers, list) or isinstance(headers, tuple):
+    if isinstance(headers, (list, tuple)):
       headers = np.array(headers)
     if not isinstance(headers, np.ndarray):
       raise ValueError('Could not convert headers %s into np.ndarray' % headers)

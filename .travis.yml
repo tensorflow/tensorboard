@@ -43,6 +43,8 @@ before_install:
 
 script:
   - |
+    pylint tensorboard
+  - |
     bazel \
       --output_base="${HOME}/.bazel-output-base" \
       --batch \
@@ -70,7 +72,6 @@ script:
       --test_output=errors \
       --spawn_strategy=sandboxed \
       --local_resources=400,2,1.0
-
 before_cache:
   - |
     find "${HOME}/.bazel-output-base" \
