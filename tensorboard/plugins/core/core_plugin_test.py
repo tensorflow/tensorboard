@@ -95,14 +95,13 @@ class CorePluginTest(tf.test.TestCase):
     # after it (so that just sorting by name doesn't have a chance of
     # working).
     fake_wall_times = {
-      'run1': 1234.0,
-      'avocado': 2345.0,
-      'zebra': 3456.0,
-      'mysterious': None,
+        'run1': 1234.0,
+        'avocado': 2345.0,
+        'zebra': 3456.0,
+        'mysterious': None,
     }
 
     stubs = tf.test.StubOutForTesting()
-    # pylint: disable=invalid-name
     def FirstEventTimestamp_stub(multiplexer_self, run_name):
       del multiplexer_self
       matches = [candidate_name
@@ -114,7 +113,6 @@ class CorePluginTest(tf.test.TestCase):
         raise ValueError('No event timestamp could be found')
       else:
         return wall_time
-    # pylint: enable=invalid-name
 
     stubs.SmartSet(self.multiplexer,
                    'FirstEventTimestamp',

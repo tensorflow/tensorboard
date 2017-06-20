@@ -301,7 +301,7 @@ def get_out_of_order(list_of_numbers):
   # TODO(cassandrax): Consider changing this to only check for out-of-order
   # steps within a particular tag.
   result = []
-  #pylint: disable=consider-using-enumerate
+  # pylint: disable=consider-using-enumerate
   for i in range(len(list_of_numbers)):
     if i == 0:
       continue

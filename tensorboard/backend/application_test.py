@@ -25,7 +25,7 @@ import shutil
 import socket
 import tempfile
 
-from six.moves import http_client
+import six
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -125,7 +125,7 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0)
     else:
-      with self.assertRaisesRegex(ValueError, r'invalid name'):
+      with six.assertRaisesRegex(self, ValueError, r'invalid name'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0)
 
@@ -164,7 +164,7 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0)
     else:
-      with self.assertRaisesRegex(ValueError, r'invalid route'):
+      with six.assertRaisesRegex(self, ValueError, r'invalid route'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0)
 

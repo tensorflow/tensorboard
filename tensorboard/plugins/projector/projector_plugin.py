@@ -30,7 +30,7 @@ from google.protobuf import json_format
 from google.protobuf import text_format
 from tensorboard.backend.http_util import Respond
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.projector import projector_config_pb2
+from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 
 # The prefix of routes provided by this plugin.
 _PLUGIN_PREFIX_ROUTE = 'projector'
@@ -159,7 +159,7 @@ def _latest_checkpoints_changed(configs, run_path_pairs):
   """Returns true if the latest checkpoint has changed in any of the runs."""
   for run_name, assets_dir in run_path_pairs:
     if run_name not in configs:
-      config = projector_config_pb2.ProjectorConfig()
+      config = ProjectorConfig()
       config_fpath = os.path.join(assets_dir, PROJECTOR_FILENAME)
       if tf.gfile.Exists(config_fpath):
         with tf.gfile.GFile(config_fpath, 'r') as f:
@@ -328,7 +328,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     configs = {}
     config_fpaths = {}
     for run_name, assets_dir in run_path_pairs:
-      config = projector_config_pb2.ProjectorConfig()
+      config = ProjectorConfig()
       config_fpath = os.path.join(assets_dir, PROJECTOR_FILENAME)
       if tf.gfile.Exists(config_fpath):
         with tf.gfile.GFile(config_fpath, 'r') as f:
@@ -623,7 +623,7 @@ def _make_sprite_image(thumbnails, thumbnail_dim):
       raise ValueError('Each element of "thumbnails" must be a 3D `ndarray`')
     thumbnails = np.array(thumbnails)
 
-  with tf.Graph().as_default():  # pylint: disable=not-context-manager
+  with tf.Graph().as_default():
     s = tf.Session()
     resized_images = tf.image.resize_images(thumbnails, thumbnail_dim).eval(
         session=s)

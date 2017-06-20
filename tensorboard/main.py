@@ -201,7 +201,7 @@ def run_simple_server(tb_app):
 
 def get_tag():
   """Returns tag of current TensorBoard release.
-  
+
   Returns:
     String of stripped contents of TAG file.
   """

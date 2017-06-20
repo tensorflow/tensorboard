@@ -28,7 +28,7 @@ import threading
 import time
 
 import six
-from six.moves.urllib import parse as urlparse  # pylint: disable=import-error
+from six.moves.urllib import parse as urlparse
 import tensorflow as tf
 from werkzeug import wrappers
 
@@ -156,7 +156,7 @@ class TensorBoardWSGI(object):
       try:
         plugin_apps = plugin.get_plugin_apps()
       except Exception as e:  # pylint: disable=broad-except
-        if type(plugin) is core_plugin.CorePlugin:
+        if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
           raise e
         tf.logging.warning('Plugin %s failed. Exception: %s',
                            plugin.plugin_name, str(e))
@@ -166,7 +166,7 @@ class TensorBoardWSGI(object):
           raise ValueError('Plugin named %r handles invalid route %r: '
                            'route does not start with a slash' %
                            (plugin.plugin_name, route))
-        if type(plugin) is core_plugin.CorePlugin:
+        if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
           path = route
         else:
           path = DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
