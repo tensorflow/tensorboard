@@ -62,13 +62,6 @@ export interface HistogramBin {
 export type HistogramSeriesDatum = HistogramSeries & Datum;
 export interface HistogramSeries { bins: HistogramBin[]; }
 
-export type ImageDatum = Datum & Image;
-export interface Image {
-  width: number;
-  height: number;
-  url: string;
-}
-
 export type AudioDatum = Datum & Audio;
 export interface Audio {
   content_type: string;
@@ -109,8 +102,7 @@ export interface DebuggerNumericsAlertReport {
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
 export const TYPES = [
-  'histogram', 'compressedHistogram', 'graph', 'image', 'audio',
-  'runMetadata', 'text'
+  'histogram', 'compressedHistogram', 'graph', 'audio', 'runMetadata', 'text'
 ];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
@@ -153,14 +145,6 @@ export class Backend {
   public histogramTags(): Promise<RunToTag> {
     return this.requestManager.request(
         getRouter().pluginRoute('histograms', '/tags'));
-  }
-
-  /**
-   * Return a promise showing the Run-to-Tag mapping for image data.
-   */
-  public imageTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('images', '/tags'));
   }
 
   /**
@@ -307,16 +291,6 @@ export class Backend {
   }
 
   /**
-   * Return a promise containing ImageDatums for given run and tag.
-   */
-  public image(tag: string, run: string): Promise<Array<ImageDatum>> {
-    const url = (getRouter().pluginRunTagRoute('images', '/images')(tag, run));
-    let p: Promise<ImageMetadata[]>;
-    p = this.requestManager.request(url);
-    return p.then(map(this.createImage.bind(this)));
-  }
-
-  /**
    * Return a promise containing AudioDatums for given run and tag.
    */
   public audio(tag: string, run: string): Promise<Array<AudioDatum>> {
@@ -364,38 +338,6 @@ export class Backend {
     let p: Promise<TupleData<CompressedHistogramTuple>[]>;
     p = this.requestManager.request(url);
     return p.then(map(detupler((x) => x)));
-  }
-
-  private createImage(x: ImageMetadata): Image&Datum {
-    const pluginRoute = getRouter().pluginRoute('images', '/individualImage');
-
-    let query = x.query;
-    if (pluginRoute.indexOf('?') > -1) {
-      // The route already has GET parameters. Append our parameters to them.
-      query = '&' + query;
-    } else {
-      // The route lacks GET parameters. We append them.
-      query = '?' + query;
-    }
-
-    if (getRouter().isDemoMode()) {
-      query = demoify(query);
-    }
-
-    let individualImageUrl = pluginRoute + query;
-    // Include wall_time just to disambiguate the URL and force the browser
-    // to reload the image when the URL changes. The backend doesn't care
-    // about the value.
-    individualImageUrl +=
-        getRouter().isDemoMode() ? '.png' : '&ts=' + x.wall_time;
-
-    return {
-      width: x.width,
-      height: x.height,
-      wall_time: timeToDate(x.wall_time),
-      step: x.step,
-      url: individualImageUrl,
-    };
   }
 
   private createAudio(x: AudioMetadata): Audio&Datum {
@@ -567,13 +509,6 @@ type TupleData<T> = [number, number, T];  // wall_time, step
 type HistogramTuple =
     [number, number, number, number, number, number[], number[]];
 type CompressedHistogramTuple = [number, number][];  // percentile, value
-interface ImageMetadata {
-  width: number;
-  height: number;
-  wall_time: number;
-  step: number;
-  query: string;
-}
 interface AudioMetadata {
   content_type: string;
   wall_time: number;
