@@ -19,7 +19,6 @@ import {getRouter} from './router';
 import {demoify, queryEncoder} from './urlPathHelpers';
 
 export interface RunEnumeration {
-  compressedHistogramTuples: string[];
   images: string[];
   audio: string[];
   graph: boolean;
@@ -82,7 +81,7 @@ export interface DebuggerNumericsAlertReport {
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
 export const TYPES = [
-  'compressedHistogram', 'graph', 'audio', 'runMetadata', 'text'
+  'graph', 'audio', 'runMetadata', 'text'
 ];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
@@ -125,15 +124,6 @@ export class Backend {
   public audioTags(): Promise<RunToTag> {
     return this.requestManager.request(
         getRouter().pluginRoute('audio', '/tags'));
-  }
-
-  /**
-   * Return a promise showing the Run-to-Tag mapping for compressedHistogram
-   * data.
-   */
-  public compressedHistogramTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('distributions', '/tags'));
   }
 
   /**
@@ -273,20 +263,6 @@ export class Backend {
     return this.requestManager.request(url);
   }
 
-  /**
-   * Get compressedHistogram data.
-   * Unlike other methods, don't bother reprocessing this data into a nicer
-   * format. This is because we will deprecate this route.
-   */
-  private compressedHistogram(tag: string, run: string):
-      Promise<Array<Datum&CompressedHistogramTuple>> {
-    const url = (getRouter().pluginRunTagRoute(
-        'distributions', '/distributions')(tag, run));
-    let p: Promise<TupleData<CompressedHistogramTuple>[]>;
-    p = this.requestManager.request(url);
-    return p.then(map(detupler((x) => x)));
-  }
-
   private createAudio(x: AudioMetadata): Audio&Datum {
     const pluginRoute = getRouter().pluginRoute('audio', '/individualAudio');
 
@@ -369,11 +345,10 @@ function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
 
 
 /**
- * The following interfaces (TupleData, CompressedHistogramTuple, and
- * AudioMetadata) describe how the data is sent over from the backend.
+ * The following interfaces (TupleData and AudioMetadata) describe how
+ * the data is sent over from the backend.
  */
 type TupleData<T> = [number, number, T];  // wall_time, step
-type CompressedHistogramTuple = [number, number][];  // percentile, value
 interface AudioMetadata {
   content_type: string;
   wall_time: number;
