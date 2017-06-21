@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {SPTree} from '../sptree';
+import {SPTree} from '../sptree.js';
 
 it('simple 2D data', () => {
   let data = [

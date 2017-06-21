@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataPoint, DataSet, State, stateGetAccessorDimensions} from '../data';
+import {DataPoint, DataSet, State, stateGetAccessorDimensions} from '../data.js';
 
 /**
  * Helper method that makes a list of points given an array of

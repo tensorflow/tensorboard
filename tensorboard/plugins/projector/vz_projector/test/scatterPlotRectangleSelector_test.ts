@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BoundingBox, ScatterPlotRectangleSelector} from '../scatterPlotRectangleSelector';
+import {BoundingBox, ScatterPlotRectangleSelector} from '../scatterPlotRectangleSelector.js';
 
 describe('selector callbacks make bounding box start bottom left', () => {
   let containerElement: HTMLElement;

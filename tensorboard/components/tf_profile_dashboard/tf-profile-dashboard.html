@@ -87,10 +87,10 @@ profile run can have multiple tools that present the performance profile as diff
 <script>
   "use strict";
 
-  import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior";
-  import {ReloadBehavior} from "../tf-dashboard-common/reload-behavior";
-  import {BackendBehavior} from "../tf-backend/behavior";
-  import {getRouter} from '../tf-backend/router';
+  import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior.js";
+  import {ReloadBehavior} from "../tf-dashboard-common/reload-behavior.js";
+  import {BackendBehavior} from "../tf-backend/behavior.js";
+  import {getRouter} from '../tf-backend/router.js';
 
   Polymer({
     is: "tf-profile-dashboard",

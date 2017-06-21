@@ -13,16 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataSet, DistanceFunction, Projection, ProjectionComponents3D, State} from './data';
-import {NearestEntry} from './knn';
-import {ProjectorEventContext} from './projectorEventContext';
-import {LabelRenderParams} from './renderContext';
-import {ScatterPlot} from './scatterPlot';
-import {ScatterPlotVisualizer3DLabels} from './scatterPlotVisualizer3DLabels';
-import {ScatterPlotVisualizerCanvasLabels} from './scatterPlotVisualizerCanvasLabels';
-import {ScatterPlotVisualizerPolylines} from './scatterPlotVisualizerPolylines';
-import {ScatterPlotVisualizerSprites} from './scatterPlotVisualizerSprites';
-import * as vector from './vector';
+import {DataSet, DistanceFunction, Projection, ProjectionComponents3D, State} from './data.js';
+import {NearestEntry} from './knn.js';
+import {ProjectorEventContext} from './projectorEventContext.js';
+import {LabelRenderParams} from './renderContext.js';
+import {ScatterPlot} from './scatterPlot.js';
+import {ScatterPlotVisualizer3DLabels} from './scatterPlotVisualizer3DLabels.js';
+import {ScatterPlotVisualizerCanvasLabels} from './scatterPlotVisualizerCanvasLabels.js';
+import {ScatterPlotVisualizerPolylines} from './scatterPlotVisualizerPolylines.js';
+import {ScatterPlotVisualizerSprites} from './scatterPlotVisualizerSprites.js';
+import * as vector from './vector.js';
 
 const LABEL_FONT_SIZE = 10;
 const LABEL_SCALE_DEFAULT = 1.0;

@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {getRuns, getTags, TYPES} from './backend';
+
+import {getRuns, getTags, TYPES} from './backend.js';
 
 /** @polymerBehavior */
 export const BackendBehavior = {

@@ -209,12 +209,12 @@ allows the user to toggle between various dashboards.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    import {AutoReloadBehavior} from "./autoReloadBehavior";
-    import {Backend} from "../tf-backend/backend";
-    import {TABS, setUseHash} from "../tf-globals/globals";
-    import {getString, setString, TAB} from "../tf-storage/storage";
-    import {setRouter, createRouter} from "../tf-backend/router";
-    import {fetchRuns} from "../tf-backend/runsStore";
+    import {AutoReloadBehavior} from "./autoReloadBehavior.js";
+    import {Backend} from "../tf-backend/backend.js";
+    import {TABS, setUseHash} from "../tf-globals/globals.js";
+    import {getString, setString, TAB} from "../tf-storage/storage.js";
+    import {setRouter, createRouter} from "../tf-backend/router.js";
+    import {fetchRuns} from "../tf-backend/runsStore.js";
 
     Polymer({
       is: "tf-tensorboard",

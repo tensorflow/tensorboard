@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {getTags} from '../tf-backend/backend';
-import {categorizer as makeCategorizer} from '../tf-dashboard-common/tf-categorizer';
+import {getTags} from '../tf-backend/backend.js';
+import {categorizer as makeCategorizer} from '../tf-dashboard-common/tf-categorizer.js';
 
 /**
  * Functions to extract categories of tags and/or run-tag combinations

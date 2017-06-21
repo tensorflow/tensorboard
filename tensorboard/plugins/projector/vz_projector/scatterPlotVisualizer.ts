@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {RenderContext} from './renderContext';
+import {RenderContext} from './renderContext.js';
 
 /**
  * ScatterPlotVisualizer is an interface used by ScatterPlotContainer

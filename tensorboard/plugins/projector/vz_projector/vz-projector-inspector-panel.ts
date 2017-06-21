@@ -13,16 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DistanceFunction, SpriteAndMetadataInfo, State} from './data';
-import * as knn from './knn';
-import {ProjectorEventContext} from './projectorEventContext';
-import * as adapter from './projectorScatterPlotAdapter';
-import * as util from './util';
-import * as vector from './vector';
-import {Projector} from './vz-projector';
-import {ProjectorInput} from './vz-projector-input';
+import {DistanceFunction, SpriteAndMetadataInfo, State} from './data.js';
+import * as knn from './knn.js';
+import {ProjectorEventContext} from './projectorEventContext.js';
+import * as adapter from './projectorScatterPlotAdapter.js';
+import * as util from './util.js';
+import * as vector from './vector.js';
+import {Projector} from './vz-projector.js';
+import {ProjectorInput} from './vz-projector-input.js';
 // tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util';
+import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
 
 /** Limit the number of search results we show to the user. */
 const LIMIT_RESULTS = 100;

@@ -13,16 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import * as RunsStore from '../tf-backend/runsStore.js';
+import {palettes} from './palettes.js';
+
 // Example usage:
 // runs = ["train", "test", "test1", "test2"]
 // ccs = new ColorScale();
 // ccs.domain(runs);
 // ccs.getColor("train");
 // ccs.getColor("test1");
-
-import * as RunsStore from '../tf-backend/runsStore';
-
-import {palettes} from './palettes';
 
 export class ColorScale {
   private identifiers = d3.map();

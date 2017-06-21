@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ProjectorEventContext} from './projectorEventContext';
-import {CameraType, LabelRenderParams, RenderContext} from './renderContext';
-import {BoundingBox, ScatterPlotRectangleSelector} from './scatterPlotRectangleSelector';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
-import * as util from './util';
-import {Point2D, Point3D} from './vector';
+import {ProjectorEventContext} from './projectorEventContext.js';
+import {CameraType, LabelRenderParams, RenderContext} from './renderContext.js';
+import {BoundingBox, ScatterPlotRectangleSelector} from './scatterPlotRectangleSelector.js';
+import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
+import * as util from './util.js';
+import {Point2D, Point3D} from './vector.js';
 
 const BACKGROUND_COLOR = 0xffffff;
 

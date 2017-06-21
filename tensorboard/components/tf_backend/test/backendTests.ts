@@ -12,10 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Backend, filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend';
-import {RequestManager} from '../requestManager';
-import {createRouter, setRouter} from '../router';
-import {BAD_CHARACTERS, demoify, queryEncoder} from '../urlPathHelpers';
+
+import {Backend, filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
+import {RequestManager} from '../requestManager.js';
+import {createRouter, setRouter} from '../router.js';
+import {BAD_CHARACTERS, demoify, queryEncoder} from '../urlPathHelpers.js';
 
 describe('urlPathHelpers', () => {
   it('demoify works as expected', () => {

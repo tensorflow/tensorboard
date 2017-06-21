@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataSet, SpriteAndMetadataInfo, State} from './data';
-import {ProjectorConfig, DataProvider, EmbeddingInfo, TENSORS_MSG_ID} from './data-provider';
-import * as dataProvider from './data-provider';
-import * as logging from './logging';
+import {DataSet, SpriteAndMetadataInfo, State} from './data.js';
+import {ProjectorConfig, DataProvider, EmbeddingInfo, TENSORS_MSG_ID} from './data-provider.js';
+import * as dataProvider from './data-provider.js';
+import * as logging from './logging.js';
 
 const BYTES_EXTENSION = '.bytes';
 
