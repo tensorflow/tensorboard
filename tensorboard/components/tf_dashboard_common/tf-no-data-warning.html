@@ -24,45 +24,21 @@ Display a warning when there is no data found.
   <template>
     <template is="dom-if" if="[[showWarning]]">
       <div class="warning">
-        <template is="dom-if" if="[[_isProjector(dataType)]]">
-          <h3>
-            No checkpoint was found.
-          </h3>
-          <p>
-            Probable causes:
-            <ul>
-              <li>
-                No checkpoint has been saved yet. Please refresh the page periodically.
-              </li>
-              <li>
-                You are not saving any checkpoint. To save your model,
-                create a
-                <a href="https://www.tensorflow.org/api_docs/python/tf/train/Saver">
-                  <code>tf.train.Saver</code>
-                </a>
-                and save your model periodically
-                by calling <code>saver.save(session, LOG_DIR/model.ckpt, step)</code>.
-              </li>
-            </ul>
-          </p>
-        </template>
-        <template is="dom-if" if="[[_isOther(dataType)]]">
-          <h3>
-            No <span>[[dataType]]</span> data was found.
-          </h3>
-          <p>
-            Probable causes:
-            <ul>
-              <li>
-                You haven't written any <span>[[dataType]]</span> data
-                to your event files.
-              </li>
-              <li>
-                TensorBoard can't find your event files.
-              </li>
-            </ul>
-          </p>
-        </template>
+        <h3>
+          No <span>[[dataType]]</span> data was found.
+        </h3>
+        <p>
+          Probable causes:
+          <ul>
+            <li>
+              You haven't written any <span>[[dataType]]</span> data
+              to your event files.
+            </li>
+            <li>
+              TensorBoard can't find your event files.
+            </li>
+          </ul>
+        </p>
         <p>
           If you're new to using TensorBoard, and want to find out how to add
           data and set up your event files, check out the
@@ -82,7 +58,6 @@ Display a warning when there is no data found.
           </a>
           and consider filing an issue on GitHub.
         </p>
-
       </div>
     </template>
     <style>
@@ -100,12 +75,6 @@ Display a warning when there is no data found.
         dataType: String,
         showWarning: Boolean
       },
-      _isProjector: function(dataType) {
-        return dataType === "projector";
-      },
-      _isOther: function(dataType) {
-        return !this._isProjector(dataType);
-      }
     });
   </script>
 </dom-module>
