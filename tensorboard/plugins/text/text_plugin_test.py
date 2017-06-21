@@ -474,7 +474,7 @@ class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):
     fry = self.plugin.text_impl('fry', 'old_plugin_asset_summary')
     self.assertEqual(len(fry), 1)
     self.assertEqual(fry[0]['step'], 0)
-    self.assertEqual(fry[0]['text'],  u'<p>I am deprecated.</p>')
+    self.assertEqual(fry[0]['text'], u'<p>I am deprecated.</p>')
 
 
 
