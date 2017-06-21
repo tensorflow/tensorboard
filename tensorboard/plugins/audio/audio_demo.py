@@ -24,7 +24,6 @@ import os.path
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-
 FLAGS = tf.flags.FLAGS
 
 tf.flags.DEFINE_string('logdir', '/tmp/audio_demo',

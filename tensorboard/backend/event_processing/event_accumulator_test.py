@@ -290,7 +290,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
     # Retrieve the health pills for each node name.
     gotten_events = acc.HealthPills('Add')
-    self.assertEquals(2, len(gotten_events))
+    self.assertEqual(2, len(gotten_events))
     self._compareHealthPills(
         ea.HealthPillEvent(
             wall_time=13371337,
@@ -808,9 +808,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
 
 class RealisticEventAccumulatorTest(EventAccumulatorTest):
-
-  def setUp(self):
-    super(RealisticEventAccumulatorTest, self).setUp()
 
   def testScalarsRealistically(self):
     """Test accumulator by writing values and then reading them."""

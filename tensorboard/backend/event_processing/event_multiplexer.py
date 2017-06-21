@@ -69,7 +69,7 @@ class EventMultiplexer(object):
 
   def __init__(self,
                run_path_map=None,
-               size_guidance=event_accumulator.DEFAULT_SIZE_GUIDANCE,
+               size_guidance=None,
                purge_orphaned_data=True):
     """Constructor for the `EventMultiplexer`.
 
@@ -88,7 +88,8 @@ class EventMultiplexer(object):
     self._accumulators = {}
     self._paths = {}
     self._reload_called = False
-    self._size_guidance = size_guidance
+    self._size_guidance = (size_guidance or
+                           event_accumulator.DEFAULT_SIZE_GUIDANCE)
     self.purge_orphaned_data = purge_orphaned_data
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
@@ -116,8 +117,7 @@ class EventMultiplexer(object):
     Returns:
       The `EventMultiplexer`.
     """
-    if name is None or name is '':
-      name = path
+    name = name or path
     accumulator = None
     with self._accumulators_mutex:
       if name not in self._accumulators or self._paths[name] != path:

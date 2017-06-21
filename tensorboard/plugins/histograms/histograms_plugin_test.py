@@ -41,6 +41,11 @@ class HistogramsPluginTest(tf.test.TestCase):
   _RUN_WITH_HISTOGRAM = '_RUN_WITH_HISTOGRAM'
   _RUN_WITH_SCALARS = '_RUN_WITH_SCALARS'
 
+  def __init__(self, *args, **kwargs):
+    super(HistogramsPluginTest, self).__init__(*args, **kwargs)
+    self.logdir = None
+    self.plugin = None
+
   def set_up_with_runs(self, run_names):
     self.logdir = self.get_temp_dir()
     for run_name in run_names:

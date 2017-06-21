@@ -41,6 +41,8 @@ before_install:
         ;;
     esac
 
+    pip install pylint
+
 script:
   - |
     bazel \
@@ -58,6 +60,7 @@ script:
       --worker_max_instances=2 \
       --strategy=Javac=worker \
       --strategy=Closure=worker
+
   - |
     bazel \
       --output_base="${HOME}/.bazel-output-base" \
@@ -70,6 +73,12 @@ script:
       --test_output=errors \
       --spawn_strategy=sandboxed \
       --local_resources=400,2,1.0
+  - |
+    TB=$(pwd)
+    cd bazel-genfiles
+    find tensorboard -name \*.py -exec cp {} "$TB"/{} \;
+    cd "$TB"
+    pylint tensorboard
 
 before_cache:
   - |

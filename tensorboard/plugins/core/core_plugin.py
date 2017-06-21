@@ -54,13 +54,13 @@ class CorePlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     apps = {
-      '/audio': self._redirect_to_index,
-      '/data/logdir': self._serve_logdir,
-      '/data/runs': self._serve_runs,
-      '/events': self._redirect_to_index,
-      '/graphs': self._redirect_to_index,
-      '/histograms': self._redirect_to_index,
-      '/images': self._redirect_to_index,
+        '/audio': self._redirect_to_index,
+        '/data/logdir': self._serve_logdir,
+        '/data/runs': self._serve_runs,
+        '/events': self._redirect_to_index,
+        '/graphs': self._redirect_to_index,
+        '/histograms': self._redirect_to_index,
+        '/images': self._redirect_to_index,
     }
     if self._assets_zip_provider:
       apps['/'] = functools.partial(self._serve_asset, 'index.html')
@@ -118,8 +118,8 @@ class CorePlugin(base_plugin.TBPlugin):
         # this will be append-only for new event-less runs.
         return float('inf')
     first_event_timestamps = {
-      run_name: get_first_event_timestamp(run_name)
-      for run_name in run_names
+        run_name: get_first_event_timestamp(run_name)
+        for run_name in run_names
     }
     run_names.sort(key=first_event_timestamps.get)
     return http_util.Respond(request, run_names, 'application/json')

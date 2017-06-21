@@ -155,7 +155,7 @@ class EventAccumulator(object):
 
   def __init__(self,
                path,
-               size_guidance=DEFAULT_SIZE_GUIDANCE,
+               size_guidance=None,
                compression_bps=NORMAL_HISTOGRAM_BPS,
                purge_orphaned_data=True):
     """Construct the `EventAccumulator`.
@@ -175,6 +175,7 @@ class EventAccumulator(object):
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
     """
+    size_guidance = size_guidance or DEFAULT_SIZE_GUIDANCE
     sizes = {}
     for key in DEFAULT_SIZE_GUIDANCE:
       if key in size_guidance:
