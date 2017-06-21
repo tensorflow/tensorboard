@@ -23,7 +23,6 @@ export interface Router {
   isDemoMode: () => boolean;
   textRuns: () => string;
   text: RunTagUrlFn;
-  healthPills: () => string;
   pluginRoute: (pluginName: string, route: string) => string;
   pluginRunTagRoute: (pluginName: string, route: string) => RunTagUrlFn;
 }
@@ -64,7 +63,6 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     isDemoMode: () => demoMode,
-    healthPills: () => dataDir + '/plugin/debugger/health_pills',
     textRuns: () => dataDir + '/plugin/text/runs' + (demoMode ? '.json' : ''),
     text: standardRoute('plugin/text/text'),
     pluginRoute,
