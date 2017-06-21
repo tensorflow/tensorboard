@@ -72,6 +72,19 @@ tf.flags.DEFINE_integer('reload_interval', 5,
                         'How often the backend should load '
                         'more data.')
 
+tf.flags.DEFINE_string('db', "", """\
+[Experimental] Sets SQL database URI.
+
+This mode causes TensorBoard to persist experiments to a SQL database. The
+following databases are supported:
+
+- sqlite: Use SQLite built in to Python. URI must specify the path of the
+  database file, which will be created if it doesn't exist. For example:
+  --db=sqlite3:~/.tensorboard.db
+
+Warning: This feature is a work in progress and only has limited support.
+""")
+
 # Inspect Mode flags
 
 tf.flags.DEFINE_boolean('inspect', False, """Use this flag to print out a digest
@@ -110,13 +123,12 @@ def create_tb_app(plugins):
   Returns:
     A new TensorBoard WSGI application.
   """
-  if not FLAGS.logdir:
-    raise ValueError('A logdir must be specified. Run `tensorboard --help` for '
-                     'details and examples.')
-
-  logdir = os.path.expanduser(FLAGS.logdir)
+  if not FLAGS.db and not FLAGS.logdir:
+    raise ValueError('A logdir must be specified when db is not specified. '
+                     'Run `tensorboard --help` for details and examples.')
   return application.standard_tensorboard_wsgi(
-      logdir=logdir,
+      db_uri=FLAGS.db,
+      logdir=os.path.expanduser(FLAGS.logdir),
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
       plugins=plugins)
@@ -172,7 +184,7 @@ def make_simple_server(tb_app, host, port):
     else:
       msg = (
           'TensorBoard attempted to bind to port %d, but it was already in use'
-          % FLAGS.port)
+          % port)
     tf.logging.error(msg)
     print(msg)
     raise socket_error

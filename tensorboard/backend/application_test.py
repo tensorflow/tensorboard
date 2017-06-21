@@ -339,5 +339,31 @@ class TensorBoardApplcationConstructionTest(tf.test.TestCase):
       application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0)
 
 
+class DbTest(tf.test.TestCase):
+
+  def testSqliteDb(self):
+    db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
+    db_module, db_connection_provider = application.get_database_info(db_uri)
+    self.assertTrue(hasattr(db_module, 'Date'))
+    with db_connection_provider() as conn:
+      c = conn.cursor()
+      c.execute('create table peeps (name text)')
+      c.execute('insert into peeps (name) values (?)', ('justine',))
+      conn.commit()
+    db_module, db_connection_provider = application.get_database_info(db_uri)
+    with db_connection_provider() as conn:
+      c = conn.cursor()
+      c.execute('select name from peeps')
+      self.assertEqual(('justine',), c.fetchone())
+
+  def testSqliteUriErrors(self):
+    with self.assertRaises(ValueError):
+      application.create_sqlite_connection_provider("lol:cat")
+    with self.assertRaises(ValueError):
+      application.create_sqlite_connection_provider("sqlite::memory:")
+    with self.assertRaises(ValueError):
+      application.create_sqlite_connection_provider("sqlite://foo.example/bar")
+
+
 if __name__ == '__main__':
   tf.test.main()

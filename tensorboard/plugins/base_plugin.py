@@ -77,11 +77,15 @@ class TBContext(object):
   cases when a field is considered mandatory by a plugin, it can either crash
   with ValueError, or silently choose to disable itself by returning False from
   its is_active method.
+
+  All fields in this object are thread safe.
   """
 
   def __init__(
       self,
       assets_zip_provider=None,
+      db_connection_provider=None,
+      db_module=None,
       logdir=None,
       multiplexer=None):
     """Instantiates magic container.
@@ -96,10 +100,22 @@ class TBContext(object):
           handle this function returns must be closed. It is assumed that you
           will pass this file handle to zipfile.ZipFile. This zip file should
           also have been created by the tensorboard_zip_file build rule.
+      db_connection_provider: Function taking no arguments that returns a
+          PEP-249 database Connection object, or None if multiplexer should be
+          used instead. The returned value must be closed, and is safe to use in
+          a `with` statement. It is also safe to assume that calling this
+          function is cheap. The returned connection must only be used by a
+          single thread. Things like connection pooling are considered
+          implementation details of the provider.
+      db_module: A PEP-249 DB Module, e.g. sqlite3. This is useful for accessing
+          things like date time constructors. This value will be None if we are
+          not in SQL mode and multiplexer should be used instead.
       logdir: The string logging directory TensorBoard was started with.
-      multiplexer: An EventMultiplexer with underlying TB data, or None if SQL
-          mode is being used.
+      multiplexer: An EventMultiplexer with underlying TB data. Plugins should
+          copy this data over to the database when the db fields are set.
     """
     self.assets_zip_provider = assets_zip_provider
+    self.db_connection_provider = db_connection_provider
+    self.db_module = db_module
     self.logdir = logdir
     self.multiplexer = multiplexer
