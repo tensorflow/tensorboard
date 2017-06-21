@@ -702,9 +702,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     writer = tf.summary.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
-      tf.summary._tensor_summary_v2('scalar', tf.constant(1.0))
-      tf.summary._tensor_summary_v2('vector', tf.constant([1.0, 2.0, 3.0]))
-      tf.summary._tensor_summary_v2('string', tf.constant(six.b('foobar')))
+      tf.summary.tensor_summary('scalar', tf.constant(1.0))
+      tf.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
+      tf.summary.tensor_summary('string', tf.constant(six.b('foobar')))
       merged = tf.summary.merge_all()
       summ = sess.run(merged)
       writer.add_summary(summ, 0)
