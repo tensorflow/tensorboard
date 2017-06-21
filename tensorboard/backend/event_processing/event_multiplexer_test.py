@@ -17,7 +17,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import functools
 import os
 import os.path
 import shutil
@@ -45,16 +44,20 @@ def _CreateCleanDirectory(path):
 
 class _FakeAccumulator(object):
 
-  def __init__(self, path, health_pill_mapping=None):
+  def __init__(self, path):
     """Constructs a fake accumulator with some fake events.
 
     Args:
       path: The path for the run that this accumulator is for.
-      health_pill_mapping: An optional mapping from Op to health pill strings.
     """
     self._path = path
     self.reload_called = False
-    self._node_names_to_health_pills = health_pill_mapping or {}
+    self._plugin_to_tag_to_content = {
+        'baz_plugin': {
+            'foo': 'foo_content',
+            'bar': 'bar_content',
+        }
+    }
 
   def Tags(self):
     return {event_accumulator.IMAGES: ['im1', 'im2'],
@@ -74,15 +77,6 @@ class _FakeAccumulator(object):
   def Scalars(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.SCALARS)
 
-  def HealthPills(self, node_name):
-    if node_name not in self._node_names_to_health_pills:
-      raise KeyError
-    health_pills = self._node_names_to_health_pills[node_name]
-    return [self._path + '/' + health_pill for health_pill in health_pills]
-
-  def GetOpsWithHealthPills(self):
-    return self._node_names_to_health_pills.keys()
-
   def Histograms(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.HISTOGRAMS)
 
@@ -98,6 +92,15 @@ class _FakeAccumulator(object):
   def Tensors(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.TENSORS)
 
+  def PluginTagToContent(self, plugin_name):
+    # We pre-pend the runs with the path and '_' so that we can verify that the
+    # tags are associated with the correct runs.
+    return {
+        self._path + '_' + run: content_mapping
+        for (run, content_mapping
+            ) in self._plugin_to_tag_to_content[plugin_name].items()
+    }
+
   def Reload(self):
     self.reload_called = True
 
@@ -105,10 +108,9 @@ class _FakeAccumulator(object):
 def _GetFakeAccumulator(path,
                         size_guidance=None,
                         compression_bps=None,
-                        purge_orphaned_data=None,
-                        health_pill_mapping=None):
+                        purge_orphaned_data=None):
   del size_guidance, compression_bps, purge_orphaned_data  # Unused.
-  return _FakeAccumulator(path, health_pill_mapping=health_pill_mapping)
+  return _FakeAccumulator(path)
 
 
 class EventMultiplexerTest(tf.test.TestCase):
@@ -152,28 +154,19 @@ class EventMultiplexerTest(tf.test.TestCase):
 
     self.assertEqual(run1_expected, run1_actual)
 
-  def testHealthPills(self):
-    """Tests HealthPills() returns events associated with run1/Add."""
-    self.stubs.Set(event_accumulator, 'EventAccumulator',
-                   functools.partial(
-                       _GetFakeAccumulator,
-                       health_pill_mapping={'Add': ['hp1', 'hp2']}))
+  def testPluginRunToTagToContent(self):
+    """Tests the method that produces the run to tag to content mapping."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
-    self.assertEqual(['path1/hp1', 'path1/hp2'], x.HealthPills('run1', 'Add'))
-
-  def testGetOpsWithHealthPillsWhenHealthPillsAreNotAvailable(self):
-    # The event accumulator lacks health pills for the run.
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
-    self.assertItemsEqual([], x.GetOpsWithHealthPills('run1'))
-
-  def testGetOpsWithHealthPillsWhenHealthPillsAreAvailable(self):
-    # The event accumulator has health pills for the run.
-    self.stubs.Set(event_accumulator, 'EventAccumulator',
-                   functools.partial(
-                       _GetFakeAccumulator,
-                       health_pill_mapping={'Add': ['hp1', 'hp2']}))
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
-    self.assertItemsEqual(['Add'], x.GetOpsWithHealthPills('run1'))
+    self.assertDictEqual({
+        'run1': {
+            'path1_foo': 'foo_content',
+            'path1_bar': 'bar_content',
+        },
+        'run2': {
+            'path2_foo': 'foo_content',
+            'path2_bar': 'bar_content',
+        }
+    }, x.PluginRunToTagToContent('baz_plugin'))
 
   def testExceptions(self):
     """KeyError should be raised when accessing non-existing keys."""
