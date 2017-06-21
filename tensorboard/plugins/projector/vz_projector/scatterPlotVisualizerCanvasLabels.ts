@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BoundingBox, CollisionGrid} from './label';
-import {CameraType, RenderContext} from './renderContext';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
-import * as util from './util';
+import {BoundingBox, CollisionGrid} from './label.js';
+import {CameraType, RenderContext} from './renderContext.js';
+import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
+import * as util from './util.js';
 
 const MAX_LABELS_ON_SCREEN = 10000;
 const LABEL_STROKE_WIDTH = 3;

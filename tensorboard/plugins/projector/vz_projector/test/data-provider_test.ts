@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataPoint, SpriteAndMetadataInfo} from '../data';
-import * as data_provider from '../data-provider';
+import {DataPoint, SpriteAndMetadataInfo} from '../data.js';
+import * as data_provider from '../data-provider.js';
 
 /**
  * Converts a string to an ArrayBuffer.

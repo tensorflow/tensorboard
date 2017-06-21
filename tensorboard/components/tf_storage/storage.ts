@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {getFakeHash, setFakeHash, TABS, useHash} from '../tf-globals/globals';
+import {getFakeHash, setFakeHash, TABS, useHash} from '../tf-globals/globals.js';
 
 
 /* tslint:disable:no-namespace variable-name */

@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {compareTagNames} from '../vz-sorting/sorting';
-import {RequestManager} from './requestManager';
-import {getRouter} from './router';
-import {demoify, queryEncoder} from './urlPathHelpers';
+import {compareTagNames} from '../vz-sorting/sorting.js';
+import {RequestManager} from './requestManager.js';
+import {getRouter} from './router.js';
+import {demoify, queryEncoder} from './urlPathHelpers.js';
 
 export interface RunEnumeration {
   images: string[];

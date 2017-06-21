@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {demoify, queryEncoder} from './urlPathHelpers'
+import {demoify, queryEncoder} from './urlPathHelpers.js';
 
 export type RunTagUrlFn = (tag: string, run: string) => string;
 

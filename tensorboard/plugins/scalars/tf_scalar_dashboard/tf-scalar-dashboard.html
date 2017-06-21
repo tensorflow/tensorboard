@@ -172,11 +172,11 @@ limitations under the License.
   </template>
 
   <script>
-    import {RequestManager} from '../tf-backend/requestManager';
-    import {getTags} from '../tf-backend/backend';
-    import {getRouter} from '../tf-backend/router';
-    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils';
-    import * as storage from '../tf-storage/storage';
+    import {RequestManager} from '../tf-backend/requestManager.js';
+    import {getTags} from '../tf-backend/backend.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
+    import * as storage from '../tf-storage/storage.js';
 
     /** @enum {string} */ const X_TYPE = {
       STEP: 'step',

@@ -13,15 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import * as data from './data';
-import {DataSet, Projection, ProjectionType, SpriteAndMetadataInfo, State} from './data';
-import * as util from './util';
-import * as vector from './vector';
-import {Vector} from './vector';
-import {Projector} from './vz-projector';
-import {ProjectorInput} from './vz-projector-input';
+import * as data from './data.js';
+import {DataSet, Projection, ProjectionType, SpriteAndMetadataInfo, State} from './data.js';
+import * as util from './util.js';
+import * as vector from './vector.js';
+import {Vector} from './vector.js';
+import {Projector} from './vz-projector.js';
+import {ProjectorInput} from './vz-projector-input.js';
 // tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util';
+import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
 
 const NUM_PCA_COMPONENTS = 10;
 

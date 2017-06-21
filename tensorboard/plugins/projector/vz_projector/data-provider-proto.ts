@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataPoint, DataProto, DataSet, SpriteAndMetadataInfo, PointMetadata, State} from './data';
-import {analyzeMetadata, ProjectorConfig, DataProvider} from './data-provider';
+import {DataPoint, DataProto, DataSet, SpriteAndMetadataInfo, PointMetadata, State} from './data.js';
+import {analyzeMetadata, ProjectorConfig, DataProvider} from './data-provider.js';
 
 
 export class ProtoDataProvider implements DataProvider {

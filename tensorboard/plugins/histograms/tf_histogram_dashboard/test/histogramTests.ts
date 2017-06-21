@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {intermediateToD3} from '../histogramCore';
+import {intermediateToD3} from '../histogramCore.js';
 
 describe('Verify that the histogram format conversion works.', () => {
 

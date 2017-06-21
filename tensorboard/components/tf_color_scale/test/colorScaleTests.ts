@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-let assert = chai.assert;
+import {ColorScale} from '../colorScale.js';
 
-import {ColorScale} from '../colorScale'
+let assert = chai.assert;
 
 describe('ColorScale', function() {
   let ccs: ColorScale;

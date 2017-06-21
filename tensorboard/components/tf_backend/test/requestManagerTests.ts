@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {RequestManager, RequestNetworkError} from '../requestManager';
+import {RequestManager, RequestNetworkError} from '../requestManager.js';
 
 interface MockRequest {
   resolve: Function;

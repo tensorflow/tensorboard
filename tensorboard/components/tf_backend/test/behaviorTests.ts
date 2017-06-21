@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Backend, getRuns, getTags, RunToTag} from '../backend'
-import {BackendBehavior} from '../behavior'
+import {Backend, getRuns, getTags, RunToTag} from '../backend.js';
+import {BackendBehavior} from '../behavior.js';
 
 declare function fixture(id: string): void;
 

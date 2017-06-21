@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {runAsyncTask} from './util';
-import * as logging from './logging';
-import {KMin} from './heap';
-import {Vector} from './vector';
-import * as vector from './vector';
+import {runAsyncTask} from './util.js';
+import * as logging from './logging.js';
+import {KMin} from './heap.js';
+import {Vector} from './vector.js';
+import * as vector from './vector.js';
 
 export type NearestEntry = {
   index: number,

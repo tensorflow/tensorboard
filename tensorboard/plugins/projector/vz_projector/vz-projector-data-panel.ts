@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ColorOption, ColumnStats, SpriteAndMetadataInfo} from './data';
-import {DataProvider, EmbeddingInfo, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider';
-import * as util from './util';
-import {Projector} from './vz-projector';
-import {ColorLegendRenderInfo, ColorLegendThreshold} from './vz-projector-legend';
+import {ColorOption, ColumnStats, SpriteAndMetadataInfo} from './data.js';
+import {DataProvider, EmbeddingInfo, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider.js';
+import * as util from './util.js';
+import {Projector} from './vz-projector.js';
+import {ColorLegendRenderInfo, ColorLegendThreshold} from './vz-projector-legend.js';
 // tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util';
+import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
 
 export let DataPanelPolymer = PolymerElement({
   is: 'vz-projector-data-panel',

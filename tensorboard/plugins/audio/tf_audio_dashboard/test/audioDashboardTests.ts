@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import * as backend_backend from '../../tf-backend/backend';
-import {createRouter, setRouter} from '../../tf-backend/router';
+import * as backend_backend from '../../tf-backend/backend.js';
+import {createRouter, setRouter} from '../../tf-backend/router.js';
 
 // TODO(dandelion): Fix me.
 declare function fixture(id: string): any;

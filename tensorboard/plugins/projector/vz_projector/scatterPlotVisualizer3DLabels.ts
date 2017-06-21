@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {RenderContext} from './renderContext';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
-import * as util from './util';
+import {RenderContext} from './renderContext.js';
+import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
+import * as util from './util.js';
 
 const FONT_SIZE = 80;
 const ONE_OVER_FONT_SIZE = 1 / FONT_SIZE;

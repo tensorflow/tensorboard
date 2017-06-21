@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataSet, SpriteAndMetadataInfo, State} from './data';
-import * as dataProvider from './data-provider';
-import {DataProvider, EmbeddingInfo, ProjectorConfig} from './data-provider';
-import * as logging from './logging';
+import {DataSet, SpriteAndMetadataInfo, State} from './data.js';
+import * as dataProvider from './data-provider.js';
+import {DataProvider, EmbeddingInfo, ProjectorConfig} from './data-provider.js';
+import * as logging from './logging.js';
 
 // Limit for the number of data points we receive from the server.
 export const LIMIT_NUM_POINTS = 100000;
