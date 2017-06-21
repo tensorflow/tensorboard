@@ -19,7 +19,6 @@ import {getRouter} from './router';
 import {demoify, queryEncoder} from './urlPathHelpers';
 
 export interface RunEnumeration {
-  histograms: string[];
   compressedHistogramTuples: string[];
   images: string[];
   audio: string[];
@@ -42,25 +41,6 @@ export interface Datum {
 
 export interface Text { text: string; }
 export type TextDatum = Datum & Text;
-
-export type HistogramDatum = Datum & Histogram;
-export interface Histogram {
-  min: number;
-  max: number;
-  nItems?: number;
-  sum?: number;
-  sumSquares?: number;
-  bucketRightEdges: number[];
-  bucketCounts: number[];
-}
-
-export interface HistogramBin {
-  x: number;
-  dx: number;
-  y: number;
-}
-export type HistogramSeriesDatum = HistogramSeries & Datum;
-export interface HistogramSeries { bins: HistogramBin[]; }
 
 export type AudioDatum = Datum & Audio;
 export interface Audio {
@@ -102,7 +82,7 @@ export interface DebuggerNumericsAlertReport {
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
 export const TYPES = [
-  'histogram', 'compressedHistogram', 'graph', 'audio', 'runMetadata', 'text'
+  'compressedHistogram', 'graph', 'audio', 'runMetadata', 'text'
 ];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
@@ -137,14 +117,6 @@ export class Backend {
    */
   public runs(): Promise<RunsResponse> {
     return this.requestManager.request(getRouter().runs());
-  }
-
-  /**
-   * Return a promise showing the Run-to-Tag mapping for histogram data.
-   */
-  public histogramTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('histograms', '/tags'));
   }
 
   /**
@@ -263,31 +235,6 @@ export class Backend {
       Promise<DebuggerNumericsAlertReportResponse> {
     return this.requestManager.request(
         getRouter().pluginRoute('debugger', '/numerics_alert_report'));
-  }
-
-  /**
-   * Return a promise containing HistogramDatums for given run and tag.
-   */
-  public histogram(tag: string, run: string):
-      Promise<Array<HistogramSeriesDatum>> {
-    let p: Promise<TupleData<HistogramTuple>[]>;
-    const url =
-        getRouter().pluginRunTagRoute('histograms', '/histograms')(tag, run);
-    p = this.requestManager.request(url);
-    return p.then(map(detupler(createHistogram))).then(function(histos) {
-      // Get the minimum and maximum values across all histograms so that the
-      // visualization is aligned for all timesteps.
-      const min = d3.min(histos, d => d.min);
-      const max = d3.max(histos, d => d.max);
-
-      return histos.map(function(histo, i) {
-        return {
-          wall_time: histo.wall_time,
-          step: histo.step,
-          bins: convertBins(histo, min, max)
-        };
-      });
-    });
   }
 
   /**
@@ -420,94 +367,12 @@ function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
   };
 };
 
-function createHistogram(x: HistogramTuple): Histogram {
-  return {
-    min: x[0],
-    max: x[1],
-    nItems: x[2],
-    sum: x[3],
-    sumSquares: x[4],
-    bucketRightEdges: x[5],
-    bucketCounts: x[6],
-  };
-}
 
 /**
- * Takes histogram data as stored by tensorboard backend and converts it to
- * the standard d3 histogram data format to make it more compatible and easier
- * to visualize. When visualizing histograms, having the left edge and width
- * makes things quite a bit easier. The bins are also converted to have an
- * uniform width, what makes the visualization easier to understand.
- *
- * @param histogram A histogram from tensorboard backend.
- * @param min The leftmost edge. The binning will start on it.
- * @param max The rightmost edge. The binning will end on it.
- * @param numBins The number of bins of the converted data. The default of 30
- * is a sensible default, using more starts to get artifacts because the event
- * data is stored in buckets, and you start being able to see the aliased
- * borders between each bucket.
- * @return A histogram bin. Each bin has an x (left edge), a dx (width),
- *     and a y (count).
- *
- * If given rightedges are inclusive, then these left edges (x) are exclusive.
- */
-export function convertBins(
-    histogram: Histogram, min: number, max: number, numBins = 30) {
-  if (histogram.bucketRightEdges.length !== histogram.bucketCounts.length) {
-    throw(new Error('Edges and counts are of different lengths.'));
-  }
-
-  if (max === min) {
-    // Create bins even if all the data has a single value.
-    max = min * 1.1 + 1;
-    min = min / 1.1 - 1;
-  }
-  const binWidth = (max - min) / numBins;
-  let bucketLeft = min;  // Use the min as the starting point for the bins.
-  let bucketPos = 0;
-  return d3.range(min, max, binWidth).map((binLeft) => {
-    const binRight = binLeft + binWidth;
-
-    // Take the count of each existing bucket, multiply it by the proportion
-    // of overlap with the new bin, then sum and store as the count for the
-    // new bin. If no overlap, will add to zero, if 100% overlap, will include
-    // the full count into new bin.
-    let binY = 0;
-    while (bucketPos < histogram.bucketRightEdges.length) {
-      // Clip the right edge because right-most edge can be infinite-sized.
-      const bucketRight = Math.min(max, histogram.bucketRightEdges[bucketPos]);
-
-      const intersect =
-          Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
-      const count = (intersect / (bucketRight - bucketLeft)) *
-          histogram.bucketCounts[bucketPos];
-
-      binY += intersect > 0 ? count : 0;
-
-      // If bucketRight is bigger than binRight, than this bin is finished and
-      // there is data for the next bin, so don't increment bucketPos.
-      if (bucketRight > binRight) {
-        break;
-      }
-      bucketLeft = Math.max(min, bucketRight);
-      bucketPos++;
-    }
-
-    return {x: binLeft, dx: binWidth, y: binY};
-  });
-}
-
-/**
- * The following interfaces (TupleData, HistogramTuple,
- * CompressedHistogramTuple, ImageMetadata, and AudioMetadata) describe how
- * the data is sent over from the backend.
+ * The following interfaces (TupleData, CompressedHistogramTuple, and
+ * AudioMetadata) describe how the data is sent over from the backend.
  */
 type TupleData<T> = [number, number, T];  // wall_time, step
-
-// Min, Max, nItems, Sum, Sum_Squares, right edges of buckets, nItems in
-// buckets
-type HistogramTuple =
-    [number, number, number, number, number, number[], number[]];
 type CompressedHistogramTuple = [number, number][];  // percentile, value
 interface AudioMetadata {
   content_type: string;

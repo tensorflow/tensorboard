@@ -6,12 +6,17 @@ licenses(["notice"])  # Apache 2.0
 
 ts_web_library(
     name = "tf_histogram_dashboard",
-    srcs = ["tf-histogram-dashboard.html"],
+    srcs = [
+        "histogramCore.ts",
+        "tf-histogram-dashboard.html",
+        "tf-histogram-loader.html",
+    ],
     path = "/tf-histogram-dashboard",
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_runs_selector",
