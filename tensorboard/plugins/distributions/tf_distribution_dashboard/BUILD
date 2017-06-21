@@ -6,10 +6,14 @@ licenses(["notice"])  # Apache 2.0
 
 ts_web_library(
     name = "tf_distribution_dashboard",
-    srcs = ["tf-distribution-dashboard.html"],
+    srcs = [
+        "tf-distribution-dashboard.html",
+        "tf-distribution-loader.html",
+    ],
     path = "/tf-distribution-dashboard",
     deps = [
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_card_heading",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:lodash",
