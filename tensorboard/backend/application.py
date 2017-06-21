@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import os
 import re
+import sqlite3
 import threading
 import time
 
@@ -61,7 +62,8 @@ def standard_tensorboard_wsgi(
     logdir,
     purge_orphaned_data,
     reload_interval,
-    plugins):
+    plugins,
+    db_uri=""):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -70,6 +72,8 @@ def standard_tensorboard_wsgi(
     reload_interval: The interval at which the backend reloads more data in
         seconds.
     plugins: A list of constructor functions for TBPlugin subclasses.
+    db_uri: A String containing the URI of the SQL database for persisting
+        data, or empty for memory-only mode.
 
   Returns:
     The new TensorBoard WSGI application.
@@ -77,8 +81,11 @@ def standard_tensorboard_wsgi(
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
+  db_module, db_connection_provider = get_database_info(db_uri)
   context = base_plugin.TBContext(
       assets_zip_provider=get_default_assets_zip_provider(),
+      db_module=db_module,
+      db_connection_provider=db_connection_provider,
       logdir=logdir,
       multiplexer=multiplexer)
   plugins = [constructor(context) for constructor in plugins]
@@ -319,6 +326,61 @@ def get_default_assets_zip_provider():
     tf.logging.warning('webfiles.zip static assets not found: %s', path)
     return None
   return lambda: open(path, 'rb')
+
+
+def get_database_info(db_uri):
+  """Returns TBContext fields relating to SQL database.
+
+  Args:
+    db_uri: A string URI expressing the DB file, e.g. "sqlite:~/tb.db".
+
+  Returns:
+    A tuple with the db_module and db_connection_provider TBContext fields. If
+    db_uri was empty, then (None, None) is returned.
+
+  Raises:
+    ValueError: If db_uri scheme is not supported.
+  """
+  if not db_uri:
+    return None, None
+  scheme = urlparse.urlparse(db_uri).scheme
+  if scheme == 'sqlite':
+    return sqlite3, create_sqlite_connection_provider(db_uri)
+  else:
+    raise ValueError('Only sqlite DB URIs are supported now: ' + db_uri)
+
+
+def create_sqlite_connection_provider(db_uri):
+  """Returns function that returns SQLite Connection objects.
+
+  Args:
+    db_uri: A string URI expressing the DB file, e.g. "sqlite:~/tb.db".
+
+  Returns:
+    A function that returns a new PEP-249 DB Connection, which must be closed,
+    each time it is called.
+
+  Raises:
+    ValueError: If db_uri is not a valid sqlite file URI.
+  """
+  uri = urlparse.urlparse(db_uri)
+  if uri.scheme != 'sqlite':
+    raise ValueError('Scheme is not sqlite: ' + db_uri)
+  if uri.netloc:
+    raise ValueError('Can not connect to SQLite over network: ' + db_uri)
+  if uri.path == ':memory:':
+    raise ValueError('Memory mode SQLite not supported: ' + db_uri)
+  path = os.path.expanduser(uri.path)
+  params = _get_connect_params(uri.query)
+  # TODO(jart): Add thread-local pooling.
+  return lambda: sqlite3.connect(path, **params)
+
+
+def _get_connect_params(query):
+  params = urlparse.parse_qs(query)
+  if any(len(v) > 2 for v in params.values()):
+    raise ValueError('DB URI params list has duplicate keys: ' + query)
+  return {k: v[0] for k, v in params.items()}
 
 
 def _clean_path(path):
