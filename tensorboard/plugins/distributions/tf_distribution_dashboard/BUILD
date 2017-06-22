@@ -22,6 +22,7 @@ ts_web_library(
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/plugins/distributions/vz_distribution_chart",
         "@org_polymer_iron_collapse",
+        "@org_polymer_paper_button",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_styles",
     ],
@@ -33,6 +34,7 @@ ts_web_library(
     path = "/tf-distribution-dashboard",
     deps = [
         ":tf_distribution_dashboard",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",

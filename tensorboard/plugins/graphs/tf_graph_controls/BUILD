@@ -11,10 +11,12 @@ ts_web_library(
     path = "/tf-graph-controls",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/plugins/graphs/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/graphs/tf_graph_common",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dropdown_menu",
+        "@org_polymer_paper_icon_button",
+        "@org_polymer_paper_item",
         "@org_polymer_paper_menu",
         "@org_polymer_paper_radio_group",
         "@org_polymer_paper_toggle_button",
