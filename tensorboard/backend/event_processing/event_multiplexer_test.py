@@ -133,17 +133,17 @@ class EventMultiplexerTest(tf.test.TestCase):
     """Tests two EventAccumulators inserted/accessed in EventMultiplexer."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
     self.assertItemsEqual(sorted(x.Runs().keys()), ['run1', 'run2'])
-    self.assertEqual(x._GetAccumulator('run1')._path, 'path1')
-    self.assertEqual(x._GetAccumulator('run2')._path, 'path2')
+    self.assertEqual(x.GetAccumulator('run1')._path, 'path1')
+    self.assertEqual(x.GetAccumulator('run2')._path, 'path2')
 
   def testReload(self):
     """EventAccumulators should Reload after EventMultiplexer call it."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
-    self.assertFalse(x._GetAccumulator('run1').reload_called)
-    self.assertFalse(x._GetAccumulator('run2').reload_called)
+    self.assertFalse(x.GetAccumulator('run1').reload_called)
+    self.assertFalse(x.GetAccumulator('run2').reload_called)
     x.Reload()
-    self.assertTrue(x._GetAccumulator('run1').reload_called)
-    self.assertTrue(x._GetAccumulator('run2').reload_called)
+    self.assertTrue(x.GetAccumulator('run1').reload_called)
+    self.assertTrue(x.GetAccumulator('run2').reload_called)
 
   def testScalars(self):
     """Tests Scalars function returns suitable values."""
@@ -180,8 +180,8 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertEqual(x.Runs(), {})
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
     self.assertItemsEqual(x.Runs(), ['run1', 'run2'])
-    self.assertEqual(x._GetAccumulator('run1')._path, 'path1')
-    self.assertEqual(x._GetAccumulator('run2')._path, 'path2')
+    self.assertEqual(x.GetAccumulator('run1')._path, 'path1')
+    self.assertEqual(x.GetAccumulator('run2')._path, 'path2')
 
   def testAddRunsFromDirectory(self):
     """Tests AddRunsFromDirectory function.
@@ -213,7 +213,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     _AddEvents(path1)
     x.AddRunsFromDirectory(realdir)
     self.assertItemsEqual(x.Runs(), ['path1'], 'loaded run: path1')
-    loader1 = x._GetAccumulator('path1')
+    loader1 = x.GetAccumulator('path1')
     self.assertEqual(loader1._path, path1, 'has the correct path')
 
     path2 = join(realdir, 'path2')
@@ -221,14 +221,14 @@ class EventMultiplexerTest(tf.test.TestCase):
     x.AddRunsFromDirectory(realdir)
     self.assertItemsEqual(x.Runs(), ['path1', 'path2'])
     self.assertEqual(
-        x._GetAccumulator('path1'), loader1, 'loader1 not regenerated')
+        x.GetAccumulator('path1'), loader1, 'loader1 not regenerated')
 
     path2_2 = join(path2, 'path2')
     _AddEvents(path2_2)
     x.AddRunsFromDirectory(realdir)
     self.assertItemsEqual(x.Runs(), ['path1', 'path2', 'path2/path2'])
     self.assertEqual(
-        x._GetAccumulator('path2/path2')._path, path2_2, 'loader2 path correct')
+        x.GetAccumulator('path2/path2')._path, path2_2, 'loader2 path correct')
 
   def testAddRunsFromDirectoryThatContainsEvents(self):
     x = event_multiplexer.EventMultiplexer()
@@ -299,29 +299,29 @@ class EventMultiplexerTest(tf.test.TestCase):
   def testAddRun(self):
     x = event_multiplexer.EventMultiplexer()
     x.AddRun('run1_path', 'run1')
-    run1 = x._GetAccumulator('run1')
+    run1 = x.GetAccumulator('run1')
     self.assertEqual(sorted(x.Runs().keys()), ['run1'])
     self.assertEqual(run1._path, 'run1_path')
 
     x.AddRun('run1_path', 'run1')
-    self.assertEqual(run1, x._GetAccumulator('run1'), 'loader not recreated')
+    self.assertEqual(run1, x.GetAccumulator('run1'), 'loader not recreated')
 
     x.AddRun('run2_path', 'run1')
-    new_run1 = x._GetAccumulator('run1')
+    new_run1 = x.GetAccumulator('run1')
     self.assertEqual(new_run1._path, 'run2_path')
     self.assertNotEqual(run1, new_run1)
 
     x.AddRun('runName3')
     self.assertItemsEqual(sorted(x.Runs().keys()), ['run1', 'runName3'])
-    self.assertEqual(x._GetAccumulator('runName3')._path, 'runName3')
+    self.assertEqual(x.GetAccumulator('runName3')._path, 'runName3')
 
   def testAddRunMaintainsLoading(self):
     x = event_multiplexer.EventMultiplexer()
     x.Reload()
     x.AddRun('run1')
     x.AddRun('run2')
-    self.assertTrue(x._GetAccumulator('run1').reload_called)
-    self.assertTrue(x._GetAccumulator('run2').reload_called)
+    self.assertTrue(x.GetAccumulator('run1').reload_called)
+    self.assertTrue(x.GetAccumulator('run2').reload_called)
 
 
 class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
