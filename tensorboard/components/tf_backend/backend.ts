@@ -36,9 +36,6 @@ export interface Datum {
   step: number;
 }
 
-export interface Text { text: string; }
-export type TextDatum = Datum & Text;
-
 export type AudioDatum = Datum & Audio;
 export interface Audio {
   content_type: string;
@@ -61,7 +58,7 @@ export interface DebuggerNumericsAlertReport {
 // when bad values first appeared in the model.
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
-export const TYPES = ['audio', 'text'];
+export const TYPES = ['audio'];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
  *
@@ -114,26 +111,6 @@ export class Backend {
       url += '.json';
     }
     return this.requestManager.request(url);
-  }
-
-  /**
-   * Returns a promise showing the Run-to-Tag mapping for text data.
-   */
-  public textRuns(): Promise<RunToTag> {
-    return this.requestManager.request(getRouter().textRuns());
-  }
-
-
-  /**
-   * Returns a promise containing TextDatums for given run and tag.
-   */
-  public text(tag: string, run: string): Promise<TextDatum[]> {
-    const url = getRouter().text(tag, run);
-    // tslint:disable-next-line:no-any it's convenient and harmless here
-    return this.requestManager.request(url).then(map((x: any) => {
-      x.wall_time = timeToDate(x.wall_time);
-      return x;
-    }));
   }
 
   /**

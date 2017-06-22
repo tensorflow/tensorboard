@@ -21,8 +21,6 @@ export interface Router {
   logdir: () => string;
   runs: () => string;
   isDemoMode: () => boolean;
-  textRuns: () => string;
-  text: RunTagUrlFn;
   pluginRoute: (pluginName: string, route: string) => string;
   pluginRunTagRoute: (pluginName: string, route: string) => RunTagUrlFn;
 }
@@ -63,8 +61,6 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     isDemoMode: () => demoMode,
-    textRuns: () => dataDir + '/plugin/text/runs' + (demoMode ? '.json' : ''),
-    text: standardRoute('plugin/text/text'),
     pluginRoute,
     pluginRunTagRoute,
   };
