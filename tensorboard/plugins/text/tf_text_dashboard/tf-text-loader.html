@@ -48,6 +48,26 @@ tf-text-loader displays markdown text data from the Text plugin.
   tf-text-loader .text > p:last-child {
     margin-bottom: 0.3em;
   }
+
+  /*
+   * These styles provide formatting for Markdown tables that may be
+   * rendered from the text summaries.
+   */
+  tf-text-loader table {
+    border-collapse: collapse;
+  }
+  tf-text-loader table th {
+    font-weight: 600;
+  }
+  tf-text-loader table th,
+  tf-text-loader table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+  }
+  tf-text-loader table tr {
+    background-color: #fff;
+    border-top: 1px solid #c6cbd1;
+  }
 </style>
 <dom-module id="tf-text-loader">
 
