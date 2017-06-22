@@ -8,9 +8,7 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "tf_dashboard_common",
     srcs = [
-        "dashboard-behavior.ts",
         "dashboard-style.html",
-        "reload-behavior.ts",
         "run-color-style.html",
         "scrollbar-style.html",
         "tensorboard-color.html",
@@ -18,7 +16,6 @@ ts_web_library(
         "tf-categorizer.ts",
         "tf-chart-scaffold.html",
         "tf-collapsable-pane.html",
-        "tf-dashboard-behavior.html",
         "tf-dashboard-layout.html",
         "tf-downloader.html",
         "tf-multi-checkbox.html",
