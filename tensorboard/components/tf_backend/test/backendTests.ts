@@ -87,8 +87,6 @@ describe('backend tests', () => {
 
   it('run helper methods work', (done) => {
     const audio = {run1: ['audio1'], fake_run_no_data: ['audio1', 'audio2']};
-    const runMetadata = {run1: ['step99'], fake_run_no_data: ['step99']};
-    const graph = ['fake_run_no_data'];
     let count = 0;
     function next() {
       count++;
@@ -98,14 +96,6 @@ describe('backend tests', () => {
     }
     backend.audioTags().then((x) => {
       chai.assert.deepEqual(x, audio);
-      next();
-    });
-    backend.runMetadataTags().then((x) => {
-      chai.assert.deepEqual(x, runMetadata);
-      next();
-    });
-    backend.graphRuns().then((x) => {
-      chai.assert.deepEqual(x, graph);
       next();
     });
   });

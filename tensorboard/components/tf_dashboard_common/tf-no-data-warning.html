@@ -24,21 +24,6 @@ Display a warning when there is no data found.
   <template>
     <template is="dom-if" if="[[showWarning]]">
       <div class="warning">
-        <template is="dom-if" if="[[_isGraph(dataType)]]">
-          <h3>
-            No graph definition files were found.
-          </h3>
-          <p>
-            To store a graph, create a
-            <code>tf.summary.FileWriter</code>
-            and pass the graph either via the constructor, or by calling its
-            <code>add_graph()</code> method.
-            You may want to check out the
-            <a href="https://www.tensorflow.org/get_started/graph_viz">
-              graph visualizer tutorial
-            </a>.
-          </p>
-        </template>
         <template is="dom-if" if="[[_isProjector(dataType)]]">
           <h3>
             No checkpoint was found.
@@ -115,14 +100,11 @@ Display a warning when there is no data found.
         dataType: String,
         showWarning: Boolean
       },
-      _isGraph: function(dataType) {
-        return dataType === "graph";
-      },
       _isProjector: function(dataType) {
         return dataType === "projector";
       },
       _isOther: function(dataType) {
-        return !this._isGraph(dataType) && !this._isProjector(dataType);
+        return !this._isProjector(dataType);
       }
     });
   </script>

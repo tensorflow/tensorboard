@@ -21,8 +21,6 @@ import {demoify, queryEncoder} from './urlPathHelpers.js';
 export interface RunEnumeration {
   images: string[];
   audio: string[];
-  graph: boolean;
-  run_metadata: string[];
 }
 
 export interface LogdirResponse { logdir: string; }
@@ -47,23 +45,6 @@ export interface Audio {
   url: string;
 }
 
-// A health pill encapsulates an overview of tensor element values. The value
-// field is a list of 12 numbers that shed light on the status of the tensor.
-export interface HealthPill {
-  device_name: string;
-  node_name: string;
-  output_slot: number;
-  dtype: string;
-  shape: number[];
-  value: number[];
-}
-
-// When updating this type, keep it consistent with the HealthPill interface
-// in tf_graph_common/lib/scene/scene.ts.
-export type HealthPillDatum = Datum & HealthPill;
-// A health pill response is a mapping from node name to a list of health pill
-// data entries.
-export interface HealthPillsResponse { [key: string]: HealthPillDatum[]; }
 
 // An object that encapsulates an alert issued by the debugger. This alert is
 // sent by debugging libraries after bad values (NaN, +/- Inf) are encountered.
@@ -80,9 +61,7 @@ export interface DebuggerNumericsAlertReport {
 // when bad values first appeared in the model.
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
-export const TYPES = [
-  'graph', 'audio', 'runMetadata', 'text'
-];
+export const TYPES = ['audio', 'text'];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
  *
@@ -138,23 +117,6 @@ export class Backend {
   }
 
   /**
-   * Return a promise showing list of runs that contain graphs.
-   */
-  public graphRuns(): Promise<string[]> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('graphs', '/runs'));
-  }
-
-  /**
-   * Return a promise showing the Run-to-Tag mapping for run_metadata objects.
-   */
-  public runMetadataTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('graphs', '/run_metadata_tags'));
-  }
-
-
-  /**
    * Returns a promise showing the Run-to-Tag mapping for text data.
    */
   public textRuns(): Promise<RunToTag> {
@@ -175,59 +137,6 @@ export class Backend {
   }
 
   /**
-   * Return a URL to fetch a graph (cf. method 'graph').
-   */
-  public graphUrl(run: string, limitAttrSize?: number, largeAttrsKey?: string):
-      string {
-    const demoMode = getRouter().isDemoMode();
-    const base = getRouter().pluginRoute('graphs', '/graph');
-    const optional = (p) => (p != null && !demoMode || undefined) && p;
-    const parameters = {
-      'run': run,
-      'limit_attr_size': optional(limitAttrSize),
-      'large_attrs_key': optional(largeAttrsKey),
-    };
-    const extension = demoMode ? '.pbtxt' : '';
-    return base + queryEncoder(parameters) + extension;
-  }
-
-  public graph(run: string, limitAttrSize?: number, largeAttrsKey?: string):
-      Promise<string> {
-    const url = this.graphUrl(run, limitAttrSize, largeAttrsKey);
-    return this.requestManager.request(url);
-  }
-
-  /**
-   * Returns a promise for requesting the health pills for a list of nodes. This
-   * route is used by the debugger plugin.
-   */
-  public healthPills(nodeNames: string[], step?: number):
-      Promise<HealthPillsResponse> {
-    const postData = {
-      'node_names': JSON.stringify(nodeNames),
-
-      // Events files with debugger data fall under this special run.
-      'run': '__debugger_data__',
-    };
-    if (step !== undefined) {
-      // The user requested health pills for a specific step. This request
-      // might be slow since the backend reads events sequentially from disk.
-      postData['step'] = step;
-    }
-    return this.requestManager.request(getRouter().healthPills(), postData);
-  }
-
-  /**
-   * Returns a promise for alerts for bad values (detected by the debugger).
-   * This route is used by the debugger plugin.
-   */
-  public debuggerNumericsAlerts():
-      Promise<DebuggerNumericsAlertReportResponse> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('debugger', '/numerics_alert_report'));
-  }
-
-  /**
    * Return a promise containing AudioDatums for given run and tag.
    */
   public audio(tag: string, run: string): Promise<Array<AudioDatum>> {
@@ -245,21 +154,6 @@ export class Backend {
     if (getRouter().isDemoMode()) {
       url += '.json';
     }
-    return this.requestManager.request(url);
-  }
-
-  /**
-   * Returns the url for the RunMetadata for the given run/tag.
-   */
-  public runMetadataUrl(tag: string, run: string): string {
-    return getRouter().pluginRunTagRoute('graphs', '/run_metadata')(tag, run);
-  }
-
-  /**
-   * Returns a promise to load the string RunMetadata for given run/tag.
-   */
-  public runMetadata(tag: string, run: string): Promise<string> {
-    const url = this.runMetadataUrl(tag, run);
     return this.requestManager.request(url);
   }
 
