@@ -118,6 +118,7 @@ class GraphsPluginTest(tf.test.TestCase):
     self.assertEqual({
         'k1', 'k2', 'pow', 'sub', 'expected', 'sub_1', 'error',
         'message_prefix', 'error_string', 'error_message', 'summary_message',
+        'summary_message/tag', 'summary_message/serialized_summary_metadata',
     }, node_names)
 
   def test_graph_large_attrs(self):
