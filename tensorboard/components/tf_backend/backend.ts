@@ -85,29 +85,6 @@ export class Backend {
   public runs(): Promise<RunsResponse> {
     return this.requestManager.request(getRouter().runs());
   }
-
-  /**
-   * Returns a promise showing the Run-to-Tag mapping for profile data.
-   */
-  public profileTags(): Promise<RunToTag> {
-    let url = getRouter().pluginRoute('profile', '/tags');
-    if (getRouter().isDemoMode()) {
-      url += '.json';
-    }
-    return this.requestManager.request(url);
-  }
-
-  /**
-   * Returns a promise containing profile data for given run and tag.
-   */
-  public profile(tag: string, run: string): Promise<string> {
-    let url = (getRouter().pluginRunTagRoute('profile', '/data')(tag, run));
-    if (getRouter().isDemoMode()) {
-      url += '.json';
-    }
-    return this.requestManager.request(url);
-  }
-
 }
 
 /** Given a RunToTag, return sorted array of all runs */
