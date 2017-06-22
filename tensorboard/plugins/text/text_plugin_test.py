@@ -46,7 +46,7 @@ class TextPluginTest(tf.test.TestCase):
 
   def testRoutesProvided(self):
     routes = self.plugin.get_plugin_apps()
-    self.assertIsInstance(routes['/runs'], collections.Callable)
+    self.assertIsInstance(routes['/tags'], collections.Callable)
     self.assertIsInstance(routes['/text'], collections.Callable)
 
   def assertConverted(self, actual, expected):

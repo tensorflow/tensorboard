@@ -43,7 +43,7 @@ from tensorboard.plugins import base_plugin
 _PLUGIN_PREFIX_ROUTE = 'text'
 
 # HTTP routes
-RUNS_ROUTE = '/runs'
+TAGS_ROUTE = '/tags'
 TEXT_ROUTE = '/text'
 
 ALLOWED_TAGS = [
@@ -276,6 +276,8 @@ class TextPlugin(base_plugin.TBPlugin):
             run, name, 'tensors.json')
         tensors = json.loads(tensors_json)
         run_to_series[run] = tensors
+      else:
+        run_to_series[run] = []
 
     # TensorBoard is obtaining summaries related to the text plugin based on
     # SummaryMetadata stored within Value protos.
@@ -289,7 +291,7 @@ class TextPlugin(base_plugin.TBPlugin):
     return run_to_series
 
   @wrappers.Request.application
-  def runs_route(self, request):
+  def tags_route(self, request):
     # Map from run to a list of tags.
     response = {
         run: tag_listing
@@ -314,7 +316,7 @@ class TextPlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-        RUNS_ROUTE: self.runs_route,
+        TAGS_ROUTE: self.tags_route,
         TEXT_ROUTE: self.text_route,
     }
 
