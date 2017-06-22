@@ -38,6 +38,7 @@ ts_web_library(
     path = "/tf-audio-dashboard",
     deps = [
         ":tf_audio_dashboard",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/demo:demo_data",

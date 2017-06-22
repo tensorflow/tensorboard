@@ -18,7 +18,7 @@ ts_web_library(
         "tf-categorizer.ts",
         "tf-chart-scaffold.html",
         "tf-collapsable-pane.html",
-        "tf-dashboard.html",
+        "tf-dashboard-behavior.html",
         "tf-dashboard-layout.html",
         "tf-downloader.html",
         "tf-multi-checkbox.html",
@@ -32,6 +32,7 @@ ts_web_library(
     ],
     path = "/tf-dashboard-common",
     deps = [
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",

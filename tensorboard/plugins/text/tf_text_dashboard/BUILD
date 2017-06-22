@@ -13,6 +13,7 @@ ts_web_library(
     path = "/tf-text-dashboard",
     deps = [
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_card_heading",
         "//tensorboard/components/tf_categorization_utils",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
@@ -34,6 +35,7 @@ ts_web_library(
     path = "/tf-text-dashboard",
     deps = [
         ":tf_text_dashboard",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
