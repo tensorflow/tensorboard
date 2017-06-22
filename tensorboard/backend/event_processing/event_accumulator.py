@@ -216,7 +216,7 @@ class EventAccumulator(object):
 
     # The attributes that get built up by the accumulator
     self.accumulated_attrs = ('scalars', 'histograms',
-                              'compressed_histograms', 'images', 'audio')
+                              'compressed_histograms', 'images', 'audios')
     self._tensor_summaries = {}
 
   def Reload(self):
