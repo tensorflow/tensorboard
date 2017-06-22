@@ -18,14 +18,6 @@ import {RequestManager} from './requestManager.js';
 import {getRouter} from './router.js';
 import {demoify, queryEncoder} from './urlPathHelpers.js';
 
-export interface RunEnumeration {
-  images: string[];
-}
-
-export interface LogdirResponse { logdir: string; }
-
-export interface RunsResponse { [runName: string]: RunEnumeration; }
-
 export type RunToTag = {
   [run: string]: string[];
 };
@@ -70,20 +62,6 @@ export class Backend {
    */
   constructor(requestManager?: RequestManager) {
     this.requestManager = requestManager || new RequestManager();
-  }
-
-  /**
-   * Returns a promise for requesting the logdir string.
-   */
-  public logdir(): Promise<LogdirResponse> {
-    return this.requestManager.request(getRouter().logdir());
-  }
-
-  /**
-   * Returns a listing of all the available data in the TensorBoard backend.
-   */
-  public runs(): Promise<RunsResponse> {
-    return this.requestManager.request(getRouter().runs());
   }
 }
 

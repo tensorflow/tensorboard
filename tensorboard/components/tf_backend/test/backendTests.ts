@@ -55,15 +55,6 @@ describe('backend tests', () => {
     rm = new RequestManager();
   });
 
-  it('runs are loaded properly', (done) => {
-    const runsResponse = backend.runs();
-    const actualRuns = rm.request(demoRouter.runs());
-    Promise.all([runsResponse, actualRuns]).then((values) => {
-      chai.assert.deepEqual(values[0], values[1]);
-      done();
-    });
-  });
-
   it('all registered types have handlers', () => {
     TYPES.forEach((t: string) => {
       chai.assert.isDefined(backend[t], t);
