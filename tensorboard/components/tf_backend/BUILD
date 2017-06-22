@@ -9,7 +9,6 @@ ts_web_library(
     name = "tf_backend",
     srcs = [
         "backend.ts",
-        "behavior.ts",
         "canceller.ts",
         "requestManager.ts",
         "router.ts",
