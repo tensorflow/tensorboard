@@ -71,33 +71,9 @@ describe('backend tests', () => {
     });
   });
 
-  it('audio is loaded properly', (done) => {
-    backend.audio('audio1', 'run1').then((audioClips) => {
-      const audio = audioClips[0];
-      assertIsDatum(audio);
-      chai.assert.equal(audio.content_type, 'audio/wav');
-      done();
-    });
-  });
-
   it('trailing slash removed from base route', () => {
     const r = createRouter('foo/');
     chai.assert.equal(r.runs(), 'foo/runs');
-  });
-
-  it('run helper methods work', (done) => {
-    const audio = {run1: ['audio1'], fake_run_no_data: ['audio1', 'audio2']};
-    let count = 0;
-    function next() {
-      count++;
-      if (count === 4) {
-        done();
-      }
-    }
-    backend.audioTags().then((x) => {
-      chai.assert.deepEqual(x, audio);
-      next();
-    });
   });
 
   it('runToTag helpers work', () => {
