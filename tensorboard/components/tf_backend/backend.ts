@@ -20,7 +20,6 @@ import {demoify, queryEncoder} from './urlPathHelpers.js';
 
 export interface RunEnumeration {
   images: string[];
-  audio: string[];
 }
 
 export interface LogdirResponse { logdir: string; }
@@ -35,13 +34,6 @@ export interface Datum {
   wall_time: Date;
   step: number;
 }
-
-export type AudioDatum = Datum & Audio;
-export interface Audio {
-  content_type: string;
-  url: string;
-}
-
 
 // An object that encapsulates an alert issued by the debugger. This alert is
 // sent by debugging libraries after bad values (NaN, +/- Inf) are encountered.
@@ -58,7 +50,7 @@ export interface DebuggerNumericsAlertReport {
 // when bad values first appeared in the model.
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
-export const TYPES = ['audio'];
+export const TYPES = [];
 /**
  * The Backend class provides a convenient and typed interface to the backend.
  *
@@ -95,14 +87,6 @@ export class Backend {
   }
 
   /**
-   * Return a promise showing the Run-to-Tag mapping for audio data.
-   */
-  public audioTags(): Promise<RunToTag> {
-    return this.requestManager.request(
-        getRouter().pluginRoute('audio', '/tags'));
-  }
-
-  /**
    * Returns a promise showing the Run-to-Tag mapping for profile data.
    */
   public profileTags(): Promise<RunToTag> {
@@ -111,16 +95,6 @@ export class Backend {
       url += '.json';
     }
     return this.requestManager.request(url);
-  }
-
-  /**
-   * Return a promise containing AudioDatums for given run and tag.
-   */
-  public audio(tag: string, run: string): Promise<Array<AudioDatum>> {
-    const url = (getRouter().pluginRunTagRoute('audio', '/audio')(tag, run));
-    let p: Promise<AudioMetadata[]>;
-    p = this.requestManager.request(url);
-    return p.then(map(this.createAudio.bind(this)));
   }
 
   /**
@@ -134,36 +108,6 @@ export class Backend {
     return this.requestManager.request(url);
   }
 
-  private createAudio(x: AudioMetadata): Audio&Datum {
-    const pluginRoute = getRouter().pluginRoute('audio', '/individualAudio');
-
-    let query = x.query;
-    if (pluginRoute.indexOf('?') > -1) {
-      // The route already has GET parameters. Append our parameters to them.
-      query = '&' + query;
-    } else {
-      // The route lacks GET parameters. We append them.
-      query = '?' + query;
-    }
-
-    if (getRouter().isDemoMode()) {
-      query = demoify(query);
-    }
-
-    let individualAudioUrl = pluginRoute + query;
-    // Include wall_time just to disambiguate the URL and force the browser
-    // to reload the audio when the URL changes. The backend doesn't care
-    // about the value.
-    individualAudioUrl +=
-        getRouter().isDemoMode() ? '.wav' : '&ts=' + x.wall_time;
-
-    return {
-      content_type: x.content_type,
-      wall_time: timeToDate(x.wall_time),
-      step: x.step,
-      url: individualAudioUrl,
-    };
-  }
 }
 
 /** Given a RunToTag, return sorted array of all runs */
@@ -216,13 +160,7 @@ function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
 
 
 /**
- * The following interfaces (TupleData and AudioMetadata) describe how
- * the data is sent over from the backend.
+ * The following interface (TupleData) describes how the data is sent
+ * over from the backend.
  */
 type TupleData<T> = [number, number, T];  // wall_time, step
-interface AudioMetadata {
-  content_type: string;
-  wall_time: number;
-  step: number;
-  query: string;
-}

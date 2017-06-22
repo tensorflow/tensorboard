@@ -14,6 +14,10 @@ ts_web_library(
     path = "/tf-audio-dashboard",
     deps = [
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_card_heading",
+        "//tensorboard/components/tf_categorization_utils",
+        "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
