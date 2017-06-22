@@ -33,6 +33,7 @@ future for loading older images.
 <dom-module id="tf-image-loader">
   <template>
     <tf-card-heading title="[[tag]]" color="[[_runColor]]">
+      <div>[[run]]</div>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
         step
         <span style="font-weight: bold">[[_stepValue]]</span>
