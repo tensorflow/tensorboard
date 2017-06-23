@@ -32,16 +32,17 @@ limitations under the License.
 <link rel="import" href="../tf-graph-dashboard/tf-graph-dashboard.html">
 <link rel="import" href="../tf-histogram-dashboard/tf-histogram-dashboard.html">
 <link rel="import" href="../tf-image-dashboard/tf-image-dashboard.html">
+<link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-text-dashboard/tf-text-dashboard.html">
 <link rel="import" href="../vz-projector/vz-projector-dashboard.html">
 
 <!--
-tf-tensorboard is the frontend entry point for TensorBoard.
+  tf-tensorboard is the frontend entry point for TensorBoard.
 
-It implements a toolbar (via paper-header-panel and paper-toolbar) that
-allows the user to toggle between various dashboards.
+  It implements a toolbar (via paper-header-panel and paper-toolbar)
+  that allows the user to toggle among various dashboards.
 -->
 <dom-module id="tf-tensorboard">
   <template>
@@ -55,10 +56,17 @@ allows the user to toggle between various dashboards.
       <paper-toolbar id="toolbar">
         <div id="toolbar-content">
           <div class="toolbar-title">TensorBoard</div>
-          <paper-tabs selected="{{modeIndex}}" noink class="tabs" id="tabs">
-            <template is="dom-repeat" items="[[tabs]]">
-              <template is="dom-if" if="[[_isTabEnabled(item)]]">
-                <paper-tab data-mode="[[item]]">[[item]]</paper-tab>
+          <paper-tabs
+            selected="{{_activeDashboardIndex}}"
+            noink
+            id="tabs"
+          >
+            <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+              <template
+                is="dom-if"
+                if="[[_isDashboardEnabled(disabledDashboards, dashboard)]]"
+              >
+                <paper-tab>[[dashboard]]</paper-tab>
               </template>
             </template>
           </paper-tabs>
@@ -66,7 +74,7 @@ allows the user to toggle between various dashboards.
             <paper-icon-button
               icon="refresh"
               on-tap="reload"
-              disabled$="[[_isReloadDisabled(mode)]]"
+              disabled$="[[_isReloadDisabled]]"
               id="reload-button"
             ></paper-icon-button>
             <paper-icon-button
@@ -83,48 +91,17 @@ allows the user to toggle between various dashboards.
 
       <div id="content" class="fit">
         <content id="injected-overview"></content>
-
-        <template is="dom-if" if="[[_modeIsScalars(mode)]]">
-          <tf-scalar-dashboard id="scalars">
-          </tf-scalar-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsImages(mode)]]">
-          <tf-image-dashboard id="images">
-          </tf-image-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsAudio(mode)]]">
-          <tf-audio-dashboard id="audio">
-          </tf-audio-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsGraphs(mode)]]">
-          <tf-graph-dashboard
-            id="graphs"
-            debugger-data-enabled="[[_debuggerDataEnabled]]"
-          ></tf-graph-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsDistributions(mode)]]">
-          <tf-distribution-dashboard id="distributions">
-          </tf-distribution-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsHistograms(mode)]]">
-          <tf-histogram-dashboard
-            id="histograms"
-          ></tf-histogram-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsEmbeddings(mode)]]">
-          <vz-projector-dashboard id="projector">
-          </vz-projector-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsText(mode)]]">
-          <tf-text-dashboard id="text">
-          </tf-text-dashboard>
+        <template
+          is="dom-repeat"
+          id="dashboards-template"
+          items="[[_dashboards]]"
+          as="dashboard"
+        >
+          <div
+            class="dashboard-container"
+            data-dashboard$="[[dashboard]]"
+            style="display: [[_displayStyle(_activeDashboard, dashboard)]]"
+          ><!-- Dashboards will be injected here dynamically. --></div>
         </template>
       </div>
     </paper-header-panel>
@@ -151,7 +128,7 @@ allows the user to toggle between various dashboards.
         display: var(--tb-toolbar-title-display, block);
       }
 
-      .tabs {
+      #tabs {
         flex-grow: 1;
         text-transform: uppercase;
         height: 100%;
@@ -186,11 +163,14 @@ allows the user to toggle between various dashboards.
         height: 100%;
       }
 
+      .dashboard-container {
+        height: 100%;
+      }
+
       [disabled] {
         opacity: 0.2;
         color: white;
       }
-
     </style>
   </template>
   <script src="autoReloadBehavior.js"></script>
@@ -201,131 +181,219 @@ allows the user to toggle between various dashboards.
     import {setRouter, createRouter} from "../tf-backend/router.js";
     import {fetchRuns} from "../tf-backend/runsStore.js";
 
+    const COMPONENTS = {
+      'scalars': 'tf-scalar-dashboard',
+      'images': 'tf-image-dashboard',
+      'audio': 'tf-audio-dashboard',
+      'graphs': 'tf-graph-dashboard',
+      'distributions': 'tf-distribution-dashboard',
+      'histograms': 'tf-histogram-dashboard',
+      'embeddings': 'vz-projector-dashboard',
+      'text': 'tf-text-dashboard',
+    };
+    if (!_.isEqual(Object.keys(COMPONENTS), TABS)) {
+      throw new Error(
+        `Bad set of components: ${Object.keys(COMPONENTS)} vs. ${TABS}`);
+    }
+
     Polymer({
       is: "tf-tensorboard",
       behaviors: [AutoReloadBehavior],
       properties: {
+        /**
+         * We accept a router property only for backward compatibility:
+         * setting it triggers an observer that simply calls
+         * `setRouter`.
+         */
         router: {
-          type: Object,  // only to trigger an observer
+          type: Object,
           observer: '_updateRouter',
         },
-        _debuggerDataEnabled: {
-          type: Boolean,
-          value: function() {
-            // For now, Tensorboard only shows debugger data if the debugger_data GET param is set
-            // to enabled.
-            let match = window.location.href.match(/[&\?]debugger_data=enabled/);
-            return !!match && match.length == 1;
-          },
-        },
-        modeIndex: Number,  // upward-bound from paper-tabs
-        // Which tab is selected (scalars, graph, images etc).
-        mode: {
-          type: String,
-          computed: '_getModeFromIndex(modeIndex)',
-          notify: true,
-        },
-        tabs: {
-          type: Array,
-          readOnly: true,
-          value: TABS,
-        },
-        // If this is set to a string, TensorBoard will switch to "demo mode"
-        // and attempt to load serialized json data from that directory. You can
-        // generate conformant json using
-        // tensorboard/scripts/serialize_tensorboard.py
+
+        /**
+         * Deprecated. This used to switch TensorBoard into "demo mode,"
+         * loading serialized JSON data from the provided directory.
+         */
         demoDir: {
           type: String,
           value: null,
         },
-        // Set this to true to store state in URI hash. Should be true for all non-test purposes.
+
+        /**
+         * Set this to true to store state in URI hash. Should be true
+         * for all non-test purposes.
+         */
         useHash: {
           type: Boolean,
           value: false,
         },
-        disabledTabs: String,
+
+        /**
+         * A comma-separated list of dashboards not to use.
+         */
+        disabledDashboards: {
+          type: String,
+          value: '',
+        },
+
+        _debuggerDataEnabled: {
+          type: Boolean,
+          value: function() {
+            // For now, Tensorboard only shows debugger data if the
+            // debugger_data GET param is set to enabled.
+            let match = window.location.href.match(/[&\?]debugger_data=enabled/);
+            return !!match && match.length == 1;
+          },
+        },
+
+        /** @type {Array<string>} */
+        _dashboards: {
+          type: Array,
+          readOnly: true,
+          value: TABS,
+        },
+
+        /**
+         * The index into `dashboards` of the currently active
+         * dashboard. (Upward-bound from the `paper-tabs` component.)
+         */
+        _activeDashboardIndex: Number,
+        _activeDashboard: {
+          type: String,
+          computed: '_getDashboardFromIndex(_dashboards, _activeDashboardIndex)',
+          observer: '_updateCurrentDashboard',
+          notify: true,
+        },
+
+        /*
+         * Will be set to `true` once our DOM is ready: in particular,
+         * once each dashboard has a `<div>` into which we can render its
+         * Polymer component root.
+         */
+        _dashboardContainersStamped: {
+          type: Boolean,
+          value: false,
+        },
+
+        _isReloadDisabled: {
+          type: Boolean,
+          computed: '_computeIsReloadDisabled(_debuggerDataEnabled, _activePlugin)',
+        },
       },
-      _isTabEnabled: function(tab) {
-        if (this.disabledTabs != null &&
-            this.disabledTabs.split(',').indexOf(tab) >= 0) {
-          return false;
+      observers: [
+        '_ensureActiveDashboardStamped(_dashboardContainersStamped, _activeDashboard)',
+      ],
+
+      _isDashboardEnabled(disabledDashboards, dashboard) {
+        return (disabledDashboards || '').split(',').indexOf(dashboard) < 0;
+      },
+
+      _getDashboardFromIndex(dashboards, index) {
+        return dashboards[index];
+      },
+
+      _displayStyle(currentDashboard, candidateDashboard) {
+         // Display only the active dashboard.
+        return currentDashboard === candidateDashboard ? 'inherit' : 'none';
+      },
+
+      _updateCurrentDashboard(currentDashboard) {
+        setString(TAB, currentDashboard, /*useLocalStorage=*/false);
+      },
+
+      /**
+       * Make sure that the currently active dashboard actually has an
+       * active Polymer component; if it doesn't, create one.
+       *
+       * We have to stamp each dashboard before we can interact with it:
+       * for instance, to ask it to reload. Conversely, we can't stamp a
+       * dashboard until its _container_ is itself stamped. (Containers
+       * are stamped declaratively by a `<dom-repeat>` in the HTML
+       * template.)
+       */
+      _ensureActiveDashboardStamped(containersStamped, dashboard) {
+        if (!containersStamped) {
+          return;
         }
-        return true;
+        const container = this.$$(
+          `.dashboard-container[data-dashboard=${dashboard}]`);
+        if (container.childNodes.length === 0) {
+          const component = document.createElement(COMPONENTS[dashboard]);
+          component.id = 'dashboard';  // used in `_activeDashboardComponent`
+          container.appendChild(component);
+        };
       },
-      _getModeFromIndex: function(modeIndex) {
-        var mode = this.tabs[modeIndex];
-        setString(TAB, mode, /*useLocalStorage=*/false);
-        return mode;
+
+      _computeIsReloadDisabled(debuggerDataEnabled, mode) {
+        // TODO(@wchargin): Refactor to remove these explicit plugin names.
+        const disabledForModes = ['graphs', 'embeddings'];
+        return !debuggerDataEnabled && disabledForModes.includes(mode);
       },
-      _isReloadDisabled: function(mode) {
-        return !this._debuggerDataEnabled && this._modeIsGraphs(mode);
-      },
-      _modeIsScalars: function(mode) {
-        return mode === "scalars";
-      },
-      _modeIsImages: function(mode) {
-        return mode === "images";
-      },
-      _modeIsAudio: function(mode) {
-        return mode === "audio";
-      },
-      _modeIsGraphs: function(mode) {
-        return mode === "graphs";
-      },
-      _modeIsEmbeddings: function(mode) {
-        return mode === "embeddings";
-      },
-      _modeIsDistributions: function(mode) {
-        return mode === "distributions";
-      },
-      _modeIsHistograms: function(mode) {
-        return mode === "histograms";
-      },
-      _modeIsText: function(mode) {
-        return mode === "text";
-      },
-      selectedDashboard: function() {
-        var dashboard = this.$$("#" + this.mode);
+
+      /**
+       * Get the Polymer component corresponding to the currently active
+       * dashboard. For instance, the result might be an instance of
+       * `<tf-scalar-dashboard>`.
+       */
+      _activeDashboardComponent() {
+        if (!this._dashboardContainersStamped) {
+          throw new Error(
+            'There is no "selected dashboard" before containers are stamped.');
+        }
+        const activeDashboard = this._activeDashboard;
+        var dashboard = this.$$(
+          `.dashboard-container[data-dashboard=${activeDashboard}] #dashboard`);
         if (dashboard == null) {
-          throw new Error(`Unable to find dashboard for mode: ${this.mode}`);
+          throw new Error(
+            `Unable to find dashboard for mode: ${activeDashboard}`);
         }
         return dashboard;
       },
-      ready: function() {
+
+      ready() {
         setUseHash(this.useHash);
 
-        this._getModeFromHash();
-        window.addEventListener('hashchange', function() {
-          this._getModeFromHash();
-        }.bind(this), /*useCapture=*/false);
-        fetchRuns();
+        // We have to wait for our dashboard-containers to be stamped
+        // before we can do anything.
+        const dashboardsTemplate = this.$$('#dashboards-template');
+        dashboardsTemplate.addEventListener('dom-change', () => {
+          // This will trigger an observer that kicks off everything.
+          this._dashboardContainersStamped = true;
+
+          this._updateActiveDashboardFromHash();
+          window.addEventListener('hashchange', () => {
+            this._updateActiveDashboardFromHash();
+          }, /*useCapture=*/false);
+          fetchRuns();
+        }, /*useCapture=*/false);
       },
-      _getModeFromHash: function() {
-        var tabName = getString(TAB, /*useLocalStorage=*/false);
-        var modeIndex = this.tabs.indexOf(tabName);
-        if (modeIndex == -1 && this.modeIndex == null) {
+
+      _updateActiveDashboardFromHash() {
+        const dashboardName = getString(TAB, /*useLocalStorage=*/false);
+        const index = this._dashboards.indexOf(dashboardName);
+        if (index == -1 && this._activeDashboardIndex == null) {
           // Select the first tab as default.
-          this.set('modeIndex', 0);
+          this.set('_activeDashboardIndex', 0);
         }
-        if (modeIndex != -1 && modeIndex != this.modeIndex) {
-          this.set('modeIndex', modeIndex);
+        if (index != -1 && index != this._activeDashboardIndex) {
+          this.set('_activeDashboardIndex', index);
         }
       },
-      _updateRouter: function(router) {
+
+      _updateRouter(router) {
         setRouter(router);
       },
-      reload: function() {
-        if (this._modeIsEmbeddings(this.mode)) {
+
+      reload() {
+        if (this._isReloadDisabled) {
           return;
         }
-        if (!this._debuggerDataEnabled && this._modeIsGraphs(this.mode)) {
-          return;
-        }
-        fetchRuns().then(function() {
-          this.selectedDashboard().reload();
-        }.bind(this));
+        fetchRuns().then(() => {
+          this._activeDashboardComponent().reload();
+        });
       },
-      openSettings: function() {
+
+      openSettings() {
         this.$.settings.open();
       },
     });
