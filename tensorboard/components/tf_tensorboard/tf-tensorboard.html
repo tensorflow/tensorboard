@@ -215,9 +215,10 @@ allows the user to toggle between various dashboards.
             // For now, Tensorboard only shows debugger data if the debugger_data GET param is set
             // to enabled.
             let match = window.location.href.match(/[&\?]debugger_data=enabled/);
-            return match && match.length == 1;
+            return !!match && match.length == 1;
           },
         },
+        modeIndex: Number,  // upward-bound from paper-tabs
         // Which tab is selected (scalars, graph, images etc).
         mode: {
           type: String,
@@ -253,7 +254,7 @@ allows the user to toggle between various dashboards.
       },
       _getModeFromIndex: function(modeIndex) {
         var mode = this.tabs[modeIndex];
-        setString(TAB, mode);
+        setString(TAB, mode, /*useLocalStorage=*/false);
         return mode;
       },
       _isReloadDisabled: function(mode) {
@@ -296,11 +297,11 @@ allows the user to toggle between various dashboards.
         this._getModeFromHash();
         window.addEventListener('hashchange', function() {
           this._getModeFromHash();
-        }.bind(this));
+        }.bind(this), /*useCapture=*/false);
         fetchRuns();
       },
       _getModeFromHash: function() {
-        var tabName = getString(TAB);
+        var tabName = getString(TAB, /*useLocalStorage=*/false);
         var modeIndex = this.tabs.indexOf(tabName);
         if (modeIndex == -1 && this.modeIndex == null) {
           // Select the first tab as default.
