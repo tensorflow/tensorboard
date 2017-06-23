@@ -112,11 +112,12 @@ tf.flags.DEFINE_string(
 FLAGS = tf.flags.FLAGS
 
 
-def create_tb_app(plugins):
+def create_tb_app(plugins, assets_zip_provider=None):
   """Read the flags, and create a TensorBoard WSGI application.
 
   Args:
     plugins: A list of constructor functions for TBPlugin subclasses.
+    assets_zip_provider: Delegates to TBContext or uses default if None.
 
   Raises:
     ValueError: if a logdir is not specified.
@@ -128,6 +129,7 @@ def create_tb_app(plugins):
     raise ValueError('A logdir must be specified when db is not specified. '
                      'Run `tensorboard --help` for details and examples.')
   return application.standard_tensorboard_wsgi(
+      assets_zip_provider=assets_zip_provider,
       db_uri=FLAGS.db,
       logdir=os.path.expanduser(FLAGS.logdir),
       purge_orphaned_data=FLAGS.purge_orphaned_data,
