@@ -140,8 +140,9 @@ class TensorBoardWSGI(object):
     self._plugins = plugins
 
     self.data_applications = {
-        # TODO(@chihuahua): Delete this RPC once we have skylark rules that obviate
-        # the need for the frontend to determine which plugins are active.
+        # TODO(@chihuahua): Delete this RPC once we have skylark rules that
+        # obviate the need for the frontend to determine which plugins are
+        # active.
         DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
     }
 
