@@ -76,7 +76,6 @@ py_library(
     name = "event_accumulator",
     srcs = ["event_accumulator.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_watcher",
         ":event_file_loader",
@@ -103,7 +102,6 @@ py_library(
     name = "event_multiplexer",
     srcs = ["event_multiplexer.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_watcher",
         ":event_accumulator",
