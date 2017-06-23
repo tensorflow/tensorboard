@@ -410,7 +410,7 @@ export class DataSet {
     // Find the nearest neighbors of a particular point.
     let neighbors = knn.findKNNofPoint(
         this.points, pointIndex, numNN, (d => d.vector), distFunc);
-    // TODO(smilkov): Figure out why we slice.
+    // TODO(@dsmilkov): Figure out why we slice.
     let result = neighbors.slice(0, numNN);
     return result;
   }

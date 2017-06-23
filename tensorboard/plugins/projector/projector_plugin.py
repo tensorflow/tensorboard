@@ -37,7 +37,7 @@ _PLUGIN_PREFIX_ROUTE = 'projector'
 
 # FYI - the PROJECTOR_FILENAME is hardcoded in the visualize_embeddings
 # method in tf.contrib.tensorboard.plugins.projector module.
-# TODO(dandelion): Fix duplication when we find a permanent home for the
+# TODO(@dandelionmane): Fix duplication when we find a permanent home for the
 # projector module.
 PROJECTOR_FILENAME = 'projector_config.pbtxt'
 _PLUGIN_NAME = 'org_tensorflow_tensorboard_projector'

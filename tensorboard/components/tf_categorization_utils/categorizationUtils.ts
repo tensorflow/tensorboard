@@ -21,7 +21,7 @@ import {categorizer as makeCategorizer} from '../tf-dashboard-common/tf-categori
  * from a run-to-tag mapping, yielding data in a format suitable to be
  * used as items in a `<dom-repeat>`ed in a Polymer component.
  *
- * TODO(wchargin): Scrap `tagGroupRegexes?: string[]` and replace with a
+ * TODO(@wchargin): Scrap `tagGroupRegexes?: string[]` and replace with a
  * `filter?: string`.
  */
 export type RunToTag = {[run: string]: string[]};

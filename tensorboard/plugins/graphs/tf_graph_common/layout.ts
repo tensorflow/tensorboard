@@ -227,7 +227,7 @@ function updateTotalWidthOfNode(renderInfo: render.RenderNodeInfo): void {
   // Assign the width of the core box (the main shape of the node).
   renderInfo.coreBox.width = renderInfo.width;
   renderInfo.coreBox.height = renderInfo.height;
-  // TODO(jimbo): Account for font width rather than using a magic number.
+  // TODO: Account for font width rather than using a magic number.
   let labelLength = renderInfo.node.name.length -
       renderInfo.node.name.lastIndexOf(NAMESPACE_DELIM) - 1;
   let charWidth = 3; // 3 pixels per character.
@@ -349,7 +349,7 @@ function dagreLayout(
     let x2 = nodeInfo.x + w;
     minX = x1 < minX ? x1 : minX;
     maxX = x2 > maxX ? x2 : maxX;
-    // TODO(jimbo): Account for the height of labels above op nodes here.
+    // TODO: Account for the height of labels above op nodes here.
     let h = 0.5 * nodeInfo.height;
     let y1 = nodeInfo.y - h;
     let y2 = nodeInfo.y + h;

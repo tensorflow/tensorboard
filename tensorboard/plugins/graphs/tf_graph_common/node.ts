@@ -478,7 +478,7 @@ function labelPosition(nodeGroup, cx: number, cy: number,
 export function buildShape(nodeGroup, d, nodeClass: string): d3.Selection<any, any, any, any> {
   // Create a group to house the underlying visual elements.
   let shapeGroup = scene.selectOrCreateChild(nodeGroup, 'g', nodeClass);
-  // TODO(jimbo): DOM structure should be templated in HTML somewhere, not JS.
+  // TODO: DOM structure should be templated in HTML somewhere, not JS.
   switch (d.node.type) {
     case NodeType.OP:
       scene.selectOrCreateChild(shapeGroup, 'ellipse', Class.Node.COLOR_TARGET);

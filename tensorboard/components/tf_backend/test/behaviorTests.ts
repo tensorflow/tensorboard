@@ -154,7 +154,7 @@ describe('data-behavior', function() {
     });
   });
 
-  // TODO(dandelion): Fix this test.
+  // TODO(@dandelionmane): Fix this test.
   it('reload calls frontendReload', function(done) {
     testElement.frontendReload = function() {
       done();
