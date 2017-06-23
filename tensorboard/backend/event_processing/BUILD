@@ -1,7 +1,7 @@
 # Description:
 # Event processing logic for TensorBoard
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -76,7 +76,6 @@ py_library(
     name = "event_accumulator",
     srcs = ["event_accumulator.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_watcher",
         ":event_file_loader",
@@ -103,7 +102,6 @@ py_library(
     name = "event_multiplexer",
     srcs = ["event_multiplexer.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_watcher",
         ":event_accumulator",
