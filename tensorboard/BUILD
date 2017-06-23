@@ -55,17 +55,24 @@ ts_web_library(
 )
 
 py_library(
-    name = "expect_tensorflow_installed",
-    # This is a dummy rule used as a TensorFlow dependency in open-source.
-    # We expect TensorFlow to already be installed on the system, e.g. via
-    # `pip install tensorflow`
-)
-
-py_library(
     name = "expect_numpy_installed",
     # This is a dummy rule used as a numpy dependency in open-source.
     # We expect numpy to already be installed on the system, e.g. via
     # `pip install numpy`
+)
+
+py_library(
+    name = "expect_sqlite3_installed",
+    # This is a dummy rule used as a sqlite3 dependency in open-source.
+    # We expect sqlite3 to already be present, as it is part of the standard
+    # library.
+)
+
+py_library(
+    name = "expect_tensorflow_installed",
+    # This is a dummy rule used as a TensorFlow dependency in open-source.
+    # We expect TensorFlow to already be installed on the system, e.g. via
+    # `pip install tensorflow`
 )
 
 filegroup(
