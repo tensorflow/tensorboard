@@ -155,7 +155,9 @@ def make_simple_server(tb_app, host, port):
       specified. Also logs an error message.
   """
   # Mute the werkzeug logging.
-  base_logging.getLogger('werkzeug').setLevel(base_logging.WARNING)
+  werkzeug_logger = base_logging.getLogger('werkzeug')
+  werkzeug_logger.setLevel(base_logging.WARNING)
+  werkzeug_logger.addHandler(base_logging.StreamHandler())
 
   try:
     if host:
