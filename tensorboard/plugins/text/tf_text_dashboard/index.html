@@ -41,23 +41,14 @@ limitations under the License.
       <template>
         <dom-module id="text-dash-demo">
           <template>
-            <tf-text-dashboard id="demo" backend="[[backend]]">
+            <tf-text-dashboard id="demo">
             </tf-text-dashboard>
           </template>
           <script>
-            import * as backend_backend from '../tf-backend/backend.js';
             import {createRouter, setRouter} from '../tf-backend/router.js';
 
             Polymer({
               is: "text-dash-demo",
-              properties: {
-                backend: {
-                  type: Object,
-                  value: function() {
-                    return new backend_backend.Backend();
-                  },
-                },
-              },
               created: function() {
                 var path = "data";
                 var router = createRouter(path, true);

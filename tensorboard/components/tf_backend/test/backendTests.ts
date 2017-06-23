@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Backend, filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
+import {filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
 import {RequestManager} from '../requestManager.js';
 import {createRouter, setRouter} from '../router.js';
 import {BAD_CHARACTERS, demoify, queryEncoder} from '../urlPathHelpers.js';
@@ -44,22 +44,12 @@ function assertIsDatum(x) {
 }
 
 describe('backend tests', () => {
-  let backend: Backend;
   let rm: RequestManager;
   const base = 'data';
   const demoRouter = createRouter(base, /*demoMode=*/true);
   beforeEach(() => {
-    // Construct a demo Backend (third param is true)
     setRouter(demoRouter);
-    backend = new Backend();
     rm = new RequestManager();
-  });
-
-  it('all registered types have handlers', () => {
-    TYPES.forEach((t: string) => {
-      chai.assert.isDefined(backend[t], t);
-      chai.assert.isDefined(backend[t + 'Runs'], t + 'Runs');
-    });
   });
 
   it('trailing slash removed from base route', () => {
