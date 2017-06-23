@@ -20,10 +20,10 @@ package_group(
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
-    data = ["TAG"],
     main = "main.py",
     srcs_version = "PY2AND3",
     deps = [
+        ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
@@ -39,6 +39,12 @@ py_binary(
     ],
 )
 
+py_binary(
+  name = "version",
+  srcs = ["version.py"],
+  srcs_version = "PY2AND3",
+)
+
 tensorboard_zip_file(
     name = "webfiles",
     deps = [":assets"],
@@ -47,7 +53,6 @@ tensorboard_zip_file(
 ts_web_library(
     name = "assets",
     srcs = [
-        "TAG",
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
     ],

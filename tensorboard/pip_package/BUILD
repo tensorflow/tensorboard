@@ -25,5 +25,6 @@ sh_binary(
           "MANIFEST.in",
           "setup.py",
           "//tensorboard",
+          "//tensorboard:version",
         ],
 )
