@@ -29,6 +29,7 @@ import sys
 import tensorflow as tf
 from werkzeug import serving
 
+from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
@@ -202,24 +203,13 @@ def run_simple_server(tb_app):
     # An error message was already logged
     # TODO(jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  msg = 'Starting TensorBoard %s at %s' % (get_tag(), url)
+  msg = 'Starting TensorBoard %s at %s' % (version.VERSION, url)
   print(msg)
   tf.logging.info(msg)
   print('(Press CTRL+C to quit)')
   sys.stdout.flush()
 
   server.serve_forever()
-
-
-def get_tag():
-  """Returns tag of current TensorBoard release.
-
-  Returns:
-    String of stripped contents of TAG file.
-  """
-  path = os.path.join(tf.resource_loader.get_data_files_path(), 'TAG')
-  with open(path) as file_:
-    return file_.read().strip()
 
 
 def main(unused_argv=None):
