@@ -85,24 +85,18 @@ allows the user to toggle between various dashboards.
         <content id="injected-overview"></content>
 
         <template is="dom-if" if="[[_modeIsScalars(mode)]]">
-          <tf-scalar-dashboard
-            id="scalars"
-            backend="[[_backend]]"
-          ></tf-scalar-dashboard>
+          <tf-scalar-dashboard id="scalars">
+          </tf-scalar-dashboard>
         </template>
 
         <template is="dom-if" if="[[_modeIsImages(mode)]]">
-          <tf-image-dashboard
-            id="images"
-            backend="[[_backend]]"
-          ></tf-image-dashboard>
+          <tf-image-dashboard id="images">
+          </tf-image-dashboard>
         </template>
 
         <template is="dom-if" if="[[_modeIsAudio(mode)]]">
-          <tf-audio-dashboard
-            id="audio"
-            backend="[[_backend]]"
-          ></tf-audio-dashboard>
+          <tf-audio-dashboard id="audio">
+          </tf-audio-dashboard>
         </template>
 
         <template is="dom-if" if="[[_modeIsGraphs(mode)]]">
@@ -113,16 +107,13 @@ allows the user to toggle between various dashboards.
         </template>
 
         <template is="dom-if" if="[[_modeIsDistributions(mode)]]">
-          <tf-distribution-dashboard
-            id="distributions"
-            backend="[[_backend]]"
-          ></tf-distribution-dashboard>
+          <tf-distribution-dashboard id="distributions">
+          </tf-distribution-dashboard>
         </template>
 
         <template is="dom-if" if="[[_modeIsHistograms(mode)]]">
           <tf-histogram-dashboard
             id="histograms"
-            backend="[[_backend]]"
           ></tf-histogram-dashboard>
         </template>
 
@@ -132,9 +123,7 @@ allows the user to toggle between various dashboards.
         </template>
 
         <template is="dom-if" if="[[_modeIsText(mode)]]">
-          <tf-text-dashboard
-            id="text"
-            backend="[[_backend]]">
+          <tf-text-dashboard id="text">
           </tf-text-dashboard>
         </template>
       </div>
@@ -207,7 +196,6 @@ allows the user to toggle between various dashboards.
   <script src="autoReloadBehavior.js"></script>
   <script>
     import {AutoReloadBehavior} from "./autoReloadBehavior.js";
-    import {Backend} from "../tf-backend/backend.js";
     import {TABS, setUseHash} from "../tf-globals/globals.js";
     import {getString, setString, TAB} from "../tf-storage/storage.js";
     import {setRouter, createRouter} from "../tf-backend/router.js";
@@ -220,10 +208,6 @@ allows the user to toggle between various dashboards.
         router: {
           type: Object,  // only to trigger an observer
           observer: '_updateRouter',
-        },
-        _backend: {
-          type: Object,
-          computed: "_makeBackend(demoDir)",
         },
         _debuggerDataEnabled: {
           type: Boolean,
@@ -271,16 +255,6 @@ allows the user to toggle between various dashboards.
         var mode = this.tabs[modeIndex];
         setString(TAB, mode);
         return mode;
-      },
-      _makeBackend: function(demoDir) {
-        // If the user has provided a router, we'll always use that.
-        // Otherwise, if the user has provided a demoDir, we'll use that
-        // to create a router.
-        if (demoDir != null && this.router == null) {
-          var router = createRouter(demoDir, true);
-          setRouter(router);
-        }
-        return new Backend();
       },
       _isReloadDisabled: function(mode) {
         return !this._debuggerDataEnabled && this._modeIsGraphs(mode);

@@ -43,27 +43,6 @@ export interface DebuggerNumericsAlertReport {
 export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 
 export const TYPES = [];
-/**
- * The Backend class provides a convenient and typed interface to the backend.
- *
- * It provides methods corresponding to the different data sources on the
- * TensorBoard backend. These methods return a promise containing the data
- * from the backend. This class does some post-processing on the data; for
- * example, converting data elements tuples into js objects so that they can
- * be accessed in a more convenient and clearly-documented fashion.
- */
-export class Backend {
-  public requestManager: RequestManager;
-
-  /**
-   * Construct a Backend instance.
-   * @param requestManager The RequestManager, overwritable so you may
-   * manually clear request queue, etc. Defaults to a new RequestManager.
-   */
-  constructor(requestManager?: RequestManager) {
-    this.requestManager = requestManager || new RequestManager();
-  }
-}
 
 /** Given a RunToTag, return sorted array of all runs */
 export function getRuns(r: RunToTag): string[] {
