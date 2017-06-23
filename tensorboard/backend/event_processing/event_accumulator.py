@@ -144,13 +144,16 @@ class EventAccumulator(object):
     histograms: A reservoir.Reservoir of histogram summaries.
     images: A reservoir.Reservoir of image summaries.
     most_recent_step: Step of last Event proto added. This should only
-        be accessed from the thread that calls Reload.
-    most_recent_wall_time: Timestamp of last Event proto added. This
-        should only be accessed from the thread that calls Reload.
+        be accessed from the thread that calls Reload. This is -1 if
+        nothing has been loaded yet.
+    most_recent_wall_time: Timestamp of last Event proto added. This is
+        a float containing seconds from the UNIX epoch, or -1 if
+        nothing has been loaded yet. This should only be accessed from
+        the thread that calls Reload.
     path: A file path to a directory containing tf events files, or a single
         tf events file. The accumulator will load events from this path.
     scalars: A reservoir.Reservoir of scalar summaries.
-    tensors: A reservoir.Reservoir of image summaries.
+    tensors: A reservoir.Reservoir of tensor summaries.
 
   @@Tensors
   """
