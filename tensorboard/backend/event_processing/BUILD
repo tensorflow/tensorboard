@@ -1,7 +1,7 @@
 # Description:
 # Event processing logic for TensorBoard
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
