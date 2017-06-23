@@ -29,7 +29,7 @@ py_library(
   srcs_version = "PY2AND3",
   visibility = ["//visibility:public"],
   deps = [
-    ":protos_all_py", 
+    ":protos_all_py",
     ":projector_plugin",
     "//tensorboard:expect_tensorflow_installed",
   ]
@@ -62,12 +62,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    visibility = ["//third_party/tensorflow:__pkg__"],
 )
 
 tb_proto_library(
