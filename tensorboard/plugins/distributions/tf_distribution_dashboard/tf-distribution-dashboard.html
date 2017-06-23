@@ -33,17 +33,6 @@ limitations under the License.
   which displays the distribution for a single tag on a single run. This
   dashboard provides a categorizer and abcissa seletor (step, relative,
   or wall time).
-
-It provides a x type selector and the normal tf-sidebar-helper options, by
-which the user can customize how data is organized and displayed.
-
-Each chart has a button that can toggle whether it is "expanded"; expanded
-charts are larger.
-
-Organizationally, the #plumbing div contains components that have no concrete
-manifestation and just effect data bindings or data loading. The .sidebar div
-contains shared controls provided by tf-sidebar-helper. The .center div
-contains vz-distribution-charts embedded inside tf-panes-helper's.
 -->
 <dom-module id="tf-distribution-dashboard">
   <template>
