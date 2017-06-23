@@ -211,6 +211,7 @@ future for loading older images.
         },
       },
       observers: [
+        "reload(run, tag)",
         "_updateImageUrl(_steps, _stepIndex)",
       ],
 
@@ -238,7 +239,7 @@ future for loading older images.
         this.reload();
       },
       reload() {
-        if (!this.attached) {
+        if (!this._attached) {
           return;
         }
         this._metadataCanceller.cancelAll();
