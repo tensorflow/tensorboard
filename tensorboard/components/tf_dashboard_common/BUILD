@@ -14,7 +14,6 @@ ts_web_library(
         "tensorboard-color.html",
         "tf-categorizer.html",
         "tf-categorizer.ts",
-        "tf-chart-scaffold.html",
         "tf-collapsable-pane.html",
         "tf-dashboard-layout.html",
         "tf-downloader.html",
