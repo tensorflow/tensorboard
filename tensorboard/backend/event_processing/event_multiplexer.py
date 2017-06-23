@@ -229,7 +229,7 @@ class EventMultiplexer(object):
     Raises:
       KeyError: If the asset is not available.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.RetrievePluginAsset(plugin_name, asset_name)
 
   def FirstEventTimestamp(self, run):
@@ -249,7 +249,7 @@ class EventMultiplexer(object):
       ValueError: If the run has no events loaded and there are no events on
         disk to load.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.FirstEventTimestamp()
 
   def Scalars(self, run, tag):
@@ -266,7 +266,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.ScalarEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Scalars(tag)
 
   def Graph(self, run):
@@ -282,7 +282,7 @@ class EventMultiplexer(object):
     Returns:
       The `GraphDef` protobuf data structure.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Graph()
 
   def MetaGraph(self, run):
@@ -298,7 +298,7 @@ class EventMultiplexer(object):
     Returns:
       The `MetaGraphDef` protobuf data structure.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.MetaGraph()
 
   def RunMetadata(self, run, tag):
@@ -315,7 +315,7 @@ class EventMultiplexer(object):
     Returns:
       The metadata in the form of `RunMetadata` protobuf data structure.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.RunMetadata(tag)
 
   def Histograms(self, run, tag):
@@ -332,7 +332,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.HistogramEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Histograms(tag)
 
   def CompressedHistograms(self, run, tag):
@@ -349,7 +349,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.CompressedHistogramEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.CompressedHistograms(tag)
 
   def Images(self, run, tag):
@@ -366,7 +366,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.ImageEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Images(tag)
 
   def Audio(self, run, tag):
@@ -383,7 +383,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.AudioEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Audio(tag)
 
   def Tensors(self, run, tag):
@@ -400,7 +400,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.TensorEvent`s.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Tensors(tag)
 
   def PluginRunToTagToContent(self, plugin_name):
@@ -418,7 +418,7 @@ class EventMultiplexer(object):
     mapping = {}
     for run in self.Runs():
       try:
-        tag_to_content = self._GetAccumulator(run).PluginTagToContent(
+        tag_to_content = self.GetAccumulator(run).PluginTagToContent(
             plugin_name)
       except KeyError:
         # This run lacks content for the plugin. Try the next run.
@@ -447,7 +447,18 @@ class EventMultiplexer(object):
     """Returns a dict mapping run names to event file paths."""
     return self._paths
 
-  def _GetAccumulator(self, run):
+  def GetAccumulator(self, run):
+    """Returns EventAccumulator for a given run.
+
+    Args:
+      run: String name of run.
+
+    Returns:
+      An EventAccumulator object.
+
+    Raises:
+      KeyError: If run does not exist.
+    """
     with self._accumulators_mutex:
       return self._accumulators[run]
 
