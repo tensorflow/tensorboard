@@ -48,8 +48,3 @@ ts_web_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

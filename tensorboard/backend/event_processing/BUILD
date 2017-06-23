@@ -155,13 +155,3 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
-
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        [
-            "*",
-        ],
-    ),
-    visibility = ["//third_party/tensorflow:__subpackages__"],
-)

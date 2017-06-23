@@ -104,8 +104,3 @@ ts_web_library(
     deps = [":sptree"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

@@ -13,8 +13,3 @@ web_library(
     path = "/",
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

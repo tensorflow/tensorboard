@@ -49,8 +49,3 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

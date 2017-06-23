@@ -86,15 +86,3 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        ["**"],
-        exclude = [
-            "METADATA",
-            "OWNERS",
-            "tensorboard.google.bzl",
-        ],
-    ),
-    tags = ["notsan"],
-)
