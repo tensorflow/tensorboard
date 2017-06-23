@@ -63,7 +63,8 @@ def standard_tensorboard_wsgi(
     purge_orphaned_data,
     reload_interval,
     plugins,
-    db_uri=""):
+    db_uri="",
+    assets_zip_provider=None):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -74,6 +75,7 @@ def standard_tensorboard_wsgi(
     plugins: A list of constructor functions for TBPlugin subclasses.
     db_uri: A String containing the URI of the SQL database for persisting
         data, or empty for memory-only mode.
+    assets_zip_provider: Delegates to TBContext or uses default if None.
 
   Returns:
     The new TensorBoard WSGI application.
@@ -83,11 +85,12 @@ def standard_tensorboard_wsgi(
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
   context = base_plugin.TBContext(
-      assets_zip_provider=get_default_assets_zip_provider(),
       db_module=db_module,
       db_connection_provider=db_connection_provider,
       logdir=logdir,
-      multiplexer=multiplexer)
+      multiplexer=multiplexer,
+      assets_zip_provider=(assets_zip_provider or
+                           get_default_assets_zip_provider()))
   plugins = [constructor(context) for constructor in plugins]
   return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval)
 
