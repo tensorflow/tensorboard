@@ -22,7 +22,6 @@ ts_web_library(
         "tf-multi-checkbox.ts",
         "tf-no-data-warning.html",
         "tf-option-selector.html",
-        "tf-panes-helper.html",
         "tf-regex-group.html",
         "tf-regex-group.ts",
     ],
