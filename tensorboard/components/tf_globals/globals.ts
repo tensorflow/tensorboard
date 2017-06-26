@@ -16,7 +16,7 @@ limitations under the License.
 // The names of TensorBoard tabs.
 export const TABS = [
   'scalars', 'images', 'audio', 'graphs', 'distributions', 'histograms',
-  'embeddings', 'text'
+  'embeddings', 'text', 'profile'
 ];
 
 // If true, TensorBoard stores its hash in the URI state.
