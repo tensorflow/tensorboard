@@ -67,7 +67,7 @@ class ProfilePluginTest(tf.test.TestCase):
     # though, and it may use the context in the future.
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=None)
     self.plugin = profile_plugin.ProfilePlugin(context)
-    self.apps = self.plugin.get_plugin_apps(None, self.logdir)
+    self.apps = self.plugin.get_plugin_apps()
 
   def testRuns(self):
     runs = self.plugin.runs_impl()
