@@ -24,7 +24,7 @@ class TraceEventsJsonStream(object):
     """Create an iterable JSON stream over the supplied Trace.
 
     Args:
-      proto: a tpu.Trace protobuf
+      proto: a tensorboard.profile.Trace protobuf
     """
     self._proto = proto
 
