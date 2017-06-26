@@ -20,6 +20,7 @@ ts_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_storage",
         "//tensorboard/plugins/scalars/vz_line_chart",
