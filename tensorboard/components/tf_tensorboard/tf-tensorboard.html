@@ -35,6 +35,7 @@ limitations under the License.
 <link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-text-dashboard/tf-text-dashboard.html">
+<link rel="import" href="../tf-profile-dashboard/tf-profile-dashboard.html">
 <link rel="import" href="../vz-projector/vz-projector-dashboard.html">
 
 <!--
@@ -125,6 +126,11 @@ allows the user to toggle between various dashboards.
         <template is="dom-if" if="[[_modeIsText(mode)]]">
           <tf-text-dashboard id="text">
           </tf-text-dashboard>
+        </template>
+
+        <template is="dom-if" if="[[_modeIsProfile(mode)]]">
+          <tf-profile-dashboard id="profile">
+          </tf-profile-dashboard>
         </template>
       </div>
     </paper-header-panel>
@@ -282,6 +288,9 @@ allows the user to toggle between various dashboards.
       },
       _modeIsText: function(mode) {
         return mode === "text";
+      },
+      _modeIsProfile: function(mode) {
+        return mode === "profile";
       },
       selectedDashboard: function() {
         var dashboard = this.$$("#" + this.mode);

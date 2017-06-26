@@ -38,6 +38,7 @@ from tensorboard.plugins.distributions import distributions_plugin
 from tensorboard.plugins.graphs import graphs_plugin
 from tensorboard.plugins.histograms import histograms_plugin
 from tensorboard.plugins.images import images_plugin
+from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalars import scalars_plugin
 from tensorboard.plugins.text import text_plugin
@@ -231,6 +232,7 @@ def main(unused_argv=None):
         graphs_plugin.GraphsPlugin,
         distributions_plugin.DistributionsPlugin,
         histograms_plugin.HistogramsPlugin,
+        profile_plugin.ProfilePlugin,
         projector_plugin.ProjectorPlugin,
         text_plugin.TextPlugin,
     ]

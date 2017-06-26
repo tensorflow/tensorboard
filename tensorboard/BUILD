@@ -32,6 +32,7 @@ py_binary(
         "//tensorboard/plugins/graphs:graphs_plugin",
         "//tensorboard/plugins/histograms:histograms_plugin",
         "//tensorboard/plugins/images:images_plugin",
+        "//tensorboard/plugins/profile:profile_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalars:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
