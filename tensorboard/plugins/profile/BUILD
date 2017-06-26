@@ -1,0 +1,77 @@
+# Description:
+# TensorBoard plugin for the performance profiling.
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])  # Apache 2.0
+
+exports_files(["LICENSE"])
+
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
+tb_proto_library(
+    name = "trace_events",
+    srcs = ["trace_events.proto"],
+    visibility = ["//visibility:public"],
+)
+
+## Profile Plugin ##
+py_library(
+    name = "profile_plugin",
+    srcs = ["profile_plugin.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":trace_events_py",
+        ":trace_events_json",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:http_util",
+        "//tensorboard/backend/event_processing:plugin_asset_util",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug//:werkzeug",
+    ],
+)
+
+py_test(
+    name = "profile_plugin_test",
+    srcs = ["profile_plugin_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":trace_events_py",
+        ":profile_plugin",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:plugin_asset_util",
+        "//tensorboard/plugins:base_plugin",
+    ],
+)
+
+py_library(
+    name = "trace_events_json",
+    srcs = ["trace_events_json.py"],
+)
+
+py_test(
+    name = "trace_events_json_test",
+    size = "small",
+    srcs = ["trace_events_json_test.py"],
+    main = "trace_events_json_test.py",
+    deps = [
+        ":trace_events_py",
+        ":trace_events_json",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_binary(
+    name = "profile_demo",
+    srcs = [
+        "profile_demo.py",
+        "profile_demo_data.py",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":profile_plugin",
+        ":trace_events_py",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:plugin_asset_util",
+    ],
+)

@@ -107,7 +107,7 @@ profile run can have multiple tools that present the performance profile as diff
       // The endpoint that serves trace viewer app.
       traceViewerBaseUrl: {
         type: String,
-        value: () => getRouter().pluginRoute("profile", "/trace_viewer"),
+        value: "/trace_viewer_index.html",
       },
       // The URL for the trace data being display.
       _traceDataUrl: {
@@ -164,7 +164,7 @@ profile run can have multiple tools that present the performance profile as diff
       const profileTagsURL =
         getRouter().pluginRoute('profile', '/tags') +
         (getRouter().isDemoMode() ? '.json' : '');
-      this._requestManager.request(url).then((runToTool) => {
+      this._requestManager.request(profileTagsURL).then((runToTool) => {
         const datasets = _.map(runToTool, (tools, run) => ({
           name: run,
           activeTools: tools,

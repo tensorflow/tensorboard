@@ -27,6 +27,7 @@ ts_web_library(
         "//tensorboard/plugins/scalars/tf_scalar_dashboard",
         "//tensorboard/components/tf_storage",
         "//tensorboard/plugins/text/tf_text_dashboard",
+        "//tensorboard/plugins/profile/tf_profile_dashboard",
         "//tensorboard/plugins/projector/vz_projector",
         "@org_polymer_font_roboto",
         "@org_polymer_iron_icons",
