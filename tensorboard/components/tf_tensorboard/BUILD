@@ -24,6 +24,7 @@ ts_web_library(
         "//tensorboard/plugins/histograms/tf_histogram_dashboard",
         "//tensorboard/plugins/images/tf_image_dashboard",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/plugins/scalars/tf_scalar_dashboard",
         "//tensorboard/components/tf_storage",
         "//tensorboard/plugins/text/tf_text_dashboard",
