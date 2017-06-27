@@ -146,7 +146,8 @@ future for loading older images.
       properties: {
         run: String,
         tag: String,
-        showActualSize: Object,  // function: (img: Node) => void
+        /** @type {function(Node)} */
+        showActualSize: Object,
 
         _runColor: {
           type: String,

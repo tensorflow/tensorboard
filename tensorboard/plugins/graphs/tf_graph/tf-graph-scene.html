@@ -675,12 +675,20 @@ Polymer({
       observer: '_onZoomChanged',
       value: false
     },
-    /** Keeps track of the starting coordinates of a graph zoom/pan */
+    /**
+     * Keeps track of the starting coordinates of a graph zoom/pan.
+     *
+     * @private {{x: number, y: number}?}
+     */
     _zoomStartCoords: {
       type: Object,
       value: null
     },
-    /** Keeps track of the current coordinates of a graph zoom/pan */
+    /**
+     * Keeps track of the current coordinates of a graph zoom/pan
+     *
+     * @private {{x: number, y: number}?}
+     */
     _zoomTransform: {
       type: Object,
       value: null
