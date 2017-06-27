@@ -181,6 +181,8 @@ profile run can have multiple tools that present the performance profile as diff
         if (trace_data_url[0] != '/') {
           trace_data_url = '/' + trace_data_url;
         }
+        // Pass the URL of trace data via GET parameter to the iframed trace
+        // viewer app.
         this._traceDataUrl = this.traceViewerBaseUrl + "?trace_data_url=" +
                             encodeURIComponent(trace_data_url);
         return;
