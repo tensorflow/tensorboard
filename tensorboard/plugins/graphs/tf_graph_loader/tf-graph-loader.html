@@ -31,7 +31,7 @@ Polymer({
 
   properties: {
     /**
-     * @type {value: number, msg: string}
+     * @type {{value: number, msg: string}}
      *
      * A number between 0 and 100 denoting the % of progress
      * for the progress bar and the displayed message.
@@ -61,6 +61,7 @@ Polymer({
       readOnly: true,
       notify: true
     },
+    /** @type {Object} */
     outStats: {
       type: Object,
       readOnly: true, // This property produces data.
@@ -90,6 +91,10 @@ Polymer({
       this._setOutStats(stats);
     }.bind(this));
   },
+  /**
+   * @param {string?} path
+   * @param {string=} pbTxtFile
+   */
   _parseAndConstructHierarchicalGraph: function(path, pbTxtFile) {
     // Reset the progress bar to 0.
     this.set('progress', {

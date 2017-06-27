@@ -166,7 +166,12 @@ Polymer({
     // A strictly increasing ID. Each request for health pills has a unique ID. This helps us
     // identify stale requests.
     _healthPillRequestId: {type: Number, value: 1},
-    // The setTimeout ID for the pending request for health pills at a specific step.
+    /**
+     * The setTimeout ID for the pending request for health pills at a
+     * specific step.
+     *
+     * @type {number?}
+     */
     _healthPillStepRequestTimerId: Number,
     // The request for health pills at a specific step (as opposed to all sampled health pills) may
     // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.

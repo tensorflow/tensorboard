@@ -11,11 +11,11 @@ ts_web_library(
     name = "test",
     srcs = [
         "tests.html",
-        "tf-categorizer-tests.ts",
+        "categorizationUtilsTests.ts",
     ],
-    path = "/tf-dashboard-common/test",
+    path = "/tf-categorization-utils/test",
     deps = [
-        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_categorization_utils",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_imports:webcomponentsjs",

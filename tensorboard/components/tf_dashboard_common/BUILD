@@ -12,8 +12,6 @@ ts_web_library(
         "run-color-style.html",
         "scrollbar-style.html",
         "tensorboard-color.html",
-        "tf-categorizer.html",
-        "tf-categorizer.ts",
         "tf-collapsable-pane.html",
         "tf-dashboard-layout.html",
         "tf-downloader.html",
@@ -54,7 +52,6 @@ ts_web_library(
 ts_web_library(
     name = "demo",
     srcs = [
-        "tf-categorizer-demo.html",
         "tf-collapsable-pane-demo.html",
         "tf-multi-checkbox-demo.html",
         "tf-regex-group-demo.html",
