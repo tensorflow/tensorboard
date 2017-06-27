@@ -86,15 +86,6 @@ def tensorboard_workspace():
           ],
       },
       generated_rule_name = "archive",
-      extra_build_file_content = "\n".join([
-          "load(\"@io_bazel_rules_webtesting//web:web.bzl\", \"web_test_archive\")",
-          "",
-          "web_test_archive(",
-          "    name = \"org_chromium_chromedriver\",",
-          "    archive = \":archive\",",
-          "    named_files = {\"CHROMEDRIVER\": \"chromedriver\"},",
-          ")",
-      ]),
   )
 
 
