@@ -97,6 +97,8 @@ def tensorboard_workspace():
       ]),
   )
 
+
+
   # Roughly corresponds to Chrome 55
   filegroup_external(
       name = "org_chromium_chromium",
@@ -114,13 +116,4 @@ def tensorboard_workspace():
           ],
       },
       generated_rule_name = "archive",
-      extra_build_file_content = "\n".join([
-          "load(\"@io_bazel_rules_webtesting//web:web.bzl\", \"web_test_archive\")",
-          "",
-          "web_test_archive(",
-          "    name = \"org_chromium_chromium\",",
-          "    archive = \":archive\",",
-          "    named_files = {\"CHROME\": \"headless_shell\"},",
-          ")",
-      ]),
   )
