@@ -7,7 +7,7 @@ licenses(["notice"])
 py_web_test_suite(
     name = "core_test",
     srcs = ["core_test.py"],
-    browsers = ["//tensorboard/functionaltests/browsers:headless_chrome"],
+    browsers = ["//tensorboard/functionaltests/browsers:chromium"],
     data = [
         "//tensorboard",
     ],

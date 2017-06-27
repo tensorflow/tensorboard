@@ -23,10 +23,10 @@ browser(
         ":mac": {"DISABLE_X_DISPLAY": "1"},
     }),
     metadata = "chromium.json",
-    required_tags = [
-        "local",
-        "noci",
-    ],
+    # required_tags = [
+    #     "local",
+    #     "noci",
+    # ],
     deps = [
         "@org_chromium_chromedriver",
         "//third_party/chromium",

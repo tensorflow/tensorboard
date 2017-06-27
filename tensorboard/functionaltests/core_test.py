@@ -60,6 +60,11 @@ class BasicTest(unittest.TestCase):
         expected_conditions.text_to_be_present_in_element((
             by.By.CLASS_NAME, "toolbar-title"), "TensorBoard"))
 
+  def testLogdirDisplays(self):
+    self.wait.until(
+      expected_conditions.text_to_be_present_in_element((
+        by.By.ID, "logdir"), "/tmp/hypothetical"))
+
 
 if __name__ == "__main__":
   unittest.main()
