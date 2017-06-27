@@ -178,6 +178,25 @@ limitations under the License.
           type: Function,
           value: () => getRouter().pluginRunTagRoute('scalars', '/scalars'),
         },
+
+        /*
+         * A map such that `_loadedRuns[run] === true` iff we've loaded
+         * `run` already, or are in the process of loading it. This
+         * exists so that when there are 100 runs selected and the user
+         * selects an additional run, we only fetch 1 more run instead
+         * of 101.
+         *
+         * `reload` clears this cache.
+         *
+         * Equivalently, this is the set of runs for which, after
+         * callbacks in-flight resolve, the most recent call to
+         * `setSeriesData(run, data)` on the chart object (a) exists
+         * and (b) occurred after all reloads so far.
+         */
+        _loadedRuns: {
+          type: Object,
+          value: () => ({}),
+        },
       },
       observers: [
         'reload(tag)',
@@ -188,6 +207,10 @@ limitations under the License.
         this._changeSeries();
       },
       reload() {
+        this._loadedRuns = {};
+        this._loadData();
+      },
+      _loadData() {
         if (!this._attached) {
           return;
         }
@@ -196,6 +219,10 @@ limitations under the License.
         // prevent race conditions where older data stomps newer data.
         this._canceller.cancelAll();
         this.runs.forEach(run => {
+          if (this._loadedRuns[run]) {
+            return;
+          }
+          this._loadedRuns[run] = true;
           const url = this._scalarUrl(this.tag, run);
           const updateSeries = this._canceller.cancellable(result => {
             if (result.cancelled) {
@@ -214,7 +241,7 @@ limitations under the License.
       },
       _changeSeries() {
         this.$$('vz-line-chart').setVisibleSeries(this.runs);
-        this.reload();
+        this._loadData();
       },
       redraw() {
         this.$$('vz-line-chart').redraw();
