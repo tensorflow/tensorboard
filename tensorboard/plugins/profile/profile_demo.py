@@ -38,15 +38,23 @@ from tensorboard.plugins.profile import trace_events_pb2
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/profile_demo'
 
+
+def _maybe_create_directory(directory):
+  try:
+    os.makedirs(directory)
+  except:
+    pass
+
+
 def dump_data(logdir):
   """Dumps plugin data to the log directory."""
   plugin_logdir = plugin_asset_util.PluginDirectory(
       logdir, profile_plugin.ProfilePlugin.plugin_name)
-  os.makedirs(plugin_logdir)
+  _maybe_create_directory(plugin_logdir)
 
   for run in profile_demo_data.RUNS:
     run_dir = os.path.join(plugin_logdir, run)
-    os.mkdir(run_dir)
+    _maybe_create_directory(run_dir)
     if run in profile_demo_data.TRACES:
       with open(os.path.join(run_dir, 'trace'), 'w') as f:
         proto = trace_events_pb2.Trace()
@@ -55,7 +63,7 @@ def dump_data(logdir):
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
-  os.mkdir(run_dir)
+  _maybe_create_directory(run_dir)
   with open(os.path.join(run_dir, 'unsupported'), 'w') as f:
     f.write('unsupported data')
 

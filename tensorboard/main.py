@@ -232,9 +232,9 @@ def main(unused_argv=None):
         graphs_plugin.GraphsPlugin,
         distributions_plugin.DistributionsPlugin,
         histograms_plugin.HistogramsPlugin,
-        profile_plugin.ProfilePlugin,
         projector_plugin.ProjectorPlugin,
         text_plugin.TextPlugin,
+        profile_plugin.ProfilePlugin,
     ]
     tb = create_tb_app(plugins)
     run_simple_server(tb)
