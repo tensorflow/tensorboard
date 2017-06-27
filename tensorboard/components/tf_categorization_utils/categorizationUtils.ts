@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {getTags} from '../tf-backend/backend.js';
-import {categorizer as makeCategorizer} from '../tf-dashboard-common/tf-categorizer.js';
 
 /**
  * Functions to extract categories of tags and/or run-tag combinations
@@ -42,16 +41,65 @@ export type RunTagCategory = {
   count: number,  // === items.length; provided for Polymer binding convenience
 }
 
+// Used internally as an intermediate structure.
+export type Category = {
+  name: string,
+  items: string[],
+};
+
+/**
+ * For each source that represents a valid regex, compute a category
+ * containing all elements that match that regex. Discard invalid
+ * sources.
+ */
+function categorizeByRegexes(xs: string[], regexSources: string[]): Category[] {
+  return regexSources.map(source => {
+    try {
+      return {source, re: new RegExp(source)};
+    } catch (e) {
+      return null;
+    }
+  }).filter(maybe => maybe != null).map(({source, re}) => ({
+    name: source,
+    items: xs.filter(x => x.match(re)),
+  }));
+}
+
+/**
+ * Compute the quotient set $X/{\sim}$, where $a \sim b$ if $a$ and $b$
+ * share a common `separator`-prefix. Order is preserved.
+ */
+function categorizeByPrefix(xs: string[], separator = '/'): Category[] {
+  const categories = [];
+  const categoriesByName = {};
+  xs.forEach(x => {
+    const index = x.indexOf(separator);
+    const name = index >= 0 ? x.slice(0, index) : x;
+    if (!categoriesByName[name]) {
+      const category = {name, items: []};
+      categoriesByName[name] = category;
+      categories.push(category);
+    }
+    categoriesByName[name].items.push(x);
+  });
+  return categories;
+}
+
+/*
+ * Compute the standard categorization of the given input, including
+ * both regex categories and prefix categories.
+ */
+export function categorize(xs: string[], regexSources: string[]): Category[] {
+  const byRegexes = categorizeByRegexes(xs, regexSources);
+  const byPrefix = categorizeByPrefix(xs);
+  return [].concat(byRegexes, byPrefix);
+}
+
 export function categorizeTags(
     runToTag: RunToTag, selectedRuns: string[],
     tagGroupRegexes?: string[]): TagCategory[] {
-  const categorizer = makeCategorizer({
-    categoryDefinitions: tagGroupRegexes || [],
-    fallbackCategorizer: 'TopLevelNamespaceCategorizer',
-  });
   const tags = getTags(runToTag);
-  const categories = categorizer(tags);
-
+  const categories = categorize(tags, tagGroupRegexes || []);
   const tagToRuns = {};
   tags.forEach(tag => {
     tagToRuns[tag] = [];
@@ -61,13 +109,13 @@ export function categorizeTags(
       tagToRuns[tag].push(run);
     });
   });
-  return categories.map(({name, tags}) => ({
+  return categories.map(({name, items}) => ({
     name,
-    items: tags.map(tag => ({
+    items: items.map(tag => ({
       tag,
       runs: tagToRuns[tag].slice(),
     })),
-    count: tags.length,
+    count: items.length,
   }));
 }
 
