@@ -25,3 +25,10 @@ web_test_archive(
     }),
     visibility = ["//tensorboard/functionaltests/browsers:__pkg__"],
 )
+
+web_test_archive(
+    name = "chromedriver",
+    archive = "@org_chromium_chromedriver//:archive",
+    named_files = {"CHROMEDRIVER": "chromedriver"},
+    visibility = ["//tensorboard/functionaltests/browsers:__pkg__"],
+)

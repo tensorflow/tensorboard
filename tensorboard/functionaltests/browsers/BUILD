@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@io_bazel_rules_webtesting//web:web.bzl", "browser")
+load("@io_bazel_rules_webtesting//web:web.bzl", "web_test_archive")
 
 licenses(["notice"])
 
@@ -23,12 +24,8 @@ browser(
         ":mac": {"DISABLE_X_DISPLAY": "1"},
     }),
     metadata = "chromium.json",
-    # required_tags = [
-    #     "local",
-    #     "noci",
-    # ],
     deps = [
-        "@org_chromium_chromedriver",
+        "//third_party/chromium:chromedriver",
         "//third_party/chromium",
     ],
 )
