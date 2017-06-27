@@ -26,7 +26,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import shutil
 import tensorflow as tf
 
 from google.protobuf import text_format
@@ -42,8 +41,8 @@ LOGDIR = '/tmp/profile_demo'
 def _maybe_create_directory(directory):
   try:
     os.makedirs(directory)
-  except:
-    pass
+  except OSError:
+    print('Directory %s already exists.' %directory)
 
 
 def dump_data(logdir):
@@ -69,7 +68,6 @@ def dump_data(logdir):
 
 
 def main(unused_argv):
-  shutil.rmtree(LOGDIR, ignore_errors=True)
   print('Saving output to %s.' % LOGDIR)
   dump_data(LOGDIR)
   print('Done. Output saved to %s.' % LOGDIR)

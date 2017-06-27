@@ -58,7 +58,7 @@ class TraceEventsJsonStream(object):
           pid=did,
           name='process_sort_index',
           args=dict(sort_index=did))
-      for rid, resource in sorted(device.resources.iteritems()):
+      for rid, resource in sorted(six.iteritems(device.resources)):
         if resource.name:
           yield dict(
               ph=_TYPE_METADATA,
