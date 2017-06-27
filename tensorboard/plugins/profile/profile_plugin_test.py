@@ -56,7 +56,7 @@ class ProfilePluginTest(tf.test.TestCase):
           data = trace.SerializeToString()
         else:
           data = tool
-        with open(tool_file, 'w') as f:
+        with open(tool_file, 'wb') as f:
           f.write(data)
     with open(os.path.join(plugin_logdir, 'noise'), 'w') as f:
       f.write('Not a dir, not a run.')
@@ -70,7 +70,7 @@ class ProfilePluginTest(tf.test.TestCase):
     self.apps = self.plugin.get_plugin_apps()
 
   def testRuns(self):
-    runs = self.plugin.runs_impl()
+    runs = self.plugin.index_impl()
     self.assertItemsEqual(runs.keys(), self.run_to_tools.keys())
     self.assertItemsEqual(runs['foo'], self.run_to_tools['foo'])
     self.assertItemsEqual(runs['bar'], [])

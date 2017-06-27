@@ -32,12 +32,12 @@ from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
 
 # The prefix of routes provided by this plugin.
-_PLUGIN_PREFIX_ROUTE = 'profile'
+PLUGIN_NAME = 'profile'
 
 # HTTP routes
 LOGDIR_ROUTE = '/logdir'
 DATA_ROUTE = '/data'
-RUNS_ROUTE = '/tags'
+TOOLS_ROUTE = '/tags'
 
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'
@@ -56,7 +56,7 @@ def process_raw_trace(raw_trace):
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = PLUGIN_NAME
 
   def __init__(self, context):
     """Constructs a profiler plugin for TensorBoard.
@@ -79,7 +79,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run_dir = os.path.join(self.plugin_logdir, run)
     return run_dir if tf.gfile.IsDirectory(run_dir) else None
 
-  def runs_impl(self):
+  def index_impl(self):
     """Returns available runs and available tool data in the log directory.
 
     In the plugin log directory, each directory contains profile data for a
@@ -97,24 +97,35 @@ class ProfilePlugin(base_plugin.TBPlugin):
       A map from runs to tool names e.g.
         {"run1": ["trace_viewer"], "run2": ["trace_viewer"]} for the example.
     """
-    runs = {}
+    # TODO(ioeric): use the following structure and use EventMultiplexer so that
+    # the plugin still works when logdir is set to root_logdir/run1/
+    #     root_logdir/
+    #       run1/
+    #         plugins/
+    #           profile/
+    #             trace
+    #       run2/
+    #         plugins/
+    #           profile/
+    #             trace
+    run_to_tools = {}
     if not tf.gfile.IsDirectory(self.plugin_logdir):
-      return runs
+      return run_to_tools
     for run in tf.gfile.ListDirectory(self.plugin_logdir):
       run_dir = self._run_dir(run)
       if not run_dir:
         continue
-      runs[run] = []
+      run_to_tools[run] = []
       for tool in TOOLS:
         tool_filename = TOOLS[tool]
         if tf.gfile.Exists(os.path.join(run_dir, tool_filename)):
-          runs[run].append(tool)
-    return runs
+          run_to_tools[run].append(tool)
+    return run_to_tools
 
   @wrappers.Request.application
-  def runs_route(self, request):
-    runs = self.runs_impl()
-    return http_util.Respond(request, runs, 'application/json')
+  def tools_route(self, request):
+    run_to_tools = self.index_impl()
+    return http_util.Respond(request, run_to_tools, 'application/json')
 
   def data_impl(self, run, tool):
     """Retrieves and processes the tool data for a run.
@@ -158,10 +169,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return {
         LOGDIR_ROUTE: self.logdir_route,
-        RUNS_ROUTE: self.runs_route,
+        TOOLS_ROUTE: self.tools_route,
         DATA_ROUTE: self.data_route,
     }
 
   def is_active(self):
     """The plugin is active iff any run has at least one active tool/tag."""
-    return any(self.runs_impl().values())
+    return any(self.index_impl().values())

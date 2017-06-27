@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import json
+import six
 
 # Values for type (ph) and s (scope) parameters in catapult trace format.
 _TYPE_METADATA = 'M'
@@ -45,7 +46,7 @@ class TraceEventsJsonStream(object):
 
   def _events(self):
     """Iterator over all catapult trace events, as python values."""
-    for did, device in sorted(self._proto.devices.iteritems()):
+    for did, device in sorted(six.iteritems(self._proto.devices)):
       if device.name:
         yield dict(
             ph=_TYPE_METADATA,
