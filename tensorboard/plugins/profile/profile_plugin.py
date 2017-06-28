@@ -150,9 +150,9 @@ class ProfilePlugin(base_plugin.TBPlugin):
       with tf.gfile.Open(asset_path, "rb") as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning("Asset path %s not found" % asset_path)
+      logging.warning("Asset path %s not found", asset_path)
     except tf.errors.OpError as e:
-      logging.warning("Couldn't read asset path: %s, OpError %s" % (asset_path, e))
+      logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
 
     if raw_data is None:
       return None
