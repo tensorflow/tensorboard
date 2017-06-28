@@ -47,6 +47,7 @@ py_test(
 py_library(
     name = "trace_events_json",
     srcs = ["trace_events_json.py"],
+    srcs_version = "PY2AND3",
     deps = [
         "@six_archive//:six",
     ],
@@ -57,6 +58,7 @@ py_test(
     size = "small",
     srcs = ["trace_events_json_test.py"],
     main = "trace_events_json_test.py",
+    srcs_version = "PY2AND3",
     deps = [
         ":trace_events_py",
         ":trace_events_json",

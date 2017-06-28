@@ -141,14 +141,21 @@ class ProfilePlugin(base_plugin.TBPlugin):
     # Path relative to the path of plugin directory.
     if tool not in TOOLS:
       return None
-    data_path = os.path.join(run, TOOLS[tool])
+    rel_data_path = os.path.join(run, TOOLS[tool])
+    asset_path = os.path.join(self.plugin_logdir, rel_data_path)
+    raw_data = None
     try:
-      raw_data = plugin_asset_util.RetrieveAsset(
-          self.logdir, ProfilePlugin.plugin_name, data_path)
-    except KeyError as e:
-      logging.warning('Failed to open data file %s. %s.', data_path, e.message)
-      return None
+      # TODO(ioeric): use plugin_asset_util.RetieveAsset when it support reading
+      # bytes data in python 3.
+      with tf.gfile.Open(asset_path, "rb") as f:
+        raw_data = f.read()
+    except tf.errors.NotFoundError:
+      logging.warning("Asset path %s not found" % asset_path)
+    except tf.errors.OpError as e:
+      logging.warning("Couldn't read asset path: %s, OpError %s" % (asset_path, e))
 
+    if raw_data is None:
+      return None
     if tool == 'trace_viewer':
       return process_raw_trace(raw_data)
     return None
