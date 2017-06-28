@@ -5,6 +5,7 @@ package(
 
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("@io_bazel_rules_webtesting//web:py.bzl", "py_web_test_suite")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -29,3 +30,13 @@ tensorboard_html_binary(
     deps = [":test"],
 )
 
+py_web_test_suite(
+    name = "driver",
+    srcs = ["driver.py"],
+    browsers = ["//tensorboard/functionaltests/browsers:chromium"],
+    data = [
+        ":devserver",
+    ],
+    srcs_version = "PY2AND3",
+    deps = ["@io_bazel_rules_webtesting//testing/web"],
+)
