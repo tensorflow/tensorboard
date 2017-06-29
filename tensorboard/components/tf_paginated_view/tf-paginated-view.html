@@ -173,7 +173,7 @@ limitations under the License.
       pages: {
         type: Array,
         notify: true,
-        computed: '_computePages(items, limit, _activeIndex)',
+        computed: '_computePages(items, limit, _activeIndex, _pageCount)',
       },
 
       // At any time we'll mark one particular item('s index) as
@@ -246,9 +246,9 @@ limitations under the License.
       }
     },
 
-    _computePages(items, limit, activeIndex) {
+    _computePages(items, limit, activeIndex, pageCount) {
       const activePageIndex = Math.floor(activeIndex / limit);
-      return _.range(this._pageCount).map(pageIndex => ({
+      return _.range(pageCount).map(pageIndex => ({
         active: pageIndex === activePageIndex,
         items: (items || []).slice(pageIndex * limit, (pageIndex + 1) * limit),
       }));
