@@ -13,20 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {categorize} from '../categorizationUtils';
+import * as CategorizationUtils from '../categorizationUtils';
 
 const assert = chai.assert;
 
 describe('categorizationUtils', () => {
+  const {CategoryType} = CategorizationUtils;
 
-  describe('categorize', () => {
+  describe('categorizeByPrefix', () => {
+    const {categorizeByPrefix} = CategorizationUtils;
+    const metadata = {type: CategoryType.PREFIX_GROUP};
 
     it('returns empty array on empty tags', () => {
-      assert.lengthOf(categorize([], []), 0);
+      assert.lengthOf(categorizeByPrefix([]), 0);
     });
 
     it('handles the singleton case', () => {
-      assert.deepEqual(categorize(['a'], []), [{name: 'a', items: ['a']}]);
+      const input = ['a'];
+      const actual = categorizeByPrefix(input);
+      const expected = [{
+        name: 'a',
+        metadata,
+        items: ['a'],
+      }];
+      assert.deepEqual(categorizeByPrefix(input), expected);
     });
 
     it('handles a simple case', () => {
@@ -34,93 +44,156 @@ describe('categorizationUtils', () => {
         'foo1/bar', 'foo1/zod', 'foo2/bar', 'foo2/zod', 'gosh/lod/mar',
         'gosh/lod/ned',
       ];
+      const actual = categorizeByPrefix(input);
       const expected = [
-        {name: 'foo1', items: ['foo1/bar', 'foo1/zod']},
-        {name: 'foo2', items: ['foo2/bar', 'foo2/zod']},
-        {name: 'gosh', items: ['gosh/lod/mar', 'gosh/lod/ned']},
+        {name: 'foo1', metadata, items: ['foo1/bar', 'foo1/zod']},
+        {name: 'foo2', metadata, items: ['foo2/bar', 'foo2/zod']},
+        {name: 'gosh', metadata, items: ['gosh/lod/mar', 'gosh/lod/ned']},
       ];
-      assert.deepEqual(categorize(input, []), expected);
+      assert.deepEqual(actual, expected);
     });
 
     it('presents categories in first-occurrence order', () => {
       const input = ['e', 'f/1', 'g', 'a', 'f/2', 'b', 'c'];
+      const actual = categorizeByPrefix(input);
       const expected = [
-        {name: 'e', items: ['e']},
-        {name: 'f', items: ['f/1', 'f/2']},
-        {name: 'g', items: ['g']},
-        {name: 'a', items: ['a']},
-        {name: 'b', items: ['b']},
-        {name: 'c', items: ['c']},
+        {name: 'e', metadata, items: ['e']},
+        {name: 'f', metadata, items: ['f/1', 'f/2']},
+        {name: 'g', metadata, items: ['g']},
+        {name: 'a', metadata, items: ['a']},
+        {name: 'b', metadata, items: ['b']},
+        {name: 'c', metadata, items: ['c']},
       ];
-      assert.deepEqual(categorize(input, []), expected);
+      assert.deepEqual(actual, expected);
     });
 
     it('handles cases where category names overlap item names', () => {
       const input = ['a', 'a/a', 'a/b', 'a/c', 'b', 'b/a'];
-      const actual = categorize(input, []);
+      const actual = categorizeByPrefix(input);
       const expected = [
-        {name: 'a', items: ['a', 'a/a', 'a/b', 'a/c']},
-        {name: 'b', items: ['b', 'b/a']},
+        {name: 'a', metadata, items: ['a', 'a/a', 'a/b', 'a/c']},
+        {name: 'b', metadata, items: ['b', 'b/a']},
       ];
       assert.deepEqual(actual, expected);
     });
+  });
 
-    it('categorizes by regular expression', () => {
-      const regexes = ['foo..', 'bar..'];
-      const items = ['foods', 'fools', 'barts', 'barms'];
-      const actual = categorize(items, regexes);
-      const expected = [
-        {name: 'foo..', items: ['foods', 'fools']},
-        {name: 'bar..', items: ['barts', 'barms']},
-        {name: 'foods', items: ['foods']},
-        {name: 'fools', items: ['fools']},
-        {name: 'barts', items: ['barts']},
-        {name: 'barms', items: ['barms']},
-      ];
+  describe('categorizeBySearchQuery', () => {
+    const {categorizeBySearchQuery} = CategorizationUtils;
+    const baseMetadata = {
+      type: CategoryType.SEARCH_RESULTS,
+      validRegex: true,
+      universalRegex: false,
+    };
+
+    it('properly selects just the items matching the query', () => {
+      const query = 'cd';
+      const items = ['def', 'cde', 'bcd', 'abc'];
+      const actual = categorizeBySearchQuery(items, query);
+      const expected = {
+        name: query,
+        metadata: baseMetadata,
+        items: ['cde', 'bcd'],
+      };
       assert.deepEqual(actual, expected);
     });
 
-    it('matches non-exclusively', () => {
-      const regexes = ['...', 'bar'];
-      const items = ['abc', 'bar', 'zod'];
-      const actual = categorize(items, regexes);
-      const expected = [
-        {name: '...', items: ['abc', 'bar', 'zod']},
-        {name: 'bar', items: ['bar']},
-        {name: 'abc', items: ['abc']},
-        {name: 'bar', items: ['bar']},
-        {name: 'zod', items: ['zod']},
-      ];
+    it('treats the query as a regular expression', () => {
+      const query = 'ba(?:na){2,}s';
+      const items = ['apples', 'bananas', 'pears', 'more bananananas more fun'];
+      const actual = categorizeBySearchQuery(items, query);
+      const expected = {
+        name: query,
+        metadata: baseMetadata,
+        items: ['bananas', 'more bananananas more fun'],
+      };
       assert.deepEqual(actual, expected);
     });
 
-    it('creates categories for unmatched rules', () => {
-      const regexes = ['a', 'b', 'c'];
+    it('yields an empty category when there are no items', () => {
+      const query = 'ba(?:na){2,}s';
       const items = [];
-      const actual = categorize(items, regexes);
-      const expected = [
-        {name: 'a', items: []},
-        {name: 'b', items: []},
-        {name: 'c', items: []},
-      ];
+      const actual = categorizeBySearchQuery(items, query);
+      const expected = {name: query, metadata: baseMetadata, items: []};
       assert.deepEqual(actual, expected);
     });
 
-    it('works with special characters in regexes', () => {
-      const regexes = ['^\\w+$', '^\\d+$', '^\\/..$'];
-      const items = ['foo', '3243', '/xa'];
-      const actual = categorize(items, regexes);
-      const expected = [
-        {name: '^\\w+$', items: ['foo', '3243']},
-        {name: '^\\d+$', items: ['3243']},
-        {name: '^\\/..$', items: ['/xa']},
-        {name: 'foo', items: ['foo']},
-        {name: '3243', items: ['3243']},
-        {name: '', items: ['/xa']},
-      ];
+    it('yields a universal category when the query is empty', () => {
+      const query = '';
+      const items = ['apples', 'bananas', 'pears', 'bananananas'];
+      const actual = categorizeBySearchQuery(items, query);
+      const expected = {name: query, metadata: baseMetadata, items};
       assert.deepEqual(actual, expected);
     });
 
+    it('notes when the query is invalid', () => {
+      const query = ')))';
+      const items = ['abc', 'bar', 'zod'];
+      const actual = categorizeBySearchQuery(items, query);
+      const expected = {
+        name: query,
+        metadata: {...baseMetadata, validRegex: false},
+        items: [],
+      };
+      assert.deepEqual(actual, expected);
+    });
+
+    it('notes when the query is ".*"', () => {
+      const query = '.*';
+      const items = ['abc', 'bar', 'zod'];
+      const actual = categorizeBySearchQuery(items, query);
+      const expected = {
+        name: query,
+        metadata: {...baseMetadata, universalRegex: true},
+        items,
+      };
+      assert.deepEqual(actual, expected);
+    });
+  });
+
+  describe('categorize', () => {
+    const {categorize} = CategorizationUtils;
+
+    it('merges the results of the query and the prefix groups', () => {
+      const query = 'ba(?:na){2,}s';
+      const items = [
+        'vegetable/asparagus',
+        'vegetable/broccoli',
+        'fruit/apples',
+        'fruit/bananas',
+        'fruit/bananananas',
+        'fruit/pears',
+        'singleton',
+      ];
+      const actual = categorize(items, query);
+      const expected = [{
+        name: query,
+        metadata: {
+          type: CategoryType.SEARCH_RESULTS,
+          validRegex: true,
+          universalRegex: false,
+        },
+        items: ['fruit/bananas', 'fruit/bananananas'],
+      }, {
+        name: 'vegetable',
+        metadata: {type: CategoryType.PREFIX_GROUP},
+        items: ['vegetable/asparagus', 'vegetable/broccoli'],
+      }, {
+        name: 'fruit',
+        metadata: {type: CategoryType.PREFIX_GROUP},
+        items: [
+          'fruit/apples',
+          'fruit/bananas',
+          'fruit/bananananas',
+          'fruit/pears',
+        ],
+      }, {
+        name: 'singleton',
+        metadata: {type: CategoryType.PREFIX_GROUP},
+        items: ['singleton'],
+      }];
+      assert.deepEqual(actual, expected);
+    });
   });
 
 });
