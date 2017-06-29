@@ -24,6 +24,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-histogram-loader.html">
 
@@ -97,17 +98,26 @@ limitations under the License.
             name="[[category.name]]"
             count="[[category.count]]"
           >
-            <div class="layout horizontal wrap">
-              <template is="dom-repeat" items="[[category.items]]">
-                <tf-histogram-loader
-                  run="[[item.run]]"
-                  tag="[[item.tag]]"
-                  time-property="[[_timeProperty]]"
-                  histogram-mode="[[_histogramMode]]"
-                  request-manager="[[_requestManager]]"
-                  ></tf-histogram-loader>
+            <tf-paginated-view
+              items="[[category.items]]"
+              pages="{{category._pages}}"
+            >
+              <template is="dom-repeat" items="[[category._pages]]" as="page">
+                <template is="dom-if" if="[[page.active]]">
+                  <div class="layout horizontal wrap">
+                    <template is="dom-repeat" items="[[page.items]]">
+                      <tf-histogram-loader
+                        run="[[item.run]]"
+                        tag="[[item.tag]]"
+                        time-property="[[_timeProperty]]"
+                        histogram-mode="[[_histogramMode]]"
+                        request-manager="[[_requestManager]]"
+                        ></tf-histogram-loader>
+                    </template>
+                  </div>
+                </template>
               </template>
-            </div>
+            </tf-paginated-view>
           </tf-collapsable-pane>
         </template>
       </div>

@@ -20,6 +20,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_icon_button",
