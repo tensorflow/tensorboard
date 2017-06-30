@@ -28,7 +28,7 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.histograms import histograms_plugin
+from tensorboard.plugins.histogram import histograms_plugin
 
 
 class HistogramsPluginTest(tf.test.TestCase):

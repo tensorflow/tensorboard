@@ -28,7 +28,7 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.distributions import distributions_plugin
+from tensorboard.plugins.distribution import distributions_plugin
 
 
 class DistributionsPluginTest(tf.test.TestCase):

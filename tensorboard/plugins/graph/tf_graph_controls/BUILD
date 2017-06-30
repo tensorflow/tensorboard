@@ -12,7 +12,7 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graphs/tf_graph_common",
+        "//tensorboard/plugins/graph/tf_graph_common",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_icon_button",
@@ -30,7 +30,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph-controls",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/plugins/graphs/tf_graph_common:legacy",
+        "//tensorboard/plugins/graph/tf_graph_common:legacy",
         "//third_party/javascript/polymer/v1/paper-button:lib",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
         "//third_party/javascript/polymer/v1/paper-menu:lib",

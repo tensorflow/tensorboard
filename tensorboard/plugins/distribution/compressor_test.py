@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorboard.plugins.distributions import compressor
+from tensorboard.plugins.distribution import compressor
 
 
 def _make_expected_value(*values):

@@ -4,7 +4,7 @@ load("//tensorboard/defs:web.bzl", "ts_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-# bazel run //third_party/tensorflow/tensorboard/plugins/graphs/tf_graph_dashboard/demo
+# bazel run //third_party/tensorflow/tensorboard/plugins/graph/tf_graph_dashboard/demo
 ts_web_library(
     name = "demo",
     srcs = ["index.html"] + glob(["data/**"]),
@@ -12,7 +12,7 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:webcomponentsjs",
-        "//tensorboard/plugins/graphs/tf_graph_dashboard",
+        "//tensorboard/plugins/graph/tf_graph_dashboard",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],

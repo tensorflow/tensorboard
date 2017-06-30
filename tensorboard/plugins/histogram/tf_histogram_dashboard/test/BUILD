@@ -15,7 +15,7 @@ ts_web_library(
     ] + glob(["data/**"]),
     path = "/tf-histogram-dashboard/test",
     deps = [
-        "//tensorboard/plugins/histograms/tf_histogram_dashboard",
+        "//tensorboard/plugins/histogram/tf_histogram_dashboard",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_imports:webcomponentsjs",
     ],

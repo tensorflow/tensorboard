@@ -29,7 +29,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.scalars import scalars_plugin
+from tensorboard.plugins.scalar import scalars_plugin
 
 
 class ScalarsPluginTest(tf.test.TestCase):

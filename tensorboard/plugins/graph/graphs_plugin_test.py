@@ -28,7 +28,7 @@ import tensorflow as tf
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.graphs import graphs_plugin
+from tensorboard.plugins.graph import graphs_plugin
 
 
 class GraphsPluginTest(tf.test.TestCase):

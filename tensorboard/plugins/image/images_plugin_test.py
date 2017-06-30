@@ -34,7 +34,7 @@ from werkzeug import wrappers
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.images import images_plugin
+from tensorboard.plugins.image import images_plugin
 
 
 class ImagesPluginTest(tf.test.TestCase):

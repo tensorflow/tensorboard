@@ -20,7 +20,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_runs_selector",
-        "//tensorboard/plugins/distributions/vz_distribution_chart",
+        "//tensorboard/plugins/distribution/vz_distribution_chart",
         "@org_polymer_iron_collapse",
         "@org_polymer_paper_button",
         "@org_polymer_paper_icon_button",

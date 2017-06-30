@@ -16,7 +16,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/scalars/vz_line_chart",
+        "//tensorboard/plugins/scalar/vz_line_chart",
     ],
 )
 
