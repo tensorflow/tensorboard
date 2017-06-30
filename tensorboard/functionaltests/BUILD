@@ -14,3 +14,4 @@ py_web_test_suite(
     srcs_version = "PY2AND3",
     deps = ["@io_bazel_rules_webtesting//testing/web"],
 )
+

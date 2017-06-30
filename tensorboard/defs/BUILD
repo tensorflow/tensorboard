@@ -12,3 +12,11 @@ filegroup(
     ],
     visibility = ["//visibility:public"],
 )
+
+py_binary(
+    name = "mocha_driver",
+    srcs = ["mocha_driver.py"],
+    srcs_version = "PY2AND3",
+    deps = ["@io_bazel_rules_webtesting//testing/web"],
+    testonly = True,
+)
