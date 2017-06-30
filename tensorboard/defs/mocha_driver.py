@@ -37,7 +37,7 @@ SECONDS_TO_TIMEOUT = 10
 class MochaTest(unittest.TestCase):
   """Driver for the mocha_test declared in //tensorboard/defs/mocha_test.bzl.
 
-  It expects that the runfiles for this test include a _mocha_test_devserver
+  It expects that the runfiles for this test include a _mocha_devserver
   which is an executable. When run this executable prints console output
   including "Listening on: [host]:[port]/", and that executable serves
   "/index.html" which is a mocha test suite.
@@ -51,7 +51,7 @@ class MochaTest(unittest.TestCase):
 
     for root, _, files in os.walk(src_dir):
       for file in files:
-        if file.endswith("_mocha_test_devserver"):
+        if file.endswith("_mocha_devserver"):
           # We found the mocha test devserver binary to run
           binary = os.path.join(root, file)
           break

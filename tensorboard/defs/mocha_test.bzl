@@ -17,16 +17,16 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 load("@io_bazel_rules_webtesting//web:py.bzl", "py_web_test_suite")
 
 
-def mocha_test(name, srcs, test_file, path, deps):
+def mocha_test(name, srcs, test_file, path, deps, tags=[]):
   ts_web_library(
     name = name + "_ts_web",
     srcs = srcs,
     path = path,
-    deps = deps,
+    deps = deps + ["//tensorboard/components/tf_imports:web_component_tester"],
   )
 
   tensorboard_html_binary(
-    name = name + "_mocha_test_devserver",
+    name = name + "_mocha_devserver",
     compilation_level = "WHITESPACE_ONLY",
     input_path = path + "/" + test_file,
     output_path = "/index.html",
@@ -38,8 +38,9 @@ def mocha_test(name, srcs, test_file, path, deps):
     main = "//tensorboard/defs:mocha_driver.py",
     srcs = ["//tensorboard/defs:mocha_driver"],
     browsers = ["//tensorboard/functionaltests/browsers:chromium"],
-    data = [":" + name + "_mocha_test_devserver"],
+    data = [":" + name + "_mocha_devserver"],
     srcs_version = "PY2AND3",
     deps = ["@io_bazel_rules_webtesting//testing/web"],
     size="small",
+    tags=tags
   )
