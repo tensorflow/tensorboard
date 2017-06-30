@@ -37,7 +37,7 @@ PLUGIN_NAME = 'profile'
 # HTTP routes
 LOGDIR_ROUTE = '/logdir'
 DATA_ROUTE = '/data'
-TOOLS_ROUTE = '/tags'
+TOOLS_ROUTE = '/tools'
 
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'

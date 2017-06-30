@@ -162,7 +162,7 @@ profile run can have multiple tools that present the performance profile as diff
       // Set this to true so we only initialize once.
       this._initialized = true;
       const profileTagsURL =
-        getRouter().pluginRoute('profile', '/tags') +
+        getRouter().pluginRoute('profile', '/tools') +
         (getRouter().isDemoMode() ? '.json' : '');
       // TODO: sort runs properly.
       this._requestManager.request(profileTagsURL).then((runToTool) => {
