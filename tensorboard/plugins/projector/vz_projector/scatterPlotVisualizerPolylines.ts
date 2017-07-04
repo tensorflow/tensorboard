@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataSet} from './data';
-import {RenderContext} from './renderContext';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
-import * as util from './util';
+import {DataSet} from './data.js';
+import {RenderContext} from './renderContext.js';
+import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
+import * as util from './util.js';
 
 const RGB_NUM_ELEMENTS = 3;
 const XYZ_NUM_ELEMENTS = 3;

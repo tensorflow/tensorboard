@@ -57,13 +57,15 @@ py_test(
 py_library(
     name = "application",
     srcs = ["application.py"],
-    data = ["//tensorboard:assets"],
+    data = ["//tensorboard:webfiles.zip"],
     srcs_version = "PY2AND3",
     deps = [
         ":http_util",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
     ],
@@ -71,7 +73,7 @@ py_library(
 
 py_test(
     name = "application_test",
-    size = "medium",
+    size = "small",
     srcs = ["application_test.py"],
     srcs_version = "PY2AND3",
     deps = [
@@ -92,14 +94,4 @@ py_library(
     deps = [
         "//tensorboard:expect_tensorflow_installed",
     ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        [
-            "*",
-        ],
-    ),
-    visibility = ["//third_party/tensorflow:__subpackages__"],
 )

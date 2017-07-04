@@ -21,9 +21,7 @@ import sys
 
 from setuptools import find_packages, setup
 
-
-# This version string is semver compatible.
-_VERSION = '0.1.2'
+import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
@@ -32,7 +30,7 @@ REQUIRED_PACKAGES = [
     'protobuf >= 3.2.0',
     'werkzeug >= 0.11.10',
     'html5lib == 0.9999999',  # identical to 1.0b8
-    'markdown == 2.2.0',
+    'markdown >= 2.6.8',
     'bleach == 1.5.0',
     'tensorflow >= 1.2.0',
 ]
@@ -49,7 +47,7 @@ CONSOLE_SCRIPTS = [
 
 setup(
     name='tensorflow-tensorboard',
-    version=_VERSION.replace('-', ''),
+    version=tensorboard.version.VERSION.replace('-', ''),
     description='TensorBoard lets you watch Tensors Flow',
     long_description='',
     url='http://tensorflow.org/',

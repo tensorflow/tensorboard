@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TSNE} from './bh_tsne';
-import {SpriteMetadata} from './data-provider';
-import * as knn from './knn';
-import * as logging from './logging';
-import * as scatterPlot from './scatterPlot';
-import * as util from './util';
-import * as vector from './vector';
+import {TSNE} from './bh_tsne.js';
+import {SpriteMetadata} from './data-provider.js';
+import * as knn from './knn.js';
+import * as logging from './logging.js';
+import * as scatterPlot from './scatterPlot.js';
+import * as util from './util.js';
+import * as vector from './vector.js';
 
 export type DistanceFunction = (a: number[], b: number[]) => number;
 export type ProjectionComponents3D = [string, string, string];

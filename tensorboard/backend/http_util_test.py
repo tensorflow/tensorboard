@@ -35,7 +35,7 @@ class RespondTest(tf.test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello world</b>', 'text/html')
     self.assertEqual(r.status_code, 200)
-    self.assertEqual(r.response[0], six.b('<b>hello world</b>'))
+    self.assertEqual(r.response, [six.b('<b>hello world</b>')])
 
   def testHeadRequest_doesNotWrite(self):
     builder = wtest.EnvironBuilder(method='HEAD')
@@ -43,7 +43,7 @@ class RespondTest(tf.test.TestCase):
     request = wrappers.Request(env)
     r = http_util.Respond(request, '<b>hello world</b>', 'text/html')
     self.assertEqual(r.status_code, 200)
-    self.assertEqual(r.response[0], six.b(''))
+    self.assertEqual(r.response, [six.b('')])
 
   def testPlainText_appendsUtf8ToContentType(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -65,23 +65,23 @@ class RespondTest(tf.test.TestCase):
     # input is unicode string, output is gbk string
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, bean, 'text/plain; charset=gbk')
-    self.assertEqual(r.response[0], bean.encode('gbk'))
+    self.assertEqual(r.response, [bean.encode('gbk')])
 
     # input is utf-8 string, output is gbk string
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, bean.encode('utf-8'), 'text/plain; charset=gbk')
-    self.assertEqual(r.response[0], bean.encode('gbk'))
+    self.assertEqual(r.response, [bean.encode('gbk')])
 
     # input is object with unicode strings, output is gbk json
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, {'red': bean}, 'application/json; charset=gbk')
-    self.assertEqual(r.response[0], b'{"red": "' + bean.encode('gbk') + b'"}')
+    self.assertEqual(r.response, [b'{"red": "' + bean.encode('gbk') + b'"}'])
 
     # input is object with utf-8 strings, output is gbk json
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(
         q, {'red': bean.encode('utf-8')}, 'application/json; charset=gbk')
-    self.assertEqual(r.response[0], b'{"red": "' + bean.encode('gbk') + b'"}')
+    self.assertEqual(r.response, [b'{"red": "' + bean.encode('gbk') + b'"}'])
 
     # input is object with gbk strings, output is gbk json
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -89,7 +89,7 @@ class RespondTest(tf.test.TestCase):
         q, {'red': bean.encode('gbk')},
         'application/json; charset=gbk',
         encoding='gbk')
-    self.assertEqual(r.response[0], b'{"red": "' + bean.encode('gbk') + b'"}')
+    self.assertEqual(r.response, [b'{"red": "' + bean.encode('gbk') + b'"}'])
 
   def testAcceptGzip_compressesResponse(self):
     fall_of_hyperion_canto1_stanza1 = '\n'.join([
@@ -119,9 +119,8 @@ class RespondTest(tf.test.TestCase):
     r = http_util.Respond(
         any_encoding, fall_of_hyperion_canto1_stanza1, 'text/plain')
     self.assertEqual(r.headers.get('Content-Encoding'), 'gzip')
-
-    self.assertEqual(
-        _gunzip(r.response[0]), fall_of_hyperion_canto1_stanza1.encode('utf-8'))
+    self.assertEqual(_gunzip(r.response[0]),  # pylint: disable=unsubscriptable-object
+                     fall_of_hyperion_canto1_stanza1.encode('utf-8'))
 
     e2 = wtest.EnvironBuilder(headers={'Accept-Encoding': 'gzip'}).get_environ()
     gzip_encoding = wrappers.Request(e2)
@@ -129,18 +128,18 @@ class RespondTest(tf.test.TestCase):
     r = http_util.Respond(
         gzip_encoding, fall_of_hyperion_canto1_stanza1, 'text/plain')
     self.assertEqual(r.headers.get('Content-Encoding'), 'gzip')
-    self.assertEqual(
-        _gunzip(r.response[0]), fall_of_hyperion_canto1_stanza1.encode('utf-8'))
+    self.assertEqual(_gunzip(r.response[0]),  # pylint: disable=unsubscriptable-object
+                     fall_of_hyperion_canto1_stanza1.encode('utf-8'))
 
     r = http_util.Respond(
         any_encoding, fall_of_hyperion_canto1_stanza1, 'image/png')
     self.assertEqual(
-        r.response[0], fall_of_hyperion_canto1_stanza1.encode('utf-8'))
+        r.response, [fall_of_hyperion_canto1_stanza1.encode('utf-8')])
 
   def testJson_getsAutoSerialized(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, [1, 2, 3], 'application/json')
-    self.assertEqual(r.response[0], b'[1, 2, 3]')
+    self.assertEqual(r.response, [b'[1, 2, 3]'])
 
   def testExpires_setsCruiseControl(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())

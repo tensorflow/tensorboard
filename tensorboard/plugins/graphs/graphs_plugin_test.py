@@ -39,6 +39,11 @@ class GraphsPluginTest(tf.test.TestCase):
   _METADATA_TAG = 'secret-stats'
   _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024
 
+  def __init__(self, *args, **kwargs):
+    super(GraphsPluginTest, self).__init__(*args, **kwargs)
+    self.logdir = None
+    self.plugin = None
+
   def generate_run(self, run_name, include_graph):
     """Create a run with a text summary, metadata, and optionally a graph."""
     tf.reset_default_graph()
@@ -110,10 +115,11 @@ class GraphsPluginTest(tf.test.TestCase):
   def test_graph_simple(self):
     graph = self._get_graph()
     node_names = set(node.name for node in graph.node)
-    self.assertEqual({'k1', 'k2', 'pow', 'sub', 'expected', 'sub_1', 'error',
-                      'message_prefix', 'error_string', 'error_message',
-                      'summary_message'},
-                     node_names)
+    self.assertEqual({
+        'k1', 'k2', 'pow', 'sub', 'expected', 'sub_1', 'error',
+        'message_prefix', 'error_string', 'error_message', 'summary_message',
+        'summary_message/tag', 'summary_message/serialized_summary_metadata',
+    }, node_names)
 
   def test_graph_large_attrs(self):
     key = 'o---;;-;'

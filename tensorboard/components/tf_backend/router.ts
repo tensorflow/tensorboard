@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {demoify, queryEncoder} from './urlPathHelpers'
+import {demoify, queryEncoder} from './urlPathHelpers.js';
 
 export type RunTagUrlFn = (tag: string, run: string) => string;
 
@@ -21,9 +21,6 @@ export interface Router {
   logdir: () => string;
   runs: () => string;
   isDemoMode: () => boolean;
-  textRuns: () => string;
-  text: RunTagUrlFn;
-  healthPills: () => string;
   pluginRoute: (pluginName: string, route: string) => string;
   pluginRunTagRoute: (pluginName: string, route: string) => RunTagUrlFn;
 }
@@ -64,9 +61,6 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     isDemoMode: () => demoMode,
-    healthPills: () => dataDir + '/plugin/debugger/health_pills',
-    textRuns: () => dataDir + '/plugin/text/runs' + (demoMode ? '.json' : ''),
-    text: standardRoute('plugin/text/text'),
     pluginRoute,
     pluginRunTagRoute,
   };

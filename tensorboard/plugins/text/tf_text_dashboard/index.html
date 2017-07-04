@@ -20,6 +20,7 @@ limitations under the License.
   <head>
     <script src="../webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../tf-backend/tf-backend.html">
     <link rel="import" href="tf-text-dashboard.html">
     <title>text Dashboard Demo</title>
     <style>
@@ -40,23 +41,14 @@ limitations under the License.
       <template>
         <dom-module id="text-dash-demo">
           <template>
-            <tf-text-dashboard id="demo" backend="[[backend]]">
+            <tf-text-dashboard id="demo">
             </tf-text-dashboard>
           </template>
           <script>
-            import * as backend_backend from '../tf-backend/backend';
-            import {createRouter, setRouter} from '../tf-backend/router';
+            import {createRouter, setRouter} from '../tf-backend/router.js';
 
             Polymer({
               is: "text-dash-demo",
-              properties: {
-                backend: {
-                  type: Object,
-                  value: function() {
-                    return new backend_backend.Backend();
-                  },
-                },
-              },
               created: function() {
                 var path = "data";
                 var router = createRouter(path, true);

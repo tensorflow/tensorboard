@@ -20,6 +20,7 @@ limitations under the License.
   <head>
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../tf-backend/tf-backend.html">
     <link rel="import" href="../tf-profile-dashboard.html">
     <title>Profile Dashboard Demo</title>
     <style>
@@ -41,24 +42,14 @@ limitations under the License.
         <dom-module id="profile-dash-demo">
           <template>
             <tf-profile-dashboard
-              backend="[[_backend]]",
               trace-viewer-base-url="../../tf-trace-viewer/demo.html">
             </tf-profile-dashboard>
           </template>
           <script>
-            import {Backend} from "../../tf-backend/backend";
-            import {createRouter, setRouter} from "../../tf-backend/router";
+            import {createRouter, setRouter} from "../../tf-backend/router.js";
 
             Polymer({
               is: "profile-dash-demo",
-              properties: {
-                _backend: {
-                  type: Object,
-                  value: function() {
-                    return new Backend();
-                  },
-                },
-              },
               created: function() {
                 var router = createRouter("data", true);
                 setRouter(router);

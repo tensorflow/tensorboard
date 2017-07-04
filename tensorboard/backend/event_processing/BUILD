@@ -1,7 +1,7 @@
 # Description:
 # Event processing logic for TensorBoard
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -154,14 +154,4 @@ py_test(
         ":event_file_inspector",
         "//tensorboard:expect_tensorflow_installed",
     ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        [
-            "*",
-        ],
-    ),
-    visibility = ["//third_party/tensorflow:__subpackages__"],
 )

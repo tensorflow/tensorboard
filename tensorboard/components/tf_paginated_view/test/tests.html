@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
 @license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,9 +16,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<meta charset="utf-8">
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-<script src="../../web-component-tester/browser.js"></script>
-<link rel="import" href="../tf-categorizer.html">
+<html>
+<head>
+  <meta charset="utf-8">
+  <script vulcanize-noinline src="../../web-component-tester/browser.js"></script>
+</head>
 <body>
-<script src="tf-categorizer-tests.js"></script>
+<script>
+// Run the tests for each main component in tensorboard.
+WCT.loadSuites([
+  'paginatedViewTests.html',
+]);
+</script>
+</body>
+</html>

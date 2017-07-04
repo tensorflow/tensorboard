@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import json
 import textwrap
 
@@ -42,7 +43,7 @@ from tensorboard.plugins import base_plugin
 _PLUGIN_PREFIX_ROUTE = 'text'
 
 # HTTP routes
-RUNS_ROUTE = '/runs'
+TAGS_ROUTE = '/tags'
 TEXT_ROUTE = '/text'
 
 ALLOWED_TAGS = [
@@ -155,7 +156,7 @@ def make_table(contents, headers=None):
                      contents.ndim)
 
   if headers:
-    if isinstance(headers, list) or isinstance(headers, tuple):
+    if isinstance(headers, (list, tuple)):
       headers = np.array(headers)
     if not isinstance(headers, np.ndarray):
       raise ValueError('Could not convert headers %s into np.ndarray' % headers)
@@ -262,10 +263,13 @@ class TextPlugin(base_plugin.TBPlugin):
     self._multiplexer = context.multiplexer
 
   def index_impl(self):
-    run_to_series = {}
+    # A previous system of collecting and serving text summaries involved
+    # storing the tags of text summaries within tensors.json files. See if we
+    # are currently using that system. We do not want to drop support for that
+    # use case.
+    run_to_series = collections.defaultdict(list)
     name = 'tensorboard_text'
     run_to_assets = self._multiplexer.PluginAssets(name)
-
     for run, assets in run_to_assets.items():
       if 'tensors.json' in assets:
         tensors_json = self._multiplexer.RetrievePluginAsset(
@@ -274,12 +278,26 @@ class TextPlugin(base_plugin.TBPlugin):
         run_to_series[run] = tensors
       else:
         run_to_series[run] = []
+
+    # TensorBoard is obtaining summaries related to the text plugin based on
+    # SummaryMetadata stored within Value protos.
+    mapping = self._multiplexer.PluginRunToTagToContent(_PLUGIN_PREFIX_ROUTE)
+
+    # Augment the summaries created via the deprecated (plugin asset based)
+    # method with these summaries created with the new method. When they
+    # conflict, the summaries created via the new method overrides.
+    for (run, tags) in mapping.items():
+      run_to_series[run] += tags.keys()
     return run_to_series
 
   @wrappers.Request.application
-  def runs_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+  def tags_route(self, request):
+    # Map from run to a list of tags.
+    response = {
+        run: tag_listing
+        for (run, tag_listing) in self.index_impl().items()
+    }
+    return http_util.Respond(request, response, 'application/json')
 
   def text_impl(self, run, tag):
     try:
@@ -298,7 +316,7 @@ class TextPlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-        RUNS_ROUTE: self.runs_route,
+        TAGS_ROUTE: self.tags_route,
         TEXT_ROUTE: self.text_route,
     }
 

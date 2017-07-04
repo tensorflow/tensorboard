@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataPoint} from './data';
-import * as logging from './logging';
-import {Point2D} from './vector';
+import {DataPoint} from './data.js';
+import * as logging from './logging.js';
+import {Point2D} from './vector.js';
 
 /**
  * Delay for running expensive tasks, in milliseconds.

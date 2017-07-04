@@ -16,13 +16,15 @@ ts_web_library(
     path = "/tf-graph-info",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graphs/tf_graph_common",
         "//tensorboard/plugins/graphs/tf_graph_debugger_data_card",
-        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_list",
+        "@org_polymer_paper_button",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_item",
+        "@org_polymer_paper_material",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",
     ],
@@ -46,8 +48,3 @@ tensorboard_webcomponent_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PointMetadata} from './data';
+import {PointMetadata} from './data.js';
 // tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util';
+import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
 
 // tslint:disable-next-line
 export let MetadataCardPolymer = PolymerElement({

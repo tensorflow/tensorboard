@@ -15,49 +15,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="tf-smoothing-input.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard.html">
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-dashboard-common/tf-panes-helper.html">
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
-<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-collapsable-pane.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="tf-scalar-chart.html">
+<link rel="import" href="tf-smoothing-input.html">
 
 <!--
-tf-scalar-dashboard is a complete frontend that loads runs from a backend,
-and creates chart panes that display data for those runs.
-
-It provides a categorizer, run selector, and x type selector, by which the user
-can customize how data is organized and displayed.
-
-Each chart has a button that can toggle whether it is "expanded"; expanded
-charts are larger.
+  A frontend that displays a set of tf-scalar-charts, each of which
+  represents the time series for a particular tag. This dashboard
+  provides a categorizer, run selector, and abcissa selector, by which
+  the user can customize how data is organized and displayed.
 -->
 <dom-module id="tf-scalar-dashboard">
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
-          <tf-categorizer tags="[[tags]]" categories="{{_categories}}">
-          </tf-categorizer>
+          <!--
+            TODO(wchargin): Remove tag groups. Replace them with a
+            search/filter bar in the main content pane.
+          -->
+          <tf-regex-group regexes="{{_tagGroupRegexes}}">
+          </tf-regex-group>
           <div class="line-item">
             <paper-checkbox
-            id="download-option"
-            checked="{{_showDownloadLinks}}"
+              checked="{{_showDownloadLinks}}"
             >Show data download links</paper-checkbox>
           </div>
           <div class="line-item">
             <paper-checkbox
-            id="outliersCheckbox"
-            checked="{{_ignoreYOutliers}}"
+              checked="{{_ignoreYOutliers}}"
             >Ignore outliers in chart scaling</paper-checkbox>
           </div>
           <div id="tooltip-sorting">
@@ -65,7 +67,7 @@ charts are larger.
             <paper-dropdown-menu
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
-              >
+            >
               <paper-menu class="dropdown-content" selected="0">
                 <paper-item>default</paper-item>
                 <paper-item>descending</paper-item>
@@ -81,17 +83,17 @@ charts are larger.
             step="0.001"
             min="0"
             max="1"
-            ></tf-smoothing-input>
+          ></tf-smoothing-input>
         </div>
         <div class="sidebar-section">
           <tf-option-selector
-            id="xTypeSelector"
+            id="x-type-selector"
             name="Horizontal Axis"
             selected-id="{{_xType}}"
-            >
-            <paper-button id="step">step</paper-button>
-            <paper-button id="relative">relative</paper-button>
-            <paper-button id="wall_time">wall</paper-button>
+          >
+            <paper-button id="step">step</paper-button><!--
+            --><paper-button id="relative">relative</paper-button><!--
+            --><paper-button id="wall_time">wall</paper-button>
           </tf-option-selector>
         </div>
         <div class="sidebar-section">
@@ -100,147 +102,145 @@ charts are larger.
         </div>
       </div>
       <div class="center">
-        <tf-panes-helper
-          categories="[[_categories]]"
-          data-type="[[dataType]]"
-          data-provider="[[dataProvider]]"
-          data-not-found="[[dataNotFound]]"
-          run2tag="[[run2tag]]"
-          selected-runs="[[_selectedRuns]]"
-          show-download-links="[[_showDownloadLinks]]"
-          download-link-url-function="[[scalarUrl]]"
-        >
-          <template>
-            <vz-line-chart
-              x-type="[[_xType]]"
-              color-scale="[[_runsColorScale]]"
-              smoothing-enabled="[[_smoothingEnabled]]"
-              smoothing-weight="[[_smoothingWeight]]"
-              tooltip-sorting-method="[[_tooltipSortingMethod]]"
-              ignore-y-outliers="[[_ignoreYOutliers]]"
-              ></vz-line-chart>
-            <paper-icon-button
-              class="log-button"
-              icon="line-weight"
-              on-tap="toggleLogScale"
-              title="Toggle y-axis log scale"
-              ></paper-icon-button>
-          </template>
-        </tf-panes-helper>
+        <template is="dom-if" if="[[_dataNotFound]]">
+          <div class="no-data-warning">
+            <h3>No scalar data was found.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>You haven’t written any scalar data to your event files.
+              <li>TensorBoard can’t find your event files.
+            </ul>
+            <p>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+          </div>
+        </template>
+        <template is="dom-repeat" items="[[_categories]]" as="category">
+          <tf-collapsable-pane
+            name="[[category.name]]"
+            count="[[category.count]]"
+          >
+            <tf-paginated-view
+              items="[[category.items]]"
+              pages="{{category._pages}}"
+            >
+              <template is="dom-repeat" items="[[category._pages]]" as="page">
+                <template is="dom-if" if="[[page.active]]">
+                  <div class="layout horizontal wrap">
+                    <template is="dom-repeat" items="[[page.items]]">
+                      <tf-scalar-chart
+                        x-type="[[_xType]]"
+                        smoothing-enabled="[[_smoothingEnabled]]"
+                        smoothing-weight="[[_smoothingWeight]]"
+                        tooltip-sorting-method="[[_tooltipSortingMethod]]"
+                        ignore-y-outliers="[[_ignoreYOutliers]]"
+                        show-download-links="[[_showDownloadLinks]]"
+                        request-manager="[[_requestManager]]"
+                        runs="[[item.runs]]"
+                        tag="[[item.tag]]"
+                      ></tf-scalar-chart>
+                    </template>
+                  </div>
+                </template>
+              </template>
+            </tf-paginated-view>
+          </tf-collapsable-pane>
+        </template>
       </div>
     </tf-dashboard-layout>
 
     <style include="dashboard-style"></style>
     <style>
-      .log-button {
-        position: absolute;
-        left: 35px;
-        bottom: -35px;
-        color: #2196F3;
-        background: #fff;
-        width: 32px;
-        height: 32px;
-        padding: 4px;
-        border-radius: 100%;
-      }
-
-      .log-button-selected {
-        background: var(--tb-ui-light-accent);
-      }
-
       #tooltip-sorting {
         display: flex;
         font-size: 14px;
         margin-top: 5px;
       }
-
       #tooltip-sorting-label {
         margin-top: 13px;
-        margin-left: 28px;
       }
-
       #tooltip-sorting paper-dropdown-menu {
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
       }
+      #x-type-selector paper-button {
+        margin: 5px 3px;
+      }
       .line-item {
         display: block;
         padding-top: 5px;
       }
-
-      .sidebar-section {
-        border-top: solid 1px rgba(0, 0, 0, 0.12);
-        padding: 20px 0px 20px 30px;
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
       }
     </style>
   </template>
 
   <script>
-    import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior";
-    import {ReloadBehavior} from "../tf-dashboard-common/reload-behavior";
-    import {BackendBehavior} from "../tf-backend/behavior";
-    import {getRouter} from "../tf-backend/router";
-    import {runsColorScale} from "../tf-color-scale/colorScale";
-    import * as storage from "../tf-storage/storage";
+    import {RequestManager} from '../tf-backend/requestManager.js';
+    import {getTags} from '../tf-backend/backend.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
+    import * as storage from '../tf-storage/storage.js';
+
+    /** @enum {string} */ const X_TYPE = {
+      STEP: 'step',
+      RELATIVE: 'relative',
+      WALL: 'wall',
+    };
 
     Polymer({
-      is: "tf-scalar-dashboard",
-      behaviors: [
-        DashboardBehavior("scalars"),
-        ReloadBehavior("tf-chart-scaffold"),
-        BackendBehavior,
-      ],
+      is: 'tf-scalar-dashboard',
       properties: {
-        backend: Object,
-        dataType: {
-          type: String,
-          value: "scalar"
-        },
-        scalarUrl: {
-          type: Function,
-          value: function() {
-            return getRouter().pluginRunTagRoute('scalars', '/scalars');
-          },
-        },
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
           value: storage.getBooleanInitializer('_showDownloadLinks', false, true),
-          observer: '_showDownloadLinksObserver'
+          observer: '_showDownloadLinksObserver',
         },
         _smoothingWeight: {
           type: Number,
           notify: true,
           value: storage.getNumberInitializer('_smoothingWeight', 0.6),
-          observer: '_smoothingWeightObserver'
+          observer: '_smoothingWeightObserver',
         },
         _smoothingEnabled: {
           type: Boolean,
-          computed: '_computeSmoothingEnabled(_smoothingWeight)'
+          computed: '_computeSmoothingEnabled(_smoothingWeight)',
         },
         _ignoreYOutliers: {
           type: Boolean,
           value: storage.getBooleanInitializer('_ignoreYOutliers', true, true),
           observer: '_ignoreYOutliersObserver',
         },
+        /** @type {X_TYPE} */
         _xType: {
           type: String,
-          value: "step"
+          value: X_TYPE.STEP,
         },
-        _runsColorScale: {
+
+        _selectedRuns: Array,
+        _runToTag: Object,  // map<run: string, tags: string[]>
+        _dataNotFound: Boolean,
+
+        _categories: {
+          type: Array,
+          computed:
+            '_makeCategories(_runToTag, _selectedRuns, _tagGroupRegexes)',
+        },
+
+        _requestManager: {
           type: Object,
-          value: function() {
-            return {
-              scale: runsColorScale,
-            };
-          },
+          value: () => new RequestManager(50),
         },
-      },
-      attached: function() {
-        this.async(function() {
-          this.fire("rendered");
-        });
       },
       _showDownloadLinksObserver: storage.getBooleanObserver(
           '_showDownloadLinks', /*default=*/ false, /*useLocalStorage=*/ true),
@@ -248,17 +248,39 @@ charts are larger.
           '_smoothingWeight', 0.6),
       _ignoreYOutliersObserver: storage.getBooleanObserver(
           '_ignoreYOutliers', /*default=*/ true, /*useLocalStorage=*/true),
-      _computeSmoothingEnabled: function(_smoothingWeight) {
+      _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
       },
-      toggleLogScale: function(e) {
-        var currentTarget = Polymer.dom(e.currentTarget);
-        var button = currentTarget.parentNode.querySelector('.log-button');
-        var chart = currentTarget.parentNode.querySelector('vz-line-chart');
 
-        button.classList.toggle("log-button-selected");
-        chart.yScaleType = chart.yScaleType === 'log' ? 'linear' : 'log';
-        chart.redraw();
+
+      ready() {
+        this.reload();
+      },
+      reload() {
+        this._fetchTags().then(() => {
+          this._reloadCharts();
+        });
+      },
+      _fetchTags() {
+        const url = getRouter().pluginRoute('scalars', '/tags');
+        return this._requestManager.request(url).then(runToTag => {
+          if (_.isEqual(runToTag, this._runToTag)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          const tags = getTags(runToTag);
+          this.set('_dataNotFound', tags.length === 0);
+          this.set('_runToTag', runToTag);
+        });
+      },
+      _reloadCharts() {
+        this.querySelectorAll('tf-scalar-chart').forEach(chart => {
+          chart.reload();
+        });
+      },
+
+      _makeCategories(runToTag, selectedRuns, tagGroupRegexes) {
+        return categorizeTags(runToTag, selectedRuns, tagGroupRegexes);
       },
     });
   </script>

@@ -15,18 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../polymer/polymer.html">
 
 <dom-module id="tf-collapsable-pane">
   <template>
-    <button
-      class="heading"
-      on-tap="togglePane"
-      open-button$="[[opened]]"
-    >
-    <span class="name">[[name]]</span>
-    <span class="count">
+    <button class="heading"
+            on-tap="togglePane"
+            open-button$="[[opened]]">
+      <span class="name">[[name]]</span>
+      <span class="count">
       <span>[[count]]</span>
     </span>
   </button>
@@ -59,6 +57,10 @@ limitations under the License.
         font-size: 15px;
         line-height: 1;
         box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        padding: 10px 15px;
+      }
+
+      .heading::-moz-focus-inner {
         padding: 10px 15px;
       }
 

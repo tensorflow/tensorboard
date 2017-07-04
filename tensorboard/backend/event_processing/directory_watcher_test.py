@@ -114,7 +114,7 @@ class DirectoryWatcherTest(tf.test.TestCase):
   def testFinishesLoadingFileWhenSwitchingToNewFile(self):
     self._WriteToFile('a', 'a')
     # Empty the iterator.
-    self.assertEquals(['a'], list(self._watcher.Load()))
+    self.assertEqual(['a'], list(self._watcher.Load()))
     self._WriteToFile('a', 'b')
     self._WriteToFile('b', 'c')
     # The watcher should finish its current file before starting a new one.

@@ -25,9 +25,3 @@ ts_web_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    testonly = 0,
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

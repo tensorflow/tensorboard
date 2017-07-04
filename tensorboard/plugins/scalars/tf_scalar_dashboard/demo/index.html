@@ -17,11 +17,12 @@ limitations under the License.
 -->
 
 <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-<link rel="import" href="../../polymer/polymer.html">
+
 <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-<link rel="import" href="../tf-scalar-dashboard.html">
 <link rel="import" href="../../paper-styles/typography.html">
+<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-scalar-dashboard.html">
 
 <title>Scalar Dashboard Demo</title>
 <style>
@@ -45,22 +46,13 @@ limitations under the License.
         <tf-scalar-dashboard id="demo" backend="[[backend]]"></tf-scalar-dashboard>
       </template>
       <script>
-        import {Backend} from "../tf-backend/backend";
-        import {createRouter, setRouter} from "../tf-backend/router";
+        import {createRouter, setRouter} from "../tf-backend/router.js";
 
         Polymer({
           is: "scalar-dash-demo",
-          properties: {
-            backend: {
-              type: Object,
-              value: function() {
-                return new Backend();
-              },
-            },
-            created: function() {
-              var router = createRouter("/data", true);
-              setRouter(router);
-            },
+          created: function() {
+            var router = createRouter("/data", true);
+            setRouter(router);
           },
         });
       </script>

@@ -13,6 +13,8 @@ ts_web_library(
     path = "/tf-image-dashboard",
     deps = [
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_card_heading",
+        "//tensorboard/components/tf_categorization_utils",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
@@ -31,15 +33,11 @@ ts_web_library(
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-image-dashboard",
     deps = [
-        "//tensorboard/plugins/images/tf_image_dashboard",
+        ":tf_image_dashboard",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

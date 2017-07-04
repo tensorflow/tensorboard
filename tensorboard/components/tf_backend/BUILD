@@ -9,7 +9,6 @@ ts_web_library(
     name = "tf_backend",
     srcs = [
         "backend.ts",
-        "behavior.ts",
         "canceller.ts",
         "requestManager.ts",
         "router.ts",
@@ -39,8 +38,3 @@ tensorboard_webcomponent_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

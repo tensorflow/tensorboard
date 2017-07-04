@@ -36,8 +36,3 @@ tensorboard_webcomponent_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

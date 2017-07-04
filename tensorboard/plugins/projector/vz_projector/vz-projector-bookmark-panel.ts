@@ -12,13 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {State} from './data';
-import {DataProvider, EmbeddingInfo} from './data-provider';
-import * as logging from './logging';
-import {ProjectorEventContext} from './projectorEventContext';
-import {Projector} from './vz-projector';
+import {State} from './data.js';
+import {DataProvider, EmbeddingInfo} from './data-provider.js';
+import * as logging from './logging.js';
+import {ProjectorEventContext} from './projectorEventContext.js';
+import {Projector} from './vz-projector.js';
 // tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util';
+import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
 
 // tslint:disable-next-line
 export let BookmarkPanelPolymer = PolymerElement({

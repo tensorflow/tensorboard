@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 // tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util';
+import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
 
 // tslint:disable-next-line
 export let LegendPolymer = PolymerElement({

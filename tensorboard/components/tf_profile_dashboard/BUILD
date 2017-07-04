@@ -15,11 +15,9 @@ ts_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/plugins/graphs/tf_graph_controls",
         "@org_polymer",
+        "@org_polymer_paper_dropdown_menu",
+        "@org_polymer_paper_item",
+        "@org_polymer_paper_menu",
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

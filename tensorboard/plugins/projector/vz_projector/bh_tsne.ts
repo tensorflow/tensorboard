@@ -43,7 +43,7 @@ limitations under the License.
  * THE SOFTWARE.
  */
 
-import {SPNode, SPTree} from './sptree';
+import {SPNode, SPTree} from './sptree.js';
 
 type AugmSPNode = SPNode&{numCells: number, yCell: number[], rCell: number};
 

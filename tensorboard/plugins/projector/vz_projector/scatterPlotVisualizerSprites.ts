@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {CameraType, RenderContext} from './renderContext';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
-import * as util from './util';
+import {CameraType, RenderContext} from './renderContext.js';
+import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
+import * as util from './util.js';
 
 const NUM_POINTS_FOG_THRESHOLD = 5000;
 const MIN_POINT_SIZE = 5.0;

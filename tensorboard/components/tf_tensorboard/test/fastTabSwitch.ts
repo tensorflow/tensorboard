@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TABS} from '../../tf-globals/globals';
+import {TABS} from '../../tf-globals/globals.js';
 
 describe('fast tab switch', () => {
   window.HTMLImports.whenReady(() => {

@@ -58,6 +58,7 @@ ts_web_library(
         ":bh_tsne",
         ":heap",
         ":sptree",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:numericjs",
@@ -103,8 +104,3 @@ ts_web_library(
     deps = [":sptree"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

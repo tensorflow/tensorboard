@@ -23,6 +23,30 @@ py_library(
     ],
 )
 
+py_library(
+  name = "projector",
+  srcs = ["__init__.py"],
+  srcs_version = "PY2AND3",
+  visibility = ["//visibility:public"],
+  deps = [
+    ":protos_all_py",
+    ":projector_plugin",
+    "//tensorboard:expect_tensorflow_installed",
+  ]
+)
+
+py_test(
+  name = "projector_api_test",
+  size = "small",
+  srcs = ["projector_api_test.py"],
+  main = "projector_api_test.py",
+  srcs_version = "PY2AND3",
+  deps = [
+      ":projector",
+      "//tensorboard:expect_tensorflow_installed",
+  ]
+)
+
 py_test(
     name = "projector_plugin_test",
     size = "small",
@@ -38,12 +62,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    visibility = ["//third_party/tensorflow:__pkg__"],
 )
 
 tb_proto_library(

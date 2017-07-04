@@ -97,7 +97,7 @@ class HistcompTest(tf.test.TestCase):
                       1.7976931348623157e+308],
         bucket=[0.0, 896.0, 0.0, 64.0, 0.0])
     vals = compressor.CompressHistogram(proto, bps)
-    self.assertEquals(tuple(v.basis_point for v in vals), bps)
+    self.assertEqual(tuple(v.basis_point for v in vals), bps)
     self.assertAlmostEqual(vals[0].value, 0.0)
     self.assertAlmostEqual(vals[1].value, 7.157142857142856e-14)
     self.assertAlmostEqual(vals[2].value, 1.7003571428571426e-13)

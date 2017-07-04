@@ -9,6 +9,7 @@ ts_web_library(
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-profile-dashboard/demo",
     deps = [
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_profile_dashboard",
         "//tensorboard/components/tf_trace_viewer:demo",
         "@org_polymer",
@@ -17,8 +18,3 @@ ts_web_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

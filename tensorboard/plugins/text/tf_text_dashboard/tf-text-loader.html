@@ -15,8 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
 <link rel="import" href="../tf-imports/d3.html">
@@ -25,30 +27,49 @@ limitations under the License.
 tf-text-loader displays markdown text data from the Text plugin.
 -->
 
+<!--
+  The following selectors override Polymer's shadow/shady/local DOMs and
+  directly style the text summaries. This selection is necessary because
+  we bind to `innerHTML` to set the contents of the relevant element to
+  some raw Markdown. This raw Markdown does not include the appropriate
+  classes on its elements, so any normal Polymer styles simply will not
+  apply.
+-->
 <style>
-  tf-text-loader p {
-    margin: 0.3em 0;
+  /*
+   * Reduce topmost and bottommost margins from 16px to 0.3em (renders
+   * at about 4.8px) to keep the layout compact. All text from the
+   * backend is rendered as Markdown, so is enclosed in `<p>` elements.
+   * By targeting only the top-level, extremal elements, we preserve any
+   * actual paragraph breaks and only change the padding against the
+   * card edges.
+   */
+  tf-text-loader .text > p:first-child {
+    margin-top: 0.3em;
+  }
+  tf-text-loader .text > p:last-child {
+    margin-bottom: 0.3em;
   }
 
+  /*
+   * These styles provide formatting for Markdown tables that may be
+   * rendered from the text summaries.
+   */
   tf-text-loader table {
     border-collapse: collapse;
   }
-
   tf-text-loader table th {
     font-weight: 600;
   }
-
   tf-text-loader table th,
   tf-text-loader table td {
     padding: 6px 13px;
     border: 1px solid #dfe2e5;
   }
-
   tf-text-loader table tr {
     background-color: #fff;
     border-top: 1px solid #c6cbd1;
   }
-
 </style>
 <dom-module id="tf-text-loader">
 
@@ -57,86 +78,126 @@ tf-text-loader displays markdown text data from the Text plugin.
    sanitized by the backend, so xss attacks are not possible.
   -->
   <template>
-    <style include="scrollbar-style"></style>
-    <paper-material elevation="1" id="outer" class="container scrollbar">
-      <template id="repeater" is="dom-repeat" items="[[_texts]]">
-      <paper-material elevation="1" class="step-container">
-        step <span class="step-value">[[_numfmt(item.step)]]</span>
-      </paper-material>
-      <paper-material elevation="1" inner-h-t-m-l="[[item.text]]" class="text">
+    <tf-card-heading title="[[tag]]" color="[[_runColor]]">
+      [[run]]
+    </tf-card-heading>
+    <paper-material
+      elevation="1"
+      id="steps-container"
+      class="container scrollbar"
+      style="border-color: [[_runColor]]"
+    >
+      <template is="dom-repeat" items="[[_texts]]">
+        <paper-material elevation="1" class="step-container">
+          step <span class="step-value">[[_formatStep(item.step)]]</span>
         </paper-material>
+        <paper-material
+          elevation="1"
+          inner-h-t-m-l="[[item.text]]"
+          class="text"></paper-material>
       </template>
     </paper-material>
-
-
+    <style include="scrollbar-style"></style>
     <style>
-      #outer {
-        display: block;
-        overflow: auto;
-        max-height: 500px;
-        position: relative;
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        margin-right: 10px;
+        margin-bottom: 15px;
+      }
+      #steps-container {
         border-radius: 3px;
-        border: 2px solid black;
+        border: 2px solid  /* color computed and set as inline style */;
+        display: block;
+        max-height: 500px;
+        overflow: auto;
+        padding: 10px;
       }
       .text {
-        margin: 0 10px 10px 10px;
-        border-radius: 0 3px 3px 3px;
         background-color: white;
+        border-radius: 0 3px 3px 3px;
         padding: 5px;
         word-break: break-word;
       }
       .step-container {
-        border-left: 1px solid #ccc;
-        border-right: 1px solid #ccc;
-        border-top: 1px solid #ccc;
-        border-radius: 3px 3px 0 0;
-        font-style: italic;
-        margin-top: 10px;
         background-color: var(--tb-ui-light-accent);
+        border-bottom: none;
+        border-radius: 3px 3px 0 0;
+        border: 1px solid #ccc;
         display: inline-block;
-        margin-left: 9px;
-        padding: 3px;
         font-size: 12px;
+        font-style: italic;
+        margin-left: -1px;  /* to correct for border */
+        padding: 3px;
       }
-
+      .step-container:not(:first-child) {
+        margin-top: 15px;
+      }
     </style>
-
   </template>
   <script>
-    import {runsColorScale} from "../tf-color-scale/colorScale";
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {getRouter} from "../tf-backend/router.js";
+    import {runsColorScale} from "../tf-color-scale/colorScale.js";
+
     Polymer({
       is: "tf-text-loader",
       properties: {
         run: String,
-        // This is an array of Tensorboard Text&Datum objects (See backend.ts for details). The
-        // properties of objects in this array are
-        // {
+        tag: String,
+        _runColor: {
+          type: String,
+          computed: '_computeRunColor(run)',
+        },
+
+        // _texts: {
         //   wall_time: Date,
         //   step: number,
         //   text: string,
-        // }
-        // they are ordered from most recent to oldest
+        // }[]
+        // Ordered from newest to oldest.
         _texts: {
           type: Array,
           value: [],
         },
 
+        requestManager: Object,
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
       },
-      redraw: function() {
-        // Other dashboards logic requires a redraw method to be defined.
+      _computeRunColor(run) {
+        return runsColorScale(run);
       },
-      setVisibleSeries: function(runs) {
-        // Do nothing.
+      attached() {
+        this._attached = true;
+        this.reload();
       },
-      setSeriesData: function(run, texts) {
-        this.set("run", run);
-        this.set("_texts", texts.reverse());
-
-        // Update the border color based on the run.
-        var color = runsColorScale(run);
-        this.$$("#outer").style.borderColor = color;
+      reload() {
+        if (!this._attached) {
+          return;
+        }
+        this._canceller.cancelAll();
+        const router = getRouter();
+        const url = router.pluginRunTagRoute("text", "/text")(
+          this.tag, this.run);
+        const updateTexts = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const data = result.value.map(datum => ({
+            wall_time: new Date(datum.wall_time * 1000),
+            step: datum.step,
+            text: datum.text,
+          }));
+          this.set("_texts", data.slice().reverse());
+        });
+        this.requestManager.request(url).then(updateTexts);
       },
-      _numfmt: function(n) {
+      _formatStep(n) {
         return d3.format(",")(n);
       }
     });

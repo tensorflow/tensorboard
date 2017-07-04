@@ -49,7 +49,7 @@ def tensorboard_python_workspace():
       sha256 = "0d68713d02ba4148c417ab1637dd819333d96929a34401d0233947bec0881ad8",
       build_file = str(Label("//third_party:bleach.BUILD")),
   )
-  
+
   native.new_http_archive(
       name = "org_pocoo_werkzeug",
       urls = [

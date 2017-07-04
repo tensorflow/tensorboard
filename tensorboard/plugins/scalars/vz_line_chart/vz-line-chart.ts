@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 /* tslint:disable:no-namespace variable-name */
 
-import {DragZoomLayer} from './dragZoomInteraction'
-import * as ChartHelpers from './vz-chart-helpers'
+import {DragZoomLayer} from './dragZoomInteraction.js';
+import * as ChartHelpers from './vz-chart-helpers.js';
 
 Polymer({
   is: 'vz-line-chart',

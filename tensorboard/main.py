@@ -29,10 +29,11 @@ import sys
 import tensorflow as tf
 from werkzeug import serving
 
-
+from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
+from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.distributions import distributions_plugin
 from tensorboard.plugins.graphs import graphs_plugin
 from tensorboard.plugins.histograms import histograms_plugin
@@ -72,6 +73,19 @@ tf.flags.DEFINE_integer('reload_interval', 5,
                         'How often the backend should load '
                         'more data.')
 
+tf.flags.DEFINE_string('db', "", """\
+[Experimental] Sets SQL database URI.
+
+This mode causes TensorBoard to persist experiments to a SQL database. The
+following databases are supported:
+
+- sqlite: Use SQLite built in to Python. URI must specify the path of the
+  database file, which will be created if it doesn't exist. For example:
+  --db=sqlite3:~/.tensorboard.db
+
+Warning: This feature is a work in progress and only has limited support.
+""")
+
 # Inspect Mode flags
 
 tf.flags.DEFINE_boolean('inspect', False, """Use this flag to print out a digest
@@ -101,11 +115,12 @@ tf.flags.DEFINE_string(
 FLAGS = tf.flags.FLAGS
 
 
-def create_tb_app(plugins):
+def create_tb_app(plugins, assets_zip_provider=None):
   """Read the flags, and create a TensorBoard WSGI application.
 
   Args:
     plugins: A list of constructor functions for TBPlugin subclasses.
+    assets_zip_provider: Delegates to TBContext or uses default if None.
 
   Raises:
     ValueError: if a logdir is not specified.
@@ -113,13 +128,13 @@ def create_tb_app(plugins):
   Returns:
     A new TensorBoard WSGI application.
   """
-  if not FLAGS.logdir:
-    raise ValueError('A logdir must be specified. Run `tensorboard --help` for '
-                     'details and examples.')
-
-  logdir = os.path.expanduser(FLAGS.logdir)
+  if not FLAGS.db and not FLAGS.logdir:
+    raise ValueError('A logdir must be specified when db is not specified. '
+                     'Run `tensorboard --help` for details and examples.')
   return application.standard_tensorboard_wsgi(
-      logdir=logdir,
+      assets_zip_provider=assets_zip_provider,
+      db_uri=FLAGS.db,
+      logdir=os.path.expanduser(FLAGS.logdir),
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
       plugins=plugins,
@@ -146,7 +161,9 @@ def make_simple_server(tb_app, host, port):
       specified. Also logs an error message.
   """
   # Mute the werkzeug logging.
-  base_logging.getLogger('werkzeug').setLevel(base_logging.WARNING)
+  werkzeug_logger = base_logging.getLogger('werkzeug')
+  werkzeug_logger.setLevel(base_logging.WARNING)
+  werkzeug_logger.addHandler(base_logging.StreamHandler())
 
   try:
     if host:
@@ -176,7 +193,7 @@ def make_simple_server(tb_app, host, port):
     else:
       msg = (
           'TensorBoard attempted to bind to port %d, but it was already in use'
-          % FLAGS.port)
+          % port)
     tf.logging.error(msg)
     print(msg)
     raise socket_error
@@ -194,7 +211,7 @@ def run_simple_server(tb_app):
     # An error message was already logged
     # TODO(jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  msg = 'Starting TensorBoard %s at %s%s' % (tb_app.tag, url, FLAGS.base_url)
+  msg = 'Starting TensorBoard %s at %s%s' % (version.VERSION, url, FLAGS.base_url)
   print(msg)
   tf.logging.info(msg)
   print('(Press CTRL+C to quit)')
@@ -211,6 +228,7 @@ def main(unused_argv=None):
     return 0
   else:
     plugins = [
+        core_plugin.CorePlugin,
         scalars_plugin.ScalarsPlugin,
         images_plugin.ImagesPlugin,
         audio_plugin.AudioPlugin,
@@ -222,6 +240,7 @@ def main(unused_argv=None):
     ]
     tb = create_tb_app(plugins)
     run_simple_server(tb)
+
 
 if __name__ == '__main__':
   tf.app.run()

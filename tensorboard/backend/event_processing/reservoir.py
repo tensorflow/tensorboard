@@ -53,6 +53,10 @@ class Reservoir(object):
 
   Adding items has amortized O(1) runtime.
 
+  Fields:
+    always_keep_last: Whether the latest seen sample is always at the
+      end of the reservoir. Defaults to True.
+    size: An integer of the maximum number of samples.
   """
 
   def __init__(self, size, seed=0, always_keep_last=True):
@@ -77,6 +81,8 @@ class Reservoir(object):
     # _mutex guards the keys - creating new keys, retrieving by key, etc
     # the internal items are guarded by the ReservoirBuckets' internal mutexes
     self._mutex = threading.Lock()
+    self.size = size
+    self.always_keep_last = always_keep_last
 
   def Keys(self):
     """Return all the keys in the reservoir.

@@ -3,6 +3,8 @@
 
 package(default_visibility = ["//visibility:private"])
 
+licenses(["notice"])  # Apache 2.0
+
 filegroup(
     name = "licenses",
     data = [
@@ -23,5 +25,6 @@ sh_binary(
           "MANIFEST.in",
           "setup.py",
           "//tensorboard",
+          "//tensorboard:version",
         ],
 )

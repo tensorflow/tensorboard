@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DistanceFunction, Projection} from './data';
-import {NearestEntry} from './knn';
+import {DistanceFunction, Projection} from './data.js';
+import {NearestEntry} from './knn.js';
 
 export type HoverListener = (index: number) => void;
 export type SelectionChangedListener =

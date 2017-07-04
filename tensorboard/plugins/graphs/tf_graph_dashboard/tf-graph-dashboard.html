@@ -16,11 +16,11 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
 <!--
@@ -35,10 +35,29 @@ by default. The user can select a different run from a dropdown menu.
 -->
 <dom-module id="tf-graph-dashboard">
 <template>
-<tf-no-data-warning
-  data-type="graph"
-  show-warning="[[_datasetsEmpty(_datasets)]]"
-></tf-no-data-warning>
+<template is="dom-if" if="[[_datasetsEmpty(_datasets)]]">
+  <div style="max-width: 540px; margin: 80px auto 0 auto;">
+    <h3>No graph definition files were found.</h3>
+    <p>
+    To store a graph, create a
+    <code>tf.summary.FileWriter</code>
+    and pass the graph either via the constructor, or by calling its
+    <code>add_graph()</code> method.
+    You may want to check out the
+    <a
+      href="https://www.tensorflow.org/get_started/graph_viz"
+    >graph visualizer tutorial</a>.
+    <p>
+    If you’re new to using TensorBoard, and want to find out how
+    to add data and set up your event files, check out the
+    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+    and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+    <p>
+    If you think TensorBoard is configured properly, please see
+    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+    and consider filing an issue on GitHub.
+  </div>
+</template>
 <template is="dom-if" if="[[!_datasetsEmpty(_datasets)]]">
 <tf-dashboard-layout>
 <div class="sidebar">
@@ -106,22 +125,20 @@ out-hierarchy-params="{{_hierarchyParams}}"
 </dom-module>
 
 <script>
-import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior";
-import {ReloadBehavior} from "../tf-dashboard-common/reload-behavior";
-import {BackendBehavior} from "../tf-backend/behavior";
-import {compareTagNames} from "../vz-sorting/sorting";
+import {RequestManager} from "../tf-backend/requestManager.js";
+import {compareTagNames} from "../vz-sorting/sorting.js";
+import {getRouter} from "../tf-backend/router.js";
+import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
 
 Polymer({
   is: 'tf-graph-dashboard',
-  behaviors: [
-    DashboardBehavior("graphs"),
-    ReloadBehavior("tf-graph-dashboard"),
-    BackendBehavior,
-  ],
   properties: {
     _datasets: Object,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
-    backend: Object,
+    _requestManager: {
+      type: Object,
+      value: () => new RequestManager(),
+    },
     debuggerDataEnabled: Boolean,
     allStepsModeEnabled: Boolean,
     specificHealthPillStep: {type: Number, value: 0},
@@ -149,7 +166,12 @@ Polymer({
     // A strictly increasing ID. Each request for health pills has a unique ID. This helps us
     // identify stale requests.
     _healthPillRequestId: {type: Number, value: 1},
-    // The setTimeout ID for the pending request for health pills at a specific step.
+    /**
+     * The setTimeout ID for the pending request for health pills at a
+     * specific step.
+     *
+     * @type {number?}
+     */
     _healthPillStepRequestTimerId: Number,
     // The request for health pills at a specific step (as opposed to all sampled health pills) may
     // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.
@@ -165,7 +187,7 @@ Polymer({
   },
   observers: [
     '_maybeFetchHealthPills(allStepsModeEnabled, specificHealthPillStep, _selectedNode)',
-    '_maybeInitializeDashboard(backend, _isAttached)',
+    '_maybeInitializeDashboard(_isAttached)',
   ],
   attached: function() {
     this.set('_isAttached', true);
@@ -176,6 +198,49 @@ Polymer({
   reload: function() {
     this._maybeFetchHealthPills();
   },
+  _fetchGraphRuns() {
+    return this._requestManager.request(
+        getRouter().pluginRoute('graphs', '/runs'));
+  },
+  _fetchRunMetadataTags() {
+    return this._requestManager.request(
+        getRouter().pluginRoute('graphs', '/run_metadata_tags'));
+  },
+  /*
+   * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.
+   * This function returns a promise with the raw health pill data.
+   */
+  _fetchHealthPills(nodeNames, step) {
+    const postData = {
+      'node_names': JSON.stringify(nodeNames),
+
+      // Events files with debugger data fall under this special run.
+      'run': '__debugger_data__',
+    };
+    if (step !== undefined) {
+      // The user requested health pills for a specific step. This request
+      // might be slow since the backend reads events sequentially from disk.
+      postData['step'] = step;
+    }
+    const url = getRouter().pluginRoute('debugger', '/health_pills');
+    return this._requestManager.request(url, postData);
+  },
+  _fetchDebuggerNumericsAlerts() {
+    return this._requestManager.request(
+        getRouter().pluginRoute('debugger', '/numerics_alert_report'));
+  },
+  _graphUrl(run, limitAttrSize, largeAttrsKey) {
+    const demoMode = getRouter().isDemoMode();
+    const base = getRouter().pluginRoute('graphs', '/graph');
+    const optional = (p) => (p != null && !demoMode || undefined) && p;
+    const parameters = {
+      'run': run,
+      'limit_attr_size': optional(limitAttrSize),
+      'large_attrs_key': optional(largeAttrsKey),
+    };
+    const extension = demoMode ? '.pbtxt' : '';
+    return base + queryEncoder(parameters) + extension;
+  },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
     // or if the graph itself has not loaded yet. We need the graph to load so that we know which
@@ -185,8 +250,8 @@ Polymer({
         this._renderHierarchy &&
         !this._datasetsEmpty(this._datasets);
   },
-  _maybeInitializeDashboard: function(backend, isAttached) {
-    if (this._initialized || !backend || !isAttached) {
+  _maybeInitializeDashboard: function(isAttached) {
+    if (this._initialized || !isAttached) {
       // Either this dashboard is already initialized ... or we are not yet ready to initialize.
       return;
     }
@@ -195,26 +260,24 @@ Polymer({
     }
     // Set this to true so we only initialize once.
     this._initialized = true;
-    Promise.all([backend.graphRuns(), backend.runMetadataTags()])
-      .then(function(result) {
-        var runsWithGraph = result[0].sort(compareTagNames);
-        var runToMetadata = result[1];
-        var datasets = _.map(runsWithGraph, function(runName) {
-          return {
-            name: runName,
-            path: backend.graphUrl(
-                runName, tf.graph.LIMIT_ATTR_SIZE, tf.graph.LARGE_ATTRS_KEY),
-            runMetadata: runToMetadata[runName] ? _.map(
-              runToMetadata[runName].sort(compareTagNames), function(tag) {
-                return {
-                  tag: tag,
-                  path: backend.runMetadataUrl(tag, runName)
-                };
-              }, this) : []
-          };
-        }, this);
+    Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])
+      .then(result => {
+        const runsWithGraph = result[0].sort(compareTagNames);
+        const runToMetadata = result[1];
+        const datasets = _.map(runsWithGraph, runName => ({
+          name: runName,
+          path: this._graphUrl(
+              runName, tf.graph.LIMIT_ATTR_SIZE, tf.graph.LARGE_ATTRS_KEY),
+          runMetadata: _.map(
+            (runToMetadata[runName] || []).sort(compareTagNames),
+            tag => ({
+              tag: tag,
+              path: getRouter().pluginRunTagRoute(
+                'graphs', '/run_metadata')(tag, runName),
+            })),
+        }));
         this.set('_datasets', datasets);
-      }.bind(this));
+      });
   },
   _requestHealthPills: function() {
     this.set('_areHealthPillsLoading', true);
@@ -249,11 +312,12 @@ Polymer({
       return;
     }
 
-    var specificStep = this.allStepsModeEnabled ? this.specificHealthPillStep : undefined;
+    const specificStep =
+      this.allStepsModeEnabled ? this.specificHealthPillStep : undefined;
 
-    var healthPillsPromise = this.backend.healthPills(
+    const healthPillsPromise = this._fetchHealthPills(
         this._renderHierarchy.getNamesOfRenderedOps(), specificStep);
-    var alertsPromise = this.backend.debuggerNumericsAlerts();
+    const alertsPromise = this._fetchDebuggerNumericsAlerts();
 
     Promise.all([healthPillsPromise, alertsPromise]).then(
         function(result) {

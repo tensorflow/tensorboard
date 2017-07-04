@@ -12,7 +12,10 @@ ts_web_library(
         "tensorboard.html",
     ],
     path = "/",
-    deps = ["//tensorboard/components/tf_tensorboard"],
+    deps = [
+        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/components/tf_tensorboard",
+    ],
 )
 
 tensorboard_html_binary(
@@ -24,11 +27,10 @@ tensorboard_html_binary(
 
 ts_web_library(
     name = "trace_viewer",
-    srcs = [
-        "trace_viewer.html",
-    ],
+    srcs = ["trace_viewer.html"],
     path = "/",
     deps = [
+        "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/components/tf_trace_viewer",
     ],
 )
@@ -40,8 +42,3 @@ tensorboard_html_binary(
     deps = [":trace_viewer"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

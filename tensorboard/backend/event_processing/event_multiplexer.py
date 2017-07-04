@@ -69,7 +69,7 @@ class EventMultiplexer(object):
 
   def __init__(self,
                run_path_map=None,
-               size_guidance=event_accumulator.DEFAULT_SIZE_GUIDANCE,
+               size_guidance=None,
                purge_orphaned_data=True):
     """Constructor for the `EventMultiplexer`.
 
@@ -88,7 +88,8 @@ class EventMultiplexer(object):
     self._accumulators = {}
     self._paths = {}
     self._reload_called = False
-    self._size_guidance = size_guidance
+    self._size_guidance = (size_guidance or
+                           event_accumulator.DEFAULT_SIZE_GUIDANCE)
     self.purge_orphaned_data = purge_orphaned_data
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
@@ -116,8 +117,7 @@ class EventMultiplexer(object):
     Returns:
       The `EventMultiplexer`.
     """
-    if name is None or name is '':
-      name = path
+    name = name or path
     accumulator = None
     with self._accumulators_mutex:
       if name not in self._accumulators or self._paths[name] != path:
@@ -229,7 +229,7 @@ class EventMultiplexer(object):
     Raises:
       KeyError: If the asset is not available.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.RetrievePluginAsset(plugin_name, asset_name)
 
   def FirstEventTimestamp(self, run):
@@ -249,7 +249,7 @@ class EventMultiplexer(object):
       ValueError: If the run has no events loaded and there are no events on
         disk to load.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.FirstEventTimestamp()
 
   def Scalars(self, run, tag):
@@ -266,40 +266,8 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.ScalarEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Scalars(tag)
-
-  def HealthPills(self, run, node_name):
-    """Retrieve the health pill events associated with a run and node name.
-
-    Args:
-      run: A string name of the run for which health pills are retrieved.
-      node_name: A string name of the node for which health pills are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the node name is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.HealthPillEvents`.
-    """
-    accumulator = self._GetAccumulator(run)
-    return accumulator.HealthPills(node_name)
-
-  def GetOpsWithHealthPills(self, run):
-    """Determines which ops have at least 1 health pill event for a given run.
-
-    Args:
-      run: The name of the run.
-
-    Raises:
-      KeyError: If the run is not found, or the node name is not available for
-        the given run.
-
-    Returns:
-      The list of names of ops with health pill events.
-    """
-    return self._GetAccumulator(run).GetOpsWithHealthPills()
 
   def Graph(self, run):
     """Retrieve the graph associated with the provided run.
@@ -314,7 +282,7 @@ class EventMultiplexer(object):
     Returns:
       The `GraphDef` protobuf data structure.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Graph()
 
   def MetaGraph(self, run):
@@ -330,7 +298,7 @@ class EventMultiplexer(object):
     Returns:
       The `MetaGraphDef` protobuf data structure.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.MetaGraph()
 
   def RunMetadata(self, run, tag):
@@ -347,7 +315,7 @@ class EventMultiplexer(object):
     Returns:
       The metadata in the form of `RunMetadata` protobuf data structure.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.RunMetadata(tag)
 
   def Histograms(self, run, tag):
@@ -364,7 +332,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.HistogramEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Histograms(tag)
 
   def CompressedHistograms(self, run, tag):
@@ -381,7 +349,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.CompressedHistogramEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.CompressedHistograms(tag)
 
   def Images(self, run, tag):
@@ -398,7 +366,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.ImageEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Images(tag)
 
   def Audio(self, run, tag):
@@ -415,7 +383,7 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.AudioEvents`.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Audio(tag)
 
   def Tensors(self, run, tag):
@@ -432,8 +400,31 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.TensorEvent`s.
     """
-    accumulator = self._GetAccumulator(run)
+    accumulator = self.GetAccumulator(run)
     return accumulator.Tensors(tag)
+
+  def PluginRunToTagToContent(self, plugin_name):
+    """Returns a 2-layer dictionary of the form {run: {tag: content}}.
+
+    The `content` referred above is the content field of the PluginData proto
+    for the specified plugin within a Summary.Value proto.
+
+    Args:
+      plugin_name: The name of the plugin for which to fetch content.
+
+    Returns:
+      A dictionary of the form {run: {tag: content}}.
+    """
+    mapping = {}
+    for run in self.Runs():
+      try:
+        tag_to_content = self.GetAccumulator(run).PluginTagToContent(
+            plugin_name)
+      except KeyError:
+        # This run lacks content for the plugin. Try the next run.
+        continue
+      mapping[run] = tag_to_content
+    return mapping
 
   def Runs(self):
     """Return all the run names in the `EventMultiplexer`.
@@ -456,7 +447,18 @@ class EventMultiplexer(object):
     """Returns a dict mapping run names to event file paths."""
     return self._paths
 
-  def _GetAccumulator(self, run):
+  def GetAccumulator(self, run):
+    """Returns EventAccumulator for a given run.
+
+    Args:
+      run: String name of run.
+
+    Returns:
+      An EventAccumulator object.
+
+    Raises:
+      KeyError: If run does not exist.
+    """
     with self._accumulators_mutex:
       return self._accumulators[run]
 

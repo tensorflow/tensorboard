@@ -1,0 +1,272 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+
+<!--
+  A component that fetches scalar data from the TensorBoard server and
+  renders it into a vz-line-chart.
+-->
+<dom-module id="tf-scalar-chart">
+  <template>
+    <tf-card-heading title="[[tag]]"></tf-card-heading>
+    <vz-line-chart
+      x-type="[[xType]]"
+      color-scale="[[_runsColorScale]]"
+      smoothing-enabled="[[smoothingEnabled]]"
+      smoothing-weight="[[smoothingWeight]]"
+      tooltip-sorting-method="[[tooltipSortingMethod]]"
+      ignore-y-outliers="[[ignoreYOutliers]]"
+    ></vz-line-chart>
+    <div style="display: flex; flex-direction: row;">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+      <paper-icon-button
+        selected$="[[_logScaleActive]]"
+        icon="line-weight"
+        on-tap="_toggleLogScale"
+        title="Toggle y-axis log scale"
+      ></paper-icon-button>
+      <span style="flex-grow: 1"></span>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <div class="download-links">
+          <paper-dropdown-menu
+            no-label-float="true"
+            label="run to download"
+            selected-item-label="{{_runToDownload}}"
+          >
+            <paper-menu class="dropdown-content">
+              <template is="dom-repeat" items="[[runs]]">
+                <paper-item no-label-float=true>[[item]]</paper-item>
+              </template>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <a
+            download="run_[[_runToDownload]]-tag-[[tag]].csv"
+            href="[[_csvUrl(_runToDownload)]]"
+          >CSV</a> <a
+            download="run_[[_runToDownload]]-tag-[[tag]].json"
+            href="[[_jsonUrl(_runToDownload)]]"
+          >JSON</a>
+          </div>
+        </div>
+      </template>
+    </div>
+    <style>
+      :host {
+        height: 235px;
+        width: 330px;
+        margin: 5px;
+        display: flex;
+        flex-direction: column;
+      }
+      :host[_expanded] {
+        height: 400px;
+        width: 100%;
+      }
+      vz-line-chart {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+      }
+      paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        pointer-events: auto;  /* TODO(wchargin): why? */
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+
+      .download-links {
+        display: flex;
+        height: 32px;
+      }
+      .download-links a {
+        font-size: 10px;
+        align-self: center;
+        margin: 2px;
+      }
+      .download-links paper-dropdown-menu {
+        width: 100px;
+        --paper-input-container-label: {
+          font-size: 10px;
+        }
+        --paper-input-container-input: {
+          font-size: 10px;
+        }
+      }
+    </style>
+  </template>
+  <script>
+    import {Canceller} from '../tf-backend/canceller.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {runsColorScale} from '../tf-color-scale/colorScale.js';
+
+    /** @enum {string} */ const X_TYPE = {
+      STEP: 'step',
+      RELATIVE: 'relative',
+      WALL: 'wall',
+    };
+
+    Polymer({
+      is: 'tf-scalar-chart',
+      properties: {
+        runs: Array,  // of String
+        tag: String,
+
+        /** @type {X_TYPE} */ xType: String,
+        smoothingEnabled: Boolean,
+        smoothingWeight: Number,
+        tooltipSortingMethod: String,
+        ignoreYOutliers: Boolean,
+        showDownloadLinks: Boolean,
+
+        requestManager: Object,
+
+        _logScaleActive: {
+          type: Boolean,
+          observer: '_logScaleChanged',
+        },
+
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+
+        _runsColorScale: {
+          type: Object,
+          value: () => ({scale: runsColorScale}),
+        },
+
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+
+        // Usage: this._scalarUrl('tag', 'run') yields the URL to the
+        // scalar data for the appropriate run and tag.
+        _scalarUrl: {
+          type: Function,
+          value: () => getRouter().pluginRunTagRoute('scalars', '/scalars'),
+        },
+
+        /*
+         * A map such that `_loadedRuns[run] === true` iff we've loaded
+         * `run` already, or are in the process of loading it. This
+         * exists so that when there are 100 runs selected and the user
+         * selects an additional run, we only fetch 1 more run instead
+         * of 101.
+         *
+         * `reload` clears this cache.
+         *
+         * Equivalently, this is the set of runs for which, after
+         * callbacks in-flight resolve, the most recent call to
+         * `setSeriesData(run, data)` on the chart object (a) exists
+         * and (b) occurred after all reloads so far.
+         */
+        _loadedRuns: {
+          type: Object,
+          value: () => ({}),
+        },
+      },
+      observers: [
+        'reload(tag)',
+        '_changeSeries(runs.*)'
+      ],
+      attached() {
+        this._attached = true;
+        this._changeSeries();
+      },
+      reload() {
+        this._loadedRuns = {};
+        this._loadData();
+      },
+      _loadData() {
+        if (!this._attached) {
+          return;
+        }
+        //
+        // Before updating, cancel any network-pending updates, to
+        // prevent race conditions where older data stomps newer data.
+        this._canceller.cancelAll();
+        this.runs.forEach(run => {
+          if (this._loadedRuns[run]) {
+            return;
+          }
+          this._loadedRuns[run] = true;
+          const url = this._scalarUrl(this.tag, run);
+          const updateSeries = this._canceller.cancellable(result => {
+            if (result.cancelled) {
+              return;
+            }
+            const data = result.value;
+            const formattedData = data.map(datum => ({
+              wall_time: new Date(datum[0] * 1000),
+              step: datum[1],
+              scalar: datum[2],
+            }));
+            this.$$('vz-line-chart').setSeriesData(run, formattedData);
+          });
+          this.requestManager.request(url).then(updateSeries);
+        });
+      },
+      _changeSeries() {
+        this.$$('vz-line-chart').setVisibleSeries(this.runs);
+        this._loadData();
+      },
+      redraw() {
+        this.$$('vz-line-chart').redraw();
+      },
+
+      _toggleLogScale() {
+        this.set('_logScaleActive', !this._logScaleActive);
+      },
+      _logScaleChanged(logScaleActive) {
+        var chart = this.$$('vz-line-chart');
+        chart.yScaleType = logScaleActive ? 'log' : 'linear';
+        this.redraw();
+      },
+
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+
+      _csvUrl(run) {
+        return this._scalarUrl(this.tag, run) + '&format=csv';
+      },
+      _jsonUrl(run) {
+        return this._scalarUrl(this.tag, run);
+      },
+    });
+  </script>
+</dom-module>

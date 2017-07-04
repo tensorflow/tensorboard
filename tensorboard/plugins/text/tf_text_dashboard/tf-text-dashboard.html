@@ -16,11 +16,12 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard.html">
-<link rel="import" href="../tf-dashboard-common/tf-panes-helper.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-collapsable-pane.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-text-loader.html">
 
@@ -29,15 +30,15 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 -->
 <dom-module id="tf-text-dashboard">
   <template>
-    <paper-dialog with-backdrop id="actual-text-size-dialog"></paper-dialog>
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
-          <tf-categorizer
-            id="categorizer"
-            tags="[[tags]]"
-            categories="{{_categories}}"
-          ></tf-categorizer>
+          <!--
+            TODO(wchargin): Remove tag groups. Replace them with a
+            search/filter bar in the main content pane.
+          -->
+          <tf-regex-group regexes="{{_tagGroupRegexes}}">
+          </tf-regex-group>
         </div>
         <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
@@ -45,56 +46,103 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         </div>
       </div>
       <div class="center">
-        <tf-panes-helper
-          categories="[[_categories]]"
-          data-type="[[dataType]]"
-          data-provider="[[dataProvider]]"
-          data-not-found="[[dataNotFound]]"
-          run2tag="[[run2tag]]"
-          selected-runs="[[_selectedRuns]]"
-          repeat-for-runs
+        <template is="dom-if" if="[[_dataNotFound]]">
+          <div class="no-data-warning">
+            <h3>No text data was found.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>You haven’t written any text data to your event files.
+              <li>TensorBoard can’t find your event files.
+            </ul>
+            <p>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+          </div>
+        </template>
+        <template is="dom-repeat" items="[[_categories]]" as="category">
+          <tf-collapsable-pane
+            name="[[category.name]]"
+            count="[[category.count]]"
           >
-          <template>
-            <tf-text-loader></tf-text-loader>
-          </template>
-        </tf-panes-helper>
+            <div class="layout horizontal wrap">
+              <template is="dom-repeat" items="[[category.items]]">
+                <tf-text-loader
+                  tag="[[item.tag]]"
+                  run="[[item.run]]"
+                  request-manager="[[_requestManager]]"
+                ></tf-text-loader>
+              </template>
+            </div>
+          </tf-collapsable-pane>
+        </template>
       </div>
     </tf-dashboard-layout>
     <style include="dashboard-style"></style>
     <style>
-      tf-panes-helper {
-        --card-width: 100%;
-        --card-height: auto;
-        --card-expanded-width: 100%;
-        --card-expanded-height: 1000px;
-        --card-padding: 0 5px 5px 5px;
-        --show-expand-button: none;
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
       }
     </style>
   </template>
   <script>
-    import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior";
-    import {ReloadBehavior} from "../tf-dashboard-common/reload-behavior";
-    import {BackendBehavior} from "../tf-backend/behavior";
+    import {RequestManager} from '../tf-backend/requestManager.js';
+    import {getTags} from '../tf-backend/backend.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
 
     Polymer({
       is: "tf-text-dashboard",
       properties: {
-        backend: Object,
-        dataType: {
-          type: String,
-          value: "text"
+        _selectedRuns: Array,
+        _runToTag: Object,  // map<run: string, tags: string[]>
+        _dataNotFound: Boolean,
+
+        _categories: {
+          type: Array,
+          computed:
+            '_makeCategories(_runToTag, _selectedRuns, _tagGroupRegexes)',
+        },
+
+        _requestManager: {
+          type: Object,
+          value: () => new RequestManager(),
         },
       },
-      behaviors: [
-        DashboardBehavior("text"),
-        ReloadBehavior("tf-chart-scaffold"),
-        BackendBehavior,
-      ],
-      attached: function() {
-        this.async(function() {
-          this.fire("rendered");
+      ready() {
+        this.reload();
+      },
+      reload() {
+        this._fetchTags().then(() => {
+          this._reloadTexts();
         });
+      },
+      _fetchTags() {
+        const url = getRouter().pluginRoute('text', '/tags');
+        return this._requestManager.request(url).then(runToTag => {
+          if (_.isEqual(runToTag, this._runToTag)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          const tags = getTags(runToTag);
+          this.set('_dataNotFound', tags.length === 0);
+          this.set('_runToTag', runToTag);
+        });
+      },
+      _reloadTexts() {
+        this.querySelectorAll('tf-text-loader').forEach(textLoader => {
+          textLoader.reload();
+        });
+      },
+      _makeCategories(runToTag, selectedRuns, tagGroupRegexes) {
+        return categorizeRunTagCombinations(
+          runToTag, selectedRuns, tagGroupRegexes);
       },
     });
   </script>

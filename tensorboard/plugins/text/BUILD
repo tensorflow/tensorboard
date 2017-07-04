@@ -42,9 +42,3 @@ py_test(
         "@six_archive//:six",
     ],
 )
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    visibility = ["//third_party/tensorflow:__pkg__"],
-)

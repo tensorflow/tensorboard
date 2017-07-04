@@ -64,7 +64,7 @@ def Cleanse(obj, encoding='utf-8'):
       return obj
   elif isinstance(obj, bytes):
     return tf.compat.as_text(obj, encoding)
-  elif isinstance(obj, list) or isinstance(obj, tuple):
+  elif isinstance(obj, (list, tuple)):
     return [Cleanse(i, encoding) for i in obj]
   elif isinstance(obj, set):
     return [Cleanse(i, encoding) for i in sorted(obj)]

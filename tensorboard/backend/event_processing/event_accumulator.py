@@ -19,7 +19,6 @@ from __future__ import print_function
 
 import collections
 import os
-import re
 import threading
 
 import tensorflow as tf
@@ -32,10 +31,6 @@ from tensorboard.plugins.distributions import compressor
 
 namedtuple = collections.namedtuple
 ScalarEvent = namedtuple('ScalarEvent', ['wall_time', 'step', 'value'])
-
-HealthPillEvent = namedtuple('HealthPillEvent', [
-    'wall_time', 'step', 'device_name', 'node_name', 'output_slot', 'dtype',
-    'shape', 'value'])
 
 CompressedHistogramEvent = namedtuple('CompressedHistogramEvent',
                                       ['wall_time', 'step',
@@ -75,7 +70,6 @@ IMAGES = 'images'
 AUDIO = 'audio'
 SCALARS = 'scalars'
 TENSORS = 'tensors'
-HEALTH_PILLS = 'health_pills'
 GRAPH = 'graph'
 META_GRAPH = 'meta_graph'
 RUN_METADATA = 'run_metadata'
@@ -90,8 +84,6 @@ DEFAULT_SIZE_GUIDANCE = {
     IMAGES: 4,
     AUDIO: 4,
     SCALARS: 10000,
-    # We store this many health pills per op.
-    HEALTH_PILLS: 100,
     HISTOGRAMS: 1,
     TENSORS: 10,
 }
@@ -101,15 +93,9 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
     IMAGES: 0,
     AUDIO: 0,
     SCALARS: 0,
-    HEALTH_PILLS: 0,
     HISTOGRAMS: 0,
     TENSORS: 0,
 }
-
-# The tag that values containing health pills have. Health pill data is stored
-# in tensors. In order to distinguish health pill values from scalar values, we
-# rely on how health pill values have this special tag value.
-HEALTH_PILL_EVENT_TAG_PREFIX = '__health_pill__/'
 
 
 def IsTensorFlowEventsFile(path):
@@ -150,12 +136,31 @@ class EventAccumulator(object):
 
   Histograms, audio, and images are very large, so storing all of them is not
   recommended.
+
+  Fields:
+    audios: A reservoir.Reservoir of audio summaries.
+    compressed_histograms: A reservoir.Reservoir of compressed
+        histogram summaries.
+    histograms: A reservoir.Reservoir of histogram summaries.
+    images: A reservoir.Reservoir of image summaries.
+    most_recent_step: Step of last Event proto added. This should only
+        be accessed from the thread that calls Reload. This is -1 if
+        nothing has been loaded yet.
+    most_recent_wall_time: Timestamp of last Event proto added. This is
+        a float containing seconds from the UNIX epoch, or -1 if
+        nothing has been loaded yet. This should only be accessed from
+        the thread that calls Reload.
+    path: A file path to a directory containing tf events files, or a single
+        tf events file. The accumulator will load events from this path.
+    scalars: A reservoir.Reservoir of scalar summaries.
+    tensors: A reservoir.Reservoir of tensor summaries.
+
   @@Tensors
   """
 
   def __init__(self,
                path,
-               size_guidance=DEFAULT_SIZE_GUIDANCE,
+               size_guidance=None,
                compression_bps=NORMAL_HISTOGRAM_BPS,
                purge_orphaned_data=True):
     """Construct the `EventAccumulator`.
@@ -175,6 +180,7 @@ class EventAccumulator(object):
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
     """
+    size_guidance = size_guidance or DEFAULT_SIZE_GUIDANCE
     sizes = {}
     for key in DEFAULT_SIZE_GUIDANCE:
       if key in size_guidance:
@@ -183,23 +189,26 @@ class EventAccumulator(object):
         sizes[key] = DEFAULT_SIZE_GUIDANCE[key]
 
     self._first_event_timestamp = None
-    self._scalars = reservoir.Reservoir(size=sizes[SCALARS])
-
-    # Unlike the other reservoir, the reservoir for health pills is keyed by the
-    # name of the op instead of the tag. This lets us efficiently obtain the
-    # health pills per node.
-    self._health_pills = reservoir.Reservoir(size=sizes[HEALTH_PILLS])
+    self.scalars = reservoir.Reservoir(size=sizes[SCALARS])
 
     self._graph = None
     self._graph_from_metagraph = False
     self._meta_graph = None
     self._tagged_metadata = {}
-    self._histograms = reservoir.Reservoir(size=sizes[HISTOGRAMS])
-    self._compressed_histograms = reservoir.Reservoir(
+    self.histograms = reservoir.Reservoir(size=sizes[HISTOGRAMS])
+    self.compressed_histograms = reservoir.Reservoir(
         size=sizes[COMPRESSED_HISTOGRAMS], always_keep_last=False)
-    self._images = reservoir.Reservoir(size=sizes[IMAGES])
-    self._audio = reservoir.Reservoir(size=sizes[AUDIO])
-    self._tensors = reservoir.Reservoir(size=sizes[TENSORS])
+    self.images = reservoir.Reservoir(size=sizes[IMAGES])
+    self.audios = reservoir.Reservoir(size=sizes[AUDIO])
+    self.tensors = reservoir.Reservoir(size=sizes[TENSORS])
+
+    # Keep a mapping from plugin name to a dict mapping from tag to plugin data
+    # content obtained from the SummaryMetadata (metadata field of Value) for
+    # that plugin (This is not the entire SummaryMetadata proto - only the
+    # content for that plugin). The SummaryWriter only keeps the content on the
+    # first event encountered per tag, so we must store that first instance of
+    # content for each tag.
+    self._plugin_to_tag_to_content = collections.defaultdict(dict)
 
     self._generator_mutex = threading.Lock()
     self.path = path
@@ -213,8 +222,8 @@ class EventAccumulator(object):
     self.file_version = None
 
     # The attributes that get built up by the accumulator
-    self.accumulated_attrs = ('_scalars', '_histograms',
-                              '_compressed_histograms', '_images', '_audio')
+    self.accumulated_attrs = ('scalars', 'histograms',
+                              'compressed_histograms', 'images', 'audios')
     self._tensor_summaries = {}
 
   def Reload(self):
@@ -283,6 +292,24 @@ class EventAccumulator(object):
       except StopIteration:
         raise ValueError('No event timestamp could be found')
 
+  def PluginTagToContent(self, plugin_name):
+    """Returns a dict mapping tags to content specific to that plugin.
+
+    Args:
+      plugin_name: The name of the plugin for which to fetch plugin-specific
+        content.
+
+    Raises:
+      KeyError: if the plugin name is not found.
+
+    Returns:
+      A dict mapping tags to plugin-specific content (which are always strings).
+      Those strings are often serialized protos.
+    """
+    if plugin_name not in self._plugin_to_tag_to_content:
+      raise KeyError('Plugin %r could not be found.' % plugin_name)
+    return self._plugin_to_tag_to_content[plugin_name]
+
   def _ProcessEvent(self, event):
     """Called whenever an event is loaded."""
     if self._first_event_timestamp is None:
@@ -341,48 +368,30 @@ class EventAccumulator(object):
       self._tagged_metadata[tag] = event.tagged_run_metadata.run_metadata
     elif event.HasField('summary'):
       for value in event.summary.value:
-        if (value.HasField('tensor') and
-            value.tag.startswith(HEALTH_PILL_EVENT_TAG_PREFIX)):
-          self._ProcessHealthPillSummary(value, event)
-        else:
-          for summary_type, summary_func in SUMMARY_TYPES.items():
-            if value.HasField(summary_type):
-              datum = getattr(value, summary_type)
-              tag = value.node_name if summary_type == 'tensor' else value.tag
-              getattr(self, summary_func)(tag, event.wall_time, event.step,
-                                          datum)
+        if value.HasField('metadata'):
+          for plugin_data in value.metadata.plugin_data:
+            tag_mapping = self._plugin_to_tag_to_content[
+                plugin_data.plugin_name]
+            if value.tag in tag_mapping:
+              # We only store the first instance of the metadata. This check is
+              # important. The FileWriter does strip metadata from all values
+              # except the first one per each tag. However, a FileWriter is
+              # created every time a training job stops and restarts. Hence, we
+              # must also ignore subsequent metadata in this logic.
+              continue
 
-  def _ProcessHealthPillSummary(self, value, event):
-    """Process summaries containing health pills.
+            # Store the content specific to this plugin for this tag.
+            tag_mapping[value.tag] = plugin_data.content
 
-    These summaries are distinguished by the fact that they have a Tensor field
-    and have a special tag value.
-
-    This method emits ERROR-level messages to the logs if it encounters Tensor
-    summaries that it cannot process.
-
-    Args:
-      value: A tf.Summary.Value with a Tensor field.
-      event: The tf.Event containing that value.
-    """
-    elements = tf.make_ndarray(value.tensor)
-
-    # The node_name property of the value object is actually a watch key: a
-    # combination of node name, output slot, and a suffix. We capture the
-    # actual node name and the output slot with a regular expression.
-    match = re.match(r'^(.*):(\d+):DebugNumericSummary$', value.node_name)
-    if not match:
-      tf.logging.log_first_n(
-          tf.logging.ERROR,
-          'Unsupported watch key %s for health pills; skipping this sequence.',
-          1, value.node_name)
-      return
-
-    node_name = match.group(1)
-    output_slot = int(match.group(2))
-    device_name = value.tag[len(HEALTH_PILL_EVENT_TAG_PREFIX):]
-    self._ProcessHealthPill(event.wall_time, event.step, device_name, node_name,
-                            output_slot, elements)
+        for summary_type, summary_func in SUMMARY_TYPES.items():
+          if value.HasField(summary_type):
+            datum = getattr(value, summary_type)
+            tag = value.tag
+            if summary_type == 'tensor' and not tag:
+              # This tensor summary was created using the old nethod that used
+              # plugin assets. We must still continue to support it.
+              tag = value.node_name
+            getattr(self, summary_func)(tag, event.wall_time, event.step, datum)
 
   def Tags(self):
     """Return all tags found in the value stream.
@@ -391,12 +400,12 @@ class EventAccumulator(object):
       A `{tagType: ['list', 'of', 'tags']}` dictionary.
     """
     return {
-        IMAGES: self._images.Keys(),
-        AUDIO: self._audio.Keys(),
-        HISTOGRAMS: self._histograms.Keys(),
-        SCALARS: self._scalars.Keys(),
-        COMPRESSED_HISTOGRAMS: self._compressed_histograms.Keys(),
-        TENSORS: self._tensors.Keys(),
+        IMAGES: self.images.Keys(),
+        AUDIO: self.audios.Keys(),
+        HISTOGRAMS: self.histograms.Keys(),
+        SCALARS: self.scalars.Keys(),
+        COMPRESSED_HISTOGRAMS: self.compressed_histograms.Keys(),
+        TENSORS: self.tensors.Keys(),
         # Use a heuristic: if the metagraph is available, but
         # graph is not, then we assume the metagraph contains the graph.
         GRAPH: self._graph is not None,
@@ -416,29 +425,7 @@ class EventAccumulator(object):
     Returns:
       An array of `ScalarEvent`s.
     """
-    return self._scalars.Items(tag)
-
-  def HealthPills(self, node_name):
-    """Returns all health pill values for a certain node.
-
-    Args:
-      node_name: The name of the node to obtain health pills for.
-
-    Raises:
-      KeyError: If the node name is not found.
-
-    Returns:
-      An array of `HealthPillEvent`s.
-    """
-    return self._health_pills.Items(node_name)
-
-  def GetOpsWithHealthPills(self):
-    """Determines which ops have at least 1 health pill event.
-
-    Returns:
-      A list of names of ops with at least 1 health pill event.
-    """
-    return self._health_pills.Keys()
+    return self.scalars.Items(tag)
 
   def Graph(self):
     """Return the graph definition, if there is one.
@@ -504,7 +491,7 @@ class EventAccumulator(object):
     Returns:
       An array of `HistogramEvent`s.
     """
-    return self._histograms.Items(tag)
+    return self.histograms.Items(tag)
 
   def CompressedHistograms(self, tag):
     """Given a summary tag, return all associated compressed histograms.
@@ -518,7 +505,7 @@ class EventAccumulator(object):
     Returns:
       An array of `CompressedHistogramEvent`s.
     """
-    return self._compressed_histograms.Items(tag)
+    return self.compressed_histograms.Items(tag)
 
   def Images(self, tag):
     """Given a summary tag, return all associated images.
@@ -532,7 +519,7 @@ class EventAccumulator(object):
     Returns:
       An array of `ImageEvent`s.
     """
-    return self._images.Items(tag)
+    return self.images.Items(tag)
 
   def Audio(self, tag):
     """Given a summary tag, return all associated audio.
@@ -546,7 +533,7 @@ class EventAccumulator(object):
     Returns:
       An array of `AudioEvent`s.
     """
-    return self._audio.Items(tag)
+    return self.audios.Items(tag)
 
   def Tensors(self, tag):
     """Given a summary tag, return all associated tensors.
@@ -560,7 +547,7 @@ class EventAccumulator(object):
     Returns:
       An array of `TensorEvent`s.
     """
-    return self._tensors.Items(tag)
+    return self.tensors.Items(tag)
 
   def _MaybePurgeOrphanedData(self, event):
     """Maybe purge orphaned data due to a TensorFlow crash.
@@ -636,8 +623,8 @@ class EventAccumulator(object):
     """Processes a proto histogram by adding it to accumulated state."""
     histo = self._ConvertHistogramProtoToTuple(histo)
     histo_ev = HistogramEvent(wall_time, step, histo)
-    self._histograms.AddItem(tag, histo_ev)
-    self._compressed_histograms.AddItem(tag, histo_ev, self._CompressHistogram)
+    self.histograms.AddItem(tag, histo_ev)
+    self.compressed_histograms.AddItem(tag, histo_ev, self._CompressHistogram)
 
   def _CompressHistogram(self, histo_ev):
     """Callback for _ProcessHistogram."""
@@ -654,7 +641,7 @@ class EventAccumulator(object):
                        encoded_image_string=image.encoded_image_string,
                        width=image.width,
                        height=image.height)
-    self._images.AddItem(tag, event)
+    self.images.AddItem(tag, event)
 
   def _ProcessAudio(self, tag, wall_time, step, audio):
     """Processes a audio by adding it to accumulated state."""
@@ -664,44 +651,16 @@ class EventAccumulator(object):
                        content_type=audio.content_type,
                        sample_rate=audio.sample_rate,
                        length_frames=audio.length_frames)
-    self._audio.AddItem(tag, event)
+    self.audios.AddItem(tag, event)
 
   def _ProcessScalar(self, tag, wall_time, step, scalar):
     """Processes a simple value by adding it to accumulated state."""
     sv = ScalarEvent(wall_time=wall_time, step=step, value=scalar)
-    self._scalars.AddItem(tag, sv)
+    self.scalars.AddItem(tag, sv)
 
   def _ProcessTensor(self, tag, wall_time, step, tensor):
     tv = TensorEvent(wall_time=wall_time, step=step, tensor_proto=tensor)
-    self._tensors.AddItem(tag, tv)
-
-  def _ProcessHealthPill(self, wall_time, step, device_name, node_name,
-                         output_slot, elements):
-    """Processes a health pill value by adding it to accumulated state.
-
-    Args:
-      wall_time: The time at which the health pill was created. Provided by the
-        debugger.
-      step: The step at which the health pill was created. Provided by the
-        debugger.
-      device_name: The name of the node's device.
-      node_name: The name of the node for this health pill.
-      output_slot: The output slot for this health pill.
-      elements: An ND array of 20 floats. The elements of the health pill.
-    """
-    # Key by the node name for fast retrieval of health pills by node name. The
-    # array is cast to a list so that it is JSON-able. The debugger data plugin
-    # serves a JSON response.
-    self._health_pills.AddItem(node_name,
-                               HealthPillEvent(
-                                   wall_time=wall_time,
-                                   step=step,
-                                   device_name=device_name,
-                                   node_name=node_name,
-                                   output_slot=output_slot,
-                                   dtype=repr(tf.as_dtype(elements[12])),
-                                   shape=list(elements[14:]),
-                                   value=list(elements)))
+    self.tensors.AddItem(tag, tv)
 
   def _Purge(self, event, by_tags):
     """Purge all events that have occurred after the given event.step.
@@ -729,7 +688,6 @@ class EventAccumulator(object):
     _NotExpired = lambda x: x.step < event.step
 
     if by_tags:
-
       def _ExpiredPerTag(value):
         return [getattr(self, x).FilterItems(_NotExpired, value.tag)
                 for x in self.accumulated_attrs]

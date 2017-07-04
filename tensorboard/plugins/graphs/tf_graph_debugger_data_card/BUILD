@@ -13,10 +13,12 @@ ts_web_library(
     path = "/tf-graph-debugger-data-card",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/plugins/graphs/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/graphs/tf_graph_common",
+        "@org_polymer_paper_material",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",
+        "@org_polymer_paper_toggle_button",
     ],
 )
 
@@ -37,8 +39,3 @@ tensorboard_webcomponent_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

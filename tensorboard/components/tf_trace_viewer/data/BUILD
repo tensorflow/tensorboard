@@ -10,8 +10,3 @@ web_library(
     path = "/tf-trace-viewer/data/plugin/profile",
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

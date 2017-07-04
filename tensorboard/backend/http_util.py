@@ -110,10 +110,8 @@ def Respond(request,
   charset_match = _EXTRACT_CHARSET_PATTERN.search(content_type)
   charset = charset_match.group(1) if charset_match else encoding
   textual = charset_match or mimetype in _TEXTUAL_MIMETYPES
-  if mimetype in _JSON_MIMETYPES and (isinstance(content, dict) or
-                                      isinstance(content, list) or
-                                      isinstance(content, set) or
-                                      isinstance(content, tuple)):
+  if (mimetype in _JSON_MIMETYPES and
+      isinstance(content, (dict, list, set, tuple))):
     content = json.dumps(json_util.Cleanse(content, encoding),
                          ensure_ascii=not charset_match)
   if charset != encoding:

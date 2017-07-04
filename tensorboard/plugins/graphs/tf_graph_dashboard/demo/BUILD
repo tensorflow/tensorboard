@@ -10,15 +10,11 @@ ts_web_library(
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-graph-dashboard/demo",
     deps = [
-        "//tensorboard/plugins/graphs/tf_graph_dashboard",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/graphs/tf_graph_dashboard",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

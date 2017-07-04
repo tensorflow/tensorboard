@@ -8,30 +8,23 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "tf_dashboard_common",
     srcs = [
-        "dashboard-behavior.ts",
         "dashboard-style.html",
-        "reload-behavior.ts",
         "run-color-style.html",
         "scrollbar-style.html",
         "tensorboard-color.html",
-        "tf-categorizer.html",
-        "tf-categorizer.ts",
-        "tf-chart-scaffold.html",
         "tf-collapsable-pane.html",
-        "tf-dashboard.html",
         "tf-dashboard-layout.html",
         "tf-downloader.html",
         "tf-multi-checkbox.html",
         "tf-multi-checkbox.ts",
         "tf-no-data-warning.html",
         "tf-option-selector.html",
-        "tf-panes-helper.html",
         "tf-regex-group.html",
         "tf-regex-group.ts",
-        "tf-run-selector.html",
     ],
     path = "/tf-dashboard-common",
     deps = [
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
@@ -59,7 +52,6 @@ ts_web_library(
 ts_web_library(
     name = "demo",
     srcs = [
-        "tf-categorizer-demo.html",
         "tf-collapsable-pane-demo.html",
         "tf-multi-checkbox-demo.html",
         "tf-regex-group-demo.html",
@@ -100,8 +92,3 @@ tensorboard_webcomponent_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

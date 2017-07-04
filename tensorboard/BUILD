@@ -3,7 +3,14 @@
 
 package(default_visibility = [":internal"])
 
+load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
+
 licenses(["notice"])  # Apache 2.0
+
+exports_files([
+    "LICENSE",
+])
 
 package_group(
     name = "internal",
@@ -13,13 +20,14 @@ package_group(
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
-    data = [":assets"],
     main = "main.py",
     srcs_version = "PY2AND3",
     deps = [
+        ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/distributions:distributions_plugin",
         "//tensorboard/plugins/graphs:graphs_plugin",
         "//tensorboard/plugins/histograms:histograms_plugin",
@@ -31,11 +39,24 @@ py_binary(
     ],
 )
 
-py_library(
-    name = "expect_tensorflow_installed",
-    # This is a dummy rule used as a TensorFlow dependency in open-source.
-    # We expect TensorFlow to already be installed on the system, e.g. via
-    # `pip install tensorflow`
+py_binary(
+  name = "version",
+  srcs = ["version.py"],
+  srcs_version = "PY2AND3",
+)
+
+tensorboard_zip_file(
+    name = "webfiles",
+    deps = [":assets"],
+)
+
+ts_web_library(
+    name = "assets",
+    srcs = [
+        "//tensorboard/components:index.html",
+        "//tensorboard/components:trace_viewer_index.html",
+    ],
+    path = "/",
 )
 
 py_library(
@@ -45,13 +66,18 @@ py_library(
     # `pip install numpy`
 )
 
-filegroup(
-    name = "assets",
-    srcs = [
-        "TAG",
-        "//tensorboard/components:index.html",
-        "//tensorboard/components:trace_viewer_index.html",
-    ],
+py_library(
+    name = "expect_sqlite3_installed",
+    # This is a dummy rule used as a sqlite3 dependency in open-source.
+    # We expect sqlite3 to already be present, as it is part of the standard
+    # library.
+)
+
+py_library(
+    name = "expect_tensorflow_installed",
+    # This is a dummy rule used as a TensorFlow dependency in open-source.
+    # We expect TensorFlow to already be installed on the system, e.g. via
+    # `pip install tensorflow`
 )
 
 filegroup(
@@ -65,15 +91,3 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        ["**"],
-        exclude = [
-            "METADATA",
-            "OWNERS",
-            "tensorboard.google.bzl",
-        ],
-    ),
-    tags = ["notsan"],
-)

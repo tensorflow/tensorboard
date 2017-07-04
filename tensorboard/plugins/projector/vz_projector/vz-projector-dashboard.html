@@ -16,20 +16,44 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-no-data-warning.html">
 <link rel="import" href="vz-projector.html">
 
 <dom-module id="vz-projector-dashboard">
 <template>
-  <tf-no-data-warning
-    data-type="projector"
-    show-warning="[[dataNotFound]]"
-  ></tf-no-data-warning>
+  <template is="dom-if" if="[[dataNotFound]]">
+    <div style="max-width: 540px; margin: 80px auto 0 auto;">
+      <h3>
+        No checkpoint was found.
+      </h3>
+      <p>Probable causes:
+      <ul>
+        <li>No checkpoint has been saved yet. Please refresh the page
+          periodically.
+        <li>You are not saving any checkpoint. To save your model,
+          create a
+          <a
+            href="https://www.tensorflow.org/api_docs/python/tf/train/Saver"
+          ><code>tf.train.Saver</code></a>
+          and save your model periodically
+          by calling <code>saver.save(session, LOG_DIR/model.ckpt, step)</code>.
+      </ul>
+      <p>
+      If you’re new to using TensorBoard, and want to find out how
+      to add data and set up your event files, check out the
+      <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+      and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+      <p>
+      If you think TensorBoard is configured properly, please see
+      <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+      and consider filing an issue on GitHub.
+    </div>
+  </template>
   <template is="dom-if" if="[[!dataNotFound]]">
     <vz-projector
       id="projector"
-      route-prefix="[[routePrefix]]"
+      route-prefix="[[_routePrefix]]"
       serving-mode="server"
       page-view-logging
       event-logging
@@ -37,31 +61,28 @@ limitations under the License.
   </template>
 </template>
 <script>
-import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior";
+import {getRouter} from '../tf-backend/router.js';
 
 Polymer({
   is: 'vz-projector-dashboard',
-  factoryImpl: function(routePrefix) {
-    this.routePrefix = routePrefix;
-  },
   properties: {
     dataNotFound: Boolean,
-    routePrefix: String,
+    _routePrefix: {
+      type: String,
+      value: () => getRouter().pluginRoute('projector', ''),
+    },
     // Whether this dashboard is initialized. This dashboard should only be initialized once.
     _initialized: Boolean,
   },
-  behaviors: [
-    DashboardBehavior("embeddings"),
-  ],
-  reload: function() {
+  reload() {
     // Do not reload the embedding projector. Reloading could take a long time.
   },
-  attached: function() {
+  attached() {
     if (this._initialized) {
       return;
     }
     let xhr = new XMLHttpRequest();
-    xhr.open('GET', this.routePrefix + '/runs');
+    xhr.open('GET', this._routePrefix + '/runs');
     xhr.onload = () => {
       // Set this to true so we only initialize once.
       this._initialized = true;
