@@ -21,6 +21,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-collapsable-pane.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-audio-loader.html">
 
@@ -67,19 +68,24 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
             name="[[category.name]]"
             count="[[category.count]]"
           >
-            <div class="layout horizontal wrap">
-              <template
-                is="dom-repeat"
-                items="[[category.items]]"
-              >
-                <tf-audio-loader
-                  run="[[item.run]]"
-                  tag="[[item.tag]]"
-                  request-manager="[[_requestManager]]"
-                  show-actual-size="[[_showActualSize]]"
-                ></tf-audio-loader>
+            <tf-paginated-view
+              items="[[category.items]]"
+              pages="{{category._pages}}"
+            >
+              <template is="dom-repeat" items="[[category._pages]]" as="page">
+                <template is="dom-if" if="[[page.active]]">
+                  <div class="layout horizontal wrap">
+                    <template is="dom-repeat" items="[[page.items]]">
+                      <tf-audio-loader
+                        run="[[item.run]]"
+                        tag="[[item.tag]]"
+                        request-manager="[[_requestManager]]"
+                        show-actual-size="[[_showActualSize]]"
+                      ></tf-audio-loader>
+                  </div>
+                </template>
               </template>
-            </div>
+            </tf-paginated-view>
           </tf-collapsable-pane>
         </template>
       </div>
