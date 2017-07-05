@@ -3,12 +3,14 @@ package(
     default_visibility = ["//tensorboard:internal"],
 )
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+
+load("//tensorboard/defs:mocha_test.bzl", "mocha_test")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
-    name = "test",
+# run :test_mocha_devserver to debug locally
+mocha_test(
+  name = "test",
     srcs = [
         "assert.ts",
         "data-provider_test.ts",
@@ -19,11 +21,9 @@ ts_web_library(
         # "scatterPlotRectangleSelector_test.ts",
         # "vz-projector-projections-panel_test.ts",
     ],
+    test_file = "tests.html",
     path = "/vz-projector/test",
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/plugins/projector/vz_projector",
     ],
 )
