@@ -53,16 +53,17 @@ class TextPluginTest(tf.test.TestCase):
     expected_html = text_plugin.markdown_and_sanitize(expected)
     self.assertEqual(actual, expected_html)
 
-  def generate_testdata(self):
+  def generate_testdata(self, include_text=True, logdir=None):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.string)
     summary_tensor = tf.summary.text('message', placeholder)
     vector_summary = tf.summary.text('vector', placeholder)
+    scalar_summary = tf.summary.scalar('twelve', tf.constant(12))
 
     run_names = ['fry', 'leela']
     for run_name in run_names:
-      subdir = os.path.join(self.logdir, run_name)
+      subdir = os.path.join(logdir or self.logdir, run_name)
       writer = tf.summary.FileWriter(subdir)
       writer.add_graph(sess.graph)
 
@@ -72,12 +73,17 @@ class TextPluginTest(tf.test.TestCase):
         feed_dict = {
             placeholder: message,
         }
-        summ = sess.run(summary_tensor, feed_dict=feed_dict)
-        writer.add_summary(summ, global_step=step)
+        if include_text:
+          summ = sess.run(summary_tensor, feed_dict=feed_dict)
+          writer.add_summary(summ, global_step=step)
         step += 1
 
       vector_message = ['one', 'two', 'three', 'four']
-      summ = sess.run(vector_summary, feed_dict={placeholder: vector_message})
+      if include_text:
+        summ = sess.run(vector_summary, feed_dict={placeholder: vector_message})
+        writer.add_summary(summ)
+
+      summ = sess.run(scalar_summary, feed_dict={placeholder: []})
       writer.add_summary(summ)
 
       writer.close()
@@ -397,19 +403,32 @@ class TextPluginTest(tf.test.TestCase):
       </table>""")
     self.assertEqual(convert(d3), d3_expected)
 
-  def testPluginIsActive(self):
+  def testPluginIsActiveWhenNoRuns(self):
+    """The plugin should be inactive when there are no runs."""
     multiplexer = event_multiplexer.EventMultiplexer()
     context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
-
-    # The plugin is inactive because text summaries are not available.
     self.assertFalse(plugin.is_active())
 
+  def testPluginIsActiveWhenTextRuns(self):
+    """The plugin should be active when there are runs with text."""
+    multiplexer = event_multiplexer.EventMultiplexer()
+    context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
+    plugin = text_plugin.TextPlugin(context)
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
+    self.assertTrue(plugin.is_active())
 
-    # The plugin is active because text summaries are available.
-    self.assertTrue(self.plugin.is_active())
+  def testPluginIsActiveWhenRunsButNoText(self):
+    """The plugin should be inactive when there are runs but none has text."""
+    multiplexer = event_multiplexer.EventMultiplexer()
+    context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
+    plugin = text_plugin.TextPlugin(context)
+    logdir = os.path.join(self.get_temp_dir(), 'runs_with_no_text')
+    self.generate_testdata(include_text=False, logdir=logdir)
+    multiplexer.AddRunsFromDirectory(logdir)
+    multiplexer.Reload()
+    self.assertFalse(plugin.is_active())
 
   def testUnicode(self):
     self.assertConverted(u'<p>Iñtërnâtiônàlizætiøn⚡💩</p>',
