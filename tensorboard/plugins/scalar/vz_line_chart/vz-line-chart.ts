@@ -168,10 +168,21 @@ Polymer({
   },
 
   /**
+   * Reset the chart domain to fit its data.
+   */
+  resetDomain: function() {
+    if (this._chart) {
+      this._chart.resetDomain();
+    }
+  },
+
+  /**
    * Re-renders the chart. Useful if e.g. the container size changed.
    */
   redraw: function() {
-    this._chart.redraw();
+    if (this._chart) {
+      this._chart.redraw();
+    }
   },
   attached: function() {
     this._attached = true;
@@ -447,6 +458,20 @@ class LineChart {
     };
     let nanData = _.flatten(this.datasets.map(datasetToNaNData));
     this.nanDataset.data(nanData);
+  }
+
+  public resetDomain() {
+    this.resetXDomain();
+    this.resetYDomain();
+  }
+
+  private resetXDomain() {
+    // (Copied from DragZoomLayer.unzoom.)
+    const xScale = this.xScale as any;
+    xScale._domainMin = null;
+    xScale._domainMax = null;
+    const xDomain = xScale._getExtent();
+    this.xScale.domain(xDomain);
   }
 
   private resetYDomain() {
