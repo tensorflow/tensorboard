@@ -33,6 +33,7 @@ from six.moves.urllib import parse as urlparse
 import tensorflow as tf
 from werkzeug import wrappers
 
+from tensorboard import schema
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
@@ -84,6 +85,9 @@ def standard_tensorboard_wsgi(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
+  if db_connection_provider is not None:
+    with db_connection_provider() as db_conn:
+      schema.setup_database(db_conn)
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,

@@ -93,6 +93,12 @@ filegroup(
 )
 
 py_library(
+    name = "schema",
+    srcs = ["schema.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_library(
     name = "util",
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
