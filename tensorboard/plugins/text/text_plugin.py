@@ -328,4 +328,4 @@ class TextPlugin(base_plugin.TBPlugin):
     Returns:
       Whether this plugin is active.
     """
-    return bool(self._multiplexer and self.index_impl())
+    return bool(self._multiplexer and any(self.index_impl().values()))
