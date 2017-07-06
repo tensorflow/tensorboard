@@ -93,13 +93,6 @@ filegroup(
 )
 
 py_library(
-    name = "test_util",
-    testonly = 1,
-    srcs = ["test_util.py"],
-    srcs_version = "PY2AND3",
-)
-
-py_library(
     name = "util",
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
@@ -117,4 +110,35 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "@six_archive//:six",
     ],
+)
+
+py_library(
+    name = "loader",
+    srcs = ["loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+        "@six_archive//:six",
+    ],
+)
+
+py_test(
+    name = "loader_test",
+    size = "small",
+    srcs = ["loader_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":loader",
+        ":test_util",
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "test_util",
+    testonly = 1,
+    srcs = ["test_util.py"],
+    srcs_version = "PY2AND3",
 )

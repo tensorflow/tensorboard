@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import locale
 import logging
 import os
 import sys
@@ -52,6 +53,39 @@ def setup_logging(streams=(sys.stderr,)):
   for handler in handlers:
     handler.setFormatter(LogFormatter())
     werkzeug_logger.addHandler(handler)
+
+
+def closeable(class_):
+  """Makes a class with a close method able to be a context manager.
+
+  This decorator is a great way to avoid having to choose between the
+  boilerplate of __enter__ and __exit__ methods, versus the boilerplate
+  of using contextlib.closing on every with statement.
+
+  Args:
+    class_: The class being decorated.
+
+  Raises:
+    ValueError: If class didn't have a close method, or already
+        implements __enter__ or __exit__.
+  """
+  if 'close' not in class_.__dict__:
+    # coffee is for closers
+    raise ValueError('Class does not define a close() method: %s' % class_)
+  if '__enter__' in class_.__dict__ or '__exit__' in class_.__dict__:
+    raise ValueError('Class already defines __enter__ or __exit__: ' + class_)
+  class_.__enter__ = lambda self: self
+  class_.__exit__ = lambda self, t, v, b: self.close() and None
+  return class_
+
+
+def add_commas(n):
+  """Adds locale specific thousands group separators.
+
+  :type n: int
+  :rtype: str
+  """
+  return locale.format('%d', n, grouping=True)
 
 
 class LogFormatter(logging.Formatter):
