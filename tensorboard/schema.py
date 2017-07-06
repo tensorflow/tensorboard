@@ -55,7 +55,7 @@ def setup_database(db_conn):
   is complete.
 
   Args:
-    db_conn: A PEP249 Connection object.
+    db_conn: A PEP 249 Connection object.
   """
   create_runs_table(db_conn)
   create_event_logs_table(db_conn)
@@ -105,14 +105,13 @@ def create_event_logs_table(db_conn):
   (run_id, path).
 
   Each time FileLoader runs a transaction committing events to the
-  database, it updates the offset field, and possibly also the
-  first_step field if steps are being logged.
+  database, it updates the offset field.
 
   Fields:
     run_id: A reference to the id field of the associated row in the
         runs table.
     path: The basename of the path of the event log file. It SHOULD be
-        in the format events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME.
+        formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX].
     offset: The byte offset in the event log file *after* the last
         successfully committed event record.
   """
@@ -121,8 +120,7 @@ def create_event_logs_table(db_conn):
       CREATE TABLE IF NOT EXISTS event_logs (
         run_id VARCHAR(36) NOT NULL,
         path VARCHAR(255) NOT NULL,
-        offset INTEGER NOT NULL,
-        first_step INTEGER
+        offset INTEGER NOT NULL
       )
     ''')
     c.execute('''\
