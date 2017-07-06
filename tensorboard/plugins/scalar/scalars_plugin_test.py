@@ -25,9 +25,9 @@ import os.path
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorboard as tb
 import tensorflow as tf
 
+import tensorboard as tb
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import scalars_plugin
@@ -93,8 +93,8 @@ class ScalarsPluginTest(tf.test.TestCase):
         feed_dict[histogram_placeholder] = [1 + step, 2 + step, 3 + step]
       s = sess.run(summ, feed_dict=feed_dict)
       writer.add_summary(s, global_step=step)
-    writer.close(
-)
+    writer.close()
+
   def test_index(self):
     self.set_up_with_runs([self._RUN_WITH_SCALARS, self._RUN_WITH_HISTOGRAM])
     self.assertEqual({

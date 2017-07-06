@@ -24,9 +24,9 @@ import json
 import os
 import textwrap
 import numpy as np
-import tensorboard as tb
 import tensorflow as tf
 
+import tensorboard as tb
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import text_plugin

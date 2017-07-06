@@ -23,11 +23,11 @@ import json
 import os
 import shutil
 
-import tensorboard as tb
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
+import tensorboard as tb
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin

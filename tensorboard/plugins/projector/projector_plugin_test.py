@@ -24,7 +24,6 @@ import io
 import json
 import os
 import numpy as np
-import tensorboard as tb
 import tensorflow as tf
 
 from werkzeug import test as werkzeug_test
@@ -32,6 +31,7 @@ from werkzeug import wrappers
 
 from google.protobuf import text_format
 
+import tensorboard as tb
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin

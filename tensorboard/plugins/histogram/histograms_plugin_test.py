@@ -23,9 +23,9 @@ import collections
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorboard as tb
 import tensorflow as tf
 
+import tensorboard as tb
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
@@ -74,8 +74,7 @@ class HistogramsPluginTest(tf.test.TestCase):
     if use_histogram:
       tb.plugins.histogram.op(self._HISTOGRAM_TAG, placeholder)
     if use_scalars:
-      tb.plugins.scalar.op(self._SCALAR_TAG,
-                                   tf.reduce_mean(placeholder))
+      tb.plugins.scalar.op(self._SCALAR_TAG, tf.reduce_mean(placeholder))
     summ = tb.merge_all_summaries()
 
     subdir = os.path.join(self.logdir, run_name)

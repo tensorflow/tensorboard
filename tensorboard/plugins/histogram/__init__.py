@@ -20,6 +20,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 def op(name, values, collections=None, family=None):
+  # pylint: disable=line-too-long
   """Create a histogram summary op in a TensorFlow graph.
 
 

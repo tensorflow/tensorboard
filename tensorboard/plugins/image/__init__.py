@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-def op(name, tensor,  max_outputs=3, collections=None, family=None):
+def op(name, tensor, max_outputs=3, collections=None, family=None):
   """Create a scalar summary op in a TensorFlow graph.
 
   The summary has up to `max_outputs` summary values containing images. The
@@ -72,11 +72,13 @@ def op(name, tensor,  max_outputs=3, collections=None, family=None):
     type `string`, which contains a `Summary` protobuf.
 
   """
-  return tf.summary.image(name=name,
-                          tensor=tensor,
-                          max_outputs=max_outputs,
-                          collections=collections,
-                          family=family)
+  return tf.summary.image(
+      name=name,
+      tensor=tensor,
+      max_outputs=max_outputs,
+      collections=collections,
+      family=family
+  )
 
 
 

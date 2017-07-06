@@ -23,9 +23,9 @@ import collections
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorboard as tb
 import tensorflow as tf
 
+import tensorboard as tb
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
