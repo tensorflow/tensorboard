@@ -19,6 +19,7 @@ limitations under the License.
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
@@ -32,14 +33,22 @@ limitations under the License.
 <dom-module id="tf-scalar-chart">
   <template>
     <tf-card-heading title="[[tag]]"></tf-card-heading>
-    <vz-line-chart
-      x-type="[[xType]]"
-      color-scale="[[_runsColorScale]]"
-      smoothing-enabled="[[smoothingEnabled]]"
-      smoothing-weight="[[smoothingWeight]]"
-      tooltip-sorting-method="[[tooltipSortingMethod]]"
-      ignore-y-outliers="[[ignoreYOutliers]]"
-    ></vz-line-chart>
+    <div id="chart-and-spinner-container">
+      <vz-line-chart
+        x-type="[[xType]]"
+        color-scale="[[_runsColorScale]]"
+        smoothing-enabled="[[smoothingEnabled]]"
+        smoothing-weight="[[smoothingWeight]]"
+        tooltip-sorting-method="[[tooltipSortingMethod]]"
+        ignore-y-outliers="[[ignoreYOutliers]]"
+        style="[[_computeLineChartStyle(_loading)]]"
+      ></vz-line-chart>
+      <template is="dom-if" if="[[_loading]]">
+        <div id="loading-spinner-container">
+          <paper-spinner-lite active></paper-spinner-lite>
+        </div>
+      </template>
+    </div>
     <div style="display: flex; flex-direction: row;">
       <paper-icon-button
         selected$="[[_expanded]]"
@@ -51,6 +60,11 @@ limitations under the License.
         icon="line-weight"
         on-tap="_toggleLogScale"
         title="Toggle y-axis log scale"
+      ></paper-icon-button>
+      <paper-icon-button
+        icon="settings-overscan"
+        on-tap="_resetDomain"
+        title="Fit domain to data"
       ></paper-icon-button>
       <span style="flex-grow: 1"></span>
       <template is="dom-if" if="[[showDownloadLinks]]">
@@ -88,6 +102,23 @@ limitations under the License.
       :host[_expanded] {
         height: 400px;
         width: 100%;
+      }
+      #chart-and-spinner-container {
+        display: flex;
+        flex-grow: 1;
+        position: relative;
+      }
+      #loading-spinner-container {
+        align-items: center;
+        bottom: 0;
+        display: flex;
+        display: flex;
+        justify-content: center;
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
       }
       vz-line-chart {
         -webkit-user-select: none;
@@ -167,6 +198,16 @@ limitations under the License.
           value: () => ({scale: runsColorScale}),
         },
 
+        _loading: {
+          type: Boolean,
+          value: false,
+        },
+
+        _resetDomainOnNextLoad: {
+          type: Boolean,
+          value: true,
+        },
+
         _canceller: {
           type: Object,
           value: () => new Canceller(),
@@ -199,9 +240,13 @@ limitations under the License.
         },
       },
       observers: [
-        'reload(tag)',
-        '_changeSeries(runs.*)'
+        '_tagChanged(_attached, tag)',
+        '_runsChanged(_attached, runs.*)'
       ],
+      created() {
+        this._loadData = _.debounce(
+          this._loadData, 100, {leading: true, trailing: true});
+      },
       attached() {
         this._attached = true;
         this._changeSeries();
@@ -210,33 +255,72 @@ limitations under the License.
         this._loadedRuns = {};
         this._loadData();
       },
-      _loadData() {
-        if (!this._attached) {
+      _tagChanged(attached, tagUpdateRecord) {
+        this._loadedRuns = {};
+        this._resetDomainOnNextLoad = true;
+        this._loadData();
+      },
+      _runsChanged(attached, runsUpdateRecord) {
+        if (!attached) {
           return;
         }
-        //
-        // Before updating, cancel any network-pending updates, to
-        // prevent race conditions where older data stomps newer data.
-        this._canceller.cancelAll();
-        this.runs.forEach(run => {
-          if (this._loadedRuns[run]) {
+        this.$$('vz-line-chart').setVisibleSeries(this.runs);
+        this._loadData();
+      },
+      _loadData() {
+        this.async(() => {
+          if (!this._attached) {
             return;
           }
-          this._loadedRuns[run] = true;
-          const url = this._scalarUrl(this.tag, run);
-          const updateSeries = this._canceller.cancellable(result => {
-            if (result.cancelled) {
-              return;
+          this._loading = true;
+          //
+          // Before updating, cancel any network-pending updates, to
+          // prevent race conditions where older data stomps newer data.
+          this._canceller.cancelAll();
+          const tag = this.tag;
+          const runPromises = this.runs.map(run => {
+            if (this._loadedRuns[run]) {
+              return Promise.resolve();
             }
-            const data = result.value;
-            const formattedData = data.map(datum => ({
-              wall_time: new Date(datum[0] * 1000),
-              step: datum[1],
-              scalar: datum[2],
-            }));
-            this.$$('vz-line-chart').setSeriesData(run, formattedData);
+            const url = this._scalarUrl(tag, run);
+            const updateSeries = this._canceller.cancellable(result => {
+              if (result.cancelled) {
+                return;
+              }
+              const data = result.value;
+              const formattedData = data.map(datum => ({
+                wall_time: new Date(datum[0] * 1000),
+                step: datum[1],
+                scalar: datum[2],
+              }));
+              if (tag === this.tag) {
+                // Only update the runs cache for the current tag. If we
+                // load data for Tag A, then the tag changes to Tag B
+                // while requests are still in flight, these requests
+                // should not poison the cache.
+                this._loadedRuns[run] = true;
+              }
+              this.$$('vz-line-chart').setSeriesData(run, formattedData);
+            });
+            return this.requestManager.request(url).then(updateSeries);
           });
-          this.requestManager.request(url).then(updateSeries);
+          const finish = this._canceller.cancellable(result => {
+            if (!result.cancelled) {
+              this._loading = false;
+              const chart = this.$$('vz-line-chart');
+              if (runPromises.length > 0 && this._resetDomainOnNextLoad) {
+                // (Don't unset _resetDomainOnNextLoad when we didn't
+                // load any runs: this has the effect that if all our
+                // runs are deselected, then we toggle them all on, we
+                // properly size the domain once all the data is loaded
+                // instead of just when we're first rendered.)
+                this._resetDomainOnNextLoad = false;
+                chart.resetDomain();
+              }
+              chart.redraw();
+            }
+          });
+          return Promise.all(runPromises).then(finish);
         });
       },
       _changeSeries() {
@@ -259,6 +343,17 @@ limitations under the License.
       _toggleExpanded(e) {
         this.set('_expanded', !this._expanded);
         this.redraw();
+      },
+
+      _computeLineChartStyle(loading) {
+        return loading ? 'opacity: 0.3;' : '';
+      },
+
+      _resetDomain() {
+        const chart = this.$$('vz-line-chart');
+        if (chart) {
+          chart.resetDomain();
+        }
       },
 
       _csvUrl(run) {
