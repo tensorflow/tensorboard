@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-def op(name, tensor, collections=None, family=None):
+def op(name, values, collections=None, family=None):
   """Create a histogram summary op in a TensorFlow graph.
 
 
@@ -54,7 +54,7 @@ def op(name, tensor, collections=None, family=None):
     A histogram summary op. When that op is run, it generates a scalar `Tensor`
     of type `string`, which contains a `Summary` protobuf.
   """
-  return tf.summary.histogram(name=name, tensor=tensor, collections=collections,
+  return tf.summary.histogram(name=name, values=values, collections=collections,
                               family=family)
 
 

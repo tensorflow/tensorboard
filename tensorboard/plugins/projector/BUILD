@@ -43,7 +43,7 @@ py_test(
   main = "projector_api_test.py",
   srcs_version = "PY2AND3",
   deps = [
-      ":api",
+      "//tensorboard:api",
       "//tensorboard:expect_tensorflow_installed",
   ]
 )
@@ -56,6 +56,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":projector_plugin",
+        "//tensorboard:api",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",

@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorboard import plugins
 
 class FileWriter(tf.summary.FileWriter):
   """Writes `Summary` protocol buffers to event files.
@@ -151,7 +152,7 @@ class FileWriter(tf.summary.FileWriter):
     """
     return super(self.__class__, self).add_session_log(session_log=session_log, global_step=global_step)
 
-  def add_graph(self, graph, global_step=None):
+  def add_graph(self, graph, global_step=None, graph_def=None):
     """Adds a `Graph` to the event file.
 
     The graph described by the protocol buffer will be displayed by
@@ -161,12 +162,13 @@ class FileWriter(tf.summary.FileWriter):
       graph: A `Graph` object, such as `sess.graph`.
       global_step: Number. Optional global step counter to record with the
         graph.
+      graph_def: Deprecated argument.
 
     Raises:
       ValueError: If both graph and graph_def are passed to the method.
     """
 
-    return super(self.__class__, self).add_graph(graph=graph, global_step=global_step)
+    return super(self.__class__, self).add_graph(graph=graph, global_step=global_step, graph_def=graph_def)
 
   def add_meta_graph(self, meta_graph_def, global_step=None):
     """Adds a `MetaGraphDef` to the event file.
@@ -197,7 +199,7 @@ class FileWriter(tf.summary.FileWriter):
     Raises:
       ValueError: If the provided tag was already used for this type of event.
     """
-    return super(self.__class__, self).add_run_metadata(run_metadata=run_metadata, global_step=global_step)
+    return super(self.__class__, self).add_run_metadata(run_metadata=run_metadata, tag=tag, global_step=global_step)
 
 
 def merge_all_summaries(key='summaries'):
@@ -239,3 +241,4 @@ def merge_summary(inputs, collections=None, name=None):
   return tf.summary.merge(inputs=inputs, collections=collections, name=name)
 
 
+__all__ = ["FileWriter, merge_all_summaries", "merge_summary", "plugins"]
