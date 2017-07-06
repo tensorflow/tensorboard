@@ -27,19 +27,19 @@ class ScalarsAPITest(tf.test.TestCase):
   def test_summary_equivalent_from_op_or_api(self):
     sess = tf.Session()
     k = tf.constant(3.0)
-    simple_op = tb.plugins.scalar.summary_op("foo", k)
+    simple_op = tb.plugins.scalar.op("foo", k)
 
     summary_from_op = tf.Summary()
     summary_from_op.ParseFromString(sess.run(simple_op))
-    handcrafted_summary = tb.plugins.scalar.summary_pb("foo", 3.0)
+    handcrafted_summary = tb.plugins.scalar.pb("foo", 3.0)
     self.assertProtoEquals(summary_from_op, handcrafted_summary)
 
     with tf.name_scope("scope"):
-      scoped_op = tb.plugins.scalar.summary_op("foo", k)
+      scoped_op = tb.plugins.scalar.op("foo", k)
 
     scoped_summary = tf.Summary()
     scoped_summary.ParseFromString(sess.run(scoped_op))
-    handcrafted_scoped = tb.plugins.scalar.summary_pb("scope/foo", 3.0)
+    handcrafted_scoped = tb.plugins.scalar.pb("scope/foo", 3.0)
     self.assertProtoEquals(scoped_summary, handcrafted_scoped)
 
 

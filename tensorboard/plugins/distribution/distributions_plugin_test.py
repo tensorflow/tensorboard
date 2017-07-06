@@ -79,9 +79,9 @@ class DistributionsPluginTest(tf.test.TestCase):
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32, shape=[3])
     if use_distributions:
-      tb.plugins.histogram.summary_op(self._DISTRIBUTION_TAG, placeholder)
+      tb.plugins.histogram.op(self._DISTRIBUTION_TAG, placeholder)
     if use_scalars:
-      tb.plugins.scalar.summary_op(self._SCALAR_TAG, tf.reduce_mean(placeholder))
+      tb.plugins.scalar.op(self._SCALAR_TAG, tf.reduce_mean(placeholder))
     summ = tb.merge_all_summaries()
 
     subdir = os.path.join(self.logdir, run_name)

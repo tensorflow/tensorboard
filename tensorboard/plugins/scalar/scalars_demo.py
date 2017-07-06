@@ -65,13 +65,13 @@ def run(logdir, run_name,
     # name-scope above.
     temperature = tf.Variable(tf.constant(initial_temperature),
                               name='temperature')
-    tb.plugins.scalar.summary_op('current', temperature)
+    tb.plugins.scalar.op('current', temperature)
 
     # Compute how much the object's temperature differs from that of its
     # environment, and track this, too: likewise, as
     # "temperature/difference_to_ambient".
     ambient_difference = temperature - ambient_temperature
-    tb.plugins.scalar.summary_op('difference_to_ambient', ambient_difference)
+    tb.plugins.scalar.op('difference_to_ambient', ambient_difference)
 
   # Newton suggested that the rate of change of the temperature of an
   # object is directly proportional to this `ambient_difference` above,
@@ -81,7 +81,7 @@ def run(logdir, run_name,
   # make the data look somewhat interesting. :-) )
   noise = 50 * tf.random_normal([])
   delta = -heat_coefficient * (ambient_difference + noise)
-  tb.plugins.scalar.summary_op('delta', delta)
+  tb.plugins.scalar.op('delta', delta)
 
   # Now, augment the current temperature by this delta that we computed.
   update_step = temperature.assign_add(delta)

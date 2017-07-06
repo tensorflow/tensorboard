@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-def summary_op(name, tensor, sample_rate, max_outputs=3, collections=None,
+def op(name, tensor, sample_rate, max_outputs=3, collections=None,
                family=None):
   """Create a audio summary op in a TensorFlow graph.
 
@@ -62,7 +62,7 @@ def summary_op(name, tensor, sample_rate, max_outputs=3, collections=None,
     type `string`, which contains a `Summary` protobuf with serialized audio
     data.
   """
-  return tb.plugins.audio.summary_op(name=name,
+  return tb.plugins.audio.op(name=name,
                           tensor=tensor,
                           sample_rate=sample_rate,
                           max_outputs=max_outputs,
@@ -70,4 +70,4 @@ def summary_op(name, tensor, sample_rate, max_outputs=3, collections=None,
                           family=family)
 
 
-__all__ = ["summary_op"]
+__all__ = ["op"]

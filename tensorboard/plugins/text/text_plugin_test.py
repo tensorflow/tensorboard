@@ -58,9 +58,9 @@ class TextPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.string)
-    summary_tensor = tb.plugins.text.summary_op('message', placeholder)
-    vector_summary = tb.plugins.text.summary_op('vector', placeholder)
-    scalar_summary = tb.plugins.scalar.summary_op('twelve', tf.constant(12))
+    summary_tensor = tb.plugins.text.op('message', placeholder)
+    vector_summary = tb.plugins.text.op('vector', placeholder)
+    scalar_summary = tb.plugins.scalar.op('twelve', tf.constant(12))
 
     run_names = ['fry', 'leela']
     for run_name in run_names:

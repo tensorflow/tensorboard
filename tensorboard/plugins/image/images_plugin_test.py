@@ -52,13 +52,13 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.uint8)
-    tb.plugins.image.summary_op(name="baz", tensor=placeholder)
-    merged_summary_op = tb.merge_all_summaries()
+    tb.plugins.image.op(name="baz", tensor=placeholder)
+    merged_op = tb.merge_all_summaries()
     foo_directory = os.path.join(self.log_dir, "foo")
     writer = tb.FileWriter(foo_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: (numpy.random.rand(1, 16, 42, 3) * 255).astype(
               numpy.uint8)
       }), global_step=step)
@@ -68,13 +68,13 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.uint8)
-    tb.plugins.image.summary_op(name="quux", tensor=placeholder)
-    merged_summary_op = tb.merge_all_summaries()
+    tb.plugins.image.op(name="quux", tensor=placeholder)
+    merged_op = tb.merge_all_summaries()
     bar_directory = os.path.join(self.log_dir, "bar")
     writer = tb.FileWriter(bar_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: (numpy.random.rand(1, 6, 8, 3) * 255).astype(
               numpy.uint8)
       }), global_step=step)

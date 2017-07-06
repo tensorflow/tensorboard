@@ -50,14 +50,14 @@ class AudioPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32)
-    tb.plugins.audio.summary_op(name="baz", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tb.merge_all_summaries()
+    tb.plugins.audio.op(name="baz", tensor=placeholder, sample_rate=44100)
+    merged_op = tb.merge_all_summaries()
     foo_directory = os.path.join(self.log_dir, "foo")
     writer = tb.FileWriter(foo_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       # The floats (sample data) range from -1 to 1.
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: numpy.random.rand(42, 22050) * 2 - 1
       }), global_step=step)
     writer.close()
@@ -66,14 +66,14 @@ class AudioPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32)
-    tb.plugins.audio.summary_op(name="quux", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tb.merge_all_summaries()
+    tb.plugins.audio.op(name="quux", tensor=placeholder, sample_rate=44100)
+    merged_op = tb.merge_all_summaries()
     bar_directory = os.path.join(self.log_dir, "bar")
     writer = tb.FileWriter(bar_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       # The floats (sample data) range from -1 to 1.
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: numpy.random.rand(42, 11025) * 2 - 1
       }), global_step=step)
     writer.close()

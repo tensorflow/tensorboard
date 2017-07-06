@@ -76,10 +76,10 @@ class ScalarsPluginTest(tf.test.TestCase):
     sess = tf.Session()
     if use_scalars:
       scalar_placeholder = tf.placeholder(tf.int64)
-      tb.plugins.scalar.summary_op(self._SCALAR_TAG, scalar_placeholder)
+      tb.plugins.scalar.op(self._SCALAR_TAG, scalar_placeholder)
     if use_histogram:
       histogram_placeholder = tf.placeholder(tf.float32, shape=[3])
-      tb.plugins.histogram.summary_op(self._HISTOGRAM_TAG, histogram_placeholder)
+      tb.plugins.histogram.op(self._HISTOGRAM_TAG, histogram_placeholder)
     summ = tb.merge_all_summaries()
 
     subdir = os.path.join(self.logdir, run_name)
@@ -155,14 +155,14 @@ class ScalarsPluginTest(tf.test.TestCase):
 
 class ManualScalarPBTest(tf.test.TestCase):
   """Verify it also supports manually-generated protocol buffers via
-  tb.plugins.scalar.summary_pb."""
+  tb.plugins.scalar.pb."""
 
   def test_scalars_json(self):
     logdir = self.get_temp_dir()
     writer = tb.FileWriter(logdir)
 
-    writer.add_summary(tb.plugins.scalar.summary_pb("foo", 1.0), 0)
-    writer.add_summary(tb.plugins.scalar.summary_pb("foo", 2.0), 100)
+    writer.add_summary(tb.plugins.scalar.pb("foo", 1.0), 0)
+    writer.add_summary(tb.plugins.scalar.pb("foo", 2.0), 100)
     writer.flush()
     multiplexer = event_multiplexer.EventMultiplexer()
     multiplexer.AddRunsFromDirectory(logdir)

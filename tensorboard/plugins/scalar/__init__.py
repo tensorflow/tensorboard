@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-def summary_op(name, tensor, collections=None, family=None):
+def op(name, tensor, collections=None, family=None):
   """Create a scalar summary op in a TensorFlow graph.
 
   The generated op outputs a `Summary` protocol buffer containing a
@@ -48,9 +48,9 @@ def summary_op(name, tensor, collections=None, family=None):
   Raises:
     ValueError: If tensor has the wrong shape or type.
   """
-  return tb.plugins.scalar.summary_op(name=name, tensor=tensor, collections=collections, family=family)
+  return tb.plugins.scalar.op(name=name, tensor=tensor, collections=collections, family=family)
 
-def summary_pb(tag, value):
+def pb(tag, value):
   """Create a single summary protobuf containing scalar data.
 
   If you want to manually add scalar data to TensorBoard without using
@@ -59,10 +59,10 @@ def summary_pb(tag, value):
   writer = tb.FileWriter(logdir)
   for i in range(100):
     p = i / 100.0
-    summ = tb.plugins.scalar.summary_pb("percent_complete", p)
+    summ = tb.plugins.scalar.pb("percent_complete", p)
     writer.add_summary(summ, i)
   writer.close()
   """
   return tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
 
-__all__ = ["summary_op", "summary_pb"]
+__all__ = ["op", "pb"]

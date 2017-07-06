@@ -12,7 +12,7 @@ TensorFlow has an op
 [`tf.random_normal`](https://www.tensorflow.org/api_docs/python/tf/random_normal)
 which is perfect for this purpose. As is usually the case with TensorBoard, we
 will ingest data using a summary op; in this case,
-['tb.plugins.histogram.summary_op'](https://www.tensorflow.org/api_docs/python/tb.plugins.histogram.summary_op).
+['tb.plugins.histogram.op'](https://www.tensorflow.org/api_docs/python/tb.plugins.histogram.op).
 For a primer on how summaries work, please see the general
 [TensorBoard tutorial](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 
@@ -28,7 +28,7 @@ k = tf.placeholder(tf.float32)
 # Make a normal distribution, with a shifting mean
 mean_moving_normal = tf.random_normal(shape=[1000], mean=(5*k), stddev=1)
 # Record that distribution into a histogram summary
-tb.plugins.histogram.summary_op("normal/moving_mean", mean_moving_normal)
+tb.plugins.histogram.op("normal/moving_mean", mean_moving_normal)
 
 # Setup a session and summary writer
 sess = tf.Session()
@@ -55,7 +55,7 @@ distributed data.
 
 ![](https://www.tensorflow.org/images/tensorboard/histogram_dashboard/1_moving_mean.png)
 
-`tb.plugins.histogram.summary_op` takes an arbitrarily sized and shaped Tensor, and
+`tb.plugins.histogram.op` takes an arbitrarily sized and shaped Tensor, and
 compresses it into a histogram data structure consisting of many bins with
 widths and counts. For example, let's say we want to organize the numbers
 `[0.5, 1.1, 1.3, 2.2, 2.9, 2.99]` into bins. We could make three bins:
@@ -133,17 +133,17 @@ k = tf.placeholder(tf.float32)
 # Make a normal distribution, with a shifting mean
 mean_moving_normal = tf.random_normal(shape=[1000], mean=(5*k), stddev=1)
 # Record that distribution into a histogram summary
-tb.plugins.histogram.summary_op("normal/moving_mean", mean_moving_normal)
+tb.plugins.histogram.op("normal/moving_mean", mean_moving_normal)
 
 # Make a normal distribution with shrinking variance
 variance_shrinking_normal = tf.random_normal(shape=[1000], mean=0, stddev=1-(k))
 # Record that distribution too
-tb.plugins.histogram.summary_op("normal/shrinking_variance", variance_shrinking_normal)
+tb.plugins.histogram.op("normal/shrinking_variance", variance_shrinking_normal)
 
 # Let's combine both of those distributions into one dataset
 normal_combined = tf.concat([mean_moving_normal, variance_shrinking_normal], 0)
 # We add another histogram summary to record the combined distribution
-tb.plugins.histogram.summary_op("normal/bimodal", normal_combined)
+tb.plugins.histogram.op("normal/bimodal", normal_combined)
 
 summaries = tb.merge_all_summaries()
 
@@ -181,35 +181,35 @@ k = tf.placeholder(tf.float32)
 # Make a normal distribution, with a shifting mean
 mean_moving_normal = tf.random_normal(shape=[1000], mean=(5*k), stddev=1)
 # Record that distribution into a histogram summary
-tb.plugins.histogram.summary_op("normal/moving_mean", mean_moving_normal)
+tb.plugins.histogram.op("normal/moving_mean", mean_moving_normal)
 
 # Make a normal distribution with shrinking variance
 variance_shrinking_normal = tf.random_normal(shape=[1000], mean=0, stddev=1-(k))
 # Record that distribution too
-tb.plugins.histogram.summary_op("normal/shrinking_variance", variance_shrinking_normal)
+tb.plugins.histogram.op("normal/shrinking_variance", variance_shrinking_normal)
 
 # Let's combine both of those distributions into one dataset
 normal_combined = tf.concat([mean_moving_normal, variance_shrinking_normal], 0)
 # We add another histogram summary to record the combined distribution
-tb.plugins.histogram.summary_op("normal/bimodal", normal_combined)
+tb.plugins.histogram.op("normal/bimodal", normal_combined)
 
 # Add a gamma distribution
 gamma = tf.random_gamma(shape=[1000], alpha=k)
-tb.plugins.histogram.summary_op("gamma", gamma)
+tb.plugins.histogram.op("gamma", gamma)
 
 # And a poisson distribution
 poisson = tf.random_poisson(shape=[1000], lam=k)
-tb.plugins.histogram.summary_op("poisson", poisson)
+tb.plugins.histogram.op("poisson", poisson)
 
 # And a uniform distribution
 uniform = tf.random_uniform(shape=[1000], maxval=k*10)
-tb.plugins.histogram.summary_op("uniform", uniform)
+tb.plugins.histogram.op("uniform", uniform)
 
 # Finally, combine everything together!
 all_distributions = [mean_moving_normal, variance_shrinking_normal,
                      gamma, poisson, uniform]
 all_combined = tf.concat(all_distributions, 0)
-tb.plugins.histogram.summary_op("all_combined", all_combined)
+tb.plugins.histogram.op("all_combined", all_combined)
 
 summaries = tb.merge_all_summaries()
 

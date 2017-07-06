@@ -59,7 +59,7 @@ class GraphsPluginTest(tf.test.TestCase):
     error_message = tf.string_join([message_prefix,
                                     tf.as_string(error, name='error_string')],
                                    name='error_message')
-    summary_message = tb.plugins.text.summary_op('summary_message', error_message)
+    summary_message = tb.plugins.text.op('summary_message', error_message)
 
     sess = tf.Session()
     writer = tb.FileWriter(os.path.join(self.logdir, run_name))

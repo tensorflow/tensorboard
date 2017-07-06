@@ -72,9 +72,9 @@ class HistogramsPluginTest(tf.test.TestCase):
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32, shape=[3])
     if use_histogram:
-      tb.plugins.histogram.summary_op(self._HISTOGRAM_TAG, placeholder)
+      tb.plugins.histogram.op(self._HISTOGRAM_TAG, placeholder)
     if use_scalars:
-      tb.plugins.scalar.summary_op(self._SCALAR_TAG,
+      tb.plugins.scalar.op(self._SCALAR_TAG,
                                    tf.reduce_mean(placeholder))
     summ = tb.merge_all_summaries()
 
