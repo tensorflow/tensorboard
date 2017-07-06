@@ -40,9 +40,9 @@ py_binary(
 )
 
 py_binary(
-  name = "version",
-  srcs = ["version.py"],
-  srcs_version = "PY2AND3",
+    name = "version",
+    srcs = ["version.py"],
+    srcs_version = "PY2AND3",
 )
 
 tensorboard_zip_file(
@@ -91,3 +91,9 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+py_library(
+    name = "test_util",
+    testonly = 1,
+    srcs = ["test_util.py"],
+    srcs_version = "PY2AND3",
+)
