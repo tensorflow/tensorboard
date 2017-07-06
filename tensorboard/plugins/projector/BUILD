@@ -8,6 +8,19 @@ exports_files(["LICENSE"])
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
+#The public Python API.
+py_library(
+  name = "api",
+  srcs = ["__init__.py"],
+  srcs_version = "PY2AND3",
+  visibility = ["//visibility:public"],
+  deps = [
+    ":protos_all_py",
+    ":projector_plugin",
+    "//tensorboard:expect_tensorflow_installed",
+  ]
+)
+
 py_library(
     name = "projector_plugin",
     srcs = ["projector_plugin.py"],
@@ -21,18 +34,6 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
-)
-
-py_library(
-  name = "api",
-  srcs = ["__init__.py"],
-  srcs_version = "PY2AND3",
-  visibility = ["//visibility:public"],
-  deps = [
-    ":protos_all_py",
-    ":projector_plugin",
-    "//tensorboard:expect_tensorflow_installed",
-  ]
 )
 
 py_test(

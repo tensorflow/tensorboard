@@ -23,7 +23,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
       ":expect_tensorflow_installed",
-      "//tensorboard/plugins/scalar:api",
+      "//tensorboard/plugins:api",
     ],
     visibility = ["//visibility:public"],
 )

@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-class FileWriter(tb.FileWriter):
+class FileWriter(tf.summary.FileWriter):
   """Writes `Summary` protocol buffers to event files.
 
   The `FileWriter` class provides a mechanism to create an event file in a
@@ -239,4 +239,3 @@ def merge_summary(inputs, collections=None, name=None):
   return tf.summary.merge(inputs=inputs, collections=collections, name=name)
 
 
-__all__ = ['FileWriter', 'merge_all_summaries', 'merge_summary']

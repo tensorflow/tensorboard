@@ -7,6 +7,7 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+# The public Python api.
 py_library(
   name = "api",
   srcs = ["__init__.py"],

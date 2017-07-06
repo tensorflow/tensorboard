@@ -23,6 +23,7 @@ import collections
 import math
 import os.path
 
+import tensorboard as tb
 import tensorflow as tf
 
 from google.protobuf import text_format

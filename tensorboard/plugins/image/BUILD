@@ -7,6 +7,14 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+# The public Python api.
+py_library(
+  name = "api",
+  srcs = ["__init__.py"],
+  srcs_version = "PY2AND3",
+  deps = ["//tensorboard:expect_tensorflow_installed"]
+)
+
 py_library(
     name = "images_plugin",
     srcs = ["images_plugin.py"],

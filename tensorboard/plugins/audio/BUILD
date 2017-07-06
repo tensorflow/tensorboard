@@ -7,6 +7,14 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+# The public Python api.
+py_library(
+  name = "api",
+  srcs = ["__init__.py"],
+  srcs_version = "PY2AND3",
+  deps = ["//tensorboard:expect_tensorflow_installed"]
+)
+
 py_library(
     name = "audio_plugin",
     srcs = ["audio_plugin.py"],
@@ -47,7 +55,7 @@ py_binary(
     srcs = ["audio_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:api"
+        "//tensorboard:api",
         "//tensorboard:expect_tensorflow_installed",
         "@six_archive//:six",
     ],

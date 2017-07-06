@@ -7,6 +7,14 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+# The public Python api.
+py_library(
+  name = "api",
+  srcs = ["__init__.py"],
+  srcs_version = "PY2AND3",
+  deps = ["//tensorboard:expect_tensorflow_installed"]
+)
+
 ## Text Plugin ##
 py_library(
     name = "text_plugin",
@@ -34,6 +42,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:api",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
