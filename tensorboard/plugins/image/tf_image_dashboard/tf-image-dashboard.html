@@ -15,21 +15,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-collapsable-pane.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="tf-audio-loader.html">
+<link rel="import" href="tf-image-loader.html">
 
 <!--
-tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
+tf-image-dashboard displays a dashboard that loads images from a
+TensorFlow run.
 -->
-<dom-module id="tf-audio-dashboard">
+<dom-module id="tf-image-dashboard">
   <template>
+    <paper-dialog with-backdrop id="actual-image-size-dialog"></paper-dialog>
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
@@ -46,10 +50,10 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       <div class="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
-            <h3>No audio data was found.</h3>
+            <h3>No image data was found.</h3>
             <p>Probable causes:</p>
             <ul>
-              <li>You haven’t written any audio data to your event files.
+              <li>You haven’t written any image data to your event files.
               <li>TensorBoard can’t find your event files.
             </ul>
             <p>
@@ -76,12 +80,13 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
                 <template is="dom-if" if="[[page.active]]">
                   <div class="layout horizontal wrap">
                     <template is="dom-repeat" items="[[page.items]]">
-                      <tf-audio-loader
+                      <tf-image-loader
                         run="[[item.run]]"
                         tag="[[item.tag]]"
                         request-manager="[[_requestManager]]"
                         show-actual-size="[[_showActualSize]]"
-                      ></tf-audio-loader>
+                      ></tf-image-loader>
+                    </template>
                   </div>
                 </template>
               </template>
@@ -107,7 +112,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
     import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
 
     Polymer({
-      is: 'tf-audio-dashboard',
+      is: 'tf-image-dashboard',
       properties: {
         _selectedRuns: Array,
         _runToTag: Object,  // map<run: string, tags: string[]>
@@ -123,6 +128,32 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
           type: Object,
           value: () => new RequestManager(),
         },
+        _showActualSize: {
+          type: Object,
+          readOnly: true,
+          value: function() {
+            return (imageNode) => {
+              // Create a full-size copy of the image.
+              const newImage = imageNode.cloneNode();
+              newImage.style.height = 'auto';
+              newImage.style.width = 'auto';
+              newImage.style.margin = 0;
+              newImage.style.padding = 0;
+              newImage.classList.add('actual-size-image');  // TODO(wchargin): Why?
+
+              // When the user clicks on the image, empty and close the dialog.
+              const dialog = this.$$('#actual-image-size-dialog');
+              newImage.addEventListener('click', () => {
+                dialog.close();
+              });
+
+              // Update dialog content. Show the dialog.
+              dialog.innerHTML = '';
+              dialog.appendChild(newImage);
+              dialog.open();
+            };
+          },
+        },
       },
 
       ready() {
@@ -130,11 +161,11 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       },
       reload() {
         this._fetchTags().then(() => {
-          this._reloadAudio();
+          this._reloadImages();
         });
       },
       _fetchTags() {
-        const url = getRouter().pluginRoute('audio', '/tags');
+        const url = getRouter().pluginRoute('images', '/tags');
         return this._requestManager.request(url).then(runToTag => {
           if (_.isEqual(runToTag, this._runToTag)) {
             // No need to update anything if there are no changes.
@@ -145,9 +176,9 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
           this.set('_runToTag', runToTag);
         });
       },
-      _reloadAudio() {
-        this.querySelectorAll('tf-audio-loader').forEach(audio => {
-          audio.reload();
+      _reloadImages() {
+        this.querySelectorAll('tf-image-loader').forEach(image => {
+          image.reload();
         });
       },
 

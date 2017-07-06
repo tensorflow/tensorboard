@@ -5,12 +5,13 @@ load("//tensorboard/defs:web.bzl", "ts_web_library")
 licenses(["notice"])  # Apache 2.0
 
 ts_web_library(
-    name = "tf_text_dashboard",
+    name = "tf_histogram_dashboard",
     srcs = [
-        "tf-text-dashboard.html",
-        "tf-text-loader.html",
+        "histogramCore.ts",
+        "tf-histogram-dashboard.html",
+        "tf-histogram-loader.html",
     ],
-    path = "/tf-text-dashboard",
+    path = "/tf-histogram-dashboard",
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
@@ -22,21 +23,22 @@ ts_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
-        "@org_polymer_paper_dialog",
+        "//tensorboard/plugins/histogram/vz_histogram_timeseries",
+        "@org_polymer_iron_collapse",
+        "@org_polymer_paper_button",
         "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_material",
-        "@org_polymer_paper_slider",
-        "@org_polymer_paper_spinner",
+        "@org_polymer_paper_styles",
     ],
 )
 
 ts_web_library(
     name = "demo",
     srcs = ["index.html"] + glob(["data/**"]),
-    path = "/tf-text-dashboard",
+    path = "/tf-histogram-dashboard",
     deps = [
-        ":tf_text_dashboard",
+        ":tf_histogram_dashboard",
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",

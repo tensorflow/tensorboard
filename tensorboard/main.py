@@ -34,12 +34,12 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
-from tensorboard.plugins.distributions import distributions_plugin
-from tensorboard.plugins.graphs import graphs_plugin
-from tensorboard.plugins.histograms import histograms_plugin
-from tensorboard.plugins.images import images_plugin
+from tensorboard.plugins.distribution import distributions_plugin
+from tensorboard.plugins.graph import graphs_plugin
+from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.projector import projector_plugin
-from tensorboard.plugins.scalars import scalars_plugin
+from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 
 # TensorBoard flags

@@ -15,41 +15,71 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-collapsable-pane.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="tf-audio-loader.html">
+<link rel="import" href="tf-histogram-loader.html">
 
 <!--
-tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
+  A frontend that displays a set of tf-histogram-loaders, each of which
+  displays the histogram for a single tag on a single run. This
+  dashboard provides a categorizer, histogram mode selector (overlay or
+  offset), and abcissa seletor (step, relative, or wall time).
 -->
-<dom-module id="tf-audio-dashboard">
+<dom-module id="tf-histogram-dashboard">
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
+          <!--
+            TODO(wchargin): Remove tag groups. Replace them with a
+            search/filter bar in the main content pane.
+          -->
           <tf-regex-group regexes="{{_tagGroupRegexes}}">
           </tf-regex-group>
         </div>
         <div class="sidebar-section">
-          <tf-runs-selector
-            id="runs-selector"
-            selected-runs="{{_selectedRuns}}"
-          ></tf-runs-selector>
+          <tf-option-selector
+            id="histogramModeSelector"
+            name="Histogram mode"
+            selected-id="{{_histogramMode}}"
+            >
+            <paper-button id="overlay">overlay</paper-button>
+            <paper-button id="offset">offset</paper-button>
+          </tf-option-selector>
         </div>
+        <div class="sidebar-section">
+          <tf-option-selector
+            id="timePropertySelector"
+            name="Offset time axis"
+            selected-id="{{_timeProperty}}"
+          >
+            <paper-button id="step">step</paper-button>
+            <paper-button id="relative">relative</paper-button>
+            <paper-button id="wall_time">wall</paper-button>
+          </tf-option-selector>
+        </div>
+        <div class="sidebar-section">
+          <tf-runs-selector selected-runs="{{_selectedRuns}}">
+          </tf-runs-selector>
+        </div>
+       </div>
       </div>
       <div class="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
-            <h3>No audio data was found.</h3>
+            <h3>No histogram data was found.</h3>
             <p>Probable causes:</p>
             <ul>
-              <li>You haven’t written any audio data to your event files.
+              <li>You haven’t written any histogram data to your event files.
               <li>TensorBoard can’t find your event files.
             </ul>
             <p>
@@ -76,12 +106,14 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
                 <template is="dom-if" if="[[page.active]]">
                   <div class="layout horizontal wrap">
                     <template is="dom-repeat" items="[[page.items]]">
-                      <tf-audio-loader
+                      <tf-histogram-loader
                         run="[[item.run]]"
                         tag="[[item.tag]]"
+                        time-property="[[_timeProperty]]"
+                        histogram-mode="[[_histogramMode]]"
                         request-manager="[[_requestManager]]"
-                        show-actual-size="[[_showActualSize]]"
-                      ></tf-audio-loader>
+                        ></tf-histogram-loader>
+                    </template>
                   </div>
                 </template>
               </template>
@@ -90,6 +122,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         </template>
       </div>
     </tf-dashboard-layout>
+
     <style include="dashboard-style"></style>
     <style>
       .no-data-warning {
@@ -98,6 +131,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       }
     </style>
   </template>
+
   <script>
     "use strict";
 
@@ -107,8 +141,17 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
     import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
 
     Polymer({
-      is: 'tf-audio-dashboard',
+      is: "tf-histogram-dashboard",
       properties: {
+        _histogramMode: {
+          type: String,
+          value: "offset",
+        },
+        _timeProperty: {
+          type: String,
+          value: "step",
+        },
+
         _selectedRuns: Array,
         _runToTag: Object,  // map<run: string, tags: string[]>
         _dataNotFound: Boolean,
@@ -130,11 +173,11 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       },
       reload() {
         this._fetchTags().then(() => {
-          this._reloadAudio();
+          this._reloadHistograms();
         });
       },
       _fetchTags() {
-        const url = getRouter().pluginRoute('audio', '/tags');
+        const url = getRouter().pluginRoute('histograms', '/tags');
         return this._requestManager.request(url).then(runToTag => {
           if (_.isEqual(runToTag, this._runToTag)) {
             // No need to update anything if there are no changes.
@@ -145,9 +188,9 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
           this.set('_runToTag', runToTag);
         });
       },
-      _reloadAudio() {
-        this.querySelectorAll('tf-audio-loader').forEach(audio => {
-          audio.reload();
+      _reloadHistograms() {
+        this.querySelectorAll('tf-histogram-loader').forEach(histogram => {
+          histogram.reload();
         });
       },
 
