@@ -629,13 +629,13 @@ class LineChart {
             'background-color',
             (d) => this.colorScale.scale(d.dataset.metadata().name));
     rows.append('td').text((d) => d.dataset.metadata().name);
+    const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
     if (this.smoothingEnabled) {
-      rows.append('td').text(
-          (d) => isNaN(d.datum.smoothed) ? 'NaN' :
-                                           valueFormatter(d.datum.smoothed));
+      rows.append('td').text((d) => formatValueOrNaN(d.datum.smoothed));
+    } else {
+      rows.append('td').text((d) => formatValueOrNaN(d.datum.scalar));
     }
-    rows.append('td').text(
-        (d) => isNaN(d.datum.scalar) ? 'NaN' : valueFormatter(d.datum.scalar));
+    rows.append('td').text((d) => formatValueOrNaN(d.datum.scalar));
     rows.append('td').text((d) => ChartHelpers.stepFormatter(d.datum.step));
     rows.append('td').text(
         (d) => ChartHelpers.timeFormatter(d.datum.wall_time));
