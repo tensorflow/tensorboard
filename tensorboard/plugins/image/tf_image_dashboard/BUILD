@@ -22,6 +22,8 @@ ts_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
+        "@org_polymer_iron_icon",
+        "@org_polymer_paper_input",
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_slider",

@@ -1,0 +1,217 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="tf-category-pane">
+  <template>
+    <template is="dom-if" if="[[_rendered]]">
+      <button class="heading"
+              on-tap="_togglePane"
+              open-button$="[[_opened]]">
+        <span class="name">
+          <template is="dom-if" if="[[_isSearchResults]]"><!--
+            --><span class="light">Tags matching /</span><!--
+            --><span class="category-name">[[category.name]]</span><!--
+            --><span class="light">/</span><!--
+            --><template is="dom-if" if="[[_isUniversalSearchQuery]]"><!--
+              --><span> (all tags)</span><!--
+            --></template><!--
+            --><template is="dom-if" if="[[_isInvalidSearchResults]]"><!--
+              --><span> <strong>(malformed regular expression)</strong></span><!--
+            --></template><!--
+          --></template><!--
+          --><template is="dom-if" if="[[!_isSearchResults]]"><!--
+            --><span class="category-name">[[category.name]]</span><!--
+          --></template>
+        </span>
+        <span class="count"><span>[[_count]]</span></span>
+      </button>
+      <iron-collapse opened="[[_opened]]">
+        <div class="content">
+          <template is="dom-if" if="[[_opened]]" restamp="[[restamp]]">
+            <content></content>
+          </template>
+        </div>
+      </iron-collapse>
+    </template>
+    <style>
+      :host {
+        display: block;
+        margin: 0 5px 1px 10px;
+      }
+
+      :host:first-of-type {
+        margin-top: 20px;
+      }
+
+      :host:last-of-type {
+        margin-bottom: 20px;
+      }
+
+      .heading {
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        padding: 10px 15px;
+      }
+
+      .heading::-moz-focus-inner {
+        padding: 10px 15px;
+      }
+
+      .content {
+        padding: 15px;
+        border: 1px solid #dedede;
+        border-top: none;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        background: white;
+      }
+
+      [open-button] {
+        border-bottom-left-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+      }
+
+      .name {
+        float: left;
+      }
+
+      .light {
+        color: var(--paper-grey-500);
+      }
+
+      .category-name {
+        white-space: pre;
+      }
+
+      .count {
+        float: right;
+        margin-right: 5px;
+        font-size: 12px;
+        color: var(--paper-grey-500);
+      }
+    </style>
+  </template>
+  <script>
+    import {CategoryType} from "./categorizationUtils.js";
+    Polymer({
+      is: "tf-category-pane",
+      properties: {
+        /**
+         * The category object represented by this pane. Should be of
+         * type Category<any> (from categorizationUtils.ts).
+         */
+        category: Object,
+
+        /**
+         * When the category is closed and reopened, should its contents
+         * be restamped (default) or retained?
+         */
+        restamp: {
+          type: Boolean,
+          value: true,
+        },
+
+        _count: {
+          type: Number,
+          computed: '_computeCount(category.items)',
+        },
+        _opened: {
+          type: Boolean,
+          value: false,
+        },
+        _rendered: {
+          type: Boolean,
+          computed: '_computeRendered(category)',
+        },
+        _isSearchResults: {
+          type: Boolean,
+          computed: '_computeIsSearchResults(category.metadata.type)',
+        },
+        _isInvalidSearchResults: {
+          type: Boolean,
+          computed: '_computeIsInvalidSearchResults(category.metadata)',
+        },
+        _isUniversalSearchQuery: {
+          type: Boolean,
+          computed: '_computeIsUniversalSearchQuery(category.metadata)',
+        },
+      },
+
+      observers: ["_nameChanged(category.name)"],
+
+      _computeCount() {
+        return this.category.items.length;
+      },
+
+      _nameChanged(newName) {
+        // Polymer will fire this observer whenever the category
+        // changes, whether the name actually changed or not. Thus, we
+        // have to perform the requisite checks ourselves.
+        if (this._previousName === (this._previousName = newName)) {
+          return;
+        }
+        if (this.category.metadata.type === CategoryType['SEARCH_RESULTS']) {
+          // When a search result category's name changes, this means
+          // that the search query has changed. Surely the user will
+          // wish to see the new results.
+          this._opened = true;
+        } else {
+          // Otherwise, we don't know what happened. Maybe new runs were
+          // loaded, maybe a tag group was added that shifted all the
+          // categories. To be safe, we'll close all the categories.
+          this._opened = false;
+        }
+      },
+
+      _togglePane() {
+        this._opened = !this._opened;
+      },
+
+      _computeRendered(category) {
+        // Show a category unless it's a search results category where
+        // there wasn't actually a search query.
+        return !(
+          category.metadata.type === CategoryType['SEARCH_RESULTS']
+          && category.name === "");
+      },
+
+      _computeIsSearchResults(type) {
+        return type === CategoryType['SEARCH_RESULTS'];
+      },
+
+      _computeIsInvalidSearchResults(metadata) {
+        return (
+          metadata.type === CategoryType['SEARCH_RESULTS']
+          && !metadata.validRegex);
+      },
+
+      _computeIsUniversalSearchQuery(metadata) {
+        return (
+          metadata.type === CategoryType['SEARCH_RESULTS']
+          && metadata.universalRegex);
+      },
+    });
+  </script>
+</dom-module>

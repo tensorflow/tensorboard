@@ -15,13 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-collapsable-pane.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-text-loader.html">
@@ -33,14 +34,6 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
-        <div class="sidebar-section">
-          <!--
-            TODO(wchargin): Remove tag groups. Replace them with a
-            search/filter bar in the main content pane.
-          -->
-          <tf-regex-group regexes="{{_tagGroupRegexes}}">
-          </tf-regex-group>
-        </div>
         <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
@@ -66,11 +59,18 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
             and consider filing an issue on GitHub.
           </div>
         </template>
-        <template is="dom-repeat" items="[[_categories]]" as="category">
-          <tf-collapsable-pane
-            name="[[category.name]]"
-            count="[[category.count]]"
+        <template is="dom-if" if="[[!_dataNotFound]]">
+          <paper-input
+            no-label-float
+            label="Filter tags (regular expressions supported)"
+            value="{{_tagFilter}}"
+            class="search-input"
           >
+            <iron-icon prefix icon="search"></iron-icon>
+          </paper-input>
+        </template>
+        <template is="dom-repeat" items="[[_categories]]" as="category">
+          <tf-category-pane category="[[category]]">
             <tf-paginated-view
               items="[[category.items]]"
               pages="{{category._pages}}"
@@ -114,10 +114,14 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         _runToTag: Object,  // map<run: string, tags: string[]>
         _dataNotFound: Boolean,
 
+        _tagFilter: {
+          type: String,  // upward bound from paper-input
+          value: '.*',
+        },
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagGroupRegexes)',
+            '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
         },
 
         _requestManager: {
@@ -150,9 +154,8 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
           textLoader.reload();
         });
       },
-      _makeCategories(runToTag, selectedRuns, tagGroupRegexes) {
-        return categorizeRunTagCombinations(
-          runToTag, selectedRuns, tagGroupRegexes);
+      _makeCategories(runToTag, selectedRuns, tagFilter) {
+        return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
       },
     });
   </script>
