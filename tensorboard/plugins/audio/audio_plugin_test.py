@@ -50,10 +50,10 @@ class AudioPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32)
-    tf.summary.audio(name="baz", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.audio.summary_op(name="baz", tensor=placeholder, sample_rate=44100)
+    merged_summary_op = tb.merge_all_summaries()
     foo_directory = os.path.join(self.log_dir, "foo")
-    writer = tf.summary.FileWriter(foo_directory)
+    writer = tb.FileWriter(foo_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       # The floats (sample data) range from -1 to 1.
@@ -66,10 +66,10 @@ class AudioPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32)
-    tf.summary.audio(name="quux", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.audio.summary_op(name="quux", tensor=placeholder, sample_rate=44100)
+    merged_summary_op = tb.merge_all_summaries()
     bar_directory = os.path.join(self.log_dir, "bar")
-    writer = tf.summary.FileWriter(bar_directory)
+    writer = tb.FileWriter(bar_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       # The floats (sample data) range from -1 to 1.

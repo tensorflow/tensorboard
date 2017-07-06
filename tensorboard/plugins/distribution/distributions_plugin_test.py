@@ -23,6 +23,7 @@ import collections
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
+import tensorboard as tb
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator
@@ -78,13 +79,13 @@ class DistributionsPluginTest(tf.test.TestCase):
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32, shape=[3])
     if use_distributions:
-      tf.summary.histogram(self._DISTRIBUTION_TAG, placeholder)
+      tb.plugins.histogram.summary_op(self._DISTRIBUTION_TAG, placeholder)
     if use_scalars:
-      tf.summary.scalar(self._SCALAR_TAG, tf.reduce_mean(placeholder))
-    summ = tf.summary.merge_all()
+      tb.plugins.scalar.summary_op(self._SCALAR_TAG, tf.reduce_mean(placeholder))
+    summ = tb.merge_all_summaries()
 
     subdir = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(subdir)
+    writer = tb.FileWriter(subdir)
     writer.add_graph(sess.graph)
     for step in xrange(self._STEPS):
       feed_dict = {placeholder: [1 + step, 2 + step, 3 + step]}

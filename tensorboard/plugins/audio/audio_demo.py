@@ -22,6 +22,7 @@ import math
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
+import tensorboard as tb
 import tensorflow as tf
 
 FLAGS = tf.flags.FLAGS
@@ -75,7 +76,7 @@ def run(logdir, run_name, wave_name, wave_constructor):
 
   # Let's log this frequency, just so that we can make sure that it's as
   # expected.
-  tf.summary.scalar('frequency', frequency)
+  tb.plugins.scalar.summary_op('frequency', frequency)
 
   # Now, we pass this to the wave constructor to get our waveform. Doing
   # so within a name scope means that any summaries that the wave
@@ -84,13 +85,13 @@ def run(logdir, run_name, wave_name, wave_constructor):
     waveform = wave_constructor(frequency)
 
   # Here's the crucial piece: we interpret this result as audio.
-  tf.summary.audio('waveform', waveform, FLAGS.sample_rate)
+  tb.plugins.audio.summary_op('waveform', waveform, FLAGS.sample_rate)
 
   # Now, we can collect up all the summaries and begin the run.
-  summ = tf.summary.merge_all()
+  summ = tb.merge_all_summaries()
 
   sess = tf.Session()
-  writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
+  writer = tb.FileWriter(os.path.join(logdir, run_name))
   writer.add_graph(sess.graph)
   sess.run(tf.global_variables_initializer())
   for step in xrange(FLAGS.steps):

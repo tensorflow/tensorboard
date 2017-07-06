@@ -25,6 +25,7 @@ import os.path
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
+import tensorboard as tb
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_multiplexer
@@ -75,14 +76,14 @@ class ScalarsPluginTest(tf.test.TestCase):
     sess = tf.Session()
     if use_scalars:
       scalar_placeholder = tf.placeholder(tf.int64)
-      tf.summary.scalar(self._SCALAR_TAG, scalar_placeholder)
+      tb.plugins.scalar.summary_op(self._SCALAR_TAG, scalar_placeholder)
     if use_histogram:
       histogram_placeholder = tf.placeholder(tf.float32, shape=[3])
-      tf.summary.histogram(self._HISTOGRAM_TAG, histogram_placeholder)
-    summ = tf.summary.merge_all()
+      tb.plugins.histogram.summary_op(self._HISTOGRAM_TAG, histogram_placeholder)
+    summ = tb.merge_all_summaries()
 
     subdir = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(subdir)
+    writer = tb.FileWriter(subdir)
     writer.add_graph(sess.graph)
     for step in xrange(self._STEPS):
       feed_dict = {}
@@ -92,8 +93,8 @@ class ScalarsPluginTest(tf.test.TestCase):
         feed_dict[histogram_placeholder] = [1 + step, 2 + step, 3 + step]
       s = sess.run(summ, feed_dict=feed_dict)
       writer.add_summary(s, global_step=step)
-    writer.close()
-
+    writer.close(
+)
   def test_index(self):
     self.set_up_with_runs([self._RUN_WITH_SCALARS, self._RUN_WITH_HISTOGRAM])
     self.assertEqual({
@@ -151,6 +152,30 @@ class ScalarsPluginTest(tf.test.TestCase):
   def test_active_with_both(self):
     self.set_up_with_runs([self._RUN_WITH_SCALARS, self._RUN_WITH_HISTOGRAM])
     self.assertTrue(self.plugin.is_active())
+
+class ManualScalarPBTest(tf.test.TestCase):
+  """Verify it also supports manually-generated protocol buffers via
+  tb.plugins.scalar.summary_pb."""
+
+  def test_scalars_json(self):
+    logdir = self.get_temp_dir()
+    writer = tb.FileWriter(logdir)
+
+    writer.add_summary(tb.plugins.scalar.summary_pb("foo", 1.0), 0)
+    writer.add_summary(tb.plugins.scalar.summary_pb("foo", 2.0), 100)
+    writer.flush()
+    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer.AddRunsFromDirectory(logdir)
+    multiplexer.Reload()
+    context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+    plugin = scalars_plugin.ScalarsPlugin(context)
+
+    data, _ = plugin.scalars_impl("foo", ".", scalars_plugin.OutputFormat.JSON)
+    self.assertEqual(len(data), 2)
+    self.assertEqual(data[0].step, 0)
+    self.assertEqual(data[0].value, 1.0)
+    self.assertEqual(data[1].step, 100)
+    self.assertEqual(data[1].value, 2.0)
 
 
 if __name__ == '__main__':

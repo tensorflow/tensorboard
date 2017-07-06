@@ -33,6 +33,8 @@ import bleach
 import markdown
 import six
 # pylint: enable=g-bad-import-order
+
+import tensorboard as tb
 import tensorflow as tf
 from werkzeug import wrappers
 

@@ -24,7 +24,7 @@ py_library(
 )
 
 py_library(
-  name = "projector",
+  name = "api",
   srcs = ["__init__.py"],
   srcs_version = "PY2AND3",
   visibility = ["//visibility:public"],
@@ -42,7 +42,7 @@ py_test(
   main = "projector_api_test.py",
   srcs_version = "PY2AND3",
   deps = [
-      ":projector",
+      ":api",
       "//tensorboard:expect_tensorflow_installed",
   ]
 )

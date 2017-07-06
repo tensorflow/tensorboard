@@ -24,6 +24,7 @@ import json
 import os
 import textwrap
 import numpy as np
+import tensorboard as tb
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_multiplexer
@@ -57,14 +58,14 @@ class TextPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.string)
-    summary_tensor = tf.summary.text('message', placeholder)
-    vector_summary = tf.summary.text('vector', placeholder)
-    scalar_summary = tf.summary.scalar('twelve', tf.constant(12))
+    summary_tensor = tb.plugins.text.summary_op('message', placeholder)
+    vector_summary = tb.plugins.text.summary_op('vector', placeholder)
+    scalar_summary = tb.plugins.scalar.summary_op('twelve', tf.constant(12))
 
     run_names = ['fry', 'leela']
     for run_name in run_names:
       subdir = os.path.join(logdir or self.logdir, run_name)
-      writer = tf.summary.FileWriter(subdir)
+      writer = tb.FileWriter(subdir)
       writer.add_graph(sess.graph)
 
       step = 0
@@ -474,7 +475,7 @@ class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):
 
     run_name = 'fry'
     subdir = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(subdir)
+    writer = tb.FileWriter(subdir)
     writer.add_graph(sess.graph)
 
     summ = sess.run(plugin_asset_summary)

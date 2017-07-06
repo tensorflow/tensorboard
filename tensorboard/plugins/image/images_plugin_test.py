@@ -27,7 +27,9 @@ import tempfile
 import numpy
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
+import tensorboard as tb
 import tensorflow as tf
+
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
@@ -50,10 +52,10 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.uint8)
-    tf.summary.image(name="baz", tensor=placeholder)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.image.summary_op(name="baz", tensor=placeholder)
+    merged_summary_op = tb.merge_all_summaries()
     foo_directory = os.path.join(self.log_dir, "foo")
-    writer = tf.summary.FileWriter(foo_directory)
+    writer = tb.FileWriter(foo_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       writer.add_summary(sess.run(merged_summary_op, feed_dict={
@@ -66,10 +68,10 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.uint8)
-    tf.summary.image(name="quux", tensor=placeholder)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.image.summary_op(name="quux", tensor=placeholder)
+    merged_summary_op = tb.merge_all_summaries()
     bar_directory = os.path.join(self.log_dir, "bar")
-    writer = tf.summary.FileWriter(bar_directory)
+    writer = tb.FileWriter(bar_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       writer.add_summary(sess.run(merged_summary_op, feed_dict={

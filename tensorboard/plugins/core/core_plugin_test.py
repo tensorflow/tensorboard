@@ -23,6 +23,7 @@ import json
 import os
 import shutil
 
+import tensorboard as tb
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -163,7 +164,7 @@ class CorePluginTest(tf.test.TestCase):
     run_path = os.path.join(self.logdir, run_name)
     os.makedirs(run_path)
 
-    writer = tf.summary.FileWriter(run_path)
+    writer = tb.FileWriter(run_path)
 
     # Add a simple graph event.
     graph_def = tf.GraphDef()
