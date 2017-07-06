@@ -62,7 +62,7 @@ def op(name, tensor, sample_rate, max_outputs=3, collections=None,
     type `string`, which contains a `Summary` protobuf with serialized audio
     data.
   """
-  return tb.plugins.audio.op(name=name,
+  return tf.summary.audio(name=name,
                           tensor=tensor,
                           sample_rate=sample_rate,
                           max_outputs=max_outputs,

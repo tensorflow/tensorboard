@@ -48,7 +48,10 @@ def op(name, tensor, collections=None, family=None):
   Raises:
     ValueError: If tensor has the wrong shape or type.
   """
-  return tb.plugins.scalar.op(name=name, tensor=tensor, collections=collections, family=family)
+  return tf.summary.scalar(name=name,
+                           tensor=tensor,
+                           collections=collections,
+                           family=family)
 
 def pb(tag, value):
   """Create a single summary protobuf containing scalar data.

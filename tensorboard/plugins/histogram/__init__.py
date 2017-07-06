@@ -54,7 +54,7 @@ def op(name, tensor, collections=None, family=None):
     A histogram summary op. When that op is run, it generates a scalar `Tensor`
     of type `string`, which contains a `Summary` protobuf.
   """
-  return tb.plugins.histogram.op(name=name, tensor=tensor, collections=collections,
+  return tf.summary.histogram(name=name, tensor=tensor, collections=collections,
                               family=family)
 
 

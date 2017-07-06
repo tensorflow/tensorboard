@@ -200,5 +200,43 @@ class FileWriter(tb.FileWriter):
     return super(self.__class__, self).add_run_metadata(run_metadata=run_metadata, global_step=global_step)
 
 
+def merge_all_summaries(key='summaries'):
+  """Merges all TensorFlow summary ops collected in the default graph.
 
-__all__ = ['FileWriter']
+  Args:
+    key: `GraphKey` used to collect the summaries.  Defaults to 'summaries'
+
+  Returns:
+    If no summaries were collected, returns None.  Otherwise returns a scalar
+    `Tensor` of type `string` containing the serialized `Summary` protocol
+    buffer resulting from the merging.
+  """
+  return tf.summary.merge_all()
+
+
+def merge_summary(inputs, collections=None, name=None):
+  """Merges summaries.
+
+  This op creates a
+  [`Summary`](https://www.tensorflow.org/code/tensorflow/core/framework/summary.proto)
+  protocol buffer that contains the union of all the values in the input
+  summaries.
+
+  When the Op is run, it reports an `InvalidArgument` error if multiple values
+  in the summaries to merge use the same tag.
+
+  Args:
+    inputs: A list of `string` `Tensor` objects containing serialized `Summary`
+      protocol buffers.
+    collections: Optional list of graph collections keys. The new summary op is
+      added to these collections. Defaults to `[]`.
+    name: A name for the operation (optional).
+
+  Returns:
+    A scalar `Tensor` of type `string`. The serialized `Summary` protocol
+    buffer resulting from the merging.
+  """
+  return tf.summary.merge(inputs=inputs, collections=collections, name=name)
+
+
+__all__ = ['FileWriter', 'merge_all_summaries', 'merge_summary']
