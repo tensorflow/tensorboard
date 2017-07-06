@@ -308,7 +308,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
       reload_multiplexer(multiplexer, path_to_run)
       time.sleep(load_interval)
 
-  thread = threading.Thread(target=_reload_forever)
+  thread = threading.Thread(target=_reload_forever, name='Reloader')
   thread.daemon = True
   thread.start()
   return thread
