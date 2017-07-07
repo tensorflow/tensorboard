@@ -128,7 +128,7 @@ class LogHandler(logging.StreamHandler):
   This handler will also strip ANSI color codes from emitted log
   records automatically when the output stream is not a terminal.
 
-  Ephemeral log records, when emitted to a teletype emulator, only
+  Ephemeral log records are only emitted to a teletype emulator, only
   display on the final row, and get overwritten as soon as another
   ephemeral record is outputted. Ephemeral records are also sticky. If
   a normal record is written then the previous ephemeral record is
@@ -182,17 +182,18 @@ class LogHandler(logging.StreamHandler):
     try:
       is_ephemeral = record.name.endswith(LogHandler.EPHEMERAL)
       color = LogHandler.COLORS.get(record.levelno)
-      if is_ephemeral and self._is_tty:
-        ephemeral = record.getMessage()
-        if ephemeral:
-          if color:
-            ephemeral = color + ephemeral + Ansi.RESET
-          self._clear_line()
-          self._stream.write(ephemeral)
-        else:
-          if self._ephemeral:
-            self._stream.write('\n')
-        self._ephemeral = ephemeral
+      if is_ephemeral:
+        if self._is_tty:
+          ephemeral = record.getMessage()
+          if ephemeral:
+            if color:
+              ephemeral = color + ephemeral + Ansi.RESET
+            self._clear_line()
+            self._stream.write(ephemeral)
+          else:
+            if self._ephemeral:
+              self._stream.write('\n')
+          self._ephemeral = ephemeral
       else:
         self._clear_line()
         if self._is_tty and color:
@@ -202,8 +203,8 @@ class LogHandler(logging.StreamHandler):
         self._disable_flush = False
         if self._is_tty and color:
           self._stream.write(Ansi.RESET)
-      if not is_ephemeral and self._ephemeral:
-        self._stream.write(self._ephemeral)
+        if self._ephemeral:
+          self._stream.write(self._ephemeral)
       self.flush()
     finally:
       self._disable_flush = False
