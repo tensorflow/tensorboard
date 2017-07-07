@@ -75,16 +75,16 @@ class FileWriter(tf.summary.FileWriter):
       filename_suffix: A string. Every event file's name is suffixed with
         `suffix`.
     """
-    super(tf.summary.FileWriter, self).__init__(logdir=logdir,
-                                                graph=graph,
-                                                max_queue=max_queue,
-                                                flush_secs=flush_secs,
-                                                filename_suffix=filename_suffix)
+    super(FileWriter, self).__init__(logdir,
+                                     graph=graph,
+                                     max_queue=max_queue,
+                                     flush_secs=flush_secs,
+                                     filename_suffix=filename_suffix)
 
 
   def get_logdir(self):
     """Returns the directory where event file will be written."""
-    return super(tf.summary.FileWriter, self).get_logdir()
+    return super(FileWriter, self).get_logdir()
 
   def add_event(self, event):
     """Adds an event to the event file.
@@ -92,7 +92,7 @@ class FileWriter(tf.summary.FileWriter):
     Args:
       event: An `Event` protocol buffer.
     """
-    return super(tf.summary.FileWriter, self).add_event(event)
+    return super(FileWriter, self).add_event(event)
 
   def flush(self):
     """Flushes the event file to disk.
@@ -100,14 +100,14 @@ class FileWriter(tf.summary.FileWriter):
     Call this method to make sure that all pending events have been written to
     disk.
     """
-    return super(tf.summary.FileWriter, self).flush()
+    return super(FileWriter, self).flush()
 
   def close(self):
     """Flushes the event file to disk and close the file.
 
     Call this method when you do not need the summary writer anymore.
     """
-    return super(tf.summary.FileWriter, self).close()
+    return super(FileWriter, self).close()
 
   def reopen(self):
     """Reopens the EventFileWriter.
@@ -117,7 +117,7 @@ class FileWriter(tf.summary.FileWriter):
 
     Does nothing if the EventFileWriter was not closed.
     """
-    return super(tf.summary.FileWriter, self).reopen()
+    return super(FileWriter, self).reopen()
 
   def add_summary(self, summary, global_step=None):
     """Adds a `Summary` protocol buffer to the event file.
@@ -137,7 +137,7 @@ class FileWriter(tf.summary.FileWriter):
       global_step: Number. Optional global step value to record with the
         summary.
     """
-    return super(tf.summary.FileWriter, self).add_summary(
+    return super(FileWriter, self).add_summary(
         summary=summary,
         global_step=global_step
     )
@@ -153,7 +153,7 @@ class FileWriter(tf.summary.FileWriter):
       global_step: Number. Optional global step value to record with the
         summary.
     """
-    return super(tf.summary.FileWriter, self).add_session_log(
+    return super(FileWriter, self).add_session_log(
         session_log=session_log,
         global_step=global_step
     )
@@ -174,7 +174,7 @@ class FileWriter(tf.summary.FileWriter):
       ValueError: If both graph and graph_def are passed to the method.
     """
 
-    return super(tf.summary.FileWriter, self).add_graph(
+    return super(FileWriter, self).add_graph(
         graph=graph,
         global_step=global_step,
         graph_def=graph_def
@@ -195,7 +195,7 @@ class FileWriter(tf.summary.FileWriter):
     Raises:
       TypeError: If both `meta_graph_def` is not an instance of `MetaGraphDef`.
     """
-    return super(tf.summary.FileWriter, self).add_meta_graph(
+    return super(FileWriter, self).add_meta_graph(
         meta_graph_def=meta_graph_def,
         global_step=global_step
     )
@@ -212,7 +212,7 @@ class FileWriter(tf.summary.FileWriter):
     Raises:
       ValueError: If the provided tag was already used for this type of event.
     """
-    return super(tf.summary.FileWriter, self).add_run_metadata(
+    return super(FileWriter, self).add_run_metadata(
         run_metadata=run_metadata,
         tag=tag,
         global_step=global_step
