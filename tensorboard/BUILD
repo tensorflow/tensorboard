@@ -23,6 +23,7 @@ py_binary(
     main = "main.py",
     srcs_version = "PY2AND3",
     deps = [
+        ":util",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
@@ -96,4 +97,24 @@ py_library(
     testonly = 1,
     srcs = ["test_util.py"],
     srcs_version = "PY2AND3",
+)
+
+py_library(
+    name = "util",
+    srcs = ["util.py"],
+    srcs_version = "PY2AND3",
+    deps = ["//tensorboard:expect_tensorflow_installed"],
+)
+
+py_test(
+    name = "util_test",
+    size = "small",
+    srcs = ["util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":test_util",
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+        "@six_archive//:six",
+    ],
 )
