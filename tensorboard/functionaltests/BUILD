@@ -12,5 +12,9 @@ py_web_test_suite(
         "//tensorboard",
     ],
     srcs_version = "PY2AND3",
-    deps = ["@io_bazel_rules_webtesting//testing/web"],
+    deps = [
+        "@io_bazel_rules_webtesting//testing/web",
+        "//tensorboard/plugins/scalar:scalars_demo",
+        "//tensorboard/plugins/audio:audio_demo",
+    ],
 )
