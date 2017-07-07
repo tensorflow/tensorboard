@@ -79,10 +79,10 @@ class RecordReaderTest(LoaderTestCase):
     path = self._save_records('foobar.records', ['foo', 'bar'])
     with self.RecordReader(path) as reader:
       record1 = reader.get_next_record()
-      self.assertEqual('foo', record1.record)
+      self.assertEqual(b'foo', record1.record)
       self.assertGreater(record1.offset, 0)
       record2 = reader.get_next_record()
-      self.assertEqual('bar', record2.record)
+      self.assertEqual(b'bar', record2.record)
       self.assertGreater(record2.offset, record1.offset)
       record3 = reader.get_next_record()
       self.assertIsNone(record3)
@@ -102,13 +102,13 @@ class RecordReaderTest(LoaderTestCase):
     with self.RecordReader(path) as reader:
       start_offset = reader.get_next_record().offset
     with self.RecordReader(path, start_offset) as reader:
-      self.assertEqual('bar', reader.get_next_record().record)
+      self.assertEqual(b'bar', reader.get_next_record().record)
 
   def testCorruptRecord_raisesDataLossError(self):
     path = self._save_string('foobar.records', 'abcd' * 4)
     with self.RecordReader(path) as reader:
       with self.assertRaises(tf.errors.DataLossError):
-        self.assertEqual('foo', reader.get_next_record())
+        self.assertEqual(b'foo', reader.get_next_record())
 
   def testFileShrunk_raisesIoError(self):
     path = self._save_records('foobar.records', ['foo'])
@@ -147,7 +147,8 @@ class RecordWriter(object):
 
   def _make_writer(self):
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      return tf.pywrap_tensorflow.PyRecordWriter_New(self.path, '', status)
+      return tf.pywrap_tensorflow.PyRecordWriter_New(
+          self.path, tf.compat.as_bytes(''), status)
 
 
 if __name__ == '__main__':

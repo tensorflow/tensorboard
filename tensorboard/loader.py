@@ -20,8 +20,10 @@ from __future__ import print_function
 
 import collections
 import re
+import sys
 import time
 import threading
+import types  # pylint: disable=unused-import
 
 import six
 import tensorflow as tf
@@ -130,7 +132,7 @@ class RecordReader(object):
     with tf.errors.raise_exception_on_not_ok_status() as status:
       return tf.pywrap_tensorflow.PyRecordReader_New(
           tf.resource_loader.readahead_file_path(tf.compat.as_bytes(self.path)),
-          self._offset, '', status)
+          self._offset, tf.compat.as_bytes(''), status)
 
   def __str__(self):
     return u'RecordReader{%s}' % self.path
@@ -159,8 +161,8 @@ class BufferedRecordReader(object):
 
   def __init__(self, path,
                start_offset=0,
-               read_ahead=None,
-               stat_interval=None,
+               read_ahead=READ_AHEAD_BYTES,
+               stat_interval=STAT_INTERVAL_SECONDS,
                clock=time.time,
                record_reader_factory=RecordReader):
     """Creates new instance.
@@ -185,12 +187,11 @@ class BufferedRecordReader(object):
     :type start_offset: int
     :type read_ahead: int
     :type clock: () -> float
+    :type record_reader_factory: (str, int) -> RecordReader
     """
     self.path = tf.compat.as_text(path)
-    self._read_ahead = read_ahead or BufferedRecordReader.READ_AHEAD_BYTES
-    self._stat_interval = (stat_interval
-                           if stat_interval is not None else
-                           BufferedRecordReader.STAT_INTERVAL_SECONDS)
+    self._read_ahead = read_ahead
+    self._stat_interval = stat_interval
     self._clock = clock
     self._is_closed = False
     self._has_reached_end = False
@@ -200,8 +201,10 @@ class BufferedRecordReader(object):
     self._buffered = 0
     self._reader = record_reader_factory(self.path, start_offset)
     self._records = collections.deque()  # type: collections.deque[Record]
-    self._read_exception = None  # type: Exception
-    self._close_exception = None  # type: Exception
+    self._read_exception = \
+        None  # type: tuple[BaseException, BaseException, types.TracebackType]
+    self._close_exception = \
+        None  # type: tuple[BaseException, BaseException, types.TracebackType]
     self._lock = threading.Lock()
     self._wake_up_producer = threading.Condition(self._lock)
     self._wake_up_consumers = threading.Condition(self._lock)
@@ -274,9 +277,9 @@ class BufferedRecordReader(object):
           return record
         self._has_reached_end = False
         self._wake_up_producer.notify()
-      while (self._read_exception is None and
-             not self._has_reached_end and
-             not self._records):
+      while not (self._read_exception or
+                 self._has_reached_end or
+                 self._records):
         self._wake_up_consumers.wait()
       return self._get_record()
 
@@ -304,11 +307,11 @@ class BufferedRecordReader(object):
       while self._reader is not None:
         self._wake_up_consumers.wait()
       if self._close_exception is not None:
-        raise self._close_exception
+        six.reraise(*self._close_exception)
 
   def _get_record(self):
     if self._read_exception is not None:
-      raise self._read_exception
+      six.reraise(*self._read_exception)
     if not self._records:
       return None
     record = self._records.popleft()
@@ -346,7 +349,7 @@ class BufferedRecordReader(object):
             self._reader.close()
             tf.logging.debug('Closed')
           except Exception as e:  # pylint: disable=broad-except
-            self._close_exception = e
+            self._close_exception = sys.exc_info()
             tf.logging.debug('Close failed: %s', e)
           self._reader = None
           self._wake_up_consumers.notify_all()
@@ -380,7 +383,7 @@ class BufferedRecordReader(object):
             self._stat()
       except Exception as e:  # pylint: disable=broad-except
         tf.logging.debug('Read failed: %s', e)
-        read_exception = e
+        read_exception = sys.exc_info()
     with self._lock:
       if read_exception is not None:
         self._read_exception = read_exception
