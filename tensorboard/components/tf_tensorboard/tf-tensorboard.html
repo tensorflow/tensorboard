@@ -312,25 +312,6 @@ limitations under the License.
     import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
     import {fetchRuns} from "../tf-backend/runsStore.js";
 
-    // A map from frontend dashboard names to backend plugin names.
-    // TODO(@wchargin): Require that these be the same; update the
-    // projector dashboard's backend name and remove this table.
-    const PLUGIN_NAMES_BY_DASHBOARD = {
-      'scalars': 'scalars',
-      'images': 'images',
-      'audio': 'audio',
-      'graphs': 'graphs',
-      'distributions': 'distributions',
-      'histograms': 'histograms',
-      'embeddings': 'projector',
-      'text': 'text',
-    };
-    if (!_.isEqual(Object.keys(PLUGIN_NAMES_BY_DASHBOARD), TABS)) {
-      throw new Error(
-        `Bad set of plugin names: ` +
-        `${Object.values(PLUGIN_NAMES_BY_DASHBOARD)} vs. ${TABS}`);
-    }
-
     // A map from dashboard name to Polymer component name.
     const COMPONENTS = {
       'scalars': 'tf-scalar-dashboard',
@@ -339,7 +320,7 @@ limitations under the License.
       'graphs': 'tf-graph-dashboard',
       'distributions': 'tf-distribution-dashboard',
       'histograms': 'tf-histogram-dashboard',
-      'embeddings': 'vz-projector-dashboard',
+      'projector': 'vz-projector-dashboard',
       'text': 'tf-text-dashboard',
     };
     if (!_.isEqual(Object.keys(COMPONENTS), TABS)) {
@@ -641,7 +622,7 @@ limitations under the License.
           return false;
         }
         // TODO(@wchargin): Refactor to remove these explicit plugin names.
-        const disabledForModes = ['graphs', 'embeddings'];
+        const disabledForModes = ['graphs', 'projector'];
         return !debuggerDataEnabled && disabledForModes.includes(selectedDashboard);
       },
 
@@ -703,8 +684,7 @@ limitations under the License.
             return;
           }
           const activePlugins = result.value;
-          this._activeDashboards = this._dashboards.filter(
-            dashboard => activePlugins[PLUGIN_NAMES_BY_DASHBOARD[dashboard]]);
+          this._activeDashboards = this._dashboards.filter(d => activePlugins[d]);
           this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
         });
         const onFailure = () => {
