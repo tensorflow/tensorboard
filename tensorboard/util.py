@@ -107,7 +107,7 @@ class Ansi(object):
   """ANSI terminal codes container."""
 
   ESCAPE = '\x1b['
-  ESCAPE_PATTERN = re.compile(re.escape(ESCAPE) + r'\??(\d+)(;\d+)*[mlh]')
+  ESCAPE_PATTERN = re.compile(re.escape(ESCAPE) + r'\??(?:\d+)(?:;\d+)*[mlh]')
   RESET = ESCAPE + '0m'
   BOLD = ESCAPE + '1m'
   FLIP = ESCAPE + '7m'
@@ -149,12 +149,12 @@ class LogHandler(logging.StreamHandler):
       logging.DEBUG: Ansi.MAGENTA,
   }
 
-  def __init__(self, stream, type='detect'):
+  def __init__(self, stream, type_='detect'):
     """Creates new instance.
 
     Args:
       stream: A file-like object.
-      type: If "detect", will call stream.isatty() and perform system
+      type_: If "detect", will call stream.isatty() and perform system
           checks to determine if it's safe to output ANSI terminal
           codes. If type is "ansi" then this forces the use of ANSI
           terminal codes.
@@ -162,12 +162,12 @@ class LogHandler(logging.StreamHandler):
     Raises:
       ValueError: If type is not "detect" or "ansi".
     """
-    if type not in ('detect', 'ansi'):
+    if type_ not in ('detect', 'ansi'):
       raise ValueError('type should be detect or ansi')
     super(LogHandler, self).__init__(stream)
     self._stream = stream
     self._disable_flush = False
-    self._is_tty = (type == 'ansi' or
+    self._is_tty = (type_ == 'ansi' or
                     (hasattr(stream, 'isatty') and
                      stream.isatty() and
                      os.name != 'nt'))
