@@ -34,6 +34,10 @@ class ScalarsAPITest(tf.test.TestCase):
     handcrafted_summary = tb.plugins.scalar.pb("foo", 3.0)
     self.assertProtoEquals(summary_from_op, handcrafted_summary)
 
+  def test_summary_with_scopes(self):
+    sess = tf.Session()
+    k = tf.constant(3.0)
+
     with tf.name_scope("scope"):
       scoped_op = tb.plugins.scalar.op("foo", k)
 

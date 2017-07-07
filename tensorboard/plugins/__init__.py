@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from tensorboard.plugins import  audio
+from tensorboard.plugins import audio
 from tensorboard.plugins import histogram
 from tensorboard.plugins import image
 from tensorboard.plugins import projector

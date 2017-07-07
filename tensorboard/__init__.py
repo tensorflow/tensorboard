@@ -256,6 +256,7 @@ def merge_summary(inputs, collections=None, name=None):
     A scalar `Tensor` of type `string`. The serialized `Summary` protocol
     buffer resulting from the merging.
   """
+  # pylint: enable=line-too-long
   return tf.summary.merge(inputs=inputs, collections=collections, name=name)
 
 
