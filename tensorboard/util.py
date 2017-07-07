@@ -25,6 +25,7 @@ from __future__ import print_function
 import locale
 import logging
 import os
+import re
 import sys
 
 import tensorflow as tf
@@ -140,6 +141,7 @@ class Ansi(object):
   """ANSI terminal codes container."""
 
   ESCAPE = '\x1b['
+  ESCAPE_PATTERN = re.compile(re.escape(ESCAPE) + r'\??(?:\d+)(?:;\d+)*[mlh]')
   RESET = ESCAPE + '0m'
   BOLD = ESCAPE + '1m'
   FLIP = ESCAPE + '7m'
@@ -157,7 +159,10 @@ class LogHandler(logging.StreamHandler):
   goal is to help the user visually distinguish meaningful information,
   even when logging is verbose.
 
-  Ephemeral log records, when emitted to a teletype emulator, only
+  This handler will also strip ANSI color codes from emitted log
+  records automatically when the output stream is not a terminal.
+
+  Ephemeral log records are only emitted to a teletype emulator, only
   display on the final row, and get overwritten as soon as another
   ephemeral record is outputted. Ephemeral records are also sticky. If
   a normal record is written then the previous ephemeral record is
@@ -178,13 +183,28 @@ class LogHandler(logging.StreamHandler):
       logging.DEBUG: Ansi.MAGENTA,
   }
 
-  def __init__(self, stream):
+  def __init__(self, stream, type_='detect'):
+    """Creates new instance.
+
+    Args:
+      stream: A file-like object.
+      type_: If "detect", will call stream.isatty() and perform system
+          checks to determine if it's safe to output ANSI terminal
+          codes. If type is "ansi" then this forces the use of ANSI
+          terminal codes.
+
+    Raises:
+      ValueError: If type is not "detect" or "ansi".
+    """
+    if type_ not in ('detect', 'ansi'):
+      raise ValueError('type should be detect or ansi')
     super(LogHandler, self).__init__(stream)
     self._stream = stream
     self._disable_flush = False
-    self._is_tty = (hasattr(stream, 'isatty') and
-                    stream.isatty() and
-                    os.name != 'nt')
+    self._is_tty = (type_ == 'ansi' or
+                    (hasattr(stream, 'isatty') and
+                     stream.isatty() and
+                     os.name != 'nt'))
     self._ephemeral = ''
 
   def emit(self, record):
@@ -194,33 +214,46 @@ class LogHandler(logging.StreamHandler):
     """
     self.acquire()
     try:
-      is_ephemeral = (self._is_tty and
-                      record.name.endswith(LogHandler.EPHEMERAL))
-      color = LogHandler.COLORS[record.levelno]
-      if self._is_tty and color:
-        self._stream.write(color)
+      is_ephemeral = record.name.endswith(LogHandler.EPHEMERAL)
+      color = LogHandler.COLORS.get(record.levelno)
       if is_ephemeral:
-        ephemeral = record.getMessage()
-        if ephemeral:
-          self._clear_line()
-          self._stream.write(ephemeral)
-        else:
-          if self._ephemeral:
-            self._stream.write('\n')
-        self._ephemeral = ephemeral
+        if self._is_tty:
+          ephemeral = record.getMessage()
+          if ephemeral:
+            if color:
+              ephemeral = color + ephemeral + Ansi.RESET
+            self._clear_line()
+            self._stream.write(ephemeral)
+          else:
+            if self._ephemeral:
+              self._stream.write('\n')
+          self._ephemeral = ephemeral
       else:
         self._clear_line()
+        if self._is_tty and color:
+          self._stream.write(color)
         self._disable_flush = True  # prevent double flush
         super(LogHandler, self).emit(record)
         self._disable_flush = False
-      if self._is_tty and color:
-        self._stream.write(Ansi.RESET)
-      if not is_ephemeral and self._ephemeral:
-        self._stream.write(self._ephemeral)
+        if self._is_tty and color:
+          self._stream.write(Ansi.RESET)
+        if self._ephemeral:
+          self._stream.write(self._ephemeral)
       self.flush()
     finally:
       self._disable_flush = False
       self.release()
+
+  def format(self, record):
+    """Turns a log record into a string.
+
+    :type record: logging.LogRecord
+    :rtype: str
+    """
+    message = super(LogHandler, self).format(record)
+    if not self._is_tty:
+      message = Ansi.ESCAPE_PATTERN.sub('', message)
+    return message
 
   def flush(self):
     """Flushes output stream."""
@@ -233,9 +266,9 @@ class LogHandler(logging.StreamHandler):
 
   def _clear_line(self):
     if self._is_tty and self._ephemeral:
-      # Our calculation of length won't be perfect due to ANSI codes,
-      # but we can make it a little bit better by scrubbing these.
-      text = self._ephemeral.replace(Ansi.ESCAPE, '')
+      # We're counting columns in the terminal, not bytes. So we don't
+      # want to take UTF-8 or color codes into consideration.
+      text = Ansi.ESCAPE_PATTERN.sub('', tf.compat.as_text(self._ephemeral))
       self._stream.write('\r' + ' ' * len(text) + '\r')
 
 
