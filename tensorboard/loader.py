@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import locale
+import logging
 import re
 import sys
 import time
@@ -379,7 +381,7 @@ class BufferedRecordReader(object):
       self._rebuffer(want)
 
   def _rebuffer(self, want):
-    tf.logging.debug('Waking up to read %s bytes', util.add_commas(want))
+    tf.logging.debug('Waking up to read %s bytes', _localize_int(want))
     records = []
     read_exception = self._read_exception
     if read_exception is None:
@@ -411,6 +413,265 @@ class BufferedRecordReader(object):
     return u'BufferedRecordReader{%s}' % self.path
 
 
+class RateCounter(object):
+  """Utility class for tracking how much a number increases each second.
+
+  The rate is calculated by averaging of samples within a time window,
+  which weights recent samples more strongly.
+  """
+
+  def __init__(self, window, clock=time.time):
+    """Creates new instance.
+
+    Args:
+      window: The maximum number of seconds across which rate is
+          averaged. In practice, the rate might be averaged over a time
+          period greater than window if set_value is being called less
+          frequently than window.
+      clock: Function returning a float with the number of seconds
+          since the UNIX epoch in zulu time.
+
+    :type window: float
+    :type clock: () -> float
+    """
+    self._window = window
+    self._clock = clock
+    self._points = collections.deque()
+    self._last_value = None  # type: float
+    self._last_time = None  # type: float
+
+  def get_rate(self):
+    """Determines rate of increase in value per second averaged over window.
+
+    Returns:
+      An integer representing the rate or None if not enough
+      information has been collected yet.
+
+    :rtype: int
+    """
+    points = []
+    total_elapsed = 0.0
+    total_weight = 0.0
+    for rate, elapsed, _ in self._points:
+      weight = 1.0 / (total_elapsed + 1) * elapsed
+      total_elapsed += elapsed
+      total_weight += weight
+      points.append((rate, weight))
+    if not total_weight:
+      return 0
+    return int(sum(w / total_weight * r for r, w in points))
+
+  def set_value(self, value):
+    """Sets number state.
+
+    This method adds a delta between value and the value of the last
+    time this method was called. Therefore the first invocation does
+    not add a delta.
+
+    Raises:
+      ValueError: If value is less than the last value.
+
+    :type value: float
+    """
+    value = float(value)
+    now = self._clock()
+    if self._last_value is None:
+      self._last_value = value
+      self._last_time = now
+      return
+    if value < self._last_value:
+      raise ValueError('%f < %f' % (value, self._last_value))
+    delta = value - self._last_value
+    elapsed = now - self._last_time
+    if not elapsed:
+      return
+    self._points.appendleft((delta / elapsed, elapsed, now))
+    self._last_time = now
+    self._last_value = value
+    self._remove_old_points()
+
+  def bump(self):
+    """Makes time since last set_value count for nothing."""
+    self._last_time = self._clock()
+
+  def _remove_old_points(self):
+    threshold = self._clock() - self._window
+    while self._points:
+      r, e, t = self._points.pop()
+      if t > threshold:
+        self._points.append((r, e, t))
+        break
+
+
+@util.closeable
+class Progress(object):
+  """Terminal UI for displaying job progress in terms of bytes.
+
+  On teletypes, this class will display a nice ephemeral unicode
+  progress bar. Otherwise it just emits periodic log messages.
+
+  This class keeps track of the rate at which input is processed, as
+  well as the rate it grows. These values are represented to the user
+  using the DELTA and NABLA symbols.
+
+  An alarm is displayed if the consumption rate falls behind the
+  production rate. In order for this to be calculated properly, the
+  sleep method of this class should be used rather than time.sleep.
+  """
+
+  BAR_INTERVAL_SECONDS = 0.25
+  BAR_LOGGER = logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
+  BAR_WIDTH = 45
+  BLOCK_DARK = u'\u2593'
+  BLOCK_LIGHT = u'\u2591'
+  DELTA = u'\u2206'
+  LOG_INTERVAL_SECONDS = 5.0
+  NABLA = u'\u2207'
+  RATE_WINDOW = 20.0
+
+  def __init__(self, clock=time.time,
+               sleep=time.sleep,
+               log_callback=tf.logging.info,
+               bar_callback=BAR_LOGGER.info,
+               rate_counter_factory=RateCounter):
+    """Creates new instance.
+
+    Args:
+      clock: Function returning a float with the number of seconds
+          since the UNIX epoch in zulu time.
+      sleep: Injected time.sleep function.
+      log_callback: Callback for emitting normal log records.
+      bar_callback: Callback for emitting ephemeral bar records.
+      rate_counter_factory: Constructor to RateCounter, which can be
+          swapped out for testing.
+
+    :type clock: () -> float
+    :type sleep: (float) -> None
+    :type rate_counter_factory: (float) -> RateCounter
+    """
+    self._clock = clock
+    self._sleep = sleep
+    self._log_callback = log_callback
+    self._bar_callback = bar_callback
+    self._initialized = False
+    self._offset = 0
+    self._size = 0
+    self._last_log_time = 0.0
+    self._last_bar_time = 0.0
+    self._last_log_offset = -1
+    self._last_bar_offset = -1
+    self._rate_offset = rate_counter_factory(Progress.RATE_WINDOW)
+    self._rate_size = rate_counter_factory(Progress.RATE_WINDOW)
+
+  def set_progress(self, offset, size):
+    """Updates the progress bar state.
+
+    This method will cause progress information to be occasionally
+    written out.
+
+    Args:
+      offset: The number of bytes processed so far.
+      size: The total number of bytes. This is allowed to increase or
+          decrease, but it must remain at least offset.
+
+    Raises:
+      ValueError: If offset is greater than size, or offset or size
+          decreased from the last invocation.
+
+    :type offset: int
+    :type size: int
+    """
+    if offset > size:
+      raise ValueError('offset (%d) can not exceed size (%d)' % (offset, size))
+    self._rate_offset.set_value(offset)
+    self._rate_size.set_value(size)
+    self._offset = offset
+    self._size = size
+    now = self._clock()
+    if not self._initialized:
+      self._last_log_time = now
+      self._last_bar_time = now
+      self._initialized = True
+      return
+    elapsed = now - self._last_log_time
+    if elapsed >= Progress.LOG_INTERVAL_SECONDS:
+      self._last_log_time = now
+      self._show_log()
+    elapsed = now - self._last_bar_time
+    if elapsed >= Progress.BAR_INTERVAL_SECONDS:
+      self._last_bar_time = now
+      self._show_bar()
+
+  def close(self):
+    """Forces progress to be written to log.
+
+    This method exists because we don't want the progress bar to say
+    something like 98% once the file is done loading.
+    """
+    self._show_log(can_stall=False)
+    self._show_bar(can_stall=False)
+    # Instructs util.LogHandler to clear the ephemeral logging state.
+    self._bar_callback('')
+
+  def sleep(self, seconds):
+    """Sleeps for a given number of seconds.
+
+    Time spent sleeping in this method does not have a detrimental
+    impact on the consumption rate.
+
+    :type seconds: float
+    """
+    self._sleep(seconds)
+    self._rate_offset.bump()
+
+  def _show_log(self, can_stall=True):
+    is_stalled = can_stall and self._offset == self._last_log_offset
+    self._last_log_offset = self._offset
+    self._log_callback('Loaded %s', self._get_message(is_stalled))
+
+  def _show_bar(self, can_stall=True):
+    is_stalled = can_stall and self._offset == self._last_bar_offset
+    self._last_bar_offset = self._offset
+    sofar = int(self._get_fraction() * Progress.BAR_WIDTH)
+    bar = (Progress.BLOCK_DARK * sofar +
+           Progress.BLOCK_LIGHT * (Progress.BAR_WIDTH - sofar))
+    self._bar_callback(u'%s %s ', bar, self._get_message(is_stalled))
+
+  def _get_message(self, is_stalled):
+    rate_offset = self._rate_offset.get_rate()  # summary processing speed
+    rate_size = self._rate_size.get_rate()  # summary production speed
+    message = u'%d%% of %s%s%s' % (
+        int(self._get_fraction() * 100.0),
+        _localize_int(self._size),
+        self._get_rate_suffix(Progress.DELTA, rate_offset),
+        self._get_rate_suffix(Progress.NABLA, rate_size))
+    if rate_offset and rate_size and rate_offset < rate_size:
+      # If TensorFlow is writing summaries to disk faster than we can
+      # insert them into the database, that's kind of problematic.
+      message += u' ' + self._make_red(u'[meltdown]')
+    elif is_stalled:
+      message += u' %s[stalled]%s' % (util.Ansi.BOLD, util.Ansi.RESET)
+    return message
+
+  def _get_fraction(self):
+    if not self._size:
+      return 0.0
+    else:
+      return float(self._offset) / self._size
+
+  def _get_rate_suffix(self, symbol, rate):
+    if not rate:
+      return u''
+    return u' %s %sB/s' % (symbol, _localize_int(rate))
+
+  def _make_red(self, text):
+    return (util.Ansi.BOLD +
+            util.Ansi.RED +
+            (util.Ansi.FLIP if self._offset % 2 == 0 else u'') +
+            text +
+            util.Ansi.RESET)
+
+
 _SHORTEN_EVENT_LOG_PATH_PATTERN = re.compile(r'(?:[^/\\]+[/\\])?(?:[^/\\]+)$')
 
 
@@ -426,3 +687,12 @@ def _shorten_event_log_path(path):
   """
   m = _SHORTEN_EVENT_LOG_PATH_PATTERN.search(path)
   return m.group(0) if m else None
+
+
+def _localize_int(n):
+  """Adds locale specific thousands group separators.
+
+  :type n: int
+  :rtype: str
+  """
+  return locale.format('%d', n, grouping=True)

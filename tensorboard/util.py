@@ -43,6 +43,7 @@ def setup_logging(streams=(sys.stderr,)):
   """
   # NOTE: Adding a level parameter to this method would be a bad idea
   #       because Python and ABSL disagree on the level numbers.
+  locale.setlocale(locale.LC_ALL, '')
   tf.logging.set_verbosity(tf.logging.WARN)
   # TODO(jart): Make the default TensorFlow logger behavior great again.
   logging.currentframe = _hack_the_main_frame
@@ -92,15 +93,6 @@ def guarded_by(field):
   """
   del field
   return lambda method: method
-
-
-def add_commas(n):
-  """Adds locale specific thousands group separators.
-
-  :type n: int
-  :rtype: str
-  """
-  return locale.format('%d', n, grouping=True)
 
 
 class LogFormatter(logging.Formatter):
