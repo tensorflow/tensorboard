@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TABS} from '../../tf-globals/globals.js';
-
 describe('tf-tensorboard tests', () => {
   window.HTMLImports.whenReady(() => {
     let tensorboard: any;
@@ -24,64 +22,22 @@ describe('tf-tensorboard tests', () => {
       tensorboard.autoReloadEnabled = false;
     });
 
-    it('specified tabs are correct', function(done) {
-      setTimeout(function() {
-        let tabs = tensorboard.$.tabs.getElementsByTagName('paper-tab');
-        let tabMode = Array.prototype.map.call(tabs, (x) => x.dataMode);
-        chai.assert.deepEqual(tabMode, TABS, 'mode is correct');
-        let tabText =
-            Array.prototype.map.call(tabs, (x) => x.innerText.toLowerCase());
-        chai.assert.deepEqual(tabText, TABS, 'text is correct');
-        done();
-      });
-    });
-
     it('renders injected content', function() {
       let injected = tensorboard.querySelector('#inject-me');
       chai.assert.isNotNull(injected);
     });
 
-    describe('reloading the selected dashboard', function() {
-      TABS.forEach((name, tabIndex) => {
-        // These tabs do not support reload mode.
-        if (name === 'graphs' || name === 'projections') {
-          return;
-        }
-        it(`${name}: calling reload reloads dashboard`, function(done) {
-          tensorboard.$.tabs.set('selected', tabIndex);
-          setTimeout(function() {
-            let called = false;
-            tensorboard.selectedDashboard().reload = function() {
-              called = true;
-            };
-            tensorboard.reload();
-            chai.assert.isFalse(
-                tensorboard.$$('#reload-button').disabled,
-                'reload button not disabled');
-            chai.assert.isTrue(called, `reload was called`);
-            done();
-          });
-        });
+    it('reloads the active dashboard on request', (done) => {
+      tensorboard.$.tabs.set('selected', 'scalars');
+      setTimeout(() => {
+        let called = false;
+        tensorboard._selectedDashboardComponent().reload = () => {
+          called = true;
+        };
+        tensorboard.reload();
+        chai.assert.isTrue(called, 'reload was called');
+        done();
       });
-    });
-
-    it('reload is disabled for graph dashboard', function(done) {
-      const idx = TABS.indexOf('graphs');
-      chai.assert.notEqual(idx, -1, 'graphs was found');
-      tensorboard.$.tabs.set('selected', idx);
-      setTimeout(
-          function() {  // async so that the queued tab change will happen
-            let called = false;
-            tensorboard.selectedDashboard().reload = function() {
-              called = true;
-            };
-            tensorboard.reload();
-            chai.assert.isTrue(
-                tensorboard.$$('#reload-button').disabled,
-                'reload button disabled');
-            chai.assert.isFalse(called, `reload was not called`);
-            done();
-          });
     });
 
     describe('top right global icons', function() {
