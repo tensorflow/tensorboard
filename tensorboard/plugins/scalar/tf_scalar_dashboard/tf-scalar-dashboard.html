@@ -125,34 +125,34 @@ limitations under the License.
           >
             <iron-icon prefix icon="search"></iron-icon>
           </paper-input>
-        </template>
-        <template is="dom-repeat" items="[[_categories]]" as="category">
-          <tf-category-pane category="[[category]]">
-            <tf-paginated-view
-              items="[[category.items]]"
-              pages="{{category._pages}}"
-            >
-              <template is="dom-repeat" items="[[category._pages]]" as="page">
-                <template is="dom-if" if="[[page.active]]">
-                  <div class="layout horizontal wrap">
-                    <template is="dom-repeat" items="[[page.items]]">
-                      <tf-scalar-chart
-                        x-type="[[_xType]]"
-                        smoothing-enabled="[[_smoothingEnabled]]"
-                        smoothing-weight="[[_smoothingWeight]]"
-                        tooltip-sorting-method="[[_tooltipSortingMethod]]"
-                        ignore-y-outliers="[[_ignoreYOutliers]]"
-                        show-download-links="[[_showDownloadLinks]]"
-                        request-manager="[[_requestManager]]"
-                        runs="[[item.runs]]"
-                        tag="[[item.tag]]"
-                      ></tf-scalar-chart>
-                    </template>
-                  </div>
+          <template is="dom-repeat" items="[[_categories]]" as="category">
+            <tf-category-pane category="[[category]]">
+              <tf-paginated-view
+                items="[[category.items]]"
+                pages="{{category._pages}}"
+              >
+                <template is="dom-repeat" items="[[category._pages]]" as="page">
+                  <template is="dom-if" if="[[page.active]]">
+                    <div class="layout horizontal wrap">
+                      <template is="dom-repeat" items="[[page.items]]">
+                        <tf-scalar-chart
+                          x-type="[[_xType]]"
+                          smoothing-enabled="[[_smoothingEnabled]]"
+                          smoothing-weight="[[_smoothingWeight]]"
+                          tooltip-sorting-method="[[_tooltipSortingMethod]]"
+                          ignore-y-outliers="[[_ignoreYOutliers]]"
+                          show-download-links="[[_showDownloadLinks]]"
+                          request-manager="[[_requestManager]]"
+                          runs="[[item.runs]]"
+                          tag="[[item.tag]]"
+                        ></tf-scalar-chart>
+                      </template>
+                    </div>
+                  </template>
                 </template>
-              </template>
-            </tf-paginated-view>
-          </tf-category-pane>
+              </tf-paginated-view>
+            </tf-category-pane>
+          </template>
         </template>
       </div>
     </tf-dashboard-layout>

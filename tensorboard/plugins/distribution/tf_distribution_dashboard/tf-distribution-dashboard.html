@@ -88,29 +88,29 @@ limitations under the License.
           >
             <iron-icon prefix icon="search"></iron-icon>
           </paper-input>
-        </template>
-        <template is="dom-repeat" items="[[_categories]]" as="category">
-          <tf-category-pane category="[[category]]">
-            <tf-paginated-view
-              items="[[category.items]]"
-              pages="{{category._pages}}"
-            >
-              <template is="dom-repeat" items="[[category._pages]]" as="page">
-                <template is="dom-if" if="[[page.active]]">
-                  <div class="layout horizontal wrap">
-                    <template is="dom-repeat" items="[[page.items]]">
-                      <tf-distribution-loader
-                        run="[[item.run]]"
-                        tag="[[item.tag]]"
-                        x-type="[[_xType]]"
-                        request-manager="[[_requestManager]]"
-                      ></tf-distribution-loader>
-                    </template>
-                  </div>
+          <template is="dom-repeat" items="[[_categories]]" as="category">
+            <tf-category-pane category="[[category]]">
+              <tf-paginated-view
+                items="[[category.items]]"
+                pages="{{category._pages}}"
+              >
+                <template is="dom-repeat" items="[[category._pages]]" as="page">
+                  <template is="dom-if" if="[[page.active]]">
+                    <div class="layout horizontal wrap">
+                      <template is="dom-repeat" items="[[page.items]]">
+                        <tf-distribution-loader
+                          run="[[item.run]]"
+                          tag="[[item.tag]]"
+                          x-type="[[_xType]]"
+                          request-manager="[[_requestManager]]"
+                        ></tf-distribution-loader>
+                      </template>
+                    </div>
+                  </template>
                 </template>
-              </template>
-            </tf-paginated-view>
-          </tf-collapsable-pane>
+              </tf-paginated-view>
+            </tf-collapsable-pane>
+          </template>
         </template>
       </div>
     </tf-dashboard-layout>
