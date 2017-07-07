@@ -137,6 +137,20 @@ class LogHandlerTest(tf.test.TestCase):
     handler.emit(make_record(logging.INFO, 'yo'))
     self.assertEqual('hi\nBOO! yo\n', stream.getvalue())
 
+  def testLogAnsiCodesWhenNotLoggingToATerminal_stripsAnsiCodes(self):
+    stream = six.StringIO()
+    handler = util.LogHandler(stream)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    handler.emit(make_record(logging.INFO, util.Ansi.RED + 'hi'))
+    self.assertEqual('hi\n', stream.getvalue())
+
+  def testLogAnsiCodesWhenLoggingToATerminal_keepsAnsiCodes(self):
+    stream = TerminalStringIO()
+    handler = util.LogHandler(stream)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    handler.emit(make_record(logging.INFO, util.Ansi.RED + 'hi'))
+    self.assertEqual(util.Ansi.RED + 'hi\n', stream.getvalue())
+
 
 def make_record(level, msg, *args):
   record = logging.LogRecord(
