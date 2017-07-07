@@ -64,7 +64,8 @@ def standard_tensorboard_wsgi(
     reload_interval,
     plugins,
     db_uri="",
-    assets_zip_provider=None):
+    assets_zip_provider=None,
+    base_url=""):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -73,6 +74,7 @@ def standard_tensorboard_wsgi(
     reload_interval: The interval at which the backend reloads more data in
         seconds.
     plugins: A list of constructor functions for TBPlugin subclasses.
+    base_url: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
         data, or empty for memory-only mode.
     assets_zip_provider: Delegates to TBContext or uses default if None.
@@ -92,10 +94,10 @@ def standard_tensorboard_wsgi(
       assets_zip_provider=(assets_zip_provider or
                            get_default_assets_zip_provider()))
   plugins = [constructor(context) for constructor in plugins]
-  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval)
+  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url)
 
 
-def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
+def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url):
   """Constructs the TensorBoard application.
 
   Args:
@@ -103,6 +105,7 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
       may be a directory, or comma,separated list of directories, or colons
       can be used to provide named directories
     plugins: A list of base_plugin.TBPlugin subclass instances.
+    base_url: A prefix of the path when app isn't served from root.
     multiplexer: The EventMultiplexer with TensorBoard data to serve
     reload_interval: How often (in seconds) to reload the Multiplexer
 
@@ -117,17 +120,18 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
   else:
     reload_multiplexer(multiplexer, path_to_run)
-  return TensorBoardWSGI(plugins)
+  return TensorBoardWSGI(plugins, base_url)
 
 
 class TensorBoardWSGI(object):
   """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-  def __init__(self, plugins):
+  def __init__(self, plugins, base_url = ""):
     """Constructs TensorBoardWSGI instance.
 
     Args:
       plugins: A list of base_plugin.TBPlugin subclass instances.
+      base_url: A prefix of the path when app isn't served from root.
 
     Returns:
       A WSGI application for the set of all TBPlugin instances.
@@ -141,6 +145,7 @@ class TensorBoardWSGI(object):
           with a slash
     """
     self._plugins = plugins
+    self._base_url = base_url
 
     self.data_applications = {
         # TODO(chizeng): Delete this RPC once we have skylark rules that obviate
@@ -214,7 +219,7 @@ class TensorBoardWSGI(object):
     """
     request = wrappers.Request(environ)
     parsed_url = urlparse.urlparse(request.path)
-    clean_path = _clean_path(parsed_url.path)
+    clean_path = _clean_path(parsed_url.path, self._base_url)
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
@@ -386,8 +391,10 @@ def _get_connect_params(query):
   return {k: v[0] for k, v in params.items()}
 
 
-def _clean_path(path):
-  """Removes trailing slash if present, unless it's the root path."""
+def _clean_path(path, _base_url = ""):
+  """Removes _base_url part and trailing slash if present, unless it's the root path."""
+  if len(_base_url) > 0 and clean_path.startswith(_base_url):
+    clean_path = clean_path[len(self._base_url):]
   if len(path) > 1 and path.endswith('/'):
     return path[:-1]
   return path
