@@ -53,8 +53,8 @@ limitations under the License.
       </paper-checkbox>
     </paper-dialog>
     <paper-header-panel>
-      <paper-toolbar id="toolbar">
-        <div id="toolbar-content">
+      <paper-toolbar id="toolbar" slot="header">
+        <div id="toolbar-content" slot="top">
           <div class="toolbar-title">TensorBoard</div>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
