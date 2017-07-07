@@ -68,28 +68,28 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
           >
             <iron-icon prefix icon="search"></iron-icon>
           </paper-input>
-        </template>
-        <template is="dom-repeat" items="[[_categories]]" as="category">
-          <tf-category-pane category="[[category]]">
-            <tf-paginated-view
-              items="[[category.items]]"
-              pages="{{category._pages}}"
-            >
-              <template is="dom-repeat" items="[[category._pages]]" as="page">
-                <template is="dom-if" if="[[page.active]]">
-                  <div class="layout horizontal wrap">
-                    <template is="dom-repeat" items="[[page.items]]">
-                      <tf-text-loader
-                        tag="[[item.tag]]"
-                        run="[[item.run]]"
-                        request-manager="[[_requestManager]]"
-                      ></tf-text-loader>
-                    </template>
-                  </div>
+          <template is="dom-repeat" items="[[_categories]]" as="category">
+            <tf-category-pane category="[[category]]">
+              <tf-paginated-view
+                items="[[category.items]]"
+                pages="{{category._pages}}"
+              >
+                <template is="dom-repeat" items="[[category._pages]]" as="page">
+                  <template is="dom-if" if="[[page.active]]">
+                    <div class="layout horizontal wrap">
+                      <template is="dom-repeat" items="[[page.items]]">
+                        <tf-text-loader
+                          tag="[[item.tag]]"
+                          run="[[item.run]]"
+                          request-manager="[[_requestManager]]"
+                        ></tf-text-loader>
+                      </template>
+                    </div>
+                  </template>
                 </template>
-              </template>
-            </tf-paginated-view>
-          </tf-collapsable-pane>
+              </tf-paginated-view>
+            </tf-collapsable-pane>
+          </template>
         </template>
       </div>
     </tf-dashboard-layout>
