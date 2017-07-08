@@ -21,14 +21,6 @@ ts_web_library(
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
-        "//tensorboard/plugins/audio/tf_audio_dashboard",
-        "//tensorboard/plugins/distribution/tf_distribution_dashboard",
-        "//tensorboard/plugins/graph/tf_graph_dashboard",
-        "//tensorboard/plugins/histogram/tf_histogram_dashboard",
-        "//tensorboard/plugins/image/tf_image_dashboard",
-        "//tensorboard/plugins/projector/vz_projector",
-        "//tensorboard/plugins/scalar/tf_scalar_dashboard",
-        "//tensorboard/plugins/text/tf_text_dashboard",
         "@org_polymer_font_roboto",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
@@ -58,4 +50,3 @@ tensorboard_html_binary(
     output_path = "/index.html",
     deps = [":demo"],
 )
-
