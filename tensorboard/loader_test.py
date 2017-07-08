@@ -26,7 +26,7 @@ from tensorboard import test_util
 from tensorboard import util
 
 
-class LoaderTestCase(tf.test.TestCase):
+class LoaderTestCase(test_util.TestCase):
   def __init__(self, *args, **kwargs):
     super(LoaderTestCase, self).__init__(*args, **kwargs)
     self.clock = test_util.FakeClock()
@@ -116,6 +116,7 @@ class RecordReaderTest(LoaderTestCase):
       reader.get_next_record()
       self._save_string('foobar.records', '~~~')
       with self.assertRaises(IOError):
+        reader.get_next_record()
         reader.get_size()
 
   # TODO(jart): Test append behavior when PyRecordWriter supports flush.

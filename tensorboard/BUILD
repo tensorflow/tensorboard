@@ -141,4 +141,8 @@ py_library(
     testonly = 1,
     srcs = ["test_util.py"],
     srcs_version = "PY2AND3",
+    deps = [
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
