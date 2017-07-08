@@ -20,6 +20,7 @@ export type RunTagUrlFn = (tag: string, run: string) => string;
 export interface Router {
   logdir: () => string;
   runs: () => string;
+  pluginsListing: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
   pluginRunTagRoute: (pluginName: string, route: string) => RunTagUrlFn;
@@ -60,6 +61,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   return {
     logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
+    pluginsListing: () => dataDir + '/plugins_listing',
     isDemoMode: () => demoMode,
     pluginRoute,
     pluginRunTagRoute,

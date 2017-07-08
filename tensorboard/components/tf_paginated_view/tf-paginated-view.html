@@ -1,0 +1,352 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
+
+<!--
+  tf-paginated-view takes an input list and outputs the input broken
+  into pages. Clients can `dom-repeat` over the pages, and conditionally
+  render each page if it is the active page. When there are multiple
+  pages, this component renders pagination controls.
+
+  We expose a list of pages instead of just a single active page so that
+  you can have a separate, persistent view associated with each page. By
+  conditionally stamping a view for each page, the state for each page's
+  view can be preserved across page changes.
+
+  Properties in:
+    - `items`: a list of elements, treated opaquely.
+    - `limit` [optional]: maximum number of items to emit at a time.
+      Must be a positive integer.
+  Properties out:
+    - `pages`: an array of pages, each with a property `items` (a
+      sublist of the input items) and `active` (a boolean indicating
+      whether this page is the currently active page).
+
+  Example usage:
+
+      <tf-paginated-view items="[[items]]" pages="{{_pages}}">
+        <template is="dom-repeat" items="[[_pages]]" as="page">
+          <template is="dom-if" if="[[page.active]]">
+            Do something with the items. Probably render them all:
+            <template is="dom-repeat" items="[[page.items]]">
+              <x-my-component item="[[item]]"></x-my-component>
+            </template>
+          </template>
+        </template>
+      </tf-paginated-view>
+-->
+<dom-module id="tf-paginated-view">
+  <template>
+    <span id="top-of-container"></span>
+    <template is="dom-if" if="[[_multiplePagesExist]]">
+      <div class="big-page-buttons" style="margin-bottom: 10px;">
+        <paper-button
+          on-tap="_performPreviousPage"
+          disabled$="[[!_hasPreviousPage]]"
+        >Previous page</paper-button><!--
+        --><paper-button
+          on-tap="_performNextPage"
+          disabled$="[[!_hasNextPage]]"
+        >Next page</paper-button>
+      </div>
+    </template>
+    <div><content></content></div>
+    <template is="dom-if" if="[[_multiplePagesExist]]">
+      <div id="controls-container">
+        <div style="display: inline-block; padding: 0 5px">
+          Page
+          <paper-input
+            id="page-input"
+            type="number"
+            no-label-float
+            min="1"
+            max="[[_pageCount]]"
+            value="[[_pageInputValue]]"
+            style="display: inline-block; width: [[_inputWidth]];"
+            on-input="_handlePageInputEvent"
+            on-change="_handlePageChangeEvent"
+            on-focus="_handlePageFocusEvent"
+            on-blur="_handlePageBlurEvent"
+          ></paper-input>
+          of [[_pageCount]]
+        </div>
+      </div>
+      <div class="big-page-buttons" style="margin-top: 10px;">
+        <paper-button
+          on-tap="_performPreviousPage"
+          disabled$="[[!_hasPreviousPage]]"
+        >Previous page</paper-button><!--
+        --><paper-button
+          on-tap="_performNextPageAndJumpToTop"
+          disabled$="[[!_hasNextPage]]"
+        >Next page</paper-button>
+      </div>
+    </template>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+      }
+      #controls-container {
+        justify-content: center;
+        display: flex;
+        flex-direction: row;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 100%;
+      }
+      #controls-container paper-button {
+        display: inline-block;
+      }
+      .big-page-buttons {
+        display: flex;
+      }
+      .big-page-buttons paper-button {
+        background-color: var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+        display: inline-block;
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 1;
+        font-size: 13px;
+      }
+      .big-page-buttons paper-button[disabled] {
+        background: none;
+      }
+    </style>
+  </template>
+  <script>
+  Polymer({
+    is: "tf-paginated-view",
+    properties: {
+      /**
+       * An arbitrary list of items. Items are opaque and will not be
+       * inspected or modified.
+       */
+      items: {
+        type: Array,
+        value: () => [],
+      },
+
+      /**
+       * The maximum number of items to include on each page.
+       */
+      limit: {
+        type: Number,
+        value: 12,  // reasonably small and has lots of factors
+        observer: '_validateLimit',  // must be a positive integer
+      },
+
+      /**
+       * A list of all pages, exactly one of which will be active
+       * (unless the list of pages is empty). We guarantee that if
+       *
+       *     const contents = flatten(pages.map(p => p.items));
+       *
+       * then `contents` will represent the same array as `items`: viz.,
+       * `contents.length === items.length` and for each index `i` we
+       * have `Object.is(contents[i], items[i])`.
+       *
+       * Every page except for the last will include exactly `limit`
+       * items. Every page will include at most `limit` items.
+       *
+       * @type {Array<{active: boolean, items: Array<Object>}>}
+       */
+      pages: {
+        type: Array,
+        notify: true,
+        computed: '_computePages(items, limit, _activeIndex, _pageCount)',
+      },
+
+      // At any time we'll mark one particular item('s index) as
+      // "active," and we'll always render the page containing that
+      // item. Clicking the next/previous page buttons will adjust this
+      // index by `limit`.
+      //
+      // We track an active index instead of an active page so that any
+      // changes to the `limit` will keep roughly the same set of items
+      // displayed. (Cf.: in a browser, when you zoom to adjust the text
+      // size, your reading position stays in about the same place.)
+      // (This decision incurs hardly any additional complexity, which
+      // is good because otherwise it wouldn't really be worth it.)
+      //
+      // Range invariant: let `count = items.length`. If `count > 0`
+      // then `0 <= _activeIndex && _activeIndex < count`; otherwise,
+      // if `count === 0` then `_activeIndex === 0`.
+      _activeIndex: {
+        type: Number,
+        value: 0,
+      },
+
+      _currentPage: {
+        type: Number,  // 1-indexed
+        computed: '_computeCurrentPage(limit, _activeIndex)',
+      },
+      _pageCount: {
+        type: Number,
+        computed: '_computePageCount(items, limit)',
+      },
+      _multiplePagesExist: {
+        type: Boolean,
+        computed: '_computeMultiplePagesExist(_pageCount)',
+      },
+      _hasPreviousPage: {
+        type: Boolean,
+        computed: '_computeHasPreviousPage(_currentPage)',
+      },
+      _hasNextPage: {
+        type: Boolean,
+        computed: '_computeHasNextPage(_currentPage, _pageCount)',
+      },
+      _inputWidth: {
+        type: String,
+        computed: '_computeInputWidth(_pageCount)',
+      },
+
+      _pageInputValue: {
+        type: String,  // value displayed in the input field at any time
+        computed: '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
+        observer: '_updatePageInputValue',
+      },
+      _pageInputRawValue: {
+        type: String,  // updated live as the user types
+        value: '',
+      },
+      _pageInputFocused: {
+        type: Boolean,
+        value: false,
+      },
+    },
+    observers: ['_clampActiveIndex(items)'],
+
+    _validateLimit(limit) {
+      if (limit !== Math.floor(limit)) {
+        throw new Error(`limit must be an integer, but got: ${limit}`);
+      }
+      if (limit <= 0) {
+        throw new Error(`limit must be positive, but got: ${limit}`);
+      }
+    },
+
+    _computePages(items, limit, activeIndex, pageCount) {
+      const activePageIndex = Math.floor(activeIndex / limit);
+      return _.range(pageCount).map(pageIndex => ({
+        active: pageIndex === activePageIndex,
+        items: (items || []).slice(pageIndex * limit, (pageIndex + 1) * limit),
+      }));
+    },
+
+    _computeCurrentPage(limit, activeIndex) {
+      return Math.floor(activeIndex / limit) + 1;
+    },
+    _computePageCount(items, limit) {
+      return Math.ceil((items || []).length / limit);
+    },
+    _computeMultiplePagesExist(pageCount) {
+      return pageCount > 1;
+    },
+    _computeHasPreviousPage(currentPage) {
+      return currentPage > 1;
+    },
+    _computeHasNextPage(currentPage, pageCount) {
+      return currentPage < pageCount;
+    },
+    _computeInputWidth(pageCount) {
+      // Add 20px for the +/- arrows added by browsers.
+      return `calc(${pageCount.toString().length}em + 20px)`;
+    },
+
+    /**
+     * Update _activeIndex, maintaining its range invariant.
+     */
+    _setActiveIndex(index) {
+      const maxIndex = (this.items || []).length - 1;
+      if (index > maxIndex) {
+        index = maxIndex;
+      }
+      if (index < 0) {
+        index = 0;
+      }
+      this.set("_activeIndex", index);
+    },
+
+    _clampActiveIndex(items) {
+      this._setActiveIndex(this._activeIndex);
+    },
+    _performPreviousPage() {
+      this._setActiveIndex(this._activeIndex - this.limit);
+    },
+    _performNextPage() {
+      this._setActiveIndex(this._activeIndex + this.limit);
+    },
+    _performNextPageAndJumpToTop() {
+      const topMarker = this.$$('#top-of-container');
+      const offsetFromTop = topMarker.getBoundingClientRect().top;
+      // NOTE: `offsetFromTop` does not take into account the fact that
+      // the "TensorBoard" tab bar occludes the main content pane, so
+      // we're off by order-of-50 pixels. IM(@wchargin)O, this isn't
+      // really a big problem: it turns out that only the collapsable
+      // card title and the top navigation buttons will be hidden (and
+      // this also means that it will be rare for this to happen at
+      // all). If we wanted, we could get proper metrics here, but doing
+      // so is tricky. Cf. https://stackoverflow.com/q/123999.
+      if (offsetFromTop < 0) {
+        // We're below the top of the page.
+        topMarker.scrollIntoView();
+      }
+      this._performNextPage();
+    },
+
+    _computePageInputValue(focused, rawValue, currentPage) {
+      return focused ? rawValue : currentPage.toString();
+    },
+    _handlePageInputEvent(e) {
+      this.set("_pageInputRawValue", e.target.value);
+      const oneIndexedPage = e.target.valueAsNumber;
+      if (isNaN(oneIndexedPage)) {
+        return;
+      }
+      const page =
+        Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
+      this._setActiveIndex(this.limit * page);
+    },
+    _handlePageChangeEvent() {
+      // Occurs on Enter, etc. Commit the true state.
+      this.set("_pageInputRawValue", this._currentPage.toString());
+    },
+    _handlePageFocusEvent() {
+      // Discard any old (or uninitialized) state before we grant focus.
+      this.set("_pageInputRawValue", this._pageInputValue);
+      this.set("_pageInputFocused", true);
+    },
+    _handlePageBlurEvent() {
+      this.set("_pageInputFocused", false);
+    },
+    _updatePageInputValue(newValue) {
+      // Force two-way binding.
+      const pageInput = this.$$('#page-input input');
+      if (pageInput) {
+        pageInput.value = newValue;
+      }
+    },
+  });
+  </script>
+</dom-module>

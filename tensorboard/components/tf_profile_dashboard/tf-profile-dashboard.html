@@ -20,7 +20,6 @@ limitations under the License.
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-behavior.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 
@@ -91,20 +90,16 @@ profile run can have multiple tools that present the performance profile as diff
 <script>
   "use strict";
 
-  import {DashboardBehavior} from "../tf-dashboard-common/dashboard-behavior.js";
-  import {ReloadBehavior} from "../tf-dashboard-common/reload-behavior.js";
-  import {BackendBehavior} from "../tf-backend/behavior.js";
+  import {RequestManager} from '../tf-backend/requestManager.js';
   import {getRouter} from '../tf-backend/router.js';
 
   Polymer({
     is: "tf-profile-dashboard",
-    behaviors: [
-      DashboardBehavior("profile"),
-      ReloadBehavior("tf-profile-dashboard"),
-      BackendBehavior,
-    ],
     properties: {
-      backend: Object,
+      _requestManager: {
+        type: Object,
+        value: () => new RequestManager(),
+      },
       _isAttached: Boolean,
       // Whether this dashboard is initialized. This dashboard should only be
       // initialized once.
@@ -112,9 +107,7 @@ profile run can have multiple tools that present the performance profile as diff
       // The endpoint that serves trace viewer app.
       traceViewerBaseUrl: {
         type: String,
-        value: function() {
-          return getRouter().pluginRoute("profile", "/trace_viewer");
-        },
+        value: () => getRouter().pluginRoute("profile", "/trace_viewer"),
       },
       // The URL for the trace data being display.
       _traceDataUrl: {
@@ -151,7 +144,7 @@ profile run can have multiple tools that present the performance profile as diff
     ready: function() {
     },
     observers: [
-      '_maybeInitializeDashboard(backend, _isAttached)',
+      '_maybeInitializeDashboard(_isAttached)',
       '_maybeUpdateTool(_datasets, selectedDataset, _currentTool)',
     ],
     attached: function() {
@@ -160,21 +153,22 @@ profile run can have multiple tools that present the performance profile as diff
     detached: function() {
       this.set('_isAttached', false);
     },
-    _maybeInitializeDashboard: function(backend, isAttached) {
-      if (this._initialized || !backend || !isAttached) {
+    _maybeInitializeDashboard: function(isAttached) {
+      if (this._initialized || !isAttached) {
         // Either this dashboard is already initialized ... or we are not yet
         // ready to initialize.
         return;
       }
       // Set this to true so we only initialize once.
       this._initialized = true;
-      backend.profileTags().then((runToTool) => {
-        var datasets = _.map(runToTool, function(tools, run) {
-          return {
-            name: run,
-            activeTools: tools,
-          };
-        }, this);
+      const profileTagsURL =
+        getRouter().pluginRoute('profile', '/tags') +
+        (getRouter().isDemoMode() ? '.json' : '');
+      this._requestManager.request(url).then((runToTool) => {
+        const datasets = _.map(runToTool, (tools, run) => ({
+          name: run,
+          activeTools: tools,
+        }));
         this.set('_datasets', datasets);
       });
     },

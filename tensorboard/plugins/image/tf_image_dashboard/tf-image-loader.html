@@ -1,0 +1,326 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
+<link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+tf-image-loader loads an individual image from the TensorBoard backend.
+
+Right now it always loads the most recent image. We should add support in the
+future for loading older images.
+-->
+<dom-module id="tf-image-loader">
+  <template>
+    <tf-card-heading title="[[tag]]" color="[[_runColor]]">
+      <div>[[run]]</div>
+      <template is="dom-if" if="[[_hasAtLeastOneStep]]">
+        step
+        <span style="font-weight: bold">[[_stepValue]]</span>
+        <template is="dom-if" if="[[_currentWallTime]]">
+          ([[_currentWallTime]])
+        </template>
+        <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
+        </paper-spinner-lite>
+      </template>
+      <template is="dom-if" if="[[_hasMultipleSteps]]">
+        <paper-slider
+          id="steps"
+          immediate-value="{{_stepIndex}}"
+          max="[[_maxStepIndex]]"
+          max-markers="[[_maxStepIndex]]"
+          snaps
+          step="1"
+          value="{{_stepIndex}}"
+        ></paper-slider>
+      </template>
+    </tf-card-heading>
+    <div id="main-image-container"></div>
+    <div style="display: flex; flex-direction: row;">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+      <paper-icon-button
+        icon="aspect-ratio"
+        on-tap="_showActualSize"
+        title="Show the image at its true pixel size"
+      ></paper-icon-button>
+    </div>
+
+    <style>
+      :host {
+        display: block;
+        width: 330px;
+        height: auto;
+        position: relative;
+        --step-slider-knob-color: #424242;
+        margin-right: 15px;
+        margin-bottom: 10px;
+      }
+      :host[_expanded] {
+        width: 700px;
+      }
+
+      paper-spinner-lite {
+        width: 14px;
+        height: 14px;
+        vertical-align: text-bottom;
+        --paper-spinner-color: var(--tb-orange-strong);
+      }
+
+      #steps {
+        height: 15px;
+        margin: 0 0 0 -15px;
+        /*
+         * 31 comes from adding a padding of 15px from both sides of the
+         * paper-slider, subtracting 1px so that the slider width aligns
+         * with the image (the last slider marker takes up 1px), and
+         * adding 2px to account for a border of 1px on both sides of
+         * the image. 30 - 1 + 2.
+         */
+        width: calc(100% + 31px);
+        --paper-slider-active-color: var(--step-slider-knob-color);
+        --paper-slider-knob-color: var(--step-slider-knob-color);
+        --paper-slider-pin-color: var(--step-slider-knob-color);
+        --paper-slider-knob-start-color: var(--step-slider-knob-color);
+        --paper-slider-knob-start-border-color: var(--step-slider-knob-color);
+        --paper-slider-pin-start-color: var(--step-slider-knob-color);
+      }
+
+      #main-image-container img {
+        border: 1px solid #f5f5f5;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: pixelated;
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+      }
+
+      paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        pointer-events: auto;  /* TODO(@wchargin): why? */
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+    </style>
+  </template>
+  <script>
+    "use strict";
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {getRouter} from "../tf-backend/router.js";
+    import {runsColorScale} from "../tf-color-scale/colorScale.js";
+    import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
+
+    Polymer({
+      is: "tf-image-loader",
+      properties: {
+        run: String,
+        tag: String,
+        /** @type {function(Node)} */
+        showActualSize: Object,
+
+        _runColor: {
+          type: String,
+          computed: '_computeRunColor(run)',
+        },
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+
+
+        requestManager: Object,
+        _metadataCanceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+        _imageCanceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+
+        // steps: {
+        //   width: number,
+        //   height: number,
+        //   wall_time: Date,
+        //   step: number,
+        //   url: string,
+        // }[]
+        _steps: {
+          type: Array,
+          value: [],
+          notify: true,
+        },
+        _stepIndex: {
+          type: Number,
+          notify: true,
+        },
+        _hasAtLeastOneStep: {
+          type: Boolean,
+          computed: "_computeHasAtLeastOneStep(_steps)",
+        },
+        _hasMultipleSteps: {
+          type: Boolean,
+          computed: "_computeHasMultipleSteps(_steps)",
+        },
+        _stepValue: {
+          type: Number,
+          computed: "_computeStepValue(_stepIndex)",
+        },
+        _currentWallTime: {
+          type: Number,
+          computed: "_computeCurrentWallTime(_stepIndex)",
+        },
+        _maxStepIndex: {
+          type: Number,
+          computed: "_computeMaxStepIndex(_steps)",
+        },
+        _isImageLoading: {
+          type: Boolean,
+          value: false,
+        },
+      },
+      observers: [
+        "reload(run, tag)",
+        "_updateImageUrl(_steps, _stepIndex)",
+      ],
+
+      _computeRunColor(run) {
+        return runsColorScale(run);
+      },
+      _computeHasAtLeastOneStep(steps) {
+        return !!steps && steps.length > 0;
+      },
+      _computeHasMultipleSteps(steps) {
+        return !!steps && steps.length > 1;
+      },
+      _computeStepValue(stepIndex) {
+        return this._steps[stepIndex].step;
+      },
+      _computeCurrentWallTime(stepIndex) {
+        return this._steps[stepIndex].wall_time.toString();
+      },
+      _computeMaxStepIndex(steps) {
+        return steps.length - 1;
+      },
+
+      attached() {
+        this._attached = true;
+        this.reload();
+      },
+      reload() {
+        if (!this._attached) {
+          return;
+        }
+        this._metadataCanceller.cancelAll();
+        const router = getRouter();
+        const url =
+          router.pluginRunTagRoute("images", "/images")(this.tag, this.run);
+        const updateSteps = this._metadataCanceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const data = result.value;
+          const steps = data.map(this._createStepDatum.bind(this));
+          this.set("_steps", steps);
+          this.set("_stepIndex", steps.length - 1);
+        });
+        this.requestManager.request(url).then(updateSteps);
+      },
+      _createStepDatum(imageMetadata) {
+        const route = getRouter().pluginRoute('images', '/individualImage');
+        let query = imageMetadata.query;
+        if (route.indexOf('?') > -1) {
+          // The route already has GET parameters. Append ours.
+          query = '&' + query;
+        } else {
+          // The route lacks GET parameters. Just use ours.
+          query = '?' + query;
+        }
+        if (getRouter().isDemoMode()) {
+          query = urlPathHelpers.demoify(query);
+        }
+
+        let individualImageUrl = route + query;
+        if (getRouter().isDemoMode()) {
+          individualImageUrl += '.png';
+        } else {
+          // Include wall_time just to disambiguate the URL and force
+          // the browser to reload the image when the URL changes. The
+          // backend doesn't care about the value.
+          individualImageUrl += `&ts=${imageMetadata.wall_time}`;
+        }
+        return {
+          width: imageMetadata.width,
+          height: imageMetadata.height,
+          wall_time: new Date(imageMetadata.wall_time),
+          step: imageMetadata.step,
+          url: individualImageUrl,
+        };
+      },
+      _updateImageUrl(steps, stepIndex) {
+        // We manually change the image URL (instead of binding to the
+        // image's src attribute) because we would like to manage what
+        // happens when the image starts and stops loading.
+        if (!steps.length) {
+          return;
+        }
+
+        const img = new Image();
+        this._imageCanceller.cancelAll();
+        img.onload = img.onerror = this._imageCanceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const mainImageContainer = this.$$("#main-image-container");
+          mainImageContainer.innerHTML = "";
+          Polymer.dom(mainImageContainer).appendChild(img);
+          this.set("_isImageLoading", false);
+        }).bind(this);
+
+        // Load the new image.
+        this.set("_isImageLoading", true);
+        img.src = steps[stepIndex].url;
+      },
+
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+      },
+      _showActualSize() {
+        const img = this.$$("#main-image-container img");
+        this.showActualSize(img);
+      },
+    });
+  </script>
+</dom-module>

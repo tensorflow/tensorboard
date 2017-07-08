@@ -12,7 +12,6 @@ ts_web_library(
     srcs = [
         "tests.html",
         "backendTests.ts",
-        "behaviorTests.ts",
         "requestManagerTests.ts",
     ] + glob(["data/**"]),
     path = "/tf-backend/test",
@@ -24,9 +23,3 @@ ts_web_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    testonly = 0,
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

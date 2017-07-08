@@ -32,16 +32,17 @@ limitations under the License.
 <link rel="import" href="../tf-graph-dashboard/tf-graph-dashboard.html">
 <link rel="import" href="../tf-histogram-dashboard/tf-histogram-dashboard.html">
 <link rel="import" href="../tf-image-dashboard/tf-image-dashboard.html">
+<link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-text-dashboard/tf-text-dashboard.html">
 <link rel="import" href="../vz-projector/vz-projector-dashboard.html">
 
 <!--
-tf-tensorboard is the frontend entry point for TensorBoard.
+  tf-tensorboard is the frontend entry point for TensorBoard.
 
-It implements a toolbar (via paper-header-panel and paper-toolbar) that
-allows the user to toggle between various dashboards.
+  It implements a toolbar (via paper-header-panel and paper-toolbar)
+  that allows the user to toggle among various dashboards.
 -->
 <dom-module id="tf-tensorboard">
   <template>
@@ -55,18 +56,62 @@ allows the user to toggle between various dashboards.
       <paper-toolbar id="toolbar">
         <div id="toolbar-content">
           <div class="toolbar-title">TensorBoard</div>
-          <paper-tabs selected="{{modeIndex}}" noink class="tabs" id="tabs">
-            <template is="dom-repeat" items="[[tabs]]">
-              <template is="dom-if" if="[[_isTabEnabled(item)]]">
-                <paper-tab data-mode="[[item]]">[[item]]</paper-tab>
+          <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
+            <span class="toolbar-message">
+              Loading active dashboards&hellip;
+            </span>
+          </template>
+          <template is="dom-if" if="[[_activeDashboardsLoaded]]">
+            <paper-tabs
+              selected="{{_selectedDashboard}}"
+              attr-for-selected="data-dashboard"
+              noink
+              id="tabs"
+            >
+              <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+                <template
+                  is="dom-if"
+                  if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboard)]]"
+                >
+                  <paper-tab data-dashboard$="[[dashboard]]">[[dashboard]]</paper-tab>
+                </template>
               </template>
+            </paper-tabs>
+            <template
+              is="dom-if"
+              if="[[_inactiveDashboardsExist(_dashboards, disabledDashboards, _activeDashboards)]]"
+            >
+              <paper-dropdown-menu
+                label="Inactive dashboards"
+                no-label-float
+                noink
+                style="margin-left: 12px"
+              >
+                <paper-menu
+                  id="inactive-dashboards-menu"
+                  class="dropdown-content"
+                  selected="{{_selectedDashboard}}"
+                  attr-for-selected="data-dashboard"
+                >
+                  <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+                    <template
+                      is="dom-if"
+                      if="[[_isDashboardInactive(disabledDashboards, _activeDashboards, dashboard)]]"
+                    >
+                      <paper-item
+                        data-dashboard$="[[dashboard]]"
+                      >[[dashboard]]</paper-item>
+                    </template>
+                  </template>
+                </paper-menu>
+              </paper-dropdown-menu>
             </template>
-          </paper-tabs>
+          </template>
           <div class="global-actions">
             <paper-icon-button
               icon="refresh"
               on-tap="reload"
-              disabled$="[[_isReloadDisabled(mode)]]"
+              disabled$="[[_isReloadDisabled]]"
               id="reload-button"
             ></paper-icon-button>
             <paper-icon-button
@@ -74,7 +119,7 @@ allows the user to toggle between various dashboards.
               on-tap="openSettings"
               id="settings-button"
             ></paper-icon-button>
-            <a href="https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tensorboard/README.md" tabindex="-1">
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md" tabindex="-1">
               <paper-icon-button icon="help-outline"></paper-icon-button>
             </a>
           </div>
@@ -83,59 +128,69 @@ allows the user to toggle between various dashboards.
 
       <div id="content" class="fit">
         <content id="injected-overview"></content>
-
-        <template is="dom-if" if="[[_modeIsScalars(mode)]]">
-          <tf-scalar-dashboard
-            id="scalars"
-            backend="[[_backend]]"
-          ></tf-scalar-dashboard>
+        <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
+          <div class="warning-message">
+            <h3>Failed to load the set of active dashboards.</h3>
+            <p>
+            This can occur if the TensorBoard backend is no longer
+            running. Perhaps this page is cached?
+            <p>
+            If you think that you’ve fixed the problem, click the reload
+            button in the top-right.
+            <template is="dom-if" if="[[autoReloadEnabled]]">
+            We’ll try to reload every [[autoReloadIntervalSecs]]&nbsp;seconds as well.
+            </template>
+            <p><i>Last reload: [[_lastReloadTime]]</i>
+            <template is="dom-if" if="[[_logdir]]">
+              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            </template>
+          </div>
         </template>
-
-        <template is="dom-if" if="[[_modeIsImages(mode)]]">
-          <tf-image-dashboard
-            id="images"
-            backend="[[_backend]]"
-          ></tf-image-dashboard>
+        <template is="dom-if" if="[[_showNoDashboardsMessage]]">
+          <div class="warning-message">
+            <h3>No dashboards are active for the current data set.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>You haven’t written any data to your event files.
+              <li>TensorBoard can’t find your event files.
+            </ul>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+            <p><i>Last reload: [[_lastReloadTime]]</i>
+            <template is="dom-if" if="[[_logdir]]">
+              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            </template>
+          </div>
         </template>
-
-        <template is="dom-if" if="[[_modeIsAudio(mode)]]">
-          <tf-audio-dashboard
-            id="audio"
-            backend="[[_backend]]"
-          ></tf-audio-dashboard>
+        <template is="dom-if" if="[[_showNoSuchDashboardMessage]]">
+          <div class="warning-message">
+            <h3>There’s no dashboard by the name of “<tt>[[_selectedDashboard]]</tt>.”</h3>
+            <template is="dom-if" if="[[_activeDashboardsLoaded]]">
+              <p>You can select a dashboard from the list above.
+            </template>
+            <p><i>Last reload: [[_lastReloadTime]]</i>
+            <template is="dom-if" if="[[_logdir]]">
+              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            </template>
+          </div>
         </template>
-
-        <template is="dom-if" if="[[_modeIsGraphs(mode)]]">
-          <tf-graph-dashboard
-            id="graphs"
-            debugger-data-enabled="[[_debuggerDataEnabled]]"
-          ></tf-graph-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsDistributions(mode)]]">
-          <tf-distribution-dashboard
-            id="distributions"
-            backend="[[_backend]]"
-          ></tf-distribution-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsHistograms(mode)]]">
-          <tf-histogram-dashboard
-            id="histograms"
-            backend="[[_backend]]"
-          ></tf-histogram-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsEmbeddings(mode)]]">
-          <vz-projector-dashboard id="projector">
-          </vz-projector-dashboard>
-        </template>
-
-        <template is="dom-if" if="[[_modeIsText(mode)]]">
-          <tf-text-dashboard
-            id="text"
-            backend="[[_backend]]">
-          </tf-text-dashboard>
+        <template
+          is="dom-repeat"
+          id="dashboards-template"
+          items="[[_dashboards]]"
+          as="dashboard"
+        >
+          <div
+            class="dashboard-container"
+            data-dashboard$="[[dashboard]]"
+            style="display: [[_displayStyle(_selectedDashboard, dashboard)]]"
+          ><!-- Dashboards will be injected here dynamically. --></div>
         </template>
       </div>
     </paper-header-panel>
@@ -158,11 +213,17 @@ allows the user to toggle between various dashboards.
         text-rendering: optimizeLegibility;
         letter-spacing: -0.025em;
         font-weight: 500;
-        flex-grow: 2;
+        flex-grow: 1;
         display: var(--tb-toolbar-title-display, block);
       }
 
-      .tabs {
+      .toolbar-message {
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      #tabs {
         flex-grow: 1;
         text-transform: uppercase;
         height: 100%;
@@ -172,8 +233,37 @@ allows the user to toggle between various dashboards.
         --paper-tabs-selection-bar-color: white;
       }
 
+      paper-dropdown-menu {
+        --paper-input-container-color: rgba(255, 255, 255, 0.8);
+        --paper-input-container-focus-color: white;
+        --paper-input-container-input-color: white;
+        --paper-dropdown-menu-icon: {
+          color: white;
+        }
+        --paper-input-container-input: {
+          -webkit-font-smoothing: antialiased;
+          font-size: 14px;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+        --paper-input-container-label: {
+          -webkit-font-smoothing: antialiased;
+          font-size: 14px;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+      }
+
+      #inactive-dashboards-menu {
+        --paper-menu-background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        --paper-menu-color: white;
+        --paper-menu: {
+          text-transform: uppercase;
+        }
+      }
+
       .global-actions {
-        flex-grow: 2;
+        flex-grow: 1;
         display: inline-flex; /* Ensure that icons stay aligned */
         justify-content: flex-end;
         text-align: right;
@@ -197,160 +287,477 @@ allows the user to toggle between various dashboards.
         height: 100%;
       }
 
+      .dashboard-container {
+        height: 100%;
+      }
+
+      .warning-message {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+
       [disabled] {
         opacity: 0.2;
         color: white;
       }
-
     </style>
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
     import {AutoReloadBehavior} from "./autoReloadBehavior.js";
-    import {Backend} from "../tf-backend/backend.js";
     import {TABS, setUseHash} from "../tf-globals/globals.js";
     import {getString, setString, TAB} from "../tf-storage/storage.js";
-    import {setRouter, createRouter} from "../tf-backend/router.js";
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {RequestManager} from "../tf-backend/requestManager.js";
+    import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
     import {fetchRuns} from "../tf-backend/runsStore.js";
+
+    // A map from frontend dashboard names to backend plugin names.
+    // TODO(@wchargin): Require that these be the same; update the
+    // projector dashboard's backend name and remove this table.
+    const PLUGIN_NAMES_BY_DASHBOARD = {
+      'scalars': 'scalars',
+      'images': 'images',
+      'audio': 'audio',
+      'graphs': 'graphs',
+      'distributions': 'distributions',
+      'histograms': 'histograms',
+      'embeddings': 'projector',
+      'text': 'text',
+    };
+    if (!_.isEqual(Object.keys(PLUGIN_NAMES_BY_DASHBOARD), TABS)) {
+      throw new Error(
+        `Bad set of plugin names: ` +
+        `${Object.values(PLUGIN_NAMES_BY_DASHBOARD)} vs. ${TABS}`);
+    }
+
+    // A map from dashboard name to Polymer component name.
+    const COMPONENTS = {
+      'scalars': 'tf-scalar-dashboard',
+      'images': 'tf-image-dashboard',
+      'audio': 'tf-audio-dashboard',
+      'graphs': 'tf-graph-dashboard',
+      'distributions': 'tf-distribution-dashboard',
+      'histograms': 'tf-histogram-dashboard',
+      'embeddings': 'vz-projector-dashboard',
+      'text': 'tf-text-dashboard',
+    };
+    if (!_.isEqual(Object.keys(COMPONENTS), TABS)) {
+      throw new Error(
+        `Bad set of components: ${Object.keys(COMPONENTS)} vs. ${TABS}`);
+    }
+
+    /** @enum {string} */ const ActiveDashboardsLoadState = {
+      NOT_LOADED: 'NOT_LOADED',
+      LOADED: 'LOADED',
+      FAILED: 'FAILED',
+    };
 
     Polymer({
       is: "tf-tensorboard",
       behaviors: [AutoReloadBehavior],
       properties: {
+        /**
+         * We accept a router property only for backward compatibility:
+         * setting it triggers an observer that simply calls
+         * `setRouter`.
+         */
         router: {
-          type: Object,  // only to trigger an observer
+          type: Object,
           observer: '_updateRouter',
         },
-        _backend: {
-          type: Object,
-          computed: "_makeBackend(demoDir)",
-        },
-        _debuggerDataEnabled: {
-          type: Boolean,
-          value: function() {
-            // For now, Tensorboard only shows debugger data if the debugger_data GET param is set
-            // to enabled.
-            let match = window.location.href.match(/[&\?]debugger_data=enabled/);
-            return match && match.length == 1;
-          },
-        },
-        // Which tab is selected (scalars, graph, images etc).
-        mode: {
-          type: String,
-          computed: '_getModeFromIndex(modeIndex)',
-          notify: true,
-        },
-        tabs: {
-          type: Array,
-          readOnly: true,
-          value: TABS,
-        },
-        // If this is set to a string, TensorBoard will switch to "demo mode"
-        // and attempt to load serialized json data from that directory. You can
-        // generate conformant json using
-        // tensorboard/scripts/serialize_tensorboard.py
+
+        /**
+         * Deprecated. This used to switch TensorBoard into "demo mode,"
+         * loading serialized JSON data from the provided directory.
+         */
         demoDir: {
           type: String,
           value: null,
         },
-        // Set this to true to store state in URI hash. Should be true for all non-test purposes.
+
+        /**
+         * Set this to true to store state in URI hash. Should be true
+         * for all non-test purposes.
+         */
         useHash: {
           type: Boolean,
           value: false,
         },
-        disabledTabs: String,
+
+        /**
+         * A comma-separated list of dashboards not to use.
+         */
+        disabledDashboards: {
+          type: String,
+          value: '',
+        },
+
+        _debuggerDataEnabled: {
+          type: Boolean,
+          value: function() {
+            // For now, Tensorboard only shows debugger data if the
+            // debugger_data GET param is set to enabled.
+            let match = window.location.href.match(/[&\?]debugger_data=enabled/);
+            return !!match && match.length == 1;
+          },
+        },
+
+        /**
+         * The set of all possible dashboard names.
+         *
+         * @type {Array<string>!}
+         */
+        _dashboards: {
+          type: Array,
+          readOnly: true,
+          value: TABS,
+        },
+
+        /**
+         * The set of currently active dashboards.
+         * `null` if not yet fetched.
+         *
+         * TODO(@wchargin): Consider templating in an initial value for
+         * this property.
+         *
+         * @type {Array<string>?}
+         */
+        _activeDashboards: {
+          type: Array,
+          value: null,
+        },
+
+        /** @type {ActiveDashboardsLoadState} */
+        _activeDashboardsLoadState: {
+          type: String,
+          value: ActiveDashboardsLoadState.NOT_LOADED,
+        },
+        _activeDashboardsNotLoaded: {
+          type: Boolean,
+          computed:
+            '_computeActiveDashboardsNotLoaded(_activeDashboardsLoadState)',
+        },
+        _activeDashboardsLoaded: {
+          type: Boolean,
+          computed:
+            '_computeActiveDashboardsLoaded(_activeDashboardsLoadState)',
+        },
+        _activeDashboardsFailedToLoad: {
+          type: Boolean,
+          computed:
+            '_computeActiveDashboardsFailedToLoad(_activeDashboardsLoadState)',
+        },
+        _showNoDashboardsMessage: {
+          type: Boolean,
+          computed:
+            '_computeShowNoDashboardsMessage(_activeDashboardsLoaded, _activeDashboards, _selectedDashboard)',
+        },
+        _showNoSuchDashboardMessage: {
+          type: Boolean,
+          computed:
+            '_computeShowNoSuchDashboardMessage(_dashboards, _selectedDashboard)',
+        },
+
+        /**
+         * The name of the currently selected dashboard, or `null` if no
+         * dashboard is selected. A `null` value here is represented by
+         * an empty string in the hash, and vice versa.
+         */
+        _selectedDashboard: {
+          type: String,
+          value: null,
+        },
+
+        /*
+         * Will be set to `true` once our DOM is ready: in particular,
+         * once each dashboard has a `<div>` into which we can render its
+         * Polymer component root.
+         */
+        _dashboardContainersStamped: {
+          type: Boolean,
+          value: false,
+        },
+
+        _isReloadDisabled: {
+          type: Boolean,
+          computed: '_computeIsReloadDisabled(_debuggerDataEnabled, _selectedDashboard)',
+        },
+
+        _lastReloadTime: {
+          type: String,
+          value: "not yet loaded",
+        },
+
+        _logdir: {
+          type: String,
+          value: null,
+        },
+
+        _requestManager: {
+          type: Object,
+          value: () => new RequestManager(),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
       },
-      _isTabEnabled: function(tab) {
-        if (this.disabledTabs != null &&
-            this.disabledTabs.split(',').indexOf(tab) >= 0) {
+      observers: [
+        '_updateSelectedDashboard(_selectedDashboard, _activeDashboards)',
+        '_ensureSelectedDashboardStamped(' +
+          '_dashboardContainersStamped, _activeDashboards, _selectedDashboard)',
+      ],
+
+      _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
+      },
+
+      /**
+       * @param {string?} disabledDashboards comma-separated
+       * @param {Array<string>?} activeDashboards if null, nothing is active
+       * @param {string} dashboard
+       * @return {boolean}
+       */
+      _isDashboardActive(disabledDashboards, activeDashboards, dashboard) {
+        if ((disabledDashboards || '').split(',').indexOf(dashboard) >= 0) {
+          // Explicitly disabled.
+          return false;
+        }
+        if (!(activeDashboards || []).includes(dashboard)) {
+          // Inactive.
           return false;
         }
         return true;
       },
-      _getModeFromIndex: function(modeIndex) {
-        var mode = this.tabs[modeIndex];
-        setString(TAB, mode);
-        return mode;
-      },
-      _makeBackend: function(demoDir) {
-        // If the user has provided a router, we'll always use that.
-        // Otherwise, if the user has provided a demoDir, we'll use that
-        // to create a router.
-        if (demoDir != null && this.router == null) {
-          var router = createRouter(demoDir, true);
-          setRouter(router);
+
+      /**
+       * Determine whether a dashboard is enabled but not active.
+       *
+       * @param {string?} disabledDashboards comma-separated
+       * @param {Array<string>?} activeDashboards if null, nothing is active
+       * @param {string} dashboard
+       * @return {boolean}
+       */
+      _isDashboardInactive(disabledDashboards, activeDashboards, dashboard) {
+        if ((disabledDashboards || '').split(',').indexOf(dashboard) >= 0) {
+          // Disabled dashboards don't appear at all; they're not just
+          // inactive.
+          return false;
         }
-        return new Backend();
-      },
-      _isReloadDisabled: function(mode) {
-        return !this._debuggerDataEnabled && this._modeIsGraphs(mode);
-      },
-      _modeIsScalars: function(mode) {
-        return mode === "scalars";
-      },
-      _modeIsImages: function(mode) {
-        return mode === "images";
-      },
-      _modeIsAudio: function(mode) {
-        return mode === "audio";
-      },
-      _modeIsGraphs: function(mode) {
-        return mode === "graphs";
-      },
-      _modeIsEmbeddings: function(mode) {
-        return mode === "embeddings";
-      },
-      _modeIsDistributions: function(mode) {
-        return mode === "distributions";
-      },
-      _modeIsHistograms: function(mode) {
-        return mode === "histograms";
-      },
-      _modeIsText: function(mode) {
-        return mode === "text";
-      },
-      selectedDashboard: function() {
-        var dashboard = this.$$("#" + this.mode);
-        if (dashboard == null) {
-          throw new Error(`Unable to find dashboard for mode: ${this.mode}`);
+        if (!(activeDashboards || []).includes(dashboard)) {
+          // Inactive.
+          return true;
         }
+        return false;
+      },
+
+      _inactiveDashboardsExist(dashboards, disabledDashboards, activeDashboards) {
+        if (!activeDashboards) {
+          // Not loaded yet. Show nothing.
+          return false;
+        }
+        const workingSet = new Set();
+        dashboards.forEach(d => {
+          workingSet.add(d);
+        });
+        (disabledDashboards || '').split(',').forEach(d => {
+          workingSet.delete(d);
+        });
+        activeDashboards.forEach(d => {
+          workingSet.delete(d);
+        });
+        return workingSet.size > 0;
+      },
+
+      _getDashboardFromIndex(dashboards, index) {
+        return dashboards[index];
+      },
+
+      _displayStyle(currentDashboard, candidateDashboard) {
+         // Display only the selected dashboard.
+        return currentDashboard === candidateDashboard ? 'inherit' : 'none';
+      },
+
+      /**
+       * If no dashboard is selected but dashboards are available,
+       * select the first active dashboard. In any case, synchronize the
+       * state to the hash.
+       */
+      _updateSelectedDashboard(selectedDashboard, activeDashboards) {
+        if (activeDashboards && selectedDashboard == null) {
+          selectedDashboard = activeDashboards[0] || null;
+          if (selectedDashboard != null) {
+            this._selectedDashboard = selectedDashboard;
+            return;  // we just triggered that handler; don't need another
+          }
+        }
+        setString(TAB, selectedDashboard || '', /*useLocalStorage=*/false);
+      },
+
+      _updateSelectedDashboardFromHash() {
+        const dashboardName = getString(TAB, /*useLocalStorage=*/false);
+        this.set('_selectedDashboard', dashboardName || null);
+      },
+
+      /**
+       * Make sure that the currently selected dashboard actually has a
+       * Polymer component; if it doesn't, create one.
+       *
+       * We have to stamp each dashboard before we can interact with it:
+       * for instance, to ask it to reload. Conversely, we can't stamp a
+       * dashboard until its _container_ is itself stamped. (Containers
+       * are stamped declaratively by a `<dom-repeat>` in the HTML
+       * template.)
+       *
+       * We also wait for the set of active dashboards to be loaded
+       * before we stamp anything. This prevents us from stamping a
+       * dashboard that's not actually enabled (e.g., if the user
+       * navigates to `/#text` when the text plugin is disabled).
+       *
+       * If the currently selected dashboard is not a real dashboard,
+       * this does nothing.
+       */
+      _ensureSelectedDashboardStamped(containersStamped, activeDashboards, dashboard) {
+        if (!containersStamped || !activeDashboards || !dashboard) {
+          return;
+        }
+        const container = this.$$(
+          `.dashboard-container[data-dashboard=${dashboard}]`);
+        if (!container) {
+          // This dashboard doesn't exist. Nothing to do here.
+          return;
+        }
+        if (container.childNodes.length === 0) {
+          const component = document.createElement(COMPONENTS[dashboard]);
+          component.id = 'dashboard';  // used in `_selectedDashboardComponent`
+          container.appendChild(component);
+        };
+      },
+
+      _computeIsReloadDisabled(debuggerDataEnabled, selectedDashboard) {
+        if (selectedDashboard == null) {
+          // No dashboards available. Let the user refresh to try to
+          // load more data.
+          return false;
+        }
+        // TODO(@wchargin): Refactor to remove these explicit plugin names.
+        const disabledForModes = ['graphs', 'embeddings'];
+        return !debuggerDataEnabled && disabledForModes.includes(selectedDashboard);
+      },
+
+      /**
+       * Get the Polymer component corresponding to the currently
+       * selected dashboard. For instance, the result might be an
+       * instance of `<tf-scalar-dashboard>`.
+       *
+       * If the dashboard does not exist (e.g., the set of active
+       * dashboards has not loaded or has failed to load, or the user
+       * has selected a dashboard for which we have no implementation),
+       * `null` is returned.
+       */
+      _selectedDashboardComponent() {
+        if (!this._dashboardContainersStamped) {
+          throw new Error(
+            'There is no "selected dashboard" before containers are stamped.');
+        }
+        const selectedDashboard = this._selectedDashboard;
+        var dashboard = this.$$(
+          `.dashboard-container[data-dashboard=${selectedDashboard}] #dashboard`);
         return dashboard;
       },
-      ready: function() {
-        setUseHash(this.useHash);
 
-        this._getModeFromHash();
-        window.addEventListener('hashchange', function() {
-          this._getModeFromHash();
-        }.bind(this));
+      ready() {
+        setUseHash(this.useHash);
+        this._updateSelectedDashboardFromHash();
+        window.addEventListener('hashchange', () => {
+          this._updateSelectedDashboardFromHash();
+        }, /*useCapture=*/false);
+
+        // We have to wait for our dashboard-containers to be stamped
+        // before we can do anything.
+        const dashboardsTemplate = this.$$('#dashboards-template');
+        const onDomChange = () => {
+          // This will trigger an observer that kicks off everything.
+          this._dashboardContainersStamped = true;
+        };
+        dashboardsTemplate.addEventListener(
+          'dom-change', onDomChange, /*useCapture=*/false);
+
         fetchRuns();
+        this._fetchLogdir();
+        this._fetchActiveDashboards();
+        this._lastReloadTime = new Date().toString();
       },
-      _getModeFromHash: function() {
-        var tabName = getString(TAB);
-        var modeIndex = this.tabs.indexOf(tabName);
-        if (modeIndex == -1 && this.modeIndex == null) {
-          // Select the first tab as default.
-          this.set('modeIndex', 0);
-        }
-        if (modeIndex != -1 && modeIndex != this.modeIndex) {
-          this.set('modeIndex', modeIndex);
-        }
+
+      _fetchLogdir() {
+        const url = getRouter().logdir();
+        return this._requestManager.request(url).then(result => {
+          this._logdir = result.logdir;
+        });
       },
-      _updateRouter: function(router) {
+
+      _fetchActiveDashboards() {
+        this._canceller.cancelAll();
+        const updateActiveDashboards = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const activePlugins = result.value;
+          this._activeDashboards = this._dashboards.filter(
+            dashboard => activePlugins[PLUGIN_NAMES_BY_DASHBOARD[dashboard]]);
+          this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
+        });
+        const onFailure = () => {
+          if (this._activeDashboardsLoadState
+              === ActiveDashboardsLoadState.NOT_LOADED) {
+            this._activeDashboardsLoadState = ActiveDashboardsLoadState.FAILED;
+          } else {
+            console.warn(
+              "Failed to reload the set of active plugins; using old value.");
+          }
+        };
+        return this._requestManager
+          .request(getRouter().pluginsListing())
+          .then(updateActiveDashboards, onFailure);
+      },
+
+      _computeActiveDashboardsNotLoaded(state) {
+        return state === ActiveDashboardsLoadState.NOT_LOADED;
+      },
+      _computeActiveDashboardsLoaded(state) {
+        return state === ActiveDashboardsLoadState.LOADED;
+      },
+      _computeActiveDashboardsFailedToLoad(state) {
+        return state === ActiveDashboardsLoadState.FAILED;
+      },
+      _computeShowNoDashboardsMessage(loaded, activeDashboards, selectedDashboard) {
+        return (loaded
+          && activeDashboards.length === 0
+          && selectedDashboard == null);
+      },
+      _computeShowNoSuchDashboardMessage(dashboards, selectedDashboard) {
+        return !!selectedDashboard && !dashboards.includes(selectedDashboard);
+      },
+
+      _updateRouter(router) {
         setRouter(router);
       },
-      reload: function() {
-        if (this._modeIsEmbeddings(this.mode)) {
+
+      reload() {
+        if (this._isReloadDisabled) {
           return;
         }
-        if (!this._debuggerDataEnabled && this._modeIsGraphs(this.mode)) {
-          return;
-        }
-        fetchRuns().then(function() {
-          this.selectedDashboard().reload();
-        }.bind(this));
+        this._fetchLogdir();
+        Promise.all([this._fetchActiveDashboards(), fetchRuns()]).then(() => {
+          const dashboard = this._selectedDashboardComponent();
+          if (dashboard) {
+            dashboard.reload();
+          }
+        });
+        this._lastReloadTime = new Date().toString();
       },
-      openSettings: function() {
+
+      openSettings() {
         this.$.settings.open();
       },
     });

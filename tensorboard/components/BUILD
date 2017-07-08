@@ -42,8 +42,3 @@ tensorboard_html_binary(
     deps = [":trace_viewer"],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

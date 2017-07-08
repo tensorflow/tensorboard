@@ -147,6 +147,8 @@ export function getURIStorageName(
  * (1) Initializes a Polymer boolean property with a default value, if its
  *     value is not already set
  * (2) Sets up listener that updates Polymer property on hash change.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getBooleanInitializer(
     propertyName: string, defaultVal: boolean,
@@ -160,6 +162,8 @@ export function getBooleanInitializer(
  * (1) Initializes a Polymer string property with a default value, if its
  *     value is not already set
  * (2) Sets up listener that updates Polymer property on hash change.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getStringInitializer(
     propertyName: string, defaultVal: string,
@@ -173,6 +177,8 @@ export function getStringInitializer(
  * (1) Initializes a Polymer number property with a default value, if its
  *     value is not already set
  * (2) Sets up listener that updates Polymer property on hash change.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getNumberInitializer(
     propertyName: string, defaultVal: number,
@@ -188,6 +194,8 @@ export function getNumberInitializer(
  * (2) Sets up listener that updates Polymer property on hash change.
  *
  * Generates a deep clone of the defaultVal to avoid mutation issues.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getObjectInitializer(
     propertyName: string, defaultVal: {}, useLocalStorage = false): Function {
@@ -197,6 +205,8 @@ export function getObjectInitializer(
 
 /**
  * Return a function that updates URIStorage when a string property changes.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getBooleanObserver(
     propertyName: string, defaultVal: boolean,
@@ -207,6 +217,8 @@ export function getBooleanObserver(
 
 /**
  * Return a function that updates URIStorage when a string property changes.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getStringObserver(
     propertyName: string, defaultVal: string,
@@ -217,6 +229,8 @@ export function getStringObserver(
 
 /**
  * Return a function that updates URIStorage when a number property changes.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getNumberObserver(
     propertyName: string, defaultVal: number,
@@ -228,6 +242,8 @@ export function getNumberObserver(
 /**
  * Return a function that updates URIStorage when an object property changes.
  * Generates a deep clone of the defaultVal to avoid mutation issues.
+ *
+ * @param {boolean=} useLocalStorage
  */
 export function getObjectObserver(
     propertyName: string, defaultVal: {}, useLocalStorage = false): Function {
@@ -295,8 +311,8 @@ function _componentToDict(component: string): StringDict {
   const tokens = component.split('&');
   tokens.forEach((token) => {
     const kv = token.split('=');
-    // Special backwards compatibility for URI components like #events
-    if (kv.length === 1 && _.contains(TABS, kv[0])) {
+    // Special backwards compatibility for URI components like #scalars.
+    if (kv.length === 1) {
       items[TAB] = kv[0];
     } else if (kv.length === 2) {
       items[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);

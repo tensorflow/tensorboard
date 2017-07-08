@@ -70,3 +70,41 @@ def tensorboard_workspace():
       strip_prefix = "protobuf-2b7430d96aeff2bb624c8d52182ff5e4b9f7f18a",
   )
 
+  filegroup_external(
+      name = "org_chromium_chromedriver",
+      licenses = ["notice"],  # Apache 2.0
+      sha256_urls = {
+          "59e6b1b1656a20334d5731b3c5a7400f92a9c6f5043bb4ab67f1ccf1979ee486": [
+              "http://mirror.bazel.build/chromedriver.storage.googleapis.com/2.26/chromedriver_linux64.zip",
+              "http://chromedriver.storage.googleapis.com/2.26/chromedriver_linux64.zip",
+          ],
+      },
+      sha256_urls_macos = {
+          "70aae3812941ed94ad8065bb4a9432861d7d4ebacdd93ee47bb2c7c57c7e841e": [
+              "http://mirror.bazel.build/chromedriver.storage.googleapis.com/2.26/chromedriver_mac64.zip",
+              "http://chromedriver.storage.googleapis.com/2.26/chromedriver_mac64.zip",
+          ],
+      },
+      generated_rule_name = "archive",
+  )
+
+
+
+  # Roughly corresponds to Chrome 55
+  filegroup_external(
+      name = "org_chromium_chromium",
+      licenses = ["restricted"],  # So many licenses
+      sha256_urls = {
+          "e3c99954d6acce013174053534b72f47f67f18a0d75f79c794daaa8dd2ae8aaf": [
+              "http://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/423768/chrome-linux.zip",
+              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/423768/chrome-linux.zip",
+          ],
+      },
+      sha256_urls_macos = {
+          "62aeb7a5c6b8a1b7b31400105bf01295bbd45b0627920b8f99f0cc4ca76927ca": [
+              "http://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/423758/chrome-mac.zip",
+              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/423758/chrome-mac.zip",
+          ],
+      },
+      generated_rule_name = "archive",
+  )

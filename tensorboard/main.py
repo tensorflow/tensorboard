@@ -29,16 +29,18 @@ import sys
 import tensorflow as tf
 from werkzeug import serving
 
+from tensorboard import util
+from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
-from tensorboard.plugins.distributions import distributions_plugin
-from tensorboard.plugins.graphs import graphs_plugin
-from tensorboard.plugins.histograms import histograms_plugin
-from tensorboard.plugins.images import images_plugin
+from tensorboard.plugins.distribution import distributions_plugin
+from tensorboard.plugins.graph import graphs_plugin
+from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.projector import projector_plugin
-from tensorboard.plugins.scalars import scalars_plugin
+from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 
 # TensorBoard flags
@@ -111,11 +113,12 @@ tf.flags.DEFINE_string(
 FLAGS = tf.flags.FLAGS
 
 
-def create_tb_app(plugins):
+def create_tb_app(plugins, assets_zip_provider=None):
   """Read the flags, and create a TensorBoard WSGI application.
 
   Args:
     plugins: A list of constructor functions for TBPlugin subclasses.
+    assets_zip_provider: Delegates to TBContext or uses default if None.
 
   Raises:
     ValueError: if a logdir is not specified.
@@ -127,6 +130,7 @@ def create_tb_app(plugins):
     raise ValueError('A logdir must be specified when db is not specified. '
                      'Run `tensorboard --help` for details and examples.')
   return application.standard_tensorboard_wsgi(
+      assets_zip_provider=assets_zip_provider,
       db_uri=FLAGS.db,
       logdir=os.path.expanduser(FLAGS.logdir),
       purge_orphaned_data=FLAGS.purge_orphaned_data,
@@ -153,9 +157,6 @@ def make_simple_server(tb_app, host, port):
     socket.error: If a server could not be constructed with the host and port
       specified. Also logs an error message.
   """
-  # Mute the werkzeug logging.
-  base_logging.getLogger('werkzeug').setLevel(base_logging.WARNING)
-
   try:
     if host:
       # The user gave us an explicit host
@@ -202,27 +203,18 @@ def run_simple_server(tb_app):
     # An error message was already logged
     # TODO(@jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  msg = 'Starting TensorBoard %s at %s' % (get_tag(), url)
-  print(msg)
-  tf.logging.info(msg)
-  print('(Press CTRL+C to quit)')
-  sys.stdout.flush()
-
-  server.serve_forever()
-
-
-def get_tag():
-  """Returns tag of current TensorBoard release.
-
-  Returns:
-    String of stripped contents of TAG file.
-  """
-  path = os.path.join(tf.resource_loader.get_data_files_path(), 'TAG')
-  with open(path) as file_:
-    return file_.read().strip()
+  logger = base_logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
+  logger.setLevel(base_logging.INFO)
+  logger.info('TensorBoard %s at %s (Press CTRL+C to quit) ',
+              version.VERSION, url)
+  try:
+    server.serve_forever()
+  finally:
+    logger.info('')
 
 
 def main(unused_argv=None):
+  util.setup_logging()
   if FLAGS.inspect:
     tf.logging.info('Not bringing up TensorBoard, but inspecting event files.')
     event_file = os.path.expanduser(FLAGS.event_file)

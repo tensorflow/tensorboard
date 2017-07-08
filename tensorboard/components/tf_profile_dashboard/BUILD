@@ -13,7 +13,7 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/plugins/graphs/tf_graph_controls",
+        "//tensorboard/plugins/graph/tf_graph_controls",
         "@org_polymer",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_item",
@@ -21,8 +21,3 @@ ts_web_library(
     ],
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

@@ -21,8 +21,3 @@ tensorboard_webcomponent_library(
     destdir = "vz-sorting",
 )
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

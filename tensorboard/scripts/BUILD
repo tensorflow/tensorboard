@@ -24,9 +24,3 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["*"]),
-    visibility = ["//third_party/tensorflow:__subpackages__"],
-)

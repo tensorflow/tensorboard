@@ -29,9 +29,3 @@ tensorboard_html_binary(
     deps = [":test"],
 )
 
-filegroup(
-    name = "all_files",
-    testonly = 0,
-    srcs = glob(["**"]),
-    tags = ["notsan"],
-)

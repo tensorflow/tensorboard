@@ -25,7 +25,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
-from tensorboard.plugins.distributions import compressor
+from tensorboard.plugins.distribution import compressor
 
 
 class _EventGenerator(object):
