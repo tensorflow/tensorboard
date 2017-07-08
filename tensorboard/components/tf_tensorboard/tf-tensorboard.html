@@ -437,11 +437,6 @@ limitations under the License.
           value: false,
         },
 
-        _isReloadDisabled: {
-          type: Boolean,
-          computed: '_computeIsReloadDisabled(_debuggerDataEnabled, _selectedDashboard)',
-        },
-
         _lastReloadTime: {
           type: String,
           value: "not yet loaded",
@@ -592,17 +587,6 @@ limitations under the License.
         };
       },
 
-      _computeIsReloadDisabled(debuggerDataEnabled, selectedDashboard) {
-        if (selectedDashboard == null) {
-          // No dashboards available. Let the user refresh to try to
-          // load more data.
-          return false;
-        }
-        // TODO(@wchargin): Refactor to remove these explicit plugin names.
-        const disabledForModes = ['graphs', 'projector'];
-        return !debuggerDataEnabled && disabledForModes.includes(selectedDashboard);
-      },
-
       /**
        * Get the Polymer component corresponding to the currently
        * selected dashboard. For instance, the result might be an
@@ -701,9 +685,6 @@ limitations under the License.
       },
 
       reload() {
-        if (this._isReloadDisabled) {
-          return;
-        }
         this._fetchLogdir();
         Promise.all([this._fetchActiveDashboards(), fetchRuns()]).then(() => {
           const dashboard = this._selectedDashboardComponent();
