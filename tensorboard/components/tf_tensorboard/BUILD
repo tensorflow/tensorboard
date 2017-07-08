@@ -34,10 +34,27 @@ ts_web_library(
 )
 
 ts_web_library(
+    name = "default_plugins",
+    srcs = ["default-plugins.html"],
+    path = "/tf-tensorboard",
+    deps = [
+        "//tensorboard/plugins/audio/tf_audio_dashboard",
+        "//tensorboard/plugins/distribution/tf_distribution_dashboard",
+        "//tensorboard/plugins/graph/tf_graph_dashboard",
+        "//tensorboard/plugins/histogram/tf_histogram_dashboard",
+        "//tensorboard/plugins/image/tf_image_dashboard",
+        "//tensorboard/plugins/projector/vz_projector",
+        "//tensorboard/plugins/scalar/tf_scalar_dashboard",
+        "//tensorboard/plugins/text/tf_text_dashboard",
+    ],
+)
+
+ts_web_library(
     name = "demo",
     srcs = ["demo.html"],
     path = "/tf-tensorboard",
     deps = [
+        ":default_plugins",
         ":tf_tensorboard",
         "//tensorboard/demo:demo_data",
     ],

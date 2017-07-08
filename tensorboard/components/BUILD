@@ -15,14 +15,7 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/plugins/audio/tf_audio_dashboard",
-        "//tensorboard/plugins/distribution/tf_distribution_dashboard",
-        "//tensorboard/plugins/graph/tf_graph_dashboard",
-        "//tensorboard/plugins/histogram/tf_histogram_dashboard",
-        "//tensorboard/plugins/image/tf_image_dashboard",
-        "//tensorboard/plugins/projector/vz_projector",
-        "//tensorboard/plugins/scalar/tf_scalar_dashboard",
-        "//tensorboard/plugins/text/tf_text_dashboard",
+        "//tensorboard/components/tf_tensorboard:default_plugins",
     ],
 )
 
