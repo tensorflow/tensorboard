@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
 import functools
 import json
 import os
@@ -345,16 +346,54 @@ class DbTest(tf.test.TestCase):
     db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
     db_module, db_connection_provider = application.get_database_info(db_uri)
     self.assertTrue(hasattr(db_module, 'Date'))
-    with db_connection_provider() as conn:
-      c = conn.cursor()
-      c.execute('create table peeps (name text)')
-      c.execute('insert into peeps (name) values (?)', ('justine',))
-      conn.commit()
-    db_module, db_connection_provider = application.get_database_info(db_uri)
-    with db_connection_provider() as conn:
-      c = conn.cursor()
-      c.execute('select name from peeps')
-      self.assertEqual(('justine',), c.fetchone())
+    with contextlib.closing(db_connection_provider()) as conn:
+      with conn:
+        with contextlib.closing(conn.cursor()) as c:
+          c.execute('create table peeps (name text)')
+          c.execute('insert into peeps (name) values (?)', ('justine',))
+    _, db_connection_provider = application.get_database_info(db_uri)
+    with contextlib.closing(db_connection_provider()) as conn:
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select name from peeps')
+        self.assertEqual(('justine',), c.fetchone())
+
+  def testTransactionRollback(self):
+    db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
+    _, db_connection_provider = application.get_database_info(db_uri)
+    with contextlib.closing(db_connection_provider()) as conn:
+      with conn:
+        with contextlib.closing(conn.cursor()) as c:
+          c.execute('create table peeps (name text)')
+      try:
+        with conn:
+          with contextlib.closing(conn.cursor()) as c:
+            c.execute('insert into peeps (name) values (?)', ('justine',))
+          raise IOError('hi')
+      except IOError:
+        pass
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select name from peeps')
+        self.assertIsNone(c.fetchone())
+
+  def testTransactionRollback_doesntDoAnythingIfIsolationLevelIsNone(self):
+    # NOTE: This is a terrible idea. Don't do this.
+    db_uri = ('sqlite:' + os.path.join(self.get_temp_dir(), 'db') +
+              '?isolation_level=null')
+    _, db_connection_provider = application.get_database_info(db_uri)
+    with contextlib.closing(db_connection_provider()) as conn:
+      with conn:
+        with contextlib.closing(conn.cursor()) as c:
+          c.execute('create table peeps (name text)')
+      try:
+        with conn:
+          with contextlib.closing(conn.cursor()) as c:
+            c.execute('insert into peeps (name) values (?)', ('justine',))
+          raise IOError('hi')
+      except IOError:
+        pass
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select name from peeps')
+        self.assertEqual(('justine',), c.fetchone())
 
   def testSqliteUriErrors(self):
     with self.assertRaises(ValueError):
