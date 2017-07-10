@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import os
 import subprocess
 import unittest
@@ -31,6 +32,10 @@ from tensorboard.plugins.scalar import scalars_demo
 from tensorboard.plugins.audio import audio_demo
 
 
+_BASE_PORT = 8000
+_PORT_OFFSETS = collections.defaultdict(lambda: len(_PORT_OFFSETS))
+
+
 class BasicTest(unittest.TestCase):
   """Tests that the basic chrome is displayed when there is no data."""
 
@@ -41,8 +46,9 @@ class BasicTest(unittest.TestCase):
                           "org_tensorflow_tensorboard/tensorboard/tensorboard")
     cls.logdir = tempfile.mkdtemp(prefix='core_test_%s_logdir_' % cls.__name__)
     cls.setUpData()
+    cls.port = _BASE_PORT + _PORT_OFFSETS[cls]
     cls.process = subprocess.Popen(
-        [binary, "--port", "8000", "--logdir", cls.logdir])
+        [binary, "--port", str(cls.port), "--logdir", cls.logdir])
 
   @classmethod
   def setUpData(cls):
@@ -56,7 +62,7 @@ class BasicTest(unittest.TestCase):
 
   def setUp(self):
     self.driver = webtest.new_webdriver_session()
-    self.driver.get("http://localhost:8000")
+    self.driver.get("http://localhost:%s" % self.port)
     self.wait = wait.WebDriverWait(self.driver, 2)
 
   def tearDown(self):
