@@ -201,7 +201,7 @@ def run_simple_server(tb_app):
     server, url = make_simple_server(tb_app, FLAGS.host, FLAGS.port)
   except socket.error:
     # An error message was already logged
-    # TODO(jart): Remove log and throw anti-pattern.
+    # TODO(@jart): Remove log and throw anti-pattern.
     sys.exit(-1)
   logger = base_logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
   logger.setLevel(base_logging.INFO)

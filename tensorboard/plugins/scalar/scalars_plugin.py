@@ -86,7 +86,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def scalars_route(self, request):
     """Given a tag and single run, return array of ScalarEvents."""
-    # TODO(cassandrax): return HTTP status code for malformed requests
+    # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
     output_format = request.args.get('format')

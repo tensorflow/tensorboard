@@ -18,6 +18,6 @@ suite('graph', () => {
 
   test('graphlib exists', () => { assert.isTrue(graphlib != null); });
 
-  // TODO(bp): write tests.
+  // TODO: write tests.
 
 });

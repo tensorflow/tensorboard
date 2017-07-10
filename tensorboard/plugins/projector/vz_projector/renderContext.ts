@@ -35,7 +35,7 @@ export enum CameraType {
  * RenderContext contains all of the state required to color and render the data
  * set. ScatterPlot passes this to every attached visualizer as part of the
  * render callback.
- * TODO(nicholsonc): This should only contain the data that's changed between
+ * TODO(@charlesnicholson): This should only contain the data that's changed between
  * each frame. Data like colors / scale factors / labels should be reapplied
  * only when they change.
  */

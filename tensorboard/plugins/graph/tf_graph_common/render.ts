@@ -345,7 +345,7 @@ export class RenderGraphInfo {
     return name;
   }
 
-  // TODO(jimbo): Delete this an any code it touches (all deprecated).
+  // TODO: Delete this an any code it touches (all deprecated).
   setDepth(depth: number): void {
     setGroupNodeDepth(this.root, +depth);
   }
@@ -1003,7 +1003,7 @@ export class RenderNodeInfo {
    * This is only used when there are too many items in a series so we only
    * want to include top N ones.
    */
-  // TODO(jimbo): Now that series rendering is non-recursive, remove this and
+  // TODO: Now that series rendering is non-recursive, remove this and
   // all its uses from the code base.
   excluded: boolean;
 

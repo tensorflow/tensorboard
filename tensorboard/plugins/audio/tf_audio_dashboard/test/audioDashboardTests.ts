@@ -15,7 +15,7 @@ limitations under the License.
 
 import {createRouter, setRouter} from '../../tf-backend/router.js';
 
-// TODO(dandelion): Fix me.
+// TODO(@dandelionmane): Fix me.
 declare function fixture(id: string): any;
 declare function stub(x, y: any): void;
 

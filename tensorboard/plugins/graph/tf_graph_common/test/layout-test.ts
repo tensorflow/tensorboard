@@ -18,6 +18,6 @@ suite('layout', () => {
 
   test('dagre exists', () => { assert.isTrue(dagre != null); });
 
-  // TODO(bp): write tests.
+  // TODO: write tests.
 
 });
