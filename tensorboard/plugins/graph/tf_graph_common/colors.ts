@@ -121,7 +121,7 @@ module tf {
     {color: 'Google Green', groups: ['math_ops']},
     {color: 'Lime', groups: ['array_ops']},
     {color: 'Teal', groups: ['control_flow_ops', 'data_flow_ops']},
-    {color: 'Pink', groups: ['summary_ops']},
+    {color: 'Pink', groups: ['ops']},
     {color: 'Deep Pink', groups: ['io_ops']}
   ].reduce((m, c) => {
     c.groups.forEach(function(group) { m[group] = c.color; });

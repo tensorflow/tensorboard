@@ -17,6 +17,17 @@ package_group(
     packages = ["//tensorboard/..."],
 )
 
+py_library(
+    name = "api",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+      ":expect_tensorflow_installed",
+      "//tensorboard/plugins:api",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],

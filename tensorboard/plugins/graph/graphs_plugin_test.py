@@ -26,6 +26,8 @@ import os.path
 import tensorflow as tf
 
 from google.protobuf import text_format
+
+import tensorboard as tb
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graphs_plugin
@@ -59,10 +61,10 @@ class GraphsPluginTest(tf.test.TestCase):
     error_message = tf.string_join([message_prefix,
                                     tf.as_string(error, name='error_string')],
                                    name='error_message')
-    summary_message = tf.summary.text('summary_message', error_message)
+    summary_message = tb.plugins.text.op('summary_message', error_message)
 
     sess = tf.Session()
-    writer = tf.summary.FileWriter(os.path.join(self.logdir, run_name))
+    writer = tb.FileWriter(os.path.join(self.logdir, run_name))
     if include_graph:
       writer.add_graph(sess.graph)
     options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)

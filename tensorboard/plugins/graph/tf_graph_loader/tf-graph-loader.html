@@ -119,7 +119,7 @@ Polymer({
     .then(function(graph) {
       if (!graph) {
         throw 'The graph is empty. Make sure that the graph is passed to the ' +
-            'tf.summary.FileWriter after the graph is defined.';
+            'tb.FileWriter after the graph is defined.';
       }
 
       // Build the flat graph (consists only of Op nodes).

@@ -21,18 +21,18 @@ from __future__ import print_function
 import os
 import shutil
 
+import tensorboard as tb
 import tensorflow as tf
 
 from google.protobuf import text_format
 
-from tensorboard.plugins import projector
 
 
 class ProjectorApiTest(tf.test.TestCase):
 
   def testVisualizeEmbeddings(self):
     # Create a dummy configuration.
-    config = projector.ProjectorConfig()
+    config = tb.plugins.projector.ProjectorConfig()
     config.model_checkpoint_path = 'test'
     emb1 = config.embeddings.add()
     emb1.tensor_name = 'tensor1'
@@ -41,12 +41,12 @@ class ProjectorApiTest(tf.test.TestCase):
     # Call the API method to save the configuration to a temporary dir.
     temp_dir = self.get_temp_dir()
     self.addCleanup(shutil.rmtree, temp_dir)
-    writer = tf.summary.FileWriter(temp_dir)
-    projector.visualize_embeddings(writer, config)
+    writer = tb.FileWriter(temp_dir)
+    tb.plugins.projector.visualize_embeddings(writer, config)
 
     # Read the configurations from disk and make sure it matches the original.
     with tf.gfile.GFile(os.path.join(temp_dir, 'projector_config.pbtxt')) as f:
-      config2 = projector.ProjectorConfig()
+      config2 = tb.plugins.projector.ProjectorConfig()
       text_format.Parse(f.read(), config2)
       self.assertEqual(config, config2)
 

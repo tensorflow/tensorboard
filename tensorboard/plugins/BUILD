@@ -12,3 +12,16 @@ py_library(
     srcs = ["base_plugin.py"],
     srcs_version = "PY2AND3",
 )
+
+py_library(
+  name = "api",
+  srcs = ["__init__.py"],
+  srcs_version = "PY2AND3",
+  deps = [
+      "//tensorboard/plugins/audio:api",
+      "//tensorboard/plugins/histogram:api",
+      "//tensorboard/plugins/image:api",
+      "//tensorboard/plugins/projector:api",
+      "//tensorboard/plugins/scalar:api",
+      "//tensorboard/plugins/text:api"
+    ])

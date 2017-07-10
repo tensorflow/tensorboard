@@ -31,6 +31,7 @@ from werkzeug import wrappers
 
 from google.protobuf import text_format
 
+import tensorboard as tb
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
@@ -177,7 +178,7 @@ class ProjectorAppTest(tf.test.TestCase):
   def testEndpointsNoAssets(self):
     g = tf.Graph()
 
-    fw = tf.summary.FileWriter(self.log_dir, graph=g)
+    fw = tb.FileWriter(self.log_dir, graph=g)
     fw.close()
 
     self._SetupWSGIApp()
@@ -224,7 +225,7 @@ class ProjectorAppTest(tf.test.TestCase):
     return json.loads(data.decode('utf-8'))
 
   def _GenerateEventsData(self):
-    fw = tf.summary.FileWriter(self.log_dir)
+    fw = tb.FileWriter(self.log_dir)
     event = tf.Event(
         wall_time=1,
         step=1,

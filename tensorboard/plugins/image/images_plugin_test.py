@@ -28,9 +28,11 @@ import numpy
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
+import tensorboard as tb
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
@@ -50,13 +52,13 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.uint8)
-    tf.summary.image(name="baz", tensor=placeholder)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.image.op(name="baz", tensor=placeholder)
+    merged_op = tb.merge_all_summaries()
     foo_directory = os.path.join(self.log_dir, "foo")
-    writer = tf.summary.FileWriter(foo_directory)
+    writer = tb.FileWriter(foo_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: (numpy.random.rand(1, 16, 42, 3) * 255).astype(
               numpy.uint8)
       }), global_step=step)
@@ -66,13 +68,13 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.uint8)
-    tf.summary.image(name="quux", tensor=placeholder)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.image.op(name="quux", tensor=placeholder)
+    merged_op = tb.merge_all_summaries()
     bar_directory = os.path.join(self.log_dir, "bar")
-    writer = tf.summary.FileWriter(bar_directory)
+    writer = tb.FileWriter(bar_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: (numpy.random.rand(1, 6, 8, 3) * 255).astype(
               numpy.uint8)
       }), global_step=step)

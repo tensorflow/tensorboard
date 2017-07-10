@@ -27,10 +27,13 @@ import tempfile
 import numpy
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
+
 import tensorflow as tf
+
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
+import tensorboard as tb
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
@@ -50,14 +53,14 @@ class AudioPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32)
-    tf.summary.audio(name="baz", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.audio.op(name="baz", tensor=placeholder, sample_rate=44100)
+    merged_op = tb.merge_all_summaries()
     foo_directory = os.path.join(self.log_dir, "foo")
-    writer = tf.summary.FileWriter(foo_directory)
+    writer = tb.FileWriter(foo_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       # The floats (sample data) range from -1 to 1.
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: numpy.random.rand(42, 22050) * 2 - 1
       }), global_step=step)
     writer.close()
@@ -66,14 +69,14 @@ class AudioPluginTest(tf.test.TestCase):
     tf.reset_default_graph()
     sess = tf.Session()
     placeholder = tf.placeholder(tf.float32)
-    tf.summary.audio(name="quux", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tf.summary.merge_all()
+    tb.plugins.audio.op(name="quux", tensor=placeholder, sample_rate=44100)
+    merged_op = tb.merge_all_summaries()
     bar_directory = os.path.join(self.log_dir, "bar")
-    writer = tf.summary.FileWriter(bar_directory)
+    writer = tb.FileWriter(bar_directory)
     writer.add_graph(sess.graph)
     for step in xrange(2):
       # The floats (sample data) range from -1 to 1.
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
+      writer.add_summary(sess.run(merged_op, feed_dict={
           placeholder: numpy.random.rand(42, 11025) * 2 - 1
       }), global_step=step)
     writer.close()
