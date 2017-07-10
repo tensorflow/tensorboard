@@ -13,12 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// The names of TensorBoard tabs.
-export const TABS = [
-  'scalars', 'images', 'audio', 'graphs', 'distributions', 'histograms',
-  'projector', 'text'
-];
-
 // If true, TensorBoard stores its hash in the URI state.
 // If false, tab switching in TensorBoard will not update location hash,
 // because hash updates interfere with wct_tests.

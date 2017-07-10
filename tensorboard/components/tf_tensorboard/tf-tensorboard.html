@@ -305,12 +305,18 @@ limitations under the License.
   <script src="autoReloadBehavior.js"></script>
   <script>
     import {AutoReloadBehavior} from "./autoReloadBehavior.js";
-    import {TABS, setUseHash} from "../tf-globals/globals.js";
+    import {setUseHash} from "../tf-globals/globals.js";
     import {getString, setString, TAB} from "../tf-storage/storage.js";
     import {Canceller} from "../tf-backend/canceller.js";
     import {RequestManager} from "../tf-backend/requestManager.js";
     import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
     import {fetchRuns} from "../tf-backend/runsStore.js";
+
+    // The names of TensorBoard tabs.
+    const TABS = [
+      'scalars', 'images', 'audio', 'graphs', 'distributions', 'histograms',
+      'projector', 'text'
+    ];
 
     // A map from dashboard name to Polymer component name.
     const COMPONENTS = {

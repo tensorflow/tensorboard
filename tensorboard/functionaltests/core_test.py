@@ -95,8 +95,10 @@ class DashboardsTest(BasicTest):
     selectors = {
       "scalars_tab": "paper-tab[data-dashboard=scalars]",
       "audio_tab": "paper-tab[data-dashboard=audio]",
+      "graphs_tab": "paper-tab[data-dashboard=graphs]",
       "inactive_dropdown": "paper-dropdown-menu[label*=Inactive]",
       "images_menu_item": "paper-item[data-dashboard=images]",
+      "reload_button": "paper-icon-button#reload-button",
     }
     elements = {}
     for (name, selector) in selectors.items():
@@ -104,14 +106,21 @@ class DashboardsTest(BasicTest):
       self.wait.until(expected_conditions.presence_of_element_located(locator))
       elements[name] = self.driver.find_element_by_css_selector(selector)
 
+    # The implementation of paper-* components doesn't seem to play nice
+    # with Selenium's `element.is_selected()` and `element.is_enabled()`
+    # methods. Instead, we check the appropriate WAI-ARIA attributes.
+    # (Also, though the docs for `get_attribute` say that the string
+    # `"false"` is returned as `False`, this appears to be the case
+    # _sometimes_ but not _always_, so we should take special care to
+    # handle that.)
     def is_selected(element):
-      """Test whether a paper-tab or paper-item is selected.
+      attribute = element.get_attribute("aria-selected")
+      return attribute and attribute != "false"
 
-      The implementation of paper-* components doesn't seem to play nice
-      with Selenium's `element.is_selected()` method. Instead, we can
-      check the WAI-ARIA attributes.
-      """
-      return element.get_attribute("aria-selected")
+    def is_enabled(element):
+      attribute = element.get_attribute("aria-disabled")
+      is_disabled = attribute and attribute != "false"
+      return not is_disabled
 
     def assert_selected_dashboard(polymer_component_name):
       expected = {polymer_component_name}
@@ -128,18 +137,25 @@ class DashboardsTest(BasicTest):
     # should not be visible, as it's within the drop-down menu.
     self.assertTrue(elements["scalars_tab"].is_displayed())
     self.assertTrue(elements["audio_tab"].is_displayed())
+    self.assertTrue(elements["graphs_tab"].is_displayed())
     self.assertTrue(is_selected(elements["scalars_tab"]))
     self.assertFalse(is_selected(elements["audio_tab"]))
     self.assertFalse(elements["images_menu_item"].is_displayed())
     self.assertFalse(is_selected(elements["images_menu_item"]))
     assert_selected_dashboard("tf-scalar-dashboard")
 
+    # While we're on the scalar dashboard, we should be allowed to
+    # reload the data.
+    self.assertTrue(is_enabled(elements["reload_button"]))
+
     # We should be able to activate the audio dashboard.
     elements["audio_tab"].click()
     self.assertFalse(is_selected(elements["scalars_tab"]))
     self.assertTrue(is_selected(elements["audio_tab"]))
+    self.assertFalse(is_selected(elements["graphs_tab"]))
     self.assertFalse(is_selected(elements["images_menu_item"]))
     assert_selected_dashboard("tf-audio-dashboard")
+    self.assertTrue(is_enabled(elements["reload_button"]))
 
     # We should then be able to open the dropdown and navigate to the
     # image dashboard. (We have to wait until it's visible because of the
@@ -151,15 +167,31 @@ class DashboardsTest(BasicTest):
     elements["images_menu_item"].click()
     self.assertFalse(is_selected(elements["scalars_tab"]))
     self.assertFalse(is_selected(elements["audio_tab"]))
+    self.assertFalse(is_selected(elements["graphs_tab"]))
     self.assertTrue(is_selected(elements["images_menu_item"]))
     assert_selected_dashboard("tf-image-dashboard")
+    self.assertTrue(is_enabled(elements["reload_button"]))
+
+    # Next, we should be able to navigate back to an active dashboard.
+    # If we choose the graphs dashboard, the reload feature should be
+    # disabled.
+    elements["graphs_tab"].click()
+    self.assertFalse(elements["images_menu_item"].is_displayed())
+    self.assertFalse(is_selected(elements["scalars_tab"]))
+    self.assertFalse(is_selected(elements["audio_tab"]))
+    self.assertTrue(is_selected(elements["graphs_tab"]))
+    self.assertFalse(is_selected(elements["images_menu_item"]))
+    assert_selected_dashboard("tf-graph-dashboard")
+    self.assertFalse(is_enabled(elements["reload_button"]))
 
     # Finally, we should be able to navigate back to the scalar dashboard.
     elements["scalars_tab"].click()
     self.assertTrue(is_selected(elements["scalars_tab"]))
     self.assertFalse(is_selected(elements["audio_tab"]))
+    self.assertFalse(is_selected(elements["graphs_tab"]))
     self.assertFalse(is_selected(elements["images_menu_item"]))
     assert_selected_dashboard("tf-scalar-dashboard")
+    self.assertTrue(is_enabled(elements["reload_button"]))
 
 
 if __name__ == "__main__":
