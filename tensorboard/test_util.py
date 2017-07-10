@@ -22,7 +22,30 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import logging
 import threading
+
+import tensorflow as tf
+
+from tensorboard import util
+
+
+class TestCase(tf.test.TestCase):
+  """TensorBoard base test class.
+
+  This class enables logging and prints test method names.
+  """
+
+  def __init__(self, method='runTest'):
+    super(TestCase, self).__init__(method)
+    self._method = method
+
+  def setUp(self):
+    super(TestCase, self).setUp()
+    util.setup_logging()
+    tf.logging.set_verbosity(tf.logging.DEBUG)
+    logging.getLogger('werkzeug').setLevel(logging.INFO)
+    tf.logging.debug('=== %s ===', self._method)
 
 
 class FakeClock(object):

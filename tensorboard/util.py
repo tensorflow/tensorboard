@@ -47,13 +47,14 @@ def setup_logging(streams=(sys.stderr,)):
   # TODO(jart): Make the default TensorFlow logger behavior great again.
   logging.currentframe = _hack_the_main_frame
   handlers = [LogHandler(s) for s in streams]
+  formatter = LogFormatter()
+  for handler in handlers:
+    handler.setFormatter(formatter)
   tensorflow_logger = logging.getLogger('tensorflow')
   tensorflow_logger.handlers = handlers
   werkzeug_logger = logging.getLogger('werkzeug')
   werkzeug_logger.setLevel(logging.WARNING)
-  for handler in handlers:
-    handler.setFormatter(LogFormatter())
-    werkzeug_logger.addHandler(handler)
+  werkzeug_logger.handlers = handlers
 
 
 def closeable(class_):
@@ -78,6 +79,19 @@ def closeable(class_):
   class_.__enter__ = lambda self: self
   class_.__exit__ = lambda self, t, v, b: self.close() and None
   return class_
+
+
+def guarded_by(field):
+  """Indicates method should be called from within a lock.
+
+  This decorator is purely for documentation purposes. It has the same
+  semantics as Java's @GuardedBy annotation.
+
+  Args:
+    field: The string name of the lock field, e.g. "_lock".
+  """
+  del field
+  return lambda method: method
 
 
 def add_commas(n):

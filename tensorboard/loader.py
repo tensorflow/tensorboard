@@ -177,7 +177,9 @@ class BufferedRecordReader(object):
           before the thread starts blocking. This value must be >0 and
           the default is BufferedRecordReader.READ_AHEAD_BYTES.
       stat_interval: A float with the minimum number of seconds between
-          stat calls, to determine the file size.
+          stat calls, to determine the file size. If this is 0.0 then
+          the thread will stat after every re-buffer, but never be
+          woken up in order to stat.
       clock: Function returning a float with the number of seconds
           since the UNIX epoch in zulu time.
       record_reader_factory: The RecordReader constructor, which can be
@@ -228,9 +230,6 @@ class BufferedRecordReader(object):
       guaranteed to never decrease. It's also guaranteed that it will
       be greater than or equal to the offset field of any Record.
 
-    Raises:
-      IOError: If the stat call failed or file shrunk.
-
     :rtype: int
     """
     with self._lock:
@@ -274,6 +273,8 @@ class BufferedRecordReader(object):
       else:
         record = self._get_record()
         if record is not None:
+          if self._should_wakeup():
+            self._wake_up_producer.notify()
           return record
         self._has_reached_end = False
         self._wake_up_producer.notify()
@@ -316,28 +317,36 @@ class BufferedRecordReader(object):
       return None
     record = self._records.popleft()
     self._buffered -= len(record.record)
-    if self._should_wakeup():
-      self._wake_up_producer.notify()
     return record
 
+  @util.guarded_by('_lock')
   def _should_wakeup(self):
     return (self._is_closed or
-            self._should_rebuffer() or
-            self._should_stat())
+            self._read_exception is None and
+            (self._should_rebuffer() or
+             (self._stat_interval and self._should_stat())))
 
+  @util.guarded_by('_lock')
   def _should_rebuffer(self):
     return (not self._has_reached_end and
             (float(self._buffered) <
              self._read_ahead / BufferedRecordReader.READ_AHEAD_AGGRESSION))
 
+  @util.guarded_by('_lock')
   def _should_stat(self):
-    return (self._offset > self._size or
-            self._last_stat <= self._clock() - self._stat_interval)
+    return (self._read_exception is None and
+            (self._offset > self._size or
+             self._last_stat <= self._clock() - self._stat_interval))
 
+  @util.guarded_by('_lock')
   def _stat(self):
-    now = self._clock()
-    self._size = self._reader.get_size()
-    self._last_stat = now
+    try:
+      now = self._clock()
+      self._size = self._reader.get_size()
+      self._last_stat = now
+    except Exception as e:  # pylint: disable=broad-except
+      tf.logging.debug('Stat failed: %s', e)
+      self._read_exception = sys.exc_info()
 
   def _run(self):
     while True:
@@ -354,6 +363,10 @@ class BufferedRecordReader(object):
           self._reader = None
           self._wake_up_consumers.notify_all()
           return
+        if self._buffered >= self._read_ahead:
+          tf.logging.debug('Waking up to stat')
+          self._stat()
+          continue
         # Calculate a good amount of data to read outside the lock.
         # The less we have buffered, the less re-buffering we'll do.
         # We want to minimize wait time in the other thread. See the
@@ -378,21 +391,20 @@ class BufferedRecordReader(object):
           self._offset = record.offset
           records.append(record)
           want -= len(record.record)
-        with self._lock:
-          if self._should_stat():
-            self._stat()
       except Exception as e:  # pylint: disable=broad-except
         tf.logging.debug('Read failed: %s', e)
         read_exception = sys.exc_info()
     with self._lock:
-      if read_exception is not None:
-        self._read_exception = read_exception
-      elif not records:
-        self._has_reached_end = True
-      else:
-        for record in records:
-          self._records.append(record)
-          self._buffered += len(record.record)
+      self._read_exception = read_exception
+      if self._should_stat():
+        self._stat()
+      if not self._read_exception:
+        if not records:
+          self._has_reached_end = True
+        else:
+          for record in records:
+            self._records.append(record)
+            self._buffered += len(record.record)
       self._wake_up_consumers.notify_all()
 
   def __str__(self):
