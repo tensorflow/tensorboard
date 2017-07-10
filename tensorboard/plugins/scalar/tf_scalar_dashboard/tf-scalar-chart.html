@@ -103,6 +103,11 @@ limitations under the License.
         height: 400px;
         width: 100%;
       }
+
+      :host[_maybe-rendered-in-bad-state] vz-line-chart {
+        visibility: hidden;
+      };
+
       #chart-and-spinner-container {
         display: flex;
         flex-grow: 1;
@@ -161,6 +166,24 @@ limitations under the License.
     import {getRouter} from '../tf-backend/router.js';
     import {runsColorScale} from '../tf-color-scale/colorScale.js';
 
+    // The chart can sometimes get in a bad state, when it redraws while
+    // it is display: none due to the user having switched to a different
+    // page. This code implements a cascading queue to redraw the bad charts
+    // one-by-one once they are active again.
+    // We use a cascading queue becuase we don't want to block the UI / make the
+    // ripples very slow while everything synchronously redraws.
+    const redrawQueue = [];
+    const cascadingRedraw = _.throttle(function internalRedraw() {
+      if (redrawQueue.length > 0) {
+        const x = redrawQueue.shift();
+        if (x.active) {
+          x.redraw();
+          x._maybeRenderedInBadState = false;
+        }
+        window.setTimeout(internalRedraw, 32);
+      }
+    }, 100);
+
     /** @enum {string} */ const X_TYPE = {
       STEP: 'step',
       RELATIVE: 'relative',
@@ -179,6 +202,11 @@ limitations under the License.
         tooltipSortingMethod: String,
         ignoreYOutliers: Boolean,
         showDownloadLinks: Boolean,
+
+        active: {
+          type: Boolean,
+          observer: '_fixBadStateWhenActive',
+        },
 
         requestManager: Object,
 
@@ -237,6 +265,12 @@ limitations under the License.
         _loadedRuns: {
           type: Object,
           value: () => ({}),
+        },
+
+        _maybeRenderedInBadState: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
         },
       },
       observers: [
@@ -317,7 +351,13 @@ limitations under the License.
                 this._resetDomainOnNextLoad = false;
                 chart.resetDomain();
               }
-              chart.redraw();
+              if (!this.active) {
+                // If we reached a point where we should render while the page
+                // is not active, we've gotten into a bad state.
+                this._maybeRenderedInBadState = true;
+              } else {
+                this.redraw();
+              }
             }
           });
           return Promise.all(runPromises).then(finish);
@@ -347,6 +387,17 @@ limitations under the License.
 
       _computeLineChartStyle(loading) {
         return loading ? 'opacity: 0.3;' : '';
+      },
+
+      _fixBadStateWhenActive() {
+        // When the chart enters a potentially bad state (because it should
+        // redraw, but the page is not currently active), we set the
+        // _maybeRenderedInBadState flag. Whenever the chart becomes active,
+        // we test this and schedule a redraw of the bad charts.
+        if (this.active && this._maybeRenderedInBadState) {
+          redrawQueue.push(this);
+          cascadingRedraw();
+        }
       },
 
       _resetDomain() {
