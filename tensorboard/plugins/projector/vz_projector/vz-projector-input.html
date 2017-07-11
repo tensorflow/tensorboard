@@ -49,9 +49,9 @@ limitations under the License.
 </style>
 
 <paper-input label="[[label]]">
-  <div class="slash" prefix>/</div>
-  <div class="slash" suffix>/</div>
-  <div suffix>
+  <div class="slash" prefix slot="prefix">/</div>
+  <div class="slash" suffix slot="suffix">/</div>
+  <div suffix slot="suffix">
     <paper-button id="regex" toggles class="toggle">.*</paper-button>
   </div>
 </paper-input>
