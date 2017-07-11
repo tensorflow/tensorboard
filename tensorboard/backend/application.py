@@ -143,8 +143,9 @@ class TensorBoardWSGI(object):
     self._plugins = plugins
 
     self.data_applications = {
-        # TODO(chizeng): Delete this RPC once we have skylark rules that obviate
-        # the need for the frontend to determine which plugins are active.
+        # TODO(@chihuahua): Delete this RPC once we have skylark rules that
+        # obviate the need for the frontend to determine which plugins are
+        # active.
         DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
     }
 
@@ -308,7 +309,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
       reload_multiplexer(multiplexer, path_to_run)
       time.sleep(load_interval)
 
-  thread = threading.Thread(target=_reload_forever)
+  thread = threading.Thread(target=_reload_forever, name='Reloader')
   thread.daemon = True
   thread.start()
   return thread
@@ -375,7 +376,7 @@ def create_sqlite_connection_provider(db_uri):
     raise ValueError('Memory mode SQLite not supported: ' + db_uri)
   path = os.path.expanduser(uri.path)
   params = _get_connect_params(uri.query)
-  # TODO(jart): Add thread-local pooling.
+  # TODO(@jart): Add thread-local pooling.
   return lambda: sqlite3.connect(path, **params)
 
 

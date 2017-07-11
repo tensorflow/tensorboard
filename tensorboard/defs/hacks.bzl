@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO(jart): Merge this file into defs.bzl once that file is sync unified.
+# TODO(@jart): Merge this file into defs.bzl once that file is sync unified.
 
 def tensorboard_typescript_bundle(
     name,

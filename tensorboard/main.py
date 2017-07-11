@@ -29,18 +29,19 @@ import sys
 import tensorflow as tf
 from werkzeug import serving
 
+from tensorboard import util
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
-from tensorboard.plugins.distributions import distributions_plugin
-from tensorboard.plugins.graphs import graphs_plugin
-from tensorboard.plugins.histograms import histograms_plugin
-from tensorboard.plugins.images import images_plugin
+from tensorboard.plugins.distribution import distributions_plugin
+from tensorboard.plugins.graph import graphs_plugin
+from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
-from tensorboard.plugins.scalars import scalars_plugin
+from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 
 # TensorBoard flags
@@ -157,11 +158,6 @@ def make_simple_server(tb_app, host, port):
     socket.error: If a server could not be constructed with the host and port
       specified. Also logs an error message.
   """
-  # Mute the werkzeug logging.
-  werkzeug_logger = base_logging.getLogger('werkzeug')
-  werkzeug_logger.setLevel(base_logging.WARNING)
-  werkzeug_logger.addHandler(base_logging.StreamHandler())
-
   try:
     if host:
       # The user gave us an explicit host
@@ -206,18 +202,20 @@ def run_simple_server(tb_app):
     server, url = make_simple_server(tb_app, FLAGS.host, FLAGS.port)
   except socket.error:
     # An error message was already logged
-    # TODO(jart): Remove log and throw anti-pattern.
+    # TODO(@jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  msg = 'Starting TensorBoard %s at %s' % (version.VERSION, url)
-  print(msg)
-  tf.logging.info(msg)
-  print('(Press CTRL+C to quit)')
-  sys.stdout.flush()
-
-  server.serve_forever()
+  logger = base_logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
+  logger.setLevel(base_logging.INFO)
+  logger.info('TensorBoard %s at %s (Press CTRL+C to quit) ',
+              version.VERSION, url)
+  try:
+    server.serve_forever()
+  finally:
+    logger.info('')
 
 
 def main(unused_argv=None):
+  util.setup_logging()
   if FLAGS.inspect:
     tf.logging.info('Not bringing up TensorBoard, but inspecting event files.')
     event_file = os.path.expanduser(FLAGS.event_file)

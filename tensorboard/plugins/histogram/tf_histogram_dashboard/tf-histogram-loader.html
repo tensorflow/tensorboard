@@ -1,0 +1,161 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../vz-histogram-timeseries/vz-histogram-timeseries.html">
+
+<!--
+  tf-histogram-loader loads an individual histogram from the TensorBoard
+  backend, and renders it into a vz-histogram-timeseries.
+-->
+<dom-module id="tf-histogram-loader">
+  <template>
+    <tf-card-heading title="[[tag]]" color="[[_runColor]]">
+      [[run]]
+    </tf-card-heading>
+    <!--
+      The main histogram that we render. Data is set directly with
+      `setSeriesData`, not with a bound property.
+    -->
+    <vz-histogram-timeseries
+      time-property="[[timeProperty]]"
+      mode="[[histogramMode]]"
+      color-scale="[[_colorScaleFunction]]"
+    ></vz-histogram-timeseries>
+    <div style="display: flex; flex-direction: row;">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+    </div>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 330px;
+        height: 235px;
+        margin-right: 10px;
+        margin-bottom: 15px;
+      }
+      :host[_expanded] {
+        width: 700px;
+        height: 500px;
+      }
+
+      vz-histogram-timeseries {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+      }
+
+      paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        pointer-events: auto;  /* TODO(@wchargin): why? */
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+    </style>
+  </template>
+  <script src="histogramCore.js"></script>
+  <script>
+    "use strict";
+
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {getRouter} from "../tf-backend/router.js";
+    import {runsColorScale} from "../tf-color-scale/colorScale.js";
+    import {backendToVz} from "./histogramCore.js";
+
+    Polymer({
+      is: "tf-histogram-loader",
+      properties: {
+        run: String,
+        tag: String,
+        timeProperty: String,
+        histogramMode: String,
+
+        /** @type {Function} */
+        _colorScaleFunction: {
+          type: Object,  // function: string => string
+          value: () => runsColorScale,
+        },
+        _runColor: {
+          type: String,
+          computed: '_computeRunColor(run)',
+        },
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+
+        requestManager: Object,
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+      },
+
+      observers: ['reload(run, tag)'],
+
+      _computeRunColor(run) {
+        return this._colorScaleFunction(run);
+      },
+
+      attached() {
+        this._attached = true;
+        this.reload();
+      },
+      reload() {
+        if (!this._attached) {
+          return;
+        }
+        this._canceller.cancelAll();
+        const router = getRouter();
+        const url = router.pluginRunTagRoute("histograms", "/histograms")(
+          this.tag, this.run);
+        const updateData = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const backendData = result.value;
+          const d3Data = backendToVz(backendData);
+          this.$$('vz-histogram-timeseries').setSeriesData(this.run, d3Data);
+        });
+        this.requestManager.request(url).then(updateData);
+      },
+      redraw() {
+        this.$$('vz-histogram-timeseries').redraw();
+      },
+
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+    });
+  </script>
+</dom-module>

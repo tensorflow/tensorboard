@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {getFakeHash, setFakeHash, TABS, useHash} from '../tf-globals/globals.js';
+import {getFakeHash, setFakeHash, useHash} from '../tf-globals/globals.js';
 
 
 /* tslint:disable:no-namespace variable-name */
@@ -311,8 +311,8 @@ function _componentToDict(component: string): StringDict {
   const tokens = component.split('&');
   tokens.forEach((token) => {
     const kv = token.split('=');
-    // Special backwards compatibility for URI components like #events
-    if (kv.length === 1 && _.contains(TABS, kv[0])) {
+    // Special backwards compatibility for URI components like #scalars.
+    if (kv.length === 1) {
       items[TAB] = kv[0];
     } else if (kv.length === 2) {
       items[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);

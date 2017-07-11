@@ -102,6 +102,6 @@ function isDigit(c: string): boolean {
 }
 
 function isBreak(c: string): boolean {
-  // TODO(jart): Remove underscore when people stop using it like a slash.
+  // TODO(@jart): Remove underscore when people stop using it like a slash.
   return c === '/' || c === '_' || isDigit(c);
 }

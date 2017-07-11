@@ -30,7 +30,7 @@ REQUIRED_PACKAGES = [
     'protobuf >= 3.2.0',
     'werkzeug >= 0.11.10',
     'html5lib == 0.9999999',  # identical to 1.0b8
-    'markdown == 2.2.0',
+    'markdown >= 2.6.8',
     'bleach == 1.5.0',
     'tensorflow >= 1.2.0',
 ]

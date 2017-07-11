@@ -1,0 +1,418 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+
+<!--
+  A component that fetches scalar data from the TensorBoard server and
+  renders it into a vz-line-chart.
+-->
+<dom-module id="tf-scalar-chart">
+  <template>
+    <tf-card-heading title="[[tag]]"></tf-card-heading>
+    <div id="chart-and-spinner-container">
+      <vz-line-chart
+        x-type="[[xType]]"
+        color-scale="[[_runsColorScale]]"
+        smoothing-enabled="[[smoothingEnabled]]"
+        smoothing-weight="[[smoothingWeight]]"
+        tooltip-sorting-method="[[tooltipSortingMethod]]"
+        ignore-y-outliers="[[ignoreYOutliers]]"
+        style="[[_computeLineChartStyle(_loading)]]"
+      ></vz-line-chart>
+      <template is="dom-if" if="[[_loading]]">
+        <div id="loading-spinner-container">
+          <paper-spinner-lite active></paper-spinner-lite>
+        </div>
+      </template>
+    </div>
+    <div style="display: flex; flex-direction: row;">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+      <paper-icon-button
+        selected$="[[_logScaleActive]]"
+        icon="line-weight"
+        on-tap="_toggleLogScale"
+        title="Toggle y-axis log scale"
+      ></paper-icon-button>
+      <paper-icon-button
+        icon="settings-overscan"
+        on-tap="_resetDomain"
+        title="Fit domain to data"
+      ></paper-icon-button>
+      <span style="flex-grow: 1"></span>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <div class="download-links">
+          <paper-dropdown-menu
+            no-label-float="true"
+            label="run to download"
+            selected-item-label="{{_runToDownload}}"
+          >
+            <paper-menu class="dropdown-content">
+              <template is="dom-repeat" items="[[runs]]">
+                <paper-item no-label-float=true>[[item]]</paper-item>
+              </template>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <a
+            download="run_[[_runToDownload]]-tag-[[tag]].csv"
+            href="[[_csvUrl(_runToDownload)]]"
+          >CSV</a> <a
+            download="run_[[_runToDownload]]-tag-[[tag]].json"
+            href="[[_jsonUrl(_runToDownload)]]"
+          >JSON</a>
+          </div>
+        </div>
+      </template>
+    </div>
+    <style>
+      :host {
+        height: 235px;
+        width: 330px;
+        margin: 5px;
+        display: flex;
+        flex-direction: column;
+      }
+      :host[_expanded] {
+        height: 400px;
+        width: 100%;
+      }
+
+      :host[_maybe-rendered-in-bad-state] vz-line-chart {
+        visibility: hidden;
+      };
+
+      #chart-and-spinner-container {
+        display: flex;
+        flex-grow: 1;
+        position: relative;
+      }
+      #loading-spinner-container {
+        align-items: center;
+        bottom: 0;
+        display: flex;
+        display: flex;
+        justify-content: center;
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      vz-line-chart {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+      }
+      paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        pointer-events: auto;  /* TODO(@wchargin): why? */
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+
+      .download-links {
+        display: flex;
+        height: 32px;
+      }
+      .download-links a {
+        font-size: 10px;
+        align-self: center;
+        margin: 2px;
+      }
+      .download-links paper-dropdown-menu {
+        width: 100px;
+        --paper-input-container-label: {
+          font-size: 10px;
+        }
+        --paper-input-container-input: {
+          font-size: 10px;
+        }
+      }
+    </style>
+  </template>
+  <script>
+    import {Canceller} from '../tf-backend/canceller.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {runsColorScale} from '../tf-color-scale/colorScale.js';
+
+    // The chart can sometimes get in a bad state, when it redraws while
+    // it is display: none due to the user having switched to a different
+    // page. This code implements a cascading queue to redraw the bad charts
+    // one-by-one once they are active again.
+    // We use a cascading queue becuase we don't want to block the UI / make the
+    // ripples very slow while everything synchronously redraws.
+    const redrawQueue = [];
+    const cascadingRedraw = _.throttle(function internalRedraw() {
+      if (redrawQueue.length > 0) {
+        const x = redrawQueue.shift();
+        if (x.active) {
+          x.redraw();
+          x._maybeRenderedInBadState = false;
+        }
+        window.setTimeout(internalRedraw, 32);
+      }
+    }, 100);
+
+    /** @enum {string} */ const X_TYPE = {
+      STEP: 'step',
+      RELATIVE: 'relative',
+      WALL: 'wall',
+    };
+
+    Polymer({
+      is: 'tf-scalar-chart',
+      properties: {
+        runs: Array,  // of String
+        tag: String,
+
+        /** @type {X_TYPE} */ xType: String,
+        smoothingEnabled: Boolean,
+        smoothingWeight: Number,
+        tooltipSortingMethod: String,
+        ignoreYOutliers: Boolean,
+        showDownloadLinks: Boolean,
+
+        active: {
+          type: Boolean,
+          observer: '_fixBadStateWhenActive',
+        },
+
+        requestManager: Object,
+
+        _logScaleActive: {
+          type: Boolean,
+          observer: '_logScaleChanged',
+        },
+
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+
+        _runsColorScale: {
+          type: Object,
+          value: () => ({scale: runsColorScale}),
+        },
+
+        _loading: {
+          type: Boolean,
+          value: false,
+        },
+
+        _resetDomainOnNextLoad: {
+          type: Boolean,
+          value: true,
+        },
+
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+
+        // Usage: this._scalarUrl('tag', 'run') yields the URL to the
+        // scalar data for the appropriate run and tag.
+        _scalarUrl: {
+          type: Function,
+          value: () => getRouter().pluginRunTagRoute('scalars', '/scalars'),
+        },
+
+        /*
+         * A map such that `_loadedRuns[run] === true` iff we've loaded
+         * `run` already, or are in the process of loading it. This
+         * exists so that when there are 100 runs selected and the user
+         * selects an additional run, we only fetch 1 more run instead
+         * of 101.
+         *
+         * `reload` clears this cache.
+         *
+         * Equivalently, this is the set of runs for which, after
+         * callbacks in-flight resolve, the most recent call to
+         * `setSeriesData(run, data)` on the chart object (a) exists
+         * and (b) occurred after all reloads so far.
+         */
+        _loadedRuns: {
+          type: Object,
+          value: () => ({}),
+        },
+
+        _maybeRenderedInBadState: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
+      },
+      observers: [
+        '_tagChanged(_attached, tag)',
+        '_runsChanged(_attached, runs.*)'
+      ],
+      created() {
+        this._loadData = _.debounce(
+          this._loadData, 100, {leading: true, trailing: true});
+      },
+      attached() {
+        this._attached = true;
+        this._changeSeries();
+      },
+      reload() {
+        this._loadedRuns = {};
+        this._loadData();
+      },
+      _tagChanged(attached, tagUpdateRecord) {
+        this._loadedRuns = {};
+        this._resetDomainOnNextLoad = true;
+        this._loadData();
+      },
+      _runsChanged(attached, runsUpdateRecord) {
+        if (!attached) {
+          return;
+        }
+        this.$$('vz-line-chart').setVisibleSeries(this.runs);
+        this._loadData();
+      },
+      _loadData() {
+        this.async(() => {
+          if (!this._attached) {
+            return;
+          }
+          this._loading = true;
+          //
+          // Before updating, cancel any network-pending updates, to
+          // prevent race conditions where older data stomps newer data.
+          this._canceller.cancelAll();
+          const tag = this.tag;
+          const runPromises = this.runs.map(run => {
+            if (this._loadedRuns[run]) {
+              return Promise.resolve();
+            }
+            const url = this._scalarUrl(tag, run);
+            const updateSeries = this._canceller.cancellable(result => {
+              if (result.cancelled) {
+                return;
+              }
+              const data = result.value;
+              const formattedData = data.map(datum => ({
+                wall_time: new Date(datum[0] * 1000),
+                step: datum[1],
+                scalar: datum[2],
+              }));
+              if (tag === this.tag) {
+                // Only update the runs cache for the current tag. If we
+                // load data for Tag A, then the tag changes to Tag B
+                // while requests are still in flight, these requests
+                // should not poison the cache.
+                this._loadedRuns[run] = true;
+              }
+              this.$$('vz-line-chart').setSeriesData(run, formattedData);
+            });
+            return this.requestManager.request(url).then(updateSeries);
+          });
+          const finish = this._canceller.cancellable(result => {
+            if (!result.cancelled) {
+              this._loading = false;
+              const chart = this.$$('vz-line-chart');
+              if (runPromises.length > 0 && this._resetDomainOnNextLoad) {
+                // (Don't unset _resetDomainOnNextLoad when we didn't
+                // load any runs: this has the effect that if all our
+                // runs are deselected, then we toggle them all on, we
+                // properly size the domain once all the data is loaded
+                // instead of just when we're first rendered.)
+                this._resetDomainOnNextLoad = false;
+                chart.resetDomain();
+              }
+              if (!this.active) {
+                // If we reached a point where we should render while the page
+                // is not active, we've gotten into a bad state.
+                this._maybeRenderedInBadState = true;
+              } else {
+                this.redraw();
+              }
+            }
+          });
+          return Promise.all(runPromises).then(finish);
+        });
+      },
+      _changeSeries() {
+        this.$$('vz-line-chart').setVisibleSeries(this.runs);
+        this._loadData();
+      },
+      redraw() {
+        this.$$('vz-line-chart').redraw();
+      },
+
+      _toggleLogScale() {
+        this.set('_logScaleActive', !this._logScaleActive);
+      },
+      _logScaleChanged(logScaleActive) {
+        var chart = this.$$('vz-line-chart');
+        chart.yScaleType = logScaleActive ? 'log' : 'linear';
+        this.redraw();
+      },
+
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+
+      _computeLineChartStyle(loading) {
+        return loading ? 'opacity: 0.3;' : '';
+      },
+
+      _fixBadStateWhenActive() {
+        // When the chart enters a potentially bad state (because it should
+        // redraw, but the page is not currently active), we set the
+        // _maybeRenderedInBadState flag. Whenever the chart becomes active,
+        // we test this and schedule a redraw of the bad charts.
+        if (this.active && this._maybeRenderedInBadState) {
+          redrawQueue.push(this);
+          cascadingRedraw();
+        }
+      },
+
+      _resetDomain() {
+        const chart = this.$$('vz-line-chart');
+        if (chart) {
+          chart.resetDomain();
+        }
+      },
+
+      _csvUrl(run) {
+        return this._scalarUrl(this.tag, run) + '&format=csv';
+      },
+      _jsonUrl(run) {
+        return this._scalarUrl(this.tag, run);
+      },
+    });
+  </script>
+</dom-module>

@@ -22,7 +22,7 @@ export type HeapItem<T> = {
 /**
  * Min-heap data structure. Provides O(1) for peek, returning the smallest key.
  */
-// TODO(jart): Rename to Heap and use Comparator.
+// TODO(@jart): Rename to Heap and use Comparator.
 export class MinHeap<T> {
   private arr: HeapItem<T>[] = [];
 

@@ -54,23 +54,61 @@ limitations under the License.
       </paper-checkbox>
     </paper-dialog>
     <paper-header-panel>
-      <paper-toolbar id="toolbar">
-        <div id="toolbar-content">
+      <paper-toolbar id="toolbar" slot="header">
+        <div id="toolbar-content" slot="top">
           <div class="toolbar-title">TensorBoard</div>
-          <paper-tabs
-            selected="{{_activeDashboardIndex}}"
-            noink
-            id="tabs"
-          >
-            <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
-              <template
-                is="dom-if"
-                if="[[_isDashboardEnabled(disabledDashboards, dashboard)]]"
-              >
-                <paper-tab>[[dashboard]]</paper-tab>
+          <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
+            <span class="toolbar-message">
+              Loading active dashboards&hellip;
+            </span>
+          </template>
+          <template is="dom-if" if="[[_activeDashboardsLoaded]]">
+            <paper-tabs
+              selected="{{_selectedDashboard}}"
+              attr-for-selected="data-dashboard"
+              noink
+              id="tabs"
+            >
+              <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+                <template
+                  is="dom-if"
+                  if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboard)]]"
+                >
+                  <paper-tab data-dashboard$="[[dashboard]]">[[dashboard]]</paper-tab>
+                </template>
               </template>
+            </paper-tabs>
+            <template
+              is="dom-if"
+              if="[[_inactiveDashboardsExist(_dashboards, disabledDashboards, _activeDashboards)]]"
+            >
+              <paper-dropdown-menu
+                label="Inactive dashboards"
+                no-label-float
+                noink
+                style="margin-left: 12px"
+              >
+                <paper-menu
+                  id="inactive-dashboards-menu"
+                  class="dropdown-content"
+                  selected="{{_selectedDashboard}}"
+                  attr-for-selected="data-dashboard"
+                >
+                  <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+                    <template
+                      is="dom-if"
+                      if="[[_isDashboardInactive(disabledDashboards, _activeDashboards, dashboard)]]"
+                      restamp
+                    >
+                      <paper-item
+                        data-dashboard$="[[dashboard]]"
+                      >[[dashboard]]</paper-item>
+                    </template>
+                  </template>
+                </paper-menu>
+              </paper-dropdown-menu>
             </template>
-          </paper-tabs>
+          </template>
           <div class="global-actions">
             <paper-icon-button
               icon="refresh"
@@ -92,6 +130,58 @@ limitations under the License.
 
       <div id="content" class="fit">
         <content id="injected-overview"></content>
+        <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
+          <div class="warning-message">
+            <h3>Failed to load the set of active dashboards.</h3>
+            <p>
+            This can occur if the TensorBoard backend is no longer
+            running. Perhaps this page is cached?
+            <p>
+            If you think that you’ve fixed the problem, click the reload
+            button in the top-right.
+            <template is="dom-if" if="[[autoReloadEnabled]]">
+            We’ll try to reload every [[autoReloadIntervalSecs]]&nbsp;seconds as well.
+            </template>
+            <p><i>Last reload: [[_lastReloadTime]]</i>
+            <template is="dom-if" if="[[_logdir]]">
+              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            </template>
+          </div>
+        </template>
+        <template is="dom-if" if="[[_showNoDashboardsMessage]]">
+          <div class="warning-message">
+            <h3>No dashboards are active for the current data set.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>You haven’t written any data to your event files.
+              <li>TensorBoard can’t find your event files.
+            </ul>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+            <p><i>Last reload: [[_lastReloadTime]]</i>
+            <template is="dom-if" if="[[_logdir]]">
+              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            </template>
+          </div>
+        </template>
+        <template is="dom-if" if="[[_showNoSuchDashboardMessage]]">
+          <div class="warning-message">
+            <h3>There’s no dashboard by the name of “<tt>[[_selectedDashboard]]</tt>.”</h3>
+            <template is="dom-if" if="[[_activeDashboardsLoaded]]">
+              <p>You can select a dashboard from the list above.
+            </template>
+            <p><i>Last reload: [[_lastReloadTime]]</i>
+            <template is="dom-if" if="[[_logdir]]">
+              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            </template>
+          </div>
+        </template>
         <template
           is="dom-repeat"
           id="dashboards-template"
@@ -101,7 +191,7 @@ limitations under the License.
           <div
             class="dashboard-container"
             data-dashboard$="[[dashboard]]"
-            style="display: [[_displayStyle(_activeDashboard, dashboard)]]"
+            style="display: [[_displayStyle(_selectedDashboard, dashboard)]]"
           ><!-- Dashboards will be injected here dynamically. --></div>
         </template>
       </div>
@@ -125,8 +215,14 @@ limitations under the License.
         text-rendering: optimizeLegibility;
         letter-spacing: -0.025em;
         font-weight: 500;
-        flex-grow: 2;
+        flex-grow: 1;
         display: var(--tb-toolbar-title-display, block);
+      }
+
+      .toolbar-message {
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        font-weight: 500;
       }
 
       #tabs {
@@ -139,8 +235,37 @@ limitations under the License.
         --paper-tabs-selection-bar-color: white;
       }
 
+      paper-dropdown-menu {
+        --paper-input-container-color: rgba(255, 255, 255, 0.8);
+        --paper-input-container-focus-color: white;
+        --paper-input-container-input-color: white;
+        --paper-dropdown-menu-icon: {
+          color: white;
+        }
+        --paper-input-container-input: {
+          -webkit-font-smoothing: antialiased;
+          font-size: 14px;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+        --paper-input-container-label: {
+          -webkit-font-smoothing: antialiased;
+          font-size: 14px;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+      }
+
+      #inactive-dashboards-menu {
+        --paper-menu-background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        --paper-menu-color: white;
+        --paper-menu: {
+          text-transform: uppercase;
+        }
+      }
+
       .global-actions {
-        flex-grow: 2;
+        flex-grow: 1;
         display: inline-flex; /* Ensure that icons stay aligned */
         justify-content: flex-end;
         text-align: right;
@@ -168,6 +293,11 @@ limitations under the License.
         height: 100%;
       }
 
+      .warning-message {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+
       [disabled] {
         opacity: 0.2;
         color: white;
@@ -177,11 +307,20 @@ limitations under the License.
   <script src="autoReloadBehavior.js"></script>
   <script>
     import {AutoReloadBehavior} from "./autoReloadBehavior.js";
-    import {TABS, setUseHash} from "../tf-globals/globals.js";
+    import {setUseHash} from "../tf-globals/globals.js";
     import {getString, setString, TAB} from "../tf-storage/storage.js";
-    import {setRouter, createRouter} from "../tf-backend/router.js";
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {RequestManager} from "../tf-backend/requestManager.js";
+    import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
     import {fetchRuns} from "../tf-backend/runsStore.js";
 
+    // The names of TensorBoard tabs.
+    const TABS = [
+      'scalars', 'images', 'audio', 'graphs', 'distributions', 'histograms',
+      'projector', 'text'
+    ];
+
+    // A map from dashboard name to Polymer component name.
     const COMPONENTS = {
       'scalars': 'tf-scalar-dashboard',
       'images': 'tf-image-dashboard',
@@ -189,7 +328,7 @@ limitations under the License.
       'graphs': 'tf-graph-dashboard',
       'distributions': 'tf-distribution-dashboard',
       'histograms': 'tf-histogram-dashboard',
-      'embeddings': 'vz-projector-dashboard',
+      'projector': 'vz-projector-dashboard',
       'text': 'tf-text-dashboard',
       'profile': 'tf-profile-dashboard',
     };
@@ -197,6 +336,12 @@ limitations under the License.
       throw new Error(
         `Bad set of components: ${Object.keys(COMPONENTS)} vs. ${TABS}`);
     }
+
+    /** @enum {string} */ const ActiveDashboardsLoadState = {
+      NOT_LOADED: 'NOT_LOADED',
+      LOADED: 'LOADED',
+      FAILED: 'FAILED',
+    };
 
     Polymer({
       is: "tf-tensorboard",
@@ -248,7 +393,11 @@ limitations under the License.
           },
         },
 
-        /** @type {Array<string>} */
+        /**
+         * The set of all possible dashboard names.
+         *
+         * @type {Array<string>!}
+         */
         _dashboards: {
           type: Array,
           readOnly: true,
@@ -256,15 +405,58 @@ limitations under the License.
         },
 
         /**
-         * The index into `dashboards` of the currently active
-         * dashboard. (Upward-bound from the `paper-tabs` component.)
+         * The set of currently active dashboards.
+         * `null` if not yet fetched.
+         *
+         * TODO(@wchargin): Consider templating in an initial value for
+         * this property.
+         *
+         * @type {Array<string>?}
          */
-        _activeDashboardIndex: Number,
-        _activeDashboard: {
+        _activeDashboards: {
+          type: Array,
+          value: null,
+        },
+
+        /** @type {ActiveDashboardsLoadState} */
+        _activeDashboardsLoadState: {
           type: String,
-          computed: '_getDashboardFromIndex(_dashboards, _activeDashboardIndex)',
-          observer: '_updateCurrentDashboard',
-          notify: true,
+          value: ActiveDashboardsLoadState.NOT_LOADED,
+        },
+        _activeDashboardsNotLoaded: {
+          type: Boolean,
+          computed:
+            '_computeActiveDashboardsNotLoaded(_activeDashboardsLoadState)',
+        },
+        _activeDashboardsLoaded: {
+          type: Boolean,
+          computed:
+            '_computeActiveDashboardsLoaded(_activeDashboardsLoadState)',
+        },
+        _activeDashboardsFailedToLoad: {
+          type: Boolean,
+          computed:
+            '_computeActiveDashboardsFailedToLoad(_activeDashboardsLoadState)',
+        },
+        _showNoDashboardsMessage: {
+          type: Boolean,
+          computed:
+            '_computeShowNoDashboardsMessage(_activeDashboardsLoaded, _activeDashboards, _selectedDashboard)',
+        },
+        _showNoSuchDashboardMessage: {
+          type: Boolean,
+          computed:
+            '_computeShowNoSuchDashboardMessage(_dashboards, _selectedDashboard)',
+        },
+
+        /**
+         * The name of the currently selected dashboard, or `null` if no
+         * dashboard is selected. A `null` value here is represented by
+         * an empty string in the hash, and vice versa.
+         */
+        _selectedDashboard: {
+          type: String,
+          value: null,
         },
 
         /*
@@ -279,15 +471,92 @@ limitations under the License.
 
         _isReloadDisabled: {
           type: Boolean,
-          computed: '_computeIsReloadDisabled(_debuggerDataEnabled, _activePlugin)',
+          computed: '_computeIsReloadDisabled(_debuggerDataEnabled, _selectedDashboard)',
+        },
+
+        _lastReloadTime: {
+          type: String,
+          value: "not yet loaded",
+        },
+
+        _logdir: {
+          type: String,
+          value: null,
+        },
+
+        _requestManager: {
+          type: Object,
+          value: () => new RequestManager(),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
         },
       },
       observers: [
-        '_ensureActiveDashboardStamped(_dashboardContainersStamped, _activeDashboard)',
+        '_updateSelectedDashboard(_selectedDashboard, _activeDashboards)',
+        '_ensureSelectedDashboardStamped(' +
+          '_dashboardContainersStamped, _activeDashboards, _selectedDashboard)',
       ],
 
-      _isDashboardEnabled(disabledDashboards, dashboard) {
-        return (disabledDashboards || '').split(',').indexOf(dashboard) < 0;
+      _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
+      },
+
+      /**
+       * @param {string?} disabledDashboards comma-separated
+       * @param {Array<string>?} activeDashboards if null, nothing is active
+       * @param {string} dashboard
+       * @return {boolean}
+       */
+      _isDashboardActive(disabledDashboards, activeDashboards, dashboard) {
+        if ((disabledDashboards || '').split(',').indexOf(dashboard) >= 0) {
+          // Explicitly disabled.
+          return false;
+        }
+        if (!(activeDashboards || []).includes(dashboard)) {
+          // Inactive.
+          return false;
+        }
+        return true;
+      },
+
+      /**
+       * Determine whether a dashboard is enabled but not active.
+       *
+       * @param {string?} disabledDashboards comma-separated
+       * @param {Array<string>?} activeDashboards if null, nothing is active
+       * @param {string} dashboard
+       * @return {boolean}
+       */
+      _isDashboardInactive(disabledDashboards, activeDashboards, dashboard) {
+        if ((disabledDashboards || '').split(',').indexOf(dashboard) >= 0) {
+          // Disabled dashboards don't appear at all; they're not just
+          // inactive.
+          return false;
+        }
+        if (!(activeDashboards || []).includes(dashboard)) {
+          // Inactive.
+          return true;
+        }
+        return false;
+      },
+
+      _inactiveDashboardsExist(dashboards, disabledDashboards, activeDashboards) {
+        if (!activeDashboards) {
+          // Not loaded yet. Show nothing.
+          return false;
+        }
+        const workingSet = new Set();
+        dashboards.forEach(d => {
+          workingSet.add(d);
+        });
+        (disabledDashboards || '').split(',').forEach(d => {
+          workingSet.delete(d);
+        });
+        activeDashboards.forEach(d => {
+          workingSet.delete(d);
+        });
+        return workingSet.size > 0;
       },
 
       _getDashboardFromIndex(dashboards, index) {
@@ -295,91 +564,168 @@ limitations under the License.
       },
 
       _displayStyle(currentDashboard, candidateDashboard) {
-         // Display only the active dashboard.
+         // Display only the selected dashboard.
         return currentDashboard === candidateDashboard ? 'inherit' : 'none';
       },
 
-      _updateCurrentDashboard(currentDashboard) {
-        setString(TAB, currentDashboard, /*useLocalStorage=*/false);
+      /**
+       * If no dashboard is selected but dashboards are available,
+       * select the first active dashboard. In any case, synchronize the
+       * state to the hash.
+       */
+      _updateSelectedDashboard(selectedDashboard, activeDashboards) {
+        if (activeDashboards && selectedDashboard == null) {
+          selectedDashboard = activeDashboards[0] || null;
+          if (selectedDashboard != null) {
+            this._selectedDashboard = selectedDashboard;
+            return;  // we just triggered that handler; don't need another
+          }
+        }
+        setString(TAB, selectedDashboard || '', /*useLocalStorage=*/false);
+      },
+
+      _updateSelectedDashboardFromHash() {
+        const dashboardName = getString(TAB, /*useLocalStorage=*/false);
+        this.set('_selectedDashboard', dashboardName || null);
       },
 
       /**
-       * Make sure that the currently active dashboard actually has an
-       * active Polymer component; if it doesn't, create one.
+       * Make sure that the currently selected dashboard actually has a
+       * Polymer component; if it doesn't, create one.
        *
        * We have to stamp each dashboard before we can interact with it:
        * for instance, to ask it to reload. Conversely, we can't stamp a
        * dashboard until its _container_ is itself stamped. (Containers
        * are stamped declaratively by a `<dom-repeat>` in the HTML
        * template.)
+       *
+       * We also wait for the set of active dashboards to be loaded
+       * before we stamp anything. This prevents us from stamping a
+       * dashboard that's not actually enabled (e.g., if the user
+       * navigates to `/#text` when the text plugin is disabled).
+       *
+       * If the currently selected dashboard is not a real dashboard,
+       * this does nothing.
        */
-      _ensureActiveDashboardStamped(containersStamped, dashboard) {
-        if (!containersStamped) {
+      _ensureSelectedDashboardStamped(containersStamped, activeDashboards, dashboard) {
+        if (!containersStamped || !activeDashboards || !dashboard) {
           return;
         }
         const container = this.$$(
           `.dashboard-container[data-dashboard=${dashboard}]`);
+        if (!container) {
+          // This dashboard doesn't exist. Nothing to do here.
+          return;
+        }
         if (container.childNodes.length === 0) {
           const component = document.createElement(COMPONENTS[dashboard]);
-          component.id = 'dashboard';  // used in `_activeDashboardComponent`
+          component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         };
       },
 
-      _computeIsReloadDisabled(debuggerDataEnabled, mode) {
+      _computeIsReloadDisabled(debuggerDataEnabled, selectedDashboard) {
+        if (selectedDashboard == null) {
+          // No dashboards available. Let the user refresh to try to
+          // load more data.
+          return false;
+        }
         // TODO(@wchargin): Refactor to remove these explicit plugin names.
-        const disabledForModes = ['graphs', 'embeddings'];
-        return !debuggerDataEnabled && disabledForModes.includes(mode);
+        const disabledForModes = ['graphs', 'projector'];
+        return !debuggerDataEnabled && disabledForModes.includes(selectedDashboard);
       },
 
       /**
-       * Get the Polymer component corresponding to the currently active
-       * dashboard. For instance, the result might be an instance of
-       * `<tf-scalar-dashboard>`.
+       * Get the Polymer component corresponding to the currently
+       * selected dashboard. For instance, the result might be an
+       * instance of `<tf-scalar-dashboard>`.
+       *
+       * If the dashboard does not exist (e.g., the set of active
+       * dashboards has not loaded or has failed to load, or the user
+       * has selected a dashboard for which we have no implementation),
+       * `null` is returned.
        */
-      _activeDashboardComponent() {
+      _selectedDashboardComponent() {
         if (!this._dashboardContainersStamped) {
           throw new Error(
             'There is no "selected dashboard" before containers are stamped.');
         }
-        const activeDashboard = this._activeDashboard;
+        const selectedDashboard = this._selectedDashboard;
         var dashboard = this.$$(
-          `.dashboard-container[data-dashboard=${activeDashboard}] #dashboard`);
-        if (dashboard == null) {
-          throw new Error(
-            `Unable to find dashboard for mode: ${activeDashboard}`);
-        }
+          `.dashboard-container[data-dashboard=${selectedDashboard}] #dashboard`);
         return dashboard;
       },
 
       ready() {
         setUseHash(this.useHash);
+        this._updateSelectedDashboardFromHash();
+        window.addEventListener('hashchange', () => {
+          this._updateSelectedDashboardFromHash();
+        }, /*useCapture=*/false);
 
         // We have to wait for our dashboard-containers to be stamped
         // before we can do anything.
         const dashboardsTemplate = this.$$('#dashboards-template');
-        dashboardsTemplate.addEventListener('dom-change', () => {
+        const onDomChange = () => {
           // This will trigger an observer that kicks off everything.
           this._dashboardContainersStamped = true;
+        };
+        dashboardsTemplate.addEventListener(
+          'dom-change', onDomChange, /*useCapture=*/false);
 
-          this._updateActiveDashboardFromHash();
-          window.addEventListener('hashchange', () => {
-            this._updateActiveDashboardFromHash();
-          }, /*useCapture=*/false);
-          fetchRuns();
-        }, /*useCapture=*/false);
+        fetchRuns();
+        this._fetchLogdir();
+        this._fetchActiveDashboards();
+        this._lastReloadTime = new Date().toString();
       },
 
-      _updateActiveDashboardFromHash() {
-        const dashboardName = getString(TAB, /*useLocalStorage=*/false);
-        const index = this._dashboards.indexOf(dashboardName);
-        if (index == -1 && this._activeDashboardIndex == null) {
-          // Select the first tab as default.
-          this.set('_activeDashboardIndex', 0);
-        }
-        if (index != -1 && index != this._activeDashboardIndex) {
-          this.set('_activeDashboardIndex', index);
-        }
+      _fetchLogdir() {
+        const url = getRouter().logdir();
+        return this._requestManager.request(url).then(result => {
+          this._logdir = result.logdir;
+        });
+      },
+
+      _fetchActiveDashboards() {
+        this._canceller.cancelAll();
+        const updateActiveDashboards = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const activePlugins = result.value;
+          this._activeDashboards = this._dashboards.filter(d => activePlugins[d]);
+          this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
+        });
+        const onFailure = () => {
+          if (this._activeDashboardsLoadState
+              === ActiveDashboardsLoadState.NOT_LOADED) {
+            this._activeDashboardsLoadState = ActiveDashboardsLoadState.FAILED;
+          } else {
+            console.warn(
+              "Failed to reload the set of active plugins; using old value.");
+          }
+        };
+        return this._requestManager
+          .request(getRouter().pluginsListing())
+          .then(updateActiveDashboards, onFailure);
+      },
+
+      _computeActiveDashboardsNotLoaded(state) {
+        return state === ActiveDashboardsLoadState.NOT_LOADED;
+      },
+      _computeActiveDashboardsLoaded(state) {
+        return state === ActiveDashboardsLoadState.LOADED;
+      },
+      _computeActiveDashboardsFailedToLoad(state) {
+        return state === ActiveDashboardsLoadState.FAILED;
+      },
+      _computeShowNoDashboardsMessage(loaded, activeDashboards, selectedDashboard) {
+        return (loaded
+          && activeDashboards.length === 0
+          && selectedDashboard == null);
+      },
+      _computeShowNoSuchDashboardMessage(dashboards, selectedDashboard) {
+        return !!selectedDashboard && !dashboards.includes(selectedDashboard);
       },
 
       _updateRouter(router) {
@@ -390,9 +736,14 @@ limitations under the License.
         if (this._isReloadDisabled) {
           return;
         }
-        fetchRuns().then(() => {
-          this._activeDashboardComponent().reload();
+        this._fetchLogdir();
+        Promise.all([this._fetchActiveDashboards(), fetchRuns()]).then(() => {
+          const dashboard = this._selectedDashboardComponent();
+          if (dashboard) {
+            dashboard.reload();
+          }
         });
+        this._lastReloadTime = new Date().toString();
       },
 
       openSettings() {

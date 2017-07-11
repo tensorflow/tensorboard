@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TAB, getString, getNumber, getObject, setString, setNumber, setObject} from '../storage.js';
-import {TABS} from '../../tf-globals/globals.js';
 
 /* tslint:disable:no-namespace */
 describe('URIStorage', () => {
@@ -57,8 +56,8 @@ describe('URIStorage', () => {
   });
 
   it('set/getTab', () => {
-    setString(TAB, TABS[0], false);
-    chai.assert.equal(TABS[0], getString(TAB, false));
+    setString(TAB, 'scalars', false);
+    chai.assert.equal('scalars', getString(TAB, false));
   });
 });
 

@@ -298,7 +298,7 @@ def get_out_of_order(list_of_numbers):
     A list of tuples in which each tuple are two elements are adjacent, but the
     second element is lower than the first.
   """
-  # TODO(cassandrax): Consider changing this to only check for out-of-order
+  # TODO: Consider changing this to only check for out-of-order
   # steps within a particular tag.
   result = []
   # pylint: disable=consider-using-enumerate

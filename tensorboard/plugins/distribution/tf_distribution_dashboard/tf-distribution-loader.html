@@ -1,0 +1,173 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../vz-distribution-chart/vz-distribution-chart.html">
+
+<!--
+  tf-distribution-loader loads an individual distribution from the
+  TensorBoard backend, and renders it into a vz-distribution-chart.
+-->
+<dom-module id="tf-distribution-loader">
+  <template>
+    <tf-card-heading title="[[tag]]" color="[[_runColor]]">
+      [[run]]
+    </tf-card-heading>
+    <!--
+      The main distribution that we render. Data is set directly with
+      `setSeriesData`, not with a bound property.
+    -->
+    <vz-distribution-chart
+      x-type="[[xType]]"
+      color-scale="[[_colorScale]]"
+    ></vz-distribution-chart>
+    <div style="display: flex; flex-direction: row;">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+    </div>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 330px;
+        height: 235px;
+        margin-right: 10px;
+        margin-bottom: 15px;
+      }
+      :host[_expanded] {
+        width: 700px;
+        height: 500px;
+      }
+
+      vz-histogram-timeseries {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+      }
+
+      paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        pointer-events: auto;  /* TODO(@wchargin): why? */
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+    </style>
+  </template>
+  <script>
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {getRouter} from "../tf-backend/router.js";
+    import {runsColorScale} from "../tf-color-scale/colorScale.js";
+
+    Polymer({
+      is: "tf-distribution-loader",
+      properties: {
+        run: String,
+        tag: String,
+        xType: String,
+
+        _colorScale: {
+          type: Object,
+          value: () => ({scale: runsColorScale}),
+          readOnly: true,
+        },
+        _runColor: {
+          type: String,
+          computed: '_computeRunColor(run)',
+        },
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+
+        requestManager: Object,
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+      },
+
+      observers: ['reload(run, tag)'],
+
+      _computeRunColor(run) {
+        return this._colorScale.scale(run);
+      },
+
+      attached() {
+        this._attached = true;
+        this.reload();
+      },
+
+      /**
+       * Reload data from the backend, updating the distribution chart's
+       * series when the response resolves.
+       */
+      reload() {
+        if (!this._attached) {
+          return;
+        }
+        this._canceller.cancelAll();
+        const router = getRouter();
+        const url = router.pluginRunTagRoute("distributions", "/distributions")(
+          this.tag, this.run);
+        const updateData = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const backendData = result.value;
+          const data = backendData.map(datum => {
+            // `vz-distribution-chart` wants each datum as an array with
+            // extra `wall_time` and `step` properties.
+            const [wall_time, step, bins] = datum;
+            bins.wall_time = new Date(wall_time * 1000);
+            bins.step = step;
+            return bins;
+          });
+          this.$$('vz-distribution-chart').setVisibleSeries([this.run]);
+          this.$$('vz-distribution-chart').setSeriesData(this.run, data);
+        });
+        this.requestManager.request(url).then(updateData);
+      },
+
+      /**
+       * Ask the distribution chart to redraw itself. This should be
+       * called whenever the dimensions of the view change (e.g., when
+       * the card is expanded), as the distribution chart will need to
+       * recalculate its layout.
+       */
+      redraw() {
+        this.$$('vz-distribution-chart').redraw();
+      },
+
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+    });
+  </script>
+</dom-module>

@@ -23,27 +23,28 @@ py_binary(
     main = "main.py",
     srcs_version = "PY2AND3",
     deps = [
+        ":util",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
-        "//tensorboard/plugins/distributions:distributions_plugin",
-        "//tensorboard/plugins/graphs:graphs_plugin",
-        "//tensorboard/plugins/histograms:histograms_plugin",
-        "//tensorboard/plugins/images:images_plugin",
+        "//tensorboard/plugins/distribution:distributions_plugin",
+        "//tensorboard/plugins/graph:graphs_plugin",
+        "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/profile:profile_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
-        "//tensorboard/plugins/scalars:scalars_plugin",
+        "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "@org_pocoo_werkzeug//:werkzeug",
     ],
 )
 
 py_binary(
-  name = "version",
-  srcs = ["version.py"],
-  srcs_version = "PY2AND3",
+    name = "version",
+    srcs = ["version.py"],
+    srcs_version = "PY2AND3",
 )
 
 tensorboard_zip_file(
@@ -92,3 +93,57 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+py_library(
+    name = "util",
+    srcs = ["util.py"],
+    srcs_version = "PY2AND3",
+    deps = ["//tensorboard:expect_tensorflow_installed"],
+)
+
+py_test(
+    name = "util_test",
+    size = "small",
+    srcs = ["util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":test_util",
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+        "@six_archive//:six",
+    ],
+)
+
+py_library(
+    name = "loader",
+    srcs = ["loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+        "@six_archive//:six",
+    ],
+)
+
+py_test(
+    name = "loader_test",
+    size = "small",
+    srcs = ["loader_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":loader",
+        ":test_util",
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "test_util",
+    testonly = 1,
+    srcs = ["test_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
