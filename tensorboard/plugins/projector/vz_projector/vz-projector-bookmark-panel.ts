@@ -134,8 +134,8 @@ export class BookmarkPanel extends BookmarkPanelPolymer {
 
   /** Handles a click on the upload bookmarks button. */
   _uploadFile() {
-    let fileInput = this.dom.select('#state-file');
-    (fileInput.node() as HTMLInputElement).click();
+    let fileInput = this.querySelector('#state-file');
+    (fileInput as HTMLInputElement).click();
   }
 
   private setupUploadButton() {
