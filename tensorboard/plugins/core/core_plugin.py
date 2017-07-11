@@ -54,10 +54,12 @@ class CorePlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     apps = {
+        '/___rPc_sWiTcH___': self._send_404_without_logging,
         '/audio': self._redirect_to_index,
         '/data/logdir': self._serve_logdir,
         '/data/runs': self._serve_runs,
         '/events': self._redirect_to_index,
+        '/favicon.ico': self._send_404_without_logging,
         '/graphs': self._redirect_to_index,
         '/histograms': self._redirect_to_index,
         '/images': self._redirect_to_index,
@@ -70,6 +72,10 @@ class CorePlugin(base_plugin.TBPlugin):
             path = info.filename
             apps['/' + path] = functools.partial(self._serve_asset, path)
     return apps
+
+  @wrappers.Request.application
+  def _send_404_without_logging(self, request):
+    return http_util.Respond(request, 'Not found', 'text/plain', code=404)
 
   @wrappers.Request.application
   def _redirect_to_index(self, unused_request):
