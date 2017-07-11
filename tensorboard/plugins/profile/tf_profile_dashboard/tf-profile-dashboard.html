@@ -33,44 +33,52 @@ profile run can have multiple tools that present the performance profile as diff
 
 <dom-module id="tf-profile-dashboard">
 <template>
-<tf-dashboard-layout>
-<div class="sidebar">
-  <div class="allcontrols">
-    <div class="sidebar-section">
-      <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
-      <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-        <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}">
-          <template is="dom-repeat" items="[[_datasets]]">
-            <paper-item>[[item.name]]</paper-item>
-          </template>
-        </paper-menu>
-      </paper-dropdown-menu>
-    </div>
-    <div class="sidebar-section">
-      <div class="title">Tools <span class="counter">([[_activeTools.length]])</span></div>
-      <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-        <paper-menu id="select" class="dropdown-content" selected="{{selectedTool}}">
-          <template is="dom-repeat" items="[[_activeTools]]">
-            <paper-item>[[item]]</paper-item>
-          </template>
-          <paper-item>None</paper-item>
-        </paper-menu>
-      </paper-dropdown-menu>
-    </div>
-    <div class="sidebar-section"></div>
+<template is="dom-if" if="[[_dataNotFound]]">
+  <div style="max-width: 540px; margin: 80px auto 0 auto;">
+    <h3>No profile data was found.</h3>
+    <p>The dashboard is internal only; coming soon!</p>
   </div>
-</div>
-<div class="center">
-  <template is="dom-if" if="[[_toolIsTraceViewer(_currentTool)]]">
-    <iframe
-      id="tv_iframe"
-      height="100%"
-      width="100%"
-      src="[[_traceDataUrl]]">
-    </iframe>
-  </template>
-</div>
-</tf-dashboard-layout>
+</template>
+<template is="dom-if" if="[[!_dataNotFound]]">
+  <tf-dashboard-layout>
+  <div class="sidebar">
+    <div class="allcontrols">
+      <div class="sidebar-section">
+        <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
+        <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
+          <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}">
+            <template is="dom-repeat" items="[[_datasets]]">
+              <paper-item>[[item.name]]</paper-item>
+            </template>
+          </paper-menu>
+        </paper-dropdown-menu>
+      </div>
+      <div class="sidebar-section">
+        <div class="title">Tools <span class="counter">([[_activeTools.length]])</span></div>
+        <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
+          <paper-menu id="select" class="dropdown-content" selected="{{selectedTool}}">
+            <template is="dom-repeat" items="[[_activeTools]]">
+              <paper-item>[[item]]</paper-item>
+            </template>
+            <paper-item>None</paper-item>
+          </paper-menu>
+        </paper-dropdown-menu>
+      </div>
+      <div class="sidebar-section"></div>
+    </div>
+  </div>
+  <div class="center">
+    <template is="dom-if" if="[[_toolIsTraceViewer(_currentTool)]]">
+      <iframe
+        id="tv_iframe"
+        height="100%"
+        width="100%"
+        src="[[_traceDataUrl]]">
+      </iframe>
+    </template>
+  </div>
+  </tf-dashboard-layout>
+</template>
 <style include="dashboard-style"></style>
 
 <style>
@@ -104,6 +112,7 @@ profile run can have multiple tools that present the performance profile as diff
       // Whether this dashboard is initialized. This dashboard should only be
       // initialized once.
       _initialized: Boolean,
+      _dataNotFound: Boolean,
       // The endpoint that serves trace viewer app.
       traceViewerBaseUrl: {
         type: String,
@@ -170,6 +179,7 @@ profile run can have multiple tools that present the performance profile as diff
           name: run,
           activeTools: tools,
         }));
+        this.set('_dataNotFound', datasets.length === 0);
         this.set('_datasets', datasets);
       });
     },
