@@ -36,7 +36,6 @@ ts_web_library(
         "vz-projector-app.html",
         "vz-projector-bookmark-panel.html",
         "vz-projector-bookmark-panel.ts",
-        "vz-projector-colab.html",
         "vz-projector-dashboard.html",
         "vz-projector-data-panel.html",
         "vz-projector-data-panel.ts",
