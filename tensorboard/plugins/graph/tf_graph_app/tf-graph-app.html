@@ -70,7 +70,16 @@ The pbtxt format is the stringified version of the graphdef.
 .container {
   height: 650px;
 }
+    
+/* The no-toolbar class will hide the div.side element, and move div.main over
+to the left hand side. */
+.container.no-toolbar .main {
+  left: 0;
+}
 
+.container.no-toolbar .side {
+  display: none;
+}  
 </style>
 <div class="container">
   <div class="all">
@@ -126,9 +135,31 @@ Polymer({
       type: String,
       observer: '_updateGraph',
     },
+      
+    width: {
+      type: Number,
+      observer: '_updateWidth'
+    },
+    height: {
+      type: Number,
+      observer: '_updateHeight'
+    },
+    toolbar: {
+      type: Boolean,
+      observer: '_updateToolbar'
+    },
 
     _renderHierarchy: Object,
     _progress: Object,
+  },
+  _updateToolbar: function() {
+    this.$$('.container').classList.toggle('no-toolbar', !this.toolbar);
+  },
+  _updateWidth: function() {
+    this.$$('.container').style.width = this.width + 'px';
+  },
+  _updateHeight: function() {
+    this.$$('.container').style.height = this.height + 'px';
   },
   _updateGraph: function() {
     if (this.pbtxtFileLocation) {
