@@ -412,6 +412,13 @@ public final class Vulcanize {
               // part of our build process.
               return CheckLevel.OFF;
             }
+            if (error.getDefaultLevel() == CheckLevel.WARNING
+                && (error.sourceName.startsWith("/iron-")
+                    || error.sourceName.startsWith("/neon-")
+                    || error.sourceName.startsWith("/paper-"))) {
+              // Suppress warnings in the Polymer standard libraries.
+              return CheckLevel.OFF;
+            }
             if (error.sourceName.startsWith("javascript/externs")
                 || error.sourceName.contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
