@@ -58,14 +58,14 @@ class TraceEventsJsonStreamTest(tf.test.TestCase):
               device_id: 1
               resource_id: 2
               name: "E1.2.1"
-              timestamp_ns: 100
-              duration_ns: 10
+              timestamp_ps: 100000
+              duration_ps: 10000
             }
             trace_events {
               device_id: 2
               resource_id: 2
               name: "E2.2.1"
-              timestamp_ns: 105
+              timestamp_ps: 105000
             }
             """),
         dict(

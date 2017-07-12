@@ -82,10 +82,10 @@ class TraceEventsJsonStream(object):
         pid=event.device_id,
         tid=event.resource_id,
         name=event.name,
-        ts=event.timestamp_ns / 1000)
-    if event.duration_ns:
+        ts=event.timestamp_ps / 1000000.0)
+    if event.duration_ps:
       result['ph'] = _TYPE_COMPLETE
-      result['dur'] = event.duration_ns / 1000
+      result['dur'] = event.duration_ps / 1000000.0
     else:
       result['ph'] = _TYPE_INSTANT
       result['s'] = _SCOPE_THREAD

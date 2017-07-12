@@ -65,10 +65,10 @@ message TraceEvent {
   // The name of this trace event.
   string name = 3;
 
-  // The timestamp that this event occurred at (in nanos since tracing started).
-  double timestamp_ns = 4;
+  // The timestamp that this event occurred at (in picos since tracing started).
+  uint64 timestamp_ps = 9;
 
-  // The duration of the event in nanoseconds if applicable.
+  // The duration of the event in picoseconds if applicable.
   // Events without duration are called instant events.
-  double duration_ns = 5;
+  uint64 duration_ps = 10;
 }
