@@ -1,0 +1,38 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!--
+  Polymer imports for each of the available dashboards. The set of
+  Polymer components imported here must exactly equal the result of
+
+      DASHBOARDS.map(dashboard => dashboard.component)
+
+  where `DASHBOARDS` is the array exported by `dashboards.ts`.
+
+  TODO(@wchargin): Create this module at build time.
+-->
+
+<link rel="import" href="../tf-audio-dashboard/tf-audio-dashboard.html">
+<link rel="import" href="../tf-distribution-dashboard/tf-distribution-dashboard.html">
+<link rel="import" href="../tf-graph-dashboard/tf-graph-dashboard.html">
+<link rel="import" href="../tf-histogram-dashboard/tf-histogram-dashboard.html">
+<link rel="import" href="../tf-image-dashboard/tf-image-dashboard.html">
+<link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
+<link rel="import" href="../tf-text-dashboard/tf-text-dashboard.html">
+<link rel="import" href="../vz-projector/vz-projector-dashboard.html">
+
+<script src="dashboards.js"></script>

@@ -9,6 +9,8 @@ ts_web_library(
     name = "tf_tensorboard",
     srcs = [
         "autoReloadBehavior.ts",
+        "dashboards.html",
+        "dashboards.ts",
         "style.html",
         "tf-tensorboard.html",
     ],
