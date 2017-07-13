@@ -22,6 +22,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
+import json
 import os
 import re
 import sqlite3
@@ -33,6 +35,7 @@ from six.moves.urllib import parse as urlparse
 import tensorflow as tf
 from werkzeug import wrappers
 
+from tensorboard import db
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
@@ -84,6 +87,10 @@ def standard_tensorboard_wsgi(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
+  if db_connection_provider is not None:
+    with contextlib.closing(db_connection_provider()) as db_conn:
+      with db_conn:
+        db.setup_database(db_conn)
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
@@ -384,7 +391,7 @@ def _get_connect_params(query):
   params = urlparse.parse_qs(query)
   if any(len(v) > 2 for v in params.values()):
     raise ValueError('DB URI params list has duplicate keys: ' + query)
-  return {k: v[0] for k, v in params.items()}
+  return {k: json.loads(v[0]) for k, v in params.items()}
 
 
 def _clean_path(path):
