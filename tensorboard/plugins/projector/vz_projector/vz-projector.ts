@@ -195,10 +195,6 @@ export class Projector extends ProjectorPolymer implements
       this.inspectorPanel.metadataChanged(spriteAndMetadata);
       this.projectionsPanel.metadataChanged(spriteAndMetadata);
       this.dataPanel.metadataChanged(spriteAndMetadata, metadataFile);
-      // Set the container to a fixed height, otherwise in Colab the
-      // height can grow indefinitely.
-      const container = this.querySelector('#container') as HTMLDivElement;
-      container.style.height = container.clientHeight + 'px';
     } else {
       this.setCurrentDataSet(null);
     }
