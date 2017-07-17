@@ -15,6 +15,7 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/components/tf_tensorboard",
+        "//tensorboard/components/tf_tensorboard:default_plugins",
     ],
 )
 
@@ -41,4 +42,3 @@ tensorboard_html_binary(
     output_path = "/trace_viewer_index.html",
     deps = [":trace_viewer"],
 )
-

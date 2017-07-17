@@ -67,6 +67,13 @@ Polymer({
   is: 'vz-projector-dashboard',
   properties: {
     dataNotFound: Boolean,
+    // Whether or not the reload button in the tf-tensorboard GUI should be
+    // shaded out.
+    isReloadDisabled: {
+      type: Boolean,
+      value: true,
+      readOnly: true,
+    },
     _routePrefix: {
       type: String,
       value: () => getRouter().pluginRoute('projector', ''),
