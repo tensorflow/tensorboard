@@ -232,7 +232,7 @@ limitations under the License.
       <div class="two-columns">
         <div> <!-- Left column -->
           <paper-dropdown-menu class="pca-dropdown" vertical-align="bottom" no-animations label="X">
-            <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{pcaX}}">
+            <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{pcaX}}" slot="dropdown-content">
               <paper-item disabled class="dropdown-item header">
                   <div>#</div>
                   <div>Variance (%)</div>
@@ -247,7 +247,7 @@ limitations under the License.
             </paper-listbox>
           </paper-dropdown-menu>
           <paper-dropdown-menu class="pca-dropdown" no-animations vertical-align="bottom" label="Z" disabled="[[!hasPcaZ]]" id="z-dropdown">
-            <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{pcaZ}}">
+            <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{pcaZ}}" slot="dropdown-content">
               <paper-item disabled class="dropdown-item header">
                   <div>#</div>
                   <div>Variance (%)</div>
@@ -264,7 +264,7 @@ limitations under the License.
         </div>
         <div> <!-- Right column -->
           <paper-dropdown-menu class="pca-dropdown" vertical-align="bottom" no-animations label="Y">
-            <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{pcaY}}">
+            <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{pcaY}}" slot="dropdown-content">
               <paper-item disabled class="dropdown-item header">
                   <div>#</div>
                   <div>Variance (%)</div>
@@ -293,7 +293,7 @@ limitations under the License.
     <!-- Custom Controls -->
     <div data-panel="custom" class="ink-panel-content">
       <paper-dropdown-menu style="width: 100%" no-animations label="Search by">
-        <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{customSelectedSearchByMetadataOption}}">
+        <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{customSelectedSearchByMetadataOption}}" slot="dropdown-content">
           <template is="dom-repeat" items="[[searchByMetadataOptions]]">
             <paper-item class="dropdown-item" value="[[item]]" label="[[item]]">
               [[item]]
