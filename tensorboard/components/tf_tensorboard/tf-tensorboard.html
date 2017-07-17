@@ -463,8 +463,9 @@ limitations under the License.
       },
       observers: [
         '_updateSelectedDashboard(_selectedDashboard, _activeDashboards)',
-        '_ensureSelectedDashboardStamped(' +
-          '_dashboardContainersStamped, _activeDashboards, _selectedDashboard)',
+        ('_ensureSelectedDashboardStamped(' +
+         '_dashboardContainersStamped, _activeDashboards, ' +
+         '_selectedDashboard, _debuggerDataEnabled)'),
       ],
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
@@ -575,7 +576,8 @@ limitations under the License.
        * If the currently selected dashboard is not a real dashboard,
        * this does nothing.
        */
-      _ensureSelectedDashboardStamped(containersStamped, activeDashboards, dashboard) {
+      _ensureSelectedDashboardStamped(containersStamped, activeDashboards,
+                                      dashboard, debuggerDataEnabled) {
         if (!containersStamped || !activeDashboards || !dashboard) {
           return;
         }
@@ -590,7 +592,9 @@ limitations under the License.
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }
-        this.set('_isReloadDisabled', !!container.childNodes[0].isReloadDisabled);
+        this.set('_isReloadDisabled',
+                 (!debuggerDataEnabled &&
+                  !!container.childNodes[0].isReloadDisabled));
       },
 
       /**
