@@ -437,6 +437,11 @@ limitations under the License.
           value: false,
         },
 
+        _isReloadDisabled: {
+          type: Boolean,
+          value: false,
+        },
+
         _lastReloadTime: {
           type: String,
           value: "not yet loaded",
@@ -584,7 +589,8 @@ limitations under the License.
           const component = document.createElement(TENSORBOARD_PLUGINS[dashboard]);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
-        };
+        }
+        this.set('_isReloadDisabled', !!container.childNodes[0].isReloadDisabled);
       },
 
       /**
@@ -685,6 +691,9 @@ limitations under the License.
       },
 
       reload() {
+        if (this._isReloadDisabled) {
+          return;
+        }
         this._fetchLogdir();
         Promise.all([this._fetchActiveDashboards(), fetchRuns()]).then(() => {
           const dashboard = this._selectedDashboardComponent();
