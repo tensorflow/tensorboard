@@ -27,7 +27,7 @@ limitations under the License.
       label="run to download"
       selected-item-label="{{_run}}"
     >
-      <paper-menu class="dropdown-content">
+      <paper-menu class="dropdown-content" slot="dropdown-content">
         <template is="dom-repeat" items="[[runs]]">
           <paper-item no-label-float=true>[[item]]</paper-item>
         </template>

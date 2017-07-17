@@ -290,7 +290,7 @@ table.tf-graph-controls td.input-element-table-data {
   <div class="control-holder runs">
     <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
     <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-      <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}">
+      <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[datasets]]">
           <paper-item>[[item.name]]</paper-item>
         </template>
@@ -301,7 +301,7 @@ table.tf-graph-controls td.input-element-table-data {
     <div class="control-holder">
       <div class="title">Session runs <span class="counter">([[_numSessionRuns(metadataTags)]])</span></div>
       <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-        <paper-menu id="select" class="dropdown-content" selected="{{selectedMetadataTag}}">
+        <paper-menu id="select" class="dropdown-content" selected="{{selectedMetadataTag}}" slot="dropdown-content">
           <template is="dom-repeat" items="[[metadataTags]]">
             <paper-item>[[item.tag]]</paper-item>
           </template>
