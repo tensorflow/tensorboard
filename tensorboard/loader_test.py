@@ -17,6 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
+import locale
 import os
 
 import tensorflow as tf
@@ -30,6 +31,7 @@ class LoaderTestCase(test_util.TestCase):
   def __init__(self, *args, **kwargs):
     super(LoaderTestCase, self).__init__(*args, **kwargs)
     self.clock = test_util.FakeClock()
+    self.sleep = test_util.FakeSleep(self.clock)
 
   def _save_string(self, name, data):
     """Writes new file to temp directory.
@@ -130,6 +132,115 @@ class BufferedRecordReaderSmallReadAheadTest(RecordReaderTest):
   RecordReader = functools.partial(loader.BufferedRecordReader,
                                    read_ahead=1,
                                    stat_interval=0)
+
+
+class ProgressTest(LoaderTestCase):
+
+  EMPTY_BAR = loader.Progress.BLOCK_LIGHT * loader.Progress.BAR_WIDTH
+  HALF_BAR = (loader.Progress.BLOCK_DARK * (loader.Progress.BAR_WIDTH // 2) +
+              EMPTY_BAR[loader.Progress.BAR_WIDTH // 2:])
+
+  def __init__(self, *args, **kwargs):
+    super(ProgressTest, self).__init__(*args, **kwargs)
+    self.logs = []  # type: list[str]
+    self.bars = []  # type: list[str]
+    self.RateCounter = functools.partial(loader.RateCounter, clock=self.clock)
+    self.progress = loader.Progress(
+        clock=self.clock,
+        sleep=self.sleep,
+        log_callback=self._on_log,
+        bar_callback=self._on_bar,
+        rate_counter_factory=self.RateCounter)
+
+  def testFirstUpdate_neversEmits(self):
+    self.progress.set_progress(1, 10)
+    self.assertEqual([], self.logs)
+    self.assertEqual([], self.bars)
+
+  def testSecondUpdateButNoTimeElapsed_doesntEmit(self):
+    self.progress.set_progress(1, 10)
+    self.progress.set_progress(2, 10)
+    self.assertEqual([], self.logs)
+    self.assertEqual([], self.bars)
+
+  def testBarTimeElapsed_logsBarButNotLog(self):
+    self.progress.set_progress(0, 10)
+    self.clock.advance(loader.Progress.BAR_INTERVAL_SECONDS)
+    self.progress.set_progress(0, 10)
+    self.assertEqual([ProgressTest.EMPTY_BAR + ' 0% of 10 '], self.bars)
+    self.assertEqual([], self.logs)
+
+  def testLogTimeElapsed_logsBarAndLog(self):
+    self.progress.set_progress(0, 10)
+    self.clock.advance(loader.Progress.LOG_INTERVAL_SECONDS)
+    self.progress.set_progress(0, 10)
+    self.assertEqual([ProgressTest.EMPTY_BAR + ' 0% of 10 '], self.bars)
+    self.assertEqual(['Loaded 0% of 10'], self.logs)
+
+  def testClose_alwaysEmitsBothAndClearsEphemeralState(self):
+    self.progress.close()
+    self.assertEqual(['Loaded 0% of 0'], self.logs)
+    self.assertEqual([ProgressTest.EMPTY_BAR + ' 0% of 0 ', ''], self.bars)
+
+  def testHalfway_showsHalfBarAndProcessingRate(self):
+    self.progress.set_progress(0, 10)
+    self.clock.advance(1.0)
+    self.progress.set_progress(5, 10)
+    self.assertEqual([(ProgressTest.HALF_BAR + ' 50% of 10 ' +
+                       loader.Progress.DELTA + ' 5B/s ')],
+                     self.bars)
+
+  def testHalfwayOfDoubledData(self):
+    self.progress.set_progress(0, 10)
+    self.clock.advance(1.0)
+    self.progress.set_progress(10, 20)
+    self.assertEqual([(ProgressTest.HALF_BAR + ' 50% of 20 ' +
+                       loader.Progress.DELTA + ' 10B/s ' +
+                       loader.Progress.NABLA + ' 10B/s ')],
+                     self.bars)
+
+  def testDataProducedFasterThanConsumed_showsMeltdownAlert(self):
+    self.progress.set_progress(0, 10)
+    self.clock.advance(1.0)
+    self.progress.set_progress(10, 30)
+    self.assertIn((u' 33% of 30 ' +
+                   loader.Progress.DELTA + ' 10B/s ' +
+                   loader.Progress.NABLA + ' 20B/s ' +
+                   '[meltdown]'),
+                  util.Ansi.ESCAPE_PATTERN.sub('', self.bars[0]))
+
+  def testNoDataSinceLastUpdate_displaysStalledAlert(self):
+    self.progress.set_progress(0, 20)
+    self.clock.advance(loader.Progress.LOG_INTERVAL_SECONDS)
+    self.progress.set_progress(10, 20)
+    self.clock.advance(loader.Progress.LOG_INTERVAL_SECONDS)
+    self.progress.set_progress(10, 20)
+    self.assertIn('[stalled]', self.bars[1])
+    self.assertIn('[stalled]', self.logs[1])
+
+  def testBigNumberInAmerica_showsCommas(self):
+    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+    self.progress.set_progress(0, 1000000)
+    self.clock.advance(1.0)
+    self.progress.set_progress(1024, 1000000)
+    self.progress.close()
+    self.assertIn(u' of 1,000,000 ', self.bars[0])
+    self.assertIn(u' 1,024B/s ', self.bars[0])
+
+  def testBigNumberInGermany_showsCommas(self):
+    locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
+    self.progress.set_progress(0, 1000000)
+    self.clock.advance(1.0)
+    self.progress.set_progress(1024, 1000000)
+    self.progress.close()
+    self.assertIn(u' of 1.000.000 ', self.bars[0])
+    self.assertIn(u' 1.024B/s ', self.bars[0])
+
+  def _on_log(self, format_, *args):
+    self.logs.append(format_ % args)
+
+  def _on_bar(self, format_, *args):
+    self.bars.append(format_ % args)
 
 
 @util.closeable

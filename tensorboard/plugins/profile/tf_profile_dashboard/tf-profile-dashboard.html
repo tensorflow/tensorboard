@@ -46,7 +46,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-          <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}">
+          <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}" slot="dropdown-content">
             <template is="dom-repeat" items="[[_datasets]]">
               <paper-item>[[item.name]]</paper-item>
             </template>
@@ -56,7 +56,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Tools <span class="counter">([[_activeTools.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-          <paper-menu id="select" class="dropdown-content" selected="{{selectedTool}}">
+          <paper-menu id="select" class="dropdown-content" selected="{{selectedTool}}" slot="dropdown-content">
             <template is="dom-repeat" items="[[_activeTools]]">
               <paper-item>[[item]]</paper-item>
             </template>

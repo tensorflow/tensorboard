@@ -198,7 +198,7 @@ paper-dropdown-menu paper-item {
   <!-- List of runs -->
   <template is="dom-if" if="[[_hasChoices(runNames)]]">
     <paper-dropdown-menu no-animations label="[[_getNumRunsLabel(runNames)]] found">
-      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedRun}}">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedRun}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[runNames]]">
           <paper-item value="[[item]]" label="[[item]]">
             [[item]]
@@ -211,7 +211,7 @@ paper-dropdown-menu paper-item {
   <template is="dom-if" if="[[tensorNames]]">
     <!-- List of tensors in checkpoint -->
     <paper-dropdown-menu no-animations label="[[_getNumTensorsLabel(tensorNames)]] found">
-      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedTensor}}">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedTensor}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[tensorNames]]">
           <paper-item value="[[item.name]]" label="[[item.name]]">
             [[item.name]]
@@ -226,7 +226,7 @@ paper-dropdown-menu paper-item {
   <!-- Label by -->
   <template is="dom-if" if="[[_hasChoices(labelOptions)]]">
     <paper-dropdown-menu no-animations label="Label by">
-      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedLabelOption}}">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedLabelOption}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[labelOptions]]">
           <paper-item value="[[item]]" label="[[item]]">
             [[item]]
@@ -239,7 +239,7 @@ paper-dropdown-menu paper-item {
   <!-- Color by -->
   <div hidden$="[[!_hasChoices(colorOptions)]]" class="colorby-container">
     <paper-dropdown-menu id="colorby" no-animations label="Color by">
-      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedColorOptionName}}">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedColorOptionName}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[colorOptions]]">
           <paper-item class$="[[getSeparatorClass(item.isSeparator)]]" value="[[item.name]]" label="[[item.name]]" disabled="[[item.isSeparator]]">
             [[item.name]]

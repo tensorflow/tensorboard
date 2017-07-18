@@ -94,6 +94,13 @@ filegroup(
 )
 
 py_library(
+    name = "db",
+    srcs = ["db.py"],
+    srcs_version = "PY2AND3",
+    deps = ["//tensorboard:expect_sqlite3_installed"],
+)
+
+py_library(
     name = "util",
     srcs = ["util.py"],
     srcs_version = "PY2AND3",

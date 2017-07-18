@@ -195,10 +195,6 @@ export class Projector extends ProjectorPolymer implements
       this.inspectorPanel.metadataChanged(spriteAndMetadata);
       this.projectionsPanel.metadataChanged(spriteAndMetadata);
       this.dataPanel.metadataChanged(spriteAndMetadata, metadataFile);
-      // Set the container to a fixed height, otherwise in Colab the
-      // height can grow indefinitely.
-      const container = this.querySelector('#container') as HTMLDivElement;
-      container.style.height = container.clientHeight + 'px';
     } else {
       this.setCurrentDataSet(null);
     }
@@ -335,6 +331,9 @@ export class Projector extends ProjectorPolymer implements
       this.dataProvider = new ServerDataProvider(this.routePrefix);
     } else if (this.servingMode === 'proto' && dataProto != null) {
       this.dataProvider = new ProtoDataProvider(dataProto);
+    } else {
+      // The component is not ready yet - waiting for the dataProto field.
+      return;
     }
 
     this.dataPanel.initialize(this, this.dataProvider);
@@ -425,9 +424,8 @@ export class Projector extends ProjectorPolymer implements
     });
 
     window.addEventListener('resize', () => {
-      const container = this.querySelector('#container') as HTMLDivElement;
-      const parentHeight = (container.parentNode as HTMLElement).clientHeight;
-      container.style.height = parentHeight + 'px';
+      const container = this.parentNode as HTMLDivElement;
+      container.style.height = document.body.clientHeight + 'px';
       this.projectorScatterPlotAdapter.resize();
     });
 

@@ -200,7 +200,7 @@ limitations under the License.
   <div class="search-by">
     <vz-projector-input id="search-box" label="Search"></vz-projector-input>
     <paper-dropdown-menu no-animations label="by">
-      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedMetadataField}}">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedMetadataField}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[metadataFields]]">
           <paper-item value="[[item]]" label="[[item]]">
             [[item]]

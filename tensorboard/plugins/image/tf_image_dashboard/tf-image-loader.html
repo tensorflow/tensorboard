@@ -284,7 +284,9 @@ future for loading older images.
         return {
           width: imageMetadata.width,
           height: imageMetadata.height,
-          wall_time: new Date(imageMetadata.wall_time),
+          // The wall time within the metadata is in seconds. The Date
+          // constructor accepts a time in milliseconds, so we multiply by 1000.
+          wall_time: new Date(imageMetadata.wall_time * 1000),
           step: imageMetadata.step,
           url: individualImageUrl,
         };

@@ -58,7 +58,7 @@ class FakeClock(object):
   This class is completely thread safe.
   """
 
-  def __init__(self, time=1.0):
+  def __init__(self, time=0.0):
     """Creates new instance.
 
     Args:
@@ -134,6 +134,6 @@ class FakeSleep(object):
     Args:
       seconds: A float indicating the number of seconds.
 
-    :rtype: float
+    :type seconds: float
     """
     self._clock.advance(seconds)

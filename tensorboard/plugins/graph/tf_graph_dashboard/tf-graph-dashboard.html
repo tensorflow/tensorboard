@@ -132,7 +132,7 @@ import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
 
 Polymer({
   is: 'tf-graph-dashboard',
-  properties: {
+   properties: {
     _datasets: Object,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
@@ -181,6 +181,13 @@ Polymer({
       readOnly: true,
     },
     runs: Array,
+    // Whether or not the reload button in the tf-tensorboard GUI should be
+    // shaded out.
+    isReloadDisabled: {
+      type: Boolean,
+      value: true,  // TODO(@chihuahua): Reconcile this setting with Health Pills.
+      readOnly: true,
+    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',

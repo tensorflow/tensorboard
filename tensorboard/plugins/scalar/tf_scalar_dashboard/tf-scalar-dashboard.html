@@ -63,7 +63,7 @@ limitations under the License.
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
             >
-              <paper-menu class="dropdown-content" selected="0">
+              <paper-menu class="dropdown-content" selected="0" slot="dropdown-content">
                 <paper-item>default</paper-item>
                 <paper-item>descending</paper-item>
                 <paper-item>ascending</paper-item>
@@ -123,7 +123,7 @@ limitations under the License.
             value="{{_tagFilter}}"
             class="search-input"
           >
-            <iron-icon prefix icon="search"></iron-icon>
+            <iron-icon prefix icon="search" slot="prefix"></iron-icon>
           </paper-input>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
