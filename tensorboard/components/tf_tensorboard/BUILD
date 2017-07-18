@@ -43,6 +43,7 @@ ts_web_library(
         "//tensorboard/plugins/graph/tf_graph_dashboard",
         "//tensorboard/plugins/histogram/tf_histogram_dashboard",
         "//tensorboard/plugins/image/tf_image_dashboard",
+        "//tensorboard/plugins/profile/tf_profile_dashboard",
         "//tensorboard/plugins/projector/vz_projector",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "//tensorboard/plugins/text/tf_text_dashboard",
