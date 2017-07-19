@@ -175,8 +175,7 @@ class TensorBoardWSGI(object):
         plugin_apps = plugin.get_plugin_apps()
       except Exception as e:  # pylint: disable=broad-except
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
-          six.reraise(*sys.exc_info())
-          raise e
+          raise
         tf.logging.warning('Plugin %s failed. Exception: %s',
                            plugin.plugin_name, str(e))
         continue
