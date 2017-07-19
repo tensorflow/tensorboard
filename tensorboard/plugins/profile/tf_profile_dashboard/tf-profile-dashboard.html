@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
+<link rel="import" href="../vz-sorting/vz-sorting.html">
 
 <!--
 tf-profile-dashboard displays profiling information for different tools.
@@ -99,7 +100,9 @@ profile run can have multiple tools that present the performance profile as diff
   "use strict";
 
   import {RequestManager} from '../tf-backend/requestManager.js';
+  import {compareTagNames} from "../vz-sorting/sorting.js";
   import {getRouter} from '../tf-backend/router.js';
+
 
   Polymer({
     is: "tf-profile-dashboard",
@@ -173,12 +176,17 @@ profile run can have multiple tools that present the performance profile as diff
       const profileTagsURL =
         getRouter().pluginRoute('profile', '/tools') +
         (getRouter().isDemoMode() ? '.json' : '');
-      // TODO: sort runs properly.
       this._requestManager.request(profileTagsURL).then((runToTool) => {
-        const datasets = _.map(runToTool, (tools, run) => ({
+        var datasets = _.map(runToTool, (tools, run) => ({
           name: run,
           activeTools: tools,
         }));
+        datasets.sort((a, b) => {
+          // The run name is currently a timestamp like "YYYY-MM-DD_HH:MM:SS".
+          // Sort runs by timestamp in reversed order so that the latest run
+          // comes first.
+          return 0 - compareTagNames(a.name, b.name);
+        });
         this.set('_dataNotFound', datasets.length === 0);
         this.set('_datasets', datasets);
       });
