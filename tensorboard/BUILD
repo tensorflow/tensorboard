@@ -34,7 +34,7 @@ py_binary(
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
-        "@org_pocoo_werkzeug//:werkzeug",
+        "@org_pocoo_werkzeug",
     ],
 )
 
@@ -119,7 +119,7 @@ py_test(
         ":test_util",
         ":util",
         "//tensorboard:expect_tensorflow_installed",
-        "@six_archive//:six",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -131,7 +131,7 @@ py_library(
     deps = [
         ":util",
         "//tensorboard:expect_tensorflow_installed",
-        "@six_archive//:six",
+        "@org_pythonhosted_six",
     ],
 )
 

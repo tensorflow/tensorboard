@@ -15,8 +15,8 @@ py_library(
     deps = [
         ":json_util",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pocoo_werkzeug//:werkzeug",
-        "@six_archive//:six",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -28,8 +28,8 @@ py_test(
     deps = [
         ":http_util",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pocoo_werkzeug//:werkzeug",
-        "@six_archive//:six",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -68,8 +68,8 @@ py_library(
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins/core:core_plugin",
-        "@org_pocoo_werkzeug//:werkzeug",
-        "@six_archive//:six",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -84,7 +84,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
-        "@org_pocoo_werkzeug//:werkzeug",
+        "@org_pocoo_werkzeug",
     ],
 )
 

@@ -17,8 +17,8 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
-        "@org_pocoo_werkzeug//:werkzeug",
-        "@six_archive//:six",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -34,7 +34,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
-        "@org_pocoo_werkzeug//:werkzeug",
-        "@six_archive//:six",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )

@@ -12,6 +12,6 @@ py_library(
     srcs = glob(["html5lib/**/*.py"]),
     srcs_version = "PY2AND3",
     deps = [
-        "@six_archive//:six",
+        "@org_pythonhosted_six",
     ],
 )

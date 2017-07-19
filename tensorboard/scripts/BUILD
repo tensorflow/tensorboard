@@ -14,7 +14,7 @@ py_binary(
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "@six_archive//:six",
+        "@org_pythonhosted_six",
     ],
 )
 

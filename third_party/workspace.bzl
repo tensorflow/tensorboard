@@ -27,21 +27,7 @@ def tensorboard_workspace():
   tensorboard_python_workspace()
   tensorboard_typings_workspace()
   tensorboard_js_workspace()
-  native.new_http_archive(
-      name = "six_archive",
-      urls = [
-          "http://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
-          "http://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
-      ],
-      sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
-      strip_prefix = "six-1.10.0",
-      build_file = str(Label("//third_party:six.BUILD")),
-  )
 
-  native.bind(
-      name = "six",
-      actual = "@six_archive//:six",
-  )
   native.http_archive(
       name = "protobuf",
       urls = [
@@ -70,6 +56,12 @@ def tensorboard_workspace():
       strip_prefix = "protobuf-2b7430d96aeff2bb624c8d52182ff5e4b9f7f18a",
   )
 
+  # Protobuf's BUILD file depends on //external:six.
+  native.bind(
+      name = "six",
+      actual = "@org_pythonhosted_six",
+  )
+
   filegroup_external(
       name = "org_chromium_chromedriver",
       licenses = ["notice"],  # Apache 2.0
@@ -87,8 +79,6 @@ def tensorboard_workspace():
       },
       generated_rule_name = "archive",
   )
-
-
 
   # Roughly corresponds to Chrome 55
   filegroup_external(
