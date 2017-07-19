@@ -226,7 +226,7 @@ def text_array_to_html(text_arr):
   """
   if not text_arr.shape:
     # It is a scalar. No need to put it in a table, just apply markdown
-    return markdown_and_sanitize(text_arr.astype(np.dtype(str)).tostring())
+    return markdown_and_sanitize(np.array_str(text_arr.astype(np.dtype(str))))
   warning = ''
   if len(text_arr.shape) > 2:
     warning = markdown_and_sanitize(WARNING_TEMPLATE % len(text_arr.shape))
