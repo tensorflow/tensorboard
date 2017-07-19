@@ -26,41 +26,25 @@ describe('Verify that the histogram format conversion works.', () => {
     });
   }
 
-  it('Throws an error if the inputs are of different lengths', () => {
-    chai.assert.throws(() => {
-      intermediateToD3({
-        wall_time: 1234.5,
-        step: 0,
-        bucketRightEdges: [0],
-        bucketCounts: [1, 2],
-        min: 1,
-        max: 2,
-      }, 1, 2, 2);
-    }, 'Edges and counts are of different lengths.');
-  });
-
   it('Handles data with no bins', () => {
     chai.assert.deepEqual(intermediateToD3({
       wall_time: 1234.5,
       step: 0,
-      bucketRightEdges: [],
-      bucketCounts: [],
       min: 0,
       max: 0,
+      buckets: [],
     }, 0, 0, 0), []);
   });
 
   it('Handles data with one bin', () => {
-    const counts = [1];
-    const rightEdges = [1.21e-12];
+    const buckets = [{left: 1.1e-12, right: 1.21e-12, count: 1}];
     const expected = [{x: 1.1e-12, dx: 1.21e-12 - 1.1e-12, y: 1}];
     const actual = intermediateToD3({
       wall_time: 1234.5,
       step: 0,
-      bucketRightEdges: rightEdges,
-      bucketCounts: counts,
       min: 1.1e-12,
       max: 1.21e-12,
+      buckets,
     }, 1.1e-12, 1.21e-12, 1);
     assertHistogramEquality(actual, expected);
   });
@@ -68,25 +52,30 @@ describe('Verify that the histogram format conversion works.', () => {
   it('Handles data with two bins.', () => {
     const counts = [1, 2];
     const rightEdges = [1.1e-12, 1.21e-12];
+    const buckets = [
+      {left: 1.0e-12, right: 1.1e-12, count: 1},
+      {left: 1.1e-12, right: 1.21e-12, count: 2},
+    ];
     const expected = [
       {x: 1.0e-12, dx: 1.05e-13, y: 1.09090909090909},
       {x: 1.105e-12, dx: 1.05e-13, y: 1.9090909090909},
     ];
-    const newHistogram = intermediateToD3({
+    const actual = intermediateToD3({
       wall_time: 1234.5,
       step: 0,
-      bucketRightEdges: rightEdges,
-      bucketCounts: counts,
       min: 1.0e-12,
       max: 1.21e-12,
+      buckets,
     }, 1.0e-12, 1.21e-12, 2);
-    assertHistogramEquality(newHistogram, expected);
+    assertHistogramEquality(actual, expected);
   });
 
   it('Handles a domain that crosses zero, but doesn\'t include zero as ' +
          'an edge.', () => {
-    const counts = [1, 2];
-    const rightEdges = [-1.0e-12, 1.0e-12];
+    const buckets = [
+      {left: -1.1e-12, right: -1.0e-12, count: 1},
+      {left: -1.0e-12, right: 1.0e-12, count: 2},
+    ];
     const expected = [
       {x: -1.1e-12, dx: 1.05e-12, y: 1.95},
       {x: -0.5e-13, dx: 1.05e-12, y: 1.05},
@@ -94,10 +83,9 @@ describe('Verify that the histogram format conversion works.', () => {
     const actual = intermediateToD3({
       wall_time: 1234.5,
       step: 0,
-      bucketRightEdges: rightEdges,
-      bucketCounts: counts,
       min: -1.1e-12,
       max: 1.0e-12,
+      buckets,
     }, -1.1e-12, 1.0e-12, 2);
     assertHistogramEquality(actual, expected);
   });
@@ -108,22 +96,30 @@ describe('Verify that the histogram format conversion works.', () => {
       step: 0,
       min: 0,
       max: 0,
-      bucketRightEdges: [0, 1e-12, 1.7976931348623157e+308],
-      bucketCounts: [0, 51200, 0],
+      buckets: [
+        {left: -1e-12, right: 0, count: 0},
+        {left: 0, right: 1e-12, count: 51200},
+        {left: 1e-12, right: 1.7976931348623157e+308, count: 0},
+      ],
     };
-    const newHistogram = intermediateToD3(h, 0, 0, 5);
-    const expectedHistogram = [
-      {x: -1, dx: 0.4, y: 0}, {x: -0.6, dx: 0.4, y: 0},
-      {x: -0.2, dx: 0.4, y: 51200}, {x: 0.2, dx: 0.4, y: 0},
+    const actual = intermediateToD3(h, 0, 0, 5);
+    const expected = [
+      {x: -1, dx: 0.4, y: 0},
+      {x: -0.6, dx: 0.4, y: 0},
+      {x: -0.2, dx: 0.4, y: 51200},
+      {x: 0.2, dx: 0.4, y: 0},
       {x: 0.6, dx: 0.4, y: 0},
     ];
-    assertHistogramEquality(newHistogram, expectedHistogram);
+    assertHistogramEquality(actual, expected);
   });
 
   it('Handles a right-most right edge that extends to very large number.',
       () => {
-    const counts = [1, 2, 3];
-    const rightEdges = [0, 1.0e-12, 1.0e14];
+    const buckets = [
+      {left: -1.0e-12, right: 0, count: 1},
+      {left: 0, right: 1.0e-12, count: 2},
+      {left: 1.0e-12, right: 1.0e14, count: 3},
+    ];
     const expected = [
       {x: -1.0e-12, dx: 0.7e-12, y: 0.7},
       {x: -0.3e-12, dx: 0.7e-12, y: 1.1},
@@ -132,10 +128,9 @@ describe('Verify that the histogram format conversion works.', () => {
     const actual = intermediateToD3({
       wall_time: 1234.5,
       step: 0,
-      bucketRightEdges: rightEdges,
-      bucketCounts: counts,
       min: -1.0e-12,
-      max: 1.1e-12
+      max: 1.1e-12,
+      buckets,
     }, -1.0e-12, 1.1e-12, 3);
     assertHistogramEquality(actual, expected);
   });
