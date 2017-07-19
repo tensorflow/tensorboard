@@ -8,6 +8,7 @@ ts_web_library(
     name = "tf_runs_selector",
     srcs = ["tf-runs-selector.html"],
     path = "/tf-runs-selector",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
@@ -18,4 +19,3 @@ ts_web_library(
         "@org_polymer_paper_styles",
     ],
 )
-

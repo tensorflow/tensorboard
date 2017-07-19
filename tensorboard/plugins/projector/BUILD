@@ -12,7 +12,7 @@ py_library(
     name = "projector_plugin",
     srcs = ["projector_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//tensorboard:internal"],
+    visibility = ["//visibility:public"],
     deps = [
         ":protos_all_py",
         "//tensorboard:expect_numpy_installed",
@@ -24,27 +24,27 @@ py_library(
 )
 
 py_library(
-  name = "projector",
-  srcs = ["__init__.py"],
-  srcs_version = "PY2AND3",
-  visibility = ["//visibility:public"],
-  deps = [
-    ":protos_all_py",
-    ":projector_plugin",
-    "//tensorboard:expect_tensorflow_installed",
-  ]
+    name = "projector",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":projector_plugin",
+        ":protos_all_py",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_test(
-  name = "projector_api_test",
-  size = "small",
-  srcs = ["projector_api_test.py"],
-  main = "projector_api_test.py",
-  srcs_version = "PY2AND3",
-  deps = [
-      ":projector",
-      "//tensorboard:expect_tensorflow_installed",
-  ]
+    name = "projector_api_test",
+    size = "small",
+    srcs = ["projector_api_test.py"],
+    main = "projector_api_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":projector",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_test(

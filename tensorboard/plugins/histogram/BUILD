@@ -12,9 +12,7 @@ py_library(
     name = "histograms_plugin",
     srcs = ["histograms_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//tensorboard:internal",
-    ],
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",

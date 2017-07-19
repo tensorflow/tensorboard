@@ -47,7 +47,7 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header">
         <div id="toolbar-content" slot="top">
-          <div class="toolbar-title">TensorBoard</div>
+          <div class="toolbar-title">[[title]]</div>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
               Loading active dashboards&hellip;
@@ -315,6 +315,18 @@ limitations under the License.
       is: "tf-tensorboard",
       behaviors: [AutoReloadBehavior],
       properties: {
+
+        /**
+         * Title name displayed in top left corner of GUI.
+         *
+         * This defaults to TensorBoard-X because we recommend against custom
+         * builds being branded as TensorBoard.
+         */
+        title: {
+          type: String,
+          value: 'TensorBoard-X',
+        },
+
         /**
          * We accept a router property only for backward compatibility:
          * setting it triggers an observer that simply calls

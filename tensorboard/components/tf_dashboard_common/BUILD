@@ -22,6 +22,7 @@ ts_web_library(
         "tf-regex-group.ts",
     ],
     path = "/tf-dashboard-common",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
@@ -89,4 +90,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

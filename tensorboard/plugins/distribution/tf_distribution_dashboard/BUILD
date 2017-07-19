@@ -11,6 +11,7 @@ ts_web_library(
         "tf-distribution-loader.html",
     ],
     path = "/tf-distribution-dashboard",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
@@ -25,8 +26,8 @@ ts_web_library(
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icon",
         "@org_polymer_paper_button",
-        "@org_polymer_paper_input",
         "@org_polymer_paper_icon_button",
+        "@org_polymer_paper_input",
         "@org_polymer_paper_styles",
     ],
 )
@@ -44,4 +45,3 @@ ts_web_library(
         "@org_polymer_paper_styles",
     ],
 )
-

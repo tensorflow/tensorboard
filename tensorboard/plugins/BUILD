@@ -11,4 +11,5 @@ py_library(
     name = "base_plugin",
     srcs = ["base_plugin.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
 )

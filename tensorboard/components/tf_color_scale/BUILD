@@ -12,10 +12,10 @@ ts_web_library(
         "tf-color-scale.html",
     ],
     path = "/tf-color-scale",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
     ],
 )
-
