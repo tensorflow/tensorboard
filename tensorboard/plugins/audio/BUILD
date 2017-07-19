@@ -11,9 +11,7 @@ py_library(
     name = "audio_plugin",
     srcs = ["audio_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//tensorboard:internal",
-    ],
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",

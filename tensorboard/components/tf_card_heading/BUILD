@@ -10,8 +10,8 @@ ts_web_library(
         "tf-card-heading.html",
     ],
     path = "/tf-card-heading",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
     ],
 )
-

@@ -59,6 +59,7 @@ py_library(
     srcs = ["application.py"],
     data = ["//tensorboard:webfiles.zip"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":http_util",
         "//tensorboard:db",

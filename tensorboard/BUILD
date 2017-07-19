@@ -8,10 +8,6 @@ load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files([
-    "LICENSE",
-])
-
 package_group(
     name = "internal",
     packages = ["//tensorboard/..."],
@@ -22,6 +18,7 @@ py_binary(
     srcs = ["main.py"],
     main = "main.py",
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":util",
         ":version",
@@ -45,6 +42,7 @@ py_binary(
     name = "version",
     srcs = ["version.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
 )
 
 tensorboard_zip_file(
@@ -66,6 +64,7 @@ py_library(
     # This is a dummy rule used as a numpy dependency in open-source.
     # We expect numpy to already be installed on the system, e.g. via
     # `pip install numpy`
+    visibility = ["//visibility:public"],
 )
 
 py_library(
@@ -73,6 +72,7 @@ py_library(
     # This is a dummy rule used as a sqlite3 dependency in open-source.
     # We expect sqlite3 to already be present, as it is part of the standard
     # library.
+    visibility = ["//visibility:public"],
 )
 
 py_library(
@@ -80,6 +80,7 @@ py_library(
     # This is a dummy rule used as a TensorFlow dependency in open-source.
     # We expect TensorFlow to already be installed on the system, e.g. via
     # `pip install tensorflow`
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -97,6 +98,7 @@ py_library(
     name = "db",
     srcs = ["db.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = ["//tensorboard:expect_sqlite3_installed"],
 )
 
@@ -104,6 +106,7 @@ py_library(
     name = "util",
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
@@ -124,6 +127,7 @@ py_library(
     name = "loader",
     srcs = ["loader.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":util",
         "//tensorboard:expect_tensorflow_installed",

@@ -9,15 +9,16 @@ ts_web_library(
     name = "tf_graph_dashboard",
     srcs = ["tf-graph-dashboard.html"],
     path = "/tf-graph-dashboard",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_sorting",
         "//tensorboard/plugins/graph/tf_graph",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/graph/tf_graph_loader",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/vz_sorting",
     ],
 )
 
@@ -28,12 +29,11 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/vz_sorting:legacy",
         "//tensorboard/plugins/graph/tf_graph:legacy",
         "//tensorboard/plugins/graph/tf_graph_board:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
         "//tensorboard/plugins/graph/tf_graph_loader:legacy",
-        "//tensorboard/components/vz_sorting:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

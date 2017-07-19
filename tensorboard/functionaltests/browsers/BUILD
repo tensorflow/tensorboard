@@ -3,7 +3,7 @@ package(default_visibility = ["//tensorboard:internal"])
 load("@io_bazel_rules_webtesting//web:web.bzl", "browser")
 load("@io_bazel_rules_webtesting//web:web.bzl", "web_test_archive")
 
-licenses(["notice"])
+licenses(["notice"])  # Apache 2.0
 
 config_setting(
     name = "mac",
@@ -24,9 +24,9 @@ browser(
         ":mac": {"DISABLE_X_DISPLAY": "1"},
     }),
     metadata = "chromium.json",
+    visibility = ["//visibility:public"],
     deps = [
-        "//third_party/chromium:chromedriver",
         "//third_party/chromium",
+        "//third_party/chromium:chromedriver",
     ],
 )
-

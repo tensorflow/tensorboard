@@ -13,6 +13,7 @@ ts_web_library(
         "tf-category-pane.html",
     ],
     path = "/tf-categorization-utils",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
@@ -21,4 +22,3 @@ ts_web_library(
         "@org_polymer_iron_collapse",
     ],
 )
-

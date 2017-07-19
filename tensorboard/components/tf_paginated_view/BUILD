@@ -8,6 +8,7 @@ ts_web_library(
     name = "tf_paginated_view",
     srcs = ["tf-paginated-view.html"],
     path = "/tf-paginated-view",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
@@ -16,4 +17,3 @@ ts_web_library(
         "@org_polymer_paper_styles",
     ],
 )
-

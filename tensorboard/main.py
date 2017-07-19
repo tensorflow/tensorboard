@@ -139,25 +139,32 @@ def create_tb_app(plugins, assets_zip_provider=None):
       plugins=plugins)
 
 
-def make_simple_server(tb_app, host, port):
+def make_simple_server(tb_app, host=None, port=None):
   """Create an HTTP server for TensorBoard.
 
   Args:
     tb_app: The TensorBoard WSGI application to create a server for.
     host: Indicates the interfaces to bind to ('::' or '0.0.0.0' for all
         interfaces, '::1' or '127.0.0.1' for localhost). A blank value ('')
-        indicates protocol-agnostic all interfaces.
+        indicates protocol-agnostic all interfaces. If not specified, will
+        default to the flag value.
     port: The port to bind to (0 indicates an unused port selected by the
-        operating system).
+        operating system). If not specified, will default to the flag value.
+
   Returns:
     A tuple of (server, url):
       server: An HTTP server object configured to host TensorBoard.
       url: A best guess at a URL where TensorBoard will be accessible once the
         server has been started.
+
   Raises:
     socket.error: If a server could not be constructed with the host and port
       specified. Also logs an error message.
   """
+  if host is None:
+    host = FLAGS.host
+  if port is None:
+    port = FLAGS.port
   try:
     if host:
       # The user gave us an explicit host
@@ -199,7 +206,7 @@ def make_simple_server(tb_app, host, port):
 def run_simple_server(tb_app):
   """Run a TensorBoard HTTP server, and print some messages to the console."""
   try:
-    server, url = make_simple_server(tb_app, FLAGS.host, FLAGS.port)
+    server, url = make_simple_server(tb_app)
   except socket.error:
     # An error message was already logged
     # TODO(@jart): Remove log and throw anti-pattern.
