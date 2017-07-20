@@ -83,7 +83,7 @@ dashboard would integrate trace viewer app using iframe.
       this._traceViewer.globalMode = true;
 
       this._throbber = document.createElement("div");
-      this._throbber.setAttribute("id", "throbber");
+      this._throbber.id = "throbber";
       this._throbber.appendChild(document.createTextNode("↻"));
 
       Polymer.dom(this.root).appendChild(this._traceViewer);
