@@ -13,7 +13,7 @@ filegroup(
         "@org_pocoo_werkzeug//:LICENSE",
         "@org_pythonhosted_markdown//:LICENSE.md",
         "@protobuf//:LICENSE",
-        "@six_archive//:LICENSE",
+        "@org_pythonhosted_six//:LICENSE",
     ]
 )
 

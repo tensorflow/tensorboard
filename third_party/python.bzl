@@ -60,3 +60,14 @@ def tensorboard_python_workspace():
       sha256 = "cc64dafbacc716cdd42503cf6c44cb5a35576443d82f29f6829e5c49264aeeee",
       build_file = str(Label("//third_party:werkzeug.BUILD")),
   )
+
+  native.new_http_archive(
+      name = "org_pythonhosted_six",
+      urls = [
+          "http://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
+          "http://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
+      ],
+      sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
+      strip_prefix = "six-1.10.0",
+      build_file = str(Label("//third_party:six.BUILD")),
+  )

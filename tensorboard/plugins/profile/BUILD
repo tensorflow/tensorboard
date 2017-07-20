@@ -28,7 +28,7 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
-        "@org_pocoo_werkzeug//:werkzeug",
+        "@org_pocoo_werkzeug",
     ],
 )
 
@@ -50,7 +50,7 @@ py_library(
     srcs = ["trace_events_json.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "@six_archive//:six",
+        "@org_pythonhosted_six",
     ],
 )
 

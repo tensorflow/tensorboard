@@ -109,7 +109,7 @@ py_library(
         ":event_accumulator",
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
-        "@six_archive//:six",
+        "@org_pythonhosted_six",
     ],
 )
 
