@@ -29,6 +29,26 @@ dashboard would integrate trace viewer app using iframe.
     width: 100%;
     height: 100%;
   }
+  /* The "throbber": a spinning loading indicator */
+  @keyframes spin { to { transform: rotate(1turn); } }
+  #throbber {
+    animation: spin 1s infinite linear;
+    color: black; font-size: 256px;
+    /* Display in the upper center of the screen */
+    position: fixed; z-index: 10;
+    top: 200px; left: 50%; width: 256px; margin-left: -128px;
+    /* Center within that box */
+    line-height: 256px; text-align:center;
+    pointer-events: none;
+
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  #throbber.active {
+    opacity: 0.15;
+    /* Wait a short time before showing the throbber (no delay for hiding). */
+    transition-delay: 0.3s;
+  }
 </style>
 <script>
   "use strict";
@@ -48,6 +68,7 @@ dashboard would integrate trace viewer app using iframe.
       _traceViewer: Object,
       _traceContainer: Object,
       _traceModel: Object,
+      _throbber: Object,
     },
     ready: function() {
       // Initiate the trace viewer app.
@@ -58,10 +79,15 @@ dashboard would integrate trace viewer app using iframe.
       this._traceViewer.track_view_container = this._traceContainer;
       this._traceViewer.appendChild(this._traceContainer);
 
-      this._traceViewer.id = 'trace-viewer';
+      this._traceViewer.id = "trace-viewer";
       this._traceViewer.globalMode = true;
 
+      this._throbber = document.createElement("div");
+      this._throbber.id = "throbber";
+      this._throbber.appendChild(document.createTextNode("↻"));
+
       Polymer.dom(this.root).appendChild(this._traceViewer);
+      Polymer.dom(this.root).appendChild(this._throbber);
 
       // Retrieve the URL of trace data.
       var queryString = window.location.href.split("?")[1];
@@ -76,6 +102,7 @@ dashboard would integrate trace viewer app using iframe.
         }
       }
 
+      this._throbber.className = "active";
       this._loadTrace();
     },
     _loadTrace : function() {
@@ -99,6 +126,7 @@ dashboard would integrate trace viewer app using iframe.
         }
         window.setTimeout(function() {
           if (req.status === 200) {
+            this._throbber.className = "inactive";
             this.set("_traceData", is_binary ? req.response : req.responseText);
           } else {
             this._displayOverlay(req.status, "Failed to fetch data");
