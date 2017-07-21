@@ -116,7 +116,7 @@ export function categorizeTags(
     tagToRuns[tag] = [];
   });
   selectedRuns.forEach(run => {
-    runToTag[run].forEach(tag => {
+    (runToTag[run] || []).forEach(tag => {
       tagToRuns[tag].push(run);
     });
   });
