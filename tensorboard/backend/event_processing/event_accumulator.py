@@ -195,6 +195,7 @@ class EventAccumulator(object):
     self._graph_from_metagraph = False
     self._meta_graph = None
     self._tagged_metadata = {}
+    self.summary_metadata = {}
     self.histograms = reservoir.Reservoir(size=sizes[HISTOGRAMS])
     self.compressed_histograms = reservoir.Reservoir(
         size=sizes[COMPRESSED_HISTOGRAMS], always_keep_last=False)
@@ -310,6 +311,20 @@ class EventAccumulator(object):
       raise KeyError('Plugin %r could not be found.' % plugin_name)
     return self._plugin_to_tag_to_content[plugin_name]
 
+  def SummaryMetadata(self, tag):
+    """Given a summary tag name, return the associated metadata object.
+
+    Args:
+      tag: The name of a tag, as a string.
+
+    Raises:
+      KeyError: If the tag is not found.
+
+    Returns:
+      A `SummaryMetadata` protobuf.
+    """
+    return self.summary_metadata[tag]
+
   def _ProcessEvent(self, event):
     """Called whenever an event is loaded."""
     if self._first_event_timestamp is None:
@@ -369,19 +384,18 @@ class EventAccumulator(object):
     elif event.HasField('summary'):
       for value in event.summary.value:
         if value.HasField('metadata'):
-          for plugin_data in value.metadata.plugin_data:
-            tag_mapping = self._plugin_to_tag_to_content[
-                plugin_data.plugin_name]
-            if value.tag in tag_mapping:
-              # We only store the first instance of the metadata. This check is
-              # important. The FileWriter does strip metadata from all values
-              # except the first one per each tag. However, a FileWriter is
-              # created every time a training job stops and restarts. Hence, we
-              # must also ignore subsequent metadata in this logic.
-              continue
-
-            # Store the content specific to this plugin for this tag.
-            tag_mapping[value.tag] = plugin_data.content
+          tag = value.tag
+          # We only store the first instance of the metadata. This check
+          # is important: the `FileWriter` does strip metadata from all
+          # values except the first one per each tag, but a new
+          # `FileWriter` is created every time a training job stops and
+          # restarts. Hence, we must also ignore non-initial metadata in
+          # this logic.
+          if tag not in self.summary_metadata:
+            self.summary_metadata[tag] = value.metadata
+            for plugin_data in value.metadata.plugin_data:
+              self._plugin_to_tag_to_content[plugin_data.plugin_name][tag] = (
+                  plugin_data.content)
 
         for summary_type, summary_func in SUMMARY_TYPES.items():
           if value.HasField(summary_type):
