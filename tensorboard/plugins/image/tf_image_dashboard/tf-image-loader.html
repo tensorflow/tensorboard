@@ -69,7 +69,7 @@ future for loading older images.
         selected$="[[_actualSizeShown]]"
         icon="aspect-ratio"
         on-tap="_toggleActualSizeShown"
-        title="Show the image at its true pixel size."
+        title="Show actual size."
       ></paper-icon-button>
     </div>
 
@@ -125,6 +125,10 @@ future for loading older images.
         max-height: 500px;
       }
 
+      :host[_actualSizeShown] #main-image-container img {
+        width: auto;
+      }
+
       paper-icon-button {
         color: #2196F3;
         border-radius: 100%;
@@ -162,6 +166,7 @@ future for loading older images.
         _actualSizeShown: {
           type: Boolean,
           value: false,
+          reflectToAttribute: true,  // for CSS
         },
 
         requestManager: Object,
@@ -218,7 +223,6 @@ future for loading older images.
       observers: [
         "reload(run, tag)",
         "_updateImageUrl(_steps, _stepIndex)",
-        "_updateActualImageSize(_actualSizeShown)",
       ],
 
       _computeRunColor(run) {
@@ -336,13 +340,6 @@ future for loading older images.
           this.set('_expanded', false);
         }
         this.set('_actualSizeShown', newValue);
-      },
-      _updateActualImageSize(actualSizeShown) {
-        // Updating the attribute and then relying on a descendent selector, ie
-        // ":host[_actualSizeShown]" img does not work, so we manually update the image width
-        // property here.
-        this.customStyle['--image-width'] = actualSizeShown ? 'auto' : '100%';
-        this.updateStyles();
       },
     });
   </script>
