@@ -21,6 +21,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
 <link rel="import" href="../tf-graph-debugger-data-card/tf-graph-debugger-data-card.html">
+<link rel="import" href="../tf-graph-op-compat-card/tf-graph-op-compat-card.html">
 <link rel="import" href="tf-node-info.html">
 
 <dom-module id="tf-graph-info">
@@ -53,6 +54,13 @@ h2 {
                   color-by="[[colorBy]]">
     </tf-node-info>
   </paper-material>
+</template>
+<template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
+  <tf-graph-op-compat-card graph-hierarchy="[[graphHierarchy]]"
+                           hierarchy-params="[[hierarchyParams]]"
+                           render-hierarchy="[[renderHierarchy]]"
+                           color-by="[[colorBy]]">
+  </tf-graph-op-compat-card>
 </template>
 <template is="dom-if" if="[[_healthPillsAvailable(debuggerDataEnabled, nodeNamesToHealthPills)]]">
   <tf-graph-debugger-data-card render-hierarchy="[[renderHierarchy]]"
@@ -125,6 +133,9 @@ h2 {
       // legend and slider. We do that because, even if no health pills exist at the current step,
       // the user may desire to change steps, and the slider must show for the user to do that.
       return debuggerDataEnabled && nodeNamesToHealthPills;
+    },
+    _equals: function(a, b) {
+      return a === b;
     },
   });
 })();

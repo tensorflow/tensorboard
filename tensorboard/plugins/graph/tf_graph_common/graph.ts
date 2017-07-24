@@ -160,6 +160,8 @@ export interface OpNode extends Node {
   outputShapes: TensorShape[];
   // The XLA Cluster on which the op ran. Null if it is unknown.
   xlaCluster: string;
+  // Whether op is compatible with device
+  compatible: boolean;
 }
 
 export interface BridgeNode extends Node {
@@ -277,6 +279,12 @@ export interface GroupNode extends Node {
   deviceHistogram: {[device: string]: number};
 
   /**
+   * Stores how many ops in sub-graph were compatible and how many are
+   * incompatible.
+   */
+  compatibilityHistogram: {compatible: number, incompatible: number}
+
+  /**
    * Flag indicating whether this GroupNode's metagraph contains any edges that
    * are not control edges. Used to quickly determine how to draw a collapsed
    * series (vertically or horizontally).
@@ -356,6 +364,7 @@ export class OpNodeImpl implements OpNode {
   outputShapes: TensorShape[];
   nodeAttributes: {[key: string]: any;};
   xlaCluster: string;
+  compatible: boolean;
 
   /**
    * Constructs a new Op node.
@@ -374,6 +383,7 @@ export class OpNodeImpl implements OpNode {
     this.inputs = normalizeInputs(rawNode.input);
     this.outputShapes = extractOutputShapes(rawNode.attr);
     this.xlaCluster = extractXlaCluster(rawNode.attr);
+    this.compatible = false;
     // additional properties
     this.type = NodeType.OP;
     this.isGroupNode = false;
@@ -556,6 +566,7 @@ export class MetanodeImpl implements Metanode {
   templateId: string;
   opHistogram: {[op: string]: number};
   deviceHistogram: {[op: string]: number};
+  compatibilityHistogram: {compatible: number, incompatible: number};
   parentNode: Node;
   hasNonControlEdges: boolean;
   include: InclusionType;
@@ -583,6 +594,7 @@ export class MetanodeImpl implements Metanode {
      */
     this.opHistogram = {};
     this.deviceHistogram = {};
+    this.compatibilityHistogram = {compatible: 0, incompatible: 0};
     /** unique id for a metanode of similar subgraph */
     this.templateId = null;
     /** Metanode which contains this node, if any */
@@ -781,6 +793,7 @@ class SeriesNodeImpl implements SeriesNode {
   bridgegraph: graphlib.Graph<GroupNode|OpNode, Metaedge>;
   parentNode: Node;
   deviceHistogram: {[op: string]: number};
+  compatibilityHistogram: {compatible: number, incompatible: number};
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
@@ -802,6 +815,7 @@ class SeriesNodeImpl implements SeriesNode {
     this.bridgegraph = null;
     this.parentNode = null;
     this.deviceHistogram = {};
+    this.compatibilityHistogram = {compatible: 0, incompatible: 0};
     this.hasNonControlEdges = false;
     this.include = InclusionType.UNSPECIFIED;
   }
