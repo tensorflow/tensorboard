@@ -63,11 +63,13 @@ future for loading older images.
         selected$="[[_expanded]]"
         icon="fullscreen"
         on-tap="_toggleExpanded"
+        title="Make the image fill the whole width. Note that this size may differ from actual."
       ></paper-icon-button>
       <paper-icon-button
+        selected$="[[_actualSizeShown]]"
         icon="aspect-ratio"
-        on-tap="_showActualSize"
-        title="Show the image at its true pixel size"
+        on-tap="_toggleActualSizeShown"
+        title="Show the image at its true pixel size."
       ></paper-icon-button>
     </div>
 
@@ -77,10 +79,12 @@ future for loading older images.
         width: 330px;
         height: auto;
         position: relative;
-        --step-slider-knob-color: #424242;
         margin-right: 15px;
         margin-bottom: 10px;
+        --image-width: 100%;
+        --step-slider-knob-color: #424242;
       }
+
       :host[_expanded] {
         width: 700px;
       }
@@ -116,7 +120,7 @@ future for loading older images.
         image-rendering: -moz-crisp-edges;
         image-rendering: pixelated;
         display: block;
-        width: 100%;
+        width: var(--image-width);
         height: auto;
         max-height: 500px;
       }
@@ -124,7 +128,6 @@ future for loading older images.
       paper-icon-button {
         color: #2196F3;
         border-radius: 100%;
-        pointer-events: auto;  /* TODO(@wchargin): why? */
         width: 32px;
         height: 32px;
         padding: 4px;
@@ -146,8 +149,6 @@ future for loading older images.
       properties: {
         run: String,
         tag: String,
-        /** @type {function(Node)} */
-        showActualSize: Object,
 
         _runColor: {
           type: String,
@@ -158,7 +159,10 @@ future for loading older images.
           value: false,
           reflectToAttribute: true,  // for CSS
         },
-
+        _actualSizeShown: {
+          type: Boolean,
+          value: false,
+        },
 
         requestManager: Object,
         _metadataCanceller: {
@@ -214,6 +218,7 @@ future for loading older images.
       observers: [
         "reload(run, tag)",
         "_updateImageUrl(_steps, _stepIndex)",
+        "_updateActualImageSize(_actualSizeShown)",
       ],
 
       _computeRunColor(run) {
@@ -316,12 +321,28 @@ future for loading older images.
         img.src = steps[stepIndex].url;
       },
 
-      _toggleExpanded(e) {
-        this.set('_expanded', !this._expanded);
+      _toggleExpanded() {
+        const newValue = !this._expanded;
+        if (newValue) {
+          // If this is true, _actualSizeShown must be false. The features are mutually exclusive.
+          this.set('_actualSizeShown', false);
+        }
+        this.set('_expanded', newValue);
       },
-      _showActualSize() {
-        const img = this.$$("#main-image-container img");
-        this.showActualSize(img);
+      _toggleActualSizeShown() {
+        const newValue = !this._actualSizeShown;
+        if (newValue) {
+          // If this is true, expanded must be false. The features are mutually exclusive.
+          this.set('_expanded', false);
+        }
+        this.set('_actualSizeShown', newValue);
+      },
+      _updateActualImageSize(actualSizeShown) {
+        // Updating the attribute and then relying on a descendent selector, ie
+        // ":host[_actualSizeShown]" img does not work, so we manually update the image width
+        // property here.
+        this.customStyle['--image-width'] = actualSizeShown ? 'auto' : '100%';
+        this.updateStyles();
       },
     });
   </script>
