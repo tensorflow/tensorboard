@@ -11,10 +11,11 @@ py_web_test_suite(
     data = [
         "//tensorboard",
     ],
+    flaky = True,
     srcs_version = "PY2AND3",
     deps = [
-        "@io_bazel_rules_webtesting//testing/web",
-        "//tensorboard/plugins/scalar:scalars_demo",
         "//tensorboard/plugins/audio:audio_demo",
+        "//tensorboard/plugins/scalar:scalars_demo",
+        "@io_bazel_rules_webtesting//testing/web",
     ],
 )
