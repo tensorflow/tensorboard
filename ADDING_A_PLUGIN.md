@@ -13,10 +13,10 @@ This document is a living guide on best practices for adding a plugin to TensorB
 
 ## Background
 
-To be successful writing a TensorBoard Plugin, you'll need to be familiar with general TensorBoard usage. We recommend you take a look at the [TensorBoard README] to get started, and work through a tutorial. You can find a lively introduction to using TensorBoard from this [YouTube presentation at the TF Dev Summit]; that was current as of early 2017.
+To be successful writing a TensorBoard Plugin, you'll need to be familiar with general TensorBoard usage. We recommend starting with Dandelion Mané's [Hands-on TensorBoard] tutorial at the 2017 TensorFlow Dev Summit. We then recommend taking a look at the [TensorBoard README] and working through the tutorial.
 
+[Hands-on TensorBoard]: https://www.youtube.com/watch?v=eBbEDRsCmv4&t=5s
 [TensorBoard README]: https://github.com/tensorflow/tensorboard/blob/master/README.md
-[YouTube presentation at the TF Dev Summit]: https://www.youtube.com/watch?v=eBbEDRsCmv4&t=5s
 
 As a plugin developer, there are a few concepts you should be especially familiar with.
 
@@ -63,7 +63,7 @@ Now that we have the background out of the way, we can talk about plugins! Each 
 
 ### API layer: How the plugin gets data
 
-Users of your plugin will use your API to emit protocol bufers containing the data that your plugin will visualize. In general, you should expose two ways of doing this: via a TensorFlow summary op, and by directly creating a protocol buffer.
+Users of your plugin will use your API to emit protocol buffers containing the data that your plugin will visualize. In general, you should expose two ways of doing this: via a TensorFlow summary op, and by directly creating a protocol buffer.
 
 For example, let's create a `Greeter` plugin. It provides a greeter `op` method, which creates a TensorFlow op that emits a string-tensor summary. It also provides a `pb` function that creates this directly, outside of a TensorFlow context. Standard TensorBoard plugins should follow this API.
 
@@ -102,7 +102,6 @@ def op(name,
   # the TensorBoard display clearer.
   if display_name is None:
     display_name = name
-  with tf.name_scope(name), \
     message = tf.string_join(['Hello, ', guest, '!'])
     # Return a summary op that is properly configured.
     return tf.summary.tensor_summary(
@@ -152,7 +151,7 @@ The `SummaryMetadata` can also contain additional information describing each se
 - a custom protocol buffer for your plugin, serialized as a ByteString or String
 - a JSON object, serialized as a string
 
-The metadata may be quite long—imagine writing a long description (with hyperlinks, Markdown code blocks, et cetera) which explains exactly how a certain data series is calculated in your model. To save space, we don't write the metadata every time. The `tf.summary.FileWriter` only writes metadata once per tag. Thus, changing the metadata for a given tag is a bad idea.
+The metadata may be quite long—imagine writing a long description (with hyperlinks, Markdown code blocks, et cetera) which explains exactly how a certain data series is calculated in your model. To save space, we don't write the metadata every time. The `tf.summary.FileWriter` only writes metadata once per tag. (Specifically: the `FileWriter` only writes metadata the *first* time it encounters a given tag. Afterwards, it discards the metadata.) Thus, changing the metadata for a given tag is a bad idea.
 
 You might be wondering why we have `tag` and `display_name` as separate concepts. Why not always use the `tag` as the display name in TensorBoard?
 
@@ -314,9 +313,9 @@ for context.
 
 ### Frontend: How the plugin visualizes your new data
 
-Now that we have an API and a Backend, it's time for the exciting part: adding a visualization!
+Now that we have an API and a Backend, it's time for the cool part: adding a visualization.
 
-TensorBoard is built on [Polymer](https://www.polymer-project.org/) (1.x). Polymer makes it easy to define new custom components and embed them into to other applications, which is great for embedding new visualizations and new dashboards into TensorBoard.
+TensorBoard is built on [Polymer](https://www.polymer-project.org/) (1.x). Polymer makes it easy to define new custom components and embed them within other applications, which makes it great for embedding new visualizations and new dashboards into TensorBoard.
 
 The first question to ask as you work on your plugin is: do you want to create a small, per-tag visualization (like the scalar chart, the histograms chart, or the image loader) and wrap it in a dashboard with standard TensorBoard UI organization? Or would you like to build everything from scratch, possibly with a single giant new visualization like the graph explorer or the projector plugin? Lots of the standard TensorBoard UI is meant to make it easy to search for different tags, so if you have one element for tag, you should use our UI helpers.
 
