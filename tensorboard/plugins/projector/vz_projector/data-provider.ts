@@ -390,12 +390,22 @@ export function retrieveSpriteAndMetadataInfo(metadataPath: string,
       request.open('GET', metadataPath);
       request.responseType = 'arraybuffer';
 
-      request.onerror = () => {
-        logging.setErrorMessage(request.responseText, 'fetching metadata');
-        reject();
-      };
-      request.onload = () => {
-        resolve(parseMetadata(request.response));
+      request.onreadystatechange = () => {
+        if (request.readyState === 4) {
+          if (request.status === 200) {
+            // The metadata was successfully retrieved. Parse it.
+            resolve(parseMetadata(request.response));
+          } else {
+            // The response contains the error message, but we must convert it
+            // to a string.
+            const errorReader = new FileReader();
+            errorReader.onload = () => {
+              logging.setErrorMessage(errorReader.result, 'fetching metadata');
+              reject();
+            };
+            errorReader.readAsText(new Blob([request.response]));
+          }
+        }
       };
       request.send(null);
     });
