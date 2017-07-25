@@ -411,15 +411,17 @@ export class RenderGraphInfo {
       if (!childNode.isGroupNode) {
         _.each((<OpNode>childNode).inEmbeddings, embedding => {
           let renderMetaedgeInfo = new RenderMetaedgeInfo(null);
-          addInAnnotation(childRenderInfo, embedding, null, renderMetaedgeInfo,
+          let renderNodeInfo = new RenderNodeInfo(embedding);
+          addInAnnotation(childRenderInfo, embedding, renderNodeInfo, renderMetaedgeInfo,
               AnnotationType.CONSTANT);
-          this.index[embedding.name] = new RenderNodeInfo(embedding);
+          this.index[embedding.name] = renderNodeInfo;
         });
         _.each((<OpNode>childNode).outEmbeddings, embedding => {
           let renderMetaedgeInfo = new RenderMetaedgeInfo(null);
-          addOutAnnotation(childRenderInfo, embedding, null, renderMetaedgeInfo,
+          let renderNodeInfo = new RenderNodeInfo(embedding);
+          addOutAnnotation(childRenderInfo, embedding, renderNodeInfo, renderMetaedgeInfo,
               AnnotationType.SUMMARY);
-          this.index[embedding.name] = new RenderNodeInfo(embedding);
+          this.index[embedding.name] = renderNodeInfo;
         });
       }
 
