@@ -836,6 +836,85 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     self.assertProtoEquals(graph.as_graph_def(add_shapes=True), acc.Graph())
     self.assertProtoEquals(meta_graph_def, acc.MetaGraph())
 
+  def _writeMetadata(self, logdir, summary_metadata, nonce=''):
+    """Write to disk a summary with the given metadata.
+
+    Arguments:
+      logdir: a string
+      summary_metadata: a `SummaryMetadata` protobuf object
+      nonce: optional; will be added to the end of the event file name
+        to guarantee that multiple calls to this function do not stomp the
+        same file
+    """
+
+    summary = tf.Summary()
+    summary.value.add(
+        tensor=tf.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
+        tag='you_are_it',
+        metadata=summary_metadata)
+    writer = tf.summary.FileWriter(logdir, filename_suffix=nonce)
+    writer.add_summary(summary.SerializeToString())
+    writer.close()
+
+
+  def testSummaryMetadata(self):
+    logdir = self.get_temp_dir()
+    summary_metadata = tf.SummaryMetadata(
+        display_name='current tagee',
+        summary_description='no',
+        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='outlet')])
+    self._writeMetadata(logdir, summary_metadata)
+    acc = ea.EventAccumulator(logdir)
+    acc.Reload()
+    self.assertProtoEquals(summary_metadata,
+                           acc.SummaryMetadata('you_are_it'))
+
+  def testSummaryMetadata_FirstMetadataWins(self):
+    logdir = self.get_temp_dir()
+    summary_metadata_1 = tf.SummaryMetadata(
+        display_name='current tagee',
+        summary_description='no',
+        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='outlet',
+                                                   content='120v')])
+    self._writeMetadata(logdir, summary_metadata_1, nonce='1')
+    acc = ea.EventAccumulator(logdir)
+    acc.Reload()
+    summary_metadata_2 = tf.SummaryMetadata(
+        display_name='tagee of the future',
+        summary_description='definitely not',
+        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='plug',
+                                                   content='110v')])
+    self._writeMetadata(logdir, summary_metadata_2, nonce='2')
+    acc.Reload()
+
+    self.assertProtoEquals(summary_metadata_1,
+                           acc.SummaryMetadata('you_are_it'))
+
+  def testPluginTagToContent_PluginsCannotJumpOnTheBandwagon(self):
+    # If there are multiple `SummaryMetadata` for a given tag, and the
+    # set of plugins in the `plugin_data` of second is different from
+    # that of the first, then the second set should be ignored.
+    logdir = self.get_temp_dir()
+    summary_metadata_1 = tf.SummaryMetadata(
+        display_name='current tagee',
+        summary_description='no',
+        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='outlet',
+                                                   content='120v')])
+    self._writeMetadata(logdir, summary_metadata_1, nonce='1')
+    acc = ea.EventAccumulator(logdir)
+    acc.Reload()
+    summary_metadata_2 = tf.SummaryMetadata(
+        display_name='tagee of the future',
+        summary_description='definitely not',
+        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='plug',
+                                                   content='110v')])
+    self._writeMetadata(logdir, summary_metadata_2, nonce='2')
+    acc.Reload()
+
+    self.assertEqual(acc.PluginTagToContent('outlet'),
+                     {'you_are_it': '120v'})
+    with six.assertRaisesRegex(self, KeyError, 'plug'):
+      acc.PluginTagToContent('plug')
 
 if __name__ == '__main__':
   tf.test.main()
