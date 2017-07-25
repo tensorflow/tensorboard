@@ -335,7 +335,7 @@ export class RenderGraphInfo {
   getNearestVisibleAncestor(name: string): string {
     let path = getHierarchicalPath(name);
     let i = 0;
-    let renderNode : RenderNodeInfo = null;
+    let renderNode: RenderNodeInfo = null;
     // Fallthrough. If everything was expanded return the node.
     let nodeName = name;
     for (; i < path.length; i++) {
@@ -353,11 +353,13 @@ export class RenderGraphInfo {
     // displayed.
     if (i == path.length - 2) {
       let nextName = path[i + 1];
-      if (renderNode.inAnnotations.nodeNames[nextName])
+      if (renderNode.inAnnotations.nodeNames[nextName]) {
         return nextName;
+      }
 
-      if (renderNode.outAnnotations.nodeNames[nextName])
+      if (renderNode.outAnnotations.nodeNames[nextName]) {
         return nextName;
+      }
     }
 
     return nodeName;
