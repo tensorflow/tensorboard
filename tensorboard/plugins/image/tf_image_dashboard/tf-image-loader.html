@@ -58,20 +58,6 @@ future for loading older images.
       </template>
     </tf-card-heading>
     <div id="main-image-container"></div>
-    <div style="display: flex; flex-direction: row;">
-      <paper-icon-button
-        selected$="[[_expanded]]"
-        icon="fullscreen"
-        on-tap="_toggleExpanded"
-        title="Fill width"
-      ></paper-icon-button>
-      <paper-icon-button
-        selected$="[[_actualSizeShown]]"
-        icon="aspect-ratio"
-        on-tap="_toggleActualSizeShown"
-        title="Show actual size"
-      ></paper-icon-button>
-    </div>
 
     <style>
       :host {
@@ -79,14 +65,14 @@ future for loading older images.
         width: 330px;
         height: auto;
         position: relative;
-        margin-right: 15px;
-        margin-bottom: 10px;
-        --image-width: 100%;
+        margin: 0 15px 40px 0;
         --step-slider-knob-color: #424242;
       }
 
-      :host[_expanded] {
-        width: 700px;
+      /** When actual size shown is on, use the actual image width. */
+      :host[actual-size-shown],
+      :host[actual-size-shown] #main-image-container img {
+        width: auto;
       }
 
       paper-spinner-lite {
@@ -115,18 +101,20 @@ future for loading older images.
         --paper-slider-pin-start-color: var(--step-slider-knob-color);
       }
 
+      /** If the image exceeds the container, activate scrolling. */
+      #main-image-container {
+        max-height: 1024px;
+        max-width: 1024px;
+        overflow: auto;
+      }
+
       #main-image-container img {
         border: 1px solid #f5f5f5;
         image-rendering: -moz-crisp-edges;
         image-rendering: pixelated;
         display: block;
-        width: var(--image-width);
+        width: 100%;
         height: auto;
-        max-height: 500px;
-      }
-
-      :host[_actualSizeShown] #main-image-container img {
-        width: auto;
       }
 
       paper-icon-button {
@@ -158,12 +146,7 @@ future for loading older images.
           type: String,
           computed: '_computeRunColor(run)',
         },
-        _expanded: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,  // for CSS
-        },
-        _actualSizeShown: {
+        actualSizeShown: {
           type: Boolean,
           value: false,
           reflectToAttribute: true,  // for CSS
@@ -323,23 +306,6 @@ future for loading older images.
         // Load the new image.
         this.set("_isImageLoading", true);
         img.src = steps[stepIndex].url;
-      },
-
-      _toggleExpanded() {
-        const newValue = !this._expanded;
-        if (newValue) {
-          // If this is true, _actualSizeShown must be false. The features are mutually exclusive.
-          this.set('_actualSizeShown', false);
-        }
-        this.set('_expanded', newValue);
-      },
-      _toggleActualSizeShown() {
-        const newValue = !this._actualSizeShown;
-        if (newValue) {
-          // If this is true, expanded must be false. The features are mutually exclusive.
-          this.set('_expanded', false);
-        }
-        this.set('_actualSizeShown', newValue);
       },
     });
   </script>
