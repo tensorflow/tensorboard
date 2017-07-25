@@ -71,7 +71,8 @@ future for loading older images.
 
       /** When actual size shown is on, use the actual image width. */
       :host[actual-size] {
-        width: 100%;
+        max-width: 100%;
+        width: auto;
       }
 
       :host[actual-size] #main-image-container img {
