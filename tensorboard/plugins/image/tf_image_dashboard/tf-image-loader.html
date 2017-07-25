@@ -75,6 +75,10 @@ future for loading older images.
         width: auto;
       }
 
+      :host[actual-size] #main-image-container {
+        max-height: 1024px;
+      }
+
       :host[actual-size] #main-image-container img {
         width: auto;
       }
@@ -105,9 +109,7 @@ future for loading older images.
         --paper-slider-pin-start-color: var(--step-slider-knob-color);
       }
 
-      /** If the image exceeds the container, activate scrolling. */
       #main-image-container {
-        max-height: 1024px;
         overflow: auto;
       }
 
