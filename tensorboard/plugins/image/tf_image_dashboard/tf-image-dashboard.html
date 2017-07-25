@@ -39,7 +39,7 @@ TensorFlow run.
         <div class="sidebar-section">
           <div class="line-item">
             <paper-checkbox
-              checked="{{_actualSizeShown}}"
+              checked="{{_actualSize}}"
             >Show actual image size</paper-checkbox>
           </div>
         </div>
@@ -93,7 +93,7 @@ TensorFlow run.
                           run="[[item.run]]"
                           tag="[[item.tag]]"
                           request-manager="[[_requestManager]]"
-                          actual-size-shown="[[_actualSizeShown]]"
+                          actual-size="[[_actualSize]]"
                         ></tf-image-loader>
                       </template>
                     </div>
@@ -127,7 +127,7 @@ TensorFlow run.
         _selectedRuns: Array,
         _runToTag: Object,  // map<run: string, tags: string[]>
         _dataNotFound: Boolean,
-        _actualSizeShown: Boolean,
+        _actualSize: Boolean,
 
         _tagFilter: {
           type: String,  // upward bound from paper-input
