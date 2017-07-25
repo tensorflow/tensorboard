@@ -668,7 +668,7 @@ export function stylize(nodeGroup, renderInfo: render.RenderNodeInfo,
   let isHighlighted = sceneElement.isNodeHighlighted(renderInfo.node.name);
   let isSelected = sceneElement.isNodeSelected(renderInfo.node.name);
   let isExtract = renderInfo.isInExtract || renderInfo.isOutExtract;
-  let isExpanded = renderInfo.expanded;
+  let isExpanded = renderInfo.expanded && nodeClass !== Class.Annotation.NODE;
   let isFadedOut = renderInfo.isFadedOut;
   nodeGroup.classed('highlighted', isHighlighted);
   nodeGroup.classed('selected', isSelected);
