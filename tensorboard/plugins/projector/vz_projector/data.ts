@@ -32,6 +32,7 @@ export interface DataProto {
   metadata: {
     columns: Array<
         {name: string; stringValues: string[]; numericValues: number[];}>;
+    sprite: {imageBase64: string; singleImageDim: [number, number]};
   };
 }
 

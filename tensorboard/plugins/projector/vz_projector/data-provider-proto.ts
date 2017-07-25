@@ -56,9 +56,28 @@ export class ProtoDataProvider implements DataProvider {
         pointsMetadata[i][c.name] = values[i];
       }
     });
-    callback({
-      stats: analyzeMetadata(columnNames, pointsMetadata),
-      pointsInfo: pointsMetadata
+    let spritesPromise: Promise<HTMLImageElement> = Promise.resolve(null);
+    if (this.dataProto.metadata.sprite != null) {
+      spritesPromise = new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject('Failed converting base64 to an image');
+        image.src = this.dataProto.metadata.sprite.imageBase64;
+      });
+    }
+    spritesPromise.then(image => {
+      const result: SpriteAndMetadataInfo = {
+        stats: analyzeMetadata(columnNames, pointsMetadata),
+        pointsInfo: pointsMetadata
+      };
+      if (image != null) {
+        result.spriteImage = image;
+        result.spriteMetadata = {
+          singleImageDim: this.dataProto.metadata.sprite.singleImageDim,
+          imagePath: 'proto'
+        };
+      }
+      callback(result);
     });
   }
 
