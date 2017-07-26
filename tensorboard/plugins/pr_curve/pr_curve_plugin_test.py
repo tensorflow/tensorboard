@@ -82,7 +82,7 @@ class PrCurveTest(tf.test.TestCase):
     correct_shape = [6, 1, 10]
     self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
 
-    np.testing.assert_allclose(([
+    np.testing.assert_allclose([
       # True positives.
       [[2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]],
       # False positives.
@@ -95,7 +95,7 @@ class PrCurveTest(tf.test.TestCase):
       [[0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0]],
       # Recall.
       [[1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0]]
-    ], tensor_nd_array.tolist()))
+    ], tensor_nd_array.tolist())
 
 if __name__ == "__main__":
   tf.test.main()
