@@ -34,9 +34,15 @@ TensorFlow run.
 -->
 <dom-module id="tf-image-dashboard">
   <template>
-    <paper-dialog with-backdrop id="actual-image-size-dialog"></paper-dialog>
     <tf-dashboard-layout>
       <div class="sidebar">
+        <div class="sidebar-section">
+          <div class="line-item">
+            <paper-checkbox
+              checked="{{_actualSize}}"
+            >Show actual image size</paper-checkbox>
+          </div>
+        </div>
         <div class="sidebar-section">
           <tf-runs-selector
             id="runs-selector"
@@ -87,7 +93,7 @@ TensorFlow run.
                           run="[[item.run]]"
                           tag="[[item.tag]]"
                           request-manager="[[_requestManager]]"
-                          show-actual-size="[[_showActualSize]]"
+                          actual-size="[[_actualSize]]"
                         ></tf-image-loader>
                       </template>
                     </div>
@@ -121,6 +127,7 @@ TensorFlow run.
         _selectedRuns: Array,
         _runToTag: Object,  // map<run: string, tags: string[]>
         _dataNotFound: Boolean,
+        _actualSize: Boolean,
 
         _tagFilter: {
           type: String,  // upward bound from paper-input
@@ -135,32 +142,6 @@ TensorFlow run.
         _requestManager: {
           type: Object,
           value: () => new RequestManager(),
-        },
-        _showActualSize: {
-          type: Object,
-          readOnly: true,
-          value: function() {
-            return (imageNode) => {
-              // Create a full-size copy of the image.
-              const newImage = imageNode.cloneNode();
-              newImage.style.height = 'auto';
-              newImage.style.width = 'auto';
-              newImage.style.margin = 0;
-              newImage.style.padding = 0;
-              newImage.classList.add('actual-size-image');  // TODO(@wchargin): Why?
-
-              // When the user clicks on the image, empty and close the dialog.
-              const dialog = this.$$('#actual-image-size-dialog');
-              newImage.addEventListener('click', () => {
-                dialog.close();
-              });
-
-              // Update dialog content. Show the dialog.
-              dialog.innerHTML = '';
-              dialog.appendChild(newImage);
-              dialog.open();
-            };
-          },
         },
       },
 

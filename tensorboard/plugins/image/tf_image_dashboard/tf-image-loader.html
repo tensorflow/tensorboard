@@ -58,18 +58,6 @@ future for loading older images.
       </template>
     </tf-card-heading>
     <div id="main-image-container"></div>
-    <div style="display: flex; flex-direction: row;">
-      <paper-icon-button
-        selected$="[[_expanded]]"
-        icon="fullscreen"
-        on-tap="_toggleExpanded"
-      ></paper-icon-button>
-      <paper-icon-button
-        icon="aspect-ratio"
-        on-tap="_showActualSize"
-        title="Show the image at its true pixel size"
-      ></paper-icon-button>
-    </div>
 
     <style>
       :host {
@@ -77,12 +65,22 @@ future for loading older images.
         width: 330px;
         height: auto;
         position: relative;
+        margin: 0 15px 40px 0;
         --step-slider-knob-color: #424242;
-        margin-right: 15px;
-        margin-bottom: 10px;
       }
-      :host[_expanded] {
-        width: 700px;
+
+      /** When actual size shown is on, use the actual image width. */
+      :host[actual-size] {
+        max-width: 100%;
+        width: auto;
+      }
+
+      :host[actual-size] #main-image-container {
+        max-height: none;
+      }
+
+      :host[actual-size] #main-image-container img {
+        width: auto;
       }
 
       paper-spinner-lite {
@@ -111,20 +109,22 @@ future for loading older images.
         --paper-slider-pin-start-color: var(--step-slider-knob-color);
       }
 
+      #main-image-container {
+        max-height: 1024px;
+        overflow: auto;
+      }
+
       #main-image-container img {
-        border: 1px solid #f5f5f5;
         image-rendering: -moz-crisp-edges;
         image-rendering: pixelated;
         display: block;
         width: 100%;
         height: auto;
-        max-height: 500px;
       }
 
       paper-icon-button {
         color: #2196F3;
         border-radius: 100%;
-        pointer-events: auto;  /* TODO(@wchargin): why? */
         width: 32px;
         height: 32px;
         padding: 4px;
@@ -146,19 +146,16 @@ future for loading older images.
       properties: {
         run: String,
         tag: String,
-        /** @type {function(Node)} */
-        showActualSize: Object,
 
         _runColor: {
           type: String,
           computed: '_computeRunColor(run)',
         },
-        _expanded: {
+        actualSize: {
           type: Boolean,
           value: false,
           reflectToAttribute: true,  // for CSS
         },
-
 
         requestManager: Object,
         _metadataCanceller: {
@@ -314,14 +311,6 @@ future for loading older images.
         // Load the new image.
         this.set("_isImageLoading", true);
         img.src = steps[stepIndex].url;
-      },
-
-      _toggleExpanded(e) {
-        this.set('_expanded', !this._expanded);
-      },
-      _showActualSize() {
-        const img = this.$$("#main-image-container img");
-        this.showActualSize(img);
       },
     });
   </script>
