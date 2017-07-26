@@ -192,9 +192,8 @@ def op(
             plugin_name='pr_curve',
             content=json_format.MessageToJson(pr_curve_plugin_data))
 
-        precision = tf.divide(
-            tf.maximum(_TINY_EPISILON, tp),
-            tf.maximum(_TINY_EPISILON, tf.add(tp, fp)))
+        precision = tf.maximum(_TINY_EPISILON, tp) /
+            tf.maximum(_TINY_EPISILON, tp + fp)
 
         # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold 1.0,
         # recall=1. Note that for the formulation on the right
@@ -204,9 +203,7 @@ def op(
         # going to be a value very close to 1 (but not quite 1), and
         # so we use the formulation on the left instead. In that case,
         # we get 0 when threshold=1.0 because fn is 0.
-        recall = tf.subtract(
-            1.0,
-            tf.divide(fn, tf.maximum(_TINY_EPISILON, tf.add(tp, fn))))
+        recall = 1.0 - fn / tf.maximum(_TINY_EPISILON, tf.add(tp, fn)
 
         # Store values within a tensor. We store them in the order:
         # true positives, false positives, true negatives, false

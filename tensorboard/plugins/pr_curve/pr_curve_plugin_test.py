@@ -75,21 +75,20 @@ class PrCurveTest(tf.test.TestCase):
 
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
 
-    # The tensor shape must be correct. The first dimension is the 4 categories
-    # of counts. The 2nd dimension is the number of classes. The last dimension
-    # is the number of thresholds.
+    # The tensor shape must be correct. The first dimension is the
+    # type of value (see documentation for the op). The 2nd dimension
+    # is the number of classes. The last dimension is the number of
+    # thresholds.
     correct_shape = [6, 1, 10]
-    self.assertListEqual(
-        correct_shape,
-        list(tensor_nd_array.shape))
+    self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
 
     # The counts within the various bins must be correct.
-    self.assertListEqual([
+    np.testing.assert_allclose(([
       [[2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]],
       [[2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]],
       [[0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0]],
       [[0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0]],
-      [[0.5, 0.5, 0.6666666865348816, 0.6666666865348816, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0]],
+      [[0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0]],
       [[1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0]]
     ], tensor_nd_array.tolist())
 
