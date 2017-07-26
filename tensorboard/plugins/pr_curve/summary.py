@@ -192,8 +192,8 @@ def op(
             plugin_name='pr_curve',
             content=json_format.MessageToJson(pr_curve_plugin_data))
 
-        precision = tf.maximum(_TINY_EPISILON, tp) /
-            tf.maximum(_TINY_EPISILON, tp + fp)
+        precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
+            _TINY_EPISILON, tp + fp)
 
         # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold 1.0,
         # recall=1. Note that for the formulation on the right
