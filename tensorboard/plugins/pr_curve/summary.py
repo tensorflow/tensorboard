@@ -203,7 +203,7 @@ def op(
         # going to be a value very close to 1 (but not quite 1), and
         # so we use the formulation on the left instead. In that case,
         # we get 0 when threshold=1.0 because fn is 0.
-        recall = 1.0 - fn / tf.maximum(_TINY_EPISILON, tf.add(tp, fn)
+        recall = 1.0 - fn / tf.maximum(_TINY_EPISILON, tf.add(tp, fn))
 
         # Store values within a tensor. We store them in the order:
         # true positives, false positives, true negatives, false
