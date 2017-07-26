@@ -17,20 +17,27 @@ limitations under the License.
  * Functions for converting between the different representations of
  * histograms.
  */
+
+export type BackendHistogramBin = [
+  number,  // left
+  number,  // right
+  number   // count
+];
 export type BackendHistogram = [
   number,  // wall_time, in seconds
   number,  // step
-  // min, max, nItems, sum, sumSquares, bucketRightEdges, bucketCounts
-  [number, number, number, number, number, number[], number[]]
+  BackendHistogramBin[]
 ];
 export type IntermediateHistogram = {
   wall_time: number,  // in seconds
   step: number,
   min: number,
   max: number,
-  // We drop `nItems`, `sum`, and `sumSquares`. They're not used.
-  bucketRightEdges: number[],
-  bucketCounts: number[],
+  buckets: {
+    left: number,
+    right: number,
+    count: number,
+  }[],
 };
 export type D3HistogramBin = {
   x: number,
@@ -45,12 +52,14 @@ export type VzHistogram = {
 
 export function backendToIntermediate(histogram: BackendHistogram):
     IntermediateHistogram {
-  const [
+  const [wall_time, step, buckets] = histogram;
+  return {
     wall_time,
     step,
-    [min, max, , , , bucketRightEdges, bucketCounts],
-  ] = histogram;
-  return {wall_time, step, min, max, bucketRightEdges, bucketCounts};
+    min: d3.min(buckets.map(([left, , ]) => left)),
+    max: d3.max(buckets.map(([, right, ]) => right)),
+    buckets: buckets.map(([left, right, count]) => ({left, right, count})),
+  };
 }
 
 /**
@@ -61,7 +70,7 @@ export function backendToIntermediate(histogram: BackendHistogram):
  * bins to have a uniform width, which makes the visualization easier to
  * understand.
  *
- * @param histogram A histogram from tensorboard backend.
+ * @param histogram
  * @param min The leftmost edge. The binning will start on it.
  * @param max The rightmost edge. The binning will end on it.
  * @param numBins The number of bins of the converted data. The default
@@ -77,20 +86,17 @@ export function backendToIntermediate(histogram: BackendHistogram):
 export function intermediateToD3(
     histogram: IntermediateHistogram, min: number, max: number,
     numBins = 30): D3HistogramBin[] {
-  if (histogram.bucketRightEdges.length !== histogram.bucketCounts.length) {
-    throw new Error("Edges and counts are of different lengths.");
-  }
-
   if (max === min) {
     // Create bins even if all the data has a single value.
     max = min * 1.1 + 1;
     min = min / 1.1 - 1;
   }
+
+  // Terminology note: _buckets_ are the input to this function,
+  // while _bins_ are our output.
   const binWidth = (max - min) / numBins;
 
-  // Use the min as the starting point for the bins.
-  let bucketLeft = min;
-  let bucketPos = 0;
+  let bucketIndex = 0;
   return d3.range(min, max, binWidth).map((binLeft) => {
     const binRight = binLeft + binWidth;
 
@@ -99,27 +105,26 @@ export function intermediateToD3(
     // count for the new bin. If no overlap, will add to zero; if 100%
     // overlap, will include the full count into new bin.
     let binY = 0;
-    while (bucketPos < histogram.bucketRightEdges.length) {
+    while (bucketIndex < histogram.buckets.length) {
       // Clip the right edge because right-most edge can be
       // infinite-sized.
-      const bucketRight = Math.min(
-        max, histogram.bucketRightEdges[bucketPos]);
+      const bucketRight = Math.min(max, histogram.buckets[bucketIndex].right);
+      const bucketLeft = Math.max(min, histogram.buckets[bucketIndex].left);
 
       const intersect =
           Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
       const count = (intersect / (bucketRight - bucketLeft)) *
-          histogram.bucketCounts[bucketPos];
+          histogram.buckets[bucketIndex].count;
 
       binY += intersect > 0 ? count : 0;
 
       // If `bucketRight` is bigger than `binRight`, then this bin is
       // finished and there is data for the next bin, so don't increment
-      // `bucketPos`.
+      // `bucketIndex`.
       if (bucketRight > binRight) {
         break;
       }
-      bucketLeft = Math.max(min, bucketRight);
-      bucketPos++;
+      bucketIndex++;
     }
     return {x: binLeft, dx: binWidth, y: binY};
   });
