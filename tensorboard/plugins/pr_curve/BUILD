@@ -18,9 +18,9 @@ py_library(
 )
 
 py_test(
-    name = "pr_curve_plugin_test",
+    name = "summary_test",
     size = "small",
-    srcs = ["pr_curve_plugin_test.py"],
+    srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":pr_curve_py",
