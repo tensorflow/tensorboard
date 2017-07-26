@@ -196,7 +196,14 @@ def op(
             tf.maximum(_TINY_EPISILON, tp),
             tf.maximum(_TINY_EPISILON, tf.add(tp, fp)))
 
-        # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold, recall=1.
+        # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold 1.0,
+        # recall=1. Note that for the formulation on the right
+        # when the threshold is 1, the numerator (tp) is 1, while
+        # the denominator is 1 + some value very close to 0 (the
+        # tiny epsilon value). The result of the division there is
+        # going to be a value very close to 1 (but not quite 1), and
+        # so we use the formulation on the left instead. In that case,
+        # we get 0 when threshold=1.0 because fn is 0.
         recall = tf.subtract(
             1.0,
             tf.divide(fn, tf.maximum(_TINY_EPISILON, tf.add(tp, fn))))
