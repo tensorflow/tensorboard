@@ -33,7 +33,8 @@ def op(
     num_thresholds=200,
     weights=None,
     num_classes=1,
-    display_name=None):
+    display_name=None,
+    description=None):
   """Computes multi-class PR summaries for a list of thresholds in `[0, 1]`.
 
   Computes true/false positive/negative values for the given `predictions`
@@ -70,6 +71,8 @@ def op(
     num_classes: Optional; Used when `predictions` is a multi-class classifier.
     display_name: The name displayed atop this PR curve in TensorBoard. The
         display_name is optional. `tag` will be used in its absence.
+    description: Not yet supported; do not use. (Eventually: Optional
+        long-form description for this summary. Markdown is supported.)
 
   Returns:
     A summary operation for use in a TensorFlow graph. The float32 tensor
@@ -180,7 +183,9 @@ def op(
 
         # Store the number of thresholds within the summary metadata because
         # that value is constant for all pr curve summaries with the same tag.
-        summary_metadata = tf.SummaryMetadata()
+        summary_metadata = tf.SummaryMetadata(
+            display_name=display_name if display_name is not None else tag,
+            summary_description=description)
         pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
             num_thresholds=num_thresholds)
         summary_metadata.plugin_data.add(
@@ -204,5 +209,4 @@ def op(
     return tf.summary.tensor_summary(
         name=tag,
         tensor=combined_data,
-        summary_metadata=summary_metadata,
-        display_name=display_name if display_name is not None else tag)
+        summary_metadata=summary_metadata)
