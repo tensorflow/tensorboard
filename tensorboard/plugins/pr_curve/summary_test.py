@@ -98,6 +98,7 @@ class PrCurveTest(tf.test.TestCase):
           labels=tf.constant([[True, False], [True, False], [False, True]]),
           predictions=tf.constant([[0.8, 0.6], [0.4, 0.2], [0.6, 0.7]]),
           num_thresholds=10,
+          num_classes=2,
           weights=tf.constant([[1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]))
       merged_summary_op = tf.summary.merge_all()
       foo_directory = os.path.join(self.logdir, 'foo')
