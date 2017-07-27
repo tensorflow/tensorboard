@@ -70,6 +70,7 @@ script:
       test \
       tensorboard/... \
       --verbose_failures \
+      --test_verbose_timeout_warnings \
       --test_output=errors \
       --spawn_strategy=sandboxed \
       --local_resources=400,2,1.0
