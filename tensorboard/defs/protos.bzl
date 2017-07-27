@@ -16,7 +16,7 @@ load("@protobuf//:protobuf.bzl", "py_proto_library")
 
 def tb_proto_library(name, srcs = [], visibility = []):
   py_proto_library(
-    name = name + "_py",
+    name = name + "_py_pb2",
     srcs = srcs,
     srcs_version = "PY2AND3",
     deps = ["@protobuf//:protobuf_python"],
