@@ -37,6 +37,7 @@ ts_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/plugins/distribution/tf_distribution_dashboard",
