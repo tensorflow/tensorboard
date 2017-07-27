@@ -15,66 +15,122 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-markdown-view/tf-markdown-view.html">
 
 <!--
-  A compact heading to appear above a single visualization, often
-  corresponding to either a single tag or a single run-tag combination.
+  A compact heading to appear above a single visualization, summarizing
+  the metadata about a tag or run-tag combination.
 
-  Properties:
-    `title` does just what it says on the tin.
-    `color` can be set to display a colored border at the left of the
-        card; if left unset, no border will be displayed:
-    Any contents of the heading will be rendered below the title, and
-        can be used to display a subtitle, some small control widgets,
-        or similar.
+  Properties (all optional):
+    - `displayName`, `tag`, and `description` are properties from the
+      relevant Summary protobuf.
+    - `run` is the name of the TensorFlow run, if applicable.
+    - `color` can be set to display a colored border at the left of the
+      card; if left unset, no border will be displayed.
+    - Any children of this component will be rendered below the above
+      information, and can be used to display (for example) some small
+      control widgets.
 -->
 <dom-module id="tf-card-heading">
   <template>
-    <div class="title-container" style="border-color: [[_borderColor]]">
-      <div
-        class="title"
-        inner-h-t-m-l="[[_break(title)]]"></div>
+    <div class="container" style="border-color: [[_borderColor]]">
       <div class="content">
+        <template is="dom-repeat" items="[[_labels]]">
+          <span class="label">[[item]]</span>
+        </template>
         <content></content>
       </div>
+      <template is="dom-if" if="[[description]]">
+        <paper-icon-button
+          icon="info"
+          on-tap="_toggleDescriptionDialog"
+          title="Show summary description"
+        ></paper-icon-button>
+      </template>
+      <paper-dialog
+        id="descriptionDialog"
+        no-overlap
+        horizontal-align="auto"
+        vertical-align="auto"
+      >
+        <paper-dialog-scrollable>
+          <tf-markdown-view html="[[description]]"></tf-markdown-view>
+        </paper-dialog-scrollable>
+      </paper-dialog>
     </div>
     <style>
-      .title-container {
-        border-left: 4px solid;
+      .container {
+        border-left: 4px solid;  /* border-color set as inline style */
         padding-left: 5px;
         margin-bottom: 10px;
-      }
-      .title {
-        font-size: 14px;
-        text-overflow: ellipsis;
-        overflow: hidden;
+        display: flex;
       }
       .content {
         font-size: 12px;
+        flex-grow: 1;
+      }
+      .label {
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      .label:first-child {
+        font-size: 14px;
+      }
+      paper-icon-button {
+        flex-grow: 0;
+      }
+      paper-dialog-scrollable {
+        max-width: 640px;
       }
     </style>
   </template>
   <script>
     Polymer({
       is: "tf-card-heading",
+
       properties: {
-        title: String,
-        color: {
-          type: String,
-          value: null,   // this property is optional
-        },
+        displayName: {type: String, value: null},
+        tag: {type: String, value: null},
+        run: {type: String, value: null},
+        description: {type: String, value: null},
+        color: {type: String, value: null},  // a CSS color (e.g., '#abcdef')
+
         _borderColor: {
           type: String,
           computed: '_computeBorderColor(color)',
           readOnly: true,
         },
+        /** @type {!Array<!string>} */
+        _labels: {
+          type: Array,
+          computed: '_computeLabels(displayName, tag, run)',
+        },
       },
+
       _computeBorderColor(color) {
         return color || 'rgba(255, 255, 255, 0.0)';  // 100% transparent white
       },
-      _break: function(input) {
-        return input.replace(/([\/_-])/g, "$1<wbr>")
+      _computeLabels(displayName, tag, run) {
+        const results = [];
+        if (displayName) {
+          results.push(displayName);
+        }
+        if (tag && tag !== displayName) {
+          results.push(results.length ? `tag: ${tag}` : tag);
+        }
+        if (run) {
+          results.push(results.length ? `run: ${run}` : run);
+        }
+        return results;
+      },
+      _toggleDescriptionDialog(e) {
+        this.$.descriptionDialog.positionTarget = e.target;
+        this.$.descriptionDialog.toggle();
       },
     });
   </script>
