@@ -133,7 +133,7 @@ import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
 
 Polymer({
   is: 'tf-graph-dashboard',
-  properties: {
+   properties: {
     _datasets: Object,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
@@ -148,7 +148,6 @@ Polymer({
     allStepsModeEnabled: Boolean,
     specificHealthPillStep: {type: Number, value: 0},
     healthPillsToggledOn: {type: Boolean, value: true, observer: '_healthPillsToggledOnChanged'},
-    runs: Array,
     _selectedNode: Object,
     _isAttached: Boolean,
     // Whether this dashboard is initialized. This dashboard should only be initialized once.
@@ -186,13 +185,21 @@ Polymer({
       value: 500,
       readOnly: true,
     },
+    runs: Array,
+    // Whether or not the reload button in the tf-tensorboard GUI should be
+    // shaded out.
+    isReloadDisabled: {
+      type: Boolean,
+      value: true,  // TODO(@chihuahua): Reconcile this setting with Health Pills.
+      readOnly: true,
+    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
   },
   observers: [
-    '_maybeFetchHealthPills(_debuggerDataEnabled, ' +
-      'allStepsModeEnabled, specificHealthPillStep, _selectedNode)',
+    '_maybeFetchHealthPills(_debuggerDataEnabled, allStepsModeEnabled, ' +
+        'specificHealthPillStep, _selectedNode)',
     '_maybeInitializeDashboard(_isAttached)',
   ],
   attached: function() {
@@ -212,8 +219,9 @@ Polymer({
             }
 
             if (result.value['debugger']) {
-              // The debugger plugin is enabled. Request debugger-related data. Perhaps the debugger
-              // plugin had been disabled beforehand because no bad values (NaN, -/+ Inf) had been
+              // The debugger plugin is enabled. Request debugger-related
+              // data. Perhaps the debugger plugin had been disabled
+              // beforehand because no bad values (NaN, -/+ Inf) had been
               // found and muted_if_healthy had been on.
               this.set('_debuggerDataEnabled', true);
             }
