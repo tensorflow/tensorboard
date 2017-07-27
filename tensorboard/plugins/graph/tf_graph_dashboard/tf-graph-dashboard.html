@@ -71,7 +71,7 @@ by default. The user can select a different run from a dropdown menu.
         selected-dataset="{{_selectedDataset}}"
         selected-file="{{_selectedFile}}"
         selected-metadata-tag="{{_selectedMetadataTag}}"
-        health-pills-feature-enabled="[[debuggerDataEnabled]]"
+        health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
   <tf-graph-loader id="loader"
@@ -95,7 +95,7 @@ out-hierarchy-params="{{_hierarchyParams}}"
         graph="[[_graph]]"
         hierarchy-params="[[_hierarchyParams]]"
         progress="[[_progress]]"
-        debugger-data-enabled="[[debuggerDataEnabled]]"
+        debugger-data-enabled="[[_debuggerDataEnabled]]"
         are-health-pills-loading="[[_areHealthPillsLoading]]"
         debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
         node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
@@ -126,23 +126,29 @@ out-hierarchy-params="{{_hierarchyParams}}"
 
 <script>
 import {RequestManager} from "../tf-backend/requestManager.js";
+import {Canceller} from "../tf-backend/canceller.js";
 import {compareTagNames} from "../vz-sorting/sorting.js";
 import {getRouter} from "../tf-backend/router.js";
 import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
 
 Polymer({
   is: 'tf-graph-dashboard',
-   properties: {
+  properties: {
     _datasets: Object,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
       type: Object,
       value: () => new RequestManager(),
     },
-    debuggerDataEnabled: Boolean,
+    _canceller: {
+      type: Object,
+      value: () => new Canceller(),
+    },
+    _debuggerDataEnabled: Boolean,
     allStepsModeEnabled: Boolean,
     specificHealthPillStep: {type: Number, value: 0},
     healthPillsToggledOn: {type: Boolean, value: true, observer: '_healthPillsToggledOnChanged'},
+    runs: Array,
     _selectedNode: Object,
     _isAttached: Boolean,
     // Whether this dashboard is initialized. This dashboard should only be initialized once.
@@ -180,20 +186,13 @@ Polymer({
       value: 500,
       readOnly: true,
     },
-    runs: Array,
-    // Whether or not the reload button in the tf-tensorboard GUI should be
-    // shaded out.
-    isReloadDisabled: {
-      type: Boolean,
-      value: true,  // TODO(@chihuahua): Reconcile this setting with Health Pills.
-      readOnly: true,
-    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
   },
   observers: [
-    '_maybeFetchHealthPills(allStepsModeEnabled, specificHealthPillStep, _selectedNode)',
+    '_maybeFetchHealthPills(_debuggerDataEnabled, ' +
+      'allStepsModeEnabled, specificHealthPillStep, _selectedNode)',
     '_maybeInitializeDashboard(_isAttached)',
   ],
   attached: function() {
@@ -203,6 +202,24 @@ Polymer({
     this.set('_isAttached', false);
   },
   reload: function() {
+    if (!this._debuggerDataEnabled) {
+      // Check if the debugger plugin is enabled now.
+      this._requestManager
+          .request(getRouter().pluginsListing())
+          .then(this._canceller.cancellable(result => {
+            if (result.cancelled) {
+              return;
+            }
+
+            if (result.value['debugger']) {
+              // The debugger plugin is enabled. Request debugger-related data. Perhaps the debugger
+              // plugin had been disabled beforehand because no bad values (NaN, -/+ Inf) had been
+              // found and muted_if_healthy had been on.
+              this.set('_debuggerDataEnabled', true);
+            }
+          }));
+    }
+
     this._maybeFetchHealthPills();
   },
   _fetchGraphRuns() {
@@ -252,7 +269,7 @@ Polymer({
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
     // or if the graph itself has not loaded yet. We need the graph to load so that we know which
     // nodes to request health pills for.
-    return this.debuggerDataEnabled &&
+    return this._debuggerDataEnabled &&
         this.healthPillsToggledOn &&
         this._renderHierarchy &&
         !this._datasetsEmpty(this._datasets);
