@@ -334,15 +334,35 @@ export class RenderGraphInfo {
    */
   getNearestVisibleAncestor(name: string): string {
     let path = getHierarchicalPath(name);
-    for (let i = 0; i < path.length; i++) {
-      let nodeName = path[i];
+    let i = 0;
+    let renderNode: RenderNodeInfo = null;
+    // Fallthrough. If everything was expanded return the node.
+    let nodeName = name;
+    for (; i < path.length; i++) {
+      nodeName = path[i];
+      renderNode = this.getRenderNodeByName(nodeName);
       // Op nodes have expanded set to false by default.
-      if (!this.getRenderNodeByName(nodeName).expanded) {
-        return nodeName;
+      if (!renderNode.expanded) {
+        break;
       }
     }
-    // Fallthrough. If everything was expanded return the node.
-    return name;
+
+    // Check case where highlighted node is an embedded node whose parent node
+    // is also its hierarchical parent. In this case, we want to return the
+    // embedded node name, as it is also displayed if its parent has been
+    // displayed.
+    if (i == path.length - 2) {
+      let nextName = path[i + 1];
+      if (renderNode.inAnnotations.nodeNames[nextName]) {
+        return nextName;
+      }
+
+      if (renderNode.outAnnotations.nodeNames[nextName]) {
+        return nextName;
+      }
+    }
+
+    return nodeName;
   }
 
   // TODO: Delete this an any code it touches (all deprecated).
