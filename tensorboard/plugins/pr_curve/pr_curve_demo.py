@@ -143,7 +143,8 @@ def start_runs(logdir, steps, run_name, doubly_weigh_blues):
       labels=labels,
       predictions=predictions,
       num_thresholds=50,
-      num_classes=3)
+      num_classes=3,
+      weights=weights)
   merged_summary_op = tf.summary.merge_all()
   events_directory = os.path.join(logdir, run_name)
   sess = tf.Session()
