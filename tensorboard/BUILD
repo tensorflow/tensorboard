@@ -105,6 +105,30 @@ py_library(
 )
 
 py_library(
+    name = "plugin_util",
+    srcs = ["plugin_util.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@org_mozilla_bleach",
+        "@org_pythonhosted_markdown",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "plugin_util_test",
+    size = "small",
+    srcs = ["plugin_util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":plugin_util",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
     name = "util",
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
