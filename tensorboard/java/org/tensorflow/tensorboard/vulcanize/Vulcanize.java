@@ -121,7 +121,7 @@ public final class Vulcanize {
     Webpath inputPath = Webpath.get(args[2]);
     outputPath = Webpath.get(args[3]);
     Path output = Paths.get(args[4]);
-    if (args[5] != NO_NOINLINE_REGEXS_STRING_PROVIDED) {
+    if (!args[5].equals(NO_NOINLINE_REGEXS_STRING_PROVIDED)) {
       Arrays.asList(args[5].split(",")).forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
     for (int i = 6; i < args.length; i++) {
