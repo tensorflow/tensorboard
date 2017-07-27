@@ -14,7 +14,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":protos_all_py",
+        ":protos_all_py_pb2",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
@@ -30,7 +30,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":projector_plugin",
-        ":protos_all_py",
+        ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -67,5 +67,5 @@ py_test(
 tb_proto_library(
     name = "protos_all",
     srcs = glob(["*.proto"]),
-    visibility = ["//tensorboard:internal"],
+    visibility = ["//visibility:public"],
 )

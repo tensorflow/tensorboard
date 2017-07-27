@@ -12,7 +12,7 @@ py_library(
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":pr_curve_py",
+        ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -23,7 +23,7 @@ py_test(
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":pr_curve_py",
+        ":protos_all_py_pb2",
         ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
@@ -36,7 +36,7 @@ py_test(
 )
 
 tb_proto_library(
-    name = "pr_curve",
+    name = "protos_all",
     srcs = ["pr_curve.proto"],
-    visibility = ["//tensorboard:internal"],
+    visibility = ["//visibility:public"],
 )
