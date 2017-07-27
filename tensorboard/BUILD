@@ -8,6 +8,8 @@ load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
 licenses(["notice"])  # Apache 2.0
 
+exports_files(["LICENSE"])  # Needed for internal repo.
+
 package_group(
     name = "internal",
     packages = ["//tensorboard/..."],
