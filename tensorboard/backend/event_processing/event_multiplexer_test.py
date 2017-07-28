@@ -63,7 +63,6 @@ class _FakeAccumulator(object):
     return {event_accumulator.IMAGES: ['im1', 'im2'],
             event_accumulator.AUDIO: ['snd1', 'snd2'],
             event_accumulator.HISTOGRAMS: ['hst1', 'hst2'],
-            event_accumulator.COMPRESSED_HISTOGRAMS: ['cmphst1', 'cmphst2'],
             event_accumulator.SCALARS: ['sv1', 'sv2']}
 
   def FirstEventTimestamp(self):
@@ -79,9 +78,6 @@ class _FakeAccumulator(object):
 
   def Histograms(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.HISTOGRAMS)
-
-  def CompressedHistograms(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.COMPRESSED_HISTOGRAMS)
 
   def Images(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.IMAGES)
@@ -107,9 +103,8 @@ class _FakeAccumulator(object):
 
 def _GetFakeAccumulator(path,
                         size_guidance=None,
-                        compression_bps=None,
                         purge_orphaned_data=None):
-  del size_guidance, compression_bps, purge_orphaned_data  # Unused.
+  del size_guidance, purge_orphaned_data  # Unused.
   return _FakeAccumulator(path)
 
 

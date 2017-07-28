@@ -25,7 +25,6 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
-from tensorboard.plugins.distribution import compressor
 
 
 class _EventGenerator(object):
@@ -146,7 +145,6 @@ class EventAccumulatorTest(tf.test.TestCase):
         ea.AUDIO: [],
         ea.SCALARS: [],
         ea.HISTOGRAMS: [],
-        ea.COMPRESSED_HISTOGRAMS: [],
         ea.GRAPH: False,
         ea.META_GRAPH: False,
         ea.RUN_METADATA: [],
@@ -209,7 +207,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
         ea.HISTOGRAMS: ['hst1', 'hst2'],
-        ea.COMPRESSED_HISTOGRAMS: ['hst1', 'hst2'],
     })
 
   def testReload(self):
@@ -232,7 +229,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
         ea.HISTOGRAMS: ['hst1', 'hst2'],
-        ea.COMPRESSED_HISTOGRAMS: ['hst1', 'hst2'],
     })
 
   def testScalars(self):
@@ -297,57 +293,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertEqual(acc.Histograms('hst1'), [hst1])
     self.assertEqual(acc.Histograms('hst2'), [hst2])
 
-  def testCompressedHistograms(self):
-    """Tests compressed histograms inserted into EventAccumulator."""
-    gen = _EventGenerator(self)
-    acc = ea.EventAccumulator(gen, compression_bps=(0, 2500, 5000, 7500, 10000))
-
-    gen.AddHistogram(
-        'hst1',
-        wall_time=1,
-        step=10,
-        hmin=1,
-        hmax=2,
-        hnum=3,
-        hsum=4,
-        hsum_squares=5,
-        hbucket_limit=[1, 2, 3],
-        hbucket=[0, 3, 0])
-    gen.AddHistogram(
-        'hst2',
-        wall_time=2,
-        step=12,
-        hmin=-2,
-        hmax=3,
-        hnum=4,
-        hsum=5,
-        hsum_squares=6,
-        hbucket_limit=[2, 3, 4],
-        hbucket=[1, 3, 0])
-    acc.Reload()
-
-    # Create the expected values after compressing hst1
-    expected_vals1 = [
-        compressor.CompressedHistogramValue(bp, val)
-        for bp, val in [(0, 1.0), (2500, 1.25), (5000, 1.5), (7500, 1.75
-                                                             ), (10000, 2.0)]
-    ]
-    expected_cmphst1 = ea.CompressedHistogramEvent(
-        wall_time=1, step=10, compressed_histogram_values=expected_vals1)
-    self.assertEqual(acc.CompressedHistograms('hst1'), [expected_cmphst1])
-
-    # Create the expected values after compressing hst2
-    expected_vals2 = [
-        compressor.CompressedHistogramValue(bp, val)
-        for bp, val in [(0, -2),
-                        (2500, 2),
-                        (5000, 2 + 1 / 3),
-                        (7500, 2 + 2 / 3),
-                        (10000, 3)]
-    ]
-    expected_cmphst2 = ea.CompressedHistogramEvent(
-        wall_time=2, step=12, compressed_histogram_values=expected_vals2)
-    self.assertEqual(acc.CompressedHistograms('hst2'), [expected_cmphst2])
 
   def testImages(self):
     """Tests 2 images inserted/accessed in EventAccumulator."""
@@ -462,7 +407,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ea.AUDIO: ['snd1'],
         ea.SCALARS: ['s1', 's3'],
         ea.HISTOGRAMS: ['hst1'],
-        ea.COMPRESSED_HISTOGRAMS: ['hst1'],
     })
 
   def testExpiredDataDiscardedAfterRestartForFileVersionLessThan2(self):
