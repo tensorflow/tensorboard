@@ -61,7 +61,6 @@ class DistributionsPluginTest(tf.test.TestCase):
       self.generate_run(run_name)
     multiplexer = event_multiplexer.EventMultiplexer(size_guidance={
         # don't truncate my test data, please
-        event_accumulator.HISTOGRAMS: self._STEPS,
         event_accumulator.TENSORS: self._STEPS,
     })
     multiplexer.AddRunsFromDirectory(self.logdir)

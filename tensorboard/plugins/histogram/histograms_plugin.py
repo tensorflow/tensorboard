@@ -29,12 +29,10 @@ import random
 import six
 from werkzeug import wrappers
 
-import numpy as np
 import tensorflow as tf
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
 
@@ -73,12 +71,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     runs = self._multiplexer.Runs()
     result = {run: {} for run in runs}
 
-    # Old-style runs
-    for (run, run_data) in six.iteritems(runs):
-      for tag in run_data.get(event_accumulator.HISTOGRAMS, []):
-        result[run][tag] = {'displayName': tag, 'description': ''}
-
-    # New-style runs
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
@@ -96,21 +88,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     At most `downsample_to` events will be returned. If this value is
     `None`, then no downsampling will be performed.
     """
-    #
-    # Reconcile results from old-style and new-style runs (preferring
-    # new-style runs if there's a conflict).
-    tensor_events = None
     try:
       tensor_events = self._multiplexer.Tensors(run, tag)
     except KeyError:
-      try:
-        old_style_events = self._multiplexer.Histograms(run, tag)
-      except KeyError:
-        pass
-      else:
-        tensor_events = [self._convert_old_style_histogram_event(ev)
-                         for ev in old_style_events]
-    if tensor_events is None:
       raise ValueError('No histogram tag %r for run %r' % (tag, run))
     events = [[ev.wall_time, ev.step, tf.make_ndarray(ev.tensor_proto).tolist()]
               for ev in tensor_events]
@@ -119,23 +99,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                                                downsample_to))
       events = [events[i] for i in indices]
     return (events, 'application/json')
-
-  def _convert_tensor_event_to_json(self, ev):
-    return [ev.wall_time, ev.step, tf.make_ndarray(ev.tensor_proto).tolist()]
-
-  def _convert_old_style_histogram_event(self, ev):
-    tensor_proto = self._convert_old_style_histogram_value(ev.histogram_value)
-    return event_accumulator.TensorEvent(
-        wall_time=ev.wall_time,
-        step=ev.step,
-        tensor_proto=tensor_proto)
-
-  def _convert_old_style_histogram_value(self, histogram_value):
-    bucket_lefts = [histogram_value.min] + histogram_value.bucket_limit[:-1]
-    bucket_rights = histogram_value.bucket_limit[:-1] + [histogram_value.max]
-    bucket_counts = histogram_value.bucket
-    buckets = np.array(list(zip(bucket_lefts, bucket_rights, bucket_counts)))
-    return tf.make_tensor_proto(buckets)
 
   @wrappers.Request.application
   def tags_route(self, request):
