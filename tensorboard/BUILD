@@ -128,6 +128,21 @@ py_library(
     deps = ["//tensorboard:expect_sqlite3_installed"],
 )
 
+py_test(
+    name = "db_test",
+    size = "medium",
+    timeout = "short",
+    srcs = ["db_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":db",
+        ":test_util",
+        "//tensorboard:expect_sqlite3_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "plugin_util",
     srcs = ["plugin_util.py"],
