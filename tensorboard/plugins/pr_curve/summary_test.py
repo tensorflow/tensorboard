@@ -97,16 +97,19 @@ class PrCurveTest(tf.test.TestCase):
       [[1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0]]
     ], tensor_nd_array.tolist())
 
-  def test2ClassesWithWeight(self):
+  def test3ClassesWithWeight(self):
     # Generate summaries for showing PR curves in TensorBoard.
     with tf.Session() as sess:
       summary.op(
           tag='tag_bar',
-          labels=tf.constant([[True, False], [True, False], [False, True]]),
-          predictions=tf.constant([[0.8, 0.6], [0.4, 0.2], [0.6, 0.7]]),
+          labels=tf.constant(
+              [[True, False, True], [True, False, False], [False, True, True]]),
+          predictions=tf.constant(
+              [[0.8, 0.6, 0.5], [0.4, 0.2, 0.7], [0.6, 0.7, 0.3]]),
           num_thresholds=10,
-          num_classes=2,
-          weights=tf.constant([[1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]))
+          num_classes=3,
+          weights=tf.constant(
+              [[1.0, 2.0, 1.0], [1.0, 2.0, 1.0], [1.0, 2.0, 1.0]]))
       merged_summary_op = tf.summary.merge_all()
       foo_directory = os.path.join(self.logdir, 'foo')
       writer = tf.summary.FileWriter(foo_directory, sess.graph)
@@ -135,27 +138,39 @@ class PrCurveTest(tf.test.TestCase):
     self.assertEqual(1, tensor_event.step)
 
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
-
     # The tensor shape must be correct. The first dimension is the
     # type of value (see documentation for the op). The 2nd dimension
     # is the number of classes. The last dimension is the number of
     # thresholds.
-    correct_shape = [6, 1, 10]
+    correct_shape = [6, 3, 10]
     self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
+    print(`tensor_nd_array.tolist()`)
     np.testing.assert_allclose([
-      # True positives.
-      [[4.0, 4.0, 4.0, 4.0, 3.0, 3.0, 3.0, 1.0, 0.0, 0.0]],
-      # False positives.
-      [[5.0, 5.0, 3.0, 3.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0]],
-       # True negatives.
-      [[0.0, 0.0, 2.0, 2.0, 2.0, 2.0, 5.0, 5.0, 5.0, 5.0]],
-      # False negatives.
-      [[0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 3.0, 4.0, 4.0]],
-      # Precision.
-      [[4/9, 4/9, 4/7, 4/7, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0]],
-      # Recall.
-      [[1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.75, 0.25, 0.0, 0.0]],
-    ], tensor_nd_array.tolist())
+        # True positives.
+        [[2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
+         [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 0.0, 0.0, 0.0],
+         [2.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
+        # False positives.
+        [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+         [4.0, 4.0, 2.0, 2.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0],
+         [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0]],
+        # True negatives.
+        [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0],
+         [0.0, 0.0, 2.0, 2.0, 2.0, 2.0, 4.0, 4.0, 4.0, 4.0],
+         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0]],
+        # False negatives.
+        [[0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0],
+         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 2.0],
+         [0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0]],
+        # Precision.
+        [[2/3, 2/3, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0],
+         [1/3, 1/3, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0],
+         [2/3, 2/3, 2/3, 0.5, 0.5, 1e-7, 1e-7, 1.0, 1.0, 1.0]], # 2 0s after 0.5
+        # Recall.
+        [[1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
+         [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+         [1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0]]],
+        tensor_nd_array.tolist())
 
 
 if __name__ == "__main__":
