@@ -126,8 +126,8 @@ def op(
     # so we can use tf.scatter_add() to update the buckets in one pass.
 
     # First compute the bucket indices for each prediction value.
-    bucket_indices = (
-        tf.cast(tf.floor(predictions * (num_thresholds-1)), tf.int32))
+    bucket_indices = tf.cast(
+        tf.floor(predictions * (num_thresholds - 1)), tf.int32)
     # Adjust indices by classes. For performance and simplicity, we keep
     # the buckets (see below) as 1D array representing the tp/fp buckets for
     # a (num_classes, num_thresholds) tensors.
@@ -154,15 +154,24 @@ def op(
         [tp_buckets_v, fp_buckets_v])
     with tf.control_dependencies([initialize_bucket_counts]):
       # Create the non-flat views with class_index as first dimension.
-      tp_buckets = tf.reshape(tp_buckets_v, (num_classes, -1))
-      fp_buckets = tf.reshape(fp_buckets_v, (num_classes, -1))
+      tp_buckets = tf.reshape(tp_buckets_v.read_value(), (num_classes, -1))
+      fp_buckets = tf.reshape(fp_buckets_v.read_value(), (num_classes, -1))
 
       with tf.name_scope('update_op'):
-        # Use scatter_add to update the buckets.
-        update_tp = tf.scatter_add(
-            tp_buckets_v, bucket_indices, true_labels, use_locking=True)
-        update_fp = tf.scatter_add(
-            fp_buckets_v, bucket_indices, false_labels, use_locking=True)
+        # We cannot use tf.scatter_add here because there is no guarantee that
+        # the variable can be read from directly (without the use of the 
+        # read_value method). See
+        # https://github.com/tensorflow/tensorflow/issues/11856 for details.
+        # We hence implement the logic of scatter_add using other functions.
+        new_true_counts = true_labels + tf.gather(
+            tp_buckets_v.read_value(), bucket_indices)
+        update_tp = tf.scatter_update(
+            tp_buckets_v, bucket_indices, new_true_counts, use_locking=True)
+
+        new_false_counts = false_labels + tf.gather(
+            fp_buckets_v.read_value(), bucket_indices)
+        update_fp = tf.scatter_update(
+            fp_buckets_v, bucket_indices, new_false_counts, use_locking=True)
 
     with tf.control_dependencies([update_tp, update_fp]):
       with tf.name_scope('metrics'):
