@@ -353,6 +353,40 @@ class TextPluginTest(tf.test.TestCase):
     scalar_expected = '<p>foo</p>'
     self.assertEqual(convert(scalar), scalar_expected)
 
+    table = textwrap.dedent("""\
+    An | Example | Table
+    --- | --- | ---
+    A | B | C
+    1 | 2 | 3
+    """)
+
+    table_converted = textwrap.dedent("""\
+    <table>
+    <thead>
+    <tr>
+    <th>An</th>
+    <th>Example</th>
+    <th>Table</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>A</td>
+    <td>B</td>
+    <td>C</td>
+    </tr>
+    <tr>
+    <td>1</td>
+    <td>2</td>
+    <td>3</td>
+    </tr>
+    </tbody>
+    </table>""")
+
+    scalar = np.array(table)
+    scalar_expected = table_converted
+    self.assertEqual(convert(scalar), scalar_expected)
+
     vector = np.array(['foo', 'bar'])
     vector_expected = textwrap.dedent("""\
       <table>
