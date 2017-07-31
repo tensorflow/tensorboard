@@ -68,6 +68,7 @@ py_library(
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/histogram:metadata",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],

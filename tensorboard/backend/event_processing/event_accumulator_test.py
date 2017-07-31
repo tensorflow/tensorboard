@@ -582,6 +582,80 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
     self.assertTrue(np.array_equal(string, six.b('foobar')))
 
+  def _testTFSummaryTensor_SizeGuidance(self,
+                                        plugin_names,
+                                        tensor_size_guidance,
+                                        steps,
+                                        expected_count):
+    event_sink = _EventGenerator(self, zero_out_timestamps=True)
+    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer.event_writer = event_sink
+    with self.test_session() as sess:
+      summary_metadata = tf.SummaryMetadata()
+      for plugin_name in plugin_names:
+        summary_metadata.plugin_data.add(plugin_name=plugin_name, content='{}')
+      tf.summary.tensor_summary('scalar', tf.constant(1.0),
+                                summary_metadata=summary_metadata)
+      merged = tf.summary.merge_all()
+      for step in xrange(steps):
+        writer.add_summary(sess.run(merged), global_step=step)
+
+
+    accumulator = ea.EventAccumulator(
+        event_sink, tensor_size_guidance=tensor_size_guidance)
+    accumulator.Reload()
+
+    tensors = accumulator.Tensors('scalar')
+    self.assertEqual(len(tensors), expected_count)
+
+  def testTFSummaryTensor_SizeGuidance_DefaultToTensorGuidance(self):
+    self._testTFSummaryTensor_SizeGuidance(
+        plugin_names=['jabberwocky'],
+        tensor_size_guidance={},
+        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
+        expected_count=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS])
+
+  def testTFSummaryTensor_SizeGuidance_UseSmallSingularPluginGuidance(self):
+    size = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
+    assert size < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], size
+    self._testTFSummaryTensor_SizeGuidance(
+        plugin_names=['jabberwocky'],
+        tensor_size_guidance={'jabberwocky': size},
+        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
+        expected_count=size)
+
+  def testTFSummaryTensor_SizeGuidance_UseLargeSingularPluginGuidance(self):
+    size = ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 5
+    self._testTFSummaryTensor_SizeGuidance(
+        plugin_names=['jabberwocky'],
+        tensor_size_guidance={'jabberwocky': size},
+        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 10,
+        expected_count=size)
+
+  def testTFSummaryTensor_SizeGuidance_TakeMaxOfTwo(self):
+    size_small = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 3)
+    size_large = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
+    assert size_small < size_large < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], (
+        size_small, size_large)
+    self._testTFSummaryTensor_SizeGuidance(
+        plugin_names=['jabberwocky', 'wnoorejbpxl'],
+        tensor_size_guidance={'jabberwocky': size_small,
+                              'wnoorejbpxl': size_large},
+        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
+        expected_count=size_large)
+
+  def testTFSummaryTensor_SizeGuidance_IgnoreIrrelevantGuidances(self):
+    size_small = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 3)
+    size_large = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
+    assert size_small < size_large < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], (
+        size_small, size_large)
+    self._testTFSummaryTensor_SizeGuidance(
+        plugin_names=['jabberwocky'],
+        tensor_size_guidance={'jabberwocky': size_small,
+                              'wnoorejbpxl': size_large},
+        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
+        expected_count=size_small)
+
 
 class RealisticEventAccumulatorTest(EventAccumulatorTest):
 

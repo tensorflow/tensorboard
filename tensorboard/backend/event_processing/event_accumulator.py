@@ -74,6 +74,8 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
     TENSORS: 0,
 }
 
+_TENSOR_RESERVOIR_KEY = "."  # arbitrary
+
 
 def IsTensorFlowEventsFile(path):
   """Check the path name to see if it is probably a TF Events file.
@@ -127,7 +129,9 @@ class EventAccumulator(object):
     path: A file path to a directory containing tf events files, or a single
         tf events file. The accumulator will load events from this path.
     scalars: A reservoir.Reservoir of scalar summaries.
-    tensors: A reservoir.Reservoir of tensor summaries.
+    tensors_by_tag: A dictionary mapping each tag name to a
+      reservoir.Reservoir of tensor summaries. Each such reservoir will
+      only use a single key, given by `_TENSOR_RESERVOIR_KEY`.
 
   @@Tensors
   """
@@ -135,6 +139,7 @@ class EventAccumulator(object):
   def __init__(self,
                path,
                size_guidance=None,
+               tensor_size_guidance=None,
                purge_orphaned_data=True):
     """Construct the `EventAccumulator`.
 
@@ -147,16 +152,24 @@ class EventAccumulator(object):
         from a `tagType` string to an integer representing the number of
         items to keep per tag for items of that `tagType`. If the size is 0,
         all events are stored.
+      tensor_size_guidance: Like `size_guidance`, but allowing finer
+        granularity for tensor summaries. Should be a map from the
+        `plugin_name` field on the `PluginData` proto to an integer
+        representing the number of items to keep per tag. Plugins for
+        which there is no entry in this map will default to the value of
+        `size_guidance[event_accumulator.TENSORS]`. Defaults to `{}`.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
     """
-    size_guidance = size_guidance or DEFAULT_SIZE_GUIDANCE
+    size_guidance = dict(size_guidance or DEFAULT_SIZE_GUIDANCE)
     sizes = {}
     for key in DEFAULT_SIZE_GUIDANCE:
       if key in size_guidance:
         sizes[key] = size_guidance[key]
       else:
         sizes[key] = DEFAULT_SIZE_GUIDANCE[key]
+    self._size_guidance = size_guidance
+    self._tensor_size_guidance = dict(tensor_size_guidance or {})
 
     self._first_event_timestamp = None
     self.scalars = reservoir.Reservoir(size=sizes[SCALARS])
@@ -168,7 +181,8 @@ class EventAccumulator(object):
     self.summary_metadata = {}
     self.images = reservoir.Reservoir(size=sizes[IMAGES])
     self.audios = reservoir.Reservoir(size=sizes[AUDIO])
-    self.tensors = reservoir.Reservoir(size=sizes[TENSORS])
+    self.tensors_by_tag = {}
+    self._tensors_by_tag_lock = threading.Lock()
 
     # Keep a mapping from plugin name to a dict mapping from tag to plugin data
     # content obtained from the SummaryMetadata (metadata field of Value) for
@@ -384,7 +398,7 @@ class EventAccumulator(object):
         IMAGES: self.images.Keys(),
         AUDIO: self.audios.Keys(),
         SCALARS: self.scalars.Keys(),
-        TENSORS: self.tensors.Keys(),
+        TENSORS: list(self.tensors_by_tag.keys()),
         # Use a heuristic: if the metagraph is available, but
         # graph is not, then we assume the metagraph contains the graph.
         GRAPH: self._graph is not None,
@@ -498,7 +512,7 @@ class EventAccumulator(object):
     Returns:
       An array of `TensorEvent`s.
     """
-    return self.tensors.Items(tag)
+    return self.tensors_by_tag[tag].Items(_TENSOR_RESERVOIR_KEY)
 
   def _MaybePurgeOrphanedData(self, event):
     """Maybe purge orphaned data due to a TensorFlow crash.
@@ -587,7 +601,25 @@ class EventAccumulator(object):
 
   def _ProcessTensor(self, tag, wall_time, step, tensor):
     tv = TensorEvent(wall_time=wall_time, step=step, tensor_proto=tensor)
-    self.tensors.AddItem(tag, tv)
+    with self._tensors_by_tag_lock:
+      if tag not in self.tensors_by_tag:
+        reservoir_size = self._GetTensorReservoirSize(tag)
+        self.tensors_by_tag[tag] = reservoir.Reservoir(reservoir_size)
+    self.tensors_by_tag[tag].AddItem(_TENSOR_RESERVOIR_KEY, tv)
+
+  def _GetTensorReservoirSize(self, tag):
+    default = self._size_guidance[TENSORS]
+    summary_metadata = self.summary_metadata.get(tag)
+    if summary_metadata is None:
+      return default
+    # In the vast majority of cases, there will not be more than one
+    # plugin associated with any tag. But in the case that this does
+    # happen, we'll take the maximum of all the suggestions, erring on
+    # the side of preserving data.
+    guidances = [self._tensor_size_guidance[data.plugin_name]
+                 for data in summary_metadata.plugin_data
+                 if data.plugin_name in self._tensor_size_guidance]
+    return max(guidances) if guidances else default
 
   def _Purge(self, event, by_tags):
     """Purge all events that have occurred after the given event.step.
