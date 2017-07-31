@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,35 +39,54 @@ def run_all(logdir, verbose=False):
   # Make a normal distribution, with a shifting mean
   mean_moving_normal = tf.random_normal(shape=[1000], mean=(5*k), stddev=1)
   # Record that distribution into a histogram summary
-  histogram_summary.op("normal/moving_mean", mean_moving_normal)
+  histogram_summary.op("normal/moving_mean",
+                       mean_moving_normal,
+                       description="A normal distribution whose mean changes "
+                                   "over time.")
 
   # Make a normal distribution with shrinking variance
   shrinking_normal = tf.random_normal(shape=[1000], mean=0, stddev=1-(k))
   # Record that distribution too
-  histogram_summary.op("normal/shrinking_variance", shrinking_normal)
+  histogram_summary.op("normal/shrinking_variance", shrinking_normal,
+                       description="A normal distribution whose variance "
+                                   "shrinks over time.")
 
   # Let's combine both of those distributions into one dataset
   normal_combined = tf.concat([mean_moving_normal, shrinking_normal], 0)
   # We add another histogram summary to record the combined distribution
-  histogram_summary.op("normal/bimodal", normal_combined)
+  histogram_summary.op("normal/bimodal", normal_combined,
+                       description="A combination of two normal distributions, "
+                                   "one with a moving mean and one with  "
+                                   "shrinking variance. The result is a "
+                                   "distribution that starts as unimodal and "
+                                   "becomes more and more bimodal over time.")
 
   # Add a gamma distribution
   gamma = tf.random_gamma(shape=[1000], alpha=k)
-  histogram_summary.op("gamma", gamma)
+  histogram_summary.op("gamma", gamma,
+                       description="A gamma distribution whose shape "
+                                   "parameter, α, changes over time.")
 
   # And a poisson distribution
   poisson = tf.random_poisson(shape=[1000], lam=k)
-  histogram_summary.op("poisson", poisson)
+  histogram_summary.op("poisson", poisson,
+                       description="A Poisson distribution, which only "
+                                   "takes on integer values.")
 
   # And a uniform distribution
   uniform = tf.random_uniform(shape=[1000], maxval=k*10)
-  histogram_summary.op("uniform", uniform)
+  histogram_summary.op("uniform", uniform,
+                       description="A simple uniform distribution.")
 
   # Finally, combine everything together!
   all_distributions = [mean_moving_normal, shrinking_normal,
                        gamma, poisson, uniform]
   all_combined = tf.concat(all_distributions, 0)
-  histogram_summary.op("all_combined", all_combined)
+  histogram_summary.op("all_combined", all_combined,
+                       description="An amalgamation of five distributions: a "
+                                   "uniform distribution, a gamma "
+                                   "distribution, a Poisson distribution, and "
+                                   "two normal distributions.")
 
   summaries = tf.summary.merge_all()
 

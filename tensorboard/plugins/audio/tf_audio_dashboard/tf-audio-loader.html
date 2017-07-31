@@ -30,8 +30,7 @@ backend.
 -->
 <dom-module id="tf-audio-loader">
   <template>
-    <tf-card-heading title="[[tag]]" color="[[_runColor]]">
-      <div>[[run]]</div>
+    <tf-card-heading run="[[run]]" tag="[[tag]]" color="[[_runColor]]">
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
         step
         <span style="font-weight: bold">[[_currentDatum.step]]</span>
