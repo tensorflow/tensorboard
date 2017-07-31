@@ -31,6 +31,7 @@ from werkzeug import wrappers
 import numpy as np
 import tensorflow as tf
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.plugins import base_plugin
@@ -83,7 +84,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         content = metadata.parse_summary_metadata(content)
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
         result[run][tag] = {'displayName': summary_metadata.display_name,
-                            'description': summary_metadata.summary_description}
+                            'description': plugin_util.markdown_to_safe_html(
+                                summary_metadata.summary_description)}
 
     return result
 

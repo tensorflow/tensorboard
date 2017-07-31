@@ -42,7 +42,8 @@ class HistogramsPluginTest(tf.test.TestCase):
   _SCALAR_TAG = 'my-boring-scalars'
 
   _DISPLAY_NAME = 'Important production statistics'
-  _DESCRIPTION = 'quod erat scribendum'
+  _DESCRIPTION = 'quod *erat* scribendum'
+  _HTML_DESCRIPTION = '<p>quod <em>erat</em> scribendum</p>'
 
   _RUN_WITH_LEGACY_HISTOGRAM = '_RUN_WITH_LEGACY_HISTOGRAM'
   _RUN_WITH_HISTOGRAM = '_RUN_WITH_HISTOGRAM'
@@ -115,7 +116,7 @@ class HistogramsPluginTest(tf.test.TestCase):
         self._RUN_WITH_HISTOGRAM: {
             '%s/histogram_summary' % self._HISTOGRAM_TAG: {
                 'displayName': self._DISPLAY_NAME,
-                'description': self._DESCRIPTION,
+                'description': self._HTML_DESCRIPTION,
             },
         },
     }, self.plugin.index_impl())

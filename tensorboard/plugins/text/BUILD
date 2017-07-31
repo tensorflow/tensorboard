@@ -15,6 +15,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_mozilla_bleach",
@@ -33,6 +34,7 @@ py_test(
     deps = [
         ":text_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
