@@ -163,15 +163,15 @@ def op(
         # read_value method). See
         # https://github.com/tensorflow/tensorflow/issues/11856 for details.
         # We hence implement the logic of scatter_add using other functions.
-        new_counts = true_labels + tf.gather(
+        new_true_counts = true_labels + tf.gather(
             tp_buckets_v.read_value(), bucket_indices)
         update_tp = tf.scatter_update(
-            tp_buckets_v, bucket_indices, new_counts, use_locking=True)
+            tp_buckets_v, bucket_indices, new_true_counts, use_locking=True)
 
-        new_counts = false_labels + tf.gather(
+        new_false_counts = false_labels + tf.gather(
             fp_buckets_v.read_value(), bucket_indices)
         update_fp = tf.scatter_update(
-            fp_buckets_v, bucket_indices, new_counts, use_locking=True)
+            fp_buckets_v, bucket_indices, new_false_counts, use_locking=True)
 
     with tf.control_dependencies([update_tp, update_fp]):
       with tf.name_scope('metrics'):
