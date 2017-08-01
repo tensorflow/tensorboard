@@ -33,17 +33,17 @@ def op(
     num_thresholds=200,
     weight=1.0,
     display_name=None,
-    description=None):
-  """Computes multi-class PR summaries for a list of thresholds in `[0, 1]`.
+    description=''):
+  """Computes PR summaries for 1 class.
 
   Computes true/false positive/negative values for the given `predictions`
   against the ground truth `labels`, against a list of evenly distributed
   threshold values in `[0, 1]` of length `num_thresholds`.
 
   Each number in `predictions`, a float in `[0, 1]`, is compared with its
-  corresponding label in `labels`, and counts as a single tp/fp/tn/fn value at
-  each threshold. This is then multiplied with `weight` which can be used to
-  reweight certain values, or more commonly used for masking values.
+  corresponding boolean label in `labels`, and counts as a single tp/fp/tn/fn
+  value at each threshold. This is then multiplied with `weight` which can be
+  used to reweight certain values, or more commonly used for masking values.
 
   NOTE(chizeng): This is a faster implementation of similar methods in
   `tf.contrib.metrics.streaming_XXX_at_thresholds`, where we assume the
@@ -62,10 +62,10 @@ def op(
         constant integer value, not a Tensor that stores an integer.
     weight: Optional; A scalar or scalar float32 `Tensor`. Individual counts are
         multiplied by this value.
-    display_name: The name displayed atop this PR curve in TensorBoard. The
-        display_name is optional. `tag` will be used in its absence.
-    description: Not yet supported; do not use. (Eventually: Optional
-        long-form description for this summary. Markdown is supported.)
+    display_name: Optional; The name displayed atop this PR curve in
+        TensorBoard. `tag` will be used in its absence.
+    description: Optional; A text description describing this summary. Appears
+        in TensorBoard near the corresponding visualization.
 
   Returns:
     A summary operation for use in a TensorFlow graph. The float32 tensor
@@ -91,7 +91,7 @@ def op(
     true_labels = tf.reshape(true_labels, [-1])
     false_labels = tf.reshape(false_labels, [-1])
 
-    # To compute TP/FP/TN/FN, we are measuring a classifier
+    # To compute TP/FP/TN/FN, we are measuring a binary classifier
     #   C(t) = (predictions >= t)
     # at each threshold 't'. So we have
     #   TP(t) = sum( C(t) * true_labels )

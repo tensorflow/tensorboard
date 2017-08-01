@@ -38,7 +38,7 @@ class PrCurveTest(tf.test.TestCase):
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 
-  def test1Class(self):
+  def testWeight1(self):
     # Generate summaries for showing PR curves in TensorBoard.
     with tf.Session() as sess:
       summary.op(
@@ -75,10 +75,9 @@ class PrCurveTest(tf.test.TestCase):
 
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
 
-    # The tensor shape must be correct. The first dimension is the
-    # type of value (see documentation for the op). The 2nd dimension
-    # is the number of classes. The last dimension is the number of
-    # thresholds.
+    # The tensor shape must be correct. The first dimension is the value to
+    # compute (see documentation for the op or the comments below). The second
+    # dimension is the number of thresholds.
     correct_shape = [6, 10]
     self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
 
