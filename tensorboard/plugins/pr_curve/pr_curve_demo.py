@@ -44,19 +44,19 @@ tf.flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
                        'Directory into which to write TensorBoard data.')
 
 tf.flags.DEFINE_integer('steps', 10,
-                        'Number of steps to generate for each PR curve. '
-                        'Should be less than 40 for reasons in the code.')
+                        'Number of steps to generate for each PR curve.')
 
 
-def start_runs(logdir, steps, run_name, doubly_weigh_blues):
-  """Generate a PR curve with precision and recall evenly weighed.
+def start_runs(logdir, steps, run_name, doubly_weight_blues, thresholds=50):
+  """Generate a PR curve with precision and recall evenly weighted.
   
   Arguments:
     logdir: The directory into which to store all the runs' data.
     steps: The number of steps to run for.
     run_name: The name of the run.
-    doubly_weigh_blues: Weigh probabilities for whether a color is blue twice
+    doubly_weight_blues: Weight probabilities for whether a color is blue twice
         as much as default.
+    thresholds: The number of thresholds to use for PR curves.
   """
   tf.reset_default_graph()
   
@@ -71,8 +71,9 @@ def start_runs(logdir, steps, run_name, doubly_weigh_blues):
   true_reds = tf.clip_by_value(
       tf.concat([
           255 - tf.abs(channel_distribution.sample([number_of_reds, 1])),
-          tf.abs(channel_distribution.sample([number_of_reds, 2]))], axis=1),
-      0, 255)
+          tf.abs(channel_distribution.sample([number_of_reds, 2]))
+      ], axis=1),
+  0, 255)
 
   # Generate greens.
   number_of_greens = 200
@@ -80,38 +81,40 @@ def start_runs(logdir, steps, run_name, doubly_weigh_blues):
       tf.concat([
           tf.abs(channel_distribution.sample([number_of_greens, 1])),
           255 - tf.abs(channel_distribution.sample([number_of_greens, 1])),
-          tf.abs(channel_distribution.sample([number_of_greens, 1]))], axis=1),
-      0, 255)
+          tf.abs(channel_distribution.sample([number_of_greens, 1]))
+      ], axis=1),
+  0, 255)
 
   # Generate blues.
   number_of_blues = 150
   true_blues = tf.clip_by_value(
       tf.concat([
           tf.abs(channel_distribution.sample([number_of_blues, 2])),
-          255 - tf.abs(channel_distribution.sample([number_of_blues, 1]))],
-          axis=1),
-      0, 255)
+          255 - tf.abs(channel_distribution.sample([number_of_blues, 1]))
+      ], axis=1),
+  0, 255)
 
   # Assign each color a vector of 3 booleans based on its true label.
   labels = tf.concat([
       tf.tile(tf.constant([[True, False, False]]), (number_of_reds, 1)),
       tf.tile(tf.constant([[False, True, False]]), (number_of_greens, 1)),
-      tf.tile(tf.constant([[False, False, True]]), (number_of_blues, 1))
+      tf.tile(tf.constant([[False, False, True]]), (number_of_blues, 1)),
   ], axis=0)
 
   # We introduce 3 normal distributions. They are used to predict whether a
   # color falls under a certain class (based on distances from corners of the
   # color triangle). The distributions vary per color. We have the distributions
   # narrow over time.
-  iteration = tf.Variable(0.0)
-  increment_iteration = tf.assign_add(iteration, 1.0)
-  with tf.control_dependencies([increment_iteration]):
-    red_predictor = tf.distributions.Normal(
-        loc=0., scale=tf.constant(40.) - iteration)
-    green_predictor = tf.distributions.Normal(
-        loc=0., scale=tf.constant(60.) - iteration)
-    blue_predictor = tf.distributions.Normal(
-        loc=0., scale=tf.constant(100.) - iteration)
+  iteration = tf.placeholder(tf.int32, shape=[])
+  red_predictor = tf.distributions.Normal(
+      loc=0.,
+      scale=tf.cast(1 + FLAGS.steps - iteration, dtype=tf.float32))
+  green_predictor = tf.distributions.Normal(
+      loc=0.,
+      scale=tf.cast(20 + FLAGS.steps - iteration, dtype=tf.float32))
+  blue_predictor = tf.distributions.Normal(
+      loc=0.,
+      scale=tf.cast(80 + FLAGS.steps - iteration, dtype=tf.float32))
 
   # Make predictions (assign 3 probabilities to each color based on each color's
   # distance to each of the 3 corners).
@@ -128,7 +131,7 @@ def start_runs(logdir, steps, run_name, doubly_weigh_blues):
       tf.expand_dims(probabilities_colors_are_blue, 1)
     ], axis=1)
 
-  if doubly_weigh_blues:
+  if doubly_weight_blues:
     weights = tf.concat([
       tf.ones((number_of_reds, 1)),
       tf.ones((number_of_greens, 1)),
@@ -137,55 +140,72 @@ def start_runs(logdir, steps, run_name, doubly_weigh_blues):
   else:
     weights = None
 
+  display_name = 'colors'
+  if doubly_weight_blues:
+    display_name += '_doubly_weight_blues'
+
+  description = ('This PR curve is generated based on probabilities assigned '
+                 'by 3 normal distributions - one for predicting each class. ')
+  if doubly_weight_blues:
+    description += ('We doubly weigh predictions for whether a certain color is'
+                    ' blue.')
+
   # This is the crucial piece. We write data required for generating PR curves.
   summary.op(
       tag='colors',
       labels=labels,
       predictions=predictions,
-      num_thresholds=50,
+      num_thresholds=thresholds,
       num_classes=3,
-      weights=weights)
+      weights=weights,
+      display_name=display_name,
+      description=description)
   merged_summary_op = tf.summary.merge_all()
   events_directory = os.path.join(logdir, run_name)
   sess = tf.Session()
   writer = tf.summary.FileWriter(events_directory, sess.graph)
 
   # We run 10 steps.
-  sess.run(tf.global_variables_initializer())
   for step in xrange(steps):
-    writer.add_summary(sess.run(merged_summary_op), step)
+    feed_dict = {
+        iteration: step,
+    }
+    merged_summary = sess.run(merged_summary_op, feed_dict=feed_dict)
+    writer.add_summary(merged_summary, step)
 
   writer.close()
 
 
-def run_all(logdir, steps, verbose=False):
+def run_all(logdir, steps, thresholds=50, verbose=False):
   """Generate PR curve summaries.
 
   Arguments:
     logdir: The directory into which to store all the runs' data.
     steps: The number of steps to run for.
+    verbose: Whether to print the names of runs into stdout during execution.
+    thresholds: The number of thresholds to use for PR curves.
   """
   # First, we generate data for a PR curve that assigns even weights for
   # predictions of all classes.
-  run_name = 'evenly_weighed'
+  run_name = 'evenly_weighted'
   if verbose:
       print('--- Running: %s' % run_name)
   start_runs(
       logdir=logdir,
       steps=steps,
       run_name=run_name,
-      doubly_weigh_blues=False)
+      doubly_weight_blues=False)
 
   # Next, we generate data for a PR curve that assigns 2x the weight for
   # predictions of whether a color is blue.
-  run_name = 'doubly_weigh_blues'
+  run_name = 'doubly_weight_blues'
   if verbose:
       print('--- Running: %s' % run_name)
   start_runs(
       logdir=logdir,
       steps=steps,
-      run_name='doubly_weigh_blues',
-      doubly_weigh_blues=True)
+      run_name='doubly_weight_blues',
+      doubly_weight_blues=True)
 
 
 def main(unused_argv):
