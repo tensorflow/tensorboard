@@ -486,6 +486,5 @@ EVENT_LOG_ID = Id('event_log_id', 29)
 
 RUN_ROWID = RowId('Runs.rowid', EXPERIMENT_ID, RUN_ID)
 TAG_ROWID = RowId('Tags.rowid', EXPERIMENT_ID, TAG_ID)
-TAG_PLUGIN_ROWID = RowId('TagsPlugins.rowid', EXPERIMENT_ID, TAG_PLUGIN_ID)
 TENSOR_ROWID = RowId('Tensors.rowid', TAG_ID, STEP_ID)
 EVENT_LOG_ROWID = RowId('EventLogs.rowid', RUN_ID, EVENT_LOG_ID)
