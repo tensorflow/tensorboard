@@ -124,13 +124,13 @@ def op(
 
     with tf.name_scope('variables'):
       # Now create the variables which correspond to the bucket values.
-      tp_buckets_v = tf.Variable(
-          tf.zeros([num_thresholds], dtype=dtype),
+      tp_buckets_v = tf.get_variable(
+          initializer=tf.zeros([num_thresholds], dtype=dtype),
           name='tp_buckets',
           trainable=False,
           collections=[tf.GraphKeys.LOCAL_VARIABLES])
-      fp_buckets_v = tf.Variable(
-          tf.zeros([num_thresholds], dtype=dtype),
+      fp_buckets_v = tf.get_variable(
+          initializer=tf.zeros([num_thresholds], dtype=dtype),
           name='fp_buckets',
           trainable=False,
           collections=[tf.GraphKeys.LOCAL_VARIABLES])
