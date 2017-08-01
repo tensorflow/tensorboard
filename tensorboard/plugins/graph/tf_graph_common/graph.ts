@@ -160,7 +160,11 @@ export interface OpNode extends Node {
   outputShapes: TensorShape[];
   // The XLA Cluster on which the op ran. Null if it is unknown.
   xlaCluster: string;
-  // Whether op is compatible with device
+  // Whether op is compatible with its assigned device.  Currently, if an op
+  // is not specified a device, the device is defaulted to the TPU.
+  // Furthermore, all ops are considered compatible for CPU and GPU devices,
+  // while a whitelist of compatible ops are specifed for the TPU.
+  // Reference: opValid func in op.ts.
   compatible: boolean;
 }
 

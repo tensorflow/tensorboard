@@ -372,15 +372,13 @@ table.tf-graph-controls td.input-element-table-data {
         FileWriter when a specific session is run.
       </paper-tooltip>
 
-      <template is="dom-if" if="[[opCompatFeatureEnabled]]">
-        <paper-radio-button id="tpu-compatibility-radio-button"
-                            name="op_compatibility">
-          TPU Compatibility
-        </paper-radio-button>
-        <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right">
-          Coloring by whether an operation is compatible for the TPU device.
-        </paper-tooltip>
-      </template>
+      <paper-radio-button id="tpu-compatibility-radio-button"
+                          name="op_compatibility">
+        TPU Compatibility
+      </paper-radio-button>
+      <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right">
+        Coloring by whether an operation is compatible for the TPU device.
+      </paper-tooltip>
 
     </paper-radio-group>
   </div>
@@ -795,8 +793,6 @@ Polymer({
       type: Boolean,
       notify: true,
     },
-    // This stores whether to allow the color-by op compatibility option
-    opCompatFeatureEnabled: Boolean,
   },
   listeners: {
     'trace-inputs.change': '_traceInputToggleChanged'
