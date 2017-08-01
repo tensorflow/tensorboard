@@ -78,7 +78,7 @@ class TensorBase(object):
         with contextlib.closing(self._db_connection_provider()) as conn:
           with conn:
             with contextlib.closing(conn.cursor()) as c:
-              c.execute('SELECT plugin_id, name FROM plugins')
+              c.execute('SELECT plugin_id, name FROM Plugins')
               self._plugin_ids_by_name.clear()
               max_id = 0
               for id_, name in c.fetchall():
@@ -95,7 +95,7 @@ class TensorBase(object):
                 new_rows.append((max_id, name))
               if new_rows:
                 c.executemany(
-                    'INSERT INTO plugins (plugin_id, name) VALUES (?, ?)',
+                    'INSERT INTO Plugins (plugin_id, name) VALUES (?, ?)',
                     new_rows)
     return result
 
