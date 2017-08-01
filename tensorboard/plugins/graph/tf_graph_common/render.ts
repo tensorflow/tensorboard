@@ -22,7 +22,7 @@ export type Point = {x: number, y: number};
 /**
  * Color parameters for op nodes.
  */
-export let OpNodeColors = {DEFAULT_FILL: 'white', DEFAULT_STROKE: '#b2b2b2',
+export let OpNodeColors = {DEFAULT_FILL: '#ffffff', DEFAULT_STROKE: '#b2b2b2',
                            COMPATIBLE: '#0f9d58', INCOMPATIBLE: '#db4437'};
 
 /**
