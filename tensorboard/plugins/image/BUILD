@@ -25,6 +25,17 @@ py_library(
     ],
 )
 
+py_binary(
+    name = "images_demo",
+    srcs = ["images_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_test(
     name = "images_plugin_test",
     size = "small",
