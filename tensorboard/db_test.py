@@ -81,10 +81,10 @@ class IdTest(test_util.TestCase):
     self.assertIn(db.Id('foo_id', 1).generate(), (0, 1))
 
   def testFields(self):
-    id = db.Id('foo_id', 2)
-    self.assertEqual('foo_id', id.name)
-    self.assertEqual(2, id.bits)
-    self.assertEqual(3, id.max)
+    id_ = db.Id('foo_id', 2)
+    self.assertEqual('foo_id', id_.name)
+    self.assertEqual(2, id_.bits)
+    self.assertEqual(3, id_.max)
 
 
 class RowIdTest(test_util.TestCase):

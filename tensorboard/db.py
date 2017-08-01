@@ -50,10 +50,10 @@ class TensorBase(object):
   def get_plugin_ids(self, names):
     """Gets IDs of plugins, creating rows if they don't exist.
 
-    This function maintains a cache of the plugins table in local memory,
-    to avoid performing queries when possible. When writing to the table,
-    this function is optimistic and can cause the outer transaction to
-    abort, in which case it will need to be retried.
+    This function maintains a cache of the plugins table in local
+    memory, to avoid performing queries when possible. When writing to
+    the table, this function is optimistic and can cause the outer
+    transaction to abort, in which case it will need to be retried.
 
     Args:
       db_conn: A PEP 249 Connection object.
@@ -121,9 +121,6 @@ class Schema(object):
     this method. It might be advantageous in certain circumstances to
     hold off on calling that method, for example when loading a really
     large backup into a fresh database.
-
-    Args:
-      db_conn: A PEP 249 Connection object.
     """
     self.create_experiments_table()
     self.create_runs_table()
@@ -137,9 +134,6 @@ class Schema(object):
     """Creates SQL tables and indexes needed by TensorBoard.
 
     If the indexes are already created, this function has no effect.
-
-    Args:
-      db_conn: A PEP 249 Connection object.
     """
     self.create_runs_table_id_index()
     self.create_runs_table_name_index()
@@ -157,7 +151,8 @@ class Schema(object):
     Fields:
       experiment_id: Random integer primary key in range [0,2^28).
       name: (Uniquely indexed) Arbitrary string which is displayed to
-          the user in the TensorBoard UI.
+          the user in the TensorBoard UI, which can be no greater than
+          255 characters.
       description: Arbitrary markdown text describing the experiment.
     """
     with self._cursor() as c:
@@ -172,22 +167,25 @@ class Schema(object):
   def create_runs_table(self):
     """Creates the Runs table.
 
-    This table stores information about runs. Each row usually represents
-    a single attempt at training or testing a TensorFlow model, with a
-    given set of hyper-parameters, whose summaries are written out to a
-    single event logs directory with a monotonic step counter.
+    This table stores information about runs. Each row usually
+    represents a single attempt at training or testing a TensorFlow
+    model, with a given set of hyper-parameters, whose summaries are
+    written out to a single event logs directory with a monotonic step
+    counter.
 
     When a run is deleted from this table, TensorBoard SHOULD treat all
     information associated with it as deleted, even if those rows in
     different tables still exist.
 
     Fields:
-      rowid: Row ID which has run_id in the low 29 bits and experiment_id
-          in the higher 28 bits. This is used to control locality.
+      rowid: Row ID which has run_id in the low 29 bits and
+          experiment_id in the higher 28 bits. This is used to control
+          locality.
       experiment_id: The 28-bit experiment ID.
       run_id: Unique randomly generated 29-bit ID for this run.
       name: Arbitrary string which is displayed to the user in the
-          TensorBoard UI, which is unique within a given experiment.
+          TensorBoard UI, which is unique within a given experiment,
+          which can be no greater than 1900 characters.
     """
     with self._cursor() as c:
       c.execute('''\
@@ -195,7 +193,7 @@ class Schema(object):
           rowid INTEGER PRIMARY KEY,
           run_id INTEGER NOT NULL,
           experiment_id INTEGER NOT NULL,
-          name VARCHAR(255) NOT NULL
+          name VARCHAR(1900) NOT NULL
         )
       ''')
 
@@ -224,11 +222,12 @@ class Schema(object):
       rowid: The rowid which has tag_id field in the low 31 bits and the
           experiment ID in the higher 28 bits.
       tag_id: Unique randomly distributed 31-bit ID for this tag.
-      run_id: The id of the row in the runs table, with which this tag is
-          associated.
+      run_id: The id of the row in the runs table, with which this tag
+          is associated.
       name: The tag. See the tag field in summary.proto for more
-          information.
-      display_name: Same as SummaryMetadata.display_name, if set.
+          information, which can be no greater than 255 characters.
+      display_name: Same as SummaryMetadata.display_name, if set, which
+          can be no greater than 255 characters.
       summary_description: Same as SummaryMetadata.summary_description,
           if set. This is Markdown describing the summary.
     """
@@ -307,7 +306,7 @@ class Schema(object):
           rowid INTEGER PRIMARY KEY,
           encoding TINYINT NOT NULL,
           is_big BOOLEAN NOT NULL,
-          tensor BLOB NOT NULL  -- VARBINARY on MySQL, MS-SQL, etc.
+          tensor BLOB NOT NULL  -- TODO(@jart): VARBINARY on MySQL, MS-SQL, etc.
         )
       ''')
 
@@ -315,8 +314,8 @@ class Schema(object):
     """Creates the BigTensors table.
 
     This table is meant for tensors larger than half a b-tree page.
-    Some databases, e.g. MySQL, will store these tensors off-page,
-    thereby making BigTensors O(nlogn) cf. Tensors.
+    Please note that some databases, e.g. MySQL, will store these
+    tensors off-page.
 
     Fields:
       rowid: Must be same as corresponding Tensors table row.
@@ -344,8 +343,9 @@ class Schema(object):
 
     Fields:
       plugin_id: Arbitrary integer arbitrarily limited to 16-bits.
-      name: (Uniquely indexed) Arbitrary string which is the same as the
-          TBPlugin.plugin_name field.
+      name: Arbitrary string which is the same as the
+          TBPlugin.plugin_name field, which can be no greater than 255
+          characters.
     """
     with self._cursor() as c:
       c.execute('''\
@@ -367,11 +367,11 @@ class Schema(object):
     """Creates the EventLogs table.
 
     Event logs are files written to disk by TensorFlow via FileWriter,
-    which uses PyRecordWriter to output records containing binary-encoded
-    tf.Event protocol buffers.
+    which uses PyRecordWriter to output records containing
+    binary-encoded tf.Event protocol buffers.
 
-    This table is used by FileLoader to track the progress of files being
-    loaded off disk into the database.
+    This table is used by FileLoader to track the progress of files
+    being loaded off disk into the database.
 
     Each time FileLoader runs a transaction committing events to the
     database, it updates the offset field.
@@ -382,7 +382,7 @@ class Schema(object):
       run_id: A reference to the id field of the associated row in the
           runs table. Must be the same as what's in those rowid bits.
       path: The basename of the path of the event log file. It SHOULD be
-          formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX].
+          formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX]
       offset: The byte offset in the event log file *after* the last
           successfully committed event record.
     """
