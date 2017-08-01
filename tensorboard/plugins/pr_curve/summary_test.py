@@ -79,22 +79,24 @@ class PrCurveTest(tf.test.TestCase):
     # type of value (see documentation for the op). The 2nd dimension
     # is the number of classes. The last dimension is the number of
     # thresholds.
-    correct_shape = [6, 1, 10]
+    correct_shape = [6, 10]
     self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
+
+    print(`tensor_nd_array.tolist()`)
 
     np.testing.assert_allclose([
       # True positives.
-      [[2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]],
+      [2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
       # False positives.
-      [[2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]],
+      [2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0],
       # True negatives.
-      [[0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0]],
+      [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0],
       # False negatives.
-      [[0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0]],
+      [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0],
       # Precision.
-      [[0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0]],
+      [0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0],
       # Recall.
-      [[1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0]]
+      [1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
     ], tensor_nd_array.tolist())
 
   def test3ClassesWithWeight(self):
