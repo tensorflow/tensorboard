@@ -479,8 +479,8 @@ export function joinAndAggregateStats(
   });
 }
 
-export function getIncompatOps(hierarchy: Hierarchy,
-                               hierarchyParams: HierarchyParams) {
+export function getIncompatibleOps(hierarchy: Hierarchy,
+                                   hierarchyParams: HierarchyParams) {
   let nodes: (GroupNode | OpNode)[] = [];
   let addedSeriesNodes: { [seriesName: string]: SeriesNode } = {};
   _.each(hierarchy.root.leaves(), leaf => {

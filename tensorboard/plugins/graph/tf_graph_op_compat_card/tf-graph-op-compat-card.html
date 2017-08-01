@@ -31,7 +31,7 @@ limitations under the License.
   max-height: 500px;
 }
 
-.incompat-ops-list {
+.incompatible-ops-list {
   height: 350px;
   max-height: 400px;
   overflow-y: scroll;
@@ -141,8 +141,8 @@ div.op-compat-value {
   <div class="expandedInfo">
     Incompatible Operations:
     (<span>[[_totalIncompatOps]]</span>)
-    <iron-list class="incompat-ops-list" id ="incompatOpsList"
-               items="[[_incompatOpNodes]]">
+    <iron-list class="incompatible-ops-list" id ="incompatibleOpsList"
+               items="[[_incompatibleOpNodes]]">
       <template>
         <tf-graph-op-compat-list-item
             class="non-control-list-item"
@@ -151,7 +151,7 @@ div.op-compat-value {
             name="[[item.name]]"
             template-index="[[_templateIndex]]"
             color-by="[[colorBy]]"
-            item-type="incompat-ops">
+            item-type="incompatible-ops">
         </tf-graph-op-compat-list-item>
       </template>
     </iron-list>
@@ -173,9 +173,9 @@ div.op-compat-value {
         type: Function,
         computed: '_getTemplateIndex(graphHierarchy)'
       },
-      _incompatOpNodes: {
+      _incompatibleOpNodes: {
         type: Object,
-        computed: '_getIncompatOpNodes(graphHierarchy, hierarchyParams)'
+        computed: '_getIncompatibleOpNodes(graphHierarchy, hierarchyParams)'
       },
       _expanded: {
         type: Boolean,
@@ -199,7 +199,7 @@ div.op-compat-value {
       },
       _totalIncompatOps: {
         type: Number,
-        computed: '_getTotalIncompatOps(graphHierarchy)'
+        computed: '_getTotalIncompatibleOps(graphHierarchy)'
       }
     },
     _getTemplateIndex: function(graphHierarchy) {
@@ -228,10 +228,10 @@ div.op-compat-value {
         list.fire('iron-resize');
       }
     },
-    _getIncompatOpNodes: function(graphHierarchy, hierarchyParams) {
+    _getIncompatibleOpNodes: function(graphHierarchy, hierarchyParams) {
       if (graphHierarchy && graphHierarchy.root) {
-        this.async(this._resizeList.bind(this, "#incompatOpsList"));
-        return tf.graph.hierarchy.getIncompatOps(graphHierarchy, hierarchyParams);
+        this.async(this._resizeList.bind(this, "#incompatibleOpsList"));
+        return tf.graph.hierarchy.getIncompatibleOps(graphHierarchy, hierarchyParams);
       }
     },
     _computeOpCompatScore: function(graphHierarchy) {
@@ -248,7 +248,7 @@ div.op-compat-value {
     _getOpCompatScoreLabel: function(opCompatScore) {
       return d3.format(".0%")(opCompatScore);
     },
-    _getTotalIncompatOps: function (graphHierarchy) {
+    _getTotalIncompatibleOps: function (graphHierarchy) {
       if (graphHierarchy && graphHierarchy.root) {
         return graphHierarchy.root.compatibilityHistogram.incompatible;
       }
