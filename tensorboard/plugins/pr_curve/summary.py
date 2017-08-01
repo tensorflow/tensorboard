@@ -33,8 +33,8 @@ def op(
     num_thresholds=200,
     weight=1.0,
     display_name=None,
-    description=''):
-  """Computes PR summaries for 1 class.
+    description=None):
+  """Create a PR curve summary op for a single binary classifier.
 
   Computes true/false positive/negative values for the given `predictions`
   against the ground truth `labels`, against a list of evenly distributed
@@ -56,12 +56,12 @@ def op(
     labels: The ground truth values. A Tensor of `bool` values with arbitrary
         shape.
     predictions: A float32 `Tensor` whose values are in the range `[0, 1]`.
-        A `Tensor` whose dimensions must match `labels`.
+        Dimensions must match those of `labels`.
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
         compute PR metrics for. Should be `>= 2`. This value should be a 
         constant integer value, not a Tensor that stores an integer.
-    weight: Optional; A scalar or scalar float32 `Tensor`. Individual counts are
-        multiplied by this value.
+    weight: Optional; A float value or scalar float32 `Tensor`. Individual
+        counts are multiplied by this value.
     display_name: Optional; The name displayed atop this PR curve in
         TensorBoard. `tag` will be used in its absence.
     description: Optional; A text description describing this summary. Appears
@@ -171,7 +171,7 @@ def op(
         # that value is constant for all pr curve summaries with the same tag.
         summary_metadata = tf.SummaryMetadata(
             display_name=display_name if display_name is not None else tag,
-            summary_description=description)
+            summary_description=description or '')
         pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
             num_thresholds=num_thresholds)
         summary_metadata.plugin_data.add(

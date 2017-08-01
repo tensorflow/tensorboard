@@ -74,15 +74,6 @@ class PrCurveTest(tf.test.TestCase):
     self.assertEqual(1, tensor_event.step)
 
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
-
-    # The tensor shape must be correct. The first dimension is the value to
-    # compute (see documentation for the op or the comments below). The second
-    # dimension is the number of thresholds.
-    correct_shape = [6, 10]
-    self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
-
-    print(`tensor_nd_array.tolist()`)
-
     np.testing.assert_allclose([
       # True positives.
       [2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
@@ -96,7 +87,7 @@ class PrCurveTest(tf.test.TestCase):
       [0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0],
       # Recall.
       [1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
-    ], tensor_nd_array.tolist())
+    ], tensor_nd_array)
 
 
 if __name__ == "__main__":
