@@ -33,7 +33,8 @@ def op(
     num_thresholds=200,
     weight=1.0,
     display_name=None,
-    description=None):
+    description=None,
+    collections=None):
   """Create a PR curve summary op for a single binary classifier.
 
   Computes true/false positive/negative values for the given `predictions`
@@ -62,10 +63,13 @@ def op(
         constant integer value, not a Tensor that stores an integer.
     weight: Optional; A float or scalar float32 `Tensor`. Individual
         counts are multiplied by this value.
-    display_name: Optional; The name displayed atop this PR curve in
-        TensorBoard. `tag` will be used in its absence.
-    description: Optional; A text description describing this summary. Appears
-        in TensorBoard near the corresponding visualization.
+    display_name: Optional name for this summary in TensorBoard, as a
+        constant `str`. Defaults to `name`.
+    description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
+    collections: Optional list of graph collections keys. The new
+        summary op is added to these collections. Defaults to
+        `[Graph Keys.SUMMARIES]`.
 
   Returns:
     A summary operation for use in a TensorFlow graph. The float32 tensor
@@ -199,4 +203,5 @@ def op(
     return tf.summary.tensor_summary(
         name=tag,
         tensor=combined_data,
+        collections=collections,
         summary_metadata=summary_metadata)
