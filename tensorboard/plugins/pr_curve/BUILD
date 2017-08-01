@@ -41,13 +41,3 @@ tb_proto_library(
     visibility = ["//visibility:public"],
 )
 
-py_binary(
-    name = "pr_curve_demo",
-    srcs = ["pr_curve_demo.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":summary",
-        "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
-    ],
-)
