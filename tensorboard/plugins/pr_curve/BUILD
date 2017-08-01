@@ -40,4 +40,3 @@ tb_proto_library(
     srcs = ["pr_curve.proto"],
     visibility = ["//visibility:public"],
 )
-
