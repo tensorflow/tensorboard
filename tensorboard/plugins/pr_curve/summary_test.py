@@ -38,13 +38,13 @@ class PrCurveTest(tf.test.TestCase):
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 
-  def test1Class(self):
+  def testWeight1(self):
     # Generate summaries for showing PR curves in TensorBoard.
     with tf.Session() as sess:
       summary.op(
           tag='tag_bar',
-          labels=tf.constant([True, False, True, False], dtype=tf.bool),
-          predictions=tf.constant([0.8, 0.6, 0.4, 0.2], dtype=tf.float32),
+          labels=tf.constant([True, False, True, False]),
+          predictions=tf.constant([0.8, 0.6, 0.4, 0.2]),
           num_thresholds=10)
       merged_summary_op = tf.summary.merge_all()
       foo_directory = os.path.join(self.logdir, 'foo')
@@ -74,28 +74,21 @@ class PrCurveTest(tf.test.TestCase):
     self.assertEqual(1, tensor_event.step)
 
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
-
-    # The tensor shape must be correct. The first dimension is the
-    # type of value (see documentation for the op). The 2nd dimension
-    # is the number of classes. The last dimension is the number of
-    # thresholds.
-    correct_shape = [6, 1, 10]
-    self.assertListEqual(correct_shape, list(tensor_nd_array.shape))
-
     np.testing.assert_allclose([
       # True positives.
-      [[2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]],
+      [2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
       # False positives.
-      [[2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]],
+      [2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0],
       # True negatives.
-      [[0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0]],
+      [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0],
       # False negatives.
-      [[0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0]],
+      [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0],
       # Precision.
-      [[0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0]],
+      [0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0],
       # Recall.
-      [[1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0]]
-    ], tensor_nd_array.tolist())
+      [1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
+    ], tensor_nd_array)
+
 
 if __name__ == "__main__":
   tf.test.main()
