@@ -224,6 +224,7 @@ class Schema(object):
       tag_id: Unique randomly distributed 31-bit ID for this tag.
       run_id: The id of the row in the runs table, with which this tag
           is associated.
+      plugin_id: The ID of the related row in the Plugins table.
       name: The tag. See the tag field in summary.proto for more
           information, which can be no greater than 255 characters.
       display_name: Same as SummaryMetadata.display_name, if set, which
@@ -237,6 +238,7 @@ class Schema(object):
           rowid INTEGER PRIMARY KEY,
           tag_id INTEGER NOT NULL,
           run_id INTEGER NOT NULL,
+          plugin_id INTEGER NOT NULL,
           name VARCHAR(255) NOT NULL,
           display_name VARCHAR(255),
           summary_description TEXT
@@ -256,29 +258,6 @@ class Schema(object):
       c.execute('''\
         CREATE UNIQUE INDEX IF NOT EXISTS TagsNameIndex
         ON Tags (run_id, name)
-      ''')
-
-  def create_tags_plugins_table(self):
-    """Creates the TagsPlugins table.
-
-    This table defines a many-to-many mapping between Tags and Plugins.
-    It is assumed that all rows associated with a given experiment will
-    be fetched at once.
-
-    Fields:
-      rowid: The rowid which has an arbitrary number in the low 38 bits
-          and the experiment ID in the higher 28 bits. This is used to
-          control locality.
-      tag_id: The ID of the related row in the Tags table.
-      plugin_id: The ID of the related row in the Plugins table.
-    """
-    with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS TagsPlugins (
-          rowid INTEGER PRIMARY KEY,
-          tag_id INTEGER NOT NULL,
-          plugin_id INTEGER NOT NULL
-        )
       ''')
 
   def create_tensors_table(self):
