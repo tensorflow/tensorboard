@@ -155,17 +155,17 @@ def op(
         thresholds = tf.cast(
             tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
         # Set up the cumulative sums to compute the actual metrics.
-        tp_buckets = tf.cast(fp_buckets_v.read_value(), tf.float32)
+        tp_buckets = tf.cast(tp_buckets_v.read_value(), tf.float32)
         fp_buckets = tf.cast(fp_buckets_v.read_value(), tf.float32)
-        tp = tf.cumsum(tp_buckets, reverse=True, axis=0, name='tp')
-        fp = tf.cumsum(fp_buckets, reverse=True, axis=0, name='fp')
+        tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
+        fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
         # fn = sum(true_labels) - tp
         #    = sum(tp_buckets) - tp
         #    = tp[:, 0] - tp
         # Similarly,
         # tn = fp[:, 0] - fp
-        tn = tf.subtract(fp[0:1], fp, name='tn')
-        fn = tf.subtract(tp[0:1], tp, name='fn')
+        tn = tf.subtract(fp[0], fp, name='tn')
+        fn = tf.subtract(tp[0], tp, name='fn')
 
         # Store the number of thresholds within the summary metadata because
         # that value is constant for all pr curve summaries with the same tag.
