@@ -25,6 +25,8 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
+    'futures >= 3.1.1',
+    'grpcio >= 1.4.0',
     'numpy >= 1.11.0',
     'six >= 1.10.0',
     'protobuf >= 3.2.0',
