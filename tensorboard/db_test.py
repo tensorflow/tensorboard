@@ -77,6 +77,7 @@ class IdTest(test_util.TestCase):
       id2.check(4)
 
   def testGenerate(self):
+    # TODO(jart): Mock this out instead and test better.
     self.assertIn(db.Id('foo_id', 1).generate(), (0, 1))
 
   def testFields(self):
@@ -96,7 +97,6 @@ class RowIdTest(test_util.TestCase):
   def testCreateAndParse(self):
     r = db.RowId('r', db.Id('g', 2), db.Id('l', 2))
     for x, y in itertools.product(range(3), range(3)):
-      tf.logging.info(r.create(x, y))
       self.assertEqual((x, y), r.parse(r.create(x, y)))
 
   def testGetRange(self):

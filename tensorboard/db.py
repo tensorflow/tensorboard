@@ -164,7 +164,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Experiments (
           experiment_id INTEGER PRIMARY KEY,
-          name TEXT NOT NULL,
+          name VARCHAR(255) NOT NULL,
           description TEXT NOT NULL
         )
       ''')
@@ -195,7 +195,7 @@ class Schema(object):
           rowid INTEGER PRIMARY KEY,
           run_id INTEGER NOT NULL,
           experiment_id INTEGER NOT NULL,
-          name TEXT NOT NULL
+          name VARCHAR(255) NOT NULL
         )
       ''')
 
@@ -238,8 +238,8 @@ class Schema(object):
           rowid INTEGER PRIMARY KEY,
           tag_id INTEGER NOT NULL,
           run_id INTEGER NOT NULL,
-          name TEXT NOT NULL,
-          display_name TEXT,
+          name VARCHAR(255) NOT NULL,
+          display_name VARCHAR(255),
           summary_description TEXT
         )
       ''')
@@ -285,7 +285,7 @@ class Schema(object):
   def create_tensors_table(self):
     """Creates the Tensors table.
 
-    This table stores the individual tensors.
+    This table is designed to offer contiguous in-page data storage.
 
     Fields:
       rowid: A 63-bit number containing the step count in the low 32
@@ -314,9 +314,9 @@ class Schema(object):
   def create_big_tensors_table(self):
     """Creates the BigTensors table.
 
-    This table allows us to store really large tensors separately from
-    the Tensors table. That way they don't slow down its scanning speed
-    and can be fetched in parallel.
+    This table is meant for tensors larger than half a b-tree page.
+    Some databases, e.g. MySQL, will store these tensors off-page,
+    thereby making BigTensors O(nlogn) cf. Tensors.
 
     Fields:
       rowid: Must be same as corresponding Tensors table row.
@@ -343,7 +343,7 @@ class Schema(object):
     will never change.
 
     Fields:
-      plugin_id: Arbitrary 16-bit integer.
+      plugin_id: Arbitrary integer arbitrarily limited to 16-bits.
       name: (Uniquely indexed) Arbitrary string which is the same as the
           TBPlugin.plugin_name field.
     """
@@ -351,7 +351,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Plugins (
           plugin_id INTEGER PRIMARY KEY,
-          name TEXT NOT NULL
+          name VARCHAR(255) NOT NULL
         )
       ''')
 
@@ -391,7 +391,7 @@ class Schema(object):
         CREATE TABLE IF NOT EXISTS EventLogs (
           rowid INTEGER PRIMARY KEY,
           run_id INTEGER NOT NULL,
-          path VARCHAR(255) NOT NULL,
+          path VARCHAR(1023) NOT NULL,
           offset INTEGER NOT NULL
         )
       ''')
@@ -494,6 +494,7 @@ def _check_id(id_, bits, name):
 
 
 def _mask(bits):
+  """Returns highest integer that can be stored in `bits` unsigned bits."""
   return (1 << bits) - 1
 
 
