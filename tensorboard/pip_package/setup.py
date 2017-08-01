@@ -60,8 +60,9 @@ setup(
     },
     package_data={
         'tensorboard': [
-            'components/index.html',
             'TAG',
+            'components/index.html',
+            'webfiles.zip',
         ],
     },
     install_requires=REQUIRED_PACKAGES,
