@@ -24,6 +24,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":protos_all_py_pb2",
+        ":pr_curve_demo",
         ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
