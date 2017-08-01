@@ -20,14 +20,14 @@ from __future__ import print_function
 
 import imghdr
 
+import six
 from six.moves import urllib
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.plugins import base_plugin
-
-_PLUGIN_PREFIX_ROUTE = event_accumulator.IMAGES
+from tensorboard.plugins.image import metadata
 
 _IMGHDR_TO_MIMETYPE = {
     'bmp': 'image/bmp',
@@ -42,7 +42,7 @@ _DEFAULT_IMAGE_MIMETYPE = 'application/octet-stream'
 class ImagesPlugin(base_plugin.TBPlugin):
   """Images Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates ImagesPlugin via TensorBoard core.
@@ -61,14 +61,48 @@ class ImagesPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The images plugin is active iff any run has at least one relevant tag."""
-    return bool(self._multiplexer) and any(self._index_impl().values())
+    if not self._multiplexer:
+      return False
+    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def _index_impl(self):
-    return {
-        run_name: run_data[event_accumulator.IMAGES]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.IMAGES in run_data
-    }
+    """Return information about the tags in each run.
+
+    Result is a dictionary of the form
+
+        {
+          "runName1": {
+            "tagName1": {
+              "displayName": "The first tag",
+              "description": "<p>Long ago there was just one tag...</p>",
+              "samples": 3
+            },
+            "tagName2": ...,
+          },
+          "runName2": ...,
+        }
+
+    For each tag, `samples` is the greatest number of images that appear
+    at any particular step. For example, if for tag `input_reshaped`
+    there are 5 samples at step 0 and 10 samples at step 1, then the
+    dictionary for `"input_reshaped"` will contain `"samples": 10`.
+    """
+    runs = self._multiplexer.Runs()
+    result = {run: {} for run in runs}
+
+    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+    for (run, tag_to_content) in six.iteritems(mapping):
+      for tag in tag_to_content:
+        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        tensor_events = self._multiplexer.Tensors(run, tag)
+        samples = max([len(event.tensor_proto.string_val[2:])  # width, height
+                       for event in tensor_events] + [0])
+        result[run][tag] = {'displayName': summary_metadata.display_name,
+                            'description': plugin_util.markdown_to_safe_html(
+                                summary_metadata.summary_description),
+                            'samples': samples}
+
+    return result
 
   @wrappers.Request.application
   def _serve_image_metadata(self, request):
@@ -87,37 +121,50 @@ class ImagesPlugin(base_plugin.TBPlugin):
     """
     tag = request.args.get('tag')
     run = request.args.get('run')
+    sample = int(request.args.get('sample', 0))
 
-    images = self._multiplexer.Images(run, tag)
-    response = self._image_response_for_run(images, run, tag)
+    images = self._multiplexer.Tensors(run, tag)
+    response = self._image_response_for_run(images, run, tag, sample)
     return http_util.Respond(request, response, 'application/json')
 
-  def _image_response_for_run(self, run_images, run, tag):
-    """Builds a JSON-serializable object with information about run_images.
+  def _image_response_for_run(self, tensor_events, run, tag, sample):
+    """Builds a JSON-serializable object with information about images.
 
     Args:
-      run_images: A list of event_accumulator.ImageValueEvent objects.
+      tensor_events: A list of image event_accumulator.TensorEvent objects.
       run: The name of the run.
       tag: The name of the tag the images all belong to.
+      sample: The zero-indexed sample of the image for which to retrieve
+        information. For instance, setting `sample` to `2` will fetch
+        information about only the third image of each batch. Steps with
+        fewer than three images will be omitted from the results.
 
     Returns:
       A list of dictionaries containing the wall time, step, URL, width, and
       height for each image.
     """
     response = []
-    for index, run_image in enumerate(run_images):
+    index = 0
+    filtered_events = self._filter_by_sample(tensor_events, sample)
+    for (index, tensor_event) in enumerate(filtered_events):
+      (width, height) = tensor_event.tensor_proto.string_val[:2]
       response.append({
-          'wall_time': run_image.wall_time,
-          'step': run_image.step,
+          'wall_time': tensor_event.wall_time,
+          'step': tensor_event.step,
           # We include the size so that the frontend can add that to the <img>
           # tag so that the page layout doesn't change when the image loads.
-          'width': run_image.width,
-          'height': run_image.height,
-          'query': self._query_for_individual_image(run, tag, index)
+          'width': int(width),
+          'height': int(height),
+          'query': self._query_for_individual_image(run, tag, sample, index)
       })
     return response
 
-  def _query_for_individual_image(self, run, tag, index):
+  def _filter_by_sample(self, tensor_events, sample):
+    return [tensor_event for tensor_event in tensor_events
+            if (len(tensor_event.tensor_proto.string_val) - 2  # width, height
+                > sample)]
+
+  def _query_for_individual_image(self, run, tag, sample, index):
     """Builds a URL for accessing the specified image.
 
     This should be kept in sync with _serve_image_metadata. Note that the URL is
@@ -127,6 +174,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
     Args:
       run: The name of the run.
       tag: The tag.
+      sample: The relevant sample index, zero-indexed. See documentation
+        on `_image_response_for_run` for more details.
       index: The index of the image. Negative values are OK.
 
     Returns:
@@ -136,7 +185,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
     query_string = urllib.parse.urlencode({
         'run': run,
         'tag': tag,
-        'index': index
+        'sample': sample,
+        'index': index,
     })
     return query_string
 
@@ -146,10 +196,13 @@ class ImagesPlugin(base_plugin.TBPlugin):
     tag = request.args.get('tag')
     run = request.args.get('run')
     index = int(request.args.get('index'))
-    image = self._multiplexer.Images(run, tag)[index]
-    image_type = imghdr.what(None, image.encoded_image_string)
+    sample = int(request.args.get('sample', 0))
+    events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
+    images = events[index].tensor_proto.string_val[2:]  # skip width, height
+    data = images[sample]
+    image_type = imghdr.what(None, data)
     content_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
-    return http_util.Respond(request, image.encoded_image_string, content_type)
+    return http_util.Respond(request, data, content_type)
 
   @wrappers.Request.application
   def _serve_tags(self, request):

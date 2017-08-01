@@ -42,10 +42,10 @@ from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.histogram import metadata as histogram_metadata
+from tensorboard.plugins.image import metadata as image_metadata
 
 
 DEFAULT_SIZE_GUIDANCE = {
-    event_accumulator.IMAGES: 10,
     event_accumulator.AUDIO: 10,
     event_accumulator.SCALARS: 1000,
     event_accumulator.TENSORS: 10,
@@ -54,6 +54,7 @@ DEFAULT_SIZE_GUIDANCE = {
 # TODO(@wchargin): Once SQL mode is in play, replace this with an
 # alternative that does not privilege first-party plugins.
 DEFAULT_TENSOR_SIZE_GUIDANCE = {
+    image_metadata.PLUGIN_NAME: 10,
     histogram_metadata.PLUGIN_NAME: 500,
 }
 

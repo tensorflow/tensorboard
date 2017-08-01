@@ -19,6 +19,8 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard import data_compat
+from tensorboard.plugins.image import summary as image_summary
+from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.histogram import summary as histogram_summary
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 
@@ -55,13 +57,6 @@ class MigrateValueTest(tf.test.TestCase):
     assert value.HasField('simple_value'), value
     self._assert_noop(value)
 
-  def test_image(self):
-    op = tf.summary.image('mona_lisa',
-                          tf.random_normal(shape=[1, 400, 200, 3]))
-    value = self._value_from_op(op)
-    assert value.HasField('image'), value
-    self._assert_noop(value)
-
   def test_audio(self):
     op = tf.summary.audio('white_noise',
                           tf.random_uniform(shape=[1, 44100],
@@ -92,6 +87,25 @@ class MigrateValueTest(tf.test.TestCase):
     assert value.HasField('tensor'), value
     self._assert_noop(value)
 
+  def test_image(self):
+    old_op = tf.summary.image('mona_lisa',
+                              tf.cast(tf.random_normal(shape=[1, 400, 200, 3]),
+                                      tf.uint8))
+    old_value = self._value_from_op(old_op)
+    assert old_value.HasField('image'), old_value
+    new_value = data_compat.migrate_value(old_value)
+
+    self.assertEqual('mona_lisa/image/0', new_value.tag)
+    expected_metadata = image_metadata.create_summary_metadata(
+        display_name='mona_lisa/image/0', description='')
+    self.assertEqual(expected_metadata, new_value.metadata)
+    self.assertTrue(new_value.HasField('tensor'))
+    (width, height, data) = tf.make_ndarray(new_value.tensor)
+    self.assertEqual(b'200', width)
+    self.assertEqual(b'400', height)
+    self.assertEqual(
+        tf.compat.as_bytes(old_value.image.encoded_image_string), data)
+
   def test_histogram(self):
     old_op = tf.summary.histogram('important_data',
                                   tf.random_normal(shape=[23, 45]))
@@ -115,6 +129,16 @@ class MigrateValueTest(tf.test.TestCase):
                               bucket_count=100,
                               display_name='Important data',
                               description='secrets of the universe')
+    value = self._value_from_op(op)
+    assert value.HasField('tensor'), value
+    self._assert_noop(value)
+
+  def test_new_style_image(self):
+    op = image_summary.op('mona_lisa',
+                          tf.cast(tf.random_normal(shape=[1, 400, 200, 3]),
+                                  tf.uint8),
+                          display_name='The Mona Lisa',
+                          description='A renowned portrait by da Vinci.')
     value = self._value_from_op(op)
     assert value.HasField('tensor'), value
     self._assert_noop(value)

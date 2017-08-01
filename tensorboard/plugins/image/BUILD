@@ -17,6 +17,7 @@ py_library(
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
@@ -43,6 +44,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":images_plugin",
+        ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",

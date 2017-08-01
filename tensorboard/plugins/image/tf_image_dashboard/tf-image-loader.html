@@ -34,26 +34,39 @@ future for loading older images.
 -->
 <dom-module id="tf-image-loader">
   <template>
-    <tf-card-heading tag="[[tag]]" run="[[run]]" color="[[_runColor]]">
+    <tf-card-heading
+      tag="[[tag]]"
+      run="[[run]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+      color="[[_runColor]]"
+    >
+      <template is="dom-if" if="[[_hasMultipleSamples]]">
+        <div>sample: [[_sampleText]] of [[ofSamples]]</div>
+      </template>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-        step
-        <span style="font-weight: bold">[[_stepValue]]</span>
-        <template is="dom-if" if="[[_currentWallTime]]">
-          ([[_currentWallTime]])
-        </template>
-        <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
-        </paper-spinner-lite>
+        <div>
+          step
+          <span style="font-weight: bold">[[_stepValue]]</span>
+          <template is="dom-if" if="[[_currentWallTime]]">
+            ([[_currentWallTime]])
+          </template>
+          <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
+          </paper-spinner-lite>
+        </div>
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
-        <paper-slider
-          id="steps"
-          immediate-value="{{_stepIndex}}"
-          max="[[_maxStepIndex]]"
-          max-markers="[[_maxStepIndex]]"
-          snaps
-          step="1"
-          value="{{_stepIndex}}"
-        ></paper-slider>
+        <div>
+          <paper-slider
+            id="steps"
+            immediate-value="{{_stepIndex}}"
+            max="[[_maxStepIndex]]"
+            max-markers="[[_maxStepIndex]]"
+            snaps
+            step="1"
+            value="{{_stepIndex}}"
+          ></paper-slider>
+        </div>
       </template>
     </tf-card-heading>
     <div id="main-image-container"></div>
@@ -61,7 +74,7 @@ future for loading older images.
     <style>
       :host {
         display: block;
-        width: 330px;
+        width: 350px;
         height: auto;
         position: relative;
         margin: 0 15px 40px 0;
@@ -145,6 +158,10 @@ future for loading older images.
       properties: {
         run: String,
         tag: String,
+        sample: Number,
+        ofSamples: Number,
+        /** @type {{description: string, displayName: string}} */
+        tagMetadata: Object,
 
         _runColor: {
           type: String,
@@ -202,6 +219,14 @@ future for loading older images.
           type: Number,
           computed: "_computeMaxStepIndex(_steps)",
         },
+        _sampleText: {
+          type: String,
+          computed: "_computeSampleText(sample)",
+        },
+        _hasMultipleSamples: {
+          type: Boolean,
+          computed: "_computeHasMultipleSamples(ofSamples)",
+        },
         _isImageLoading: {
           type: Boolean,
           value: false,
@@ -230,6 +255,12 @@ future for loading older images.
       _computeMaxStepIndex(steps) {
         return steps.length - 1;
       },
+      _computeSampleText(sample) {
+        return `${sample + 1}`;
+      },
+      _computeHasMultipleSamples(ofSamples) {
+        return ofSamples > 1;
+      },
 
       attached() {
         this._attached = true;
@@ -241,8 +272,9 @@ future for loading older images.
         }
         this._metadataCanceller.cancelAll();
         const router = getRouter();
-        const url =
-          router.pluginRunTagRoute("images", "/images")(this.tag, this.run);
+        const baseURL = router.pluginRoute("images", "/images");
+        const query = `run=${this.run}&tag=${this.tag}&sample=${this.sample}`;
+        const url = baseURL + (baseURL.indexOf('?') !== -1 ? '&' : '?') + query;
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
