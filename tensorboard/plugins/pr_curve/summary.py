@@ -161,9 +161,9 @@ def op(
         fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
         # fn = sum(true_labels) - tp
         #    = sum(tp_buckets) - tp
-        #    = tp[:, 0] - tp
+        #    = tp[0] - tp
         # Similarly,
-        # tn = fp[:, 0] - fp
+        # tn = fp[0] - fp
         tn = tf.subtract(fp[0], fp, name='tn')
         fn = tf.subtract(tp[0], tp, name='fn')
 
