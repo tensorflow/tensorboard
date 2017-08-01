@@ -60,7 +60,7 @@ def op(
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
         compute PR metrics for. Should be `>= 2`. This value should be a 
         constant integer value, not a Tensor that stores an integer.
-    weight: Optional; A float value or scalar float32 `Tensor`. Individual
+    weight: Optional; A float or scalar float32 `Tensor`. Individual
         counts are multiplied by this value.
     display_name: Optional; The name displayed atop this PR curve in
         TensorBoard. `tag` will be used in its absence.
