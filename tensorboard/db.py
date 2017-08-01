@@ -20,69 +20,6 @@ WARNING: This module is EXPERIMENTAL. It will not be considered stable
 until data migration tools are put into place. Until that time, any
 database created with this schema will need to be deleted as new updates
 occur.
-
-## Overview
-
-TensorBoard stores data using SQL via the PEP 249 API. We accomplish
-portability by restricting ourselves to an understanding of SQL that
-works efficiently in both the tiniest database in the world, SQLite, as
-well as the largest database in the world, Spanner. This, in theory,
-should mean all other ACID SQL DBs in-between are supported as well.
-
-## Primary Keys
-
-Every table has a primary key. This is considered a SQL best practice
-and is mandated by Spanner[1].
-
-Primary keys are randomly generated because it scales better than auto
-incremented IDs. Monotonic indexes in distributed systems like Spanner
-tend to cause all operations to go to a single node[2].
-
-Primary keys are 63-bit integers. They act not only as indexes, but also
-control where the row data is stored. We are constrained to this data
-type because SQLite will only make a field the "rowid"[3] if it's
-declared "INTEGER PRIMARY KEY" and SQLite doesn't support unsigned
-integers. Please note that INTEGER is 32-bits in MySQL and PostgreSQL.
-
-To control the locality of rows, a multi-field key will be encoded into
-the 63-bits. When this happens, the higher and lower bits will be random
-and the middle bits will encode the second field, e.g. timestamp for a
-time-series chart. This ensures rows occupy contiguous memory in
-SQLite's B-trees, thus minimizing disk seeks; and in distributed systems
-ensures rows a stored on ideally one shard, thus minimizing RPCs. The
-high random bits ensure locality when the sharding algorithm is the
-less-than operator and the low random bits hedge against modulus
-sharding.
-
-## Foreign Keys
-
-There is no referential integrity on foreign keys. When we delete a row,
-we do not delete the rows that reference it. Foreign key cleanup
-performed manually on a periodic basis. This is because Spanner and
-SQLite do not have delete cascading. Furthermore, TensorBoard core has
-no awareness of tables defined by plugins, which might reference these
-tables.
-
-## Transactions
-
-All database writes happen inside transactions.
-
-Transactions are optimistic in the sense that they assume, when
-inserting data, that the randomly generated ID range has never been
-inserted before. While collisions in a 64-bit address space are
-unlikely, even with imperfect PRNG, we retry transactions with new
-random IDs in the event that they do occur.
-
-All transactions are retried upon failure with exponential back-off, to
-handle transient failures. These can occur in any database for a variety
-of reasons, such as write contention. For example SQLite does not
-acquire a write lock when a transaction begins, but rather, when the
-first write happens[4].
-
-[1] https://goo.gl/HxSCo4
-[2] https://cloud.google.com/spanner/docs/schema-design
-[3] https://sqlite.org/lang_createtable.html#rowid
-[4] https://sqlite.org/lang_transaction.html
 """
 
 from __future__ import absolute_import
@@ -90,90 +27,464 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
+import random
 import sqlite3  # pylint: disable=unused-import
+import threading
 
 
-def setup_database(db_conn):
-  """Creates SQL tables and indexes needed by TensorBoard.
+class TensorBase(object):
+  """API for TensorBase.
 
-  If the tables and indexes are already created, this function has no
-  effect.
-
-  Args:
-    db_conn: A PEP 249 Connection object.
-
-  :type db_conn: sqlite3.Connection
+  This class is thread safe.
   """
-  create_runs_table(db_conn)
-  create_event_logs_table(db_conn)
+
+  def __init__(self, db_connection_provider):
+    """Creates new instance.
+
+    :type db_connection_provider: () -> sqlite3.Connection
+    """
+    self._db_connection_provider = db_connection_provider
+    self._plugin_ids_by_name = {}  # type: dict[str, int]
+    self._plugin_ids_by_name_lock = threading.Lock()
+
+  def get_plugin_ids(self, names):
+    """Gets IDs of plugins, creating rows if they don't exist.
+
+    This function maintains a cache of the plugins table in local
+    memory, to avoid performing queries when possible. When writing to
+    the table, this function is optimistic and can cause the outer
+    transaction to abort, in which case it will need to be retried.
+
+    Args:
+      db_conn: A PEP 249 Connection object.
+      names: An iterable of strings of plugin names.
+
+    Returns:
+      Map of plugin names to their permanent arbitrary IDs.
+
+    :type names: list[str]
+    :rtype: dict[str, int]
+    """
+    result = {}
+    names_set = set(names)
+    with self._plugin_ids_by_name_lock:
+      for name in names:
+        id_ = self._plugin_ids_by_name.get(name)
+        if id_ is not None:
+          result[name] = id_
+          names_set.remove(name)
+      if names_set:
+        # TODO(@jart): Retry transaction with exponential backoff.
+        with contextlib.closing(self._db_connection_provider()) as conn:
+          with conn:
+            with contextlib.closing(conn.cursor()) as c:
+              c.execute('SELECT plugin_id, name FROM Plugins')
+              self._plugin_ids_by_name.clear()
+              max_id = 0
+              for id_, name in c.fetchall():
+                if id_ > max_id:
+                  max_id = id_
+                self._plugin_ids_by_name[name] = id_
+                if name in names_set:
+                  result[name] = id_
+                  names_set.remove(name)
+              new_rows = []
+              for name in names_set:
+                max_id += 1
+                result[name] = max_id
+                new_rows.append((max_id, name))
+              if new_rows:
+                c.executemany(
+                    'INSERT INTO Plugins (plugin_id, name) VALUES (?, ?)',
+                    new_rows)
+    return result
 
 
-def create_runs_table(db_conn):
-  """Creates the runs table.
+class Schema(object):
+  """SQL schema creation tool for TensorBase."""
 
-  This table stores information about runs. Each row usually represents
-  a single attempt at training or testing a TensorFlow model, with a
-  given set of hyper-parameters, whose summaries are written out to a
-  single event logs directory with a monotonic step counter.
+  def __init__(self, db_conn):
+    """Creates new instance.
 
-  When a run is deleted from this table, TensorBoard SHOULD treat all
-  information associated with it as deleted, even if those rows in
-  different tables still exist.
+    :type db_conn: sqlite3.Connection
+    """
+    self._db_conn = db_conn
+    self._plugin_ids_by_name = {}  # type: dict[str, int]
+    self._plugin_ids_by_name_lock = threading.Lock()
 
-  Fields:
-    id: Random integer primary key in range [0,2^63).
-    name: (Uniquely indexed) Arbitrary string which is displayed to
-        the user in the TensorBoard UI.
+  def create_tables(self):
+    """Creates SQL tables needed by TensorBoard.
 
-  :type db_conn: sqlite3.Connection
-  """
-  with contextlib.closing(db_conn.cursor()) as c:
-    c.execute('''\
-      CREATE TABLE IF NOT EXISTS runs (
-        id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL
-      )
-    ''')
-    c.execute('''\
-      CREATE UNIQUE INDEX IF NOT EXISTS runs_index
-      ON runs (name)
-    ''')
+    If the tables are already created, this function has no effect.
+
+    Please note that the create_indexes() method should be called after
+    this method. It might be advantageous in certain circumstances to
+    hold off on calling that method, for example when loading a really
+    large backup into a fresh database.
+    """
+    self.create_experiments_table()
+    self.create_runs_table()
+    self.create_tags_table()
+    self.create_tensors_table()
+    self.create_big_tensors_table()
+    self.create_event_logs_table()
+    self.create_plugins_table()
+
+  def create_indexes(self):
+    """Creates SQL tables and indexes needed by TensorBoard.
+
+    If the indexes are already created, this function has no effect.
+    """
+    self.create_runs_table_id_index()
+    self.create_runs_table_name_index()
+    self.create_tags_table_id_index()
+    self.create_tags_table_name_index()
+    self.create_event_logs_table_path_index()
+    self.create_plugins_table_name_index()
+
+  def create_experiments_table(self):
+    """Creates the Experiments table.
+
+    This table stores information about experiments, which are sets of
+    runs.
+
+    Fields:
+      experiment_id: Random integer primary key in range [0,2^28).
+      name: (Uniquely indexed) Arbitrary string which is displayed to
+          the user in the TensorBoard UI, which can be no greater than
+          255 characters.
+      description: Arbitrary markdown text describing the experiment.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS Experiments (
+          experiment_id INTEGER PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT NOT NULL
+        )
+      ''')
+
+  def create_runs_table(self):
+    """Creates the Runs table.
+
+    This table stores information about runs. Each row usually
+    represents a single attempt at training or testing a TensorFlow
+    model, with a given set of hyper-parameters, whose summaries are
+    written out to a single event logs directory with a monotonic step
+    counter.
+
+    When a run is deleted from this table, TensorBoard SHOULD treat all
+    information associated with it as deleted, even if those rows in
+    different tables still exist.
+
+    Fields:
+      rowid: Row ID which has run_id in the low 29 bits and
+          experiment_id in the higher 28 bits. This is used to control
+          locality.
+      experiment_id: The 28-bit experiment ID.
+      run_id: Unique randomly generated 29-bit ID for this run.
+      name: Arbitrary string which is displayed to the user in the
+          TensorBoard UI, which is unique within a given experiment,
+          which can be no greater than 1900 characters.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS Runs (
+          rowid INTEGER PRIMARY KEY,
+          run_id INTEGER NOT NULL,
+          experiment_id INTEGER NOT NULL,
+          name VARCHAR(1900) NOT NULL
+        )
+      ''')
+
+  def create_runs_table_id_index(self):
+    """Uniquely indexes the run_id field on the Runs table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS RunsIdIndex ON Runs (run_id)
+      ''')
+
+  def create_runs_table_name_index(self):
+    """Uniquely indexes the name field on the Runs table.
+
+    More accurately, this indexes (experiment_id, name).
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS RunsNameIndex
+        ON Runs (experiment_id, name)
+      ''')
+
+  def create_tags_table(self):
+    """Creates the Tags table.
+
+    Fields:
+      rowid: The rowid which has tag_id field in the low 31 bits and the
+          experiment ID in the higher 28 bits.
+      tag_id: Unique randomly distributed 31-bit ID for this tag.
+      run_id: The id of the row in the runs table, with which this tag
+          is associated.
+      plugin_id: The ID of the related row in the Plugins table.
+      name: The tag. See the tag field in summary.proto for more
+          information, which can be no greater than 255 characters.
+      display_name: Same as SummaryMetadata.display_name, if set, which
+          can be no greater than 255 characters.
+      summary_description: Same as SummaryMetadata.summary_description,
+          if set. This is Markdown describing the summary.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS Tags (
+          rowid INTEGER PRIMARY KEY,
+          tag_id INTEGER NOT NULL,
+          run_id INTEGER NOT NULL,
+          plugin_id INTEGER NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          display_name VARCHAR(255),
+          summary_description TEXT
+        )
+      ''')
+
+  def create_tags_table_id_index(self):
+    """Indexes the tag_id field on the Tags table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS TagsIdIndex ON Tags (tag_id)
+      ''')
+
+  def create_tags_table_name_index(self):
+    """Indexes the name field on the Tags table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS TagsNameIndex
+        ON Tags (run_id, name)
+      ''')
+
+  def create_tensors_table(self):
+    """Creates the Tensors table.
+
+    This table is designed to offer contiguous in-page data storage.
+
+    Fields:
+      rowid: A 63-bit number containing the step count in the low 32
+          bits, and the randomly generated tag ID in the higher 31 bits.
+      encoding: A number indicating how the tensor was encoded to the
+          tensor blob field. 0 indicates an uncompressed binary Tensor
+          proto. 1..9 indicates a binary Tensor proto gzipped at the
+          corresponding level. 10..255 are reserved for future encoding
+          methods.
+      is_big: A boolean indicating that the tensor field is empty and a
+          separate asynchronous lookup should be performed on the
+          BigTensors table.
+      tensor: A binary representation of this tensor. This will be empty
+          if the is_big field is true.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS Tensors (
+          rowid INTEGER PRIMARY KEY,
+          encoding TINYINT NOT NULL,
+          is_big BOOLEAN NOT NULL,
+          tensor BLOB NOT NULL  -- TODO(@jart): VARBINARY on MySQL, MS-SQL, etc.
+        )
+      ''')
+
+  def create_big_tensors_table(self):
+    """Creates the BigTensors table.
+
+    This table is meant for tensors larger than half a b-tree page.
+    Please note that some databases, e.g. MySQL, will store these
+    tensors off-page.
+
+    Fields:
+      rowid: Must be same as corresponding Tensors table row.
+      tensor: A binary representation of this tensor, using the encoding
+          specified in the corresponding Tensors table row.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS BigTensors (
+          rowid INTEGER PRIMARY KEY,
+          tensor BLOB NOT NULL
+        )
+      ''')
+
+  def create_plugins_table(self):
+    """Creates the Plugins table.
+
+    This table exists to assign arbitrary IDs to TBPlugin names. These
+    IDs are handed out in monotonically increasing order, but that's OK,
+    because the size of this table will be extremely small. These IDs
+    will not be the same across TensorBoard installs.
+
+    It is assumed that once an ID is mapped to a name, that the mapping
+    will never change.
+
+    Fields:
+      plugin_id: Arbitrary integer arbitrarily limited to 16-bits.
+      name: Arbitrary string which is the same as the
+          TBPlugin.plugin_name field, which can be no greater than 255
+          characters.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS Plugins (
+          plugin_id INTEGER PRIMARY KEY,
+          name VARCHAR(255) NOT NULL
+        )
+      ''')
+
+  def create_plugins_table_name_index(self):
+    """Uniquely indexes the name field on the plugins table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS PluginsNameIndex
+        ON Plugins (name)
+      ''')
+
+  def create_event_logs_table(self):
+    """Creates the EventLogs table.
+
+    Event logs are files written to disk by TensorFlow via FileWriter,
+    which uses PyRecordWriter to output records containing
+    binary-encoded tf.Event protocol buffers.
+
+    This table is used by FileLoader to track the progress of files
+    being loaded off disk into the database.
+
+    Each time FileLoader runs a transaction committing events to the
+    database, it updates the offset field.
+
+    Fields:
+      rowid: An arbitrary event_log_id in the first 29 bits, and the
+          run_id in the higher 29 bits.
+      run_id: A reference to the id field of the associated row in the
+          runs table. Must be the same as what's in those rowid bits.
+      path: The basename of the path of the event log file. It SHOULD be
+          formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX]
+      offset: The byte offset in the event log file *after* the last
+          successfully committed event record.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS EventLogs (
+          rowid INTEGER PRIMARY KEY,
+          run_id INTEGER NOT NULL,
+          path VARCHAR(1023) NOT NULL,
+          offset INTEGER NOT NULL
+        )
+      ''')
+
+  def create_event_logs_table_path_index(self):
+    """Uniquely indexes the (name, path) fields on the event_logs table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS EventLogsPathIndex
+        ON EventLogs (run_id, path)
+      ''')
+
+  def _cursor(self):
+    return contextlib.closing(self._db_conn.cursor())  # type: sqlite3.Cursor
 
 
-def create_event_logs_table(db_conn):
-  """Creates the event_logs table.
+class Id(object):
+  """Utility class for unsigned fixed bit IDs."""
 
-  Event logs are files written to disk by TensorFlow via FileWriter,
-  which uses PyRecordWriter to output records containing binary-encoded
-  tf.Event protocol buffers.
+  def __init__(self, name, bits):
+    """Creates new instance.
 
-  This table is used by FileLoader to track the progress of files being
-  loaded off disk into the database.
+    :type name: str
+    :type bits: int
+    """
+    if bits < 1:
+      raise ValueError('bits must be >0')
+    self.name = name
+    self.bits = bits
+    self.max = _mask(bits)
 
-  Each time FileLoader runs a transaction committing events to the
-  database, it updates the offset field.
+  def check(self, x):
+    """Throws ValueError if x isn't in bit range.
 
-  Fields:
-    id: Random integer primary key in range [0,2^63).
-    run_id: A reference to the id field of the associated row in the
-        runs table.
-    path: The basename of the path of the event log file. It SHOULD be
-        formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX].
-    offset: The byte offset in the event log file *after* the last
-        successfully committed event record.
+    :type x: int
+    """
+    _check_id(x, self.bits, self.name)
 
-  :type db_conn: sqlite3.Connection
-  """
-  with contextlib.closing(db_conn.cursor()) as c:
-    c.execute('''\
-      CREATE TABLE IF NOT EXISTS event_logs (
-        id INTEGER PRIMARY KEY,
-        run_id INTEGER NOT NULL,
-        path VARCHAR(255) NOT NULL,
-        offset INTEGER NOT NULL
-      )
-    ''')
-    c.execute('''\
-      CREATE UNIQUE INDEX IF NOT EXISTS event_logs_index
-      ON event_logs (run_id, path)
-    ''')
+  def generate(self):
+    """Generates a random ID in the bit range.
+
+    :rtype: int
+    """
+    return random.randint(0, self.max)
+
+
+class RowId(object):
+  """Utility class for bit-packed SQLite primary keys."""
+
+  def __init__(self, name, global_id, local_id):
+    """Creates new instance.
+
+    :type name: str
+    :type global_id: Id
+    :type local_id: Id
+    """
+    self.name = name
+    self.bits = global_id.bits + local_id.bits
+    if self.bits > 63:
+      raise ValueError('%s can not exceed 63 bits' % name)
+    self._global = global_id
+    self._local = local_id
+
+  def create(self, high, low):
+    """Creates a rowid from its global and local portions.
+
+    :type high: int
+    :type low: int
+    :rtype: int
+    """
+    self._global.check(high)
+    self._local.check(low)
+    return (high << self._local.bits) + low
+
+  def parse(self, rowid):
+    """Parses a rowid into its global and local portions.
+
+    :type rowid: int
+    :rtype: tuple[int, int]
+    """
+    _check_id(rowid, self.bits, self.name)
+    return rowid >> self._local.bits, rowid & self._local.max
+
+  def get_range(self, high):
+    """Returns an inclusive range of all possible y values.
+
+    This is used for the SQL BETWEEN operator.
+
+    :type high: int
+    :rtype: tuple[int, int]
+    """
+    return self.create(high, 0), self.create(high, self._local.max)
+
+
+def _check_id(id_, bits, name):
+  if id_ < 0:
+    raise ValueError('%s can not be a negative number: %d' % (name, id_))
+  if id_ > _mask(bits):
+    raise ValueError('%s must be a %d-bit number: %d' % (name, bits, id_))
+
+
+def _mask(bits):
+  """Returns highest integer that can be stored in `bits` unsigned bits."""
+  return (1 << bits) - 1
+
+
+EXPERIMENT_ID = Id('experiment_id', 28)
+RUN_ID = Id('run_id', 29)
+TAG_ID = Id('tag_id', 31)
+TAG_PLUGIN_ID = Id('tag_plugin_id', 35)
+STEP_ID = Id('step', 32)
+EVENT_LOG_ID = Id('event_log_id', 29)
+
+RUN_ROWID = RowId('Runs.rowid', EXPERIMENT_ID, RUN_ID)
+TAG_ROWID = RowId('Tags.rowid', EXPERIMENT_ID, TAG_ID)
+TENSOR_ROWID = RowId('Tensors.rowid', TAG_ID, STEP_ID)
+EVENT_LOG_ROWID = RowId('EventLogs.rowid', RUN_ID, EVENT_LOG_ID)

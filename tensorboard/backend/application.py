@@ -90,7 +90,9 @@ def standard_tensorboard_wsgi(
   if db_connection_provider is not None:
     with contextlib.closing(db_connection_provider()) as db_conn:
       with db_conn:
-        db.setup_database(db_conn)
+        schema = db.Schema(db_conn)
+        schema.create_tables()
+        schema.create_indexes()
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
