@@ -97,6 +97,30 @@ filegroup(
 )
 
 py_library(
+    name = "data_compat",
+    srcs = ["data_compat.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/histogram:metadata",
+    ],
+)
+
+py_test(
+    name = "data_compat_test",
+    size = "small",
+    srcs = ["data_compat_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":data_compat",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/histogram:summary",
+    ],
+)
+
+py_library(
     name = "db",
     srcs = ["db.py"],
     srcs_version = "PY2AND3",
