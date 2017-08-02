@@ -27,14 +27,9 @@ from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
-from tensorboard.plugins.distribution import compressor
 
 namedtuple = collections.namedtuple
 ScalarEvent = namedtuple('ScalarEvent', ['wall_time', 'step', 'value'])
-
-CompressedHistogramEvent = namedtuple('CompressedHistogramEvent',
-                                      ['wall_time', 'step',
-                                       'compressed_histogram_values'])
 
 HistogramEvent = namedtuple('HistogramEvent',
                             ['wall_time', 'step', 'histogram_value'])
@@ -64,7 +59,6 @@ SUMMARY_TYPES = {
 
 ## The tagTypes below are just arbitrary strings chosen to pass the type
 ## information of the tag from the backend to the frontend
-COMPRESSED_HISTOGRAMS = 'distributions'
 HISTOGRAMS = 'histograms'
 IMAGES = 'images'
 AUDIO = 'audio'
@@ -80,16 +74,14 @@ RUN_METADATA = 'run_metadata'
 NORMAL_HISTOGRAM_BPS = (0, 668, 1587, 3085, 5000, 6915, 8413, 9332, 10000)
 
 DEFAULT_SIZE_GUIDANCE = {
-    COMPRESSED_HISTOGRAMS: 500,
     IMAGES: 4,
     AUDIO: 4,
     SCALARS: 10000,
-    HISTOGRAMS: 1,
-    TENSORS: 10,
+    HISTOGRAMS: 500,
+    TENSORS: 500,
 }
 
 STORE_EVERYTHING_SIZE_GUIDANCE = {
-    COMPRESSED_HISTOGRAMS: 0,
     IMAGES: 0,
     AUDIO: 0,
     SCALARS: 0,
@@ -127,10 +119,9 @@ class EventAccumulator(object):
   the `Event` and `Summary` data by its tag.
 
   Calling `Tags()` gets a map from `tagType` (e.g. `'images'`,
-  `'compressedHistograms'`, `'scalars'`, etc) to the associated tags for those
-  data types. Then, various functional endpoints (eg
-  `Accumulator.Scalars(tag)`) allow for the retrieval of all data
-  associated with that tag.
+  `'scalars'`, etc) to the associated tags for those data types. Then,
+  various functional endpoints (e.g., `Accumulator.Scalars(tag)`) allow
+  for the retrieval of all data associated with that tag.
 
   The `Reload()` method synchronously loads all of the data written so far.
 
@@ -139,8 +130,6 @@ class EventAccumulator(object):
 
   Fields:
     audios: A reservoir.Reservoir of audio summaries.
-    compressed_histograms: A reservoir.Reservoir of compressed
-        histogram summaries.
     histograms: A reservoir.Reservoir of histogram summaries.
     images: A reservoir.Reservoir of image summaries.
     most_recent_step: Step of last Event proto added. This should only
@@ -161,7 +150,6 @@ class EventAccumulator(object):
   def __init__(self,
                path,
                size_guidance=None,
-               compression_bps=NORMAL_HISTOGRAM_BPS,
                purge_orphaned_data=True):
     """Construct the `EventAccumulator`.
 
@@ -174,9 +162,6 @@ class EventAccumulator(object):
         from a `tagType` string to an integer representing the number of
         items to keep per tag for items of that `tagType`. If the size is 0,
         all events are stored.
-      compression_bps: Information on how the `EventAccumulator` should compress
-        histogram data for the `CompressedHistograms` tag (for details see
-        `ProcessCompressedHistogram`).
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
     """
@@ -197,8 +182,6 @@ class EventAccumulator(object):
     self._tagged_metadata = {}
     self.summary_metadata = {}
     self.histograms = reservoir.Reservoir(size=sizes[HISTOGRAMS])
-    self.compressed_histograms = reservoir.Reservoir(
-        size=sizes[COMPRESSED_HISTOGRAMS], always_keep_last=False)
     self.images = reservoir.Reservoir(size=sizes[IMAGES])
     self.audios = reservoir.Reservoir(size=sizes[AUDIO])
     self.tensors = reservoir.Reservoir(size=sizes[TENSORS])
@@ -215,7 +198,6 @@ class EventAccumulator(object):
     self.path = path
     self._generator = _GeneratorFromPath(path)
 
-    self._compression_bps = compression_bps
     self.purge_orphaned_data = purge_orphaned_data
 
     self.most_recent_step = -1
@@ -223,8 +205,7 @@ class EventAccumulator(object):
     self.file_version = None
 
     # The attributes that get built up by the accumulator
-    self.accumulated_attrs = ('scalars', 'histograms',
-                              'compressed_histograms', 'images', 'audios')
+    self.accumulated_attrs = ('scalars', 'histograms', 'images', 'audios')
     self._tensor_summaries = {}
 
   def Reload(self):
@@ -418,7 +399,6 @@ class EventAccumulator(object):
         AUDIO: self.audios.Keys(),
         HISTOGRAMS: self.histograms.Keys(),
         SCALARS: self.scalars.Keys(),
-        COMPRESSED_HISTOGRAMS: self.compressed_histograms.Keys(),
         TENSORS: self.tensors.Keys(),
         # Use a heuristic: if the metagraph is available, but
         # graph is not, then we assume the metagraph contains the graph.
@@ -506,20 +486,6 @@ class EventAccumulator(object):
       An array of `HistogramEvent`s.
     """
     return self.histograms.Items(tag)
-
-  def CompressedHistograms(self, tag):
-    """Given a summary tag, return all associated compressed histograms.
-
-    Args:
-      tag: A string tag associated with the events.
-
-    Raises:
-      KeyError: If the tag is not found.
-
-    Returns:
-      An array of `CompressedHistogramEvent`s.
-    """
-    return self.compressed_histograms.Items(tag)
 
   def Images(self, tag):
     """Given a summary tag, return all associated images.
@@ -638,15 +604,6 @@ class EventAccumulator(object):
     histo = self._ConvertHistogramProtoToTuple(histo)
     histo_ev = HistogramEvent(wall_time, step, histo)
     self.histograms.AddItem(tag, histo_ev)
-    self.compressed_histograms.AddItem(tag, histo_ev, self._CompressHistogram)
-
-  def _CompressHistogram(self, histo_ev):
-    """Callback for _ProcessHistogram."""
-    return CompressedHistogramEvent(
-        histo_ev.wall_time,
-        histo_ev.step,
-        compressor.CompressHistogram(
-            histo_ev.histogram_value, self._compression_bps))
 
   def _ProcessImage(self, tag, wall_time, step, image):
     """Processes an image by adding it to accumulated state."""
@@ -722,19 +679,16 @@ class EventAccumulator(object):
 
 def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
                      event_wall_time, num_expired_scalars, num_expired_histos,
-                     num_expired_comp_histos, num_expired_images,
-                     num_expired_audio):
+                     num_expired_images, num_expired_audio):
   """Return the string message associated with TensorBoard purges."""
   return ('Detected out of order event.step likely caused by '
           'a TensorFlow restart. Purging expired events from Tensorboard'
           ' display between the previous step: {} (timestamp: {}) and '
           'current step: {} (timestamp: {}). Removing {} scalars, {} '
-          'histograms, {} compressed histograms, {} images, '
-          'and {} audio.').format(most_recent_step, most_recent_wall_time,
-                                  event_step, event_wall_time,
-                                  num_expired_scalars, num_expired_histos,
-                                  num_expired_comp_histos, num_expired_images,
-                                  num_expired_audio)
+          'histograms, {} images, and {} audio.'
+         ).format(most_recent_step, most_recent_wall_time, event_step,
+                  event_wall_time, num_expired_scalars, num_expired_histos,
+                  num_expired_images, num_expired_audio)
 
 
 def _GeneratorFromPath(path):

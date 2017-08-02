@@ -16,7 +16,7 @@
 
 This plugin's `/histograms` route returns a result of the form
 
-    [wall_time, step, [left0, right0, count0], ...],
+    [[wall_time, step, [[left0, right0, count0], ...]], ...],
 
 where each inner array corresponds to a single bucket in the histogram.
 """
@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import random
 import six
 from werkzeug import wrappers
 
@@ -89,8 +90,12 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
     return result
 
-  def histograms_impl(self, tag, run):
-    """Result of the form `(body, mime_type)`, or `ValueError`."""
+  def histograms_impl(self, tag, run, downsample_to=50):
+    """Result of the form `(body, mime_type)`, or `ValueError`.
+
+    At most `downsample_to` events will be returned. If this value is
+    `None`, then no downsampling will be performed.
+    """
     #
     # Reconcile results from old-style and new-style runs (preferring
     # new-style runs if there's a conflict).
@@ -107,9 +112,13 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                          for ev in old_style_events]
     if tensor_events is None:
       raise ValueError('No histogram tag %r for run %r' % (tag, run))
-    return ([[ev.wall_time, ev.step, tf.make_ndarray(ev.tensor_proto).tolist()]
-             for ev in tensor_events],
-            'application/json')
+    events = [[ev.wall_time, ev.step, tf.make_ndarray(ev.tensor_proto).tolist()]
+              for ev in tensor_events]
+    if downsample_to is not None and len(events) > downsample_to:
+      indices = sorted(random.Random(0).sample(list(range(len(events))),
+                                               downsample_to))
+      events = [events[i] for i in indices]
+    return (events, 'application/json')
 
   def _convert_tensor_event_to_json(self, ev):
     return [ev.wall_time, ev.step, tf.make_ndarray(ev.tensor_proto).tolist()]

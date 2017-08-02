@@ -44,11 +44,11 @@ from tensorboard.plugins.core import core_plugin
 
 
 DEFAULT_SIZE_GUIDANCE = {
-    event_accumulator.COMPRESSED_HISTOGRAMS: 500,
     event_accumulator.IMAGES: 10,
     event_accumulator.AUDIO: 10,
     event_accumulator.SCALARS: 1000,
-    event_accumulator.HISTOGRAMS: 50,
+    event_accumulator.HISTOGRAMS: 500,
+    event_accumulator.TENSORS: 500,
 }
 
 DATA_PREFIX = '/data'
