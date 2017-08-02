@@ -30,8 +30,8 @@ def op(
     tag,
     labels,
     predictions,
-    num_thresholds=200,
-    weight=1.0,
+    num_thresholds=None,
+    weight=None,
     display_name=None,
     description=None,
     collections=None):
@@ -45,12 +45,6 @@ def op(
   corresponding boolean label in `labels`, and counts as a single tp/fp/tn/fn
   value at each threshold. This is then multiplied with `weight` which can be
   used to reweight certain values, or more commonly used for masking values.
-
-  NOTE(chizeng): This is a faster implementation of similar methods in
-  `tf.contrib.metrics.streaming_XXX_at_thresholds`, where we assume the
-  threshold values are evenly distributed and thereby can implement a `O(n+m)`
-  algorithm instead of `O(n*m)` in both time and space, where `n` is the
-  size of `labels` and `m` is the number of thresholds.
 
   Args:
     tag: A tag attached to the summary. Used by TensorBoard for organization.
@@ -78,6 +72,12 @@ def op(
     false positives, true negatives, false negatives, precision, recall.
 
   """
+  if num_thresholds is None:
+    num_thresholds = 200
+  
+  if weight is None:
+    weight = 1.0
+
   dtype = predictions.dtype
 
   with tf.name_scope(tag, values=[labels, predictions, weight]):
@@ -90,10 +90,12 @@ def op(
     true_labels = f_labels * weight
     false_labels = (1.0 - f_labels) * weight
 
-    # Before we begin, flatten all vectors.
+    # Before we begin, flatten predictions.
     predictions = tf.reshape(predictions, [-1])
-    true_labels = tf.reshape(true_labels, [-1])
-    false_labels = tf.reshape(false_labels, [-1])
+
+    # Shape the labels so they are broadcast-able for later multiplication.
+    true_labels = tf.reshape(true_labels, [-1, 1])
+    false_labels = tf.reshape(false_labels, [-1, 1])
 
     # To compute TP/FP/TN/FN, we are measuring a binary classifier
     #   C(t) = (predictions >= t)
@@ -121,84 +123,57 @@ def op(
     # First compute the bucket indices for each prediction value.
     bucket_indices = tf.cast(
         tf.floor(predictions * (num_thresholds - 1)), tf.int32)
+    tp_buckets = tf.reduce_sum(
+        tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
+        axis=0)
+    fp_buckets = tf.reduce_sum(
+        tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
+        axis=0)
 
-    with tf.name_scope('variables'):
-      # Now create the variables which correspond to the bucket values.
-      tp_buckets_v = tf.get_variable(
-          initializer=tf.zeros([num_thresholds], dtype=dtype),
-          name='tp_buckets',
-          trainable=False,
-          collections=[tf.GraphKeys.LOCAL_VARIABLES])
-      fp_buckets_v = tf.get_variable(
-          initializer=tf.zeros([num_thresholds], dtype=dtype),
-          name='fp_buckets',
-          trainable=False,
-          collections=[tf.GraphKeys.LOCAL_VARIABLES])
+    thresholds = tf.cast(
+        tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
+    # Set up the cumulative sums to compute the actual metrics.
+    tp_buckets = tf.cast(tp_buckets, tf.float32)
+    fp_buckets = tf.cast(fp_buckets, tf.float32)
 
-    initialize_bucket_counts = tf.variables_initializer(
-        [tp_buckets_v, fp_buckets_v])
-    with tf.control_dependencies([initialize_bucket_counts]):
-      with tf.name_scope('update_op'):
-        # We cannot use tf.scatter_add here because there is no guarantee that
-        # the variable can be read from directly (without the use of the 
-        # read_value method). See
-        # https://github.com/tensorflow/tensorflow/issues/11856 for details.
-        # We hence implement the logic of scatter_add using other functions.
-        new_true_counts = true_labels + tf.gather(
-            tp_buckets_v.read_value(), bucket_indices)
-        update_tp = tf.scatter_update(
-            tp_buckets_v, bucket_indices, new_true_counts, use_locking=True)
+    tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
+    fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
+    # fn = sum(true_labels) - tp
+    #    = sum(tp_buckets) - tp
+    #    = tp[0] - tp
+    # Similarly,
+    # tn = fp[0] - fp
+    tn = fp[0] - fp
+    fn = tp[0] - tp
 
-        new_false_counts = false_labels + tf.gather(
-            fp_buckets_v.read_value(), bucket_indices)
-        update_fp = tf.scatter_update(
-            fp_buckets_v, bucket_indices, new_false_counts, use_locking=True)
+    # Store the number of thresholds within the summary metadata because
+    # that value is constant for all pr curve summaries with the same tag.
+    summary_metadata = tf.SummaryMetadata(
+        display_name=display_name if display_name is not None else tag,
+        summary_description=description or '')
+    pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
+        num_thresholds=num_thresholds)
+    summary_metadata.plugin_data.add(
+        plugin_name='pr_curve',
+        content=json_format.MessageToJson(pr_curve_plugin_data))
 
-    with tf.control_dependencies([update_tp, update_fp]):
-      with tf.name_scope('metrics'):
-        thresholds = tf.cast(
-            tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
-        # Set up the cumulative sums to compute the actual metrics.
-        tp_buckets = tf.cast(tp_buckets_v.read_value(), tf.float32)
-        fp_buckets = tf.cast(fp_buckets_v.read_value(), tf.float32)
-        tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
-        fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
-        # fn = sum(true_labels) - tp
-        #    = sum(tp_buckets) - tp
-        #    = tp[0] - tp
-        # Similarly,
-        # tn = fp[0] - fp
-        tn = tf.subtract(fp[0], fp, name='tn')
-        fn = tf.subtract(tp[0], tp, name='fn')
+    precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
+        _TINY_EPISILON, tp + fp)
 
-        # Store the number of thresholds within the summary metadata because
-        # that value is constant for all pr curve summaries with the same tag.
-        summary_metadata = tf.SummaryMetadata(
-            display_name=display_name if display_name is not None else tag,
-            summary_description=description or '')
-        pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
-            num_thresholds=num_thresholds)
-        summary_metadata.plugin_data.add(
-            plugin_name='pr_curve',
-            content=json_format.MessageToJson(pr_curve_plugin_data))
+    # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold 1.0,
+    # recall=1. Note that for the formulation on the right
+    # when the threshold is 1, the numerator (tp) is 1, while
+    # the denominator is 1 + some value very close to 0 (the
+    # tiny epsilon value). The result of the division there is
+    # going to be a value very close to 1 (but not quite 1), and
+    # so we use the formulation on the left instead. In that case,
+    # the division yields 0 when threshold=1.0 because fn is 0.
+    recall = 1.0 - fn / tf.maximum(_TINY_EPISILON, tf.add(tp, fn))
 
-        precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
-            _TINY_EPISILON, tp + fp)
-
-        # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold 1.0,
-        # recall=1. Note that for the formulation on the right
-        # when the threshold is 1, the numerator (tp) is 1, while
-        # the denominator is 1 + some value very close to 0 (the
-        # tiny epsilon value). The result of the division there is
-        # going to be a value very close to 1 (but not quite 1), and
-        # so we use the formulation on the left instead. In that case,
-        # the division yields 0 when threshold=1.0 because fn is 0.
-        recall = 1.0 - fn / tf.maximum(_TINY_EPISILON, tf.add(tp, fn))
-
-        # Store values within a tensor. We store them in the order:
-        # true positives, false positives, true negatives, false
-        # negatives, precision, and recall.
-        combined_data = tf.stack([tp, fp, tn, fn, precision, recall])
+    # Store values within a tensor. We store them in the order:
+    # true positives, false positives, true negatives, false
+    # negatives, precision, and recall.
+    combined_data = tf.stack([tp, fp, tn, fn, precision, recall])
 
     return tf.summary.tensor_summary(
         name=tag,
