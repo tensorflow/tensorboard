@@ -43,28 +43,32 @@ class PrCurveTest(tf.test.TestCase):
     pr_curve_demo.run_all(
         logdir=self.logdir,
         steps=3,
-        thresholds=10,
+        thresholds=5,
         verbose=False)
 
-  def testWeight1(self):
     # Create a multiplexer for reading the data we just wrote.
     self.multiplexer = event_multiplexer.EventMultiplexer()
     self.multiplexer.AddRunsFromDirectory(self.logdir)
     self.multiplexer.Reload()
 
-  def validateTensorEvent_(self, tensor_event, expected_value):
+  def validateTensorEvent_(self, expected_step, expected_value, tensor_event):
     """Checks that the values stored within a tensor are correct.
     
     Args:
+      expected_step: The expected step.
       tensor_event: A TensorEvent named tuple.
       expected_value: A nested python list of expected float32 values.
     """
-    # TODO
+    self.assertEqual(expected_step, tensor_event.step)
+    tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
+    print(`tensor_nd_array.tolist()`)
+    np.testing.assert_allclose(expected_value, tensor_nd_array)
 
-  def test1Class(self):
+  def test1Weight1(self):
     # Verify that the metadata was correctly written.
-    accumulator = self.multiplexer.GetAccumulator('evenly_weighted')
+    accumulator = self.multiplexer.GetAccumulator('colors')
     tag_content_dict = accumulator.PluginTagToContent('pr_curve')
+<<<<<<< HEAD
     self.assertListEqual(['colors/colors'], list(tag_content_dict.keys()))
 
     # Parse the data within the JSON string and set the proto's fields.
@@ -94,6 +98,35 @@ class PrCurveTest(tf.test.TestCase):
       # Recall.
       [1.0, 1.0, 1.0, 1.0, 2/3, 2/3, 1/3, 1/3, 0.0, 0.0],
     ], tensor_nd_array)
+=======
+    expected_tags = ['red/red', 'green/green', 'blue/blue']
+    self.assertItemsEqual(expected_tags, list(tag_content_dict.keys()))
+
+    for tag in expected_tags:
+      # Parse the data within the JSON string and set the proto's fields.
+      plugin_data = pr_curve_pb2.PrCurvePluginData()
+      json_format.Parse(tag_content_dict[tag], plugin_data)
+      self.assertEqual(5, plugin_data.num_thresholds)
+
+      # Test the summary contents.
+      tensor_events = accumulator.Tensors(tag)
+      self.assertEqual(3, len(tensor_events))
+
+      # debug
+      for tensor_event in tensor_events:
+        print(`tf.make_ndarray(tensor_event.tensor_proto).tolist()`)
+
+    # Test the output for the green classifier.
+    tensor_events = accumulator.Tensors('green/green')
+    self.validateTensorEvent_(0, [
+      [2.0, 2.0, 2.0, 1.0, 0.0],  # True positives.
+      [1.0, 1.0, 1.0, 1.0, 1.0],  # False positives.
+      [0.0, 0.0, 0.0, 0.0, 0.0],  # True negatives.
+      [0.0, 0.0, 0.0, 1.0, 2.0],  # False negatives.
+      [2/3, 2/3, 2/3, 0.5, 1.0],  # Precision.
+      [1.0, 1.0, 1.0, 0.5, 0.0],  # Recall.
+    ], tensor_events[0])
+>>>>>>> .
 
 
 if __name__ == "__main__":
