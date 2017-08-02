@@ -320,22 +320,16 @@ table.tf-graph-controls td.input-element-table-data {
       </div>
     </div>
   </template>
-  <table class="control-holder">
-    <tr>
-      <td class="title">Trace inputs</td>
-      <td class="input-element-table-data">
-        <paper-toggle-button id="trace-inputs"></paper-toggle-button>
-      </td>
-    </tr>
-    <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
-      <tr>
-        <td class="title">Show health pills</td>
-        <td class="input-element-table-data">
-          <paper-toggle-button checked="{{healthPillsToggledOn}}"></paper-toggle-button>
-        </td>
-      </tr>
-    </template>
-  </table>
+  <div class="control-holder">
+    <paper-toggle-button id="trace-inputs"></paper-toggle-button>
+    <div class="title">Trace inputs</div>
+  </div>
+  <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
+    <div class="control-holder">
+      <paper-toggle-button checked="{{healthPillsToggledOn}}"></paper-toggle-button>
+      <div class="title">Show health pills</div>
+    </div>
+  </template>
   <div class="control-holder">
     <div class="title">Color</div>
     <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
@@ -619,7 +613,7 @@ table.tf-graph-controls td.input-element-table-data {
               </defs>
               <path marker-end="url(#dataflow-arrowhead-legend)"
                     stroke="#bbb" d="M2 9 l 29 0"
-                    stroke-linecap="round" />
+                    stroke-linecap="round" />showUploadButton
             </svg>
           </td>
           <td>
