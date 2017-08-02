@@ -43,8 +43,8 @@ class PrCurveTest(tf.test.TestCase):
     with tf.Session() as sess:
       summary.op(
           tag='tag_bar',
-          labels=tf.constant([True, False, True, False]),
-          predictions=tf.constant([0.8, 0.6, 0.4, 0.2]),
+          labels=tf.constant([True, False, False, True, True, False]),
+          predictions=tf.constant([0.81, 0.8, 0.61, 0.6, 0.4, 0.2]),
           num_thresholds=10)
       merged_summary_op = tf.summary.merge_all()
       foo_directory = os.path.join(self.logdir, 'foo')
@@ -76,17 +76,17 @@ class PrCurveTest(tf.test.TestCase):
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
     np.testing.assert_allclose([
       # True positives.
-      [2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
+      [3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0],
       # False positives.
-      [2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+      [3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0],
       # True negatives.
-      [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0],
+      [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
       # False negatives.
-      [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0],
+      [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
       # Precision.
-      [0.5, 0.5, 2/3, 2/3, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0],
+      [0.5, 0.5, 0.6, 0.6, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0],
       # Recall.
-      [1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
+      [1.0, 1.0, 1.0, 1.0, 2/3, 2/3, 1/3, 1/3, 0.0, 0.0],
     ], tensor_nd_array)
 
 
