@@ -97,6 +97,7 @@ py_test(
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/plugins/image:summary",
     ],
 )
 

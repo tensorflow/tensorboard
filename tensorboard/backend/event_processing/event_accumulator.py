@@ -32,10 +32,6 @@ from tensorboard.backend.event_processing import reservoir
 namedtuple = collections.namedtuple
 ScalarEvent = namedtuple('ScalarEvent', ['wall_time', 'step', 'value'])
 
-ImageEvent = namedtuple('ImageEvent', ['wall_time', 'step',
-                                       'encoded_image_string', 'width',
-                                       'height'])
-
 AudioEvent = namedtuple('AudioEvent', ['wall_time', 'step',
                                        'encoded_audio_string', 'content_type',
                                        'sample_rate', 'length_frames'])
@@ -45,14 +41,12 @@ TensorEvent = namedtuple('TensorEvent', ['wall_time', 'step', 'tensor_proto'])
 ## Different types of summary events handled by the event_accumulator
 SUMMARY_TYPES = {
     'simple_value': '_ProcessScalar',
-    'image': '_ProcessImage',
     'audio': '_ProcessAudio',
     'tensor': '_ProcessTensor',
 }
 
 ## The tagTypes below are just arbitrary strings chosen to pass the type
 ## information of the tag from the backend to the frontend
-IMAGES = 'images'
 AUDIO = 'audio'
 SCALARS = 'scalars'
 TENSORS = 'tensors'
@@ -61,14 +55,12 @@ META_GRAPH = 'meta_graph'
 RUN_METADATA = 'run_metadata'
 
 DEFAULT_SIZE_GUIDANCE = {
-    IMAGES: 4,
     AUDIO: 4,
     SCALARS: 10000,
     TENSORS: 500,
 }
 
 STORE_EVERYTHING_SIZE_GUIDANCE = {
-    IMAGES: 0,
     AUDIO: 0,
     SCALARS: 0,
     TENSORS: 0,
@@ -101,24 +93,23 @@ class EventAccumulator(object):
   interface for loading Event data written during a TensorFlow run.
   TensorFlow writes out `Event` protobuf objects, which have a timestamp
   and step number, and often contain a `Summary`. Summaries can have
-  different kinds of data like an image or a scalar value. The Summaries
-  also have a tag, which we use to organize logically related data. The
-  `EventAccumulator` supports retrieving the `Event` and `Summary` data
-  by its tag.
+  different kinds of data like a scalar value or an arbitrary tensor.
+  The Summaries also have a tag, which we use to organize logically
+  related data. The `EventAccumulator` supports retrieving the `Event`
+  and `Summary` data by its tag.
 
-  Calling `Tags()` gets a map from `tagType` (e.g. `'images'`,
-  `'scalars'`, etc) to the associated tags for those data types. Then,
+  Calling `Tags()` gets a map from `tagType` (e.g., `'scalars'`,
+  `'tensors'`, etc.) to the associated tags for those data types. Then,
   various functional endpoints (e.g., `Accumulator.Scalars(tag)`) allow
   for the retrieval of all data associated with that tag.
 
   The `Reload()` method synchronously loads all of the data written so far.
 
-  Audio and images are very large, so storing all of them is not
+  Audio clips can be very large, so storing all of them is not
   recommended.
 
   Fields:
     audios: A reservoir.Reservoir of audio summaries.
-    images: A reservoir.Reservoir of image summaries.
     most_recent_step: Step of last Event proto added. This should only
         be accessed from the thread that calls Reload. This is -1 if
         nothing has been loaded yet.
@@ -179,7 +170,6 @@ class EventAccumulator(object):
     self._meta_graph = None
     self._tagged_metadata = {}
     self.summary_metadata = {}
-    self.images = reservoir.Reservoir(size=sizes[IMAGES])
     self.audios = reservoir.Reservoir(size=sizes[AUDIO])
     self.tensors_by_tag = {}
     self._tensors_by_tag_lock = threading.Lock()
@@ -203,7 +193,7 @@ class EventAccumulator(object):
     self.file_version = None
 
     # The attributes that get built up by the accumulator
-    self.accumulated_attrs = ('scalars', 'images', 'audios')
+    self.accumulated_attrs = ('scalars', 'audios')
     self._tensor_summaries = {}
 
   def Reload(self):
@@ -395,7 +385,6 @@ class EventAccumulator(object):
       A `{tagType: ['list', 'of', 'tags']}` dictionary.
     """
     return {
-        IMAGES: self.images.Keys(),
         AUDIO: self.audios.Keys(),
         SCALARS: self.scalars.Keys(),
         TENSORS: list(self.tensors_by_tag.keys()),
@@ -471,20 +460,6 @@ class EventAccumulator(object):
     run_metadata = tf.RunMetadata()
     run_metadata.ParseFromString(self._tagged_metadata[tag])
     return run_metadata
-
-  def Images(self, tag):
-    """Given a summary tag, return all associated images.
-
-    Args:
-      tag: A string tag associated with the events.
-
-    Raises:
-      KeyError: If the tag is not found.
-
-    Returns:
-      An array of `ImageEvent`s.
-    """
-    return self.images.Items(tag)
 
   def Audio(self, tag):
     """Given a summary tag, return all associated audio.
@@ -575,15 +550,6 @@ class EventAccumulator(object):
       self.most_recent_step = event.step
       self.most_recent_wall_time = event.wall_time
 
-  def _ProcessImage(self, tag, wall_time, step, image):
-    """Processes an image by adding it to accumulated state."""
-    event = ImageEvent(wall_time=wall_time,
-                       step=step,
-                       encoded_image_string=image.encoded_image_string,
-                       width=image.width,
-                       height=image.height)
-    self.images.AddItem(tag, event)
-
   def _ProcessAudio(self, tag, wall_time, step, audio):
     """Processes a audio by adding it to accumulated state."""
     event = AudioEvent(wall_time=wall_time,
@@ -666,17 +632,15 @@ class EventAccumulator(object):
 
 
 def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
-                     event_wall_time, num_expired_scalars, num_expired_images,
-                     num_expired_audio):
+                     event_wall_time, num_expired_scalars, num_expired_audio):
   """Return the string message associated with TensorBoard purges."""
   return ('Detected out of order event.step likely caused by '
           'a TensorFlow restart. Purging expired events from Tensorboard'
           ' display between the previous step: {} (timestamp: {}) and '
           'current step: {} (timestamp: {}). Removing {} scalars, '
-          '{} images, and {} audio.'
+          'and {} audio.'
          ).format(most_recent_step, most_recent_wall_time, event_step,
-                  event_wall_time, num_expired_scalars, num_expired_images,
-                  num_expired_audio)
+                  event_wall_time, num_expired_scalars, num_expired_audio)
 
 
 def _GeneratorFromPath(path):

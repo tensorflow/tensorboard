@@ -21,6 +21,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
+from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 
 
@@ -47,6 +48,7 @@ def migrate_value(value):
   """
   handler = {
       'histo': _migrate_histogram_value,
+      'image': _migrate_image_value,
   }.get(value.WhichOneof('value'))
   return handler(value) if handler else value
 
@@ -60,6 +62,21 @@ def _migrate_histogram_value(value):
 
   tensor_proto = tf.make_tensor_proto(buckets)
   summary_metadata = histogram_metadata.create_summary_metadata(
+      display_name=value.metadata.display_name or value.tag,
+      description=value.metadata.summary_description)
+  return tf.Summary.Value(tag=value.tag,
+                          metadata=summary_metadata,
+                          tensor=tensor_proto)
+
+
+def _migrate_image_value(value):
+  image_value = value.image
+  data = [tf.compat.as_bytes(str(image_value.width)),
+          tf.compat.as_bytes(str(image_value.height)),
+          tf.compat.as_bytes(image_value.encoded_image_string)]
+
+  tensor_proto = tf.make_tensor_proto(data)
+  summary_metadata = image_metadata.create_summary_metadata(
       display_name=value.metadata.display_name or value.tag,
       description=value.metadata.summary_description)
   return tf.Summary.Value(tag=value.tag,

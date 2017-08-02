@@ -24,6 +24,7 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard.plugins.image import summary as image_summary
 from tensorboard.backend.event_processing import event_accumulator as ea
 
 
@@ -51,21 +52,6 @@ class _EventGenerator(object):
         step=step,
         summary=tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)]))
-    self.AddEvent(event)
-
-  def AddImage(self,
-               tag,
-               wall_time=0,
-               step=0,
-               encoded_image_string=b'imgstr',
-               width=150,
-               height=100):
-    image = tf.Summary.Image(
-        encoded_image_string=encoded_image_string, width=width, height=height)
-    event = tf.Event(
-        wall_time=wall_time,
-        step=step,
-        summary=tf.Summary(value=[tf.Summary.Value(tag=tag, image=image)]))
     self.AddEvent(event)
 
   def AddAudio(self,
@@ -116,7 +102,6 @@ class EventAccumulatorTest(tf.test.TestCase):
     """
 
     empty_tags = {
-        ea.IMAGES: [],
         ea.AUDIO: [],
         ea.SCALARS: [],
         ea.GRAPH: False,
@@ -168,14 +153,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     gen.AddScalar('s1')
     gen.AddScalar('s2')
-    gen.AddImage('im1')
-    gen.AddImage('im2')
     gen.AddAudio('snd1')
     gen.AddAudio('snd2')
     acc = ea.EventAccumulator(gen)
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
-        ea.IMAGES: ['im1', 'im2'],
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
     })
@@ -188,13 +170,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTagsEqual(acc.Tags(), {})
     gen.AddScalar('s1')
     gen.AddScalar('s2')
-    gen.AddImage('im1')
-    gen.AddImage('im2')
     gen.AddAudio('snd1')
     gen.AddAudio('snd2')
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
-        ea.IMAGES: ['im1', 'im2'],
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
     })
@@ -210,40 +189,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     acc.Reload()
     self.assertEqual(acc.Scalars('s1'), [s1])
     self.assertEqual(acc.Scalars('s2'), [s2])
-
-  def testImages(self):
-    """Tests 2 images inserted/accessed in EventAccumulator."""
-    gen = _EventGenerator(self)
-    acc = ea.EventAccumulator(gen)
-    im1 = ea.ImageEvent(
-        wall_time=1,
-        step=10,
-        encoded_image_string=b'big',
-        width=400,
-        height=300)
-    im2 = ea.ImageEvent(
-        wall_time=2,
-        step=12,
-        encoded_image_string=b'small',
-        width=40,
-        height=30)
-    gen.AddImage(
-        'im1',
-        wall_time=1,
-        step=10,
-        encoded_image_string=b'big',
-        width=400,
-        height=300)
-    gen.AddImage(
-        'im2',
-        wall_time=2,
-        step=12,
-        encoded_image_string=b'small',
-        width=40,
-        height=30)
-    acc.Reload()
-    self.assertEqual(acc.Images('im1'), [im1])
-    self.assertEqual(acc.Images('im2'), [im2])
 
   def testAudio(self):
     """Tests 2 audio events inserted/accessed in EventAccumulator."""
@@ -295,10 +240,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     with self.assertRaises(KeyError):
       acc.Scalars('im1')
     with self.assertRaises(KeyError):
-      acc.Images('s1')
-    with self.assertRaises(KeyError):
-      acc.Images('hst1')
-    with self.assertRaises(KeyError):
       acc.Audio('s1')
     with self.assertRaises(KeyError):
       acc.Audio('hst1')
@@ -310,12 +251,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalar('s1', wall_time=1, step=10, value=20)
     gen.AddEvent(tf.Event(wall_time=2, step=20, file_version='nots2'))
     gen.AddScalar('s3', wall_time=3, step=100, value=1)
-    gen.AddImage('im1')
     gen.AddAudio('snd1')
 
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
-        ea.IMAGES: ['im1'],
         ea.AUDIO: ['snd1'],
         ea.SCALARS: ['s1', 's3'],
     })
@@ -514,8 +453,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     first_value = accumulator.Scalars('scalar1')[0].value
     self.assertTrue(isinstance(first_value, float))
 
-  def testTFSummaryImage(self):
-    """Verify processing of tf.summary.image."""
+  def testNewStyleImageSummary(self):
+    """Verify processing of tensorboard.plugins.image.summary."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = tf.summary.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
@@ -526,11 +465,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
       # Using the tf node name instead allows argument re-use to the image
       # summary.
       with tf.name_scope('1'):
-        tf.summary.image('images', ipt, max_outputs=1)
+        image_summary.op('images', ipt, max_outputs=1)
       with tf.name_scope('2'):
-        tf.summary.image('images', ipt, max_outputs=2)
+        image_summary.op('images', ipt, max_outputs=2)
       with tf.name_scope('3'):
-        tf.summary.image('images', ipt, max_outputs=3)
+        image_summary.op('images', ipt, max_outputs=3)
       merged = tf.summary.merge_all()
       writer.add_graph(sess.graph)
       for i in xrange(10):
@@ -541,12 +480,13 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     accumulator.Reload()
 
     tags = [
-        u'1/images/image', u'2/images/image/0', u'2/images/image/1',
-        u'3/images/image/0', u'3/images/image/1', u'3/images/image/2'
+        u'1/images/image_summary',
+        u'2/images/image_summary',
+        u'3/images/image_summary',
     ]
 
     self.assertTagsEqual(accumulator.Tags(), {
-        ea.IMAGES: tags,
+        ea.TENSORS: tags,
         ea.GRAPH: True,
         ea.META_GRAPH: False,
     })

@@ -92,6 +92,9 @@ TensorFlow run.
                         <tf-image-loader
                           run="[[item.run]]"
                           tag="[[item.tag]]"
+                          sample="[[item.sample]]"
+                          of-samples="[[item.ofSamples]]"
+                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                           request-manager="[[_requestManager]]"
                           actual-size="[[_actualSize]]"
                         ></tf-image-loader>
@@ -125,7 +128,7 @@ TensorFlow run.
       is: 'tf-image-dashboard',
       properties: {
         _selectedRuns: Array,
-        _runToTag: Object,  // map<run: string, tags: string[]>
+        _runToTagInfo: Object,
         _dataNotFound: Boolean,
         _actualSize: Boolean,
 
@@ -136,7 +139,7 @@ TensorFlow run.
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
+            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter)',
         },
 
         _requestManager: {
@@ -155,14 +158,15 @@ TensorFlow run.
       },
       _fetchTags() {
         const url = getRouter().pluginRoute('images', '/tags');
-        return this._requestManager.request(url).then(runToTag => {
-          if (_.isEqual(runToTag, this._runToTag)) {
+        return this._requestManager.request(url).then(runToTagInfo => {
+          if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
             // No need to update anything if there are no changes.
             return;
           }
+          const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
           const tags = getTags(runToTag);
           this.set('_dataNotFound', tags.length === 0);
-          this.set('_runToTag', runToTag);
+          this.set('_runToTagInfo', runToTagInfo);
         });
       },
       _reloadImages() {
@@ -171,8 +175,25 @@ TensorFlow run.
         });
       },
 
-      _makeCategories(runToTag, selectedRuns, tagFilter) {
-        return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+      _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
+        const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
+        const baseCategories =
+          categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+        function explodeItem(item) {
+          const samples = runToTagInfo[item.run][item.tag].samples;
+          return _.range(samples).map(i => Object.assign({}, item, {
+            sample: i,
+            ofSamples: samples,
+          }));
+        }
+        const withSamples = baseCategories.map(category =>
+          Object.assign({}, category, {
+            items: [].concat.apply([], category.items.map(explodeItem)),
+          }));
+        return withSamples;
+      },
+      _tagMetadata(runToTagInfo, run, tag) {
+        return runToTagInfo[run][tag];
       },
     });
   </script>

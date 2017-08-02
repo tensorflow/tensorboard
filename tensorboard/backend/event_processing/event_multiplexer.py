@@ -324,23 +324,6 @@ class EventMultiplexer(object):
     accumulator = self.GetAccumulator(run)
     return accumulator.RunMetadata(tag)
 
-  def Images(self, run, tag):
-    """Retrieve the image events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.ImageEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Images(tag)
-
   def Audio(self, run, tag):
     """Retrieve the audio events associated with a run and tag.
 
@@ -422,8 +405,7 @@ class EventMultiplexer(object):
 
     Returns:
     ```
-      {runName: { images: [tag1, tag2, tag3],
-                  scalarValues: [tagA, tagB, tagC],
+      {runName: { scalarValues: [tagA, tagB, tagC],
                   graph: true, meta_graph: true}}
     ```
     """
