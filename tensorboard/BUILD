@@ -146,6 +146,18 @@ py_test(
     ],
 )
 
+py_binary(
+    name = "encode_png_benchmark",
+    srcs = ["encode_png_benchmark.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":util",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "plugin_util",
     srcs = ["plugin_util.py"],
@@ -175,7 +187,10 @@ py_library(
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//tensorboard:expect_tensorflow_installed"],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_test(
@@ -186,6 +201,7 @@ py_test(
     deps = [
         ":test_util",
         ":util",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],

@@ -27,7 +27,9 @@ import logging
 import os
 import re
 import sys
+import threading
 
+import numpy as np
 import tensorflow as tf
 
 
@@ -297,3 +299,63 @@ def _hack_the_main_frame():
       'tf_logging.py' in frame.f_back.f_code.co_filename):
     return frame.f_back
   return frame
+
+
+class _TensorFlowPngEncoder(object):
+  """A parallelizable PNG encoder that uses TensorFlow as a backend.
+
+  If you need to encode many PNGs, create a single instance of this
+  class and call its `encode` function many times. This will construct a
+  TensorFlow graph and session just once, reusing them for each
+  encoding.
+
+  This class is thread-safe, and has high performance when run in
+  parallel. See `encode_png_benchmark.py` for details.
+  """
+
+  def __init__(self):
+    super(_TensorFlowPngEncoder, self).__init__()
+    self._session = None
+    self._image_placeholder = None
+    self._encode_op = None
+    self._initialization_lock = threading.Lock()
+
+  def _lazily_initialize(self):
+    """Initialize the graph and session, if this has not yet been done."""
+    with self._initialization_lock:
+      if self._session:
+        return
+      graph = tf.Graph()
+      with graph.as_default():
+        self._image_placeholder = tf.placeholder(
+            dtype=tf.uint8, name='image_to_encode')
+        self._encode_op = tf.image.encode_png(self._image_placeholder)
+      self._session = tf.Session(graph=graph)
+
+  def encode(self, image):
+    if not isinstance(image, np.ndarray):
+      raise ValueError("'image' must be a numpy array: %r" % image)
+    if image.dtype != np.uint8:
+      raise ValueError("'image' dtype must be uint8, but is %r" % image.dtype)
+    self._lazily_initialize()
+    return self._session.run(self._encode_op,
+                             feed_dict={self._image_placeholder: image})
+
+
+_png_encoder = _TensorFlowPngEncoder()
+
+
+def encode_png(image):
+  """Encode an image to PNG.
+
+  This function is thread-safe, and has high performance when run in
+  parallel. See `encode_png_benchmark.py` for details.
+
+  Arguments:
+    image: A numpy array of shape `[height, width, channels]`, where
+      `channels` is 1, 3, or 4, and of dtype uint8.
+
+  Returns:
+    A bytestring with PNG-encoded data.
+  """
+  return _png_encoder.encode(image)

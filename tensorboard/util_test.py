@@ -20,6 +20,7 @@ import logging
 import time
 
 import six
+import numpy as np
 import tensorflow as tf
 
 from tensorboard import test_util
@@ -181,6 +182,78 @@ def TerminalStringIO():
   stream = six.StringIO()
   stream.isatty = lambda: True
   return stream
+
+
+class TensorFlowPngEncoderTest(tf.test.TestCase):
+  """Tests for the private `_TensorFlowPngEncoder` class.
+
+  The functionality of this class is tested via the `SummaryTest` (via
+  the `summary.pb` function). This class tests how it interacts with
+  other graphs and sessions---namely, not at all!
+  """
+
+  def setUp(self):
+    super(TensorFlowPngEncoderTest, self).setUp()
+
+    patch = tf.test.mock.patch('tensorflow.Session', wraps=tf.Session)
+    patch.start()
+    self.addCleanup(patch.stop)
+
+    self._encoder = util._TensorFlowPngEncoder()
+    self._rgb = np.arange(12 * 34 * 3).reshape((12, 34, 3)).astype(np.uint8)
+    self._rgba = np.arange(21 * 43 * 4).reshape((21, 43, 4)).astype(np.uint8)
+
+  def _check_png(self, data):
+    # If it has a valid PNG header and is of a reasonable size, we can
+    # assume it did the right thing. We trust the underlying
+    # `encode_png` op.
+    self.assertEqual(b'\x89PNG', data[:4])
+    self.assertGreater(len(data), 128)
+
+  def test_invalid_non_numpy(self):
+    with six.assertRaisesRegex(self, ValueError, "must be a numpy array"):
+      self._encoder.encode(self._rgb.tolist())
+
+  def test_invalid_non_uint8(self):
+    with six.assertRaisesRegex(self, ValueError, "dtype must be uint8"):
+      self._encoder.encode(self._rgb.astype(np.float32))
+
+  def test_encodes_png(self):
+    data = self._encoder.encode(self._rgb)
+    self._check_png(data)
+
+  def test_encodes_png_with_alpha(self):
+    data = self._encoder.encode(self._rgba)
+    self._check_png(data)
+
+  def test_preserves_existing_graph(self):
+    tf.constant(1) + tf.constant(2)  # pylint: disable=expression-not-assigned
+    original_graph = tf.get_default_graph()
+    original_proto = original_graph.as_graph_def().SerializeToString()
+    assert len(original_proto) > 10, original_graph
+    self._encoder.encode(self._rgb)
+    self.assertIs(original_graph, tf.get_default_graph())
+    self.assertEqual(original_proto,
+                     tf.get_default_graph().as_graph_def().SerializeToString())
+
+  def test_preserves_existing_session(self):
+    with tf.Session() as sess:
+      op = tf.reduce_sum([2, 2])
+      self.assertIs(sess, tf.get_default_session())
+      data = self._encoder.encode(self._rgb)
+      self._check_png(data)
+      self.assertIs(sess, tf.get_default_session())
+      number_of_lights = sess.run(op)
+      self.assertEqual(number_of_lights, 4)
+
+  def test_lazily_initializes_sessions(self):
+    self.assertEqual(tf.Session.call_count, 0)
+
+  def test_reuses_sessions(self):
+    self._encoder.encode(self._rgb)
+    self.assertEqual(tf.Session.call_count, 1)
+    self._encoder.encode(self._rgb)
+    self.assertEqual(tf.Session.call_count, 1)
 
 
 if __name__ == '__main__':
