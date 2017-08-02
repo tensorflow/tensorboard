@@ -120,9 +120,11 @@ def op(
     #   bucket_index(p) = floor( p * (num_thresholds - 1) )
     # so we can use tf.scatter_add() to update the buckets in one pass.
 
-    # First compute the bucket indices for each prediction value.
+    # Compute the bucket indices for each prediction value.
     bucket_indices = tf.cast(
         tf.floor(predictions * (num_thresholds - 1)), tf.int32)
+    
+    # Bucket predictions.
     tp_buckets = tf.reduce_sum(
         tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
         axis=0)
@@ -132,10 +134,8 @@ def op(
 
     thresholds = tf.cast(
         tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
+    
     # Set up the cumulative sums to compute the actual metrics.
-    tp_buckets = tf.cast(tp_buckets, tf.float32)
-    fp_buckets = tf.cast(fp_buckets, tf.float32)
-
     tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
     fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
     # fn = sum(true_labels) - tp
