@@ -70,6 +70,7 @@ class EventMultiplexer(object):
   def __init__(self,
                run_path_map=None,
                size_guidance=None,
+               tensor_size_guidance=None,
                purge_orphaned_data=True):
     """Constructor for the `EventMultiplexer`.
 
@@ -79,6 +80,9 @@ class EventMultiplexer(object):
         None, then the EventMultiplexer initializes without any runs.
       size_guidance: A dictionary mapping from `tagType` to the number of items
         to store for each tag of that type. See
+        `event_accumulator.EventAccumulator` for details.
+      tensor_size_guidance: A dictionary mapping from `plugin_name` to
+        the number of items to store for each tag of that type. See
         `event_accumulator.EventAccumulator` for details.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
@@ -90,6 +94,7 @@ class EventMultiplexer(object):
     self._reload_called = False
     self._size_guidance = (size_guidance or
                            event_accumulator.DEFAULT_SIZE_GUIDANCE)
+    self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
@@ -130,6 +135,7 @@ class EventMultiplexer(object):
         accumulator = event_accumulator.EventAccumulator(
             path,
             size_guidance=self._size_guidance,
+            tensor_size_guidance=self._tensor_size_guidance,
             purge_orphaned_data=self.purge_orphaned_data)
         self._accumulators[name] = accumulator
         self._paths[name] = path
