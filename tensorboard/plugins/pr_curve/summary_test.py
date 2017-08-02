@@ -43,8 +43,8 @@ class PrCurveTest(tf.test.TestCase):
     with tf.Session() as sess:
       summary.op(
           tag='tag_bar',
-          labels=tf.constant([True, False, True, False]),
-          predictions=tf.constant([0.8, 0.6, 0.4, 0.2]),
+          labels=tf.constant([True, False, False, True, True, False]),
+          predictions=tf.constant([0.81, 0.8, 0.61, 0.6, 0.4, 0.2]),
           num_thresholds=10)
       merged_summary_op = tf.summary.merge_all()
       foo_directory = os.path.join(self.logdir, 'foo')
