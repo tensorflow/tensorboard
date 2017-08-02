@@ -104,6 +104,7 @@ py_library(
     deps = [
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/image:metadata",
     ],
 )
 
@@ -117,6 +118,8 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/histogram:summary",
+        "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/image:summary",
     ],
 )
 
