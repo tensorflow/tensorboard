@@ -30,8 +30,8 @@ def op(
     tag,
     labels,
     predictions,
-    num_thresholds=None,
-    weight=None,
+    num_thresholds=200,
+    weight=1.0,
     display_name=None,
     description=None,
     collections=None):
@@ -72,12 +72,6 @@ def op(
     false positives, true negatives, false negatives, precision, recall.
 
   """
-  if num_thresholds is None:
-    num_thresholds = 200
-  
-  if weight is None:
-    weight = 1.0
-
   dtype = predictions.dtype
 
   with tf.name_scope(tag, values=[labels, predictions, weight]):
