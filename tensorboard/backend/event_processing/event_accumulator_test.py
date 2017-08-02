@@ -53,31 +53,6 @@ class _EventGenerator(object):
             value=[tf.Summary.Value(tag=tag, simple_value=value)]))
     self.AddEvent(event)
 
-  def AddHistogram(self,
-                   tag,
-                   wall_time=0,
-                   step=0,
-                   hmin=1,
-                   hmax=2,
-                   hnum=3,
-                   hsum=4,
-                   hsum_squares=5,
-                   hbucket_limit=None,
-                   hbucket=None):
-    histo = tf.HistogramProto(
-        min=hmin,
-        max=hmax,
-        num=hnum,
-        sum=hsum,
-        sum_squares=hsum_squares,
-        bucket_limit=hbucket_limit,
-        bucket=hbucket)
-    event = tf.Event(
-        wall_time=wall_time,
-        step=step,
-        summary=tf.Summary(value=[tf.Summary.Value(tag=tag, histo=histo)]))
-    self.AddEvent(event)
-
   def AddImage(self,
                tag,
                wall_time=0,
@@ -144,7 +119,6 @@ class EventAccumulatorTest(tf.test.TestCase):
         ea.IMAGES: [],
         ea.AUDIO: [],
         ea.SCALARS: [],
-        ea.HISTOGRAMS: [],
         ea.GRAPH: False,
         ea.META_GRAPH: False,
         ea.RUN_METADATA: [],
@@ -194,8 +168,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     gen.AddScalar('s1')
     gen.AddScalar('s2')
-    gen.AddHistogram('hst1')
-    gen.AddHistogram('hst2')
     gen.AddImage('im1')
     gen.AddImage('im2')
     gen.AddAudio('snd1')
@@ -206,7 +178,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ea.IMAGES: ['im1', 'im2'],
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
-        ea.HISTOGRAMS: ['hst1', 'hst2'],
     })
 
   def testReload(self):
@@ -217,8 +188,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTagsEqual(acc.Tags(), {})
     gen.AddScalar('s1')
     gen.AddScalar('s2')
-    gen.AddHistogram('hst1')
-    gen.AddHistogram('hst2')
     gen.AddImage('im1')
     gen.AddImage('im2')
     gen.AddAudio('snd1')
@@ -228,7 +197,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ea.IMAGES: ['im1', 'im2'],
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
-        ea.HISTOGRAMS: ['hst1', 'hst2'],
     })
 
   def testScalars(self):
@@ -242,57 +210,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     acc.Reload()
     self.assertEqual(acc.Scalars('s1'), [s1])
     self.assertEqual(acc.Scalars('s2'), [s2])
-
-  def testHistograms(self):
-    """Tests whether histograms are inserted into EventAccumulator."""
-    gen = _EventGenerator(self)
-    acc = ea.EventAccumulator(gen)
-
-    val1 = ea.HistogramValue(
-        min=1,
-        max=2,
-        num=3,
-        sum=4,
-        sum_squares=5,
-        bucket_limit=[1, 2, 3],
-        bucket=[0, 3, 0])
-    val2 = ea.HistogramValue(
-        min=-2,
-        max=3,
-        num=4,
-        sum=5,
-        sum_squares=6,
-        bucket_limit=[2, 3, 4],
-        bucket=[1, 3, 0])
-
-    hst1 = ea.HistogramEvent(wall_time=1, step=10, histogram_value=val1)
-    hst2 = ea.HistogramEvent(wall_time=2, step=12, histogram_value=val2)
-    gen.AddHistogram(
-        'hst1',
-        wall_time=1,
-        step=10,
-        hmin=1,
-        hmax=2,
-        hnum=3,
-        hsum=4,
-        hsum_squares=5,
-        hbucket_limit=[1, 2, 3],
-        hbucket=[0, 3, 0])
-    gen.AddHistogram(
-        'hst2',
-        wall_time=2,
-        step=12,
-        hmin=-2,
-        hmax=3,
-        hnum=4,
-        hsum=5,
-        hsum_squares=6,
-        hbucket_limit=[2, 3, 4],
-        hbucket=[1, 3, 0])
-    acc.Reload()
-    self.assertEqual(acc.Histograms('hst1'), [hst1])
-    self.assertEqual(acc.Histograms('hst2'), [hst2])
-
 
   def testImages(self):
     """Tests 2 images inserted/accessed in EventAccumulator."""
@@ -378,10 +295,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     with self.assertRaises(KeyError):
       acc.Scalars('im1')
     with self.assertRaises(KeyError):
-      acc.Histograms('s1')
-    with self.assertRaises(KeyError):
-      acc.Histograms('im1')
-    with self.assertRaises(KeyError):
       acc.Images('s1')
     with self.assertRaises(KeyError):
       acc.Images('hst1')
@@ -397,7 +310,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalar('s1', wall_time=1, step=10, value=20)
     gen.AddEvent(tf.Event(wall_time=2, step=20, file_version='nots2'))
     gen.AddScalar('s3', wall_time=3, step=100, value=1)
-    gen.AddHistogram('hst1')
     gen.AddImage('im1')
     gen.AddAudio('snd1')
 
@@ -406,7 +318,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ea.IMAGES: ['im1'],
         ea.AUDIO: ['snd1'],
         ea.SCALARS: ['s1', 's3'],
-        ea.HISTOGRAMS: ['hst1'],
     })
 
   def testExpiredDataDiscardedAfterRestartForFileVersionLessThan2(self):

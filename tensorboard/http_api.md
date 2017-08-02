@@ -111,9 +111,9 @@ value the empty array.
 
 ## `/data/plugin/histograms/histograms?run=foo&tag=bar`
 
-Returns an array of event_accumulator.HistogramEvents ([wall_time, step,
-HistogramValue]) for the given run and tag. A HistogramValue is [min, max, num,
-sum, sum_squares, bucket_limit, bucket]. wall_time is seconds since epoch.
+Returns an array of [wall_time, step, HistogramValue] for the given run
+and tag. A HistogramValue is a list of buckets, where each bucket is of
+the form [min, max, count]. wall_time is seconds since epoch.
 
 Annotated Example: (note - real data is higher precision)
 
@@ -122,16 +122,9 @@ Annotated Example: (note - real data is higher precision)
         1443871386.185149, # wall_time
         235166,            # step
         [
-          -0.66,           # minimum value
-          0.44,            # maximum value
-          8.0,             # number of items in the histogram
-          -0.80,           # sum of items in the histogram
-          0.73,            # sum of squares of items in the histogram
-          [-0.68, -0.62, -0.292, -0.26, -0.11, -0.10, -0.08, -0.07, -0.05,
-          -0.0525, -0.0434, -0.039, -0.029, -0.026, 0.42, 0.47, 1.8e+308],
-                          # the right edge of each bucket
-        [0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
-          1.0, 0.0]        # the number of elements within each bucket
+          [0.0, 1.0, 123.0],
+          [1.0, 2.0, 234.0],
+          [2.0, 3.0, 188.0]
         ]
       ]
     ]
@@ -152,8 +145,8 @@ value the empty array.
 
 ## `/data/plugin/distributions/distributions?run=foo&tag=bar`
 
-Returns an array of event_accumulator.CompressedHistogramEvents ([wall_time,
-step, CompressedHistogramValues]) for the given run and tag.
+Returns an array of [wall_time, step, CompressedHistogramValues] for the
+given run and tag.
 
 CompressedHistogramValues is a list of namedtuples with each tuple specifying
 a basis point (bps) as well as an interpolated value of the histogram value

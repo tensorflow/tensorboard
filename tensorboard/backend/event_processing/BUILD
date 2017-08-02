@@ -82,6 +82,7 @@ py_library(
         ":event_file_loader",
         ":plugin_asset_util",
         ":reservoir",
+        "//tensorboard:data_compat",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/distribution:compressor",
     ],
