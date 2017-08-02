@@ -28,8 +28,8 @@ import tensorflow as tf
 from google.protobuf import json_format
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins.pr_curve import pr_curve_demo
-from tensorboard.plugins.pr_curve import summary
 from tensorboard.plugins.pr_curve import pr_curve_pb2
+from tensorboard.plugins.pr_curve import summary
 
 
 class PrCurveTest(tf.test.TestCase):
@@ -68,37 +68,8 @@ class PrCurveTest(tf.test.TestCase):
     # Verify that the metadata was correctly written.
     accumulator = self.multiplexer.GetAccumulator('colors')
     tag_content_dict = accumulator.PluginTagToContent('pr_curve')
-<<<<<<< HEAD
-    self.assertListEqual(['colors/colors'], list(tag_content_dict.keys()))
-
-    # Parse the data within the JSON string and set the proto's fields.
-    plugin_data = pr_curve_pb2.PrCurvePluginData()
-    json_format.Parse(tag_content_dict['colors/colors'], plugin_data)
-    self.assertEqual(10, plugin_data.num_thresholds)
 
     # Test the summary contents.
-    tensor_events = accumulator.Tensors('colors/colors')
-    self.assertEqual(3, len(tensor_events))
-
-    tensor_event = tensor_events[0]
-    self.assertEqual(1, tensor_event.step)
-    tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
-
-    np.testing.assert_allclose([
-      # True positives.
-      [3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0],
-      # False positives.
-      [3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0],
-      # True negatives.
-      [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
-      # False negatives.
-      [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
-      # Precision.
-      [0.5, 0.5, 0.6, 0.6, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0],
-      # Recall.
-      [1.0, 1.0, 1.0, 1.0, 2/3, 2/3, 1/3, 1/3, 0.0, 0.0],
-    ], tensor_nd_array)
-=======
     expected_tags = ['red/red', 'green/green', 'blue/blue']
     self.assertItemsEqual(expected_tags, list(tag_content_dict.keys()))
 
@@ -116,8 +87,9 @@ class PrCurveTest(tf.test.TestCase):
       for tensor_event in tensor_events:
         print(`tf.make_ndarray(tensor_event.tensor_proto).tolist()`)
 
-    # Test the output for the green classifier.
-    tensor_events = accumulator.Tensors('green/green')
+    # Test the output for the red classifier.
+    tensor_events = accumulator.Tensors('red/red')
+    print(`tensor_events`)
     self.validateTensorEvent_(0, [
       [2.0, 2.0, 2.0, 1.0, 0.0],  # True positives.
       [1.0, 1.0, 1.0, 1.0, 1.0],  # False positives.
@@ -126,7 +98,22 @@ class PrCurveTest(tf.test.TestCase):
       [2/3, 2/3, 2/3, 0.5, 1.0],  # Precision.
       [1.0, 1.0, 1.0, 0.5, 0.0],  # Recall.
     ], tensor_events[0])
->>>>>>> .
+    self.validateTensorEvent_(1, [
+      [2.0, 2.0, 2.0, 1.0, 0.0],  # True positives.
+      [1.0, 1.0, 1.0, 1.0, 1.0],  # False positives.
+      [0.0, 0.0, 0.0, 0.0, 0.0],  # True negatives.
+      [0.0, 0.0, 0.0, 1.0, 2.0],  # False negatives.
+      [2/3, 2/3, 2/3, 0.5, 1.0],  # Precision.
+      [1.0, 1.0, 1.0, 0.5, 0.0],  # Recall.
+    ], tensor_events[1])
+    self.validateTensorEvent_(2, [
+      [2.0, 2.0, 2.0, 1.0, 0.0],  # True positives.
+      [1.0, 1.0, 1.0, 1.0, 1.0],  # False positives.
+      [0.0, 0.0, 0.0, 0.0, 0.0],  # True negatives.
+      [0.0, 0.0, 0.0, 1.0, 2.0],  # False negatives.
+      [2/3, 2/3, 2/3, 0.5, 1.0],  # Precision.
+      [1.0, 1.0, 1.0, 0.5, 0.0],  # Recall.
+    ], tensor_events[2])
 
 
 if __name__ == "__main__":

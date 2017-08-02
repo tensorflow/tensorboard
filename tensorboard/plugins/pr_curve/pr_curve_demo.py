@@ -58,6 +58,7 @@ def start_runs(logdir, steps, run_name, thresholds, weight=None):
     thresholds: The number of thresholds to use for PR curves.
   """
   tf.reset_default_graph()
+  tf.set_random_seed(42)
   
   # Create a normal distribution layer used to generate true color labels.
   channel_distribution = tf.distributions.Normal(loc=0., scale=42.)
