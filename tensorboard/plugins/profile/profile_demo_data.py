@@ -46,15 +46,15 @@ trace_events {
   device_id: 1
   resource_id: 2
   name: "E1.2.1"
-  timestamp_ns: 100
-  duration_ns: 10
+  timestamp_ps: 100
+  duration_ps: 10
 }
 trace_events {
   device_id: 2
   resource_id: 2
   name: "E2.2.1"
-  timestamp_ns: 90
-  duration_ns: 40
+  timestamp_ps: 90
+  duration_ps: 40
 }
 """
 
@@ -81,13 +81,13 @@ trace_events {
   device_id: 1
   resource_id: 2
   name: "E1.2.1"
-  timestamp_ns: 10
-  duration_ns: 1000
+  timestamp_ps: 10
+  duration_ps: 1000
 }
 trace_events {
   device_id: 2
   resource_id: 2
   name: "E2.2.1"
-  timestamp_ns: 105
+  timestamp_ps: 105
 }
 """

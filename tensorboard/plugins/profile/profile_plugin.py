@@ -28,8 +28,6 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.profile import trace_events_json
-from tensorboard.plugins.profile import trace_events_pb2
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -42,15 +40,8 @@ TOOLS_ROUTE = '/tools'
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
-    'trace_viewer': 'trace',
+    'trace_viewer': 'trace.json',
 }
-
-
-def process_raw_trace(raw_trace):
-  """Processes raw trace data and returns the UI data."""
-  trace = trace_events_pb2.Trace()
-  trace.ParseFromString(raw_trace)
-  return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
 
 class ProfilePlugin(base_plugin.TBPlugin):
@@ -145,9 +136,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      # TODO(ioeric): use plugin_asset_util.RetieveAsset when it support reading
-      # bytes data in python 3.
-      with tf.gfile.Open(asset_path, "rb") as f:
+      # TODO(ioeric): Switch to use plugin_asset_util.RetieveAsset when the API
+      # supports reading bytes data in python 3. We might add tools with binary
+      # data soon.
+      with tf.gfile.Open(asset_path, "r") as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
       logging.warning("Asset path %s not found", asset_path)
@@ -157,7 +149,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if raw_data is None:
       return None
     if tool == 'trace_viewer':
-      return process_raw_trace(raw_data)
+      # The JSON trace is ready to be visualized in TraceViewer.
+      return raw_data
     return None
 
   @wrappers.Request.application

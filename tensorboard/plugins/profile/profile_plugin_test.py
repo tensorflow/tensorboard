@@ -51,12 +51,10 @@ class ProfilePluginTest(tf.test.TestCase):
           continue
         tool_file = os.path.join(run_dir, profile_plugin.TOOLS[tool])
         if tool == 'trace_viewer':
-          trace = trace_events_pb2.Trace()
-          trace.devices[0].name = run
-          data = trace.SerializeToString()
+          data = json.dumps(dict(run=run))
         else:
           data = tool
-        with open(tool_file, 'wb') as f:
+        with open(tool_file, 'w') as f:
           f.write(data)
     with open(os.path.join(plugin_logdir, 'noise'), 'w') as f:
       f.write('Not a dir, not a run.')
@@ -78,22 +76,7 @@ class ProfilePluginTest(tf.test.TestCase):
 
   def testData(self):
     trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer'))
-    self.assertEqual(trace,
-                     dict(
-                         displayTimeUnit='ns',
-                         metadata={'highres-ticks': True},
-                         traceEvents=[
-                             dict(
-                                 ph='M',
-                                 pid=0,
-                                 name='process_name',
-                                 args=dict(name='foo')),
-                             dict(
-                                 ph='M',
-                                 pid=0,
-                                 name='process_sort_index',
-                                 args=dict(sort_index=0)), {}
-                         ]))
+    self.assertEqual(trace, dict(run='foo'))
 
     # Invalid tool/run.
     self.assertEqual(None, self.plugin.data_impl('foo', 'nonono'))

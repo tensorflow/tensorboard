@@ -22,8 +22,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":protos_all_py_pb2",
-        ":trace_events_json",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
@@ -45,6 +43,8 @@ py_test(
     ],
 )
 
+# TODO(ioeric): this is only used by test and demo at this point. Clean it up
+# when we are sure that we will not convert JSON in the plugin anymore.
 py_library(
     name = "trace_events_json",
     srcs = ["trace_events_json.py"],
@@ -77,6 +77,7 @@ py_binary(
     deps = [
         ":profile_plugin",
         ":protos_all_py_pb2",
+        ":trace_events_json",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:plugin_asset_util",
     ],
