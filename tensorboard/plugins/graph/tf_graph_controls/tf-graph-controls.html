@@ -365,6 +365,15 @@ table.tf-graph-controls td.input-element-table-data {
         Coloring by memory is only enabled if the RunMetadata proto is passed to the
         FileWriter when a specific session is run.
       </paper-tooltip>
+
+      <paper-radio-button id="tpu-compatibility-radio-button"
+                          name="op_compatibility">
+        TPU Compatibility
+      </paper-radio-button>
+      <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right">
+        Coloring by whether an operation is compatible for the TPU device.
+      </paper-tooltip>
+
     </paper-radio-group>
   </div>
   <div>
@@ -474,6 +483,26 @@ table.tf-graph-controls td.input-element-table-data {
                  xlink:href="#grey-rect" x="0" y="0"/>
           </svg>
           <span class="color-legend-value">unknown XLA cluster</span>
+        </div>
+      </div>
+    </template>
+    <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
+      <div class="color-text">
+        <div class="color-legend-row">
+          <svg class="icon" preserveAspectRatio="xMinYMid meet"
+               viewBox="0 0 10 10">
+            <use xlink:href="#op-node-stamp" fill="#0f9d58" stroke="#ccc" x="9.5"
+                 y="6" />
+          </svg>
+          <span class="color-legend-value">Valid Op</span>
+        </div>
+        <div class="color-legend-row">
+          <svg class="icon" preserveAspectRatio="xMinYMid meet"
+               viewBox="0 0 10 10">
+            <use xlink:href="#op-node-stamp" fill="#db4437" stroke="#ccc" x="9.5"
+                 y="6" />
+          </svg>
+          <span class="color-legend-value">Invalid Op</span>
         </div>
       </div>
     </template>

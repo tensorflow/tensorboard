@@ -19,6 +19,7 @@ ts_web_library(
         "layout.ts",
         "minimap.ts",
         "node.ts",
+        "op.ts",
         "parser.ts",
         "proto.ts",
         "render.ts",
