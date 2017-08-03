@@ -30,8 +30,8 @@ def op(
     tag,
     labels,
     predictions,
-    num_thresholds=200,
-    weight=1.0,
+    num_thresholds=None,
+    weight=None,
     display_name=None,
     description=None,
     collections=None):
