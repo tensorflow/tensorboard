@@ -34,9 +34,9 @@ py_test(
     name = "profile_plugin_test",
     srcs = ["profile_plugin_test.py"],
     srcs_version = "PY2AND3",
+    size="small",
     deps = [
         ":profile_plugin",
-        ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",

@@ -26,7 +26,6 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import profile_plugin
-from tensorboard.plugins.profile import trace_events_pb2
 
 
 class ProfilePluginTest(tf.test.TestCase):
