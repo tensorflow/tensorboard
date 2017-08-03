@@ -105,33 +105,35 @@ def start_runs(logdir, steps, run_name, thresholds, weight=None):
   # color falls under a certain class (based on distances from corners of the
   # color triangle). The distributions vary per color. We have the distributions
   # narrow over time.
-  initial_standard_deviations = (1, 20, 80)
+  initial_standard_deviations = [v + FLAGS.steps for v in (1, 20, 80)]
   iteration = tf.placeholder(tf.int32, shape=[])
   red_predictor = tf.distributions.Normal(
       loc=0.,
       scale=tf.cast(
-          initial_standard_deviations[0] + FLAGS.steps - iteration,
+          initial_standard_deviations[0] - iteration,
           dtype=tf.float32))
   green_predictor = tf.distributions.Normal(
       loc=0.,
       scale=tf.cast(
-          initial_standard_deviations[1] + FLAGS.steps - iteration,
+          initial_standard_deviations[1] - iteration,
           dtype=tf.float32))
   blue_predictor = tf.distributions.Normal(
       loc=0.,
       scale=tf.cast(
-          initial_standard_deviations[2] + FLAGS.steps - iteration,
+          initial_standard_deviations[2] - iteration,
           dtype=tf.float32))
 
   # Make predictions (assign 3 probabilities to each color based on each color's
-  # distance to each of the 3 corners).
+  # distance to each of the 3 corners). We seek double the area in the right
+  # tail of the normal distribution. 
   examples = tf.concat([true_reds, true_greens, true_blues], axis=0)
-  probabilities_colors_are_red = red_predictor.cdf(
-      tf.norm(examples - tf.constant([255., 0, 0]), axis=1))
-  probabilities_colors_are_green = green_predictor.cdf(
-      tf.norm(examples - tf.constant([0, 255., 0]), axis=1))
-  probabilities_colors_are_blue = blue_predictor.cdf(
-      tf.norm(examples - tf.constant([0, 0, 255.]), axis=1))
+  probabilities_colors_are_red = (1 - red_predictor.cdf(
+      tf.norm(examples - tf.constant([255., 0, 0]), axis=1))) * 2
+  probabilities_colors_are_green = (1 - green_predictor.cdf(
+      tf.norm(examples - tf.constant([0, 255., 0]), axis=1))) * 2
+  probabilities_colors_are_blue = (1 - blue_predictor.cdf(
+      tf.norm(examples - tf.constant([0, 0, 255.]), axis=1))) * 2
+
   predictions = (
       probabilities_colors_are_red,
       probabilities_colors_are_green,
