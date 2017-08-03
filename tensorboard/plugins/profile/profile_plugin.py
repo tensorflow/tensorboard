@@ -139,10 +139,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
       # TODO(ioeric): Switch to use plugin_asset_util.RetieveAsset when the API
       # supports reading bytes data in python 3. We might add tools with binary
       # data soon.
-      with tf.gfile.Open(asset_path, "r") as f:
+      with tf.gfile.Open(asset_path, 'r') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning("Asset path %s not found", asset_path)
+      logging.warning('Asset path %s not found', asset_path)
     except tf.errors.OpError as e:
       logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
 

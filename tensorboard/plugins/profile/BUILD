@@ -32,9 +32,9 @@ py_library(
 
 py_test(
     name = "profile_plugin_test",
+    size = "small",
     srcs = ["profile_plugin_test.py"],
     srcs_version = "PY2AND3",
-    size="small",
     deps = [
         ":profile_plugin",
         "//tensorboard:expect_tensorflow_installed",
