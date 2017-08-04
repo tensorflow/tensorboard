@@ -24,6 +24,7 @@ import math
 import os
 import numpy as np
 import tensorflow as tf
+import threading
 from werkzeug import wrappers
 
 from google.protobuf import json_format
@@ -227,7 +228,16 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     self.old_num_run_paths = None
     self.config_fpaths = None
     self.tensor_cache = LRUCache(_TENSOR_CACHE_CAPACITY)
-    self.run_paths = None
+    
+    # Whether the plugin is active (has meaningful data to process and serve).
+    # Once the plugin is deemed active, we no longer re-compute the value
+    # because doing so is potentially expensive.
+    self._is_active = False
+
+    # The running thread that is currently determining whether the plugin is
+    # active. If such a thread exists, do not start a duplicate thread.
+    self._thread_for_determining_is_active = None
+    
     if self.multiplexer:
       self.run_paths = self.multiplexer.RunPaths()
 
@@ -250,7 +260,49 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     Returns:
       A boolean. Whether this plugin is active.
     """
-    return bool(self.multiplexer and self.configs)
+    if not self.multiplexer:
+      return False
+
+    if self._is_active:
+      # We have already determined that the projector plugin should be active.
+      # Do not re-compute that. We have no reason to later set this plugin to be
+      # inactive.
+      return True
+
+    if self._thread_for_determining_is_active:
+      # We are currently determining whether the plugin is active. Do not start
+      # a separate thread.
+      return self._is_active
+
+    # The plugin is currently not active. The frontend might check again later.
+    # For now, spin off a separate thread to determine whether the plugin is
+    # active.
+    new_thread = threading.Thread(target=self._determine_is_active)
+    self._thread_for_determining_is_active = new_thread
+    new_thread.start()
+    return False
+
+  def _determine_is_active(self):
+    """Determines whether the thread is active.
+
+    This method is run in a separate thread so that the plugin can offer an
+    immediate response to whether it is active and determine whether it should
+    be active in a separate thread.
+    """
+    if self.configs:
+      self._is_active = True
+    self._thread_for_determining_is_active = None
+
+  def _get_thread_for_determining_is_active(self):
+    """Gets the currently running thread for determining is_active.
+
+    This method is useful for testing.
+
+    Returns:
+      The thread that is currently determining whether the plugin is active.
+      This is None if no such thread is running.
+    """
+    return self._thread_for_determining_is_active
 
   @property
   def configs(self):
