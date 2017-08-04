@@ -47,21 +47,27 @@ tf.flags.DEFINE_integer('steps', 10,
                         'Number of steps to generate for each PR curve.')
 
 
-def start_runs(logdir, steps, run_name, thresholds, weight=None):
+def start_runs(
+    logdir,
+    steps,
+    run_name,
+    thresholds,
+    assign_random_weights=False):
   """Generate a PR curve with precision and recall evenly weighted.
   
   Arguments:
     logdir: The directory into which to store all the runs' data.
     steps: The number of steps to run for.
     run_name: The name of the run.
-    weight: Weight counts for predictions of each color by this amount.
     thresholds: The number of thresholds to use for PR curves.
+    assign_random_weights: Whether to assign random weights between 0 and 1 to
+        each example.
   """
   tf.reset_default_graph()
   tf.set_random_seed(42)
   
   # Create a normal distribution layer used to generate true color labels.
-  channel_distribution = tf.distributions.Normal(loc=0., scale=42.)
+  channel_distribution = tf.distributions.Normal(loc=0., scale=142.)
 
   # Sample the distribution to generate colors. Lets generate different numbers
   # of each color. The first dimension is the count of examples.
@@ -105,7 +111,7 @@ def start_runs(logdir, steps, run_name, thresholds, weight=None):
   # color falls under a certain class (based on distances from corners of the
   # color triangle). The distributions vary per color. We have the distributions
   # narrow over time.
-  initial_standard_deviations = [v + FLAGS.steps for v in (1, 20, 80)]
+  initial_standard_deviations = [v + FLAGS.steps for v in (158, 200, 242)]
   iteration = tf.placeholder(tf.int32, shape=[])
   red_predictor = tf.distributions.Normal(
       loc=0.,
@@ -148,12 +154,16 @@ def start_runs(logdir, steps, run_name, thresholds, weight=None):
                    'deviation is initially %0.0f and decreases over time.' %
                        initial_standard_deviations[i])
 
+    weights = None
+    if assign_random_weights:
+      weights = tf.random_uniform(shape=tf.shape(predictions[i]), maxval=1.0)
+
     summary.op(
         tag=color,
         labels=labels[:, i],
         predictions=predictions[i],
         num_thresholds=thresholds,
-        weight=weight,
+        weights=weights,
         display_name='classifying %s' % color,
         description=description)
   merged_summary_op = tf.summary.merge_all()
@@ -193,7 +203,7 @@ def run_all(logdir, steps, thresholds, verbose=False):
 
   # Next, we generate data for a PR curve that assigns 2x the weight for
   # predictions of whether a color is blue.
-  run_name = 'colors_weight_2x'
+  run_name = 'colors_weighted_randomly'
   if verbose:
       print('--- Running: %s' % run_name)
   start_runs(
@@ -201,7 +211,7 @@ def run_all(logdir, steps, thresholds, verbose=False):
       steps=steps,
       run_name=run_name,
       thresholds=thresholds,
-      weight=2.0)
+      assign_random_weights=True)
 
 
 def main(unused_argv):
