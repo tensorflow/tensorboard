@@ -197,7 +197,7 @@ class ProjectorAppTest(tf.test.TestCase):
     mock = patcher.start()
     self.addCleanup(patcher.stop)
 
-    mock.assert_not_called()
+    self.assertEqual(0, mock.call_count)
     # The projector plugin has not yet determined whether it is active, but it
     # should now start a thread to determine that.
     self.assertFalse(self.plugin.is_active())
