@@ -253,7 +253,7 @@ class ProjectorAppTest(tf.test.TestCase):
     tf.test.mock.patch('threading.Thread', FakeThread).start()
 
     # The projector plugin has not yet determined whether it is active, but it
-    # should have started a thread to determine that.
+    # should now start a thread to determine that.
     self.assertFalse(self.plugin.is_active())
 
     # We simulate the logic of the thread executing.
