@@ -31,7 +31,7 @@ def op(
     labels,
     predictions,
     num_thresholds=None,
-    weight=None,
+    weights=None,
     display_name=None,
     description=None,
     collections=None):
@@ -55,8 +55,8 @@ def op(
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
         compute PR metrics for. Should be `>= 2`. This value should be a 
         constant integer value, not a Tensor that stores an integer.
-    weight: Optional; A float or scalar float32 `Tensor`. Individual
-        counts are multiplied by this value.
+    weights: Optional; A float32 `Tensor` of the same size as `labels`.
+        Individual counts are multiplied by this value.
     display_name: Optional name for this summary in TensorBoard, as a
         constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
@@ -75,20 +75,20 @@ def op(
   if num_thresholds is None:
     num_thresholds = 200
 
-  if weight is None:
-    weight = 1.0
+  if weights is None:
+    weights = 1.0
 
   dtype = predictions.dtype
 
-  with tf.name_scope(tag, values=[labels, predictions, weight]):
+  with tf.name_scope(tag, values=[labels, predictions, weights]):
     tf.assert_type(labels, tf.bool)
     # We cast to float to ensure we have 0.0 or 1.0.
     f_labels = tf.cast(labels, dtype)
     # Ensure predictions are all in range [0.0, 1.0].
     predictions = tf.minimum(1.0, tf.maximum(0.0, predictions))
     # Get weighted true/false labels.
-    true_labels = f_labels * weight
-    false_labels = (1.0 - f_labels) * weight
+    true_labels = f_labels * weights
+    false_labels = (1.0 - f_labels) * weights
 
     # Before we begin, flatten predictions.
     predictions = tf.reshape(predictions, [-1])
