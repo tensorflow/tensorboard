@@ -259,7 +259,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     This plugin is only active if any run has an embedding.
 
     Returns:
-      A boolean. Whether this plugin is active.
+      Whether any run has embedding data to show in the projector.
     """
     if not self.multiplexer:
       return False
