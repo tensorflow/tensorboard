@@ -45,8 +45,8 @@ class DbTestCase(test_util.TestCase):
   def setUp(self):
     super(DbTestCase, self).setUp()
     db_path = os.path.join(self.get_temp_dir(), 'DbTestCase.sqlite')
-    self._db_connection_provider = \
-        lambda: sqlite3.connect(db_path, isolation_level=None)
+    self._db_connection_provider = (
+        lambda: db.Connection(sqlite3.connect(db_path, isolation_level=None)))
     with contextlib.closing(self.connect()) as db_conn:
       schema = db.Schema(db_conn)
       schema.create_tables()
@@ -126,6 +126,10 @@ class TransactionTest(DbTestCase):
     with self.assertRaises(Exception):
       self.tbase.run_transaction(second)
     self.tbase.run_transaction(third)
+
+  def testTransactionalVacuum_isForbidden(self):
+    with self.assertRaises(ValueError):
+      self.tbase.run_transaction(lambda c: c.execute('vacuum'))
 
 
 class IdTest(test_util.TestCase):

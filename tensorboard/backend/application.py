@@ -393,7 +393,7 @@ def create_sqlite_connection_provider(db_uri):
   path = os.path.expanduser(uri.path)
   params = _get_connect_params(uri.query)
   # TODO(@jart): Add thread-local pooling.
-  return lambda: sqlite3.connect(path, **params)
+  return lambda: db.Connection(sqlite3.connect(path, **params))
 
 
 def _get_connect_params(query):
