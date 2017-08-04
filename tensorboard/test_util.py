@@ -70,6 +70,13 @@ class FakeClock(object):
     self._lock = threading.Lock()
 
   def __call__(self):
+    """Delegates to get_time().
+
+    :rtype: float
+    """
+    return self.get_time()
+
+  def get_time(self):
     """Returns current fake time.
 
     Returns:

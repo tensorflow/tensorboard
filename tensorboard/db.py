@@ -27,9 +27,16 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
+import functools
 import random
-import sqlite3  # pylint: disable=unused-import
+import re
+import sqlite3
 import threading
+import types  # pylint: disable=unused-import
+
+from tensorboard import util
+
+TESTING_MODE = False
 
 
 class TensorBase(object):
@@ -38,14 +45,30 @@ class TensorBase(object):
   This class is thread safe.
   """
 
-  def __init__(self, db_connection_provider):
+  def __init__(self, db_connection_provider, retrier_factory=util.Retrier):
     """Creates new instance.
 
     :type db_connection_provider: () -> sqlite3.Connection
+    :type retrier_factory: ((Exception) -> bool) -> util.Retrier
     """
     self._db_connection_provider = db_connection_provider
     self._plugin_ids_by_name = {}  # type: dict[str, int]
     self._plugin_ids_by_name_lock = threading.Lock()
+    self._retrier = retrier_factory(_is_transient_sqlite_error)
+
+  def run_transaction(self, callback):
+    """Runs an optimistic database transaction.
+
+    If the callback returns without throwing an exception, it is
+    committed, otherwise it's rolled back. If the exception is a
+    transient database error, such as write contention or a random ID
+    INSERT failure, then we retry with exponential back-off.
+
+    :type callback: (TransactionConnection) -> T
+    :rtype: T
+    """
+    with contextlib.closing(self._db_connection_provider()) as connection:
+      return self._retrier.run(_TransactionRunner(connection, callback))
 
   def get_plugin_ids(self, names):
     """Gets IDs of plugins, creating rows if they don't exist.
@@ -65,39 +88,42 @@ class TensorBase(object):
     :type names: list[str]
     :rtype: dict[str, int]
     """
-    result = {}
-    names_set = set(names)
     with self._plugin_ids_by_name_lock:
-      for name in names:
-        id_ = self._plugin_ids_by_name.get(name)
-        if id_ is not None:
-          result[name] = id_
-          names_set.remove(name)
-      if names_set:
-        # TODO(@jart): Retry transaction with exponential backoff.
-        with contextlib.closing(self._db_connection_provider()) as conn:
-          with conn:
-            with contextlib.closing(conn.cursor()) as c:
-              c.execute('SELECT plugin_id, name FROM Plugins')
-              self._plugin_ids_by_name.clear()
-              max_id = 0
-              for id_, name in c.fetchall():
-                if id_ > max_id:
-                  max_id = id_
-                self._plugin_ids_by_name[name] = id_
-                if name in names_set:
-                  result[name] = id_
-                  names_set.remove(name)
-              new_rows = []
-              for name in names_set:
-                max_id += 1
-                result[name] = max_id
-                new_rows.append((max_id, name))
-              if new_rows:
-                c.executemany(
-                    'INSERT INTO Plugins (plugin_id, name) VALUES (?, ?)',
-                    new_rows)
-    return result
+      if all(name in self._plugin_ids_by_name for name in names):
+        return self._get_plugin_ids(names)
+      self._plugin_ids_by_name.update(
+          self.run_transaction(functools.partial(_add_plugins, names)))
+      return self._get_plugin_ids(names)
+
+  def _get_plugin_ids(self, names):
+    return {name: self._plugin_ids_by_name[name] for name in names}
+
+
+def _add_plugins(names, connection):
+  """Fetches Plugins table and assigns IDs for new names if necessary.
+
+  :type names: list[str]
+  :type connection: TransactionConnection
+  :rtype: dict[str, int]
+  """
+  the_whole_table = {}  # type: dict[str, int]
+  names = set(names)
+  max_id = 0
+  for id_, name in connection.execute('SELECT plugin_id, name FROM Plugins'):
+    if id_ > max_id:
+      max_id = id_
+    the_whole_table[name] = id_
+    names.discard(name)
+  new_rows = []
+  for name in names:
+    max_id += 1
+    the_whole_table[name] = max_id
+    new_rows.append((max_id, name))
+  if new_rows:
+    connection.executemany(
+        'INSERT INTO Plugins (plugin_id, name) VALUES (?, ?)',
+        new_rows)
+  return the_whole_table
 
 
 class Schema(object):
@@ -109,8 +135,6 @@ class Schema(object):
     :type db_conn: sqlite3.Connection
     """
     self._db_conn = db_conn
-    self._plugin_ids_by_name = {}  # type: dict[str, int]
-    self._plugin_ids_by_name_lock = threading.Lock()
 
   def create_tables(self):
     """Creates SQL tables needed by TensorBoard.
@@ -385,6 +409,333 @@ class Schema(object):
 
   def _cursor(self):
     return contextlib.closing(self._db_conn.cursor())  # type: sqlite3.Cursor
+
+
+def _is_transient_sqlite_error(exception):
+  """Returns True if transaction should be retried on SQLite.
+
+  :type exception: Exception
+  """
+  return (isinstance(exception, (FakeTransientDatabaseError,
+                                 sqlite3.DatabaseError)) and
+          not isinstance(exception, sqlite3.ProgrammingError))
+
+
+class _TransactionRunner(object):
+  """Utility class for running a transaction attempt.
+
+  If TESTING_MODE is True, then the first invocation will always result
+  in a roll back.
+  """
+
+  def __init__(self, connection, callback):
+    """Runs a write-deferred database transaction.
+
+    :type connection: sqlite3.Connection
+    :type callback: (TransactionConnection) -> T
+    """
+    self._connection = connection
+    self._callback = callback
+    self._should_rollback = TESTING_MODE
+
+  def __call__(self):
+    """Runs a write-deferred database transaction.
+
+    :rtype: T
+    """
+    with self._connection:
+      write_cursor = _DeferredCursor()
+      result = self._callback(
+          TransactionConnection(self._connection, write_cursor))
+      if self._should_rollback:
+        self._should_rollback = False
+        raise FakeTransientDatabaseError()
+      write_cursor.replay(self._connection)
+      return result
+
+
+class FakeTransientDatabaseError(Exception):
+  """Exception thrown to roll back transactions in TESTING_MODE."""
+
+  def __str__(self):
+    return 'FakeTransientDatabaseError'
+
+
+class TransactionConnection(object):
+  """Delegate for PEP 249 Connection object when in a Transaction."""
+
+  def __init__(self, actual_connection, write_cursor):
+    """Creates new instance.
+
+    :type actual_connection: sqlite3.Connection
+    :type write_cursor: _DeferredCursor
+    """
+    self._actual_connection = actual_connection
+    self._write_cursor = write_cursor
+
+  def cursor(self):
+    """Returns a new database cursor.
+
+    :rtype: TransactionCursor
+    """
+    return TransactionCursor(self, self._actual_connection, self._write_cursor)
+
+  def execute(self, sql, parameters=()):
+    """Executes a query and returns its cursor.
+
+    If this is a write query, it won't be executed until the end of the
+    transaction.
+
+    This method is not part of PEP 249 but is part of the sqlite3 API.
+
+    :type sql: str
+    :type parameters: tuple[object]
+    :rtype: TransactionCursor
+    """
+    cursor = self.cursor()
+    cursor.execute(sql, parameters)
+    return cursor
+
+  def executemany(self, sql, seq_of_parameters=()):
+    """Executes a query many times and returns its cursor.
+
+    If this is a write query, it won't be executed until the end of the
+    transaction.
+
+    This method is not part of PEP 249 but is part of the sqlite3 API.
+
+    :type sql: str
+    :type seq_of_parameters: list[tuple[object]]
+    """
+    cursor = self.cursor()
+    cursor.executemany(sql, seq_of_parameters)
+    return cursor
+
+  def commit(self):
+    """Raises NotImplementedError.
+
+    Simply return from the callback to commit a transaction.
+    """
+    raise NotImplementedError('Please return from callback to commit')
+
+  def rollback(self):
+    """Raises NotImplementedError.
+
+    Simply throw an exception type to cause a rollback.
+    """
+    raise NotImplementedError('Please throw an exception to rollback')
+
+  def close(self):
+    """Raises NotImplementedError.
+
+    It doesn't make sense to close a DB connection while inside a
+    transaction.
+    """
+    raise NotImplementedError('Connection.close not available in Transaction')
+
+
+class TransactionCursor(object):
+  """Delegate for PEP 249 Cursor object when in a Transaction."""
+
+  WRITE_QUERY_PATTERN = re.compile(r'^\s*(UPDATE|DELETE) ')
+
+  def __init__(self, connection, actual_connection, write_cursor):
+    """Creates new instance.
+
+    :type connection: TransactionConnection
+    :type actual_connection: sqlite3.Connection
+    :type write_cursor: _DeferredCursor
+    """
+    self.connection = connection  # Cycle required by PEP 249
+    self._actual_connection = actual_connection
+    self._write_cursor = write_cursor
+    self._cursor = None  # type: sqlite3.Cursor
+    self._is_closed = False
+
+  def execute(self, sql, parameters=()):
+    """Executes a query.
+
+    If this is a write query, it won't be executed until the end of the
+    transaction.
+
+    :type sql: str
+    :type parameters: tuple[object]
+    """
+    if TransactionCursor.WRITE_QUERY_PATTERN.search(sql) is not None:
+      self._check_closed()
+      self._write_cursor.execute(sql, parameters)
+      return
+    self._init_cursor()
+    self._cursor.execute(sql, parameters)
+
+  def executemany(self, sql, seq_of_parameters=()):
+    """Executes a query many times.
+
+    If this is a write query, it won't be executed until the end of the
+    transaction.
+
+    :type sql: str
+    :type seq_of_parameters: list[tuple[object]]
+    """
+    if TransactionCursor.WRITE_QUERY_PATTERN.search(sql) is not None:
+      self._check_closed()
+      self._write_cursor.executemany(sql, seq_of_parameters)
+      return
+    self._init_cursor()
+    self._cursor.executemany(sql, seq_of_parameters)
+
+  def executescript(self, sql):
+    """Raises NotImplementedError.
+
+    This method has surprising behavior with Python's SQLite driver. It
+    also prevents TensorBoard's transaction system from deferring write
+    queries.
+    """
+    raise NotImplementedError('Cursor.executescript not supported')
+
+  def fetchone(self):
+    """Returns next row in result set.
+
+    :rtype: tuple[object]
+    """
+    self._check_that_read_query_was_issued()
+    return self._cursor.fetchone()
+
+  def fetchmany(self, size=None):
+    """Returns next chunk of rows in result set.
+
+    :type size: int
+    """
+    self._check_that_read_query_was_issued()
+    if size is not None:
+      return self._cursor.fetchmany(size)
+    else:
+      return self._cursor.fetchmany()
+
+  def fetchall(self):
+    """Returns next row in result set.
+
+    :rtype: tuple[object]
+    """
+    self._check_that_read_query_was_issued()
+    return self._cursor.fetchone()
+
+  def nextset(self):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.nextset not supported')
+
+  @property
+  def description(self):
+    """Returns information about each column in result set.
+
+    :rtype: list[tuple[str, int, int, int, int, int bool]]
+    """
+    self._check_that_read_query_was_issued()
+    return self._cursor.description
+
+  @property
+  def rowcount(self):
+    """Returns number of rows retrieved by last read query.
+
+    :rtype: int
+    """
+    self._check_that_read_query_was_issued()
+    return self._cursor.rowcount
+
+  @property
+  def lastrowid(self):
+    """Raises NotImplementedError.
+
+    This is not possible to implement in TensorBoard's transaction
+    system, which defers writes to the end.
+
+    :rtype: int
+    """
+    self._check_that_read_query_was_issued()
+    return self._cursor.rowcount
+
+  def _get_arraysize(self):
+    self._init_cursor()
+    return self._cursor.arraysize
+
+  def _set_arraysize(self, arraysize):
+    self._init_cursor()
+    self._cursor.arraysize = arraysize
+
+  arraysize = property(_get_arraysize, _set_arraysize)
+
+  def close(self):
+    """Closes resources associated with cursor."""
+    if self._cursor is not None:
+      self._cursor.close()
+      self._cursor = None
+    self._is_closed = True
+
+  def __iter__(self):
+    """Returns iterator over results of last read query.
+
+    :rtype: types.GeneratorType[tuple[object]]
+    """
+    self._check_that_read_query_was_issued()
+    for row in self._cursor:
+      yield row
+
+  def callproc(self, procname, parameters=()):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.callproc not supported')
+
+  def setinputsizes(self, sizes):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.setinputsizes not supported')
+
+  def setoutputsize(self, size, column):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.setoutputsize not supported')
+
+  def _init_cursor(self):
+    self._check_closed()
+    if self._cursor is None:
+      self._cursor = self._actual_connection.cursor()
+
+  def _check_that_read_query_was_issued(self):
+    self._check_closed()
+    if self._cursor is None:
+      raise ValueError('no read query was issued')
+
+  def _check_closed(self):
+    if self._is_closed:
+      raise ValueError('cursor was closed')
+
+
+class _DeferredCursor(object):
+  """Helper class for write queries."""
+
+  def __init__(self):
+    self._queries = []  # type: list[tuple[str, str, object]]
+
+  def execute(self, sql, parameters):
+    """Executes query in the future.
+
+    :type sql: str
+    :type parameters: tuple[object]
+    """
+    self._queries.append(('execute', sql, parameters))
+
+  def executemany(self, sql, seq_of_parameters):
+    """Executes multi-query in the future.
+
+    :type sql: str
+    :type seq_of_parameters: list[tuple[object]]
+    """
+    self._queries.append(('executemany', sql, seq_of_parameters))
+
+  def replay(self, connection):
+    """Executes deferred queries.
+
+    :type connection: sqlite3.Connection
+    """
+    for method, sql, parameters in self._queries:
+      getattr(connection, method)(sql, parameters)
 
 
 class Id(object):

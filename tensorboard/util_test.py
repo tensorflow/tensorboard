@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools
 import logging
 import time
 
@@ -158,6 +159,49 @@ class LogHandlerTest(tf.test.TestCase):
     handler.setFormatter(logging.Formatter('%(message)s'))
     handler.emit(make_ephemeral_record(logging.INFO, 'hi'))
     self.assertEqual('', stream.getvalue())
+
+
+class RetrierTest(test_util.TestCase):
+
+  def __init__(self, *args, **kwargs):
+    super(RetrierTest, self).__init__(*args, **kwargs)
+    self.clock = test_util.FakeClock()
+    self.sleep = test_util.FakeSleep(self.clock)
+    self.Retrier = functools.partial(util.Retrier, sleep=self.sleep)
+
+  def testOneMaxAttempt_justDelegates(self):
+    retrier = self.Retrier(max_attempts=1, is_transient=lambda e: True)
+    self.assertIsNone(retrier.run(lambda: None))
+    self.assertEqual('hello', retrier.run(lambda: 'hello'))
+    with self.assertRaises(ValueError):
+      retrier.run(FailThenSucceed(raises=[ValueError]))
+    self.assertEqual(0.0, self.clock.get_time())
+
+  def testThreeFailures_hasExponentialDelayAndRecovers(self):
+    retrier = self.Retrier(max_attempts=4, is_transient=lambda e: True)
+    callback = FailThenSucceed(raises=[Exception, Exception, Exception],
+                               returns=['hi'])
+    self.assertEqual('hi', retrier.run(callback))
+    self.assertEqual((1 + 2 + 4) * util.Retrier.DELAY, self.clock.get_time())
+
+  def testNotATransientError_doesntRetry(self):
+    retrier = self.Retrier(is_transient=lambda e: isinstance(e, IOError))
+    with self.assertRaises(ValueError):
+      retrier.run(FailThenSucceed(raises=[ValueError]))
+    self.assertEqual(0.0, self.clock.get_time())
+    self.assertTrue(retrier.run(FailThenSucceed(raises=[IOError])))
+    self.assertEqual(util.Retrier.DELAY, self.clock.get_time())
+
+
+class FailThenSucceed(object):
+  def __init__(self, raises=(Exception,), returns=(True,)):
+    self._raises = list(raises)
+    self._returns = list(returns)
+
+  def __call__(self):
+    if self._raises:
+      raise self._raises.pop(0)
+    return self._returns.pop(0)
 
 
 def make_record(level, msg, *args):

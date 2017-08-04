@@ -28,6 +28,7 @@ import os
 import re
 import sys
 import threading
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -95,6 +96,44 @@ def guarded_by(field):
   """
   del field
   return lambda method: method
+
+
+class Retrier(object):
+  """Helper class for retrying things with exponential back-off."""
+
+  DELAY = 0.1
+
+  def __init__(self, is_transient, max_attempts=8, sleep=time.sleep):
+    """Creates new instance.
+
+    :type is_transient: (Exception) -> bool
+    :type max_attempts: int
+    :type sleep: (float) -> None
+    """
+    self._is_transient = is_transient
+    self._max_attempts = max_attempts
+    self._sleep = sleep
+
+  def run(self, callback):
+    """Invokes callback, retrying on transient exceptions.
+
+    After the first failure, we wait 100ms, and then double with each
+    subsequent failed attempt. The default max attempts is 8 which
+    equates to about thirty seconds of sleeping total.
+
+    :type callback: () -> T
+    :rtype: T
+    """
+    failures = 0
+    while True:
+      try:
+        return callback()
+      except Exception as e:  # pylint: disable=broad-except
+        failures += 1
+        if failures == self._max_attempts or not self._is_transient(e):
+          raise
+        tf.logging.warn('Retrying on transient %s', e)
+        self._sleep(2 ** (failures - 1) * Retrier.DELAY)
 
 
 class LogFormatter(logging.Formatter):

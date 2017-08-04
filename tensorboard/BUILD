@@ -128,7 +128,10 @@ py_library(
     srcs = ["db.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//tensorboard:expect_sqlite3_installed"],
+    deps = [
+        ":util",
+        "//tensorboard:expect_sqlite3_installed",
+    ],
 )
 
 py_test(
@@ -140,6 +143,7 @@ py_test(
     deps = [
         ":db",
         ":test_util",
+        ":util",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
