@@ -22,9 +22,10 @@ import collections
 import imghdr
 import math
 import os
+import threading
+
 import numpy as np
 import tensorflow as tf
-import threading
 from werkzeug import wrappers
 
 from google.protobuf import json_format
@@ -228,7 +229,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     self.old_num_run_paths = None
     self.config_fpaths = None
     self.tensor_cache = LRUCache(_TENSOR_CACHE_CAPACITY)
-    
+
     # Whether the plugin is active (has meaningful data to process and serve).
     # Once the plugin is deemed active, we no longer re-compute the value
     # because doing so is potentially expensive.
@@ -237,7 +238,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     # The running thread that is currently determining whether the plugin is
     # active. If such a thread exists, do not start a duplicate thread.
     self._thread_for_determining_is_active = None
-    
+
     if self.multiplexer:
       self.run_paths = self.multiplexer.RunPaths()
 
