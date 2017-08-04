@@ -38,6 +38,35 @@ from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
 
 
+class FakeThread(object):
+  """Fakes threading behavior so that threads can be effectively tested."""
+
+  def __init__(self, target):
+    """A 'thread' that just synchronously calls a method.
+
+    Args:
+      target: The function to call.
+    """
+    self._started = False
+    self._target = target
+
+  def start(self):  # pylint: disable=invalid-name
+    """Starts the thread. Part of the API for python threads."""
+    self._started = True
+
+  def actually_run(self):
+    """Actually runs the target.
+
+    Called within tests to simulate the logic of the thread being executed.
+
+    Raises:
+      RuntimeError: If this method is called before the thread is started.
+    """
+    if not self._started:
+      raise RuntimeError('Attempted to run a FakeThread before it started')
+    self._target()
+
+
 class ProjectorAppTest(tf.test.TestCase):
 
   def __init__(self, *args, **kwargs):
@@ -48,6 +77,9 @@ class ProjectorAppTest(tf.test.TestCase):
 
   def setUp(self):
     self.log_dir = self.get_temp_dir()
+    
+  def tearDown(self):
+    tf.test.mock.patch.stopall()
 
   def testRunsWithValidCheckpoint(self):
     self._GenerateProjectorTestData()
@@ -193,13 +225,39 @@ class ProjectorAppTest(tf.test.TestCase):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
 
-    # Embedding data is available.
+    # The is_active method makes use of a separate thread, so we mock threading
+    # behavior to make this test deterministic.
+    tf.test.mock.patch('threading.Thread', FakeThread).start()
+
+    # The projector plugin has not yet determined whether it is active, but it
+    # should have started a thread to determine that.
+    self.assertFalse(self.plugin.is_active())
+
+    # The logic has not finished running yet, so the plugin should still not
+    # have deemed itself to be active.
+    self.assertFalse(self.plugin.is_active())
+
+    # We simulate the logic of the thread executing.
+    self.plugin._get_thread_for_determining_is_active().actually_run()
+
+    # The plugin later finds that embedding data is available.
     self.assertTrue(self.plugin.is_active())
 
   def testPluginIsNotActive(self):
     self._SetupWSGIApp()
 
-    # Embedding data is not available.
+    # The is_active method makes use of a separate thread, so we mock threading
+    # behavior to make this test deterministic.
+    tf.test.mock.patch('threading.Thread', FakeThread).start()
+
+    # The projector plugin has not yet determined whether it is active, but it
+    # should have started a thread to determine that.
+    self.assertFalse(self.plugin.is_active())
+
+    # We simulate the logic of the thread executing.
+    self.plugin._get_thread_for_determining_is_active().actually_run()
+
+    # The plugin later finds that embedding data is not available.
     self.assertFalse(self.plugin.is_active())
 
   def _SetupWSGIApp(self):
