@@ -240,7 +240,7 @@ class ProjectorAppTest(tf.test.TestCase):
     self.assertFalse(self.plugin.is_active())
 
     # We simulate the logic of the thread executing.
-    self.plugin._get_thread_for_determining_is_active().actually_run()
+    self.plugin._thread_for_determining_is_active.actually_run()
 
     # The plugin later finds that embedding data is available.
     self.assertTrue(self.plugin.is_active())
@@ -257,7 +257,7 @@ class ProjectorAppTest(tf.test.TestCase):
     self.assertFalse(self.plugin.is_active())
 
     # We simulate the logic of the thread executing.
-    self.plugin._get_thread_for_determining_is_active().actually_run()
+    self.plugin._thread_for_determining_is_active.actually_run()
 
     # The plugin later finds that embedding data is not available.
     self.assertFalse(self.plugin.is_active())
