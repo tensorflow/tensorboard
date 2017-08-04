@@ -42,7 +42,9 @@ class FakeThread(object):
   """Fakes threading behavior so that threads can be effectively tested."""
 
   def __init__(self, target):
-    """A 'thread' that just synchronously calls a method.
+    """A 'thread' that lets a test run its logic at any time.
+  
+    Specifically, a test makes the logic run by calling actually_run.
 
     Args:
       target: The function to call.
