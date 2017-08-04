@@ -8,6 +8,20 @@ licenses(["notice"])  # Apache 2.0
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 py_library(
+    name = "pr_curves_plugin",
+    srcs = ["pr_curves_plugin.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:http_util",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",

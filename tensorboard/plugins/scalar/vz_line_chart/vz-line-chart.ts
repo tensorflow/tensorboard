@@ -68,14 +68,9 @@ Polymer({
     smoothingWeight: {type: Number, value: 0.6},
 
     /**
-     * The way to display the X values. Allows:
-     * - "step" - Linear scale using the  "step" property of the datum.
-     * - "wall_time" - Temporal scale using the "wall_time" property of the
-     * datum.
-     * - "relative" - Temporal scale using the "relative" property of the
-     * datum if it is present or calculating from "wall_time" if it isn't.
+     * The way to display the X values. A ChartHelpers.XComponents object.
      */
-    xType: {type: String, value: 'step'},
+    xComponents: Object,
 
     /**
      * The scale for the y-axis. Allows:
@@ -126,7 +121,7 @@ Polymer({
     _makeChartAsyncCallbackId: {type: Number, value: null}
   },
   observers: [
-    '_makeChart(xType, yScaleType, colorScale, _attached)',
+    '_makeChart(xComponents, yScaleType, colorScale, _attached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -194,7 +189,7 @@ Polymer({
     this.scopeSubtree(this.$.tooltip, true);
     this.scopeSubtree(this.$.chartdiv, true);
   },
-  _makeChart: function(xType, yScaleType, colorScale, _attached) {
+  _makeChart: function(xComponents, yScaleType, colorScale, _attached) {
     if (this._makeChartAsyncCallbackId !== null) {
       this.cancelAsync(this._makeChartAsyncCallbackId);
       this._makeChartAsyncCallbackId = null;
@@ -205,7 +200,7 @@ Polymer({
       if (!this._attached) return;
       if (this._chart) this._chart.destroy();
       var tooltip = d3.select(this.$.tooltip);
-      var chart = new LineChart(xType, yScaleType, colorScale, tooltip);
+      var chart = new LineChart(xComponents, yScaleType, colorScale, tooltip);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
@@ -282,7 +277,9 @@ class LineChart {
   private targetSVG: d3.Selection<any, any, any, any>;
 
   constructor(
-      xType: string, yScaleType: string, colorScale: Plottable.Scales.Color,
+      xComponents: ChartHelpers.XComponents,
+      yScaleType: string,
+      colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>) {
     this.seriesNames = [];
     this.name2datasets = {};
@@ -297,14 +294,14 @@ class LineChart {
     // need to do a single bind, so we can deregister the callback from
     // old Plottable.Datasets. (Deregistration is done by identity checks.)
     this.onDatasetChanged = this._onDatasetChanged.bind(this);
-    this.buildChart(xType, yScaleType);
+    this.buildChart(xComponents, yScaleType);
   }
 
-  private buildChart(xType: string, yScaleType: string) {
+  private buildChart(
+      xComponents: ChartHelpers.XComponents, yScaleType: string) {
     if (this.outer) {
       this.outer.destroy();
     }
-    let xComponents = ChartHelpers.getXComponents(xType);
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;

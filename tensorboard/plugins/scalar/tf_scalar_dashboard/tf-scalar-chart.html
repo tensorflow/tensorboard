@@ -35,7 +35,7 @@ limitations under the License.
     <tf-card-heading tag="[[tag]]"></tf-card-heading>
     <div id="chart-and-spinner-container">
       <vz-line-chart
-        x-type="[[xType]]"
+        x-components="[[_xComponents]]"
         color-scale="[[_runsColorScale]]"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
@@ -165,6 +165,7 @@ limitations under the License.
     import {Canceller} from '../tf-backend/canceller.js';
     import {getRouter} from '../tf-backend/router.js';
     import {runsColorScale} from '../tf-color-scale/colorScale.js';
+    import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
 
     // The chart can sometimes get in a bad state, when it redraws while
     // it is display: none due to the user having switched to a different
@@ -196,7 +197,21 @@ limitations under the License.
         runs: Array,  // of String
         tag: String,
 
-        /** @type {X_TYPE} */ xType: String,
+        /**
+         * Allows:
+         * - "step" - Linear scale using the  "step" property of the datum.
+         * - "wall_time" - Temporal scale using the "wall_time" property of the
+         * datum.
+         * - "relative" - Temporal scale using the "relative" property of the
+         * datum if it is present or calculating from "wall_time" if it isn't.
+         * @type {X_TYPE}
+         */
+        xType: String,
+
+        /** @type {ChartHelpers.XComponents} */ _xComponents: {
+          type: Object,
+          computed: '_computeXComponents(xType)',
+        },
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
         tooltipSortingMethod: String,
@@ -412,6 +427,9 @@ limitations under the License.
       },
       _jsonUrl(run) {
         return this._scalarUrl(this.tag, run);
+      },
+      _computeXComponents(xType) {
+        return ChartHelpers.getXComponents(xType);
       },
     });
   </script>
