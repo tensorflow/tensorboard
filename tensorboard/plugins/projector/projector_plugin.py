@@ -294,17 +294,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
       self._is_active = True
     self._thread_for_determining_is_active = None
 
-  def _get_thread_for_determining_is_active(self):
-    """Gets the currently running thread for determining is_active.
-
-    This method is useful for testing.
-
-    Returns:
-      The thread that is currently determining whether the plugin is active.
-      This is None if no such thread is running.
-    """
-    return self._thread_for_determining_is_active
-
   @property
   def configs(self):
     """Returns a map of run paths to `ProjectorConfig` protos."""
