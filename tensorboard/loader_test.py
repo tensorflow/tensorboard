@@ -246,6 +246,86 @@ class ProgressTest(LoaderTestCase):
     self.bars.append(format_ % args)
 
 
+class EventLogTest(LoaderTestCase):
+  EventLog = functools.partial(loader.EventLog,
+                               record_reader_factory=loader.RecordReader)
+
+  def testInvalidFilename_throwsException(self):
+    path = self._save_records('empty.records', [])
+    with self.assertRaises(ValueError):
+      self.EventLog(path)
+
+  def testEqualAndSortsByTimestampAndHost(self):
+    self.assertEqual(
+        [self.EventLog('events.out.tfevents.0.LOCALHOST'),
+         self.EventLog('events.out.tfevents.0.localhost'),
+         self.EventLog('events.out.tfevents.1.localhost')],
+        sorted([self.EventLog('events.out.tfevents.1.localhost'),
+                self.EventLog('events.out.tfevents.0.localhost'),
+                self.EventLog('events.out.tfevents.0.LOCALHOST')]))
+
+  def testFields(self):
+    path = self._save_records('events.out.tfevents.7.localhost', [])
+    with self.EventLog(path) as log:
+      self.assertEqual(path, log.path)
+      self.assertEqual(7, log.timestamp)
+      self.assertEqual('localhost', log.hostname)
+
+  def testNoReads_closeWorks(self):
+    path = self._save_records('events.out.tfevents.0.localhost', [])
+    self.EventLog(path).close()
+
+  def testClose_canBeCalledMultipleTimes(self):
+    path = self._save_records('events.out.tfevents.0.localhost', [])
+    log = self.EventLog(path)
+    log.close()
+    log.close()
+
+  def testEmptyFile_returnsNoneRecords(self):
+    path = self._save_records('events.out.tfevents.0.localhost', [])
+    with self.EventLog(path) as log:
+      self.assertIsNone(log.get_next_event())
+      self.assertIsNone(log.get_next_event())
+
+  def testReadOneEvent(self):
+    event = tf.Event()
+    event.step = 123
+    path = self._save_records('events.out.tfevents.0.localhost',
+                              [event.SerializeToString()])
+    with self.EventLog(path) as log:
+      self.assertEqual(event, log.get_next_event())
+      self.assertIsNone(log.get_next_event())
+
+  def testMarkReset(self):
+    event = tf.Event()
+    event.step = 123
+    path = self._save_records('events.out.tfevents.0.localhost',
+                              [event.SerializeToString()])
+    with self.EventLog(path) as log:
+      log.mark()
+      self.assertEqual(event, log.get_next_event())
+      log.reset()
+      self.assertEqual(event, log.get_next_event())
+      self.assertIsNone(log.get_next_event())
+
+  def testMarkWithShrinkingBatchSize_raisesValueError(self):
+    event1 = tf.Event()
+    event1.step = 123
+    event2 = tf.Event()
+    event2.step = 456
+    path = self._save_records('events.out.tfevents.0.localhost',
+                              [event1.SerializeToString(),
+                               event2.SerializeToString()])
+    with self.EventLog(path) as log:
+      log.mark()
+      self.assertEqual(event1, log.get_next_event())
+      self.assertEqual(event2, log.get_next_event())
+      log.reset()
+      self.assertEqual(event1, log.get_next_event())
+      with self.assertRaisesRegexp(ValueError, 'monotonic'):
+        log.mark()
+
+
 @util.closeable
 class RecordWriter(object):
   def __init__(self, path):
