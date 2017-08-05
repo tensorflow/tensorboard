@@ -902,9 +902,10 @@ function extractXlaCluster(attr: Array<{key: string, value: any}>): string|
 
 /**
  * Normalizes the inputs and extracts associated metadata:
- * 1) Inputs can contain a colon followed by a number at the end
- *    (e.g. inputName:1) and we remove this from the input name, and take note
- *    that the input was numbered.
+ * 1) Inputs can contain a colon followed by a suffix of characters.
+ *    That suffix may be a single number (e.g. inputName:1) or several word
+ *    characters separated from a number by a colon (e.g. inputName:foo:1). The
+ *    latter case is used to denote inputs and outputs of functions.
  * 2) Control dependency inputs contain caret at the beginning and we
  *    remove this and annotate the edge as a control dependency.
  * @param inputs Array of unnormalized names of input nodes.
@@ -912,20 +913,37 @@ function extractXlaCluster(attr: Array<{key: string, value: any}>): string|
 function normalizeInputs(inputs: string[]): NormalizedInput[] {
   let normalizedInputs: NormalizedInput[] = [];
   _.each(inputs, inputName => {
-    let start = inputName[0] === '^';
-    let colon = inputName.lastIndexOf(':');
-    let end = colon !== -1 &&
-      inputName.length - colon > 1 &&
-      !(/\D/).test(inputName.substring(colon + 1)) ?
-      colon : inputName.length;
-    let name = inputName.substring(start ? 1 : 0, end);
+    let isControlDependency = inputName[0] === '^';
+    if (isControlDependency) {
+      // The carat merely indicates whether this input is a control dependency.
+      // It should not be part of the name.
+      inputName = inputName.substring(1);
+    }
+
+    let name = inputName;
+    let outputTensorIndex = '0';
+
+    let match = inputName.match(/(.*):(\w+:\d+)$/);
+    if (match) {
+      // The output string consists of several characters and a number separated
+      // by a colon.
+      name = match[1];
+      outputTensorIndex = match[2];
+    } else {
+      match = inputName.match(/(.*):(\d+)$/);
+      if (match) {
+        // The output string consists of a single number.
+        name = match[1];
+        outputTensorIndex = match[2];
+      }
+    }
+
     if (normalizedInputs.length === 0 ||
       name !== normalizedInputs[normalizedInputs.length - 1].name) {
       normalizedInputs.push({
         name: name,
-        outputTensorIndex:
-            end === inputName.length ? '0' : inputName.slice(colon + 1),
-        isControlDependency: start
+        outputTensorIndex: outputTensorIndex,
+        isControlDependency: isControlDependency,
       });
     }
   });
