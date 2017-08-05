@@ -55,7 +55,7 @@ export interface BaseEdge extends graphlib.EdgeObject {
   isControlDependency: boolean;
   isReferenceEdge: boolean;
   /** The index of the output tensor of the source node. */
-  outputTensorIndex: number;
+  outputTensorIndex: string;
 }
 
 /**
@@ -75,7 +75,7 @@ export class SlimGraph {
 export interface NormalizedInput {
   name: string;
   /** The index of the output tensor of the source node. */
-  outputTensorIndex: number;
+  outputTensorIndex: string;
   isControlDependency: boolean;
 }
 
@@ -146,8 +146,10 @@ export interface OpNode extends Node {
   // If there is no such node, then this is null.
   owningSeries: string;
   /**
-   * Array of tensor shapes. Null if the number of output tensors is unknown,
-   * otherwise the length will equal the number of output tensors.
+   * Object mapping output channel string to tensor shapes. The output channel
+   * is a string rather than a number because within TensorFlow functions, an
+   * output may be a cross between an output variable and a number (combined
+   * with a colon) such as "foo:2" rather than just a number alone.
    *
    * Each tensor shape is an array of numbers, or null. Details:
    * - null means unknown rank, and therefore entire shape is unknown.
@@ -157,7 +159,7 @@ export interface OpNode extends Node {
    * - [5, -1, 3] means rank-3 tensor of shape is 5x?x3. The size
    *       of the middle dimension is unknown (encoded as -1).
    */
-  outputShapes: TensorShape[];
+  outputShapes: {[key: string]: TensorShape;};
   // The XLA Cluster on which the op ran. Null if it is unknown.
   xlaCluster: string;
   // Whether op is compatible with its assigned device.  Currently, if an op
@@ -365,7 +367,7 @@ export class OpNodeImpl implements OpNode {
   parentNode: Node;
   include: InclusionType;
   owningSeries: string;
-  outputShapes: TensorShape[];
+  outputShapes: {[key: string]: TensorShape;};
   nodeAttributes: {[key: string]: any;};
   xlaCluster: string;
   compatible: boolean;
@@ -738,14 +740,15 @@ export class MetaedgeImpl implements Metaedge {
   private static computeSizeOfEdge(edge: BaseEdge, h: hierarchy.Hierarchy):
       number {
     let opNode = <OpNode> h.node(edge.v);
-    if (opNode.outputShapes == null) {
+    if (!opNode.outputShapes) {
       // No shape information. Asssume a single number. This gives
       // a lower bound for the total size.
       return 1;
     }
     h.hasShapeInfo = true;
+    
     // Sum the sizes of all output tensors.
-    return _(opNode.outputShapes).map(shape => {
+    return _(opNode.outputShapes).mapValues((shape: number[]) => {
       // If the shape is unknown, treat it as 1 when computing
       // total size. This gives a lower bound for the total size.
       if (shape == null) {
@@ -831,7 +834,7 @@ class SeriesNodeImpl implements SeriesNode {
  */
 // tslint:disable-next-line:no-any
 function extractOutputShapes(attr: Array<{key: string, value: any}>):
-    TensorShape[] {
+    {[key: string]: TensorShape;} {
   let result = null;
   // We don't know anything about the output tensors.
   if (!attr) {
@@ -921,7 +924,7 @@ function normalizeInputs(inputs: string[]): NormalizedInput[] {
       normalizedInputs.push({
         name: name,
         outputTensorIndex:
-            end === inputName.length ? 0 : Number(inputName.slice(colon + 1)),
+            end === inputName.length ? '0' : inputName.slice(colon + 1),
         isControlDependency: start
       });
     }
@@ -949,7 +952,7 @@ function addEdgeToGraph(
 }
 
 export function build(
-    rawNodes: tf.graph.proto.NodeDef[], params: BuildParams,
+    graphDef: tf.graph.proto.GraphDef, params: BuildParams,
     tracker: ProgressTracker): Promise<SlimGraph|void> {
   /**
    * A dictionary that maps each in-embedding node name to the node
@@ -969,6 +972,7 @@ export function build(
   let isInEmbeddedPred = getEmbedPredicate(params.inEmbeddingTypes);
   let isOutEmbeddedPred = getEmbedPredicate(params.outEmbeddingTypes);
   let embeddingNodeNames: string[] = [];
+  let rawNodes = graphDef.node;
   /**
    * A list of all the non-embedding node names which appear in the processed
    * list of raw nodes. Here we pre-allocate enough room for all the rawNodes,

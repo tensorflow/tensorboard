@@ -189,7 +189,7 @@ const METADATA_REPEATED_FIELDS: {[attrPath: string]: boolean} = {
  */
 export function parseGraphPbTxt(input: ArrayBuffer):
     Promise<tf.graph.proto.NodeDef[]> {
-  return parsePbtxtFile(input, GRAPH_REPEATED_FIELDS).then(obj => obj['node']);
+  return parsePbtxtFile(input, GRAPH_REPEATED_FIELDS);
 }
 
 /**

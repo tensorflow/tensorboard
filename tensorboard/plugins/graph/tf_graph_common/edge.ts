@@ -125,7 +125,7 @@ export function buildGroup(sceneGroup,
 export function getLabelForBaseEdge(
     baseEdge: BaseEdge, renderInfo: render.RenderGraphInfo): string {
   let node = <OpNode>renderInfo.getNodeByName(baseEdge.v);
-  if (node.outputShapes == null || node.outputShapes.length === 0) {
+  if (node.outputShapes == null || _.isEmpty(node.outputShapes)) {
     return null;
   }
   let shape = node.outputShapes[baseEdge.outputTensorIndex];
