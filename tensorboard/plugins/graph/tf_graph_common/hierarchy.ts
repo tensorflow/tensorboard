@@ -479,6 +479,55 @@ export function joinAndAggregateStats(
   });
 }
 
+export function getIncompatibleOps(hierarchy: Hierarchy,
+                                   hierarchyParams: HierarchyParams) {
+  let nodes: (GroupNode | OpNode)[] = [];
+  let addedSeriesNodes: { [seriesName: string]: SeriesNode } = {};
+  _.each(hierarchy.root.leaves(), leaf => {
+    let node = hierarchy.node(leaf);
+    if (node.type == NodeType.OP) {
+      let opNode = <OpNode> node;
+
+      if (!opNode.compatible) {
+        if (opNode.owningSeries) {
+          if (hierarchyParams &&
+              hierarchyParams.seriesMap[opNode.owningSeries]
+              === tf.graph.SeriesGroupingType.UNGROUP) {
+            // For un-grouped series node, add each node individually
+            nodes.push(opNode)
+          } else {
+            if (!addedSeriesNodes[opNode.owningSeries]) {
+              let series = <SeriesNode>hierarchy.node(opNode.owningSeries);
+              if (series) {
+                addedSeriesNodes[opNode.owningSeries] = series;
+                nodes.push(series);
+              }
+            }
+          }
+        } else {
+          nodes.push(opNode);
+        }
+      }
+
+      // Check the embeddings for invalid operations
+      _.each(opNode.inEmbeddings, (inNode) => {
+        if (!inNode.compatible) {
+          nodes.push(inNode);
+        }
+      });
+
+      _.each(opNode.outEmbeddings, (outNode) => {
+        if (!outNode.compatible) {
+          nodes.push(outNode);
+        }
+      });
+
+    }
+  });
+  return nodes;
+}
+
+
 /**
  * Creates the metanodes in the hierarchical graph and assigns parent-child
  * relationship between them.
@@ -501,6 +550,37 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
         parent.deviceHistogram[node.device] =
             (parent.deviceHistogram[node.device] || 0) + 1;
       }
+
+      // Increment parents appropriate compatibility count
+      if (node.compatible) {
+        parent.compatibilityHistogram.compatible =
+            (parent.compatibilityHistogram.compatible || 0) + 1;
+      } else {
+        parent.compatibilityHistogram.incompatible =
+            (parent.compatibilityHistogram.incompatible || 0) + 1;
+      }
+
+      // Increment capability counts for in and out embeddings
+      _.each(node.inEmbeddings, (inNode) => {
+        if (inNode.compatible) {
+          parent.compatibilityHistogram.compatible =
+              (parent.compatibilityHistogram.compatible || 0) + 1;
+        } else {
+          parent.compatibilityHistogram.incompatible =
+              (parent.compatibilityHistogram.incompatible || 0) + 1;
+        }
+      });
+
+      _.each(node.outEmbeddings, (outNode) => {
+        if (outNode.compatible) {
+          parent.compatibilityHistogram.compatible =
+              (parent.compatibilityHistogram.compatible || 0) + 1;
+        } else {
+          parent.compatibilityHistogram.incompatible =
+              (parent.compatibilityHistogram.incompatible || 0) + 1;
+        }
+      });
+
       if (i === path.length - 1) { break; }
       let name = path[i];
       let child = <Metanode>h.node(name);
@@ -669,6 +749,37 @@ function groupSeries(metanode: Metanode, hierarchy: Hierarchy,
         seriesNode.deviceHistogram[child.device] =
             (seriesNode.deviceHistogram[child.device] || 0) + 1;
       }
+
+      // Increment parents appropriate compatibility count
+      if (child.compatible) {
+        seriesNode.compatibilityHistogram.compatible =
+            (seriesNode.compatibilityHistogram.compatible || 0) + 1;
+      } else {
+        seriesNode.compatibilityHistogram.incompatible =
+            (seriesNode.compatibilityHistogram.incompatible || 0) + 1;
+      }
+
+      // Increment capability counts for in and out embeddings
+      _.each(child.inEmbeddings, (inNode) => {
+        if (inNode.compatible) {
+          seriesNode.compatibilityHistogram.compatible =
+              (seriesNode.compatibilityHistogram.compatible || 0) + 1;
+        } else {
+          seriesNode.compatibilityHistogram.incompatible =
+              (seriesNode.compatibilityHistogram.incompatible || 0) + 1;
+        }
+      });
+
+      _.each(child.outEmbeddings, (outNode) => {
+        if (outNode.compatible) {
+          seriesNode.compatibilityHistogram.compatible =
+              (seriesNode.compatibilityHistogram.compatible || 0) + 1;
+        } else {
+          seriesNode.compatibilityHistogram.incompatible =
+              (seriesNode.compatibilityHistogram.incompatible || 0) + 1;
+        }
+      });
+
       child.parentNode = seriesNode;
       seriesNames[n] = seriesName;
       // Remove now-grouped node from its original parent's metagraph.
