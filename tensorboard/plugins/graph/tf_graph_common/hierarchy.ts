@@ -629,7 +629,8 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
           libraryFunctionNode.metagraph.node(functionNodeName) as Metanode;
       if (childNode.type === tf.graph.NodeType.META) {
         const functionName = functionNodeName.substring(
-            tf.graph.FUNCTION_LIBRARY_NODE.length);
+            tf.graph.FUNCTION_LIBRARY_NODE.length +
+                tf.graph.NAMESPACE_DELIM.length);
         h.libraryFunctions[functionName] = childNode;
       }
     });
