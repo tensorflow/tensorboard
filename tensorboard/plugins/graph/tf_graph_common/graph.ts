@@ -17,6 +17,7 @@ module tf.graph {
 /** Delimiter used in node names to denote namespaces. */
 export const NAMESPACE_DELIM = '/';
 export const ROOT_NAME = '__root__';
+export const FUNCTION_LIBRARY_NODE = '__function_library__';
 
 /** Attribute key used for storing attributes that are too large. */
 export const LARGE_ATTRS_KEY = '_too_large_attrs';
@@ -160,14 +161,19 @@ export interface OpNode extends Node {
    *       of the middle dimension is unknown (encoded as -1).
    */
   outputShapes: {[key: string]: TensorShape;};
+
   // The XLA Cluster on which the op ran. Null if it is unknown.
   xlaCluster: string;
+
   // Whether op is compatible with its assigned device.  Currently, if an op
   // is not specified a device, the device is defaulted to the TPU.
   // Furthermore, all ops are considered compatible for CPU and GPU devices,
   // while a whitelist of compatible ops are specifed for the TPU.
   // Reference: opValid func in op.ts.
   compatible: boolean;
+
+  // Whether this op is part of a library function.
+  isPartOfLibraryFunction: boolean;
 }
 
 export interface BridgeNode extends Node {
@@ -306,6 +312,7 @@ export interface Metanode extends GroupNode {
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
   leaves(): string[];
+  isPartOfLibraryFunction: boolean;
 }
 
 export interface SeriesNode extends GroupNode {
@@ -371,6 +378,7 @@ export class OpNodeImpl implements OpNode {
   nodeAttributes: {[key: string]: any;};
   xlaCluster: string;
   compatible: boolean;
+  isPartOfLibraryFunction: boolean;
 
   /**
    * Constructs a new Op node.
@@ -577,6 +585,7 @@ export class MetanodeImpl implements Metanode {
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
+  isPartOfLibraryFunction: boolean;
 
   /** A label object for meta-nodes in the graph hierarchy */
   constructor(name: string, opt = {}) {
@@ -1008,12 +1017,13 @@ export function build(
           () => {
             let opNodes = new Array<OpNode>(rawNodes.length);
             let index = 0;
-            _.each(rawNodes, rawNode => {
+
+            const processRawNode = rawNode => {
               let opNode = new OpNodeImpl(rawNode);
               if (isInEmbeddedPred(opNode)) {
                 embeddingNodeNames.push(opNode.name);
                 inEmbedding[opNode.name] = opNode;
-                return;
+                return opNode;
               }
 
               if (isOutEmbeddedPred(opNode)) {
@@ -1024,14 +1034,66 @@ export function build(
                   outEmbeddings[inputName] = outEmbeddings[inputName] || [];
                   outEmbeddings[inputName].push(opNode);
                 });
-                return;
+                return opNode;
               }
               // The node is not an embedding, so add it to the names and nodes
               // lists.
               opNodes[index] = opNode;
               nodeNames[index] = opNode.name;
               index++;
-            });
+              return opNode;
+            };
+
+            _.each(rawNodes, processRawNode);
+
+            const processFunction = (func: tf.graph.proto.FunctionDef) => {
+              // Give the function itself a node.
+              const functionNodeName =
+                  FUNCTION_LIBRARY_NODE + NAMESPACE_DELIM + func.signature.name;
+              // Create an op node for the function. Mark it as part of a
+              // function library.
+              processRawNode({
+                name: functionNodeName,
+                input: [],
+                device: '',
+                op: '',
+                attr: [],
+              }).isPartOfLibraryFunction = true;
+
+              // TODO: Make nodes for input args.
+
+              _.each(func.node_def, rawNode => {
+                // Prefix with the name of the function so that the graph
+                // correctly computes the hierarchy.
+                rawNode.name = functionNodeName + '/' + rawNode.name;
+                if (typeof rawNode.input === 'string') {
+                  rawNode.input = [rawNode.input];
+                }
+                const opNode = processRawNode(rawNode);
+                opNode.isPartOfLibraryFunction = true;
+
+                _.each(opNode.inputs, normalizedInput => {
+                  normalizedInput.name =
+                      functionNodeName + '/' + normalizedInput.name;
+                });
+              });
+            };
+
+            if (graphDef.library && graphDef.library.function) {
+              // This graph contains functions.
+              if (graphDef.library.function['length'] >= 0) {
+                // The graph has several functions.
+                _.each(
+                  graphDef.library.function as tf.graph.proto.FunctionDef[],
+                  processFunction);
+              } else {
+                // The graph has 1 function. Unfortunately, in that case, the
+                // function property is a single function (not an array).
+                processFunction(
+                  graphDef.library.function as tf.graph.proto.FunctionDef);
+              }
+            }
+
             opNodes.splice(index);
             nodeNames.splice(index);
             return opNodes;
