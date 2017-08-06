@@ -398,6 +398,155 @@ export class RenderGraphInfo {
     return this.renderedOpNames;
   }
 
+  /**
+   * Clones an op node and adds it to a metagraph. Does nothing if an op node
+   * with the same new name has already been created within the metagraph. This
+   * method is used when duplicating a library function to be injected within a
+   * metanode representing a function call.
+   * @param parentMetanode The parent metanode on which to add the new node.
+   * @param node The op node to clone.
+   * @param newPrefix The prefix string to use in lieu of the one that merely
+   *     indicates that the metanode represents a function defined in the
+   *     library. This prefix should reflect graph hierarchy.
+   * @return The newly created op node (the clone of the original).
+   */
+  private cloneAndAddFunctionOpNode(
+      parentMetanode: Metanode,
+      node: OpNode,
+      newPrefix: string): OpNode {
+    const newName = node.name.replace(
+        tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+    let newOpNode = parentMetanode.metagraph.node(newName);
+    if (newOpNode) {
+      // This node had already been created and added to the graph.
+      return newOpNode as OpNode;
+    }
+
+    // Create a new op node.
+    newOpNode = new OpNodeImpl({
+      name: newName,
+      input: [],
+      device: node.device,
+      op: node.op,
+      attr: _.cloneDeep(node.attr),
+    });
+
+    // Update various properties.
+    newOpNode.cardinality = node.cardinality;
+    newOpNode.include = node.include;
+    newOpNode.outputShapes = _.cloneDeep(node.outputShapes);
+    newOpNode.xlaCluster = node.xlaCluster;
+
+    // Update the inputs of the new node to reflect the new path.
+    newOpNode.inputs = node.inputs.map(normalizedInput => {
+      const newNormalizedInput = _.clone(normalizedInput);
+      newNormalizedInput.name = normalizedInput.name.replace(
+          tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+      return newNormalizedInput;
+    });
+
+    // Add the new op node to the hierarchy and metagraph. Also add it to its
+    // parent metanode.
+    newOpNode.parentNode = parentMetanode;
+    parentMetanode.metagraph.setNode(newOpNode.name, newOpNode);
+    this.hierarchy.setNode(newOpNode.name, newOpNode);
+
+    // Update embeddings.
+    const updateEmbeddingOpNode = embeddingNode => {
+      return this.cloneAndAddFunctionOpNode(
+          parentMetanode, embeddingNode, newPrefix);
+    }
+    newOpNode.inEmbeddings = node.inEmbeddings.map(updateEmbeddingOpNode);
+    newOpNode.outEmbeddings = node.outEmbeddings.map(updateEmbeddingOpNode);
+
+    return newOpNode;
+  }
+
+  /**
+   * Clones a Metanode that represents a function defined in the graph library.
+   * We dynamically inject a clone of a function into a meta graph when the user
+   * expands a function call. We cannot do this at the beginning because the
+   * functions may recursively call themselves or other functions.
+   * @param libraryMetanode The metanode for a library function to clone.
+   * @param newPrefix The prefix string to use in lieu of the one that merely
+   *     indicates that the metanode represents a function defined in the
+   *     library. This prefix should reflect graph hierarchy.
+   */
+  private cloneFunctionLibraryMetanode(
+      libraryMetanode: Metanode, newPrefix: string): Metanode {
+    const newMetanode = tf.graph.createMetanode(
+        libraryMetanode.name.replace(
+            tf.graph.FUNCTION_LIBRARY_NODE, newPrefix));
+
+    // Copy over various properties.
+    newMetanode.depth = libraryMetanode.depth;
+    newMetanode.cardinality = libraryMetanode.cardinality;
+    newMetanode.templateId = libraryMetanode.templateId;
+    newMetanode.opHistogram = _.clone(libraryMetanode.opHistogram);
+    newMetanode.deviceHistogram = _.clone(libraryMetanode.deviceHistogram);
+    newMetanode.hasNonControlEdges = libraryMetanode.hasNonControlEdges;
+    newMetanode.include = libraryMetanode.include;
+    newMetanode.nodeAttributes = _.clone(libraryMetanode.nodeAttributes);
+
+    // Recursively duplicate the children nodes.
+    _.each(libraryMetanode.metagraph.nodes(), nodeName => {
+      const node = libraryMetanode.metagraph.node(nodeName);
+      switch (node.type) {
+        case NodeType.META:
+          // Recursively duplicate the metanode.
+          const newNode = this.cloneFunctionLibraryMetanode(
+              node as Metanode, newPrefix);
+
+          // Add the new node to the graph.
+          newNode.parentNode = newMetanode;
+          newMetanode.metagraph.setNode(newNode.name, newNode);
+          this.hierarchy.setNode(newNode.name, newNode);
+          break;
+        case NodeType.OP:
+          // Duplicate the op node.
+          this.cloneAndAddFunctionOpNode(
+              newMetanode, node as OpNode, newPrefix);
+          break;
+        default:
+          // This logic should never run because the meta graph should only
+          // contain meta and op nodes.
+          console.warn(
+              node.name + ' is oddly neither a metanode nor an opnode.');
+      }
+    });
+
+    // Clone the edges.
+    _.each(libraryMetanode.metagraph.edges(), (edge: Metaedge) => {
+      const newV = edge.v.replace(
+          tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+      const newW = edge.w.replace(
+          tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+
+      const newMetaEdge = new MetaedgeImpl(newV, newW);
+      
+      // Duplicate various properties.
+      newMetaEdge.inbound = edge.inbound;
+      newMetaEdge.numRegularEdges = edge.numRegularEdges;
+      newMetaEdge.numControlEdges = edge.numControlEdges;
+      newMetaEdge.numRefEdges = edge.numRefEdges;
+      newMetaEdge.totalSize = edge.totalSize;
+      if (edge.baseEdgeList) {
+        newMetaEdge.baseEdgeList = edge.baseEdgeList.map(baseEdge => {
+          const newBaseEdge = _.clone(baseEdge);
+          newBaseEdge.v = baseEdge.v.replace(
+              tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+          newBaseEdge.w = baseEdge.w.replace(
+              tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+          return newBaseEdge;
+        });
+      }
+
+      newMetanode.metagraph.setEdge(newV, newW, newMetaEdge);
+    });
+
+    return newMetanode;
+  }
+
   buildSubhierarchy(nodeName: string): void {
     // Terminate if the rendering hierarchy was already constructed
     // for this node.
@@ -417,6 +566,28 @@ export class RenderGraphInfo {
     let renderGroupNodeInfo = <RenderGroupNodeInfo> renderNodeInfo;
     let metagraph = renderGroupNodeInfo.node.metagraph;
     let coreGraph = renderGroupNodeInfo.coreGraph;
+
+    if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
+      // This graph has library functions. Add them to the current
+      // sub-hierarchy if necessary.
+      _.each(metagraph.nodes(), childName => {
+        const originalNode = metagraph.node(childName) as OpNode;
+        const libraryMetanode =
+            this.hierarchy.libraryFunctions[originalNode.op];
+        if (!libraryMetanode) {
+          // This node is not a function call.
+          return;
+        }
+
+        // Replace the node that is a function call with a copy of the function
+        // metagraph.
+        const clonedMetanode = this.cloneFunctionLibraryMetanode(
+            libraryMetanode, originalNode.name);
+        clonedMetanode.parentNode = originalNode.parentNode;
+        metagraph.setNode(originalNode.name, clonedMetanode);
+        this.hierarchy.setNode(originalNode.name, clonedMetanode);
+      });
+    }
 
     // Create render nodes to represent each child from the metagraph. Although
     // these will initially be added to the coreGraph, they may later be
