@@ -172,8 +172,11 @@ export interface OpNode extends Node {
   // Reference: opValid func in op.ts.
   compatible: boolean;
 
-  // Whether this op is part of a library function.
-  isPartOfLibraryFunction: boolean;
+  // Whether this op is an input for a library function.
+  isFunctionInput: boolean;
+
+  // Whether this op is an input for a library function.
+  isFunctionOutput: boolean;
 }
 
 export interface BridgeNode extends Node {
@@ -312,7 +315,8 @@ export interface Metanode extends GroupNode {
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
   leaves(): string[];
-  isPartOfLibraryFunction: boolean;
+  isFunctionInput: boolean;
+  isFunctionOutput: boolean;
 }
 
 export interface SeriesNode extends GroupNode {
@@ -378,7 +382,8 @@ export class OpNodeImpl implements OpNode {
   nodeAttributes: {[key: string]: any;};
   xlaCluster: string;
   compatible: boolean;
-  isPartOfLibraryFunction: boolean;
+  isFunctionInput: boolean;
+  isFunctionOutput: boolean;
 
   /**
    * Constructs a new Op node.
@@ -585,7 +590,8 @@ export class MetanodeImpl implements Metanode {
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
-  isPartOfLibraryFunction: boolean;
+  isFunctionInput: boolean;
+  isFunctionOutput: boolean;
 
   /** A label object for meta-nodes in the graph hierarchy */
   constructor(name: string, opt = {}) {
@@ -1058,23 +1064,69 @@ export function build(
                 device: '',
                 op: '',
                 attr: [],
-              }).isPartOfLibraryFunction = true;
+              });
 
-              // TODO: Make nodes for input args.
+              // Makes an OpNode out of either an input_arg or output_arg of a
+              // library function.
+              const processInput = (arg) => {
+                const opNode = processRawNode({
+                  name: functionNodeName + NAMESPACE_DELIM + arg.name,
+                  input: [],
+                  device: '',
+                  op: 'input_arg',
+                  attr: [{
+                    key: 'T',
+                    value: {
+                      type: arg.type,
+                    },
+                  }],
+                });
+                opNode.isFunctionInput = true;
+              };
+
+              // Make nodes for input args of the function. Unfortunately, the
+              // pbtxt configuration language is not rich enough to
+              // differentiate between an array with 1 item vs 1 object property.
+              if (func.signature.input_arg['name']) {
+                // There is only 1 input arg.
+                processInput(func.signature.input_arg);
+              } else {
+                // There are several input args.
+                _.each(func.signature.input_arg, processInput);
+              }
+
+              // Make nodes for output args of the function. Track the names of
+              // output args within the keys of this object. Unlike the
+              // input_args, the output_args are already defined within the
+              // node_defs of the library function.
+              const outputArgNames = {};
+              const processOutput = arg => {
+                outputArgNames[arg.name] = 1;
+              };
+              if (func.signature.output_arg['name']) {
+                // There is only 1 output arg.
+                processOutput(func.signature.output_arg);
+              } else {
+                // There are several output args.
+                _.each(func.signature.output_arg, processOutput);
+              }
 
               _.each(func.node_def, rawNode => {
                 // Prefix with the name of the function so that the graph
-                // correctly computes the hierarchy.
+                // correctly computes the hierarchy (and makes metanodes).
                 rawNode.name = functionNodeName + '/' + rawNode.name;
                 if (typeof rawNode.input === 'string') {
                   rawNode.input = [rawNode.input];
                 }
                 const opNode = processRawNode(rawNode);
-                opNode.isPartOfLibraryFunction = true;
+                if (outputArgNames[rawNode.name]) {
+                  // Mark the node as one of the outputs of the function.
+                  opNode.isFunctionOutput = true;
+                }
 
                 _.each(opNode.inputs, normalizedInput => {
                   normalizedInput.name =
-                      functionNodeName + '/' + normalizedInput.name;
+                      functionNodeName + NAMESPACE_DELIM + normalizedInput.name;
                 });
               });
             };
@@ -1087,8 +1139,8 @@ export function build(
                   graphDef.library.function as tf.graph.proto.FunctionDef[],
                   processFunction);
               } else {
-                // The graph has 1 function. Unfortunately, in that case, the
-                // function property is a single function (not an array).
+                // The graph has 1 function. In that case, the function property
+                // is a single function (not an array).
                 processFunction(
                   graphDef.library.function as tf.graph.proto.FunctionDef);
               }
