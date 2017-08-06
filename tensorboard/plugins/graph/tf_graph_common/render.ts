@@ -412,10 +412,11 @@ export class RenderGraphInfo {
    */
   private cloneAndAddFunctionOpNode(
       parentMetanode: Metanode,
+      libraryFunctionNodeName: string,
       node: OpNode,
       newPrefix: string): OpNode {
     const newName = node.name.replace(
-        tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+        libraryFunctionNodeName, newPrefix);
     let newOpNode = parentMetanode.metagraph.node(newName);
     if (newOpNode) {
       // This node had already been created and added to the graph.
@@ -441,7 +442,7 @@ export class RenderGraphInfo {
     newOpNode.inputs = node.inputs.map(normalizedInput => {
       const newNormalizedInput = _.clone(normalizedInput);
       newNormalizedInput.name = normalizedInput.name.replace(
-          tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+          libraryFunctionNodeName, newPrefix);
       return newNormalizedInput;
     });
 
@@ -454,7 +455,7 @@ export class RenderGraphInfo {
     // Update embeddings.
     const updateEmbeddingOpNode = embeddingNode => {
       return this.cloneAndAddFunctionOpNode(
-          parentMetanode, embeddingNode, newPrefix);
+          parentMetanode, libraryFunctionNodeName, embeddingNode, newPrefix);
     }
     newOpNode.inEmbeddings = node.inEmbeddings.map(updateEmbeddingOpNode);
     newOpNode.outEmbeddings = node.outEmbeddings.map(updateEmbeddingOpNode);
@@ -468,15 +469,18 @@ export class RenderGraphInfo {
    * expands a function call. We cannot do this at the beginning because the
    * functions may recursively call themselves or other functions.
    * @param libraryMetanode The metanode for a library function to clone.
+   * @param oldPrefix The old prefix to replace (that just reflects how this
+   *     node is for a library function).
    * @param newPrefix The prefix string to use in lieu of the one that merely
    *     indicates that the metanode represents a function defined in the
    *     library. This prefix should reflect graph hierarchy.
    */
   private cloneFunctionLibraryMetanode(
-      libraryMetanode: Metanode, newPrefix: string): Metanode {
+      libraryMetanode: Metanode,
+      oldPrefix: string,
+      newPrefix: string): Metanode {
     const newMetanode = tf.graph.createMetanode(
-        libraryMetanode.name.replace(
-            tf.graph.FUNCTION_LIBRARY_NODE, newPrefix));
+        libraryMetanode.name.replace(oldPrefix, newPrefix));
 
     // Copy over various properties.
     newMetanode.depth = libraryMetanode.depth;
@@ -495,7 +499,7 @@ export class RenderGraphInfo {
         case NodeType.META:
           // Recursively duplicate the metanode.
           const newNode = this.cloneFunctionLibraryMetanode(
-              node as Metanode, newPrefix);
+              node as Metanode, oldPrefix, newPrefix);
 
           // Add the new node to the graph.
           newNode.parentNode = newMetanode;
@@ -505,7 +509,7 @@ export class RenderGraphInfo {
         case NodeType.OP:
           // Duplicate the op node.
           this.cloneAndAddFunctionOpNode(
-              newMetanode, node as OpNode, newPrefix);
+              newMetanode, oldPrefix, node as OpNode, newPrefix);
           break;
         default:
           // This logic should never run because the meta graph should only
@@ -517,10 +521,8 @@ export class RenderGraphInfo {
 
     // Clone the edges.
     _.each(libraryMetanode.metagraph.edges(), (edge: Metaedge) => {
-      const newV = edge.v.replace(
-          tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
-      const newW = edge.w.replace(
-          tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+      const newV = edge.v.replace(oldPrefix, newPrefix);
+      const newW = edge.w.replace(oldPrefix, newPrefix);
 
       const newMetaEdge = new MetaedgeImpl(newV, newW);
       
@@ -533,10 +535,8 @@ export class RenderGraphInfo {
       if (edge.baseEdgeList) {
         newMetaEdge.baseEdgeList = edge.baseEdgeList.map(baseEdge => {
           const newBaseEdge = _.clone(baseEdge);
-          newBaseEdge.v = baseEdge.v.replace(
-              tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
-          newBaseEdge.w = baseEdge.w.replace(
-              tf.graph.FUNCTION_LIBRARY_NODE, newPrefix);
+          newBaseEdge.v = baseEdge.v.replace(oldPrefix, newPrefix);
+          newBaseEdge.w = baseEdge.w.replace(oldPrefix, newPrefix);
           return newBaseEdge;
         });
       }
@@ -574,6 +574,7 @@ export class RenderGraphInfo {
         const originalNode = metagraph.node(childName) as OpNode;
         const libraryMetanode =
             this.hierarchy.libraryFunctions[originalNode.op];
+        console.log('childName', childName, metagraph, originalNode);
         if (!libraryMetanode) {
           // This node is not a function call.
           return;
@@ -582,7 +583,8 @@ export class RenderGraphInfo {
         // Replace the node that is a function call with a copy of the function
         // metagraph.
         const clonedMetanode = this.cloneFunctionLibraryMetanode(
-            libraryMetanode, originalNode.name);
+            libraryMetanode, libraryMetanode.name, originalNode.name);
+        console.log(clonedMetanode);
         clonedMetanode.parentNode = originalNode.parentNode;
         metagraph.setNode(originalNode.name, clonedMetanode);
         this.hierarchy.setNode(originalNode.name, clonedMetanode);

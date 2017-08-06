@@ -635,8 +635,6 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
       }
     });
   }
-
-  console.log(h.libraryFunctions);
 };
 
 /**
