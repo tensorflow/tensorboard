@@ -721,12 +721,14 @@ class _TransactionConnection(Connection):
 class _TransactionCursor(Cursor):
   """PEP 249 Cursor object when inside TensorBoard transactions."""
 
-  FORBIDDEN_PATTERN = re.compile(r'^\s*(ALTER|CREATE|DROP|VACUUM)\b', re.I)
-  WRITE_QUERY_PATTERN = re.compile(r'^\s*(DELETE|INSERT|REPLACE|UPDATE) ', re.I)
+  FORBIDDEN_PATTERN = re.compile(
+      r'^\s*(?:ALTER|CREATE|DROP|VACUUM)\b', re.I)
+  WRITE_QUERY_PATTERN = re.compile(
+      r'^\s*(?:DELETE|INSERT|REPLACE|UPDATE)\b', re.I)
 
   def __init__(self, connection):
     super(_TransactionCursor, self).__init__(connection)
-    self.connection = connection  # assign again for type inference
+    self.connection = connection  # assign again for IDE type inference
 
   def execute(self, sql, parameters=()):
     _check_sql_allowed_in_transaction(sql)
