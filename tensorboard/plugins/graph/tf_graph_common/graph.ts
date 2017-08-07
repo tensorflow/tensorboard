@@ -172,11 +172,13 @@ export interface OpNode extends Node {
   // Reference: opValid func in op.ts.
   compatible: boolean;
 
-  // Whether this op is an input for a library function.
-  isFunctionInput: boolean;
+  // This field is only defined if the op node represents an input_arg to a
+  // library function. It is the index of the input_arg.
+  functionInputIndex: number;
 
-  // Whether this op is an input for a library function.
-  isFunctionOutput: boolean;
+  // This field is only defined if the op node represents an output_arg of a
+  // library function. It is the index of the output_arg.
+  functionOutputIndex: number;
 }
 
 export interface BridgeNode extends Node {
@@ -315,8 +317,6 @@ export interface Metanode extends GroupNode {
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
   leaves(): string[];
-  isFunctionInput: boolean;
-  isFunctionOutput: boolean;
 }
 
 export interface SeriesNode extends GroupNode {
@@ -382,8 +382,14 @@ export class OpNodeImpl implements OpNode {
   nodeAttributes: {[key: string]: any;};
   xlaCluster: string;
   compatible: boolean;
-  isFunctionInput: boolean;
-  isFunctionOutput: boolean;
+
+  // This field is only defined if the op node represents an input_arg to a
+  // library function. It is the index of the input_arg.
+  functionInputIndex: number;
+  
+  // This field is only defined if the op node represents an output_arg of a
+  // library function. It is the index of the output_arg.
+  functionOutputIndex: number;
 
   /**
    * Constructs a new Op node.
@@ -590,8 +596,6 @@ export class MetanodeImpl implements Metanode {
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
-  isFunctionInput: boolean;
-  isFunctionOutput: boolean;
 
   /** A label object for meta-nodes in the graph hierarchy */
   constructor(name: string, opt = {}) {
@@ -1066,8 +1070,9 @@ export function build(
                 attr: [],
               });
 
-              // Makes an OpNode out of either an input_arg or output_arg of a
-              // library function.
+              // Makes an OpNode out of either an input_arg of a library
+              // function.
+              let currentInputIndex = 0;
               const processInput = (arg) => {
                 const opNode = processRawNode({
                   name: functionNodeName + NAMESPACE_DELIM + arg.name,
@@ -1081,7 +1086,8 @@ export function build(
                     },
                   }],
                 });
-                opNode.isFunctionInput = true;
+                opNode.functionInputIndex = currentInputIndex;
+                currentInputIndex++;
               };
 
               // Make nodes for input args of the function. Unfortunately, the
@@ -1111,6 +1117,7 @@ export function build(
                 _.each(func.signature.output_arg, processOutput);
               }
 
+              let currentOutputIndex = 0;
               _.each(func.node_def, rawNode => {
                 // Prefix with the name of the function so that the graph
                 // correctly computes the hierarchy (and makes metanodes).
@@ -1121,7 +1128,8 @@ export function build(
                 const opNode = processRawNode(rawNode);
                 if (outputArgNames[rawNode.name]) {
                   // Mark the node as one of the outputs of the function.
-                  opNode.isFunctionOutput = true;
+                  opNode.functionOutputIndex = currentOutputIndex;
+                  currentOutputIndex++;
                 }
 
                 _.each(opNode.inputs, normalizedInput => {

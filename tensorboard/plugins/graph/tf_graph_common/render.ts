@@ -437,6 +437,8 @@ export class RenderGraphInfo {
     newOpNode.include = node.include;
     newOpNode.outputShapes = _.cloneDeep(node.outputShapes);
     newOpNode.xlaCluster = node.xlaCluster;
+    newOpNode.functionInputIndex = node.functionInputIndex;
+    newOpNode.functionOutputIndex = node.functionOutputIndex;
 
     // Update the inputs of the new node to reflect the new path.
     newOpNode.inputs = node.inputs.map(normalizedInput => {
@@ -468,6 +470,8 @@ export class RenderGraphInfo {
    * We dynamically inject a clone of a function into a meta graph when the user
    * expands a function call. We cannot do this at the beginning because the
    * functions may recursively call themselves or other functions.
+   * @param opNodeToReplace The op node in the graph to replace with a new
+   *     (expandable) metanode that visualizes the innards of a function.
    * @param libraryMetanode The metanode for a library function to clone.
    * @param oldPrefix The old prefix to replace (that just reflects how this
    *     node is for a library function).
@@ -476,6 +480,7 @@ export class RenderGraphInfo {
    *     library. This prefix should reflect graph hierarchy.
    */
   private cloneFunctionLibraryMetanode(
+      opNodeToReplace: OpNode,
       libraryMetanode: Metanode,
       oldPrefix: string,
       newPrefix: string): Metanode {
@@ -499,7 +504,7 @@ export class RenderGraphInfo {
         case NodeType.META:
           // Recursively duplicate the metanode.
           const newNode = this.cloneFunctionLibraryMetanode(
-              node as Metanode, oldPrefix, newPrefix);
+              opNodeToReplace, node as Metanode, oldPrefix, newPrefix);
 
           // Add the new node to the graph.
           newNode.parentNode = newMetanode;
@@ -508,8 +513,38 @@ export class RenderGraphInfo {
           break;
         case NodeType.OP:
           // Duplicate the op node.
-          this.cloneAndAddFunctionOpNode(
+          const newOpNode = this.cloneAndAddFunctionOpNode(
               newMetanode, oldPrefix, node as OpNode, newPrefix);
+          if (_.isNumber(newOpNode.functionInputIndex)) {
+            // This node represents an input_arg of the library function. Give
+            // it edges so that its bridge edges are created correctly.
+            let inputIndex = newOpNode.functionInputIndex;
+            let newInput = opNodeToReplace.inputs[inputIndex];
+            while (newInput.isControlDependency) {
+              // Ignore control dependencies - they are not assigned to
+              // input_args.
+              inputIndex++;
+              newInput = opNodeToReplace.inputs[inputIndex];
+            }
+            // Clone the normalized input object.
+            newOpNode.inputs.push(_.clone(newInput));
+
+            // Update values in the corresponding edge in the high-level
+            // metagraph.
+            const originalMetaEdges = this.hierarchy.getPredecessors(
+                opNodeToReplace.name);
+            const originalMetaEdge = originalMetaEdges.regular[
+                newOpNode.functionInputIndex];
+
+            // Also change any base edges that point into the original node to
+            // point to the input arg within the function. These are used to
+            // make bridge edges.
+            _.each(originalMetaEdge.baseEdgeList, edge => {
+              if (edge.w === opNodeToReplace.name) {
+                edge.w = newOpNode.name;
+              }
+            });
+          }
           break;
         default:
           // This logic should never run because the meta graph should only
@@ -520,7 +555,9 @@ export class RenderGraphInfo {
     });
 
     // Clone the edges.
-    _.each(libraryMetanode.metagraph.edges(), (edge: Metaedge) => {
+    _.each(libraryMetanode.metagraph.edges(),
+        (edgeObject: graphlib.EdgeObject) => {
+      const edge = libraryMetanode.metagraph.edge(edgeObject);
       const newV = edge.v.replace(oldPrefix, newPrefix);
       const newW = edge.w.replace(oldPrefix, newPrefix);
 
@@ -532,6 +569,7 @@ export class RenderGraphInfo {
       newMetaEdge.numControlEdges = edge.numControlEdges;
       newMetaEdge.numRefEdges = edge.numRefEdges;
       newMetaEdge.totalSize = edge.totalSize;
+      console.log('edge.baseEdgeList', edge, edge.baseEdgeList);
       if (edge.baseEdgeList) {
         newMetaEdge.baseEdgeList = edge.baseEdgeList.map(baseEdge => {
           const newBaseEdge = _.clone(baseEdge);
@@ -541,7 +579,13 @@ export class RenderGraphInfo {
         });
       }
 
-      newMetanode.metagraph.setEdge(newV, newW, newMetaEdge);
+      // Set the direction of the edge based on whether it is inbound. The edge
+      // is inbound if its destination is within the metagraph.
+      if (newMetanode.metagraph.node(newW)) {
+        newMetanode.metagraph.setEdge(newV, newW, newMetaEdge);
+      } else {
+        newMetanode.metagraph.setEdge(newW, newV, newMetaEdge);
+      }
     });
 
     return newMetanode;
@@ -574,7 +618,6 @@ export class RenderGraphInfo {
         const originalNode = metagraph.node(childName) as OpNode;
         const libraryMetanode =
             this.hierarchy.libraryFunctions[originalNode.op];
-        console.log('childName', childName, metagraph, originalNode);
         if (!libraryMetanode) {
           // This node is not a function call.
           return;
@@ -583,8 +626,10 @@ export class RenderGraphInfo {
         // Replace the node that is a function call with a copy of the function
         // metagraph.
         const clonedMetanode = this.cloneFunctionLibraryMetanode(
-            libraryMetanode, libraryMetanode.name, originalNode.name);
-        console.log(clonedMetanode);
+            originalNode,
+            libraryMetanode,
+            libraryMetanode.name,
+            originalNode.name);
         clonedMetanode.parentNode = originalNode.parentNode;
         metagraph.setNode(originalNode.name, clonedMetanode);
         this.hierarchy.setNode(originalNode.name, clonedMetanode);
