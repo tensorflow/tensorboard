@@ -569,7 +569,6 @@ export class RenderGraphInfo {
       newMetaEdge.numControlEdges = edge.numControlEdges;
       newMetaEdge.numRefEdges = edge.numRefEdges;
       newMetaEdge.totalSize = edge.totalSize;
-      console.log('edge.baseEdgeList', edge, edge.baseEdgeList);
       if (edge.baseEdgeList) {
         newMetaEdge.baseEdgeList = edge.baseEdgeList.map(baseEdge => {
           const newBaseEdge = _.clone(baseEdge);
