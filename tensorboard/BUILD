@@ -213,6 +213,7 @@ py_test(
         ":test_util",
         ":util",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 

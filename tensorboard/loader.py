@@ -677,10 +677,10 @@ class Progress(object):
 @util.closeable
 @functools.total_ordering
 @six.python_2_unicode_compatible
-class EventLog(object):
+class EventLogReader(object):
   """Helper class for reading from event log files.
 
-  This class is wrapper around BufferedRecordReader that operates on
+  This class is a wrapper around BufferedRecordReader that operates on
   record files containing tf.Event protocol buffers.
 
   Fields:
@@ -813,13 +813,13 @@ def get_event_logs(directory):
     List of EventLog objects, ordered by directory name and timestamp.
 
   :type directory: str
-  :rtype: list[EventLog]
+  :rtype: list[EventLogReader]
   """
   logs = []
   for dirname, _, filenames in tf.gfile.Walk(directory):
     for filename in filenames:
       if is_event_log_file(filename):
-        logs.append(EventLog(os.path.join(dirname, filename)))
+        logs.append(EventLogReader(os.path.join(dirname, filename)))
   logs.sort()
   return logs
 
