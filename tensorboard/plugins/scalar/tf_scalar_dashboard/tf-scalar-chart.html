@@ -35,7 +35,7 @@ limitations under the License.
     <tf-card-heading tag="[[tag]]"></tf-card-heading>
     <div id="chart-and-spinner-container">
       <vz-line-chart
-        x-components="[[_xComponents]]"
+        x-components-creation-method="[[_xComponentsCreationMethod]]"
         color-scale="[[_runsColorScale]]"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
@@ -206,11 +206,15 @@ limitations under the License.
          * datum if it is present or calculating from "wall_time" if it isn't.
          * @type {X_TYPE}
          */
-        xType: String,
+        xType: {
+          type: String,
+          notify: true,
+        },
 
-        /** @type {ChartHelpers.XComponents} */ _xComponents: {
+        /** @type {() => ChartHelpers.XComponents} */
+        _xComponentsCreationMethod: {
           type: Object,
-          computed: '_computeXComponents(xType)',
+          computed: '_computeXComponentsCreationMethod(xType)',
         },
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
@@ -428,8 +432,11 @@ limitations under the License.
       _jsonUrl(run) {
         return this._scalarUrl(this.tag, run);
       },
-      _computeXComponents(xType) {
-        return ChartHelpers.getXComponents(xType);
+      _computeXComponentsCreationMethod(xType) {
+        if (!xType) {
+          return null;
+        }
+        return () => ChartHelpers.getXComponents(xType);
       },
     });
   </script>

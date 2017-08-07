@@ -68,9 +68,13 @@ Polymer({
     smoothingWeight: {type: Number, value: 0.6},
 
     /**
-     * The way to display the X values. A ChartHelpers.XComponents object.
+     * A function to create a ChartHelpers.XComponents and accepts no arguments.
+     * We accept a function for creating an XComponents object instead of such
+     * an object itself because the Axis must be made right when we make the
+     * LineChart object, lest we use a previously destroyed Axis. See the async
+     * logic below that uses this property.
      */
-    xComponents: Object,
+    xComponentsCreationMethod: Object,
 
     /**
      * The scale for the y-axis. Allows:
@@ -121,7 +125,7 @@ Polymer({
     _makeChartAsyncCallbackId: {type: Number, value: null}
   },
   observers: [
-    '_makeChart(xComponents, yScaleType, colorScale, _attached)',
+    '_makeChart(xComponentsCreationMethod, yScaleType, colorScale, _attached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -189,7 +193,8 @@ Polymer({
     this.scopeSubtree(this.$.tooltip, true);
     this.scopeSubtree(this.$.chartdiv, true);
   },
-  _makeChart: function(xComponents, yScaleType, colorScale, _attached) {
+  _makeChart: function(
+      xComponentsCreationMethod, yScaleType, colorScale, _attached) {
     if (this._makeChartAsyncCallbackId !== null) {
       this.cancelAsync(this._makeChartAsyncCallbackId);
       this._makeChartAsyncCallbackId = null;
@@ -197,10 +202,11 @@ Polymer({
 
     this._makeChartAsyncCallbackId = this.async(function() {
       this._makeChartAsyncCallbackId = null;
-      if (!this._attached) return;
+      if (!this._attached || !this.xComponentsCreationMethod) return;
       if (this._chart) this._chart.destroy();
       var tooltip = d3.select(this.$.tooltip);
-      var chart = new LineChart(xComponents, yScaleType, colorScale, tooltip);
+      var chart = new LineChart(
+          this.xComponentsCreationMethod(), yScaleType, colorScale, tooltip);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
