@@ -206,7 +206,7 @@ Polymer({
       if (this._chart) this._chart.destroy();
       var tooltip = d3.select(this.$.tooltip);
       var chart = new LineChart(
-          this.xComponentsCreationMethod(), yScaleType, colorScale, tooltip);
+          this.xComponentsCreationMethod, yScaleType, colorScale, tooltip);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
@@ -283,7 +283,7 @@ class LineChart {
   private targetSVG: d3.Selection<any, any, any, any>;
 
   constructor(
-      xComponents: ChartHelpers.XComponents,
+      xComponentsCreationMethod: () => ChartHelpers.XComponents,
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>) {
@@ -300,14 +300,16 @@ class LineChart {
     // need to do a single bind, so we can deregister the callback from
     // old Plottable.Datasets. (Deregistration is done by identity checks.)
     this.onDatasetChanged = this._onDatasetChanged.bind(this);
-    this.buildChart(xComponents, yScaleType);
+    this.buildChart(xComponentsCreationMethod, yScaleType);
   }
 
   private buildChart(
-      xComponents: ChartHelpers.XComponents, yScaleType: string) {
+      xComponentsCreationMethod: () => ChartHelpers.XComponents,
+      yScaleType: string) {
     if (this.outer) {
       this.outer.destroy();
     }
+    const xComponents = xComponentsCreationMethod();
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;
