@@ -17,6 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
+import functools
 import itertools
 import os
 import sqlite3
@@ -24,7 +25,10 @@ import sqlite3
 import tensorflow as tf
 
 from tensorboard import db
+from tensorboard import util
 from tensorboard import test_util
+
+db.TESTING_MODE = True
 
 
 class DbTestCase(test_util.TestCase):
@@ -32,26 +36,100 @@ class DbTestCase(test_util.TestCase):
   def __init__(self, *args, **kwargs):
     super(DbTestCase, self).__init__(*args, **kwargs)
     self._db_connection_provider = None
+    self.clock = test_util.FakeClock()
+    self.sleep = test_util.FakeSleep(self.clock)
+    self.Retrier = functools.partial(util.Retrier, sleep=self.sleep)
+    self.tbase = db.TensorBase(db_connection_provider=self.connect,
+                               retrier_factory=self.Retrier)
 
   def setUp(self):
     super(DbTestCase, self).setUp()
     db_path = os.path.join(self.get_temp_dir(), 'DbTestCase.sqlite')
-    self._db_connection_provider = lambda: sqlite3.connect(db_path)
-    with contextlib.closing(self._db_connection_provider()) as conn:
-      with conn:
-        schema = db.Schema(conn)
-        schema.create_tables()
-        schema.create_indexes()
+    self._db_connection_provider = (
+        lambda: db.Connection(sqlite3.connect(db_path, isolation_level=None)))
+    with contextlib.closing(self.connect()) as db_conn:
+      schema = db.Schema(db_conn)
+      schema.create_tables()
+      schema.create_indexes()
+
+  def connect(self):
+    return self._db_connection_provider()
 
 
-class PluginTest(DbTestCase):
+class PluginsTest(DbTestCase):
 
   def testGetPluginIds(self):
-    tbase = db.TensorBase(self._db_connection_provider)
-    self.assertEqual({'b': 1}, tbase.get_plugin_ids(['b']))
-    self.assertEqual({'a': 2}, tbase.get_plugin_ids(['a']))
-    self.assertEqual({'b': 1}, tbase.get_plugin_ids(['b']))
-    self.assertEqual({'b': 1, 'c': 3}, tbase.get_plugin_ids(['c', 'b']))
+    self.assertEqual({'b': 1}, self.tbase.get_plugin_ids(['b']))
+    self.assertEqual({'a': 2}, self.tbase.get_plugin_ids(['a']))
+    self.assertEqual({'b': 1}, self.tbase.get_plugin_ids(['b']))
+    self.assertEqual({'b': 1, 'c': 3}, self.tbase.get_plugin_ids(['c', 'b']))
+
+
+class TransactionTest(DbTestCase):
+
+  def setUp(self):
+    super(TransactionTest, self).setUp()
+    with contextlib.closing(self.connect()) as db_conn:
+      with contextlib.closing(db_conn.cursor()) as c:
+        c.execute('CREATE TABLE IF NOT EXISTS Numbers (a INTEGER, b INTEGER)')
+
+  def testWritesNotVisibleUntilNextTransaction(self):
+
+    def first(db_conn):
+      db_conn.execute('INSERT INTO Numbers (a, b) VALUES (7, 23)')
+
+    def second(db_conn):
+      with contextlib.closing(db_conn.cursor()) as c:
+        c.execute('SELECT b FROM Numbers WHERE a = 7')
+        self.assertEqual(23, c.fetchone()[0])
+        c.execute('UPDATE Numbers SET b = 24 WHERE a = 7')
+      with contextlib.closing(db_conn.cursor()) as c:
+        c.execute('SELECT b FROM Numbers WHERE a = 7')
+        self.assertEqual(23, c.fetchone()[0])
+
+    def third(db_conn):
+      c = db_conn.execute('SELECT b FROM Numbers WHERE a = 7')
+      self.assertEqual(24, c.fetchone()[0])
+
+    self.tbase.run_transaction(first)
+    self.tbase.run_transaction(second)
+    self.tbase.run_transaction(third)
+
+  def testWritesAreOrdered(self):
+
+    def first(db_conn):
+      db_conn.execute('INSERT INTO Numbers (a, b) VALUES (7, 23)')
+      db_conn.execute('UPDATE Numbers SET b = 24 WHERE a = 7')
+      db_conn.execute('UPDATE Numbers SET b = 25 WHERE a = 7')
+
+    def second(db_conn):
+      c = db_conn.execute('SELECT b FROM Numbers WHERE a = 7')
+      self.assertEqual(25, c.fetchone()[0])
+
+    self.tbase.run_transaction(first)
+    self.tbase.run_transaction(second)
+
+  def testRollback(self):
+
+    def first(db_conn):
+      db_conn.execute('INSERT INTO Numbers (a, b) VALUES (7, 23)')
+
+    def second(db_conn):
+      db_conn.execute('UPDATE Numbers SET b = 24 WHERE a = 7')
+      raise Exception()
+
+    def third(db_conn):
+      c = db_conn.execute('SELECT b FROM Numbers WHERE a = 7')
+      self.assertEqual(23, c.fetchone()[0])
+
+    self.tbase.run_transaction(first)
+    with self.assertRaises(Exception):
+      self.tbase.run_transaction(second)
+    self.tbase.run_transaction(third)
+
+  def testTransactionalVacuum_isForbidden(self):
+    with self.assertRaises(ValueError):
+      self.tbase.run_transaction(lambda c: c.execute('vacuum'))
 
 
 class IdTest(test_util.TestCase):
