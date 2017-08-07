@@ -19,8 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import gzip
 import json
 import os
+import six
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_asset_util
@@ -50,11 +52,11 @@ class ProfilePluginTest(tf.test.TestCase):
           continue
         tool_file = os.path.join(run_dir, profile_plugin.TOOLS[tool])
         if tool == 'trace_viewer':
-          data = json.dumps(dict(run=run))
+          with gzip.open(tool_file, 'wb') as f:
+            f.write(six.b(json.dumps(dict(run=run))))
         else:
-          data = tool
-        with open(tool_file, 'w') as f:
-          f.write(data)
+          with open(tool_file, 'w') as f:
+            f.write(tool)
     with open(os.path.join(plugin_logdir, 'noise'), 'w') as f:
       f.write('Not a dir, not a run.')
 
@@ -74,7 +76,9 @@ class ProfilePluginTest(tf.test.TestCase):
     self.assertItemsEqual(runs['empty'], [])
 
   def testData(self):
-    trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer'))
+    gzipped_json = self.plugin.data_impl('foo', 'trace_viewer')
+    json_bytes = gzip.GzipFile(fileobj=six.BytesIO(gzipped_json)).read()
+    trace = json.loads(json_bytes.decode())
     self.assertEqual(trace, dict(run='foo'))
 
     # Invalid tool/run.
