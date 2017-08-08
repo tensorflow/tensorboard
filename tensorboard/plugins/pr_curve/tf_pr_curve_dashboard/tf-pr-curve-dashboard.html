@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-pr-curve-card.html">
+<link rel="import" href="tf-step-selector.html">
 
 <!--
   A frontend that displays a set of precision-recall curves. Each PR curve is
@@ -71,6 +72,11 @@ limitations under the License.
           >
             <iron-icon prefix icon="search"></iron-icon>
           </paper-input>
+          <template is="dom-if" if="[[_shouldShowStepsSlider(_stepsForSlider)]]">
+            <tf-step-selector
+              current-step="{{_step}}"
+              steps="[[_stepsForSlider]]"></tf-step-selector>
+          </template>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
               <tf-paginated-view
@@ -131,6 +137,19 @@ limitations under the License.
           type: Object,
           value: () => new RequestManager(),
         },
+        _step: {
+          type: Number,
+          value: 0,
+          notify: true,
+        },
+        // An array of steps (numbers) to show in the slider for the dashboard.
+        _stepsForSlider: {
+          type: Array,
+          notify: true,
+        },
+      },
+      listeners: {
+        'data-updated': '_handleNewRunToDataMapping',
       },
       ready() {
         this.reload();
@@ -159,6 +178,27 @@ limitations under the License.
       },
       _makeCategories(runToTag, selectedRuns, tagFilter) {
         return categorizeTags(runToTag, selectedRuns, tagFilter);
+      },
+      _handleNewRunToDataMapping(e) {
+        const runToData = e.detail.runToData;
+        console.log('_handleNewRunToDataMapping', runToData);
+        _.forOwn(runToData, (entries, run) => {
+          if (!entries.length) {
+            return;
+          }
+
+          if (entries[entries.length - 1].step >
+              this._stepsForSlider[this._stepsForSlider.length - 1]) {
+            // We have encountered a new step greater than any that we have seen
+            // before. Update the slider so the user can see PR curves at that
+            // step.
+            this.set('_stepsForSlider', entries.map(entry => entry.step));
+          }
+        });
+      },
+      _shouldShowStepsSlider(stepsForSlider) {
+        // Only show the slider if we have more than 1 step.
+        return stepsForSlider && stepsForSlider.length;
       },
     });
   </script>

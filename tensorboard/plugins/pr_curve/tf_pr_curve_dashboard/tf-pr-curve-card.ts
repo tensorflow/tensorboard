@@ -50,7 +50,7 @@ Polymer({
     // we actually want the value itself to be a function.
     _xComponentsCreationMethod: {
       type: Object,
-      value: () => ((): ChartHelpers.XComponents => {
+      value: () => (() => {
         const scale = new Plottable.Scales.Linear();
         return {
           scale: scale,
@@ -110,6 +110,9 @@ Polymer({
           });
         }
         this.$$('vz-line-chart').setSeriesData(run, seriesData);
+      });
+      this.fire('data-updated', {
+        'runToData': runToData,
       });
     });
     this.requestManager.request(url).then(updateData);

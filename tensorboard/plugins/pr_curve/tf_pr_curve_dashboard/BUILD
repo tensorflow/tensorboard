@@ -24,6 +24,8 @@ ts_web_library(
         "tf-pr-curve-card.html",
         "tf-pr-curve-card.ts",
         "tf-pr-curve-dashboard.html",
+        "tf-step-selector.html",
+        "tf-step-selector.ts",
     ],
     path = "/tf-pr-curve-dashboard",
     deps = [
@@ -40,6 +42,7 @@ ts_web_library(
         "@org_polymer_iron_icon//:org_polymer_iron_icon",
         "@org_polymer_paper_icon_button//:org_polymer_paper_icon_button",
         "@org_polymer_paper_input//:org_polymer_paper_input",
+        "@org_polymer_paper_slider//:org_polymer_paper_slider",
         "@org_polymer_paper_spinner//:org_polymer_paper_spinner",
     ],
 )
