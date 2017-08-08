@@ -30,12 +30,20 @@ limitations under the License.
         id="slider"
         value="{{_stepIndex}}"
         immediate-value="{{_stepIndex}}"
-        step="[[_stepIndex]]"
+        step="1"
         type="number"
-        min="0"
-        max="[[_numberOfSteps]]"
+        min=0
+        max="[[_maxStepIndex]]"
         ></paper-slider>
     <style>
+      #slider {
+        margin: 0 0 0 -5px;
+        width: 100%;
+      }
+      
+      #step-display-container {
+        margin: 10px 15px 0 10px;
+      }
     </style>
   </template>
   <script src="tf-step-selector.js"></script>

@@ -31,20 +31,17 @@ Polymer({
       type: String,
       computed: '_computeStepText(currentStep)',
     },
+    _maxStepIndex: {
+      type: Number,
+      computed: '_computeMaxStepIndex(steps)',
+    },
     _stepIndex: Number,
   },
   observers: [
     '_stepsListChanged(steps)',
   ],
-  attached() {
-    // Defer reloading until after we're attached, because that ensures that
-    // the requestManager has been set from above. (Polymer is tricky
-    // sometimes)
-    this._attached = true;
-    this.reload();
-  },
   _computeCurrentStep(stepIndex) {
-    return this.steps[stepIndex];
+    return this.steps && this.steps.length ? this.steps[stepIndex] : null;
   },
   _computeStepText(currentStep) {
     if (_.isNumber(currentStep)) {
@@ -58,5 +55,8 @@ Polymer({
     }
     // Set to the last index.
     this.set('_stepIndex', steps.length - 1);
+  },
+  _computeMaxStepIndex(steps) {
+    return steps && steps.length ? steps.length - 1 : 0;
   },
 });

@@ -187,8 +187,10 @@ limitations under the License.
             return;
           }
 
-          if (entries[entries.length - 1].step >
-              this._stepsForSlider[this._stepsForSlider.length - 1]) {
+          if (!this._stepsForSlider ||
+              !this._stepsForSlider.length ||
+              entries[entries.length - 1].step >
+                  this._stepsForSlider[this._stepsForSlider.length - 1]) {
             // We have encountered a new step greater than any that we have seen
             // before. Update the slider so the user can see PR curves at that
             // step.
