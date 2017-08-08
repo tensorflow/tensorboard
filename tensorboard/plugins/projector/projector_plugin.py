@@ -144,8 +144,9 @@ def _read_tensor_tsv_file(fpath):
   with tf.gfile.GFile(fpath, 'r') as f:
     tensor = []
     for line in f:
+      line = line.rstrip('\n')
       if line:
-        tensor.append(list(map(float, line.rstrip('\n').split('\t'))))
+        tensor.append(list(map(float, line.split('\t'))))
   return np.array(tensor, dtype='float32')
 
 
