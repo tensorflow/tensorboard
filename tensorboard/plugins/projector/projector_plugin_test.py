@@ -200,21 +200,23 @@ class ProjectorAppTest(tf.test.TestCase):
     # The projector plugin has not yet determined whether it is active, but it
     # should now start a thread to determine that.
     self.assertFalse(self.plugin.is_active())
-    mock.assert_called_once_with(self.plugin._thread_for_determining_is_active)
+    thread = self.plugin._thread_for_determining_is_active
+    mock.assert_called_once_with(thread)
 
     # The logic has not finished running yet, so the plugin should still not
     # have deemed itself to be active.
     self.assertFalse(self.plugin.is_active())
-    mock.assert_called_once_with(self.plugin._thread_for_determining_is_active)
+    mock.assert_called_once_with(thread)
 
     self.plugin._thread_for_determining_is_active.run()
 
     # The plugin later finds that embedding data is available.
     self.assertTrue(self.plugin.is_active())
 
-    # Subsequent calls to is_active should not start a new thread.
+    # Subsequent calls to is_active should not start a new thread. The mock
+    # should only have been called once throughout this test.
     self.assertTrue(self.plugin.is_active())
-    mock.assert_called_once_with(self.plugin._thread_for_determining_is_active)
+    mock.assert_called_once_with(thread)
 
   def testPluginIsNotActive(self):
     self._SetupWSGIApp()
