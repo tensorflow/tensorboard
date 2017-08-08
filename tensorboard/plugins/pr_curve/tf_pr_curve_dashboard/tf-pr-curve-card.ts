@@ -45,16 +45,19 @@ Polymer({
       value: () => new Canceller(),
     },
     _attached: Boolean,
-    _xComponents: {
+    // The value field is a function that returns a function because Polymer
+    // will actually call the value field if the field is a function. However,
+    // we actually want the value itself to be a function.
+    _xComponentsCreationMethod: {
       type: Object,
-      value: (): ChartHelpers.XComponents => {
+      value: () => ((): ChartHelpers.XComponents => {
         const scale = new Plottable.Scales.Linear();
         return {
           scale: scale,
           axis: new Plottable.Axes.Numeric(scale, 'bottom'),
           accessor: (d: PrCurvePoint) => d.recall,
         };
-      },
+      }),
       readOnly: true,
     }
   },
