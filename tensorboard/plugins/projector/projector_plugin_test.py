@@ -212,6 +212,10 @@ class ProjectorAppTest(tf.test.TestCase):
     # The plugin later finds that embedding data is available.
     self.assertTrue(self.plugin.is_active())
 
+    # Subsequent calls to is_active should not start a new thread.
+    self.assertTrue(self.plugin.is_active())
+    mock.assert_called_once_with(self.plugin._thread_for_determining_is_active)
+
   def testPluginIsNotActive(self):
     self._SetupWSGIApp()
 
@@ -230,6 +234,11 @@ class ProjectorAppTest(tf.test.TestCase):
 
     # The plugin later finds that embedding data is not available.
     self.assertFalse(self.plugin.is_active())
+
+    # Furthermore, the plugin should have spawned a new thread to check whether
+    # it is active (because it might now be active even though it had not been
+    # beforehand), so the mock should now be called twice.
+    self.assertEqual(2, mock.call_count)
 
   def _SetupWSGIApp(self):
     multiplexer = event_multiplexer.EventMultiplexer(
