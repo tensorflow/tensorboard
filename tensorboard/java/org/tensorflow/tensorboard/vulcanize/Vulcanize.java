@@ -113,7 +113,7 @@ public final class Vulcanize {
 
   // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
   // third_party/tensorboard/defs/vulcanize.bzl is not set.
-  private static final String NO_NOINLINE_REGEXS_STRING_PROVIDED = "NO_REGEXS";
+  private static final String NO_NOINLINE_FILE_PROVIDED = "NO_REGEXS";
 
   public static void main(String[] args) throws IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
@@ -121,8 +121,10 @@ public final class Vulcanize {
     Webpath inputPath = Webpath.get(args[2]);
     outputPath = Webpath.get(args[3]);
     Path output = Paths.get(args[4]);
-    if (!args[5].equals(NO_NOINLINE_REGEXS_STRING_PROVIDED)) {
-      Arrays.asList(args[5].split(",")).forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
+    if (!args[5].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[5])), UTF_8);
+      Arrays.asList(ignoreFile.split("\n")).forEach(
+          (str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
     for (int i = 6; i < args.length; i++) {
       if (args[i].endsWith(".js")) {
