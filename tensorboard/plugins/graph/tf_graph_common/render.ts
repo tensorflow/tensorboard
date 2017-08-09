@@ -519,7 +519,7 @@ export class RenderGraphInfo {
             // This node represents an input_arg of the library function. Give
             // it edges so that its bridge edges are created correctly.
             let inputIndex = newOpNode.functionInputIndex;
-            let newInput = opNodeToReplace.inputs[inputIndex];
+            let newInput = _.clone(opNodeToReplace.inputs[inputIndex]);
             while (newInput.isControlDependency) {
               // Ignore control dependencies - they are not assigned to
               // input_args.
@@ -527,7 +527,7 @@ export class RenderGraphInfo {
               newInput = opNodeToReplace.inputs[inputIndex];
             }
             // Clone the normalized input object.
-            newOpNode.inputs.push(_.clone(newInput));
+            newOpNode.inputs.push(newInput);
 
             // Update values in the corresponding edge in the high-level
             // metagraph.
@@ -543,8 +543,31 @@ export class RenderGraphInfo {
               if (edge.w === opNodeToReplace.name) {
                 edge.w = newOpNode.name;
               }
+              if (edge.v === opNodeToReplace.name) {
+                edge.v = newOpNode.name;
+              }
             });
           }
+
+          // if (_.isNumber(newOpNode.functionOutputIndex)) {
+          //   // This node represents an output_arg of the library function. Give
+          //   // it edges so that its bridge edges are created correctly.
+          //   let outputIndex = newOpNode.functionOutputIndex;
+          //   let newOutput = _.clone(opNodeToReplace.inputs[outputIndex]);
+
+          //   // Update values in the corresponding edge in the high-level
+          //   // metagraph.
+          //   const originalMetaEdges = this.hierarchy.getSuccessors(
+          //       opNodeToReplace.name);
+          //   const originalMetaEdge = originalMetaEdges.regular[
+          //       newOpNode.functionOutputIndex];
+
+          //   _.each(originalMetaEdge.baseEdgeList, edge => {
+          //     if (edge.v === opNodeToReplace.name) {
+          //       edge.v = newOpNode.name;
+          //     }
+          //   });
+          // }
           break;
         default:
           // This logic should never run because the meta graph should only
