@@ -35,7 +35,7 @@ limitations under the License.
       <div class="sidebar">
         <div class="sidebar-section">
           <h3>Step for Each Run</h3>
-          <p>
+          <p id="instructions">
             Runs may differ in current step. For each run, we show the PR curve
             at the largest step no greater than the slider step.
           </p>
@@ -123,13 +123,17 @@ limitations under the License.
 
     <style include="dashboard-style"></style>
     <style>
+      #instructions {
+        width: 300px;
+      }
+
       .no-data-warning {
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
 
-      .run-step-combo .step-text {
-        margin: 0 0 10px 0;
+      .run-step-combo .run-text {
+        margin: 10px 0 0 0;
       }
     </style>
   </template>
