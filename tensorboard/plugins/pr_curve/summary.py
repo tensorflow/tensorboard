@@ -148,14 +148,14 @@ def op(
 
     # Store the number of thresholds within the summary metadata because
     # that value is constant for all pr curve summaries with the same tag.
-    summary_metadata = tf.SummaryMetadata(
-        display_name=display_name if display_name is not None else tag,
-        summary_description=description or '')
     pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
         num_thresholds=num_thresholds)
-    summary_metadata.plugin_data.add(
-        plugin_name='pr_curve',
-        content=json_format.MessageToJson(pr_curve_plugin_data))
+    content = json_format.MessageToJson(pr_curve_plugin_data)
+    summary_metadata = tf.SummaryMetadata(
+        display_name=display_name if display_name is not None else tag,
+        summary_description=description or '',
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='pr_curve',
+                                                  content=content))
 
     precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
         _TINY_EPISILON, tp + fp)

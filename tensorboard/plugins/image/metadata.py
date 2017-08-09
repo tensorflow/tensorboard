@@ -33,9 +33,10 @@ def create_summary_metadata(display_name, description):
   """
   content = plugin_data_pb2.ImagePluginData()
   metadata = tf.SummaryMetadata(display_name=display_name,
-                                summary_description=description)
-  metadata.plugin_data.add(plugin_name=PLUGIN_NAME,
-                           content=content.SerializeToString())
+                                summary_description=description,
+                                plugin_data=tf.SummaryMetadata.PluginData(
+                                    plugin_name=PLUGIN_NAME,
+                                    content=content.SerializeToString()))
   return metadata
 
 
