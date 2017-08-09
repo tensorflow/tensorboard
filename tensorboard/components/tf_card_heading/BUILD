@@ -13,5 +13,9 @@ ts_web_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_markdown_view",
+        "@org_polymer_paper_dialog",
+        "@org_polymer_paper_dialog_scrollable",
+        "@org_polymer_paper_icon_button",
     ],
 )

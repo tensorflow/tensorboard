@@ -74,7 +74,7 @@ limitations under the License.
               if="[[_inactiveDashboardsExist(_dashboards, disabledDashboards, _activeDashboards)]]"
             >
               <paper-dropdown-menu
-                label="Inactive dashboards"
+                label="Inactive"
                 no-label-float
                 noink
                 style="margin-left: 12px"
@@ -211,6 +211,7 @@ limitations under the License.
       }
 
       .toolbar-message {
+        opacity: 0.7;
         -webkit-font-smoothing: antialiased;
         font-size: 14px;
         font-weight: 500;
@@ -363,16 +364,6 @@ limitations under the License.
           value: '',
         },
 
-        _debuggerDataEnabled: {
-          type: Boolean,
-          value: function() {
-            // For now, Tensorboard only shows debugger data if the
-            // debugger_data GET param is set to enabled.
-            let match = window.location.href.match(/[&\?]debugger_data=enabled/);
-            return !!match && match.length == 1;
-          },
-        },
-
         /**
          * The set of all possible dashboard names.
          *
@@ -477,7 +468,7 @@ limitations under the License.
         '_updateSelectedDashboard(_selectedDashboard, _activeDashboards)',
         ('_ensureSelectedDashboardStamped(' +
          '_dashboardContainersStamped, _activeDashboards, ' +
-         '_selectedDashboard, _debuggerDataEnabled)'),
+         '_selectedDashboard)'),
       ],
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
@@ -589,7 +580,7 @@ limitations under the License.
        * this does nothing.
        */
       _ensureSelectedDashboardStamped(containersStamped, activeDashboards,
-                                      dashboard, debuggerDataEnabled) {
+                                      dashboard) {
         if (!containersStamped || !activeDashboards || !dashboard) {
           return;
         }
@@ -604,9 +595,7 @@ limitations under the License.
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }
-        this.set('_isReloadDisabled',
-                 (!debuggerDataEnabled &&
-                  !!container.childNodes[0].isReloadDisabled));
+        this.set('_isReloadDisabled', !!container.childNodes[0].isReloadDisabled);
       },
 
       /**

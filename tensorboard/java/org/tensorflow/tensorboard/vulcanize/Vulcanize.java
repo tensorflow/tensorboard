@@ -57,6 +57,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
@@ -108,6 +109,11 @@ public final class Vulcanize {
   private static Node licenseComment;
   private static int insideDemoSnippet;
   private static boolean testOnly;
+  private static List<Pattern> ignoreRegExs = new ArrayList<>();
+
+  // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
+  // third_party/tensorboard/defs/vulcanize.bzl is not set.
+  private static final String NO_NOINLINE_REGEXS_STRING_PROVIDED = "NO_REGEXS";
 
   public static void main(String[] args) throws IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
@@ -115,7 +121,10 @@ public final class Vulcanize {
     Webpath inputPath = Webpath.get(args[2]);
     outputPath = Webpath.get(args[3]);
     Path output = Paths.get(args[4]);
-    for (int i = 5; i < args.length; i++) {
+    if (!args[5].equals(NO_NOINLINE_REGEXS_STRING_PROVIDED)) {
+      Arrays.asList(args[5].split(",")).forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
+    }
+    for (int i = 6; i < args.length; i++) {
       if (args[i].endsWith(".js")) {
         String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
         SourceFile sourceFile = SourceFile.fromCode(args[i], code);
@@ -209,9 +218,18 @@ public final class Vulcanize {
       return node;
     }
     if (node instanceof Element) {
-      if (!getAttrTransitive(node, "vulcanize-noinline").isPresent()) {
+      String href = node.attr("href");
+      // Ignore any files that match any of the ignore regular expressions.
+      boolean ignoreFile = false;
+      for (Pattern pattern : ignoreRegExs) {
+        if (pattern.matcher(href).find()) {
+          ignoreFile = true;
+          break;
+        }
+      }
+      if (!getAttrTransitive(node, "vulcanize-noinline").isPresent() && !ignoreFile) {
         if (isExternalCssNode(node)
-            && !shouldIgnoreUri(node.attr("href"))) {
+            && !shouldIgnoreUri(href)) {
           node = visitStylesheet(node);
         } else if (node.nodeName().equals("link")
             && node.attr("rel").equals("import")) {

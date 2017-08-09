@@ -42,7 +42,8 @@ class HistogramsPluginTest(tf.test.TestCase):
   _SCALAR_TAG = 'my-boring-scalars'
 
   _DISPLAY_NAME = 'Important production statistics'
-  _DESCRIPTION = 'quod erat scribendum'
+  _DESCRIPTION = 'quod *erat* scribendum'
+  _HTML_DESCRIPTION = '<p>quod <em>erat</em> scribendum</p>'
 
   _RUN_WITH_LEGACY_HISTOGRAM = '_RUN_WITH_LEGACY_HISTOGRAM'
   _RUN_WITH_HISTOGRAM = '_RUN_WITH_HISTOGRAM'
@@ -59,7 +60,6 @@ class HistogramsPluginTest(tf.test.TestCase):
       self.generate_run(run_name)
     multiplexer = event_multiplexer.EventMultiplexer(size_guidance={
         # don't truncate my test data, please
-        event_accumulator.HISTOGRAMS: self._STEPS,
         event_accumulator.TENSORS: self._STEPS,
     })
     multiplexer.AddRunsFromDirectory(self.logdir)
@@ -93,7 +93,7 @@ class HistogramsPluginTest(tf.test.TestCase):
       writer.add_summary(s, global_step=step)
     writer.close()
 
-  def testRoutesProvided(self):
+  def test_routes_provided(self):
     """Tests that the plugin offers the correct routes."""
     self.set_up_with_runs([self._RUN_WITH_SCALARS])
     routes = self.plugin.get_plugin_apps()
@@ -115,7 +115,7 @@ class HistogramsPluginTest(tf.test.TestCase):
         self._RUN_WITH_HISTOGRAM: {
             '%s/histogram_summary' % self._HISTOGRAM_TAG: {
                 'displayName': self._DISPLAY_NAME,
-                'description': self._DESCRIPTION,
+                'description': self._HTML_DESCRIPTION,
             },
         },
     }, self.plugin.index_impl())
@@ -125,20 +125,39 @@ class HistogramsPluginTest(tf.test.TestCase):
                            self._RUN_WITH_LEGACY_HISTOGRAM,
                            self._RUN_WITH_HISTOGRAM])
     if should_work:
-      (data, mime_type) = self.plugin.histograms_impl(tag_name, run_name)
-      self.assertEqual('application/json', mime_type)
-      self.assertEqual(len(data), self._STEPS)
-      for i in xrange(self._STEPS):
-        [_unused_wall_time, step, buckets] = data[i]
-        self.assertEqual(i, step)
-        self.assertEqual(1 + i, buckets[0][0])   # first left-edge
-        self.assertEqual(3 + i, buckets[-1][1])  # last right-edge
-        self.assertAlmostEqual(
-            3,  # three items across all buckets
-            sum(bucket[2] for bucket in buckets))
+      self._check_histograms_result(tag_name, run_name, downsample=False)
+      self._check_histograms_result(tag_name, run_name, downsample=True)
     else:
       with six.assertRaisesRegex(self, ValueError, 'No histogram tag'):
         self.plugin.histograms_impl(self._HISTOGRAM_TAG, run_name)
+
+  def _check_histograms_result(self, tag_name, run_name, downsample):
+    if downsample:
+      downsample_to = 50
+      expected_length = 50
+    else:
+      downsample_to = None
+      expected_length = self._STEPS
+
+    (data, mime_type) = self.plugin.histograms_impl(tag_name, run_name,
+                                                    downsample_to=downsample_to)
+    self.assertEqual('application/json', mime_type)
+    self.assertEqual(expected_length, len(data),
+                     'expected %r, got %r (downsample=%r)'
+                     % (expected_length, len(data), downsample))
+    last_step_seen = None
+    for (i, datum) in enumerate(data):
+      [_unused_wall_time, step, buckets] = datum
+      if last_step_seen is not None:
+        self.assertGreater(step, last_step_seen)
+      last_step_seen = step
+      if not downsample:
+        self.assertEqual(i, step)
+      self.assertEqual(1 + step, buckets[0][0])   # first left-edge
+      self.assertEqual(3 + step, buckets[-1][1])  # last right-edge
+      self.assertAlmostEqual(
+          3,  # three items across all buckets
+          sum(bucket[2] for bucket in buckets))
 
   def test_histograms_with_scalars(self):
     self._test_histograms(self._RUN_WITH_SCALARS, self._HISTOGRAM_TAG,

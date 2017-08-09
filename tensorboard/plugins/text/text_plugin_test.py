@@ -26,6 +26,7 @@ import textwrap
 import numpy as np
 import tensorflow as tf
 
+from tensorboard import plugin_util
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import text_plugin
@@ -48,10 +49,6 @@ class TextPluginTest(tf.test.TestCase):
     routes = self.plugin.get_plugin_apps()
     self.assertIsInstance(routes['/tags'], collections.Callable)
     self.assertIsInstance(routes['/text'], collections.Callable)
-
-  def assertConverted(self, actual, expected):
-    expected_html = text_plugin.markdown_and_sanitize(expected)
-    self.assertEqual(actual, expected_html)
 
   def generate_testdata(self, include_text=True, logdir=None):
     tf.reset_default_graph()
@@ -104,9 +101,7 @@ class TextPluginTest(tf.test.TestCase):
     self.assertEqual(len(leela), 4)
     for i in range(4):
       self.assertEqual(fry[i]['step'], i)
-      self.assertConverted(fry[i]['text'], 'fry *loves* ' + GEMS[i])
       self.assertEqual(leela[i]['step'], i)
-      self.assertConverted(leela[i]['text'], 'leela *loves* ' + GEMS[i])
 
     table = self.plugin.text_impl('fry', 'vector')[0]['text']
     self.assertEqual(table,
@@ -127,82 +122,6 @@ class TextPluginTest(tf.test.TestCase):
       </tr>
       </tbody>
       </table>"""))
-
-  def assertTextConverted(self, actual, expected):
-    self.assertEqual(text_plugin.markdown_and_sanitize(actual), expected)
-
-  def testMarkdownConversion(self):
-    emphasis = '*Italics1* _Italics2_ **bold1** __bold2__'
-    emphasis_converted = ('<p><em>Italics1</em> <em>Italics2</em> '
-                          '<strong>bold1</strong> <strong>bold2</strong></p>')
-
-    self.assertEqual(
-        text_plugin.markdown_and_sanitize(emphasis), emphasis_converted)
-
-    md_list = textwrap.dedent("""\
-    1. List item one.
-    2. List item two.
-      * Sublist
-      * Sublist2
-    1. List continues.
-    """)
-    md_list_converted = textwrap.dedent("""\
-    <ol>
-    <li>List item one.</li>
-    <li>List item two.</li>
-    <li>Sublist</li>
-    <li>Sublist2</li>
-    <li>List continues.</li>
-    </ol>""")
-    self.assertEqual(
-        text_plugin.markdown_and_sanitize(md_list), md_list_converted)
-
-    link = '[TensorFlow](http://tensorflow.org)'
-    link_converted = '<p><a href="http://tensorflow.org">TensorFlow</a></p>'
-    self.assertEqual(text_plugin.markdown_and_sanitize(link), link_converted)
-
-    table = textwrap.dedent("""\
-    An | Example | Table
-    --- | --- | ---
-    A | B | C
-    1 | 2 | 3
-    """)
-
-    table_converted = textwrap.dedent("""\
-    <table>
-    <thead>
-    <tr>
-    <th>An</th>
-    <th>Example</th>
-    <th>Table</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>A</td>
-    <td>B</td>
-    <td>C</td>
-    </tr>
-    <tr>
-    <td>1</td>
-    <td>2</td>
-    <td>3</td>
-    </tr>
-    </tbody>
-    </table>""")
-
-    self.assertEqual(text_plugin.markdown_and_sanitize(table), table_converted)
-
-  def testSanitization(self):
-    dangerous = "<script>alert('xss')</script>"
-    sanitized = "&lt;script&gt;alert('xss')&lt;/script&gt;"
-    self.assertEqual(text_plugin.markdown_and_sanitize(dangerous), sanitized)
-
-    dangerous = textwrap.dedent("""\
-    hello <a name='n'
-    href='javascript:alert('xss')'>*you*</a>""")
-    sanitized = '<p>hello <a><em>you</em></a></p>'
-    self.assertEqual(text_plugin.markdown_and_sanitize(dangerous), sanitized)
 
   def testTableGeneration(self):
     array2d = np.array([['one', 'two'], ['three', 'four']])
@@ -386,8 +305,8 @@ class TextPluginTest(tf.test.TestCase):
     d3 = np.array([[['foo', 'bar'], ['zoink', 'zod']], [['FOO', 'BAR'],
                                                         ['ZOINK', 'ZOD']]])
 
-    warning = text_plugin.markdown_and_sanitize(text_plugin.WARNING_TEMPLATE %
-                                                3)
+    warning = plugin_util.markdown_to_safe_html(
+        text_plugin.WARNING_TEMPLATE % 3)
     d3_expected = warning + textwrap.dedent("""\
       <table>
       <tbody>
@@ -429,10 +348,6 @@ class TextPluginTest(tf.test.TestCase):
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
     self.assertFalse(plugin.is_active())
-
-  def testUnicode(self):
-    self.assertConverted(u'<p>Iñtërnâtiônàlizætiøn⚡💩</p>',
-                         'Iñtërnâtiônàlizætiøn⚡💩')
 
 
 class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):

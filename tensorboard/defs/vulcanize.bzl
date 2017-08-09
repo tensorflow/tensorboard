@@ -31,6 +31,7 @@ def _tensorboard_html_binary(ctx):
 
   # vulcanize
   jslibs = depset(ctx.files._jslibs) + closure_js_library.srcs
+  path_regexs_str = ",".join(ctx.attr.path_regexs_for_noinline) or "NO_REGEXS"
   ctx.action(
       inputs=list(manifests | files | jslibs),
       outputs=[ctx.outputs.html],
@@ -39,7 +40,8 @@ def _tensorboard_html_binary(ctx):
                   "true" if ctx.attr.testonly else "false",
                   ctx.attr.input_path,
                   ctx.attr.output_path,
-                  ctx.outputs.html.path] +
+                  ctx.outputs.html.path,
+                  path_regexs_str] +
                  [f.path for f in jslibs] +
                  [f.path for f in manifests]),
       progress_message="Vulcanizing %s" % ctx.attr.input_path)
@@ -107,6 +109,7 @@ tensorboard_html_binary = rule(
             ],
             mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
+        "path_regexs_for_noinline": attr.string_list(),
         "_jslibs": attr.label(
             default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:jslibs"),
             allow_files=True),

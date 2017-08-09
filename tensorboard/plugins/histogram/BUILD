@@ -15,8 +15,8 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",

@@ -28,9 +28,13 @@ limitations under the License.
 -->
 <dom-module id="tf-distribution-loader">
   <template>
-    <tf-card-heading title="[[tag]]" color="[[_runColor]]">
-      [[run]]
-    </tf-card-heading>
+    <tf-card-heading
+      tag="[[tag]]"
+      run="[[run]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+      color="[[_runColor]]"
+    ></tf-card-heading>
     <!--
       The main distribution that we render. Data is set directly with
       `setSeriesData`, not with a bound property.
@@ -88,6 +92,8 @@ limitations under the License.
       properties: {
         run: String,
         tag: String,
+        /** @type {{description: string, displayName: string}} */
+        tagMetadata: Object,
         xType: String,
 
         _colorScale: {

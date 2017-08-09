@@ -111,10 +111,10 @@ def op(name,
       there are no buckets. If there is data but all points have the
       same value, then there is one bucket whose left and right
       endpoints are the same.
-    display_name: Not yet supported; do not use. (Eventually: Optional
-      name for this summary in TensorBoard. Defaults to `name`.)
-    description: Not yet supported; do not use. (Eventually: Optional
-      long-form description for this summary. Markdown is supported.)
+    display_name: Optional name for this summary in TensorBoard, as a
+      constant `str`. Defaults to `name`.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
     collections: Optional list of graph collections keys. The new
       summary op is added to these collections. Defaults to
       `[Graph Keys.SUMMARIES]`.
@@ -147,10 +147,10 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
       there are no buckets. If there is data but all points have the
       same value, then there is one bucket whose left and right
       endpoints are the same.
-    display_name: Not yet supported; do not use. (Eventually: Optional
-      name for this summary in TensorBoard. Defaults to `name`.)
-    description: Not yet supported; do not use. (Eventually: Optional
-      long-form description for this summary. Markdown is supported.)
+    display_name: Optional name for this summary in TensorBoard, as a
+      `str`. Defaults to `name`.
+    description: Optional long-form description for this summary, as a
+      `str`. Markdown is supported. Defaults to empty.
 
   Returns:
     A `tf.Summary` protobuf object.

@@ -27,15 +27,10 @@ import textwrap
 import numpy as np
 # pylint: enable=g-bad-import-order
 
-import bleach
-# pylint: disable=g-bad-import-order
-# Google-only: import markdown_freewisdom
-import markdown
-import six
-# pylint: enable=g-bad-import-order
 import tensorflow as tf
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 
@@ -46,65 +41,10 @@ _PLUGIN_PREFIX_ROUTE = 'text'
 TAGS_ROUTE = '/tags'
 TEXT_ROUTE = '/text'
 
-ALLOWED_TAGS = [
-    'ul',
-    'ol',
-    'li',
-    'p',
-    'pre',
-    'code',
-    'blockquote',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'hr',
-    'br',
-    'strong',
-    'em',
-    'a',
-    'img',
-    'table',
-    'thead',
-    'tbody',
-    'td',
-    'tr',
-    'th',
-]
-
-ALLOWED_ATTRIBUTES = {'a': ['href', 'title'], 'img': ['src', 'title', 'alt']}
 
 WARNING_TEMPLATE = textwrap.dedent("""\
   **Warning:** This text summary contained data of dimensionality %d, but only \
   2d tables are supported. Showing a 2d slice of the data instead.""")
-
-
-def markdown_and_sanitize(markdown_string):
-  """Takes a markdown string and converts it into sanitized html.
-
-  It uses the table extension; while that's not a part of standard
-  markdown, it is sure to be useful for TensorBoard users.
-
-  The sanitizer uses the allowed_tags and attributes specified above. Mostly,
-  we ensure that our standard use cases like tables and links are supported.
-
-  Args:
-    markdown_string: Markdown string to sanitize
-
-  Returns:
-    a string containing sanitized html for input markdown
-  """
-  # Convert to utf-8 whenever we have a binary input.
-  if isinstance(markdown_string, six.binary_type):
-    markdown_string = markdown_string.decode('utf-8')
-
-  string_html = markdown.markdown(
-      markdown_string, extensions=['markdown.extensions.tables'])
-  string_sanitized = bleach.clean(
-      string_html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
-  return string_sanitized
 
 
 def make_table_row(contents, tag='td'):
@@ -226,13 +166,16 @@ def text_array_to_html(text_arr):
   """
   if not text_arr.shape:
     # It is a scalar. No need to put it in a table, just apply markdown
-    return markdown_and_sanitize(text_arr.astype(np.dtype(str)).tostring())
+    return plugin_util.markdown_to_safe_html(
+        text_arr.astype(np.dtype(str)).tostring())
   warning = ''
   if len(text_arr.shape) > 2:
-    warning = markdown_and_sanitize(WARNING_TEMPLATE % len(text_arr.shape))
+    warning = plugin_util.markdown_to_safe_html(WARNING_TEMPLATE
+                                                % len(text_arr.shape))
     text_arr = reduce_to_2d(text_arr)
 
-  html_arr = [markdown_and_sanitize(x) for x in text_arr.reshape(-1)]
+  html_arr = [plugin_util.markdown_to_safe_html(x)
+              for x in text_arr.reshape(-1)]
   html_arr = np.array(html_arr).reshape(text_arr.shape)
 
   return warning + make_table(html_arr)

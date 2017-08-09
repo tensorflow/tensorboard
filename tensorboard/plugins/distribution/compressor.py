@@ -32,7 +32,7 @@ CompressedHistogramValue = collections.namedtuple('CompressedHistogramValue',
                                                   ['basis_point', 'value'])
 
 
-def CompressHistogram(histo, bps=NORMAL_HISTOGRAM_BPS):
+def compress_histogram(buckets, bps=NORMAL_HISTOGRAM_BPS):
   """Creates fixed size histogram by adding compression to accumulated state.
 
   This routine transforms a histogram at a particular step by linearly
@@ -43,7 +43,8 @@ def CompressHistogram(histo, bps=NORMAL_HISTOGRAM_BPS):
   coordinate.
 
   Args:
-    histo: A HistogramProto object.
+    buckets: A list of buckets, each of which is a 3-tuple of the form
+      `(min, max, count)`.
     bps: Compression points represented in basis points, 1/100ths of a percent.
         Defaults to normal distribution.
 
@@ -51,38 +52,41 @@ def CompressHistogram(histo, bps=NORMAL_HISTOGRAM_BPS):
     List of values for each basis point.
   """
   # See also: Histogram::Percentile() in core/lib/histogram/histogram.cc
-  if not histo.num:
+  buckets = np.array(buckets)
+  if not buckets.size:
     return [CompressedHistogramValue(b, 0.0) for b in bps]
-  bucket = np.array(histo.bucket)
-  bucket_limit = list(histo.bucket_limit)
-  weights = (bucket * bps[-1] / (bucket.sum() or 1.0)).cumsum()
-  values = []
-  j = 0
-  while j < len(bps):
-    i = np.searchsorted(weights, bps[j], side='right')
+  (minmin, maxmax) = (buckets[0][0], buckets[-1][1])
+  counts = buckets[:, 2]
+  right_edges = list(buckets[:, 1])
+  weights = (counts * bps[-1] / (counts.sum() or 1.0)).cumsum()
+
+  result = []
+  bp_index = 0
+  while bp_index < len(bps):
+    i = np.searchsorted(weights, bps[bp_index], side='right')
     while i < len(weights):
       cumsum = weights[i]
       cumsum_prev = weights[i - 1] if i > 0 else 0.0
-      if cumsum == cumsum_prev:  # prevent remap divide by zero
+      if cumsum == cumsum_prev:  # prevent division-by-zero in `_lerp`
         i += 1
         continue
       if not i or not cumsum_prev:
-        lhs = histo.min
+        lhs = minmin
       else:
-        lhs = max(bucket_limit[i - 1], histo.min)
-      rhs = min(bucket_limit[i], histo.max)
-      weight = _Remap(bps[j], cumsum_prev, cumsum, lhs, rhs)
-      values.append(CompressedHistogramValue(bps[j], weight))
-      j += 1
+        lhs = max(right_edges[i - 1], minmin)
+      rhs = min(right_edges[i], maxmax)
+      weight = _lerp(bps[bp_index], cumsum_prev, cumsum, lhs, rhs)
+      result.append(CompressedHistogramValue(bps[bp_index], weight))
+      bp_index += 1
       break
     else:
       break
-  while j < len(bps):
-    values.append(CompressedHistogramValue(bps[j], histo.max))
-    j += 1
-  return values
+  while bp_index < len(bps):
+    result.append(CompressedHistogramValue(bps[bp_index], maxmax))
+    bp_index += 1
+  return result
 
 
-def _Remap(x, x0, x1, y0, y1):
-  """Linearly map from [x0, x1] unto [y0, y1]."""
+def _lerp(x, x0, x1, y0, y1):
+  """Affinely map from [x0, x1] onto [y0, y1]."""
   return y0 + (x - x0) * float(y1 - y0) / (x1 - x0)

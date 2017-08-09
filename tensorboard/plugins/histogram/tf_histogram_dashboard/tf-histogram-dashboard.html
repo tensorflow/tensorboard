@@ -108,10 +108,11 @@ limitations under the License.
                         <tf-histogram-loader
                           run="[[item.run]]"
                           tag="[[item.tag]]"
+                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                           time-property="[[_timeProperty]]"
                           histogram-mode="[[_histogramMode]]"
                           request-manager="[[_requestManager]]"
-                          ></tf-histogram-loader>
+                        ></tf-histogram-loader>
                       </template>
                     </div>
                   </template>
@@ -202,9 +203,10 @@ limitations under the License.
       },
 
       _makeCategories(runToTag, selectedRuns, tagFilter) {
-        // TODO(@wchargin): Incorporate the tags' display names and
-        // descriptions.
         return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+      },
+      _tagMetadata(runToTagInfo, run, tag) {
+        return runToTagInfo[run][tag];
       },
     });
   </script>

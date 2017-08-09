@@ -70,6 +70,7 @@ class EventMultiplexer(object):
   def __init__(self,
                run_path_map=None,
                size_guidance=None,
+               tensor_size_guidance=None,
                purge_orphaned_data=True):
     """Constructor for the `EventMultiplexer`.
 
@@ -79,6 +80,9 @@ class EventMultiplexer(object):
         None, then the EventMultiplexer initializes without any runs.
       size_guidance: A dictionary mapping from `tagType` to the number of items
         to store for each tag of that type. See
+        `event_accumulator.EventAccumulator` for details.
+      tensor_size_guidance: A dictionary mapping from `plugin_name` to
+        the number of items to store for each tag of that type. See
         `event_accumulator.EventAccumulator` for details.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
@@ -90,6 +94,7 @@ class EventMultiplexer(object):
     self._reload_called = False
     self._size_guidance = (size_guidance or
                            event_accumulator.DEFAULT_SIZE_GUIDANCE)
+    self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
@@ -130,6 +135,7 @@ class EventMultiplexer(object):
         accumulator = event_accumulator.EventAccumulator(
             path,
             size_guidance=self._size_guidance,
+            tensor_size_guidance=self._tensor_size_guidance,
             purge_orphaned_data=self.purge_orphaned_data)
         self._accumulators[name] = accumulator
         self._paths[name] = path
@@ -318,57 +324,6 @@ class EventMultiplexer(object):
     accumulator = self.GetAccumulator(run)
     return accumulator.RunMetadata(tag)
 
-  def Histograms(self, run, tag):
-    """Retrieve the histogram events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.HistogramEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Histograms(tag)
-
-  def CompressedHistograms(self, run, tag):
-    """Retrieve the compressed histogram events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.CompressedHistogramEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.CompressedHistograms(tag)
-
-  def Images(self, run, tag):
-    """Retrieve the image events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.ImageEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Images(tag)
-
   def Audio(self, run, tag):
     """Retrieve the audio events associated with a run and tag.
 
@@ -450,10 +405,7 @@ class EventMultiplexer(object):
 
     Returns:
     ```
-      {runName: { images: [tag1, tag2, tag3],
-                  scalarValues: [tagA, tagB, tagC],
-                  histograms: [tagX, tagY, tagZ],
-                  compressedHistograms: [tagX, tagY, tagZ],
+      {runName: { scalarValues: [tagA, tagB, tagC],
                   graph: true, meta_graph: true}}
     ```
     """

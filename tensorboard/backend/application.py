@@ -41,14 +41,21 @@ from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.plugins.histogram import metadata as histogram_metadata
+from tensorboard.plugins.image import metadata as image_metadata
 
 
 DEFAULT_SIZE_GUIDANCE = {
-    event_accumulator.COMPRESSED_HISTOGRAMS: 500,
-    event_accumulator.IMAGES: 10,
     event_accumulator.AUDIO: 10,
     event_accumulator.SCALARS: 1000,
-    event_accumulator.HISTOGRAMS: 50,
+    event_accumulator.TENSORS: 10,
+}
+
+# TODO(@wchargin): Once SQL mode is in play, replace this with an
+# alternative that does not privilege first-party plugins.
+DEFAULT_TENSOR_SIZE_GUIDANCE = {
+    image_metadata.PLUGIN_NAME: 10,
+    histogram_metadata.PLUGIN_NAME: 500,
 }
 
 DATA_PREFIX = '/data'
@@ -85,12 +92,14 @@ def standard_tensorboard_wsgi(
   """
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
+      tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
   if db_connection_provider is not None:
     with contextlib.closing(db_connection_provider()) as db_conn:
-      with db_conn:
-        db.setup_database(db_conn)
+      schema = db.Schema(db_conn)
+      schema.create_tables()
+      schema.create_indexes()
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
@@ -384,7 +393,7 @@ def create_sqlite_connection_provider(db_uri):
   path = os.path.expanduser(uri.path)
   params = _get_connect_params(uri.query)
   # TODO(@jart): Add thread-local pooling.
-  return lambda: sqlite3.connect(path, **params)
+  return lambda: db.Connection(sqlite3.connect(path, **params))
 
 
 def _get_connect_params(query):

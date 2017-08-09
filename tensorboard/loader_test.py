@@ -20,6 +20,7 @@ import functools
 import locale
 import os
 
+import six
 import tensorflow as tf
 
 from tensorboard import loader
@@ -228,7 +229,10 @@ class ProgressTest(LoaderTestCase):
     self.assertIn(u' 1,024B/s ', self.bars[0])
 
   def testBigNumberInGermany_showsCommas(self):
-    locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
+    try:
+      locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
+    except Exception:
+      raise self.skipTest('Environment does not support de_DE.utf8 locale')
     self.progress.set_progress(0, 1000000)
     self.clock.advance(1.0)
     self.progress.set_progress(1024, 1000000)
@@ -241,6 +245,85 @@ class ProgressTest(LoaderTestCase):
 
   def _on_bar(self, format_, *args):
     self.bars.append(format_ % args)
+
+
+class EventLogReaderTest(LoaderTestCase):
+  EventLog = functools.partial(loader.EventLogReader,
+                               record_reader_factory=loader.RecordReader)
+
+  def testInvalidFilename_throwsException(self):
+    path = self._save_records('empty.records', [])
+    with self.assertRaises(ValueError):
+      self.EventLog(path)
+
+  def testEqualAndSortsByTimestampAndHost(self):
+    self.assertEqual(
+        [self.EventLog('events.out.tfevents.0.LOCALHOST'),
+         self.EventLog('events.out.tfevents.0.localhost'),
+         self.EventLog('events.out.tfevents.1.localhost')],
+        sorted([self.EventLog('events.out.tfevents.1.localhost'),
+                self.EventLog('events.out.tfevents.0.localhost'),
+                self.EventLog('events.out.tfevents.0.LOCALHOST')]))
+
+  def testFields(self):
+    path = self._save_records('events.out.tfevents.7.localhost', [])
+    with self.EventLog(path) as log:
+      self.assertEqual(path, log.path)
+      self.assertEqual(7, log.timestamp)
+      self.assertEqual('localhost', log.hostname)
+
+  def testNoReads_closeWorks(self):
+    path = self._save_records('events.out.tfevents.0.localhost', [])
+    self.EventLog(path).close()
+
+  def testClose_canBeCalledMultipleTimes(self):
+    path = self._save_records('events.out.tfevents.0.localhost', [])
+    log = self.EventLog(path)
+    log.close()
+    log.close()
+
+  def testEmptyFile_returnsNoneRecords(self):
+    path = self._save_records('events.out.tfevents.0.localhost', [])
+    with self.EventLog(path) as log:
+      self.assertIsNone(log.get_next_event())
+      self.assertIsNone(log.get_next_event())
+
+  def testReadOneEvent(self):
+    event = tf.Event(step=123)
+    path = self._save_records('events.out.tfevents.0.localhost',
+                              [event.SerializeToString()])
+    with self.EventLog(path) as log:
+      self.assertEqual(event, log.get_next_event())
+      self.assertIsNone(log.get_next_event())
+
+  def testMarkReset(self):
+    event1 = tf.Event(step=123)
+    event2 = tf.Event(step=456)
+    path = self._save_records('events.out.tfevents.0.localhost',
+                              [event1.SerializeToString(),
+                               event2.SerializeToString()])
+    with self.EventLog(path) as log:
+      log.mark()
+      self.assertEqual(event1, log.get_next_event())
+      log.reset()
+      self.assertEqual(event1, log.get_next_event())
+      self.assertEqual(event2, log.get_next_event())
+      self.assertIsNone(log.get_next_event())
+
+  def testMarkWithShrinkingBatchSize_raisesValueError(self):
+    event1 = tf.Event(step=123)
+    event2 = tf.Event(step=456)
+    path = self._save_records('events.out.tfevents.0.localhost',
+                              [event1.SerializeToString(),
+                               event2.SerializeToString()])
+    with self.EventLog(path) as log:
+      log.mark()
+      self.assertEqual(event1, log.get_next_event())
+      self.assertEqual(event2, log.get_next_event())
+      log.reset()
+      self.assertEqual(event1, log.get_next_event())
+      with six.assertRaisesRegex(self, ValueError, r'monotonic'):
+        log.mark()
 
 
 @util.closeable
