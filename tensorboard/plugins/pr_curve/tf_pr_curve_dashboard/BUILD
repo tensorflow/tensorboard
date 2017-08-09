@@ -24,6 +24,7 @@ ts_web_library(
         "tf-pr-curve-card.html",
         "tf-pr-curve-card.ts",
         "tf-pr-curve-dashboard.html",
+        "tf-pr-curve-dashboard.ts",
         "tf-step-selector.html",
         "tf-step-selector.ts",
     ],

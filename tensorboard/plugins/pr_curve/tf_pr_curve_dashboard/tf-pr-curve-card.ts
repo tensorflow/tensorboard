@@ -30,6 +30,12 @@ Polymer({
   properties: {
     runs: Array,
     tag: String,
+
+    // The card will display the PR curve at this step or the one closest to it,
+    // but less than it.
+    stepCap: Number,
+    
+    _runToData: Object,
     /** @type {Function} */
     _colorScaleFunction: {
       type: Object,  // function: string => string
@@ -64,6 +70,7 @@ Polymer({
   observers: [
       "reload(run, tag)",
       "_runsChanged(_attached, runs.*)",
+      "_setChartData(_runToData, stepCap)",
   ],
   _computeRunColor(run) {
     return this._colorScaleFunction(run);
@@ -94,28 +101,51 @@ Polymer({
 
       // This is a mapping between run and data.
       const runToData = result.value;
-      _.forOwn(runToData, (entries, run) => {
-        let seriesData: PrCurvePoint[] = [];
-        const entry = entries[0];
-
-        // Reverse the values so they are plotted in order, which allows for
-        // tool tips.
-        entry.precision.reverse();
-        entry.recall.reverse();
-
-        for (let i = 0; i < entry.precision.length; i++) {
-          seriesData.push({
-            scalar: entry.precision[i],
-            recall: entry.recall[i],
-          });
-        }
-        this.$$('vz-line-chart').setSeriesData(run, seriesData);
-      });
+      this.set('_runToData', runToData);
       this.fire('data-updated', {
         'runToData': runToData,
       });
     });
     this.requestManager.request(url).then(updateData);
+  },
+  _setChartData(runToData, stepCap) {
+    if (!runToData || !_.isNumber(stepCap)) {
+      return;
+    }
+
+    _.forOwn(runToData, (entries, run) => {
+      if (!entries || !entries.length) {
+        return;
+      }
+
+      let seriesData: PrCurvePoint[] = [];
+      let entriesIndex = entries.length - 1;
+      while (entriesIndex > 0) {
+        if (entries[entriesIndex].step <= stepCap) {
+          // This is the rightmost entry closest (or equal to) the step cap.
+          break;
+        }
+        entriesIndex--;
+      }
+      const entry = entries[entriesIndex];
+      this.fire('run-step-updated', {
+        'run': run,
+        'step': entry.step,
+      });
+
+      // Reverse the values so they are plotted in order, which allows for
+      // tool tips.
+      entry.precision.reverse();
+      entry.recall.reverse();
+
+      for (let i = 0; i < entry.precision.length; i++) {
+        seriesData.push({
+          scalar: entry.precision[i],
+          recall: entry.recall[i],
+        });
+      }
+      this.$$('vz-line-chart').setSeriesData(run, seriesData);
+    });
   },
   _runsChanged(attached, runsUpdateRecord) {
     if (!attached) {

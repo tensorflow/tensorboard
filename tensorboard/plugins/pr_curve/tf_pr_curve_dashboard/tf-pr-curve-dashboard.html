@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
@@ -32,6 +33,22 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
+        <div class="sidebar-section">
+          <h3>Step for Each Run</h3>
+          <p>
+            Runs may differ in current step. For each run, we show the PR curve
+            at the largest step no greater than the slider step.
+          </p>
+          <template is="dom-repeat" items="{{_runStepPairs}}">
+            <div class="run-step-combo">
+              <div class="run-text"
+                    style="color:[[_computeColorForRun(item.run)]];">
+                [[item.run]]
+              </div>
+              <div class="step-text">[[item.step]]</div>
+            </div>
+          </template>
+        </div>
         <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
@@ -91,6 +108,7 @@ limitations under the License.
                           runs="[[item.runs]]"
                           tag="[[item.tag]]"
                           request-manager="[[_requestManager]]"
+                          step-cap="[[_step]]"
                         ></tf-pr-curve-card>
                       </template>
                     </div>
@@ -109,99 +127,12 @@ limitations under the License.
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
+
+      .run-step-combo .step-text {
+        margin: 0 0 10px 0;
+      }
     </style>
   </template>
 
-  <script>
-    "use strict";
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getTags} from '../tf-backend/backend.js';
-    import {getRouter} from '../tf-backend/router.js';
-    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
-    Polymer({
-      is: "tf-pr-curve-dashboard",
-      properties: {
-        _selectedRuns: Array,
-        _runToTag: Object,  // map<run: string, tags: string[]>
-        _dataNotFound: Boolean,
-        _tagFilter: {
-          type: String,  // upward bound from paper-input
-          value: '.*',
-        },
-        _categories: {
-          type: Array,
-          computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
-        },
-        _requestManager: {
-          type: Object,
-          value: () => new RequestManager(),
-        },
-        _step: {
-          type: Number,
-          value: 0,
-          notify: true,
-        },
-        // An array of steps (numbers) to show in the slider for the dashboard.
-        _stepsForSlider: {
-          type: Array,
-          notify: true,
-        },
-      },
-      listeners: {
-        'data-updated': '_handleNewRunToDataMapping',
-      },
-      ready() {
-        this.reload();
-      },
-      reload() {
-        this._fetchTags().then(() => {
-          this._reloadCards();
-        });
-      },
-      _fetchTags() {
-        const url = getRouter().pluginRoute('pr_curve', '/tags');
-        return this._requestManager.request(url).then(runToTag => {
-          if (_.isEqual(runToTag, this._runToTag)) {
-            // No need to update anything if there are no changes.
-            return;
-          }
-          const tags = getTags(runToTag);
-          this.set('_dataNotFound', tags.length === 0);
-          this.set('_runToTag', runToTag);
-        });
-      },
-      _reloadCards() {
-        this.querySelectorAll('tf-pr-curve-card').forEach(card => {
-          card.reload();
-        });
-      },
-      _makeCategories(runToTag, selectedRuns, tagFilter) {
-        return categorizeTags(runToTag, selectedRuns, tagFilter);
-      },
-      _handleNewRunToDataMapping(e) {
-        const runToData = e.detail.runToData;
-        console.log('_handleNewRunToDataMapping', runToData);
-        _.forOwn(runToData, (entries, run) => {
-          if (!entries.length) {
-            return;
-          }
-
-          if (!this._stepsForSlider ||
-              !this._stepsForSlider.length ||
-              entries[entries.length - 1].step >
-                  this._stepsForSlider[this._stepsForSlider.length - 1]) {
-            // We have encountered a new step greater than any that we have seen
-            // before. Update the slider so the user can see PR curves at that
-            // step.
-            this.set('_stepsForSlider', entries.map(entry => entry.step));
-          }
-        });
-      },
-      _shouldShowStepsSlider(stepsForSlider) {
-        // Only show the slider if we have more than 1 step.
-        return stepsForSlider && stepsForSlider.length;
-      },
-    });
-  </script>
+  <script src="tf-pr-curve-dashboard.js"></script>
 </dom-module>
