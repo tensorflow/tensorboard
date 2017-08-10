@@ -243,7 +243,7 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
     patch.start()
     self.addCleanup(patch.stop)
 
-    self._encoder = util._TensorFlowPngEncoder()
+    self._encode = util._TensorFlowPngEncoder()
     self._rgb = np.arange(12 * 34 * 3).reshape((12, 34, 3)).astype(np.uint8)
     self._rgba = np.arange(21 * 43 * 4).reshape((21, 43, 4)).astype(np.uint8)
 
@@ -256,18 +256,18 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
 
   def test_invalid_non_numpy(self):
     with six.assertRaisesRegex(self, ValueError, "must be a numpy array"):
-      self._encoder.encode(self._rgb.tolist())
+      self._encode(self._rgb.tolist())
 
   def test_invalid_non_uint8(self):
     with six.assertRaisesRegex(self, ValueError, "dtype must be uint8"):
-      self._encoder.encode(self._rgb.astype(np.float32))
+      self._encode(self._rgb.astype(np.float32))
 
   def test_encodes_png(self):
-    data = self._encoder.encode(self._rgb)
+    data = self._encode(self._rgb)
     self._check_png(data)
 
   def test_encodes_png_with_alpha(self):
-    data = self._encoder.encode(self._rgba)
+    data = self._encode(self._rgba)
     self._check_png(data)
 
   def test_preserves_existing_graph(self):
@@ -275,7 +275,7 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
     original_graph = tf.get_default_graph()
     original_proto = original_graph.as_graph_def().SerializeToString()
     assert len(original_proto) > 10, original_graph
-    self._encoder.encode(self._rgb)
+    self._encode(self._rgb)
     self.assertIs(original_graph, tf.get_default_graph())
     self.assertEqual(original_proto,
                      tf.get_default_graph().as_graph_def().SerializeToString())
@@ -284,7 +284,7 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
     with tf.Session() as sess:
       op = tf.reduce_sum([2, 2])
       self.assertIs(sess, tf.get_default_session())
-      data = self._encoder.encode(self._rgb)
+      data = self._encode(self._rgb)
       self._check_png(data)
       self.assertIs(sess, tf.get_default_session())
       number_of_lights = sess.run(op)
@@ -294,9 +294,9 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
     self.assertEqual(tf.Session.call_count, 0)
 
   def test_reuses_sessions(self):
-    self._encoder.encode(self._rgb)
+    self._encode(self._rgb)
     self.assertEqual(tf.Session.call_count, 1)
-    self._encoder.encode(self._rgb)
+    self._encode(self._rgb)
     self.assertEqual(tf.Session.call_count, 1)
 
 
