@@ -36,12 +36,13 @@ def create_summary_metadata(display_name, description):
   Returns:
     A `tf.SummaryMetadata` protobuf object.
   """
-  content = HistogramMetadata()
-  metadata = tf.SummaryMetadata(display_name=display_name,
-                                summary_description=description)
-  metadata.plugin_data.add(plugin_name=PLUGIN_NAME,
-                           content=json.dumps(content._asdict()))  # pylint: disable=protected-access
-  return metadata
+  content = json.dumps(HistogramMetadata()._asdict())  # pylint: disable=protected-access
+  return tf.SummaryMetadata(
+      display_name=display_name,
+      summary_description=description,
+      plugin_data=tf.SummaryMetadata.PluginData(
+          plugin_name=PLUGIN_NAME,
+          content=content))
 
 
 def parse_summary_metadata(content):

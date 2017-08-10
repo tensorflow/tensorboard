@@ -74,9 +74,10 @@ class MigrateValueTest(tf.test.TestCase):
     self._assert_noop(value)
 
   def test_fully_populated_tensor(self):
-    metadata = tf.SummaryMetadata()
-    metadata.plugin_data.add(plugin_name='font_of_wisdom',
-                             content='adobe_garamond')
+    metadata = tf.SummaryMetadata(
+        plugin_data=tf.SummaryMetadata.PluginData(
+            plugin_name='font_of_wisdom',
+            content='adobe_garamond'))
     op = tf.summary.tensor_summary(
         name='tensorpocalypse',
         tensor=tf.constant([[0.0, 2.0], [float('inf'), float('nan')]]),

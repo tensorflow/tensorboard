@@ -78,9 +78,9 @@ class SummaryTest(tf.test.TestCase):
     summary_metadata = pb.value[0].metadata
     self.assertEqual(summary_metadata.display_name, 'widgets')
     self.assertEqual(summary_metadata.summary_description, '')
-    plugin_data = summary_metadata.plugin_data[0]
+    plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
-    self.assertEqual(summary_metadata.plugin_data[0].content, '{}')
+    self.assertEqual(summary_metadata.plugin_data.content, '{}')
 
   def test_explicit_display_name_and_description(self):
     display_name = 'Widget metrics'
@@ -91,7 +91,7 @@ class SummaryTest(tf.test.TestCase):
     summary_metadata = pb.value[0].metadata
     self.assertEqual(summary_metadata.display_name, display_name)
     self.assertEqual(summary_metadata.summary_description, description)
-    plugin_data = summary_metadata.plugin_data[0]
+    plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
     self.assertEqual(plugin_data.content, '{}')
 

@@ -70,9 +70,9 @@ class SummaryTest(tf.test.TestCase):
   def test_metadata(self):
     pb = self.compute_and_check_summary_pb('mona_lisa', self.images)
     summary_metadata = pb.value[0].metadata
-    plugin_data = summary_metadata.plugin_data[0]
+    plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
-    content = summary_metadata.plugin_data[0].content
+    content = summary_metadata.plugin_data.content
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
 
