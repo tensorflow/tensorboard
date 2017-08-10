@@ -1105,10 +1105,12 @@ export function build(
               // output args within the keys of this object. Unlike the
               // input_args, the output_args are already defined within the
               // node_defs of the library function.
+              let currentOutputIndex = 0;
               const outputArgNames = {};
               const processOutput = arg => {
-                outputArgNames[
-                    functionNodeName + NAMESPACE_DELIM + arg.name] = 1;
+                outputArgNames[functionNodeName + NAMESPACE_DELIM + arg.name] =
+                    currentOutputIndex;
+                currentOutputIndex++;
               };
               if (func.signature.output_arg['name']) {
                 // There is only 1 output arg.
@@ -1118,7 +1120,6 @@ export function build(
                 _.each(func.signature.output_arg, processOutput);
               }
 
-              let currentOutputIndex = 0;
               _.each(func.node_def, rawNode => {
                 // Prefix with the name of the function so that the graph
                 // correctly computes the hierarchy (and makes metanodes).
@@ -1127,10 +1128,9 @@ export function build(
                   rawNode.input = [rawNode.input];
                 }
                 const opNode = processRawNode(rawNode);
-                if (outputArgNames[rawNode.name]) {
+                if (_.isNumber(outputArgNames[rawNode.name])) {
                   // Mark the node as one of the outputs of the function.
-                  opNode.functionOutputIndex = currentOutputIndex;
-                  currentOutputIndex++;
+                  opNode.functionOutputIndex = outputArgNames[rawNode.name];
                 }
 
                 _.each(opNode.inputs, normalizedInput => {
