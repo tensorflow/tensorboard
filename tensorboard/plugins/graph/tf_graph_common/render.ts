@@ -470,6 +470,8 @@ export class RenderGraphInfo {
    * We dynamically inject a clone of a function into a meta graph when the user
    * expands a function call. We cannot do this at the beginning because the
    * functions may recursively call themselves or other functions.
+   * @param metagraph The metagraph we are currently rendering the sub-hierarchy
+   *     for.
    * @param opNodeToReplace The op node in the graph to replace with a new
    *     (expandable) metanode that visualizes the innards of a function.
    * @param libraryMetanode The metanode for a library function to clone.
@@ -480,6 +482,7 @@ export class RenderGraphInfo {
    *     library. This prefix should reflect graph hierarchy.
    */
   private cloneFunctionLibraryMetanode(
+      metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>,
       opNodeToReplace: OpNode,
       libraryMetanode: Metanode,
       oldPrefix: string,
@@ -504,7 +507,11 @@ export class RenderGraphInfo {
         case NodeType.META:
           // Recursively duplicate the metanode.
           const newNode = this.cloneFunctionLibraryMetanode(
-              opNodeToReplace, node as Metanode, oldPrefix, newPrefix);
+              metagraph,
+              opNodeToReplace,
+              node as Metanode,
+              oldPrefix,
+              newPrefix);
 
           // Add the new node to the graph.
           newNode.parentNode = newMetanode;
@@ -548,26 +555,6 @@ export class RenderGraphInfo {
               }
             });
           }
-
-          // if (_.isNumber(newOpNode.functionOutputIndex)) {
-          //   // This node represents an output_arg of the library function. Give
-          //   // it edges so that its bridge edges are created correctly.
-          //   let outputIndex = newOpNode.functionOutputIndex;
-          //   let newOutput = _.clone(opNodeToReplace.inputs[outputIndex]);
-
-          //   // Update values in the corresponding edge in the high-level
-          //   // metagraph.
-          //   const originalMetaEdges = this.hierarchy.getSuccessors(
-          //       opNodeToReplace.name);
-          //   const originalMetaEdge = originalMetaEdges.regular[
-          //       newOpNode.functionOutputIndex];
-
-          //   _.each(originalMetaEdge.baseEdgeList, edge => {
-          //     if (edge.v === opNodeToReplace.name) {
-          //       edge.v = newOpNode.name;
-          //     }
-          //   });
-          // }
           break;
         default:
           // This logic should never run because the meta graph should only
@@ -610,6 +597,14 @@ export class RenderGraphInfo {
       }
     });
 
+    // Connect the outputs of the function to other ops.
+    const originalMetaEdges = this.hierarchy.getSuccessors(
+        opNodeToReplace.name);
+    _.each(originalMetaEdges.regular, (metaedge) => {
+      const destinationNode = metagraph.node(metaedge.w) as OpNode;
+      console.log('destinationNode', destinationNode, destinationNode.inputs);
+    });
+
     return newMetanode;
   }
 
@@ -648,6 +643,7 @@ export class RenderGraphInfo {
         // Replace the node that is a function call with a copy of the function
         // metagraph.
         const clonedMetanode = this.cloneFunctionLibraryMetanode(
+            metagraph,
             originalNode,
             libraryMetanode,
             libraryMetanode.name,

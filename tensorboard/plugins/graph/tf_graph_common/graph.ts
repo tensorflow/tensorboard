@@ -1107,7 +1107,8 @@ export function build(
               // node_defs of the library function.
               const outputArgNames = {};
               const processOutput = arg => {
-                outputArgNames[arg.name] = 1;
+                outputArgNames[
+                    functionNodeName + NAMESPACE_DELIM + arg.name] = 1;
               };
               if (func.signature.output_arg['name']) {
                 // There is only 1 output arg.
