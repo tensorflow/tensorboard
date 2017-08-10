@@ -26,7 +26,7 @@ before_install:
     rm -f install.sh
     case "${TF}" in
       RELEASE)
-        pip install tensorflow
+        pip install -I tensorflow
         ;;
       NIGHTLY)
         if [[ "${TRAVIS_PYTHON_VERSION}" == 2* ]]; then
@@ -34,10 +34,10 @@ before_install:
         else
         NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON3,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.head-cp34-cp34m-linux_x86_64.whl'
         fi
-        pip install "${NIGHTLY_URL}"
+        pip install -I "${NIGHTLY_URL}"
         ;;
       *)
-        pip install tensorflow=="${TF}"
+        pip install -I tensorflow=="${TF}"
         ;;
     esac
 
