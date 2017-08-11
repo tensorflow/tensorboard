@@ -658,8 +658,6 @@ export class RenderGraphInfo {
     let metagraph = renderGroupNodeInfo.node.metagraph;
     let coreGraph = renderGroupNodeInfo.coreGraph;
 
-    window['__metagraph__' + nodeName] = metagraph;
-
     const nodesThatGotCloned = [];
     const functionCallMetanodesToAdd = [];
     if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
