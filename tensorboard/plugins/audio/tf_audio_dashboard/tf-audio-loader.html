@@ -211,7 +211,7 @@ backend.
           individualAudioURL += `&ts=${audioMetadata.wall_time}`;
         }
         return {
-          wall_time: new Date(audioMetadata.wall_time).toString(),
+          wall_time: new Date(audioMetadata.wall_time * 1000).toString(),
           step: audioMetadata.step,
           content_type: audioMetadata.content_type,
           url: individualAudioURL,
