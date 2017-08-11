@@ -487,7 +487,6 @@ export class RenderGraphInfo {
       libraryMetanode: Metanode,
       oldPrefix: string,
       newPrefix: string): Metanode {
-    console.log('name change', opNodeToReplace.name, libraryMetanode.name.replace(oldPrefix, newPrefix));
     const newMetanode = tf.graph.createMetanode(
         libraryMetanode.name.replace(oldPrefix, newPrefix));
 
@@ -559,12 +558,10 @@ export class RenderGraphInfo {
             });
           }
 
-          console.log('newOpNode', newOpNode.name, newOpNode);
           if (_.isNumber(newOpNode.functionOutputIndex)) {
             functionOutputIndexToNode[newOpNode.functionOutputIndex] =
                 newOpNode;
           }
-          console.log(functionOutputIndexToNode);
           break;
         default:
           // This logic should never run because the meta graph should only
@@ -573,8 +570,6 @@ export class RenderGraphInfo {
               node.name + ' is oddly neither a metanode nor an opnode.');
       }
     });
-
-    console.log(functionOutputIndexToNode);
 
     // Clone the edges.
     _.each(libraryMetanode.metagraph.edges(),
@@ -629,6 +624,14 @@ export class RenderGraphInfo {
             normalizedInput.outputTensorIndex = '0';
           }
         });
+
+        // Modify the list of base edges to point from the output so that bridge
+        // edges are correct.
+        _.each(metaedge.baseEdgeList, (baseEdge) => {
+          baseEdge.v =
+              functionOutputIndexToNode[baseEdge.outputTensorIndex].name;
+          baseEdge.outputTensorIndex = '0';
+        });
       });
     }
 
@@ -644,8 +647,6 @@ export class RenderGraphInfo {
 
     let renderNodeInfo = this.index[nodeName];
 
-    console.log('buildSubhierarchy', nodeName);
-
     // If it is not a meta node or a series node, don't do anything.
     if (renderNodeInfo.node.type !== NodeType.META &&
         renderNodeInfo.node.type !== NodeType.SERIES) {
@@ -657,16 +658,13 @@ export class RenderGraphInfo {
     let metagraph = renderGroupNodeInfo.node.metagraph;
     let coreGraph = renderGroupNodeInfo.coreGraph;
 
+    window['__metagraph__' + nodeName] = metagraph;
+
     const nodesThatGotCloned = [];
     const functionCallMetanodesToAdd = [];
     if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
       // This graph has library functions. Add them to the current
       // sub-hierarchy if necessary.
-
-      _.each(metagraph.nodes(), childName => {
-        console.log('has?', childName, metagraph.node(childName));
-      });
-
       _.each(metagraph.nodes(), childName => {
         // Why is this so often undefined?
         const originalNode = metagraph.node(childName) as OpNode;
