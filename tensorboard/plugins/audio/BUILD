@@ -16,6 +16,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
@@ -31,6 +32,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":audio_plugin",
+        ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
@@ -73,6 +75,7 @@ py_binary(
     srcs = ["audio_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],

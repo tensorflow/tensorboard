@@ -103,6 +103,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
     ],
@@ -116,6 +117,8 @@ py_test(
     deps = [
         ":data_compat",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/plugins/image:metadata",

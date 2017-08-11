@@ -24,6 +24,7 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.backend.event_processing import event_accumulator as ea
 
@@ -52,25 +53,6 @@ class _EventGenerator(object):
         step=step,
         summary=tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)]))
-    self.AddEvent(event)
-
-  def AddAudio(self,
-               tag,
-               wall_time=0,
-               step=0,
-               encoded_audio_string=b'sndstr',
-               content_type='audio/wav',
-               sample_rate=44100,
-               length_frames=22050):
-    audio = tf.Summary.Audio(
-        encoded_audio_string=encoded_audio_string,
-        content_type=content_type,
-        sample_rate=sample_rate,
-        length_frames=length_frames)
-    event = tf.Event(
-        wall_time=wall_time,
-        step=step,
-        summary=tf.Summary(value=[tf.Summary.Value(tag=tag, audio=audio)]))
     self.AddEvent(event)
 
   def AddEvent(self, event):
@@ -102,7 +84,6 @@ class EventAccumulatorTest(tf.test.TestCase):
     """
 
     empty_tags = {
-        ea.AUDIO: [],
         ea.SCALARS: [],
         ea.GRAPH: False,
         ea.META_GRAPH: False,
@@ -153,12 +134,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     gen.AddScalar('s1')
     gen.AddScalar('s2')
-    gen.AddAudio('snd1')
-    gen.AddAudio('snd2')
     acc = ea.EventAccumulator(gen)
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
-        ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
     })
 
@@ -170,11 +148,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTagsEqual(acc.Tags(), {})
     gen.AddScalar('s1')
     gen.AddScalar('s2')
-    gen.AddAudio('snd1')
-    gen.AddAudio('snd2')
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
-        ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
     })
 
@@ -190,44 +165,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertEqual(acc.Scalars('s1'), [s1])
     self.assertEqual(acc.Scalars('s2'), [s2])
 
-  def testAudio(self):
-    """Tests 2 audio events inserted/accessed in EventAccumulator."""
-    gen = _EventGenerator(self)
-    acc = ea.EventAccumulator(gen)
-    snd1 = ea.AudioEvent(
-        wall_time=1,
-        step=10,
-        encoded_audio_string=b'big',
-        content_type='audio/wav',
-        sample_rate=44100,
-        length_frames=441000)
-    snd2 = ea.AudioEvent(
-        wall_time=2,
-        step=12,
-        encoded_audio_string=b'small',
-        content_type='audio/wav',
-        sample_rate=44100,
-        length_frames=44100)
-    gen.AddAudio(
-        'snd1',
-        wall_time=1,
-        step=10,
-        encoded_audio_string=b'big',
-        content_type='audio/wav',
-        sample_rate=44100,
-        length_frames=441000)
-    gen.AddAudio(
-        'snd2',
-        wall_time=2,
-        step=12,
-        encoded_audio_string=b'small',
-        content_type='audio/wav',
-        sample_rate=44100,
-        length_frames=44100)
-    acc.Reload()
-    self.assertEqual(acc.Audio('snd1'), [snd1])
-    self.assertEqual(acc.Audio('snd2'), [snd2])
-
   def testKeyError(self):
     """KeyError should be raised when accessing non-existing keys."""
     gen = _EventGenerator(self)
@@ -239,10 +176,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
       acc.Scalars('hst1')
     with self.assertRaises(KeyError):
       acc.Scalars('im1')
-    with self.assertRaises(KeyError):
-      acc.Audio('s1')
-    with self.assertRaises(KeyError):
-      acc.Audio('hst1')
 
   def testNonValueEvents(self):
     """Non-value events in the generator don't cause early exits."""
@@ -251,11 +184,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalar('s1', wall_time=1, step=10, value=20)
     gen.AddEvent(tf.Event(wall_time=2, step=20, file_version='nots2'))
     gen.AddScalar('s3', wall_time=3, step=100, value=1)
-    gen.AddAudio('snd1')
 
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
-        ea.AUDIO: ['snd1'],
         ea.SCALARS: ['s1', 's3'],
     })
 
@@ -452,6 +383,40 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertEqual(accumulator.Scalars('scalar2'), seq2)
     first_value = accumulator.Scalars('scalar1')[0].value
     self.assertTrue(isinstance(first_value, float))
+
+  def testNewStyleAudioSummary(self):
+    """Verify processing of tensorboard.plugins.audio.summary."""
+    event_sink = _EventGenerator(self, zero_out_timestamps=True)
+    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer.event_writer = event_sink
+    with self.test_session() as sess:
+      ipt = tf.random_normal(shape=[5, 441, 2])
+      with tf.name_scope('1'):
+        audio_summary.op('one', ipt, sample_rate=44100, max_outputs=1)
+      with tf.name_scope('2'):
+        audio_summary.op('two', ipt, sample_rate=44100, max_outputs=2)
+      with tf.name_scope('3'):
+        audio_summary.op('three', ipt, sample_rate=44100, max_outputs=3)
+      merged = tf.summary.merge_all()
+      writer.add_graph(sess.graph)
+      for i in xrange(10):
+        summ = sess.run(merged)
+        writer.add_summary(summ, global_step=i)
+
+    accumulator = ea.EventAccumulator(event_sink)
+    accumulator.Reload()
+
+    tags = [
+        u'1/one/audio_summary',
+        u'2/two/audio_summary',
+        u'3/three/audio_summary',
+    ]
+
+    self.assertTagsEqual(accumulator.Tags(), {
+        ea.TENSORS: tags,
+        ea.GRAPH: True,
+        ea.META_GRAPH: False,
+    })
 
   def testNewStyleImageSummary(self):
     """Verify processing of tensorboard.plugins.image.summary."""
