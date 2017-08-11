@@ -86,8 +86,6 @@ module tf.graph.proto {
   export interface FunctionDefLibraryDef {
     // A list of functions.
     function: FunctionDef | FunctionDef[];
-
-    // TODO(chizeng): Support gradients.
   };
 
   /**
