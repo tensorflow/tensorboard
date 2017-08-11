@@ -56,7 +56,7 @@ export interface BaseEdge extends graphlib.EdgeObject {
   isControlDependency: boolean;
   isReferenceEdge: boolean;
   /** The index of the output tensor of the source node. */
-  outputTensorIndex: string;
+  outputTensorKey: string;
 }
 
 /**
@@ -76,7 +76,7 @@ export class SlimGraph {
 export interface NormalizedInput {
   name: string;
   /** The index of the output tensor of the source node. */
-  outputTensorIndex: string;
+  outputTensorKey: string;
   isControlDependency: boolean;
 }
 
@@ -765,7 +765,7 @@ export class MetaedgeImpl implements Metaedge {
       return 1;
     }
     h.hasShapeInfo = true;
-    
+
     // Sum the sizes of all output tensors.
     return _(opNode.outputShapes).mapValues((shape: number[]) => {
       // If the shape is unknown, treat it as 1 when computing
@@ -940,20 +940,20 @@ function normalizeInputs(inputs: string[]): NormalizedInput[] {
     }
 
     let name = inputName;
-    let outputTensorIndex = '0';
+    let outputTensorKey = '0';
 
     let match = inputName.match(/(.*):(\w+:\d+)$/);
     if (match) {
       // The output string consists of several characters and a number separated
       // by a colon.
       name = match[1];
-      outputTensorIndex = match[2];
+      outputTensorKey = match[2];
     } else {
       match = inputName.match(/(.*):(\d+)$/);
       if (match) {
         // The output string consists of a single number.
         name = match[1];
-        outputTensorIndex = match[2];
+        outputTensorKey = match[2];
       }
     }
 
@@ -961,7 +961,7 @@ function normalizeInputs(inputs: string[]): NormalizedInput[] {
       name !== normalizedInputs[normalizedInputs.length - 1].name) {
       normalizedInputs.push({
         name: name,
-        outputTensorIndex: outputTensorIndex,
+        outputTensorKey: outputTensorKey,
         isControlDependency: isControlDependency,
       });
     }
@@ -982,7 +982,7 @@ function addEdgeToGraph(
   graph.edges.push({
     v: inputName,
     w: outputNode.name,
-    outputTensorIndex: input.outputTensorIndex,
+    outputTensorKey: input.outputTensorKey,
     isControlDependency: input.isControlDependency,
     isReferenceEdge: isRefEdge
   });

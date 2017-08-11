@@ -128,7 +128,7 @@ export function getLabelForBaseEdge(
   if (node.outputShapes == null || _.isEmpty(node.outputShapes)) {
     return null;
   }
-  let shape = node.outputShapes[baseEdge.outputTensorIndex];
+  let shape = node.outputShapes[baseEdge.outputTensorKey];
   if (shape == null) {
     return null;
   }

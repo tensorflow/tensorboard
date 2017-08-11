@@ -579,7 +579,7 @@ export class RenderGraphInfo {
       const newW = edge.w.replace(oldPrefix, newPrefix);
 
       const newMetaEdge = new MetaedgeImpl(newV, newW);
-      
+
       // Duplicate various properties.
       newMetaEdge.inbound = edge.inbound;
       newMetaEdge.numRegularEdges = edge.numRegularEdges;
@@ -618,10 +618,10 @@ export class RenderGraphInfo {
             // numeric because it is an output of a metanode) to the correct
             // function output.
             const outputNode = functionOutputIndexToNode[
-                normalizedInput.outputTensorIndex];
+                normalizedInput.outputTensorKey];
             normalizedInput.name = outputNode.name;
             // Each function output node only has 1 slot.
-            normalizedInput.outputTensorIndex = '0';
+            normalizedInput.outputTensorKey = '0';
           }
         });
 
@@ -629,8 +629,8 @@ export class RenderGraphInfo {
         // edges are correct.
         _.each(metaedge.baseEdgeList, (baseEdge) => {
           baseEdge.v =
-              functionOutputIndexToNode[baseEdge.outputTensorIndex].name;
-          baseEdge.outputTensorIndex = '0';
+              functionOutputIndexToNode[baseEdge.outputTensorKey].name;
+          baseEdge.outputTensorKey = '0';
         });
       });
     }

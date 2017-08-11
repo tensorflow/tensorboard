@@ -52,7 +52,10 @@ module tf.graph.proto {
   };
 
   /**
-   * Specifies an argument.
+   * Specifies an argument. An argument is either an input or an output of a
+   * function. There are thus 2 types of arguments: input_args and output_args.
+   * Nodes outside a function call connect to arguments. The graph explorer
+   * creates nodes for all arguments within a function.
    */
   export interface ArgDef {
     name: string;
@@ -60,7 +63,7 @@ module tf.graph.proto {
   };
 
   /**
-   * Describes a function.
+   * Describes the signature of a function - its name, inputs, and outputs.
    */
   export interface OpDef {
     name: string;
@@ -69,7 +72,7 @@ module tf.graph.proto {
   };
 
   /**
-   * Describes a function.
+   * Describes a single function within the library.
    */
   export interface FunctionDef {
     // The definition of the function's name, arguments, return values,
