@@ -99,6 +99,7 @@ py_test(
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/scalar:summary",
     ],
 )
 
