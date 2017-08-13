@@ -40,8 +40,11 @@ Polymer({
   observers: [
     '_stepsListChanged(steps)',
   ],
-  _computeCurrentStep(stepIndex) {
-    return this.steps && this.steps.length ? this.steps[stepIndex] : null;
+  _computeCurrentStep(steps, stepIndex) {
+    if (!steps || stepIndex >= steps.length) {
+      return null;
+    }
+    return this.steps[stepIndex];
   },
   _computeStepText(currentStep) {
     if (_.isNumber(currentStep)) {

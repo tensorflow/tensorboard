@@ -25,7 +25,7 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
-  """A plugin that serves precision-recall curves for individual classes."""
+  """A plugin that serves precision–recall curves for individual classes."""
 
   plugin_name = 'pr_curve'
 

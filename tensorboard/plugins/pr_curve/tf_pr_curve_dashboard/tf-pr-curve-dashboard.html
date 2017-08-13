@@ -26,7 +26,7 @@ limitations under the License.
 <link rel="import" href="tf-step-selector.html">
 
 <!--
-  A frontend that displays a set of precision-recall curves. Each PR curve is
+  A frontend that displays a set of precision–recall curves. Each PR curve is
   associated with a tag (which is in turn associated with 1 class).
 -->
 <dom-module id="tf-pr-curve-dashboard">
@@ -34,7 +34,16 @@ limitations under the License.
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
-          <h3>Step for Each Run</h3>
+          <h3>
+            Step for each run
+            <div class="tooltip-block-container">
+              <span>?</span>
+              <paper-tooltip animation-delay="0" position="right">
+                Runs may differ in current step. For each run, we show the PR
+                curve at the largest step no greater than the slider step.
+              </paper-tooltip>
+            </div>
+          </h3>
           <p id="instructions">
             Runs may differ in current step. For each run, we show the PR curve
             at the largest step no greater than the slider step.
@@ -58,11 +67,11 @@ limitations under the License.
       <div class="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
-            <h3>No precision-recall curve data was found.</h3>
+            <h3>No precision–recall curve data was found.</h3>
             <p>Probable causes:</p>
             <ul>
               <li>
-                You haven’t written any precision-recall data to your event
+                You haven’t written any precision–recall data to your event
                 files.
               </li>
               <li>
@@ -125,6 +134,10 @@ limitations under the License.
     <style>
       #instructions {
         width: 300px;
+      }
+
+      .tooltip-block-container {
+        display: inline-block;
       }
 
       .no-data-warning {

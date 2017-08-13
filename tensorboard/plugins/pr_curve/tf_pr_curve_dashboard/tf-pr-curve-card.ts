@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-/* tslint:disable:no-namespace variable-name */
 
 "use strict";
 import {Canceller} from "../tf-backend/canceller.js";
@@ -40,10 +39,6 @@ Polymer({
     _colorScaleFunction: {
       type: Object,  // function: string => string
       value: () => ({scale: runsColorScale}),
-    },
-    _runColor: {
-      type: String,
-      computed: "_computeRunColor(run)",
     },
     requestManager: Object,
     _canceller: {
@@ -75,9 +70,6 @@ Polymer({
   _computeRunColor(run) {
     return this._colorScaleFunction(run);
   },
-  _serializedRunToPrCurveData(runToPrCurveData) {
-    return JSON.stringify(runToPrCurveData);
-  },
   attached() {
     // Defer reloading until after we're attached, because that ensures that
     // the requestManager has been set from above. (Polymer is tricky
@@ -100,7 +92,6 @@ Polymer({
         return;
       }
 
-      // This is a mapping between run and data.
       const runToData = result.value;
       this.set('_runToData', runToData);
       this.fire('data-updated', {
@@ -119,7 +110,6 @@ Polymer({
         return;
       }
 
-      let seriesData: PrCurvePoint[] = [];
       let entriesIndex = entries.length - 1;
       while (entriesIndex > 0) {
         if (entries[entriesIndex].step <= stepCap) {
@@ -129,6 +119,7 @@ Polymer({
         entriesIndex--;
       }
       const entry = entries[entriesIndex];
+
       this.fire('run-step-updated', {
         'run': run,
         'step': entry.step,
@@ -136,13 +127,14 @@ Polymer({
 
       // Reverse the values so they are plotted in order, which allows for
       // tool tips.
-      entry.precision.reverse();
-      entry.recall.reverse();
+      const precision = entry.precision.slice().reverse();
+      const recall = entry.recall.slice().reverse();
 
+      let seriesData: PrCurvePoint[] = [];
       for (let i = 0; i < entry.precision.length; i++) {
         seriesData.push({
-          scalar: entry.precision[i],
-          recall: entry.recall[i],
+          scalar: precision[i],
+          recall: recall[i],
         });
       }
       this.$$('vz-line-chart').setSeriesData(run, seriesData);
@@ -154,8 +146,5 @@ Polymer({
     }
     this.$$('vz-line-chart').setVisibleSeries(this.runs);
     this.reload();
-  },
-  _computeLineChartStyle(loading) {
-    return loading ? 'opacity: 0.3;' : '';
   },
 });

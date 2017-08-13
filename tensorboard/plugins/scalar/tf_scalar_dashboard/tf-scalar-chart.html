@@ -433,9 +433,6 @@ limitations under the License.
         return this._scalarUrl(this.tag, run);
       },
       _computeXComponentsCreationMethod(xType) {
-        if (!xType) {
-          return null;
-        }
         return () => ChartHelpers.getXComponents(xType);
       },
     });

@@ -22,20 +22,17 @@ limitations under the License.
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <!--
-  Renders precision-recall curves.
+  Renders precision–recall curves.
 -->
 <dom-module id="tf-pr-curve-card">
   <template>
-    <tf-card-heading tag="[[tag]]"
-                     run="[[run]]"
-                     color="[[_runColor]]">
+    <tf-card-heading tag="[[tag]]">
     </tf-card-heading>
 
     <div id="chart-and-spinner-container">
       <vz-line-chart
         x-components-creation-method="[[_xComponentsCreationMethod]]"
         color-scale="[[_colorScaleFunction]]"
-        style="[[_computeLineChartStyle(_loading)]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -56,6 +53,10 @@ limitations under the License.
       :host[_expanded] {
         width: 700px;
         height: 500px;
+      }
+      /** When the chart is loading, make it semi-transparent. */
+      :host[actual-size] vz-line-chart {
+        opacity: 0.3;
       }
       #chart-and-spinner-container {
         display: flex;
