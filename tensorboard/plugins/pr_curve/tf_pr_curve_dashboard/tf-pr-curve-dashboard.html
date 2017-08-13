@@ -34,28 +34,13 @@ limitations under the License.
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
-          <h3>
-            Step for each run
-            <div class="tooltip-block-container">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Runs may differ in current step. For each run, we show the PR
-                curve at the largest step no greater than the slider step.
-              </paper-tooltip>
-            </div>
-          </h3>
-          <p id="instructions">
-            Runs may differ in current step. For each run, we show the PR curve
-            at the largest step no greater than the slider step.
-          </p>
-          <template is="dom-repeat" items="{{_runStepPairs}}">
-            <div class="run-step-combo">
-              <div class="run-text"
-                    style="color:[[_computeColorForRun(item.run)]];">
-                [[item.run]]
-              </div>
-              <div class="step-text">[[item.step]]</div>
-            </div>
+          <template is="dom-repeat"
+                    items="[[_listOfRuns]]"
+                    as="run">
+            <tf-step-selector
+                run="[[run]]"
+                step-per-run="[[_stepPerRun]]"
+                steps-per-run="[[_stepsPerRun]]"></tf-step-selector>
           </template>
         </div>
         <div class="sidebar-section">
@@ -98,11 +83,6 @@ limitations under the License.
           >
             <iron-icon prefix icon="search"></iron-icon>
           </paper-input>
-          <template is="dom-if" if="[[_shouldShowStepsSlider(_stepsForSlider)]]">
-            <tf-step-selector
-              current-step="{{_step}}"
-              steps="[[_stepsForSlider]]"></tf-step-selector>
-          </template>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
               <tf-paginated-view
@@ -117,7 +97,7 @@ limitations under the License.
                           runs="[[item.runs]]"
                           tag="[[item.tag]]"
                           request-manager="[[_requestManager]]"
-                          step-cap="[[_step]]"
+                          step-per-run="[[_stepPerRun]]"
                         ></tf-pr-curve-card>
                       </template>
                     </div>

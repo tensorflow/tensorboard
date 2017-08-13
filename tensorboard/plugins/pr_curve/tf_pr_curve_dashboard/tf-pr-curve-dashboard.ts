@@ -5,21 +5,22 @@ import {getRouter} from '../tf-backend/router.js';
 import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
 import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
-// Used to remember the step that each run is at. The runs may differ in
-// step for various reasons. One run might write summaries more often or
-// just run more slowly.
-interface RunStepPair {
-  run: string;
-  step: number;
-};
-
 Polymer({
   is: 'tf-pr-curve-dashboard',
   properties: {
     _selectedRuns: Array,
     _runToTag: Object,  // map<run: string, tags: string[]>
-    _maxStepPerRun: {
-      type: Object, // map<run: string, max_step: number>
+    // The steps that the step slider for each run should use.
+    _stepsPerRun: {
+      type: Object, // map<run: string, steps: number[]>
+      value: {},
+    },
+    _listOfRuns: Array,  // string[]
+    // The actual step value that each run should use. If a run + tag lacks a PR
+    // curve at this exact step value, the greatest step value less than this
+    // value will be used.
+    _stepPerRun: {
+      type: Object, // map<run: string, steps: number>
       value: {},
     },
     // TODO(chizeng): Make sliders for each run.
@@ -45,23 +46,10 @@ Polymer({
       value: 0,
       notify: true,
     },
-    // An array of steps (numbers) to show in the slider for the dashboard.
-    _stepsForSlider: {
-      type: Array,
-      notify: true,
-    },
     _colorScale: {
       type: Object,
       value: () => ({scale: runsColorScale}),
       readOnly: true,
-    },
-    _runToStepMapping: {
-      type: Object,
-      value: {},
-    },
-    _runStepPairs: {
-      type: Array,
-      notify: true,
     },
   },
   listeners: {
@@ -72,7 +60,7 @@ Polymer({
     this.reload();
   },
   reload() {
-    Promise.all([this._fetchTags(), this._fetchMaxStepsPerRun()]).then(() => {
+    Promise.all([this._fetchTags(), this._fetchStepsPerRun()]).then(() => {
       this._reloadCards();
     });
   },
@@ -88,14 +76,15 @@ Polymer({
       this.set('_runToTag', runToTag);
     });
   },
-  _fetchMaxStepsPerRun() {
-    const url = getRouter().pluginRoute('pr_curves', '/max_step_per_run');
-    return this._requestManager.request(url).then(maxStepPerRun => {
-      if (_.isEqual(maxStepPerRun, this._maxStepPerRun)) {
-        // No need to update anything if there are no changes.
-        return;
+  _fetchStepsPerRun() {
+    const url = getRouter().pluginRoute('pr_curves', '/steps_per_run');
+    return this._requestManager.request(url).then(stepsPerRun => {
+      this.set('_stepsPerRun', stepsPerRun);
+
+      const listOfRuns = _.keys(stepsPerRun).sort();
+      if (!_.isEqual(listOfRuns, this._listOfRuns)) {
+        this.set('_listOfRuns', listOfRuns);
       }
-      this.set('_maxStepPerRun', maxStepPerRun);
     });
   },
   _reloadCards() {
@@ -105,48 +94,6 @@ Polymer({
   },
   _makeCategories(runToTag, selectedRuns, tagFilter) {
     return categorizeTags(runToTag, selectedRuns, tagFilter);
-  },
-  _handleNewRunToDataMapping(e) {
-    const runToData = e.detail.runToData;
-    _.forOwn(runToData, (entries, run) => {
-      if (!entries.length) {
-        return;
-      }
-
-      if (!this._stepsForSlider ||
-          !this._stepsForSlider.length ||
-          entries[entries.length - 1].step >
-              this._stepsForSlider[this._stepsForSlider.length - 1]) {
-        // We have encountered a new step greater than any that we have seen
-        // before. Update the slider so the user can see PR curves at that
-        // step.
-        this.set('_stepsForSlider', entries.map(entry => entry.step));
-      }
-    });
-  },
-  _handleRunStepUpdated(e) {
-    this._runToStepMapping[e.detail.run] = e.detail.step;
-    const runStepPairs: RunStepPair[] = [];
-    _.forOwn(this._runToStepMapping, (step, run) => {
-      runStepPairs.push({
-        run: run,
-        step: step,
-      });
-    });
-    runStepPairs.sort((pair0, pair1) => {
-      if (pair0.run < pair1.run) {
-        return -1;
-      }
-      if (pair0.run > pair1.run) {
-        return 1;
-      }
-      return 0;
-    });
-    this.set('_runStepPairs', runStepPairs);
-  },
-  _shouldShowStepsSlider(stepsForSlider) {
-    // Only show the slider if we have more than 1 step.
-    return stepsForSlider && stepsForSlider.length;
   },
   _computeColorForRun(run) {
     return this._colorScale.scale(run);

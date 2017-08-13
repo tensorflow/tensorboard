@@ -25,9 +25,9 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
-  """A plugin that serves precision–recall curves for individual classes."""
+  """A plugin that serves PR curves for individual classes."""
 
-  plugin_name = 'pr_curve'
+  plugin_name = 'pr_curves'
 
   def __init__(self, context):
     """Instantiates a PrCurvesPlugin.
@@ -47,8 +47,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       containing data required for PR curves for that run. Runs that either
       cannot be found or that lack tags will be excluded from the response.
     """
-    comma_separated_runs = request.args.getlist('run')
-    runs = comma_separated_runs.split(',') if comma_separated_runs else []
+    runs = request.args.getlist('run')
     tag = request.args.get('tag')
 
     response_mapping = {}
@@ -84,6 +83,33 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     }
     return http_util.Respond(request, response, 'application/json')
 
+  @wrappers.Request.application
+  def steps_per_run_route(self, request):
+    """Gets a dict mapping run to a list of numeric steps.
+
+    Returns:
+      A dict with string keys (all runs with PR curve data). The values of the
+      dict are lists of step values (ints) that should be used for the slider
+      for that run.
+    """
+    all_runs = self._multiplexer.PluginRunToTagToContent(
+        PrCurvesPlugin.plugin_name)
+    response = {}
+
+    # Compute the max step exhibited by any tag for each run. If a run lacks
+    # data, exclude it from the mapping.
+    for run, tag_to_content in all_runs.items():
+      if not tag_to_content:
+        # This run lacks data for this plugin.
+        continue
+
+      # Just use the list of tensor events for any of the tags to determine the
+      # steps to list for the run. The steps should be the same across tags
+      # unless the user uses conditionals the only write summaries now and then.
+      tensor_events = self._multiplexer.Tensors(run, tag_to_content.keys()[0])
+      response[run] = [e.step for e in tensor_events]
+    return http_util.Respond(request, response, 'application/json')
+
   def get_plugin_apps(self):
     """Gets all routes offered by the plugin.
 
@@ -93,7 +119,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return {
         '/tags': self.tags_route,
         '/pr_curves': self.pr_curves_route,
-        '/max_step_per_run': self.max_step_per_run_route,
+        '/steps_per_run': self.steps_per_run_route,
     }
 
   def is_active(self):
@@ -112,31 +138,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
     # The plugin is active if any of the runs has a tag relevant to the plugin.
     return any(six.itervalues(all_runs))
-
-  @wrappers.Request.application
-  def max_step_per_run_route(self, request):
-    """Gets a dict mapping run to the max step any of its tags exhibit.
-
-    Returns:
-      A dict with string keys (all runs with PR curve data). The values of the
-      dict are ints equal to the max step exhibited by any tag within a run.
-    """
-    all_runs = self._multiplexer.PluginRunToTagToContent(
-        PrCurvesPlugin.plugin_name)
-    response = {}
-
-    # Compute the max step exhibited by any tag for each run. If a run lacks
-    # data, exclude it from the mapping.
-    for run, tag_to_content in all_runs.items():
-      if not tag_to_content:
-        # This run lacks data for this plugin.
-        continue
-
-      # The last event contains the greatest step. If a tag is included by
-      # PluginRunToTagToContent, we know that it has at least 1 event.
-      response[run] = max([self._multiplexer.Tensors(run, tag)[-1].step
-                           for tag in tag_to_content.keys()])
-    return http_util.Respond(request, response, 'application/json')
 
   def _process_tensor_event(self, event):
     """Converts a TensorEvent into an dict that encapsulates information on it.

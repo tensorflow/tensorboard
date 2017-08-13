@@ -29,11 +29,10 @@ Polymer({
   properties: {
     runs: Array,
     tag: String,
+    // For each run, the card will display the PR curve at this step or the one
+    // closest to it, but less than it.
+    stepPerRun: Object,
 
-    // The card will display the PR curve at this step or the one closest to it,
-    // but less than it.
-    stepCap: Number,
-    
     _runToData: Object,
     /** @type {Function} */
     _colorScaleFunction: {
@@ -60,12 +59,12 @@ Polymer({
         };
       }),
       readOnly: true,
-    }
+    },
   },
   observers: [
       'reload(run, tag)',
       '_runsChanged(_attached, runs.*)',
-      '_setChartData(_runToData, stepCap)',
+      '_setChartData(_runToData, stepPerRun)',
   ],
   _computeRunColor(run) {
     return this._colorScaleFunction(run);
@@ -100,8 +99,8 @@ Polymer({
     });
     this.requestManager.request(url).then(updateData);
   },
-  _setChartData(runToData, stepCap) {
-    if (!runToData || !_.isNumber(stepCap)) {
+  _setChartData(runToData, stepPerRun) {
+    if (!runToData) {
       return;
     }
 
@@ -110,6 +109,7 @@ Polymer({
         return;
       }
 
+      const stepCap = stepPerRun[run];
       let entriesIndex = entries.length - 1;
       while (entriesIndex > 0) {
         if (entries[entriesIndex].step <= stepCap) {
@@ -119,11 +119,6 @@ Polymer({
         entriesIndex--;
       }
       const entry = entries[entriesIndex];
-
-      this.fire('run-step-updated', {
-        'run': run,
-        'step': entry.step,
-      });
 
       // Reverse the values so they are plotted in order, which allows for
       // tool tips.
