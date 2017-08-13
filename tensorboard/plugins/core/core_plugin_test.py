@@ -49,7 +49,7 @@ class CorePluginTest(tf.test.TestCase):
         multiplexer=self.multiplexer)
     self.plugin = core_plugin.CorePlugin(self._context)
     app = application.TensorBoardWSGIApp(
-        self.logdir, [self.plugin], self.multiplexer, 0)
+        self.logdir, [self.plugin], self.multiplexer, 0, base_url='')
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
   def testRoutesProvided(self):
