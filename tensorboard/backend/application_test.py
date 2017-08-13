@@ -105,6 +105,41 @@ class TensorboardServerTest(tf.test.TestCase):
     # Plugin foo is active. Plugin bar is not.
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
+class TensorboardServerBaseUrlTest(tf.test.TestCase):
+  _only_use_meta_graph = False  # Server data contains only a GraphDef
+
+  def setUp(self):
+    plugins = [
+        FakePlugin(
+            None, plugin_name='foo', is_active_value=True, routes_mapping={}),
+        FakePlugin(
+            None, plugin_name='bar', is_active_value=False, routes_mapping={}),
+    ]
+    app = application.TensorBoardWSGI(plugins, base_url='/test')
+    self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+  def _get_json(self, path):
+    response = self.server.get(path)
+    self.assertEqual(200, response.status_code)
+    self.assertEqual('application/json', response.headers.get('Content-Type'))
+    return json.loads(response.get_data().decode('utf-8'))
+
+  def testBaseUrlRequestNonexistentPage(self):
+    """Request a page that doesn't exist; it should 404."""
+    response = self.server.get('/test/asdf')
+    self.assertEqual(404, response.status_code)
+
+  def testBaseUrlNonexistentPluginsListing(self):
+    """Test the format of the data/plugins_listing endpoint."""
+    response = self.server.get('/tet/data/plugins_listing')
+    self.assertEqual(404, response.status_code)
+
+  def testPluginsListing(self):
+    """Test the format of the data/plugins_listing endpoint."""
+    parsed_object = self._get_json('/test/data/plugins_listing')
+    # Plugin foo is active. Plugin bar is not.
+    self.assertEqual(parsed_object, {'foo': True, 'bar': False})
+
 
 class TensorboardServerPluginNameTest(tf.test.TestCase):
 
@@ -124,11 +159,13 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
     ]
     if should_be_okay:
       application.TensorBoardWSGIApp(
-          temp_dir, plugins, multiplexer, reload_interval=0)
+          temp_dir, plugins, multiplexer, reload_interval=0,
+          base_url='')
     else:
       with six.assertRaisesRegex(self, ValueError, r'invalid name'):
         application.TensorBoardWSGIApp(
-            temp_dir, plugins, multiplexer, reload_interval=0)
+            temp_dir, plugins, multiplexer, reload_interval=0,
+            base_url='')
 
   def testEmptyName(self):
     self._test('', False)
@@ -144,6 +181,7 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
 
   def testComprehensiveName(self):
     self._test('Scalar-Dashboard_3000.1', True)
+
 
 
 class TensorboardServerPluginRouteTest(tf.test.TestCase):
@@ -163,11 +201,11 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
     ]
     if should_be_okay:
       application.TensorBoardWSGIApp(
-          temp_dir, plugins, multiplexer, reload_interval=0)
+          temp_dir, plugins, multiplexer, reload_interval=0, base_url='')
     else:
       with six.assertRaisesRegex(self, ValueError, r'invalid route'):
         application.TensorBoardWSGIApp(
-            temp_dir, plugins, multiplexer, reload_interval=0)
+            temp_dir, plugins, multiplexer, reload_interval=0, base_url='')
 
   def testNormalRoute(self):
     self._test('/runs', True)
@@ -327,7 +365,7 @@ class TensorBoardApplcationConstructionTest(tf.test.TestCase):
           FakePlugin(
               None, plugin_name=None, is_active_value=True, routes_mapping={}),
       ]
-      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0)
+      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '/')
 
     # Fails if there are two plugins with same name
     with self.assertRaises(ValueError):
@@ -337,7 +375,7 @@ class TensorBoardApplcationConstructionTest(tf.test.TestCase):
           FakePlugin(
               None, plugin_name='foo', is_active_value=True, routes_mapping={}),
       ]
-      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0)
+      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '/')
 
 
 class DbTest(tf.test.TestCase):
