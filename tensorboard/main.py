@@ -114,6 +114,9 @@ tf.flags.DEFINE_string(
     'event_file', '',
     'The particular event file to query for. Only used if --inspect is present '
     'and --logdir is not specified.')
+tf.flags.DEFINE_string(
+    'base_url', '',
+    'Optional relative prefix to the path, e.g. "/service/tf"')
 
 tf.flags.DEFINE_integer(
     'debugger_data_server_grpc_port', None,
@@ -147,10 +150,11 @@ def create_tb_app(plugins, assets_zip_provider=None):
       logdir=os.path.expanduser(FLAGS.logdir),
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
-      plugins=plugins)
+      plugins=plugins,
+      base_url=FLAGS.base_url)
 
 
-def make_simple_server(tb_app, host=None, port=None):
+def make_simple_server(tb_app, host=None, port=None, base_url=None):
   """Create an HTTP server for TensorBoard.
 
   Args:
@@ -161,6 +165,7 @@ def make_simple_server(tb_app, host=None, port=None):
         default to the flag value.
     port: The port to bind to (0 indicates an unused port selected by the
         operating system). If not specified, will default to the flag value.
+    base_url: Optional relative prefix to the path, e.g. "/service/tf"
 
   Returns:
     A tuple of (server, url):
@@ -176,6 +181,8 @@ def make_simple_server(tb_app, host=None, port=None):
     host = FLAGS.host
   if port is None:
     port = FLAGS.port
+  if base_url is None:
+      base_url = FLAGS.base_url
   try:
     if host:
       # The user gave us an explicit host
@@ -210,7 +217,7 @@ def make_simple_server(tb_app, host=None, port=None):
     raise socket_error
 
   final_port = server.socket.getsockname()[1]
-  tensorboard_url = 'http://%s:%d' % (final_host, final_port)
+  tensorboard_url = 'http://%s:%d%s' % (final_host, final_port, base_url)
   return server, tensorboard_url
 
 
