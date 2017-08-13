@@ -79,8 +79,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     all_runs = self._multiplexer.PluginRunToTagToContent(
         PrCurvesPlugin.plugin_name)
     response = {
-        run: list(tagToContent.keys())
-             for (run, tagToContent) in all_runs.items()
+        run: list(tag_to_content.keys())
+             for (run, tag_to_content) in all_runs.items()
     }
     return http_util.Respond(request, response, 'application/json')
 
@@ -93,6 +93,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return {
         '/tags': self.tags_route,
         '/pr_curves': self.pr_curves_route,
+        '/max_step_per_run': self.max_step_per_run_route,
     }
 
   def is_active(self):
@@ -111,6 +112,31 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
     # The plugin is active if any of the runs has a tag relevant to the plugin.
     return any(six.itervalues(all_runs))
+
+  @wrappers.Request.application
+  def max_step_per_run_route(self, request):
+    """Gets a dict mapping run to the max step any of its tags exhibit.
+
+    Returns:
+      A dict with string keys (all runs with PR curve data). The values of the
+      dict are ints equal to the max step exhibited by any tag within a run.
+    """
+    all_runs = self._multiplexer.PluginRunToTagToContent(
+        PrCurvesPlugin.plugin_name)
+    response = {}
+
+    # Compute the max step exhibited by any tag for each run. If a run lacks
+    # data, exclude it from the mapping.
+    for run, tag_to_content in all_runs.items():
+      if not tag_to_content:
+        # This run lacks data for this plugin.
+        continue
+
+      # The last event contains the greatest step. If a tag is included by
+      # PluginRunToTagToContent, we know that it has at least 1 event.
+      response[run] = max([self._multiplexer.Tensors(run, tag)[-1].step
+                           for tag in tag_to_content.keys()])
+    return http_util.Respond(request, response, 'application/json')
 
   def _process_tensor_event(self, event):
     """Converts a TensorEvent into an dict that encapsulates information on it.

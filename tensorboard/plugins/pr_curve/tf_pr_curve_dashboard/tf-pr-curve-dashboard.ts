@@ -18,6 +18,14 @@ Polymer({
   properties: {
     _selectedRuns: Array,
     _runToTag: Object,  // map<run: string, tags: string[]>
+    _maxStepPerRun: {
+      type: Object, // map<run: string, max_step: number>
+      value: {},
+    },
+    // TODO(chizeng): Make sliders for each run.
+    // TODO(chizeng): Make slider accept a callback for when the slider changes.
+      // ie, update _stepPerRun
+    // TODO(chizeng): Each card listens for changes in _stepPerRun.
     _dataNotFound: Boolean,
     _tagFilter: {
       type: String,  // upward bound from paper-input
@@ -64,7 +72,7 @@ Polymer({
     this.reload();
   },
   reload() {
-    this._fetchTags().then(() => {
+    Promise.all([this._fetchTags(), this._fetchMaxStepsPerRun()]).then(() => {
       this._reloadCards();
     });
   },
@@ -78,6 +86,16 @@ Polymer({
       const tags = getTags(runToTag);
       this.set('_dataNotFound', tags.length === 0);
       this.set('_runToTag', runToTag);
+    });
+  },
+  _fetchMaxStepsPerRun() {
+    const url = getRouter().pluginRoute('pr_curves', '/max_step_per_run');
+    return this._requestManager.request(url).then(maxStepPerRun => {
+      if (_.isEqual(maxStepPerRun, this._maxStepPerRun)) {
+        // No need to update anything if there are no changes.
+        return;
+      }
+      this.set('_maxStepPerRun', maxStepPerRun);
     });
   },
   _reloadCards() {
