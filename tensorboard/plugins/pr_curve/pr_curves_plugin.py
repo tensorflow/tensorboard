@@ -47,7 +47,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       containing data required for PR curves for that run. Runs that either
       cannot be found or that lack tags will be excluded from the response.
     """
-    comma_separated_runs = request.args.get('runs')
+    comma_separated_runs = request.args.getlist('run')
     runs = comma_separated_runs.split(',') if comma_separated_runs else []
     tag = request.args.get('tag')
 
@@ -56,9 +56,11 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       try:
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
-        tf.logging.warn(
-            'No PR curves could be fetched for run %r and tag %r', run, tag)
-        continue
+        return http_util.Respond(
+            request,
+            'No PR curves could be fetched for run %r and tag %r' % (run, tag),
+            'text/plain',
+            400)
       
       response_mapping[run] = [
           self._process_tensor_event(e) for e in tensor_events]
@@ -101,12 +103,14 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       Whether this plugin is active.
     """
+    if not self._multiplexer:
+      return False
+
     all_runs = self._multiplexer.PluginRunToTagToContent(
         PrCurvesPlugin.plugin_name)
 
-    # The plugin is active if any of the runs has a tag relevant
-    # to the plugin.
-    return bool(self._multiplexer and any(six.itervalues(all_runs)))
+    # The plugin is active if any of the runs has a tag relevant to the plugin.
+    return any(six.itervalues(all_runs))
 
   def _process_tensor_event(self, event):
     """Converts a TensorEvent into an dict that encapsulates information on it.

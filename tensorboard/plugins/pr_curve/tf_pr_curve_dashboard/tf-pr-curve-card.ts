@@ -68,9 +68,9 @@ Polymer({
     }
   },
   observers: [
-      "reload(run, tag)",
-      "_runsChanged(_attached, runs.*)",
-      "_setChartData(_runToData, stepCap)",
+      'reload(run, tag)',
+      '_runsChanged(_attached, runs.*)',
+      '_setChartData(_runToData, stepCap)',
   ],
   _computeRunColor(run) {
     return this._colorScaleFunction(run);
@@ -91,9 +91,10 @@ Polymer({
     }
     this._canceller.cancelAll();
     const router = getRouter();
-    let url = router.pluginRoute("pr_curve", "/pr_curves");
+    let url = router.pluginRoute('pr_curves', '/pr_curves');
     url += url.indexOf('?') > -1 ? '&' : '?';
-    url += `tag=${this.tag}&runs=${this.runs.join(',')}`;
+    const urlRunsPortion = this.runs.map(r => `run=${r}`).join('&');
+    url += `tag=${this.tag}&${urlRunsPortion}`;
     const updateData = this._canceller.cancellable(result => {
       if (result.cancelled) {
         return;

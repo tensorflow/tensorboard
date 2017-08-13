@@ -69,7 +69,7 @@ Polymer({
     });
   },
   _fetchTags() {
-    const url = getRouter().pluginRoute('pr_curve', '/tags');
+    const url = getRouter().pluginRoute('pr_curves', '/tags');
     return this._requestManager.request(url).then(runToTag => {
       if (_.isEqual(runToTag, this._runToTag)) {
         // No need to update anything if there are no changes.
