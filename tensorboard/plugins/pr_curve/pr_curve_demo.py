@@ -214,7 +214,7 @@ def run_all(logdir, steps, thresholds, verbose=False):
       assign_random_weights=True)
 
 
-def main(unused_argv):=
+def main(unused_argv):
   logdir = os.path.expanduser(FLAGS.logdir)
   print('Saving output to %s.' % logdir)
   run_all(logdir, FLAGS.steps, 50, verbose=True)
