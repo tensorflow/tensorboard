@@ -46,7 +46,6 @@ tf.flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
 tf.flags.DEFINE_integer('steps', 10,
                         'Number of steps to generate for each PR curve.')
 
-
 def start_runs(
     logdir,
     steps,
@@ -184,7 +183,6 @@ def start_runs(
 
   writer.close()
 
-
 def run_all(logdir, steps, thresholds, verbose=False):
   """Generate PR curve summaries.
 
@@ -216,7 +214,6 @@ def run_all(logdir, steps, thresholds, verbose=False):
       run_name=run_name,
       thresholds=thresholds,
       mask_every_other_prediction=True)
-
 
 def main(unused_argv):
   print('Saving output to %s.' % FLAGS.logdir)

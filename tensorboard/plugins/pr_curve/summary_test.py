@@ -61,6 +61,9 @@ class PrCurveTest(tf.test.TestCase):
     """
     self.assertEqual(expected_step, tensor_event.step)
     tensor_nd_array = tf.make_ndarray(tensor_event.tensor_proto)
+    # We use an absolute error instead of a relative one because the expected
+    # values are small. The default relative error (trol) of 1e-7 yields many
+    # undesired test failures.
     np.testing.assert_allclose(
         expected_value, tensor_nd_array, rtol=0, atol=1e-7)
 
