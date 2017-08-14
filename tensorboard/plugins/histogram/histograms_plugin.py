@@ -74,7 +74,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
-        content = metadata.parse_summary_metadata(content)
+        content = metadata.parse_plugin_metadata(content)
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(
