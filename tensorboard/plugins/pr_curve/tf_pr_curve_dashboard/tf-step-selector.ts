@@ -21,28 +21,23 @@ Polymer({
   properties: {
     // The run this step slider is for.
     run: String,
+    // The color to use to visualize the run.
+    color: String,
     // A mapping between run and list of steps to use for the slider for that
     // run. This component indexes into this object to retrieve the steps.
     stepsPerRun: Object,
-    // The object mapping run to step per run. This object is updated by this
-    // component when the selected step for the run changes.
-    stepPerRun: {
-      type: Object,
-      notify: true,
-    },
     // An array of numbers that are step values.
     steps: {
       type: Array,
-      computed: '_computeSteps(stepsPerRun)',
+      computed: '_computeSteps(run, stepsPerRun)',
     },
-    // The current step. Other components should 2-way bind to this property.
     _currentStep: {
       type: Number,
-      computed: '_computeCurrentStep(_stepIndex)',
+      computed: '_computeCurrentStep(steps, _stepIndex)',
     },
     _stepText: {
       type: String,
-      computed: '_computeStepText(currentStep)',
+      computed: '_computeStepText(_currentStep)',
     },
     _maxStepIndex: {
       type: Number,
@@ -51,23 +46,23 @@ Polymer({
     _stepIndex: Number,
   },
   observers: [
-    '_currentStepChanged(_currentStep)',
+    '_currentStepChanged(run, _currentStep)',
     '_stepsListChanged(steps)',
   ],
-  _currentStepChanged(currentStep) {
-    if (currentStep != this.stepPerRun[this.run]) {
-      this.stepPerRun[this.run] = currentStep;
-      this.set('stepPerRun', this.stepPerRun);
-    }
+  _currentStepChanged(run, currentStep) {
+    this.fire('step-selected-changed', {
+      'run': run,
+      'step': currentStep,
+    });
   },
-  _computeSteps(stepsPerRun) {
-    return stepsPerRun.keys();
+  _computeSteps(run, stepsPerRun) {
+    return stepsPerRun[run];
   },
   _computeCurrentStep(steps, stepIndex) {
     if (!steps || stepIndex >= steps.length) {
       return null;
     }
-    return this.steps[stepIndex];
+    return steps[stepIndex];
   },
   _computeStepText(currentStep) {
     if (_.isNumber(currentStep)) {

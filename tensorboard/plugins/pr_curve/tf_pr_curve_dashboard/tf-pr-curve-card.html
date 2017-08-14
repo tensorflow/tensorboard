@@ -41,6 +41,17 @@ limitations under the License.
       </template>
     </div>
 
+    <div id="step-legend">
+      <template is="dom-repeat" items="[[_runsWithStepAvailable]]" as="run">
+        <div class="run-label">
+          [[run]]
+        </div>
+        <div class="step-label">
+          [[_computeCurrentStepForRun(_actualStepPerRun, run)]]
+        </div>
+      </template>
+    </div>
+
     <style>
       :host {
         display: flex;
@@ -78,6 +89,17 @@ limitations under the License.
       vz-line-chart {
         -webkit-user-select: none;
         -moz-user-select: none;
+      }
+      #step-legend {
+        width: 100%;
+      }
+      .run-label {
+        width: 50%;
+      }
+      .step-label {
+        box-sizing: border-box;
+        width: 50%;
+        padding: 0 0 0 10px;
       }
     </style>
   </template>

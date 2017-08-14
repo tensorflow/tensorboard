@@ -20,13 +20,10 @@ Polymer({
     // curve at this exact step value, the greatest step value less than this
     // value will be used.
     _stepPerRun: {
-      type: Object, // map<run: string, steps: number>
+      type: Object,  // map<run: string, step: number>
+      notify: true,
       value: {},
     },
-    // TODO(chizeng): Make sliders for each run.
-    // TODO(chizeng): Make slider accept a callback for when the slider changes.
-      // ie, update _stepPerRun
-    // TODO(chizeng): Each card listens for changes in _stepPerRun.
     _dataNotFound: Boolean,
     _tagFilter: {
       type: String,  // upward bound from paper-input
@@ -52,10 +49,8 @@ Polymer({
       readOnly: true,
     },
   },
-  listeners: {
-    'data-updated': '_handleNewRunToDataMapping',
-    'run-step-updated': '_handleRunStepUpdated',
-  },
+  // TODO(chizeng): Create a widget with multiple sliders. That uses
+  // parts of that slider widget, except we store the mapping directly.
   ready() {
     this.reload();
   },

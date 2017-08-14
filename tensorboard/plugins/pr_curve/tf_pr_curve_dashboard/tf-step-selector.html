@@ -26,6 +26,12 @@ limitations under the License.
     <div id="step-display-container">
       step <span id="step-text">[[_stepText]]</span>
     </div>
+    <div id="run-display-container">
+      <div id="run-color-box" style="background:[[color]];"></div>
+      <div id="run-text">
+        [[run]]
+      </div>
+    </div>
     <paper-slider
         id="slider"
         value="{{_stepIndex}}"
@@ -37,12 +43,27 @@ limitations under the License.
         ></paper-slider>
     <style>
       #slider {
-        margin: 0 0 0 -5px;
-        width: 100%;
+        margin: -8px 0 0 -15px;
+        width: calc(100% + 31px);
       }
       
       #step-display-container {
-        margin: 10px 15px 0 10px;
+        margin: 10px 15px 0 0;
+      }
+
+      #run-display-container {
+        font-size: 0.7em;
+      }
+
+      #run-text {
+        display: inline-block;
+      }
+
+      #run-color-box {
+        width: 8px;
+        height: 8px;
+        border-radius: 3px;
+        display: inline-block;
       }
     </style>
   </template>

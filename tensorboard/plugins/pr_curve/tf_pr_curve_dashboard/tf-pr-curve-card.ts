@@ -31,8 +31,18 @@ Polymer({
     tag: String,
     // For each run, the card will display the PR curve at this step or the one
     // closest to it, but less than it.
-    stepPerRun: Object,
-
+    stepCapPerRun: Object,
+    // This maps a run to the actual step that is presented in the PR curve.
+    _actualStepPerRun: {
+      type: Object,
+      value: {},
+    },
+    // A list of runs with an available step. Used to populate the table of
+    // steps per run.
+    _runsWithStepAvailable: {
+      type: Array,
+      computed: "_computeRunsWithStepAvailable(_actualStepPerRun)",
+    },
     _runToData: Object,
     /** @type {Function} */
     _colorScaleFunction: {
@@ -64,7 +74,7 @@ Polymer({
   observers: [
       'reload(run, tag)',
       '_runsChanged(_attached, runs.*)',
-      '_setChartData(_runToData, stepPerRun)',
+      '_setChartData(_runToData, stepCapPerRun)',
   ],
   _computeRunColor(run) {
     return this._colorScaleFunction(run);
@@ -99,7 +109,7 @@ Polymer({
     });
     this.requestManager.request(url).then(updateData);
   },
-  _setChartData(runToData, stepPerRun) {
+  _setChartData(runToData, stepCapPerRun) {
     if (!runToData) {
       return;
     }
@@ -109,7 +119,7 @@ Polymer({
         return;
       }
 
-      const stepCap = stepPerRun[run];
+      const stepCap = stepCapPerRun[run];
       let entriesIndex = entries.length - 1;
       while (entriesIndex > 0) {
         if (entries[entriesIndex].step <= stepCap) {
@@ -119,6 +129,12 @@ Polymer({
         entriesIndex--;
       }
       const entry = entries[entriesIndex];
+
+      if (this._actualStepPerRun[run] != entry.step) {
+        // Update the step shown for this run within the card.
+        this._actualStepPerRun[run] = entry.step;
+        this.set('_actualStepPerRun', this._actualStepPerRun);
+      }
 
       // Reverse the values so they are plotted in order, which allows for
       // tool tips.
@@ -141,5 +157,11 @@ Polymer({
     }
     this.$$('vz-line-chart').setVisibleSeries(this.runs);
     this.reload();
+  },
+  _computeRunsWithStepAvailable(actualStepPerRun) {
+    return _.keys(actualStepPerRun).sort();
+  },
+  _computeCurrentStepForRun(actualStepPerRun, run) {
+    return actualStepPerRun[run];
   },
 });

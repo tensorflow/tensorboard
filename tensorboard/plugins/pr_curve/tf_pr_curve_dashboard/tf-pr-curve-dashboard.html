@@ -33,16 +33,18 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
-        <div class="sidebar-section">
-          <template is="dom-repeat"
-                    items="[[_listOfRuns]]"
-                    as="run">
-            <tf-step-selector
-                run="[[run]]"
-                step-per-run="[[_stepPerRun]]"
-                steps-per-run="[[_stepsPerRun]]"></tf-step-selector>
-          </template>
-        </div>
+        <template is="dom-if" if="[[_stepsPerRun]]">
+          <div class="sidebar-section">
+            <template is="dom-repeat"
+                      items="{{_listOfRuns}}"
+                      as="run">
+              <tf-step-selector
+                  run="[[run]]"
+                  color="[[_computeColorForRun(run)]]"
+                  steps-per-run="[[_stepsPerRun]]"></tf-step-selector>
+            </template>
+          </div>
+        </template>
         <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
@@ -97,7 +99,7 @@ limitations under the License.
                           runs="[[item.runs]]"
                           tag="[[item.tag]]"
                           request-manager="[[_requestManager]]"
-                          step-per-run="[[_stepPerRun]]"
+                          step-cap-per-run="[[_stepPerRun]]"
                         ></tf-pr-curve-card>
                       </template>
                     </div>
