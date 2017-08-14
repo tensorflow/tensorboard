@@ -22,11 +22,8 @@ ts_web_library(
     name = "tf_pr_curve_dashboard",
     srcs = [
         "tf-pr-curve-card.html",
-        "tf-pr-curve-card.ts",
         "tf-pr-curve-dashboard.html",
-        "tf-pr-curve-dashboard.ts",
         "tf-step-selector.html",
-        "tf-step-selector.ts",
     ],
     path = "/tf-pr-curve-dashboard",
     deps = [
