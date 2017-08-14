@@ -39,7 +39,7 @@ Polymer({
     },
     _currentStep: {
       type: Number,
-      computed: '_computeCurrentStep(stepPerRun, steps, _stepIndex)',
+      computed: '_computeCurrentStep(steps, _stepIndex)',
     },
     _stepText: {
       type: String,
@@ -52,12 +52,15 @@ Polymer({
     _stepIndex: Number,
   },
   observers: [
-    '_currentStepChanged(run, _currentStep)',
+    '_currentStepChanged(stepPerRun, run, _currentStep)',
     '_stepsListChanged(steps)',
   ],
   _currentStepChanged(stepPerRun, run, currentStep) {
     if (stepPerRun[run] != currentStep) {
       stepPerRun[run] = currentStep;
+      // This clone is unfortunately necessary for Polymer to notify a change in
+      // the object. Otherwise, Polymer does not seem to notify if the same
+      // object reference is used.
       this.set('stepPerRun', _.clone(stepPerRun));
     }
   },

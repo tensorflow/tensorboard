@@ -43,11 +43,15 @@ limitations under the License.
 
     <div id="step-legend">
       <template is="dom-repeat" items="[[_runsWithStepAvailable]]" as="run">
-        <div class="run-label">
-          [[run]]
-        </div>
-        <div class="step-label">
-          [[_computeCurrentStepForRun(_actualStepPerRun, run)]]
+        <div class="legend-row">
+          <div class="color-box"
+               style="background: [[_computeRunColor(run)]];">
+          </div>
+          [[run]] is at 
+          <span class="step-label-text">
+            step [[_computeCurrentStepForRun(_actualStepPerRun, run)]]
+          </span><br>
+          ([[_computeCurrentWallTimeForRun(_actualWallTimePerRun, run)]])
         </div>
       </template>
     </div>
@@ -59,7 +63,7 @@ limitations under the License.
         width: 330px;
         height: 235px;
         margin-right: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 25px;
       }
       :host[_expanded] {
         width: 700px;
@@ -91,15 +95,28 @@ limitations under the License.
         -moz-user-select: none;
       }
       #step-legend {
+        font-size: 0.8em;
+        width: 100%;
+      }
+      .legend-row {
+        margin: 5px 0 5px 0;
         width: 100%;
       }
       .run-label {
-        width: 50%;
-      }
-      .step-label {
+        width: 30%;
+        display: inline-block;
+        word-wrap: break-word;
         box-sizing: border-box;
-        width: 50%;
-        padding: 0 0 0 10px;
+        padding: 0 0 0 8px;
+      }
+      .color-box {
+        display: inline-block;
+        border-radius: 1px;
+        width: 10px;
+        height: 10px;
+      }
+      .step-label-text {
+        font-weight: bold;
       }
     </style>
   </template>

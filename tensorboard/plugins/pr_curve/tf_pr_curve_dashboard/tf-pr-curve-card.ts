@@ -37,6 +37,12 @@ Polymer({
       type: Object,
       value: {},
     },
+    // This maps a run to the actual wall time that is presented in the PR
+    // curve.
+    _actualWallTimePerRun: {
+      type: Object,
+      value: {},
+    },
     // A list of runs with an available step. Used to populate the table of
     // steps per run.
     _runsWithStepAvailable: {
@@ -77,7 +83,7 @@ Polymer({
       '_setChartData(_runToData, stepCapPerRun)',
   ],
   _computeRunColor(run) {
-    return this._colorScaleFunction(run);
+    return this._colorScaleFunction.scale(run);
   },
   attached() {
     // Defer reloading until after we're attached, because that ensures that
@@ -130,11 +136,12 @@ Polymer({
       }
       const entry = entries[entriesIndex];
 
-      if (this._actualStepPerRun[run] != entry.step) {
-        // Update the step shown for this run within the card.
-        this._actualStepPerRun[run] = entry.step;
-        this.set('_actualStepPerRun', this._actualStepPerRun);
-      }
+      // Update the step shown for this run within the card.
+      this._actualStepPerRun[run] = entry.step;
+      this._actualWallTimePerRun[run] = entry.wall_time;
+
+      // This clone operation is necessary for Polymer to notify an update.
+      this.set('_actualStepPerRun', _.clone(this._actualStepPerRun));
 
       // Reverse the values so they are plotted in order, which allows for
       // tool tips.
@@ -163,5 +170,8 @@ Polymer({
   },
   _computeCurrentStepForRun(actualStepPerRun, run) {
     return actualStepPerRun[run];
+  },
+  _computeCurrentWallTimeForRun(actualWallTimePerRun, run) {
+    return new Date(actualWallTimePerRun[run] * 1000).toString();
   },
 });

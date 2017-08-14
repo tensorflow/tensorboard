@@ -106,7 +106,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # Just use the list of tensor events for any of the tags to determine the
       # steps to list for the run. The steps should be the same across tags
       # unless the user uses conditionals the only write summaries now and then.
-      tensor_events = self._multiplexer.Tensors(run, tag_to_content.keys()[0])
+      tensor_events = self._multiplexer.Tensors(
+          run, list(tag_to_content.keys())[0])
       response[run] = [e.step for e in tensor_events]
     return http_util.Respond(request, response, 'application/json')
 
