@@ -73,7 +73,7 @@ class PrCurveTest(tf.test.TestCase):
     tag_content_dict = accumulator.PluginTagToContent('pr_curves')
 
     # Test the summary contents.
-    expected_tags = ['red/red', 'green/green', 'blue/blue']
+    expected_tags = ['red/pr_curves', 'green/pr_curves', 'blue/pr_curves']
     self.assertItemsEqual(expected_tags, list(tag_content_dict.keys()))
 
     for tag in expected_tags:
@@ -88,7 +88,7 @@ class PrCurveTest(tf.test.TestCase):
 
     # Test the output for the red classifier. The red classifier has the
     # narrowest standard deviation.
-    tensor_events = accumulator.Tensors('red/red')
+    tensor_events = accumulator.Tensors('red/pr_curves')
     self.validateTensorEvent(0, [
       [100.0, 45.0, 11.0, 2.0, 0.0],  # True positives.
       [350.0, 50.0, 11.0, 2.0, 0.0],  # False positives.
@@ -115,7 +115,7 @@ class PrCurveTest(tf.test.TestCase):
     ], tensor_events[2])
 
     # Test the output for the green classifier.
-    tensor_events = accumulator.Tensors('green/green')
+    tensor_events = accumulator.Tensors('green/pr_curves')
     self.validateTensorEvent(0, [
       [200.0, 125.0, 48.0, 7.0, 0.0],  # True positives.
       [250.0, 100.0, 13.0, 2.0, 0.0],  # False positives.
@@ -143,7 +143,7 @@ class PrCurveTest(tf.test.TestCase):
 
     # Test the output for the blue classifier. The normal distribution that is
     # the blue classifier has the widest standard deviation.
-    tensor_events = accumulator.Tensors('blue/blue')
+    tensor_events = accumulator.Tensors('blue/pr_curves')
     self.validateTensorEvent(0, [
       [150.0, 126.0, 45.0, 6.0, 0.0],  # True positives.
       [300.0, 201.0, 38.0, 2.0, 0.0],  # False positives.
@@ -175,7 +175,7 @@ class PrCurveTest(tf.test.TestCase):
     tag_content_dict = accumulator.PluginTagToContent('pr_curves')
 
     # Test the summary contents.
-    expected_tags = ['red/red', 'green/green', 'blue/blue']
+    expected_tags = ['red/pr_curves', 'green/pr_curves', 'blue/pr_curves']
     self.assertItemsEqual(expected_tags, list(tag_content_dict.keys()))
 
     for tag in expected_tags:
@@ -190,7 +190,7 @@ class PrCurveTest(tf.test.TestCase):
 
     # Test the output for the red classifier. The red classifier has the
     # narrowest standard deviation.
-    tensor_events = accumulator.Tensors('red/red')
+    tensor_events = accumulator.Tensors('red/pr_curves')
     self.validateTensorEvent(0, [
       [50.0, 22.0, 4.0, 0.0, 0.0],  # True positives.
       [175.0, 22.0, 6.0, 1.0, 0.0],  # False positives.
@@ -219,7 +219,7 @@ class PrCurveTest(tf.test.TestCase):
     ], tensor_events[2])
 
     # Test the output for the green classifier.
-    tensor_events = accumulator.Tensors('green/green')
+    tensor_events = accumulator.Tensors('green/pr_curves')
 
     self.validateTensorEvent(0, [
       [100.0, 71.0, 24.0, 2.0, 0.0],  # True positives.
@@ -250,7 +250,7 @@ class PrCurveTest(tf.test.TestCase):
 
     # Test the output for the blue classifier. The normal distribution that is
     # the blue classifier has the widest standard deviation.
-    tensor_events = accumulator.Tensors('blue/blue')
+    tensor_events = accumulator.Tensors('blue/pr_curves')
 
     self.validateTensorEvent(0, [
       [75.0, 64.0, 21.0, 5.0, 0.0],  # True positives.
