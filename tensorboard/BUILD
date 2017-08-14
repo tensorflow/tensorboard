@@ -128,7 +128,10 @@ py_library(
     srcs = ["db.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//tensorboard:expect_sqlite3_installed"],
+    deps = [
+        ":util",
+        "//tensorboard:expect_sqlite3_installed",
+    ],
 )
 
 py_test(
@@ -140,7 +143,20 @@ py_test(
     deps = [
         ":db",
         ":test_util",
+        ":util",
         "//tensorboard:expect_sqlite3_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_binary(
+    name = "encode_png_benchmark",
+    srcs = ["encode_png_benchmark.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":util",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
@@ -175,7 +191,10 @@ py_library(
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//tensorboard:expect_tensorflow_installed"],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_test(
@@ -186,6 +205,7 @@ py_test(
     deps = [
         ":test_util",
         ":util",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
@@ -213,6 +233,7 @@ py_test(
         ":test_util",
         ":util",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 

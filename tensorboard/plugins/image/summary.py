@@ -25,6 +25,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
+from tensorboard import util
 from tensorboard.plugins.image import metadata
 
 
@@ -112,7 +113,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
     raise ValueError('Shape %r must have rank 4' % (images.shape, ))
 
   limited_images = images[:max_outputs]
-  encoded_images = [_encode_png(image) for image in limited_images]
+  encoded_images = [util.encode_png(image) for image in limited_images]
   (width, height) = (images.shape[1], images.shape[2])
   content = [str(width), str(height)] + encoded_images
   tensor = tf.make_tensor_proto(content, dtype=tf.string)
@@ -127,9 +128,3 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
                     metadata=summary_metadata,
                     tensor=tensor)
   return summary
-
-
-def _encode_png(image):
-  # TODO(@wchargin): Pick a third-party PNG backend and implement this.
-  del image
-  raise NotImplementedError('Encoding PNGs in Python is not yet supported.')

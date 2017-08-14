@@ -364,16 +364,21 @@ class EventAccumulator(object):
           # this logic.
           if tag not in self.summary_metadata:
             self.summary_metadata[tag] = value.metadata
-            for plugin_data in value.metadata.plugin_data:
+            plugin_data = value.metadata.plugin_data
+            if plugin_data.plugin_name:
               self._plugin_to_tag_to_content[plugin_data.plugin_name][tag] = (
                   plugin_data.content)
+            else:
+              tf.logging.warn(
+                  ('This summary with tag %r is oddly not associated with a '
+                   'plugin.'), tag)
 
         for summary_type, summary_func in SUMMARY_TYPES.items():
           if value.HasField(summary_type):
             datum = getattr(value, summary_type)
             tag = value.tag
             if summary_type == 'tensor' and not tag:
-              # This tensor summary was created using the old nethod that used
+              # This tensor summary was created using the old method that used
               # plugin assets. We must still continue to support it.
               tag = value.node_name
             getattr(self, summary_func)(tag, event.wall_time, event.step, datum)
@@ -578,14 +583,8 @@ class EventAccumulator(object):
     summary_metadata = self.summary_metadata.get(tag)
     if summary_metadata is None:
       return default
-    # In the vast majority of cases, there will not be more than one
-    # plugin associated with any tag. But in the case that this does
-    # happen, we'll take the maximum of all the suggestions, erring on
-    # the side of preserving data.
-    guidances = [self._tensor_size_guidance[data.plugin_name]
-                 for data in summary_metadata.plugin_data
-                 if data.plugin_name in self._tensor_size_guidance]
-    return max(guidances) if guidances else default
+    return self._tensor_size_guidance.get(
+        summary_metadata.plugin_data.plugin_name, default)
 
   def _Purge(self, event, by_tags):
     """Purge all events that have occurred after the given event.step.

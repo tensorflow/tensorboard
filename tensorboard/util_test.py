@@ -16,10 +16,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools
 import logging
 import time
 
 import six
+import numpy as np
 import tensorflow as tf
 
 from tensorboard import test_util
@@ -159,6 +161,49 @@ class LogHandlerTest(tf.test.TestCase):
     self.assertEqual('', stream.getvalue())
 
 
+class RetrierTest(test_util.TestCase):
+
+  def __init__(self, *args, **kwargs):
+    super(RetrierTest, self).__init__(*args, **kwargs)
+    self.clock = test_util.FakeClock()
+    self.sleep = test_util.FakeSleep(self.clock)
+    self.Retrier = functools.partial(util.Retrier, sleep=self.sleep)
+
+  def testOneMaxAttempt_justDelegates(self):
+    retrier = self.Retrier(max_attempts=1, is_transient=lambda e: True)
+    self.assertIsNone(retrier.run(lambda: None))
+    self.assertEqual('hello', retrier.run(lambda: 'hello'))
+    with self.assertRaises(ValueError):
+      retrier.run(FailThenSucceed(raises=[ValueError]))
+    self.assertEqual(0.0, self.clock.get_time())
+
+  def testThreeFailures_hasExponentialDelayAndRecovers(self):
+    retrier = self.Retrier(max_attempts=4, is_transient=lambda e: True)
+    callback = FailThenSucceed(raises=[Exception, Exception, Exception],
+                               returns=['hi'])
+    self.assertEqual('hi', retrier.run(callback))
+    self.assertEqual((1 + 2 + 4) * util.Retrier.DELAY, self.clock.get_time())
+
+  def testNotATransientError_doesntRetry(self):
+    retrier = self.Retrier(is_transient=lambda e: isinstance(e, IOError))
+    with self.assertRaises(ValueError):
+      retrier.run(FailThenSucceed(raises=[ValueError]))
+    self.assertEqual(0.0, self.clock.get_time())
+    self.assertTrue(retrier.run(FailThenSucceed(raises=[IOError])))
+    self.assertEqual(util.Retrier.DELAY, self.clock.get_time())
+
+
+class FailThenSucceed(object):
+  def __init__(self, raises=(Exception,), returns=(True,)):
+    self._raises = list(raises)
+    self._returns = list(returns)
+
+  def __call__(self):
+    if self._raises:
+      raise self._raises.pop(0)
+    return self._returns.pop(0)
+
+
 def make_record(level, msg, *args):
   record = logging.LogRecord(
       name='tensorflow',
@@ -181,6 +226,78 @@ def TerminalStringIO():
   stream = six.StringIO()
   stream.isatty = lambda: True
   return stream
+
+
+class TensorFlowPngEncoderTest(tf.test.TestCase):
+  """Tests for the private `_TensorFlowPngEncoder` class.
+
+  The functionality of this class is tested via the `SummaryTest` (via
+  the `summary.pb` function). This class tests how it interacts with
+  other graphs and sessions---namely, not at all!
+  """
+
+  def setUp(self):
+    super(TensorFlowPngEncoderTest, self).setUp()
+
+    patch = tf.test.mock.patch('tensorflow.Session', wraps=tf.Session)
+    patch.start()
+    self.addCleanup(patch.stop)
+
+    self._encoder = util._TensorFlowPngEncoder()
+    self._rgb = np.arange(12 * 34 * 3).reshape((12, 34, 3)).astype(np.uint8)
+    self._rgba = np.arange(21 * 43 * 4).reshape((21, 43, 4)).astype(np.uint8)
+
+  def _check_png(self, data):
+    # If it has a valid PNG header and is of a reasonable size, we can
+    # assume it did the right thing. We trust the underlying
+    # `encode_png` op.
+    self.assertEqual(b'\x89PNG', data[:4])
+    self.assertGreater(len(data), 128)
+
+  def test_invalid_non_numpy(self):
+    with six.assertRaisesRegex(self, ValueError, "must be a numpy array"):
+      self._encoder.encode(self._rgb.tolist())
+
+  def test_invalid_non_uint8(self):
+    with six.assertRaisesRegex(self, ValueError, "dtype must be uint8"):
+      self._encoder.encode(self._rgb.astype(np.float32))
+
+  def test_encodes_png(self):
+    data = self._encoder.encode(self._rgb)
+    self._check_png(data)
+
+  def test_encodes_png_with_alpha(self):
+    data = self._encoder.encode(self._rgba)
+    self._check_png(data)
+
+  def test_preserves_existing_graph(self):
+    tf.constant(1) + tf.constant(2)  # pylint: disable=expression-not-assigned
+    original_graph = tf.get_default_graph()
+    original_proto = original_graph.as_graph_def().SerializeToString()
+    assert len(original_proto) > 10, original_graph
+    self._encoder.encode(self._rgb)
+    self.assertIs(original_graph, tf.get_default_graph())
+    self.assertEqual(original_proto,
+                     tf.get_default_graph().as_graph_def().SerializeToString())
+
+  def test_preserves_existing_session(self):
+    with tf.Session() as sess:
+      op = tf.reduce_sum([2, 2])
+      self.assertIs(sess, tf.get_default_session())
+      data = self._encoder.encode(self._rgb)
+      self._check_png(data)
+      self.assertIs(sess, tf.get_default_session())
+      number_of_lights = sess.run(op)
+      self.assertEqual(number_of_lights, 4)
+
+  def test_lazily_initializes_sessions(self):
+    self.assertEqual(tf.Session.call_count, 0)
+
+  def test_reuses_sessions(self):
+    self._encoder.encode(self._rgb)
+    self.assertEqual(tf.Session.call_count, 1)
+    self._encoder.encode(self._rgb)
+    self.assertEqual(tf.Session.call_count, 1)
 
 
 if __name__ == '__main__':

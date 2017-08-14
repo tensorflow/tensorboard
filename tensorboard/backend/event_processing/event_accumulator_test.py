@@ -523,7 +523,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTrue(np.array_equal(string, six.b('foobar')))
 
   def _testTFSummaryTensor_SizeGuidance(self,
-                                        plugin_names,
+                                        plugin_name,
                                         tensor_size_guidance,
                                         steps,
                                         expected_count):
@@ -531,9 +531,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     writer = tf.summary.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
-      summary_metadata = tf.SummaryMetadata()
-      for plugin_name in plugin_names:
-        summary_metadata.plugin_data.add(plugin_name=plugin_name, content='{}')
+      summary_metadata = tf.SummaryMetadata(
+          plugin_data=tf.SummaryMetadata.PluginData(plugin_name=plugin_name,
+                                                    content='{}'))
       tf.summary.tensor_summary('scalar', tf.constant(1.0),
                                 summary_metadata=summary_metadata)
       merged = tf.summary.merge_all()
@@ -550,7 +550,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
   def testTFSummaryTensor_SizeGuidance_DefaultToTensorGuidance(self):
     self._testTFSummaryTensor_SizeGuidance(
-        plugin_names=['jabberwocky'],
+        plugin_name='jabberwocky',
         tensor_size_guidance={},
         steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
         expected_count=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS])
@@ -559,7 +559,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     size = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
     assert size < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], size
     self._testTFSummaryTensor_SizeGuidance(
-        plugin_names=['jabberwocky'],
+        plugin_name='jabberwocky',
         tensor_size_guidance={'jabberwocky': size},
         steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
         expected_count=size)
@@ -567,22 +567,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testTFSummaryTensor_SizeGuidance_UseLargeSingularPluginGuidance(self):
     size = ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 5
     self._testTFSummaryTensor_SizeGuidance(
-        plugin_names=['jabberwocky'],
+        plugin_name='jabberwocky',
         tensor_size_guidance={'jabberwocky': size},
         steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 10,
         expected_count=size)
-
-  def testTFSummaryTensor_SizeGuidance_TakeMaxOfTwo(self):
-    size_small = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 3)
-    size_large = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
-    assert size_small < size_large < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], (
-        size_small, size_large)
-    self._testTFSummaryTensor_SizeGuidance(
-        plugin_names=['jabberwocky', 'wnoorejbpxl'],
-        tensor_size_guidance={'jabberwocky': size_small,
-                              'wnoorejbpxl': size_large},
-        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
-        expected_count=size_large)
 
   def testTFSummaryTensor_SizeGuidance_IgnoreIrrelevantGuidances(self):
     size_small = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 3)
@@ -590,7 +578,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     assert size_small < size_large < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], (
         size_small, size_large)
     self._testTFSummaryTensor_SizeGuidance(
-        plugin_names=['jabberwocky'],
+        plugin_name='jabberwocky',
         tensor_size_guidance={'jabberwocky': size_small,
                               'wnoorejbpxl': size_large},
         steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
@@ -725,13 +713,12 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     writer.add_summary(summary.SerializeToString())
     writer.close()
 
-
   def testSummaryMetadata(self):
     logdir = self.get_temp_dir()
     summary_metadata = tf.SummaryMetadata(
         display_name='current tagee',
         summary_description='no',
-        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='outlet')])
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet'))
     self._writeMetadata(logdir, summary_metadata)
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
@@ -743,16 +730,16 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     summary_metadata_1 = tf.SummaryMetadata(
         display_name='current tagee',
         summary_description='no',
-        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='outlet',
-                                                   content='120v')])
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet',
+                                                  content='120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
     summary_metadata_2 = tf.SummaryMetadata(
         display_name='tagee of the future',
         summary_description='definitely not',
-        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='plug',
-                                                   content='110v')])
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='plug',
+                                                  content='110v'))
     self._writeMetadata(logdir, summary_metadata_2, nonce='2')
     acc.Reload()
 
@@ -767,16 +754,16 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     summary_metadata_1 = tf.SummaryMetadata(
         display_name='current tagee',
         summary_description='no',
-        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='outlet',
-                                                   content='120v')])
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet',
+                                                  content='120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
     summary_metadata_2 = tf.SummaryMetadata(
         display_name='tagee of the future',
         summary_description='definitely not',
-        plugin_data=[tf.SummaryMetadata.PluginData(plugin_name='plug',
-                                                   content='110v')])
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='plug',
+                                                  content='110v'))
     self._writeMetadata(logdir, summary_metadata_2, nonce='2')
     acc.Reload()
 

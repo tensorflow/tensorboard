@@ -19,8 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import hashlib
-
 import numpy as np
 import six
 import tensorflow as tf
@@ -34,9 +32,6 @@ class SummaryTest(tf.test.TestCase):
   def setUp(self):
     super(SummaryTest, self).setUp()
     tf.reset_default_graph()
-    self.stubs = tf.test.StubOutForTesting()
-    self.stubs.Set(summary, '_encode_png', self.stub_for_encode_png)
-    self.stubs.Set(tf.image, 'encode_png', self.stub_for_tf_encode_png)
 
     self.image_width = 300
     self.image_height = 75
@@ -45,34 +40,9 @@ class SummaryTest(tf.test.TestCase):
     self.images = self._generate_images(channels=3)
     self.images_with_alpha = self._generate_images(channels=4)
 
-  def tearDown(self):
-    self.stubs.CleanUp()
-    super(SummaryTest, self).tearDown()
-
   def _generate_images(self, channels):
     size = [self.image_count, self.image_width, self.image_height, channels]
     return np.random.uniform(low=0, high=255, size=size).astype(np.uint8)
-
-  def stub_for_encode_png(self, data_array):
-    data_str = str(data_array)  # numpy will truncate this value
-    data_bytes = data_array.tobytes()  # this is not truncated
-    hashed = hashlib.sha256(data_bytes).hexdigest()
-    prefix = data_str[:64]
-    suffix = data_str[-64:]
-    digest = '%r...[%s]...%r' % (prefix, hashed, suffix)
-    return tf.compat.as_bytes('shape:%r;length:%s;digest:%s'
-                              % (data_array.shape, len(data_bytes), digest))
-
-  def stub_for_tf_encode_png(self, data_tensor):
-    f = tf.py_func(self.stub_for_encode_png,
-                   [data_tensor],
-                   Tout=tf.string,
-                   stateful=False)
-    # The shape needs to be statically known. In the real code, it's
-    # correctly inferred, but we have to set it manually here because we
-    # use a `py_func`.
-    f.set_shape([])  # PNG text is a string scalar (rank-0)
-    return f
 
   def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
@@ -100,9 +70,9 @@ class SummaryTest(tf.test.TestCase):
   def test_metadata(self):
     pb = self.compute_and_check_summary_pb('mona_lisa', self.images)
     summary_metadata = pb.value[0].metadata
-    plugin_data = summary_metadata.plugin_data[0]
+    plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
-    content = summary_metadata.plugin_data[0].content
+    content = summary_metadata.plugin_data.content
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
 
@@ -161,16 +131,15 @@ class SummaryTest(tf.test.TestCase):
     self.assertEqual(tf.compat.as_bytes(str(self.image_width)), result[0])
     self.assertEqual(tf.compat.as_bytes(str(self.image_height)), result[1])
 
-    # Check fake PNG data (verifying that the image was passed to the
-    # encoder correctly).
+    # Check actual image dimensions.
     images = result[2:]
-    shape = (self.image_width, self.image_height, channel_count)
-    shape_tag = tf.compat.as_bytes('shape:%r;' % (shape, ))
-    for image in images:
-      self.assertTrue(
-          image.startswith(shape_tag),
-          'expected fake image data to start with %r, but found: %r'
-          % (shape_tag, image[:len(shape_tag) * 2]))
+    with tf.Session() as sess:
+      placeholder = tf.placeholder(tf.string)
+      decoder = tf.image.decode_png(placeholder)
+      for image in images:
+        decoded = sess.run(decoder, feed_dict={placeholder: image})
+        self.assertEqual((self.image_width, self.image_height, channel_count),
+                         decoded.shape)
 
   def test_dimensions(self):
     self._test_dimensions(alpha=False)

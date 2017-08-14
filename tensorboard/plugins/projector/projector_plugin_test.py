@@ -193,14 +193,54 @@ class ProjectorAppTest(tf.test.TestCase):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
 
-    # Embedding data is available.
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    # The projector plugin has not yet determined whether it is active, but it
+    # should now start a thread to determine that.
+    self.assertFalse(self.plugin.is_active())
+    thread = self.plugin._thread_for_determining_is_active
+    mock.assert_called_once_with(thread)
+
+    # The logic has not finished running yet, so the plugin should still not
+    # have deemed itself to be active.
+    self.assertFalse(self.plugin.is_active())
+    mock.assert_called_once_with(thread)
+
+    self.plugin._thread_for_determining_is_active.run()
+
+    # The plugin later finds that embedding data is available.
     self.assertTrue(self.plugin.is_active())
+
+    # Subsequent calls to is_active should not start a new thread. The mock
+    # should only have been called once throughout this test.
+    self.assertTrue(self.plugin.is_active())
+    mock.assert_called_once_with(thread)
 
   def testPluginIsNotActive(self):
     self._SetupWSGIApp()
 
-    # Embedding data is not available.
+    # The is_active method makes use of a separate thread, so we mock threading
+    # behavior to make this test deterministic.
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    # The projector plugin has not yet determined whether it is active, but it
+    # should now start a thread to determine that.
     self.assertFalse(self.plugin.is_active())
+    mock.assert_called_once_with(self.plugin._thread_for_determining_is_active)
+
+    self.plugin._thread_for_determining_is_active.run()
+
+    # The plugin later finds that embedding data is not available.
+    self.assertFalse(self.plugin.is_active())
+
+    # Furthermore, the plugin should have spawned a new thread to check whether
+    # it is active (because it might now be active even though it had not been
+    # beforehand), so the mock should now be called twice.
+    self.assertEqual(2, mock.call_count)
 
   def _SetupWSGIApp(self):
     multiplexer = event_multiplexer.EventMultiplexer(

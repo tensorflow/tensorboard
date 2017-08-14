@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import functools
 import locale
 import logging
+import os
 import re
 import sys
 import time
@@ -670,6 +672,169 @@ class Progress(object):
             (util.Ansi.FLIP if self._offset % 2 == 0 else u'') +
             text +
             util.Ansi.RESET)
+
+
+@util.closeable
+@functools.total_ordering
+@six.python_2_unicode_compatible
+class EventLogReader(object):
+  """Helper class for reading from event log files.
+
+  This class is a wrapper around BufferedRecordReader that operates on
+  record files containing tf.Event protocol buffers.
+
+  Fields:
+    path: A string with the path of the event log on the local or
+        remote file system.
+    timestamp: An integer of the number of seconds since the UNIX epoch
+        in UTC according to hostname at the time when the event log
+        file was created.
+    hostname: A string with the FQDN of the machine that wrote this
+        event log file.
+  """
+
+  def __init__(self, path,
+               start_offset=0,
+               record_reader_factory=BufferedRecordReader):
+    """Creates new instance.
+
+    Args:
+      path: Path of event log file.
+      start_offset: Byte offset to seek in file once it's opened.
+      record_reader_factory: A reference to the constructor of a class
+          that implements the same interface as RecordReader.
+
+    :type path: str
+    :type record_reader_factory: (str, int) -> RecordReader
+    """
+    self.path = tf.compat.as_text(path)
+    m = _EVENT_LOG_PATH_PATTERN.search(self.path)
+    if not m:
+      raise ValueError('Bad event log path: ' + self.path)
+    self.timestamp = int(m.group('timestamp'))
+    self.hostname = m.group('hostname')
+    self._mark = -1
+    self._offset = start_offset
+    self._reader = record_reader_factory(self.path, start_offset)
+    self._key = (os.path.dirname(self.path), self.timestamp, self.hostname)
+    self._saved_events = \
+        collections.deque()  # type: collections.deque[tf.Event]
+    self._prepended_events = \
+        collections.deque()  # type: collections.deque[tf.Event]
+
+  def get_next_event(self):
+    """Reads an event proto from the file.
+
+    Returns:
+      A tf.Event or None if no more records exist in the file. Please
+      note that the file remains open for subsequent reads in case more
+      are appended later.
+
+    :rtype: tf.Event
+    """
+    if self._prepended_events:
+      event = self._prepended_events.popleft()
+    else:
+      record = self._reader.get_next_record()
+      if record is None:
+        return None
+      event = tf.Event()
+      event.ParseFromString(record.record)
+      self._offset = record.offset
+    if self._mark != -1:
+      self._saved_events.append(event)
+    return event
+
+  def get_offset(self):
+    """Returns current byte offset in file.
+
+    If mark() was called, then this returns the marked position.
+
+    :rtype: int
+    """
+    if self._mark != -1:
+      return self._mark
+    return self._offset
+
+  def get_size(self):
+    """Returns byte length of file.
+
+    :rtype: int
+    """
+    return self._reader.get_size()
+
+  def mark(self):
+    """Marks current position in file so reset() can be called."""
+    if self._prepended_events:
+      raise ValueError('mark() offsets must be monotonic')
+    self._mark = self._offset
+    self._saved_events.clear()
+
+  def reset(self):
+    """Resets read state to where mark() was called."""
+    if self._mark == -1:
+      raise ValueError('mark() was not called')
+    self._prepended_events.extend(self._saved_events)
+    self._saved_events.clear()
+
+  def close(self):
+    """Closes event log reader if open.
+
+    Further i/o is not permitted after this method is called.
+    """
+    if self._reader is not None:
+      self._reader.close()
+      self._reader = None
+
+  def __hash__(self):
+    return hash(self._key)
+
+  def __eq__(self, other):
+    return self._key == other._key
+
+  def __lt__(self, other):
+    return self._key < other._key
+
+  def __str__(self):
+    offset = self.get_offset()
+    if offset:
+      return u'EventLog{path=%s, offset=%d}' % (self.path, offset)
+    else:
+      return u'EventLog{%s}' % self.path
+
+
+def get_event_logs(directory):
+  """Walks directory tree for EventLog files.
+
+  Args:
+    directory: Path of directory.
+
+  Returns:
+    List of EventLog objects, ordered by directory name and timestamp.
+
+  :type directory: str
+  :rtype: list[EventLogReader]
+  """
+  logs = []
+  for dirname, _, filenames in tf.gfile.Walk(directory):
+    for filename in filenames:
+      if is_event_log_file(filename):
+        logs.append(EventLogReader(os.path.join(dirname, filename)))
+  logs.sort()
+  return logs
+
+
+_EVENT_LOG_PATH_PATTERN = re.compile(
+    r'\.tfevents\.(?P<timestamp>\d+).(?P<hostname>[-.0-9A-Za-z]+)$')
+
+
+def is_event_log_file(path):
+  """Returns True if path appears to be an event log file.
+
+  :type path: str
+  :rtype: bool
+  """
+  return bool(_EVENT_LOG_PATH_PATTERN.search(path))
 
 
 _SHORTEN_EVENT_LOG_PATH_PATTERN = re.compile(r'(?:[^/\\]+[/\\])?(?:[^/\\]+)$')

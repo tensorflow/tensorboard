@@ -97,10 +97,9 @@ def standard_tensorboard_wsgi(
   db_module, db_connection_provider = get_database_info(db_uri)
   if db_connection_provider is not None:
     with contextlib.closing(db_connection_provider()) as db_conn:
-      with db_conn:
-        schema = db.Schema(db_conn)
-        schema.create_tables()
-        schema.create_indexes()
+      schema = db.Schema(db_conn)
+      schema.create_tables()
+      schema.create_indexes()
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
@@ -394,7 +393,7 @@ def create_sqlite_connection_provider(db_uri):
   path = os.path.expanduser(uri.path)
   params = _get_connect_params(uri.query)
   # TODO(@jart): Add thread-local pooling.
-  return lambda: sqlite3.connect(path, **params)
+  return lambda: db.Connection(sqlite3.connect(path, **params))
 
 
 def _get_connect_params(query):
