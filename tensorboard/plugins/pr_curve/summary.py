@@ -154,7 +154,7 @@ def op(
     summary_metadata = tf.SummaryMetadata(
         display_name=display_name if display_name is not None else tag,
         summary_description=description or '',
-        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='pr_curve',
+        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='pr_curves',
                                                   content=content))
 
     precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
