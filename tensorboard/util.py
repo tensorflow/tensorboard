@@ -340,23 +340,47 @@ def _hack_the_main_frame():
   return frame
 
 
-class _TensorFlowPngEncoder(object):
-  """A parallelizable PNG encoder that uses TensorFlow as a backend.
+class _PersistentOpEvaluator(object):
+  """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
 
-  If you need to encode many PNGs, create a single instance of this
-  class and call its `encode` function many times. This will construct a
-  TensorFlow graph and session just once, reusing them for each
-  encoding.
+  Extend this class to create a particular kind of op evaluator, like an
+  image encoder. In `initialize_graph`, create an appropriate TensorFlow
+  graph with placeholder inputs. In `run`, evaluate this graph and
+  return its result. This class will manage a singleton graph and
+  session to preserve memory usage, and will ensure that this graph and
+  session do not interfere with other concurrent sessions.
 
-  This class is thread-safe, and has high performance when run in
-  parallel. See `encode_png_benchmark.py` for details.
+  A subclass of this class offers a threadsafe, highly parallel Python
+  entry point for evaluating a particular TensorFlow graph.
+
+  Example usage:
+
+      class FluxCapacitanceEvaluator(_PersistentOpEvaluator):
+        \"\"\"Compute the flux capacitance required for a system.
+
+        Arguments:
+          x: Available power input, as a `float`, in jigawatts.
+
+        Returns:
+          A `float`, in nanofarads.
+        \"\"\"
+
+        def initialize_graph(self):
+          self._placeholder = tf.placeholder(some_dtype)
+          self._op = some_op(self._placeholder)
+
+        def run(self, x):
+          return self._op.eval(feed_dict: {self._placeholder: x})
+
+      evaluate_flux_capacitance = FluxCapacitanceEvaluator()
+
+      for x in xs:
+        evaluate_flux_capacitance(x)
   """
 
   def __init__(self):
-    super(_TensorFlowPngEncoder, self).__init__()
+    super(_PersistentOpEvaluator, self).__init__()
     self._session = None
-    self._image_placeholder = None
-    self._encode_op = None
     self._initialization_lock = threading.Lock()
 
   def _lazily_initialize(self):
@@ -366,25 +390,34 @@ class _TensorFlowPngEncoder(object):
         return
       graph = tf.Graph()
       with graph.as_default():
-        self._image_placeholder = tf.placeholder(
-            dtype=tf.uint8, name='image_to_encode')
-        self._encode_op = tf.image.encode_png(self._image_placeholder)
+        self.initialize_graph()
       self._session = tf.Session(graph=graph)
 
-  def encode(self, image):
-    if not isinstance(image, np.ndarray):
-      raise ValueError("'image' must be a numpy array: %r" % image)
-    if image.dtype != np.uint8:
-      raise ValueError("'image' dtype must be uint8, but is %r" % image.dtype)
+  def initialize_graph(self):
+    """Create the TensorFlow graph needed to compute this operation.
+
+    This should write ops to the default graph and return `None`.
+    """
+    raise NotImplementedError('Subclasses must implement "initialize_graph".')
+
+  def run(self, *args, **kwargs):
+    """Evaluate the ops with the given input.
+
+    When this function is called, the default session will have the
+    graph defined by a previous call to `initialize_graph`. This
+    function should evaluate any ops necessary to compute the result of
+    the query for the given *args and **kwargs, likely returning the
+    result of a call to `some_op.eval(...)`.
+    """
+    raise NotImplementedError('Subclasses must implement "run".')
+
+  def __call__(self, *args, **kwargs):
     self._lazily_initialize()
-    return self._session.run(self._encode_op,
-                             feed_dict={self._image_placeholder: image})
+    with self._session.as_default():
+      return self.run(*args, **kwargs)
 
 
-_png_encoder = _TensorFlowPngEncoder()
-
-
-def encode_png(image):
+class _TensorFlowPngEncoder(_PersistentOpEvaluator):
   """Encode an image to PNG.
 
   This function is thread-safe, and has high performance when run in
@@ -397,4 +430,23 @@ def encode_png(image):
   Returns:
     A bytestring with PNG-encoded data.
   """
-  return _png_encoder.encode(image)
+
+  def __init__(self):
+    super(_TensorFlowPngEncoder, self).__init__()
+    self._image_placeholder = None
+    self._encode_op = None
+
+  def initialize_graph(self):
+    self._image_placeholder = tf.placeholder(
+        dtype=tf.uint8, name='image_to_encode')
+    self._encode_op = tf.image.encode_png(self._image_placeholder)
+
+  def run(self, image):  # pylint: disable=arguments-differ
+    if not isinstance(image, np.ndarray):
+      raise ValueError("'image' must be a numpy array: %r" % image)
+    if image.dtype != np.uint8:
+      raise ValueError("'image' dtype must be uint8, but is %r" % image.dtype)
+    return self._encode_op.eval(feed_dict={self._image_placeholder: image})
+
+
+encode_png = _TensorFlowPngEncoder()
