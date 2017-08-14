@@ -60,15 +60,15 @@ class PrCurveTest(tf.test.TestCase):
     # Verify that the metadata was correctly written.
     accumulator = multiplexer.GetAccumulator('foo')
     tag_content_dict = accumulator.PluginTagToContent('pr_curve')
-    self.assertListEqual(['tag_bar/tag_bar'], list(tag_content_dict.keys()))
+    self.assertListEqual(['tag_bar/pr_curves'], list(tag_content_dict.keys()))
 
     # Parse the data within the JSON string and set the proto's fields.
     plugin_data = pr_curve_pb2.PrCurvePluginData()
-    json_format.Parse(tag_content_dict['tag_bar/tag_bar'], plugin_data)
+    json_format.Parse(tag_content_dict['tag_bar/pr_curves'], plugin_data)
     self.assertEqual(10, plugin_data.num_thresholds)
 
     # Test the summary contents.
-    tensor_events = accumulator.Tensors('tag_bar/tag_bar')
+    tensor_events = accumulator.Tensors('tag_bar/pr_curves')
     self.assertEqual(1, len(tensor_events))
     tensor_event = tensor_events[0]
     self.assertEqual(1, tensor_event.step)
