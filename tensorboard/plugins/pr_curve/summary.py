@@ -176,7 +176,7 @@ def op(
     combined_data = tf.stack([tp, fp, tn, fn, precision, recall])
 
     return tf.summary.tensor_summary(
-        name=tag,
+        name='pr_curves',
         tensor=combined_data,
         collections=collections,
         summary_metadata=summary_metadata)
