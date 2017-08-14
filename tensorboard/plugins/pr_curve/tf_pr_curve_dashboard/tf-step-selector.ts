@@ -26,6 +26,12 @@ Polymer({
     // A mapping between run and list of steps to use for the slider for that
     // run. This component indexes into this object to retrieve the steps.
     stepsPerRun: Object,
+    // The object mapping run to step per run. This object is updated by this
+    // component when the selected step for the run changes.
+    stepPerRun: {
+      type: Object,
+      notify: true,
+    },
     // An array of numbers that are step values.
     steps: {
       type: Array,
@@ -33,7 +39,7 @@ Polymer({
     },
     _currentStep: {
       type: Number,
-      computed: '_computeCurrentStep(steps, _stepIndex)',
+      computed: '_computeCurrentStep(stepPerRun, steps, _stepIndex)',
     },
     _stepText: {
       type: String,
@@ -49,11 +55,11 @@ Polymer({
     '_currentStepChanged(run, _currentStep)',
     '_stepsListChanged(steps)',
   ],
-  _currentStepChanged(run, currentStep) {
-    this.fire('step-selected-changed', {
-      'run': run,
-      'step': currentStep,
-    });
+  _currentStepChanged(stepPerRun, run, currentStep) {
+    if (stepPerRun[run] != currentStep) {
+      stepPerRun[run] = currentStep;
+      this.set('stepPerRun', _.clone(stepPerRun));
+    }
   },
   _computeSteps(run, stepsPerRun) {
     return stepsPerRun[run];
