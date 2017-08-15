@@ -159,7 +159,7 @@ def start_runs(
       # predictions are assigned a default weight of 1.
       consecutive_indices = tf.reshape(
           tf.range(tf.size(predictions[i])), tf.shape(predictions[i]))
-      weights = tf.cast(tf.mod(consecutive_indices, 2), dtype=tf.float32)
+      weights = tf.cast(consecutive_indices % 2, dtype=tf.float32)
 
     summary.op(
         tag=color,
