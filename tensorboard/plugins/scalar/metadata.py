@@ -24,6 +24,11 @@ from tensorboard.plugins.scalar import plugin_data_pb2
 
 PLUGIN_NAME = 'scalars'
 
+# The most recent value for the `version` field of the
+# `ScalarPluginData` proto.
+PROTO_VERSION = 0
+
+
 
 def create_summary_metadata(display_name, description):
   """Create a `tf.SummaryMetadata` proto for scalar plugin data.
@@ -31,12 +36,13 @@ def create_summary_metadata(display_name, description):
   Returns:
     A `tf.SummaryMetadata` protobuf object.
   """
-  content = plugin_data_pb2.ScalarPluginData()
-  metadata = tf.SummaryMetadata(display_name=display_name,
-                                summary_description=description,
-                                plugin_data=tf.SummaryMetadata.PluginData(
-                                    plugin_name=PLUGIN_NAME,
-                                    content=content.SerializeToString()))
+  content = plugin_data_pb2.ScalarPluginData(version=PROTO_VERSION)
+  metadata = tf.SummaryMetadata(
+      display_name=display_name,
+      summary_description=description,
+      plugin_data=tf.SummaryMetadata.PluginData(
+          plugin_name=PLUGIN_NAME,
+          content=content.SerializeToString()))
   return metadata
 
 
@@ -51,5 +57,16 @@ def parse_plugin_metadata(content):
     A `ScalarPluginData` protobuf object.
   """
   result = plugin_data_pb2.ScalarPluginData()
+  # TODO(@jart): Instead of converting to bytes, assert that the input
+  # is a bytestring, and raise a ValueError otherwise...but only after
+  # converting `PluginData`'s `content` field to have type `bytes`
+  # instead of `string`.
   result.ParseFromString(tf.compat.as_bytes(content))
-  return result
+  if result.version == 0:
+    return result
+  else:
+    tf.logging.warn(
+        'Unknown metadata version: %s. The latest version known to '
+        'this build of TensorBoard is %s; perhaps a newer build is '
+        'available?', result.version, PROTO_VERSION)
+    return result

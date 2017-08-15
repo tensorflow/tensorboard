@@ -17,11 +17,11 @@ syntax = "proto3";
 
 package tensorboard;
 
-// Scalar summaries created by the `tensorboard.plugins.scalar.summary`
+// Histogram summaries created by the `tensorboard.plugins.histogram.summary`
 // module will include `SummaryMetadata` whose `plugin_data` field has
-// as `content` a binary string that is the encoding of an
-// `ScalarPluginData` proto.
-message ScalarPluginData {
+// as `content` a binary string that is the encoding of a
+// `HistogramPluginData` proto.
+message HistogramPluginData {
   // Version `0` is the only supported version.
   int32 version = 1;
 }

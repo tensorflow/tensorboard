@@ -80,7 +80,8 @@ class SummaryTest(tf.test.TestCase):
     self.assertEqual(summary_metadata.summary_description, '')
     plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
-    self.assertEqual(summary_metadata.plugin_data.content, '{}')
+    parsed = metadata.parse_plugin_metadata(plugin_data.content)
+    self.assertEqual(metadata.PROTO_VERSION, parsed.version)
 
   def test_explicit_display_name_and_description(self):
     display_name = 'Widget metrics'
@@ -93,7 +94,8 @@ class SummaryTest(tf.test.TestCase):
     self.assertEqual(summary_metadata.summary_description, description)
     plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
-    self.assertEqual(plugin_data.content, '{}')
+    parsed = metadata.parse_plugin_metadata(plugin_data.content)
+    self.assertEqual(metadata.PROTO_VERSION, parsed.version)
 
   def test_empty_input(self):
     pb = self.compute_and_check_summary_pb('nothing_to_see_here', [])

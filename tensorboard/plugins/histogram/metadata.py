@@ -18,16 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
-import json
-
 import tensorflow as tf
+from tensorboard.plugins.histogram import plugin_data_pb2
 
 
 PLUGIN_NAME = 'histograms'
 
-
-HistogramMetadata = collections.namedtuple('HistogramMetadata', ())
+# The most recent value for the `version` field of the
+# `HistogramPluginData` proto.
+PROTO_VERSION = 0
 
 
 def create_summary_metadata(display_name, description):
@@ -36,13 +35,13 @@ def create_summary_metadata(display_name, description):
   Returns:
     A `tf.SummaryMetadata` protobuf object.
   """
-  content = json.dumps(HistogramMetadata()._asdict())  # pylint: disable=protected-access
+  content = plugin_data_pb2.HistogramPluginData(version=PROTO_VERSION)
   return tf.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
       plugin_data=tf.SummaryMetadata.PluginData(
           plugin_name=PLUGIN_NAME,
-          content=content))
+          content=content.SerializeToString()))
 
 
 def parse_plugin_metadata(content):
@@ -53,6 +52,23 @@ def parse_plugin_metadata(content):
       corresponding to the histogram plugin.
 
   Returns:
-    A `HistogramMetadata` instance.
+    A `HistogramPluginData` protobuf object.
   """
-  return HistogramMetadata(**json.loads(content))
+  if content == '{}' or content == b'{}':
+    # Old-style JSON format. Equivalent to an all-default proto.
+    return plugin_data_pb2.HistogramPluginData()
+  else:
+    result = plugin_data_pb2.HistogramPluginData()
+    # TODO(@jart): Instead of converting to bytes, assert that the input
+    # is a bytestring, and raise a ValueError otherwise...but only after
+    # converting `PluginData`'s `content` field to have type `bytes`
+    # instead of `string`.
+    result.ParseFromString(tf.compat.as_bytes(content))
+    if result.version == 0:
+      return result
+    else:
+      tf.logging.warn(
+          'Unknown metadata version: %s. The latest version known to '
+          'this build of TensorBoard is %s; perhaps a newer build is '
+          'available?', result.version, PROTO_VERSION)
+      return result
