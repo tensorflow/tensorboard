@@ -96,6 +96,7 @@ py_test(
     deps = [
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
     ],

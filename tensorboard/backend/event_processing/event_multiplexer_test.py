@@ -60,8 +60,7 @@ class _FakeAccumulator(object):
     }
 
   def Tags(self):
-    return {event_accumulator.AUDIO: ['snd1', 'snd2'],
-            event_accumulator.SCALARS: ['sv1', 'sv2']}
+    return {event_accumulator.SCALARS: ['sv1', 'sv2']}
 
   def FirstEventTimestamp(self):
     return 0
@@ -73,9 +72,6 @@ class _FakeAccumulator(object):
 
   def Scalars(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.SCALARS)
-
-  def Audio(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.AUDIO)
 
   def Tensors(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.TENSORS)
