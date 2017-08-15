@@ -19,6 +19,9 @@ An audio summary stores a rank-2 string tensor of shape `[k, 2]`, where
 the tensor is a pair `[encoded_audio, label]`, where `encoded_audio` is
 a binary string whose encoding is specified in the summary metadata, and
 `label` is a UTF-8 encoded Markdown string describing the audio clip.
+
+NOTE: This module is in beta, and its API is subject to change, but the
+data that it stores to disk will be supported forever.
 """
 
 from __future__ import absolute_import

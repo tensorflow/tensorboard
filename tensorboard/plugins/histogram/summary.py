@@ -23,6 +23,9 @@ like 30. There are two edge cases: if there is no data, then there are
 no buckets (the shape is `[0, 3]`); and if there is data but all points
 have the same value, then there is one bucket whose left and right
 endpoints are the same (the shape is `[1, 3]`).
+
+NOTE: This module is in beta, and its API is subject to change, but the
+data that it stores to disk will be supported forever.
 """
 
 from __future__ import absolute_import
