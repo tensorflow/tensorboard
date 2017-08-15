@@ -56,7 +56,8 @@ def op(
         compute PR metrics for. Should be `>= 2`. This value should be a 
         constant integer value, not a Tensor that stores an integer.
     weights: Optional float32 `Tensor`. Individual counts are multiplied by this
-        value.
+        value. This tensor must be either the same shape as or broadcastable to
+        the `labels` tensor.
     display_name: Optional name for this summary in TensorBoard, as a
         constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
