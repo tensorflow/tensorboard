@@ -24,6 +24,7 @@ import tensorflow as tf
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
+from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
 def migrate_value(value):
@@ -51,6 +52,7 @@ def migrate_value(value):
       'histo': _migrate_histogram_value,
       'image': _migrate_image_value,
       'audio': _migrate_audio_value,
+      'simple_value': _migrate_scalar_value,
   }.get(value.WhichOneof('value'))
   return handler(value) if handler else value
 
@@ -94,6 +96,17 @@ def _migrate_audio_value(value):
       display_name=value.metadata.display_name or value.tag,
       description=value.metadata.summary_description,
       encoding=audio_metadata.Encoding.Value('WAV'))
+  return tf.Summary.Value(tag=value.tag,
+                          metadata=summary_metadata,
+                          tensor=tensor_proto)
+
+
+def _migrate_scalar_value(value):
+  scalar_value = value.simple_value
+  tensor_proto = tf.make_tensor_proto(scalar_value)
+  summary_metadata = scalar_metadata.create_summary_metadata(
+      display_name=value.metadata.display_name or value.tag,
+      description=value.metadata.summary_description)
   return tf.Summary.Value(tag=value.tag,
                           metadata=summary_metadata,
                           tensor=tensor_proto)

@@ -17,8 +17,8 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -33,9 +33,10 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":scalars_plugin",
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -47,6 +48,7 @@ py_binary(
     srcs = ["scalars_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],

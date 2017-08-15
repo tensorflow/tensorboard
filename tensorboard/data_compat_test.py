@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 
 from tensorboard import data_compat
@@ -25,6 +26,8 @@ from tensorboard.plugins.histogram import summary as histogram_summary
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.image import metadata as image_metadata
+from tensorboard.plugins.scalar import summary as scalar_summary
+from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
 class MigrateValueTest(tf.test.TestCase):
@@ -54,10 +57,21 @@ class MigrateValueTest(tf.test.TestCase):
     self.assertEqual(original_pbtxt, value.SerializeToString())
 
   def test_scalar(self):
-    op = tf.summary.scalar('important_constants', tf.constant(0x5f3759df))
-    value = self._value_from_op(op)
-    assert value.HasField('simple_value'), value
-    self._assert_noop(value)
+    old_op = tf.summary.scalar('important_constants', tf.constant(0x5f3759df))
+    old_value = self._value_from_op(old_op)
+    assert old_value.HasField('simple_value'), old_value
+    new_value = data_compat.migrate_value(old_value)
+
+    self.assertEqual('important_constants', new_value.tag)
+    expected_metadata = scalar_metadata.create_summary_metadata(
+        display_name='important_constants',
+        description='')
+    self.assertEqual(expected_metadata, new_value.metadata)
+    self.assertTrue(new_value.HasField('tensor'))
+    data = tf.make_ndarray(new_value.tensor)
+    self.assertEqual((), data.shape)
+    low_precision_value = np.array(0x5f3759df).astype('float32').item()
+    self.assertEqual(low_precision_value, data.item())
 
   def test_audio(self):
     audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
@@ -163,6 +177,14 @@ class MigrateValueTest(tf.test.TestCase):
                           sample_rate=44100,
                           display_name='Piano Concerto No.23',
                           description='In **A major**.')
+    value = self._value_from_op(op)
+    assert value.HasField('tensor'), value
+    self._assert_noop(value)
+
+  def test_new_style_scalar(self):
+    op = scalar_summary.op('important_constants', tf.constant(0x5f3759df),
+                           display_name='Important constants',
+                           description='evil floating point bit magic')
     value = self._value_from_op(op)
     assert value.HasField('tensor'), value
     self._assert_noop(value)

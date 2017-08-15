@@ -44,16 +44,17 @@ from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
+from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
 DEFAULT_SIZE_GUIDANCE = {
-    event_accumulator.SCALARS: 1000,
     event_accumulator.TENSORS: 10,
 }
 
 # TODO(@wchargin): Once SQL mode is in play, replace this with an
 # alternative that does not privilege first-party plugins.
 DEFAULT_TENSOR_SIZE_GUIDANCE = {
+    scalar_metadata.PLUGIN_NAME: 1000,
     image_metadata.PLUGIN_NAME: 10,
     audio_metadata.PLUGIN_NAME: 10,
     histogram_metadata.PLUGIN_NAME: 500,

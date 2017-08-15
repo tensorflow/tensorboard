@@ -106,6 +106,7 @@ py_library(
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/scalar:metadata",
     ],
 )
 
@@ -116,6 +117,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":data_compat",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/audio:summary",
@@ -123,6 +125,8 @@ py_test(
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/scalar:summary",
     ],
 )
 

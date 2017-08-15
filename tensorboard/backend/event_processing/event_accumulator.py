@@ -30,31 +30,26 @@ from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
 
 namedtuple = collections.namedtuple
-ScalarEvent = namedtuple('ScalarEvent', ['wall_time', 'step', 'value'])
 
 TensorEvent = namedtuple('TensorEvent', ['wall_time', 'step', 'tensor_proto'])
 
 ## Different types of summary events handled by the event_accumulator
 SUMMARY_TYPES = {
-    'simple_value': '_ProcessScalar',
     'tensor': '_ProcessTensor',
 }
 
 ## The tagTypes below are just arbitrary strings chosen to pass the type
 ## information of the tag from the backend to the frontend
-SCALARS = 'scalars'
 TENSORS = 'tensors'
 GRAPH = 'graph'
 META_GRAPH = 'meta_graph'
 RUN_METADATA = 'run_metadata'
 
 DEFAULT_SIZE_GUIDANCE = {
-    SCALARS: 10000,
     TENSORS: 500,
 }
 
 STORE_EVERYTHING_SIZE_GUIDANCE = {
-    SCALARS: 0,
     TENSORS: 0,
 }
 
@@ -85,15 +80,15 @@ class EventAccumulator(object):
   interface for loading Event data written during a TensorFlow run.
   TensorFlow writes out `Event` protobuf objects, which have a timestamp
   and step number, and often contain a `Summary`. Summaries can have
-  different kinds of data like a scalar value or an arbitrary tensor.
-  The Summaries also have a tag, which we use to organize logically
-  related data. The `EventAccumulator` supports retrieving the `Event`
-  and `Summary` data by its tag.
+  different kinds of data stored as arbitrary tensors. The Summaries
+  also have a tag, which we use to organize logically related data. The
+  `EventAccumulator` supports retrieving the `Event` and `Summary` data
+  by its tag.
 
-  Calling `Tags()` gets a map from `tagType` (e.g., `'scalars'`,
-  `'tensors'`, etc.) to the associated tags for those data types. Then,
-  various functional endpoints (e.g., `Accumulator.Scalars(tag)`) allow
-  for the retrieval of all data associated with that tag.
+  Calling `Tags()` gets a map from `tagType` (i.e., `tensors`) to the
+  associated tags for those data types. Then, the functional endpoint
+  (i.g., `Accumulator.Tensors(tag)`) allows for the retrieval of all
+  data associated with that tag.
 
   The `Reload()` method synchronously loads all of the data written so far.
 
@@ -107,7 +102,6 @@ class EventAccumulator(object):
         the thread that calls Reload.
     path: A file path to a directory containing tf events files, or a single
         tf events file. The accumulator will load events from this path.
-    scalars: A reservoir.Reservoir of scalar summaries.
     tensors_by_tag: A dictionary mapping each tag name to a
       reservoir.Reservoir of tensor summaries. Each such reservoir will
       only use a single key, given by `_TENSOR_RESERVOIR_KEY`.
@@ -151,7 +145,6 @@ class EventAccumulator(object):
     self._tensor_size_guidance = dict(tensor_size_guidance or {})
 
     self._first_event_timestamp = None
-    self.scalars = reservoir.Reservoir(size=sizes[SCALARS])
 
     self._graph = None
     self._graph_from_metagraph = False
@@ -180,7 +173,7 @@ class EventAccumulator(object):
     self.file_version = None
 
     # The attributes that get built up by the accumulator
-    self.accumulated_attrs = ('scalars', )
+    self.accumulated_attrs = ()
     self._tensor_summaries = {}
 
   def Reload(self):
@@ -377,7 +370,6 @@ class EventAccumulator(object):
       A `{tagType: ['list', 'of', 'tags']}` dictionary.
     """
     return {
-        SCALARS: self.scalars.Keys(),
         TENSORS: list(self.tensors_by_tag.keys()),
         # Use a heuristic: if the metagraph is available, but
         # graph is not, then we assume the metagraph contains the graph.
@@ -385,20 +377,6 @@ class EventAccumulator(object):
         META_GRAPH: self._meta_graph is not None,
         RUN_METADATA: list(self._tagged_metadata.keys())
     }
-
-  def Scalars(self, tag):
-    """Given a summary tag, return all associated `ScalarEvent`s.
-
-    Args:
-      tag: A string tag associated with the events.
-
-    Raises:
-      KeyError: If the tag is not found.
-
-    Returns:
-      An array of `ScalarEvent`s.
-    """
-    return self.scalars.Items(tag)
 
   def Graph(self):
     """Return the graph definition, if there is one.
@@ -527,11 +505,6 @@ class EventAccumulator(object):
       self.most_recent_step = event.step
       self.most_recent_wall_time = event.wall_time
 
-  def _ProcessScalar(self, tag, wall_time, step, scalar):
-    """Processes a simple value by adding it to accumulated state."""
-    sv = ScalarEvent(wall_time=wall_time, step=step, value=scalar)
-    self.scalars.AddItem(tag, sv)
-
   def _ProcessTensor(self, tag, wall_time, step, tensor):
     tv = TensorEvent(wall_time=wall_time, step=step, tensor_proto=tensor)
     with self._tensors_by_tag_lock:
@@ -593,14 +566,14 @@ class EventAccumulator(object):
 
 
 def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
-                     event_wall_time, num_expired_scalars):
+                     event_wall_time):
   """Return the string message associated with TensorBoard purges."""
   return ('Detected out of order event.step likely caused by '
           'a TensorFlow restart. Purging expired events from Tensorboard'
           ' display between the previous step: {} (timestamp: {}) and '
-          'current step: {} (timestamp: {}). Removing {} scalars.'
+          'current step: {} (timestamp: {}).'
          ).format(most_recent_step, most_recent_wall_time, event_step,
-                  event_wall_time, num_expired_scalars)
+                  event_wall_time)
 
 
 def _GeneratorFromPath(path):
