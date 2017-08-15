@@ -31,7 +31,7 @@ def op(
     labels,
     predictions,
     num_thresholds=None,
-    weight=None,
+    weights=None,
     display_name=None,
     description=None,
     collections=None):
