@@ -340,7 +340,7 @@ def _hack_the_main_frame():
   return frame
 
 
-class _PersistentOpEvaluator(object):
+class PersistentOpEvaluator(object):
   """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
 
   Extend this class to create a particular kind of op evaluator, like an
@@ -355,7 +355,7 @@ class _PersistentOpEvaluator(object):
 
   Example usage:
 
-      class FluxCapacitanceEvaluator(_PersistentOpEvaluator):
+      class FluxCapacitanceEvaluator(PersistentOpEvaluator):
         \"\"\"Compute the flux capacitance required for a system.
 
         Arguments:
@@ -379,7 +379,7 @@ class _PersistentOpEvaluator(object):
   """
 
   def __init__(self):
-    super(_PersistentOpEvaluator, self).__init__()
+    super(PersistentOpEvaluator, self).__init__()
     self._session = None
     self._initialization_lock = threading.Lock()
 
@@ -417,7 +417,7 @@ class _PersistentOpEvaluator(object):
       return self.run(*args, **kwargs)
 
 
-class _TensorFlowPngEncoder(_PersistentOpEvaluator):
+class _TensorFlowPngEncoder(PersistentOpEvaluator):
   """Encode an image to PNG.
 
   This function is thread-safe, and has high performance when run in
@@ -452,7 +452,7 @@ class _TensorFlowPngEncoder(_PersistentOpEvaluator):
 encode_png = _TensorFlowPngEncoder()
 
 
-class _TensorFlowWavEncoder(_PersistentOpEvaluator):
+class _TensorFlowWavEncoder(PersistentOpEvaluator):
   """Encode an audio clip to WAV.
 
   This function is thread-safe and exhibits good parallel performance.
