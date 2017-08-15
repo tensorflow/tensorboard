@@ -300,5 +300,29 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
     self.assertEqual(tf.Session.call_count, 1)
 
 
+class TensorFlowWavEncoderTest(tf.test.TestCase):
+
+  def setUp(self):
+    super(TensorFlowWavEncoderTest, self).setUp()
+    self._encode = util._TensorFlowWavEncoder()
+
+    space = np.linspace(0.0, 100.0, 44100)
+    self._stereo = np.array([np.sin(space), np.cos(space)]).transpose()
+    self._mono = self._stereo.mean(axis=1, keepdims=True)
+
+  def _check_wav(self, data):
+    # If it has a valid WAV/RIFF header and is of a reasonable size, we
+    # can assume it did the right thing. We trust the underlying
+    # `encode_audio` op.
+    self.assertEqual(b'RIFF', data[:4])
+    self.assertGreater(len(data), 128)
+
+  def test_encodes_mono_wav(self):
+    self._check_wav(self._encode(self._mono, samples_per_second=44100))
+
+  def test_encodes_stereo_wav(self):
+    self._check_wav(self._encode(self._stereo, samples_per_second=44100))
+
+
 if __name__ == '__main__':
   tf.test.main()
