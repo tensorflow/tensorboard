@@ -18,20 +18,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
 from six.moves import urllib
 from werkzeug import wrappers
 
-from tensorboard.backend import http_util
-from tensorboard.backend.event_processing import event_accumulator
-from tensorboard.plugins import base_plugin
+import tensorflow as tf
 
-_PLUGIN_PREFIX_ROUTE = event_accumulator.AUDIO
+from tensorboard import plugin_util
+from tensorboard.backend import http_util
+from tensorboard.plugins import base_plugin
+from tensorboard.plugins.audio import metadata
+
+_DEFAULT_MIME_TYPE = 'application/octet-stream'
+_MIME_TYPES = {
+    metadata.Encoding.Value('WAV'): 'audio/wav',
+}
 
 
 class AudioPlugin(base_plugin.TBPlugin):
   """Audio Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates AudioPlugin via TensorBoard core.
@@ -50,23 +57,73 @@ class AudioPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The audio plugin is active iff any run has at least one relevant tag."""
-    return bool(self._multiplexer) and any(self._index_impl().values())
+    if not self._multiplexer:
+      return False
+    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def _index_impl(self):
-    return {
-        run_name: run_data[event_accumulator.AUDIO]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.AUDIO in run_data
-    }
+    """Return information about the tags in each run.
+
+    Result is a dictionary of the form
+
+        {
+          "runName1": {
+            "tagName1": {
+              "displayName": "The first tag",
+              "description": "<p>Long ago there was just one tag...</p>",
+              "samples": 3
+            },
+            "tagName2": ...,
+            ...
+          },
+          "runName2": ...,
+          ...
+        }
+
+    For each tag, `samples` is the greatest number of audio clips that
+    appear at any particular step. (It's not related to "samples of a
+    waveform.") For example, if for tag `minibatch_input` there are
+    five audio clips at step 0 and ten audio clips at step 1, then the
+    dictionary for `"minibatch_input"` will contain `"samples": 10`.
+    """
+    runs = self._multiplexer.Runs()
+    result = {run: {} for run in runs}
+
+    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+    for (run, tag_to_content) in six.iteritems(mapping):
+      for tag in tag_to_content:
+        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        tensor_events = self._multiplexer.Tensors(run, tag)
+        samples = max([self._number_of_samples(event.tensor_proto)
+                       for event in tensor_events] + [0])
+        result[run][tag] = {'displayName': summary_metadata.display_name,
+                            'description': plugin_util.markdown_to_safe_html(
+                                summary_metadata.summary_description),
+                            'samples': samples}
+
+    return result
+
+  def _number_of_samples(self, tensor_proto):
+    """Count the number of samples of an audio TensorProto."""
+    # We directly inspect the `tensor_shape` of the proto instead of
+    # using the preferred `tf.make_ndarray(...).shape`, because
+    # these protos can contain a large amount of encoded audio data,
+    # and we don't want to have to convert them all to numpy arrays
+    # just to look at their shape.
+    return tensor_proto.tensor_shape.dim[0].size
+
+  def _filter_by_sample(self, tensor_events, sample):
+    return [tensor_event for tensor_event in tensor_events
+            if self._number_of_samples(tensor_event.tensor_proto) > sample]
 
   @wrappers.Request.application
   def _serve_audio_metadata(self, request):
     """Given a tag and list of runs, serve a list of metadata for audio.
 
-    Note that the audio themselves are not sent; instead, we respond with URLs
-    to the audio. The frontend should treat these URLs as opaque and should not
-    try to parse information about them or generate them itself, as the format
-    may change.
+    Note that the actual audio data are not sent; instead, we respond
+    with URLs to the audio. The frontend should treat these URLs as
+    opaque and should not try to parse information about them or
+    generate them itself, as the format may change.
 
     Args:
       request: A werkzeug.wrappers.Request object.
@@ -76,34 +133,46 @@ class AudioPlugin(base_plugin.TBPlugin):
     """
     tag = request.args.get('tag')
     run = request.args.get('run')
+    sample = int(request.args.get('sample', 0))
 
-    audio_list = self._multiplexer.Audio(run, tag)
-    response = self._audio_response_for_run(audio_list, run, tag)
+    events = self._multiplexer.Tensors(run, tag)
+    response = self._audio_response_for_run(events, run, tag, sample)
     return http_util.Respond(request, response, 'application/json')
 
-  def _audio_response_for_run(self, run_audio, run, tag):
-    """Builds a JSON-serializable object with information about run_audio.
+  def _audio_response_for_run(self, tensor_events, run, tag, sample):
+    """Builds a JSON-serializable object with information about audio.
 
     Args:
-      run_audio: A list of event_accumulator.AudioValueEvent objects.
+      tensor_events: A list of image event_accumulator.TensorEvent objects.
       run: The name of the run.
       tag: The name of the tag the audio entries all belong to.
+      sample: The zero-indexed sample of the audio sample for which to
+      retrieve information. For instance, setting `sample` to `2` will
+        fetch information about only the third audio clip of each batch,
+        and steps with fewer than three audio clips will be omitted from
+        the results.
 
     Returns:
       A list of dictionaries containing the wall time, step, URL, width, and
       height for each audio entry.
     """
     response = []
-    for index, run_audio_clip in enumerate(run_audio):
+    index = 0
+    filtered_events = self._filter_by_sample(tensor_events, sample)
+    content_type = self._get_mime_type(run, tag)
+    for (index, tensor_event) in enumerate(filtered_events):
+      data = tf.make_ndarray(tensor_event.tensor_proto)
+      label = data[sample, 1]
       response.append({
-          'wall_time': run_audio_clip.wall_time,
-          'step': run_audio_clip.step,
-          'content_type': run_audio_clip.content_type,
-          'query': self._query_for_individual_audio(run, tag, index)
+          'wall_time': tensor_event.wall_time,
+          'step': tensor_event.step,
+          'label': plugin_util.markdown_to_safe_html(label),
+          'contentType': content_type,
+          'query': self._query_for_individual_audio(run, tag, sample, index)
       })
     return response
 
-  def _query_for_individual_audio(self, run, tag, index):
+  def _query_for_individual_audio(self, run, tag, sample, index):
     """Builds a URL for accessing the specified audio.
 
     This should be kept in sync with _serve_audio_metadata. Note that the URL is
@@ -122,19 +191,27 @@ class AudioPlugin(base_plugin.TBPlugin):
     query_string = urllib.parse.urlencode({
         'run': run,
         'tag': tag,
-        'index': index
+        'sample': sample,
+        'index': index,
     })
     return query_string
 
+  def _get_mime_type(self, run, tag):
+    content = self._multiplexer.SummaryMetadata(run, tag).plugin_data.content
+    parsed = metadata.parse_plugin_metadata(content)
+    return _MIME_TYPES.get(parsed.encoding, _DEFAULT_MIME_TYPE)
+
   @wrappers.Request.application
   def _serve_individual_audio(self, request):
-    """Serves an individual audio entry."""
+    """Serve encoded audio data."""
     tag = request.args.get('tag')
     run = request.args.get('run')
     index = int(request.args.get('index'))
-    audio = self._multiplexer.Audio(run, tag)[index]
-    return http_util.Respond(
-        request, audio.encoded_audio_string, audio.content_type)
+    sample = int(request.args.get('sample', 0))
+    events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
+    data = tf.make_ndarray(events[index].tensor_proto)[sample, 0]
+    mime_type = self._get_mime_type(run, tag)
+    return http_util.Respond(request, data, mime_type)
 
   @wrappers.Request.application
   def _serve_tags(self, request):

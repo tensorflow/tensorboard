@@ -16,10 +16,10 @@
 """Logic for TensorBoard inspector to help humans investigate event files.
 
 Example usages:
-tensorboard --inspect --event_file=myevents.out
-tensorboard --inspect --event_file=myevents.out --tag=loss
-tensorboard --inspect --logdir=mylogdir
-tensorboard --inspect --logdir=mylogdir --tag=loss
+tensorboard --inspect --event_file myevents.out
+tensorboard --inspect --event_file myevents.out --tag loss
+tensorboard --inspect --logdir mylogdir
+tensorboard --inspect --logdir mylogdir --tag loss
 
 
 This script runs over a logdir and creates an InspectionUnit for every

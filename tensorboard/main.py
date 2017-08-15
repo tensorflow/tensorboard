@@ -56,7 +56,7 @@ You may also pass a comma separated list of log directories, and TensorBoard
 will watch each directory. You can also assign names to individual log
 directories by putting a colon between the name and the path, as in
 
-tensorboard --logdir=name1:/path/to/logs/1,name2:/path/to/logs/2
+tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
 """)
 
 tf.flags.DEFINE_string(
@@ -84,7 +84,7 @@ following databases are supported:
 
 - sqlite: Use SQLite built in to Python. URI must specify the path of the
   database file, which will be created if it doesn't exist. For example:
-  --db=sqlite3:~/.tensorboard.db
+  --db sqlite3:~/.tensorboard.db
 
 Warning: This feature is a work in progress and only has limited support.
 """)
@@ -96,10 +96,10 @@ of your event files to the command line, when no data is shown on TensorBoard or
 the data shown looks weird.
 
 Example usages:
-tensorboard --inspect --event_file=myevents.out
-tensorboard --inspect --event_file=myevents.out --tag=loss
-tensorboard --inspect --logdir=mylogdir
-tensorboard --inspect --logdir=mylogdir --tag=loss
+tensorboard --inspect --event_file myevents.out
+tensorboard --inspect --event_file myevents.out --tag loss
+tensorboard --inspect --logdir mylogdir
+tensorboard --inspect --logdir mylogdir --tag loss
 
 See tensorflow/python/summary/event_file_inspector.py for more info and
 detailed usage.

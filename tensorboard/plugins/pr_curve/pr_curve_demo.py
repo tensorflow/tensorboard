@@ -46,13 +46,12 @@ tf.flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
 tf.flags.DEFINE_integer('steps', 10,
                         'Number of steps to generate for each PR curve.')
 
-
 def start_runs(
     logdir,
     steps,
     run_name,
     thresholds,
-    assign_random_weights=False):
+    mask_every_other_prediction=False):
   """Generate a PR curve with precision and recall evenly weighted.
   
   Arguments:
@@ -60,8 +59,8 @@ def start_runs(
     steps: The number of steps to run for.
     run_name: The name of the run.
     thresholds: The number of thresholds to use for PR curves.
-    assign_random_weights: Whether to assign random weights between 0 and 1 to
-        each example.
+    mask_every_other_prediction: Whether to mask every other prediction by
+      alternating weights between 0 and 1.
   """
   tf.reset_default_graph()
   tf.set_random_seed(42)
@@ -155,8 +154,12 @@ def start_runs(
                        initial_standard_deviations[i])
 
     weights = None
-    if assign_random_weights:
-      weights = tf.random_uniform(shape=tf.shape(predictions[i]), maxval=1.0)
+    if mask_every_other_prediction:
+      # Assign a weight of 0 to every even-indexed prediction. Odd-indexed
+      # predictions are assigned a default weight of 1.
+      consecutive_indices = tf.reshape(
+          tf.range(tf.size(predictions[i])), tf.shape(predictions[i]))
+      weights = tf.cast(consecutive_indices % 2, dtype=tf.float32)
 
     summary.op(
         tag=color,
@@ -180,7 +183,6 @@ def start_runs(
 
   writer.close()
 
-
 def run_all(logdir, steps, thresholds, verbose=False):
   """Generate PR curve summaries.
 
@@ -201,9 +203,9 @@ def run_all(logdir, steps, thresholds, verbose=False):
       run_name=run_name,
       thresholds=thresholds)
 
-  # Next, we generate data for a PR curve that assigns 2x the weight for
-  # predictions of whether a color is blue.
-  run_name = 'colors_weighted_randomly'
+  # Next, we generate data for a PR curve that assigns arbitrary weights to
+  # predictions.
+  run_name = 'mask_every_other_prediction'
   if verbose:
       print('--- Running: %s' % run_name)
   start_runs(
@@ -211,14 +213,12 @@ def run_all(logdir, steps, thresholds, verbose=False):
       steps=steps,
       run_name=run_name,
       thresholds=thresholds,
-      assign_random_weights=True)
-
+      mask_every_other_prediction=True)
 
 def main(unused_argv):
-  logdir = os.path.expanduser(FLAGS.logdir)
-  print('Saving output to %s.' % logdir)
-  run_all(logdir, FLAGS.steps, 50, verbose=True)
-  print('Done. Output saved to %s.' % logdir)
+  print('Saving output to %s.' % FLAGS.logdir)
+  run_all(FLAGS.logdir, FLAGS.steps, 50, verbose=True)
+  print('Done. Output saved to %s.' % FLAGS.logdir)
 
 
 if __name__ == '__main__':

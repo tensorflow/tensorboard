@@ -340,7 +340,7 @@ def _hack_the_main_frame():
   return frame
 
 
-class _PersistentOpEvaluator(object):
+class PersistentOpEvaluator(object):
   """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
 
   Extend this class to create a particular kind of op evaluator, like an
@@ -355,7 +355,7 @@ class _PersistentOpEvaluator(object):
 
   Example usage:
 
-      class FluxCapacitanceEvaluator(_PersistentOpEvaluator):
+      class FluxCapacitanceEvaluator(PersistentOpEvaluator):
         \"\"\"Compute the flux capacitance required for a system.
 
         Arguments:
@@ -379,7 +379,7 @@ class _PersistentOpEvaluator(object):
   """
 
   def __init__(self):
-    super(_PersistentOpEvaluator, self).__init__()
+    super(PersistentOpEvaluator, self).__init__()
     self._session = None
     self._initialization_lock = threading.Lock()
 
@@ -417,7 +417,7 @@ class _PersistentOpEvaluator(object):
       return self.run(*args, **kwargs)
 
 
-class _TensorFlowPngEncoder(_PersistentOpEvaluator):
+class _TensorFlowPngEncoder(PersistentOpEvaluator):
   """Encode an image to PNG.
 
   This function is thread-safe, and has high performance when run in
@@ -450,3 +450,48 @@ class _TensorFlowPngEncoder(_PersistentOpEvaluator):
 
 
 encode_png = _TensorFlowPngEncoder()
+
+
+class _TensorFlowWavEncoder(PersistentOpEvaluator):
+  """Encode an audio clip to WAV.
+
+  This function is thread-safe and exhibits good parallel performance.
+
+  Arguments:
+    audio: A numpy array of shape `[samples, channels]`.
+    samples_per_second: A positive `int`, in Hz.
+
+  Returns:
+    A bytestring with WAV-encoded data.
+  """
+
+  def __init__(self):
+    super(_TensorFlowWavEncoder, self).__init__()
+    self._audio_placeholder = None
+    self._samples_per_second_placeholder = None
+    self._encode_op = None
+
+  def initialize_graph(self):
+    self._audio_placeholder = tf.placeholder(
+        dtype=tf.float32, name='image_to_encode')
+    self._samples_per_second_placeholder = tf.placeholder(
+        dtype=tf.int32, name='samples_per_second')
+    self._encode_op = tf.contrib.ffmpeg.encode_audio(
+        self._audio_placeholder,
+        file_format='wav',
+        samples_per_second=self._samples_per_second_placeholder)
+
+  def run(self, audio, samples_per_second):  # pylint: disable=arguments-differ
+    if not isinstance(audio, np.ndarray):
+      raise ValueError("'audio' must be a numpy array: %r" % audio)
+    if not isinstance(samples_per_second, int):
+      raise ValueError("'samples_per_second' must be an int: %r"
+                       % samples_per_second)
+    feed_dict = {
+        self._audio_placeholder: audio,
+        self._samples_per_second_placeholder: samples_per_second,
+    }
+    return self._encode_op.eval(feed_dict=feed_dict)
+
+
+encode_wav = _TensorFlowWavEncoder()
