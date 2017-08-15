@@ -39,16 +39,16 @@ Once you have event files, run TensorBoard and provide the log directory. If
 you're using a precompiled TensorFlow package (e.g. you installed via pip), run:
 
 ```
-tensorboard --logdir=path/to/logs
+tensorboard --logdir path/to/logs
 ```
 
 Or, if you are building from source:
 
 ```
 bazel build tensorboard:tensorboard
-./bazel-bin/tensorboard/tensorboard --logdir=path/to/logs
+./bazel-bin/tensorboard/tensorboard --logdir path/to/logs
 # or even more succinctly
-bazel run tensorboard -- --logdir=path/to/logs
+bazel run tensorboard -- --logdir path/to/logs
 ```
 
 This should print that TensorBoard has started. Next, connect to
@@ -130,7 +130,7 @@ For example, here is a well-organized TensorBoard log directory, with two runs,
 /some/path/mnist_experiments/run1/events.out.tfevents.1456525585.name
 /some/path/mnist_experiments/run2/
 /some/path/mnist_experiments/run2/events.out.tfevents.1456525385.name
-/tensorboard --logdir=/some/path/mnist_experiments
+/tensorboard --logdir /some/path/mnist_experiments
 ```
 
 You may also pass a comma separated list of log directories, and TensorBoard
@@ -138,7 +138,7 @@ will watch each directory. You can also assign names to individual log
 directories by putting a colon between the name and the path, as in
 
 ```
-tensorboard --logdir=name1:/path/to/logs/1,name2:/path/to/logs/2
+tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
 ```
 
 # The Visualizations
@@ -232,7 +232,7 @@ features including hyperlinks, lists, and tables are all supported.
 ### My TensorBoard isn't showing any data! What's wrong?
 
 The first thing to do is ensure that TensorBoard is properly loading data from
-the correct directory. Launch `tensorboard --logdir=DIRECTORY_PATH --debug` and
+the correct directory. Launch `tensorboard --logdir DIRECTORY_PATH --debug` and
 look for output of the form
 
 `INFO:tensorflow:TensorBoard path_to_run is: {'DIRECTORY_PATH': None}`
@@ -252,7 +252,7 @@ If you have at least one result, then TensorBoard should be able to load data.
 Finally, let's make sure that the event files actually have data. Run
 tensorboard in inspector mode to inspect the contents of your event files.
 
-`tensorboard --inspect --logdir=DIRECTORY_PATH`
+`tensorboard --inspect --logdir DIRECTORY_PATH`
 
 If after running this procedure, it's still not working, please file an [issue
 on GitHub](https://github.com/tensorflow/tensorflow/issues). It will be much
@@ -312,7 +312,7 @@ event; like all events, it may have a `step` associated with it. If TensorBoard
 detects a `SessionStatus.START` event with step `a`, it will assume that every
 event with a step greater than `a` was orphaned, and it will discard those
 events. This behavior may be disabled with the flag
-`--purge_orphaned_data=false` (in versions after 0.7).
+`--purge_orphaned_data false` (in versions after 0.7).
 
 ### How can I export data from TensorBoard?
 
@@ -350,7 +350,7 @@ for some more information.
 ### I get a network security popup every time I run TensorBoard on a mac!
 
 This is because by default, TensorBoard serves on host `0.0.0.0` which is
-publicly accessible. You can stop the popups by specifying `--host=localhost` at
+publicly accessible. You can stop the popups by specifying `--host localhost` at
 startup.
 
 ### How can I contribute to TensorBoard development?
