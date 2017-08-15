@@ -60,8 +60,7 @@ class _FakeAccumulator(object):
     }
 
   def Tags(self):
-    return {event_accumulator.AUDIO: ['snd1', 'snd2'],
-            event_accumulator.SCALARS: ['sv1', 'sv2']}
+    return {}
 
   def FirstEventTimestamp(self):
     return 0
@@ -70,12 +69,6 @@ class _FakeAccumulator(object):
     if tag_name not in self.Tags()[enum]:
       raise KeyError
     return ['%s/%s' % (self._path, tag_name)]
-
-  def Scalars(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.SCALARS)
-
-  def Audio(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.AUDIO)
 
   def Tensors(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.TENSORS)
@@ -133,15 +126,6 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertTrue(x.GetAccumulator('run1').reload_called)
     self.assertTrue(x.GetAccumulator('run2').reload_called)
 
-  def testScalars(self):
-    """Tests Scalars function returns suitable values."""
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
-
-    run1_actual = x.Scalars('run1', 'sv1')
-    run1_expected = ['path1/sv1']
-
-    self.assertEqual(run1_expected, run1_actual)
-
   def testPluginRunToTagToContent(self):
     """Tests the method that produces the run to tag to content mapping."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
@@ -160,7 +144,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     """KeyError should be raised when accessing non-existing keys."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
     with self.assertRaises(KeyError):
-      x.Scalars('sv1', 'xxx')
+      x.Tensors('sv1', 'xxx')
 
   def testInitialization(self):
     """Tests EventMultiplexer is created properly with its params."""

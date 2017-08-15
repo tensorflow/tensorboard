@@ -22,6 +22,7 @@ import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from tensorboard.plugins.scalar import summary
 
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/scalars_demo'
@@ -64,13 +65,20 @@ def run(logdir, run_name,
     # name-scope above.
     temperature = tf.Variable(tf.constant(initial_temperature),
                               name='temperature')
-    tf.summary.scalar('current', temperature)
+    summary.op('current', temperature,
+               display_name='Temperature',
+               description='The temperature of the object under '
+               'simulation, in Kelvins.')
 
     # Compute how much the object's temperature differs from that of its
     # environment, and track this, too: likewise, as
     # "temperature/difference_to_ambient".
     ambient_difference = temperature - ambient_temperature
-    tf.summary.scalar('difference_to_ambient', ambient_difference)
+    summary.op('difference_to_ambient', ambient_difference,
+               display_name='Difference to ambient temperature',
+               description='The difference between the ambient '
+                           'temperature and the temperature of the '
+                           'object under simulation, in Kelvins.')
 
   # Newton suggested that the rate of change of the temperature of an
   # object is directly proportional to this `ambient_difference` above,
@@ -80,7 +88,9 @@ def run(logdir, run_name,
   # make the data look somewhat interesting. :-) )
   noise = 50 * tf.random_normal([])
   delta = -heat_coefficient * (ambient_difference + noise)
-  tf.summary.scalar('delta', delta)
+  summary.op('delta', delta,
+             description='The change in temperature from the previous '
+                         'step, in Kelvins.')
 
   # Now, augment the current temperature by this delta that we computed.
   update_step = temperature.assign_add(delta)

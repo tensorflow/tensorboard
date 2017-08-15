@@ -398,6 +398,246 @@ export class RenderGraphInfo {
     return this.renderedOpNames;
   }
 
+  /**
+   * Clones an op node and adds it to a metagraph. Does nothing if an op node
+   * with the same new name has already been created within the metagraph. This
+   * method is used when duplicating a library function to be injected within a
+   * metanode representing a function call.
+   * @param parentMetanode The parent metanode on which to add the new node.
+   * @param node The op node to clone.
+   * @param newPrefix The prefix string to use in lieu of the one that merely
+   *     indicates that the metanode represents a function defined in the
+   *     library. This prefix should reflect graph hierarchy.
+   * @return The newly created op node (the clone of the original).
+   */
+  private cloneAndAddFunctionOpNode(
+      parentMetanode: Metanode,
+      libraryFunctionNodeName: string,
+      node: OpNode,
+      newPrefix: string): OpNode {
+    const newName = node.name.replace(
+        libraryFunctionNodeName, newPrefix);
+    let newOpNode = parentMetanode.metagraph.node(newName);
+    if (newOpNode) {
+      // This node had already been created and added to the graph.
+      return newOpNode as OpNode;
+    }
+
+    // Create a new op node.
+    newOpNode = new OpNodeImpl({
+      name: newName,
+      input: [],
+      device: node.device,
+      op: node.op,
+      attr: _.cloneDeep(node.attr),
+    });
+
+    // Update various properties.
+    newOpNode.cardinality = node.cardinality;
+    newOpNode.include = node.include;
+    newOpNode.outputShapes = _.cloneDeep(node.outputShapes);
+    newOpNode.xlaCluster = node.xlaCluster;
+    newOpNode.functionInputIndex = node.functionInputIndex;
+    newOpNode.functionOutputIndex = node.functionOutputIndex;
+
+    // Update the inputs of the new node to reflect the new path.
+    newOpNode.inputs = node.inputs.map(normalizedInput => {
+      const newNormalizedInput = _.clone(normalizedInput);
+      newNormalizedInput.name = normalizedInput.name.replace(
+          libraryFunctionNodeName, newPrefix);
+      return newNormalizedInput;
+    });
+
+    // Add the new op node to the hierarchy and metagraph. Also add it to its
+    // parent metanode.
+    newOpNode.parentNode = parentMetanode;
+    parentMetanode.metagraph.setNode(newOpNode.name, newOpNode);
+    this.hierarchy.setNode(newOpNode.name, newOpNode);
+
+    // Update embeddings.
+    const updateEmbeddingOpNode = embeddingNode => {
+      return this.cloneAndAddFunctionOpNode(
+          parentMetanode, libraryFunctionNodeName, embeddingNode, newPrefix);
+    }
+    newOpNode.inEmbeddings = node.inEmbeddings.map(updateEmbeddingOpNode);
+    newOpNode.outEmbeddings = node.outEmbeddings.map(updateEmbeddingOpNode);
+
+    return newOpNode;
+  }
+
+  /**
+   * Clones a Metanode that represents a function defined in the graph library.
+   * We dynamically inject a clone of a function into a meta graph when the user
+   * expands a function call. We cannot do this at the beginning because the
+   * functions may recursively call themselves or other functions.
+   * @param metagraph The metagraph we are currently rendering the sub-hierarchy
+   *     for.
+   * @param opNodeToReplace The op node in the graph to replace with a new
+   *     (expandable) metanode that visualizes the innards of a function.
+   * @param libraryMetanode The metanode for a library function to clone.
+   * @param oldPrefix The old prefix to replace (that just reflects how this
+   *     node is for a library function).
+   * @param newPrefix The prefix string to use in lieu of the one that merely
+   *     indicates that the metanode represents a function defined in the
+   *     library. This prefix should reflect graph hierarchy.
+   */
+  private cloneFunctionLibraryMetanode(
+      metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>,
+      opNodeToReplace: OpNode,
+      libraryMetanode: Metanode,
+      oldPrefix: string,
+      newPrefix: string): Metanode {
+    const newMetanode = tf.graph.createMetanode(
+        libraryMetanode.name.replace(oldPrefix, newPrefix));
+
+    // Copy over various properties.
+    newMetanode.depth = libraryMetanode.depth;
+    newMetanode.cardinality = libraryMetanode.cardinality;
+    newMetanode.templateId = libraryMetanode.templateId;
+    newMetanode.opHistogram = _.clone(libraryMetanode.opHistogram);
+    newMetanode.deviceHistogram = _.clone(libraryMetanode.deviceHistogram);
+    newMetanode.hasNonControlEdges = libraryMetanode.hasNonControlEdges;
+    newMetanode.include = libraryMetanode.include;
+    newMetanode.nodeAttributes = _.clone(libraryMetanode.nodeAttributes);
+
+    // Recursively duplicate the children nodes. At the same time, make a
+    // mapping between function output index and the new node for the output.
+    const functionOutputIndexToNode = {};
+    _.each(libraryMetanode.metagraph.nodes(), nodeName => {
+      const node = libraryMetanode.metagraph.node(nodeName);
+      switch (node.type) {
+        case NodeType.META:
+          // Recursively duplicate the metanode.
+          const newNode = this.cloneFunctionLibraryMetanode(
+              metagraph,
+              opNodeToReplace,
+              node as Metanode,
+              oldPrefix,
+              newPrefix);
+
+          // Add the new node to the graph.
+          newNode.parentNode = newMetanode;
+          newMetanode.metagraph.setNode(newNode.name, newNode);
+          this.hierarchy.setNode(newNode.name, newNode);
+          break;
+        case NodeType.OP:
+          // Duplicate the op node.
+          const newOpNode = this.cloneAndAddFunctionOpNode(
+              newMetanode, oldPrefix, node as OpNode, newPrefix);
+          if (_.isNumber(newOpNode.functionInputIndex)) {
+            // This node represents an input_arg of the library function. Give
+            // it edges so that its bridge edges are created correctly.
+            let inputIndex = newOpNode.functionInputIndex;
+            let newInput = _.clone(opNodeToReplace.inputs[inputIndex]);
+            while (newInput.isControlDependency) {
+              // Ignore control dependencies - they are not assigned to
+              // input_args.
+              inputIndex++;
+              newInput = opNodeToReplace.inputs[inputIndex];
+            }
+            // Clone the normalized input object.
+            newOpNode.inputs.push(newInput);
+
+            // Update values in the corresponding edge in the high-level
+            // metagraph.
+            const originalMetaEdges = this.hierarchy.getPredecessors(
+                opNodeToReplace.name);
+            const originalMetaEdge = originalMetaEdges.regular[
+                newOpNode.functionInputIndex];
+
+            // Also change any base edges that point into the original node to
+            // point to the input arg within the function. These are used to
+            // make bridge edges.
+            _.each(originalMetaEdge.baseEdgeList, edge => {
+              if (edge.w === opNodeToReplace.name) {
+                edge.w = newOpNode.name;
+              }
+              if (edge.v === opNodeToReplace.name) {
+                edge.v = newOpNode.name;
+              }
+            });
+          }
+
+          if (_.isNumber(newOpNode.functionOutputIndex)) {
+            functionOutputIndexToNode[newOpNode.functionOutputIndex] =
+                newOpNode;
+          }
+          break;
+        default:
+          // This logic should never run because the meta graph should only
+          // contain meta and op nodes.
+          console.warn(
+              node.name + ' is oddly neither a metanode nor an opnode.');
+      }
+    });
+
+    // Clone the edges.
+    _.each(libraryMetanode.metagraph.edges(),
+        (edgeObject: graphlib.EdgeObject) => {
+      const edge = libraryMetanode.metagraph.edge(edgeObject);
+      const newV = edge.v.replace(oldPrefix, newPrefix);
+      const newW = edge.w.replace(oldPrefix, newPrefix);
+
+      const newMetaEdge = new MetaedgeImpl(newV, newW);
+
+      // Duplicate various properties.
+      newMetaEdge.inbound = edge.inbound;
+      newMetaEdge.numRegularEdges = edge.numRegularEdges;
+      newMetaEdge.numControlEdges = edge.numControlEdges;
+      newMetaEdge.numRefEdges = edge.numRefEdges;
+      newMetaEdge.totalSize = edge.totalSize;
+      if (edge.baseEdgeList) {
+        newMetaEdge.baseEdgeList = edge.baseEdgeList.map(baseEdge => {
+          const newBaseEdge = _.clone(baseEdge);
+          newBaseEdge.v = baseEdge.v.replace(oldPrefix, newPrefix);
+          newBaseEdge.w = baseEdge.w.replace(oldPrefix, newPrefix);
+          return newBaseEdge;
+        });
+      }
+
+      // Set the direction of the edge based on whether it is inbound. The edge
+      // is inbound if its destination is within the metagraph.
+      if (newMetanode.metagraph.node(newW)) {
+        newMetanode.metagraph.setEdge(newV, newW, newMetaEdge);
+      } else {
+        newMetanode.metagraph.setEdge(newW, newV, newMetaEdge);
+      }
+    });
+
+    if (!_.isEmpty(functionOutputIndexToNode)) {
+      // Connect the outputs of the function to other ops.
+      const originalMetaEdges = this.hierarchy.getSuccessors(
+          opNodeToReplace.name);
+      _.each(originalMetaEdges.regular, (metaedge) => {
+        const destinationNode = metagraph.node(metaedge.w) as OpNode;
+        _.each(destinationNode.inputs, normalizedInput => {
+          // If an output of the function is an input into this op, map it back
+          // to the output within the function so bridge edges are computed.
+          if (normalizedInput.name === opNodeToReplace.name) {
+            // Map the output tensor index (which in this case is for sure
+            // numeric because it is an output of a metanode) to the correct
+            // function output.
+            const outputNode = functionOutputIndexToNode[
+                normalizedInput.outputTensorKey];
+            normalizedInput.name = outputNode.name;
+            // Each function output node only has 1 slot.
+            normalizedInput.outputTensorKey = '0';
+          }
+        });
+
+        // Modify the list of base edges to point from the output so that bridge
+        // edges are correct.
+        _.each(metaedge.baseEdgeList, (baseEdge) => {
+          baseEdge.v =
+              functionOutputIndexToNode[baseEdge.outputTensorKey].name;
+          baseEdge.outputTensorKey = '0';
+        });
+      });
+    }
+
+    return newMetanode;
+  }
+
   buildSubhierarchy(nodeName: string): void {
     // Terminate if the rendering hierarchy was already constructed
     // for this node.
@@ -417,6 +657,49 @@ export class RenderGraphInfo {
     let renderGroupNodeInfo = <RenderGroupNodeInfo> renderNodeInfo;
     let metagraph = renderGroupNodeInfo.node.metagraph;
     let coreGraph = renderGroupNodeInfo.coreGraph;
+
+    const nodesThatGotCloned = [];
+    const functionCallMetanodesToAdd = [];
+    if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
+      // This graph has library functions. Add them to the current
+      // sub-hierarchy if necessary.
+      _.each(metagraph.nodes(), childName => {
+        // Why is this so often undefined?
+        const originalNode = metagraph.node(childName) as OpNode;
+        const libraryMetanode =
+            this.hierarchy.libraryFunctions[originalNode.op];
+        if (!libraryMetanode) {
+          // This node is not a function call.
+          return;
+        }
+
+        if (childName.indexOf(tf.graph.FUNCTION_LIBRARY_NODE) === 0) {
+          // Do not replace library functions in the graph. The library
+          // functions serve as templates for other nodes.
+          return;
+        }
+
+        // We later replace the node that is a function call with a copy of the
+        // function metagraph. We do not do so now because we are also looping
+        // through all the nodes.
+        const clonedMetanode = this.cloneFunctionLibraryMetanode(
+            metagraph,
+            originalNode,
+            libraryMetanode,
+            libraryMetanode.name,
+            originalNode.name);
+        nodesThatGotCloned.push(originalNode);
+        functionCallMetanodesToAdd.push(clonedMetanode);
+      });
+
+      // Perform node replacement.
+      _.each(functionCallMetanodesToAdd, (clonedMetanode, i) => {
+        const originalNode = nodesThatGotCloned[i];
+        clonedMetanode.parentNode = originalNode.parentNode;
+        metagraph.setNode(originalNode.name, clonedMetanode);
+        this.hierarchy.setNode(originalNode.name, clonedMetanode);
+      });
+    }
 
     // Create render nodes to represent each child from the metagraph. Although
     // these will initially be added to the coreGraph, they may later be
@@ -1671,7 +1954,7 @@ export function expandUntilNodeIsShown(
 
   // Graph names do not take into account the output slot. Strip it.
   const lastNodeNameMatch =
-      splitTensorName[splitTensorName.length - 1].match(/(.*):\d+/);
+      splitTensorName[splitTensorName.length - 1].match(/(.*):\w+/);
   if (lastNodeNameMatch.length === 2) {
     splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch[1];
   }

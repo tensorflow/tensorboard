@@ -27,6 +27,7 @@ export interface Edges {
 
 export interface Hierarchy {
   root: Metanode;
+  libraryFunctions: {[key: string]: Metanode};
   templates: {[templateId: string]: string[]};
   /** List of all device names */
   devices: string[];
@@ -51,6 +52,7 @@ export interface Hierarchy {
  */
 class HierarchyImpl implements Hierarchy {
   root: Metanode;
+  libraryFunctions: {[key: string]: Metanode};
   templates: {[templateId: string]: string[]};
   private index: {[nodeName: string]: GroupNode|OpNode};
   devices: string[];
@@ -61,6 +63,7 @@ class HierarchyImpl implements Hierarchy {
 
   constructor() {
     this.root = createMetanode(ROOT_NAME, {compound: true});
+    this.libraryFunctions = {};
     this.templates = null;
     this.devices = null;
     /**
@@ -201,7 +204,7 @@ class HierarchyImpl implements Hierarchy {
             metaedge.addBaseEdge(
                 {
                   isControlDependency: input.isControlDependency,
-                  outputTensorIndex: input.outputTensorIndex,
+                  outputTensorKey: input.outputTensorKey,
                   isReferenceEdge: false,
                   v: embeddedNode.name,
                   w: nodeName
@@ -240,7 +243,7 @@ class HierarchyImpl implements Hierarchy {
             metaedge.addBaseEdge(
                 {
                   isControlDependency: input.isControlDependency,
-                  outputTensorIndex: input.outputTensorIndex,
+                  outputTensorKey: input.outputTensorKey,
                   isReferenceEdge: false,
                   v: nodeName,
                   w: embeddedNode.name
@@ -608,6 +611,30 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
       embedding.parentNode = node;
     });
   });
+
+  const libraryFunctionNode =
+      h.node(tf.graph.FUNCTION_LIBRARY_NODE) as Metanode;
+  if (libraryFunctionNode) {
+    // This graph has a function library. Remove the library from the root node
+    // itself. We later dynamically add copies of functions into metanodes that
+    // are actually function calls.
+    const rootNode = libraryFunctionNode.parentNode as Metanode;
+    rootNode.metagraph.removeNode(libraryFunctionNode.name);
+
+    // Add all of the library function node's children to a mapping. All of the
+    // nodes within this special node for library functions are themselves
+    // metanodes for library functions.
+    _.each(libraryFunctionNode.metagraph.nodes(), functionNodeName => {
+      const childNode =
+          libraryFunctionNode.metagraph.node(functionNodeName) as Metanode;
+      if (childNode.type === tf.graph.NodeType.META) {
+        const functionName = functionNodeName.substring(
+            tf.graph.FUNCTION_LIBRARY_NODE.length +
+                tf.graph.NAMESPACE_DELIM.length);
+        h.libraryFunctions[functionName] = childNode;
+      }
+    });
+  }
 };
 
 /**

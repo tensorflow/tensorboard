@@ -43,7 +43,7 @@ def op(
 
   Each number in `predictions`, a float in `[0, 1]`, is compared with its
   corresponding boolean label in `labels`, and counts as a single tp/fp/tn/fn
-  value at each threshold. This is then multiplied with `weight` which can be
+  value at each threshold. This is then multiplied with `weights` which can be
   used to reweight certain values, or more commonly used for masking values.
 
   Args:
@@ -55,8 +55,9 @@ def op(
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
         compute PR metrics for. Should be `>= 2`. This value should be a 
         constant integer value, not a Tensor that stores an integer.
-    weights: Optional; A float32 `Tensor` of the same size as `labels`.
-        Individual counts are multiplied by this value.
+    weights: Optional float32 `Tensor`. Individual counts are multiplied by this
+        value. This tensor must be either the same shape as or broadcastable to
+        the `labels` tensor.
     display_name: Optional name for this summary in TensorBoard, as a
         constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a

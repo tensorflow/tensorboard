@@ -18,18 +18,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import inspect
 import math
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from tensorboard.plugins.audio import summary
 
 FLAGS = tf.flags.FLAGS
 
 tf.flags.DEFINE_string('logdir', '/tmp/audio_demo',
                        'Directory into which to write TensorBoard data.')
 
-tf.flags.DEFINE_integer('steps', 500,
+tf.flags.DEFINE_integer('steps', 50,
                         'Number of frequencies of each waveform to generate.')
 
 # Parameters for the audio output.
@@ -68,10 +70,11 @@ def run(logdir, run_name, wave_name, wave_constructor):
 
   # We want to linearly interpolate a frequency between A4 (440 Hz) and
   # A5 (880 Hz).
-  f_min = 440.0
-  f_max = 880.0
-  t = step_placeholder / (FLAGS.steps - 1)
-  frequency = f_min * (1.0 - t) + f_max * t
+  with tf.name_scope('compute_frequency'):
+    f_min = 440.0
+    f_max = 880.0
+    t = step_placeholder / (FLAGS.steps - 1)
+    frequency = f_min * (1.0 - t) + f_max * t
 
   # Let's log this frequency, just so that we can make sure that it's as
   # expected.
@@ -83,8 +86,37 @@ def run(logdir, run_name, wave_name, wave_constructor):
   with tf.name_scope(wave_name):
     waveform = wave_constructor(frequency)
 
+  # We also have the opportunity to annotate each audio clip with a
+  # label. This is a good place to include the frequency, because it'll
+  # be visible immediately next to the audio clip.
+  with tf.name_scope('compute_labels'):
+    samples = tf.shape(waveform)[0]
+    wave_types = tf.tile(["*Wave type:* `%s`." % wave_name], [samples])
+    frequencies = tf.string_join([
+        "*Frequency:* ",
+        tf.tile([tf.as_string(frequency, precision=2)], [samples]),
+        " Hz.",
+    ])
+    samples = tf.string_join([
+        "*Sample:* ", tf.as_string(tf.range(samples) + 1),
+        " of ", tf.as_string(samples), ".",
+    ])
+    labels = tf.string_join([wave_types, frequencies, samples], separator=" ")
+
+  # We can place a description next to the summary in TensorBoard. This
+  # is a good place to explain what the summary represents, methodology
+  # for creating it, etc. Let's include the source code of the function
+  # that generated the wave.
+  source = '\n'.join('    %s' % line.rstrip()
+                     for line in inspect.getsourcelines(wave_constructor)[0])
+  description = ("A wave of type `%r`, generated via:\n\n%s"
+                 % (wave_name, source))
+
   # Here's the crucial piece: we interpret this result as audio.
-  tf.summary.audio('waveform', waveform, FLAGS.sample_rate)
+  summary.op('waveform', waveform, FLAGS.sample_rate,
+             labels=labels,
+             display_name=wave_name,
+             description=description)
 
   # Now, we can collect up all the summaries and begin the run.
   summ = tf.summary.merge_all()
@@ -192,7 +224,12 @@ def bisine_wahwah_wave(frequency):
   ts = (tf.sin(math.pi * 2 * thetas) + 1) / 2
   #
   # Finally, we can mix the two together, and we're done.
-  return ts * waves_a + (1.0 - ts) * waves_b
+  wave = ts * waves_a + (1.0 - ts) * waves_b
+  #
+  # Alternately, we can make the effect more pronounced by exaggerating
+  # the sample data. Let's emit both variations.
+  exaggerated_wave = wave ** 3.0
+  return tf.concat([wave, exaggerated_wave], axis=0)
 
 
 def run_all(logdir, verbose=False):

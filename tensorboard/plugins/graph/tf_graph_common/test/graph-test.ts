@@ -67,11 +67,11 @@ suite('graph', () => {
 
             let firstInputOfX = slimGraph.nodes['X'].inputs[0];
             assert.equal(firstInputOfX.name, 'Q');
-            assert.equal(firstInputOfX.outputTensorIndex, 2);
+            assert.equal(firstInputOfX.outputTensorIndex, '2');
 
             let secondInputOfX = slimGraph.nodes['X'].inputs[1];
             assert.equal(secondInputOfX.name, 'W');
-            assert.equal(secondInputOfX.outputTensorIndex, 0);
+            assert.equal(secondInputOfX.outputTensorIndex, '0');
 
             tf.graph.parser.parseStatsPbTxt(statsPbtxt).then(stepStats => {
               tf.graph.joinStatsInfoWithGraph(slimGraph, stepStats);
