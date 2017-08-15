@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import * as RunsStore from '../tf-backend/runsStore.js';
-import {palettes} from './palettes.js';
+import {standard as standardPalette} from './palettes.js';
 
 // Example usage:
 // runs = ["train", "test", "test1", "test2"]
@@ -28,11 +28,11 @@ export class ColorScale {
 
   /**
    * Creates a color scale with optional custom palette.
-   * @param {Array<string>} [palette=palettes.googleColorBlind] - The color
-   *     palette you want as an Array of hex strings.
+   * @param {Array<string>} palette The color palette to use, as an
+   *   Array of hex strings. Defaults to the standard palette.
    */
   constructor(
-      private readonly palette: string[] = palettes.googleColorBlindAssist) {}
+      private readonly palette: string[] = standardPalette) {}
 
   /**
    * Set the domain of strings.
