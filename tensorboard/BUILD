@@ -199,6 +199,7 @@ py_library(
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 

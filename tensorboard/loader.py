@@ -827,9 +827,8 @@ class RunReader(object):
     self.name = tf.compat.as_text(name)
     self._mark = -1
     self._logs = []  # type: list[EventLogReader]
-    self._i = 0
+    self._index = 0
     self._entombed_progress = 0
-    self._has_new_stuff = False
     self._saved_events = \
         collections.deque()  # type: collections.deque[tf.Event]
     self._prepended_events = \
@@ -868,9 +867,12 @@ class RunReader(object):
             ('INSERT INTO EventLogs (rowid, run_id, path, offset)'
              ' VALUES (?, ?, ?, 0)'),
             (log.rowid, self.run_id, log.path))
-    self._logs.append(log)
-    self._has_new_stuff = True
     tf.logging.debug('Adding %s', log)
+    self._logs.append(log)
+    # Skip over event logs we've already read.
+    if log.get_offset() > 0 and not self._prepended_events:
+      self._index = len(self._logs) - 1
+      self._cleanup()
     return True
 
   def get_next_event(self):
@@ -878,22 +880,18 @@ class RunReader(object):
 
     :rtype: tf.Event
     """
-    if self._has_new_stuff:
-      self._fast_forward_over_things_we_have_read()
-      self._cleanup()
-      self._has_new_stuff = False
     event = None
     if self._prepended_events:
       event = self._prepended_events.popleft()
-    elif self._i < len(self._logs):
+    elif self._index < len(self._logs):
       while True:
-        log = self._logs[self._i]
+        log = self._logs[self._index]
         event = log.get_next_event()
         if event is not None:
           break
-        if self._i == len(self._logs) - 1:
+        if self._index == len(self._logs) - 1:
           break
-        self._i += 1
+        self._index += 1
         self._cleanup()
     if event is not None and self._mark != -1:
       self._saved_events.append(event)
@@ -937,7 +935,7 @@ class RunReader(object):
     """
     with contextlib.closing(self._db_conn.cursor()) as c:
       n = 0
-      while self._i >= n < len(self._logs):
+      while self._index >= n < len(self._logs):
         log = self._logs[n]
         n += 1
         offset = log.get_offset()
@@ -971,7 +969,7 @@ class RunReader(object):
           logged.
     """
     util.close_all(self._logs)
-    self._i = len(self._logs)
+    self._index = len(self._logs)
     self._mark = -1
     self._prepended_events.clear()
     self._saved_events.clear()
@@ -980,22 +978,16 @@ class RunReader(object):
     # Last event log has to be preserved so we can continue enforcing
     # monotonicity. We entomb offset because that also has to be
     # monotonic, but the size does not.
-    if 0 < self._i < len(self._logs):
-      deleted = self._logs[:self._i]
-      self._logs = self._logs[self._i:]
-      self._i = 0
+    if 0 < self._index < len(self._logs):
+      deleted = self._logs[:self._index]
+      self._logs = self._logs[self._index:]
+      self._index = 0
       self._entombed_progress += sum(l.get_offset() for l in deleted)
       util.close_all(deleted)
 
-  def _fast_forward_over_things_we_have_read(self):
-    for i in range(len(self._logs) - 1, self._i + 1, -1):
-      if self._logs[i].get_offset():
-        self._skip_to_event_log(i)
-        break
-
   def _skip_to_event_log(self, i):
-    should_mark = self._mark != -1 and i > self._i
-    self._i = i
+    should_mark = self._mark != -1 and i > self._index
+    self._index = i
     if should_mark:
       self._prepended_events.clear()
       self.mark()
