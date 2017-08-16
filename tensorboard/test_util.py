@@ -34,8 +34,6 @@ import tensorflow as tf
 from tensorboard import db
 from tensorboard import util
 
-db.TESTING_MODE = True
-
 
 class TestCase(tf.test.TestCase):
   """TensorBoard base test class.
@@ -50,7 +48,7 @@ class TestCase(tf.test.TestCase):
     self.clock = FakeClock()
     self.sleep = FakeSleep(self.clock)
     self.Retrier = functools.partial(util.Retrier, sleep=self.sleep)
-    self.tbase = db.TensorBase(db_connection_provider=self.connect,
+    self.tbase = db.TensorBase(db_connection_provider=self.connect_db,
                                retrier_factory=self.Retrier)
 
   def setUp(self):
@@ -59,8 +57,13 @@ class TestCase(tf.test.TestCase):
     tf.logging.set_verbosity(tf.logging.DEBUG)
     logging.getLogger('werkzeug').setLevel(logging.INFO)
     tf.logging.debug('=== %s ===', self._method)
+    db.TESTING_MODE = True
 
-  def connect(self):
+  def tearDown(self):
+    super(TestCase, self).tearDown()
+    db.TESTING_MODE = False
+
+  def connect_db(self):
     """Establishes a PEP 249 DB connection.
 
     :rtype: db.Connection

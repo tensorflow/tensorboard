@@ -38,7 +38,7 @@ class TransactionTest(test_util.TestCase):
 
   def setUp(self):
     super(TransactionTest, self).setUp()
-    with contextlib.closing(self.connect()) as db_conn:
+    with contextlib.closing(self.connect_db()) as db_conn:
       with contextlib.closing(db_conn.cursor()) as c:
         c.execute('CREATE TABLE IF NOT EXISTS Numbers (a INTEGER, b INTEGER)')
 

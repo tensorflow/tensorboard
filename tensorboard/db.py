@@ -791,6 +791,7 @@ class Id(object):
     """Throws ValueError if x isn't in bit range.
 
     :type x: int
+    :rtype: int
     """
     return _check_id(x, self.bits, self.name)
 
@@ -823,6 +824,7 @@ class RowId(object):
     """Throws ValueError if rowid isn't in proper ranges.
 
     :type rowid: int
+    :rtype: int
     """
     self.parse(rowid)
     return rowid
