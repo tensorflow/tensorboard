@@ -18,5 +18,8 @@ syntax = "proto3";
 package tensorboard;
 
 message PrCurvePluginData {
-  uint32 num_thresholds = 1;
+  // Version `0` is the only supported version.
+  int32 version = 1;
+
+  uint32 num_thresholds = 2;
 }

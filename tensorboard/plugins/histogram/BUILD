@@ -5,6 +5,8 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 exports_files(["LICENSE"])
 
 ## Histograms Plugin ##
@@ -50,6 +52,7 @@ py_library(
         "//tensorboard:internal",
     ],
     deps = [
+        ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -89,4 +92,10 @@ py_binary(
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
+)
+
+tb_proto_library(
+    name = "protos_all",
+    srcs = ["plugin_data.proto"],
+    visibility = ["//visibility:public"],
 )
