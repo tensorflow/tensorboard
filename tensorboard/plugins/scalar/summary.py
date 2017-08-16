@@ -36,8 +36,8 @@ def op(name,
 
   Arguments:
     name: A unique name for the generated summary node.
-    data: A real numeric rank-0 `Tensor`. Must have `dtype` compatible
-      with `float32`.
+    data: A real numeric rank-0 `Tensor`. Must have `dtype` castable
+      to `float32`.
     display_name: Optional name for this summary in TensorBoard, as a
       constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
