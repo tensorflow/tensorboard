@@ -768,6 +768,18 @@ class EventLogReader(object):
     """
     return self._reader.get_size()
 
+  def save_progress(self, db_conn):
+    """Saves current offset to DB.
+
+    The rowid property must be set beforehand.
+
+    :type db_conn: db.Connection
+    """
+    with contextlib.closing(db_conn.cursor()) as c:
+      c.execute(
+          'UPDATE EventLogs SET offset = ? WHERE rowid = ? AND offset < ?',
+          (self._offset, self.rowid, self._offset))
+
   def close(self):
     """Closes event log reader if open.
 
@@ -808,20 +820,17 @@ class RunReader(object):
     name: Display name of this run.
   """
 
-  def __init__(self, db_conn, rowid, name):
+  def __init__(self, rowid, name):
     """Creates new instance.
 
     Args:
-      db_conn: A PEP 249 Connection object.
       rowid: Primary key of run in `Runs` table, which should already
           be inserted. This is a bit-packed int made by db.RUN_ROWID.
       name: Display name of run.
 
-    :type db_conn: db.Connection
     :type rowid: int
     :type name: str
     """
-    self._db_conn = db_conn
     self.rowid = db.RUN_ROWID.check(rowid)
     self.run_id = db.RUN_ROWID.parse(rowid)[1]
     self.name = tf.compat.as_text(name)
@@ -834,7 +843,7 @@ class RunReader(object):
     self._prepended_events = \
         collections.deque()  # type: collections.deque[tf.Event]
 
-  def add_event_log(self, log):
+  def add_event_log(self, db_conn, log):
     """Adds event log to run loader.
 
     Event logs must be added monotonically, based on the timestamp in
@@ -842,17 +851,19 @@ class RunReader(object):
     current batch of reads to fast forward.
 
     Args:
+      db_conn: A PEP 249 Connection object.
       log: An EventLogReader instance.
 
     Returns:
       True if log was actually added.
 
+    :type db_conn: db.Connection
     :type log: EventLogReader
     :rtype: bool
     """
     if self._logs and log <= self._logs[-1]:
       return False
-    with contextlib.closing(self._db_conn.cursor()) as c:
+    with contextlib.closing(db_conn.cursor()) as c:
       c.execute(
           'SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?',
           (self.run_id, log.path))
@@ -928,20 +939,17 @@ class RunReader(object):
     """
     return sum(el.get_size() for el in self._logs) + self._entombed_progress
 
-  def save_progress(self):
+  def save_progress(self, db_conn):
     """Saves current offsets of all open event logs to DB.
 
     This should be called after the mark has been advanced.
+
+    :type db_conn: db.Connection
     """
-    with contextlib.closing(self._db_conn.cursor()) as c:
-      n = 0
-      while self._index >= n < len(self._logs):
-        log = self._logs[n]
-        n += 1
-        offset = log.get_offset()
-        c.execute(
-            'UPDATE EventLogs SET offset = ? WHERE rowid = ? AND offset < ?',
-            (offset, log.rowid, offset))
+    n = 0
+    while self._index >= n < len(self._logs):
+      self._logs[n].save_progress(db_conn)
+      n += 1
 
   def mark(self):
     """Marks current position in file so reset() can be called."""
@@ -1019,10 +1027,7 @@ def _get_basename(path):
   :type path: str
   :rtype: str
   """
-  result = os.path.basename(os.path.normpath(path))
-  if result in ('', '.', '..'):
-    result = os.path.basename(os.path.realpath(path))
-  return result
+  return os.path.basename(os.path.normpath(os.path.join(os.getcwd(), path)))
 
 
 def get_event_logs(directory):

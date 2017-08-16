@@ -106,7 +106,8 @@ def close_all(resources):
       resource.close()
     except Exception as e:  # pylint: disable=broad-except
       if exc_info is not None:
-        tf.logging.error('Suppressing close(%s) failure: %s', resource, e)
+        tf.logging.error('Suppressing close(%s) failure: %s', resource, e,
+                         exc_info=exc_info)
       exc_info = sys.exc_info()
   if exc_info is not None:
     six.reraise(*exc_info)
