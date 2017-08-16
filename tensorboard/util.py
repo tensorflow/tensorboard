@@ -85,6 +85,32 @@ def closeable(class_):
   return class_
 
 
+def close_all(resources):
+  """Safely closes multiple resources.
+
+  The close method on all resources is guaranteed to be called. If
+  multiple close methods throw exceptions, then the least recent ones
+  will be logged via tf.logging.error.
+
+  Args:
+    resources: An iterable of object instances whose classes implement
+        the close method.
+
+  Raises:
+    Exception: To rethrow the last exception raised by a close method.
+  """
+  badness = None
+  for resource in resources:
+    try:
+      resource.close()
+    except Exception as e:  # pylint: disable=broad-except
+      if badness is not None:
+        tf.logging.error('Suppressing close(%s) failure: %s', resource, e)
+      badness = e
+  if badness is not None:
+    raise badness  # pylint: disable=raising-bad-type
+
+
 def guarded_by(field):
   """Indicates method should be called from within a lock.
 
