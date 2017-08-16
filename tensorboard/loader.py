@@ -1027,7 +1027,18 @@ def _get_basename(path):
   :type path: str
   :rtype: str
   """
-  return os.path.basename(os.path.normpath(os.path.join(os.getcwd(), path)))
+  return os.path.basename(os.path.normpath(os.path.join(_get_cwd(), path)))
+
+
+def _get_cwd():
+  """Returns current directory and try not to expand symlinks.
+
+  :rtype: str
+  """
+  result = os.environ.get('PWD')
+  if not result:
+    result = os.getcwd()
+  return result
 
 
 def get_event_logs(directory):
