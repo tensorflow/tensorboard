@@ -77,6 +77,13 @@ Polymer({
     xComponentsCreationMethod: Object,
 
     /**
+     * A function to create a Plottable.IAccessor<number> for accessing the
+     * y value. We accept a function for creating such an object instead of
+     * accepting such an object itself for reasons above.
+     */
+    yValueAccessorCreationMethod: Object,
+
+    /**
      * The scale for the y-axis. Allows:
      * - "linear" - linear scale (Plottable.Scales.Linear)
      * - "log" - modified-log scale (Plottable.Scales.ModifiedLog)
@@ -206,7 +213,11 @@ Polymer({
       if (this._chart) this._chart.destroy();
       var tooltip = d3.select(this.$.tooltip);
       var chart = new LineChart(
-          this.xComponentsCreationMethod, yScaleType, colorScale, tooltip);
+          this.xComponentsCreationMethod,
+          this.yValueAccessorCreationMethod,
+          yScaleType,
+          colorScale,
+          tooltip);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
@@ -268,7 +279,7 @@ class LineChart {
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
   private scatterPlot: Plottable.Plots.Scatter<number|Date, Number>;
   private nanDisplay: Plottable.Plots.Scatter<number|Date, Number>;
-  private scalarAccessor: Plottable.IAccessor<number>;
+  private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number>;
   private lastPointsDataset: Plottable.Dataset;
   private datasets: Plottable.Dataset[];
@@ -284,6 +295,7 @@ class LineChart {
 
   constructor(
       xComponentsCreationMethod: () => ChartHelpers.XComponents,
+      yValueAccessorCreationMethod: () => Plottable.IAccessor<number>,
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>) {
@@ -300,11 +312,13 @@ class LineChart {
     // need to do a single bind, so we can deregister the callback from
     // old Plottable.Datasets. (Deregistration is done by identity checks.)
     this.onDatasetChanged = this._onDatasetChanged.bind(this);
-    this.buildChart(xComponentsCreationMethod, yScaleType);
+    this.buildChart(
+        xComponentsCreationMethod, yValueAccessorCreationMethod, yScaleType);
   }
 
   private buildChart(
       xComponentsCreationMethod: () => ChartHelpers.XComponents,
+      yValueAccessorCreationMethod: () => Plottable.IAccessor<number>,
       yScaleType: string) {
     if (this.outer) {
       this.outer.destroy();
@@ -320,11 +334,13 @@ class LineChart {
         ChartHelpers.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
+    this.yValueAccessor = yValueAccessorCreationMethod();
 
     this.dzl = new DragZoomLayer(
         this.xScale, this.yScale, this.resetYDomain.bind(this));
 
-    let center = this.buildPlot(this.xAccessor, this.xScale, this.yScale);
+    let center = this.buildPlot(
+        this.xAccessor, this.yValueAccessor, this.xScale, this.yScale);
 
     this.gridlines =
         new Plottable.Components.Gridlines(this.xScale, this.yScale);
@@ -340,12 +356,11 @@ class LineChart {
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
 
-  private buildPlot(xAccessor, xScale, yScale): Plottable.Component {
-    this.scalarAccessor = (d: ChartHelpers.ScalarDatum) => d.scalar;
+  private buildPlot(xAccessor, yAccessor, xScale, yScale): Plottable.Component {
     this.smoothedAccessor = (d: ChartHelpers.ScalarDatum) => d.smoothed;
     let linePlot = new Plottable.Plots.Line<number|Date>();
     linePlot.x(xAccessor, xScale);
-    linePlot.y(this.scalarAccessor, yScale);
+    linePlot.y(this.yValueAccessor, yScale);
     linePlot.attr(
         'stroke',
         (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
@@ -367,7 +382,7 @@ class LineChart {
     // visible. We hide it when tooltips are active to keep things clean.
     let scatterPlot = new Plottable.Plots.Scatter<number|Date, number>();
     scatterPlot.x(xAccessor, xScale);
-    scatterPlot.y(this.scalarAccessor, yScale);
+    scatterPlot.y(this.yValueAccessor, yScale);
     scatterPlot.attr('fill', (d: any) => this.colorScale.scale(d.name));
     scatterPlot.attr('opacity', 1);
     scatterPlot.size(ChartHelpers.TOOLTIP_CIRCLE_SIZE * 2);
@@ -491,7 +506,7 @@ class LineChart {
   }
 
   private getAccessor(): Plottable.IAccessor<number> {
-    return this.smoothingEnabled ? this.smoothedAccessor : this.scalarAccessor;
+    return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
   private setupTooltips(plot: Plottable.XYPlot<number|Date, number>):
@@ -542,9 +557,11 @@ class LineChart {
       let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
       // We draw tooltips for points that are NaN, or are currently visible
       let ptsForTooltips = pts.filter(
-          (p) => intersectsBBox(p.x, p.y, bbox) || isNaN(p.datum.scalar));
+          (p) => intersectsBBox(p.x, p.y, bbox) ||
+              isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
       // Only draw little indicator circles for the non-NaN points
-      let ptsToCircle = ptsForTooltips.filter((p) => !isNaN(p.datum.scalar));
+      let ptsToCircle = ptsForTooltips.filter(
+          (p) => !isNaN(this.yValueAccessor(p.datum0, p.dataset)));
 
       let ptsSelection: any =
           pointsComponent.content().selectAll('.point').data(
@@ -582,7 +599,7 @@ class LineChart {
         Math.pow(p.x - target.x, 2) + Math.pow(p.y - target.y, 2);
     let closestDist = _.min(points.map(dist));
 
-    let valueSortMethod = this.scalarAccessor;
+    let valueSortMethod = this.yValueAccessor;
     if (this.smoothingEnabled) {
       valueSortMethod = this.smoothedAccessor;
     }
@@ -615,7 +632,8 @@ class LineChart {
       let lastPoint = _.last(d.dataset.data());
       let firstX = this.xScale.scale(this.xAccessor(firstPoint, 0, d.dataset));
       let lastX = this.xScale.scale(this.xAccessor(lastPoint, 0, d.dataset));
-      let s = this.smoothingEnabled ? d.datum.smoothed : d.datum.scalar;
+      let s = this.smoothingEnabled ?
+          d.datum.smoothed : this.yValueAccessor(d.datum, 0, d.dataset);
       return target.x < firstX || target.x > lastX || isNaN(s);
     });
     rows.classed('closest', (p) => dist(p) === closestDist);
@@ -673,7 +691,7 @@ class LineChart {
     let points: ChartHelpers.Point[] = dataset.data().map((d, i) => {
       let x = this.xAccessor(d, i, dataset);
       let y = this.smoothingEnabled ? this.smoothedAccessor(d, i, dataset) :
-                                      this.scalarAccessor(d, i, dataset);
+                                      this.yValueAccessor(d, i, dataset);
       return {
         x: this.xScale.scale(x),
         y: this.yScale.scale(y),
@@ -699,14 +717,15 @@ class LineChart {
   private resmoothDataset(dataset: Plottable.Dataset) {
     let data = dataset.data();
     const smoothingWeight = this.smoothingWeight;
-    let last = data.length > 0 ? data[0].scalar : NaN;
-    data.forEach((d) => {
+    let last = data.length > 0 ? this.yValueAccessor(data[0], 0, dataset) : NaN;
+    data.forEach((d, i) => {
       if (!_.isFinite(last)) {
-        d.smoothed = d.scalar;
+        d.smoothed = this.yValueAccessor(d, i, dataset);
       } else {
         // 1st-order IIR low-pass filter to attenuate the higher-
         // frequency components of the time-series.
-        d.smoothed = last * smoothingWeight + (1 - smoothingWeight) * d.scalar;
+        d.smoothed = last * smoothingWeight + (
+            1 - smoothingWeight) * this.yValueAccessor(d, i, dataset);
       }
       last = d.smoothed;
     });
@@ -773,7 +792,7 @@ class LineChart {
   public smoothingDisable() {
     if (this.smoothingEnabled) {
       this.linePlot.removeClass('ghost');
-      this.scatterPlot.y(this.scalarAccessor, this.yScale);
+      this.scatterPlot.y(this.yValueAccessor, this.yScale);
       this.smoothLinePlot.datasets([]);
       this.smoothingEnabled = false;
       this.updateSpecialDatasets();

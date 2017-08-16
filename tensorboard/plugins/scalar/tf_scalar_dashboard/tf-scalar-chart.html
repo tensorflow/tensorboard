@@ -40,6 +40,7 @@ limitations under the License.
     <div id="chart-and-spinner-container">
       <vz-line-chart
         x-components-creation-method="[[_xComponentsCreationMethod]]"
+        y-value-accessor-creation-method="[[_yValueAccessorCreationMethod]]"
         color-scale="[[_runsColorScale]]"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
@@ -220,6 +221,16 @@ limitations under the License.
           type: Object,
           computed: '_computeXComponentsCreationMethod(xType)',
         },
+
+        /** @type {() => Plottable.IAccessor<number>} */
+        _yValueAccessorCreationMethod: {
+          type: Object,
+          readOnly: true,
+          value: () => {
+            return (d) => d.scalar;
+          },
+        },
+
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
         tooltipSortingMethod: String,
