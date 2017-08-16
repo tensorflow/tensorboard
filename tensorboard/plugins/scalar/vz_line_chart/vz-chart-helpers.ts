@@ -41,6 +41,12 @@ export interface Point {
   dataset: Plottable.Dataset;
 }
 
+export interface TooltipColumn {
+  title: string;
+  // This function computes the value for the string.
+  computeFunction: ((p: Point, smoothingEnabled: boolean) => string);
+}
+
 /* Create a formatter function that will switch between exponential and
  * regular display depending on the scale of the number being formatted,
  * and show `digits` significant digits.

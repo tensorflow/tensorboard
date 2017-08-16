@@ -49,7 +49,11 @@ Polymer({
      * there aren't enough points on the right, the line stops being
      * rendered at all.
      */
-    smoothingEnabled: {type: Boolean, value: false},
+    smoothingEnabled: {
+      type: Boolean,
+      notify: true,
+      value: false,
+    },
 
     /**
      * Weight (between 0.0 and 1.0) of the smoothing. This weight controls
@@ -77,11 +81,16 @@ Polymer({
     xComponentsCreationMethod: Object,
 
     /**
-     * A function to create a Plottable.IAccessor<number> for accessing the
-     * y value. We accept a function for creating such an object instead of
-     * accepting such an object itself for reasons above.
+     * A method that implements the Plottable.IAccessor<number> interface. Used
+     * for accessing the y value from a data point.
      */
-    yValueAccessorCreationMethod: Object,
+    yValueAccessor: Object,
+
+    /**
+     * An array of ChartHelper.TooltipColumn objects. Used to populate the table
+     * within the tooltip. The table contains 1 row per run.
+     */
+    tooltipColumns: Array,
 
     /**
      * The scale for the y-axis. Allows:
@@ -132,7 +141,7 @@ Polymer({
     _makeChartAsyncCallbackId: {type: Number, value: null}
   },
   observers: [
-    '_makeChart(xComponentsCreationMethod, yScaleType, colorScale, _attached)',
+    '_makeChart(xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -201,7 +210,12 @@ Polymer({
     this.scopeSubtree(this.$.chartdiv, true);
   },
   _makeChart: function(
-      xComponentsCreationMethod, yScaleType, colorScale, _attached) {
+      xComponentsCreationMethod,
+      yValueAccessor,
+      yScaleType,
+      tooltipColumns,
+      colorScale,
+      _attached) {
     if (this._makeChartAsyncCallbackId !== null) {
       this.cancelAsync(this._makeChartAsyncCallbackId);
       this._makeChartAsyncCallbackId = null;
@@ -209,15 +223,24 @@ Polymer({
 
     this._makeChartAsyncCallbackId = this.async(function() {
       this._makeChartAsyncCallbackId = null;
-      if (!this._attached || !this.xComponentsCreationMethod) return;
+      if (!this._attached ||
+          !this.xComponentsCreationMethod ||
+          !this.yValueAccessor ||
+          !this.tooltipColumns) {
+        return;
+      }
       if (this._chart) this._chart.destroy();
       var tooltip = d3.select(this.$.tooltip);
+      // We directly reference properties of `this` because this call is
+      // asynchronous, and values may have changed in between the call being
+      // initiated and actually being run.
       var chart = new LineChart(
           this.xComponentsCreationMethod,
-          this.yValueAccessorCreationMethod,
+          this.yValueAccessor,
           yScaleType,
           colorScale,
-          tooltip);
+          tooltip,
+          this.tooltipColumns);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
@@ -286,7 +309,7 @@ class LineChart {
   private onDatasetChanged: (dataset: Plottable.Dataset) => void;
   private nanDataset: Plottable.Dataset;
   private smoothingWeight: number;
-  private smoothingEnabled: Boolean;
+  private smoothingEnabled: boolean;
   private tooltipSortingMethod: string;
   private tooltipPosition: string;
   private _ignoreYOutliers: boolean;
@@ -295,10 +318,11 @@ class LineChart {
 
   constructor(
       xComponentsCreationMethod: () => ChartHelpers.XComponents,
-      yValueAccessorCreationMethod: () => Plottable.IAccessor<number>,
+      yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
-      tooltip: d3.Selection<any, any, any, any>) {
+      tooltip: d3.Selection<any, any, any, any>,
+      tooltipColumns: ChartHelpers.TooltipColumn[]) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -309,17 +333,19 @@ class LineChart {
     // every dataset we're currently drawing.
     this.lastPointsDataset = new Plottable.Dataset();
     this.nanDataset = new Plottable.Dataset();
+    this.yValueAccessor = yValueAccessor;
     // need to do a single bind, so we can deregister the callback from
     // old Plottable.Datasets. (Deregistration is done by identity checks.)
     this.onDatasetChanged = this._onDatasetChanged.bind(this);
     this.buildChart(
-        xComponentsCreationMethod, yValueAccessorCreationMethod, yScaleType);
+        xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns);
   }
 
   private buildChart(
       xComponentsCreationMethod: () => ChartHelpers.XComponents,
-      yValueAccessorCreationMethod: () => Plottable.IAccessor<number>,
-      yScaleType: string) {
+      yValueAccessor: Plottable.IAccessor<number>,
+      yScaleType: string,
+      tooltipColumns: ChartHelpers.TooltipColumn[]) {
     if (this.outer) {
       this.outer.destroy();
     }
@@ -334,13 +360,16 @@ class LineChart {
         ChartHelpers.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
-    this.yValueAccessor = yValueAccessorCreationMethod();
 
     this.dzl = new DragZoomLayer(
         this.xScale, this.yScale, this.resetYDomain.bind(this));
 
     let center = this.buildPlot(
-        this.xAccessor, this.yValueAccessor, this.xScale, this.yScale);
+        this.xAccessor,
+        this.yValueAccessor,
+        this.xScale,
+        this.yScale,
+        tooltipColumns);
 
     this.gridlines =
         new Plottable.Components.Gridlines(this.xScale, this.yScale);
@@ -356,7 +385,8 @@ class LineChart {
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
 
-  private buildPlot(xAccessor, yAccessor, xScale, yScale): Plottable.Component {
+  private buildPlot(
+      xAccessor, yAccessor, xScale, yScale, tooltipColumns): Plottable.Component {
     this.smoothedAccessor = (d: ChartHelpers.ScalarDatum) => d.smoothed;
     let linePlot = new Plottable.Plots.Line<number|Date>();
     linePlot.x(xAccessor, xScale);
@@ -366,7 +396,7 @@ class LineChart {
         (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
             this.colorScale.scale(dataset.metadata().name));
     this.linePlot = linePlot;
-    let group = this.setupTooltips(linePlot);
+    let group = this.setupTooltips(linePlot, tooltipColumns);
 
     let smoothLinePlot = new Plottable.Plots.Line<number|Date>();
     smoothLinePlot.x(xAccessor, xScale);
@@ -509,7 +539,9 @@ class LineChart {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
-  private setupTooltips(plot: Plottable.XYPlot<number|Date, number>):
+  private setupTooltips(
+      plot: Plottable.XYPlot<number|Date, number>,
+      tooltipColumns: ChartHelpers.TooltipColumn[]):
       Plottable.Components.Group {
     let pi = new Plottable.Interactions.Pointer();
     pi.attachTo(plot);
@@ -561,7 +593,7 @@ class LineChart {
               isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
       // Only draw little indicator circles for the non-NaN points
       let ptsToCircle = ptsForTooltips.filter(
-          (p) => !isNaN(this.yValueAccessor(p.datum0, p.dataset)));
+          (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
 
       let ptsSelection: any =
           pointsComponent.content().selectAll('.point').data(
@@ -577,7 +609,7 @@ class LineChart {
                 'fill',
                 (p) => this.colorScale.scale(p.dataset.metadata().name));
         ptsSelection.exit().remove();
-        this.drawTooltips(ptsForTooltips, target);
+        this.drawTooltips(ptsForTooltips, target, tooltipColumns);
       } else {
         hideTooltips();
       }
@@ -589,7 +621,9 @@ class LineChart {
   }
 
   private drawTooltips(
-      points: ChartHelpers.Point[], target: ChartHelpers.Point) {
+      points: ChartHelpers.Point[],
+      target: ChartHelpers.Point,
+      tooltipColumns: ChartHelpers.TooltipColumn[]) {
     // Formatters for value, step, and wall_time
     this.scatterPlot.attr('opacity', 0);
     let valueFormatter = ChartHelpers.multiscaleFormatter(
@@ -651,20 +685,11 @@ class LineChart {
         .style(
             'background-color',
             (d) => this.colorScale.scale(d.dataset.metadata().name));
-    rows.append('td').text((d) => d.dataset.metadata().name);
-    const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
-    if (this.smoothingEnabled) {
-      rows.append('td').text((d) => formatValueOrNaN(d.datum.smoothed));
-    } else {
-      rows.append('td').text((d) => formatValueOrNaN(d.datum.scalar));
-    }
-    rows.append('td').text((d) => formatValueOrNaN(d.datum.scalar));
-    rows.append('td').text((d) => ChartHelpers.stepFormatter(d.datum.step));
-    rows.append('td').text(
-        (d) => ChartHelpers.timeFormatter(d.datum.wall_time));
-    rows.append('td').text(
-        (d) => ChartHelpers.relativeFormatter(
-            ChartHelpers.relativeAccessor(d.datum, -1, d.dataset)));
+
+    _.each(tooltipColumns, (column) => {
+      rows.append('td').text(
+          (d) => column.computeFunction(d, !!this.smoothingEnabled));
+    });
 
     // compute left position
     let documentWidth = document.body.clientWidth;

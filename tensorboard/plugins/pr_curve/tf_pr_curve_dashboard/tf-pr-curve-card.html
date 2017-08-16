@@ -32,6 +32,8 @@ limitations under the License.
     <div id="chart-and-spinner-container">
       <vz-line-chart
         x-components-creation-method="[[_xComponentsCreationMethod]]"
+        y-value-accessor="[[_yValueAccessor]]"
+        tooltip-columns="[[_tooltipColumns]]"
         color-scale="[[_colorScaleFunction]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
@@ -171,6 +173,7 @@ limitations under the License.
         // we actually want the value itself to be a function.
         _xComponentsCreationMethod: {
           type: Object,
+          readOnly: true,
           value: () => (() => {
             const scale = new Plottable.Scales.Linear();
             return {
@@ -179,8 +182,34 @@ limitations under the License.
               accessor: d => d.recall,
             };
           }),
-          readOnly: true,
         },
+        /** @type {() => Plottable.IAccessor<number>} */
+        _yValueAccessor: {
+          type: Object,
+          readOnly: true,
+          // This function returns a function because polymer calls the outer
+          // function to compute the value. We actually want the value of this
+          // property to be the inner function.
+          value: () => (d => d.precision),
+        },
+        _tooltipColumns: {
+          type: Array,
+          readOnly: true,
+          value: [
+            {
+              title: 'Name',
+              computeFunction: (d) => d.dataset.metadata().name,
+            },
+            {
+              title: 'Precision',
+              computeFunction: (d) => d.datum.precision,
+            },
+            {
+              title: 'Recall',
+              computeFunction: (d) => d.datum.recall,
+            },
+          ],
+        }
       },
       observers: [
           'reload(run, tag)',
@@ -256,7 +285,7 @@ limitations under the License.
           let seriesData = [];
           for (let i = 0; i < entry.precision.length; i++) {
             seriesData.push({
-              scalar: precision[i],
+              precision: precision[i],
               recall: recall[i],
             });
           }

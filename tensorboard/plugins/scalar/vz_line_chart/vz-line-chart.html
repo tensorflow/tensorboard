@@ -37,12 +37,9 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         <thead>
           <tr>
             <th><!-- run color swatch --></th>
-            <th>Name</th>
-            <th>Smoothed</th>
-            <th>Value</th>
-            <th>Step</th>
-            <th>Time</th>
-            <th>Relative</th>
+            <template is="dom-repeat" items="[[tooltipColumns]]" as="column">
+              [[column.title]]
+            </template>
           </tr>
         </thead>
         <tbody>
