@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TensorBoard data ingestion module."""
+"""TensorBoard data ingestion module.
+
+WARNING: This module is currently EXPERIMENTAL.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import collections
+import contextlib
 import functools
 import locale
 import logging
@@ -32,6 +36,7 @@ import types  # pylint: disable=unused-import
 import six
 import tensorflow as tf
 
+from tensorboard import db
 from tensorboard import util
 
 
@@ -684,6 +689,7 @@ class EventLogReader(object):
   record files containing tf.Event protocol buffers.
 
   Fields:
+    rowid: An integer primary key in EventLogs table, or 0 if unknown.
     path: A string with the path of the event log on the local or
         remote file system.
     timestamp: An integer of the number of seconds since the UNIX epoch
@@ -707,20 +713,17 @@ class EventLogReader(object):
     :type path: str
     :type record_reader_factory: (str, int) -> RecordReader
     """
+    self.rowid = 0
     self.path = tf.compat.as_text(path)
     m = _EVENT_LOG_PATH_PATTERN.search(self.path)
     if not m:
       raise ValueError('Bad event log path: ' + self.path)
     self.timestamp = int(m.group('timestamp'))
     self.hostname = m.group('hostname')
-    self._mark = -1
     self._offset = start_offset
-    self._reader = record_reader_factory(self.path, start_offset)
+    self._reader_factory = record_reader_factory
+    self._reader = self._reader_factory(self.path, start_offset)
     self._key = (os.path.dirname(self.path), self.timestamp, self.hostname)
-    self._saved_events = \
-        collections.deque()  # type: collections.deque[tf.Event]
-    self._prepended_events = \
-        collections.deque()  # type: collections.deque[tf.Event]
 
   def get_next_event(self):
     """Reads an event proto from the file.
@@ -732,28 +735,30 @@ class EventLogReader(object):
 
     :rtype: tf.Event
     """
-    if self._prepended_events:
-      event = self._prepended_events.popleft()
-    else:
-      record = self._reader.get_next_record()
-      if record is None:
-        return None
-      event = tf.Event()
-      event.ParseFromString(record.record)
-      self._offset = record.offset
-    if self._mark != -1:
-      self._saved_events.append(event)
+    record = self._reader.get_next_record()
+    if record is None:
+      return None
+    event = tf.Event()
+    event.ParseFromString(record.record)
+    self._offset = record.offset
     return event
+
+  def set_offset(self, offset):
+    """Sets byte offset in file.
+
+    :type offset: int
+    """
+    if offset == self._offset:
+      return
+    self._reader.close()
+    self._reader = self._reader_factory(self.path, offset)
+    self._offset = offset
 
   def get_offset(self):
     """Returns current byte offset in file.
 
-    If mark() was called, then this returns the marked position.
-
     :rtype: int
     """
-    if self._mark != -1:
-      return self._mark
     return self._offset
 
   def get_size(self):
@@ -763,19 +768,17 @@ class EventLogReader(object):
     """
     return self._reader.get_size()
 
-  def mark(self):
-    """Marks current position in file so reset() can be called."""
-    if self._prepended_events:
-      raise ValueError('mark() offsets must be monotonic')
-    self._mark = self._offset
-    self._saved_events.clear()
+  def save_progress(self, db_conn):
+    """Saves current offset to DB.
 
-  def reset(self):
-    """Resets read state to where mark() was called."""
-    if self._mark == -1:
-      raise ValueError('mark() was not called')
-    self._prepended_events.extend(self._saved_events)
-    self._saved_events.clear()
+    The rowid property must be set beforehand.
+
+    :type db_conn: db.Connection
+    """
+    with contextlib.closing(db_conn.cursor()) as c:
+      c.execute(
+          'UPDATE EventLogs SET offset = ? WHERE rowid = ? AND offset < ?',
+          (self._offset, self.rowid, self._offset))
 
   def close(self):
     """Closes event log reader if open.
@@ -798,19 +801,255 @@ class EventLogReader(object):
   def __str__(self):
     offset = self.get_offset()
     if offset:
-      return u'EventLog{path=%s, offset=%d}' % (self.path, offset)
+      return u'EventLogReader{path=%s, offset=%d}' % (self.path, offset)
     else:
-      return u'EventLog{%s}' % self.path
+      return u'EventLogReader{%s}' % self.path
+
+
+@util.closeable
+@functools.total_ordering
+@six.python_2_unicode_compatible
+class RunReader(object):
+  """Utility for loading event logs into the DB.
+
+  This class merges the chain of event log files into one meaningful
+  stream of events, ordered by step or timestamp.
+
+  Fields:
+    rowid: The primary key of the corresponding row in Runs.
+    name: Display name of this run.
+  """
+
+  def __init__(self, rowid, name):
+    """Creates new instance.
+
+    Args:
+      rowid: Primary key of run in `Runs` table, which should already
+          be inserted. This is a bit-packed int made by db.RUN_ROWID.
+      name: Display name of run.
+
+    :type rowid: int
+    :type name: str
+    """
+    self.rowid = db.RUN_ROWID.check(rowid)
+    self.run_id = db.RUN_ROWID.parse(rowid)[1]
+    self.name = tf.compat.as_text(name)
+    self._mark = -1
+    self._logs = []  # type: list[EventLogReader]
+    self._index = 0
+    self._entombed_progress = 0
+    self._saved_events = \
+        collections.deque()  # type: collections.deque[tf.Event]
+    self._prepended_events = \
+        collections.deque()  # type: collections.deque[tf.Event]
+
+  def add_event_log(self, db_conn, log):
+    """Adds event log to run loader.
+
+    Event logs must be added monotonically, based on the timestamp in
+    the filename. Please note that calling this method could cause a
+    current batch of reads to fast forward.
+
+    Args:
+      db_conn: A PEP 249 Connection object.
+      log: An EventLogReader instance.
+
+    Returns:
+      True if log was actually added.
+
+    :type db_conn: db.Connection
+    :type log: EventLogReader
+    :rtype: bool
+    """
+    if self._logs and log <= self._logs[-1]:
+      return False
+    with contextlib.closing(db_conn.cursor()) as c:
+      c.execute(
+          'SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?',
+          (self.run_id, log.path))
+      row = c.fetchone()
+      if row:
+        log.rowid = row[0]
+        log.set_offset(row[1])
+      else:
+        event_log_id = db.EVENT_LOG_ID.generate()
+        log.rowid = db.EVENT_LOG_ROWID.create(self.run_id, event_log_id)
+        c.execute(
+            ('INSERT INTO EventLogs (rowid, run_id, path, offset)'
+             ' VALUES (?, ?, ?, 0)'),
+            (log.rowid, self.run_id, log.path))
+    tf.logging.debug('Adding %s', log)
+    self._logs.append(log)
+    # Skip over event logs we've already read.
+    if log.get_offset() > 0 and not self._prepended_events:
+      self._index = len(self._logs) - 1
+      self._cleanup()
+    return True
+
+  def get_next_event(self):
+    """Returns next tf.Event from event logs or None if stalled.
+
+    :rtype: tf.Event
+    """
+    event = None
+    if self._prepended_events:
+      event = self._prepended_events.popleft()
+    elif self._index < len(self._logs):
+      while True:
+        log = self._logs[self._index]
+        event = log.get_next_event()
+        if event is not None:
+          break
+        if self._index == len(self._logs) - 1:
+          break
+        self._index += 1
+        self._cleanup()
+    if event is not None and self._mark != -1:
+      self._saved_events.append(event)
+    return event
+
+  def mark_peek_reset(self):
+    """Returns next event without advancing.
+
+    Note: This method sets the mark to the current position.
+
+    :rtype: tf.Event
+    """
+    self.mark()
+    result = self.get_next_event()
+    self.reset()
+    return result
+
+  def get_offset(self):
+    """Returns number of bytes read across all event log files.
+
+    :rtype: int
+    """
+    if self._mark != -1:
+      return self._mark
+    return self._get_offset()
+
+  def _get_offset(self):
+    return sum(el.get_offset() for el in self._logs) + self._entombed_progress
+
+  def get_size(self):
+    """Returns sum of byte lengths of event log files.
+
+    :rtype: int
+    """
+    return sum(el.get_size() for el in self._logs) + self._entombed_progress
+
+  def save_progress(self, db_conn):
+    """Saves current offsets of all open event logs to DB.
+
+    This should be called after the mark has been advanced.
+
+    :type db_conn: db.Connection
+    """
+    n = 0
+    while self._index >= n < len(self._logs):
+      self._logs[n].save_progress(db_conn)
+      n += 1
+
+  def mark(self):
+    """Marks current position in file so reset() can be called."""
+    if self._prepended_events:
+      raise ValueError('mark() offsets must be monotonic')
+    self._mark = self._get_offset()
+    self._saved_events.clear()
+
+  def reset(self):
+    """Resets read state to where mark() was called."""
+    if self._mark == -1:
+      return
+    self._prepended_events.extend(self._saved_events)
+    self._saved_events.clear()
+
+  def close(self):
+    """Closes all event log readers.
+
+    This method may be called multiple times, but further operations
+    are not permitted.
+
+    Raises:
+      Exception: To propagate the most recent exception thrown by the
+          EventLogReader close method. Suppressed exceptions are
+          logged.
+    """
+    util.close_all(self._logs)
+    self._index = len(self._logs)
+    self._mark = -1
+    self._prepended_events.clear()
+    self._saved_events.clear()
+
+  def _cleanup(self):
+    # Last event log has to be preserved so we can continue enforcing
+    # monotonicity. We entomb offset because that also has to be
+    # monotonic, but the size does not.
+    if 0 < self._index < len(self._logs):
+      deleted = self._logs[:self._index]
+      self._logs = self._logs[self._index:]
+      self._index = 0
+      self._entombed_progress += sum(l.get_offset() for l in deleted)
+      util.close_all(deleted)
+
+  def _skip_to_event_log(self, i):
+    should_mark = self._mark != -1 and i > self._index
+    self._index = i
+    if should_mark:
+      self._prepended_events.clear()
+      self.mark()
+
+  def __hash__(self):
+    return hash(self.rowid)
+
+  def __eq__(self, other):
+    return self.rowid == other.rowid
+
+  def __lt__(self, other):
+    return self.rowid < other.rowid
+
+  def __str__(self):
+    offset = self.get_offset()
+    if offset:
+      return u'RunReader{name=%s, offset=%d}' % (self.name, offset)
+    else:
+      return u'RunReader{%s}' % self.name
+
+
+def _get_basename(path):
+  """Gets base name of path.
+
+  This is the same as os.path.basename, however it may potentially do
+  i/o to handle a few edge cases, which would otherwise cause the
+  result to be less meaningful, e.g. "." and "..".
+
+  :type path: str
+  :rtype: str
+  """
+  return os.path.basename(os.path.normpath(os.path.join(_get_cwd(), path)))
+
+
+def _get_cwd():
+  """Returns current directory and try not to expand symlinks.
+
+  :rtype: str
+  """
+  result = os.environ.get('PWD')
+  if not result:
+    result = os.getcwd()
+  return result
 
 
 def get_event_logs(directory):
-  """Walks directory tree for EventLog files.
+  """Walks directory tree for EventLogReader files.
 
   Args:
     directory: Path of directory.
 
   Returns:
-    List of EventLog objects, ordered by directory name and timestamp.
+    List of EventLogReader objects, ordered by directory name and
+    timestamp.
 
   :type directory: str
   :rtype: list[EventLogReader]
