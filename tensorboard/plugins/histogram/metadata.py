@@ -45,7 +45,7 @@ def create_summary_metadata(display_name, description):
           content=content))
 
 
-def parse_summary_metadata(content):
+def parse_plugin_metadata(content):
   """Parse summary metadata to a Python object.
 
   Arguments:
