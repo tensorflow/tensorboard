@@ -34,8 +34,6 @@ import tensorflow as tf
 from tensorboard import db
 from tensorboard import util
 
-db.TESTING_MODE = True
-
 
 class TestCase(tf.test.TestCase):
   """TensorBoard base test class.
