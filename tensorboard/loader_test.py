@@ -440,21 +440,6 @@ class RunReaderTest(LoaderTestCase):
         run.add_event_log(log)
         self.assertEqual(event2, run.get_next_event())
 
-  def testRunWasRestarted_doesntBotherReadingOldEventLog(self):
-    id_ = db.RUN_ROWID.create(1, 1)
-    event1 = tf.Event(step=1, wall_time=666)
-    event2 = tf.Event(step=1, wall_time=777)
-    path1 = self._save_records('events.out.tfevents.1.localhost',
-                               [event1.SerializeToString()])
-    path2 = self._save_records('events.out.tfevents.2.localhost',
-                               [event2.SerializeToString()])
-    with self.EventLog(path1) as log1, self.EventLog(path2) as log2:
-      with loader.RunReader(self.connect(), id_, 'doodle') as run:
-        run.add_event_log(log1)
-        run.add_event_log(log2)
-        self.assertEqual(event2, run.get_next_event())
-        self.assertIsNone(run.mark_peek_reset())
-
 
 @util.closeable
 class RecordWriter(object):

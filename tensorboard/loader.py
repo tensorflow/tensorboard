@@ -699,8 +699,6 @@ class EventLogReader(object):
         event log file.
   """
 
-  FIRST_STEP_PEEKS = 5
-
   def __init__(self, path,
                start_offset=0,
                record_reader_factory=BufferedRecordReader):
@@ -726,9 +724,6 @@ class EventLogReader(object):
     self._reader_factory = record_reader_factory
     self._reader = self._reader_factory(self.path, start_offset)
     self._key = (os.path.dirname(self.path), self.timestamp, self.hostname)
-    self._first_step = None  # type: int
-    self._observed_zero_step = False
-    self._update_first_step_invocations = 0
 
   def get_next_event(self):
     """Reads an event proto from the file.
@@ -746,7 +741,6 @@ class EventLogReader(object):
     event = tf.Event()
     event.ParseFromString(record.record)
     self._offset = record.offset
-    self._update_first_step(event)
     return event
 
   def set_offset(self, offset):
@@ -774,34 +768,6 @@ class EventLogReader(object):
     """
     return self._reader.get_size()
 
-  def get_first_step(self):
-    """Determines step count of first summary event.
-
-    This method requires an open/read/close but memoizes the result. If
-    the answer was already inferred from previous calls to
-    get_next_event, then no i/o should be necessary.
-
-    Returns:
-      The step count of the first summary event, or None if there
-      didn't appear to be any summary events, or the user isn't logging
-      step counts.
-
-    :rtype: int
-    """
-    if self._first_step is not None:
-      return self._first_step
-    if self._update_first_step_invocations >= EventLogReader.FIRST_STEP_PEEKS:
-      return None
-    with RecordReader(self.path) as reader:
-      for _ in range(EventLogReader.FIRST_STEP_PEEKS):
-        record = reader.get_next_record()
-        if record is None:
-          break
-        event = tf.Event()
-        event.ParseFromString(record.record)
-        self._update_first_step(event)
-    return self._first_step
-
   def close(self):
     """Closes event log reader if open.
 
@@ -810,16 +776,6 @@ class EventLogReader(object):
     if self._reader is not None:
       self._reader.close()
       self._reader = None
-
-  def _update_first_step(self, event):
-    self._update_first_step_invocations += 1
-    # proto3 doesn't let us distinguish between absent and 0.
-    if event.step:
-      step = 0 if self._observed_zero_step else event.step
-      if self._first_step is None or step < self._first_step:
-        self._first_step = step
-    elif event.summary:
-      self._observed_zero_step = True
 
   def __hash__(self):
     return hash(self._key)
@@ -859,7 +815,6 @@ class RunReader(object):
       db_conn: A PEP 249 Connection object.
       rowid: Primary key of run in `Runs` table, which should already
           be inserted. This is a bit-packed int made by db.RUN_ROWID.
-      run_id: The run_id column which is encoded in the rowid bits.
       name: Display name of run.
 
     :type db_conn: db.Connection
@@ -925,7 +880,6 @@ class RunReader(object):
     """
     if self._has_new_stuff:
       self._fast_forward_over_things_we_have_read()
-      self._fast_forward_over_restarted_runs()
       self._cleanup()
       self._has_new_stuff = False
     event = None
@@ -1038,19 +992,6 @@ class RunReader(object):
       if self._logs[i].get_offset():
         self._skip_to_event_log(i)
         break
-
-  def _fast_forward_over_restarted_runs(self):
-    skip_to = self._i
-    for i in range(len(self._logs) - 2, self._i - 1, -1):
-      a = self._logs[i].get_first_step()
-      b = self._logs[i + 1].get_first_step()
-      if b is not None and (a is None or b <= a):
-        skip_to = i + 1
-        break
-    for i in range(self._i, skip_to):
-      tf.logging.warning('Skipping %s because %s reset the step counter',
-                         self._logs[i], self._logs[skip_to])
-    self._skip_to_event_log(skip_to)
 
   def _skip_to_event_log(self, i):
     should_mark = self._mark != -1 and i > self._i
