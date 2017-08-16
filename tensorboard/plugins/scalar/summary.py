@@ -15,6 +15,9 @@
 """Scalar summaries and TensorFlow operations to create them.
 
 A scalar summary stores a single floating-point value, as a rank-0 tensor.
+
+NOTE: This module is in beta, and its API is subject to change, but the
+data that it stores to disk will be supported forever.
 """
 
 from __future__ import absolute_import
