@@ -150,8 +150,6 @@ py_test(
     deps = [
         ":db",
         ":test_util",
-        ":util",
-        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
@@ -250,7 +248,9 @@ py_library(
     srcs = ["test_util.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":db",
         ":util",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
