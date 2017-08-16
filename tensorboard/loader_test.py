@@ -432,8 +432,8 @@ class RunReaderTest(LoaderTestCase):
     event1 = tf.Event(step=123)
     event2 = tf.Event(step=456)
     path = self._save_records('events.out.tfevents.1.localhost',
-                               [event1.SerializeToString(),
-                                event2.SerializeToString()])
+                              [event1.SerializeToString(),
+                               event2.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path) as log:
         with loader.RunReader(id_, 'doodle') as run:
