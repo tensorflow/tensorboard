@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""The TensorBoard Scalars plugin."""
+"""The TensorBoard Scalars plugin.
+
+See `http_api.md` in this directory for specifications of the routes for
+this plugin.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
