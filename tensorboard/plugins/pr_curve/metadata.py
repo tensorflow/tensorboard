@@ -20,7 +20,7 @@ from __future__ import print_function
 
 from google.protobuf import json_format
 import tensorflow as tf
-from tensorboard.plugins.pr_curve import pr_curve_pb2
+from tensorboard.plugins.pr_curve import plugin_data_pb2
 
 
 PLUGIN_NAME = 'pr_curves'
@@ -41,7 +41,7 @@ def create_summary_metadata(display_name, description, num_thresholds):
   Returns:
     A `tf.SummaryMetadata` protobuf object.
   """
-  pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
+  pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
         num_thresholds=num_thresholds)
   content = json_format.MessageToJson(pr_curve_plugin_data)
   return tf.SummaryMetadata(
