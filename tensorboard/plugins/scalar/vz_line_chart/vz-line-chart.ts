@@ -292,8 +292,13 @@ Polymer({
   },
   _computeTooltipTableHeaderHtml(tooltipColumns) {
     // The first column contains the circle with the color of the run.
-    const mapper = (c: ChartHelpers.TooltipColumn) => `<th>${c.title}</th>`;
-    return '<th></th>' + _.map(tooltipColumns, mapper).join('');
+    const titles = ["", ..._.map(tooltipColumns, 'title')];
+    return titles.map(title => `<th>${this._sanitize(title)}</th>`).join('');
+  },
+  _sanitize(value) {
+    return value.replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')  // for symmetry :-)
+                .replace(/&/g, '&amp;');
   },
 });
 

@@ -191,20 +191,25 @@ limitations under the License.
         _tooltipColumns: {
           type: Array,
           readOnly: true,
-          value: [
-            {
-              title: 'Name',
-              computeFunction: (d) => d.dataset.metadata().name,
-            },
-            {
-              title: 'Precision',
-              computeFunction: (d) => d.datum.precision,
-            },
-            {
-              title: 'Recall',
-              computeFunction: (d) => d.datum.recall,
-            },
-          ],
+          value: () => {
+            const valueFormatter = ChartHelpers.multiscaleFormatter(
+                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
+            const formatValueOrNaN =
+                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+            return [
+              {
+                title: 'Name',
+                computeFunction: (d) => d.dataset.metadata().name,
+              },
+              {
+                title: 'Precision',
+                computeFunction: (d) => formatValueOrNaN(d.datum.precision),
+              },
+              {
+                title: 'Recall',
+                computeFunction: (d) => formatValueOrNaN(d.datum.recall),
+              }];
+          },
         }
       },
       observers: [
@@ -239,21 +244,21 @@ limitations under the License.
 
           const runToData = result.value;
           this.set('_runToData', runToData);
-          this.fire('data-updated', {
-            'runToData': runToData,
-          });
         });
         this.requestManager.request(url).then(updateData);
       },
       _setChartData(actualPrCurveEntryPerRun) {
         _.forOwn(actualPrCurveEntryPerRun, (entry, run) => {
-          // Reverse the values so they are plotted in order, which allows for
-          // tool tips.
+          // Reverse the values so they are plotted in order. The logic within
+          // the line chart for associating information to show in the tooltip
+          // with points in the chart assumes that the series data is ordered
+          // by the variable on the X axis. If the values are not in order,
+          // tooltips will not work because the tooltip will always be stuck on
+          // one side of the chart. 
           const precision = entry.precision.slice().reverse();
           const recall = entry.recall.slice().reverse();
           const seriesData = _.zipWith(
-              precision,
-              recall, (precision, recall) => ({
+              precision, recall, (precision, recall) => ({
                 precision: precision,
                 recall: recall,
               }));

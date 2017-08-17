@@ -30,6 +30,10 @@ PLUGIN_NAME = 'pr_curves'
 PRECISION_INDEX = 4
 RECALL_INDEX = 5
 
+# The most recent value for the `version` field of the `PrCurvePluginData`
+# proto.
+PROTO_VERSION = 0
+
 def create_summary_metadata(display_name, description, num_thresholds):
   """Create a `tf.SummaryMetadata` proto for pr_curves plugin data.
 
@@ -42,7 +46,7 @@ def create_summary_metadata(display_name, description, num_thresholds):
     A `tf.SummaryMetadata` protobuf object.
   """
   pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
-        num_thresholds=num_thresholds)
+        version=PROTO_VERSION, num_thresholds=num_thresholds)
   content = json_format.MessageToJson(pr_curve_plugin_data)
   return tf.SummaryMetadata(
       display_name=display_name,

@@ -86,7 +86,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return http_util.Respond(request, response, 'application/json')
 
   @wrappers.Request.application
-  def steps_per_run_route(self, request):
+  def available_steps_route(self, request):
     """Gets a dict mapping run to a list of numeric steps.
 
     Returns:
@@ -124,7 +124,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return {
         '/tags': self.tags_route,
         '/pr_curves': self.pr_curves_route,
-        '/steps_per_run': self.steps_per_run_route,
+        '/available_steps': self.available_steps_route,
     }
 
   def is_active(self):

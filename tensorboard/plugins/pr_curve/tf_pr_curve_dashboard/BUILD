@@ -23,7 +23,7 @@ ts_web_library(
     srcs = [
         "tf-pr-curve-card.html",
         "tf-pr-curve-dashboard.html",
-        "tf-pr-curve-step-selector.html",
+        "tf-pr-curve-steps-selector.html",
     ],
     path = "/tf-pr-curve-dashboard",
     deps = [

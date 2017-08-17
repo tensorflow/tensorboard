@@ -21,7 +21,7 @@ limitations under the License.
 <!--
   Renders a UI for selecting a step.
 -->
-<dom-module id="tf-pr-curve-step-selector">
+<dom-module id="tf-pr-curve-steps-selector">
   <template>
     <template is="dom-repeat" items="[[runs]]" as="run">
       <div class="run-widget">
@@ -39,7 +39,7 @@ limitations under the License.
             step="1"
             type="number"
             min=0
-            max="[[_computeMaxStepIndexForRun(runToSteps, run)]]"
+            max="[[_computeMaxStepIndexForRun(runToAvailableSteps, run)]]"
             ></paper-slider>
       </div>
     </template>
@@ -76,13 +76,13 @@ limitations under the License.
   import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
   Polymer({
-    is: "tf-pr-curve-step-selector",
+    is: "tf-pr-curve-steps-selector",
     properties: {
       // A list of runs to create sliders for.
       runs: Array,
       // A mapping between run and list of steps to use for the slider for that
       // run. This component indexes into this object to retrieve the steps.
-      runToSteps: Object,
+      runToAvailableSteps: Object,
       // A mapping between run and slider index.
       _runToStepIndex: Object,
       // The object mapping run to step per run. This object is updated by this
@@ -91,28 +91,33 @@ limitations under the License.
       runToStep: {
         type: Object,
         notify: true,
-        computed: "_computerunToStep(runToSteps, _runToStepIndex)",
+        computed: "_computeRunToStep(runToAvailableSteps, _runToStepIndex)",
       },
     },
     listeners: {
       "value-change": "_sliderValueChanged",
+      "immediate-value-change": "_sliderValueChanged",
     },
     observers: [
       "_runsChanged(runs, _runToStepIndex)",
-      "_runToStepsChanged(runToSteps)",
+      "_runToAvailableStepsChanged(runToAvailableSteps)",
     ],
     ready() {
       // Initialize the sliders so they point to the most recent value.
       this._updateSliders(this._runToStepIndex);
     },
-    _runsChanged(runs, runToStepIndex) {
+    _runsChanged(runs) {
+      if (!this._runToStepIndex) {
+        return;
+      }
       // When selected runs change, make sure any new sliders point to the
       // correct step. We use a setTimeout to add this operation to the end of
       // the JS event queue so that it happens after the dom-repeat renders. We
-      // do not make this handler update _runToStepIndex because asynchronously
-      // awaiting changes on _runToStepIndex could create a rendering loop.
+      // do not make this handler run when _runToStepIndex is updated because
+      // asynchronously changing _runToStepIndex could create a rendering loop
+      // and jittery sliders.
       setTimeout(() => {
-        this._updateSliders(runToStepIndex);
+        this._updateSliders(this._runToStepIndex);
       }, 0);
     },
     _computeColorForRun(run) {
@@ -122,32 +127,28 @@ limitations under the License.
       return runToStep[run];
     },
     _sliderValueChanged(event) {
-      const run = this._obtainRunFromSliderId(event.target.id);
+      const run = this._parseRunFromSliderId(event.target.id);
       this.set(
           "_runToStepIndex",
           Object.assign(
               {}, this._runToStepIndex, {[run]: event.target.immediateValue}));
     },
-    _obtainRunFromSliderId(sliderId) {
-      // We store the name of the run as a substring of the ID.
-      return sliderId.substring("slider-".length);
-    },
-    _computerunToStep(runToSteps, runToStepIndex) {
+    _computeRunToStep(runToAvailableSteps, runToStepIndex) {
       const runToStep = {};
-      _.forOwn(runToSteps, (steps, run) => {
+      _.forOwn(runToAvailableSteps, (steps, run) => {
         runToStep[run] = steps[runToStepIndex[run]];
       });
       return runToStep;
     },
-    _computeMaxStepIndexForRun(runToSteps, run) {
-      const steps = runToSteps[run];
+    _computeMaxStepIndexForRun(runToAvailableSteps, run) {
+      const steps = runToAvailableSteps[run];
       return steps && steps.length ? steps.length - 1 : 0;
     },
-    _runToStepsChanged(runToSteps) {
+    _runToAvailableStepsChanged(runToAvailableSteps) {
       // The steps per run just refreshed. Change every slider to point to the
       // last available step.
       const runToIndex = {};
-      _.forOwn(runToSteps, (steps, run) => {
+      _.forOwn(runToAvailableSteps, (steps, run) => {
         if (steps.length) {
           runToIndex[run] = steps.length - 1;
         }
@@ -162,10 +163,13 @@ limitations under the License.
       const sliders = this.querySelectorAll("paper-slider");
       if (sliders) {
         for (let i = 0; i < sliders.length; i++) {
-          const run = this._obtainRunFromSliderId(sliders[i].id);
+          const run = this._parseRunFromSliderId(sliders[i].id);
           sliders[i].value = runToStepIndex[run];
         }
       }
+    },
+    _parseRunFromSliderId(sliderId) {
+      return sliderId.substring("slider-".length);
     },
   });
   </script>

@@ -23,7 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-pr-curve-card.html">
-<link rel="import" href="tf-pr-curve-step-selector.html">
+<link rel="import" href="tf-pr-curve-steps-selector.html">
 
 <!--
   A frontend that displays a set of precision–recall curves. Each PR curve is
@@ -35,10 +35,10 @@ limitations under the License.
       <div class="sidebar">
         <template is="dom-if" if="[[_runToSteps]]">
           <div class="sidebar-section">
-            <tf-pr-curve-step-selector
+            <tf-pr-curve-steps-selector
                   runs="[[_relevantSelectedRuns]]"
                   run-to-step="{{_runToStep}}"
-                  run-to-steps="[[_runToSteps]]"></tf-pr-curve-step-selector>
+                  run-to-available-steps="[[_runToSteps]]"></tf-pr-curve-steps-selector>
           </div>
         </template>
         <div class="sidebar-section">
@@ -179,8 +179,6 @@ limitations under the License.
         notify: true,
       },
     },
-    // TODO(chizeng): Create a widget with multiple sliders. That uses
-    // parts of that slider widget, except we store the mapping directly.
     ready() {
       this.reload();
     },
@@ -202,7 +200,7 @@ limitations under the License.
       });
     },
     _fetchStepsPerRun() {
-      const url = getRouter().pluginRoute('pr_curves', '/steps_per_run');
+      const url = getRouter().pluginRoute('pr_curves', '/available_steps');
       return this._requestManager.request(url).then(stepsPerRun => {
         this.set('_runToSteps', stepsPerRun);
 
