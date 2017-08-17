@@ -4,14 +4,16 @@
 </style>
 <div class="tf-op-profile">
   <template is="dom-repeat" items="{{_root.children}}">
-    <p>[[item.name]]</p>
+    <p style$="color:[[_itemColor(item)]];">[[item.name]]</p>
   </template>
 </div>
-</dom-module>
+</template>
 
+<script src="colors.js"></script>
 <script>
 import {RequestManager} from '../tf-backend/requestManager.js';
 import {getRouter} from '../tf-backend/router.js';
+import {flameColor} from './colors.js';
 
 Polymer({
   is: 'tf-op-profile',
@@ -52,5 +54,9 @@ Polymer({
   _getRoot: function(data, breakdown) {
     return data[breakdown];
   },
+  _itemColor: function(item) {
+    return flameColor(item.metrics.flops / item.metrics.time);
+  },
 });
 </script>
+</dom-module>

@@ -6,7 +6,10 @@ licenses(["notice"])  # Apache 2.0
 
 ts_web_library(
     name = "tf_op_profile",
-    srcs = ["tf-op-profile.html"],
+    srcs = [
+        "colors.ts",
+        "tf-op-profile.html",
+    ],
     path = "/tf-op-profile",
     visibility = ["//visibility:public"],
     deps = [
