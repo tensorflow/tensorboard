@@ -159,6 +159,7 @@ class Schema(object):
 
     If the indexes are already created, this function has no effect.
     """
+    self.create_experiments_table_name_index()
     self.create_runs_table_id_index()
     self.create_runs_table_name_index()
     self.create_tags_table_id_index()
@@ -176,16 +177,24 @@ class Schema(object):
       experiment_id: Random integer primary key in range [0,2^28).
       name: (Uniquely indexed) Arbitrary string which is displayed to
           the user in the TensorBoard UI, which can be no greater than
-          255 characters.
+          500 characters.
       description: Arbitrary markdown text describing the experiment.
     """
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Experiments (
           experiment_id INTEGER PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
+          name VARCHAR(500) NOT NULL,
           description TEXT NOT NULL
         )
+      ''')
+
+  def create_experiments_table_name_index(self):
+    """Uniquely indexes the name field on the Experiments table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS ExperimentsNameIndex
+        ON Experiments (name)
       ''')
 
   def create_runs_table(self):
@@ -250,9 +259,9 @@ class Schema(object):
           is associated.
       plugin_id: The ID of the related row in the Plugins table.
       name: The tag. See the tag field in summary.proto for more
-          information, which can be no greater than 255 characters.
+          information, which can be no greater than 500 characters.
       display_name: Same as SummaryMetadata.display_name, if set, which
-          can be no greater than 255 characters.
+          can be no greater than 500 characters.
       summary_description: Same as SummaryMetadata.summary_description,
           if set. This is Markdown describing the summary.
     """
@@ -263,8 +272,8 @@ class Schema(object):
           tag_id INTEGER NOT NULL,
           run_id INTEGER NOT NULL,
           plugin_id INTEGER NOT NULL,
-          name VARCHAR(255) NOT NULL,
-          display_name VARCHAR(255),
+          name VARCHAR(500) NOT NULL,
+          display_name VARCHAR(500),
           summary_description TEXT
         )
       ''')
@@ -772,8 +781,8 @@ class Id(object):
     :type name: str
     :type bits: int
     """
-    if bits < 1:
-      raise ValueError('bits must be >0')
+    if bits < 2:
+      raise ValueError('bits must be >1')
     self.name = name
     self.bits = bits
     self.max = _mask(bits)
@@ -782,15 +791,16 @@ class Id(object):
     """Throws ValueError if x isn't in bit range.
 
     :type x: int
+    :rtype: int
     """
-    _check_id(x, self.bits, self.name)
+    return _check_id(x, self.bits, self.name)
 
   def generate(self):
     """Generates a random ID in the bit range.
 
     :rtype: int
     """
-    return random.randint(0, self.max)
+    return random.randint(1, self.max)
 
 
 class RowId(object):
@@ -810,6 +820,15 @@ class RowId(object):
     self._global = global_id
     self._local = local_id
 
+  def check(self, rowid):
+    """Throws ValueError if rowid isn't in proper ranges.
+
+    :type rowid: int
+    :rtype: int
+    """
+    self.parse(rowid)
+    return rowid
+
   def create(self, high, low):
     """Creates a rowid from its global and local portions.
 
@@ -828,7 +847,8 @@ class RowId(object):
     :rtype: tuple[int, int]
     """
     _check_id(rowid, self.bits, self.name)
-    return rowid >> self._local.bits, rowid & self._local.max
+    return (self._global.check(rowid >> self._local.bits),
+            self._local.check(rowid & self._local.max))
 
   def get_range(self, high):
     """Returns an inclusive range of all possible y values.
@@ -838,14 +858,17 @@ class RowId(object):
     :type high: int
     :rtype: tuple[int, int]
     """
-    return self.create(high, 0), self.create(high, self._local.max)
+    return self.create(high, 1), self.create(high, self._local.max)
 
 
 def _check_id(id_, bits, name):
+  if id_ == 0:
+    raise ValueError('%s can not be zero' % name)
   if id_ < 0:
     raise ValueError('%s can not be a negative number: %d' % (name, id_))
   if id_ > _mask(bits):
     raise ValueError('%s must be a %d-bit number: %d' % (name, bits, id_))
+  return id_
 
 
 def _mask(bits):

@@ -14,19 +14,8 @@
 # ==============================================================================
 """The TensorBoard Distributions (a.k.a. compressed histograms) plugin.
 
-This plugin provides a different view for the same data that is used for
-the histograms plugin. Its `/distributions` route returns a result of
-the form
-
-    [[wall_time, step, [[bp_1, icdf_1], ..., [bp_k, icdf_k]]], ...],
-
-where each `icdf_i` is the value of the inverse CDF of the probability
-distribution provided by the data evaluated at `bp_i / 10000`. That is,
-each `icdf_i` is the lowest value such that `bp_i / 10000` of the values
-in the original data fall below `icdf_i`.
-
-The `bp_i` are the fixed values of `NORMAL_HISTOGRAM_BPS` in the
-`compressor` module of this package; `k` is `len(NORMAL_HISTOGRAM_BPS)`.
+See `http_api.md` in this directory for specifications of the routes for
+this plugin.
 """
 
 from __future__ import absolute_import

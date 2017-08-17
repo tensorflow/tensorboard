@@ -31,6 +31,7 @@ import threading
 import time
 
 import numpy as np
+import six
 import tensorflow as tf
 
 
@@ -83,6 +84,33 @@ def closeable(class_):
   class_.__enter__ = lambda self: self
   class_.__exit__ = lambda self, t, v, b: self.close() and None
   return class_
+
+
+def close_all(resources):
+  """Safely closes multiple resources.
+
+  The close method on all resources is guaranteed to be called. If
+  multiple close methods throw exceptions, then the first will be
+  raised and the rest will be logged.
+
+  Args:
+    resources: An iterable of object instances whose classes implement
+        the close method.
+
+  Raises:
+    Exception: To rethrow the last exception raised by a close method.
+  """
+  exc_info = None
+  for resource in resources:
+    try:
+      resource.close()
+    except Exception as e:  # pylint: disable=broad-except
+      if exc_info is not None:
+        tf.logging.error('Suppressing close(%s) failure: %s', resource, e,
+                         exc_info=exc_info)
+      exc_info = sys.exc_info()
+  if exc_info is not None:
+    six.reraise(*exc_info)
 
 
 def guarded_by(field):

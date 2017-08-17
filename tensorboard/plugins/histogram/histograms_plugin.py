@@ -14,11 +14,8 @@
 # ==============================================================================
 """The TensorBoard Histograms plugin.
 
-This plugin's `/histograms` route returns a result of the form
-
-    [[wall_time, step, [[left0, right0, count0], ...]], ...],
-
-where each inner array corresponds to a single bucket in the histogram.
+See `http_api.md` in this directory for specifications of the routes for
+this plugin.
 """
 
 from __future__ import absolute_import
@@ -74,7 +71,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
-        content = metadata.parse_summary_metadata(content)
+        content = metadata.parse_plugin_metadata(content)
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(

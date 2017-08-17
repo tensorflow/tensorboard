@@ -25,6 +25,8 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
+    'futures >= 3.1.1',
+    'grpcio >= 1.4.0',
     'numpy >= 1.11.0',
     'six >= 1.10.0',
     'protobuf >= 3.2.0',
@@ -32,7 +34,7 @@ REQUIRED_PACKAGES = [
     'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
     'bleach == 1.5.0',
-    'tensorflow >= 1.2.0',
+    'tensorflow >= 1.3.0',
 ]
 
 # python3 requires wheel 0.26

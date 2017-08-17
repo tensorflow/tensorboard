@@ -64,7 +64,7 @@ py_test(
 
 tb_proto_library(
     name = "protos_all",
-    srcs = ["pr_curve.proto"],
+    srcs = ["plugin_data.proto"],
     visibility = ["//visibility:public"],
 )
 

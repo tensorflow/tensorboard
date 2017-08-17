@@ -23,6 +23,9 @@ like 30. There are two edge cases: if there is no data, then there are
 no buckets (the shape is `[0, 3]`); and if there is data but all points
 have the same value, then there is one bucket whose left and right
 endpoints are the same (the shape is `[1, 3]`).
+
+NOTE: This module is in beta, and its API is subject to change, but the
+data that it stores to disk will be supported forever.
 """
 
 from __future__ import absolute_import
@@ -42,7 +45,7 @@ def _buckets(data, bucket_count=None):
   """Create a TensorFlow op to group data into histogram buckets.
 
   Arguments:
-    data: A `Tensor` of any shape. Must be compatible with `float64`.
+    data: A `Tensor` of any shape. Must be castable to `float64`.
     bucket_count: Optional positive `int` or scalar `int32` `Tensor`.
   Returns:
     A `Tensor` of shape `[k, 3]` and type `float64`. The `i`th row is
@@ -105,7 +108,7 @@ def op(name,
 
   Arguments:
     name: A unique name for the generated summary node.
-    data: A `Tensor` of any shape. Must be compatible with `float64`.
+    data: A `Tensor` of any shape. Must be castable to `float64`.
     bucket_count: Optional positive `int`. The output will have this
       many buckets, except in two edge cases. If there is no data, then
       there are no buckets. If there is data but all points have the
@@ -141,7 +144,7 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
     name: A unique name for the generated summary, including any desired
       name scopes.
     data: A `np.array` or array-like form of any shape. Must have type
-      compatible with `float`.
+      castable to `float`.
     bucket_count: Optional positive `int`. The output will have this
       many buckets, except in two edge cases. If there is no data, then
       there are no buckets. If there is data but all points have the

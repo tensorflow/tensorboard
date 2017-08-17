@@ -16,6 +16,9 @@
 
 An image summary stores the width, height, and PNG-encoded data for zero
 or more images in a rank-1 string array: `[w, h, png0, png1, ...]`.
+
+NOTE: This module is in beta, and its API is subject to change, but the
+data that it stores to disk will be supported forever.
 """
 
 from __future__ import absolute_import

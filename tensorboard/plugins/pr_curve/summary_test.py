@@ -27,8 +27,8 @@ import tensorflow as tf
 
 from google.protobuf import json_format
 from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.plugins.pr_curve import plugin_data_pb2
 from tensorboard.plugins.pr_curve import pr_curve_demo
-from tensorboard.plugins.pr_curve import pr_curve_pb2
 from tensorboard.plugins.pr_curve import summary
 
 
@@ -78,7 +78,7 @@ class PrCurveTest(tf.test.TestCase):
 
     for tag in expected_tags:
       # Parse the data within the JSON string and set the proto's fields.
-      plugin_data = pr_curve_pb2.PrCurvePluginData()
+      plugin_data = plugin_data_pb2.PrCurvePluginData()
       json_format.Parse(tag_content_dict[tag], plugin_data)
       self.assertEqual(5, plugin_data.num_thresholds)
 
@@ -180,7 +180,7 @@ class PrCurveTest(tf.test.TestCase):
 
     for tag in expected_tags:
       # Parse the data within the JSON string and set the proto's fields.
-      plugin_data = pr_curve_pb2.PrCurvePluginData()
+      plugin_data = plugin_data_pb2.PrCurvePluginData()
       json_format.Parse(tag_content_dict[tag], plugin_data)
       self.assertEqual(5, plugin_data.num_thresholds)
 

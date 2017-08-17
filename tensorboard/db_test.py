@@ -17,46 +17,15 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
-import functools
 import itertools
-import os
-import sqlite3
 
 import tensorflow as tf
 
 from tensorboard import db
-from tensorboard import util
 from tensorboard import test_util
 
-db.TESTING_MODE = True
 
-
-class DbTestCase(test_util.TestCase):
-
-  def __init__(self, *args, **kwargs):
-    super(DbTestCase, self).__init__(*args, **kwargs)
-    self._db_connection_provider = None
-    self.clock = test_util.FakeClock()
-    self.sleep = test_util.FakeSleep(self.clock)
-    self.Retrier = functools.partial(util.Retrier, sleep=self.sleep)
-    self.tbase = db.TensorBase(db_connection_provider=self.connect,
-                               retrier_factory=self.Retrier)
-
-  def setUp(self):
-    super(DbTestCase, self).setUp()
-    db_path = os.path.join(self.get_temp_dir(), 'DbTestCase.sqlite')
-    self._db_connection_provider = (
-        lambda: db.Connection(sqlite3.connect(db_path, isolation_level=None)))
-    with contextlib.closing(self.connect()) as db_conn:
-      schema = db.Schema(db_conn)
-      schema.create_tables()
-      schema.create_indexes()
-
-  def connect(self):
-    return self._db_connection_provider()
-
-
-class PluginsTest(DbTestCase):
+class PluginsTest(test_util.TestCase):
 
   def testGetPluginIds(self):
     self.assertEqual({'b': 1}, self.tbase.get_plugin_ids(['b']))
@@ -65,11 +34,11 @@ class PluginsTest(DbTestCase):
     self.assertEqual({'b': 1, 'c': 3}, self.tbase.get_plugin_ids(['c', 'b']))
 
 
-class TransactionTest(DbTestCase):
+class TransactionTest(test_util.TestCase):
 
   def setUp(self):
     super(TransactionTest, self).setUp()
-    with contextlib.closing(self.connect()) as db_conn:
+    with contextlib.closing(self.connect_db()) as db_conn:
       with contextlib.closing(db_conn.cursor()) as c:
         c.execute('CREATE TABLE IF NOT EXISTS Numbers (a INTEGER, b INTEGER)')
 
@@ -141,22 +110,18 @@ class IdTest(test_util.TestCase):
       db.Id('i', -1)
 
   def testCheck(self):
-    id1 = db.Id('foo_id', 1)
-    with self.assertRaises(ValueError):
-      id1.check(-1)
-    id1.check(0)
-    id1.check(1)
-    with self.assertRaises(ValueError):
-      id1.check(2)
     id2 = db.Id('foo_id', 2)
-    id2.check(0)
+    with self.assertRaises(ValueError):
+      id2.check(0)
+    id2.check(1)
+    id2.check(2)
     id2.check(3)
     with self.assertRaises(ValueError):
       id2.check(4)
 
   def testGenerate(self):
     # TODO(jart): Mock this out instead and test better.
-    self.assertIn(db.Id('foo_id', 1).generate(), (0, 1))
+    self.assertIn(db.Id('foo_id', 2).generate(), (1, 2, 3))
 
   def testFields(self):
     id_ = db.Id('foo_id', 2)
@@ -174,22 +139,22 @@ class RowIdTest(test_util.TestCase):
 
   def testCreateAndParse(self):
     r = db.RowId('r', db.Id('g', 2), db.Id('l', 2))
-    for x, y in itertools.product(range(3), range(3)):
+    for x, y in itertools.product(range(1, 3), range(1, 3)):
       self.assertEqual((x, y), r.parse(r.create(x, y)))
 
   def testGetRange(self):
     r = db.RowId('r', db.Id('x', 4), db.Id('y', 4))
-    self.assertEqual((0x00, 0x0F), r.get_range(0x0))
-    self.assertEqual((0xF0, 0xFF), r.get_range(0xF))
+    self.assertEqual((0x11, 0x1F), r.get_range(0x1))
+    self.assertEqual((0xF1, 0xFF), r.get_range(0xF))
 
   def testOutOfBounds(self):
-    r = db.RowId('r', db.Id('x', 1), db.Id('y', 1))
+    r = db.RowId('r', db.Id('x', 2), db.Id('y', 2))
     with self.assertRaises(ValueError):
-      r.create(2, 2)
+      r.create(4, 4)
     with self.assertRaises(ValueError):
-      r.parse(4)
+      r.parse(8)
     with self.assertRaises(ValueError):
-      r.get_range(2)
+      r.get_range(4)
 
 
 if __name__ == '__main__':

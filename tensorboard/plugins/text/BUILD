@@ -42,3 +42,13 @@ py_test(
         "@org_pythonhosted_six",
     ],
 )
+
+py_binary(
+    name = "text_demo",
+    srcs = ["text_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
