@@ -1,0 +1,56 @@
+<dom-module id="tf-op-profile">
+<template>
+<style>
+</style>
+<div class="tf-op-profile">
+  <template is="dom-repeat" items="{{_root.children}}">
+    <p>[[item.name]]</p>
+  </template>
+</div>
+</dom-module>
+
+<script>
+import {RequestManager} from '../tf-backend/requestManager.js';
+import {getRouter} from '../tf-backend/router.js';
+
+Polymer({
+  is: 'tf-op-profile',
+  properties: {
+    _requestManager: {
+      type: Object,
+      value: () => new RequestManager(),
+    },
+    _data: {
+      type: Object,
+      notify: true,
+    },
+    _breakdown: {
+      type: String,
+      value: 'byCategory',
+      notify: true,
+    },
+    _root: {
+      type: Object,
+      computed: '_getRoot(_data, _breakdown)',
+      notify: true,
+    },
+    run: {
+      type: String,
+      notify: true,
+      observer: '_runChanged'
+    },
+  },
+  _runChanged: function(run) {
+    this._requestManager.request(
+        getRouter().
+            pluginRunTagRoute('profile', '/data')('op_profile', run)
+    ).then((data) => {
+      console.log("Loaded profile ", data);
+      this._data = data;
+    });
+  },
+  _getRoot: function(data, breakdown) {
+    return data[breakdown];
+  },
+});
+</script>
