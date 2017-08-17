@@ -24,24 +24,30 @@ limitations under the License.
 <dom-module id="tf-pr-curve-step-selector">
   <template>
     <template is="dom-repeat" items="[[runs]]" as="run">
-      <div class="run-display-container">
-        <div class="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
-        <div class="run-text">
-          [[run]]
+      <div class="run-widget">
+        <div class="run-display-container">
+          <div class="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
+          <div class="run-text">
+            [[run]]
+          </div>
         </div>
+        <div class="step-display-container">
+          step <span class="step-text">[[_computeStepTextForRun(runToStep, run)]]</span>
+        </div>
+        <paper-slider
+            id="slider-[[run]]"
+            step="1"
+            type="number"
+            min=0
+            max="[[_computeMaxStepIndexForRun(runToSteps, run)]]"
+            ></paper-slider>
       </div>
-      <div class="step-display-container">
-        step <span class="step-text">[[_computeStepTextForRun(runToStep, run)]]</span>
-      </div>
-      <paper-slider
-          id="slider-[[run]]"
-          step="1"
-          type="number"
-          min=0
-          max="[[_computeMaxStepIndexForRun(runToSteps, run)]]"
-          ></paper-slider>
     </template>
     <style>
+      .run-widget {
+        margin: 10px 0 0 0;
+      }
+
       paper-slider {
         margin: -8px 0 0 -15px;
         width: calc(100% + 31px);
@@ -49,7 +55,7 @@ limitations under the License.
       
       .step-display-container {
         font-size: 0.9em;
-        margin: 10px 15px 0 0;
+        margin: 0 15px 0 0;
       }
 
       .run-text {
