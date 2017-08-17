@@ -1,0 +1,155 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<dom-module id="tf-op-table-entry">
+<template>
+<style>
+.entry {
+  background-color: rgba(0,0,0,0.04);
+}
+.entry:not(.expanded) > .children {
+  display: none;
+}
+.parent {
+  background-color: rgba(1,1,0,0.04);
+}
+</style>
+<div class$="{{_classEntry(node)}}">
+  <div class="header"
+       on-click="_handleHeaderClick"
+       on-mouseenter="_handleHeaderMouseEnter"
+       on-mouseleave="_handleHeaderMouseLeave">
+    <div class="bar" style$="{{_styleBar(node)}}"></div>
+    <span class="time">{{_percent(node.metrics.time)}}</span>
+    <span class="disclosure"></span>
+    <span class="name">{{node.name}}</span>
+  </div>
+  <div class="children">
+    <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
+      <tf-op-table-entry node="{{item}}" active={{active}}>
+      </tf-op-table-entry>
+    </template>
+  </div>
+</div>
+</dom-module>
+
+<dom-module id="tf-op-table">
+<template>
+<style>
+  #table {
+    background-color: white;
+  }
+  body {
+    background-color: #f8f8f8;
+  }
+</style>
+<div id="tf_op_table" class="mdl-cell mdl-cell--8-col mdl-cell--middle">
+  <tf-op-table-entry node="[[rootNode]]" active={{active}}></tf-op-table-entry>
+</div>
+</dom-module>
+
+<script>
+import {RequestManager} from '../tf-backend/requestManager.js';
+import {getRouter} from '../tf-backend/router.js';
+
+Polymer({
+  is: 'tf-op-table-entry',
+  properties: {
+    node: {
+      type: Object,
+    },
+    active: {
+      type: Object,
+      notify: true,
+    },
+  },
+  _classEntry: function(node) {
+    var classes = 'entry';
+    if (node.children) {
+      classes += ' parent';
+    }
+    return classes;
+  },
+  _sortEntry: function(node1, node2) {
+    if (node1.metrics.time == node2.metrics.time) return 0;
+    return node1.metrics.time > node2.metrics.time ? -1 : 1;
+  },
+  _styleBar: function(node) {
+    var style = '';
+    style += 'width: ' + this._percent(node.metrics.time) + '; ';
+    style += 'background-color: ' + this._color(node, 1, 0.2) + '; ';
+    return style;
+  },
+  _handleHeaderClick: function(e) {
+    var entry = Polymer.dom(e).rootTarget.closest('.entry');
+    entry.classList.toggle('expanded');
+    var table = entry.closest('#tf_op_table');
+    table.querySelectorAll('.entry.selected')
+        .forEach(e => e.classList.remove('selected'));
+    entry.classList.add('selected');
+  },
+  _handleHeaderMouseEnter: function(e) {
+    var entry = Polymer.dom(e).rootTarget.closest('.entry');
+    this.active = this.node;
+  },
+  _handleHeaderMouseLeave: function(e) {
+    this.active = null;
+  },
+  _color: function(item, brightness, opacity) {
+    return this._fraccolor(item.metrics.flops / item.metrics.time, brightness,
+                           opacity);
+  }
+  , _fraccolor : function(frac, brightness, opacity) {
+    if (brightness === undefined) brightness = 1;
+    if (opacity === undefined) opacity = 1;
+    var bri_lo = Math.min(brightness, 1);
+    var bri_hi = Math.max(brightness - 1, 0);
+    function hex(fraction) {
+      var s = Math.round(255 * (bri_hi + (1 - bri_hi) * fraction)).toString(16);
+      return (s.length < 2) ? "0" + s : s;
+    }
+    function c(fraction) {
+      return Math.round(255 * (bri_hi + (1 - bri_hi) * fraction));
+    }
+    if (frac < 0.5) {
+      return "rgba(" + c(bri_lo) + "," + c(2 * frac * bri_lo) + "," + c(0) +
+             "," + opacity + ")";
+    } else {
+      return "rgba(" + c(2 * (1 - frac) * bri_lo) + "," + c(bri_lo) + "," +
+             c(0) + "," + opacity + ")";
+    }
+  },
+  _percent: function(x) {
+    return x >= 0.995
+               ? "100%"
+               : x < 0.00001 ? "0.0000%" : (x * 100).toPrecision(2) + "%";
+  },
+});
+
+Polymer({
+  is: 'tf-op-table',
+  properties: {
+    rootNode: {
+      type: Object,
+    },
+    active: {
+      type: String,
+      notify: true,
+    },
+  },
+});
+</script>

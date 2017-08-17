@@ -10,5 +10,14 @@ ts_web_library(
     path = "/tf-op-profile",
     visibility = ["//visibility:public"],
     deps = [
+        ":tf_op_table",
+    ],
+)
+
+ts_web_library(
+    name = "tf_op_table",
+    srcs = ["tf-op-table.html"],
+    path = "/tf-op-profile",
+    deps = [
     ],
 )

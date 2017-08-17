@@ -1,11 +1,11 @@
+<link rel="import" href="tf-op-table.html">
+
 <dom-module id="tf-op-profile">
 <template>
 <style>
 </style>
 <div class="tf-op-profile">
-  <template is="dom-repeat" items="{{_root.children}}">
-    <p>[[item.name]]</p>
-  </template>
+  <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
 </div>
 </dom-module>
 
@@ -34,6 +34,12 @@ Polymer({
       computed: '_getRoot(_data, _breakdown)',
       notify: true,
     },
+    _active: {
+      type: Object,
+      value: null,
+      notify: true,
+      observer: '_activeChanged'
+    },
     run: {
       type: String,
       notify: true,
@@ -51,6 +57,9 @@ Polymer({
   },
   _getRoot: function(data, breakdown) {
     return data[breakdown];
+  },
+  _activeChanged: function(active) {
+    console.log('active changed:', active);
   },
 });
 </script>
