@@ -25,7 +25,6 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
-from tensorboard.plugins.pr_curve import pr_curve_pb2
 
 # A tiny value. Used to prevent division by 0 as well as to make precision 1
 # when the threshold is 0.
