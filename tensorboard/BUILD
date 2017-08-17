@@ -28,6 +28,7 @@ py_binary(
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/debugger:debugger_plugin",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
@@ -66,6 +67,22 @@ py_library(
     # This is a dummy rule used as a numpy dependency in open-source.
     # We expect numpy to already be installed on the system, e.g. via
     # `pip install numpy`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_futures_installed",
+    # This is a dummy rule used as a futures dependency in open-source.
+    # We expect numpy to already be installed on the system, e.g. via
+    # `pip install futures`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_portpicker_installed",
+    # This is a dummy rule used as a portpicker dependency in open-source.
+    # We expect portpicker to already be installed on the system, e.g. via
+    # `pip install portpicker`
     visibility = ["//visibility:public"],
 )
 
