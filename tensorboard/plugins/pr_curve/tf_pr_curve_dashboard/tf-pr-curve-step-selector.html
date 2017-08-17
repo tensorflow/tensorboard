@@ -24,43 +24,41 @@ limitations under the License.
 <dom-module id="tf-pr-curve-step-selector">
   <template>
     <template is="dom-repeat" items="[[runs]]" as="run">
-      <div id="run-display-container">
-        <div id="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
-        <div id="run-text">
+      <div class="run-display-container">
+        <div class="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
+        <div class="run-text">
           [[run]]
         </div>
       </div>
-      <div id="step-display-container">
-        step <span id="step-text">[[_computeStepTextForRun(run)]]</span>
+      <div class="step-display-container">
+        step <span class="step-text">[[_computeStepTextForRun(runToStep, run)]]</span>
       </div>
       <paper-slider
-          data-run="[[run]]"
-          id="slider"
+          id="slider-[[run]]"
           step="1"
           type="number"
-          immediate-value="[[_computeInitialIndex(_stepIndexPerRun, run)]]"
           min=0
-          max="[[_maxStepIndex]]"
+          max="[[_computeMaxStepIndexForRun(runToSteps, run)]]"
           ></paper-slider>
     </template>
     <style>
-      #slider {
+      paper-slider {
         margin: -8px 0 0 -15px;
         width: calc(100% + 31px);
       }
       
-      #step-display-container {
+      .step-display-container {
         font-size: 0.9em;
         margin: 10px 15px 0 0;
       }
 
-      #run-text {
+      .run-text {
         display: inline-block;
       }
 
-      #run-color-box {
-        width: 8px;
-        height: 8px;
+      .run-color-box {
+        width: 12px;
+        height: 12px;
         border-radius: 3px;
         display: inline-block;
       }
@@ -78,50 +76,90 @@ limitations under the License.
       runs: Array,
       // A mapping between run and list of steps to use for the slider for that
       // run. This component indexes into this object to retrieve the steps.
-      stepsPerRun: Object,
+      runToSteps: Object,
       // A mapping between run and slider index.
-      _stepIndexPerRun: Object,
+      _runToStepIndex: Object,
       // The object mapping run to step per run. This object is updated by this
-      // component when the selected step for the run changes.
-      stepPerRun: {
+      // component when the selected step for the run changes, so this property
+      // should be upward bound.
+      runToStep: {
         type: Object,
         notify: true,
-        computed: "_computeStepPerRun(stepsPerRun, _stepIndexPerRun)",
+        computed: "_computerunToStep(runToSteps, _runToStepIndex)",
       },
     },
     listeners: {
-      "immediate-value-changed": "_onSliderValueChanged",
+      "immediate-value-change": "_sliderValueChanged",
     },
     observers: [
-      "_stepsPerRunChanged(stepsPerRun)",
+      "_runsChanged(runs, _runToStepIndex)",
+      "_runToStepsChanged(runToSteps)",
     ],
+    ready() {
+      // Initialize the sliders so they point to the most recent value.
+      this._updateSliders(this._runToStepIndex);
+    },
+    _runsChanged(runs, runToStepIndex) {
+      // When selected runs change, make sure any new sliders point to the
+      // correct step. We use a setTimeout to add this operation to the end of
+      // the JS event queue so that it happens after the dom-repeat renders. We
+      // do not make this handler update _runToStepIndex because asynchronously
+      // awaiting changes on _runToStepIndex could create a rendering loop.
+      setTimeout(() => {
+        this._updateSliders(runToStepIndex);
+      }, 0);
+    },
     _computeColorForRun(run) {
       return runsColorScale(run);
     },
-    _computeStepTextForRun(stepPerRun, run) {
-      return stepPerRun[run];
+    _computeStepTextForRun(runToStep, run) {
+      return runToStep[run];
     },
-    _stepsPerRunChanged(stepsPerRun) {
-      const stepIndexPerRun = {};
-      _.forOwn(stepsPerRun, (steps, run) => {
-        stepIndexPerRun[run] = steps.length - 1;
-
-        // TODO: Change the slider for the run.
-      });
-      this.set('_stepIndexPerRun', stepIndexPerRun);
-    },
-    _onSliderValueChanged(event) {
-      const run = event.target.getAttribute('data-run');
+    _sliderValueChanged(event) {
+      const run = this._obtainRunFromSliderId(event.target.id);
       this.set(
-          '_stepIndexPerRun',
+          "_runToStepIndex",
           Object.assign(
-              {},
-              this._stepIndexPerRun,
-              {run: event.target.immediateValue}));
-      // TODO: Verify if this callback runs.
+              {}, this._runToStepIndex, {[run]: event.target.immediateValue}));
     },
-    _computeInitialIndex(stepIndexPerRun, run) {
-      return stepIndexPerRun[run];
+    _obtainRunFromSliderId(sliderId) {
+      // We store the name of the run as a substring of the ID.
+      return sliderId.substring("slider-".length);
+    },
+    _computerunToStep(runToSteps, runToStepIndex) {
+      const runToStep = {};
+      _.forOwn(runToSteps, (steps, run) => {
+        runToStep[run] = steps[runToStepIndex[run]];
+      });
+      return runToStep;
+    },
+    _computeMaxStepIndexForRun(runToSteps, run) {
+      const steps = runToSteps[run];
+      return steps && steps.length ? steps.length - 1 : 0;
+    },
+    _runToStepsChanged(runToSteps) {
+      // The steps per run just refreshed. Change every slider to point to the
+      // last available step.
+      const runToIndex = {};
+      _.forOwn(runToSteps, (steps, run) => {
+        if (steps.length) {
+          runToIndex[run] = steps.length - 1;
+        }
+      });
+      this.set("_runToStepIndex", runToIndex);
+
+      // Set the values of all the sliders. They are not 2-way bound, so we must
+      // actually set them.
+      this._updateSliders(runToIndex);
+    },
+    _updateSliders(runToStepIndex) {
+      const sliders = this.querySelectorAll("paper-slider");
+      if (sliders) {
+        for (let i = 0; i < sliders.length; i++) {
+          const run = this._obtainRunFromSliderId(sliders[i].id);
+          sliders[i].value = runToStepIndex[run];
+        }
+      }
     },
   });
   </script>

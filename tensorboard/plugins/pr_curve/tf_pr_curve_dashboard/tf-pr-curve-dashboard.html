@@ -33,12 +33,12 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
-        <template is="dom-if" if="[[_stepsPerRun]]">
+        <template is="dom-if" if="[[_runToSteps]]">
           <div class="sidebar-section">
             <tf-pr-curve-step-selector
                   runs="[[_relevantSelectedRuns]]"
-                  step-per-run="{{_stepPerRun}}"
-                  steps-per-run="[[_stepsPerRun]]"></tf-pr-curve-step-selector>
+                  run-to-step="{{_runToStep}}"
+                  run-to-steps="[[_runToSteps]]"></tf-pr-curve-step-selector>
           </div>
         </template>
         <div class="sidebar-section">
@@ -95,7 +95,7 @@ limitations under the License.
                           runs="[[item.runs]]"
                           tag="[[item.tag]]"
                           request-manager="[[_requestManager]]"
-                          step-cap-per-run="[[_stepPerRun]]"
+                          run-to-step-cap="[[_runToStep]]"
                         ></tf-pr-curve-card>
                       </template>
                     </div>
@@ -143,7 +143,7 @@ limitations under the License.
       _selectedRuns: Array,
       _runToTag: Object,  // map<run: string, tags: string[]>
       // The steps that the step slider for each run should use.
-      _stepsPerRun: {
+      _runToSteps: {
         type: Object, // map<run: string, steps: number[]>
         value: {},
       },
@@ -156,7 +156,7 @@ limitations under the License.
       // The actual step value that each run should use. If a run + tag lacks a
       // PR curve at this exact step value, the greatest step value less than
       // this value will be used.
-      _stepPerRun: {
+      _runToStep: {
         type: Object,  // map<run: string, step: number>
         notify: true,
       },
@@ -167,8 +167,7 @@ limitations under the License.
       },
       _categories: {
         type: Array,
-        computed:
-          '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
+        computed: '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
       },
       _requestManager: {
         type: Object,
@@ -205,7 +204,7 @@ limitations under the License.
     _fetchStepsPerRun() {
       const url = getRouter().pluginRoute('pr_curves', '/steps_per_run');
       return this._requestManager.request(url).then(stepsPerRun => {
-        this.set('_stepsPerRun', stepsPerRun);
+        this.set('_runToSteps', stepsPerRun);
 
         const listOfRuns = _.keys(stepsPerRun).sort();
         if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
