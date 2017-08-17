@@ -102,6 +102,13 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+py_library(
+    name = "tf_contrib_ffmpeg",
+    # This is a dummy rule for the open source world, which indicates
+    # that srcs dereference tf.contrib.ffmpeg.
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "ts_web_library_default_typings",
     srcs = [
@@ -216,6 +223,7 @@ py_library(
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:tf_contrib_ffmpeg",
         "@org_pythonhosted_six",
     ],
 )
