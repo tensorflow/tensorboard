@@ -72,11 +72,11 @@ Polymer({
     smoothingWeight: {type: Number, value: 0.6},
 
     /**
-     * A function to create a ChartHelpers.XComponents and accepts no arguments.
      * We accept a function for creating an XComponents object instead of such
      * an object itself because the Axis must be made right when we make the
      * LineChart object, lest we use a previously destroyed Axis. See the async
      * logic below that uses this property.
+     * @type {function(): ChartHelpers.XComponents}
      */
     xComponentsCreationMethod: Object,
 
@@ -91,6 +91,16 @@ Polymer({
      * within the tooltip. The table contains 1 row per run.
      */
     tooltipColumns: Array,
+
+    /**
+     * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
+     * table element ... because polymer is awry. Hence, we manually generate
+     * the HTML for creating a row of table headers.
+     */
+    tooltipTableHeaderHtml: {
+      type: String,
+      computed: "_computeTooltipTableHeaderHtml(tooltipColumns)",
+    },
 
     /**
      * The scale for the y-axis. Allows:
@@ -279,7 +289,12 @@ Polymer({
     if (this._chart) {
       this._chart.setTooltipPosition(this.tooltipPosition);
     }
-  }
+  },
+  _computeTooltipTableHeaderHtml(tooltipColumns) {
+    // The first column contains the circle with the color of the run.
+    const mapper = (c: ChartHelpers.TooltipColumn) => `<th>${c.title}</th>`;
+    return '<th></th>' + _.map(tooltipColumns, mapper).join('');
+  },
 });
 
 class LineChart {

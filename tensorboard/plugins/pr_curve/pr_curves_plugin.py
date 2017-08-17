@@ -23,11 +23,13 @@ from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.pr_curve import metadata
+
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
   """A plugin that serves PR curves for individual classes."""
 
-  plugin_name = 'pr_curves'
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates a PrCurvesPlugin.
@@ -104,8 +106,10 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         continue
 
       # Just use the list of tensor events for any of the tags to determine the
-      # steps to list for the run. The steps should be the same across tags
-      # unless the user uses conditionals the only write summaries now and then.
+      # steps to list for the run. The steps are often the same across tags for
+      # each run, albeit the user may elect to sample certain tags differently
+      # within the same run. If the latter occurs, TensorBoard will show the
+      # actual step of each tag atop the card for the tag.
       tensor_events = self._multiplexer.Tensors(
           run, list(tag_to_content.keys())[0])
       response[run] = [e.step for e in tensor_events]
@@ -150,6 +154,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return {
         'wall_time': event.wall_time,
         'step': event.step,
-        'precision': data_array[4].tolist(),
-        'recall': data_array[5].tolist(),
+        'precision': data_array[metadata.PRECISION_INDEX].tolist(),
+        'recall': data_array[metadata.RECALL_INDEX].tolist(),
     }

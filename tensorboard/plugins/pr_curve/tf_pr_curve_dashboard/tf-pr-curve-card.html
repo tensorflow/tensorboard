@@ -51,9 +51,11 @@ limitations under the License.
           </div>
           [[run]] is at 
           <span class="step-label-text">
-            step [[_computeCurrentStepForRun(_actualStepPerRun, run)]]
+            step [[_computeCurrentStepForRun(_actualPrCurveEntryPerRun, run)]]
           </span><br>
-          ([[_computeCurrentWallTimeForRun(_actualWallTimePerRun, run)]])
+          <span class="wall-time-label-text">
+            ([[_computeCurrentWallTimeForRun(_actualPrCurveEntryPerRun, run)]])
+          </span>
         </div>
       </template>
     </div>
@@ -122,6 +124,10 @@ limitations under the License.
       .step-label-text {
         font-weight: bold;
       }
+      .wall-time-label-text {
+        color: #888;
+        font-size: 0.8em;
+      }
     </style>
   </template>
   <script>
@@ -139,22 +145,15 @@ limitations under the License.
         // For each run, the card will display the PR curve at this step or the one
         // closest to it, but less than it.
         stepCapPerRun: Object,
-        // This maps a run to the actual step that is presented in the PR curve.
-        _actualStepPerRun: {
+        _actualPrCurveEntryPerRun: {
           type: Object,
-          value: {},
-        },
-        // This maps a run to the actual wall time that is presented in the PR
-        // curve.
-        _actualWallTimePerRun: {
-          type: Object,
-          value: {},
+          computed: "_computeActualPrCurveEntryPerRun(_runToData, stepCapPerRun)",
         },
         // A list of runs with an available step. Used to populate the table of
         // steps per run.
         _runsWithStepAvailable: {
           type: Array,
-          computed: "_computeRunsWithStepAvailable(_actualStepPerRun)",
+          computed: "_computeRunsWithStepAvailable(_actualPrCurveEntryPerRun)",
         },
         _runToData: Object,
         /** @type {Function} */
@@ -214,7 +213,7 @@ limitations under the License.
       observers: [
           'reload(run, tag)',
           '_runsChanged(_attached, runs.*)',
-          '_setChartData(_runToData, stepCapPerRun)',
+          '_setChartData(_actualPrCurveEntryPerRun)',
       ],
       _computeRunColor(run) {
         return this._colorScaleFunction.scale(run);
@@ -234,8 +233,8 @@ limitations under the License.
         const router = getRouter();
         let url = router.pluginRoute('pr_curves', '/pr_curves');
         url += url.indexOf('?') > -1 ? '&' : '?';
-        const urlRunsPortion = this.runs.map(r => `run=${r}`).join('&');
-        url += `tag=${this.tag}&${urlRunsPortion}`;
+        const urlRunsPortion = this.runs.map(r => `&run=${r}`).join('');
+        url += `tag=${this.tag}${urlRunsPortion}`;       
         const updateData = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -249,46 +248,18 @@ limitations under the License.
         });
         this.requestManager.request(url).then(updateData);
       },
-      _setChartData(runToData, stepCapPerRun) {
-        if (!runToData) {
-          return;
-        }
-
-        _.forOwn(runToData, (entries, run) => {
-          if (!entries || !entries.length) {
-            return;
-          }
-
-          const stepCap = stepCapPerRun[run];
-          let entriesIndex = entries.length - 1;
-          while (entriesIndex > 0) {
-            if (entries[entriesIndex].step <= stepCap) {
-              // This is the rightmost entry closest (or equal to) the step cap.
-              break;
-            }
-            entriesIndex--;
-          }
-          const entry = entries[entriesIndex];
-
-          // Update the step shown for this run within the card.
-          this._actualStepPerRun[run] = entry.step;
-          this._actualWallTimePerRun[run] = entry.wall_time;
-
-          // This clone operation is necessary for Polymer to notify an update.
-          this.set('_actualStepPerRun', _.clone(this._actualStepPerRun));
-
+      _setChartData(actualPrCurveEntryPerRun) {
+        _.forOwn(actualPrCurveEntryPerRun, (entry, run) => {
           // Reverse the values so they are plotted in order, which allows for
           // tool tips.
           const precision = entry.precision.slice().reverse();
           const recall = entry.recall.slice().reverse();
-
-          let seriesData = [];
-          for (let i = 0; i < entry.precision.length; i++) {
-            seriesData.push({
-              precision: precision[i],
-              recall: recall[i],
-            });
-          }
+          const seriesData = _.zipWith(
+              precision,
+              recall, (precision, recall) => ({
+                precision: precision,
+                recall: recall,
+              }));
           this.$$('vz-line-chart').setSeriesData(run, seriesData);
         });
       },
@@ -299,14 +270,34 @@ limitations under the License.
         this.$$('vz-line-chart').setVisibleSeries(this.runs);
         this.reload();
       },
-      _computeRunsWithStepAvailable(actualStepPerRun) {
-        return _.keys(actualStepPerRun).sort();
+      _computeActualPrCurveEntryPerRun(runToData, stepCapPerRun) {
+        if (!runToData) {
+          return;
+        }
+
+        const runToEntry = {};
+        _.forOwn(runToData, (entries, run) => {
+          if (!entries || !entries.length) {
+            return;
+          }
+
+          const stepCap = stepCapPerRun[run];
+          const entryIndex = Math.min(
+              _.sortedIndex(entries.map(entry => entry.step), stepCap),
+              entries.length - 1);
+          runToEntry[run] = entries[entryIndex];
+        });
+        return runToEntry;
       },
-      _computeCurrentStepForRun(actualStepPerRun, run) {
-        return actualStepPerRun[run];
+      _computeRunsWithStepAvailable(actualPrCurveEntryPerRun) {
+        return _.keys(actualPrCurveEntryPerRun).sort();
       },
-      _computeCurrentWallTimeForRun(actualWallTimePerRun, run) {
-        return new Date(actualWallTimePerRun[run] * 1000).toString();
+      _computeCurrentStepForRun(actualPrCurveEntryPerRun, run) {
+        return actualPrCurveEntryPerRun[run].step;
+      },
+      _computeCurrentWallTimeForRun(actualPrCurveEntryPerRun, run) {
+        return new Date(
+            actualPrCurveEntryPerRun[run].wall_time * 1000).toString();
       },
     });
   </script>

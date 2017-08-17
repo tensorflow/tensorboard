@@ -191,7 +191,17 @@ limitations under the License.
       }
     }, 100);
 
-    /** @enum {string} */ const X_TYPE = {
+    /** 
+     * Allows:
+     * - "step" - Linear scale using the "step" property of the datum.
+     * - "wall_time" - Temporal scale using the "wall_time" property of the
+     * datum.
+     * - "relative" - Temporal scale using the "relative" property of the
+     * datum if it is present or calculating from "wall_time" if it isn't.
+     * @enum {string}
+     * */
+    
+    const X_TYPE = {
       STEP: 'step',
       RELATIVE: 'relative',
       WALL: 'wall',
@@ -204,12 +214,6 @@ limitations under the License.
         tag: String,
 
         /**
-         * Allows:
-         * - "step" - Linear scale using the  "step" property of the datum.
-         * - "wall_time" - Temporal scale using the "wall_time" property of the
-         * datum.
-         * - "relative" - Temporal scale using the "relative" property of the
-         * datum if it is present or calculating from "wall_time" if it isn't.
          * @type {X_TYPE}
          */
         xType: {

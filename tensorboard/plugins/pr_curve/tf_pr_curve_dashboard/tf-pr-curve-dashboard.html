@@ -23,7 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-pr-curve-card.html">
-<link rel="import" href="tf-step-selector.html">
+<link rel="import" href="tf-pr-curve-step-selector.html">
 
 <!--
   A frontend that displays a set of precision–recall curves. Each PR curve is
@@ -35,15 +35,10 @@ limitations under the License.
       <div class="sidebar">
         <template is="dom-if" if="[[_stepsPerRun]]">
           <div class="sidebar-section">
-            <template is="dom-repeat"
-                      items="{{_listOfRuns}}"
-                      as="run">
-              <tf-step-selector
-                  run="[[run]]"
-                  color="[[_computeColorForRun(run)]]"
+            <tf-pr-curve-step-selector
+                  runs="[[_relevantSelectedRuns]]"
                   step-per-run="{{_stepPerRun}}"
-                  steps-per-run="[[_stepsPerRun]]"></tf-step-selector>
-            </template>
+                  steps-per-run="[[_stepsPerRun]]"></tf-pr-curve-step-selector>
           </div>
         </template>
         <div class="sidebar-section">
@@ -152,14 +147,18 @@ limitations under the License.
         type: Object, // map<run: string, steps: number[]>
         value: {},
       },
-      _listOfRuns: Array,  // string[]
-      // The actual step value that each run should use. If a run + tag lacks a PR
-      // curve at this exact step value, the greatest step value less than this
-      // value will be used.
+      // A list of runs that are both selected and have PR curve data.
+      _relevantSelectedRuns: {
+        type: Array,
+        computed: "_computeRelevantSelectedRuns(_selectedRuns, _runToTag)",
+      },
+      _runsWithPrCurveData: Array,  // string[]
+      // The actual step value that each run should use. If a run + tag lacks a
+      // PR curve at this exact step value, the greatest step value less than
+      // this value will be used.
       _stepPerRun: {
         type: Object,  // map<run: string, step: number>
         notify: true,
-        value: {},
       },
       _dataNotFound: Boolean,
       _tagFilter: {
@@ -179,11 +178,6 @@ limitations under the License.
         type: Number,
         value: 0,
         notify: true,
-      },
-      _colorScale: {
-        type: Object,
-        value: () => ({scale: runsColorScale}),
-        readOnly: true,
       },
     },
     // TODO(chizeng): Create a widget with multiple sliders. That uses
@@ -214,8 +208,8 @@ limitations under the License.
         this.set('_stepsPerRun', stepsPerRun);
 
         const listOfRuns = _.keys(stepsPerRun).sort();
-        if (!_.isEqual(listOfRuns, this._listOfRuns)) {
-          this.set('_listOfRuns', listOfRuns);
+        if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
+          this.set('_runsWithPrCurveData', listOfRuns);
         }
       });
     },
@@ -228,7 +222,10 @@ limitations under the License.
       return categorizeTags(runToTag, selectedRuns, tagFilter);
     },
     _computeColorForRun(run) {
-      return this._colorScale.scale(run);
+      return runsColorScale(run);
+    },
+    _computeRelevantSelectedRuns(selectedRuns, runToTag) {
+      return _.filter(selectedRuns, run => runToTag[run]);
     },
   });
   </script>

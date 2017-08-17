@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from google.protobuf import json_format
+from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import pr_curve_pb2
 
 # A tiny value. Used to prevent division by 0 as well as to make precision 1
@@ -149,14 +149,10 @@ def op(
 
     # Store the number of thresholds within the summary metadata because
     # that value is constant for all pr curve summaries with the same tag.
-    pr_curve_plugin_data = pr_curve_pb2.PrCurvePluginData(
-        num_thresholds=num_thresholds)
-    content = json_format.MessageToJson(pr_curve_plugin_data)
-    summary_metadata = tf.SummaryMetadata(
+    summary_metadata = metadata.create_summary_metadata(
         display_name=display_name if display_name is not None else tag,
-        summary_description=description or '',
-        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='pr_curves',
-                                                  content=content))
+        description=description or '',
+        num_thresholds=num_thresholds)
 
     precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
         _TINY_EPISILON, tp + fp)

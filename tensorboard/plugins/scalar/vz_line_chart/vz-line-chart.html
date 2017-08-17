@@ -35,12 +35,10 @@ such as different X scales (linear and temporal), tooltips and smoothing.
     <div id="tooltip">
       <table>
         <thead>
-          <tr>
-            <th><!-- run color swatch --></th>
-            <template is="dom-repeat" items="[[tooltipColumns]]" as="column">
-              <th>[[column.title]]</th>
-            </template>
-          </tr>
+          <!-- We inject the HTML instead of using dom-repeat because polymer
+               does not support dom-repeat templates within table elements. -->
+          <tr id="tooltip-table-header-row"
+              inner-h-t-m-l="[[tooltipTableHeaderHtml]]"></tr>
         </thead>
         <tbody>
         </tbody>

@@ -1,0 +1,128 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Renders a UI for selecting a step.
+-->
+<dom-module id="tf-pr-curve-step-selector">
+  <template>
+    <template is="dom-repeat" items="[[runs]]" as="run">
+      <div id="run-display-container">
+        <div id="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
+        <div id="run-text">
+          [[run]]
+        </div>
+      </div>
+      <div id="step-display-container">
+        step <span id="step-text">[[_computeStepTextForRun(run)]]</span>
+      </div>
+      <paper-slider
+          data-run="[[run]]"
+          id="slider"
+          step="1"
+          type="number"
+          immediate-value="[[_computeInitialIndex(_stepIndexPerRun, run)]]"
+          min=0
+          max="[[_maxStepIndex]]"
+          ></paper-slider>
+    </template>
+    <style>
+      #slider {
+        margin: -8px 0 0 -15px;
+        width: calc(100% + 31px);
+      }
+      
+      #step-display-container {
+        font-size: 0.9em;
+        margin: 10px 15px 0 0;
+      }
+
+      #run-text {
+        display: inline-block;
+      }
+
+      #run-color-box {
+        width: 8px;
+        height: 8px;
+        border-radius: 3px;
+        display: inline-block;
+      }
+    </style>
+  </template>
+  <script>
+  "use strict";
+
+  import {runsColorScale} from "../tf-color-scale/colorScale.js";
+
+  Polymer({
+    is: "tf-pr-curve-step-selector",
+    properties: {
+      // A list of runs to create sliders for.
+      runs: Array,
+      // A mapping between run and list of steps to use for the slider for that
+      // run. This component indexes into this object to retrieve the steps.
+      stepsPerRun: Object,
+      // A mapping between run and slider index.
+      _stepIndexPerRun: Object,
+      // The object mapping run to step per run. This object is updated by this
+      // component when the selected step for the run changes.
+      stepPerRun: {
+        type: Object,
+        notify: true,
+        computed: "_computeStepPerRun(stepsPerRun, _stepIndexPerRun)",
+      },
+    },
+    listeners: {
+      "immediate-value-changed": "_onSliderValueChanged",
+    },
+    observers: [
+      "_stepsPerRunChanged(stepsPerRun)",
+    ],
+    _computeColorForRun(run) {
+      return runsColorScale(run);
+    },
+    _computeStepTextForRun(stepPerRun, run) {
+      return stepPerRun[run];
+    },
+    _stepsPerRunChanged(stepsPerRun) {
+      const stepIndexPerRun = {};
+      _.forOwn(stepsPerRun, (steps, run) => {
+        stepIndexPerRun[run] = steps.length - 1;
+
+        // TODO: Change the slider for the run.
+      });
+      this.set('_stepIndexPerRun', stepIndexPerRun);
+    },
+    _onSliderValueChanged(event) {
+      const run = event.target.getAttribute('data-run');
+      this.set(
+          '_stepIndexPerRun',
+          Object.assign(
+              {},
+              this._stepIndexPerRun,
+              {run: event.target.immediateValue}));
+      // TODO: Verify if this callback runs.
+    },
+    _computeInitialIndex(stepIndexPerRun, run) {
+      return stepIndexPerRun[run];
+    },
+  });
+  </script>
+</dom-module>
