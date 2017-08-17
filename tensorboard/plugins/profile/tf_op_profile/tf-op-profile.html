@@ -1,3 +1,5 @@
+<link rel="import" href="tf-op-table.html">
+
 <dom-module id="tf-op-profile">
 <template>
 <style>
@@ -29,9 +31,7 @@
     </span>
   </p>
   </div>
-  <template is="dom-repeat" items="{{_root.children}}">
-    <p style$="color:[[_textColor(item)]];">[[item.name]]</p>
-  </template>
+  <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
 </div>
 </template>
 
@@ -62,6 +62,12 @@ Polymer({
       computed: '_getRoot(_data, _breakdown)',
       notify: true,
     },
+    _active: {
+      type: Object,
+      value: null,
+      notify: true,
+      observer: '_activeChanged'
+    },
     run: {
       type: String,
       notify: true,
@@ -83,9 +89,6 @@ Polymer({
   },
   _getRoot: function(data, breakdown) {
     return data[breakdown];
-  },
-  _textColor: function(item) {
-    return flameColor(this._utilization(item), 0.7);
   },
   _utilization: function(item) {
     if (!item.metrics) return 0/0;
@@ -117,6 +120,12 @@ Polymer({
   },
   hasFlops: function(item) { return item.metrics.flops > 0; },
   goodFlops: function(item) { return this._utilization(item) > 0.4; },
+  _activeChanged: function(active) {
+    console.log('active changed:', active);
+  },
+  _textColor: function(item) {
+    return flameColor(this._utilization(item), 0.7);
+  },
 });
 </script>
 </dom-module>
