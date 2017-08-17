@@ -155,7 +155,6 @@ limitations under the License.
           computed: "_computeRunsWithStepAvailable(runs, _runToPrCurveEntry)",
         },
         _runToData: Object,
-        /** @type {Function} */
         _colorScaleFunction: {
           type: Object,  // function: string => string
           value: () => ({scale: runsColorScale}),
@@ -181,7 +180,7 @@ limitations under the License.
             };
           }),
         },
-        /** @type {() => Plottable.IAccessor<number>} */
+        /** @type {function() => Plottable.IAccessor<number>} */
         _yValueAccessor: {
           type: Object,
           readOnly: true,

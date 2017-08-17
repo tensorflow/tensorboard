@@ -220,13 +220,13 @@ limitations under the License.
           notify: true,
         },
 
-        /** @type {() => ChartHelpers.XComponents} */
+        /** @type {function() => ChartHelpers.XComponents} */
         _xComponentsCreationMethod: {
           type: Object,
           computed: '_computeXComponentsCreationMethod(xType)',
         },
 
-        /** @type {() => Plottable.IAccessor<number>} */
+        /** @type {function() => Plottable.IAccessor<number>} */
         _yValueAccessor: {
           type: Object,
           readOnly: true,
@@ -235,7 +235,6 @@ limitations under the License.
           },
         },
 
-        /** @type {ChartHelpers.TooltipColumn} */
         _tooltipColumns: {
           type: Array,
           readOnly: true,
