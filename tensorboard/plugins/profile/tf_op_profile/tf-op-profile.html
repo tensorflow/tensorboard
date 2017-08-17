@@ -5,13 +5,41 @@
 <style>
 </style>
 <div class="tf-op-profile">
+  <h4>Overall TPU utilization is
+    <span style$="color:[[_textColor(_root)]]">[[_utilizationPercent(_root)]]</span>
+  </h4>
+  <p>Modifying your model's architecture, data dimensions, and improving the
+  efficiency of CPU operations may help reach the TPU's FLOPS potential.</p>
+  <h4>The most time was spent in a <b>[[_costlyOp.category]] operation</b>
+    ([[_percent(_costlyOp.value)]])</h4>
+  <p hidden$="[[hasFlops(_costlyOp.op)]]">
+    [[_costlyOp.op.name]] is
+    <span style$="color:[[_textColor(_costlyOp.op)]];">overhead</span>,
+    and a good target for optimization.
+  </p>
+  <!-- crazy extra div to avoid HTML parsing bugs in polymer -->
+  <div hidden$="[[!hasFlops(_costlyOp.op)]]">
+  <p>
+    While active, [[_costlyOp.op.name]] uses
+    <span style="color:[[_textColor(_costlyOp.op)]]">[[_utilizationPercent(_costlyOp.op)]]</span>
+    of the computational potential of the chip.
+    <span hidden$="[[goodFlops(_costlyOp.op)]]">
+      This is a good target for optimization.
+    </span>
+    <span hidden$="[[!goodFlops(_costlyOp.op)]]">
+      This is pretty good - other operations may be better targets for optimization.
+    </span>
+  </p>
+  </div>
   <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
 </div>
-</dom-module>
+</template>
 
+<script src="colors.js"></script>
 <script>
 import {RequestManager} from '../tf-backend/requestManager.js';
 import {getRouter} from '../tf-backend/router.js';
+import {flameColor} from './colors.js';
 
 Polymer({
   is: 'tf-op-profile',
@@ -45,6 +73,10 @@ Polymer({
       notify: true,
       observer: '_runChanged'
     },
+    _costlyOp: {
+      type: Object,
+      computed: '_worstOp(_data, "time")',
+    },
   },
   _runChanged: function(run) {
     this._requestManager.request(
@@ -58,8 +90,42 @@ Polymer({
   _getRoot: function(data, breakdown) {
     return data[breakdown];
   },
+  _utilization: function(item) {
+    if (!item.metrics) return 0/0;
+    return item.metrics.flops / item.metrics.time;
+  },
+  _utilizationPercent: function(item) {
+    return this._percent(this._utilization(item));
+  },
+  _percent: function(fraction) {
+    return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
+      (fraction * 100).toPrecision(2) + "%";
+  },
+  _worstOp: function(data, metric) {
+    var worst = null, worstValue = -Infinity, worstCategory = undefined;
+    var category = [];
+    function visit(node) {
+      if (node.xla != null && node.metrics != null && node.metrics[metric] > worstValue) {
+        worst = node;
+        worstCategory = category[category.length - 1];
+        worstValue = node.metrics[metric];
+      }
+      if (node.category != null) category.push(node.name);
+      node.children.forEach(visit);
+      if (node.category != null) category.pop();
+    }
+    visit(data.byCategory);
+    console.log("Worst op is ", worst, worstCategory, worstValue);
+    return {op: worst, category: worstCategory, value: worstValue};
+  },
+  hasFlops: function(item) { return item.metrics.flops > 0; },
+  goodFlops: function(item) { return this._utilization(item) > 0.4; },
   _activeChanged: function(active) {
     console.log('active changed:', active);
   },
+  _textColor: function(item) {
+    return flameColor(this._utilization(item), 0.7);
+  },
 });
 </script>
+</dom-module>
