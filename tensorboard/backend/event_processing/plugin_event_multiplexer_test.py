@@ -23,8 +23,8 @@ import shutil
 
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import event_accumulator
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 
 
 def _AddEvents(path):
@@ -60,11 +60,7 @@ class _FakeAccumulator(object):
     }
 
   def Tags(self):
-    return {event_accumulator.IMAGES: ['im1', 'im2'],
-            event_accumulator.AUDIO: ['snd1', 'snd2'],
-            event_accumulator.HISTOGRAMS: ['hst1', 'hst2'],
-            event_accumulator.COMPRESSED_HISTOGRAMS: ['cmphst1', 'cmphst2'],
-            event_accumulator.SCALARS: ['sv1', 'sv2']}
+    return {}
 
   def FirstEventTimestamp(self):
     return 0
@@ -73,21 +69,6 @@ class _FakeAccumulator(object):
     if tag_name not in self.Tags()[enum]:
       raise KeyError
     return ['%s/%s' % (self._path, tag_name)]
-
-  def Scalars(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.SCALARS)
-
-  def Histograms(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.HISTOGRAMS)
-
-  def CompressedHistograms(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.COMPRESSED_HISTOGRAMS)
-
-  def Images(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.IMAGES)
-
-  def Audio(self, tag_name):
-    return self._TagHelper(tag_name, event_accumulator.AUDIO)
 
   def Tensors(self, tag_name):
     return self._TagHelper(tag_name, event_accumulator.TENSORS)
@@ -107,9 +88,9 @@ class _FakeAccumulator(object):
 
 def _GetFakeAccumulator(path,
                         size_guidance=None,
-                        compression_bps=None,
+                        tensor_size_guidance=None,
                         purge_orphaned_data=None):
-  del size_guidance, compression_bps, purge_orphaned_data  # Unused.
+  del size_guidance, tensor_size_guidance, purge_orphaned_data  # Unused.
   return _FakeAccumulator(path)
 
 
@@ -145,15 +126,6 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertTrue(x.GetAccumulator('run1').reload_called)
     self.assertTrue(x.GetAccumulator('run2').reload_called)
 
-  def testScalars(self):
-    """Tests Scalars function returns suitable values."""
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
-
-    run1_actual = x.Scalars('run1', 'sv1')
-    run1_expected = ['path1/sv1']
-
-    self.assertEqual(run1_expected, run1_actual)
-
   def testPluginRunToTagToContent(self):
     """Tests the method that produces the run to tag to content mapping."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
@@ -172,7 +144,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     """KeyError should be raised when accessing non-existing keys."""
     x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
     with self.assertRaises(KeyError):
-      x.Scalars('sv1', 'xxx')
+      x.Tensors('sv1', 'xxx')
 
   def testInitialization(self):
     """Tests EventMultiplexer is created properly with its params."""

@@ -30,7 +30,7 @@ from werkzeug import test as werkzeug_test
 # pylint: disable=ungrouped-imports, wrong-import-order
 from google.protobuf  import json_format
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_plugin
