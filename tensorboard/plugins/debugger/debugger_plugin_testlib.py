@@ -120,9 +120,10 @@ class DebuggerPluginTestBase(tf.test.TestCase):
         debugger_server_lib.DebuggerDataServer,
         return_value=self.mock_debugger_data_server)
 
-    tf.test.mock.patch('tensorboard.plugins.debugger.'
-                       'debugger_server_lib.DebuggerDataServer',
-                       self.mock_debugger_data_server_class).start()
+    tf.test.mock.patch.object(
+        debugger_server_lib,
+        'DebuggerDataServer',
+        self.mock_debugger_data_server_class).start()
 
     self.context = base_plugin.TBContext(
         logdir=self.log_dir, multiplexer=self.multiplexer)
