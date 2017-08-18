@@ -61,6 +61,10 @@ tf-op-bar {
   display: block;
   word-wrap: break-word;
 }
+.unavailable {
+  font-style: italic;
+  color: #666;
+}
 </style>
 <template>
   <paper-card id="card" heading="[[item.name]]" elevation="2">
@@ -73,6 +77,12 @@ tf-op-bar {
       <div hidden="[[!item.xla.expression]]">
         <b>Expression: </b>
         <code class="expression">[[item.xla.expression]]</code>
+      </div>
+      <div class="unavailable" hidden="[[!_fused(item)]]">
+        Performance information for individual fused operations is not available.
+      </div>
+      <div class="unavailable" hidden="[[!item.category]]">
+        Select items within this category for performace details.
       </div>
     </div>
   </paper-card>
@@ -90,9 +100,6 @@ Polymer({
       observer: '_updateCard',
     },
   },
-  _bgColor: function(item) {
-    return 'red';
-  },
   _utilization: utilization,
   _updateCard: function(item){
     if (item == null) return;
@@ -102,10 +109,11 @@ Polymer({
   },
   _subheader: function(item) {
     if (!item) return null;
-    if (item.xla) return item.metrics ? "Operation" : "Fused operation";
+    if (item.xla) return item.xla.category + " operation";
     if (item.category) return "Operation category";
     return "Unknown";
   },
+  _fused: function(item){ return item && item.xla && !item.metrics; },
 });
 </script>
 </dom-module>
