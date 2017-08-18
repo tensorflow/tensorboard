@@ -40,7 +40,9 @@ limitations under the License.
   </div>
   <div class="children">
     <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
-      <tf-op-table-entry node="{{item}}" active={{active}}>
+      <tf-op-table-entry node="{{item}}"
+        active="{{active}}"
+        cur-selected="{{curSelected}}">
       </tf-op-table-entry>
     </template>
   </div>
@@ -58,7 +60,11 @@ limitations under the License.
   }
 </style>
 <div id="tf_op_table" class="mdl-cell mdl-cell--8-col mdl-cell--middle">
-  <tf-op-table-entry node="[[rootNode]]" active={{active}}></tf-op-table-entry>
+  <tf-op-table-entry
+    node="[[rootNode]]"
+    active="{{active}}"
+    cur-selected="{{_selected}}">
+  </tf-op-table-entry>
 </div>
 </dom-module>
 
@@ -76,6 +82,13 @@ Polymer({
       type: Object,
       notify: true,
     },
+    curSelected: {
+      type: Object,
+      notify: true,
+    },
+  },
+  _curSelectedChanged: function(selected) {
+    console.log('  cur-selected:', selected);
   },
   _classEntry: function(node) {
     var classes = 'entry';
@@ -101,19 +114,25 @@ Polymer({
     table.querySelectorAll('.entry.selected')
         .forEach(e => e.classList.remove('selected'));
     entry.classList.add('selected');
+    this.curSelected = this.node;
+    this.active = this.node;
   },
   _handleHeaderMouseEnter: function(e) {
     var entry = Polymer.dom(e).rootTarget.closest('.entry');
-    this.active = this.node;
+    if (!this.curSelected) {
+      this.active = this.node;
+    }
   },
   _handleHeaderMouseLeave: function(e) {
-    this.active = null;
+    if (!this.curSelected) {
+      this.active = null;
+    }
   },
   _color: function(item, brightness, opacity) {
     return this._fraccolor(item.metrics.flops / item.metrics.time, brightness,
                            opacity);
-  }
-  , _fraccolor : function(frac, brightness, opacity) {
+  },
+  _fraccolor : function(frac, brightness, opacity) {
     if (brightness === undefined) brightness = 1;
     if (opacity === undefined) opacity = 1;
     var bri_lo = Math.min(brightness, 1);
@@ -147,9 +166,17 @@ Polymer({
       type: Object,
     },
     active: {
-      type: String,
+      type: Object,
       notify: true,
     },
+    _selected : {
+      type: Object,
+      value: null,
+      observer: '_selectedChanged',
+    },
+  },
+  _selectedChanged: function(s) {
+    console.log('selected:', s);
   },
 });
 </script>
