@@ -1,17 +1,71 @@
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="colors.html">
 
+<dom-module id="tf-op-bar">
+<style>
+:host {
+  display: inline-block;
+  height: 1.5em;
+  line-height: 1.5em;
+}
+</style>
+<template>
+&nbsp;[[_percent(value)]]
+</template>
+<script>
+import {flameColor} from '../tf-op-profile/colors.js';
+
+Polymer({
+  is: 'tf-op-bar',
+  properties: {
+    value: {
+      type: Number,
+      notify: true,
+      observer: '_updateValue',
+    },
+  },
+  _percent: function(fraction) {
+    return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
+      (fraction * 100).toPrecision(2) + "%";
+  },
+  _updateValue: function(value) {
+    var pos = this._percent(value);
+    var color = flameColor(value);
+    this.style.background = "linear-gradient(to right, " + color + " " + pos +
+        ", #ccc " + pos + ")";
+  },
+});
+</script>
+</dom-module>
+
 <dom-module id="tf-op-details">
 <style>
 paper-card {
   --paper-card-header-color: white;
   width: 100%;
 }
+tf-op-bar {
+  width: 100%;
+}
+.card-content > div {
+  margin-bottom: 1em;
+}
+.expression {
+  display: block;
+  word-wrap: break-word;
+}
 </style>
 <template>
   <paper-card id="card" heading="[[item.name]]" elevation="2">
     <div class="card-content">
-      <code hidden="[[!item.xla]]">[[item.xla.expression]]</code>
+      <div hidden="[[!item.metrics]]">
+        <b>FLOPS utilization: </b>
+        <tf-op-bar value="[[_utilization(item)]]"></tf-op-bar>
+      </div>
+      <div hidden="[[!item.xla.expression]]">
+        <b>Expression: </b>
+        <code class="expression">[[item.xla.expression]]</code>
+      </div>
     </div>
   </paper-card>
 </template>
