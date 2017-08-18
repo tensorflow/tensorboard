@@ -135,7 +135,7 @@ def op(
     fp_buckets = tf.reduce_sum(
         tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
         axis=0)
-    
+
     # Set up the cumulative sums to compute the actual metrics.
     tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
     fp = tf.cumsum(fp_buckets, reverse=True, name='fp')

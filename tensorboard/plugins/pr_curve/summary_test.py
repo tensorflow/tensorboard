@@ -23,15 +23,15 @@ import numpy as np
 import tensorflow as tf
 
 from google.protobuf import json_format
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins.pr_curve import plugin_data_pb2
 from tensorboard.plugins.pr_curve import pr_curve_demo
 
 
 class PrCurveTest(tf.test.TestCase):
 
-  def setUp(self, *args, **kwargs):
-    super(PrCurveTest, self).setUp(*args, **kwargs)
+  def setUp(self):
+    super(PrCurveTest, self).setUp()
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 
@@ -188,12 +188,12 @@ class PrCurveTest(tf.test.TestCase):
     # narrowest standard deviation.
     tensor_events = accumulator.Tensors('red/pr_curves')
     self.validateTensorEvent(0, [
-      [50.0, 22.0, 4.0, 0.0, 0.0],  # True positives.
-      [175.0, 22.0, 6.0, 1.0, 0.0],  # False positives.
-      [0.0, 153.0, 169.0, 174.0, 175.0],  # True negatives.
-      [0.0, 28.0, 46.0, 50.0, 50.0],  # False negatives.
-      [0.2222222, 0.5, 0.4, 1e-07, 1.0],  # Precision.
-      [1.0, 0.44, 0.08, 0.0, 0.0],  # Recall.
+        [50.0, 22.0, 4.0, 0.0, 0.0],  # True positives.
+        [175.0, 22.0, 6.0, 1.0, 0.0],  # False positives.
+        [0.0, 153.0, 169.0, 174.0, 175.0],  # True negatives.
+        [0.0, 28.0, 46.0, 50.0, 50.0],  # False negatives.
+        [0.2222222, 0.5, 0.4, 1e-07, 1.0],  # Precision.
+        [1.0, 0.44, 0.08, 0.0, 0.0],  # Recall.
     ], tensor_events[0])
 
     self.validateTensorEvent(1, [
@@ -206,42 +206,42 @@ class PrCurveTest(tf.test.TestCase):
     ], tensor_events[1])
 
     self.validateTensorEvent(2, [
-      [50.0, 18.0, 6.0, 1.0, 0.0],  # True positives.
-      [175.0, 27.0, 6.0, 0.0, 0.0],  # False positives.
-      [0.0, 148.0, 169.0, 175.0, 175.0],  # True negatives.
-      [0.0, 32.0, 44.0, 49.0, 50.0],  # False negatives.
-      [0.2222222, 0.4, 0.5, 1.0, 1.0],  # Precision.
-      [1.0, 0.36, 0.12, 0.02, 0.0],  # Recall.
+        [50.0, 18.0, 6.0, 1.0, 0.0],  # True positives.
+        [175.0, 27.0, 6.0, 0.0, 0.0],  # False positives.
+        [0.0, 148.0, 169.0, 175.0, 175.0],  # True negatives.
+        [0.0, 32.0, 44.0, 49.0, 50.0],  # False negatives.
+        [0.2222222, 0.4, 0.5, 1.0, 1.0],  # Precision.
+        [1.0, 0.36, 0.12, 0.02, 0.0],  # Recall.
     ], tensor_events[2])
 
     # Test the output for the green classifier.
     tensor_events = accumulator.Tensors('green/pr_curves')
 
     self.validateTensorEvent(0, [
-      [100.0, 71.0, 24.0, 2.0, 0.0],  # True positives.
-      [125.0, 51.0, 5.0, 2.0, 0.0],  # False positives.
-      [0.0, 74.0, 120.0, 123.0, 125.0],  # True negatives.
-      [0.0, 29.0, 76.0, 98.0, 100.0],  # False negatives.
-      [0.4444444, 0.5819672, 0.8275862, 0.5, 1.0],  # Precision.
-      [1.0, 0.71, 0.24, 0.02, 0.0],  # Recall.
+        [100.0, 71.0, 24.0, 2.0, 0.0],  # True positives.
+        [125.0, 51.0, 5.0, 2.0, 0.0],  # False positives.
+        [0.0, 74.0, 120.0, 123.0, 125.0],  # True negatives.
+        [0.0, 29.0, 76.0, 98.0, 100.0],  # False negatives.
+        [0.4444444, 0.5819672, 0.8275862, 0.5, 1.0],  # Precision.
+        [1.0, 0.71, 0.24, 0.02, 0.0],  # Recall.
     ], tensor_events[0])
 
     self.validateTensorEvent(1, [
-      [100.0, 63.0, 20.0, 5.0, 0.0],  # True positives.
-      [125.0, 42.0, 7.0, 1.0, 0.0],  # False positives.
-      [0.0, 83.0, 118.0, 124.0, 125.0],  # True negatives.
-      [0.0, 37.0, 80.0, 95.0, 100.0],  # False negatives.
-      [0.4444444, 0.6, 0.7407407, 0.8333333, 1.0],  # Precision.
-      [1.0, 0.63, 0.2, 0.05, 0.0],  # Recall.
+        [100.0, 63.0, 20.0, 5.0, 0.0],  # True positives.
+        [125.0, 42.0, 7.0, 1.0, 0.0],  # False positives.
+        [0.0, 83.0, 118.0, 124.0, 125.0],  # True negatives.
+        [0.0, 37.0, 80.0, 95.0, 100.0],  # False negatives.
+        [0.4444444, 0.6, 0.7407407, 0.8333333, 1.0],  # Precision.
+        [1.0, 0.63, 0.2, 0.05, 0.0],  # Recall.
     ], tensor_events[1])
 
     self.validateTensorEvent(2, [
-      [100.0, 58.0, 19.0, 2.0, 0.0],  # True positives.
-      [125.0, 40.0, 7.0, 0.0, 0.0],  # False positives.
-      [0.0, 85.0, 118.0, 125.0, 125.0],  # True negatives.
-      [0.0, 42.0, 81.0, 98.0, 100.0],  # False negatives.
-      [0.4444444, 0.5918368, 0.7307692, 1.0, 1.0],  # Precision.
-      [1.0, 0.58, 0.19, 0.02, 0.0],  # Recall.
+        [100.0, 58.0, 19.0, 2.0, 0.0],  # True positives.
+        [125.0, 40.0, 7.0, 0.0, 0.0],  # False positives.
+        [0.0, 85.0, 118.0, 125.0, 125.0],  # True negatives.
+        [0.0, 42.0, 81.0, 98.0, 100.0],  # False negatives.
+        [0.4444444, 0.5918368, 0.7307692, 1.0, 1.0],  # Precision.
+        [1.0, 0.58, 0.19, 0.02, 0.0],  # Recall.
     ], tensor_events[2])
 
     # Test the output for the blue classifier. The normal distribution that is
