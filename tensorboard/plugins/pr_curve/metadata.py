@@ -53,4 +53,3 @@ def create_summary_metadata(display_name, description, num_thresholds):
       summary_description=description,
       plugin_data=tf.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
                                                 content=content))
-  
