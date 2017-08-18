@@ -70,8 +70,8 @@ profile run can have multiple tools that present the performance profile as diff
     </div>
   </div>
   <div class="center">
-    <!-- TODO(sammccall): dom-if doesn't suppress behavior, tool selection is buggy -->
-    <template is="dom-if" if="[[_eq(_currentTool, 'trace_viewer')]]">
+    <!-- TODO(sammccall): tool selection is buggy -->
+    <template is="dom-if" if="[[_eq(_currentTool, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"
         height="100%"
@@ -79,7 +79,7 @@ profile run can have multiple tools that present the performance profile as diff
         src="[[_traceDataUrl]]">
       </iframe>
     </template>
-    <template is="dom-if" if="[[_eq(_currentTool, 'op_profile')]]">
+    <template is="dom-if" if="[[_eq(_currentTool, 'op_profile')]]" restamp="true">
       <tf-op-profile run="[[_run(_datasets, selectedDataset)]]">
       </tf-op-profile>
     </template>
