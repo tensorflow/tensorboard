@@ -150,7 +150,7 @@ def start_runs(
     description = ('The probabilities used to create this PR curve are '
                    'generated from a normal distribution. Its standard '
                    'deviation is initially %0.0f and decreases over time.' %
-                  initial_standard_deviations[i])
+                   initial_standard_deviations[i])
 
     weights = None
     if mask_every_other_prediction:
