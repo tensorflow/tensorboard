@@ -130,9 +130,6 @@ Polymer({
       type: Number,
     }
   },
-  _curSelectedChanged: function(selected) {
-    console.log('  cur-selected:', selected);
-  },
   _classEntry: function(node, level) {
     var classes = 'entry';
     if (node.children.length > 0) {
@@ -224,11 +221,7 @@ Polymer({
     _selected : {
       type: Object,
       value: null,
-      observer: '_selectedChanged',
     },
-  },
-  _selectedChanged: function(s) {
-    console.log('selected:', s);
   },
 });
 </script>
