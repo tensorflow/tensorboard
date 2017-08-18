@@ -79,14 +79,6 @@ py_library(
 )
 
 py_library(
-    name = "expect_portpicker_installed",
-    # This is a dummy rule used as a portpicker dependency in open-source.
-    # We expect portpicker to already be installed on the system, e.g. via
-    # `pip install portpicker`
-    visibility = ["//visibility:public"],
-)
-
-py_library(
     name = "expect_sqlite3_installed",
     # This is a dummy rule used as a sqlite3 dependency in open-source.
     # We expect sqlite3 to already be present, as it is part of the standard
