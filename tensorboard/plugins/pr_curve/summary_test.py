@@ -26,7 +26,7 @@ import numpy as np
 import tensorflow as tf
 
 from google.protobuf import json_format
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins.pr_curve import plugin_data_pb2
 from tensorboard.plugins.pr_curve import pr_curve_demo
 from tensorboard.plugins.pr_curve import summary
@@ -53,7 +53,7 @@ class PrCurveTest(tf.test.TestCase):
 
   def validateTensorEvent(self, expected_step, expected_value, tensor_event):
     """Checks that the values stored within a tensor are correct.
-    
+
     Args:
       expected_step: The expected step.
       tensor_event: A TensorEvent named tuple.
@@ -208,7 +208,7 @@ class PrCurveTest(tf.test.TestCase):
       [0.2222222, 0.3777778, 0.8333333, 1.0, 1.0],  # Precision.
       [1.0, 0.34, 0.1, 0.02, 0.0],  # Recall.
     ], tensor_events[1])
-    
+
     self.validateTensorEvent(2, [
       [50.0, 18.0, 6.0, 1.0, 0.0],  # True positives.
       [175.0, 27.0, 6.0, 0.0, 0.0],  # False positives.
@@ -229,7 +229,7 @@ class PrCurveTest(tf.test.TestCase):
       [0.4444444, 0.5819672, 0.8275862, 0.5, 1.0],  # Precision.
       [1.0, 0.71, 0.24, 0.02, 0.0],  # Recall.
     ], tensor_events[0])
-    
+
     self.validateTensorEvent(1, [
       [100.0, 63.0, 20.0, 5.0, 0.0],  # True positives.
       [125.0, 42.0, 7.0, 1.0, 0.0],  # False positives.
@@ -260,7 +260,7 @@ class PrCurveTest(tf.test.TestCase):
       [0.3333333, 0.3786982, 0.5384616, 1.0, 1.0],  # Precision.
       [1.0, 0.8533334, 0.28, 0.0666667, 0.0],  # Recall.
     ], tensor_events[0])
-    
+
     self.validateTensorEvent(1, [
       [75.0, 62.0, 21.0, 1.0, 0.0],  # True positives.
       [150.0, 99.0, 21.0, 3.0, 0.0],  # False positives.
@@ -269,7 +269,7 @@ class PrCurveTest(tf.test.TestCase):
       [0.3333333, 0.3850932, 0.5, 0.25, 1.0],  # Precision.
       [1.0, 0.8266667, 0.28, 0.0133333, 0.0],  # Recall.
     ], tensor_events[1])
-    
+
     self.validateTensorEvent(2, [
       [75.0, 61.0, 16.0, 2.0, 0.0],  # True positives.
       [150.0, 92.0, 20.0, 1.0, 0.0],  # False positives.

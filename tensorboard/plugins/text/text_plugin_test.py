@@ -27,7 +27,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard import plugin_util
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import text_plugin
 

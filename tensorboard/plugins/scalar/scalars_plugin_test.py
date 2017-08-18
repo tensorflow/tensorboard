@@ -27,8 +27,8 @@ from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import event_accumulator
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.scalar import summary

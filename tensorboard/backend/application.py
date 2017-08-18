@@ -37,8 +37,8 @@ from werkzeug import wrappers
 
 from tensorboard import db
 from tensorboard.backend import http_util
-from tensorboard.backend.event_processing import event_accumulator
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.core import core_plugin
