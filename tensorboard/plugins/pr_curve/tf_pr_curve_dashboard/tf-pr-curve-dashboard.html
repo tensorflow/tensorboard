@@ -33,12 +33,12 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
-        <template is="dom-if" if="[[_runToSteps]]">
-          <div class="sidebar-section">
+        <template is="dom-if" if="[[_runToAvailableSteps]]">
+          <div class="sidebar-section" id="steps-selector-container">
             <tf-pr-curve-steps-selector
                   runs="[[_relevantSelectedRuns]]"
                   run-to-step="{{_runToStep}}"
-                  run-to-available-steps="[[_runToSteps]]"></tf-pr-curve-steps-selector>
+                  run-to-available-steps="[[_runToAvailableSteps]]"></tf-pr-curve-steps-selector>
           </div>
         </template>
         <div class="sidebar-section">
@@ -126,11 +126,16 @@ limitations under the License.
       .run-step-combo .run-text {
         margin: 10px 0 0 0;
       }
+
+      /** Not not let the steps selector occlude the run selector. */
+      #steps-selector-container {
+        max-height: 50%;
+        overflow-y: auto;
+      }
     </style>
   </template>
 
   <script>
-  "use strict";
   import {RequestManager} from '../tf-backend/requestManager.js';
   import {getTags} from '../tf-backend/backend.js';
   import {getRouter} from '../tf-backend/router.js';
@@ -143,7 +148,7 @@ limitations under the License.
       _selectedRuns: Array,
       _runToTag: Object,  // map<run: string, tags: string[]>
       // The steps that the step slider for each run should use.
-      _runToSteps: {
+      _runToAvailableSteps: {
         type: Object, // map<run: string, steps: number[]>
         value: {},
       },
@@ -202,7 +207,7 @@ limitations under the License.
     _fetchStepsPerRun() {
       const url = getRouter().pluginRoute('pr_curves', '/available_steps');
       return this._requestManager.request(url).then(stepsPerRun => {
-        this.set('_runToSteps', stepsPerRun);
+        this.set('_runToAvailableSteps', stepsPerRun);
 
         const listOfRuns = _.keys(stepsPerRun).sort();
         if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
