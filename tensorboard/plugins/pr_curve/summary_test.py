@@ -196,7 +196,7 @@ class PrCurveTest(tf.test.TestCase):
         [1.0, 0.44, 0.08, 0.0, 0.0],  # Recall.
     ], tensor_events[0])
 
-   self.validateTensorEvent(1, [
+    self.validateTensorEvent(1, [
         [50.0, 17.0, 5.0, 1.0, 0.0],  # True positives.
         [175.0, 28.0, 1.0, 0.0, 0.0],  # False positives.
         [0.0, 147.0, 174.0, 175.0, 175.0],  # True negatives.
