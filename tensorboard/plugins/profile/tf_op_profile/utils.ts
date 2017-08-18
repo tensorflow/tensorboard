@@ -10,3 +10,13 @@ export function flameColor(fraction: number, brightness = 1, opacity = 1) {
     rgba(brightness, 2 * fraction * brightness, 0, opacity) :
     rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
 }
+
+export function utilization(item) {
+  if (!item || !item.metrics) return 0/0;
+  return item.metrics.flops / item.metrics.time;
+}
+
+export function percent(fraction: number) {
+  return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
+    (fraction * 100).toPrecision(2) + "%";
+}

@@ -1,5 +1,5 @@
 <link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="colors.html">
+<link rel="import" href="utils.html">
 
 <!--
   tf-op-bar shows a small % utilization bar, colored using flameColor.
@@ -16,7 +16,7 @@
 &nbsp;[[_percent(value)]]
 </template>
 <script>
-import {flameColor} from '../tf-op-profile/colors.js';
+import {flameColor, percent} from './utils.js';
 
 Polymer({
   is: 'tf-op-bar',
@@ -27,15 +27,10 @@ Polymer({
       observer: '_updateValue',
     },
   },
-  _percent: function(fraction) {
-    return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
-      (fraction * 100).toPrecision(2) + "%";
-  },
+  _percent: percent,
   _updateValue: function(value) {
-    var pos = this._percent(value);
-    var color = flameColor(value);
-    this.style.background = "linear-gradient(to right, " + color + " " + pos +
-        ", #ccc " + pos + ")";
+    this.style.background = "linear-gradient(to right, " + flameColor(value) +
+        " " + percent(value) + ", #ccc " + percent(value) + ")";
   },
 });
 </script>
@@ -77,7 +72,7 @@ tf-op-bar {
 </template>
 
 <script>
-import {flameColor} from '../tf-op-profile/colors.js';
+import {flameColor, utilization} from './utils.js';
 
 Polymer({
   is: 'tf-op-details',
@@ -91,13 +86,10 @@ Polymer({
   _bgColor: function(item) {
     return 'red';
   },
-  _utilization: function(item) {
-    if (!item) return 0/0;
-    return item.metrics.flops / item.metrics.time;
-  },
+  _utilization: utilization,
   _updateCard: function(item){
     if (item == null) return;
-    var color = flameColor(this._utilization(item), 0.7);
+    var color = flameColor(utilization(item), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
   },
 });

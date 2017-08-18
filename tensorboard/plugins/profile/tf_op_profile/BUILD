@@ -10,9 +10,9 @@ ts_web_library(
     path = "/tf-op-profile",
     visibility = ["//visibility:public"],
     deps = [
-        ":colors",
         ":tf_op_details",
         ":tf_op_table",
+        ":utils",
     ],
 )
 
@@ -21,7 +21,7 @@ ts_web_library(
     srcs = ["tf-op-details.html"],
     path = "/tf-op-profile",
     deps = [
-        ":colors",
+        ":utils",
         "@org_polymer_paper_card",
     ],
 )
@@ -31,15 +31,15 @@ ts_web_library(
     srcs = ["tf-op-table.html"],
     path = "/tf-op-profile",
     deps = [
-        ":colors",
+        ":utils",
     ],
 )
 
 ts_web_library(
-    name = "colors",
+    name = "utils",
     srcs = [
-        "colors.html",
-        "colors.ts",
+        "utils.html",
+        "utils.ts",
     ],
     path = "/tf-op-profile",
 )

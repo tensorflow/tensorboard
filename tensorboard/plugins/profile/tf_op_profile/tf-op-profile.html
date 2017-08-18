@@ -1,6 +1,6 @@
 <link rel="import" href="tf-op-table.html">
 <link rel="import" href="tf-op-details.html">
-<link rel="import" href="colors.html">
+<link rel="import" href="utils.html">
 
 <!--
   tf-op-profile is a view within the tf-profile-dashboard.
@@ -32,21 +32,21 @@ tf-op-details {
   efficiency of CPU operations may help reach the TPU's FLOPS potential.</p>
   <h4>The most time was spent in a <b>[[_costlyOp.category]] operation</b>
     ([[_percent(_costlyOp.value)]])</h4>
-  <p hidden$="[[hasFlops(_costlyOp.op)]]">
+  <p hidden$="[[_hasFlops(_costlyOp.op)]]">
     [[_costlyOp.op.name]] is
     <span style$="color:[[_textColor(_costlyOp.op)]];">overhead</span>,
     and a good target for optimization.
   </p>
   <!-- extra div to avoid HTML parsing bugs in polymer/vulcanize -->
-  <div hidden$="[[!hasFlops(_costlyOp.op)]]">
+  <div hidden$="[[!_hasFlops(_costlyOp.op)]]">
   <p>
     While active, [[_costlyOp.op.name]] uses
     <span style="color:[[_textColor(_costlyOp.op)]]">[[_utilizationPercent(_costlyOp.op)]]</span>
     of the computational potential of the chip.
-    <span hidden$="[[goodFlops(_costlyOp.op)]]">
+    <span hidden$="[[_goodFlops(_costlyOp.op)]]">
       This is a good target for optimization.
     </span>
-    <span hidden$="[[!goodFlops(_costlyOp.op)]]">
+    <span hidden$="[[!_goodFlops(_costlyOp.op)]]">
       This is pretty good - other operations may be better targets for optimization.
     </span>
   </p>
@@ -58,13 +58,14 @@ tf-op-details {
 <script>
 import {RequestManager} from '../tf-backend/requestManager.js';
 import {getRouter} from '../tf-backend/router.js';
-import {flameColor} from '../tf-op-profile/colors.js';
+import {flameColor, utilization, percent} from './utils.js';
 
 Polymer({
   is: 'tf-op-profile',
   properties: {
     _requestManager: {
       type: Object,
+      readOnly: true,
       value: () => new RequestManager(),
     },
     _data: {
@@ -88,7 +89,6 @@ Polymer({
     },
     run: {
       type: String,
-      notify: true,
       observer: '_runChanged'
     },
     _costlyOp: {
@@ -105,20 +105,9 @@ Polymer({
       this._data = data;
     });
   },
-  _getRoot: function(data, breakdown) {
-    return data[breakdown];
-  },
-  _utilization: function(item) {
-    if (!item.metrics) return 0/0;
-    return item.metrics.flops / item.metrics.time;
-  },
-  _utilizationPercent: function(item) {
-    return this._percent(this._utilization(item));
-  },
-  _percent: function(fraction) {
-    return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
-      (fraction * 100).toPrecision(2) + "%";
-  },
+  _getRoot: function(data, breakdown) { return data[breakdown]; },
+  _percent: percent,
+  _utilizationPercent: function(item) { return percent(utilization(item)); },
   _worstOp: function(data, metric) {
     var worst = null, worstValue = -Infinity, worstCategory = undefined;
     var category = [];
@@ -136,11 +125,9 @@ Polymer({
     console.log("Worst op is ", worst, worstCategory, worstValue);
     return {op: worst, category: worstCategory, value: worstValue};
   },
-  hasFlops: function(item) { return item.metrics.flops > 0; },
-  goodFlops: function(item) { return this._utilization(item) > 0.4; },
-  _textColor: function(item) {
-    return flameColor(this._utilization(item), 0.7);
-  },
+  _hasFlops: function(item) { return item.metrics.flops > 0; },
+  _goodFlops: function(item) { return utilization(item) > 0.4; },
+  _textColor: function(item) { return flameColor(utilization(item), 0.7); },
 });
 </script>
 </dom-module>

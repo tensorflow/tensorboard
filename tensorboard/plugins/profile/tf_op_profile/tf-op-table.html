@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="colors.html">
+<link rel="import" href="utils.html">
 
 <!--
   tf-op-table-entry is a row in a tf-op-table.
@@ -125,7 +125,7 @@ limitations under the License.
 </dom-module>
 
 <script>
-import {flameColor} from '../tf-op-profile/colors.js';
+import {flameColor, percent, utilization} from './utils.js';
 
 Polymer({
   is: 'tf-op-table-entry',
@@ -161,8 +161,8 @@ Polymer({
   },
   _styleBar: function(node) {
     var style = '';
-    style += 'width: ' + this._percent(node.metrics.time) + '; ';
-    style += 'background-color: ' + this._color(node, 1, 0.2) + '; ';
+    style += 'width: ' + percent(node.metrics.time) + '; ';
+    style += 'background-color: ' + flameColor(utilization(node), 1, 0.2) + ';';
     return style;
   },
   _paddingDisclosure: function(level) {
@@ -189,15 +189,7 @@ Polymer({
       this.active = null;
     }
   },
-  _color: function(item, brightness, opacity) {
-    return flameColor(item.metrics.flops / item.metrics.time, brightness,
-                      opacity);
-  },
-  _percent: function(x) {
-    return x >= 0.995
-               ? "100%"
-               : x < 0.00001 ? "0.0000%" : (x * 100).toPrecision(2) + "%";
-  },
+  _percent: percent,
 });
 
 Polymer({
