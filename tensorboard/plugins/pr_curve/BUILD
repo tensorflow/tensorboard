@@ -68,7 +68,6 @@ py_test(
     deps = [
         ":protos_all_py_pb2",
         ":pr_curve_demo",
-        ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",

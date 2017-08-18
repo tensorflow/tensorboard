@@ -111,7 +111,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
         'mask_every_other_prediction': [0, 1, 2],
     }, self.plugin.available_steps_impl())
 
-  def testPrCurves(self):
+  def testPrCurvesDataCorrect(self):
     """Tests that responses for PR curves for run-tag combos are correct."""
     pr_curves_response = self.plugin.pr_curves_impl(
         ['colors', 'mask_every_other_prediction'], 'blue/pr_curves')
@@ -159,6 +159,18 @@ class PrCurvesPluginTest(tf.test.TestCase):
         expected_precision=[0.3333333, 0.3986928, 0.4444444, 0.6666667, 1.0],
         expected_recall=[1.0, 0.8133333, 0.2133333, 0.0266666, 0.0],
         pr_curve_entry=entries[2])
+
+  def testPrCurvesRaisesValueErrorWhenNoData(self):
+    """Tests that the method for obtaining PR curve data raises a ValueError.
+
+    The handler should raise a ValueError when no PR curve data can be found
+    for a certain run-tag combination.
+    """
+    with self.assertRaises(ValueError):
+      self.plugin.pr_curves_impl(['colors'], 'non_existent_tag')
+
+    with self.assertRaises(ValueError):
+      self.plugin.pr_curves_impl(['non_existent_run'], 'blue/pr_curves')
 
   def testPluginIsNotActive(self):
     """Tests that the plugin is inactive when no relevant data exists."""

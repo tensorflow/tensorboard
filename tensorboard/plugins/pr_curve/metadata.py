@@ -46,7 +46,7 @@ def create_summary_metadata(display_name, description, num_thresholds):
     A `tf.SummaryMetadata` protobuf object.
   """
   pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
-        version=PROTO_VERSION, num_thresholds=num_thresholds)
+      version=PROTO_VERSION, num_thresholds=num_thresholds)
   content = json_format.MessageToJson(pr_curve_plugin_data)
   return tf.SummaryMetadata(
       display_name=display_name,

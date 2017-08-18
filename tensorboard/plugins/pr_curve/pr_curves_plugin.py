@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import numpy as np
 import six
 from werkzeug import wrappers
 
@@ -59,8 +58,13 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       return http_util.Respond(
           request, 'No tag provided when fetching PR curve data', 400)
 
-    return http_util.Respond(
-        request, self.pr_curves_impl(runs, tag), 'application/json')
+    try:
+      response = http_util.Respond(
+          request, self.pr_curves_impl(runs, tag), 'application/json')
+    except ValueError as e:
+      return http_util.Respond(request, '%s' % e, 'text/plain', 400)
+
+    return response
 
   def pr_curves_impl(self, runs, tag):
     """Creates the JSON object for the PR curves response for a run-tag combo.
@@ -68,7 +72,10 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Arguments:
       runs: A list of runs to fetch the curves for.
       tag: The tag to fetch the curves for.
-    
+
+    Raises:
+      ValueError: If no PR curves could be fetched for a run and tag.
+
     Returns:
       The JSON object for the PR curves route response.
     """
@@ -77,12 +84,9 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       try:
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
-        return http_util.Respond(
-            request,
-            'No PR curves could be fetched for run %r and tag %r' % (run, tag),
-            'text/plain',
-            400)
-      
+        raise ValueError(
+            'No PR curves could be fetched for run %r and tag %r' % (run, tag))
+
       response_mapping[run] = [
           self._process_tensor_event(e) for e in tensor_events]
     return response_mapping
@@ -100,7 +104,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
   def tags_impl(self):
     """Creates the JSON object for the tags route response.
-    
+
     Returns:
       The JSON object for the tags route response.
     """
@@ -108,7 +112,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         PrCurvesPlugin.plugin_name)
     return {
         run: list(tag_to_content.keys())
-             for (run, tag_to_content) in all_runs.items()
+        for (run, tag_to_content) in all_runs.items()
     }
 
   @wrappers.Request.application
@@ -125,7 +129,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
   def available_steps_impl(self):
     """Creates the JSON object for the available steps route response.
-    
+
     Returns:
       The JSON object for the available steps route response.
     """
@@ -166,7 +170,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     """Determines whether this plugin is active.
 
     This plugin is active only if PR curve summary data is read by TensorBoard.
-    
+
     Returns:
       Whether this plugin is active.
     """
@@ -181,7 +185,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
   def _process_tensor_event(self, event):
     """Converts a TensorEvent into an dict that encapsulates information on it.
-    
+
     Args:
       event: The TensorEvent to convert.
     """
