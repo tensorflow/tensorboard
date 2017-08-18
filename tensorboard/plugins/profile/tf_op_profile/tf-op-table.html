@@ -18,29 +18,71 @@ limitations under the License.
 <dom-module id="tf-op-table-entry">
 <template>
 <style>
-.entry {
-  background-color: rgba(0,0,0,0.04);
-}
 .entry:not(.expanded) > .children {
   display: none;
 }
-.parent {
-  background-color: rgba(1,1,0,0.04);
+.header {
+  padding: 0.5em;
+  position: relative;
+  box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.06);
+  z-index: 0;
+}
+.bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: -1;
+}
+.time {
+  display: inline-block;
+  width: 6em;
+}
+.name {
+  display: inline-block;
+  font-family: monospace;
+  min-width: 40%;
+}
+.entry.toplevel > .header {
+  display: none;
+}
+.entry.selected > .header {
+  background-color: rgba(0,0,0,0.04);
+  font-weight: bold;
+}
+.entry .header:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+.entry > .header > .disclosure:before {
+  display: inline-block;
+  width: 1.2em;
+  content: ' ';
+}
+.entry.parent > .header > .disclosure:before {
+  content: '\25b6';
+}
+.entry.parent.expanded > .header > .disclosure:before {
+  content: '\25bc';
+}
+.entry.parent.expanded:not(.selected) > .header .name {
+  opacity: 0.6;
 }
 </style>
-<div class$="{{_classEntry(node)}}">
+<div class$="{{_classEntry(node, level)}}">
   <div class="header"
        on-click="_handleHeaderClick"
        on-mouseenter="_handleHeaderMouseEnter"
        on-mouseleave="_handleHeaderMouseLeave">
     <div class="bar" style$="{{_styleBar(node)}}"></div>
     <span class="time">{{_percent(node.metrics.time)}}</span>
-    <span class="disclosure"></span>
+    <span class="disclosure" style="{{_paddingDisclosure(level)}}"></span>
     <span class="name">{{node.name}}</span>
   </div>
   <div class="children">
     <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
-      <tf-op-table-entry node="{{item}}"
+      <tf-op-table-entry
+        node="[[item]]"
+        level={{level}}+1
         active="{{active}}"
         cur-selected="{{curSelected}}">
       </tf-op-table-entry>
@@ -52,16 +94,14 @@ limitations under the License.
 <dom-module id="tf-op-table">
 <template>
 <style>
-  #table {
+  #tf_op_table {
     background-color: white;
-  }
-  body {
-    background-color: #f8f8f8;
   }
 </style>
 <div id="tf_op_table" class="mdl-cell mdl-cell--8-col mdl-cell--middle">
   <tf-op-table-entry
     node="[[rootNode]]"
+    level=0
     active="{{active}}"
     cur-selected="{{_selected}}">
   </tf-op-table-entry>
@@ -86,16 +126,25 @@ Polymer({
       type: Object,
       notify: true,
     },
+    level: {
+      type: Number,
+    }
   },
   _curSelectedChanged: function(selected) {
     console.log('  cur-selected:', selected);
   },
-  _classEntry: function(node) {
+  _classEntry: function(node, level) {
     var classes = 'entry';
-    if (node.children) {
+    if (node.children.length > 0) {
       classes += ' parent';
     }
+    if (level == 0) {
+      classes += ' toplevel expanded';
+    }
     return classes;
+  },
+  _nextLevel: function(level) {
+    return level+1;
   },
   _sortEntry: function(node1, node2) {
     if (node1.metrics.time == node2.metrics.time) return 0;
@@ -106,6 +155,9 @@ Polymer({
     style += 'width: ' + this._percent(node.metrics.time) + '; ';
     style += 'background-color: ' + this._color(node, 1, 0.2) + '; ';
     return style;
+  },
+  _paddingDisclosure: function(level) {
+    return 'padding-left: ' + level + 'em';
   },
   _handleHeaderClick: function(e) {
     var entry = Polymer.dom(e).rootTarget.closest('.entry');
