@@ -50,8 +50,28 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       cannot be found or that lack tags will be excluded from the response.
     """
     runs = request.args.getlist('run')
-    tag = request.args.get('tag')
+    if not runs:
+      return http_util.Respond(
+          request, 'No runs provided when fetching PR curve data', 400)
 
+    tag = request.args.get('tag')
+    if not tag:
+      return http_util.Respond(
+          request, 'No tag provided when fetching PR curve data', 400)
+
+    return http_util.Respond(
+        request, self.pr_curves_impl(runs, tag), 'application/json')
+
+  def pr_curves_impl(self, runs, tag):
+    """Creates the JSON object for the PR curves response for a run-tag combo.
+
+    Arguments:
+      runs: A list of runs to fetch the curves for.
+      tag: The tag to fetch the curves for.
+    
+    Returns:
+      The JSON object for the PR curves route response.
+    """
     response_mapping = {}
     for run in runs:
       try:
@@ -65,9 +85,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       
       response_mapping[run] = [
           self._process_tensor_event(e) for e in tensor_events]
-
-    # We convert the tensor data into a JSON-able response.
-    return http_util.Respond(request, response_mapping, 'application/json')
+    return response_mapping
 
   @wrappers.Request.application
   def tags_route(self, request):
@@ -77,13 +95,21 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       are all the runs. Each run is mapped to a (potentially empty)
       list of all tags that are relevant to this plugin.
     """
+    return http_util.Respond(
+        request, self.tags_route_impl(), 'application/json')
+
+  def tags_impl(self):
+    """Creates the JSON object for the tags route response.
+    
+    Returns:
+      The JSON object for the tags route response.
+    """
     all_runs = self._multiplexer.PluginRunToTagToContent(
         PrCurvesPlugin.plugin_name)
-    response = {
+    return {
         run: list(tag_to_content.keys())
              for (run, tag_to_content) in all_runs.items()
     }
-    return http_util.Respond(request, response, 'application/json')
 
   @wrappers.Request.application
   def available_steps_route(self, request):
@@ -93,6 +119,15 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       A dict with string keys (all runs with PR curve data). The values of the
       dict are lists of step values (ints) that should be used for the slider
       for that run.
+    """
+    return http_util.Respond(
+        request, self.available_steps_impl(), 'application/json')
+
+  def available_steps_impl(self):
+    """Creates the JSON object for the available steps route response.
+    
+    Returns:
+      The JSON object for the available steps route response.
     """
     all_runs = self._multiplexer.PluginRunToTagToContent(
         PrCurvesPlugin.plugin_name)
@@ -113,7 +148,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       tensor_events = self._multiplexer.Tensors(
           run, list(tag_to_content.keys())[0])
       response[run] = [e.step for e in tensor_events]
-    return http_util.Respond(request, response, 'application/json')
+    return response
 
   def get_plugin_apps(self):
     """Gets all routes offered by the plugin.

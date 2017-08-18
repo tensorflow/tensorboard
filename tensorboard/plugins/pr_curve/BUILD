@@ -32,6 +32,22 @@ py_library(
     ],
 )
 
+py_test(
+    name = "pr_curves_plugin_test",
+    size = "small",
+    srcs = ["pr_curves_plugin_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":pr_curves_plugin",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],
