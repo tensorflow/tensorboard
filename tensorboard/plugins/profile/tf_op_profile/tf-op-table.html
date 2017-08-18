@@ -17,6 +17,14 @@ limitations under the License.
 
 <link rel="import" href="colors.html">
 
+<!--
+  tf-op-table-entry is a row in a tf-op-table.
+  It describes an op, or group of ops (the node property).
+  Its background contains a bar, whose size shows the time taken, and whose
+  color shows the op's utilization.
+  If the node has children, the tf-op-table-entry has child entries, and can be
+  expanded/collapsed.
+-->
 <dom-module id="tf-op-table-entry">
 <template>
 <style>
@@ -95,6 +103,10 @@ limitations under the License.
 </div>
 </dom-module>
 
+<!--
+  A tf-op-table shows a hierarchical profile using a tree of tf-op-table-entrys.
+  One entry at a time can be made active (by clicking on it).
+-->
 <dom-module id="tf-op-table">
 <template>
 <style>

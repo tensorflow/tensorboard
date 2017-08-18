@@ -2,6 +2,13 @@
 <link rel="import" href="tf-op-details.html">
 <link rel="import" href="colors.html">
 
+<!--
+  tf-op-profile is a view within the tf-profile-dashboard.
+  It shows a hierarchical profile of XLA operations broken (a tf-op-table).
+  A single item can be selected, and its details are shown (with tf-op-details).
+  Summary information and the most expensive op are described at the top, as
+  a gentle introduction.
+-->
 <dom-module id="tf-op-profile">
 <template>
 <style>
@@ -30,7 +37,7 @@ tf-op-details {
     <span style$="color:[[_textColor(_costlyOp.op)]];">overhead</span>,
     and a good target for optimization.
   </p>
-  <!-- crazy extra div to avoid HTML parsing bugs in polymer -->
+  <!-- extra div to avoid HTML parsing bugs in polymer/vulcanize -->
   <div hidden$="[[!hasFlops(_costlyOp.op)]]">
   <p>
     While active, [[_costlyOp.op.name]] uses
