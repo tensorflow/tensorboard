@@ -9,6 +9,11 @@ python:
 os:
   - linux
 
+branches:
+  only:
+    - master
+    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
+
 env:
   - BAZEL=0.5.1 TF=NIGHTLY
 

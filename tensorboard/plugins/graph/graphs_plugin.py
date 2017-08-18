@@ -22,7 +22,7 @@ from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
-from tensorboard.backend.event_processing import event_accumulator
+from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 
 _PLUGIN_PREFIX_ROUTE = 'graphs'
