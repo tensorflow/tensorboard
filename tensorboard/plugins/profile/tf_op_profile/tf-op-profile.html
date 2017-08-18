@@ -30,23 +30,23 @@ tf-op-details {
   </h4>
   <p>Modifying your model's architecture, data dimensions, and improving the
   efficiency of CPU operations may help reach the TPU's FLOPS potential.</p>
-  <h4>The most time was spent in a <b>[[_costlyOp.category]] operation</b>
-    ([[_percent(_costlyOp.value)]])</h4>
-  <p hidden$="[[_hasFlops(_costlyOp.op)]]">
-    [[_costlyOp.op.name]] is
-    <span style$="color:[[_textColor(_costlyOp.op)]];">overhead</span>,
+  <h4>The most time was spent in a <b>[[_costlyOp.xla.category]] operation</b>
+    ([[_percent(_costlyOp.metrics.time)]])</h4>
+  <p hidden$="[[_hasFlops(_costlyOp)]]">
+    [[_costlyOp.name]] is
+    <span style$="color:[[_textColor(_costlyOp)]];">overhead</span>,
     and a good target for optimization.
   </p>
   <!-- extra div to avoid HTML parsing bugs in polymer/vulcanize -->
-  <div hidden$="[[!_hasFlops(_costlyOp.op)]]">
+  <div hidden$="[[!_hasFlops(_costlyOp)]]">
   <p>
-    While active, [[_costlyOp.op.name]] uses
-    <span style="color:[[_textColor(_costlyOp.op)]]">[[_utilizationPercent(_costlyOp.op)]]</span>
+  While active, <code>[[_costlyOp.name]]</code> uses
+    <span style="color:[[_textColor(_costlyOp)]]">[[_utilizationPercent(_costlyOp)]]</span>
     of the computational potential of the chip.
-    <span hidden$="[[_goodFlops(_costlyOp.op)]]">
+    <span hidden$="[[_goodFlops(_costlyOp)]]">
       This is a good target for optimization.
     </span>
-    <span hidden$="[[!_goodFlops(_costlyOp.op)]]">
+    <span hidden$="[[!_goodFlops(_costlyOp)]]">
       This is pretty good - other operations may be better targets for optimization.
     </span>
   </p>
@@ -109,21 +109,17 @@ Polymer({
   _percent: percent,
   _utilizationPercent: function(item) { return percent(utilization(item)); },
   _worstOp: function(data, metric) {
-    var worst = null, worstValue = -Infinity, worstCategory = undefined;
-    var category = [];
+    var worst = null, worstValue = -Infinity;
     function visit(node) {
       if (node.xla != null && node.metrics != null && node.metrics[metric] > worstValue) {
         worst = node;
-        worstCategory = category[category.length - 1];
         worstValue = node.metrics[metric];
       }
-      if (node.category != null) category.push(node.name);
       node.children.forEach(visit);
-      if (node.category != null) category.pop();
     }
     visit(data.byCategory);
-    console.log("Worst op is ", worst, worstCategory, worstValue);
-    return {op: worst, category: worstCategory, value: worstValue};
+    console.log("Worst op is ", worst);
+    return worst;
   },
   _hasFlops: function(item) { return item.metrics.flops > 0; },
   _goodFlops: function(item) { return utilization(item) > 0.4; },
