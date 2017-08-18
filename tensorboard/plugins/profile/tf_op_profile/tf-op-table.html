@@ -176,18 +176,14 @@ Polymer({
         .forEach(e => e.classList.remove('selected'));
     entry.classList.add('selected');
     this.curSelected = this.node;
-    this.active = this.node;
+    console.log("Selected ", this.node);
   },
   _handleHeaderMouseEnter: function(e) {
     var entry = Polymer.dom(e).rootTarget.closest('.entry');
-    if (!this.curSelected) {
-      this.active = this.node;
-    }
+    this.active = this.node;
   },
   _handleHeaderMouseLeave: function(e) {
-    if (!this.curSelected) {
-      this.active = null;
-    }
+    this.active = this.curSelected;
   },
   _percent: percent,
 });
