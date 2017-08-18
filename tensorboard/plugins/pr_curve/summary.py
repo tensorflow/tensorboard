@@ -26,8 +26,8 @@ import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 
-# A tiny value. Used to prevent division by 0 as well as to make precision 1
-# when the threshold is 0.
+# A tiny value. Used to prevent division by 0 as well as to make
+# precision 1 when the threshold is 0.
 _TINY_EPISILON = 1e-7
 
 def op(

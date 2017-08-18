@@ -25,13 +25,13 @@ from tensorboard.plugins.pr_curve import plugin_data_pb2
 
 PLUGIN_NAME = 'pr_curves'
 
-# Indices for obtaining precision and recall values from the tensor stored in a
-# summary.
+# Indices for obtaining precision and recall values from the tensor
+# stored in a summary.
 PRECISION_INDEX = 4
 RECALL_INDEX = 5
 
-# The most recent value for the `version` field of the `PrCurvePluginData`
-# proto.
+# The most recent value for the `version` field of the
+# `PrCurvePluginData` proto.
 PROTO_VERSION = 0
 
 def create_summary_metadata(display_name, description, num_thresholds):
