@@ -96,7 +96,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       list of all tags that are relevant to this plugin.
     """
     return http_util.Respond(
-        request, self.tags_route_impl(), 'application/json')
+        request, self.tags_impl(), 'application/json')
 
   def tags_impl(self):
     """Creates the JSON object for the tags route response.
