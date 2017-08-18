@@ -105,7 +105,7 @@ limitations under the License.
     <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
       <tf-op-table-entry
         node="[[item]]"
-        level={{level}}+1
+        level={{_nextLevel(level)}}
         active="{{active}}"
         cur-selected="{{curSelected}}">
       </tf-op-table-entry>
@@ -169,9 +169,10 @@ Polymer({
     }
     return classes;
   },
-  _sortEntry: function(node1, node2) {
-    if (node1.metrics.time == node2.metrics.time) return 0;
-    return node1.metrics.time > node2.metrics.time ? -1 : 1;
+  _sortEntry: function(left, right) {
+    var leftTime = left.metrics ? left.metrics.time : 0;
+    var rightTime = right.metrics ? right.metrics.time : 0;
+    return rightTime - leftTime;
   },
   _styleBar: function(node) {
     var style = '';
@@ -182,6 +183,7 @@ Polymer({
   _paddingDisclosure: function(level) {
     return 'padding-left: ' + level + 'em';
   },
+  _nextLevel: function(level) { return level + 1; },
   _handleHeaderClick: function(e) {
     var entry = Polymer.dom(e).rootTarget.closest('.entry');
     entry.classList.toggle('expanded');
