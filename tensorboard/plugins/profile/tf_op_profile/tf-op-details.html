@@ -48,6 +48,12 @@ paper-card {
 tf-op-bar {
   width: 100%;
 }
+#subheader {
+  padding: 0 16px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  top: -10px;
+}
 .card-content > div {
   margin-bottom: 1em;
 }
@@ -58,6 +64,7 @@ tf-op-bar {
 </style>
 <template>
   <paper-card id="card" heading="[[item.name]]" elevation="2">
+    <div id="subheader">[[_subheader(item)]]</div>
     <div class="card-content">
       <div hidden="[[!item.metrics]]">
         <b>FLOPS utilization: </b>
@@ -91,6 +98,13 @@ Polymer({
     if (item == null) return;
     var color = flameColor(utilization(item), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
+    this.$.subheader.style.backgroundColor = color;
+  },
+  _subheader: function(item) {
+    if (!item) return null;
+    if (item.xla) return item.metrics ? "Operation" : "Fused operation";
+    if (item.category) return "Operation category";
+    return "Unknown";
   },
 });
 </script>
