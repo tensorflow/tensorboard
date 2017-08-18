@@ -37,7 +37,7 @@ limitations under the License.
         tooltip-columns="[[_tooltipColumns]]"
         color-scale="[[_colorScaleFunction]]"
       ></vz-line-chart>
-      <template is="dom-if" if="[[_loading]]">
+      <template is="dom-if" if="[[loading]]">
         <div id="loading-spinner-container">
           <paper-spinner-lite active></paper-spinner-lite>
         </div>
@@ -69,14 +69,14 @@ limitations under the License.
         margin-right: 10px;
         margin-bottom: 25px;
       }
-      /** When the chart is loading, make it semi-transparent. */
-      :host[_loading] vz-line-chart {
-        opacity: 0.3;
-      }
       #chart-and-spinner-container {
         display: flex;
         height: 300px;
         position: relative;
+      }
+      #line-chart-container {
+        width: 100%;
+        height: 100%;
       }
       #loading-spinner-container {
         align-items: center;
@@ -180,7 +180,7 @@ limitations under the License.
           // property to be the inner function.
           value: () => (d => d.precision),
         },
-        _loading: Boolean,
+        loading: Boolean,
         _tooltipColumns: {
           type: Array,
           readOnly: true,
@@ -238,9 +238,9 @@ limitations under the License.
 
           const runToData = result.value;
           this.set('_runToData', runToData);
-          this.set('_loading', false);
+          this.set('loading', false);
         });
-        this.set('_loading', true);
+        this.set('loading', true);
         this.requestManager.request(url).then(updateData);
       },
       _setChartData(changeRecord) {
