@@ -68,18 +68,17 @@ Polymer({
       readOnly: true,
       value: () => new RequestManager(),
     },
+    run: {
+      type: String,
+      observer: '_load'
+    },
     _data: {
       type: Object,
       notify: true,
     },
-    _breakdown: {
-      type: String,
-      value: 'byCategory',
-      notify: true,
-    },
     _root: {
       type: Object,
-      computed: '_getRoot(_data, _breakdown)',
+      computed: '_getRoot(_data, "byCategory")',
       notify: true,
     },
     _active: {
@@ -87,16 +86,12 @@ Polymer({
       value: null,
       notify: true,
     },
-    run: {
-      type: String,
-      observer: '_runChanged'
-    },
     _costlyOp: {
       type: Object,
-      computed: '_worstOp(_data, "time")',
+      computed: '_worstOp(_data.byCategory, "time")',
     },
   },
-  _runChanged: function(run) {
+  _load: function(run) {
     this._requestManager.request(
         getRouter().
             pluginRunTagRoute('profile', '/data')('op_profile', run)
@@ -108,7 +103,7 @@ Polymer({
   _getRoot: function(data, breakdown) { return data[breakdown]; },
   _percent: percent,
   _utilizationPercent: function(node) { return percent(utilization(node)); },
-  _worstOp: function(data, metric) {
+  _worstOp: function(root, metric) {
     var worst = null, worstValue = -Infinity;
     function visit(node) {
       if (node.xla != null && node.metrics != null && node.metrics[metric] > worstValue) {
@@ -117,7 +112,7 @@ Polymer({
       }
       node.children.forEach(visit);
     }
-    visit(data.byCategory);
+    visit(root);
     console.log("Worst op is ", worst);
     return worst;
   },
