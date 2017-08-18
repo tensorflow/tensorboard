@@ -43,7 +43,6 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",

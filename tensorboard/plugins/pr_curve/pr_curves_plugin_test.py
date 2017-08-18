@@ -21,15 +21,11 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import csv
 import os.path
 
-from six import StringIO
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import numpy as np
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import pr_curve_demo
@@ -38,8 +34,8 @@ from tensorboard.plugins.pr_curve import pr_curves_plugin
 
 class PrCurvesPluginTest(tf.test.TestCase):
 
-  def setUp(self, *args, **kwargs):
-    super(PrCurvesPluginTest, self).setUp(*args, **kwargs)
+  def setUp(self):
+    super(PrCurvesPluginTest, self).setUp()
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
     tf.reset_default_graph()
 
@@ -95,7 +91,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
     # Assert that the runs are right.
     self.assertItemsEqual(
         ['colors', 'mask_every_other_prediction'], list(tags_response.keys()))
-    
+
     # Assert that runs are mapped to correct tags.
     self.assertItemsEqual(
         ['red/pr_curves', 'green/pr_curves', 'blue/pr_curves'],
@@ -115,7 +111,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
     """Tests that responses for PR curves for run-tag combos are correct."""
     pr_curves_response = self.plugin.pr_curves_impl(
         ['colors', 'mask_every_other_prediction'], 'blue/pr_curves')
-    
+
     # Assert that the runs are correct.
     self.assertItemsEqual(
         ['colors', 'mask_every_other_prediction'],
