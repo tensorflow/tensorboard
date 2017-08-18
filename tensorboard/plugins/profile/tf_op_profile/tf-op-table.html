@@ -31,11 +31,14 @@ limitations under the License.
 .entry:not(.expanded) > .children {
   display: none;
 }
-.header {
+.row {
   padding: 0.5em;
   position: relative;
   box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.06);
   z-index: 0;
+}
+.row.header {
+  font-weight: bold;
 }
 .bar {
   position: absolute;
@@ -53,7 +56,7 @@ limitations under the License.
   font-family: monospace;
   min-width: 40%;
 }
-.entry.toplevel > .header {
+.entry.toplevel > .row {
   display: none;
 }
 .entry.selected {
@@ -62,26 +65,33 @@ limitations under the License.
 .entry.selected > .header{
   font-weight: bold;
 }
-.entry .header:hover {
+.entry .row:hover {
   background-color: rgba(0,0,0,0.05);
 }
-.entry > .header > .disclosure:before {
+.entry > .row > .disclosure:before {
   display: inline-block;
   width: 1.2em;
   content: ' ';
 }
-.entry.parent > .header > .disclosure:before {
+.entry.parent > .row > .disclosure:before {
   content: '\25b6';
 }
-.entry.parent.expanded > .header > .disclosure:before {
+.entry.parent.expanded > .row > .disclosure:before {
   content: '\25bc';
 }
-.entry.parent.expanded:not(.selected) > .header .name {
+.entry.parent.expanded:not(.selected) > .row .name {
   opacity: 0.6;
 }
 </style>
+<template is="dom-if" if="[[_eq(level, 0)]]">
+  <div class="row header">
+    <span class="name">Time</span>
+    <span class="disclosure" style="{{_paddingDisclosure(0)}}"></span>
+    <span class="name">Op Name</span>
+  </div>
+</template>
 <div class$="{{_classEntry(node, level)}}">
-  <div class="header"
+  <div class="row"
        on-click="_handleHeaderClick"
        on-mouseenter="_handleHeaderMouseEnter"
        on-mouseleave="_handleHeaderMouseLeave">
@@ -89,6 +99,7 @@ limitations under the License.
     <span class="time">{{_percent(node.metrics.time)}}</span>
     <span class="disclosure" style="{{_paddingDisclosure(level)}}"></span>
     <span class="name">{{node.name}}</span>
+    <span>{{_provenance(node)}}</span>
   </div>
   <div class="children">
     <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
@@ -145,6 +156,9 @@ Polymer({
       type: Number,
     }
   },
+  _eq: function(x, y) {
+    return x == y;
+  },
   _classEntry: function(node, level) {
     var classes = 'entry';
     if (node.children.length > 0) {
@@ -186,6 +200,10 @@ Polymer({
     this.active = this.curSelected;
   },
   _percent: percent,
+  _provenance: function(node) {
+    return (node.xla && node.xla.provenance)
+              ? node.xla.provenance.replace(/^.*\//, '') : "";
+  },
 });
 
 Polymer({
