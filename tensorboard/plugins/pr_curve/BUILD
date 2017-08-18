@@ -39,6 +39,8 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":pr_curves_plugin",
+        ":pr_curve_demo",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
