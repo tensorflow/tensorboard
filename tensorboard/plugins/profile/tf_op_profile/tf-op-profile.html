@@ -1,10 +1,23 @@
 <link rel="import" href="tf-op-table.html">
+<link rel="import" href="tf-op-details.html">
+<link rel="import" href="colors.html">
 
 <dom-module id="tf-op-profile">
 <template>
 <style>
+tf-op-details {
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  width: 330px;
+}
+:host {
+  display: block;
+  margin-right: 350px;
+}
 </style>
 <div class="tf-op-profile">
+  <tf-op-details hidden="[[!_active]]" item="[[_active]]"></tf-op-details>
   <h4>Overall TPU utilization is
     <span style$="color:[[_textColor(_root)]]">[[_utilizationPercent(_root)]]</span>
   </h4>
@@ -35,11 +48,10 @@
 </div>
 </template>
 
-<script src="colors.js"></script>
 <script>
 import {RequestManager} from '../tf-backend/requestManager.js';
 import {getRouter} from '../tf-backend/router.js';
-import {flameColor} from './colors.js';
+import {flameColor} from '../tf-op-profile/colors.js';
 
 Polymer({
   is: 'tf-op-profile',
@@ -66,7 +78,6 @@ Polymer({
       type: Object,
       value: null,
       notify: true,
-      observer: '_activeChanged'
     },
     run: {
       type: String,
@@ -120,9 +131,6 @@ Polymer({
   },
   hasFlops: function(item) { return item.metrics.flops > 0; },
   goodFlops: function(item) { return this._utilization(item) > 0.4; },
-  _activeChanged: function(active) {
-    console.log('active changed:', active);
-  },
   _textColor: function(item) {
     return flameColor(this._utilization(item), 0.7);
   },

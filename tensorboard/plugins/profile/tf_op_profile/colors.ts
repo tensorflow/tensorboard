@@ -4,7 +4,7 @@ function rgba(red: number, green: number, blue: number, alpha: number) {
 }
 
 export function flameColor(fraction: number, brightness = 1, opacity = 1) {
-  if (isNaN(fraction)) return rgba(0, 0, 0, opacity);
+  if (isNaN(fraction)) return rgba(brightness, brightness, brightness, opacity);
   fraction = Math.sqrt(fraction);  // Or everything is depressing and red.
   return (fraction < 0.5) ?
     rgba(brightness, 2 * fraction * brightness, 0, opacity) :

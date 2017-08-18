@@ -1,0 +1,45 @@
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="colors.html">
+
+<dom-module id="tf-op-details">
+<style>
+paper-card {
+  --paper-card-header-color: white;
+  width: 100%;
+}
+</style>
+<template>
+  <paper-card id="card" heading="[[item.name]]" elevation="2">
+    <div class="card-content">
+      <code hidden="[[!item.xla]]">[[item.xla.expression]]</code>
+    </div>
+  </paper-card>
+</template>
+
+<script>
+import {flameColor} from '../tf-op-profile/colors.js';
+
+Polymer({
+  is: 'tf-op-details',
+  properties: {
+    item: {
+      type: Object,
+      notify: true,
+      observer: '_updateCard',
+    },
+  },
+  _bgColor: function(item) {
+    return 'red';
+  },
+  _utilization: function(item) {
+    if (!item) return 0/0;
+    return item.metrics.flops / item.metrics.time;
+  },
+  _updateCard: function(item){
+    if (item == null) return;
+    var color = flameColor(this._utilization(item), 0.7);
+    this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
+  },
+});
+</script>
+</dom-module>
