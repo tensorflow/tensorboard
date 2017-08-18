@@ -17,6 +17,7 @@ export function utilization(item) {
 }
 
 export function percent(fraction: number) {
+  if (isNaN(fraction)) return "-";
   return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
     (fraction * 100).toPrecision(2) + "%";
 }
