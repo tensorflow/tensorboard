@@ -11,9 +11,9 @@ export function flameColor(fraction: number, brightness = 1, opacity = 1) {
     rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
 }
 
-export function utilization(item) {
-  if (!item || !item.metrics) return 0/0;
-  return item.metrics.flops / item.metrics.time;
+export function utilization(node) {
+  if (!node || !node.metrics) return 0/0;
+  return node.metrics.flops / node.metrics.time;
 }
 
 export function percent(fraction: number) {

@@ -5,7 +5,7 @@
 <!--
   tf-op-profile is a view within the tf-profile-dashboard.
   It shows a hierarchical profile of XLA operations broken (a tf-op-table).
-  A single item can be selected, and its details are shown (with tf-op-details).
+  A single node can be selected, and its details are shown (with tf-op-details).
   Summary information and the most expensive op are described at the top, as
   a gentle introduction.
 -->
@@ -24,7 +24,7 @@ tf-op-details {
 }
 </style>
 <div class="tf-op-profile">
-  <tf-op-details hidden="[[!_active]]" item="[[_active]]"></tf-op-details>
+  <tf-op-details hidden="[[!_active]]" node="[[_active]]"></tf-op-details>
   <h4>Overall TPU utilization is
     <span style$="color:[[_textColor(_root)]]">[[_utilizationPercent(_root)]]</span>
   </h4>
@@ -107,7 +107,7 @@ Polymer({
   },
   _getRoot: function(data, breakdown) { return data[breakdown]; },
   _percent: percent,
-  _utilizationPercent: function(item) { return percent(utilization(item)); },
+  _utilizationPercent: function(node) { return percent(utilization(node)); },
   _worstOp: function(data, metric) {
     var worst = null, worstValue = -Infinity;
     function visit(node) {
@@ -121,9 +121,9 @@ Polymer({
     console.log("Worst op is ", worst);
     return worst;
   },
-  _hasFlops: function(item) { return item.metrics.flops > 0; },
-  _goodFlops: function(item) { return utilization(item) > 0.4; },
-  _textColor: function(item) { return flameColor(utilization(item), 0.7); },
+  _hasFlops: function(node) { return node.metrics.flops > 0; },
+  _goodFlops: function(node) { return utilization(node) > 0.4; },
+  _textColor: function(node) { return flameColor(utilization(node), 0.7); },
 });
 </script>
 </dom-module>

@@ -37,7 +37,7 @@ Polymer({
 </dom-module>
 
 <!--
-  tf-op-details is a card that describes an op or group of ops (the 'item').
+  tf-op-details is a card that describes an op or group of ops (the 'node').
 -->
 <dom-module id="tf-op-details">
 <style>
@@ -67,21 +67,21 @@ tf-op-bar {
 }
 </style>
 <template>
-  <paper-card id="card" heading="[[item.name]]" elevation="2">
-    <div id="subheader">[[_subheader(item)]]</div>
+  <paper-card id="card" heading="[[node.name]]" elevation="2">
+    <div id="subheader">[[_subheader(node)]]</div>
     <div class="card-content">
-      <div hidden="[[!item.metrics]]">
+      <div hidden="[[!node.metrics]]">
         <b>FLOPS utilization: </b>
-        <tf-op-bar value="[[_utilization(item)]]"></tf-op-bar>
+        <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
       </div>
-      <div hidden="[[!item.xla.expression]]">
+      <div hidden="[[!node.xla.expression]]">
         <b>Expression: </b>
-        <code class="expression">[[item.xla.expression]]</code>
+        <code class="expression">[[node.xla.expression]]</code>
       </div>
-      <div class="unavailable" hidden="[[!_fused(item)]]">
+      <div class="unavailable" hidden="[[!_fused(node)]]">
         Performance information for individual fused operations is not available.
       </div>
-      <div class="unavailable" hidden="[[!item.category]]">
+      <div class="unavailable" hidden="[[!node.category]]">
         Select items within this category for performace details.
       </div>
     </div>
@@ -94,26 +94,26 @@ import {flameColor, utilization} from './utils.js';
 Polymer({
   is: 'tf-op-details',
   properties: {
-    item: {
+    node: {
       type: Object,
       notify: true,
       observer: '_updateCard',
     },
   },
   _utilization: utilization,
-  _updateCard: function(item){
-    if (item == null) return;
-    var color = flameColor(utilization(item), 0.7);
+  _updateCard: function(node){
+    if (node == null) return;
+    var color = flameColor(utilization(node), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
     this.$.subheader.style.backgroundColor = color;
   },
-  _subheader: function(item) {
-    if (!item) return null;
-    if (item.xla) return item.xla.category + " operation";
-    if (item.category) return "Operation category";
+  _subheader: function(node) {
+    if (!node) return null;
+    if (node.xla) return node.xla.category + " operation";
+    if (node.category) return "Operation category";
     return "Unknown";
   },
-  _fused: function(item){ return item && item.xla && !item.metrics; },
+  _fused: function(node){ return node && node.xla && !node.metrics; },
 });
 </script>
 </dom-module>
