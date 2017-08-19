@@ -308,6 +308,7 @@ Polymer({
                 'graphs', '/run_metadata')(tag, runName),
             })),
         }));
+        console.log("tf-graph-dashboard: datasets = ", datasets);  // DEBUG
         this.set('_datasets', datasets);
       });
   },

@@ -20,6 +20,15 @@ py_library(
 )
 
 py_library(
+    name = "debug_graphs_helper",
+    srcs = ["debug_graphs_helper.py"],
+    srcs_version = "PY2AND3",
+)
+
+# TODO(cais): Incorporate debug_graphs_helper into debug_data.py in tensorflow.
+# TODO(cais): Add unit tests for code in debug_graphs_helper.py.
+
+py_library(
     name = "events_writer_manager",
     srcs = ["events_writer_manager.py"],
     srcs_version = "PY2AND3",
@@ -131,10 +140,12 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":constants",
+        ":debug_graphs_helper",
         ":debugger_server_lib",
         "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
+        "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",

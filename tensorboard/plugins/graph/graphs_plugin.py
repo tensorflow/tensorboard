@@ -122,6 +122,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
     else:
       if result is not None:
         (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
+        # tf.logging.warn("graph_route: body = %s, mime_type = %s" ,
+        #                 body, mime_type)
+        # tf.logging.warn("graph_route: type(body) = %s", type(body))
         return http_util.Respond(request, body, mime_type)
       else:
         return http_util.Respond(request, '404 Not Found', 'text/plain',

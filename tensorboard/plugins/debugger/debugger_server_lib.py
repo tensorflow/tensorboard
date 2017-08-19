@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import functools
 import json
 import os
@@ -57,6 +58,9 @@ class DebuggerDataStreamHandler(
   # NotImplementedError anymore.
   def __init__(self,  # pylint: disable=super-init-not-called
                events_writer_manager,
+               run_key_to_graphs,  # TODO(cais): This should become a class.
+               comm_data,
+               ack,
                numerics_alert_callback=None):
     """Constructor of DebuggerDataStreamHandler.
 
@@ -74,6 +78,16 @@ class DebuggerDataStreamHandler(
     # fetches.
     self._session_run_index = -1
 
+    # Data structures for session.run calls.
+    # A map from core metadata to the corresponding partition graph(s).
+    self._run_key_to_graphs = run_key_to_graphs
+    self._comm_data = comm_data
+    self._ack = ack
+    # TODO(cais): A more efficient way for waiting for client ACK.
+
+    self._run_key = None
+    self._graph_defs = []
+
   def on_core_metadata_event(self, event):
     """Implementation of the core metadata-carrying Event proto callback.
 
@@ -83,6 +97,37 @@ class DebuggerDataStreamHandler(
         See the doc string of debug_data.DebugDumpDir.core_metadata for details.
     """
     self._session_run_index = self._parse_session_run_index(event)
+
+    # TOOD(cais): Refactor in to helper function.
+    core_metadata = json.loads(event.log_message.message)
+    tf.logging.warn("core_metadata: %s", core_metadata)
+    input_names = core_metadata["input_names"]
+    output_names = core_metadata["output_names"]
+    target_nodes = core_metadata["target_nodes"]
+    # TODO(cais): run_key should also include the device.
+    run_key = ",".join(input_names)
+    run_key += "|"
+    run_key += ",".join(output_names)
+    run_key += "|"
+    run_key += ",".join(target_nodes)
+    tf.logging.warn("input_names: %s", input_names)
+    tf.logging.warn("output_names: %s", output_names)
+    tf.logging.warn("target_nodes: %s", target_nodes)
+    tf.logging.warn("run_key: %s", run_key)
+    self._run_key = run_key
+    # TODO(cais): Handle cases of >1 runs of the same run_key.
+    if run_key not in self._run_key_to_graphs:
+      self._run_key_to_graphs[run_key] = self._graph_defs[-1]
+      # TODO(cais): Obviously, we want all the GraphDefs, not just the last one!
+      self._comm_data[event.wall_time] = run_key
+
+      # Wait for acknowledgement.
+      self._ack["client"] = False
+      while not self._ack["client"]:
+        tf.logging.warning("Waiting for client ack (meta)...")
+        time.sleep(1.0)
+      tf.logging.warning("Client ack received (meta)...")
+    # TODO(cais): Experiment with unblocking from front end.
 
   def on_graph_def(self, graph_def, device_name, wall_time):
     """Implementation of the GraphDef-carrying Event proto callback.
@@ -104,7 +149,12 @@ class DebuggerDataStreamHandler(
     # provided otherwise).
     del device_name
     del wall_time
-    del graph_def
+    # tf.logging.warn("on_graph_def(): graph_def = %s", graph_def)
+    # tf.logging.warn("on_graph_def(): graph_def seiralized = %s",
+    #                 graph_def.SerializeToString())
+    # import time  # DEBUG
+    # time.sleep(10)
+    self._graph_defs.append(graph_def)
 
   def on_value_event(self, event):
     """Records the summary values based on an updated message from the debugger.
@@ -121,47 +171,64 @@ class DebuggerDataStreamHandler(
     # The node name property is actually a watch key, which is a concatenation
     # of several pieces of data.
     watch_key = event.summary.value[0].node_name
-    if not watch_key.endswith(constants.DEBUG_NUMERIC_SUMMARY_SUFFIX):
-      # Ignore events that lack a DebugNumericSummary.
-      # NOTE(@chihuahua): We may later handle other types of debug ops.
-      return
 
-    # We remove the constants.DEBUG_NUMERIC_SUMMARY_SUFFIX from the end of the
-    # watch name because it is not distinguishing: every health pill entry ends
-    # with it.
-    node_name_and_output_slot = watch_key[
-        :-len(constants.DEBUG_NUMERIC_SUMMARY_SUFFIX)]
+    if watch_key.endswith(constants.DEBUG_NUMERIC_SUMMARY_SUFFIX):
+      # We remove the constants.DEBUG_NUMERIC_SUMMARY_SUFFIX from the end of the
+      # watch name because it is not distinguishing: every health pill entry
+      # ends with it.
+      node_name_and_output_slot = watch_key[
+          :-len(constants.DEBUG_NUMERIC_SUMMARY_SUFFIX)]
+      tf.logging.warning("on_value_event(): node_name_and_output_slot = %s",
+                         node_name_and_output_slot)
 
-    shape = tf.make_ndarray(event.summary.value[0].tensor).shape
-    if (len(shape) != 1 or
-        shape[0] < constants.MIN_DEBUG_NUMERIC_SUMMARY_TENSOR_LENGTH):
-      tf.logging.warning("Health-pill tensor either lacks a dimension or is "
-                         "shaped incorrectly: %s" % shape)
-      return
+      shape = tf.make_ndarray(event.summary.value[0].tensor).shape
+      if (len(shape) != 1 or
+          shape[0] < constants.MIN_DEBUG_NUMERIC_SUMMARY_TENSOR_LENGTH):
+        tf.logging.warning("Health-pill tensor either lacks a dimension or is "
+                           "shaped incorrectly: %s" % shape)
+        return
 
-    match = re.match(r"^(.*):(\d+)$", node_name_and_output_slot)
-    if not match:
-      tf.logging.warning(
-          ("A event with a health pill has an invalid node name and output "
-           "slot combination, (i.e., an unexpected debug op): %r"),
-          node_name_and_output_slot)
-      return None
+      match = re.match(r"^(.*):(\d+)$", node_name_and_output_slot)
+      if not match:
+        tf.logging.warning(
+            ("A event with a health pill has an invalid node name and output "
+             "slot combination, (i.e., an unexpected debug op): %r"),
+            node_name_and_output_slot)
+        return None
 
-    if self._session_run_index >= 0:
-      event.step = self._session_run_index
+      if self._session_run_index >= 0:
+        event.step = self._session_run_index
+      else:
+        # Data from parameter servers (or any graphs without a master) do not
+        # contain core metadata. So the session run count is missing. Set its
+        # value to a microsecond epoch timestamp.
+        event.step = int(time.time() * 1e6)
+
+      # Write this event to the events file designated for data from the
+      # debugger.
+      self._events_writer_manager.write_event(event)
+
+      alert = numerics_alert.extract_numerics_alert(event)
+      if self._numerics_alert_callback and alert:
+        self._numerics_alert_callback(alert)
     else:
-      # Data from parameter servers (or any graphs without a master) do not
-      # contain core metadata. So the session run count is missing. Set its
-      # value to a microsecond epoch timestamp.
-      event.step = int(time.time() * 1e6)
+      # Generic-type tensors.
+      tensor_value = tf.make_ndarray(event.summary.value[0].tensor)
+      # TODO(cais): The value of the dict should be tensor keys, instead of
+      # the value or a string representation of it, which is too big for
+      # many real-life tensors.
+      node_name = event.summary.value[0].node_name
+      tensor_value_str = "%s: %s" % (node_name, tensor_value)
+      tf.logging.warning(
+          "Recording tensor value in _comm_data: %s", tensor_value_str)
+      self._comm_data[event.wall_time] = tensor_value_str
 
-    # Write this event to the events file designated for data from the
-    # debugger.
-    self._events_writer_manager.write_event(event)
-
-    alert = numerics_alert.extract_numerics_alert(event)
-    if self._numerics_alert_callback and alert:
-      self._numerics_alert_callback(alert)
+      # Wait for acknowledgement.
+      self._ack["client"] = False
+      while not self._ack["client"]:
+        tf.logging.warning("Waiting for client ack (tensors)...")
+        time.sleep(1.0)
+      tf.logging.info("Client ack received (tensor)...")
 
   def _parse_session_run_index(self, event):
     """Parses the session_run_index value from the event proto.
@@ -265,11 +332,20 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
 
     self._numerics_alert_registry = numerics_alert.NumericsAlertRegistry(
         initialization_list=initial_data)
-
     self._numerics_alert_lock = threading.Lock()
+
+    # Data structures for runs.
+    self._run_key_to_graphs = dict()
+    self._comm_data = collections.OrderedDict()
+    # keys: event timestamps; values: ...
+    self.ack = {"client": False}
+
     curried_handler_constructor = functools.partial(
         DebuggerDataStreamHandler,
         self._events_writer_manager,
+        self._run_key_to_graphs,
+        self._comm_data,
+        self.ack,
         self._numerics_alert_callback)
     grpc_debug_server.EventListenerBaseServicer.__init__(
         self, receive_port, curried_handler_constructor)
@@ -291,6 +367,14 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
       This is just the name of that file, not the full path to that file.
     """
     return self._events_writer_manager.get_current_file_name()
+
+  @property
+  def run_key_to_graphs(self):
+    return self._run_key_to_graphs
+
+  @property
+  def comm_data(self):
+    return self._comm_data
 
   def _numerics_alert_callback(self, alert):
     """Handles the case in which we receive a bad value (NaN, -/+ Inf).

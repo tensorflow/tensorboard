@@ -23,6 +23,7 @@ import glob
 import json
 import os
 import re
+import time
 import threading
 
 import tensorflow as tf
@@ -32,11 +33,16 @@ from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
+from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.plugins.debugger import debugger_server_lib
 
 # HTTP routes.
 _HEALTH_PILLS_ROUTE = '/health_pills'
 _NUMERICS_ALERT_REPORT_ROUTE = '/numerics_alert_report'
+_RUN_KEY_TO_GRAPHS_ROUTE = '/run_key_to_graphs'
+_DEBUGGER_GRAPH_ROUTE = '/debugger_graph'
+_COMM_ROUTE = '/comm'
+_CLIENT_ACK_ROUTE = '/client_ack'
 
 # The POST key of HEALTH_PILLS_ROUTE for a JSON list of node names.
 _NODE_NAMES_POST_KEY = 'node_names'
@@ -89,6 +95,11 @@ class DebuggerPlugin(base_plugin.TBPlugin):
     self._debugger_data_server = None
     self._grpc_port = None
 
+    # TODO(cais): The way this is written currently assumes that there is no
+    # more than 1 debugging connection. Relax this assumption.
+    self._debugging_connection_state = 'meta'  # Valid values: "meta", "tensors"
+    self._debugging_connection_timestamp = -1
+
   def listen(self, grpc_port):
     """Start listening on the given gRPC port.
 
@@ -128,6 +139,10 @@ class DebuggerPlugin(base_plugin.TBPlugin):
     return {
         _HEALTH_PILLS_ROUTE: self._serve_health_pills_handler,
         _NUMERICS_ALERT_REPORT_ROUTE: self._serve_numerics_alert_report_handler,
+        _RUN_KEY_TO_GRAPHS_ROUTE: self._serve_run_keys_to_graphs,
+        _DEBUGGER_GRAPH_ROUTE: self._serve_debugger_graph,
+        _COMM_ROUTE: self._serve_comm,
+        _CLIENT_ACK_ROUTE: self._serve_client_ack,
     }
 
   def is_active(self):
@@ -516,3 +531,89 @@ class DebuggerPlugin(base_plugin.TBPlugin):
     # Convert the named tuples to dictionaries so we JSON them into objects.
     response = [r._asdict() for r in report]  # pylint: disable=protected-access
     return http_util.Respond(request, response, 'application/json')
+
+  @wrappers.Request.application
+  def _serve_run_keys_to_graphs(self, request):
+    run_key_to_graphs = self._debugger_data_server.run_key_to_graphs
+    return http_util.Respond(
+        request, run_key_to_graphs, "application/json")
+
+  @wrappers.Request.application
+  def _serve_comm(self, request):
+    if self._debugging_connection_state == "meta":
+      # Poll self._debugger_data_server for metadata.
+      # TODO(cais): Instead of keeping track of number of old keys, we should
+      # probably keep track of the most recent key as a member variable to avoid
+      # missing comm data.
+      # TODO(cais): More efficient polling. Maybe erase old things.
+      while True:
+        keys = self._debugger_data_server.comm_data.keys()
+        if keys and keys[-1] > self._debugging_connection_timestamp:
+          self._debugging_connection_timestamp = keys[-1]
+          break
+        else:
+          tf.logging.warn("_serve_comm: sleeping for 1 s (meta)")
+          time.sleep(1)
+
+      new_key = self._debugging_connection_timestamp
+      self._debugging_connection_state = 'tensors'
+      self._debugger_data_server.ack["client"] = True
+      return http_util.Respond(
+          request,
+          {
+              "state": "meta",
+              "data": {new_key: self._debugger_data_server.comm_data[new_key]},
+          },
+          "application/json")
+    elif self._debugging_connection_state == "tensors":
+      # Poll self._debugger_data_server for tensor data.
+      while True:
+        keys = self._debugger_data_server.comm_data.keys()
+        if keys and keys[-1] > self._debugging_connection_timestamp:
+          self._debugging_connection_timestamp = keys[-1]
+          break
+        else:
+          tf.logging.warn("_serve_comm: sleeping for 1 s (tensors)")
+          time.sleep(1)
+      new_key = self._debugging_connection_timestamp
+      tensor_value = self._debugger_data_server.comm_data[new_key]
+      tf.logging.info("tensor_value: %s" % tensor_value)
+      # TODO(cais): _debugging_connection_state needs to be set back to 'meta'
+      # somehow to support next Session.run().
+      return http_util.Respond(
+          request,
+          {
+              "state": "tensors",
+              "data": {new_key: tensor_value},
+          },
+          "application/json")
+    else:
+      raise ValueError("Invalid value in _debugging_connection_state: %s" %
+                       self._debugging_connection_state)
+
+  @wrappers.Request.application
+  def _serve_client_ack(self, request):
+    self._debugger_data_server.ack["client"] = True
+    return http_util.Respond(request, {}, "application/json")
+
+  @wrappers.Request.application
+  def _serve_debugger_graph(self, request):
+    run_key = request.args.get("run_key")
+    tf.logging.warning("_serve_debugger_graph(): run_key = %s", run_key)
+    graph_def = self._debugger_data_server.run_key_to_graphs[run_key]
+    tf.logging.warning("_serve_debugger_graph(): type(graph_def) = %s",
+                       type(graph_def))
+    gated = debug_graphs_helper.extract_gated_grpc_tensors(graph_def)
+    tf.logging.warning("_serve_debugger_graph(): gated = %s", gated)
+
+    # TODO(cais): The following calls to request_watch should be made into
+    # controls in the TDP web UI.
+    for node_name, output_slot, debug_op in gated:
+      tf.logging.warning(
+          "_serve_debugger_graph(): calling request_watch on (%s, %s, %s)" % (
+              node_name, output_slot, debug_op))
+      self._debugger_data_server.request_watch(
+          node_name, output_slot, debug_op, breakpoint=False)
+      # TODO(cais): Set this to True and support pausing in the frontend.
+
+    return http_util.Respond(request, str(graph_def), "text/x-protobuf")

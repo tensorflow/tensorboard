@@ -882,6 +882,7 @@ Polymer({
     this.set('_isAttached', false);
   },
   _renderHierarchyChanged: function(renderHierarchy) {
+    console.log('_renderHierarchyChanged: ', renderHierarchy);  // DEBUG
     this._hasRenderHierarchyBeenFitOnce = false;
     this._resetState();
     this._build(renderHierarchy);

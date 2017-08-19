@@ -140,6 +140,8 @@ Polymer({
     }
   },
   _buildRenderHierarchy: function(graphHierarchy) {
+    console.log("_buildRenderHierarchy: graphHierarchy = ",
+                graphHierarchy);  // DEBUG
     tf.graph.util.time('new tf.graph.render.Hierarchy', function() {
       if (graphHierarchy.root.type !== tf.graph.NodeType.META) {
         // root must be metanode but sometimes Polymer's dom-if has not
@@ -188,6 +190,7 @@ Polymer({
     }.bind(this));
   },
   _getVisible: function(name) {
+    console.log("tf-graph: this.renderHierarchy = ", this.renderHierarchy);
     if (!name) {
       return name;
     }

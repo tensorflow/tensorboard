@@ -1,0 +1,253 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-graph-board/tf-graph-board.html">
+<link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
+<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+<!-- <link rel="import" href="tf-scalar-chart.html"> -->
+<!-- <link rel="import" href="tf-smoothing-input.html"> -->
+
+<dom-module id="tf-debugger-dashboard">
+  <template>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        Graph Board:
+        <tf-graph-board id="graphboard"
+            graph-hierarchy="[[graphHierarchy]]"
+            graph="[[graph]]"
+            stats="[[stats]]"
+            progress="[[_progress]]"
+            color-by="[[colorBy]]"
+            color-by-params="{{colorByParams}}"
+            render-hierarchy="{{_renderHierarchy}}"
+        ></tf-graph-board>
+        <div class="sidebar-section">
+            <div>
+                <paper-textarea value="[[_runInfo]]"
+                    autoresizing></paper-textarea>
+            </div>
+            <div>
+                <paper-button raised class="continue-button" on-click="_continue">
+                    <span>[[_continueButtonText]]</span>
+                </paper-button>
+            </div>
+        </div>
+        <div class="container">
+          graph controls:
+          <tf-graph-controls
+              color-by-params="[[colorByParams]]"
+              stats="[[stabts]]"
+              color-by="{{colorBy}}"
+              render-hierarchy="[[_renderHierarchy]]"
+          ></tf-graph-controls>
+          graph loader:
+          <tf-graph-loader id="loader"
+              out-graph-hierarchy="{{graphHierarchy}}"
+              out-graph="{{graph}}"
+              out-stats="{{stats}}"
+              progress="{{_progress}}"
+          ></tf-graph-loader>
+        </div>
+      </div>
+      <div class="center">
+        <div>
+          <paper-textarea value="[[_tensorData]]"
+              rows="10" autoresizing></paper-textarea>
+        </div>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+    <style>
+      #tooltip-sorting {
+        display: flex;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      #tooltip-sorting-label {
+        margin-top: 13px;
+      }
+      #tooltip-sorting paper-dropdown-menu {
+        margin-left: 10px;
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        width: 105px;
+      }
+      #x-type-selector paper-button {
+        margin: 5px 3px;
+      }
+      .line-item {
+        display: block;
+        padding-top: 5px;
+      }
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+      .center {
+        position: relative;
+        height: 100%;
+      }
+    </style>
+  </template>
+
+  <script>
+    import {RequestManager} from '../tf-backend/requestManager.js';
+    import {getTags} from '../tf-backend/backend.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
+    import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
+    import * as storage from '../tf-storage/storage.js';
+
+    Polymer({
+      is: 'tf-debugger-dashboard',
+      properties: {
+        _runInfo: {
+            type: String,
+            value: 'Run info',
+        },
+        _tensorData: {
+            type: String,
+            value: 'Tensor data: ',
+        },
+
+        _longPollCount: {
+            type: Number,
+            value: 0,
+        },
+
+        _continueButtonText: {
+            type: String,
+            value: 'Continue',
+        },
+        isReloadDisabled: {
+          type: Boolean,
+          value: true,  // TODO(@caisq): Investigate why this doesn't work.
+          readOnly: true,
+        },
+        alreadyStarted: {
+          type: Boolean,
+          value: false,
+        },
+
+        _requestManager: {
+           type: Object,
+           value: () => new RequestManager(50),
+        },
+      },
+
+      ready() {
+        this.reload();
+      },
+
+      long_poll() {
+        this._longPollCount ++;
+
+        console.log('Starting long-polling LP #' + this._longPollCount);
+        const url = getRouter().pluginRoute('debugger', '/comm');
+        console.log('Sending long-polling request to: ', url);
+        this._requestManager.request(url).then(response => {
+          const response_state = response['state'];
+          const response_data = response['data'];
+          if (response_state == 'meta') {
+            var run_keys = [];
+            for (var timestamp in response_data) {
+              run_keys.push(response_data[timestamp]);
+            }
+            var run_key = run_keys[run_keys.length - 1];
+            var run_key_items = run_key.split('|');
+            var feed_names = run_key_items[0];
+            var fetch_names = run_key_items[1];
+            var target_names = run_key_items[2];
+            var run_info = 'Feeds: ' + feed_names + '; Fetches: ' +
+                           fetch_names + '; Targets: ' + target_names;
+            this.set('_runInfo', run_info);
+            this._displayGraph(run_key);
+          } else if (response_state == 'tensors') {
+            console.log('state tensors: response data: ', response_data);
+            for (var timestamp in response_data) {
+              this.set(
+                  '_tensorData',
+                  this._tensorData + '\n' + response_data[timestamp]);
+            }
+          } else {
+            console.error(
+                'Invalid long-polling response state: ', response_state);
+          }
+
+          // Long polling loop: initialite the next long polling.
+          // TODO(cais): This will run into call stack limit eventually?
+          this.long_poll();
+        });
+      },
+
+      reload() {
+        if (this.alreadyStarted) {
+          return;
+        }
+
+        // Initiate long-polling.
+        this.long_poll();
+
+        this.set('alreadyStarted', true);
+      },
+
+      _displayGraph(run_key) {
+        const parameters = {
+          'run_key': run_key,
+        };
+        const base_path = '/data/plugin/debugger/debugger_graph';
+        const path = base_path + queryEncoder(parameters);
+        console.log('path = ', path);
+        this.$.loader.datasets = [{
+          "name": "/debugger_graph",
+          "path": path,
+        }];
+        this.$.loader.set("selectedDataset", 0);
+        this.$$('.container').style.width = '600px';
+        this.$$('.container').style.width = '450px';
+      },
+
+      _continue() {
+        console.log('In _continue()');
+        const url = getRouter().pluginRoute('debugger', '/client_ack');
+        this._requestManager.request(url).then(response => {
+          console.log('/client_ask response: ', response);
+        });
+      },
+
+    });
+  </script>
+</dom-module>

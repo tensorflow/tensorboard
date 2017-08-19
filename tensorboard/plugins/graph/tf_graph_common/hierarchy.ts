@@ -536,6 +536,7 @@ export function getIncompatibleOps(hierarchy: Hierarchy,
  * relationship between them.
  */
 function addNodes(h: Hierarchy, graph: SlimGraph) {
+  console.log('addNodes: graph = ', graph);  // DEBUG
   _.each(graph.nodes, (node, nodeName) => {
     let path = getHierarchicalPath(node.name);
     let parent: Metanode = h.root;

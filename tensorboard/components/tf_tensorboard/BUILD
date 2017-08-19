@@ -40,6 +40,7 @@ ts_web_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio/tf_audio_dashboard",
+        "//tensorboard/plugins/debugger/tf_debugger_dashboard",
         "//tensorboard/plugins/distribution/tf_distribution_dashboard",
         "//tensorboard/plugins/graph/tf_graph_dashboard",
         "//tensorboard/plugins/histogram/tf_histogram_dashboard",
