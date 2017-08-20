@@ -158,7 +158,9 @@ const PARAMS = {
  * The regular expression to use when parsing for the string that is
  * used to label a function node in the graph. We strip away a prefix
  * indicating that the node represents a function definition. We also
- * remove an arbitrary hexadecimal suffix and its 
+ * remove an arbitrary hexadecimal suffix and the number following it
+ * if it is present. To be clear, we extract foo from
+ * __function__library_foo_deadb00f_42.
  */
 const nodeDisplayNameRegex = new RegExp(
     '^(?:' + tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
