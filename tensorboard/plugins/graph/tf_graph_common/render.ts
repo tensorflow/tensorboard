@@ -155,6 +155,16 @@ const PARAMS = {
 };
 
 /**
+ * The regular expression to use when parsing for the string that is
+ * used to label a function node in the graph. We strip away a prefix
+ * indicating that the node represents a function definition. We also
+ * remove an arbitrary hexadecimal suffix and its 
+ */
+const nodeDisplayNameRegex = new RegExp(
+    '^(?:' + tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
+        ')?(\\w+)_[a-z0-9]{8}(?:_\\d+)?$');
+
+/**
  * Stores the rendering information, such as x and y coordinates,
  * for each node in the graph.
  */
@@ -499,6 +509,7 @@ export class RenderGraphInfo {
     newMetanode.hasNonControlEdges = libraryMetanode.hasNonControlEdges;
     newMetanode.include = libraryMetanode.include;
     newMetanode.nodeAttributes = _.clone(libraryMetanode.nodeAttributes);
+    newMetanode.associatedFunction = libraryMetanode.associatedFunction;
 
     // Recursively duplicate the children nodes. At the same time, make a
     // mapping between function output index and the new node for the output.
@@ -1398,6 +1409,11 @@ export class RenderNodeInfo {
    */
   isFadedOut: boolean;
 
+  /**
+   * The name string used to label the node in the graph.
+   */
+  displayName: string;
+
   constructor(node: Node) {
     this.node = node;
     this.expanded = false;
@@ -1432,6 +1448,33 @@ export class RenderNodeInfo {
 
     // By default, we don't fade nodes out. Default to false for safety.
     this.isFadedOut = false;
+
+    this.displayName = node.name;
+    const functionNode = node as Metanode;
+    if (functionNode.type === NodeType.META &&
+        functionNode.associatedFunction) {
+      // Strip the random hexadecimal suffix as well as the numeric
+      // count (marking the index for this function call).
+      const delimiterIndex = functionNode.name.lastIndexOf(
+          tf.graph.NAMESPACE_DELIM);
+      if (delimiterIndex > -1) {
+        // Only use the last portion as the display name.
+        this.displayName = this.displayName.substring(
+            delimiterIndex + 1);
+      }
+
+      // Function names are suffixed with a length-8 hexadecimal string
+      // followed by an optional number. We remove that suffix because
+      // the user did not generate that suffix. That suffix merely
+      // serves to differentiate between functions with different
+      // signatures but the same name otherwise.
+      // Furthermore, we remove the prefix that merely ascertains this
+      // node as a function definition. There is no reason for the user
+      // to see that in the graph, as the node would already be within
+      // the functions scene group.
+      const match = this.displayName.match(nodeDisplayNameRegex);
+      this.displayName = match[1];
+    }
   }
 
   isInCore(): boolean {

@@ -237,8 +237,7 @@ function updateTotalWidthOfNode(renderInfo: render.RenderNodeInfo): void {
   renderInfo.coreBox.width = renderInfo.width;
   renderInfo.coreBox.height = renderInfo.height;
   // TODO: Account for font width rather than using a magic number.
-  let labelLength = renderInfo.node.name.length -
-      renderInfo.node.name.lastIndexOf(NAMESPACE_DELIM) - 1;
+  let labelLength = renderInfo.displayName.length;
   let charWidth = 3; // 3 pixels per character.
   // Compute the total width of the node.
   renderInfo.width = Math.max(renderInfo.coreBox.width +
