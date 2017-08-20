@@ -86,7 +86,7 @@ export const PARAMS = {
       /** X-space between each extracted node and the core graph. */
       extractXOffset: 15,
       /** Y-space between each extracted node. */
-      extractYOffset: 20
+      extractYOffset: 20,
     },
     series: {
       paddingTop: 10,
@@ -200,6 +200,15 @@ export const PARAMS = {
   }
 };
 
+/**
+ * The minimum width we confer upon the auxiliary nodes section if functions
+ * also appear. Without enforcing this minimum, metanodes in the function 
+ * library section could jut into the auxiliary nodes section because the
+ * title "Auxiliary Nodes" is longer than the width of the auxiliary nodes
+ * section itself.
+ */
+export const MIN_AUX_WIDTH = 140;
+
 /** Calculate layout for a scene of a group node. */
 export function layoutScene(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // Update layout, size, and annotations of its children nodes and edges.
@@ -245,7 +254,8 @@ function layoutChildren(renderNodeInfo: render.RenderGroupNodeInfo): void {
   let children = renderNodeInfo.coreGraph.nodes().map(n => {
     return renderNodeInfo.coreGraph.node(n);
   }).concat(renderNodeInfo.isolatedInExtract,
-      renderNodeInfo.isolatedOutExtract);
+            renderNodeInfo.isolatedOutExtract,
+            renderNodeInfo.libraryFunctionsExtract);
 
   _.each(children, childNodeInfo => {
     // Set size of each child
@@ -475,6 +485,23 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
       return height + yOffset + child.height;
     }, 0);
 
+  // Calculate the position of nodes in libraryFunctionsExtract relative to the
+  // top-left corner of libraryFunctionsBox (the bounding box for all library
+  // function nodes) and calculate the size of the libraryFunctionsBox.
+  let maxLibraryFunctionsWidth = _.max(renderNodeInfo.libraryFunctionsExtract,
+      renderNode => renderNode.width).width;
+  renderNodeInfo.libraryFunctionsBox.width = maxLibraryFunctionsWidth != null ?
+      maxLibraryFunctionsWidth : 0;
+
+  renderNodeInfo.libraryFunctionsBox.height =
+    _.reduce(renderNodeInfo.libraryFunctionsExtract, (height, child, i) => {
+      let yOffset = i > 0 ? params.extractYOffset : 0;
+      // use width/height here to avoid overlaps between extracts
+      child.x = 0;
+      child.y = height + yOffset + child.height / 2;
+      return height + yOffset + child.height;
+    }, 0);
+
   // Compute the total padding between the core graph, in-extract and
   // out-extract boxes.
   let numParts = 0;
@@ -484,20 +511,28 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   if (renderNodeInfo.isolatedOutExtract.length > 0) {
     numParts++;
   }
+  if (renderNodeInfo.libraryFunctionsExtract.length > 0) {
+    numParts++;
+  }
   if (renderNodeInfo.coreGraph.nodeCount() > 0) {
     numParts++;
   }
   let offset = PARAMS.subscene.meta.extractXOffset;
-  let padding = numParts <= 1 ? 0 : (numParts  <= 2 ? offset : 2 * offset);
+  let padding = numParts <= 1 ? 0 : (numParts * offset);
 
-  // Add the in-extract and out-extract width to the core box width.
-  renderNodeInfo.coreBox.width += renderNodeInfo.inExtractBox.width +
-      renderNodeInfo.outExtractBox.width + padding;
+  // Add the in-extract and out-extract width to the core box width. Do not let
+  // the auxiliary width be too small, lest it be smaller than the title.
+  const auxWidth = Math.max(
+      MIN_AUX_WIDTH,
+      renderNodeInfo.inExtractBox.width + renderNodeInfo.outExtractBox.width);
+  renderNodeInfo.coreBox.width += auxWidth + padding +
+      renderNodeInfo.libraryFunctionsBox.width + padding;
   renderNodeInfo.coreBox.height =
     params.labelHeight +
     Math.max(
       renderNodeInfo.inExtractBox.height,
       renderNodeInfo.coreBox.height,
+      renderNodeInfo.libraryFunctionsBox.height,
       renderNodeInfo.outExtractBox.height
   );
   // Determine the whole metanode's width (from left to right).

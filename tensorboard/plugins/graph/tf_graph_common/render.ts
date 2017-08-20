@@ -673,7 +673,7 @@ export class RenderGraphInfo {
           return;
         }
 
-        if (childName.indexOf(tf.graph.FUNCTION_LIBRARY_NODE) === 0) {
+        if (childName.indexOf(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX) === 0) {
           // Do not replace library functions in the graph. The library
           // functions serve as templates for other nodes.
           return;
@@ -743,6 +743,20 @@ export class RenderGraphInfo {
     if (PARAMS.enableExtraction &&
         renderGroupNodeInfo.node.type === NodeType.META) {
       extractHighDegrees(renderGroupNodeInfo);
+    }
+
+    if (nodeName === tf.graph.ROOT_NAME) {
+      // Add all metanodes representing library function templates into the
+      // library function scene group for the root node.
+      _.forOwn(this.hierarchy.libraryFunctions, (node, functionName) => {
+        const childRenderInfo = this.getOrCreateRenderNodeByName(node.name);
+        renderGroupNodeInfo.libraryFunctionsExtract.push(childRenderInfo);
+
+        // Do not render function definitions in the core graph.
+        childRenderInfo.node.include = InclusionType.EXCLUDE;
+        coreGraph.removeNode(node.name);
+        console.log('removing ' + node.name);
+      });
     }
 
     // Record that we constructed the rendering hierarchy for this node, so we
@@ -1352,6 +1366,12 @@ export class RenderNodeInfo {
   isOutExtract: boolean;
 
   /**
+   * Whether a node represents a function template within the library, in which
+   * case it should be rendered in a special scene group.
+   */
+  isLibraryFunction: boolean;
+
+  /**
    * List of (color, proportion) tuples based on the proportion of devices of
    * its children. If this node is an op node, this list will have only one
    * color with proportion 1.0.
@@ -1415,7 +1435,7 @@ export class RenderNodeInfo {
   }
 
   isInCore(): boolean {
-    return !this.isInExtract && !this.isOutExtract;
+    return !this.isInExtract && !this.isOutExtract && !this.isLibraryFunction;
   }
 }
 
@@ -1534,10 +1554,14 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
    * Size of the bounding box for a metanode's isolated out-extract children.
    */
   outExtractBox: {width: number, height: number};
+  /** Size of the bounding box for the function library. */
+  libraryFunctionsBox: {width: number, height: number};
   /** Array of isolated in-extract nodes. */
   isolatedInExtract: RenderNodeInfo[];
   /** Array of isolated out-extract nodes. */
   isolatedOutExtract: RenderNodeInfo[];
+  /** Array of nodes to show in the function library scene group. */
+  libraryFunctionsExtract: RenderNodeInfo[];
 
   constructor(groupNode: GroupNode) {
     super(groupNode);
@@ -1548,8 +1572,10 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
             gl.name, GraphType.CORE, { compound: true });
     this.inExtractBox = {width: 0, height: 0};
     this.outExtractBox = {width: 0, height: 0};
+    this.libraryFunctionsBox = {width: 0, height: 0};
     this.isolatedInExtract = [];
     this.isolatedOutExtract = [];
+    this.libraryFunctionsExtract = [];
   }
 }
 

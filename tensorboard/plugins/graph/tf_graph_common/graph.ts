@@ -17,7 +17,7 @@ module tf.graph {
 /** Delimiter used in node names to denote namespaces. */
 export const NAMESPACE_DELIM = '/';
 export const ROOT_NAME = '__root__';
-export const FUNCTION_LIBRARY_NODE = '__function_library__';
+export const FUNCTION_LIBRARY_NODE_PREFIX = '__function_library__';
 
 /** Attribute key used for storing attributes that are too large. */
 export const LARGE_ATTRS_KEY = '_too_large_attrs';
@@ -313,6 +313,10 @@ export interface Metanode extends GroupNode {
   depth: number;
   templateId: string;
   opHistogram: {[op: string]: number};
+
+  // The name of the function this metanode is associated with if any.
+  associatedFunction: string;
+  
   getFirstChild(): GroupNode|OpNode;
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
@@ -596,6 +600,7 @@ export class MetanodeImpl implements Metanode {
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
+  associatedFunction: string;
 
   /** A label object for meta-nodes in the graph hierarchy */
   constructor(name: string, opt = {}) {
@@ -626,6 +631,7 @@ export class MetanodeImpl implements Metanode {
     this.parentNode = null;
     this.hasNonControlEdges = false;
     this.include = InclusionType.UNSPECIFIED;
+    this.associatedFunction = '';
   }
 
   getFirstChild(): GroupNode|OpNode {
@@ -1059,7 +1065,7 @@ export function build(
             const processFunction = (func: tf.graph.proto.FunctionDef) => {
               // Give the function itself a node.
               const functionNodeName =
-                  FUNCTION_LIBRARY_NODE + NAMESPACE_DELIM + func.signature.name;
+                  FUNCTION_LIBRARY_NODE_PREFIX + func.signature.name;
               // Create an op node for the function. Mark it as part of a
               // function library.
               processRawNode({
