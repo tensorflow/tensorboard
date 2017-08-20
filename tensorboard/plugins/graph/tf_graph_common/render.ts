@@ -1449,20 +1449,14 @@ export class RenderNodeInfo {
     // By default, we don't fade nodes out. Default to false for safety.
     this.isFadedOut = false;
 
-    this.displayName = node.name;
+    // Only use the portion beyond the last delimiter as the display
+    // name.
+    this.displayName = node.name.substring(
+        node.name.lastIndexOf(tf.graph.NAMESPACE_DELIM) + 1);
+
     const functionNode = node as Metanode;
     if (functionNode.type === NodeType.META &&
         functionNode.associatedFunction) {
-      // Strip the random hexadecimal suffix as well as the numeric
-      // count (marking the index for this function call).
-      const delimiterIndex = functionNode.name.lastIndexOf(
-          tf.graph.NAMESPACE_DELIM);
-      if (delimiterIndex > -1) {
-        // Only use the last portion as the display name.
-        this.displayName = this.displayName.substring(
-            delimiterIndex + 1);
-      }
-
       // Function names are suffixed with a length-8 hexadecimal string
       // followed by an optional number. We remove that suffix because
       // the user did not generate that suffix. That suffix merely
