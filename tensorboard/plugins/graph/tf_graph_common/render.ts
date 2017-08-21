@@ -768,7 +768,6 @@ export class RenderGraphInfo {
         // Do not render function definitions in the core graph.
         childRenderInfo.node.include = InclusionType.EXCLUDE;
         coreGraph.removeNode(node.name);
-        console.log('removing ' + node.name);
       });
     }
 
