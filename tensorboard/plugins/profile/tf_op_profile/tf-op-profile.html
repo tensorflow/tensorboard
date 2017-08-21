@@ -27,8 +27,8 @@ You may obtain a copy of the License at
   a gentle introduction.
 -->
 <dom-module id="tf-op-profile">
-<template>
-<style>
+  <template>
+    <style>
 tf-op-details {
   position: fixed;
   top: 80px;
@@ -39,40 +39,40 @@ tf-op-details {
   display: block;
   margin-right: 360px;
 }
-</style>
-<div class="tf-op-profile">
-  <tf-op-details hidden="[[!_active]]" node="[[_active]]"></tf-op-details>
-  <h4>Overall TPU utilization is
-    <span style$="color:[[_textColor(_root)]]">[[_utilizationPercent(_root)]]</span>
-  </h4>
-  <p>Modifying your model's architecture, data dimensions, and improving the
-  efficiency of CPU operations may help reach the TPU's FLOPS potential.</p>
-  <h4>The most time was spent in a <b>[[_costlyOp.xla.category]] operation</b>
-    ([[_percent(_costlyOp.metrics.time)]])</h4>
-  <p hidden$="[[_hasFlops(_costlyOp)]]">
-    [[_costlyOp.name]] is
-    <span style$="color:[[_textColor(_costlyOp)]];">overhead</span>,
-    and a good target for optimization.
-  </p>
-  <!-- extra div to avoid HTML parsing bugs in polymer/vulcanize -->
-  <div hidden$="[[!_hasFlops(_costlyOp)]]">
-  <p>
-  While active, <code>[[_costlyOp.name]]</code> uses
-    <span style="color:[[_textColor(_costlyOp)]]">[[_utilizationPercent(_costlyOp)]]</span>
-    of the computational potential of the chip.
-    <span hidden$="[[_goodFlops(_costlyOp)]]">
-      This is a good target for optimization.
-    </span>
-    <span hidden$="[[!_goodFlops(_costlyOp)]]">
-      This is pretty good - other operations may be better targets for optimization.
-    </span>
-  </p>
-  </div>
-  <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
-</div>
-</template>
+    </style>
+    <div class="tf-op-profile">
+      <tf-op-details hidden="[[!_active]]" node="[[_active]]"></tf-op-details>
+      <h4>Overall TPU utilization is
+        <span style$="color:[[_textColor(_root)]]">[[_utilizationPercent(_root)]]</span>
+      </h4>
+      <p>Modifying your model's architecture, data dimensions, and improving the
+      efficiency of CPU operations may help reach the TPU's FLOPS potential.</p>
+      <h4>The most time was spent in a <b>[[_costlyOp.xla.category]] operation</b>
+        ([[_percent(_costlyOp.metrics.time)]])</h4>
+      <p hidden$="[[_hasFlops(_costlyOp)]]">
+        [[_costlyOp.name]] is
+        <span style$="color:[[_textColor(_costlyOp)]];">overhead</span>,
+        and a good target for optimization.
+      </p>
+      <!-- extra div to avoid HTML parsing bugs in polymer/vulcanize -->
+      <div hidden$="[[!_hasFlops(_costlyOp)]]">
+      <p>
+      While active, <code>[[_costlyOp.name]]</code> uses
+        <span style="color:[[_textColor(_costlyOp)]]">[[_utilizationPercent(_costlyOp)]]</span>
+        of the computational potential of the chip.
+        <span hidden$="[[_goodFlops(_costlyOp)]]">
+          This is a good target for optimization.
+        </span>
+        <span hidden$="[[!_goodFlops(_costlyOp)]]">
+          This is pretty good - other operations may be better targets for optimization.
+        </span>
+      </p>
+      </div>
+      <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
+    </div>
+  </template>
 
-<script>
+  <script>
 import {RequestManager} from '../tf-backend/requestManager.js';
 import {getRouter} from '../tf-backend/router.js';
 import {flameColor, utilization, percent} from './utils.js';
@@ -113,7 +113,6 @@ Polymer({
         getRouter().
             pluginRunTagRoute('profile', '/data')('op_profile', run)
     ).then((data) => {
-      console.log("Loaded profile ", data);
       this._data = data;
     });
   },
@@ -137,5 +136,5 @@ Polymer({
   _goodFlops: function(node) { return utilization(node) > 0.4; },
   _textColor: function(node) { return flameColor(utilization(node), 0.7); },
 });
-</script>
+  </script>
 </dom-module>

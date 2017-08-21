@@ -22,17 +22,17 @@ You may obtain a copy of the License at
   tf-op-bar shows a small % utilization bar, colored using flameColor.
 -->
 <dom-module id="tf-op-bar">
-<style>
+  <style>
 :host {
   display: inline-block;
   height: 1.5em;
   line-height: 1.5em;
 }
-</style>
-<template>
+  </style>
+  <template>
 &nbsp;[[_percent(value)]]
-</template>
-<script>
+  </template>
+  <script>
 import {flameColor, percent} from './utils.js';
 
 Polymer({
@@ -50,14 +50,14 @@ Polymer({
         " " + percent(value) + ", #ccc " + percent(value) + ")";
   },
 });
-</script>
+  </script>
 </dom-module>
 
 <!--
   tf-op-details is a card that describes an op or group of ops (the 'node').
 -->
 <dom-module id="tf-op-details">
-<style>
+  <style>
 paper-card {
   --paper-card-header-color: white;
   width: 100%;
@@ -82,30 +82,30 @@ tf-op-bar {
   font-style: italic;
   color: #666;
 }
-</style>
-<template>
-  <paper-card id="card" heading="[[node.name]]" elevation="2">
-    <div id="subheader">[[_subheader(node)]]</div>
-    <div class="card-content">
-      <div hidden="[[!node.metrics]]">
-        <b>FLOPS utilization: </b>
-        <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
+  </style>
+  <template>
+    <paper-card id="card" heading="[[node.name]]" elevation="2">
+      <div id="subheader">[[_subheader(node)]]</div>
+      <div class="card-content">
+        <div hidden="[[!node.metrics]]">
+          <b>FLOPS utilization: </b>
+          <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
+        </div>
+        <div hidden="[[!node.xla.expression]]">
+          <b>Expression: </b>
+          <code class="expression">[[node.xla.expression]]</code>
+        </div>
+        <div class="unavailable" hidden="[[!_fused(node)]]">
+          Performance information for individual fused operations is not available.
+        </div>
+        <div class="unavailable" hidden="[[!node.category]]">
+          Select items within this category for performace details.
+        </div>
       </div>
-      <div hidden="[[!node.xla.expression]]">
-        <b>Expression: </b>
-        <code class="expression">[[node.xla.expression]]</code>
-      </div>
-      <div class="unavailable" hidden="[[!_fused(node)]]">
-        Performance information for individual fused operations is not available.
-      </div>
-      <div class="unavailable" hidden="[[!node.category]]">
-        Select items within this category for performace details.
-      </div>
-    </div>
-  </paper-card>
-</template>
+    </paper-card>
+  </template>
 
-<script>
+  <script>
 import {flameColor, utilization} from './utils.js';
 
 Polymer({
@@ -132,5 +132,5 @@ Polymer({
   },
   _fused: function(node){ return node && node.xla && !node.metrics; },
 });
-</script>
+  </script>
 </dom-module>

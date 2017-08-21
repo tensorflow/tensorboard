@@ -17,7 +17,9 @@ limitations under the License.
 
 <link rel="import" href="utils.html">
 
-<dom-module id="tf-op-table-styles"><template><style>
+<dom-module id="tf-op-table-styles">
+  <template>
+    <style>
 #time {
   display: inline-block;
   width: 80px;
@@ -30,7 +32,9 @@ limitations under the License.
 #row, #header {
   padding: 0.5em;
 }
-</style></template></dom-module>
+    </style>
+  </template>
+</dom-module>
 
 <!--
   tf-op-table-entry is a row in a tf-op-table.
@@ -41,8 +45,8 @@ limitations under the License.
   expanded/collapsed.
 -->
 <dom-module id="tf-op-table-entry">
-<template>
-<style include="tf-op-table-styles">
+  <template>
+    <style include="tf-op-table-styles">
 #row {
   position: relative;
   box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.06);
@@ -74,36 +78,36 @@ limitations under the License.
 #name {
   font-family: monospace;
 }
-</style>
-<div id="row"
-     on-click="_handleHeaderClick"
-     on-mouseenter="_handleHeaderMouseEnter"
-     on-mouseleave="_handleHeaderMouseLeave"
-     hidden="[[!level]]">
-  <div id="bar"></div>
-  <span id="time">{{_percent(node.metrics.time)}}</span>
-  <span id="name" style$="padding-left:[[level]]em;">
-    <span id="disclosure">
-      <span hidden="[[!node.children.length]]">
-        <span hidden="[[expanded]]">&#x25b6;</span>
-        <span hidden="[[!expanded]]">&#x25bc;</span>
+    </style>
+    <div id="row"
+         on-click="_handleHeaderClick"
+         on-mouseenter="_handleHeaderMouseEnter"
+         on-mouseleave="_handleHeaderMouseLeave"
+         hidden="[[!level]]">
+      <div id="bar"></div>
+      <span id="time">{{_percent(node.metrics.time)}}</span>
+      <span id="name" style$="padding-left:[[level]]em;">
+        <span id="disclosure">
+          <span hidden="[[!node.children.length]]">
+            <span hidden="[[expanded]]">&#x25b6;</span>
+            <span hidden="[[!expanded]]">&#x25bc;</span>
+          </span>
+        </span>{{node.name}}
       </span>
-    </span>{{node.name}}
-  </span>
-  <span id="provenance">{{_provenance(node)}}</span>
-</div>
-<template is="dom-if" if="[[expanded]]">
-  <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
-    <tf-op-table-entry
-      node="[[item]]"
-      level={{_nextLevel(level)}}
-      table={{table}}>
-    </tf-op-table-entry>
+      <span id="provenance">{{_provenance(node)}}</span>
+    </div>
+    <template is="dom-if" if="[[expanded]]">
+      <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
+        <tf-op-table-entry
+          node="[[item]]"
+          level={{_nextLevel(level)}}
+          table={{table}}>
+        </tf-op-table-entry>
+      </template>
+    </template>
   </template>
-</template>
-</dom-module>
 
-<script>
+  <script>
 import {flameColor, percent, utilization} from './utils.js';
 
 Polymer({
@@ -145,7 +149,6 @@ Polymer({
     this.classList.add('selected');
     this.table._selectedEntry = this;
     this.table.selected = this.node;
-    console.log("Selected ", this.node);
   },
   _handleHeaderMouseEnter: function(e) { this.table.active = this.node; },
   _handleHeaderMouseLeave: function(e) { this.table.active = this.table.selected; },
@@ -155,15 +158,16 @@ Polymer({
               ? node.xla.provenance.replace(/^.*\//, '') : "";
   },
 });
-</script>
+  </script>
+</dom-module>
 
 <!--
   A tf-op-table shows a hierarchical profile using a tree of tf-op-table-entrys.
   One entry at a time can be made active (by clicking on it).
 -->
 <dom-module id="tf-op-table">
-<template>
-<style include="tf-op-table-styles">
+  <template>
+    <style include="tf-op-table-styles">
 :host {
   display: block;
   background-color: white;
@@ -178,17 +182,17 @@ Polymer({
 }
 /* Match indented names */
 #name { padding-left: 2em; }
-</style>
-<div id="header">
-  <span id="time">Time</span>
-  <span id="name">Name</span>
-  <span id="provenance">TensorFlow Op</span>
-</div>
-<tf-op-table-entry node="[[rootNode]]" table="[[_this()]]" expanded="true">
-</tf-op-table-entry>
-</dom-module>
+    </style>
+    <div id="header">
+      <span id="time">Time</span>
+      <span id="name">Name</span>
+      <span id="provenance">TensorFlow Op</span>
+    </div>
+    <tf-op-table-entry node="[[rootNode]]" table="[[_this()]]" expanded="true">
+    </tf-op-table-entry>
+  </template>
 
-<script>
+  <script>
 Polymer({
   is: 'tf-op-table',
   properties: {
@@ -206,4 +210,5 @@ Polymer({
   },
   _this: function() { return this; },
 });
-</script>
+  </script>
+</dom-module>
