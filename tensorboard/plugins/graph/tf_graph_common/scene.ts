@@ -26,6 +26,10 @@ module tf.graph.scene {
       SHAPE: 'nodeshape',
       // <*> element(s) under SHAPE that should receive color updates.
       COLOR_TARGET: 'nodecolortarget',
+      // Input argument of a TensorFlow function.
+      INPUT_ARG: 'input-arg',
+      // Output argument of a TensorFlow function.
+      OUTPUT_ARG: 'output-arg',
       // <text> element showing the node's label.
       LABEL: 'nodelabel',
       // <g> element that contains all visuals for the expand/collapse
@@ -472,6 +476,26 @@ export function positionRect(rect, cx: number, cy: number, width: number,
     .attr('y', cy - height / 2)
     .attr('width', width)
     .attr('height', height);
+};
+
+/**
+ * Positions a triangle and sizes it.
+ * @param polygon polygon to set position of.
+ * @param cx Center x.
+ * @param cy Center y.
+ * @param width Width of bounding box for triangle.
+ * @param height Height of bounding box for triangle.
+ */
+export function positionTriangle(polygon, cx, cy, width, height) {
+  const halfHeight = height / 2;
+  const halfWidth = width / 2;
+  const points = [
+    [cx, cy - halfHeight],
+    [cx + halfWidth, cy + halfHeight],
+    [cx - halfWidth, cy + halfHeight]
+  ];
+  polygon.transition().attr(
+      'points', points.map(point => point.join(',')).join(' '));
 };
 
 /**
