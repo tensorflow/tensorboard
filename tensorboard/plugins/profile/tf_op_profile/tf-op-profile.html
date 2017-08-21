@@ -129,7 +129,6 @@ Polymer({
       node.children.forEach(visit);
     }
     visit(root);
-    console.log("Worst op is ", worst);
     return worst;
   },
   _hasFlops: function(node) { return node.metrics.flops > 0; },
