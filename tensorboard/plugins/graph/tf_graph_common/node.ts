@@ -487,13 +487,7 @@ export function buildShape(nodeGroup, d, nodeClass: string): d3.Selection<any, a
         // This is input or output arg for a TensorFlow function. Use a special
         // shape (a triangle) for them.
         scene.selectOrCreateChild(
-            shapeGroup,
-            'polygon',
-            [
-              Class.Node.COLOR_TARGET,
-              _.isNumber(opNode.functionInputIndex) ?
-                  Class.Node.INPUT_ARG : Class.Node.OUTPUT_ARG
-            ]);
+            shapeGroup, 'polygon', Class.Node.COLOR_TARGET);
         break;
       }
       scene.selectOrCreateChild(shapeGroup, 'ellipse', Class.Node.COLOR_TARGET);

@@ -26,10 +26,6 @@ module tf.graph.scene {
       SHAPE: 'nodeshape',
       // <*> element(s) under SHAPE that should receive color updates.
       COLOR_TARGET: 'nodecolortarget',
-      // Input argument of a TensorFlow function.
-      INPUT_ARG: 'input-arg',
-      // Output argument of a TensorFlow function.
-      OUTPUT_ARG: 'output-arg',
       // <text> element showing the node's label.
       LABEL: 'nodelabel',
       // <g> element that contains all visuals for the expand/collapse
