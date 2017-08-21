@@ -659,7 +659,7 @@ Polymer({
     /** Whether this scene element is currently attached to a parent element. */
     _isAttached: Boolean,
 
-    /** @type {d3_zoom} d3 zoom object */
+    /** This property is a d3_zoom object. */
     _zoom: Object,
     highlightedNode: {
       type: String,
@@ -699,15 +699,15 @@ Polymer({
       value: 20
     },
     /**
-     * @type {d3.scale.ordinal}
      * Scale mapping from template name to a number between 0 and N-1
      * where N is the number of different template names. Used by
      * tf.graph.scene.node when computing node color by structure.
+     * This property is a d3.scale.ordinal object.
      */
     templateIndex: Function,
     /**
-     * @type {tf.scene.Minimap}
      * A minimap object to notify for zoom events.
+     * This property is a tf.scene.Minimap object.
      */
     minimap: Object,
     /*
