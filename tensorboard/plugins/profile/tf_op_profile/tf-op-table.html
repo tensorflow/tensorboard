@@ -64,7 +64,10 @@ limitations under the License.
       <span id="name">Name</span>
       <span id="provenance">TensorFlow Op</span>
     </div>
-    <tf-op-table-entry node="[[rootNode]]" table="[[_this()]]" expanded="true">
+    <tf-op-table-entry node="[[rootNode]]"
+        header-hover="[[_onHeaderHover]]"
+        header-click="[[_onHeaderClick]]"
+        expanded="true">
     </tf-op-table-entry>
   </template>
 
@@ -77,14 +80,41 @@ Polymer({
     },
     active: {
       type: Object,
+      computed: '_active(_selected, _hover)',
       notify: true,
     },
-    selected: {
+    _selected: {
       type: Object,
       value: null,
+      notify: true,
+    },
+    _hover: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
+    // Handlers for hover/click events on entries.
+    // We don't use two-way data binding on _hover and _selected, because
+    // we get slowdown when they change.
+    _onHeaderHover: {
+      type: Object,
+      value: function() { return (entry) => this._hover = entry; },
+    },
+    _onHeaderClick: {
+      type: Object,
+      value: function() {
+        return (entry) => {
+          if (this._selected) this._selected.selected = false;
+          this._selected = entry;
+          entry.selected = true;
+        };
+      },
     },
   },
-  _this: function() { return this; },
+  _active: function(selected, hover) {
+    if (hover) return hover.node;
+    if (selected) return selected.node;
+  },
 });
   </script>
 </dom-module>
@@ -156,7 +186,8 @@ Polymer({
         <tf-op-table-entry
           node="[[item]]"
           level={{_nextLevel(level)}}
-          table={{table}}>
+          header-hover="{{headerHover}}"
+          header-click="{{headerClick}}">
         </tf-op-table-entry>
       </template>
     </template>
@@ -175,16 +206,25 @@ Polymer({
       type: Number,
       value: 0,
     },
-    // We access the selected/active items through the root table.
-    // Using two-way binding results in notifications to each table entry,
-    // which is unacceptably slow.
-    table: {
+    headerHover: {
       type: Object,
+      value: () => function(entry) {},
+      notify: true,
+    },
+    headerClick: {
+      type: Object,
+      value: () => function(entry) {},
+      notify: true,
     },
     expanded: {
       type: Boolean,
       value: false,
       notify: true,
+    },
+    selected: {
+      type: Boolean,
+      value: false,
+      observer: '_selectedChanged',
     },
   },
   _eq: function(x, y) {
@@ -203,18 +243,16 @@ Polymer({
   _nextLevel: function(level) { return level + 1; },
   _handleHeaderClick: function(e) {
     this.expanded ^= true;
-    if (this.table._selectedEntry) this.table._selectedEntry.classList.remove('selected');
-    this.classList.add('selected');
-    this.table._selectedEntry = this;
-    this.table.selected = this.node;
+    this.headerClick(this);
   },
-  _handleHeaderMouseEnter: function(e) { this.table.active = this.node; },
-  _handleHeaderMouseLeave: function(e) { this.table.active = this.table.selected; },
+  _handleHeaderMouseEnter: function(e) { this.headerHover(this); },
+  _handleHeaderMouseLeave: function(e) { this.headerHover(null); },
   _percent: percent,
   _provenance: function(node) {
     return (node.xla && node.xla.provenance)
               ? node.xla.provenance.replace(/^.*\//, '') : "";
   },
+  _selectedChanged: function(v) { this.classList.toggle('selected', v); }
 });
   </script>
 </dom-module>
