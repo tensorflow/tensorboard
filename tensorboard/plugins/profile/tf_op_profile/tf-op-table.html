@@ -175,6 +175,9 @@ Polymer({
       type: Number,
       value: 0,
     },
+    // We access the selected/active items through the root table.
+    // Using two-way binding results in notifications to each table entry,
+    // which is unacceptably slow.
     table: {
       type: Object,
     },
