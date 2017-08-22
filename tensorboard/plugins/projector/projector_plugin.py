@@ -329,10 +329,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         if embedding.tensor_path and not embedding.tensor_shape:
           fpath = _rel_to_abs_asset_path(embedding.tensor_path,
                                          self.config_fpaths[run])
-          tensor = self.tensor_cache.get(embedding.tensor_name)
+          tensor = self.tensor_cache.get((run, embedding.tensor_name))
           if tensor is None:
             tensor = _read_tensor_tsv_file(fpath)
-            self.tensor_cache.set(embedding.tensor_name, tensor)
+            self.tensor_cache.set((run, embedding.tensor_name), tensor)
           embedding.tensor_shape.extend([len(tensor), len(tensor[0])])
 
       reader = self._get_reader_for_run(run)
@@ -539,7 +539,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     config = self.configs[run]
 
-    tensor = self.tensor_cache.get(name)
+    tensor = self.tensor_cache.get((run, name))
     if tensor is None:
       # See if there is a tensor file in the config.
       embedding = self._get_embedding(name, config)
@@ -564,7 +564,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         except tf.errors.InvalidArgumentError as e:
           return Respond(request, str(e), 'text/plain', 400)
 
-      self.tensor_cache.set(name, tensor)
+      self.tensor_cache.set((run, name), tensor)
 
     if num_rows:
       tensor = tensor[:num_rows]
