@@ -95,10 +95,18 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def tags_route(self, request):
     """A route (HTTP handler) that returns a response with tags.
+
     Returns:
       A response that contains a JSON object. The keys of the object
-      are all the runs. Each run is mapped to a (potentially empty)
-      list of all tags that are relevant to this plugin.
+      are all the runs. Each run is mapped to a (potentially empty) dictionary
+      whose keys are tags associated with run and whose values are metadata
+      (dictionaries).
+
+      The metadata dictionaries contain 2 keys:
+        - displayName: For the display name used atop visualizations in
+            TensorBoard.
+        - description: The description that appears near visualizations upon the
+            user hovering over a certain icon.
     """
     return http_util.Respond(
         request, self.tags_impl(), 'application/json')

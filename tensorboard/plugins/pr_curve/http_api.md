@@ -84,14 +84,41 @@ Used by the PR Curves dashboard to render plots.
 
 ## `/data/plugin/pr_curves/tags`
 
-Retrieves a JSON mapping between run name and a list of tags (strings) available
-for the run. Here is an example.
+Retrieves a JSON object whose keys are the names of all the runs (regardless of
+whether they have available PR curve data). The values of that object are also
+objects whose keys are tag strings (associated with the run) and whose values
+are objects with 2 keys: `displayName` and `description` (associated with the
+run-tag combination).
+
+The `displayName` is shown atop individual plots in TensorBoard. The description
+might offer insight for instance into how data was generated.  
+
+Here is an example.
 
 ```json
 {
-  "foo": ["green/pr_curves", "red/pr_curves"],
-  "bar": ["green/pr_curves", "red/pr_curves", "blue/pr_curves"]
+  "foo": {
+    "green/pr_curves": {
+      "displayName": "classifying green",
+      "description": "Human eyes are very sensitive to green."
+    },
+    "red/pr_curves":  {
+      "displayName": "classifying red",
+      "description": "Human eyes are also pretty sensitive to red."
+    },
+  },
+  "bar": {
+    "green/pr_curves": {
+      "displayName": "classifying green",
+      "description": "Human eyes are very sensitive to green."
+    },
+    "blue/pr_curves":  {
+      "displayName": "classifying red",
+      "description": "Human eyes are not as sensitive to blue."
+    },
+  },
 }
 ```
 
-Used by TensorBoard for categorizing PR Curve plots into runs and tags.
+Used by TensorBoard for categorizing PR Curve plots into runs and tags as well
+as to show metadata associated with each plot.
