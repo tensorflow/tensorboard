@@ -1,4 +1,4 @@
-# Precision—Recall Curve plugin HTTP API
+# Precision—Recall Curve Plugin HTTP API
 
 The plugin name is `pr_curves`, so all its routes are under
 `/data/plugin/pr_curves`.
