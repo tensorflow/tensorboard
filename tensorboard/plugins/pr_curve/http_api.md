@@ -113,7 +113,7 @@ Here is an example.
       "description": "Human eyes are very sensitive to green."
     },
     "blue/pr_curves":  {
-      "displayName": "classifying red",
+      "displayName": "classifying blue",
       "description": "Human eyes are not as sensitive to blue."
     },
   },
