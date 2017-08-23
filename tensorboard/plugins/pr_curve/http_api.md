@@ -25,12 +25,12 @@ data for.
 Each PR data entry contains the following properties.
 
 * **wall_time**: The wall time (number) in seconds since the epoch at which data
-                 for the PR curve was collected.
+  for the PR curve was collected.
 * **step**: The step (number).
 * **precision**: A list of precision values (numbers). The length of this list
-                 is the number of thresholds used to generate PR curves.
+  is the number of thresholds used to generate PR curves.
 * **recall**: A list of recall values that each pair-wise correspond to the list
-              of precision values (numbers).
+  of precision values (numbers).
 
 Here is an example. We assume 5 thresholds for PR curves. We also assume GET
 parameters of `?tag=green/pr_curves&run=bar&run=foo`.
