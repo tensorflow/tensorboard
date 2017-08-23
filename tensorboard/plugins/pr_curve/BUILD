@@ -24,6 +24,7 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/plugins:base_plugin",

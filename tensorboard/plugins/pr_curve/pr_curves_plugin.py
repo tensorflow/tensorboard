@@ -20,6 +20,7 @@ import tensorflow as tf
 import six
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
@@ -108,11 +109,18 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       The JSON object for the tags route response.
     """
-    all_runs = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-    return {
-        run: list(tag_to_content.keys())
-        for (run, tag_to_content) in all_runs.items()
-    }
+    runs = self._multiplexer.Runs()
+    result = {run: {} for run in runs}
+
+    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+    for (run, tag_to_content) in six.iteritems(mapping):
+      for (tag, content) in six.iteritems(tag_to_content):
+        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        result[run][tag] = {'displayName': summary_metadata.display_name,
+                            'description': plugin_util.markdown_to_safe_html(
+                                summary_metadata.summary_description)}
+
+    return result
 
   @wrappers.Request.application
   def available_steps_route(self, request):
@@ -148,7 +156,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # within the same run. If the latter occurs, TensorBoard will show the
       # actual step of each tag atop the card for the tag.
       tensor_events = self._multiplexer.Tensors(
-          run, next(six.iterkeys(tag_to_content)))
+          run, min(six.iterkeys(tag_to_content)))
       response[run] = [e.step for e in tensor_events]
     return response
 

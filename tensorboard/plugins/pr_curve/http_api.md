@@ -1,6 +1,6 @@
 # Precision—Recall Curve plugin HTTP API
 
-The scalar plugin name is `pr_curves`, so all its routes are under
+The plugin name is `pr_curves`, so all its routes are under
 `/data/plugin/pr_curves`.
 
 ## `/data/plugin/pr_curves/available_steps`
@@ -15,7 +15,7 @@ the step slider of the run. Here is an example.
 }
 ```
 
-## `/data/plugin/scalars/pr_curves`
+## `/data/plugin/pr_curves/pr_curves`
 
 Retrieves a JSON object mapping run name to a list of PR curve data entries (one
 entry per step). This route requires a `tag` GET parameter as well as at least
@@ -82,7 +82,7 @@ parameters of `?tag=green/pr_curves&run=bar&run=foo`.
 
 Used by the PR Curves dashboard to render plots.
 
-## `/data/plugin/scalars/tags`
+## `/data/plugin/pr_curves/tags`
 
 Retrieves a JSON mapping between run name and a list of tags (strings) available
 for the run. Here is an example.

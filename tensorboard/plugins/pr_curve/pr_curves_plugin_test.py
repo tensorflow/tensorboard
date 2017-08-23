@@ -75,6 +75,20 @@ class PrCurvesPluginTest(tf.test.TestCase):
     np.testing.assert_allclose(
         expected_recall, pr_curve_entry['recall'], rtol=0, atol=1e-7)
 
+  def computeCorrectDescription(self, standard_deviation):
+    """Generates a correct description.
+
+    Arguments:
+      standard_deviation: An integer standard deviation value.
+
+    Returns:
+      The correct description given a standard deviation value.
+    """
+    description = ('<p>The probabilities used to create this PR curve are '
+                   'generated from a normal distribution. Its standard '
+                   'deviation is initially %d and decreases'
+                   ' over time.</p>') % standard_deviation
+
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
     routes = self.plugin.get_plugin_apps()
@@ -90,13 +104,39 @@ class PrCurvesPluginTest(tf.test.TestCase):
     self.assertItemsEqual(
         ['colors', 'mask_every_other_prediction'], list(tags_response.keys()))
 
-    # Assert that runs are mapped to correct tags.
+    # Assert that the tags for each run are correct.
     self.assertItemsEqual(
         ['red/pr_curves', 'green/pr_curves', 'blue/pr_curves'],
-        tags_response['colors'])
+        list(tags_response['colors'].keys()))
     self.assertItemsEqual(
         ['red/pr_curves', 'green/pr_curves', 'blue/pr_curves'],
-        tags_response['mask_every_other_prediction'])
+        list(tags_response['mask_every_other_prediction'].keys()))
+
+    # Verify the data for each run-tag combination.
+    self.assertDictEqual({
+      'displayName': 'classifying red',
+      'description': self.computeCorrectDescription(168),
+    }, tags_response['colors']['red/pr_curves'])
+    self.assertDictEqual({
+      'displayName': 'classifying green',
+      'description': self.computeCorrectDescription(210),
+    }, tags_response['colors']['green/pr_curves'])
+    self.assertDictEqual({
+      'displayName': 'classifying blue',
+      'description': self.computeCorrectDescription(252),
+    }, tags_response['colors']['blue/pr_curves'])
+    self.assertDictEqual({
+      'displayName': 'classifying red',
+      'description': self.computeCorrectDescription(168),
+    }, tags_response['mask_every_other_prediction']['red/pr_curves'])
+    self.assertDictEqual({
+      'displayName': 'classifying green',
+      'description': self.computeCorrectDescription(210),
+    }, tags_response['mask_every_other_prediction']['green/pr_curves'])
+    self.assertDictEqual({
+      'displayName': 'classifying blue',
+      'description': self.computeCorrectDescription(252),
+    }, tags_response['mask_every_other_prediction']['blue/pr_curves'])
 
   def testAvailableSteps(self):
     """Tests that runs are mapped to correct available steps."""
