@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from google.protobuf import json_format
 import tensorflow as tf
 from tensorboard.plugins.pr_curve import plugin_data_pb2
 
@@ -47,7 +46,7 @@ def create_summary_metadata(display_name, description, num_thresholds):
   """
   pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
       version=PROTO_VERSION, num_thresholds=num_thresholds)
-  content = json_format.MessageToJson(pr_curve_plugin_data)
+  content = pr_curve_plugin_data.SerializeToString()
   return tf.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
