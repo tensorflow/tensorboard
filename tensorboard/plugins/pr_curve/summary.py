@@ -139,7 +139,7 @@ def op(
 
     thresholds = tf.cast(
         tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
-
+    
     # Set up the cumulative sums to compute the actual metrics.
     tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
     fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
