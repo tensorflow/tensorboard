@@ -28,8 +28,6 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.profile import trace_events_json
-from tensorboard.plugins.profile import trace_events_pb2
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -42,15 +40,8 @@ TOOLS_ROUTE = '/tools'
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
-    'trace_viewer': 'trace',
+    'trace_viewer': 'trace.json.gz',
 }
-
-
-def process_raw_trace(raw_trace):
-  """Processes raw trace data and returns the UI data."""
-  trace = trace_events_pb2.Trace()
-  trace.ParseFromString(raw_trace)
-  return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
 
 class ProfilePlugin(base_plugin.TBPlugin):
@@ -128,15 +119,14 @@ class ProfilePlugin(base_plugin.TBPlugin):
     return http_util.Respond(request, run_to_tools, 'application/json')
 
   def data_impl(self, run, tool):
-    """Retrieves and processes the tool data for a run.
+    """Retrieves the tool data for a run.
 
     Args:
       run: Name of the run.
       tool: Name of the tool.
 
     Returns:
-      A string that can be served to the frontend tool or None if tool or
-        run is invalid.
+      The tool data for the given run or None if run or tool is invalid.
     """
     # Path relative to the path of plugin directory.
     if tool not in TOOLS:
@@ -145,20 +135,16 @@ class ProfilePlugin(base_plugin.TBPlugin):
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      # TODO(ioeric): use plugin_asset_util.RetieveAsset when it support reading
-      # bytes data in python 3.
-      with tf.gfile.Open(asset_path, "rb") as f:
+      # TODO(ioeric): Switch to use plugin_asset_util.RetieveAsset when the API
+      # supports reading bytes data in python 3.
+      with tf.gfile.Open(asset_path, 'rb') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning("Asset path %s not found", asset_path)
+      logging.warning('Asset path %s not found', asset_path)
     except tf.errors.OpError as e:
       logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
 
-    if raw_data is None:
-      return None
-    if tool == 'trace_viewer':
-      return process_raw_trace(raw_data)
-    return None
+    return raw_data
 
   @wrappers.Request.application
   def data_route(self, request):
@@ -169,9 +155,12 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run = request.args.get('run')
     tool = request.args.get('tag')
     data = self.data_impl(run, tool)
-    if data is None:
-      return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
-    return http_util.Respond(request, data, 'text/plain')
+    if data:
+      if tool == 'trace_viewer':
+        # The JSON trace is ready to be visualized in TraceViewer.
+        return http_util.Respond(request, data, 'text/plain', encoding='gzip')
+    return http_util.Respond(
+        request, '404 not found', 'text/plain', code=404)
 
   def get_plugin_apps(self):
     return {
