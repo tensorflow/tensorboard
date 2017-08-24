@@ -41,11 +41,11 @@ export interface Point {
   dataset: Plottable.Dataset;
 }
 
-export interface TooltipColumnState{
+export interface TooltipColumnState {
   smoothingEnabled: boolean;
 }
 
-export interface TooltipColumn {
+export interface TooltipColumn { 
   title: string;
   // This function computes the value for the string. None of the arguments
   // passed to it are ever falsy.
