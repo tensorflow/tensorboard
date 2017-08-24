@@ -107,7 +107,7 @@ class TensorboardServerTest(tf.test.TestCase):
 
 class TensorboardServerBaseUrlTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
-
+  base_url = '/test'
   def setUp(self):
     plugins = [
         FakePlugin(
@@ -115,7 +115,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
         FakePlugin(
             None, plugin_name='bar', is_active_value=False, routes_mapping={}),
     ]
-    app = application.TensorBoardWSGI(plugins, base_url='/test')
+    app = application.TensorBoardWSGI(plugins, base_url=self.base_url)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
   def _get_json(self, path):
@@ -124,9 +124,14 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
     self.assertEqual('application/json', response.headers.get('Content-Type'))
     return json.loads(response.get_data().decode('utf-8'))
 
+  def testBaseUrlRequest(self):
+    """Request a page that doesn't exist; it should 404."""
+    response = self.server.get(self.base_url)
+    self.assertEqual(404, response.status_code)
+
   def testBaseUrlRequestNonexistentPage(self):
     """Request a page that doesn't exist; it should 404."""
-    response = self.server.get('/test/asdf')
+    response = self.server.get(self.base_url + '/asdf')
     self.assertEqual(404, response.status_code)
 
   def testBaseUrlNonexistentPluginsListing(self):
@@ -136,7 +141,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
 
   def testPluginsListing(self):
     """Test the format of the data/plugins_listing endpoint."""
-    parsed_object = self._get_json('/test/data/plugins_listing')
+    parsed_object = self._get_json(self.base_url + '/data/plugins_listing')
     # Plugin foo is active. Plugin bar is not.
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
@@ -350,7 +355,6 @@ class TensorboardSimpleServerConstructionTest(tf.test.TestCase):
       # IPv6 is not supported
       pass
     self.assertTrue(one_passed)  # We expect either IPv4 or IPv6 to be supported
-
 
 class TensorBoardApplcationConstructionTest(tf.test.TestCase):
 
