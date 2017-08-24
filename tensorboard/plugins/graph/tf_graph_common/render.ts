@@ -1455,9 +1455,8 @@ export class RenderNodeInfo {
     this.displayName = node.name.substring(
         node.name.lastIndexOf(tf.graph.NAMESPACE_DELIM) + 1);
 
-    const functionNode = node as Metanode;
-    if (functionNode.type === NodeType.META &&
-        functionNode.associatedFunction) {
+    if (node.type === NodeType.META &&
+        (node as Metanode).associatedFunction) {
       // Function names are suffixed with a length-8 hexadecimal string
       // followed by an optional number. We remove that suffix because
       // the user did not generate that suffix. That suffix merely
