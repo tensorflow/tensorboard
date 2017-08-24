@@ -94,10 +94,11 @@ Polymer({
 
     /**
      * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
-     * table element ... because polymer is awry. Hence, we manually generate
-     * the HTML for creating a row of table headers.
+     * table element because Polymer does not support that. This seems like
+     * a bug in Polymer. Hence, we manually generate the HTML for creating a row
+     * of table headers.
      */
-    tooltipTableHeaderHtml: {
+    _tooltipTableHeaderHtml: {
       type: String,
       computed: "_computeTooltipTableHeaderHtml(tooltipColumns)",
     },

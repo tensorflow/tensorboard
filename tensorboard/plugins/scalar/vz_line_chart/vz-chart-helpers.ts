@@ -41,7 +41,7 @@ export interface Point {
   dataset: Plottable.Dataset;
 }
 
-export interface TooltipColumnStatus {
+export interface TooltipColumnState{
   smoothingEnabled: boolean;
 }
 
@@ -49,7 +49,7 @@ export interface TooltipColumn {
   title: string;
   // This function computes the value for the string. None of the arguments
   // passed to it are ever falsy.
-  evaluate: ((p: Point, status: TooltipColumnStatus) => string);
+  evaluate: ((p: Point, status: TooltipColumnState) => string);
 }
 
 /* Create a formatter function that will switch between exponential and

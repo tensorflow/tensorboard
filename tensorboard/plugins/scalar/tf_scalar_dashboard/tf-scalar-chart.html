@@ -215,10 +215,7 @@ limitations under the License.
         /**
          * @type {X_TYPE}
          */
-        xType: {
-          type: String,
-          notify: true,
-        },
+        xType: String,
 
         _xComponentsCreationMethod: {
           type: Object,
@@ -254,7 +251,7 @@ limitations under the License.
               },
               {
                 title: 'Value',
-                evaluate: (d) => d.datum.scalar,
+                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
               },
               {
                 title: 'Step',
