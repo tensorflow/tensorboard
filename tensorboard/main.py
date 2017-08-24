@@ -40,6 +40,7 @@ from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
+from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
@@ -254,6 +255,7 @@ def main(unused_argv=None):
         distributions_plugin.DistributionsPlugin,
         histograms_plugin.HistogramsPlugin,
         projector_plugin.ProjectorPlugin,
+        pr_curves_plugin.PrCurvesPlugin,
         text_plugin.TextPlugin,
         profile_plugin.ProfilePlugin,
         ConstructDebuggerPluginWithGrpcPort,

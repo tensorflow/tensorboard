@@ -1,0 +1,252 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="tf-pr-curve-card.html">
+<link rel="import" href="tf-pr-curve-steps-selector.html">
+
+<!--
+  A frontend that displays a set of precision–recall curves. Each PR curve is
+  associated with a tag (which is in turn associated with 1 class).
+-->
+<dom-module id="tf-pr-curve-dashboard">
+  <template>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <tf-option-selector
+            id="time-type-selector"
+            name="Time Display Type"
+            selected-id="{{_timeDisplayType}}"
+          >
+            <paper-button id="step">step</paper-button><!--
+            --><paper-button id="relative">relative</paper-button><!--
+            --><paper-button id="wall_time">wall</paper-button>
+          </tf-option-selector>
+        </div>
+        <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
+          <div class="sidebar-section" id="steps-selector-container">
+            <tf-pr-curve-steps-selector
+                  runs="[[_relevantSelectedRuns]]"
+                  run-to-step="{{_runToStep}}"
+                  run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
+                  time-display-type="[[_timeDisplayType]]"></tf-pr-curve-steps-selector>
+          </div>
+        </template>
+        <div class="sidebar-section">
+          <tf-runs-selector selected-runs="{{_selectedRuns}}">
+          </tf-runs-selector>
+        </div>
+       </div>
+      </div>
+      <div class="center">
+        <template is="dom-if" if="[[_dataNotFound]]">
+          <div class="no-data-warning">
+            <h3>No precision–recall curve data was found.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>
+                You haven’t written any precision–recall data to your event
+                files.
+              </li>
+              <li>
+                TensorBoard can’t find your event files.
+              </li>
+            </ul>
+            <p>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+          </div>
+        </template>
+        <template is="dom-if" if="[[!_dataNotFound]]">
+          <paper-input
+            no-label-float
+            label="Filter tags (regular expressions supported)"
+            value="{{_tagFilter}}"
+            class="search-input"
+          >
+            <iron-icon prefix icon="search"></iron-icon>
+          </paper-input>
+          <template is="dom-repeat" items="[[_categories]]" as="category">
+            <tf-category-pane category="[[category]]">
+              <tf-paginated-view
+                items="[[category.items]]"
+                pages="{{category._pages}}"
+              >
+                <template is="dom-repeat" items="[[category._pages]]" as="page">
+                  <template is="dom-if" if="[[page.active]]">
+                    <div class="layout horizontal wrap">
+                      <template is="dom-repeat" items="[[page.items]]">
+                        <tf-pr-curve-card
+                          runs="[[item.runs]]"
+                          tag="[[item.tag]]"
+                          request-manager="[[_requestManager]]"
+                          run-to-step-cap="[[_runToStep]]"
+                        ></tf-pr-curve-card>
+                      </template>
+                    </div>
+                  </template>
+                </template>
+              </tf-paginated-view>
+            </tf-category-pane>
+          </template>
+        </template>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+    <style>
+      #instructions {
+        width: 300px;
+      }
+      .tooltip-block-container {
+        display: inline-block;
+      }
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+      .run-step-combo .run-text {
+        margin: 10px 0 0 0;
+      }
+      /** Not not let the steps selector occlude the run selector. */
+      #steps-selector-container {
+        max-height: 40%;
+        overflow-y: auto;
+      }
+    </style>
+  </template>
+
+  <script>
+  import {RequestManager} from '../tf-backend/requestManager.js';
+  import {getTags} from '../tf-backend/backend.js';
+  import {getRouter} from '../tf-backend/router.js';
+  import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
+  import {runsColorScale} from "../tf-color-scale/colorScale.js";
+
+  Polymer({
+    is: 'tf-pr-curve-dashboard',
+    properties: {
+      // Determines how the time entry is shown. One of step, relative, or
+      // wall_time.
+      _timeDisplayType : {
+        type: String,
+        value: 'step',
+      },
+      _selectedRuns: Array,
+      _runToTag: Object,  // map<run: string, tags: string[]>
+      // The steps that the step slider for each run should use.
+      _runToAvailableTimeEntries: {
+        type: Object, // map<run: string, steps: number[]>
+        value: {},
+      },
+      // A list of runs that are both selected and have PR curve data.
+      _relevantSelectedRuns: {
+        type: Array,
+        computed: "_computeRelevantSelectedRuns(_selectedRuns, _runToTag)",
+      },
+      _runsWithPrCurveData: Array,  // string[]
+      // The actual step value that each run should use. If a run + tag lacks a
+      // PR curve at this exact step value, the greatest step value less than
+      // this value will be used.
+      _runToStep: {
+        type: Object,  // map<run: string, step: number>
+        notify: true,
+      },
+      _dataNotFound: Boolean,
+      _tagFilter: {
+        type: String,  // upward bound from paper-input
+        value: '.*',
+      },
+      _categories: {
+        type: Array,
+        computed: '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
+      },
+      _requestManager: {
+        type: Object,
+        value: () => new RequestManager(),
+      },
+      _step: {
+        type: Number,
+        value: 0,
+        notify: true,
+      },
+    },
+    ready() {
+      this.reload();
+    },
+    reload() {
+      Promise.all(
+          [this._fetchTags(), this._fetchTimeEntriesPerRun()]).then(() => {
+        this._reloadCards();
+      });
+    },
+    _fetchTags() {
+      const url = getRouter().pluginRoute('pr_curves', '/tags');
+      return this._requestManager.request(url).then(runToTag => {
+        if (_.isEqual(runToTag, this._runToTag)) {
+          // No need to update anything if there are no changes.
+          return;
+        }
+        const tags = getTags(runToTag);
+        this.set('_dataNotFound', tags.length === 0);
+        this.set('_runToTag', runToTag);
+      });
+    },
+    _fetchTimeEntriesPerRun() {
+      const url = getRouter().pluginRoute(
+          'pr_curves', '/available_time_entries');
+      return this._requestManager.request(url).then(timeEntriesPerRun => {
+        this.set('_runToAvailableTimeEntries', timeEntriesPerRun);
+
+        const listOfRuns = _.keys(timeEntriesPerRun).sort();
+        if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
+          this.set('_runsWithPrCurveData', listOfRuns);
+        }
+      });
+    },
+    _reloadCards() {
+      this.querySelectorAll('tf-pr-curve-card').forEach(card => {
+        card.reload();
+      });
+    },
+    _makeCategories(runToTag, selectedRuns, tagFilter) {
+      return categorizeTags(runToTag, selectedRuns, tagFilter);
+    },
+    _computeColorForRun(run) {
+      return runsColorScale(run);
+    },
+    _computeRelevantSelectedRuns(selectedRuns, runToTag) {
+      return _.filter(selectedRuns, run => runToTag[run]);
+    },
+  });
+  </script>
+</dom-module>

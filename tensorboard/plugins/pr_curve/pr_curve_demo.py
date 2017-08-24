@@ -30,7 +30,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import math
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -53,7 +52,7 @@ def start_runs(
     thresholds,
     mask_every_other_prediction=False):
   """Generate a PR curve with precision and recall evenly weighted.
-  
+
   Arguments:
     logdir: The directory into which to store all the runs' data.
     steps: The number of steps to run for.
@@ -64,7 +63,7 @@ def start_runs(
   """
   tf.reset_default_graph()
   tf.set_random_seed(42)
-  
+
   # Create a normal distribution layer used to generate true color labels.
   channel_distribution = tf.distributions.Normal(loc=0., scale=142.)
 
@@ -78,7 +77,7 @@ def start_runs(
           255 - tf.abs(channel_distribution.sample([number_of_reds, 1])),
           tf.abs(channel_distribution.sample([number_of_reds, 2]))
       ], axis=1),
-  0, 255)
+      0, 255)
 
   # Generate greens.
   number_of_greens = 200
@@ -88,7 +87,7 @@ def start_runs(
           255 - tf.abs(channel_distribution.sample([number_of_greens, 1])),
           tf.abs(channel_distribution.sample([number_of_greens, 1]))
       ], axis=1),
-  0, 255)
+      0, 255)
 
   # Generate blues.
   number_of_blues = 150
@@ -97,7 +96,7 @@ def start_runs(
           tf.abs(channel_distribution.sample([number_of_blues, 2])),
           255 - tf.abs(channel_distribution.sample([number_of_blues, 1]))
       ], axis=1),
-  0, 255)
+      0, 255)
 
   # Assign each color a vector of 3 booleans based on its true label.
   labels = tf.concat([
@@ -130,7 +129,7 @@ def start_runs(
 
   # Make predictions (assign 3 probabilities to each color based on each color's
   # distance to each of the 3 corners). We seek double the area in the right
-  # tail of the normal distribution. 
+  # tail of the normal distribution.
   examples = tf.concat([true_reds, true_greens, true_blues], axis=0)
   probabilities_colors_are_red = (1 - red_predictor.cdf(
       tf.norm(examples - tf.constant([255., 0, 0]), axis=1))) * 2
@@ -151,7 +150,7 @@ def start_runs(
     description = ('The probabilities used to create this PR curve are '
                    'generated from a normal distribution. Its standard '
                    'deviation is initially %0.0f and decreases over time.' %
-                       initial_standard_deviations[i])
+                   initial_standard_deviations[i])
 
     weights = None
     if mask_every_other_prediction:
@@ -196,7 +195,7 @@ def run_all(logdir, steps, thresholds, verbose=False):
   # predictions of all classes.
   run_name = 'colors'
   if verbose:
-      print('--- Running: %s' % run_name)
+    print('--- Running: %s' % run_name)
   start_runs(
       logdir=logdir,
       steps=steps,
@@ -207,7 +206,7 @@ def run_all(logdir, steps, thresholds, verbose=False):
   # predictions.
   run_name = 'mask_every_other_prediction'
   if verbose:
-      print('--- Running: %s' % run_name)
+    print('--- Running: %s' % run_name)
   start_runs(
       logdir=logdir,
       steps=steps,
