@@ -147,7 +147,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       The JSON object for the available time entries route response.
     """
     all_runs = self._multiplexer.PluginRunToTagToContent(
-        PrCurvesPlugin.plugin_name)
+        metadata.plugin_name)
     response = {}
 
     # Compute the max step exhibited by any tag for each run. If a run lacks
@@ -163,7 +163,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # within the same run. If the latter occurs, TensorBoard will show the
       # actual step of each tag atop the card for the tag.
       tensor_events = self._multiplexer.Tensors(
-          run, list(tag_to_content.keys())[0])
+          run, min(six.iterkeys(tag_to_content)))
       response[run] = [self._create_time_entry(e, tensor_events[0].wall_time)
                        for e in tensor_events]
     return response
