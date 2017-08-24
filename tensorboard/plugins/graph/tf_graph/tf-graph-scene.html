@@ -194,21 +194,21 @@ limitations under the License.
 
 /* --- Op Node --- */
 
-::content .op > .nodeshape > ellipse,
-::content .op > .annotation-node > ellipse {
+::content .op > .nodeshape > .nodecolortarget,
+::content .op > .annotation-node > .nodecolortarget {
   cursor: pointer;
   fill: #fff;
   stroke: #ccc;
 }
 
-::content .op.selected > .nodeshape > ellipse,
-::content .op.selected > .annotation-node > ellipse {
+::content .op.selected > .nodeshape > .nodecolortarget,
+::content .op.selected > .annotation-node > .nodecolortarget {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .op.highlighted > .nodeshape > ellipse,
-::content .op.highlighted > .annotation-node > ellipse {
+::content .op.highlighted > .nodeshape > .nodecolortarget,
+::content .op.highlighted > .annotation-node > .nodecolortarget {
   stroke-width: 2;
 }
 

@@ -475,6 +475,26 @@ export function positionRect(rect, cx: number, cy: number, width: number,
 };
 
 /**
+ * Positions a triangle and sizes it.
+ * @param polygon polygon to set position of.
+ * @param cx Center x.
+ * @param cy Center y.
+ * @param width Width of bounding box for triangle.
+ * @param height Height of bounding box for triangle.
+ */
+export function positionTriangle(polygon, cx, cy, width, height) {
+  const halfHeight = height / 2;
+  const halfWidth = width / 2;
+  const points = [
+    [cx, cy - halfHeight],
+    [cx + halfWidth, cy + halfHeight],
+    [cx - halfWidth, cy + halfHeight]
+  ];
+  polygon.transition().attr(
+      'points', points.map(point => point.join(',')).join(' '));
+};
+
+/**
  * Helper for setting position of a svg expand/collapse button
  * @param button container group
  * @param renderNode the render node of the group node to position
