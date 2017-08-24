@@ -147,7 +147,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       The JSON object for the available time entries route response.
     """
     all_runs = self._multiplexer.PluginRunToTagToContent(
-        metadata.plugin_name)
+        metadata.PLUGIN_NAME)
     response = {}
 
     # Compute the max step exhibited by any tag for each run. If a run lacks
