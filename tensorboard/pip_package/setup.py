@@ -19,29 +19,9 @@ from __future__ import print_function
 
 import sys
 
-import pip
 from setuptools import find_packages, setup
 
 import tensorboard.version
-
-TENSORFLOW_CPU_PACKAGE_NAME = 'tensorflow'
-TENSORFLOW_GPU_PACKAGE_NAME = 'tensorflow-gpu'
-
-# Determine if the user has installed tensorflow-gpu. If so, we must not
-# override it by installing tensorflow with only CPU support. Instead,
-# we must install tensorflow-gpu.
-tensorflow_package_name = TENSORFLOW_CPU_PACKAGE_NAME
-for package in pip.commands.freeze.freeze():
-  if package.startswith(TENSORFLOW_GPU_PACKAGE_NAME):
-    # The user has TensorFlow with GPU support installed.
-    tensorflow_package_name = TENSORFLOW_GPU_PACKAGE_NAME
-    break
-
-  if package > TENSORFLOW_GPU_PACKAGE_NAME:
-    # The freeze command lists packages in alphabetical order. If the
-    # current package comes after the package we are looking for, we can
-    # stop looking.
-    break
 
 REQUIRED_PACKAGES = [
     'futures >= 3.1.1',
@@ -53,7 +33,6 @@ REQUIRED_PACKAGES = [
     'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
     'bleach == 1.5.0',
-    '%s >= 1.3.0' % tensorflow_package_name,
 ]
 
 # python3 requires wheel 0.26
