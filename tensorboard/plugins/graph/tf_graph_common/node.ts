@@ -339,8 +339,7 @@ export function getGroupSettingLabel(node: Node) {
  */
 function labelBuild(nodeGroup, renderNodeInfo: render.RenderNodeInfo,
     sceneElement) {
-  let namePath = renderNodeInfo.node.name.split('/');
-  let text = namePath[namePath.length - 1];
+  let text = renderNodeInfo.displayName;
 
   // Truncate long labels for unexpanded Metanodes.
   let useFontScale = renderNodeInfo.node.type === NodeType.META &&
@@ -739,7 +738,9 @@ export function stylize(nodeGroup, renderInfo: render.RenderNodeInfo,
   nodeClass = nodeClass || Class.Node.SHAPE;
   let isHighlighted = sceneElement.isNodeHighlighted(renderInfo.node.name);
   let isSelected = sceneElement.isNodeSelected(renderInfo.node.name);
-  let isExtract = renderInfo.isInExtract || renderInfo.isOutExtract;
+  let isExtract = renderInfo.isInExtract ||
+                  renderInfo.isOutExtract ||
+                  renderInfo.isLibraryFunction;
   let isExpanded = renderInfo.expanded && nodeClass !== Class.Annotation.NODE;
   let isFadedOut = renderInfo.isFadedOut;
   nodeGroup.classed('highlighted', isHighlighted);

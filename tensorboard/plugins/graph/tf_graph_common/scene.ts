@@ -59,6 +59,7 @@ module tf.graph.scene {
     Scene: {
       GROUP: 'scene',
       CORE: 'core',
+      FUNCTION_LIBRARY: 'function-library',
       INEXTRACT: 'in-extract',
       OUTEXTRACT: 'out-extract'
     },
@@ -389,6 +390,16 @@ export function buildGroup(container,
     selectChild(sceneGroup, 'g', Class.Scene.OUTEXTRACT).remove();
   }
 
+  // Library functions
+  if (renderNode.libraryFunctionsExtract.length > 0) {
+    let outExtractGroup =
+        selectOrCreateChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY);
+    node.buildGroup(outExtractGroup, renderNode.libraryFunctionsExtract,
+        sceneElement);
+  } else {
+    selectChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY).remove();
+  }
+
   position(sceneGroup, renderNode);
 
   // Fade in the scene group if it didn't already exist.
@@ -420,12 +431,31 @@ function position(sceneGroup, renderNode: render.RenderGroupNodeInfo) {
   // in-extract
   let hasInExtract = renderNode.isolatedInExtract.length > 0;
   let hasOutExtract = renderNode.isolatedOutExtract.length > 0;
+  let hasLibraryFunctions = renderNode.libraryFunctionsExtract.length > 0;
+
+  let offset = layout.PARAMS.subscene.meta.extractXOffset;
+
+  let auxWidth = 0;
+  if (hasInExtract) {
+    auxWidth += renderNode.outExtractBox.width;
+  }
+  if (hasOutExtract) {
+    auxWidth += renderNode.outExtractBox.width;
+  }
 
   if (hasInExtract) {
-    let offset = layout.PARAMS.subscene.meta.extractXOffset;
-    let inExtractX = renderNode.coreBox.width -
-      renderNode.inExtractBox.width / 2 - renderNode.outExtractBox.width -
+    let inExtractX = renderNode.coreBox.width;
+    if (auxWidth < layout.MIN_AUX_WIDTH) {
+      inExtractX = inExtractX - layout.MIN_AUX_WIDTH +
+          renderNode.inExtractBox.width / 2;
+    } else {
+      inExtractX = inExtractX -
+          renderNode.inExtractBox.width / 2 - renderNode.outExtractBox.width -
           (hasOutExtract ? offset : 0);
+    }
+    inExtractX = inExtractX -
+        renderNode.libraryFunctionsBox.width -
+        (hasLibraryFunctions ? offset : 0);
     translate(
         selectChild(sceneGroup, 'g', Class.Scene.INEXTRACT), inExtractX,
         yTranslate);
@@ -433,10 +463,27 @@ function position(sceneGroup, renderNode: render.RenderGroupNodeInfo) {
 
   // out-extract
   if (hasOutExtract) {
-    let outExtractX = renderNode.coreBox.width -
-      renderNode.outExtractBox.width / 2;
+    let outExtractX = renderNode.coreBox.width;
+    if (auxWidth < layout.MIN_AUX_WIDTH) {
+      outExtractX = outExtractX - layout.MIN_AUX_WIDTH +
+          renderNode.outExtractBox.width / 2;
+    } else {
+      outExtractX -= renderNode.outExtractBox.width / 2;
+    }
+    outExtractX = outExtractX -
+      renderNode.libraryFunctionsBox.width -
+      (hasLibraryFunctions ? offset : 0);
     translate(
         selectChild(sceneGroup, 'g', Class.Scene.OUTEXTRACT), outExtractX,
+        yTranslate);
+  }
+
+  if (hasLibraryFunctions) {
+    let libraryFunctionsExtractX = renderNode.coreBox.width -
+        renderNode.libraryFunctionsBox.width / 2;
+    translate(
+        selectChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY),
+        libraryFunctionsExtractX,
         yTranslate);
   }
 };

@@ -504,11 +504,7 @@ limitations under the License.
   top: 20px;
 }
 
-.title {
-  position: absolute;
-}
-
-.auxTitle {
+.title, .auxTitle, .functionLibraryTitle {
   position: absolute;
 }
 
@@ -521,6 +517,7 @@ limitations under the License.
 <div class="titleContainer">
   <div id="title" class="title">Main Graph</div>
   <div id="auxTitle" class="auxTitle">Auxiliary Nodes</div>
+  <div id="functionLibraryTitle" class="functionLibraryTitle">Functions</div>
 </div>
 <svg id="svg">
   <defs>
@@ -899,7 +896,10 @@ Polymer({
   _updateLabels: function(showLabels) {
     var mainGraphTitleElement = this.getElementsByClassName('title')[0];
     var titleStyle = mainGraphTitleElement.style;
-    var auxTitleStyle = this.getElementsByClassName('auxTitle')[0].style;
+    var auxTitleElement = this.getElementsByClassName('auxTitle')[0];
+    var auxTitleStyle = auxTitleElement.style;
+    var functionLibraryTitleStyle =
+        this.getElementsByClassName('functionLibraryTitle')[0].style;
     var core = d3.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
       tf.graph.scene.Class.Scene.CORE).node();
     // Only show labels if the graph is fully loaded.
@@ -925,9 +925,29 @@ Polymer({
       } else {
         auxTitleStyle.display = 'none';
       }
+
+      let functionLibrary = d3.select(
+          "." + tf.graph.scene.Class.Scene.GROUP + ">." +
+              tf.graph.scene.Class.Scene.FUNCTION_LIBRARY).node();
+      let functionLibraryX =
+          functionLibrary ? functionLibrary.getCTM().e : null;
+      if (functionLibraryX !== null && functionLibraryX !== auxX) {
+        functionLibraryTitleStyle.display = 'inline';
+
+        // Make sure that the function library title is positioned rightwards
+        // enough so as to prevent overlap with other content.
+        functionLibraryX = Math.max(
+            auxX + auxTitleElement.getBoundingClientRect().width,
+            functionLibraryX);
+
+        functionLibraryTitleStyle.left = functionLibraryX + 'px';
+      } else {
+        functionLibraryTitleStyle.display = 'none';
+      }
     } else {
-      titleStyle.display='none';
+      titleStyle.display = 'none';
       auxTitleStyle.display = 'none';
+      functionLibraryTitleStyle.display = 'none';
     }
   },
   /**
