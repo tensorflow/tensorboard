@@ -343,4 +343,4 @@ Next, we dive in with setting up a standard dashboard layout. Here is an overvie
 
 ## Integration
 
-We're still polishing out how you integrate a new plugin into TensorBoard. For now, take a look at @jart's [TensorBoard Plugin Example](https://github.com/jart/tensorboard_plugin_example).
+We're still polishing out how you integrate a new plugin into TensorBoard. For now, take a look at @jart's [TensorBoard Plugin Example](https://github.com/jart/tensorboard-plugin-example).
