@@ -17,9 +17,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import pip
 import sys
 
+import pip
 from setuptools import find_packages, setup
 
 import tensorboard.version
