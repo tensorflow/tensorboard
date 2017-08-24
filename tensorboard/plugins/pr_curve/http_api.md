@@ -131,7 +131,10 @@ are objects with 2 keys: `displayName` and `description` (associated with the
 run-tag combination).
 
 The `displayName` is shown atop individual plots in TensorBoard. The description
-might offer insight for instance into how data was generated.  
+might offer insight for instance into how data was generated.
+
+Importantly, the `description` contains sanitized HTML to be injected into the
+DOM, while the `displayName` is simply an arbitrary string.
 
 Here is an example.
 
