@@ -1070,35 +1070,39 @@ export function build(
                 attr: [],
               });
 
-              // Makes an OpNode out of either an input_arg of a library
-              // function.
-              let currentInputIndex = 0;
-              const processInput = (arg) => {
-                const opNode = processRawNode({
-                  name: functionNodeName + NAMESPACE_DELIM + arg.name,
-                  input: [],
-                  device: '',
-                  op: 'input_arg',
-                  attr: [{
-                    key: 'T',
-                    value: {
-                      type: arg.type,
-                    },
-                  }],
-                });
-                opNode.functionInputIndex = currentInputIndex;
-                currentInputIndex++;
-              };
+              // If the function has inputs, make nodes out of them.
+              if (func.signature.input_arg) {
+                // Makes an OpNode out of either an input_arg of a library
+                // function.
+                let currentInputIndex = 0;
+                const processInput = (arg) => {
+                  const opNode = processRawNode({
+                    name: functionNodeName + NAMESPACE_DELIM + arg.name,
+                    input: [],
+                    device: '',
+                    op: 'input_arg',
+                    attr: [{
+                      key: 'T',
+                      value: {
+                        type: arg.type,
+                      },
+                    }],
+                  });
+                  opNode.functionInputIndex = currentInputIndex;
+                  currentInputIndex++;
+                };
 
-              // Make nodes for input args of the function. Unfortunately, the
-              // pbtxt configuration language is not rich enough to
-              // differentiate between an array with 1 item vs 1 object property.
-              if (func.signature.input_arg['name']) {
-                // There is only 1 input arg.
-                processInput(func.signature.input_arg);
-              } else {
-                // There are several input args.
-                _.each(func.signature.input_arg, processInput);
+                // Make nodes for input args of the function. Unfortunately, the
+                // pbtxt configuration language is not rich enough to
+                // differentiate between an array with 1 item vs 1 object
+                // property.
+                if (func.signature.input_arg['name']) {
+                  // There is only 1 input arg.
+                  processInput(func.signature.input_arg);
+                } else {
+                  // There are several input args.
+                  _.each(func.signature.input_arg, processInput);
+                }
               }
 
               // Make nodes for output args of the function. Track the names of
@@ -1107,17 +1111,22 @@ export function build(
               // node_defs of the library function.
               let currentOutputIndex = 0;
               const outputArgNames = {};
-              const processOutput = arg => {
-                outputArgNames[functionNodeName + NAMESPACE_DELIM + arg.name] =
-                    currentOutputIndex;
-                currentOutputIndex++;
-              };
-              if (func.signature.output_arg['name']) {
-                // There is only 1 output arg.
-                processOutput(func.signature.output_arg);
-              } else {
-                // There are several output args.
-                _.each(func.signature.output_arg, processOutput);
+
+              // If the function has outputs, make nodes out of them.
+              if (func.signature.output_arg) {
+                const processOutput = arg => {
+                  outputArgNames[
+                      functionNodeName + NAMESPACE_DELIM + arg.name] =
+                          currentOutputIndex;
+                  currentOutputIndex++;
+                };
+                if (func.signature.output_arg['name']) {
+                  // There is only 1 output arg.
+                  processOutput(func.signature.output_arg);
+                } else {
+                  // There are several output args.
+                  _.each(func.signature.output_arg, processOutput);
+                }
               }
 
               _.each(func.node_def, rawNode => {
