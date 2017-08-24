@@ -13,6 +13,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
@@ -21,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="tf-pr-curve-card.html">
 <link rel="import" href="tf-pr-curve-steps-selector.html">
@@ -33,12 +35,24 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
-        <template is="dom-if" if="[[_runToAvailableSteps]]">
+        <div class="sidebar-section">
+          <tf-option-selector
+            id="time-type-selector"
+            name="Time Display Type"
+            selected-id="{{_timeDisplayType}}"
+          >
+            <paper-button id="step">step</paper-button><!--
+            --><paper-button id="relative">relative</paper-button><!--
+            --><paper-button id="wall_time">wall</paper-button>
+          </tf-option-selector>
+        </div>
+        <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
           <div class="sidebar-section" id="steps-selector-container">
             <tf-pr-curve-steps-selector
                   runs="[[_relevantSelectedRuns]]"
                   run-to-step="{{_runToStep}}"
-                  run-to-available-steps="[[_runToAvailableSteps]]"></tf-pr-curve-steps-selector>
+                  run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
+                  time-display-type="[[_timeDisplayType]]"></tf-pr-curve-steps-selector>
           </div>
         </template>
         <div class="sidebar-section">
@@ -125,7 +139,7 @@ limitations under the License.
       }
       /** Not not let the steps selector occlude the run selector. */
       #steps-selector-container {
-        max-height: 50%;
+        max-height: 40%;
         overflow-y: auto;
       }
     </style>
@@ -141,10 +155,16 @@ limitations under the License.
   Polymer({
     is: 'tf-pr-curve-dashboard',
     properties: {
+      // Determines how the time entry is shown. One of step, relative, or
+      // wall_time.
+      _timeDisplayType : {
+        type: String,
+        value: 'step',
+      },
       _selectedRuns: Array,
       _runToTag: Object,  // map<run: string, tags: string[]>
       // The steps that the step slider for each run should use.
-      _runToAvailableSteps: {
+      _runToAvailableTimeEntries: {
         type: Object, // map<run: string, steps: number[]>
         value: {},
       },
@@ -184,7 +204,8 @@ limitations under the License.
       this.reload();
     },
     reload() {
-      Promise.all([this._fetchTags(), this._fetchStepsPerRun()]).then(() => {
+      Promise.all(
+          [this._fetchTags(), this._fetchTimeEntriesPerRun()]).then(() => {
         this._reloadCards();
       });
     },
@@ -200,12 +221,13 @@ limitations under the License.
         this.set('_runToTag', runToTag);
       });
     },
-    _fetchStepsPerRun() {
-      const url = getRouter().pluginRoute('pr_curves', '/available_steps');
-      return this._requestManager.request(url).then(stepsPerRun => {
-        this.set('_runToAvailableSteps', stepsPerRun);
+    _fetchTimeEntriesPerRun() {
+      const url = getRouter().pluginRoute(
+          'pr_curves', '/available_time_entries');
+      return this._requestManager.request(url).then(timeEntriesPerRun => {
+        this.set('_runToAvailableTimeEntries', timeEntriesPerRun);
 
-        const listOfRuns = _.keys(stepsPerRun).sort();
+        const listOfRuns = _.keys(timeEntriesPerRun).sort();
         if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
           this.set('_runsWithPrCurveData', listOfRuns);
         }

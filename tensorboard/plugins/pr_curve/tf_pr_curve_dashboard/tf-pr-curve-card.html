@@ -46,6 +46,14 @@ limitations under the License.
       </template>
     </div>
 
+    <div id="buttons-row">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+    </div>
+
     <div id="step-legend">
       <template is="dom-repeat" items="[[_runsWithStepAvailable]]" as="run">
         <div class="legend-row">
@@ -71,10 +79,16 @@ limitations under the License.
         margin-right: 10px;
         margin-bottom: 25px;
       }
+      :host[_expanded] {
+        width: 100%;
+      }
       #chart-and-spinner-container {
         display: flex;
         height: 300px;
         position: relative;
+      }
+      :host[_expanded] #chart-and-spinner-container {
+        height: 500px;
       }
       #line-chart-container {
         width: 100%;
@@ -95,6 +109,20 @@ limitations under the License.
       vz-line-chart {
         -webkit-user-select: none;
         -moz-user-select: none;
+      }
+      #buttons-row {
+        display: flex;
+        flex-direction: row;
+      }
+      #buttons-row paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      #buttons-row paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
       }
       #step-legend {
         box-sizing: border-box;
@@ -137,6 +165,11 @@ limitations under the License.
         // For each run, the card will display the PR curve at this step or the
         // one closest to it, but less than it.
         runToStepCap: Object,
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
         _runToPrCurveEntry: {
           type: Object,
           value: {},
@@ -208,7 +241,7 @@ limitations under the License.
         }
       },
       observers: [
-          'reload(run, tag)',
+          'reload(runs, tag)',
           '_runsChanged(_attached, runs.*)',
           '_setChartData(_runToPrCurveEntry.*)',
           '_updateRunToPrCurveEntry(_runToData, runToStepCap.*)',
@@ -227,6 +260,12 @@ limitations under the License.
         if (!this._attached) {
           return;
         }
+        if (this.runs.length === 0) {
+          // There are no selected runs.
+          this.set('_runToData', {});
+          return;
+        }
+
         this._canceller.cancelAll();
         const router = getRouter();
         let url = router.pluginRoute('pr_curves', '/pr_curves');
@@ -262,7 +301,11 @@ limitations under the License.
 
         // Only 1 run changed. Only update the series for that run.
         const entry = changeRecord.value;
-        this._updateSeriesDataForRun(run, entry);
+        if (entry) {
+          this._updateSeriesDataForRun(run, entry);
+        } else {
+          this._clearSeriesData(run);
+        }
       },
       _updateSeriesDataForRun(run, entryFor1Step) {
         // Reverse the values so they are plotted in order. The logic within
@@ -279,6 +322,10 @@ limitations under the License.
               recall: recall,
             }));
         this.$$('vz-line-chart').setSeriesData(run, seriesData);
+      },
+      _clearSeriesData(run) {
+        // Clears data for a run in the chart.
+        this.$$('vz-line-chart').setSeriesData(run, []);
       },
       _runsChanged(attached, runsUpdateRecord) {
         if (!attached) {
@@ -308,11 +355,12 @@ limitations under the License.
           return;
         }
 
-        // Only update one of the runs.
+        // Only update one of the runs. Possibly clear its series.
+        const entries = runToData[run];
         this.set(
             `_runToPrCurveEntry.${run}`,
-            this._computeEntryClosestOrEqualToStepCap(
-                changeRecord.value, runToData[run]));
+            entries ? this._computeEntryClosestOrEqualToStepCap(
+                changeRecord.value, runToData[run]) : null);
       },
       _computeEntryClosestOrEqualToStepCap(stepCap, entries) {
         const entryIndex = Math.min(
@@ -324,10 +372,26 @@ limitations under the License.
         return _.filter(runs, run => actualPrCurveEntryPerRun[run]).sort();
       },
       _computeCurrentStepForRun(changeRecord, run) {
-        return changeRecord.base[run].step;
+        // If there is no data for the run, then the run is not being shown, so
+        // the return value is not used. We return null as a reasonable value.
+        const entry = changeRecord.base[run];
+        return entry ? entry.step : null;
       },
       _computeCurrentWallTimeForRun(changeRecord, run) {
+        const entry = changeRecord.base[run];
+        // If there is no data for the run, then the run is not being shown, so
+        // the return value is not used. We return null as a reasonable value.
+        if (!entry) {
+          return null;
+        }
         return new Date(changeRecord.base[run].wall_time * 1000).toString();
+      },
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+      redraw() {
+        this.$$('vz-line-chart').redraw();
       },
     });
   </script>
