@@ -88,13 +88,15 @@ class PrCurvesPluginTest(tf.test.TestCase):
                    'generated from a normal distribution. Its standard '
                    'deviation is initially %d and decreases'
                    ' over time.</p>') % standard_deviation
+    return description
 
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
     routes = self.plugin.get_plugin_apps()
     self.assertIsInstance(routes['/tags'], collections.Callable)
     self.assertIsInstance(routes['/pr_curves'], collections.Callable)
-    self.assertIsInstance(routes['/available_steps'], collections.Callable)
+    self.assertIsInstance(
+        routes['/available_time_entries'], collections.Callable)
 
   def testTagsProvided(self):
     """Tests that tags are provided."""
@@ -140,10 +142,40 @@ class PrCurvesPluginTest(tf.test.TestCase):
 
   def testAvailableSteps(self):
     """Tests that runs are mapped to correct available steps."""
-    self.assertDictEqual({
-        'colors': [0, 1, 2],
-        'mask_every_other_prediction': [0, 1, 2],
-    }, self.plugin.available_steps_impl())
+    # Test that all runs are within the keys of the mapping.
+    response = self.plugin.available_time_entries_impl()
+    self.assertItemsEqual(
+        ['colors', 'mask_every_other_prediction'], list(response.keys()))
+
+    # TODO(chizeng): Find a means of testing the wall time and relative time.
+    # The wall time written to disk is computed within TensorFlow C++.
+    entries = response['colors']
+    entry = entries[0]
+    self.assertEqual(0, entry['step'])
+    self.assertIn('relative', entry)
+    self.assertIn('wall_time', entry)
+    entry = entries[1]
+    self.assertEqual(1, entry['step'])
+    self.assertIn('relative', entry)
+    self.assertIn('wall_time', entry)
+    entry = entries[2]
+    self.assertEqual(2, entry['step'])
+    self.assertIn('relative', entry)
+    self.assertIn('wall_time', entry)
+
+    entries = response['mask_every_other_prediction']
+    entry = entries[0]
+    self.assertEqual(0, entry['step'])
+    self.assertIn('relative', entry)
+    self.assertIn('wall_time', entry)
+    entry = entries[1]
+    self.assertEqual(1, entry['step'])
+    self.assertIn('relative', entry)
+    self.assertIn('wall_time', entry)
+    entry = entries[2]
+    self.assertEqual(2, entry['step'])
+    self.assertIn('relative', entry)
+    self.assertIn('wall_time', entry)
 
   def testPrCurvesDataCorrect(self):
     """Tests that responses for PR curves for run-tag combos are correct."""

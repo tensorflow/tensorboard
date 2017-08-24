@@ -131,24 +131,23 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return result
 
   @wrappers.Request.application
-  def available_steps_route(self, request):
-    """Gets a dict mapping run to a list of numeric steps.
-
+  def available_time_entries_route(self, request):
+    """Gets a dict mapping run to a list of time entries.
     Returns:
       A dict with string keys (all runs with PR curve data). The values of the
-      dict are lists of step values (ints) that should be used for the slider
-      for that run.
+      dict are lists of time entries (consisting of the 3 fields below) to be
+      used in populating values within time sliders.
     """
     return http_util.Respond(
-        request, self.available_steps_impl(), 'application/json')
+        request, self.available_time_entries_impl(), 'application/json')
 
-  def available_steps_impl(self):
-    """Creates the JSON object for the available steps route response.
-
+  def available_time_entries_impl(self):
+    """Creates the JSON object for the available time entries route response.
     Returns:
-      The JSON object for the available steps route response.
+      The JSON object for the available time entries route response.
     """
-    all_runs = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+    all_runs = self._multiplexer.PluginRunToTagToContent(
+        PrCurvesPlugin.plugin_name)
     response = {}
 
     # Compute the max step exhibited by any tag for each run. If a run lacks
@@ -164,9 +163,24 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # within the same run. If the latter occurs, TensorBoard will show the
       # actual step of each tag atop the card for the tag.
       tensor_events = self._multiplexer.Tensors(
-          run, min(six.iterkeys(tag_to_content)))
-      response[run] = [e.step for e in tensor_events]
+          run, list(tag_to_content.keys())[0])
+      response[run] = [self._create_time_entry(e, tensor_events[0].wall_time)
+                       for e in tensor_events]
     return response
+
+  def _create_time_entry(self, tensor_event, initial_wall_time):
+    """Creates a time entry given a tensor event.
+    
+    Arguments:
+      tensor_event: The tensor event for the time entry.
+      initial_wall_time: The wall time of the first event in seconds since the
+        epoch. Used to compute relative time.
+    """
+    return {
+      'step': tensor_event.step,
+      'wall_time': tensor_event.wall_time,
+      'relative': tensor_event.wall_time - initial_wall_time,
+    }
 
   def get_plugin_apps(self):
     """Gets all routes offered by the plugin.
@@ -177,7 +191,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return {
         '/tags': self.tags_route,
         '/pr_curves': self.pr_curves_route,
-        '/available_steps': self.available_steps_route,
+        '/available_time_entries': self.available_time_entries_route,
     }
 
   def is_active(self):

@@ -3,15 +3,55 @@
 The plugin name is `pr_curves`, so all its routes are under
 `/data/plugin/pr_curves`.
 
-## `/data/plugin/pr_curves/available_steps`
+## `/data/plugin/pr_curves/available_time_entries`
 
-Retrieves a JSON object mapping run name to a list of numeric steps to use for
-the step slider of the run. Here is an example.
+Retrieves a JSON object mapping run name to a list of time entries (one for each
+step). Each time entry has 3 properties:
+
+* **step**: The step of the event.
+* **wall_time**: The time in seconds since the epoch at which the summary was
+  written.
+* **relative**: The time in seconds since the first summary was written for the
+  run.
+
+Here is an example.
 
 ```json
 {
-  "foo": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-  "bar": [0, 2, 4, 6, 8]
+  "foo": [
+    {
+      "step": 0,
+      "wall_time": 1503076940.949388,
+      "relative": 0
+    },
+    {
+      "step": 1,
+      "wall_time": 1503076940.953447,
+      "relative": 0.0040590763092041016
+    },
+    {
+      "step": 2,
+      "wall_time": 1503076940.95812,
+      "relative": 0.008732080459594727
+    }
+  ],
+  "bar": [
+    {
+      "step": 0,
+      "wall_time": 1503076940.964225,
+      "relative": 0
+    },
+    {
+      "step": 1,
+      "wall_time": 1503076940.969845,
+      "relative": 0.005620002746582031
+    },
+    {
+      "step": 2,
+      "wall_time": 1503076940.974917,
+      "relative": 0.01069188117980957
+    }
+  ],
 }
 ```
 
