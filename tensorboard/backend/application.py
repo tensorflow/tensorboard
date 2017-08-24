@@ -163,13 +163,16 @@ class TensorBoardWSGI(object):
           with a slash
     """
     self._plugins = plugins
-    self._base_url = base_url
+    if base_url.endswith('/'):
+      self._base_url = base_url[:-1]
+    else:
+      self._base_url = base_url
 
     self.data_applications = {
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
         # obviate the need for the frontend to determine which plugins are
         # active.
-        DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
+        self._base_url + DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
     }
 
     # Serve the routes from the registered plugins using their name as the route
@@ -200,9 +203,10 @@ class TensorBoardWSGI(object):
                            'route does not start with a slash' %
                            (plugin.plugin_name, route))
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
-          path = route
+          path = self._base_url + route
+          tf.logging.error("ROUTE :::: %s" , path)
         else:
-          path = DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
+          path = self._base_url + DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
         self.data_applications[path] = app
 
   @wrappers.Request.application
@@ -237,8 +241,13 @@ class TensorBoardWSGI(object):
       A werkzeug Response.
     """
     request = wrappers.Request(environ)
-    parsed_url = urlparse.urlparse(request.path)
-    clean_path = _clean_path(parsed_url.path, self._base_url)
+    tf.logging.error("Environ ::: %s", str(environ))
+    tf.logging.error("Request ::: %s", str(request))
+    parsed_url = urlparse.urlparse(request.path) 
+    #clean_path = _clean_path(parsed_url.path, self._base_url)
+    clean_path = parsed_url.path 
+    tf.logging.error("Clean Path ::: %s", clean_path)
+    tf.logging.error("Data applications :::: %s", str(self.data_applications))
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
@@ -411,9 +420,10 @@ def _get_connect_params(query):
 
 
 def _clean_path(path, _base_url = ""):
-  """Removes _base_url part and trailing slash if present, unless it's the root path."""
-  if len(_base_url) > 0 and path.startswith(_base_url):
-    path = path[len(_base_url):]
+  """
+  If base_url is present, do not remove the ending '/'
+  If the base_url contains a '/' return as is, if not append '/'
+  """
   if len(path) > 1 and path.endswith('/'):
     return path[:-1]
-  return path
+
