@@ -152,29 +152,23 @@ class PrCurvesPluginTest(tf.test.TestCase):
     entries = response['colors']
     entry = entries[0]
     self.assertEqual(0, entry['step'])
-    self.assertIn('relative', entry)
     self.assertIn('wall_time', entry)
     entry = entries[1]
     self.assertEqual(1, entry['step'])
-    self.assertIn('relative', entry)
     self.assertIn('wall_time', entry)
     entry = entries[2]
     self.assertEqual(2, entry['step'])
-    self.assertIn('relative', entry)
     self.assertIn('wall_time', entry)
 
     entries = response['mask_every_other_prediction']
     entry = entries[0]
     self.assertEqual(0, entry['step'])
-    self.assertIn('relative', entry)
     self.assertIn('wall_time', entry)
     entry = entries[1]
     self.assertEqual(1, entry['step'])
-    self.assertIn('relative', entry)
     self.assertIn('wall_time', entry)
     entry = entries[2]
     self.assertEqual(2, entry['step'])
-    self.assertIn('relative', entry)
     self.assertIn('wall_time', entry)
 
   def testPrCurvesDataCorrect(self):

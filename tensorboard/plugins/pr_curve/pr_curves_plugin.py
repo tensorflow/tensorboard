@@ -143,6 +143,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
   def available_time_entries_impl(self):
     """Creates the JSON object for the available time entries route response.
+
     Returns:
       The JSON object for the available time entries route response.
     """
@@ -164,22 +165,18 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # actual step of each tag atop the card for the tag.
       tensor_events = self._multiplexer.Tensors(
           run, min(six.iterkeys(tag_to_content)))
-      response[run] = [self._create_time_entry(e, tensor_events[0].wall_time)
-                       for e in tensor_events]
+      response[run] = [self._create_time_entry(e) for e in tensor_events]
     return response
 
-  def _create_time_entry(self, tensor_event, initial_wall_time):
+  def _create_time_entry(self, tensor_event):
     """Creates a time entry given a tensor event.
     
     Arguments:
       tensor_event: The tensor event for the time entry.
-      initial_wall_time: The wall time of the first event in seconds since the
-        epoch. Used to compute relative time.
     """
     return {
       'step': tensor_event.step,
       'wall_time': tensor_event.wall_time,
-      'relative': tensor_event.wall_time - initial_wall_time,
     }
 
   def get_plugin_apps(self):
