@@ -22,6 +22,7 @@ import collections
 import os.path
 
 import numpy as np
+import six
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
@@ -35,7 +36,6 @@ class PrCurvesPluginTest(tf.test.TestCase):
   def setUp(self):
     super(PrCurvesPluginTest, self).setUp()
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
-    tf.reset_default_graph()
 
     # Generate data.
     pr_curve_demo.run_all(
@@ -68,7 +68,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
     """
     self.assertEqual(expected_step, pr_curve_entry['step'])
     # We use an absolute error instead of a relative one because the expected
-    # values are small. The default relative error (trol) of 1e-7 yields many
+    # values are small. The default relative error (rtol) of 1e-7 yields many
     # undesired test failures.
     np.testing.assert_allclose(
         expected_precision, pr_curve_entry['precision'], rtol=0, atol=1e-7)
@@ -160,10 +160,12 @@ class PrCurvesPluginTest(tf.test.TestCase):
     The handler should raise a ValueError when no PR curve data can be found
     for a certain run-tag combination.
     """
-    with self.assertRaises(ValueError):
+    with six.assertRaisesRegex(
+        self, ValueError, r'No PR curves could be fetched'):
       self.plugin.pr_curves_impl(['colors'], 'non_existent_tag')
 
-    with self.assertRaises(ValueError):
+    with six.assertRaisesRegex(
+        self, ValueError, r'No PR curves could be fetched'):
       self.plugin.pr_curves_impl(['non_existent_run'], 'blue/pr_curves')
 
   def testPluginIsNotActive(self):

@@ -38,6 +38,7 @@ py_test(
     srcs = ["pr_curves_plugin_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":metadata",
         ":pr_curves_plugin",
         ":pr_curve_demo",
         "//tensorboard:expect_numpy_installed",

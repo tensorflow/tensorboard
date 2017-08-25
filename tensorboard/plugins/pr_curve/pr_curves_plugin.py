@@ -62,7 +62,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       response = http_util.Respond(
           request, self.pr_curves_impl(runs, tag), 'application/json')
     except ValueError as e:
-      return http_util.Respond(request, '%s' % e, 'text/plain', 400)
+      return http_util.Respond(request, str(e), 'text/plain', 400)
 
     return response
 
@@ -108,8 +108,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       The JSON object for the tags route response.
     """
-    all_runs = self._multiplexer.PluginRunToTagToContent(
-        PrCurvesPlugin.plugin_name)
+    all_runs = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     return {
         run: list(tag_to_content.keys())
         for (run, tag_to_content) in all_runs.items()
@@ -133,8 +132,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       The JSON object for the available steps route response.
     """
-    all_runs = self._multiplexer.PluginRunToTagToContent(
-        PrCurvesPlugin.plugin_name)
+    all_runs = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     response = {}
 
     # Compute the max step exhibited by any tag for each run. If a run lacks
@@ -150,7 +148,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # within the same run. If the latter occurs, TensorBoard will show the
       # actual step of each tag atop the card for the tag.
       tensor_events = self._multiplexer.Tensors(
-          run, list(tag_to_content.keys())[0])
+          run, next(six.iterkeys(tag_to_content)))
       response[run] = [e.step for e in tensor_events]
     return response
 
@@ -177,8 +175,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     if not self._multiplexer:
       return False
 
-    all_runs = self._multiplexer.PluginRunToTagToContent(
-        PrCurvesPlugin.plugin_name)
+    all_runs = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
 
     # The plugin is active if any of the runs has a tag relevant to the plugin.
     return any(six.itervalues(all_runs))

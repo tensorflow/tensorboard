@@ -26,8 +26,8 @@ import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 
-# A tiny value. Used to prevent division by 0 as well as to make
-# precision 1 when the threshold is 0.
+# A tiny value. Used to prevent division by 0 as well as to make precision 1
+# when the threshold is 0.
 _TINY_EPISILON = 1e-7
 
 def op(
@@ -57,7 +57,7 @@ def op(
     predictions: A float32 `Tensor` whose values are in the range `[0, 1]`.
         Dimensions must match those of `labels`.
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
-        compute PR metrics for. Should be `>= 2`. This value should be a
+        compute PR metrics for. Should be `>= 2`. This value should be a 
         constant integer value, not a Tensor that stores an integer.
     weights: Optional float32 `Tensor`. Individual counts are multiplied by this
         value. This tensor must be either the same shape as or broadcastable to
@@ -75,6 +75,7 @@ def op(
     produced by the summary operation is of dimension (6, num_thresholds). The
     first dimension (of length 6) is of the order: true positives,
     false positives, true negatives, false negatives, precision, recall.
+
   """
   if num_thresholds is None:
     num_thresholds = 200
@@ -127,7 +128,7 @@ def op(
     # Compute the bucket indices for each prediction value.
     bucket_indices = tf.cast(
         tf.floor(predictions * (num_thresholds - 1)), tf.int32)
-
+    
     # Bucket predictions.
     tp_buckets = tf.reduce_sum(
         tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
@@ -135,6 +136,9 @@ def op(
     fp_buckets = tf.reduce_sum(
         tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
         axis=0)
+
+    thresholds = tf.cast(
+        tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
 
     # Set up the cumulative sums to compute the actual metrics.
     tp = tf.cumsum(tp_buckets, reverse=True, name='tp')

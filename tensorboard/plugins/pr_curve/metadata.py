@@ -52,3 +52,28 @@ def create_summary_metadata(display_name, description, num_thresholds):
       summary_description=description,
       plugin_data=tf.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
                                                 content=content))
+
+def parse_plugin_metadata(content):
+  """Parse summary metadata to a Python object.
+
+  Arguments:
+    content: The `content` field of a `SummaryMetadata` proto
+      corresponding to the pr_curves plugin.
+
+  Returns:
+    A `PrCurvesPlugin` protobuf object.
+  """
+  result = plugin_data_pb2.PrCurvePluginData()
+  # TODO(@jart): Instead of converting to bytes, assert that the input
+  # is a bytestring, and raise a ValueError otherwise...but only after
+  # converting `PluginData`'s `content` field to have type `bytes`
+  # instead of `string`.
+  result.ParseFromString(tf.compat.as_bytes(content))
+  if result.version == 0:
+    return result
+  else:
+    tf.logging.warn(
+        'Unknown metadata version: %s. The latest version known to '
+        'this build of TensorBoard is %s; perhaps a newer build is '
+        'available?', result.version, PROTO_VERSION)
+    return result
