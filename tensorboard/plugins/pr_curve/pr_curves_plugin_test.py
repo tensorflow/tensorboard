@@ -116,28 +116,28 @@ class PrCurvesPluginTest(tf.test.TestCase):
 
     # Verify the data for each run-tag combination.
     self.assertDictEqual({
-      'displayName': 'classifying red',
-      'description': self.computeCorrectDescription(168),
+        'displayName': 'classifying red',
+        'description': self.computeCorrectDescription(168),
     }, tags_response['colors']['red/pr_curves'])
     self.assertDictEqual({
-      'displayName': 'classifying green',
-      'description': self.computeCorrectDescription(210),
+        'displayName': 'classifying green',
+        'description': self.computeCorrectDescription(210),
     }, tags_response['colors']['green/pr_curves'])
     self.assertDictEqual({
-      'displayName': 'classifying blue',
-      'description': self.computeCorrectDescription(252),
+        'displayName': 'classifying blue',
+        'description': self.computeCorrectDescription(252),
     }, tags_response['colors']['blue/pr_curves'])
     self.assertDictEqual({
-      'displayName': 'classifying red',
-      'description': self.computeCorrectDescription(168),
+        'displayName': 'classifying red',
+        'description': self.computeCorrectDescription(168),
     }, tags_response['mask_every_other_prediction']['red/pr_curves'])
     self.assertDictEqual({
-      'displayName': 'classifying green',
-      'description': self.computeCorrectDescription(210),
+        'displayName': 'classifying green',
+        'description': self.computeCorrectDescription(210),
     }, tags_response['mask_every_other_prediction']['green/pr_curves'])
     self.assertDictEqual({
-      'displayName': 'classifying blue',
-      'description': self.computeCorrectDescription(252),
+        'displayName': 'classifying blue',
+        'description': self.computeCorrectDescription(252),
     }, tags_response['mask_every_other_prediction']['blue/pr_curves'])
 
   def testAvailableSteps(self):

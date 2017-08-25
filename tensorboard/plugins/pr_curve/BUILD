@@ -67,7 +67,6 @@ py_test(
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":protos_all_py_pb2",
         ":pr_curve_demo",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",

@@ -19,23 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
-import os
-
 import numpy as np
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins.pr_curve import metadata
-from tensorboard.plugins.pr_curve import plugin_data_pb2
 from tensorboard.plugins.pr_curve import pr_curve_demo
-from tensorboard.plugins.pr_curve import summary
 
 
 class PrCurveTest(tf.test.TestCase):
 
-  def setUp(self, *args, **kwargs):
-    super(PrCurveTest, self).setUp(*args, **kwargs)
+  def setUp(self):
+    super(PrCurvesPluginTest, self).setUp()
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 

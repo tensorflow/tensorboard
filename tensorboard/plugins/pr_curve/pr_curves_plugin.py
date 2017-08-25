@@ -122,7 +122,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
-      for (tag, content) in six.iteritems(tag_to_content):
+      for (tag, _) in six.iteritems(tag_to_content):
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(
@@ -170,13 +170,13 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
   def _create_time_entry(self, tensor_event):
     """Creates a time entry given a tensor event.
-    
+
     Arguments:
       tensor_event: The tensor event for the time entry.
     """
     return {
-      'step': tensor_event.step,
-      'wall_time': tensor_event.wall_time,
+        'step': tensor_event.step,
+        'wall_time': tensor_event.wall_time,
     }
 
   def get_plugin_apps(self):
