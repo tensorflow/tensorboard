@@ -19,23 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
-import os
-
 import numpy as np
 import tensorflow as tf
 
-from google.protobuf import json_format
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
-from tensorboard.plugins.pr_curve import plugin_data_pb2
+from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import pr_curve_demo
-from tensorboard.plugins.pr_curve import summary
 
 
 class PrCurveTest(tf.test.TestCase):
 
-  def setUp(self, *args, **kwargs):
-    super(PrCurveTest, self).setUp(*args, **kwargs)
+  def setUp(self):
+    super(PrCurveTest, self).setUp()
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 
@@ -78,8 +73,7 @@ class PrCurveTest(tf.test.TestCase):
 
     for tag in expected_tags:
       # Parse the data within the JSON string and set the proto's fields.
-      plugin_data = plugin_data_pb2.PrCurvePluginData()
-      json_format.Parse(tag_content_dict[tag], plugin_data)
+      plugin_data = metadata.parse_plugin_metadata(tag_content_dict[tag])
       self.assertEqual(5, plugin_data.num_thresholds)
 
       # Test the summary contents.
@@ -180,8 +174,7 @@ class PrCurveTest(tf.test.TestCase):
 
     for tag in expected_tags:
       # Parse the data within the JSON string and set the proto's fields.
-      plugin_data = plugin_data_pb2.PrCurvePluginData()
-      json_format.Parse(tag_content_dict[tag], plugin_data)
+      plugin_data = metadata.parse_plugin_metadata(tag_content_dict[tag])
       self.assertEqual(5, plugin_data.num_thresholds)
 
       # Test the summary contents.
