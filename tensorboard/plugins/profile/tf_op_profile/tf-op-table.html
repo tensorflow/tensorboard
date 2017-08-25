@@ -93,13 +93,17 @@ Polymer({
       value: null,
       notify: true,
     },
-    // Handlers for hover/click events on entries.
-    // We don't use two-way data binding on _hover and _selected, because
-    // we get slowdown when they change.
+    /**
+     * Handlers for hover/click events on entries.
+     * We don't use two-way data binding on _hover and _selected, because
+     * we get slowdown when they change.
+     * @type {Function}
+     */
     _onHeaderHover: {
       type: Object,
       value: function() { return (entry) => this._hover = entry; },
     },
+    /** @type {Function} */
     _onHeaderClick: {
       type: Object,
       value: function() {
@@ -206,11 +210,13 @@ Polymer({
       type: Number,
       value: 0,
     },
+    /** @type {Function} */
     headerHover: {
       type: Object,
       value: () => function(entry) {},
       notify: true,
     },
+    /** @type {Function} */
     headerClick: {
       type: Object,
       value: () => function(entry) {},

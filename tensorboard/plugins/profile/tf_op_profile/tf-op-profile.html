@@ -133,7 +133,7 @@ Polymer({
   },
   _hasFlops: function(node) { return node.metrics.flops > 0; },
   _goodFlops: function(node) { return utilization(node) > 0.4; },
-  _textColor: function(node) { return flameColor(utilization(node), 0.7); },
+  _textColor: function(node) { return flameColor(utilization(node), 0.7, 1); },
 });
   </script>
 </dom-module>
