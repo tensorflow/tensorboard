@@ -57,19 +57,6 @@ py_library(
     ],
 )
 
-py_test(
-    name = "summary_test",
-    size = "small",
-    srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":metadata",
-        ":summary",
-        "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
-)
-
 py_binary(
     name = "audio_demo",
     srcs = ["audio_demo.py"],
