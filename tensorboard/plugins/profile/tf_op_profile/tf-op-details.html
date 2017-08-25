@@ -46,8 +46,10 @@ Polymer({
   },
   _percent: percent,
   _updateValue: function(value) {
-    this.style.background = "linear-gradient(to right, " + flameColor(value) +
-        " " + percent(value) + ", #ccc " + percent(value) + ")";
+    const color = flameColor(value);
+    const length = percent(value);
+    this.style.background =
+        "linear-gradient(to right, ${color} ${length}, #ccc ${length})";
   },
 });
   </script>
