@@ -23,6 +23,7 @@ function rgba(red: number, green: number, blue: number, alpha: number) {
  * @param {number} fraction
  * @param {number=} brightness
  * @param {number=} opacity
+ * @return {string} An RGBA color.
  */
 export function flameColor(fraction: number, brightness = 1, opacity = 1) {
   if (isNaN(fraction)) return rgba(brightness, brightness, brightness, opacity);
