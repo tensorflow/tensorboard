@@ -30,7 +30,7 @@ from tensorboard.plugins.pr_curve import pr_curve_demo
 class PrCurveTest(tf.test.TestCase):
 
   def setUp(self):
-    super(PrCurvesPluginTest, self).setUp()
+    super(PrCurveTest, self).setUp()
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 
