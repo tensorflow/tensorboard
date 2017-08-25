@@ -80,7 +80,7 @@ module tf.graph.proto {
     signature: OpDef;
 
     // A list of nodes in the function.
-    node_def: NodeDef[];
+    node_def: NodeDef | NodeDef[];
   };
 
   /**
@@ -96,7 +96,7 @@ module tf.graph.proto {
    */
   export interface GraphDef {
     // A list of nodes in the graph.
-    node: NodeDef[];
+    node: NodeDef | NodeDef[];
 
     // Compatibility versions of the graph.
     versions: VersionDef[];
