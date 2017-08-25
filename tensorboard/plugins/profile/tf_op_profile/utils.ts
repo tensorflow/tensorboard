@@ -18,6 +18,13 @@ function rgba(red: number, green: number, blue: number, alpha: number) {
       "," + Math.round(blue * 255) + "," + alpha + ")";
 }
 
+/**
+ * Computes a flame color.
+ * @param {number} fraction
+ * @param {number=} brightness
+ * @param {number=} opacity
+ * @return {string} An RGBA color.
+ */
 export function flameColor(fraction: number, brightness = 1, opacity = 1) {
   if (isNaN(fraction)) return rgba(brightness, brightness, brightness, opacity);
   fraction = Math.sqrt(fraction);  // Or everything is depressing and red.
