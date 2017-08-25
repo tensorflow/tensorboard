@@ -18,9 +18,9 @@ load("//tensorboard/defs:web.bzl", "web_aspect")
 
 def _tensorboard_html_binary(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
-  manifests = set(order="topological")
-  files = set()
-  webpaths = set()
+  manifests = depset(order="topological")
+  files = depset()
+  webpaths = depset()
   for dep in deps:
     manifests += dep.webfiles.manifests
     webpaths += dep.webfiles.webpaths
