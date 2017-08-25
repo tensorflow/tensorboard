@@ -69,7 +69,7 @@ future for loading older images.
         </div>
       </template>
     </tf-card-heading>
-    <div id="main-image-container"></div>
+    <div id="main-image-container" on-tap="_handleTap"></div>
 
     <style>
       :host {
@@ -342,6 +342,9 @@ future for loading older images.
         // Load the new image.
         this.set("_isImageLoading", true);
         img.src = steps[stepIndex].url;
+      },
+      _handleTap(e) {
+        this.set('actualSize', !this.actualSize);
       },
     });
   </script>
