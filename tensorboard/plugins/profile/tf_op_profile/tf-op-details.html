@@ -46,9 +46,10 @@ Polymer({
   },
   _percent: percent,
   _updateValue: function(value) {
-    this.style.background = "linear-gradient(to right, " +
-        flameColor(value, 1, 1) + " " + percent(value) + ", #ccc " +
-            percent(value) + ")";
+    const color = flameColor(value);
+    const length = percent(value);
+    this.style.background =
+        "linear-gradient(to right, ${color} ${length}, #ccc ${length})";
   },
 });
   </script>
@@ -121,7 +122,7 @@ Polymer({
   _utilization: utilization,
   _updateCard: function(node){
     if (node == null) return;
-    var color = flameColor(utilization(node), 0.7, 1);
+    var color = flameColor(utilization(node), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
     this.$.subheader.style.backgroundColor = color;
   },
