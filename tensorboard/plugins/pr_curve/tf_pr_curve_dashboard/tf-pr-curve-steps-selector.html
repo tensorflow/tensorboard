@@ -1,0 +1,194 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Renders a UI for selecting a step.
+-->
+<dom-module id="tf-pr-curve-steps-selector">
+  <template>
+    <template is="dom-repeat" items="[[runs]]" as="run">
+      <div class="run-widget">
+        <div class="run-display-container">
+          <div class="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
+          <div class="run-text">
+            [[run]]
+          </div>
+        </div>
+        <div class="step-display-container">
+          [[_computeTimeTextForRun(runToAvailableTimeEntries, _runToStepIndex, run, timeDisplayType)]]
+        </div>
+        <paper-slider
+            data-run$="[[run]]"
+            step="1"
+            type="number"
+            min=0
+            max="[[_computeMaxStepIndexForRun(runToAvailableTimeEntries, run)]]"
+            ></paper-slider>
+      </div>
+    </template>
+    <style>
+      .run-widget {
+        margin: 10px 0 0 0;
+      }
+      paper-slider {
+        margin: -8px 0 0 -15px;
+        width: 100%;
+      }
+      .step-display-container {
+        font-size: 0.9em;
+        margin: 0 15px 0 0;
+      }
+      .run-text {
+        display: inline-block;
+      }
+      .run-color-box {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        display: inline-block;
+      }
+    </style>
+  </template>
+  <script>
+  import {runsColorScale} from "../tf-color-scale/colorScale.js";
+
+  Polymer({
+    is: "tf-pr-curve-steps-selector",
+    properties: {
+      // A list of runs to create sliders for.
+      runs: Array,
+      // A mapping between run and list of steps to use for the slider for that
+      // run. This component indexes into this object to retrieve the steps.
+      runToAvailableTimeEntries: Object,
+      // The object mapping run to step. This object is updated by this
+      // component when the selected step for the run changes, so this property
+      // should be upward bound.
+      runToStep: {
+        type: Object,
+        notify: true,
+        computed: "_computeRunToStep(runToAvailableTimeEntries, _runToStepIndex)",
+      },
+      timeDisplayType: String,
+      // A mapping between run and slider index.
+      _runToStepIndex: Object,
+    },
+    listeners: {
+      "value-change": "_sliderValueChanged",
+      "immediate-value-change": "_sliderValueChanged",
+    },
+    observers: [
+      "_runsChanged(runs, _runToStepIndex)",
+      "_runToAvailableTimeEntriesChanged(runToAvailableTimeEntries)",
+    ],
+    ready() {
+      // Initialize the sliders so they point to the most recent value.
+      this._updateSliders(this._runToStepIndex);
+    },
+    _runsChanged(runs) {
+      // When selected runs change, make sure any new sliders point to the
+      // correct step. We use a setTimeout to add this operation to the end of
+      // the JS event queue so that it happens after the dom-repeat renders. We
+      // do not make this handler run when _runToStepIndex is updated because
+      // asynchronously changing _runToStepIndex could create a rendering loop
+      // and jittery sliders.
+      setTimeout(() => {
+        this._updateSliders(this._runToStepIndex);
+      }, 0);
+    },
+    _computeColorForRun(run) {
+      return runsColorScale(run);
+    },
+    _computeTimeTextForRun(
+        runToAvailableTimeEntries, runToStepIndex, run, timeDisplayType) {
+      const stepIndex = runToStepIndex[run];
+      if (!_.isNumber(stepIndex)) {
+        // The step is not known yet.
+        return '';
+      }
+
+      const entries = runToAvailableTimeEntries[run];
+      if (!entries) {
+        // No PR curve data has been received from the server yet.
+        return '';
+      }
+
+      const value = entries[stepIndex][timeDisplayType];
+      if (timeDisplayType === 'step') {
+        return `step ${value}`;
+      } else if (timeDisplayType === 'relative') {
+        // Return the time using the units that are most apt.
+        if (value < 1) {
+          return `${(value * 1000).toFixed(2)} ms`;
+        }
+        return `${value.toFixed(2)} s`;
+      } else if (timeDisplayType === 'wall_time') {
+        return new Date(value * 1000).toString();
+      }
+      console.error(
+          `The display type of ${timeDisplayType} is not recognized.`);
+    },
+    _sliderValueChanged(event) {
+      const run = event.target.dataset.run;
+      const newRunToStepIndex = _.clone(this._runToStepIndex);
+      newRunToStepIndex[run] = event.target.immediateValue;
+      this.set('_runToStepIndex', newRunToStepIndex);
+    },
+    _computeMaxStepIndexForRun(runToAvailableTimeEntries, run) {
+      const entries = runToAvailableTimeEntries[run];
+      return entries && entries.length ? entries.length - 1 : 0;
+    },
+    _runToAvailableTimeEntriesChanged(runToAvailableTimeEntries) {
+      // The step for each run just refreshed. Change every slider to point to
+      // the last available step.
+      const newRunToStepIndex = {};
+      _.forOwn(runToAvailableTimeEntries, (entries, run) => {
+        if (entries.length) {
+          newRunToStepIndex[run] = entries.length - 1;
+        }
+      });
+      this.set('_runToStepIndex', newRunToStepIndex);
+
+      // Set the values of all the sliders. They are not 2-way bound, so we must
+      // actually set them.
+      this._updateSliders(newRunToStepIndex);
+    },
+    _updateSliders(runToStepIndex) {
+      const sliders = this.querySelectorAll("paper-slider");
+      if (sliders) {
+        for (let i = 0; i < sliders.length; i++) {
+          const run = sliders[i].dataset.run;
+          sliders[i].value = runToStepIndex[run];
+        }
+      }
+    },
+    _computeRunToStep(runToAvailableTimeEntries, runToStepIndex) {
+      const runToStep = {};
+      _.forOwn(runToStepIndex, (index, run) => {
+        const entries = runToAvailableTimeEntries[run];
+        if (!entries) {
+          return
+        }
+        runToStep[run] = entries[index].step;
+      });
+      return runToStep;
+    },
+  });
+  </script>
+</dom-module>
