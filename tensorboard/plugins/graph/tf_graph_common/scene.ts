@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 module tf.graph.scene {
-  const svgNamespace = 'http://www.w3.org/2000/svg';
+  export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
   /** Enums element class of objects in the scene */
   export let Class = {
@@ -677,14 +677,14 @@ function _addHealthPill(
     healthPillHeight /= 2;
   }
 
-  let healthPillGroup = document.createElementNS(svgNamespace, 'g');
+  let healthPillGroup = document.createElementNS(SVG_NAMESPACE, 'g');
   healthPillGroup.classList.add('health-pill');
 
   // Define the gradient for the health pill.
-  let healthPillDefs = document.createElementNS(svgNamespace, 'defs');
+  let healthPillDefs = document.createElementNS(SVG_NAMESPACE, 'defs');
   healthPillGroup.appendChild(healthPillDefs);
   let healthPillGradient =
-      document.createElementNS(svgNamespace, 'linearGradient');
+      document.createElementNS(SVG_NAMESPACE, 'linearGradient');
 
   // Every element in a web page must have a unique ID.
   const healthPillGradientId = 'health-pill-gradient-' + healthPillId;
@@ -700,13 +700,13 @@ function _addHealthPill(
     cumulativeCount += lastHealthPillElementsBreakdown[i];
 
     // Create a color interval using 2 stop elements.
-    let stopElement0 = document.createElementNS(svgNamespace, 'stop');
+    let stopElement0 = document.createElementNS(SVG_NAMESPACE, 'stop');
     stopElement0.setAttribute('offset', previousOffset);
     stopElement0.setAttribute(
         'stop-color', healthPillEntries[i].background_color);
     healthPillGradient.appendChild(stopElement0);
 
-    let stopElement1 = document.createElementNS(svgNamespace, 'stop');
+    let stopElement1 = document.createElementNS(SVG_NAMESPACE, 'stop');
     let percent = (cumulativeCount * 100 / totalCount) + '%';
     stopElement1.setAttribute('offset', percent);
     stopElement1.setAttribute(
@@ -717,14 +717,14 @@ function _addHealthPill(
   healthPillDefs.appendChild(healthPillGradient);
 
   // Create the rectangle for the health pill.
-  let rect = document.createElementNS(svgNamespace, 'rect');
+  let rect = document.createElementNS(SVG_NAMESPACE, 'rect');
   rect.setAttribute('fill', 'url(#' + healthPillGradientId + ')');
   rect.setAttribute('width', String(healthPillWidth));
   rect.setAttribute('height', String(healthPillHeight));
   healthPillGroup.appendChild(rect);
 
   // Show a title with specific counts on hover.
-  let titleSvg = document.createElementNS(svgNamespace, 'title');
+  let titleSvg = document.createElementNS(SVG_NAMESPACE, 'title');
   titleSvg.textContent = _getHealthPillTextContent(
       healthPill, totalCount, lastHealthPillElementsBreakdown, numericStats);
   healthPillGroup.appendChild(titleSvg);
@@ -761,7 +761,7 @@ function _addHealthPill(
       }
     }
 
-    let statsSvg = document.createElementNS(svgNamespace, 'text');
+    let statsSvg = document.createElementNS(SVG_NAMESPACE, 'text');
     const minString =
         humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
     const maxString =
