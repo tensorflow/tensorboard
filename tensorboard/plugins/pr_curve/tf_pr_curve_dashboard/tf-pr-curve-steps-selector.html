@@ -156,22 +156,22 @@ limitations under the License.
     },
     _runToAvailableTimeEntriesChanged(runToAvailableTimeEntries) {
       // The mapping from run to available time entries just changed.
-      const newRunToStepIndex = {};
-      let runAdded = false;
+      // This method directly uses this._runToStepIndex instead of
+      // accepting it as a parameter because this method later directly
+      // modifies _runToStepIndex.
+      const newRunToStepIndex = _.clone(this._runToStepIndex || {});
+      const runAdded = false;
       _.forOwn(runToAvailableTimeEntries, (entries, run) => {
-        if (!this._runToStepIndex ||
-            !_.isNumber(this._runToStepIndex[run])) {
+        if (!_.isNumber(newRunToStepIndex[run])) {
           // This run had previously lacked a slider. Initially set the slider
-          // for the run to point to the last step. This method directly uses
-          // this._runToStepIndex instead of accepting it as a parameter because
-          // this method later directly modifies _runToStepIndex.
+          // for the run to point to the last step.
           newRunToStepIndex[run] = entries.length - 1;
           runAdded = true;
         }
       });
 
       if (!runAdded) {
-        // Do not update sliders if no new runs had been added.
+        // No new runs added. Do not update sliders.
         return;
       }
 
