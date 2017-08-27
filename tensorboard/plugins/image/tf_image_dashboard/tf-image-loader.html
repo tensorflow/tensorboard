@@ -69,9 +69,30 @@ future for loading older images.
         </div>
       </template>
     </tf-card-heading>
-    <div id="main-image-container" on-tap="_handleTap"></div>
+    <button id="main-image-container" on-tap="_handleTap"></button>
 
     <style>
+      /** Make button a div. */
+      button {
+        width: 100%;
+        display: block;
+        background: none;
+        border: 0;
+        padding: 0;
+      }
+
+      /** Firefox: Get rid of dotted line inside button. */
+      button::-moz-focus-inner {
+        border: 0;
+        padding: 0;
+      }
+
+      /** Firefox: Simulate Chrome's outer glow on button when focused. */
+      button:-moz-focusring {
+        outline: none;
+        box-shadow: 0px 0px 1px 2px Highlight;
+      }
+
       :host {
         display: block;
         width: 350px;
@@ -89,6 +110,7 @@ future for loading older images.
 
       :host[actual-size] #main-image-container {
         max-height: none;
+        width: auto;
       }
 
       :host[actual-size] #main-image-container img {
