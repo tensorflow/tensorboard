@@ -128,7 +128,7 @@ limitations under the License.
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
-      /** Not not let the steps selector occlude the run selector. */
+      /** Do not let the steps selector occlude the run selector. */
       #steps-selector-container {
         max-height: 40%;
         overflow-y: auto;
@@ -165,7 +165,7 @@ limitations under the License.
         computed: "_computeRelevantSelectedRuns(_selectedRuns, _runToTag)",
       },
       _runsWithPrCurveData: Array,  // string[]
-      // The actual step value that each run should use. If a run + tag lacks a
+      // The desired step value that each run should use. If a run + tag lacks a
       // PR curve at this exact step value, the greatest step value less than
       // this value will be used.
       _runToStep: {
@@ -220,10 +220,6 @@ limitations under the License.
         // Compute the relative field for each time entry. For each step, the
         // relative field is the number of seconds (float) since the first step.
         _.forOwn(timeEntriesPerRun, (entries, run) => {
-          if (!entries.length) {
-            return;
-          }
-
           _.forEach(entries, entry => {
             entry['relative'] = entry.wall_time - entries[0].wall_time;
           });
@@ -231,7 +227,7 @@ limitations under the License.
 
         this.set('_runToAvailableTimeEntries', timeEntriesPerRun);
 
-        const listOfRuns = _.keys(timeEntriesPerRun).sort();
+        const listOfRuns = _.keys(timeEntriesPerRun).slice().sort();
         if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
           this.set('_runsWithPrCurveData', listOfRuns);
         }

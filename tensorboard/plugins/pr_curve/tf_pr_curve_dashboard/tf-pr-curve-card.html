@@ -287,10 +287,12 @@ limitations under the License.
 
         this._canceller.cancelAll();
         const router = getRouter();
+
         let url = router.pluginRoute('pr_curves', '/pr_curves');
         url += url.indexOf('?') > -1 ? '&' : '?';
-        const urlRunsPortion = this.runs.map(r => `&run=${r}`).join('');
-        url += `tag=${this.tag}${urlRunsPortion}`;
+        url += `tag=${this.tag}`;
+        url += this.runs.map(r => `&run=${r}`).join('');
+
         const updateData = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -378,7 +380,7 @@ limitations under the License.
       _computeSetOfRelevantRuns(runsWithStepAvailable) {
         const setOfRelevantRuns = {};
         _.forEach(runsWithStepAvailable, run => {
-          setOfRelevantRuns[run] = 1;
+          setOfRelevantRuns[run] = true;
         });
         return setOfRelevantRuns;
       },
@@ -395,7 +397,7 @@ limitations under the License.
         if (!entry) {
           return null;
         }
-        return new Date(runToPrCurveEntry[run].wall_time * 1000).toString();
+        return new Date(entry.wall_time * 1000).toString();
       },
       _toggleExpanded(e) {
         this.set('_expanded', !this._expanded);

@@ -108,7 +108,7 @@ limitations under the License.
       // do not make this handler run when _runToStepIndex is updated because
       // asynchronously changing _runToStepIndex could create a rendering loop
       // and jittery sliders.
-      setTimeout(() => {
+      this.async(() => {
         this._updateSliders(this._runToStepIndex);
       }, 0);
     },
@@ -141,7 +141,7 @@ limitations under the License.
       } else if (timeDisplayType === 'wall_time') {
         return new Date(value * 1000).toString();
       }
-      console.error(
+      throw new Error(
           `The display type of ${timeDisplayType} is not recognized.`);
     },
     _sliderValueChanged(event) {
@@ -155,14 +155,26 @@ limitations under the License.
       return entries && entries.length ? entries.length - 1 : 0;
     },
     _runToAvailableTimeEntriesChanged(runToAvailableTimeEntries) {
-      // The step for each run just refreshed. Change every slider to point to
-      // the last available step.
+      // The mapping from run to available time entries just changed.
       const newRunToStepIndex = {};
+      let runAdded = false;
       _.forOwn(runToAvailableTimeEntries, (entries, run) => {
-        if (entries.length) {
+        if (!this._runToStepIndex ||
+            !_.isNumber(this._runToStepIndex[run])) {
+          // This run had previously lacked a slider. Initially set the slider
+          // for the run to point to the last step. This method directly uses
+          // this._runToStepIndex instead of accepting it as a parameter because
+          // this method later directly modifies _runToStepIndex.
           newRunToStepIndex[run] = entries.length - 1;
+          runAdded = true;
         }
       });
+
+      if (!runAdded) {
+        // Do not update sliders if no new runs had been added.
+        return;
+      }
+
       this.set('_runToStepIndex', newRunToStepIndex);
 
       // Set the values of all the sliders. They are not 2-way bound, so we must
@@ -170,12 +182,9 @@ limitations under the License.
       this._updateSliders(newRunToStepIndex);
     },
     _updateSliders(runToStepIndex) {
-      const sliders = this.querySelectorAll("paper-slider");
-      if (sliders) {
-        for (let i = 0; i < sliders.length; i++) {
-          const run = sliders[i].dataset.run;
-          sliders[i].value = runToStepIndex[run];
-        }
+      const sliders = this.querySelectorAll('paper-slider');
+      for (let i = 0; i < sliders.length; i++) {
+        sliders[i].value = sliders[i].dataset.run;
       }
     },
     _computeRunToStep(runToAvailableTimeEntries, runToStepIndex) {
@@ -183,7 +192,7 @@ limitations under the License.
       _.forOwn(runToStepIndex, (index, run) => {
         const entries = runToAvailableTimeEntries[run];
         if (!entries) {
-          return
+          return;
         }
         runToStep[run] = entries[index].step;
       });
