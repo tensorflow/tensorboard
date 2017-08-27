@@ -94,20 +94,8 @@ limitations under the License.
       "immediate-value-change": "_sliderValueChanged",
     },
     observers: [
-      "_runsChanged(runs, _runToStepIndex)",
       "_runToAvailableTimeEntriesChanged(runToAvailableTimeEntries)",
     ],
-    _runsChanged(runs) {
-      // When selected runs change, make sure any new sliders point to the
-      // correct step. We use a setTimeout to add this operation to the end of
-      // the JS event queue so that it happens after the dom-repeat renders. We
-      // do not make this handler run when _runToStepIndex is updated because
-      // asynchronously changing _runToStepIndex could create a rendering loop
-      // and jittery sliders.
-      this.async(() => {
-        this._updateSliders(this._runToStepIndex);
-      }, 0);
-    },
     _computeColorForRun(run) {
       return runsColorScale(run);
     },
@@ -152,24 +140,17 @@ limitations under the License.
     },
     _runToAvailableTimeEntriesChanged(runToAvailableTimeEntries) {
       // The mapping from run to available time entries just changed.
-      // This method directly uses this._runToStepIndex instead of
-      // accepting it as a parameter because this method later directly
-      // modifies _runToStepIndex.
-      const newRunToStepIndex = _.clone(this._runToStepIndex || {});
-      let runAdded = false;
+      const newRunToStepIndex = {};
       _.forOwn(runToAvailableTimeEntries, (entries, run) => {
-        if (!_.isNumber(newRunToStepIndex[run])) {
+        if (!_.isNumber(this._runToStepIndex[run])) {
           // This run had previously lacked a slider. Initially set the slider
           // for the run to point to the last step.
           newRunToStepIndex[run] = entries.length - 1;
-          runAdded = true;
+        } else {
+          // The step for this run did not change.
+          newRunToStepIndex[run] = this._runToStepIndex[run];
         }
       });
-
-      if (!runAdded) {
-        // No new runs added. Do not update sliders.
-        return;
-      }
 
       this.set('_runToStepIndex', newRunToStepIndex);
 
@@ -178,9 +159,11 @@ limitations under the License.
       this._updateSliders(newRunToStepIndex);
     },
     _updateSliders(runToStepIndex) {
+      // When selected runs change, make sure any new sliders point to the
+      // correct step.
       const sliders = this.querySelectorAll('paper-slider');
       for (let i = 0; i < sliders.length; i++) {
-        sliders[i].value = sliders[i].dataset.run;
+        sliders[i].value = runToStepIndex[sliders[i].dataset.run];
       }
     },
     _computeRunToStep(runToAvailableTimeEntries, runToStepIndex) {
