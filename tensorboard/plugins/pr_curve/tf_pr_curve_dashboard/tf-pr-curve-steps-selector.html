@@ -97,10 +97,6 @@ limitations under the License.
       "_runsChanged(runs, _runToStepIndex)",
       "_runToAvailableTimeEntriesChanged(runToAvailableTimeEntries)",
     ],
-    ready() {
-      // Initialize the sliders so they point to the most recent value.
-      this._updateSliders(this._runToStepIndex);
-    },
     _runsChanged(runs) {
       // When selected runs change, make sure any new sliders point to the
       // correct step. We use a setTimeout to add this operation to the end of
