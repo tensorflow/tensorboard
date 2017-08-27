@@ -19,6 +19,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading-style.html">
+<link rel="import" href="../tf-card-heading/util.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-imports/d3.html">
@@ -39,25 +41,36 @@ backend.
       color="[[_runColor]]"
     >
       <template is="dom-if" if="[[_hasMultipleSamples]]">
-        <div>sample: [[_sampleText]] of [[totalSamples]]</div>
+        <div class="row">
+          <div class="label">
+            sample: [[_sampleText]] of [[totalSamples]]
+          </div>
+        </div>
       </template>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-        step
-        <span style="font-weight: bold">[[_currentDatum.step]]</span>
-        <template is="dom-if" if="[[_currentDatum.wall_time]]">
-          ([[_currentDatum.wall_time]])
-        </template>
+        <div class="row">
+          <div class="label">
+            step <strong>[[_currentDatum.step]]</strong>
+          </div>
+          <template is="dom-if" if="[[_currentDatum.wall_time]]">
+            <div class="label right">
+              [[_currentDatum.wall_time]]
+            </div>
+          </template>
+        </div>
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
-        <paper-slider
-          id="steps"
-          immediate-value="{{_stepIndex}}"
-          max="[[_maxStepIndex]]"
-          max-markers="[[_maxStepIndex]]"
-          snaps
-          step="1"
-          value="{{_stepIndex}}"
-        ></paper-slider>
+        <div class="row">
+          <paper-slider
+              id="steps"
+              immediate-value="{{_stepIndex}}"
+              max="[[_maxStepIndex]]"
+              max-markers="[[_maxStepIndex]]"
+              snaps
+              step="1"
+              value="{{_stepIndex}}"
+          ></paper-slider>
+        </div>
       </template>
     </tf-card-heading>
     <template is="dom-if" if="[[_hasAtLeastOneStep]]">
@@ -72,7 +85,7 @@ backend.
     <div id="main-audio-container">
     </div>
 
-    <style>
+    <style include="tf-card-heading-style">
       :host {
         display: block;
         width: 350px;
@@ -103,6 +116,7 @@ backend.
     "use strict";
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
+    import {formatDate} from '../tf-card-heading/util.js';
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
     import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
 
@@ -235,7 +249,7 @@ backend.
           individualAudioURL += `&ts=${audioMetadata.wall_time}`;
         }
         return {
-          wall_time: new Date(audioMetadata.wall_time * 1000).toString(),
+          wall_time: formatDate(new Date(audioMetadata.wall_time * 1000)),
           step: audioMetadata.step,
           label: audioMetadata.label,
           contentType: audioMetadata.contentType,

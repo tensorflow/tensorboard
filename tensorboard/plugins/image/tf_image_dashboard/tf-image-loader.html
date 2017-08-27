@@ -21,6 +21,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading-style.html">
+<link rel="import" href="../tf-card-heading/util.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-imports/d3.html">
@@ -45,14 +47,19 @@ future for loading older images.
         <div>sample: [[_sampleText]] of [[ofSamples]]</div>
       </template>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-        <div>
-          step
-          <span style="font-weight: bold">[[_stepValue]]</span>
-          <template is="dom-if" if="[[_currentWallTime]]">
-            ([[_currentWallTime]])
-          </template>
-          <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
-          </paper-spinner-lite>
+        <div class="row">
+          <div class="label">
+            step <span style="font-weight: bold">[[_stepValue]]</span>
+          </div>
+          <div class="label right">
+            <template is="dom-if" if="[[_currentWallTime]]">
+              [[_currentWallTime]]
+            </template>
+          </div>
+          <div class="label right">
+            <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
+            </paper-spinner-lite>
+          </div>
         </div>
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
@@ -74,7 +81,7 @@ future for loading older images.
             id="main-image-container"
             on-tap="_handleTap"></button>
 
-    <style>
+    <style include="tf-card-heading-style">
       /** Make button a div. */
       button {
         width: 100%;
@@ -176,6 +183,7 @@ future for loading older images.
     "use strict";
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
+    import {formatDate} from '../tf-card-heading/util.js';
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
     import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
 
@@ -276,7 +284,7 @@ future for loading older images.
         return this._steps[stepIndex].step;
       },
       _computeCurrentWallTime(stepIndex) {
-        return this._steps[stepIndex].wall_time.toString();
+        return formatDate(this._steps[stepIndex].wall_time);
       },
       _computeMaxStepIndex(steps) {
         return steps.length - 1;
