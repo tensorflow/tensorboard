@@ -160,7 +160,7 @@ limitations under the License.
       // accepting it as a parameter because this method later directly
       // modifies _runToStepIndex.
       const newRunToStepIndex = _.clone(this._runToStepIndex || {});
-      const runAdded = false;
+      let runAdded = false;
       _.forOwn(runToAvailableTimeEntries, (entries, run) => {
         if (!_.isNumber(newRunToStepIndex[run])) {
           // This run had previously lacked a slider. Initially set the slider
