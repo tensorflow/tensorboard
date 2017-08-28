@@ -174,7 +174,7 @@ class TensorBoardWSGI(object):
         # obviate the need for the frontend to determine which plugins are
         # active.
         self._base_url + DATA_PREFIX + PLUGINS_LISTING_ROUTE:
-              self._serve_plugins_listing,
+            self._serve_plugins_listing,
     }
 
     # Serve the routes from the registered plugins using their name as the route
@@ -415,7 +415,7 @@ def _get_connect_params(query):
   params = urlparse.parse_qs(query)
   if any(len(v) > 2 for v in params.values()):
     raise ValueError('DB URI params list has duplicate keys: ' + query)
-  return {k: json.loads(v[0]) for k,v in params.items()}
+  return {k: json.loads(v[0]) for k, v in params.items()}
 
 
 def _clean_path(path, _base_url=""):
