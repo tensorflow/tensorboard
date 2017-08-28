@@ -242,7 +242,7 @@ class TensorBoardWSGI(object):
     """
     request = wrappers.Request(environ)
     parsed_url = urlparse.urlparse(request.path)
-    clean_path = parsed_url.path
+    clean_path = _clean_path(parsed_url.path, self._base_url)
 
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
@@ -420,5 +420,6 @@ def _clean_path(path, _base_url = ""):
   If base_url is present, do not remove the ending '/'
   If the base_url contains a '/' return as is, if not append '/'
   """
-  if len(path) > 1 and path.endswith('/'):
+  if len(path) > 1 and path.endswith('/') and path != _base_url + '/':
     return path[:-1]
+  return path
