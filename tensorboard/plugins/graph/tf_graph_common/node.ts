@@ -513,8 +513,24 @@ export function buildShape(nodeGroup, d, nodeClass: string): d3.Selection<any, a
           .attr('rx', d.radius).attr('ry', d.radius);
       break;
     case NodeType.META:
-      scene.selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
-          .attr('rx', d.radius).attr('ry', d.radius);
+      // Create 1 rect that will be responsible for coloring (by structure,
+      // device, etc).
+      const rects = [
+          scene.selectOrCreateChild(
+              shapeGroup, 'rect', Class.Node.COLOR_TARGET)];
+      if ((d.node as Metanode).associatedFunction) {
+        // Create a rect that uses a pattern to distinguish this shape as a
+        // TensorFlow function.
+        rects.push(scene.selectOrCreateChild(
+            shapeGroup, 'rect', Class.Node.FUNCTION_INDICATOR_LAYER));
+      }
+      // Create a rect for actually handling events (clicks, etc).
+      rects.push(scene.selectOrCreateChild(
+          shapeGroup, 'rect', Class.Node.EVENT_HANDLING_LAYER));
+      // Round the corners of the rects.
+      _.forEach(rects, rect => {
+        rect.attr('rx', d.radius).attr('ry', d.radius);
+      });
       break;
     default:
       throw Error('Unrecognized node type: ' + d.node.type);
@@ -562,15 +578,17 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
     }
     case NodeType.META: {
       // position shape
-      let shape = scene.selectChild(shapeGroup, 'rect');
+      let shapes = shapeGroup.selectAll('rect');
       if (d.expanded) {
-        scene.positionRect(shape, d.x, d.y, d.width, d.height);
+        scene.positionRect(shapes, d.x, d.y, d.width, d.height);
         subscenePosition(nodeGroup, d);
-        // put label on top
-        labelPosition(nodeGroup, cx, d.y,
-          - d.height / 2 + d.labelHeight / 2);
+
+        // Put the label on top.
+        labelPosition(nodeGroup, cx, d.y, - d.height / 2 + d.labelHeight / 2);
       } else {
-        scene.positionRect(shape, cx, d.y, d.coreBox.width, d.coreBox.height);
+        scene.positionRect(shapes, cx, d.y, d.coreBox.width, d.coreBox.height);
+
+        // Place the label in the middle.
         labelPosition(nodeGroup, cx, d.y, 0);
       }
       break;

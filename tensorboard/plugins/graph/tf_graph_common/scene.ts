@@ -26,6 +26,10 @@ module tf.graph.scene {
       SHAPE: 'nodeshape',
       // <*> element(s) under SHAPE that should receive color updates.
       COLOR_TARGET: 'nodecolortarget',
+      // The layer (or shape in the stack) that handles events (clicks, etc).
+      EVENT_HANDLING_LAYER: 'event-handling-layer',
+      // The layer that visually distinguishes a shape as a TensorFlow function.
+      FUNCTION_INDICATOR_LAYER: 'function-indicator-layer',
       // <text> element showing the node's label.
       LABEL: 'nodelabel',
       // <g> element that contains all visuals for the expand/collapse
@@ -506,7 +510,7 @@ export function translate(selection, x0: number, y0: number) {
 
 /**
  * Helper for setting position of a svg rect
- * @param rect rect to set position of.
+ * @param rect A d3 selection of rect(s) to set position of.
  * @param cx Center x.
  * @param cy Center x.
  * @param width Width to set.
