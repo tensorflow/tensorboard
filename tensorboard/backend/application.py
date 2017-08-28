@@ -113,7 +113,7 @@ def standard_tensorboard_wsgi(
                            get_default_assets_zip_provider()))
   plugins = [constructor(context) for constructor in plugins]
   return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-      base_url)
+                            base_url)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url):
@@ -208,7 +208,7 @@ class TensorBoardWSGI(object):
           path = self._base_url + route
           tf.logging.error("ROUTE :::: %s", path)
         else:
-          path = self._base_url + DATA_PREFIX + PLUGIN_PREFIX + '/' +
+          path = self._base_url + DATA_PREFIX + PLUGIN_PREFIX + '/' + \
                     plugin.plugin_name + route
         self.data_applications[path] = app
 
