@@ -369,7 +369,7 @@ class TensorBoardApplcationConstructionTest(tf.test.TestCase):
           FakePlugin(
               None, plugin_name=None, is_active_value=True, routes_mapping={}),
       ]
-      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '/')
+      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '')
 
     # Fails if there are two plugins with same name
     with self.assertRaises(ValueError):
@@ -379,7 +379,7 @@ class TensorBoardApplcationConstructionTest(tf.test.TestCase):
           FakePlugin(
               None, plugin_name='foo', is_active_value=True, routes_mapping={}),
       ]
-      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '/')
+      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '')
 
 
 class DbTest(tf.test.TestCase):
