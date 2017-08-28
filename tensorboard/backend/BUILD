@@ -70,6 +70,7 @@ py_library(
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/scalar:metadata",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],

@@ -27,16 +27,15 @@ ts_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_graph_op_compat_card"],
-    destdir = "tf_graph_op_compat_card",
+    destdir = "tf-graph-op-compat-card",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//third_party/tensorboard/plugins/graph/tf_graph_info:tf_graph_icon_legacy",
         "//third_party/javascript/polymer/v1/iron-collapse:lib",
         "//third_party/javascript/polymer/v1/iron-list:lib",
         "//third_party/javascript/polymer/v1/paper-icon-button:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
+        "//third_party/tensorboard/plugins/graph/tf_graph_info:tf_graph_icon_legacy",
     ],
 )
-

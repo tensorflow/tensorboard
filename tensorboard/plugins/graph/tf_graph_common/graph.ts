@@ -17,6 +17,7 @@ module tf.graph {
 /** Delimiter used in node names to denote namespaces. */
 export const NAMESPACE_DELIM = '/';
 export const ROOT_NAME = '__root__';
+export const FUNCTION_LIBRARY_NODE_PREFIX = '__function_library__';
 
 /** Attribute key used for storing attributes that are too large. */
 export const LARGE_ATTRS_KEY = '_too_large_attrs';
@@ -55,7 +56,7 @@ export interface BaseEdge extends graphlib.EdgeObject {
   isControlDependency: boolean;
   isReferenceEdge: boolean;
   /** The index of the output tensor of the source node. */
-  outputTensorIndex: number;
+  outputTensorKey: string;
 }
 
 /**
@@ -75,7 +76,7 @@ export class SlimGraph {
 export interface NormalizedInput {
   name: string;
   /** The index of the output tensor of the source node. */
-  outputTensorIndex: number;
+  outputTensorKey: string;
   isControlDependency: boolean;
 }
 
@@ -146,8 +147,10 @@ export interface OpNode extends Node {
   // If there is no such node, then this is null.
   owningSeries: string;
   /**
-   * Array of tensor shapes. Null if the number of output tensors is unknown,
-   * otherwise the length will equal the number of output tensors.
+   * Object mapping output channel string to tensor shapes. The output channel
+   * is a string rather than a number because within TensorFlow functions, an
+   * output may be a cross between an output variable and a number (combined
+   * with a colon) such as "foo:2" rather than just a number alone.
    *
    * Each tensor shape is an array of numbers, or null. Details:
    * - null means unknown rank, and therefore entire shape is unknown.
@@ -157,15 +160,25 @@ export interface OpNode extends Node {
    * - [5, -1, 3] means rank-3 tensor of shape is 5x?x3. The size
    *       of the middle dimension is unknown (encoded as -1).
    */
-  outputShapes: TensorShape[];
+  outputShapes: {[key: string]: TensorShape;};
+
   // The XLA Cluster on which the op ran. Null if it is unknown.
   xlaCluster: string;
+
   // Whether op is compatible with its assigned device.  Currently, if an op
   // is not specified a device, the device is defaulted to the TPU.
   // Furthermore, all ops are considered compatible for CPU and GPU devices,
   // while a whitelist of compatible ops are specifed for the TPU.
   // Reference: opValid func in op.ts.
   compatible: boolean;
+
+  // This field is only defined if the op node represents an input_arg to a
+  // library function. It is the index of the input_arg.
+  functionInputIndex: number;
+
+  // This field is only defined if the op node represents an output_arg of a
+  // library function. It is the index of the output_arg.
+  functionOutputIndex: number;
 }
 
 export interface BridgeNode extends Node {
@@ -300,6 +313,10 @@ export interface Metanode extends GroupNode {
   depth: number;
   templateId: string;
   opHistogram: {[op: string]: number};
+
+  // The name of the function this metanode is associated with if any.
+  associatedFunction: string;
+  
   getFirstChild(): GroupNode|OpNode;
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
@@ -365,10 +382,18 @@ export class OpNodeImpl implements OpNode {
   parentNode: Node;
   include: InclusionType;
   owningSeries: string;
-  outputShapes: TensorShape[];
+  outputShapes: {[key: string]: TensorShape;};
   nodeAttributes: {[key: string]: any;};
   xlaCluster: string;
   compatible: boolean;
+
+  // This field is only defined if the op node represents an input_arg to a
+  // library function. It is the index of the input_arg.
+  functionInputIndex: number;
+  
+  // This field is only defined if the op node represents an output_arg of a
+  // library function. It is the index of the output_arg.
+  functionOutputIndex: number;
 
   /**
    * Constructs a new Op node.
@@ -575,6 +600,7 @@ export class MetanodeImpl implements Metanode {
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
+  associatedFunction: string;
 
   /** A label object for meta-nodes in the graph hierarchy */
   constructor(name: string, opt = {}) {
@@ -605,6 +631,7 @@ export class MetanodeImpl implements Metanode {
     this.parentNode = null;
     this.hasNonControlEdges = false;
     this.include = InclusionType.UNSPECIFIED;
+    this.associatedFunction = '';
   }
 
   getFirstChild(): GroupNode|OpNode {
@@ -738,14 +765,15 @@ export class MetaedgeImpl implements Metaedge {
   private static computeSizeOfEdge(edge: BaseEdge, h: hierarchy.Hierarchy):
       number {
     let opNode = <OpNode> h.node(edge.v);
-    if (opNode.outputShapes == null) {
+    if (!opNode.outputShapes) {
       // No shape information. Asssume a single number. This gives
       // a lower bound for the total size.
       return 1;
     }
     h.hasShapeInfo = true;
+
     // Sum the sizes of all output tensors.
-    return _(opNode.outputShapes).map(shape => {
+    return _(opNode.outputShapes).mapValues((shape: number[]) => {
       // If the shape is unknown, treat it as 1 when computing
       // total size. This gives a lower bound for the total size.
       if (shape == null) {
@@ -831,7 +859,7 @@ class SeriesNodeImpl implements SeriesNode {
  */
 // tslint:disable-next-line:no-any
 function extractOutputShapes(attr: Array<{key: string, value: any}>):
-    TensorShape[] {
+    {[key: string]: TensorShape;} {
   let result = null;
   // We don't know anything about the output tensors.
   if (!attr) {
@@ -899,9 +927,10 @@ function extractXlaCluster(attr: Array<{key: string, value: any}>): string|
 
 /**
  * Normalizes the inputs and extracts associated metadata:
- * 1) Inputs can contain a colon followed by a number at the end
- *    (e.g. inputName:1) and we remove this from the input name, and take note
- *    that the input was numbered.
+ * 1) Inputs can contain a colon followed by a suffix of characters.
+ *    That suffix may be a single number (e.g. inputName:1) or several word
+ *    characters separated from a number by a colon (e.g. inputName:foo:1). The
+ *    latter case is used to denote inputs and outputs of functions.
  * 2) Control dependency inputs contain caret at the beginning and we
  *    remove this and annotate the edge as a control dependency.
  * @param inputs Array of unnormalized names of input nodes.
@@ -909,20 +938,37 @@ function extractXlaCluster(attr: Array<{key: string, value: any}>): string|
 function normalizeInputs(inputs: string[]): NormalizedInput[] {
   let normalizedInputs: NormalizedInput[] = [];
   _.each(inputs, inputName => {
-    let start = inputName[0] === '^';
-    let colon = inputName.lastIndexOf(':');
-    let end = colon !== -1 &&
-      inputName.length - colon > 1 &&
-      !(/\D/).test(inputName.substring(colon + 1)) ?
-      colon : inputName.length;
-    let name = inputName.substring(start ? 1 : 0, end);
+    let isControlDependency = inputName[0] === '^';
+    if (isControlDependency) {
+      // The carat merely indicates whether this input is a control dependency.
+      // It should not be part of the name.
+      inputName = inputName.substring(1);
+    }
+
+    let name = inputName;
+    let outputTensorKey = '0';
+
+    let match = inputName.match(/(.*):(\w+:\d+)$/);
+    if (match) {
+      // The output string consists of several characters and a number separated
+      // by a colon.
+      name = match[1];
+      outputTensorKey = match[2];
+    } else {
+      match = inputName.match(/(.*):(\d+)$/);
+      if (match) {
+        // The output string consists of a single number.
+        name = match[1];
+        outputTensorKey = match[2];
+      }
+    }
+
     if (normalizedInputs.length === 0 ||
       name !== normalizedInputs[normalizedInputs.length - 1].name) {
       normalizedInputs.push({
         name: name,
-        outputTensorIndex:
-            end === inputName.length ? 0 : Number(inputName.slice(colon + 1)),
-        isControlDependency: start
+        outputTensorKey: outputTensorKey,
+        isControlDependency: isControlDependency,
       });
     }
   });
@@ -942,14 +988,14 @@ function addEdgeToGraph(
   graph.edges.push({
     v: inputName,
     w: outputNode.name,
-    outputTensorIndex: input.outputTensorIndex,
+    outputTensorKey: input.outputTensorKey,
     isControlDependency: input.isControlDependency,
     isReferenceEdge: isRefEdge
   });
 }
 
 export function build(
-    rawNodes: tf.graph.proto.NodeDef[], params: BuildParams,
+    graphDef: tf.graph.proto.GraphDef, params: BuildParams,
     tracker: ProgressTracker): Promise<SlimGraph|void> {
   /**
    * A dictionary that maps each in-embedding node name to the node
@@ -969,6 +1015,7 @@ export function build(
   let isInEmbeddedPred = getEmbedPredicate(params.inEmbeddingTypes);
   let isOutEmbeddedPred = getEmbedPredicate(params.outEmbeddingTypes);
   let embeddingNodeNames: string[] = [];
+  let rawNodes = graphDef.node;
   /**
    * A list of all the non-embedding node names which appear in the processed
    * list of raw nodes. Here we pre-allocate enough room for all the rawNodes,
@@ -986,12 +1033,13 @@ export function build(
           () => {
             let opNodes = new Array<OpNode>(rawNodes.length);
             let index = 0;
-            _.each(rawNodes, rawNode => {
+
+            const processRawNode = rawNode => {
               let opNode = new OpNodeImpl(rawNode);
               if (isInEmbeddedPred(opNode)) {
                 embeddingNodeNames.push(opNode.name);
                 inEmbedding[opNode.name] = opNode;
-                return;
+                return opNode;
               }
 
               if (isOutEmbeddedPred(opNode)) {
@@ -1002,14 +1050,126 @@ export function build(
                   outEmbeddings[inputName] = outEmbeddings[inputName] || [];
                   outEmbeddings[inputName].push(opNode);
                 });
-                return;
+                return opNode;
               }
               // The node is not an embedding, so add it to the names and nodes
               // lists.
               opNodes[index] = opNode;
               nodeNames[index] = opNode.name;
               index++;
-            });
+              return opNode;
+            };
+
+            _.each(rawNodes, processRawNode);
+
+            const processFunction = (func: tf.graph.proto.FunctionDef) => {
+              // Give the function itself a node.
+              const functionNodeName =
+                  FUNCTION_LIBRARY_NODE_PREFIX + func.signature.name;
+              // Create an op node for the function. Mark it as part of a
+              // function library.
+              processRawNode({
+                name: functionNodeName,
+                input: [],
+                device: '',
+                op: '',
+                attr: [],
+              });
+
+              // If the function has inputs, make nodes out of them.
+              if (func.signature.input_arg) {
+                // Makes an OpNode out of either an input_arg of a library
+                // function.
+                let currentInputIndex = 0;
+                const processInput = (arg) => {
+                  const opNode = processRawNode({
+                    name: functionNodeName + NAMESPACE_DELIM + arg.name,
+                    input: [],
+                    device: '',
+                    op: 'input_arg',
+                    attr: [{
+                      key: 'T',
+                      value: {
+                        type: arg.type,
+                      },
+                    }],
+                  });
+                  opNode.functionInputIndex = currentInputIndex;
+                  currentInputIndex++;
+                };
+
+                // Make nodes for input args of the function. Unfortunately, the
+                // pbtxt configuration language is not rich enough to
+                // differentiate between an array with 1 item vs 1 object
+                // property.
+                if (func.signature.input_arg['name']) {
+                  // There is only 1 input arg.
+                  processInput(func.signature.input_arg);
+                } else {
+                  // There are several input args.
+                  _.each(func.signature.input_arg, processInput);
+                }
+              }
+
+              // Make nodes for output args of the function. Track the names of
+              // output args within the keys of this object. Unlike the
+              // input_args, the output_args are already defined within the
+              // node_defs of the library function.
+              let currentOutputIndex = 0;
+              const outputArgNames = {};
+
+              // If the function has outputs, make nodes out of them.
+              if (func.signature.output_arg) {
+                const processOutput = arg => {
+                  outputArgNames[
+                      functionNodeName + NAMESPACE_DELIM + arg.name] =
+                          currentOutputIndex;
+                  currentOutputIndex++;
+                };
+                if (func.signature.output_arg['name']) {
+                  // There is only 1 output arg.
+                  processOutput(func.signature.output_arg);
+                } else {
+                  // There are several output args.
+                  _.each(func.signature.output_arg, processOutput);
+                }
+              }
+
+              _.each(func.node_def, rawNode => {
+                // Prefix with the name of the function so that the graph
+                // correctly computes the hierarchy (and makes metanodes).
+                rawNode.name = functionNodeName + '/' + rawNode.name;
+                if (typeof rawNode.input === 'string') {
+                  rawNode.input = [rawNode.input];
+                }
+                const opNode = processRawNode(rawNode);
+                if (_.isNumber(outputArgNames[rawNode.name])) {
+                  // Mark the node as one of the outputs of the function.
+                  opNode.functionOutputIndex = outputArgNames[rawNode.name];
+                }
+
+                _.each(opNode.inputs, normalizedInput => {
+                  normalizedInput.name =
+                      functionNodeName + NAMESPACE_DELIM + normalizedInput.name;
+                });
+              });
+            };
+
+            if (graphDef.library && graphDef.library.function) {
+              // This graph contains functions.
+              if (graphDef.library.function['length'] >= 0) {
+                // The graph has several functions.
+                _.each(
+                  graphDef.library.function as tf.graph.proto.FunctionDef[],
+                  processFunction);
+              } else {
+                // The graph has 1 function. In that case, the function property
+                // is a single function (not an array).
+                processFunction(
+                  graphDef.library.function as tf.graph.proto.FunctionDef);
+              }
+            }
+
             opNodes.splice(index);
             nodeNames.splice(index);
             return opNodes;

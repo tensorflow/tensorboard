@@ -35,10 +35,12 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
+from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
@@ -55,7 +57,7 @@ You may also pass a comma separated list of log directories, and TensorBoard
 will watch each directory. You can also assign names to individual log
 directories by putting a colon between the name and the path, as in
 
-tensorboard --logdir=name1:/path/to/logs/1,name2:/path/to/logs/2
+tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
 """)
 
 tf.flags.DEFINE_string(
@@ -83,7 +85,7 @@ following databases are supported:
 
 - sqlite: Use SQLite built in to Python. URI must specify the path of the
   database file, which will be created if it doesn't exist. For example:
-  --db=sqlite3:~/.tensorboard.db
+  --db sqlite3:~/.tensorboard.db
 
 Warning: This feature is a work in progress and only has limited support.
 """)
@@ -95,21 +97,30 @@ of your event files to the command line, when no data is shown on TensorBoard or
 the data shown looks weird.
 
 Example usages:
-tensorboard --inspect --event_file=myevents.out
-tensorboard --inspect --event_file=myevents.out --tag=loss
-tensorboard --inspect --logdir=mylogdir
-tensorboard --inspect --logdir=mylogdir --tag=loss
+tensorboard --inspect --event_file myevents.out
+tensorboard --inspect --event_file myevents.out --tag loss
+tensorboard --inspect --logdir mylogdir
+tensorboard --inspect --logdir mylogdir --tag loss
 
 See tensorflow/python/summary/event_file_inspector.py for more info and
 detailed usage.
 """)
+
 tf.flags.DEFINE_string(
     'tag', '',
     'The particular tag to query for. Only used if --inspect is present')
+
 tf.flags.DEFINE_string(
     'event_file', '',
     'The particular event file to query for. Only used if --inspect is present '
     'and --logdir is not specified.')
+
+tf.flags.DEFINE_integer(
+    'debugger_data_server_grpc_port', None,
+    'The port at which the debugger data server (to be started by the debugger '
+    'plugin) should receive debugging data via gRPC from one or more '
+    'debugger-enabled TensorFlow runtimes. No debugger plugin or debugger data '
+    'server will be started if this flag is not provided.')
 
 FLAGS = tf.flags.FLAGS
 
@@ -229,6 +240,12 @@ def main(unused_argv=None):
     efi.inspect(FLAGS.logdir, event_file, FLAGS.tag)
     return 0
   else:
+    def ConstructDebuggerPluginWithGrpcPort(context):
+      debugger_plugin = debugger_plugin_lib.DebuggerPlugin(context)
+      if FLAGS.debugger_data_server_grpc_port is not None:
+        debugger_plugin.listen(FLAGS.debugger_data_server_grpc_port)
+      return debugger_plugin
+
     plugins = [
         core_plugin.CorePlugin,
         scalars_plugin.ScalarsPlugin,
@@ -237,10 +254,13 @@ def main(unused_argv=None):
         graphs_plugin.GraphsPlugin,
         distributions_plugin.DistributionsPlugin,
         histograms_plugin.HistogramsPlugin,
+        pr_curves_plugin.PrCurvesPlugin,
         projector_plugin.ProjectorPlugin,
         text_plugin.TextPlugin,
         profile_plugin.ProfilePlugin,
+        ConstructDebuggerPluginWithGrpcPort,
     ]
+
     tb = create_tb_app(plugins)
     run_simple_server(tb)
 

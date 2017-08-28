@@ -54,6 +54,17 @@ export const palettes = {
     '#5e35b1',  // purple
     '#A52714',  // red
   ],
+  // A colorblind-friendly palette designed for TensorBoard by Paul Tol
+  // (https://personal.sron.nl/~pault/).
+  tensorboardColorBlindAssist: [
+    '#ff7043',  // orange
+    '#cc3311',  // red
+    '#ee3377',  // magenta
+    '#0077bb',  // blue
+    '#33bbee',  // cyan
+    '#009988',  // teal
+    '#bbbbbb',  // grey
+  ],
   // These palettes try to be better for color differentiation.
   // https://personal.sron.nl/~pault/
   colorBlindAssist1:
@@ -66,11 +77,24 @@ export const palettes = {
     '#332288', '#6699cc', '#88ccee', '#44aa99', '#117733', '#999933', '#ddcc77',
     '#cc6677', '#aa4466', '#882255', '#661100', '#aa4499'
   ],
-  // based on this palette: http://mkweb.bcgsc.ca/biovis2012/
   colorBlindAssist4: [
+    // Paul Tol's "Alternative Scheme for Qualitative Data". Preferred
+    // if `tensorboardColorBlindAssist` cannot be used for any reason.
+    '#4477aa',
+    '#66ccee',
+    '#228833',
+    '#ccbb44',
+    '#ee6677',
+    '#aa3377',
+    '#bbbbbb',
+  ],
+  // based on this palette: http://mkweb.bcgsc.ca/biovis2012/
+  colorBlindAssist5: [
     '#FF6DB6', '#920000', '#924900', '#DBD100', '#24FF24', '#006DDB', '#490092'
   ],
   mldash: [
     '#E47EAD', '#F4640D', '#FAA300', '#F5E636', '#00A077', '#0077B8', '#00B7ED'
   ]
 };
+
+export const standard = palettes.tensorboardColorBlindAssist;

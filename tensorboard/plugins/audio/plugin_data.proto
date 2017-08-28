@@ -17,6 +17,19 @@ syntax = "proto3";
 
 package tensorboard;
 
-message PrCurvePluginData {
-  uint32 num_thresholds = 1;
+// Audio summaries created by the `tensorboard.plugins.audio.summary`
+// module will include `SummaryMetadata` whose `plugin_data` field has
+// as `content` a binary string that is the encoding of an
+// `AudioPluginData` proto.
+message AudioPluginData {
+  enum Encoding {
+    // Do not use `UNKNOWN`; it is only present because it must be.
+    UNKNOWN = 0;
+    WAV = 11;
+  }
+
+  // Version `0` is the only supported version.
+  int32 version = 1;
+
+  Encoding encoding = 2;
 }

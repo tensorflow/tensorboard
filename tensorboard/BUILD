@@ -28,10 +28,12 @@ py_binary(
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/debugger:debugger_plugin",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
         "//tensorboard/plugins/image:images_plugin",
+        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
@@ -70,6 +72,14 @@ py_library(
 )
 
 py_library(
+    name = "expect_futures_installed",
+    # This is a dummy rule used as a futures dependency in open-source.
+    # We expect numpy to already be installed on the system, e.g. via
+    # `pip install futures`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
     name = "expect_sqlite3_installed",
     # This is a dummy rule used as a sqlite3 dependency in open-source.
     # We expect sqlite3 to already be present, as it is part of the standard
@@ -82,6 +92,13 @@ py_library(
     # This is a dummy rule used as a TensorFlow dependency in open-source.
     # We expect TensorFlow to already be installed on the system, e.g. via
     # `pip install tensorflow`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "tf_contrib_ffmpeg",
+    # This is a dummy rule for the open source world, which indicates
+    # that srcs dereference tf.contrib.ffmpeg.
     visibility = ["//visibility:public"],
 )
 
@@ -103,8 +120,10 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/scalar:metadata",
     ],
 )
 
@@ -115,11 +134,16 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":data_compat",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/scalar:summary",
     ],
 )
 
@@ -143,8 +167,6 @@ py_test(
     deps = [
         ":db",
         ":test_util",
-        ":util",
-        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
@@ -194,6 +216,8 @@ py_library(
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:tf_contrib_ffmpeg",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -243,7 +267,9 @@ py_library(
     srcs = ["test_util.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":db",
         ":util",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

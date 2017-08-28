@@ -38,6 +38,74 @@ module tf.graph.proto {
   }
 
   /**
+   * Describes a version of TensorFlow.
+   */
+  export interface VersionDef {
+    // The version of the code that produced this data.
+    producer: number;
+
+    // Any consumer below this version is not allowed to consume this data.
+    min_consumer: number;
+
+    // Specific consumer versions which are disallowed (e.g. due to bugs).
+    bad_consumers: number[];
+  };
+
+  /**
+   * Specifies an argument. An argument is either an input or an output of a
+   * function. There are thus 2 types of arguments: input_args and output_args.
+   * Nodes outside a function call connect to arguments. The graph explorer
+   * creates nodes for all arguments within a function.
+   */
+  export interface ArgDef {
+    name: string;
+    type: string;
+  };
+
+  /**
+   * Describes the signature of a function - its name, inputs, and outputs.
+   */
+  export interface OpDef {
+    name: string;
+    input_arg: ArgDef[];
+    output_arg: ArgDef[];
+  };
+
+  /**
+   * Describes a single function within the library.
+   */
+  export interface FunctionDef {
+    // The definition of the function's name, arguments, return values,
+    // attrs etc.
+    signature: OpDef;
+
+    // A list of nodes in the function.
+    node_def: NodeDef[];
+  };
+
+  /**
+   * Describes a library of functions that may be composed throughout the graph.
+   */
+  export interface FunctionDefLibraryDef {
+    // A list of functions.
+    function: FunctionDef | FunctionDef[];
+  };
+
+  /**
+   * TensorFlow graph definition as defined in the graph.proto file.
+   */
+  export interface GraphDef {
+    // A list of nodes in the graph.
+    node: NodeDef[];
+
+    // Compatibility versions of the graph.
+    versions: VersionDef[];
+
+    // Contains a library of functions that may composed through the graph.
+    library: FunctionDefLibraryDef;
+  };
+
+  /**
    * Generic graph as defined in the graph_explorer.proto file.
    */
   export interface GenericGraph {

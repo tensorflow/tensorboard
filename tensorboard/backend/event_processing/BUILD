@@ -74,7 +74,10 @@ py_test(
 
 py_library(
     name = "event_accumulator",
-    srcs = ["event_accumulator.py"],
+    srcs = [
+        "event_accumulator.py",
+        "plugin_event_accumulator.py",
+    ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
@@ -96,14 +99,34 @@ py_test(
     deps = [
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/scalar:summary",
+    ],
+)
+
+py_test(
+    name = "plugin_event_accumulator_test",
+    size = "small",
+    srcs = ["plugin_event_accumulator_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":event_accumulator",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:summary",
+        "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/scalar:summary",
     ],
 )
 
 py_library(
     name = "event_multiplexer",
-    srcs = ["event_multiplexer.py"],
+    srcs = [
+        "event_multiplexer.py",
+        "plugin_event_multiplexer.py",
+    ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
@@ -119,6 +142,18 @@ py_test(
     name = "event_multiplexer_test",
     size = "small",
     srcs = ["event_multiplexer_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":event_accumulator",
+        ":event_multiplexer",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_test(
+    name = "plugin_event_multiplexer_test",
+    size = "small",
+    srcs = ["plugin_event_multiplexer_test.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",

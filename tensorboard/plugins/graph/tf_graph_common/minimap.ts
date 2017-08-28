@@ -222,10 +222,11 @@ export class Minimap {
 
     // Download canvas width and height are multiples of the style width and
     // height in order to increase pixel density of the PNG for clarity.
-    d3.select(this.downloadCanvas).style(
-      <any>{ width: sceneSize.width, height: sceneSize.height });
-    d3.select(this.downloadCanvas).attr(
-      <any>{ width: sceneSize.width * 3, height: sceneSize.height * 3 });
+    const downloadCanvasSelection = d3.select(this.downloadCanvas);
+    downloadCanvasSelection.style('width', sceneSize.width);
+    downloadCanvasSelection.style('height', sceneSize.height);
+    downloadCanvasSelection.attr('width', 3 * sceneSize.width);
+    downloadCanvasSelection.attr('height', 3 * sceneSize.height);
 
     if (this.translate != null && this.zoom != null) {
       // Update the viewpoint rectangle shape since the aspect ratio of the

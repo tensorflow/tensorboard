@@ -32,11 +32,17 @@ limitations under the License.
 -->
 <dom-module id="tf-scalar-chart">
   <template>
-    <tf-card-heading tag="[[tag]]"></tf-card-heading>
+    <tf-card-heading
+      tag="[[tag]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+    ></tf-card-heading>
     <div id="chart-and-spinner-container">
       <vz-line-chart
-        x-type="[[xType]]"
+        x-components-creation-method="[[_xComponentsCreationMethod]]"
+        y-value-accessor="[[_yValueAccessor]]"
         color-scale="[[_runsColorScale]]"
+        tooltip-columns="[[_tooltipColumns]]"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
         tooltip-sorting-method="[[tooltipSortingMethod]]"
@@ -132,7 +138,6 @@ limitations under the License.
       paper-icon-button {
         color: #2196F3;
         border-radius: 100%;
-        pointer-events: auto;  /* TODO(@wchargin): why? */
         width: 32px;
         height: 32px;
         padding: 4px;
@@ -165,6 +170,7 @@ limitations under the License.
     import {Canceller} from '../tf-backend/canceller.js';
     import {getRouter} from '../tf-backend/router.js';
     import {runsColorScale} from '../tf-color-scale/colorScale.js';
+    import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
 
     // The chart can sometimes get in a bad state, when it redraws while
     // it is display: none due to the user having switched to a different
@@ -184,7 +190,17 @@ limitations under the License.
       }
     }, 100);
 
-    /** @enum {string} */ const X_TYPE = {
+    /** 
+     * Allows:
+     * - "step" - Linear scale using the "step" property of the datum.
+     * - "wall_time" - Temporal scale using the "wall_time" property of the
+     * datum.
+     * - "relative" - Temporal scale using the "relative" property of the
+     * datum if it is present or calculating from "wall_time" if it isn't.
+     * @enum {string}
+     * */
+    
+    const X_TYPE = {
       STEP: 'step',
       RELATIVE: 'relative',
       WALL: 'wall',
@@ -196,7 +212,65 @@ limitations under the License.
         runs: Array,  // of String
         tag: String,
 
-        /** @type {X_TYPE} */ xType: String,
+        /**
+         * @type {X_TYPE}
+         */
+        xType: String,
+
+        _xComponentsCreationMethod: {
+          type: Object,
+          computed: '_computeXComponentsCreationMethod(xType)',
+        },
+
+        _yValueAccessor: {
+          type: Object,
+          readOnly: true,
+          value: () => {
+            return d => d.scalar;
+          },
+        },
+
+        _tooltipColumns: {
+          type: Array,
+          readOnly: true,
+          value: () => {
+            const valueFormatter = ChartHelpers.multiscaleFormatter(
+                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
+            const formatValueOrNaN =
+                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+            return [
+              {
+                title: 'Name',
+                evaluate: (d) => d.dataset.metadata().name,
+              },
+              {
+                title: 'Smoothed',
+                evaluate: (d, statusObject) => formatValueOrNaN(
+                    statusObject.smoothingEnabled ?
+                        d.datum.smoothed : d.datum.scalar),
+              },
+              {
+                title: 'Value',
+                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
+              },
+              {
+                title: 'Step',
+                evaluate: (d) => ChartHelpers.stepFormatter(d.datum.step),
+              },
+              {
+                title: 'Time',
+                evaluate: (d) => ChartHelpers.timeFormatter(d.datum.wall_time),
+              },
+              {
+                title: 'Relative',
+                evaluate:
+                    (d) => ChartHelpers.relativeFormatter(
+                        ChartHelpers.relativeAccessor(d.datum, -1, d.dataset)),
+              },
+            ]
+          },
+        },
+
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
         tooltipSortingMethod: String,
@@ -412,6 +486,9 @@ limitations under the License.
       },
       _jsonUrl(run) {
         return this._scalarUrl(this.tag, run);
+      },
+      _computeXComponentsCreationMethod(xType) {
+        return () => ChartHelpers.getXComponents(xType);
       },
     });
   </script>

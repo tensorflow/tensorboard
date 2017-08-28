@@ -9,6 +9,11 @@ python:
 os:
   - linux
 
+branches:
+  only:
+    - master
+    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
+
 env:
   - BAZEL=0.5.1 TF=NIGHTLY
 
@@ -42,6 +47,8 @@ before_install:
     esac
 
     pip install pylint
+    pip install futures==3.1.1
+    pip install grpcio==1.4.0
 
 script:
   - |

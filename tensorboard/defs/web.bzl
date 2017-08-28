@@ -159,6 +159,7 @@ def _ts_web_library(ctx):
                 inlineSources=True,
                 module="es6",
                 moduleResolution="node",
+                skipLibCheck=True,
                 noResolve=True,
                 target="es5",
             ),

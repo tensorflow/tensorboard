@@ -22,11 +22,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
+import functools
 import logging
+import os
+import sqlite3
 import threading
 
 import tensorflow as tf
 
+from tensorboard import db
 from tensorboard import util
 
 
@@ -39,6 +44,12 @@ class TestCase(tf.test.TestCase):
   def __init__(self, method='runTest'):
     super(TestCase, self).__init__(method)
     self._method = method
+    self._db_connection_provider = None  # type: () -> db.Connection
+    self.clock = FakeClock()
+    self.sleep = FakeSleep(self.clock)
+    self.Retrier = functools.partial(util.Retrier, sleep=self.sleep)
+    self.tbase = db.TensorBase(db_connection_provider=self.connect_db,
+                               retrier_factory=self.Retrier)
 
   def setUp(self):
     super(TestCase, self).setUp()
@@ -46,6 +57,26 @@ class TestCase(tf.test.TestCase):
     tf.logging.set_verbosity(tf.logging.DEBUG)
     logging.getLogger('werkzeug').setLevel(logging.INFO)
     tf.logging.debug('=== %s ===', self._method)
+    db.TESTING_MODE = True
+
+  def tearDown(self):
+    super(TestCase, self).tearDown()
+    db.TESTING_MODE = False
+
+  def connect_db(self):
+    """Establishes a PEP 249 DB connection.
+
+    :rtype: db.Connection
+    """
+    if self._db_connection_provider is None:
+      db_path = os.path.join(self.get_temp_dir(), 'TestCase.sqlite')
+      self._db_connection_provider = (
+          lambda: db.Connection(sqlite3.connect(db_path, isolation_level=None)))
+      with contextlib.closing(self._db_connection_provider()) as db_conn:
+        schema = db.Schema(db_conn)
+        schema.create_tables()
+        schema.create_indexes()
+    return self._db_connection_provider()
 
 
 class FakeClock(object):

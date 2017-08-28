@@ -24,8 +24,8 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard.plugins.image import summary as image_summary
 from tensorboard.backend.event_processing import event_accumulator as ea
+from tensorboard.plugins.distribution import compressor
 
 
 class _EventGenerator(object):
@@ -52,6 +52,46 @@ class _EventGenerator(object):
         step=step,
         summary=tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)]))
+    self.AddEvent(event)
+
+  def AddHistogram(self,
+                   tag,
+                   wall_time=0,
+                   step=0,
+                   hmin=1,
+                   hmax=2,
+                   hnum=3,
+                   hsum=4,
+                   hsum_squares=5,
+                   hbucket_limit=None,
+                   hbucket=None):
+    histo = tf.HistogramProto(
+        min=hmin,
+        max=hmax,
+        num=hnum,
+        sum=hsum,
+        sum_squares=hsum_squares,
+        bucket_limit=hbucket_limit,
+        bucket=hbucket)
+    event = tf.Event(
+        wall_time=wall_time,
+        step=step,
+        summary=tf.Summary(value=[tf.Summary.Value(tag=tag, histo=histo)]))
+    self.AddEvent(event)
+
+  def AddImage(self,
+               tag,
+               wall_time=0,
+               step=0,
+               encoded_image_string=b'imgstr',
+               width=150,
+               height=100):
+    image = tf.Summary.Image(
+        encoded_image_string=encoded_image_string, width=width, height=height)
+    event = tf.Event(
+        wall_time=wall_time,
+        step=step,
+        summary=tf.Summary(value=[tf.Summary.Value(tag=tag, image=image)]))
     self.AddEvent(event)
 
   def AddAudio(self,
@@ -102,8 +142,11 @@ class EventAccumulatorTest(tf.test.TestCase):
     """
 
     empty_tags = {
+        ea.IMAGES: [],
         ea.AUDIO: [],
         ea.SCALARS: [],
+        ea.HISTOGRAMS: [],
+        ea.COMPRESSED_HISTOGRAMS: [],
         ea.GRAPH: False,
         ea.META_GRAPH: False,
         ea.RUN_METADATA: [],
@@ -153,13 +196,20 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     gen.AddScalar('s1')
     gen.AddScalar('s2')
+    gen.AddHistogram('hst1')
+    gen.AddHistogram('hst2')
+    gen.AddImage('im1')
+    gen.AddImage('im2')
     gen.AddAudio('snd1')
     gen.AddAudio('snd2')
     acc = ea.EventAccumulator(gen)
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
+        ea.IMAGES: ['im1', 'im2'],
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
+        ea.HISTOGRAMS: ['hst1', 'hst2'],
+        ea.COMPRESSED_HISTOGRAMS: ['hst1', 'hst2'],
     })
 
   def testReload(self):
@@ -170,12 +220,19 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTagsEqual(acc.Tags(), {})
     gen.AddScalar('s1')
     gen.AddScalar('s2')
+    gen.AddHistogram('hst1')
+    gen.AddHistogram('hst2')
+    gen.AddImage('im1')
+    gen.AddImage('im2')
     gen.AddAudio('snd1')
     gen.AddAudio('snd2')
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
+        ea.IMAGES: ['im1', 'im2'],
         ea.AUDIO: ['snd1', 'snd2'],
         ea.SCALARS: ['s1', 's2'],
+        ea.HISTOGRAMS: ['hst1', 'hst2'],
+        ea.COMPRESSED_HISTOGRAMS: ['hst1', 'hst2'],
     })
 
   def testScalars(self):
@@ -189,6 +246,142 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     acc.Reload()
     self.assertEqual(acc.Scalars('s1'), [s1])
     self.assertEqual(acc.Scalars('s2'), [s2])
+
+  def testHistograms(self):
+    """Tests whether histograms are inserted into EventAccumulator."""
+    gen = _EventGenerator(self)
+    acc = ea.EventAccumulator(gen)
+
+    val1 = ea.HistogramValue(
+        min=1,
+        max=2,
+        num=3,
+        sum=4,
+        sum_squares=5,
+        bucket_limit=[1, 2, 3],
+        bucket=[0, 3, 0])
+    val2 = ea.HistogramValue(
+        min=-2,
+        max=3,
+        num=4,
+        sum=5,
+        sum_squares=6,
+        bucket_limit=[2, 3, 4],
+        bucket=[1, 3, 0])
+
+    hst1 = ea.HistogramEvent(wall_time=1, step=10, histogram_value=val1)
+    hst2 = ea.HistogramEvent(wall_time=2, step=12, histogram_value=val2)
+    gen.AddHistogram(
+        'hst1',
+        wall_time=1,
+        step=10,
+        hmin=1,
+        hmax=2,
+        hnum=3,
+        hsum=4,
+        hsum_squares=5,
+        hbucket_limit=[1, 2, 3],
+        hbucket=[0, 3, 0])
+    gen.AddHistogram(
+        'hst2',
+        wall_time=2,
+        step=12,
+        hmin=-2,
+        hmax=3,
+        hnum=4,
+        hsum=5,
+        hsum_squares=6,
+        hbucket_limit=[2, 3, 4],
+        hbucket=[1, 3, 0])
+    acc.Reload()
+    self.assertEqual(acc.Histograms('hst1'), [hst1])
+    self.assertEqual(acc.Histograms('hst2'), [hst2])
+
+  def testCompressedHistograms(self):
+    """Tests compressed histograms inserted into EventAccumulator."""
+    gen = _EventGenerator(self)
+    acc = ea.EventAccumulator(gen, compression_bps=(0, 2500, 5000, 7500, 10000))
+
+    gen.AddHistogram(
+        'hst1',
+        wall_time=1,
+        step=10,
+        hmin=1,
+        hmax=2,
+        hnum=3,
+        hsum=4,
+        hsum_squares=5,
+        hbucket_limit=[1, 2, 3],
+        hbucket=[0, 3, 0])
+    gen.AddHistogram(
+        'hst2',
+        wall_time=2,
+        step=12,
+        hmin=-2,
+        hmax=3,
+        hnum=4,
+        hsum=5,
+        hsum_squares=6,
+        hbucket_limit=[2, 3, 4],
+        hbucket=[1, 3, 0])
+    acc.Reload()
+
+    # Create the expected values after compressing hst1
+    expected_vals1 = [
+        compressor.CompressedHistogramValue(bp, val)
+        for bp, val in [(0, 1.0), (2500, 1.25), (5000, 1.5), (7500, 1.75
+                                                             ), (10000, 2.0)]
+    ]
+    expected_cmphst1 = ea.CompressedHistogramEvent(
+        wall_time=1, step=10, compressed_histogram_values=expected_vals1)
+    self.assertEqual(acc.CompressedHistograms('hst1'), [expected_cmphst1])
+
+    # Create the expected values after compressing hst2
+    expected_vals2 = [
+        compressor.CompressedHistogramValue(bp, val)
+        for bp, val in [(0, -2),
+                        (2500, 2),
+                        (5000, 2 + 1 / 3),
+                        (7500, 2 + 2 / 3),
+                        (10000, 3)]
+    ]
+    expected_cmphst2 = ea.CompressedHistogramEvent(
+        wall_time=2, step=12, compressed_histogram_values=expected_vals2)
+    self.assertEqual(acc.CompressedHistograms('hst2'), [expected_cmphst2])
+
+  def testImages(self):
+    """Tests 2 images inserted/accessed in EventAccumulator."""
+    gen = _EventGenerator(self)
+    acc = ea.EventAccumulator(gen)
+    im1 = ea.ImageEvent(
+        wall_time=1,
+        step=10,
+        encoded_image_string=b'big',
+        width=400,
+        height=300)
+    im2 = ea.ImageEvent(
+        wall_time=2,
+        step=12,
+        encoded_image_string=b'small',
+        width=40,
+        height=30)
+    gen.AddImage(
+        'im1',
+        wall_time=1,
+        step=10,
+        encoded_image_string=b'big',
+        width=400,
+        height=300)
+    gen.AddImage(
+        'im2',
+        wall_time=2,
+        step=12,
+        encoded_image_string=b'small',
+        width=40,
+        height=30)
+    acc.Reload()
+    self.assertEqual(acc.Images('im1'), [im1])
+    self.assertEqual(acc.Images('im2'), [im2])
 
   def testAudio(self):
     """Tests 2 audio events inserted/accessed in EventAccumulator."""
@@ -240,6 +433,14 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     with self.assertRaises(KeyError):
       acc.Scalars('im1')
     with self.assertRaises(KeyError):
+      acc.Histograms('s1')
+    with self.assertRaises(KeyError):
+      acc.Histograms('im1')
+    with self.assertRaises(KeyError):
+      acc.Images('s1')
+    with self.assertRaises(KeyError):
+      acc.Images('hst1')
+    with self.assertRaises(KeyError):
       acc.Audio('s1')
     with self.assertRaises(KeyError):
       acc.Audio('hst1')
@@ -251,12 +452,17 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalar('s1', wall_time=1, step=10, value=20)
     gen.AddEvent(tf.Event(wall_time=2, step=20, file_version='nots2'))
     gen.AddScalar('s3', wall_time=3, step=100, value=1)
+    gen.AddHistogram('hst1')
+    gen.AddImage('im1')
     gen.AddAudio('snd1')
 
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
+        ea.IMAGES: ['im1'],
         ea.AUDIO: ['snd1'],
         ea.SCALARS: ['s1', 's3'],
+        ea.HISTOGRAMS: ['hst1'],
+        ea.COMPRESSED_HISTOGRAMS: ['hst1'],
     })
 
   def testExpiredDataDiscardedAfterRestartForFileVersionLessThan2(self):
@@ -453,8 +659,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     first_value = accumulator.Scalars('scalar1')[0].value
     self.assertTrue(isinstance(first_value, float))
 
-  def testNewStyleImageSummary(self):
-    """Verify processing of tensorboard.plugins.image.summary."""
+  def testTFSummaryImage(self):
+    """Verify processing of tf.summary.image."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = tf.summary.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
@@ -465,11 +671,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
       # Using the tf node name instead allows argument re-use to the image
       # summary.
       with tf.name_scope('1'):
-        image_summary.op('images', ipt, max_outputs=1)
+        tf.summary.image('images', ipt, max_outputs=1)
       with tf.name_scope('2'):
-        image_summary.op('images', ipt, max_outputs=2)
+        tf.summary.image('images', ipt, max_outputs=2)
       with tf.name_scope('3'):
-        image_summary.op('images', ipt, max_outputs=3)
+        tf.summary.image('images', ipt, max_outputs=3)
       merged = tf.summary.merge_all()
       writer.add_graph(sess.graph)
       for i in xrange(10):
@@ -480,13 +686,12 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     accumulator.Reload()
 
     tags = [
-        u'1/images/image_summary',
-        u'2/images/image_summary',
-        u'3/images/image_summary',
+        u'1/images/image', u'2/images/image/0', u'2/images/image/1',
+        u'3/images/image/0', u'3/images/image/1', u'3/images/image/2'
     ]
 
     self.assertTagsEqual(accumulator.Tags(), {
-        ea.TENSORS: tags,
+        ea.IMAGES: tags,
         ea.GRAPH: True,
         ea.META_GRAPH: False,
     })
@@ -521,68 +726,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.assertTrue(np.array_equal(scalar, 1.0))
     self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
     self.assertTrue(np.array_equal(string, six.b('foobar')))
-
-  def _testTFSummaryTensor_SizeGuidance(self,
-                                        plugin_name,
-                                        tensor_size_guidance,
-                                        steps,
-                                        expected_count):
-    event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
-    writer.event_writer = event_sink
-    with self.test_session() as sess:
-      summary_metadata = tf.SummaryMetadata(
-          plugin_data=tf.SummaryMetadata.PluginData(plugin_name=plugin_name,
-                                                    content='{}'))
-      tf.summary.tensor_summary('scalar', tf.constant(1.0),
-                                summary_metadata=summary_metadata)
-      merged = tf.summary.merge_all()
-      for step in xrange(steps):
-        writer.add_summary(sess.run(merged), global_step=step)
-
-
-    accumulator = ea.EventAccumulator(
-        event_sink, tensor_size_guidance=tensor_size_guidance)
-    accumulator.Reload()
-
-    tensors = accumulator.Tensors('scalar')
-    self.assertEqual(len(tensors), expected_count)
-
-  def testTFSummaryTensor_SizeGuidance_DefaultToTensorGuidance(self):
-    self._testTFSummaryTensor_SizeGuidance(
-        plugin_name='jabberwocky',
-        tensor_size_guidance={},
-        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
-        expected_count=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS])
-
-  def testTFSummaryTensor_SizeGuidance_UseSmallSingularPluginGuidance(self):
-    size = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
-    assert size < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], size
-    self._testTFSummaryTensor_SizeGuidance(
-        plugin_name='jabberwocky',
-        tensor_size_guidance={'jabberwocky': size},
-        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
-        expected_count=size)
-
-  def testTFSummaryTensor_SizeGuidance_UseLargeSingularPluginGuidance(self):
-    size = ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 5
-    self._testTFSummaryTensor_SizeGuidance(
-        plugin_name='jabberwocky',
-        tensor_size_guidance={'jabberwocky': size},
-        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 10,
-        expected_count=size)
-
-  def testTFSummaryTensor_SizeGuidance_IgnoreIrrelevantGuidances(self):
-    size_small = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 3)
-    size_large = int(ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] / 2)
-    assert size_small < size_large < ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS], (
-        size_small, size_large)
-    self._testTFSummaryTensor_SizeGuidance(
-        plugin_name='jabberwocky',
-        tensor_size_guidance={'jabberwocky': size_small,
-                              'wnoorejbpxl': size_large},
-        steps=ea.DEFAULT_SIZE_GUIDANCE[ea.TENSORS] + 1,
-        expected_count=size_small)
 
 
 class RealisticEventAccumulatorTest(EventAccumulatorTest):
@@ -716,9 +859,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
   def testSummaryMetadata(self):
     logdir = self.get_temp_dir()
     summary_metadata = tf.SummaryMetadata(
-        display_name='current tagee',
-        summary_description='no',
-        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet'))
+        display_name='current tagee', summary_description='no')
+    summary_metadata.plugin_data.plugin_name = 'outlet'
     self._writeMetadata(logdir, summary_metadata)
     acc = ea.EventAccumulator(logdir)
     acc.Reload()

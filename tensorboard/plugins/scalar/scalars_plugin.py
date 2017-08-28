@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""The TensorBoard Scalars plugin."""
+"""The TensorBoard Scalars plugin.
+
+See `http_api.md` in this directory for specifications of the routes for
+this plugin.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,14 +24,15 @@ from __future__ import print_function
 
 import csv
 
+import six
 from six import StringIO
 from werkzeug import wrappers
 
+import tensorflow as tf
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.plugins import base_plugin
-
-_PLUGIN_PREFIX_ROUTE = event_accumulator.SCALARS
+from tensorboard.plugins.scalar import metadata
 
 
 class OutputFormat(object):
@@ -39,7 +44,7 @@ class OutputFormat(object):
 class ScalarsPlugin(base_plugin.TBPlugin):
   """Scalars Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates ScalarsPlugin via TensorBoard core.
@@ -60,15 +65,28 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer) and any(self.index_impl().values())
 
   def index_impl(self):
-    return {
-        run_name: run_data[event_accumulator.SCALARS]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.SCALARS in run_data
-    }
+    """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
+    runs = self._multiplexer.Runs()
+    result = {run: {} for run in runs}
+
+    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+    for (run, tag_to_content) in six.iteritems(mapping):
+      for (tag, content) in six.iteritems(tag_to_content):
+        content = metadata.parse_plugin_metadata(content)
+        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        result[run][tag] = {'displayName': summary_metadata.display_name,
+                            'description': plugin_util.markdown_to_safe_html(
+                                summary_metadata.summary_description)}
+
+    return result
 
   def scalars_impl(self, tag, run, output_format):
     """Result of the form `(body, mime_type)`."""
-    values = self._multiplexer.Scalars(run, tag)
+    tensor_events = self._multiplexer.Tensors(run, tag)
+    values = [[tensor_event.wall_time,
+               tensor_event.step,
+               tf.make_ndarray(tensor_event.tensor_proto).item()]
+              for tensor_event in tensor_events]
     if output_format == OutputFormat.CSV:
       string_io = StringIO()
       writer = csv.writer(string_io)

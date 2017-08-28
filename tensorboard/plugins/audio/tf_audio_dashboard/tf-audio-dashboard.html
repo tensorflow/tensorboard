@@ -83,8 +83,10 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
                         <tf-audio-loader
                           run="[[item.run]]"
                           tag="[[item.tag]]"
+                          sample="[[item.sample]]"
+                          total-samples="[[item.totalSamples]]"
+                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                           request-manager="[[_requestManager]]"
-                          show-actual-size="[[_showActualSize]]"
                         ></tf-audio-loader>
                     </div>
                   </template>
@@ -115,7 +117,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       is: 'tf-audio-dashboard',
       properties: {
         _selectedRuns: Array,
-        _runToTag: Object,  // map<run: string, tags: string[]>
+        _runToTagInfo: Object,
         _dataNotFound: Boolean,
 
         _tagFilter: {
@@ -125,7 +127,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
+            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter)',
         },
 
         _requestManager: {
@@ -144,14 +146,15 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       },
       _fetchTags() {
         const url = getRouter().pluginRoute('audio', '/tags');
-        return this._requestManager.request(url).then(runToTag => {
-          if (_.isEqual(runToTag, this._runToTag)) {
+        return this._requestManager.request(url).then(runToTagInfo => {
+          if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
             // No need to update anything if there are no changes.
             return;
           }
+          const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
           const tags = getTags(runToTag);
           this.set('_dataNotFound', tags.length === 0);
-          this.set('_runToTag', runToTag);
+          this.set('_runToTagInfo', runToTagInfo);
         });
       },
       _reloadAudio() {
@@ -160,8 +163,25 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         });
       },
 
-      _makeCategories(runToTag, selectedRuns, tagFilter) {
-        return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+      _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
+        const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
+        const baseCategories =
+          categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+        function explodeItem(item) {
+          const samples = runToTagInfo[item.run][item.tag].samples;
+          return _.range(samples).map(i => Object.assign({}, item, {
+            sample: i,
+            totalSamples: samples,
+          }));
+        }
+        const withSamples = baseCategories.map(category =>
+          Object.assign({}, category, {
+            items: [].concat.apply([], category.items.map(explodeItem)),
+          }));
+        return withSamples;
+      },
+      _tagMetadata(runToTagInfo, run, tag) {
+        return runToTagInfo[run][tag];
       },
     });
   </script>

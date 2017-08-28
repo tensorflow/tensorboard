@@ -228,22 +228,58 @@ def TerminalStringIO():
   return stream
 
 
-class TensorFlowPngEncoderTest(tf.test.TestCase):
-  """Tests for the private `_TensorFlowPngEncoder` class.
-
-  The functionality of this class is tested via the `SummaryTest` (via
-  the `summary.pb` function). This class tests how it interacts with
-  other graphs and sessions---namely, not at all!
-  """
+class PersistentOpEvaluatorTest(tf.test.TestCase):
 
   def setUp(self):
-    super(TensorFlowPngEncoderTest, self).setUp()
+    super(PersistentOpEvaluatorTest, self).setUp()
 
     patch = tf.test.mock.patch('tensorflow.Session', wraps=tf.Session)
     patch.start()
     self.addCleanup(patch.stop)
 
-    self._encoder = util._TensorFlowPngEncoder()
+    class Squarer(util.PersistentOpEvaluator):
+
+      def __init__(self):
+        super(Squarer, self).__init__()
+        self._input = None
+        self._squarer = None
+
+      def initialize_graph(self):
+        self._input = tf.placeholder(tf.int32)
+        self._squarer = tf.square(self._input)
+
+      def run(self, xs):  # pylint: disable=arguments-differ
+        return self._squarer.eval(feed_dict={self._input: xs})
+
+    self._square = Squarer()
+
+  def test_preserves_existing_session(self):
+    with tf.Session() as sess:
+      op = tf.reduce_sum([2, 2])
+      self.assertIs(sess, tf.get_default_session())
+
+      result = self._square(123)
+      self.assertEqual(123 * 123, result)
+
+      self.assertIs(sess, tf.get_default_session())
+      number_of_lights = sess.run(op)
+      self.assertEqual(number_of_lights, 4)
+
+  def test_lazily_initializes_sessions(self):
+    self.assertEqual(tf.Session.call_count, 0)
+
+  def test_reuses_sessions(self):
+    self._square(123)
+    self.assertEqual(tf.Session.call_count, 1)
+    self._square(234)
+    self.assertEqual(tf.Session.call_count, 1)
+
+
+class TensorFlowPngEncoderTest(tf.test.TestCase):
+
+  def setUp(self):
+    super(TensorFlowPngEncoderTest, self).setUp()
+    self._encode = util._TensorFlowPngEncoder()
     self._rgb = np.arange(12 * 34 * 3).reshape((12, 34, 3)).astype(np.uint8)
     self._rgba = np.arange(21 * 43 * 4).reshape((21, 43, 4)).astype(np.uint8)
 
@@ -256,48 +292,42 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
 
   def test_invalid_non_numpy(self):
     with six.assertRaisesRegex(self, ValueError, "must be a numpy array"):
-      self._encoder.encode(self._rgb.tolist())
+      self._encode(self._rgb.tolist())
 
   def test_invalid_non_uint8(self):
     with six.assertRaisesRegex(self, ValueError, "dtype must be uint8"):
-      self._encoder.encode(self._rgb.astype(np.float32))
+      self._encode(self._rgb.astype(np.float32))
 
   def test_encodes_png(self):
-    data = self._encoder.encode(self._rgb)
+    data = self._encode(self._rgb)
     self._check_png(data)
 
   def test_encodes_png_with_alpha(self):
-    data = self._encoder.encode(self._rgba)
+    data = self._encode(self._rgba)
     self._check_png(data)
 
-  def test_preserves_existing_graph(self):
-    tf.constant(1) + tf.constant(2)  # pylint: disable=expression-not-assigned
-    original_graph = tf.get_default_graph()
-    original_proto = original_graph.as_graph_def().SerializeToString()
-    assert len(original_proto) > 10, original_graph
-    self._encoder.encode(self._rgb)
-    self.assertIs(original_graph, tf.get_default_graph())
-    self.assertEqual(original_proto,
-                     tf.get_default_graph().as_graph_def().SerializeToString())
 
-  def test_preserves_existing_session(self):
-    with tf.Session() as sess:
-      op = tf.reduce_sum([2, 2])
-      self.assertIs(sess, tf.get_default_session())
-      data = self._encoder.encode(self._rgb)
-      self._check_png(data)
-      self.assertIs(sess, tf.get_default_session())
-      number_of_lights = sess.run(op)
-      self.assertEqual(number_of_lights, 4)
+class TensorFlowWavEncoderTest(tf.test.TestCase):
 
-  def test_lazily_initializes_sessions(self):
-    self.assertEqual(tf.Session.call_count, 0)
+  def setUp(self):
+    super(TensorFlowWavEncoderTest, self).setUp()
+    self._encode = util._TensorFlowWavEncoder()
+    space = np.linspace(0.0, 100.0, 44100)
+    self._stereo = np.array([np.sin(space), np.cos(space)]).transpose()
+    self._mono = self._stereo.mean(axis=1, keepdims=True)
 
-  def test_reuses_sessions(self):
-    self._encoder.encode(self._rgb)
-    self.assertEqual(tf.Session.call_count, 1)
-    self._encoder.encode(self._rgb)
-    self.assertEqual(tf.Session.call_count, 1)
+  def _check_wav(self, data):
+    # If it has a valid WAV/RIFF header and is of a reasonable size, we
+    # can assume it did the right thing. We trust the underlying
+    # `encode_audio` op.
+    self.assertEqual(b'RIFF', data[:4])
+    self.assertGreater(len(data), 128)
+
+  def test_encodes_mono_wav(self):
+    self._check_wav(self._encode(self._mono, samples_per_second=44100))
+
+  def test_encodes_stereo_wav(self):
+    self._check_wav(self._encode(self._stereo, samples_per_second=44100))
 
 
 if __name__ == '__main__':

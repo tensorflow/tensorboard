@@ -23,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
+<link rel="import" href="../tf-op-profile/tf-op-profile.html">
 
 <!--
 tf-profile-dashboard displays profiling information for different tools.
@@ -69,13 +70,18 @@ profile run can have multiple tools that present the performance profile as diff
     </div>
   </div>
   <div class="center">
-    <template is="dom-if" if="[[_toolIsTraceViewer(_currentTool)]]">
+    <!-- TODO(sammccall): tool selection is buggy -->
+    <template is="dom-if" if="[[_eq(_currentTool, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"
         height="100%"
         width="100%"
         src="[[_traceDataUrl]]">
       </iframe>
+    </template>
+    <template is="dom-if" if="[[_eq(_currentTool, 'op_profile')]]" restamp="true">
+      <tf-op-profile run="[[_run(_datasets, selectedDataset)]]">
+      </tf-op-profile>
     </template>
   </div>
   </tf-dashboard-layout>
@@ -230,9 +236,10 @@ profile run can have multiple tools that present the performance profile as diff
       }
       return [];
     },
-    _toolIsTraceViewer: function(toolName) {
-      return toolName == 'trace_viewer';
+    _eq: function(actual, expected) {
+      return actual == expected;
     },
+    _run(datasets, index) { return datasets[index].name; },
   });
 </script>
 </dom-module>

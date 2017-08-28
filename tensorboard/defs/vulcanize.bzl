@@ -18,9 +18,9 @@ load("//tensorboard/defs:web.bzl", "web_aspect")
 
 def _tensorboard_html_binary(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
-  manifests = set(order="topological")
-  files = set()
-  webpaths = set()
+  manifests = depset(order="topological")
+  files = depset()
+  webpaths = depset()
   for dep in deps:
     manifests += dep.webfiles.manifests
     webpaths += dep.webfiles.webpaths
@@ -31,9 +31,14 @@ def _tensorboard_html_binary(ctx):
 
   # vulcanize
   jslibs = depset(ctx.files._jslibs) + closure_js_library.srcs
-  path_regexs_str = ",".join(ctx.attr.path_regexs_for_noinline) or "NO_REGEXS"
+  if ctx.file.path_regexs_for_noinline == None:
+    ignore_regexs_file_set = set()
+    ignore_regexs_file_path = "NO_REGEXS"
+  else:
+    ignore_regexs_file_set = set([ctx.file.path_regexs_for_noinline])
+    ignore_regexs_file_path = ctx.file.path_regexs_for_noinline.path
   ctx.action(
-      inputs=list(manifests | files | jslibs),
+      inputs=list(manifests | files | jslibs | ignore_regexs_file_set),
       outputs=[ctx.outputs.html],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
@@ -41,7 +46,7 @@ def _tensorboard_html_binary(ctx):
                   ctx.attr.input_path,
                   ctx.attr.output_path,
                   ctx.outputs.html.path,
-                  path_regexs_str] +
+                  ignore_regexs_file_path] +
                  [f.path for f in jslibs] +
                  [f.path for f in manifests]),
       progress_message="Vulcanizing %s" % ctx.attr.input_path)
@@ -109,7 +114,7 @@ tensorboard_html_binary = rule(
             ],
             mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
-        "path_regexs_for_noinline": attr.string_list(),
+        "path_regexs_for_noinline": attr.label(allow_single_file=True),
         "_jslibs": attr.label(
             default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:jslibs"),
             allow_files=True),

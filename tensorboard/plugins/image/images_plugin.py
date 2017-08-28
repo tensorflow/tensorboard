@@ -66,27 +66,6 @@ class ImagesPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def _index_impl(self):
-    """Return information about the tags in each run.
-
-    Result is a dictionary of the form
-
-        {
-          "runName1": {
-            "tagName1": {
-              "displayName": "The first tag",
-              "description": "<p>Long ago there was just one tag...</p>",
-              "samples": 3
-            },
-            "tagName2": ...,
-          },
-          "runName2": ...,
-        }
-
-    For each tag, `samples` is the greatest number of images that appear
-    at any particular step. For example, if for tag `input_reshaped`
-    there are 5 samples at step 0 and 10 samples at step 1, then the
-    dictionary for `"input_reshaped"` will contain `"samples": 10`.
-    """
     runs = self._multiplexer.Runs()
     result = {run: {} for run in runs}
 
