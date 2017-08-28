@@ -112,7 +112,8 @@ def standard_tensorboard_wsgi(
       assets_zip_provider=(assets_zip_provider or
                            get_default_assets_zip_provider()))
   plugins = [constructor(context) for constructor in plugins]
-  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url)
+  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
+      base_url)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url):
@@ -144,7 +145,7 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url):
 class TensorBoardWSGI(object):
   """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-  def __init__(self, plugins, base_url = ""):
+  def __init__(self, plugins, base_url=""):
     """Constructs TensorBoardWSGI instance.
 
     Args:
@@ -172,7 +173,8 @@ class TensorBoardWSGI(object):
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
         # obviate the need for the frontend to determine which plugins are
         # active.
-        self._base_url + DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
+        self._base_url + DATA_PREFIX + PLUGINS_LISTING_ROUTE:
+              self._serve_plugins_listing,
     }
 
     # Serve the routes from the registered plugins using their name as the route
@@ -204,9 +206,10 @@ class TensorBoardWSGI(object):
                            (plugin.plugin_name, route))
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
           path = self._base_url + route
-          tf.logging.error("ROUTE :::: %s" , path)
+          tf.logging.error("ROUTE :::: %s", path)
         else:
-          path = self._base_url + DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
+          path = self._base_url + DATA_PREFIX + PLUGIN_PREFIX + '/' +
+                    plugin.plugin_name + route
         self.data_applications[path] = app
 
   @wrappers.Request.application
@@ -412,10 +415,10 @@ def _get_connect_params(query):
   params = urlparse.parse_qs(query)
   if any(len(v) > 2 for v in params.values()):
     raise ValueError('DB URI params list has duplicate keys: ' + query)
-  return {k: json.loads(v[0]) for k, v in params.items()}
+  return {k: json.loads(v[0]) for k,v in params.items()}
 
 
-def _clean_path(path, _base_url = ""):
+def _clean_path(path, _base_url=""):
   """
   If base_url is present, do not remove the ending '/'
   If the base_url contains a '/' return as is, if not append '/'

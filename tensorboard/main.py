@@ -182,7 +182,7 @@ def make_simple_server(tb_app, host=None, port=None, base_url=None):
   if port is None:
     port = FLAGS.port
   if base_url is None:
-      base_url = FLAGS.base_url
+    base_url = FLAGS.base_url
   try:
     if host:
       # The user gave us an explicit host
