@@ -241,12 +241,9 @@ class TensorBoardWSGI(object):
       A werkzeug Response.
     """
     request = wrappers.Request(environ)
-    tf.logging.debug("Environ ::: %s", str(environ))
-    tf.logging.debug("Request ::: %s", str(request))
-    parsed_url = urlparse.urlparse(request.path) 
-    #clean_path = _clean_path(parsed_url.path, self._base_url)
-    clean_path = parsed_url.path 
-    tf.logging.debug("Data applications :::: %s", str(self.data_applications))
+    parsed_url = urlparse.urlparse(request.path)
+    clean_path = parsed_url.path
+
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
@@ -425,4 +422,3 @@ def _clean_path(path, _base_url = ""):
   """
   if len(path) > 1 and path.endswith('/'):
     return path[:-1]
-
