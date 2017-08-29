@@ -41,26 +41,26 @@ backend.
       color="[[_runColor]]"
     >
       <template is="dom-if" if="[[_hasMultipleSamples]]">
-        <div class="row">
-          <div class="label">
+        <div class="heading-row">
+          <div class="heading-label">
             sample: [[_sampleText]] of [[totalSamples]]
           </div>
         </div>
       </template>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-        <div class="row">
-          <div class="label">
+        <div class="heading-row">
+          <div class="heading-label">
             step <strong>[[_currentDatum.step]]</strong>
           </div>
           <template is="dom-if" if="[[_currentDatum.wall_time]]">
-            <div class="label right">
+            <div class="heading-label heading-right">
               [[_currentDatum.wall_time]]
             </div>
           </template>
         </div>
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
-        <div class="row">
+        <div class="heading-row">
           <paper-slider
               id="steps"
               immediate-value="{{_stepIndex}}"

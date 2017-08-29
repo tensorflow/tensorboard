@@ -47,11 +47,11 @@ future for loading older images.
         <div>sample: [[_sampleText]] of [[ofSamples]]</div>
       </template>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-        <div class="row">
-          <div class="label">
+        <div class="heading-row">
+          <div class="heading-label">
             step <span style="font-weight: bold">[[_stepValue]]</span>
           </div>
-          <div class="label right">
+          <div class="heading-label heading-right">
             <template is="dom-if" if="[[_currentWallTime]]">
               [[_currentWallTime]]
             </template>
