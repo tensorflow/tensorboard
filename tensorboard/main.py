@@ -116,7 +116,11 @@ tf.flags.DEFINE_string(
     'and --logdir is not specified.')
 tf.flags.DEFINE_string(
     'base_url', '',
-    'Optional relative prefix to the path, e.g. "/service/tf"')
+    'An optional, relative prefix to the path, e.g. "/path/to/tensorboard". '
+    'resulting in the new base_url being located at '
+    'localhost:6006/path/to/tensorboard under default settings. When '
+    'specifying a base_url a leading slash is required, however trailing '
+    'slashes can be omitted.')
 
 tf.flags.DEFINE_integer(
     'debugger_data_server_grpc_port', None,
