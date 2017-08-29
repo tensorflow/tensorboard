@@ -116,7 +116,8 @@ def standard_tensorboard_wsgi(
                             path_prefix)
 
 
-def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, path_prefix):
+def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
+                       path_prefix):
   """Constructs the TensorBoard application.
 
   Args:
@@ -421,15 +422,17 @@ def _get_connect_params(query):
 def _clean_path(path, path_prefix=""):
   """Cleans the path of the request.
 
-  Removes the ending '/' if the request begins with the path prefix and
-  pings a non-empty route.
+  Removes the ending '/' if the request begins with the path prefix and pings a
+  non-empty route.
 
   Arguments:
     path: The path of a request.
-    path_prefix: The prefix string that every route of this TensorBoard instance starts with.
+    path_prefix: The prefix string that every route of this TensorBoard instance
+    starts with.
 
   Returns:
-    The route to use to serve the request (with the path prefix stripped if applicable).
+    The route to use to serve the request (with the path prefix stripped if
+    applicable).
   """
   regex = re.compile(path_prefix + ".+/$")
   if regex.match(path):
