@@ -136,7 +136,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
 
   def testBaseUrlNonexistentPluginsListing(self):
     """Test the format of the data/plugins_listing endpoint."""
-    response = self.server.get('/tet/data/plugins_listing')
+    response = self.server.get('/non_existent_prefix/data/plugins_listing')
     self.assertEqual(404, response.status_code)
 
   def testPluginsListing(self):
