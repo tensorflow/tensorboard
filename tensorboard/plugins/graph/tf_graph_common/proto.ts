@@ -67,8 +67,8 @@ module tf.graph.proto {
    */
   export interface OpDef {
     name: string;
-    input_arg: ArgDef[];
-    output_arg: ArgDef[];
+    input_arg: ArgDef | ArgDef[];
+    output_arg: ArgDef | ArgDef[];
   };
 
   /**
@@ -80,7 +80,7 @@ module tf.graph.proto {
     signature: OpDef;
 
     // A list of nodes in the function.
-    node_def: NodeDef[];
+    node_def: NodeDef | NodeDef[];
   };
 
   /**
@@ -96,10 +96,10 @@ module tf.graph.proto {
    */
   export interface GraphDef {
     // A list of nodes in the graph.
-    node: NodeDef[];
+    node: NodeDef | NodeDef[];
 
     // Compatibility versions of the graph.
-    versions: VersionDef[];
+    versions: VersionDef | VersionDef[];
 
     // Contains a library of functions that may composed through the graph.
     library: FunctionDefLibraryDef;

@@ -1015,7 +1015,18 @@ export function build(
   let isInEmbeddedPred = getEmbedPredicate(params.inEmbeddingTypes);
   let isOutEmbeddedPred = getEmbedPredicate(params.outEmbeddingTypes);
   let embeddingNodeNames: string[] = [];
-  let rawNodes = graphDef.node;
+
+  let unknownTypeRawNodes = graphDef.node;
+  if (unknownTypeRawNodes && !_.isArray((unknownTypeRawNodes))) {
+    // The node property is not actually an array. It is a single node. The
+    // pbtxt syntax is unfortunately not flexible enough to communicate whether
+    // a property is an array or a single value, so we have to figure out the
+    // actual type.
+    unknownTypeRawNodes = [
+        (unknownTypeRawNodes as tf.graph.proto.NodeDef)];
+  }
+  let rawNodes = unknownTypeRawNodes as tf.graph.proto.NodeDef[];
+
   /**
    * A list of all the non-embedding node names which appear in the processed
    * list of raw nodes. Here we pre-allocate enough room for all the rawNodes,
@@ -1135,7 +1146,18 @@ export function build(
                 }
               }
 
-              _.each(func.node_def, rawNode => {
+              let unknownTypeNodes = func.node_def;
+              if (unknownTypeNodes && !_.isArray(unknownTypeNodes)) {
+                // The node_def property is not actually an array. It is a
+                // single node. The pbtxt syntax is unfortunately not flexible
+                // enough to communicate whether a property is an array or a
+                // single value, so we have to figure out the actual type.
+                unknownTypeNodes = [
+                    (unknownTypeNodes as tf.graph.proto.NodeDef)];
+              }
+              let nodeDefs = unknownTypeNodes as tf.graph.proto.NodeDef[];
+
+              _.each(nodeDefs, rawNode => {
                 // Prefix with the name of the function so that the graph
                 // correctly computes the hierarchy (and makes metanodes).
                 rawNode.name = functionNodeName + '/' + rawNode.name;
