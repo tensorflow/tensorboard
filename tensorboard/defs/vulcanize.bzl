@@ -32,10 +32,10 @@ def _tensorboard_html_binary(ctx):
   # vulcanize
   jslibs = depset(ctx.files._jslibs) + closure_js_library.srcs
   if ctx.file.path_regexs_for_noinline == None:
-    ignore_regexs_file_set = set()
+    ignore_regexs_file_set = depset()
     ignore_regexs_file_path = "NO_REGEXS"
   else:
-    ignore_regexs_file_set = set([ctx.file.path_regexs_for_noinline])
+    ignore_regexs_file_set = depset([ctx.file.path_regexs_for_noinline])
     ignore_regexs_file_path = ctx.file.path_regexs_for_noinline.path
   ctx.action(
       inputs=list(manifests | files | jslibs | ignore_regexs_file_set),
