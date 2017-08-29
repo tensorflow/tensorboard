@@ -235,17 +235,26 @@ export class RenderGraphInfo {
         .domain(memoryExtent)
         .range(PARAMS.minMaxColors);
 
-    // Find also the minimum and maximum compute time.
-    let computeTimeExtent = d3.extent(topLevelGraph.nodes(),
-        (nodeName, index) => {
-      let node = topLevelGraph.node(nodeName);
+    // Find the maximum and minimum compute time in the whole graph.
+    let minMicros = null;
+    let maxMicros = null;
+    _.each(this.hierarchy.getNodeMap(), (node, nodeName) => {
       // Some ops don't have stats at all.
       if (node.stats != null) {
-        return node.stats.getTotalMicros();
+        let m = node.stats.getTotalMicros();
+        if (m == null) {
+          return;
+        }
+        if (minMicros == null || minMicros > m) {
+          minMicros = m;
+        }
+        if (maxMicros == null || maxMicros < m) {
+          maxMicros = m;
+        }
       }
     });
     this.computeTimeScale = d3.scaleLinear<string, string>()
-        .domain(computeTimeExtent)
+        .domain([minMicros, maxMicros])
         .range(PARAMS.minMaxColors);
 
     this.edgeWidthScale = this.hierarchy.hasShapeInfo ?
