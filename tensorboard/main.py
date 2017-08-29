@@ -120,7 +120,9 @@ tf.flags.DEFINE_string(
     'resulting in the new base url being located at '
     'localhost:6006/path/to/tensorboard under default settings. A leading '
     'slash is required when specifying the path_prefix, however trailing '
-    'slashes can be omitted.')
+    'slashes can be omitted. The path_prefix can be leveraged for path '
+    'based routing of an elb when the website base_url is not available '
+    'e.g. "example.site.com/path/to/tensorboard/"')
 
 tf.flags.DEFINE_integer(
     'debugger_data_server_grpc_port', None,
