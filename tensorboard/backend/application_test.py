@@ -107,7 +107,7 @@ class TensorboardServerTest(tf.test.TestCase):
 
 class TensorboardServerBaseUrlTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
-  base_url = '/test'
+  path_prefix = '/test'
   def setUp(self):
     plugins = [
         FakePlugin(
@@ -115,7 +115,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
         FakePlugin(
             None, plugin_name='bar', is_active_value=False, routes_mapping={}),
     ]
-    app = application.TensorBoardWSGI(plugins, base_url=self.base_url)
+    app = application.TensorBoardWSGI(plugins, path_prefix=self.path_prefix)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
   def _get_json(self, path):
@@ -126,12 +126,12 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
 
   def testBaseUrlRequest(self):
     """Request a page that doesn't exist; it should 404."""
-    response = self.server.get(self.base_url)
+    response = self.server.get(self.path_prefix)
     self.assertEqual(404, response.status_code)
 
   def testBaseUrlRequestNonexistentPage(self):
     """Request a page that doesn't exist; it should 404."""
-    response = self.server.get(self.base_url + '/asdf')
+    response = self.server.get(self.path_prefix + '/asdf')
     self.assertEqual(404, response.status_code)
 
   def testBaseUrlNonexistentPluginsListing(self):
@@ -141,7 +141,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
 
   def testPluginsListing(self):
     """Test the format of the data/plugins_listing endpoint."""
-    parsed_object = self._get_json(self.base_url + '/data/plugins_listing')
+    parsed_object = self._get_json(self.path_prefix + '/data/plugins_listing')
     # Plugin foo is active. Plugin bar is not.
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
@@ -165,12 +165,12 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
     if should_be_okay:
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0,
-          base_url='')
+          path_prefix='')
     else:
       with six.assertRaisesRegex(self, ValueError, r'invalid name'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0,
-            base_url='')
+            path_prefix='')
 
   def testEmptyName(self):
     self._test('', False)
@@ -206,11 +206,11 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
     ]
     if should_be_okay:
       application.TensorBoardWSGIApp(
-          temp_dir, plugins, multiplexer, reload_interval=0, base_url='')
+          temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
     else:
       with six.assertRaisesRegex(self, ValueError, r'invalid route'):
         application.TensorBoardWSGIApp(
-            temp_dir, plugins, multiplexer, reload_interval=0, base_url='')
+            temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
 
   def testNormalRoute(self):
     self._test('/runs', True)

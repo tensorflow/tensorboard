@@ -131,7 +131,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     self.plugin.listen(self.debugger_data_server_grpc_port)
     wsgi_app = application.TensorBoardWSGIApp(
         self.log_dir, [self.plugin], self.multiplexer, reload_interval=0,
-        base_url='')
+        path_prefix='')
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
     # The debugger data server should be started at the correct port.

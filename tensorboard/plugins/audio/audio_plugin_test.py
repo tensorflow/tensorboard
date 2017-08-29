@@ -96,7 +96,7 @@ class AudioPluginTest(tf.test.TestCase):
     self.plugin = audio_plugin.AudioPlugin(context)
     wsgi_app = application.TensorBoardWSGIApp(
         self.log_dir, [self.plugin], multiplexer, reload_interval=0,
-        base_url='')
+        path_prefix='')
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
   def tearDown(self):

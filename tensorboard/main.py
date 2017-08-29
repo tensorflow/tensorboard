@@ -115,11 +115,11 @@ tf.flags.DEFINE_string(
     'The particular event file to query for. Only used if --inspect is present '
     'and --logdir is not specified.')
 tf.flags.DEFINE_string(
-    'base_url', '',
+    'path_prefix', '',
     'An optional, relative prefix to the path, e.g. "/path/to/tensorboard". '
-    'resulting in the new base_url being located at '
-    'localhost:6006/path/to/tensorboard under default settings. When '
-    'specifying a base_url a leading slash is required, however trailing '
+    'resulting in the new base url being located at '
+    'localhost:6006/path/to/tensorboard under default settings. A leading '
+    'slash is required when specifying the path_prefix, however trailing '
     'slashes can be omitted.')
 
 tf.flags.DEFINE_integer(
@@ -155,10 +155,10 @@ def create_tb_app(plugins, assets_zip_provider=None):
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
       plugins=plugins,
-      base_url=FLAGS.base_url)
+      path_prefix=FLAGS.path_prefix)
 
 
-def make_simple_server(tb_app, host=None, port=None, base_url=None):
+def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
   """Create an HTTP server for TensorBoard.
 
   Args:
@@ -169,7 +169,7 @@ def make_simple_server(tb_app, host=None, port=None, base_url=None):
         default to the flag value.
     port: The port to bind to (0 indicates an unused port selected by the
         operating system). If not specified, will default to the flag value.
-    base_url: Optional relative prefix to the path, e.g. "/service/tf"
+    path_prefix: Optional relative prefix to the path, e.g. "/service/tf"
 
   Returns:
     A tuple of (server, url):
@@ -185,8 +185,8 @@ def make_simple_server(tb_app, host=None, port=None, base_url=None):
     host = FLAGS.host
   if port is None:
     port = FLAGS.port
-  if base_url is None:
-    base_url = FLAGS.base_url
+  if path_prefix is None:
+    path_prefix = FLAGS.path_prefix
   try:
     if host:
       # The user gave us an explicit host
@@ -221,7 +221,7 @@ def make_simple_server(tb_app, host=None, port=None, base_url=None):
     raise socket_error
 
   final_port = server.socket.getsockname()[1]
-  tensorboard_url = 'http://%s:%d%s' % (final_host, final_port, base_url)
+  tensorboard_url = 'http://%s:%d%s' % (final_host, final_port, path_prefix)
   return server, tensorboard_url
 
 
