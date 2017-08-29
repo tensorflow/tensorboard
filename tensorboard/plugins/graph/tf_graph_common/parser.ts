@@ -211,7 +211,7 @@ export function parseStatsPbTxt(input: ArrayBuffer):
  */
 function parsePbtxtFile(
     input: ArrayBuffer,
-    repeatedFields: {[attrPath: string]: boolean}): Promise<Object> {
+    repeatedFields: {[attrPath: string]: boolean}): Promise<any> {
   let output: { [name: string]: any; } = {};
   let stack = [];
   let path: string[] = [];
