@@ -418,11 +418,21 @@ def _get_connect_params(query):
   return {k: json.loads(v[0]) for k, v in params.items()}
 
 
-def _clean_path(path, _base_url=""):
+def _clean_path(path, path_prefix=""):
+  """Cleans the path of the request.
+
+  Removes the ending '/' if the request begins with the path prefix and
+  pings a non-empty route.
+
+  Arguments:
+    path: The path of a request.
+    path_prefix: The prefix string that every route of this TensorBoard instance starts with.
+
+  Returns:
+    The route to use to serve the request (with the path prefix stripped if applicable).
   """
-  If base_url is present, do not remove the ending '/'
-  If the base_url contains a '/' return as is, if not append '/'
-  """
-  if len(path) > 1 and path.endswith('/') and path != _base_url + '/':
-    return path[:-1]
+  regex = re.compile(path_prefix + ".+/$")
+  if regex.match(path):
+    # Remove the ending prefix.
+    return path[-1]
   return path
