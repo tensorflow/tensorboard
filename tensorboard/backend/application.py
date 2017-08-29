@@ -124,9 +124,9 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval, base_url):
       may be a directory, or comma,separated list of directories, or colons
       can be used to provide named directories
     plugins: A list of base_plugin.TBPlugin subclass instances.
-    base_url: A prefix of the path when app isn't served from root.
     multiplexer: The EventMultiplexer with TensorBoard data to serve
     reload_interval: How often (in seconds) to reload the Multiplexer
+    base_url: A prefix of the path when app isn't served from root.
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
