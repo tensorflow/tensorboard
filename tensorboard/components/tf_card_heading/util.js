@@ -29,7 +29,7 @@ export function formatDate(date) {
 
 /**
  * Returns CSS color that will contrast against background.
- * @param {?string} background
+ * @param {?string} background RGB hex color code, e.g. #eee, #eeeeee.
  * @return {string}
  */
 export function pickTextColor(background) {
@@ -47,7 +47,7 @@ export function pickTextColor(background) {
 
 /**
  * Turns a hex string into an RGB array.
- * @param {?string} color
+ * @param {?string} color RGB hex color code, e.g. #eee, #eeeeee.
  * @return {Array<number>}
  */
 function convertHexToRgb(color) {
