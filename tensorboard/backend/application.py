@@ -434,8 +434,6 @@ def _clean_path(path, path_prefix=""):
     The route to use to serve the request (with the path prefix stripped if
     applicable).
   """
-  regex = re.compile(path_prefix + ".+/$")
-  if regex.match(path):
-    # Remove the ending prefix.
-    return path[-1]
+  if path != '/' and path.endswith('/') and path != path_prefix + '/':
+    return path[:-1]
   return path
