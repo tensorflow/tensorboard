@@ -21,7 +21,7 @@ limitations under the License.
  * These should stay in sync.
  * 
  * When adding a repeated field to this file, make sure to update the
- * GRAPH_REPEATED_FIELDS and METADATA_REPEATED_FIELDS within parser.ts.
+ * GRAPH_REPEATED_FIELDS and METADATA_REPEATED_FIELDS lists within parser.ts.
  * Otherwise, the parser has no way of differentiating between a field with a
  * certain value and a repeated field that has only 1 occurence, resulting in
  * subtle bugs.
