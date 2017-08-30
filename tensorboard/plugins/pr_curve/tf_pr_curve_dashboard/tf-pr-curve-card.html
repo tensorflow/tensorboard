@@ -175,7 +175,7 @@ limitations under the License.
         // plot. The entry is based on which step the user currently selects.
         _runToPrCurveEntry: {
           type: Object,
-          value: {},
+          value: () => ({}),
         },
         // We also cache the previous run to entry mapping in order to prevent
         // redrawing PR curves for runs that did not change. Ideally, we would
@@ -183,7 +183,7 @@ limitations under the License.
         // does not work for run names that contain periods.
         _previousRunToPrCurveEntry: {
           type: Object,
-          value: {},
+          value: () => ({}),
         },
         // A list of runs with an available step. Used to populate the table of
         // steps per run.
@@ -245,7 +245,7 @@ limitations under the License.
                 (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
             return [
               {
-                title: 'Name',
+                title: 'Run',
                 evaluate: (d) => d.dataset.metadata().name,
               },
               {
@@ -324,15 +324,15 @@ limitations under the License.
           this._updateSeriesDataForRun(run, entry);
         });
       },
-      _updateSeriesDataForRun(run, entryFor1Step) {
+      _updateSeriesDataForRun(run, entryForOneStep) {
         // Reverse the values so they are plotted in order. The logic within
         // the line chart for associating information to show in the tooltip
         // with points in the chart assumes that the series data is ordered
         // by the variable on the X axis. If the values are not in order,
         // tooltips will not work because the tooltip will always be stuck on
         // one side of the chart.
-        const precision = entryFor1Step.precision.slice().reverse();
-        const recall = entryFor1Step.recall.slice().reverse();
+        const precision = entryForOneStep.precision.slice().reverse();
+        const recall = entryForOneStep.recall.slice().reverse();
         const seriesData = _.zipWith(
             precision, recall, (precision, recall) => ({
               precision: precision,
