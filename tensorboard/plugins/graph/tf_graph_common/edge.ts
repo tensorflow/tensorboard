@@ -153,6 +153,34 @@ export function getLabelForEdge(metaedge: Metaedge,
 }
 
 /**
+ * Computes the index into a set of points that constitute a path for which the
+ * distance along the path from the initial point is as large as possible
+ * without exceeding the length. This function was introduced after the
+ * native getPathSegAtLength method got deprecated by SVG 2.
+ * @param points Array of path control points. A point has x and y properties.
+ *   Must be of length at least 2.
+ * @param length The length (float).
+ * @param lineFunc A function that takes points and returns the "d" attribute
+ *   of a path made from connecting the points.
+ * @return The index into the points array.
+ */
+function getPathSegmentIndexAtLength(
+    points: render.Point[],
+    length: number,
+    lineFunc: (points: render.Point[]) => string): number {
+  const path = document.createElementNS(tf.graph.scene.SVG_NAMESPACE, 'path');
+  for (let i = 1; i < points.length; i++) {
+    path.setAttribute("d", lineFunc(points.slice(0, i)));
+    if (path.getTotalLength() > length) {
+      // This many points has already exceeded the length.
+      return i - 1;
+    }
+  }
+  // The entire path is shorter than the specified length.
+  return points.length - 1;
+}
+
+/**
  * Shortens the path enought such that the tip of the start/end marker will
  * point to the start/end of the path. The marker can be of arbitrary size.
  *
@@ -183,7 +211,7 @@ function adjustPathPointsForMarker(points: render.Point[],
     const point = pathNode.getPointAtLength(length);
     // Figure out how many segments of the path we need to remove in order
     // to shorten the path.
-    const segIndex = pathNode.getPathSegAtLength(length);
+    const segIndex = getPathSegmentIndexAtLength(points, length, lineFunc);
     // Update the very first segment.
     points[segIndex - 1] = {x: point.x, y: point.y};
     // Ignore every point before segIndex - 1.
@@ -197,7 +225,7 @@ function adjustPathPointsForMarker(points: render.Point[],
     const point = pathNode.getPointAtLength(length);
     // Figure out how many segments of the path we need to remove in order
     // to shorten the path.
-    const segIndex = pathNode.getPathSegAtLength(length);
+    const segIndex = getPathSegmentIndexAtLength(points, length, lineFunc);
     // Update the very last segment.
     points[segIndex] = {x: point.x, y: point.y};
     // Ignore every point after segIndex.
