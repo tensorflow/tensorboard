@@ -1157,17 +1157,7 @@ export function build(
 
             if (graphDef.library && graphDef.library.function) {
               // This graph contains functions.
-              if (graphDef.library.function['length'] >= 0) {
-                // The graph has several functions.
-                _.each(
-                  graphDef.library.function as tf.graph.proto.FunctionDef[],
-                  processFunction);
-              } else {
-                // The graph has 1 function. In that case, the function property
-                // is a single function (not an array).
-                processFunction(
-                  graphDef.library.function as tf.graph.proto.FunctionDef);
-              }
+              _.each(graphDef.library.function, processFunction);
             }
 
             opNodes.splice(index);
