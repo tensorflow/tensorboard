@@ -58,10 +58,10 @@ export const palettes = {
   // (https://personal.sron.nl/~pault/).
   tensorboardColorBlindAssist: [
     '#ff7043',  // orange
+    '#0077bb',  // blue    
     '#cc3311',  // red
+    '#33bbee',  // cyan    
     '#ee3377',  // magenta
-    '#0077bb',  // blue
-    '#33bbee',  // cyan
     '#009988',  // teal
     '#bbbbbb',  // grey
   ],
