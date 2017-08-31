@@ -31,7 +31,6 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
-<link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
@@ -50,7 +49,7 @@ limitations under the License.
             graph="[[graph]]"
             stats="[[stats]]"
             progress="[[_progress]]"
-            color-by="[[colorBy]]"
+            color-by="structure"
             color-by-params="{{colorByParams}}"
             render-hierarchy="{{_renderHierarchy}}"
         ></tf-graph-board>
@@ -66,14 +65,6 @@ limitations under the License.
             </div>
         </div>
         <div class="container">
-          graph controls:
-          <tf-graph-controls
-              color-by-params="[[colorByParams]]"
-              stats="[[stabts]]"
-              color-by="{{colorBy}}"
-              render-hierarchy="[[_renderHierarchy]]"
-          ></tf-graph-controls>
-          graph loader:
           <tf-graph-loader id="loader"
               out-graph-hierarchy="{{graphHierarchy}}"
               out-graph="{{graph}}"
