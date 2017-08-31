@@ -30,7 +30,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-graph-board/tf-graph-board.html">
+<link rel="import" href="../tf-graph/tf-graph.html">
 <link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
@@ -43,16 +43,17 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
-        Graph Board:
-        <tf-graph-board id="graphboard"
-            graph-hierarchy="[[graphHierarchy]]"
-            graph="[[graph]]"
-            stats="[[stats]]"
-            progress="[[_progress]]"
-            color-by="structure"
-            color-by-params="{{colorByParams}}"
-            render-hierarchy="{{_renderHierarchy}}"
-        ></tf-graph-board>
+        <div id="graph-container">
+          <tf-graph id="graph"
+              graph-hierarchy="[[graphHierarchy]]"
+              basic-graph="[[graph]]"
+              stats="[[stats]]"
+              progress="[[_progress]]"
+              color-by="structure"
+              color-by-params="{{colorByParams}}"
+              render-hierarchy="{{_renderHierarchy}}"
+          ></tf-graph>
+        </div>
         <div class="sidebar-section">
             <div>
                 <paper-textarea value="[[_runInfo]]"
@@ -83,6 +84,14 @@ limitations under the License.
 
     <style include="dashboard-style"></style>
     <style>
+      #graph-container {
+        position: relative;
+      }
+      #graph {
+        display: block;
+        width: 500px;
+        height: 500px;
+      }
       #tooltip-sorting {
         display: flex;
         font-size: 14px;
@@ -145,7 +154,7 @@ limitations under the License.
         },
         isReloadDisabled: {
           type: Boolean,
-          value: true,  // TODO(@caisq): Investigate why this doesn't work.
+          value: true,
           readOnly: true,
         },
         alreadyStarted: {
@@ -192,6 +201,18 @@ limitations under the License.
               this.set(
                   '_tensorData',
                   this._tensorData + '\n' + response_data[timestamp]);
+
+              // TODO(chizeng): Define a robust means of passing data to the
+              // client.
+              const newDataString = response_data[timestamp];
+              const match = newDataString.match(/^(.+):\d+:\w+:\s(.+)/);
+              if (!match) {
+                // No info could be parsed from the data.
+                return;
+              }
+
+              const nodeName = match[1];
+              this.$.graph.set('selectedNode', nodeName);
             }
           } else {
             console.error(

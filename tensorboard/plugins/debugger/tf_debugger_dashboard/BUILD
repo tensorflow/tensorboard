@@ -22,7 +22,7 @@ ts_web_library(
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_storage",
-        "//tensorboard/plugins/graph/tf_graph_board",
+        "//tensorboard/plugins/graph/tf_graph",
         "//tensorboard/plugins/graph/tf_graph_loader",
         "//tensorboard/plugins/scalar/vz_line_chart",  # TODO(cais): Use to draw data lines.
         "@org_polymer_iron_collapse",
