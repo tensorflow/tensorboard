@@ -18,12 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collectionsperf-calendar
 import glob
 import json
 import os
 import re
-import time
 import threading
 
 import tensorflow as tf
@@ -540,56 +539,10 @@ class DebuggerPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _serve_comm(self, request):
-    if self._debugging_connection_state == "meta":
-      # Poll self._debugger_data_server for metadata.
-      # TODO(cais): Instead of keeping track of number of old keys, we should
-      # probably keep track of the most recent key as a member variable to avoid
-      # missing comm data.
-      # TODO(cais): More efficient polling. Maybe erase old things.
-      while True:
-        keys = self._debugger_data_server.comm_data.keys()
-        if keys and keys[-1] > self._debugging_connection_timestamp:
-          self._debugging_connection_timestamp = keys[-1]
-          break
-        else:
-          tf.logging.warn("_serve_comm: sleeping for 1 s (meta)")
-          time.sleep(1)
-
-      new_key = self._debugging_connection_timestamp
-      self._debugging_connection_state = 'tensors'
-      self._debugger_data_server.ack["client"] = True
-      return http_util.Respond(
-          request,
-          {
-              "state": "meta",
-              "data": {new_key: self._debugger_data_server.comm_data[new_key]},
-          },
-          "application/json")
-    elif self._debugging_connection_state == "tensors":
-      # Poll self._debugger_data_server for tensor data.
-      while True:
-        keys = self._debugger_data_server.comm_data.keys()
-        if keys and keys[-1] > self._debugging_connection_timestamp:
-          self._debugging_connection_timestamp = keys[-1]
-          break
-        else:
-          tf.logging.warn("_serve_comm: sleeping for 1 s (tensors)")
-          time.sleep(1)
-      new_key = self._debugging_connection_timestamp
-      tensor_value = self._debugger_data_server.comm_data[new_key]
-      tf.logging.info("tensor_value: %s" % tensor_value)
-      # TODO(cais): _debugging_connection_state needs to be set back to 'meta'
-      # somehow to support next Session.run().
-      return http_util.Respond(
-          request,
-          {
-              "state": "tensors",
-              "data": {new_key: tensor_value},
-          },
-          "application/json")
-    else:
-      raise ValueError("Invalid value in _debugging_connection_state: %s" %
-                       self._debugging_connection_state)
+    # comm_queue.get() blocks until an item is put into the queue (by
+    # self._debugger_data_server). This is how the HTTP long polling ends.
+    comm_data = self._debugger_data_server.comm_queue.get()
+    return http_util.Respond(request, comm_data, "application/json")
 
   @wrappers.Request.application
   def _serve_client_ack(self, request):

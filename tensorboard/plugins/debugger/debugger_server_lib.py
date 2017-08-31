@@ -22,7 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import Queue
 import functools
 import json
 import os
@@ -38,6 +38,48 @@ from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import events_writer_manager as events_writer_manager_lib
 # pylint: enable=line-too-long
 from tensorboard.plugins.debugger import numerics_alert
+
+
+def _run_key(feed_names, fetch_names, target_names):
+  return (",".join(feed_names) + "|" + ",".join(fetch_names) +
+          "|" + ",".join(target_names))
+
+
+def _comm_metadata(feed_names, fetch_names, target_names, timestamp):
+  return {
+      "type": "meta",
+      "timestamp": timestamp,
+      "data": {
+          "feed_names": feed_names,
+          "fetch_names": fetch_names,
+          "target_names": target_names,
+          "run_key": _run_key(feed_names, fetch_names, target_names),
+      }
+  }
+
+
+def _comm_tensor_data(event):
+  tensor_value = tf.make_ndarray(event.summary.value[0].tensor)
+  # TODO(cais): The value of the dict should be tensor keys, instead of
+  # the value or a string representation of it, which is too big for
+  # many real-life tensors.
+  node_name, output_slot, debug_op = event.summary.value[0].node_name.split(":")
+  output_slot = int(output_slot)
+  tf.logging.warning(
+      "Recording tensor value: %s, %d, %s", node_name, output_slot, debug_op)
+  tensor_value = tf.make_ndarray(event.summary.value[0].tensor)
+  tensor_value_str = str(tensor_value)
+  # TODO(cais): Include dtype and shape in the data field.
+  return {
+      "type": "tensor",
+      "timestamp": event.wall_time,
+      "data": {
+          "node_name": node_name,
+          "output_slot": output_slot,
+          "debug_op": debug_op,
+          "value": tensor_value_str,
+      },
+  }
 
 
 class DebuggerDataStreamHandler(
@@ -59,7 +101,7 @@ class DebuggerDataStreamHandler(
   def __init__(self,  # pylint: disable=super-init-not-called
                events_writer_manager,
                run_key_to_graphs,  # TODO(cais): This should become a class.
-               comm_data,
+               comm_queue,
                ack,
                numerics_alert_callback=None):
     """Constructor of DebuggerDataStreamHandler.
@@ -81,7 +123,7 @@ class DebuggerDataStreamHandler(
     # Data structures for session.run calls.
     # A map from core metadata to the corresponding partition graph(s).
     self._run_key_to_graphs = run_key_to_graphs
-    self._comm_data = comm_data
+    self._comm_queue = comm_queue
     self._ack = ack
     # TODO(cais): A more efficient way for waiting for client ACK.
 
@@ -105,27 +147,23 @@ class DebuggerDataStreamHandler(
     output_names = core_metadata["output_names"]
     target_nodes = core_metadata["target_nodes"]
     # TODO(cais): run_key should also include the device.
-    run_key = ",".join(input_names)
-    run_key += "|"
-    run_key += ",".join(output_names)
-    run_key += "|"
-    run_key += ",".join(target_nodes)
     tf.logging.warn("input_names: %s", input_names)
     tf.logging.warn("output_names: %s", output_names)
     tf.logging.warn("target_nodes: %s", target_nodes)
+    run_key = _run_key(input_names, output_names, target_nodes)
     tf.logging.warn("run_key: %s", run_key)
-    self._run_key = run_key
     # TODO(cais): Handle cases of >1 runs of the same run_key.
     if run_key not in self._run_key_to_graphs:
       self._run_key_to_graphs[run_key] = self._graph_defs[-1]
       # TODO(cais): Obviously, we want all the GraphDefs, not just the last one!
-      self._comm_data[event.wall_time] = run_key
+    self._comm_queue.put(_comm_metadata(
+        input_names, output_names, target_nodes, event.wall_time))
 
-      # Wait for acknowledgement.
-      self._ack["client"] = False
-      while not self._ack["client"]:
-        tf.logging.warning("Waiting for client ack (meta)...")
-        time.sleep(1.0)
+    # Wait for acknowledgement from client.
+    self._ack["client"] = False
+    tf.logging.warning("Waiting for client ack (meta)...")
+    while not self._ack["client"]:
+      time.sleep(0.1)
       tf.logging.warning("Client ack received (meta)...")
     # TODO(cais): Experiment with unblocking from front end.
 
@@ -149,11 +187,6 @@ class DebuggerDataStreamHandler(
     # provided otherwise).
     del device_name
     del wall_time
-    # tf.logging.warn("on_graph_def(): graph_def = %s", graph_def)
-    # tf.logging.warn("on_graph_def(): graph_def seiralized = %s",
-    #                 graph_def.SerializeToString())
-    # import time  # DEBUG
-    # time.sleep(10)
     self._graph_defs.append(graph_def)
 
   def on_value_event(self, event):
@@ -213,21 +246,16 @@ class DebuggerDataStreamHandler(
         self._numerics_alert_callback(alert)
     else:
       # Generic-type tensors.
-      tensor_value = tf.make_ndarray(event.summary.value[0].tensor)
       # TODO(cais): The value of the dict should be tensor keys, instead of
       # the value or a string representation of it, which is too big for
       # many real-life tensors.
-      node_name = event.summary.value[0].node_name
-      tensor_value_str = "%s: %s" % (node_name, tensor_value)
-      tf.logging.warning(
-          "Recording tensor value in _comm_data: %s", tensor_value_str)
-      self._comm_data[event.wall_time] = tensor_value_str
+      self._comm_queue.put(_comm_tensor_data(event))
 
       # Wait for acknowledgement.
       self._ack["client"] = False
+      tf.logging.warning("Waiting for client ack (tensors)...")
       while not self._ack["client"]:
-        tf.logging.warning("Waiting for client ack (tensors)...")
-        time.sleep(1.0)
+        time.sleep(0.1)
       tf.logging.info("Client ack received (tensor)...")
 
   def _parse_session_run_index(self, event):
@@ -336,7 +364,7 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
 
     # Data structures for runs.
     self._run_key_to_graphs = dict()
-    self._comm_data = collections.OrderedDict()
+    self.comm_queue = Queue.Queue()
     # keys: event timestamps; values: ...
     self.ack = {"client": False}
 
@@ -344,7 +372,7 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
         DebuggerDataStreamHandler,
         self._events_writer_manager,
         self._run_key_to_graphs,
-        self._comm_data,
+        self.comm_queue,
         self.ack,
         self._numerics_alert_callback)
     grpc_debug_server.EventListenerBaseServicer.__init__(
@@ -371,10 +399,6 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
   @property
   def run_key_to_graphs(self):
     return self._run_key_to_graphs
-
-  @property
-  def comm_data(self):
-    return self._comm_data
 
   def _numerics_alert_callback(self, alert):
     """Handles the case in which we receive a bad value (NaN, -/+ Inf).

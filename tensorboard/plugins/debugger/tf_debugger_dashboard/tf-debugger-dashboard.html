@@ -43,6 +43,7 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar">
+        Runtime Graph:
         <div id="graph-container">
           <tf-graph id="graph"
               graph-hierarchy="[[graphHierarchy]]"
@@ -57,7 +58,7 @@ limitations under the License.
         <div class="sidebar-section">
             <div>
                 <paper-textarea value="[[_runInfo]]"
-                    autoresizing></paper-textarea>
+                    rows="8" autoresizing></paper-textarea>
             </div>
             <div>
                 <paper-button raised class="continue-button" on-click="_continue">
@@ -136,7 +137,7 @@ limitations under the License.
       properties: {
         _runInfo: {
             type: String,
-            value: 'Run info',
+            value: 'Run info:',
         },
         _tensorData: {
             type: String,
@@ -179,44 +180,30 @@ limitations under the License.
         const url = getRouter().pluginRoute('debugger', '/comm');
         console.log('Sending long-polling request to: ', url);
         this._requestManager.request(url).then(response => {
-          const response_state = response['state'];
+          const response_type = response['type'];
           const response_data = response['data'];
-          if (response_state == 'meta') {
-            var run_keys = [];
-            for (var timestamp in response_data) {
-              run_keys.push(response_data[timestamp]);
-            }
-            var run_key = run_keys[run_keys.length - 1];
-            var run_key_items = run_key.split('|');
-            var feed_names = run_key_items[0];
-            var fetch_names = run_key_items[1];
-            var target_names = run_key_items[2];
-            var run_info = 'Feeds: ' + feed_names + '; Fetches: ' +
-                           fetch_names + '; Targets: ' + target_names;
-            this.set('_runInfo', run_info);
+          if (response_type == 'meta') {
+            const feed_names = response_data['feed_names']
+            const fetch_names = response_data['fetch_names']
+            const target_names = response_data['target_names']
+            const run_key = response_data['run_key']
+            const run_info = 'Feeds: ' + feed_names + '; Fetches: ' +
+                fetch_names + '; Targets: ' + target_names;
+            this.set('_runInfo', this._runInfo + '\n' + run_info);
             this._displayGraph(run_key);
-          } else if (response_state == 'tensors') {
+          } else if (response_type == 'tensor') {
             console.log('state tensors: response data: ', response_data);
-            for (var timestamp in response_data) {
-              this.set(
-                  '_tensorData',
-                  this._tensorData + '\n' + response_data[timestamp]);
+            this.set(
+                '_tensorData',
+                this._tensorData + '\n' +
+                response_data['node_name'] + ':' +
+                response_data['output_slot'] + ': ' +
+                response_data['value']);
 
-              // TODO(chizeng): Define a robust means of passing data to the
-              // client.
-              const newDataString = response_data[timestamp];
-              const match = newDataString.match(/^(.+):\d+:\w+:\s(.+)/);
-              if (!match) {
-                // No info could be parsed from the data.
-                return;
-              }
-
-              const nodeName = match[1];
-              this.$.graph.set('selectedNode', nodeName);
-            }
+            this.$.graph.set('selectedNode', response_data['node_name']);
           } else {
             console.error(
-                'Invalid long-polling response state: ', response_state);
+                'Invalid long-polling response type: ', response_type);
           }
 
           // Long polling loop: initialite the next long polling.
@@ -229,6 +216,9 @@ limitations under the License.
         if (this.alreadyStarted) {
           return;
         }
+
+        this.set('_runInfo',
+            this._runInfo + "\nWaiting for session.run() to connect... ");
 
         // Initiate long-polling.
         this.long_poll();

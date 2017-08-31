@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# TODO(cais): Use tf_debug instead.
 from tensorflow.python.debug.lib import debug_data
 
 
