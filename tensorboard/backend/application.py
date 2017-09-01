@@ -207,7 +207,6 @@ class TensorBoardWSGI(object):
                            (plugin.plugin_name, route))
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
           path = self._path_prefix + route
-          tf.logging.error("ROUTE :::: %s", path)
         else:
           path = self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' + \
                     plugin.plugin_name + route
@@ -434,6 +433,6 @@ def _clean_path(path, path_prefix=""):
     The route to use to serve the request (with the path prefix stripped if
     applicable).
   """
-  if path != '/' and path.endswith('/') and path != path_prefix + '/':
+  if path != path_prefix + '/' and path.endswith('/'):
     return path[:-1]
   return path
