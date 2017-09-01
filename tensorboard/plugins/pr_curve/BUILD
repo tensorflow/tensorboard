@@ -55,6 +55,9 @@ py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
