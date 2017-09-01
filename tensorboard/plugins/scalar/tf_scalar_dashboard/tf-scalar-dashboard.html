@@ -33,6 +33,7 @@ limitations under the License.
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../tf-utils/tf-utils.html">
 <link rel="import" href="tf-scalar-chart.html">
 <link rel="import" href="tf-smoothing-input.html">
 
@@ -189,10 +190,11 @@ limitations under the License.
   </template>
 
   <script>
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getTags} from '../tf-backend/backend.js';
-    import {getRouter} from '../tf-backend/router.js';
+    import {aggregateTagInfo} from '../tf-utils/utils.js';
     import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
+    import {getRouter} from '../tf-backend/router.js';
+    import {getTags} from '../tf-backend/backend.js';
+    import {RequestManager} from '../tf-backend/requestManager.js';
     import * as storage from '../tf-storage/storage.js';
 
     /** @enum {string} */ const X_TYPE = {
@@ -292,65 +294,15 @@ limitations under the License.
         const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
         return categorizeTags(runToTag, selectedRuns, tagFilter);
       },
-      _tagMetadata(runToTagInfo, runs, tag) {
-        /*
-         * Each run--tag combination may have its own display name and
-         * description, but we display just one chart per tag: this is a
-         * dimension mismatch. We reconcile this as follows:
-         *
-         *   - We only show a display name if all runs agree. Otherwise,
-         *     we use the tag name without the "/scalar_summary" suffix.
-         *
-         *   - If all runs agree on a description, we use it. Otherwise,
-         *     we concatenate all descriptions, annotating which ones
-         *     came from which run, and display them in a list.
-         */
-        let unanimousDisplayName = undefined;
-        const descriptionToRuns = {};  // from description to runs it appears in
+      _tagMetadata(runToTagsInfo, runs, tag) {
+        const runToTagInfo = {};
         runs.forEach(run => {
-          const info = runToTagInfo[run][tag];
-          if (unanimousDisplayName === undefined) {
-            unanimousDisplayName = info.displayName;
-          }
-          if (unanimousDisplayName !== info.displayName) {
-            unanimousDisplayName = null;
-          }
-          if (descriptionToRuns[info.description] === undefined) {
-            descriptionToRuns[info.description] = [];
-          }
-          descriptionToRuns[info.description].push(run);
+            runToTagInfo[run] = runToTagsInfo[run][tag];
         });
-        const displayName =
-          unanimousDisplayName !== null ?
-          unanimousDisplayName :
-          tag.replace(/\/scalar_summary$/, '');
-        const description = (() => {
-          const descriptions = Object.keys(descriptionToRuns);
-          if (descriptions.length === 0) {
-            return '';
-          } else if (descriptions.length === 1) {
-            return descriptions[0];
-          } else {
-            const items = descriptions.map(description => {
-              const runs = descriptionToRuns[description].map(run => {
-                const safeRun = run
-                  .replace(/</g, '&lt;')
-                  .replace(/>/g, '&gt;')  // for symmetry :-)
-                  .replace(/&/g, '&amp;');
-                return `<code>${safeRun}</code>`;
-              });
-              const joined = runs.length > 2 ?
-                (runs.slice(0, runs.length - 1).join(', ')
-                  + ', and ' + runs[runs.length - 1]) :
-                runs.join(' and ');
-              const runNoun = runs.length === 1 ? 'run' : 'runs';
-              return `<li><p>For ${runNoun} ${joined}:</p>${description}</li>`;
-            });
-            const prefix = '<p><strong>Multiple descriptions:</strong></p>';
-            return `${prefix}<ul>${items.join('')}</ul>`;
-          }
-        })();
-        return {displayName, description};
+        // All new-style scalar tags include the `/scalar_summary`
+        // suffix. We can trim that from the display name.
+        const defaultDisplayName = tag.replace(/\/scalar_summary$/, '');
+        return aggregateTagInfo(runToTagInfo, defaultDisplayName);
       },
     });
   </script>
