@@ -21,7 +21,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging as base_logging
 import os
 import socket
 import sys
@@ -211,14 +210,10 @@ def run_simple_server(tb_app):
     # An error message was already logged
     # TODO(@jart): Remove log and throw anti-pattern.
     sys.exit(-1)
-  logger = base_logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
-  logger.setLevel(base_logging.INFO)
-  logger.info('TensorBoard %s at %s (Press CTRL+C to quit) ',
-              version.VERSION, url)
-  try:
-    server.serve_forever()
-  finally:
-    logger.info('')
+  sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
+                   (version.VERSION, url))
+  sys.stderr.flush()
+  server.serve_forever()
 
 
 def main(unused_argv=None):
