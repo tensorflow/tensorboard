@@ -24,8 +24,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from google.protobuf import json_format
-from tensorboard.plugins.pr_curve import plugin_data_pb2
+from tensorboard.plugins.pr_curve import metadata
 
 # A tiny value. Used to prevent division by 0 as well as to make precision 1
 # when the threshold is 0.
@@ -58,7 +57,7 @@ def op(
     predictions: A float32 `Tensor` whose values are in the range `[0, 1]`.
         Dimensions must match those of `labels`.
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
-        compute PR metrics for. Should be `>= 2`. This value should be a 
+        compute PR metrics for. Should be `>= 2`. This value should be a
         constant integer value, not a Tensor that stores an integer.
     weights: Optional float32 `Tensor`. Individual counts are multiplied by this
         value. This tensor must be either the same shape as or broadcastable to
@@ -129,7 +128,7 @@ def op(
     # Compute the bucket indices for each prediction value.
     bucket_indices = tf.cast(
         tf.floor(predictions * (num_thresholds - 1)), tf.int32)
-    
+
     # Bucket predictions.
     tp_buckets = tf.reduce_sum(
         tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
@@ -138,9 +137,6 @@ def op(
         tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
         axis=0)
 
-    thresholds = tf.cast(
-        tf.linspace(0.0, 1.0, num_thresholds), dtype=dtype)
-    
     # Set up the cumulative sums to compute the actual metrics.
     tp = tf.cumsum(tp_buckets, reverse=True, name='tp')
     fp = tf.cumsum(fp_buckets, reverse=True, name='fp')
@@ -154,14 +150,10 @@ def op(
 
     # Store the number of thresholds within the summary metadata because
     # that value is constant for all pr curve summaries with the same tag.
-    pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
-        num_thresholds=num_thresholds)
-    content = json_format.MessageToJson(pr_curve_plugin_data)
-    summary_metadata = tf.SummaryMetadata(
+    summary_metadata = metadata.create_summary_metadata(
         display_name=display_name if display_name is not None else tag,
-        summary_description=description or '',
-        plugin_data=tf.SummaryMetadata.PluginData(plugin_name='pr_curves',
-                                                  content=content))
+        description=description or '',
+        num_thresholds=num_thresholds)
 
     precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
         _TINY_EPISILON, tp + fp)

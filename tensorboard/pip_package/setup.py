@@ -34,7 +34,6 @@ REQUIRED_PACKAGES = [
     'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
     'bleach == 1.5.0',
-    'tensorflow >= 1.3.0',
 ]
 
 # python3 requires wheel 0.26

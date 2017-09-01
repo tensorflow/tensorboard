@@ -155,6 +155,18 @@ const PARAMS = {
 };
 
 /**
+ * The regular expression to use when parsing for the string that is
+ * used to label a function node in the graph. We strip away a prefix
+ * indicating that the node represents a function definition. We also
+ * remove an arbitrary hexadecimal suffix and the number following it
+ * if it is present. To be clear, we extract foo from
+ * __function_library__foo_deadb00f_42.
+ */
+const nodeDisplayNameRegex = new RegExp(
+    '^(?:' + tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
+        ')?(\\w+)_[a-z0-9]{8}(?:_\\d+)?$');
+
+/**
  * Stores the rendering information, such as x and y coordinates,
  * for each node in the graph.
  */
@@ -499,6 +511,7 @@ export class RenderGraphInfo {
     newMetanode.hasNonControlEdges = libraryMetanode.hasNonControlEdges;
     newMetanode.include = libraryMetanode.include;
     newMetanode.nodeAttributes = _.clone(libraryMetanode.nodeAttributes);
+    newMetanode.associatedFunction = libraryMetanode.associatedFunction;
 
     // Recursively duplicate the children nodes. At the same time, make a
     // mapping between function output index and the new node for the output.
@@ -673,7 +686,7 @@ export class RenderGraphInfo {
           return;
         }
 
-        if (childName.indexOf(tf.graph.FUNCTION_LIBRARY_NODE) === 0) {
+        if (childName.indexOf(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX) === 0) {
           // Do not replace library functions in the graph. The library
           // functions serve as templates for other nodes.
           return;
@@ -743,6 +756,19 @@ export class RenderGraphInfo {
     if (PARAMS.enableExtraction &&
         renderGroupNodeInfo.node.type === NodeType.META) {
       extractHighDegrees(renderGroupNodeInfo);
+    }
+
+    if (nodeName === tf.graph.ROOT_NAME) {
+      // Add all metanodes representing library function templates into the
+      // library function scene group for the root node.
+      _.forOwn(this.hierarchy.libraryFunctions, (node, functionName) => {
+        const childRenderInfo = this.getOrCreateRenderNodeByName(node.name);
+        renderGroupNodeInfo.libraryFunctionsExtract.push(childRenderInfo);
+
+        // Do not render function definitions in the core graph.
+        childRenderInfo.node.include = InclusionType.EXCLUDE;
+        coreGraph.removeNode(node.name);
+      });
     }
 
     // Record that we constructed the rendering hierarchy for this node, so we
@@ -1352,6 +1378,12 @@ export class RenderNodeInfo {
   isOutExtract: boolean;
 
   /**
+   * Whether a node represents a function template within the library, in which
+   * case it should be rendered in a special scene group.
+   */
+  isLibraryFunction: boolean;
+
+  /**
    * List of (color, proportion) tuples based on the proportion of devices of
    * its children. If this node is an op node, this list will have only one
    * color with proportion 1.0.
@@ -1377,6 +1409,11 @@ export class RenderNodeInfo {
    * Whether this node is faded out. Used when displaying stats.
    */
   isFadedOut: boolean;
+
+  /**
+   * The name string used to label the node in the graph.
+   */
+  displayName: string;
 
   constructor(node: Node) {
     this.node = node;
@@ -1412,10 +1449,30 @@ export class RenderNodeInfo {
 
     // By default, we don't fade nodes out. Default to false for safety.
     this.isFadedOut = false;
+
+    // Only use the portion beyond the last delimiter as the display
+    // name.
+    this.displayName = node.name.substring(
+        node.name.lastIndexOf(tf.graph.NAMESPACE_DELIM) + 1);
+
+    if (node.type === NodeType.META &&
+        (node as Metanode).associatedFunction) {
+      // Function names are suffixed with a length-8 hexadecimal string
+      // followed by an optional number. We remove that suffix because
+      // the user did not generate that suffix. That suffix merely
+      // serves to differentiate between functions with different
+      // signatures but the same name otherwise.
+      // Furthermore, we remove the prefix that merely ascertains this
+      // node as a function definition. There is no reason for the user
+      // to see that in the graph, as the node would already be within
+      // the functions scene group.
+      const match = this.displayName.match(nodeDisplayNameRegex);
+      this.displayName = match[1];
+    }
   }
 
   isInCore(): boolean {
-    return !this.isInExtract && !this.isOutExtract;
+    return !this.isInExtract && !this.isOutExtract && !this.isLibraryFunction;
   }
 }
 
@@ -1534,10 +1591,14 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
    * Size of the bounding box for a metanode's isolated out-extract children.
    */
   outExtractBox: {width: number, height: number};
+  /** Size of the bounding box for the function library. */
+  libraryFunctionsBox: {width: number, height: number};
   /** Array of isolated in-extract nodes. */
   isolatedInExtract: RenderNodeInfo[];
   /** Array of isolated out-extract nodes. */
   isolatedOutExtract: RenderNodeInfo[];
+  /** Array of nodes to show in the function library scene group. */
+  libraryFunctionsExtract: RenderNodeInfo[];
 
   constructor(groupNode: GroupNode) {
     super(groupNode);
@@ -1548,8 +1609,10 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
             gl.name, GraphType.CORE, { compound: true });
     this.inExtractBox = {width: 0, height: 0};
     this.outExtractBox = {width: 0, height: 0};
+    this.libraryFunctionsBox = {width: 0, height: 0};
     this.isolatedInExtract = [];
     this.isolatedOutExtract = [];
+    this.libraryFunctionsExtract = [];
   }
 }
 

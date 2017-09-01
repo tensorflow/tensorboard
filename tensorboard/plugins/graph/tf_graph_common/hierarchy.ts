@@ -593,9 +593,24 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
         child.parentNode = parent;
         h.setNode(name, child);
         parent.metagraph.setNode(name, child);
+
+        if (name.indexOf(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX) === 0 &&
+            parent.name === tf.graph.ROOT_NAME) {
+          // This metanode represents a function in the Library. We later copy
+          // its contents to dynamically inject function data into the graph
+          // when the subhierarchy of a metanode is built (upon its expansion).
+          const functionName = name.substring(
+              tf.graph.FUNCTION_LIBRARY_NODE_PREFIX.length);
+
+          // For now, remember the metanode that represents the function with
+          // this name.
+          h.libraryFunctions[functionName] = child;
+          child.associatedFunction = functionName;
+        }
       }
       parent = child;
     }
+
     // Assuming node name is 'a/b/c', assign the OpNode as a child of the
     // metanode 'a/b'.
     h.setNode(node.name, node);
@@ -612,30 +627,6 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
       embedding.parentNode = node;
     });
   });
-
-  const libraryFunctionNode =
-      h.node(tf.graph.FUNCTION_LIBRARY_NODE) as Metanode;
-  if (libraryFunctionNode) {
-    // This graph has a function library. Remove the library from the root node
-    // itself. We later dynamically add copies of functions into metanodes that
-    // are actually function calls.
-    const rootNode = libraryFunctionNode.parentNode as Metanode;
-    rootNode.metagraph.removeNode(libraryFunctionNode.name);
-
-    // Add all of the library function node's children to a mapping. All of the
-    // nodes within this special node for library functions are themselves
-    // metanodes for library functions.
-    _.each(libraryFunctionNode.metagraph.nodes(), functionNodeName => {
-      const childNode =
-          libraryFunctionNode.metagraph.node(functionNodeName) as Metanode;
-      if (childNode.type === tf.graph.NodeType.META) {
-        const functionName = functionNodeName.substring(
-            tf.graph.FUNCTION_LIBRARY_NODE.length +
-                tf.graph.NAMESPACE_DELIM.length);
-        h.libraryFunctions[functionName] = childNode;
-      }
-    });
-  }
 };
 
 /**

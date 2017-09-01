@@ -8,6 +8,9 @@ ts_web_library(
     name = "tf_card_heading",
     srcs = [
         "tf-card-heading.html",
+        "tf-card-heading-style.html",
+        "util.html",
+        "util.js",
     ],
     path = "/tf-card-heading",
     visibility = ["//visibility:public"],

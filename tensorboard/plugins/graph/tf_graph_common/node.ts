@@ -339,8 +339,7 @@ export function getGroupSettingLabel(node: Node) {
  */
 function labelBuild(nodeGroup, renderNodeInfo: render.RenderNodeInfo,
     sceneElement) {
-  let namePath = renderNodeInfo.node.name.split('/');
-  let text = namePath[namePath.length - 1];
+  let text = renderNodeInfo.displayName;
 
   // Truncate long labels for unexpanded Metanodes.
   let useFontScale = renderNodeInfo.node.type === NodeType.META &&
@@ -481,6 +480,15 @@ export function buildShape(nodeGroup, d, nodeClass: string): d3.Selection<any, a
   // TODO: DOM structure should be templated in HTML somewhere, not JS.
   switch (d.node.type) {
     case NodeType.OP:
+      const opNode = d.node as OpNode;
+      if (_.isNumber(opNode.functionInputIndex) ||
+          _.isNumber(opNode.functionOutputIndex)) {
+        // This is input or output arg for a TensorFlow function. Use a special
+        // shape (a triangle) for them.
+        scene.selectOrCreateChild(
+            shapeGroup, 'polygon', Class.Node.COLOR_TARGET);
+        break;
+      }
       scene.selectOrCreateChild(shapeGroup, 'ellipse', Class.Node.COLOR_TARGET);
       break;
     case NodeType.SERIES:
@@ -537,8 +545,18 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
   switch (d.node.type) {
     case NodeType.OP: {
       // position shape
-      let shape = scene.selectChild(shapeGroup, 'ellipse');
-      scene.positionEllipse(shape, cx, d.y, d.coreBox.width, d.coreBox.height);
+      const opNode = d.node as OpNode;
+      if (_.isNumber(opNode.functionInputIndex) ||
+          _.isNumber(opNode.functionOutputIndex)) {
+        // This shape represents the input into or output out of a TensorFlow
+        // function.
+        let shape = scene.selectChild(shapeGroup, 'polygon');
+        scene.positionTriangle(shape, d.x, d.y, d.width, d.height);
+      } else {
+        let shape = scene.selectChild(shapeGroup, 'ellipse');
+        scene.positionEllipse(
+            shape, cx, d.y, d.coreBox.width, d.coreBox.height);
+      }
       labelPosition(nodeGroup, cx, d.y, d.labelOffset);
       break;
     }
@@ -610,6 +628,12 @@ export function getFillForNode(templateIndex, colorBy,
         return renderInfo.structural ?
             '#f0e' :
             (<BridgeNode>renderInfo.node).inbound ? '#0ef' : '#fe0';
+      } else if (_.isNumber((renderInfo.node as OpNode).functionInputIndex)) {
+        // This is an input of a TensorFlow function.
+        return '#795548';
+      } else if (_.isNumber((renderInfo.node as OpNode).functionOutputIndex)) {
+        // This is an output of a TensorFlow function.
+        return '#009688';
       } else {
         // Op nodes are white.
         return 'white';
@@ -714,7 +738,9 @@ export function stylize(nodeGroup, renderInfo: render.RenderNodeInfo,
   nodeClass = nodeClass || Class.Node.SHAPE;
   let isHighlighted = sceneElement.isNodeHighlighted(renderInfo.node.name);
   let isSelected = sceneElement.isNodeSelected(renderInfo.node.name);
-  let isExtract = renderInfo.isInExtract || renderInfo.isOutExtract;
+  let isExtract = renderInfo.isInExtract ||
+                  renderInfo.isOutExtract ||
+                  renderInfo.isLibraryFunction;
   let isExpanded = renderInfo.expanded && nodeClass !== Class.Annotation.NODE;
   let isFadedOut = renderInfo.isFadedOut;
   nodeGroup.classed('highlighted', isHighlighted);

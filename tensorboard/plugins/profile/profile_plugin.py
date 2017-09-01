@@ -43,6 +43,7 @@ TOOLS_ROUTE = '/tools'
 _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
     'trace_viewer': 'trace',
+    'op_profile': 'op_profile.json',
 }
 
 
@@ -145,8 +146,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      # TODO(ioeric): use plugin_asset_util.RetieveAsset when it support reading
-      # bytes data in python 3.
       with tf.gfile.Open(asset_path, "rb") as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
@@ -158,6 +157,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return None
     if tool == 'trace_viewer':
       return process_raw_trace(raw_data)
+    if tool == 'op_profile':
+      return raw_data
     return None
 
   @wrappers.Request.application

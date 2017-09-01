@@ -17,7 +17,7 @@ module tf.graph {
 /** Delimiter used in node names to denote namespaces. */
 export const NAMESPACE_DELIM = '/';
 export const ROOT_NAME = '__root__';
-export const FUNCTION_LIBRARY_NODE = '__function_library__';
+export const FUNCTION_LIBRARY_NODE_PREFIX = '__function_library__';
 
 /** Attribute key used for storing attributes that are too large. */
 export const LARGE_ATTRS_KEY = '_too_large_attrs';
@@ -313,6 +313,10 @@ export interface Metanode extends GroupNode {
   depth: number;
   templateId: string;
   opHistogram: {[op: string]: number};
+
+  // The name of the function this metanode is associated with if any.
+  associatedFunction: string;
+  
   getFirstChild(): GroupNode|OpNode;
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
@@ -441,12 +445,12 @@ export function joinStatsInfoWithGraph(
       return;
     }
     _.each(devStats.node_stats, nodeStats => {
-      // Lookup the node in the graph by its original name, e.g. A. If not
-      // found, lookup by the rewritten name A/(A) in case the name is both
+      // Lookup the node in the graph by its original name, e.g. A/B. If not
+      // found, lookup by the rewritten name A/B/(B) in case the name is both
       // a namespace and a node name.
-      let nodeName = nodeStats.node_name in graph.nodes ? nodeStats.node_name :
-                                                          nodeStats.node_name +
-              NAMESPACE_DELIM + '(' + nodeStats.node_name + ')';
+      let nodeName = nodeStats.node_name in graph.nodes ?
+          nodeStats.node_name :
+          getStrictName(nodeStats.node_name);
 
       // Couldn't find a matching node.
       if (!(nodeName in graph.nodes)) {
@@ -596,6 +600,7 @@ export class MetanodeImpl implements Metanode {
   hasNonControlEdges: boolean;
   include: InclusionType;
   nodeAttributes: {[key: string]: any;};
+  associatedFunction: string;
 
   /** A label object for meta-nodes in the graph hierarchy */
   constructor(name: string, opt = {}) {
@@ -626,6 +631,7 @@ export class MetanodeImpl implements Metanode {
     this.parentNode = null;
     this.hasNonControlEdges = false;
     this.include = InclusionType.UNSPECIFIED;
+    this.associatedFunction = '';
   }
 
   getFirstChild(): GroupNode|OpNode {
@@ -1059,7 +1065,7 @@ export function build(
             const processFunction = (func: tf.graph.proto.FunctionDef) => {
               // Give the function itself a node.
               const functionNodeName =
-                  FUNCTION_LIBRARY_NODE + NAMESPACE_DELIM + func.signature.name;
+                  FUNCTION_LIBRARY_NODE_PREFIX + func.signature.name;
               // Create an op node for the function. Mark it as part of a
               // function library.
               processRawNode({
@@ -1070,35 +1076,39 @@ export function build(
                 attr: [],
               });
 
-              // Makes an OpNode out of either an input_arg of a library
-              // function.
-              let currentInputIndex = 0;
-              const processInput = (arg) => {
-                const opNode = processRawNode({
-                  name: functionNodeName + NAMESPACE_DELIM + arg.name,
-                  input: [],
-                  device: '',
-                  op: 'input_arg',
-                  attr: [{
-                    key: 'T',
-                    value: {
-                      type: arg.type,
-                    },
-                  }],
-                });
-                opNode.functionInputIndex = currentInputIndex;
-                currentInputIndex++;
-              };
+              // If the function has inputs, make nodes out of them.
+              if (func.signature.input_arg) {
+                // Makes an OpNode out of either an input_arg of a library
+                // function.
+                let currentInputIndex = 0;
+                const processInput = (arg) => {
+                  const opNode = processRawNode({
+                    name: functionNodeName + NAMESPACE_DELIM + arg.name,
+                    input: [],
+                    device: '',
+                    op: 'input_arg',
+                    attr: [{
+                      key: 'T',
+                      value: {
+                        type: arg.type,
+                      },
+                    }],
+                  });
+                  opNode.functionInputIndex = currentInputIndex;
+                  currentInputIndex++;
+                };
 
-              // Make nodes for input args of the function. Unfortunately, the
-              // pbtxt configuration language is not rich enough to
-              // differentiate between an array with 1 item vs 1 object property.
-              if (func.signature.input_arg['name']) {
-                // There is only 1 input arg.
-                processInput(func.signature.input_arg);
-              } else {
-                // There are several input args.
-                _.each(func.signature.input_arg, processInput);
+                // Make nodes for input args of the function. Unfortunately, the
+                // pbtxt configuration language is not rich enough to
+                // differentiate between an array with 1 item vs 1 object
+                // property.
+                if (func.signature.input_arg['name']) {
+                  // There is only 1 input arg.
+                  processInput(func.signature.input_arg);
+                } else {
+                  // There are several input args.
+                  _.each(func.signature.input_arg, processInput);
+                }
               }
 
               // Make nodes for output args of the function. Track the names of
@@ -1107,17 +1117,22 @@ export function build(
               // node_defs of the library function.
               let currentOutputIndex = 0;
               const outputArgNames = {};
-              const processOutput = arg => {
-                outputArgNames[functionNodeName + NAMESPACE_DELIM + arg.name] =
-                    currentOutputIndex;
-                currentOutputIndex++;
-              };
-              if (func.signature.output_arg['name']) {
-                // There is only 1 output arg.
-                processOutput(func.signature.output_arg);
-              } else {
-                // There are several output args.
-                _.each(func.signature.output_arg, processOutput);
+
+              // If the function has outputs, make nodes out of them.
+              if (func.signature.output_arg) {
+                const processOutput = arg => {
+                  outputArgNames[
+                      functionNodeName + NAMESPACE_DELIM + arg.name] =
+                          currentOutputIndex;
+                  currentOutputIndex++;
+                };
+                if (func.signature.output_arg['name']) {
+                  // There is only 1 output arg.
+                  processOutput(func.signature.output_arg);
+                } else {
+                  // There are several output args.
+                  _.each(func.signature.output_arg, processOutput);
+                }
               }
 
               _.each(func.node_def, rawNode => {
@@ -1142,17 +1157,7 @@ export function build(
 
             if (graphDef.library && graphDef.library.function) {
               // This graph contains functions.
-              if (graphDef.library.function['length'] >= 0) {
-                // The graph has several functions.
-                _.each(
-                  graphDef.library.function as tf.graph.proto.FunctionDef[],
-                  processFunction);
-              } else {
-                // The graph has 1 function. In that case, the function property
-                // is a single function (not an array).
-                processFunction(
-                  graphDef.library.function as tf.graph.proto.FunctionDef);
-              }
+              _.each(graphDef.library.function, processFunction);
             }
 
             opNodes.splice(index);

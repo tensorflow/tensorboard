@@ -47,7 +47,7 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header">
         <div id="toolbar-content" slot="top">
-          <div class="toolbar-title">[[title]]</div>
+          <div class="toolbar-title">[[brand]]</div>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
               Loading active dashboards&hellip;
@@ -323,9 +323,17 @@ limitations under the License.
          * This defaults to TensorBoard-X because we recommend against custom
          * builds being branded as TensorBoard.
          */
-        title: {
+        brand: {
           type: String,
           value: 'TensorBoard-X',
+        },
+
+        /**
+         * Deprecated: Equivalent to 'brand' attribute.
+         */
+        title: {
+          type: String,
+          observer: '_updateTitle',
         },
 
         /**
@@ -693,6 +701,12 @@ limitations under the License.
 
       _updateRouter(router) {
         setRouter(router);
+      },
+
+      _updateTitle(title) {
+        if (title) {
+          this.set('brand', title);
+        }
       },
 
       reload() {
