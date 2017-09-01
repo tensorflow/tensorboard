@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collectionsperf-calendar
+import collections
 import glob
 import json
 import os
