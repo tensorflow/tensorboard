@@ -60,18 +60,23 @@ limitations under the License.
               noink
               id="tabs"
             >
-              <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+              <template
+                is="dom-repeat"
+                items="[[_dashboardInformationObjects]]"
+                as="dashboardInformation">
                 <template
                   is="dom-if"
-                  if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboard)]]"
+                  if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboardInformation)]]"
                 >
-                  <paper-tab data-dashboard$="[[dashboard]]">[[dashboard]]</paper-tab>
+                  <paper-tab data-dashboard$="[[dashboardInformation.plugin]]">
+                    [[dashboardInformation.tabName]]
+                  </paper-tab>
                 </template>
               </template>
             </paper-tabs>
             <template
               is="dom-if"
-              if="[[_inactiveDashboardsExist(_dashboards, disabledDashboards, _activeDashboards)]]"
+              if="[[_inactiveDashboardsExist(_dashboardInformationObjects, disabledDashboards, _activeDashboards)]]"
             >
               <paper-dropdown-menu
                 label="Inactive"
@@ -85,15 +90,17 @@ limitations under the License.
                   selected="{{_selectedDashboard}}"
                   attr-for-selected="data-dashboard"
                 >
-                  <template is="dom-repeat" items="[[_dashboards]]" as="dashboard">
+                  <template is="dom-repeat"
+                            items="[[_dashboardInformationObjects]]"
+                            as="dashboardInformation">
                     <template
                       is="dom-if"
-                      if="[[_isDashboardInactive(disabledDashboards, _activeDashboards, dashboard)]]"
+                      if="[[_isDashboardInactive(disabledDashboards, _activeDashboards, dashboardInformation)]]"
                       restamp
                     >
                       <paper-item
-                        data-dashboard$="[[dashboard]]"
-                      >[[dashboard]]</paper-item>
+                        data-dashboard$="[[dashboardInformation.plugin]]"
+                      >[[dashboardInformation.tabName]]</paper-item>
                     </template>
                   </template>
                 </paper-menu>
@@ -176,13 +183,13 @@ limitations under the License.
         <template
           is="dom-repeat"
           id="dashboards-template"
-          items="[[_dashboards]]"
-          as="dashboard"
+          items="[[_dashboardInformationObjects]]"
+          as="dashboardInformation"
         >
           <div
             class="dashboard-container"
-            data-dashboard$="[[dashboard]]"
-            style="display: [[_displayStyle(_selectedDashboard, dashboard)]]"
+            data-dashboard$="[[dashboardInformation.plugin]]"
+            style="display: [[_displayStyle(_selectedDashboard, dashboardInformation.plugin)]]"
           ><!-- Dashboards will be injected here dynamically. --></div>
         </template>
       </div>
@@ -373,19 +380,21 @@ limitations under the License.
         },
 
         /**
-         * The set of all possible dashboard names.
+         * The set of all dashboards. Each object within this array is a
+         * DashboardInformation object.
          *
-         * @type {!Array<string>}
+         * @type {!Array<Object>}
          */
-        _dashboards: {
-          type: Array,
+        _dashboardInformationObjects: {
+          type: Object,
           readOnly: true,
-          value: Object.keys(TENSORBOARD_PLUGINS),
+          value: Object.values(PLUGIN_TO_DASHBOARD_INFORMATION),
         },
 
         /**
          * The set of currently active dashboards.
-         * `null` if not yet fetched.
+         * `null` if not yet fetched. Each item is a DashboardInformation
+         * object.
          *
          * TODO(@wchargin): Consider templating in an initial value for
          * this property.
@@ -425,11 +434,11 @@ limitations under the License.
         _showNoSuchDashboardMessage: {
           type: Boolean,
           computed:
-            '_computeShowNoSuchDashboardMessage(_dashboards, _selectedDashboard)',
+            '_computeShowNoSuchDashboardMessage(_dashboardInformationObjects, _selectedDashboard)',
         },
 
         /**
-         * The name of the currently selected dashboard, or `null` if no
+         * The plugin name of the currently selected dashboard, or `null` if no
          * dashboard is selected. A `null` value here is represented by
          * an empty string in the hash, and vice versa.
          */
@@ -485,15 +494,17 @@ limitations under the License.
       /**
        * @param {string?} disabledDashboards comma-separated
        * @param {Array<string>?} activeDashboards if null, nothing is active
-       * @param {string} dashboard
+       * @param {Object} dashboardInformation
        * @return {boolean}
        */
-      _isDashboardActive(disabledDashboards, activeDashboards, dashboard) {
-        if ((disabledDashboards || '').split(',').indexOf(dashboard) >= 0) {
+      _isDashboardActive(
+          disabledDashboards, activeDashboards, dashboardInformation) {
+        if ((disabledDashboards || '').split(',').indexOf(
+            dashboardInformation.plugin) >= 0) {
           // Explicitly disabled.
           return false;
         }
-        if (!(activeDashboards || []).includes(dashboard)) {
+        if (!(activeDashboards || []).includes(dashboardInformation.plugin)) {
           // Inactive.
           return false;
         }
@@ -505,16 +516,18 @@ limitations under the License.
        *
        * @param {string?} disabledDashboards comma-separated
        * @param {Array<string>?} activeDashboards if null, nothing is active
-       * @param {string} dashboard
+       * @param {Object} dashboardInformation
        * @return {boolean}
        */
-      _isDashboardInactive(disabledDashboards, activeDashboards, dashboard) {
-        if ((disabledDashboards || '').split(',').indexOf(dashboard) >= 0) {
+      _isDashboardInactive(
+          disabledDashboards, activeDashboards, dashboardInformation) {
+        if ((disabledDashboards || '').split(',').indexOf(
+            dashboardInformation.plugin) >= 0) {
           // Disabled dashboards don't appear at all; they're not just
           // inactive.
           return false;
         }
-        if (!(activeDashboards || []).includes(dashboard)) {
+        if (!(activeDashboards || []).includes(dashboardInformation.plugin)) {
           // Inactive.
           return true;
         }
@@ -528,13 +541,13 @@ limitations under the License.
         }
         const workingSet = new Set();
         dashboards.forEach(d => {
-          workingSet.add(d);
+          workingSet.add(d.plugin);
         });
         (disabledDashboards || '').split(',').forEach(d => {
-          workingSet.delete(d);
+          workingSet.delete(d.plugin);
         });
         activeDashboards.forEach(d => {
-          workingSet.delete(d);
+          workingSet.delete(d.plugin);
         });
         return workingSet.size > 0;
       },
@@ -588,18 +601,20 @@ limitations under the License.
        * this does nothing.
        */
       _ensureSelectedDashboardStamped(containersStamped, activeDashboards,
-                                      dashboard) {
-        if (!containersStamped || !activeDashboards || !dashboard) {
+                                      selectedDashboard) {
+        if (!containersStamped || !activeDashboards || !selectedDashboard) {
           return;
         }
         const container = this.$$(
-          `.dashboard-container[data-dashboard=${dashboard}]`);
+            `.dashboard-container[data-dashboard=${selectedDashboard}]`);
         if (!container) {
           // This dashboard doesn't exist. Nothing to do here.
+          console.log(`no exist - ${selectedDashboard}`);
           return;
         }
         if (container.childNodes.length === 0) {
-          const component = document.createElement(TENSORBOARD_PLUGINS[dashboard]);
+          const component = document.createElement(
+              PLUGIN_TO_DASHBOARD_INFORMATION[selectedDashboard].elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }
@@ -664,7 +679,10 @@ limitations under the License.
             return;
           }
           const activePlugins = result.value;
-          this._activeDashboards = this._dashboards.filter(d => activePlugins[d]);
+          this._activeDashboards = _.map(
+              this._dashboardInformationObjects.filter(
+                  d => activePlugins[d.plugin]),
+              d => d.plugin);
           this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
         });
         const onFailure = () => {
@@ -696,7 +714,9 @@ limitations under the License.
           && selectedDashboard == null);
       },
       _computeShowNoSuchDashboardMessage(dashboards, selectedDashboard) {
-        return !!selectedDashboard && !dashboards.includes(selectedDashboard);
+        return !!selectedDashboard &&
+               _.isUndefined(
+                   _.find(dashboards, d => d.plugin === selectedDashboard))
       },
 
       _updateRouter(router) {

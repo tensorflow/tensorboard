@@ -28,17 +28,4 @@ limitations under the License.
 <link rel="import" href="../vz-projector/vz-projector-dashboard.html">
 
 <!-- Tell tf-tensorboard what plugins exist. -->
-<script>
-  const TENSORBOARD_PLUGINS = {
-    'scalars': 'tf-scalar-dashboard',
-    'images': 'tf-image-dashboard',
-    'audio': 'tf-audio-dashboard',
-    'graphs': 'tf-graph-dashboard',
-    'distributions': 'tf-distribution-dashboard',
-    'histograms': 'tf-histogram-dashboard',
-    'projector': 'vz-projector-dashboard',
-    'text': 'tf-text-dashboard',
-    'pr_curves': 'tf-pr-curve-dashboard',
-    'profile': 'tf-profile-dashboard',
-  };
-</script>
+<script src="default-plugins.js"></script>
