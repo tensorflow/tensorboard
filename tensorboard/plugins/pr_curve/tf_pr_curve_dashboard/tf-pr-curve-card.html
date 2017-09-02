@@ -251,15 +251,51 @@ limitations under the License.
                 evaluate: (d) => d.dataset.metadata().name,
               },
               {
+                title: 'Threshold',
+                evaluate: (d) => formatValueOrNaN(d.datum.thresholds),
+              },
+              {
                 title: 'Precision',
                 evaluate: (d) => formatValueOrNaN(d.datum.precision),
               },
               {
                 title: 'Recall',
                 evaluate: (d) => formatValueOrNaN(d.datum.recall),
+              },
+              {
+                title: 'TP',
+                evaluate: (d) => d.datum.true_positives,
+              },
+              {
+                title: 'FP',
+                evaluate: (d) => d.datum.false_positives,
+              },
+              {
+                title: 'TN',
+                evaluate: (d) => d.datum.true_negatives,
+              },
+              {
+                title: 'FN',
+                evaluate: (d) => d.datum.false_negatives,
               }];
           },
-        }
+        },
+        // These are all the fields we must obtain from PR curve data
+        // retrieved from the backend in order to allow vz-line-chart to
+        // plot curves and populate tooltips.
+        _seriesDataFields: {
+          type: Array,
+          value: [
+            'thresholds',
+            'precision',
+            'recall',
+            'true_positives',
+            'false_positives',
+            'true_negatives',
+            'false_negatives'
+          ],
+          readOnly: true,
+        },
       },
       observers: [
         'reload(runs, tag)',
@@ -333,13 +369,22 @@ limitations under the License.
         // by the variable on the X axis. If the values are not in order,
         // tooltips will not work because the tooltip will always be stuck on
         // one side of the chart.
-        const precision = entryForOneStep.precision.slice().reverse();
-        const recall = entryForOneStep.recall.slice().reverse();
-        const seriesData = _.zipWith(
-            precision, recall, (precision, recall) => ({
-              precision: precision,
-              recall: recall,
-            }));
+        const fieldsToData = _.reduce(
+            this._seriesDataFields,
+            (result, field) => {
+              result[field] = entryForOneStep[field].slice().reverse();
+              return result;
+            },
+            {});
+
+        // The number of series data is equal to the number of entries in any of
+        // the fields. We just use the first field to gauge the length.
+        const seriesData = new Array(
+            fieldsToData[this._seriesDataFields[0]].length);
+        // Create a list of data to pass to vz-line-chart for visualization.
+        for (let i = 0; i < seriesData.length; i++) {
+          seriesData[i] = _.mapValues(fieldsToData, values => values[i]);
+        }
         this.$$('vz-line-chart').setSeriesData(run, seriesData);
       },
       _clearSeriesData(run) {
