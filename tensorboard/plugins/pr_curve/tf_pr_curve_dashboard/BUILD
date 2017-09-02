@@ -36,6 +36,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_runs_selector",
+        "//tensorboard/components/tf_utils",
         "//tensorboard/components/vz_line_chart",
         "@org_polymer_iron_icon",
         "@org_polymer_paper_button",

@@ -29,11 +29,11 @@ limitations under the License.
 -->
 <dom-module id="tf-pr-curve-card">
   <template>
-    <!-- TODO(chihuahua): Pass display-name and description. This
-         requires generalizing the logic for dimensionality reduction
-         from the scalar chart. -->
-    <tf-card-heading tag="[[tag]]">
-    </tf-card-heading>
+    <tf-card-heading
+      tag="[[tag]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+    ></tf-card-heading>
 
     <div id="chart-and-spinner-container">
       <vz-line-chart
@@ -164,6 +164,9 @@ limitations under the License.
       properties: {
         runs: Array,
         tag: String,
+        /** @type {{displayName: string, description: string}} */
+        tagMetadata: Object,
+
         // For each run, the card will display the PR curve at this step or the
         // one closest to it, but less than it.
         runToStepCap: Object,
