@@ -381,19 +381,19 @@ limitations under the License.
 
         /**
          * The set of all dashboards. Each object within this array is a
-         * dashboardData object.
+         * DashboardDatum object.
          *
          * @type {Array<Object>}
          */
         _dashboardData: {
           type: Array,
           readOnly: true,
-          value: Object.values(PLUGIN_TO_DASHBOARD_DATA),
+          value: Object.values(PLUGIN_TO_DASHBOARD_DATUM),
         },
 
         /**
          * The set of currently active dashboards.
-         * `null` if not yet fetched. Each item is a dashboardData
+         * `null` if not yet fetched. Each item is a DashboardDatum
          * object.
          *
          * TODO(@wchargin): Consider templating in an initial value for
@@ -494,17 +494,17 @@ limitations under the License.
       /**
        * @param {string?} disabledDashboards comma-separated
        * @param {Array<string>?} activeDashboards if null, nothing is active
-       * @param {Object} dashboardData
+       * @param {Object} dashboardDatum
        * @return {boolean}
        */
       _isDashboardActive(
-          disabledDashboards, activeDashboards, dashboardData) {
+          disabledDashboards, activeDashboards, dashboardDatum) {
         if ((disabledDashboards || '').split(',').indexOf(
-            dashboardData.plugin) >= 0) {
+            dashboardDatum.plugin) >= 0) {
           // Explicitly disabled.
           return false;
         }
-        if (!(activeDashboards || []).includes(dashboardData.plugin)) {
+        if (!(activeDashboards || []).includes(dashboardDatum.plugin)) {
           // Inactive.
           return false;
         }
@@ -516,18 +516,18 @@ limitations under the License.
        *
        * @param {string?} disabledDashboards comma-separated
        * @param {Array<string>?} activeDashboards if null, nothing is active
-       * @param {Object} dashboardData
+       * @param {Object} dashboardDatum
        * @return {boolean}
        */
       _isDashboardInactive(
-          disabledDashboards, activeDashboards, dashboardData) {
+          disabledDashboards, activeDashboards, dashboardDatum) {
         if ((disabledDashboards || '').split(',').indexOf(
-            dashboardData.plugin) >= 0) {
+            dashboardDatum.plugin) >= 0) {
           // Disabled dashboards don't appear at all; they're not just
           // inactive.
           return false;
         }
-        if (!(activeDashboards || []).includes(dashboardData.plugin)) {
+        if (!(activeDashboards || []).includes(dashboardDatum.plugin)) {
           // Inactive.
           return true;
         }
@@ -613,7 +613,7 @@ limitations under the License.
         }
         if (container.childNodes.length === 0) {
           const component = document.createElement(
-              PLUGIN_TO_DASHBOARD_DATA[selectedDashboard].elementName);
+              PLUGIN_TO_DASHBOARD_DATUM[selectedDashboard].elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }

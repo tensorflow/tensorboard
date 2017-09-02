@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export interface DashboardData {
+export interface DashboardDatum {
   // The name of the element for the dashboard (excluding the angle brackets on
   // either side). For instance, tf-scalar-dashboard. Used to select the correct
   // dashboard when a user enters it.
@@ -31,8 +31,8 @@ export interface DashboardData {
   tabName: string;
 }
 
-// Maps plugin name (must match the backend) to DashboardData.
-const PLUGIN_TO_DASHBOARD_DATA : {[key: string]: DashboardData} = {
+// Maps plugin name (must match the backend) to DashboardDatum.
+const PLUGIN_TO_DASHBOARD_DATUM : {[key: string]: DashboardDatum} = {
   'scalars': {
     elementName: 'tf-scalar-dashboard',
     plugin: 'scalars',
@@ -87,7 +87,7 @@ const PLUGIN_TO_DASHBOARD_DATA : {[key: string]: DashboardData} = {
 
 // The key for each entry in the mapping above must match the corresponding
 // plugin string property.
-_.forOwn(PLUGIN_TO_DASHBOARD_DATA, (data, plugin) => {
+_.forOwn(PLUGIN_TO_DASHBOARD_DATUM, (data, plugin) => {
   if (data.plugin !== plugin) {
     throw new Error(`Plugin name mismatch for key: ${plugin}`);
   }
