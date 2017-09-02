@@ -184,12 +184,12 @@ limitations under the License.
           is="dom-repeat"
           id="dashboards-template"
           items="[[_dashboardData]]"
-          as="dashboardData"
+          as="dashboardDatum"
         >
           <div
             class="dashboard-container"
-            data-dashboard$="[[dashboardData.plugin]]"
-            style="display: [[_displayStyle(_selectedDashboard, dashboardData.plugin)]]"
+            data-dashboard$="[[dashboardDatum.plugin]]"
+            style="display: [[_displayStyle(_selectedDashboard, dashboardDatum.plugin)]]"
           ><!-- Dashboards will be injected here dynamically. --></div>
         </template>
       </div>
