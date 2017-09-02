@@ -24,6 +24,7 @@ ts_web_library(
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_utils",
         "//tensorboard/components/vz_line_chart",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icon",
