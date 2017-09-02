@@ -62,21 +62,21 @@ limitations under the License.
             >
               <template
                 is="dom-repeat"
-                items="[[_dashboardDataObjects]]"
-                as="dashboardData">
+                items="[[_dashboardData]]"
+                as="dashboardDatum">
                 <template
                   is="dom-if"
-                  if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboardData)]]"
+                  if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboardDatum)]]"
                 >
-                  <paper-tab data-dashboard$="[[dashboardData.plugin]]">
-                    [[dashboardData.tabName]]
+                  <paper-tab data-dashboard$="[[dashboardDatum.plugin]]">
+                    [[dashboardDatum.tabName]]
                   </paper-tab>
                 </template>
               </template>
             </paper-tabs>
             <template
               is="dom-if"
-              if="[[_inactiveDashboardsExist(_dashboardDataObjects, disabledDashboards, _activeDashboards)]]"
+              if="[[_inactiveDashboardsExist(_dashboardData, disabledDashboards, _activeDashboards)]]"
             >
               <paper-dropdown-menu
                 label="Inactive"
@@ -91,16 +91,16 @@ limitations under the License.
                   attr-for-selected="data-dashboard"
                 >
                   <template is="dom-repeat"
-                            items="[[_dashboardDataObjects]]"
-                            as="dashboardData">
+                            items="[[_dashboardData]]"
+                            as="dashboardDatum">
                     <template
                       is="dom-if"
-                      if="[[_isDashboardInactive(disabledDashboards, _activeDashboards, dashboardData)]]"
+                      if="[[_isDashboardInactive(disabledDashboards, _activeDashboards, dashboardDatum)]]"
                       restamp
                     >
                       <paper-item
-                        data-dashboard$="[[dashboardData.plugin]]"
-                      >[[dashboardData.tabName]]</paper-item>
+                        data-dashboard$="[[dashboardDatum.plugin]]"
+                      >[[dashboardDatum.tabName]]</paper-item>
                     </template>
                   </template>
                 </paper-menu>
@@ -183,7 +183,7 @@ limitations under the License.
         <template
           is="dom-repeat"
           id="dashboards-template"
-          items="[[_dashboardDataObjects]]"
+          items="[[_dashboardData]]"
           as="dashboardData"
         >
           <div
@@ -383,10 +383,10 @@ limitations under the License.
          * The set of all dashboards. Each object within this array is a
          * dashboardData object.
          *
-         * @type {!Array<Object>}
+         * @type {Array<Object>}
          */
-        _dashboardDataObjects: {
-          type: Object,
+        _dashboardData: {
+          type: Array,
           readOnly: true,
           value: Object.values(PLUGIN_TO_DASHBOARD_DATA),
         },
@@ -434,7 +434,7 @@ limitations under the License.
         _showNoSuchDashboardMessage: {
           type: Boolean,
           computed:
-            '_computeShowNoSuchDashboardMessage(_dashboardDataObjects, _selectedDashboard)',
+            '_computeShowNoSuchDashboardMessage(_dashboardData, _selectedDashboard)',
         },
 
         /**
@@ -678,11 +678,7 @@ limitations under the License.
             return;
           }
           const activePlugins = result.value;
-          this._activeDashboards = _.map(
-              this._dashboardDataObjects .filter(
-                  d => activePlugins[d.plugin]),
-              d => d.plugin);
-          this._activeDashboards = this._dashboardDataObjects.map(
+          this._activeDashboards = this._dashboardData.map(
               d => d.plugin).filter(p => activePlugins[p]);
           this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
         });
