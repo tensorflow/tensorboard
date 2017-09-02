@@ -35,7 +35,10 @@ ts_web_library(
 
 ts_web_library(
     name = "default_plugins",
-    srcs = ["default-plugins.html"],
+    srcs = [
+        "default-plugins.html",
+        "default-plugins.ts",
+    ],
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],
     deps = [
