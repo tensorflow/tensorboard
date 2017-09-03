@@ -26,9 +26,9 @@ import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 
-# A tiny value. Used to prevent division by 0 as well as to make precision 1
-# when the threshold is 0.
-_TINY_EPISILON = 1e-7
+# A value that we use as the minimum value during division of counts to prevent
+# division by 0. 1 suffices because counts of course must be whole numbers.
+_MINIMUM_COUNT = 1.0
 
 def op(
     tag,
@@ -155,18 +155,8 @@ def op(
         description=description or '',
         num_thresholds=num_thresholds)
 
-    precision = tf.maximum(_TINY_EPISILON, tp) / tf.maximum(
-        _TINY_EPISILON, tp + fp)
-
-    # Use (1-fn/(tp+fn)) = tp/(tp+fn) so that at threshold 1.0,
-    # recall=1. Note that for the formulation on the right
-    # when the threshold is 1, the numerator (tp) is 1, while
-    # the denominator is 1 + some value very close to 0 (the
-    # tiny epsilon value). The result of the division there is
-    # going to be a value very close to 1 (but not quite 1), and
-    # so we use the formulation on the left instead. In that case,
-    # the division yields 0 when threshold=1.0 because fn is 0.
-    recall = 1.0 - fn / tf.maximum(_TINY_EPISILON, tf.add(tp, fn))
+    precision = tp / tf.maximum(_MINIMUM_COUNT, tp + fp)
+    recall = tp / tf.maximum(_MINIMUM_COUNT, tp + fn)
 
     # Store values within a tensor. We store them in the order:
     # true positives, false positives, true negatives, false
