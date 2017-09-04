@@ -19,14 +19,13 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-global-steps-selector/tf-global-steps-selector.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
 <link rel="import" href="tf-pr-curve-card.html">
-<link rel="import" href="tf-pr-curve-steps-selector.html">
 
 <!--
   A frontend that displays a set of precision–recall curves. Each PR curve is
@@ -49,11 +48,11 @@ limitations under the License.
         </div>
         <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
           <div class="sidebar-section" id="steps-selector-container">
-            <tf-pr-curve-steps-selector
+            <tf-global-steps-selector
                   runs="[[_relevantSelectedRuns]]"
                   run-to-step="{{_runToStep}}"
                   run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
-                  time-display-type="[[_timeDisplayType]]"></tf-pr-curve-steps-selector>
+                  time-display-type="[[_timeDisplayType]]"></tf-global-steps-selector>
           </div>
         </template>
         <div class="sidebar-section">
@@ -144,7 +143,6 @@ limitations under the License.
   import {getRouter} from '../tf-backend/router.js';
   import {getTags} from '../tf-backend/backend.js';
   import {RequestManager} from '../tf-backend/requestManager.js';
-  import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
   Polymer({
     is: 'tf-pr-curve-dashboard',
@@ -244,9 +242,6 @@ limitations under the License.
     _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
       const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
       return categorizeTags(runToTag, selectedRuns, tagFilter);
-    },
-    _computeColorForRun(run) {
-      return runsColorScale(run);
     },
     _computeRelevantSelectedRuns(selectedRuns, runToTagInfo) {
       return selectedRuns.filter(run => runToTagInfo[run]);
