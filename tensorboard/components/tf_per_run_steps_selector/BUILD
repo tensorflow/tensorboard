@@ -19,11 +19,11 @@ load("//tensorboard/defs:web.bzl", "ts_web_library")
 licenses(["notice"])  # Apache 2.0
 
 ts_web_library(
-    name = "tf_global_steps_selector",
+    name = "tf_per_run_steps_selector",
     srcs = [
-        "tf-global-steps-selector.html",
+        "tf-per-run-steps-selector.html",
     ],
-    path = "/tf-global-steps-selector",
+    path = "/tf-per-run-steps-selector",
     deps = [
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_imports:lodash",

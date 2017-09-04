@@ -22,7 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-global-steps-selector/tf-global-steps-selector.html">
+<link rel="import" href="../tf-per-run-steps-selector/tf-per-run-steps-selector.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
 <link rel="import" href="tf-pr-curve-card.html">
@@ -48,11 +48,11 @@ limitations under the License.
         </div>
         <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
           <div class="sidebar-section" id="steps-selector-container">
-            <tf-global-steps-selector
+            <tf-per-run-steps-selector
                   runs="[[_relevantSelectedRuns]]"
                   run-to-step="{{_runToStep}}"
                   run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
-                  time-display-type="[[_timeDisplayType]]"></tf-global-steps-selector>
+                  time-display-type="[[_timeDisplayType]]"></tf-per-run-steps-selector>
           </div>
         </template>
         <div class="sidebar-section">

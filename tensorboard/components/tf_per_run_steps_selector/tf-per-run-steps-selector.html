@@ -22,7 +22,7 @@ limitations under the License.
   each run. This component might be desired in cases in which a user would like
   to select the same step across all tags for a given run.
 -->
-<dom-module id="tf-global-steps-selector">
+<dom-module id="tf-per-run-steps-selector">
   <template>
     <template is="dom-repeat" items="[[runs]]" as="run">
       <div class="run-widget">
@@ -88,7 +88,7 @@ limitations under the License.
   let TimeEntry;
 
   Polymer({
-    is: "tf-global-steps-selector",
+    is: "tf-per-run-steps-selector",
     properties: {
       /**
        * A list of runs to create sliders for.

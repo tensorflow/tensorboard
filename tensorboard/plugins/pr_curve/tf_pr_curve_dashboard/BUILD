@@ -31,7 +31,7 @@ ts_web_library(
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_card_heading",
         "//tensorboard/components/tf_categorization_utils",
-        "//tensorboard/components/tf_global_steps_selector",
+        "//tensorboard/components/tf_per_run_steps_selector",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_paginated_view",
