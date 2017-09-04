@@ -34,7 +34,7 @@ limitations under the License.
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
-<link rel="import" href="tf-scalar-chart.html">
+<link rel="import" href="tf-scalar-card.html">
 <link rel="import" href="tf-smoothing-input.html">
 
 <!--
@@ -136,7 +136,7 @@ limitations under the License.
                   <template is="dom-if" if="[[page.active]]">
                     <div class="layout horizontal wrap">
                       <template is="dom-repeat" items="[[page.items]]">
-                        <tf-scalar-chart
+                        <tf-scalar-card
                           x-type="[[_xType]]"
                           smoothing-enabled="[[_smoothingEnabled]]"
                           smoothing-weight="[[_smoothingWeight]]"
@@ -148,7 +148,7 @@ limitations under the License.
                           tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                           active="[[page.active]]"
-                        ></tf-scalar-chart>
+                        ></tf-scalar-card>
                       </template>
                     </div>
                   </template>
