@@ -436,7 +436,7 @@ export function retrieveSpriteAndMetadataInfo(metadataPath: string,
       try {
         callback(metadata);
       } catch (e) {
-        logging.setModalMessage(`Error: ${e}`);
+        logging.setModalMessage(String(e));
       }
     }
   });
