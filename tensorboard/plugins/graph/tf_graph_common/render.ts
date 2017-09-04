@@ -222,8 +222,8 @@ export class RenderGraphInfo {
                 MetanodeColors.XLA_CLUSTER_PALETTE));
 
     let topLevelGraph = this.hierarchy.root.metagraph;
-    // Find the maximum and minimum memory usage.
-    let memoryExtent = d3.extent(topLevelGraph.nodes(),
+    // Find the maximum memory usage. Use 0 as the minimum.
+    let maxMemory = d3.max(topLevelGraph.nodes(),
         (nodeName, index) => {
       let node = topLevelGraph.node(nodeName);
       // Some ops don't have stats at all.
@@ -232,11 +232,11 @@ export class RenderGraphInfo {
       }
     });
     this.memoryUsageScale = d3.scaleLinear<string, string>()
-        .domain(memoryExtent)
+        .domain([0, maxMemory])
         .range(PARAMS.minMaxColors);
 
-    // Find also the minimum and maximum compute time.
-    let computeTimeExtent = d3.extent(topLevelGraph.nodes(),
+    // Find the maximum compute time. Use 0 as the minimum.
+    let maxComputeTime = d3.max(topLevelGraph.nodes(),
         (nodeName, index) => {
       let node = topLevelGraph.node(nodeName);
       // Some ops don't have stats at all.
@@ -245,7 +245,7 @@ export class RenderGraphInfo {
       }
     });
     this.computeTimeScale = d3.scaleLinear<string, string>()
-        .domain(computeTimeExtent)
+        .domain([0, maxComputeTime])
         .range(PARAMS.minMaxColors);
 
     this.edgeWidthScale = this.hierarchy.hasShapeInfo ?
