@@ -186,18 +186,18 @@ class PrCurvesPluginTest(tf.test.TestCase):
     self.assertEqual(3, len(entries))
     self.validatePrCurveEntry(
         expected_step=0,
-        expected_precision=[0.3333333, 0.3853211, 0.5421686, 0.75, 1.0],
-        expected_recall=[1.0, 0.8400000, 0.3000000, 0.0400000, 0.0],
+        expected_precision=[0.3333333, 0.3853211, 0.5421687, 0.75, 0.0],
+        expected_recall=[1.0, 0.84, 0.3, 0.04, 0.0],
         pr_curve_entry=entries[0])
     self.validatePrCurveEntry(
         expected_step=1,
-        expected_precision=[0.3333333, 0.3855421, 0.5357142, 0.4000000, 1.0],
-        expected_recall=[1.0, 0.8533333, 0.3000000, 0.0266666, 0.0],
+        expected_precision=[0.3333333, 0.3855422, 0.5357143, 0.4, 0.0],
+        expected_recall=[1.0, 0.8533334, 0.3, 0.0266667, 0.0],
         pr_curve_entry=entries[1])
     self.validatePrCurveEntry(
         expected_step=2,
-        expected_precision=[0.3333333, 0.3934426, 0.5064935, 0.6666666, 1.0],
-        expected_recall=[1.0, 0.8000000, 0.2599999, 0.0266666, 0.0],
+        expected_precision=[0.3333333, 0.3934426, 0.5064935, 0.6666667, 0.0],
+        expected_recall=[1.0, 0.8, 0.26, 0.0266667, 0.0],
         pr_curve_entry=entries[2])
 
     # Assert that PR curve data is correct for the mask_every_other_prediction
@@ -206,18 +206,18 @@ class PrCurvesPluginTest(tf.test.TestCase):
     self.assertEqual(3, len(entries))
     self.validatePrCurveEntry(
         expected_step=0,
-        expected_precision=[0.3333333, 0.3786982, 0.5384616, 1.0, 1.0],
+        expected_precision=[0.3333333, 0.3786982, 0.5384616, 1.0, 0.0],
         expected_recall=[1.0, 0.8533334, 0.28, 0.0666667, 0.0],
         pr_curve_entry=entries[0])
     self.validatePrCurveEntry(
         expected_step=1,
-        expected_precision=[0.3333333, 0.3850932, 0.5, 0.25, 1.0],
+        expected_precision=[0.3333333, 0.3850932, 0.5, 0.25, 0.0],
         expected_recall=[1.0, 0.8266667, 0.28, 0.0133333, 0.0],
         pr_curve_entry=entries[1])
     self.validatePrCurveEntry(
         expected_step=2,
-        expected_precision=[0.3333333, 0.3986928, 0.4444444, 0.6666667, 1.0],
-        expected_recall=[1.0, 0.8133333, 0.2133333, 0.0266666, 0.0],
+        expected_precision=[0.3333333, 0.3986928, 0.4444444, 0.6666667, 0.0],
+        expected_recall=[1.0, 0.8133333, 0.2133333, 0.0266667, 0.0],
         pr_curve_entry=entries[2])
 
   def testPrCurvesRaisesValueErrorWhenNoData(self):
