@@ -25,12 +25,13 @@ limitations under the License.
       /** Horizontal line of labels. */
       .heading-row {
         margin-top: -4px;
-        clear: both;
+        display: flex;
+        flex-direction: row;
       }
 
       /** Piece of text in the figure caption. */
       .heading-label {
-        float: left;
+        flex-grow: 1;
         margin-top: 4px;
         /* TODO(@jart): Use proper width so overflow works. */
         text-overflow: ellipsis;
@@ -39,7 +40,7 @@ limitations under the License.
 
       /** Makes label show on the right. */
       .heading-right {
-        float: right;
+        flex-grow: 0;
         margin-left: 0.5em;
       }
     </style>
