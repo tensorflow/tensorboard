@@ -84,6 +84,31 @@ tf-op-bar {
   font-style: italic;
   color: #666;
 }
+
+.layout {
+  display: table;
+  width: 50%;
+  border-spacing: 1em 0.3em;
+}
+.layout > * { display: table-row; }
+.layout > * > * { display: table-cell; }
+.layout .size, .layout .size-x { text-align: center; }
+.layout .size-x { font-weight: bold; color: #888; }
+.layout .semantics {
+  font-size: smaller;
+  font-weight: bold;
+  color: #48c;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.layout .alignment {
+  /* Make the background extend outside the box */
+  position: absolute;
+  padding: 0.5em;
+  margin-top: -0.5em;
+  width: 50%;
+  box-sizing: border-box;
+}
   </style>
   <template>
     <paper-card id="card" heading="[[node.name]]" elevation="2">
@@ -102,6 +127,19 @@ tf-op-bar {
         </div>
         <div class="unavailable" hidden="[[!node.category]]">
           Select items within this category for performace details.
+        </div>
+        <div hidden="[[!node.xla.layout]]">
+          <b>Layout: </b>
+          <div class="layout" hidden="[[!node.xla.layout]]">
+            <template is="dom-repeat" items="[[node.xla.layout.dimensions]]">
+              <div hidden="[[!index]]"><span class="size-x">×</span></div>
+              <div>
+                <span class="size">[[item.size]]</span>
+                <span class="semantics">[[item.semantics]]</span>
+                <span class="alignment" style$="background-color:[[_dimensionColor(item)]]">[[_dimensionHint(item)]]</span>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </paper-card>
@@ -133,6 +171,20 @@ Polymer({
     return "Unknown";
   },
   _fused: function(node){ return node && node.xla && !node.metrics; },
+  _dimensionColor: function(dim) {
+    if (!dim || !dim.alignment) return null;
+    var ratio = dim.size / dim.alignment;
+    // Colors should grade harshly: 50% in a dimension is already very bad.
+    var harshCurve = (x) => 1 - Math.sqrt(1 - x);
+    return flameColor(ratio / Math.ceil(ratio), 1, 0.25, harshCurve);
+  },
+  _dimensionHint: function(dim) {
+    if (!dim || !dim.alignment) return null;
+    var mul = Math.ceil(dim.size / dim.alignment);
+    var mulSuffix = (mul == 1) ? "" : ": " + mul + " × " + dim.alignment;
+    if (dim.size % dim.alignment == 0) return "Exact fit" + mulSuffix;
+    return "Pad to " + (mul * dim.alignment) + mulSuffix;
+  },
 });
   </script>
 </dom-module>
