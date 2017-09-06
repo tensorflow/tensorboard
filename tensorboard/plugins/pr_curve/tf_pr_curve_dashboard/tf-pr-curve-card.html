@@ -295,8 +295,8 @@ limitations under the License.
 
         let url = router.pluginRoute('pr_curves', '/pr_curves');
         url += url.indexOf('?') > -1 ? '&' : '?';
-        url += `tag=${this.tag}`;
-        url += this.runs.map(r => `&run=${r}`).join('');
+        url += `tag=${encodeURIComponent(this.tag)}`;
+        url += this.runs.map(r => `&run=${encodeURIComponent(r)}`).join('');
 
         const updateData = this._canceller.cancellable(result => {
           if (result.cancelled) {

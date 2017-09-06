@@ -211,9 +211,10 @@ backend.
         }
         this._metadataCanceller.cancelAll();
         const router = getRouter();
-        const baseURL = router.pluginRoute("audio", "/audio");
-        const query = `run=${this.run}&tag=${this.tag}&sample=${this.sample}`;
-        const url = baseURL + (baseURL.indexOf('?') !== -1 ? '&' : '?') + query;
+        const route = router.pluginRunTagRoute("audio", "/audio")(
+            this.tag, this.run);
+        const query = `sample=${this.sample}`;
+        const url = route + (route.indexOf('?') !== -1 ? '&' : '?') + query;
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
