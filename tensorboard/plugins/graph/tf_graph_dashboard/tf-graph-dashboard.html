@@ -129,7 +129,7 @@ import {RequestManager} from "../tf-backend/requestManager.js";
 import {Canceller} from "../tf-backend/canceller.js";
 import {compareTagNames} from "../vz-sorting/sorting.js";
 import {getRouter} from "../tf-backend/router.js";
-import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
+import {addParams} from "../tf-backend/urlPathHelpers.js";
 
 Polymer({
   is: 'tf-graph-dashboard',
@@ -271,7 +271,7 @@ Polymer({
       'large_attrs_key': optional(largeAttrsKey),
     };
     const extension = demoMode ? '.pbtxt' : '';
-    return base + queryEncoder(parameters) + extension;
+    return addParams(base, parameters) + extension;
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,

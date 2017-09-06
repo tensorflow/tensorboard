@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {queryEncoder} from './urlPathHelpers.js';
+import {addParams} from './urlPathHelpers.js';
 
 export type RunTagUrlFn = (tag: string, run: string) => string;
 
@@ -41,7 +41,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   function standardRoute(route: string, demoExtension = '.json'):
       ((tag: string, run: string) => string) {
     return function(tag: string, run: string): string {
-      return dataDir + '/' + route + queryEncoder({tag: tag, run: run});
+      return dataDir + '/' + addParams(route, {tag, run});
     };
   }
   function pluginRoute(pluginName: string, route: string): string {
@@ -50,7 +50,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   function pluginRunTagRoute(pluginName: string, route: string):
       ((tag: string, run: string) => string) {
     const base = pluginRoute(pluginName, route);
-    return (tag, run) => base + queryEncoder({tag, run});
+    return (tag, run) => addParams(base, {tag, run});
   }
   return {
     logdir: () => dataDir + '/logdir',

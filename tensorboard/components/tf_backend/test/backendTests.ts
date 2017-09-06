@@ -16,13 +16,26 @@ limitations under the License.
 import {filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
 import {RequestManager} from '../requestManager.js';
 import {createRouter, setRouter} from '../router.js';
-import {queryEncoder} from '../urlPathHelpers.js';
+import {addParams} from '../urlPathHelpers.js';
 
 describe('urlPathHelpers', () => {
-  it('queryEncoder works on spaces and parens', () => {
-    const params = {foo: 'something with spaces and (parens)'};
-    const actual = queryEncoder(params);
-    const expected = 'something+with+spaces+and+%28parens%29';
+  it('addParams leaves input untouched when there are no parameters', () => {
+    const actual = addParams('http://foo', {a: undefined, b: undefined});
+    const expected = 'http://foo';
+    chai.assert.equal(actual, expected);
+  });
+  it('addParams adds parameters to a URL without parameters', () => {
+    const actual = addParams(
+      'http://foo',
+      {a: "1", b: ["2", "3+4"], c: "5", d: undefined});
+    const expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
+    chai.assert.equal(actual, expected);
+  });
+  it('addParams adds parameters to a URL with parameters', () => {
+    const actual = addParams(
+      'http://foo?a=1',
+      {b: ["2", "3+4"], c: "5", d: undefined});
+    const expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
     chai.assert.equal(actual, expected);
   });
 });
