@@ -213,8 +213,7 @@ backend.
         const router = getRouter();
         const route = router.pluginRunTagRoute("audio", "/audio")(
             this.tag, this.run);
-        const query = `sample=${this.sample}`;
-        const url = route + (route.indexOf('?') !== -1 ? '&' : '?') + query;
+        const url = `${route}&sample=${this.sample}`;
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
