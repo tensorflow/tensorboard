@@ -41,7 +41,7 @@ limitations under the License.
   <template>
     <div class="container">
       <figcaption class="content">
-        <div class="row">
+        <div class="heading-row">
           <template is="dom-if" if="[[_nameLabel]]">
             <div itemprop="name" class="heading-label name">
               [[_nameLabel]]
@@ -56,7 +56,7 @@ limitations under the License.
           </template>
         </div>
         <template is="dom-if" if="[[_tagLabel]]">
-          <div class="row">
+          <div class="heading-row">
             <div class="heading-label">
               tag: <span itemprop="tag">[[_tagLabel]]</span>
             </div>
