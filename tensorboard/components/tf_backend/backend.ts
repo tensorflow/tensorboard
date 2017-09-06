@@ -16,7 +16,6 @@ limitations under the License.
 import {compareTagNames} from '../vz-sorting/sorting.js';
 import {RequestManager} from './requestManager.js';
 import {getRouter} from './router.js';
-import {demoify, queryEncoder} from './urlPathHelpers.js';
 
 export type RunToTag = {
   [run: string]: string[];
