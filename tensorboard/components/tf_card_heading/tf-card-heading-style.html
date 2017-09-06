@@ -22,25 +22,29 @@ limitations under the License.
   <template>
     <style>
 
+      figcaption {
+        width: 100%;
+      }
+
       /** Horizontal line of labels. */
       .heading-row {
         margin-top: -4px;
-        clear: both;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
       }
 
       /** Piece of text in the figure caption. */
       .heading-label {
-        float: left;
+        flex-grow: 1;
         margin-top: 4px;
-        /* TODO(@jart): Use proper width so overflow works. */
-        text-overflow: ellipsis;
-        overflow: hidden;
+        max-width: 100%;
+        word-wrap: break-word;
       }
 
       /** Makes label show on the right. */
       .heading-right {
-        float: right;
-        margin-left: 0.5em;
+        flex-grow: 0;
       }
     </style>
   </template>
