@@ -1,6 +1,26 @@
-We highly encourage contributions from the community. First, please fill out either the individual or corporate Contributor License Agreement (CLA).
+Want to contribute? Great! First, read this page (including the small print at the end).
 
-* If you are an individual writing original source code and you're sure you own the intellectual property, then you'll need to sign an [individual CLA](http://code.google.com/legal/individual-cla-v1.0.html).
-* If you work for a company that wants to allow you to contribute your work, then you'll need to sign a [corporate CLA](http://code.google.com/legal/corporate-cla-v1.0.html).
+### Before you contribute
+Before we can use your code, you must sign the
+[Google Individual Contributor License Agreement]
+(https://cla.developers.google.com/about/google-individual)
+(CLA), which you can do online. The CLA is necessary mainly because you own the
+copyright to your changes, even after your contribution becomes part of our
+codebase, so we need your permission to use and distribute your code. We also
+need to be sure of various other things—for instance that you'll tell us if you
+know that your code infringes on other people's patents. You don't have to sign
+the CLA until after you've submitted your code for review and a member has
+approved it, but you must do so before we can put your code into our codebase.
+Before you start working on a larger contribution, you should get in touch with
+us first through the issue tracker with your idea so that we can help out and
+possibly guide you. Coordinating up front makes it much easier to avoid
+frustration later on.
 
-Only original source code from you and other people that have signed the CLA can be accepted into the main repository.
+### Code reviews
+All submissions, including submissions by project members, require review. We
+use GitHub pull requests for this purpose.
+
+### The small print
+Contributions made by corporations are covered by a different agreement than
+the one above, the
+[Software Grant and Corporate Contributor License Agreement](https://cla.developers.google.com/about/google-corporate).
