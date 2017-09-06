@@ -73,6 +73,7 @@ tf-op-details {
   </template>
 
   <script>
+import {addParams} from "../tf-backend/urlPathHelpers.js";
 import {RequestManager} from '../tf-backend/requestManager.js';
 import {getRouter} from '../tf-backend/router.js';
 import {flameColor, utilization, percent} from './utils.js';
@@ -109,9 +110,8 @@ Polymer({
     },
   },
   _load: function(run) {
-    this._requestManager.request(
-        getRouter().
-            pluginRunTagRoute('profile', '/data')('op_profile', run)
+    this._requestManager.request(addParams(
+        getRouter().pluginRoute('profile', '/data'), {tag: 'op_profile', run})
     ).then((data) => {
       this._data = data;
     });

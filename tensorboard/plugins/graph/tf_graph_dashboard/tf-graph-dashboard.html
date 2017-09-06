@@ -338,8 +338,9 @@ Polymer({
             (runToMetadata[runName] || []).sort(compareTagNames),
             tag => ({
               tag: tag,
-              path: getRouter().pluginRunTagRoute(
-                'graphs', '/run_metadata')(tag, runName),
+              path: addParams(
+                getRouter().pluginRoute('graphs', '/run_metadata'),
+                {tag: tag, run: runName}),
             })),
         }));
         this.set('_datasets', datasets);
