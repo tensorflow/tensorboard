@@ -306,9 +306,9 @@ future for loading older images.
         }
         this._metadataCanceller.cancelAll();
         const router = getRouter();
-        const baseURL = router.pluginRoute("images", "/images");
-        const query = `run=${this.run}&tag=${this.tag}&sample=${this.sample}`;
-        const url = baseURL + (baseURL.indexOf('?') !== -1 ? '&' : '?') + query;
+        const route = router.pluginRunTagRoute("images", "/images")(
+            this.tag, this.run);
+        const url = `${route}&sample=${this.sample}`;
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
