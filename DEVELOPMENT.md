@@ -1,6 +1,6 @@
 # How to Develop TensorBoard
 
-TensorBoard at HEAD relies on the nightly installation of TensorFlow, so please install TensorFlow nighly for development. To install TensorFlow nightly, `pip install` the link to the [appropriate whl file listed at the TensorFlow repository](https://github.com/tensorflow/tensorflow).
+TensorBoard at HEAD relies on the nightly installation of TensorFlow, so please install TensorFlow nightly for development. To install TensorFlow nightly, `pip install` the link to the [appropriate whl file listed at the TensorFlow repository](https://github.com/tensorflow/tensorflow).
 
 Our decision to develop on TensorFlow nightly has pros and cons. A main advantage is that plugin authors can use the latest features of TensorFlow. A disadvantage is that the previous release of TensorFlow does not suffice for development.
 
