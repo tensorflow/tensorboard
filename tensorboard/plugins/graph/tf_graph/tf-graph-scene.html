@@ -1018,6 +1018,21 @@ Polymer({
     if (nodeGroup) {
       tf.graph.scene.node.stylize(nodeGroup, node, this);
     }
+    
+    if (node.node.type === tf.graph.NodeType.META &&
+        node.node.associatedFunction &&
+        !node.isLibraryFunction) {
+      // The node is that of a function call. Also link the node within the
+      // function library. This clarifies to the user that the library function
+      // is being used.
+      var libraryFunctionNodeName = tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
+          node.node.associatedFunction;
+      var functionGroup = d3.select(
+          '.' + tf.graph.scene.Class.Scene.GROUP + '>.' +
+          tf.graph.scene.Class.Scene.FUNCTION_LIBRARY + ' g[data-name="' +
+          libraryFunctionNodeName + '"]');
+      tf.graph.scene.node.stylize(functionGroup, node, this);
+    }
 
     var annotationGroupIndex = this.getAnnotationGroupsIndex(n);
     _.each(annotationGroupIndex, function(aGroup, hostName) {
