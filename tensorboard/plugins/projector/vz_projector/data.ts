@@ -236,7 +236,11 @@ export class DataSet {
     for (let id = 0; id < this.points.length; ++id) {
       let dataPoint = this.points[id];
       dataPoint.vector = vector.sub(dataPoint.vector, centroid);
-      vector.unit(dataPoint.vector);
+      if (vector.norm2(dataPoint.vector) > 0) {
+        // If we take the unit norm of a vector of all 0s, we get a vector of
+        // all NaNs. We prevent that with a guard.
+        vector.unit(dataPoint.vector);
+      }
     }
   }
 
