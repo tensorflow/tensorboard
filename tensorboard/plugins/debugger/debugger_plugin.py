@@ -398,7 +398,8 @@ class DebuggerPlugin(base_plugin.TBPlugin):
         plugin_data = summary_metadata.plugin_data
         if plugin_data.plugin_name == constants.DEBUGGER_PLUGIN_NAME:
           try:
-            content = json.loads(summary_metadata.plugin_data.content)
+            content = json.loads(
+                tf.compat.as_text(summary_metadata.plugin_data.content))
           except ValueError as err:
             tf.logging.warning(
                 'Could not parse the JSON string containing data for '

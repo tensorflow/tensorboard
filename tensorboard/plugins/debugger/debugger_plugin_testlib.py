@@ -169,8 +169,9 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     content_proto = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device=device_name, output_slot=output_slot)
     value.metadata.plugin_data.plugin_name = constants.DEBUGGER_PLUGIN_NAME
-    value.metadata.plugin_data.content = json_format.MessageToJson(
-        content_proto, including_default_value_fields=True)
+    value.metadata.plugin_data.content = tf.compat.as_bytes(
+        json_format.MessageToJson(
+            content_proto, including_default_value_fields=True))
     return event
 
   def _DeserializeResponse(self, byte_content):
