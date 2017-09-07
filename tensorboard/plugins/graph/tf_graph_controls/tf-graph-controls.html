@@ -82,9 +82,24 @@ table td {
 }
 
 .legend-holder {
+  background: #e9e9e9;
+  border-top: 1px solid #ccc;
+  color: #555;
   position: absolute;
   bottom: 0;
-  padding-bottom: 10px;
+  left: 0;
+  padding: 15px 23px;
+  width: 100%;
+}
+
+.toggle-legend-button {
+  max-height: 20px;
+  max-width: 20px;
+  padding: 0;
+}
+
+.toggle-legend-text {
+  vertical-align: middle;
 }
 
 paper-radio-button {
@@ -516,192 +531,199 @@ table.tf-graph-controls td.input-element-table-data {
       </div>
     </template>
   </div>
-  <!--
-    Due to limited vertical space on the left sidebar, hide the legend whenever
-    we show a list of devices to include in stats.
-  -->
-  <template is="dom-if" if="[[!_isGradientColoring(stats, colorBy)]]">
-    <div class="legend-holder">
-      <table>
-        <tr>
-          <td><div class="title">Graph</div></td>
-          <td>(* = expandable)</td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon">
-              <rect transform="translate(3, 1)" height="14" width="35"
-                  rx="5" ry="5"/>
-            </svg>
-          </td>
-          <td>
-            Namespace<span class="gray">*</span>
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Encapsulates a set of nodes. Namespace is hierarchical and based on scope.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon" preserveAspectRatio="xMinYMid meet"
-                viewBox="0 0 10 10">
-              <use xlink:href="#op-node-stamp" fill="white" stroke="#ccc" x="9.5"
-                y="6" />
-            </svg>
-          </td>
-          <td>
-            OpNode
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Node that performs an operation. These nodes cannot expand.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon" height="15px" preserveAspectRatio="xMinYMid meet"
-                viewBox="0 0 12 12">
-              <use xlink:href="#op-series-horizontal-stamp" fill="white"
-                  stroke="#ccc" x="2" y="2"/>
-            </svg>
-          </td>
-          <td>
-            Unconnected series<span class="gray">*</span>
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Sequence of numbered nodes that are not connected to each other.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon" height="15px"
-                preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
-              <use xlink:href="#op-series-vertical-stamp"
-                  fill="white" stroke="#ccc" x="2" y="2"/>
-            </svg>
-          </td>
-          <td>
-            Connected series<span class="gray">*</span>
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Sequence of numbered nodes that are connected to each other.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon">
-              <circle fill="white" stroke="#848484" cx="10" cy="10" r="5"/>
-            </svg>
-          </td>
-          <td>
-            Constant
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Node that outputs a constant value.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="image-icon" viewBox="0 0 12 12" width="24" height="24">
-              <use x="0" y="0" class="image-icon" xlink:href="#summary-icon"/>
-            </svg>
-          </td>
-          <td>
-            Summary
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Node that collects data for visualization within TensorBoard.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon" height="15px"
-                preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
-              <defs>
-                <marker id="dataflow-arrowhead-legend" fill="#bbb" markerWidth="10"
-                    markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
-                  <path d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"/>
-                </marker>
-              </defs>
-              <path marker-end="url(#dataflow-arrowhead-legend)"
-                    stroke="#bbb" d="M2 9 l 29 0"
-                    stroke-linecap="round" />
-            </svg>
-          </td>
-          <td>
-            Dataflow edge
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Edge showing the data flow between operations. Edges flow upwards unless arrowheads specify otherwise.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon" height="15px"
-                preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
-              <path stroke="#bbb"
-                d="M2 9 l 29 0" stroke-linecap="round" stroke-dasharray="2, 2" />
-            </svg>
-          </td>
-          <td>
-            Control dependency edge
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Edge showing the control dependency between operations.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <svg class="icon" height="15px"
-                preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
-              <defs>
-                <marker id="reference-arrowhead-legend" fill="#FFB74D" markerWidth="10"
-                    markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
-                  <path d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"/>
-                </marker>
-              </defs>
-              <path marker-end="url(#reference-arrowhead-legend)"
-                    stroke="#FFB74D" d="M2 9 l 29 0"
-                    stroke-linecap="round" />
-            </svg>
-          </td>
-          <td>
-            Reference edge
-            <div class="legend-clarifier">
-              <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
-                Edge showing that the outgoing operation node can mutate the incoming tensor.
-              </paper-tooltip>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </template>
+
+  <div class="legend-holder">
+    <paper-icon-button
+      icon="[[_getToggleLegendIcon(_legendOpened)]]"
+      on-click="_toggleLegendOpen"
+      class="toggle-legend-button">
+    </paper-icon-button>
+    <span class="toggle-legend-text">
+      [[_getToggleText(_legendOpened)]]
+    </span>
+    <iron-collapse opened="[[_legendOpened]]">
+      <div>
+        <table>
+          <tr>
+            <td><div class="title">Graph</div></td>
+            <td>(* = expandable)</td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon">
+                <rect transform="translate(3, 1)" height="14" width="35"
+                    rx="5" ry="5"/>
+              </svg>
+            </td>
+            <td>
+              Namespace<span class="gray">*</span>
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Encapsulates a set of nodes. Namespace is hierarchical and based on scope.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon" preserveAspectRatio="xMinYMid meet"
+                  viewBox="0 0 10 10">
+                <use xlink:href="#op-node-stamp" fill="white" stroke="#ccc" x="9.5"
+                  y="6" />
+              </svg>
+            </td>
+            <td>
+              OpNode
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Node that performs an operation. These nodes cannot expand.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon" height="15px" preserveAspectRatio="xMinYMid meet"
+                  viewBox="0 0 12 12">
+                <use xlink:href="#op-series-horizontal-stamp" fill="white"
+                    stroke="#ccc" x="2" y="2"/>
+              </svg>
+            </td>
+            <td>
+              Unconnected series<span class="gray">*</span>
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Sequence of numbered nodes that are not connected to each other.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon" height="15px"
+                  preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
+                <use xlink:href="#op-series-vertical-stamp"
+                    fill="white" stroke="#ccc" x="2" y="2"/>
+              </svg>
+            </td>
+            <td>
+              Connected series<span class="gray">*</span>
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Sequence of numbered nodes that are connected to each other.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon">
+                <circle fill="white" stroke="#848484" cx="10" cy="10" r="5"/>
+              </svg>
+            </td>
+            <td>
+              Constant
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Node that outputs a constant value.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="image-icon" viewBox="0 0 12 12" width="24" height="24">
+                <use x="0" y="0" class="image-icon" xlink:href="#summary-icon"/>
+              </svg>
+            </td>
+            <td>
+              Summary
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Node that collects data for visualization within TensorBoard.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon" height="15px"
+                  preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
+                <defs>
+                  <marker id="dataflow-arrowhead-legend" fill="#bbb" markerWidth="10"
+                      markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+                    <path d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"/>
+                  </marker>
+                </defs>
+                <path marker-end="url(#dataflow-arrowhead-legend)"
+                      stroke="#bbb" d="M2 9 l 29 0"
+                      stroke-linecap="round" />
+              </svg>
+            </td>
+            <td>
+              Dataflow edge
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Edge showing the data flow between operations. Edges flow upwards unless arrowheads specify otherwise.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon" height="15px"
+                  preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
+                <path stroke="#bbb"
+                  d="M2 9 l 29 0" stroke-linecap="round" stroke-dasharray="2, 2" />
+              </svg>
+            </td>
+            <td>
+              Control dependency edge
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Edge showing the control dependency between operations.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="icon" height="15px"
+                  preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
+                <defs>
+                  <marker id="reference-arrowhead-legend" fill="#FFB74D" markerWidth="10"
+                      markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+                    <path d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"/>
+                  </marker>
+                </defs>
+                <path marker-end="url(#reference-arrowhead-legend)"
+                      stroke="#FFB74D" d="M2 9 l 29 0"
+                      stroke-linecap="round" />
+              </svg>
+            </td>
+            <td>
+              Reference edge
+              <div class="legend-clarifier">
+                <span>?</span>
+                <paper-tooltip animation-delay="0" position="right">
+                  Edge showing that the outgoing operation node can mutate the incoming tensor.
+                </paper-tooltip>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </iron-collapse>
   </div>
+</div>
 </template>
 </dom-module>
 
@@ -786,6 +808,10 @@ Polymer({
     healthPillsToggledOn: {
       type: Boolean,
       notify: true,
+    },
+    _legendOpened: {
+      type: Boolean,
+      value: true,
     },
   },
   listeners: {
@@ -938,6 +964,20 @@ Polymer({
   },
   _statsNotNull: function(stats) {
     return stats !== null;
+  },
+  _toggleLegendOpen() {
+    this.set('_legendOpened', !this._legendOpened);
+  },
+  _getToggleText(legendOpened) {
+    return legendOpened ? "Close legend." : "Expand legend.";
+  },
+  _getToggleLegendIcon(legendOpened) {
+    // This seems counter-intuitive, but actually makes sense because the
+    // expand-more button points downwards, and the expand-less button points
+    // upwards. For most collapsibles, this works because the collapsibles
+    // expand in the downwards direction. This collapsible expands upwards
+    // though, so we reverse the icons.
+    return legendOpened ? "expand-more" : "expand-less";
   },
 });
 })(); // Closing private scope.
