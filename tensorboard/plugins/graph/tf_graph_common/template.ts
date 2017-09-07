@@ -104,11 +104,22 @@ function clusterSimilarSubgraphs(h: hierarchy.Hierarchy) {
 
   return _(hashDict)
       .pairs()
-      // filter nn metanode with only one member
-      .filter(function(pair: {level: number, nodes: string[]}) {
-        return pair[1].nodes.length > 1;
+      .filter(function(pair: {level: number, nodes: (OpNode|Metanode)[]}) {
+        const nodes = pair[1].nodes;
+        if (nodes.length > 1) {
+          // There is more than 1 node with this template. It is worth assigning
+          // a unique color to this template.
+          return true;
+        }
+
+        // If there is only 1 node with this template, only make a template for
+        // it if it represents a function. In that case, the graph explorer may
+        // add more nodes with the template later.
+        const node = nodes[0];
+        return node.type === NodeType.META &&
+            (node as Metanode).associatedFunction;
       })
-      .sortBy(function(pair: {level: number, nodes: string[]}) {
+      .sortBy(function(pair: {level: number, nodes: (OpNode|Metanode)[]}) {
         // sort by depth
         // (all members in the same nnGroup has equal depth)
         return pair[1].nodes[0].depth;
