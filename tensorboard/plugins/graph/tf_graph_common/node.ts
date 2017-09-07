@@ -269,6 +269,10 @@ export function getContextMenu(node: Node, sceneElement) {
       sceneElement.fire('node-toggle-extract', {name: node.name});
     }
   }];
+  if (sceneElement.nodeContextMenuItems) {
+    // Add these additional context menu items.
+    menu = menu.concat(sceneElement.nodeContextMenuItems);
+  }
   if (canBeInSeries(node)) {
     menu.push({
       title: d => { return getGroupSettingLabel(node); },
