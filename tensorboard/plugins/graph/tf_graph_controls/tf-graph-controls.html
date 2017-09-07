@@ -534,14 +534,14 @@ table.tf-graph-controls td.input-element-table-data {
 
   <div class="legend-holder">
     <paper-icon-button
-      icon="{{_getToggleLegendIcon(_legendOpened)}}"
+      icon="[[_getToggleLegendIcon(_legendOpened)]]"
       on-click="_toggleLegendOpen"
       class="toggle-legend-button">
     </paper-icon-button>
     <span class="toggle-legend-text">
       [[_getToggleText(_legendOpened)]]
     </span>
-    <iron-collapse opened="{{_legendOpened}}">
+    <iron-collapse opened="[[_legendOpened]]">
       <div>
         <table>
           <tr>
