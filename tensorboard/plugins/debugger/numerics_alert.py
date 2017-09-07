@@ -26,6 +26,8 @@ import collections
 import json
 import re
 
+import tensorflow as tf
+
 from tensorflow.python import debug as tf_debug
 from tensorboard.plugins.debugger import constants
 
