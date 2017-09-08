@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {demoify, queryEncoder} from './urlPathHelpers.js';
+import {queryEncoder} from './urlPathHelpers.js';
 
 export type RunTagUrlFn = (tag: string, run: string) => string;
 
@@ -35,19 +35,13 @@ export interface Router {
  * @param demoMode {boolean} Whether to modify urls for filesystem demo usage.
  */
 export function createRouter(dataDir = 'data', demoMode = false): Router {
-  var clean = demoMode ? demoify : (x) => x;
   if (dataDir[dataDir.length - 1] === '/') {
     dataDir = dataDir.slice(0, dataDir.length - 1);
   }
   function standardRoute(route: string, demoExtension = '.json'):
       ((tag: string, run: string) => string) {
     return function(tag: string, run: string): string {
-      var url =
-          dataDir + '/' + route + clean(queryEncoder({tag: tag, run: run}));
-      if (demoMode) {
-        url += demoExtension;
-      }
-      return url;
+      return dataDir + '/' + route + queryEncoder({tag: tag, run: run});
     };
   }
   function pluginRoute(pluginName: string, route: string): string {
@@ -56,7 +50,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   function pluginRunTagRoute(pluginName: string, route: string):
       ((tag: string, run: string) => string) {
     const base = pluginRoute(pluginName, route);
-    return (tag, run) => base + clean(queryEncoder({tag, run}));
+    return (tag, run) => base + queryEncoder({tag, run});
   }
   return {
     logdir: () => dataDir + '/logdir',

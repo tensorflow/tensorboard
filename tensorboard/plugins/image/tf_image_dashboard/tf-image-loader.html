@@ -185,7 +185,6 @@ future for loading older images.
     import {getRouter} from "../tf-backend/router.js";
     import {formatDate} from '../tf-card-heading/util.js';
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
-    import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
 
     Polymer({
       is: "tf-image-loader",
@@ -330,19 +329,12 @@ future for loading older images.
           // The route lacks GET parameters. Just use ours.
           query = '?' + query;
         }
-        if (getRouter().isDemoMode()) {
-          query = urlPathHelpers.demoify(query);
-        }
 
-        let individualImageUrl = route + query;
-        if (getRouter().isDemoMode()) {
-          individualImageUrl += '.png';
-        } else {
-          // Include wall_time just to disambiguate the URL and force
-          // the browser to reload the image when the URL changes. The
-          // backend doesn't care about the value.
-          individualImageUrl += `&ts=${imageMetadata.wall_time}`;
-        }
+        // Include wall_time just to disambiguate the URL and force
+        // the browser to reload the image when the URL changes. The
+        // backend doesn't care about the value.
+        const individualImageUrl = `${route}${query}&ts=${imageMetadata.wall_time}`;
+
         return {
           width: imageMetadata.width,
           height: imageMetadata.height,

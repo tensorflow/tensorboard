@@ -16,24 +16,13 @@ limitations under the License.
 import {filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
 import {RequestManager} from '../requestManager.js';
 import {createRouter, setRouter} from '../router.js';
-import {BAD_CHARACTERS, demoify, queryEncoder} from '../urlPathHelpers.js';
+import {queryEncoder} from '../urlPathHelpers.js';
 
 describe('urlPathHelpers', () => {
-  it('demoify works as expected', () => {
-    const demoified = demoify(BAD_CHARACTERS);
-    let allClean = '';
-    for (let i = 0; i < BAD_CHARACTERS.length; i++) {
-      allClean += '_';
-    }
-    chai.assert.equal(demoified, allClean, 'cleaning the BAD_CHARACTERS works');
-    chai.assert.equal(demoify('foozod'), 'foozod', 'doesnt change safe string');
-    chai.assert.equal(demoify('foo zod (2)'), 'foo_zod__2_', 'simple case');
-  });
-
-  it('queryEncoder works with demoify on spaces and parens', () => {
+  it('queryEncoder works on spaces and parens', () => {
     const params = {foo: 'something with spaces and (parens)'};
-    const actual = demoify(queryEncoder(params));
-    const expected = '_foo_something_with_spaces_and__28parens_29';
+    const actual = queryEncoder(params);
+    const expected = 'something+with+spaces+and+%28parens%29';
     chai.assert.equal(actual, expected);
   });
 });
