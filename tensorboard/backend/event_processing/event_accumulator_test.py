@@ -873,7 +873,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         display_name='current tagee',
         summary_description='no',
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet',
-                                                  content='120v'))
+                                                  content=b'120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
@@ -881,7 +881,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         display_name='tagee of the future',
         summary_description='definitely not',
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='plug',
-                                                  content='110v'))
+                                                  content=b'110v'))
     self._writeMetadata(logdir, summary_metadata_2, nonce='2')
     acc.Reload()
 
@@ -897,7 +897,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         display_name='current tagee',
         summary_description='no',
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet',
-                                                  content='120v'))
+                                                  content=b'120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
@@ -905,12 +905,12 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         display_name='tagee of the future',
         summary_description='definitely not',
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='plug',
-                                                  content='110v'))
+                                                  content=b'110v'))
     self._writeMetadata(logdir, summary_metadata_2, nonce='2')
     acc.Reload()
 
     self.assertEqual(acc.PluginTagToContent('outlet'),
-                     {'you_are_it': '120v'})
+                     {'you_are_it': b'120v'})
     with six.assertRaisesRegex(self, KeyError, 'plug'):
       acc.PluginTagToContent('plug')
 

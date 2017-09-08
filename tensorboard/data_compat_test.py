@@ -103,7 +103,7 @@ class MigrateValueTest(tf.test.TestCase):
     metadata = tf.SummaryMetadata(
         plugin_data=tf.SummaryMetadata.PluginData(
             plugin_name='font_of_wisdom',
-            content='adobe_garamond'))
+            content=b'adobe_garamond'))
     op = tf.summary.tensor_summary(
         name='tensorpocalypse',
         tensor=tf.constant([[0.0, 2.0], [float('inf'), float('nan')]]),
