@@ -87,14 +87,17 @@ limitations under the License.
       },
       timeDisplayType: String,
       // A mapping between run and slider index.
-      _runToStepIndex: Object,
+      _runToStepIndex: {
+        type: Object,
+        value: {},
+      },
     },
     listeners: {
       "value-change": "_sliderValueChanged",
       "immediate-value-change": "_sliderValueChanged",
     },
     observers: [
-      "_runToAvailableTimeEntriesChanged(runToAvailableTimeEntries)",
+      "_updateStepsForNewRuns(runs, runToAvailableTimeEntries, _runToStepIndex)",
     ],
     _computeColorForRun(run) {
       return runsColorScale(run);
@@ -138,25 +141,36 @@ limitations under the License.
       const entries = runToAvailableTimeEntries[run];
       return entries && entries.length ? entries.length - 1 : 0;
     },
-    _runToAvailableTimeEntriesChanged(runToAvailableTimeEntries) {
+    _updateStepsForNewRuns(runs, runToAvailableTimeEntries, runToStepIndex) {
       // The mapping from run to available time entries just changed.
       const newRunToStepIndex = {};
+      let runAdded = false;
       _.forOwn(runToAvailableTimeEntries, (entries, run) => {
-        if (!_.isNumber(this._runToStepIndex[run])) {
+        if (!_.isNumber(runToStepIndex[run])) {
           // This run had previously lacked a slider. Initially set the slider
           // for the run to point to the last step.
           newRunToStepIndex[run] = entries.length - 1;
+          runAdded = true;
         } else {
           // The step for this run did not change.
           newRunToStepIndex[run] = this._runToStepIndex[run];
         }
       });
 
-      this.set('_runToStepIndex', newRunToStepIndex);
+      // We only update the run to step index mapping if it changed. Otherwise,
+      // enter an infinite loop and hit the max stack size for recursion.
+      if (runAdded) {
+        this.set('_runToStepIndex', newRunToStepIndex);
+      }
 
       // Set the values of all the sliders. They are not 2-way bound, so we must
-      // actually set them.
-      this._updateSliders(newRunToStepIndex);
+      // actually set them. We asynchronously update the sliders because we
+      // should only update sliders after the dom-repeat finishes rendering. We
+      // update sliders even if no run was added because the `runs` array might
+      // have changed despite how `runToAvailableTimeEntries` did not.
+      this.async(() => {
+        this._updateSliders(newRunToStepIndex);
+      });
     },
     _updateSliders(runToStepIndex) {
       // When selected runs change, make sure any new sliders point to the
