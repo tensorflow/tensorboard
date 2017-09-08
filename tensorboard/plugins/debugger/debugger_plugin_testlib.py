@@ -139,7 +139,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
 
     mock_debugger_data_server = self.mock_debugger_data_server
     start = mock_debugger_data_server.start_the_debugger_data_receiving_server
-    start.assert_called_once()
+    self.assertEqual(1, start.call_count)
 
   def tearDown(self):
     # Remove the directory with debugger-related events files.

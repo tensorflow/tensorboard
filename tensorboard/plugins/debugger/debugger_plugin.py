@@ -201,7 +201,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
 
     jsonified_node_names = request.form[_NODE_NAMES_POST_KEY]
     try:
-      node_names = json.loads(jsonified_node_names)
+      node_names = json.loads(tf.compat.as_text(jsonified_node_names))
     except Exception as e:  # pylint: disable=broad-except
       # Different JSON libs raise different exceptions, so we just do a
       # catch-all here. This problem is complicated by how Tensorboard might be
@@ -281,7 +281,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
       for tensor_event in self._event_multiplexer.Tensors(run, node_name):
         json_string = tags_to_content[node_name]
         try:
-          content_object = json.loads(json_string)
+          content_object = json.loads(tf.compat.as_text(json_string))
           device_name = content_object['device']
           output_slot = content_object['outputSlot']
           health_pills.append(
