@@ -89,7 +89,7 @@ limitations under the License.
       // A mapping between run and slider index.
       _runToStepIndex: {
         type: Object,
-        value: {},
+        value: () => ({}),
       },
     },
     listeners: {
@@ -153,12 +153,12 @@ limitations under the License.
           runAdded = true;
         } else {
           // The step for this run did not change.
-          newRunToStepIndex[run] = this._runToStepIndex[run];
+          newRunToStepIndex[run] = runToStepIndex[run];
         }
       });
 
       // We only update the run to step index mapping if it changed. Otherwise,
-      // enter an infinite loop and hit the max stack size for recursion.
+      // we enter an infinite loop and hit the max stack size for recursion.
       if (runAdded) {
         this.set('_runToStepIndex', newRunToStepIndex);
       }
