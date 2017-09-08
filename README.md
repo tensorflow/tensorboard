@@ -163,6 +163,8 @@ the run-selector on the left.
 Additionally, you can create new folders to organize tags by writing regular
 expressions in the box in the top-left of the dashboard.
 
+![Scalars Dashboard](images/dashboard_screenshots/scalars.png)
+
 ### Histogram Dashboard
 
 The HistogramDashboard displays how the statistical distribution of a Tensor
@@ -172,6 +174,8 @@ the tensor at a given step. It's organized with the oldest timestep in the back,
 and the most recent timestep in front. By changing the Histogram Mode from
 "offset" to "overlay", the perspective will rotate so that every histogram slice
 is rendered as a line and overlaid with one another.
+
+![Histograms Dashboard](images/dashboard_screenshots/histograms.png)
 
 ### Distribution Dashboard
 
@@ -188,6 +192,7 @@ normal distribution: `[maximum, μ+1.5σ, μ+σ, μ+0.5σ, μ, μ-0.5σ, μ-σ, 
 minimum]` so that the colored regions, read from inside to outside, have widths
 `[σ, 2σ, 3σ]` respectively.
 
+![Distributions Dashboard](images/dashboard_screenshots/distributions.png)
 
 ### Image Dashboard
 
@@ -198,12 +203,16 @@ pngs, you can use this to embed custom visualizations (e.g. matplotlib
 scatterplots) into TensorBoard. This dashboard always shows you the latest image
 for each tag.
 
+![Images Dashboard](images/dashboard_screenshots/images.png)
+
 ### Audio Dashboard
 
 The Audio Dashboard can embed playable audio widgets for audio saved via a
 `tf.summary.audio`. The dashboard is set up so that each row corresponds to a
 different tag, and each column corresponds to a run. This dashboard always
 embeds the latest audio for each tag.
+
+![Audio Dashboard](images/dashboard_screenshots/audio.png)
 
 ### Graph Explorer
 
@@ -212,6 +221,8 @@ TensorFlow model. To get best use of the graph visualizer, you should use name
 scopes to hierarchically group the ops in your graph - otherwise, the graph may
 be difficult to decipher. For more information, including examples, see [the
 graph visualizer tutorial](https://www.tensorflow.org/get_started/graph_viz).
+
+![Graphs Dashboard](images/dashboard_screenshots/graphs.png)
 
 ### Embedding Projector
 
@@ -222,10 +233,14 @@ model checkpoint file, and may be configured with additional metadata, like
 a vocabulary file or sprite images. For more details, see [the embedding
 projector tutorial](https://www.tensorflow.org/get_started/embedding_viz).
 
+![Projector Dashboard](images/dashboard_screenshots/projector.png)
+
 ### Text Dashboard
 
 The Text Dashboard displays text snippets saved via `tf.summary.text`. Markdown
 features including hyperlinks, lists, and tables are all supported.
+
+![Text Dashboard](images/dashboard_screenshots/text.png)
 
 # Frequently Asked Questions
 
