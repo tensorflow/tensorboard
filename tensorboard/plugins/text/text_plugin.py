@@ -33,9 +33,10 @@ from werkzeug import wrappers
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.text import metadata
 
 # The prefix of routes provided by this plugin.
-_PLUGIN_PREFIX_ROUTE = 'text'
+_PLUGIN_PREFIX_ROUTE = metadata.PLUGIN_NAME
 
 # HTTP routes
 TAGS_ROUTE = '/tags'
@@ -195,7 +196,7 @@ def process_string_tensor_event(event):
 class TextPlugin(base_plugin.TBPlugin):
   """Text Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates TextPlugin via TensorBoard core.
