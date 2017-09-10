@@ -209,13 +209,14 @@ limitations under the License.
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
-          value: storage.getBooleanInitializer('_showDownloadLinks', false, true),
+          value: storage.getBooleanInitializer('_showDownloadLinks',
+              {defaultValue: false, useLocalStorage: true}),
           observer: '_showDownloadLinksObserver',
         },
         _smoothingWeight: {
           type: Number,
           notify: true,
-          value: storage.getNumberInitializer('_smoothingWeight', 0.6),
+          value: storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
           observer: '_smoothingWeightObserver',
         },
         _smoothingEnabled: {
@@ -224,7 +225,8 @@ limitations under the License.
         },
         _ignoreYOutliers: {
           type: Boolean,
-          value: storage.getBooleanInitializer('_ignoreYOutliers', true, true),
+          value: storage.getBooleanInitializer('_ignoreYOutliers',
+              {defaultValue: true, useLocalStorage: true}),
           observer: '_ignoreYOutliersObserver',
         },
         /** @type {X_TYPE} */
@@ -253,11 +255,11 @@ limitations under the License.
         },
       },
       _showDownloadLinksObserver: storage.getBooleanObserver(
-          '_showDownloadLinks', /*default=*/ false, /*useLocalStorage=*/ true),
+          '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
       _smoothingWeightObserver: storage.getNumberObserver(
-          '_smoothingWeight', 0.6),
+          '_smoothingWeight', {defaultValue: 0.6}),
       _ignoreYOutliersObserver: storage.getBooleanObserver(
-          '_ignoreYOutliers', /*default=*/ true, /*useLocalStorage=*/true),
+          '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
       _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
       },
