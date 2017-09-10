@@ -21,7 +21,8 @@ Polymer({
     rawRegexes: {
       type: Array,
       value: storage.getObjectInitializer(
-          'rawRegexes', [{regex: '', valid: true}]),
+          'rawRegexes',
+          {defaultValue: [{regex: '', valid: true}]}),
     },
     regexes:
         {type: Array, computed: 'usableRegexes(rawRegexes.*)', notify: true},
@@ -31,8 +32,9 @@ Polymer({
     'checkValidity(rawRegexes.*)',
     '_uriStoreRegexes(rawRegexes.*)',
   ],
-  _uriStoreRegexes:
-      storage.getObjectObserver('rawRegexes', [{regex: '', valid: true}]),
+  _uriStoreRegexes: storage.getObjectObserver(
+      'rawRegexes',
+      {defaultValue: [{regex: '', valid: true}]}),
   checkValidity: function(x) {
     var match = x.path.match(/rawRegexes\.(\d+)\.regex/);
     if (match) {
