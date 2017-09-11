@@ -15,15 +15,12 @@ limitations under the License.
 
 import {addParams} from './urlPathHelpers.js';
 
-export type RunTagUrlFn = (tag: string, run: string) => string;
-
 export interface Router {
   logdir: () => string;
   runs: () => string;
   pluginsListing: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
-  pluginRunTagRoute: (pluginName: string, route: string) => RunTagUrlFn;
 }
 ;
 
@@ -47,18 +44,12 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   function pluginRoute(pluginName: string, route: string): string {
     return `${dataDir}/plugin/${pluginName}${route}`;
   }
-  function pluginRunTagRoute(pluginName: string, route: string):
-      ((tag: string, run: string) => string) {
-    const base = pluginRoute(pluginName, route);
-    return (tag, run) => addParams(base, {tag, run});
-  }
   return {
     logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     pluginsListing: () => dataDir + '/plugins_listing',
     isDemoMode: () => demoMode,
     pluginRoute,
-    pluginRunTagRoute,
   };
 };
 
