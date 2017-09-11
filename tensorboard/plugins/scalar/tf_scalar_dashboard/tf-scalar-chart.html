@@ -88,10 +88,10 @@ limitations under the License.
           </paper-dropdown-menu>
           <a
             download="run_[[_runToDownload]]-tag-[[tag]].csv"
-            href="[[_csvUrl(_runToDownload)]]"
+            href="[[_csvUrl(tag, _runToDownload)]]"
           >CSV</a> <a
             download="run_[[_runToDownload]]-tag-[[tag]].json"
-            href="[[_jsonUrl(_runToDownload)]]"
+            href="[[_jsonUrl(tag, _runToDownload)]]"
           >JSON</a>
           </div>
         </div>
@@ -487,11 +487,11 @@ limitations under the License.
         }
       },
 
-      _csvUrl(run) {
-        return addParams(this._scalarUrl(this.tag, run), {format: 'csv'});
+      _csvUrl(tag, run) {
+        return addParams(this._scalarUrl(tag, run), {format: 'csv'});
       },
-      _jsonUrl(run) {
-        return this._scalarUrl(this.tag, run);
+      _jsonUrl(tag, run) {
+        return this._scalarUrl(tag, run);
       },
       _computeXComponentsCreationMethod(xType) {
         return () => ChartHelpers.getXComponents(xType);
