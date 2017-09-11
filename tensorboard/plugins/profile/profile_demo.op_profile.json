@@ -52,22 +52,22 @@
         },
         "children": [{
           "name": "%dot.1",
-          "children": [],
           "xla": {
             "op": "dot",
             "expression": "%dot.1 = something",
             "provenance": "TfOpForFusedDot",
             "category": "Good ops"
-          }
+          },
+          "children": []
         }, {
           "name": "%dot.2",
-          "children": [],
           "xla": {
             "op": "dot",
             "expression": "%dot.2 = something",
             "provenance": "",
             "category": "Good ops"
-          }
+          },
+          "children": []
         }]
       }]
     }, {
@@ -88,7 +88,8 @@
           "expression": "%infeed = something",
           "provenance": "",
           "category": "Overhead"
-        }
+        },
+        "children": []
       }]
     }]
   }
