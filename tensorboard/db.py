@@ -175,6 +175,7 @@ class Schema(object):
 
     Fields:
       experiment_id: Random integer primary key in range [0,2^28).
+      cusotmer_number: Integer identifying a customer.
       name: (Uniquely indexed) Arbitrary string which is displayed to
           the user in the TensorBoard UI, which can be no greater than
           500 characters.
@@ -184,6 +185,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Experiments (
           experiment_id INTEGER PRIMARY KEY,
+          customer_number INTEGER,
           name VARCHAR(500) NOT NULL,
           description TEXT NOT NULL
         )
@@ -214,6 +216,7 @@ class Schema(object):
       rowid: Row ID which has run_id in the low 29 bits and
           experiment_id in the higher 28 bits. This is used to control
           locality.
+      customer_number: Integer identifying the customer that owns the row.
       experiment_id: The 28-bit experiment ID.
       run_id: Unique randomly generated 29-bit ID for this run.
       name: Arbitrary string which is displayed to the user in the
@@ -224,6 +227,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Runs (
           rowid INTEGER PRIMARY KEY,
+          cusotmer_number INTEGER,
           run_id INTEGER NOT NULL,
           experiment_id INTEGER NOT NULL,
           name VARCHAR(1900) NOT NULL
@@ -254,6 +258,7 @@ class Schema(object):
     Fields:
       rowid: The rowid which has tag_id field in the low 31 bits and the
           experiment ID in the higher 28 bits.
+      customer_number: INT64 identifying the customer that owns the row.
       tag_id: Unique randomly distributed 31-bit ID for this tag.
       run_id: The id of the row in the runs table, with which this tag
           is associated.
@@ -269,6 +274,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Tags (
           rowid INTEGER PRIMARY KEY,
+          customer_number INT64,
           tag_id INTEGER NOT NULL,
           run_id INTEGER NOT NULL,
           plugin_id INTEGER NOT NULL,
@@ -301,6 +307,9 @@ class Schema(object):
     Fields:
       rowid: A 63-bit number containing the step count in the low 32
           bits, and the randomly generated tag ID in the higher 31 bits.
+      customer_number: INT64 identifying the customer that owns the row.
+      tag_id: Unique randomly distributed 31-bit ID for this tag.
+      step_count: The step count associated with this Tensor.
       encoding: A number indicating how the tensor was encoded to the
           tensor blob field. 0 indicates an uncompressed binary Tensor
           proto. 1..9 indicates a binary Tensor proto gzipped at the
@@ -316,6 +325,9 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Tensors (
           rowid INTEGER PRIMARY KEY,
+          customer_number INTEGER,
+          tag_id INTEGER NOT NULL,
+          step_count INTEGER NOT NULL,
           encoding TINYINT NOT NULL,
           is_big BOOLEAN NOT NULL,
           tensor BLOB NOT NULL  -- TODO(@jart): VARBINARY on MySQL, MS-SQL, etc.
@@ -338,6 +350,9 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS BigTensors (
           rowid INTEGER PRIMARY KEY,
+          customer_number INTEGER,
+          tag_id INTEGER,
+          step_count INTEGER,
           tensor BLOB NOT NULL
         )
       ''')
@@ -402,7 +417,9 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS EventLogs (
           rowid INTEGER PRIMARY KEY,
+          customer_number INTEGER,
           run_id INTEGER NOT NULL,
+          event_log_id INTEGER NOT NULL,
           path VARCHAR(1023) NOT NULL,
           offset INTEGER NOT NULL
         )
@@ -823,7 +840,7 @@ class RowId(object):
   def check(self, rowid):
     """Throws ValueError if rowid isn't in proper ranges.
 
-    :type rowid: int
+    :type rowid: int or PrimaryKey
     :rtype: int
     """
     self.parse(rowid)
@@ -875,6 +892,57 @@ def _mask(bits):
   """Returns highest integer that can be stored in `bits` unsigned bits."""
   return (1 << bits) - 1
 
+
+class PrimaryKey(object):
+  """Class representing a primary key.
+
+  A primary key can be encoded either as a bit packed int64 key that is compatible with SQLLite. Or
+  as a multi field key. The encoding will be chosen by the database.
+  """
+  def __init__(self, row_id, key_parts):
+    """Create a primary key object.
+
+    Args:
+      row_id: A RowId defining the schema for the key.
+      key_parts: List of key parts.
+
+    :type row_id:RowId
+    """
+    self.row_id = row_id
+    self.key_parts = key_parts
+    self.key_names = [row_id.global_id, row_id.local_id]
+
+  def key_part(self, name):
+    """Return the specified key part.
+
+    Args:
+      name: Name of the field in the key to fetch.
+
+    Returns:
+      value: Value of the key part
+
+    Raises:
+       ValueError: If name is not a valid keypart.
+    """
+    i = self.key_names.index
+    return self.key_parts[i]
+
+  def where_clause(self, multi_field_key=False):
+    """Generate a clause to be used in a where statement to select this key.
+
+    Args:
+      multi_field_key: bool indicating whether to return a clause that treats it as packed key or multi-key field.
+
+    Returns:
+      clause: String containing the clause.
+
+    :type packed:bool
+    :rtype: str
+    """
+    if packed:
+      return "rowid = {0}".format(self.row_id.create(self.key_parts[0], self.key_parts[1])
+    else:
+      return " and ".join(["{0} = {1}".format(k,v) for k,v in zip(self.key_names, self.key_parts)] )
 
 EXPERIMENT_ID = Id('experiment_id', 28)
 RUN_ID = Id('run_id', 29)

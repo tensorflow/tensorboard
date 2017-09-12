@@ -777,8 +777,8 @@ class EventLogReader(object):
     """
     with contextlib.closing(db_conn.cursor()) as c:
       c.execute(
-          'UPDATE EventLogs SET offset = ? WHERE rowid = ? AND offset < ?',
-          (self._offset, self.rowid, self._offset))
+          'UPDATE EventLogs SET offset = ? WHERE {0} AND offset < ?'.format(self.rowid.where_clause(self.use_multi_key)),
+          (self._offset, self._offset))
 
   def close(self):
     """Closes event log reader if open.
@@ -825,14 +825,19 @@ class RunReader(object):
 
     Args:
       rowid: Primary key of run in `Runs` table, which should already
-          be inserted. This is a bit-packed int made by db.RUN_ROWID.
+          be inserted. The key should have schema db.RUN_ROWID.
       name: Display name of run.
 
     :type rowid: int
     :type name: str
     """
-    self.rowid = db.RUN_ROWID.check(rowid)
-    self.run_id = db.RUN_ROWID.parse(rowid)[1]
+    # TODO(jlewi): Wha'ts the proper way to check rowid? We want to check two things
+    # 1. Its a key of the correct type; i.e. the key schema is RUN_ROWID. 2. We want to check that
+    # the value of the key is in the accepted range. Should we defer the check of the accepted range to
+    # the Cursor/Connection since it will depend on the database?
+    # self.rowid = db.RUN_ROWID.check(rowid)
+    self.rowid = rowid
+    self.run_id = rowid.key_part(db.RUN_ID.name)
     self.name = tf.compat.as_text(name)
     self._mark = -1
     self._logs = []  # type: list[EventLogReader]
@@ -865,8 +870,8 @@ class RunReader(object):
       return False
     with contextlib.closing(db_conn.cursor()) as c:
       c.execute(
-          'SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?',
-          (self.run_id, log.path))
+          'SELECT rowid, offset FROM EventLogs WHERE {0} AND path = ?'.format(self.run_id.where_clause(self.use_multi_key)),
+          (log.path))
       row = c.fetchone()
       if row:
         log.rowid = row[0]

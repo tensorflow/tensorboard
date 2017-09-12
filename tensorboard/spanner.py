@@ -293,6 +293,9 @@ class CloudSpannerSchema(db.Schema):
     different tables still exist.
 
     Fields:
+      rowid: Row ID which has run_id in the low 29 bits and
+          experiment_id in the higher 28 bits. This is used to control
+          locality.
       customer_number: INT64 identifying the customer that owns the row.
       experiment_id: The 28-bit experiment ID.
       run_id: Unique randomly generated 29-bit ID for this run.
@@ -305,11 +308,12 @@ class CloudSpannerSchema(db.Schema):
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE Runs (
+          rowid INT64,
           customer_number INT64,
           experiment_id INT64 NOT NULL,
           run_id INT64 NOT NULL,
           name STRING(1900) NOT NULL
-        ) PRIMARY KEY(customer_number,  experiment_id, run_id)
+        ) PRIMARY KEY(rowid, customer_number,  experiment_id, run_id)
       ''')
 
   def create_runs_table_id_index(self):
@@ -334,6 +338,8 @@ class CloudSpannerSchema(db.Schema):
     """Creates the Tags table.
 
     Fields:
+      rowid: The rowid which has tag_id field in the low 31 bits and the
+          experiment ID in the higher 28 bits.
       customer_number: INT64 identifying the customer that owns the row.
       tag_id: Unique randomly distributed 31-bit ID for this tag.
       run_id: The id of the row in the runs table, with which this tag
@@ -349,6 +355,7 @@ class CloudSpannerSchema(db.Schema):
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE Tags (
+          rowid INT64,
           customer_number INT64,
           run_id INT64 NOT NULL,
           tag_id INT64 NOT NULL,
@@ -356,7 +363,7 @@ class CloudSpannerSchema(db.Schema):
           name STRING(500) NOT NULL,
           display_name STRING(500),
           summary_description STRING(65535)
-        ) PRIMARY KEY(customer_number, run_id, tag_id)
+        ) PRIMARY KEY(rowid, customer_number, run_id, tag_id)
       ''')
 
   def create_tags_table_id_index(self):
@@ -384,6 +391,8 @@ class CloudSpannerSchema(db.Schema):
     This table is designed to offer contiguous in-page data storage.
 
     Fields:
+      rowid: A 63-bit number containing the step count in the low 32
+          bits, and the randomly generated tag ID in the higher 31 bits.
       customer_number: INT64 identifying the customer that owns the row.
       tag_id: Unique randomly distributed 31-bit ID for this tag.
       step_count: The step count associated with this Tensor.
@@ -403,13 +412,14 @@ class CloudSpannerSchema(db.Schema):
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE Tensors (
+          rowid INT64,
           customer_number INT64,
           tag_id INT64 NOT NULL,
           step_count INT64 NOT NULL,
           encoding INT64 NOT NULL,
           is_big BOOL NOT NULL,
           tensor BYTES(MAX) NOT NULL
-        ) PRIMARY KEY(customer_number, tag_id, step_count)
+        ) PRIMARY KEY(rowid, customer_number, tag_id, step_count)
       ''')
 
   # TODO(jlewi): bytes fields can be a max of 10Mb. Is this going to be an issue?
@@ -429,11 +439,12 @@ class CloudSpannerSchema(db.Schema):
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE BigTensors (
+          rowid INT64,
           customer_number INT64,
           tag_id INT64 NOT NULL,
           step_count INT64 NOT NULL,
           tensor BYTES(MAX) NOT NULL
-        ) PRIMARY KEY(customer_number, tag_id, step_count)
+        ) PRIMARY KEY(rowid, customer_number, tag_id, step_count)
       ''')
 
   # TODO(jlewi): Should this table include a customer_number? I don't think
@@ -455,6 +466,7 @@ class CloudSpannerSchema(db.Schema):
           TBPlugin.plugin_name field, which can be no greater than 255
           characters.
     """
+    # TODO(jlewi): Should plugins be customer specific.
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE Plugins (
@@ -487,7 +499,7 @@ class CloudSpannerSchema(db.Schema):
     Fields:
       customer_number: INT64 identifying the customer that owns the row.
       run_id: A reference to the id field of the associated row in the
-          runs table. Must be the same as what's in those rowid bits.
+          runs table.
       event_log_id:  An arbitrary event_log_id.
       path: The basename of the path of the event log file. It SHOULD be
           formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX]
@@ -497,12 +509,13 @@ class CloudSpannerSchema(db.Schema):
     with self._cursor() as c:
       c.execute('''\
         CREATE TABLE EventLogs (
+          rowid INT64,
           customer_number INT64,
           run_id INT64 NOT NULL,
           event_log_id INT64 NOT NULL,
           path STRING(1023) NOT NULL,
           offset INT64 NOT NULL
-        ) PRIMARY KEY(customer_number, run_id, event_log_id)
+        ) PRIMARY KEY(rowid, customer_number, run_id, event_log_id)
       ''')
 
   def create_event_logs_table_path_index(self):
