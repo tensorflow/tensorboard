@@ -148,23 +148,141 @@ def op(
     tn = fp[0] - fp
     fn = tp[0] - tp
 
-    # Store the number of thresholds within the summary metadata because
-    # that value is constant for all pr curve summaries with the same tag.
-    summary_metadata = metadata.create_summary_metadata(
-        display_name=display_name if display_name is not None else tag,
-        description=description or '',
-        num_thresholds=num_thresholds)
-
     precision = tp / tf.maximum(_MINIMUM_COUNT, tp + fp)
     recall = tp / tf.maximum(_MINIMUM_COUNT, tp + fn)
 
-    # Store values within a tensor. We store them in the order:
-    # true positives, false positives, true negatives, false
-    # negatives, precision, and recall.
-    combined_data = tf.stack([tp, fp, tn, fn, precision, recall])
+    return _create_tensor_summary(
+        tag,
+        tp,
+        fp,
+        tn,
+        fn,
+        precision,
+        recall,
+        num_thresholds,
+        display_name,
+        description,
+        collections)
 
-    return tf.summary.tensor_summary(
-        name='pr_curves',
-        tensor=combined_data,
-        collections=collections,
-        summary_metadata=summary_metadata)
+def raw_metrics_op(
+    tag,
+    true_positive_counts,
+    false_positive_counts,
+    true_negative_counts,
+    false_negative_counts,
+    precision,
+    recall,
+    num_thresholds=None,
+    display_name=None,
+    description=None,
+    collections=None):
+  """Create an op that collects data for visualizing PR curves.
+
+  Unlike the op above, this one avoids computing precision, recall, and the
+  intermediate counts. Instead, it accepts those tensors as arguments and
+  relies on the caller to ensure that the calculations are correct (and the
+  counts yield the provided precision and recall values).
+
+  This op is useful when a caller seeks to compute precision and recall
+  differently but still use the PR curves plugin.
+
+  Args:
+    tag: A tag attached to the summary. Used by TensorBoard for organization.
+    true_positive_counts: A rank-1 tensor of true positive counts. Must contain
+        `num_thresholds` elements and be castable to float32.
+    false_positive_counts: A rank-1 tensor of false positive counts. Must
+        contain `num_thresholds` elements and be castable to float32.
+    true_negative_counts: A rank-1 tensor of true negative counts. Must contain
+        `num_thresholds` elements and be castable to float32.
+    false_negative_counts: A rank-1 tensor of false negative counts. Must
+        contain `num_thresholds` elements and be castable to float32.
+    num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
+        compute PR metrics for. Should be `>= 2`. This value should be a
+        constant integer value, not a Tensor that stores an integer.
+    display_name: Optional name for this summary in TensorBoard, as a
+        constant `str`. Defaults to `name`.
+    description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
+    collections: Optional list of graph collections keys. The new
+        summary op is added to these collections. Defaults to
+        `[Graph Keys.SUMMARIES]`.
+
+  Returns:
+    A summary operation for use in a TensorFlow graph. See docs for the `op`
+    method for details on the float32 tensor produced by this summary.
+  """
+  with tf.name_scope(tag, values=[
+      true_positive_counts,
+      false_positive_counts,
+      true_negative_counts,
+      false_negative_counts,
+      precision,
+      recall
+  ]):
+    return _create_tensor_summary(
+        tag,
+        true_positive_counts,
+        false_positive_counts,
+        true_negative_counts,
+        false_negative_counts,
+        precision,
+        recall,
+        num_thresholds,
+        display_name,
+        description,
+        collections)
+
+def _create_tensor_summary(
+    tag,
+    true_positive_counts,
+    false_positive_counts,
+    true_negative_counts,
+    false_negative_counts,
+    precision,
+    recall,
+    num_thresholds=None,
+    display_name=None,
+    description=None,
+    collections=None):
+  """A private helper method for generating a tensor summary.
+
+  We use a helper method instead of having `op` directly call `raw_metrics_op`
+  to prevent the scope of `raw_metrics_op` from being embedded within `op`.
+
+  Args:
+    tag: See docs for `raw_metrics_op`.
+    true_positive_counts: See docs for `raw_metrics_op`.
+    false_positive_counts: See docs for `raw_metrics_op`.
+    true_negative_counts: See docs for `raw_metrics_op`.
+    false_negative_counts: See docs for `raw_metrics_op`.
+    num_thresholds: See docs for `raw_metrics_op`.
+    display_name: See docs for `raw_metrics_op`.
+    description: See docs for `raw_metrics_op`.
+    collections: See docs for `raw_metrics_op`.
+
+  Returns:
+    A tensor summary that collects data for PR curves.
+  """
+  # Store the number of thresholds within the summary metadata because
+  # that value is constant for all pr curve summaries with the same tag.
+  summary_metadata = metadata.create_summary_metadata(
+      display_name=display_name if display_name is not None else tag,
+      description=description or '',
+      num_thresholds=num_thresholds)
+
+  # Store values within a tensor. We store them in the order:
+  # true positives, false positives, true negatives, false
+  # negatives, precision, and recall.
+  combined_data = tf.stack([
+      tf.cast(true_positive_counts, tf.float32),
+      tf.cast(false_positive_counts, tf.float32),
+      tf.cast(true_negative_counts, tf.float32),
+      tf.cast(false_negative_counts, tf.float32),
+      tf.cast(precision, tf.float32),
+      tf.cast(recall, tf.float32)])
+
+  return tf.summary.tensor_summary(
+      name='pr_curves',
+      tensor=combined_data,
+      collections=collections,
+      summary_metadata=summary_metadata)
