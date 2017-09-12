@@ -26,6 +26,9 @@ import shutil
 import socket
 import tempfile
 
+from unittest import mock
+import posixpath, ntpath
+
 import six
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
@@ -186,55 +189,54 @@ class TensorboardServerUsingMetagraphOnlyTest(TensorboardServerTest):
 
 class ParseEventFilesSpecTest(tf.test.TestCase):
 
+  def customFsUtil(self, pathObj, logdir, expected):
+    with mock.patch('os.path', pathObj):
+      self.assertEqual(application.parse_event_files_spec(logdir), expected)
+
   def testRunName(self):
-    logdir = 'lol:/cat'
-    expected = {'/cat': 'lol'}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'lol:/cat', {'/cat': 'lol'})
+    self.customFsUtil(ntpath, 'lol:C:\\cat', {'C:\\cat': 'lol'})
 
   def testPathWithColonThatComesAfterASlash_isNotConsideredARunName(self):
-    logdir = '/lol:/cat'
-    expected = {'/lol:/cat': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, '/lol:/cat', {'/lol:/cat': None})
 
   def testMultipleDirectories(self):
-    logdir = '/a,/b'
-    expected = {'/a': None, '/b': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, '/a,/b', {'/a': None, '/b': None})
+    self.customFsUtil(ntpath, 'C:\\a,C:\\b', {'C:\\a': None, 'C:\\b': None})
 
   def testNormalizesPaths(self):
-    logdir = '/lol/.//cat/../cat'
-    expected = {'/lol/cat': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, '/lol/.//cat/../cat', {'/lol/cat': None})
+    self.customFsUtil(ntpath, 'C:\\lol\\.\\\\cat\\..\\cat', {'C:\\lol\\cat': None})
 
   def testAbsolutifies(self):
-    logdir = 'lol/cat'
-    expected = {os.path.realpath('lol/cat'): None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'lol/cat', {posixpath.realpath('lol/cat'): None})
+    self.customFsUtil(ntpath, 'lol\\cat', {ntpath.realpath('lol\\cat'): None})
 
   def testRespectsGCSPath(self):
-    logdir = 'gs://foo/path'
-    expected = {'gs://foo/path': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'gs://foo/path', {'gs://foo/path': None})
+    self.customFsUtil(ntpath, 'gs://foo/path', {'gs://foo/path': None})
 
   def testRespectsHDFSPath(self):
-    logdir = 'hdfs://foo/path'
-    expected = {'hdfs://foo/path': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
+    self.customFsUtil(ntpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
 
   def testDoesNotExpandUserInGCSPath(self):
-    logdir = 'gs://~/foo/path'
-    expected = {'gs://~/foo/path': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
+    self.customFsUtil(ntpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
 
   def testDoesNotNormalizeGCSPath(self):
-    logdir = 'gs://foo/./path//..'
-    expected = {'gs://foo/./path//..': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
+    self.customFsUtil(ntpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
 
   def testRunNameWithGCSPath(self):
-    logdir = 'lol:gs://foo/path'
-    expected = {'gs://foo/path': 'lol'}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.customFsUtil(posixpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
+    self.customFsUtil(ntpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
+
+  def testSingleLetterGroup(self):
+    self.customFsUtil(posixpath, 'A:/foo/path', {'/foo/path': 'A'})
+    # single letter groups are not supported on Windows
+    with self.assertRaises(AssertionError):
+      self.customFsUtil(ntpath, 'A:C:\\foo\\path', {'C:\\foo\\path': 'A'})
 
 
 class TensorBoardPluginsTest(tf.test.TestCase):
