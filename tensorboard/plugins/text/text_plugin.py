@@ -35,9 +35,6 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
 
-# The prefix of routes provided by this plugin.
-_PLUGIN_PREFIX_ROUTE = metadata.PLUGIN_NAME
-
 # HTTP routes
 TAGS_ROUTE = '/tags'
 TEXT_ROUTE = '/text'
@@ -225,7 +222,7 @@ class TextPlugin(base_plugin.TBPlugin):
 
     # TensorBoard is obtaining summaries related to the text plugin based on
     # SummaryMetadata stored within Value protos.
-    mapping = self._multiplexer.PluginRunToTagToContent(_PLUGIN_PREFIX_ROUTE)
+    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
 
     # Augment the summaries created via the deprecated (plugin asset based)
     # method with these summaries created with the new method. When they

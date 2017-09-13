@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import six
 
 from tensorboard.plugins.text import metadata
 
@@ -31,19 +32,34 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create a string summary op.
-  Arguments:
-    name: A unique name for the generated summary node.
-    data: A rank-0 `Tensor`. Must have `dtype` of string.
+  """Summarizes textual data.
+
+  Text data summarized via this plugin will be visible in the Text Dashboard
+  in TensorBoard. The standard TensorBoard Text Dashboard will render markdown
+  in the strings, and will automatically organize 1d and 2d tensors into tables.
+  If a tensor with more than 2 dimensions is provided, a 2d subarray will be
+  displayed along with a warning message. (Note that this behavior is not
+  intrinsic to the text summary api, but rather to the default TensorBoard text
+  plugin.)
+
+  Args:
+    name: A name for the generated node. Will also serve as a series name in
+      TensorBoard.
+    data: a string-type Tensor to summarize. The text should be UTF-encoded.
     display_name: Optional name for this summary in TensorBoard, as a
       constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
       constant `str`. Markdown is supported. Defaults to empty.
-    collections: Optional list of graph collections keys. The new
-      summary op is added to these collections. Defaults to
-      `[Graph Keys.SUMMARIES]`.
+    collections: Optional list of ops.GraphKeys.  The collections to add the
+      summary to.  Defaults to [_ops.GraphKeys.SUMMARIES]
+
   Returns:
-    A TensorFlow summary op.
+    A TensorSummary op that is configured so that TensorBoard will recognize
+    that it contains textual data. The TensorSummary is a scalar `Tensor` of
+    type `string` which contains `Summary` protobufs.
+
+  Raises:
+    ValueError: If tensor has the wrong type.
   """
   if display_name is None:
     display_name = name
@@ -58,26 +74,32 @@ def op(name,
 
 
 def pb(name, data, display_name=None, description=None):
-  """Create a scalar summary protobuf.
+  """Create a text summary protobuf.
+
   Arguments:
-    name: A unique name for the generated summary, including any desired
-      name scopes.
-    data: A python string. Or a rank-0 numpy array containing string data (of
-      type numpy.string_). 
+    name: A name for the generated node. Will also serve as a series name in
+      TensorBoard.
+    data: A python bytes string (str). Or a numpy array containing string data
+      (of type numpy.string_). 
     display_name: Optional name for this summary in TensorBoard, as a
       `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
       `str`. Markdown is supported. Defaults to empty.
+
+  Raises:
+    ValueError: If the data is of the wrong type.
+
   Returns:
     A `tf.Summary` protobuf object.
   """
-  if isinstance(data, str):
+  if isinstance(data, six.binary_type):
+    if isinstance(data, six.text_type):
+      raise ValueError(
+        'Unicode text (%r) is not supported. Only byte strings are.' % data)
     data = np.array(data)
-  if data.shape != ():
-    raise ValueError('Expected rank of 0 for data, saw shape: %s.' % data.shape)
   if data.dtype.kind != 'S':
     raise ValueError(
-        'Type %s is not supported. Only strings are.' % data.dtype.name)
+        'Type %r is not supported. Only strings are.' % data.dtype.name)
   tensor = tf.make_tensor_proto(data, dtype=tf.string)
 
   if display_name is None:

@@ -23,73 +23,115 @@ import numpy as np
 import six
 import tensorflow as tf
 
+from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
 
 
 class SummaryTest(tf.test.TestCase):
 
-  def test_op(self):
+  def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
-      pbtxt = sess.run(summary.op('foo', tf.constant('forty-two')))
-      summary_pb = tf.Summary()
-      summary_pb.ParseFromString(pbtxt)
+      actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
+    actual_proto = tf.Summary()
+    actual_proto.ParseFromString(actual_pbtxt)
+    return actual_proto
 
-    self.assertEqual(1, len(summary_pb.value))
-    value = summary_pb.value[0]
-    self.assertEqual('foo/text_summary', value.tag)
-    self.assertEqual('foo', value.metadata.display_name)
-    self.assertEqual('', value.metadata.summary_description)
-    string_content = tf.make_ndarray(value.tensor).astype(np.dtype(str))
-    self.assertEqual('forty-two', string_content)
+  def normalize_summary_pb(self, pb):
+    """Pass `pb`'s `TensorProto` through a marshalling roundtrip.
 
-  def test_op_with_custom_display_name_and_description(self):
-    with tf.Session() as sess:
-      op = summary.op(
-          name='foo',
-          data=tf.constant('forty-two'),
-          display_name='42',
-          description='It succeeds 41 and precedes 43.')
-      pbtxt = sess.run(op)
-      summary_pb = tf.Summary()
-      summary_pb.ParseFromString(pbtxt)
+    `TensorProto`s can be equal in value even if they are not identical
+    in representation, because data can be stored in either the
+    `tensor_content` field or the `${dtype}_value` field. This
+    normalization ensures a canonical form, and should be used before
+    comparing two `Summary`s for equality.
+    """
+    result = tf.Summary()
+    result.MergeFrom(pb)
+    for value in result.value:
+      if value.HasField('tensor'):
+        new_tensor = tf.make_tensor_proto(tf.make_ndarray(value.tensor))
+        value.ClearField('tensor')
+        value.tensor.MergeFrom(new_tensor)
+    return result
 
-    self.assertEqual(1, len(summary_pb.value))
-    value = summary_pb.value[0]
-    self.assertEqual('42', value.metadata.display_name)
-    self.assertEqual(
-        'It succeeds 41 and precedes 43.', value.metadata.summary_description)
+  def compute_and_check_summary_pb(self, name, data,
+                                   display_name=None, description=None,
+                                   data_tensor=None, feed_dict=None):
+    """Use both `op` and `pb` to get a summary, asserting equality.
 
-  def test_pb_with_python_string(self):
-    summary_pb = summary.pb('foo', 'forty-two')
-    self.assertEqual(1, len(summary_pb.value))
-    value = summary_pb.value[0]
-    self.assertEqual('foo/text_summary', value.tag)
-    self.assertEqual('foo', value.metadata.display_name)
-    self.assertEqual('', value.metadata.summary_description)
-    string_content = tf.make_ndarray(value.tensor).astype(np.dtype(str))
-    self.assertEqual('forty-two', string_content)
+    Returns:
+      a `Summary` protocol buffer
+    """
+    if data_tensor is None:
+      data_tensor = tf.constant(data)
+    op = summary.op(
+        name, data, display_name=display_name, description=description)
+    pb = self.normalize_summary_pb(summary.pb(
+        name, data, display_name=display_name, description=description))
+    pb_via_op = self.normalize_summary_pb(
+        self.pb_via_op(op, feed_dict=feed_dict))
+    self.assertProtoEquals(pb, pb_via_op)
+    return pb
 
-  def test_pb_with_numpy_array(self):
-    summary_pb = summary.pb('foo', np.array('forty-two'))
-    self.assertEqual(1, len(summary_pb.value))
-    value = summary_pb.value[0]
-    self.assertEqual('foo/text_summary', value.tag)
-    self.assertEqual('foo', value.metadata.display_name)
-    self.assertEqual('', value.metadata.summary_description)
-    string_content = tf.make_ndarray(value.tensor).astype(np.dtype(str))
-    self.assertEqual('forty-two', string_content)
+  def test_metadata(self):
+    pb = self.compute_and_check_summary_pb('do', 'A deer. A female deer.')
+    summary_metadata = pb.value[0].metadata
+    plugin_data = summary_metadata.plugin_data
+    self.assertEqual(summary_metadata.display_name, 'do')
+    self.assertEqual(summary_metadata.summary_description, '')
+    self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
+    content = summary_metadata.plugin_data.content
+    # There's no content, so successfully parsing is fine.
+    metadata.parse_plugin_metadata(content)
 
-  def test_pb_with_custom_display_name_and_description(self):
-    summary_pb = summary.pb(
-        name='foo',
-        data='forty-two',
-        display_name='42',
-        description='It succeeds 41 and precedes 43.')
-    self.assertEqual(1, len(summary_pb.value))
-    value = summary_pb.value[0]
-    self.assertEqual('42', value.metadata.display_name)
-    self.assertEqual(
-        'It succeeds 41 and precedes 43.', value.metadata.summary_description)
+  def test_explicit_display_name_and_description(self):
+    display_name = '"Re"'
+    description = 'A whole step above do.'
+    pb = self.compute_and_check_summary_pb('re', 'A drop of golden sun.',
+                                           display_name=display_name,
+                                           description=description)
+    summary_metadata = pb.value[0].metadata
+    self.assertEqual(summary_metadata.display_name, display_name)
+    self.assertEqual(summary_metadata.summary_description, description)
+    plugin_data = summary_metadata.plugin_data
+    self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
+    content = summary_metadata.plugin_data.content
+    # There's no content, so successfully parsing is fine.
+    metadata.parse_plugin_metadata(content)
+
+  def test_string_value(self):
+    pb = self.compute_and_check_summary_pb('mi', 'A name I call myself.')
+    value = tf.make_ndarray(pb.value[0].tensor).item()
+    self.assertEqual(str, type(value))
+    self.assertEqual('A name I call myself.', value)
+
+  def test_np_array_value(self):
+    pb = self.compute_and_check_summary_pb('fa', 'A long, long way to run.')
+    value = tf.make_ndarray(pb.value[0].tensor).item()
+    self.assertEqual(str, type(value))
+    self.assertEqual('A long, long way to run.', value)
+
+  def test_non_string_value_in_op(self):
+    with six.assertRaisesRegex(
+        self,
+        Exception,
+        r'Const:0 must be of type <dtype: \'string\'>'):
+      with tf.Session() as sess:
+        sess.run(summary.op('so', tf.constant(5)))
+
+  def test_non_string_value_in_pb(self):
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        r'Type \'int\d+\' is not supported. Only strings are.'):
+      summary.pb('la', np.array(range(42)))
+
+  def test_unicode_numpy_array_value_in_pb(self):
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        r'Type \'unicode\d+\' is not supported. Only strings are.'):
+      summary.pb('ti', np.array(u'A drink with jam and bread.'))
 
 
 if __name__ == '__main__':
