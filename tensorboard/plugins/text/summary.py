@@ -80,7 +80,7 @@ def pb(name, data, display_name=None, description=None):
     name: A name for the generated node. Will also serve as a series name in
       TensorBoard.
     data: A python bytes string (str). Or a numpy array containing string data
-      (of type numpy.string_). 
+      (of type numpy.string_).
     display_name: Optional name for this summary in TensorBoard, as a
       `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
