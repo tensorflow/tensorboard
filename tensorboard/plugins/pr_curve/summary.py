@@ -249,8 +249,7 @@ def _create_tensor_summary(
   We use a helper method instead of having `op` directly call `raw_metrics_op`
   to prevent the scope of `raw_metrics_op` from being embedded within `op`.
 
-  Args:
-    Arguments are the same as for raw_metrics_op
+  Arguments are the same as for raw_metrics_op
 
   Returns:
     A tensor summary that collects data for PR curves.
