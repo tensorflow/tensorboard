@@ -26,6 +26,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import shutil
 import tensorflow as tf
 
 from google.protobuf import text_format
@@ -33,7 +34,6 @@ from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins.profile import profile_demo_data
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.profile import trace_events_pb2
-from shutil import copyfile
 
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/profile_demo'
@@ -60,8 +60,8 @@ def dump_data(logdir):
         proto = trace_events_pb2.Trace()
         text_format.Merge(profile_demo_data.TRACES[run], proto)
         f.write(proto.SerializeToString())
-    copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
-             os.path.join(run_dir, 'op_profile.json'))
+    shutil.copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
+                    os.path.join(run_dir, 'op_profile.json'))
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
