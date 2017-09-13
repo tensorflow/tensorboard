@@ -95,7 +95,7 @@ def pb(name, data, display_name=None, description=None):
   if isinstance(data, six.binary_type):
     if isinstance(data, six.text_type):
       raise ValueError(
-        'Unicode text (%r) is not supported. Only byte strings are.' % data)
+          'Unicode text (%r) is not supported. Only byte strings are.' % data)
     data = np.array(data)
   if data.dtype.kind != 'S':
     raise ValueError(
