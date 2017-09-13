@@ -35,6 +35,7 @@ from google.cloud import spanner
 from google.gax import errors
 from google.api.core import exceptions
 import logging
+import re
 from tensorboard import db
 
 class CloudSpannerConnection(object):
@@ -49,9 +50,12 @@ class CloudSpannerConnection(object):
       instance: The name of the instance to use.
       database: The name of the database.
     """
+    # TODO(jlewi): Should we take client as an argument?
     self.client = spanner.Client(project=project)
     self.instance_id = instance
     self.database_id = database
+    self._instance = None
+    self._database = None
 
   def cursor(self):
     """Construct a cursor for Cloud Spanner."""
@@ -61,6 +65,26 @@ class CloudSpannerConnection(object):
     cursor = db.Cursor(self)
     cursor._delegate = delegate
     return cursor
+
+  @property
+  def database(self):
+    """Return the CloudSpanner Database object.
+
+    This method is not part of PEP249.
+    """
+    if not self._database:
+      self._database = self.instance.database(self.database_id)
+    return self._database
+
+  @property
+  def instance(self):
+    """Return the CloudSpanner instance object.
+
+    This method is not part of PEP249.
+    """
+    if not self._instance:
+      self._instance = spanner.client.Instance(self.instance_id, self.client)
+    return self._instance
 
 class CloudSpannerCursor(object):
   """Cursor for Cloud Spanner."""
@@ -74,7 +98,12 @@ class CloudSpannerCursor(object):
     self.client = client
     self.database_id = database_id
     self.instance_id = instance_id
+    # TODO(jlewi): Should we take in a CloudSpannerConnection and reuse the instance and db associated with
+    # that connection?
     self.instance = spanner.client.Instance(instance_id, client)
+
+    # Store results of an SQL query for use in cursor operation
+    self._results = None
 
   def execute(self, sql, parameters=()):
     """Executes a single query.
@@ -89,13 +118,35 @@ class CloudSpannerCursor(object):
     # I just guessed that Python format would work.
     self.database = self.instance.database(self.database_id)
 
-    try:
-      op = self.database.update_ddl([sql.format(parameters)])
-    except errors.RetryError as e:
-      logging.error("There was a problem creating the database. %s", e.cause.details())
-      raise
-    # TODO(jlewi): Does this block until op completes?
-    op.result()
+    parsed = parse_sql(sql, parameters)
+
+    if not parsed:
+      raise ValueError('SQL query {} is not supported for Cloud Spanner.'.format(sql))
+
+    if isinstance(parsed, InsertSQL):
+      with self.database.batch() as batch:
+        batch.insert(
+              table=parsed.table,
+                columns=parsed.columns,
+                values=[parsed.values])
+
+      return
+    sql = sql.strip()
+    if sql.lower().startswith("select"):
+      # Replace '?' with {} so we can use Google format to substitute in the parameters.
+      sql = sql.replace('?', '{}')
+      sql = sql.format(*parameters)
+      session = self.database.session()
+      session.create()
+      self._results = session.execute_sql(sql)
+    else:
+      try:
+        op = self.database.update_ddl([sql.format(parameters)])
+      except errors.RetryError as e:
+        logging.error("There was a problem creating the database. %s", e.cause.details())
+        raise
+      # TODO(jlewi): Does this block until op completes?
+      op.result()
 
   #def executemany(self, sql, seq_of_parameters=()):
     #"""Executes a single query many times.
@@ -114,13 +165,17 @@ class CloudSpannerCursor(object):
     #self._init_delegate()
     #self._delegate.executescript(sql)
 
-  #def fetchone(self):
-    #"""Returns next row in result set.
+  def fetchone(self):
+    """Returns next row in result set.
 
-    #:rtype: tuple[object]
-    #"""
+    :rtype: tuple[object]
+    """
     #self._check_that_read_query_was_issued()
     #return self._delegate.fetchone()
+    if not self._results:
+      # TODO(jlewi): Should we use self._results.one() so that we return an exception if no row
+      # is found?
+      return self._results.one_or_none
 
   #def fetchmany(self, size=None):
     #"""Returns next chunk of rows in result set.
@@ -497,6 +552,8 @@ class CloudSpannerSchema(db.Schema):
     database, it updates the offset field.
 
     Fields:
+     rowid: An arbitrary event_log_id in the first 29 bits, and the
+          run_id in the higher 29 bits.
       customer_number: INT64 identifying the customer that owns the row.
       run_id: A reference to the id field of the associated row in the
           runs table.
@@ -525,3 +582,40 @@ class CloudSpannerSchema(db.Schema):
         CREATE UNIQUE INDEX EventLogsPathIndex
         ON EventLogs (customer_number, run_id, path)
       ''')
+
+
+class InsertSQL(object):
+  """Represent and InsertSQL statement."""
+
+  def __init__(self, table, columns, values):
+    self.table = table
+    self.columns = columns
+    self.values = values
+
+# \s matches any whitespace
+INSERT_PATTERN = re.compile("insert\s*into\s*([a-z0-9_]*)\s*\(([a-z0-9,_\s]*)\)\s*values\s*\(([a-z0-9,_\s]*)\)", flags=re.IGNORECASE)
+
+def parse_sql(sql, parameters):
+  """Parse an sql statement.
+
+  Args:
+    sql: An SQL statement.
+    parameters: Parameters to substitute into the query.
+
+  Returns:
+    obj: InsertSQL or SelectSQL or UpdateSQL object containing the result.
+
+  : type sql:str
+  : rtype: InsertSQL | SelectSQL | UpdateSQL | None
+  """
+
+  # Perform variable substitution
+  sql = sql.replace("?", "{}")
+  sql = sql.format(*parameters)
+
+  m = INSERT_PATTERN.match(sql)
+  if m:
+    table = m.group(1)
+    columns = [c.strip() for c in m.group(2).split(',')]
+    values = [v.strip() for v in m.group(3).split(',')]
+    return InsertSQL(table, columns, values)

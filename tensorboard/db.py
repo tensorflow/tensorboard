@@ -893,56 +893,56 @@ def _mask(bits):
   return (1 << bits) - 1
 
 
-class PrimaryKey(object):
-  """Class representing a primary key.
+#class PrimaryKey(object):
+  #"""Class representing a primary key.
 
-  A primary key can be encoded either as a bit packed int64 key that is compatible with SQLLite. Or
-  as a multi field key. The encoding will be chosen by the database.
-  """
-  def __init__(self, row_id, key_parts):
-    """Create a primary key object.
+  #A primary key can be encoded either as a bit packed int64 key that is compatible with SQLLite. Or
+  #as a multi field key. The encoding will be chosen by the database.
+  #"""
+  #def __init__(self, row_id, key_parts):
+    #"""Create a primary key object.
 
-    Args:
-      row_id: A RowId defining the schema for the key.
-      key_parts: List of key parts.
+    #Args:
+      #row_id: A RowId defining the schema for the key.
+      #key_parts: List of key parts.
 
-    :type row_id:RowId
-    """
-    self.row_id = row_id
-    self.key_parts = key_parts
-    self.key_names = [row_id.global_id, row_id.local_id]
+    #:type row_id:RowId
+    #"""
+    #self.row_id = row_id
+    #self.key_parts = key_parts
+    #self.key_names = [row_id.global_id, row_id.local_id]
 
-  def key_part(self, name):
-    """Return the specified key part.
+  #def key_part(self, name):
+    #"""Return the specified key part.
 
-    Args:
-      name: Name of the field in the key to fetch.
+    #Args:
+      #name: Name of the field in the key to fetch.
 
-    Returns:
-      value: Value of the key part
+    #Returns:
+      #value: Value of the key part
 
-    Raises:
-       ValueError: If name is not a valid keypart.
-    """
-    i = self.key_names.index
-    return self.key_parts[i]
+    #Raises:
+       #ValueError: If name is not a valid keypart.
+    #"""
+    #i = self.key_names.index
+    #return self.key_parts[i]
 
-  def where_clause(self, multi_field_key=False):
-    """Generate a clause to be used in a where statement to select this key.
+  #def where_clause(self, multi_field_key=False):
+    #"""Generate a clause to be used in a where statement to select this key.
 
-    Args:
-      multi_field_key: bool indicating whether to return a clause that treats it as packed key or multi-key field.
+    #Args:
+      #multi_field_key: bool indicating whether to return a clause that treats it as packed key or multi-key field.
 
-    Returns:
-      clause: String containing the clause.
+    #Returns:
+      #clause: String containing the clause.
 
-    :type packed:bool
-    :rtype: str
-    """
-    if packed:
-      return "rowid = {0}".format(self.row_id.create(self.key_parts[0], self.key_parts[1])
-    else:
-      return " and ".join(["{0} = {1}".format(k,v) for k,v in zip(self.key_names, self.key_parts)] )
+    #:type packed:bool
+    #:rtype: str
+    #"""
+    #if packed:
+      #return "rowid = {0}".format(self.row_id.create(self.key_parts[0], self.key_parts[1])
+    #else:
+      #return " and ".join(["{0} = {1}".format(k,v) for k,v in zip(self.key_names, self.key_parts)] )
 
 EXPERIMENT_ID = Id('experiment_id', 28)
 RUN_ID = Id('run_id', 29)
