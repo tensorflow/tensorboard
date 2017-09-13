@@ -217,7 +217,7 @@ def raw_metrics_op(
       true_negative_counts,
       false_negative_counts,
       precision,
-      recall
+      recall,
   ]):
     return _create_tensor_summary(
         tag,
@@ -250,15 +250,7 @@ def _create_tensor_summary(
   to prevent the scope of `raw_metrics_op` from being embedded within `op`.
 
   Args:
-    tag: See docs for `raw_metrics_op`.
-    true_positive_counts: See docs for `raw_metrics_op`.
-    false_positive_counts: See docs for `raw_metrics_op`.
-    true_negative_counts: See docs for `raw_metrics_op`.
-    false_negative_counts: See docs for `raw_metrics_op`.
-    num_thresholds: See docs for `raw_metrics_op`.
-    display_name: See docs for `raw_metrics_op`.
-    description: See docs for `raw_metrics_op`.
-    collections: See docs for `raw_metrics_op`.
+    Arguments are the same as for raw_metrics_op
 
   Returns:
     A tensor summary that collects data for PR curves.
