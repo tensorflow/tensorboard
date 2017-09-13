@@ -73,6 +73,7 @@ py_binary(
         "profile_demo.py",
         "profile_demo_data.py",
     ],
+    data = ["profile_demo.op_profile.json"],
     srcs_version = "PY2AND3",
     deps = [
         ":profile_plugin",

@@ -26,6 +26,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import shutil
 import tensorflow as tf
 
 from google.protobuf import text_format
@@ -59,6 +60,8 @@ def dump_data(logdir):
         proto = trace_events_pb2.Trace()
         text_format.Merge(profile_demo_data.TRACES[run], proto)
         f.write(proto.SerializeToString())
+    shutil.copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
+                    os.path.join(run_dir, 'op_profile.json'))
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
