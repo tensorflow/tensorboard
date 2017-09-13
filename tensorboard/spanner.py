@@ -38,6 +38,135 @@ import logging
 import re
 from tensorboard import db
 
+class ColumnType(object):
+  pass
+
+class Int64ColumnType(ColumnType):
+  pass
+
+class StringColumnType(ColumnType):
+
+  def __init__(self, length=None):
+    """Define a string column.
+
+    Args:
+      length: The length of the string. None indicates column
+        should have maximum length allowed.
+    """
+    self.length = length
+
+class ColumnSchema(object):
+  """Defines the schema for a column."""
+
+  def __init__(self, name, value_type):
+    """Define a column.
+
+    Args:
+      name: Name of the column.
+      value_type: A ColumnType object describing the type for the
+        column.
+    """
+    self.name = name
+    self.value_type = value_type
+
+class TableSchema(object):
+  """Define the schema for a table."""
+
+  def __init__(self, name, columns, keys):
+    """Create a table schema.
+
+    Args:
+      name: Name for the table.
+      columns: List of ColumnSchema objects describing the
+        schema.
+      keys: List of column names comprising the key.
+
+    Returns:
+      schema: Schema for the table.
+    """
+    self.name = name
+    self._columns = columns
+    self._keys = keys
+
+    self._name_to_column = {}
+    for c in self._columns:
+      self._name_to_column[c.name] = c
+
+  @property
+  def keys(self):
+    return self._keys
+
+  @property
+  def columns(self):
+    return self._columns
+
+  def get_column(self, name):
+    """Get the column with the specified name.
+
+    Raises:
+      ValueError if no column with the specified name.
+    """
+    return self._name_to_column[name]
+
+RUNS_TABLE = TableSchema(
+  name = 'Runs',
+  columns=[ColumnSchema('rowid', Int64ColumnType()),
+           ColumnSchema('customer_number', Int64ColumnType()),
+           ColumnSchema('experiment_id', Int64ColumnType()),
+           ColumnSchema('run_id', Int64ColumnType()),
+           ColumnSchema('name', StringColumnType(length=1900))],
+  keys=['rowid', 'customer_number','experiment_id', 'run_id'])
+
+EVENT_LOGS_TABLE = TableSchema(
+  name = 'EventLogs',
+  columns=[ColumnSchema('rowid', Int64ColumnType()),
+           ColumnSchema('customer_number', Int64ColumnType()),
+           ColumnSchema('run_id', Int64ColumnType()),
+           ColumnSchema('event_log_id', Int64ColumnType()),
+           ColumnSchema('path', StringColumnType(length=1023)),
+           ColumnSchema('offset', Int64ColumnType())],
+  keys=['rowid', 'customer_number', 'run_id', 'event_log_id'])
+
+
+
+def to_spanner_type(column_type):
+  """Return the Cloud Spanner type corresponding to the supplied type.
+
+  Args:
+    column_type: Instance of ColumnType.
+
+  Returns:
+    string identify the spanner column type.
+  """
+  if isinstance(column_type, Int64ColumnType):
+    return 'INT64'
+
+  if isinstance(column_type, StringColumnType):
+    if column_type.length:
+      return 'STRING({0})'.format(column_type.length)
+    else:
+      return 'STRING(MAX)'
+
+def schema_to_spanner_ddl(schema):
+  """Convert a TableSchema object to a spanner DDL statement.
+
+  Args:
+    schema: TableSchema object representing the schema for the table.
+
+  Returns:
+    ddl statement to create the table.
+
+  : type schema: TableSchema
+  : rtype : str
+  """
+  # TODO(jlewi): Add support for not null modifier.
+  columns = [ '{0} {1}'.format(c.name, to_spanner_type(c.value_type)) for c in schema.columns]
+  columns = ', '.join(columns)
+  keys = ', '.join(schema.keys)
+  ddl = 'CREATE TABLE {name} ({columns}) PRIMARY KEY ({key_fields})'.format(
+    name = schema.name, columns = columns, key_fields=keys)
+  return ddl
+
 class CloudSpannerConnection(object):
   """Connection to Cloud Spanner database.
   """
@@ -87,7 +216,13 @@ class CloudSpannerConnection(object):
     return self._instance
 
 class CloudSpannerCursor(object):
-  """Cursor for Cloud Spanner."""
+  """Cursor for Cloud Spanner.
+
+  When executing an SQL select query, the cursor will load all rows into memory when execute
+  as called as opposed to streaming the results based on calls to fetchone and fetchmany.
+  This is a pretty naive implementation that could be inefficient when returning many rows.
+  We should consider improving that in the future.
+  """
 
   def __init__(self, client, database_id, instance_id):
     """ Create the Cursor.
@@ -103,7 +238,9 @@ class CloudSpannerCursor(object):
     self.instance = spanner.client.Instance(instance_id, client)
 
     # Store results of an SQL query for use in cursor operation
-    self._results = None
+    # rindex points to the position in _results of the next row to return.
+    self._results = []
+    self._rindex = 0
 
   def execute(self, sql, parameters=()):
     """Executes a single query.
@@ -131,22 +268,25 @@ class CloudSpannerCursor(object):
                 values=[parsed.values])
 
       return
-    sql = sql.strip()
-    if sql.lower().startswith("select"):
-      # Replace '?' with {} so we can use Google format to substitute in the parameters.
-      sql = sql.replace('?', '{}')
-      sql = sql.format(*parameters)
+
+    if isinstance(parsed, SelectSQL):
       session = self.database.session()
       session.create()
-      self._results = session.execute_sql(sql)
-    else:
-      try:
-        op = self.database.update_ddl([sql.format(parameters)])
-      except errors.RetryError as e:
-        logging.error("There was a problem creating the database. %s", e.cause.details())
-        raise
-      # TODO(jlewi): Does this block until op completes?
-      op.result()
+      results = session.execute_sql(parsed.sql)
+      results.consume_all()
+      self._results = results.rows
+      self._rindex = 0
+      return
+
+    # TODO(jlewi): Update the code to handle update ddl statements.
+    #else:
+      #try:
+        #op = self.database.update_ddl([sql.format(parameters)])
+      #except errors.RetryError as e:
+        #logging.error("There was a problem creating the database. %s", e.cause.details())
+        #raise
+      ## TODO(jlewi): Does this block until op completes?
+      #op.result()
 
   #def executemany(self, sql, seq_of_parameters=()):
     #"""Executes a single query many times.
@@ -170,31 +310,33 @@ class CloudSpannerCursor(object):
 
     :rtype: tuple[object]
     """
-    #self._check_that_read_query_was_issued()
-    #return self._delegate.fetchone()
-    if not self._results:
-      # TODO(jlewi): Should we use self._results.one() so that we return an exception if no row
-      # is found?
-      return self._results.one_or_none
+    if self._rindex < len(self._results):
+      self._rindex += 1
+      return self._results[self._rindex - 1]
 
-  #def fetchmany(self, size=None):
-    #"""Returns next chunk of rows in result set.
+  def fetchmany(self, size=None):
+    """Returns next chunk of rows in result set.
 
-    #:type size: int
-    #"""
-    #self._check_that_read_query_was_issued()
-    #if size is not None:
-      #return self._delegate.fetchmany(size)
-    #else:
-      #return self._delegate.fetchmany()
+    :type size: int
+    """
+    start_index = self._rindex
+    if size is not None:
+      end_index = start_index + size
+    else:
+      end_index = len(self._results)
 
-  #def fetchall(self):
-    #"""Returns next row in result set.
+    self._rindex = end_index
+    return self._results[start_index:end_index]
 
-    #:rtype: tuple[object]
-    #"""
-    #self._check_that_read_query_was_issued()
-    #return self._delegate.fetchone()
+  def fetchall(self):
+    """Returns next row in result set.
+
+    :rtype: tuple[object]
+    """
+    start_index = self._rindex
+    end_index = len(self._results)
+    self._rindex = end_index
+    return self._results[start_index:end_index]
 
   #@property
   #def description(self):
@@ -287,19 +429,15 @@ class CloudSpannerCursor(object):
 #
 class CloudSpannerSchema(db.Schema):
   def create_tables(self):
-    with self._cursor() as c:
-      spanner_cursor = c._delegate
-      # Create an empty database.
-      database = spanner_cursor.instance.database(spanner_cursor.database_id)
-      try:
-        op = database.create()
-        op.result()
-      except errors.RetryError as e:
-        logging.error("There was a problem creating the database. %s", e.cause.details())
-        raise
-
-    # Create the database if it doesn't exist.
-    super(CloudSpannerSchema, self).create_tables()
+    # Create an empty database.
+    ddl = [schema_to_spanner_ddl(RUNS_TABLE), schema_to_spanner_ddl(EVENT_LOGS_TABLE)]
+    database = self._db_conn.instance.database(self._db_conn.database_id, ddl)
+    try:
+      op = database.create()
+      op.result()
+    except errors.RetryError as e:
+      logging.error("There was a problem creating the database. %s", e.cause.details())
+      raise
 
   def create_experiments_table(self):
     """Creates the Experiments table.
@@ -593,7 +731,15 @@ class InsertSQL(object):
     self.values = values
 
 # \s matches any whitespace
-INSERT_PATTERN = re.compile("insert\s*into\s*([a-z0-9_]*)\s*\(([a-z0-9,_\s]*)\)\s*values\s*\(([a-z0-9,_\s]*)\)", flags=re.IGNORECASE)
+INSERT_PATTERN = re.compile("\s*insert\s*into\s*([a-z0-9_]*)\s*\(([a-z0-9,_\s]*)\)\s*values\s*\(([a-z0-9,_\s]*)\)", flags=re.IGNORECASE)
+
+SELECT_PATTERN = re.compile("\s*select.*", flags=re.IGNORECASE)
+
+class SelectSQL(object):
+  """Reprsent a Select SQL statement."""
+
+  def __init__(self, sql):
+    self.sql = sql
 
 def parse_sql(sql, parameters):
   """Parse an sql statement.
@@ -619,3 +765,7 @@ def parse_sql(sql, parameters):
     columns = [c.strip() for c in m.group(2).split(',')]
     values = [v.strip() for v in m.group(3).split(',')]
     return InsertSQL(table, columns, values)
+
+  m= SELECT_PATTERN.match(sql)
+  if m:
+    return SelectSQL(sql)

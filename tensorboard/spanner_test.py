@@ -30,109 +30,20 @@ import unittest
 
 CODE_ALREADY_EXISTS = 409
 
-def save_records(name, records):
-  """Writes new record file to temp directory.
+class SchemaToSpannerDDL(tf.test.TestCase):
+  def testSchemas(self):
+    table = tb_spanner.TableSchema(
+      name = 'SomeTable',
+      columns=[tb_spanner.ColumnSchema('k_int64', tb_spanner.Int64ColumnType()),
+               tb_spanner.ColumnSchema('k_str', tb_spanner.StringColumnType(length=23)),
+               tb_spanner.ColumnSchema('str_max', tb_spanner.StringColumnType())],
+      keys=['k_int64', 'k_str'])
 
-  :type name: str
-  :type records: list[str]
-  :rtype: str
-  """
-  temp_dir = tempfile.mkdtemp()
-  path = os.path.join(temp_dir, name)
-  with loader_test.RecordWriter(path) as writer:
-    for record in records:
-      writer.write(record)
-  return path
-
-# TODO(jlewi): This is an E2E test. Need to figure out proper way to run it and also
-# to create unittests.
-#class CloudSpannerTest(tf.test.TestCase):
-#def testE2e(self):
-def testE2e():
-  project = "cloud-ml-dev"
-  instance_name = "jlewi-tb"
-
-  # Use a unique DB on each test run.
-  now = datetime.datetime.now()
-  database_name = "tb-test-{0}".format(now.strftime("%Y%m%d-%H%M%S"))
-
-  client = spanner.Client(project)
-  # TODO(jlewi): Should we specify parameters like region and nodes?
-  config_name = "projects/{0}/instanceConfigs/regional-us-central1".format(project)
-  instance = client.instance(instance_name, configuration_name=config_name,
-                             node_count=3, display_name="Spanner instance for jlewi@.")
-  try:
-    op = instance.create()
-    # TODO(jlewi): Wait for op to complete.
-  except Exception as e:
-    if e.code == CODE_ALREADY_EXISTS:
-      # Do nothing since the instance already exists.
-      pass
-    else:
-      raise e
-    # e.get
-  # TODO(jlewi): Wait for operation to complete.
-
-
-
-  # DO NOT SUBMIT uncomment.
-  # TODO(jlewi): create_tables is very slow; even for testing it might be an issue. I wonder if creating all tables
-  # at once would speed things up?
-  if False:
-    conn = tb_spanner.CloudSpannerConnection(project, instance_name, database_name)
-    schema = tb_spanner.CloudSpannerSchema(conn)
-    schema.create_tables()
-  else:
-    # Use an existing database
-    database_name = "tb-test-20170911-185126"
-    conn = tb_spanner.CloudSpannerConnection(project, instance_name, database_name)
-    schema = tb_spanner.CloudSpannerSchema(conn)
-
-  # Insert a row into EventLogs
-  rowid = int(now.strftime("%Y%m%d%H%M%S"))
-  run_id = rowid
-  event_log_id = rowid
-  path = "some_path_{0}".format(rowid)
-  customer_number = 10
-  offset = 23
-  with contextlib.closing(conn.cursor()) as c:
-    c.execute(
-          ('INSERT INTO EventLogs (rowid, customer_number, run_id, event_log_id, path, offset)'
-             ' VALUES (?, ?, ?, ?, ?, 0)'),
-            (rowid, customer_number, run_id, event_log_id, path))
-
-    #c.execute(
-        #'SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?',
-        #(self.run_id, log.path))
-    #row = c.fetchone()
-    #if row:
-      #log.rowid = row[0]
-      #log.set_offset(row[1])
-    #else:
-      #event_log_id = db.EVENT_LOG_ID.generate()
-      #log.rowid = db.EVENT_LOG_ROWID.create(self.run_id, event_log_id)
-      #c.execute(
-          #('INSERT INTO EventLogs (rowid, run_id, path, offset)'
-           #' VALUES (?, ?, ?, 0)'),
-          #(log.rowid, self.run_id, log.path))
-
-  #event = tf.Event(step=123)
-  #path = save_records('events.out.tfevents.0.localhost', [event.SerializeToString()])
-
-  ## Reading the EventLog doesn't actual try to write to the DB.
-  #EventLog = functools.partial(loader.EventLogReader,
-                               #record_reader_factory=loader.RecordReader)
-  #with EventLog(path) as log:
-    ##actual = log.get_next_event()
-    ##self.assertEqual(event, log.get_next_event())
-    ##self.assertIsNone(log.get_next_event())
-    #customer_number = 1
-    #experiment_id = 2
-    #run_id = 3
-    #name = "some run"
-    #reader = loader.RunReader(customer_number, experiment_id, run_id, name)
-    #reader.add_event_log(conn, log)
-
+    ddl = tb_spanner.schema_to_spanner_ddl(table)
+    expected = ('CREATE TABLE SomeTable ('
+                'k_int64 INT64, k_str STRING(23), str_max STRING(MAX))'
+                ' PRIMARY KEY (k_int64, k_str)')
+    self.assertEqual(expected, ddl)
 
 class SqlParserTest(tf.test.TestCase):
   def testParseInsert(self):
@@ -147,17 +58,33 @@ class SqlParserTest(tf.test.TestCase):
                         insert_sql.columns)
     self.assertAllEqual(['a', 'b', 'c', 0], insert_sql.values)
 
-class CloudSpannerCursorTest(tf.test.TestCase):
-  def testInsertSql(self):
-    """Test that insert SQL statements work."""
-    # TODO(jlewi): Create the Spanner instance and database as part of onetime setup for all tests.
+  def testParseSelect(self):
+    sql = ('SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?')
+    parameters = ('a', 'b')
 
+    select_sql = tb_spanner.parse_sql(sql, parameters)
+    self.assertIsInstance(select_sql, tb_spanner.SelectSQL)
+    self.assertEquals('SELECT rowid, offset FROM EventLogs WHERE run_id = a AND path = b',
+                      select_sql.sql)
+
+class CloudSpannerCursorTest(tf.test.TestCase):
+  @classmethod
+  def setUpClass(self):
     # Use an existing database
+    # TODO(jlewi): Create the Spanner instance and database as part of onetime setup for all tests.
     project = "cloud-ml-dev"
     instance_name = "jlewi-tb"
-    database_name = "tb-test-20170911-185126"
-    conn = tb_spanner.CloudSpannerConnection(project, instance_name, database_name)
-    schema = tb_spanner.CloudSpannerSchema(conn)
+    # database_name = "tb-test-20170911-185126"
+    # Use a unique DB on each test run.
+    now = datetime.datetime.now()
+    database_name = "tb-test-{0}".format(now.strftime("%Y%m%d-%H%M%S"))
+    self.conn = tb_spanner.CloudSpannerConnection(project, instance_name, database_name)
+    schema = tb_spanner.CloudSpannerSchema(self.conn)
+    schema.create_tables()
+
+  def testInsertSql(self):
+    """Test that insert SQL statements work."""
+    schema = tb_spanner.CloudSpannerSchema(self.conn)
 
     # Insert a row into EventLogs
     now = datetime.datetime.now()
@@ -167,14 +94,14 @@ class CloudSpannerCursorTest(tf.test.TestCase):
     path = "some_path_{0}".format(rowid)
     customer_number = 10
     offset = 23
-    with contextlib.closing(conn.cursor()) as c:
+    with contextlib.closing(self.conn.cursor()) as c:
       c.execute(
             ('INSERT INTO EventLogs (rowid, customer_number, run_id, event_log_id, path, offset)'
                ' VALUES (?, ?, ?, ?, ?, ?)'),
               (rowid, customer_number, run_id, event_log_id, path, offset))
 
 
-    with conn.database.snapshot() as snapshot:
+    with self.conn.database.snapshot() as snapshot:
       # TODO(jlewi): Verify that we can read the row.
       keyset = spanner.KeySet([[rowid, customer_number, run_id, event_log_id]])
 
@@ -189,8 +116,33 @@ class CloudSpannerCursorTest(tf.test.TestCase):
 
       self.assertEquals(1, len(rows))
       self.assertAllEqual([rowid, customer_number, run_id, event_log_id, path, offset], rows[0])
+
+
+  def testSelectSql(self):
+    """Test verifies we can issue select queries against Cloud Spanner."""
+    rows = [
+      [297, 0 , 0,  0, 'path_0', 0],
+      [297, 0 , 0,  1, 'path_1', 1],
+      [392, 0 , 1,  0, 'path_0', 0],
+      [392, 0 , 1,  1, 'path_1', 1],
+    ]
+
+    with self.conn.database.batch() as batch:
+      batch.insert(
+        table='EventLogs',
+        columns=['rowid','customer_number', 'run_id', 'event_log_id', 'path', 'offset'],
+        values = rows)
+
+    with contextlib.closing(self.conn.cursor()) as c:
+      c.execute(
+            ('SELECT rowid, customer_number, run_id, event_log_id, path, offset '
+               ' from EventLogs where rowid = ? and event_log_id = ?'),
+              (297, 0))
+      row = c.fetchone()
+      self.assertAllEqual([297, 0 , 0,  0, 'path_0', 0], row)
+
+      # According to PEP 249 fetchone should return None if no more rows.
+      self.assertIsNone(c.fetchone())
+
 if __name__ == "__main__":
-  # DO NOT SUBMIT. Running the unittest interferes with how wingide breaks
-  # on exceptions. What if we do run tests.
   tf.test.main()
-  #testE2e()
