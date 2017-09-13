@@ -89,7 +89,7 @@ class ImagesPluginTest(tf.test.TestCase):
         logdir=self.log_dir, multiplexer=multiplexer)
     plugin = images_plugin.ImagesPlugin(context)
     wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [plugin], multiplexer, reload_interval=0)
+        self.log_dir, [plugin], multiplexer, reload_interval=0, path_prefix='')
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
     self.routes = plugin.get_plugin_apps()
 
