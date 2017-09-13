@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins.pr_curve import metadata
+from tensorboard.plugins.pr_curve import summary
 from tensorboard.plugins.pr_curve import pr_curve_demo
 
 
@@ -34,17 +35,20 @@ class PrCurveTest(tf.test.TestCase):
     self.logdir = self.get_temp_dir()
     tf.reset_default_graph()
 
-    # Generate data.
+  def generateDemoData(self):
+    """Generates test data using the plugin demo."""
     pr_curve_demo.run_all(
         logdir=self.logdir,
         steps=3,
         thresholds=5,
         verbose=False)
 
-    # Create a multiplexer for reading the data we just wrote.
-    self.multiplexer = event_multiplexer.EventMultiplexer()
-    self.multiplexer.AddRunsFromDirectory(self.logdir)
-    self.multiplexer.Reload()
+  def createMultiplexer(self):
+    """Creates a multiplexer for reading data within the logdir."""
+    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer.AddRunsFromDirectory(self.logdir)
+    multiplexer.Reload()
+    return multiplexer
 
   def validateTensorEvent(self, expected_step, expected_value, tensor_event):
     """Checks that the values stored within a tensor are correct.
@@ -63,8 +67,11 @@ class PrCurveTest(tf.test.TestCase):
         expected_value, tensor_nd_array, rtol=0, atol=1e-7)
 
   def testWeight1(self):
+    self.generateDemoData()
+    multiplexer = self.createMultiplexer()
+
     # Verify that the metadata was correctly written.
-    accumulator = self.multiplexer.GetAccumulator('colors')
+    accumulator = multiplexer.GetAccumulator('colors')
     tag_content_dict = accumulator.PluginTagToContent('pr_curves')
 
     # Test the summary contents.
@@ -164,8 +171,11 @@ class PrCurveTest(tf.test.TestCase):
     ], tensor_events[2])
 
   def testExplicitWeights(self):
+    self.generateDemoData()
+    multiplexer = self.createMultiplexer()
+
     # Verify that the metadata was correctly written.
-    accumulator = self.multiplexer.GetAccumulator('mask_every_other_prediction')
+    accumulator = multiplexer.GetAccumulator('mask_every_other_prediction')
     tag_content_dict = accumulator.PluginTagToContent('pr_curves')
 
     # Test the summary contents.
@@ -263,6 +273,52 @@ class PrCurveTest(tf.test.TestCase):
         [0.3333333, 0.3986928, 0.4444444, 0.6666667, 0.0],  # Precision.
         [1.0, 0.8133333, 0.2133333, 0.0266667, 0.0],  # Recall.
     ], tensor_events[2])
+
+  def testRawMetricsOp(self):
+    writer = tf.summary.FileWriter(self.logdir)
+    with tf.Session() as sess:
+      # We pass raw counts and precision/recall values.
+      writer.add_summary(sess.run(summary.raw_metrics_op(
+          tag='foo',
+          true_positive_counts=tf.constant([75, 64, 21, 5, 0]),
+          false_positive_counts=tf.constant([150, 105, 18, 0, 0]),
+          true_negative_counts=tf.constant([0, 45, 132, 150, 150]),
+          false_negative_counts=tf.constant([0, 11, 54, 70, 75]),
+          precision=tf.constant(
+              [0.3333333, 0.3786982, 0.5384616, 1.0, 0.0]),
+          recall=tf.constant([1.0, 0.8533334, 0.28, 0.0666667, 0.0]),
+          num_thresholds=5,
+          display_name='some_raw_values',
+          description='We passed raw values into a summary op.')))
+
+    multiplexer = self.createMultiplexer()
+    accumulator = multiplexer.GetAccumulator('.')
+    tag_content_dict = accumulator.PluginTagToContent('pr_curves')
+    self.assertItemsEqual(['foo/pr_curves'], list(tag_content_dict.keys()))
+
+    # Test the metadata.
+    summary_metadata = multiplexer.SummaryMetadata('.', 'foo/pr_curves')
+    self.assertEqual('some_raw_values', summary_metadata.display_name)
+    self.assertEqual(
+        'We passed raw values into a summary op.',
+        summary_metadata.summary_description)
+
+    # Test the stored plugin data.
+    plugin_data = metadata.parse_plugin_metadata(
+        tag_content_dict['foo/pr_curves'])
+    self.assertEqual(5, plugin_data.num_thresholds)
+
+    # Test the summary contents.
+    tensor_events = accumulator.Tensors('foo/pr_curves')
+    self.assertEqual(1, len(tensor_events))
+    self.validateTensorEvent(0, [
+        [75.0, 64.0, 21.0, 5.0, 0.0],  # True positives.
+        [150.0, 105.0, 18.0, 0.0, 0.0],  # False positives.
+        [0.0, 45.0, 132.0, 150.0, 150.0],  # True negatives.
+        [0.0, 11.0, 54.0, 70.0, 75.0],  # False negatives.
+        [0.3333333, 0.3786982, 0.5384616, 1.0, 0.0],  # Precision.
+        [1.0, 0.8533334, 0.28, 0.0666667, 0.0],  # Recall.
+    ], tensor_events[0])
 
 
 if __name__ == "__main__":
