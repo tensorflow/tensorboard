@@ -433,7 +433,11 @@ export function retrieveSpriteAndMetadataInfo(metadataPath: string,
     } else {
       metadata.spriteImage = spriteImage;
       metadata.spriteMetadata = spriteMetadata;
-      callback(metadata);
+      try {
+        callback(metadata);
+      } catch (e) {
+        logging.setModalMessage(String(e));
+      }
     }
   });
 }

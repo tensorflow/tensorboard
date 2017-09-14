@@ -93,7 +93,7 @@ limitations under the License.
   <script src="histogramCore.js"></script>
   <script>
     "use strict";
-
+    import {addParams} from "../tf-backend/urlPathHelpers.js";
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
@@ -147,8 +147,10 @@ limitations under the License.
         }
         this._canceller.cancelAll();
         const router = getRouter();
-        const url = router.pluginRunTagRoute("histograms", "/histograms")(
-          this.tag, this.run);
+        const url = addParams(router.pluginRoute("histograms", "/histograms"), {
+          tag: this.tag,
+          run: this.run,
+        });
         const updateData = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;

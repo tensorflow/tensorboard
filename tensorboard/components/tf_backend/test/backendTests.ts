@@ -16,24 +16,26 @@ limitations under the License.
 import {filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
 import {RequestManager} from '../requestManager.js';
 import {createRouter, setRouter} from '../router.js';
-import {BAD_CHARACTERS, demoify, queryEncoder} from '../urlPathHelpers.js';
+import {addParams} from '../urlPathHelpers.js';
 
 describe('urlPathHelpers', () => {
-  it('demoify works as expected', () => {
-    const demoified = demoify(BAD_CHARACTERS);
-    let allClean = '';
-    for (let i = 0; i < BAD_CHARACTERS.length; i++) {
-      allClean += '_';
-    }
-    chai.assert.equal(demoified, allClean, 'cleaning the BAD_CHARACTERS works');
-    chai.assert.equal(demoify('foozod'), 'foozod', 'doesnt change safe string');
-    chai.assert.equal(demoify('foo zod (2)'), 'foo_zod__2_', 'simple case');
+  it('addParams leaves input untouched when there are no parameters', () => {
+    const actual = addParams('http://foo', {a: undefined, b: undefined});
+    const expected = 'http://foo';
+    chai.assert.equal(actual, expected);
   });
-
-  it('queryEncoder works with demoify on spaces and parens', () => {
-    const params = {foo: 'something with spaces and (parens)'};
-    const actual = demoify(queryEncoder(params));
-    const expected = '_foo_something_with_spaces_and__28parens_29';
+  it('addParams adds parameters to a URL without parameters', () => {
+    const actual = addParams(
+      'http://foo',
+      {a: "1", b: ["2", "3+4"], c: "5", d: undefined});
+    const expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
+    chai.assert.equal(actual, expected);
+  });
+  it('addParams adds parameters to a URL with parameters', () => {
+    const actual = addParams(
+      'http://foo?a=1',
+      {b: ["2", "3+4"], c: "5", d: undefined});
+    const expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
     chai.assert.equal(actual, expected);
   });
 });

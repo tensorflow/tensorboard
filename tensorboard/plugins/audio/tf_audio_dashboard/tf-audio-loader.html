@@ -114,11 +114,11 @@ backend.
   </template>
   <script>
     "use strict";
+    import {addParams} from "../tf-backend/urlPathHelpers.js";
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
     import {formatDate} from '../tf-card-heading/util.js';
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
-    import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
 
     Polymer({
       is: "tf-audio-loader",
@@ -211,9 +211,11 @@ backend.
         }
         this._metadataCanceller.cancelAll();
         const router = getRouter();
-        const route = router.pluginRunTagRoute("audio", "/audio")(
-            this.tag, this.run);
-        const url = `${route}&sample=${this.sample}`;
+        const url = addParams(router.pluginRoute('audio', '/audio'), {
+            tag: this.tag,
+            run: this.run,
+            sample: this.sample,
+        });
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -226,34 +228,19 @@ backend.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(audioMetadata) {
-        const route = getRouter().pluginRoute('audio', '/individualAudio');
-        let query = audioMetadata.query;
-        if (route.indexOf('?') > -1) {
-          // The route already has GET parameters. Append ours.
-          query = '&' + query;
-        } else {
-          // The route lacks GET parameters. Just use ours.
-          query = '?' + query;
-        }
-        if (getRouter().isDemoMode()) {
-          query = urlPathHelpers.demoify(query);
-        }
+        let url = getRouter().pluginRoute('audio', '/individualAudio');
+        // Include wall_time just to disambiguate the URL and force
+        // the browser to reload the audio when the URL changes. The
+        // backend doesn't care about the value.
+        url = addParams(url, {ts: audioMetadata.wall_time});
+        url += '&' + audioMetadata.query;
 
-        let individualAudioURL = route + query;
-        if (getRouter().isDemoMode()) {
-          individualAudioURL += '.png';
-        } else {
-          // Include wall_time just to disambiguate the URL and force
-          // the browser to reload the audio when the URL changes. The
-          // backend doesn't care about the value.
-          individualAudioURL += `&ts=${audioMetadata.wall_time}`;
-        }
         return {
           wall_time: formatDate(new Date(audioMetadata.wall_time * 1000)),
           step: audioMetadata.step,
           label: audioMetadata.label,
           contentType: audioMetadata.contentType,
-          url: individualAudioURL,
+          url,
         };
       },
     });

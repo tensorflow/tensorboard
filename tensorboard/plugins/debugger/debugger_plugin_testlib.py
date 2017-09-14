@@ -130,7 +130,8 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     self.plugin = debugger_plugin.DebuggerPlugin(self.context)
     self.plugin.listen(self.debugger_data_server_grpc_port)
     wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin], self.multiplexer, reload_interval=0)
+        self.log_dir, [self.plugin], self.multiplexer, reload_interval=0,
+        path_prefix='')
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
     # The debugger data server should be started at the correct port.
@@ -139,7 +140,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
 
     mock_debugger_data_server = self.mock_debugger_data_server
     start = mock_debugger_data_server.start_the_debugger_data_receiving_server
-    start.assert_called_once()
+    self.assertEqual(1, start.call_count)
 
   def tearDown(self):
     # Remove the directory with debugger-related events files.
@@ -169,8 +170,9 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     content_proto = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device=device_name, output_slot=output_slot)
     value.metadata.plugin_data.plugin_name = constants.DEBUGGER_PLUGIN_NAME
-    value.metadata.plugin_data.content = json_format.MessageToJson(
-        content_proto, including_default_value_fields=True)
+    value.metadata.plugin_data.content = tf.compat.as_bytes(
+        json_format.MessageToJson(
+            content_proto, including_default_value_fields=True))
     return event
 
   def _DeserializeResponse(self, byte_content):

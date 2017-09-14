@@ -35,6 +35,7 @@ by default. The user can select a different run from a dropdown menu.
 -->
 <dom-module id="tf-graph-dashboard">
 <template>
+<paper-dialog id="error-dialog" with-backdrop></paper-dialog>
 <template is="dom-if" if="[[_datasetsEmpty(_datasets)]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No graph definition files were found.</h3>
@@ -120,6 +121,10 @@ by default. The user can select a different run from a dropdown menu.
   height: 100%;
 }
 
+paper-dialog {
+  padding: 20px;
+}
+
 </style>
 </template>
 </dom-module>
@@ -129,12 +134,19 @@ import {RequestManager} from "../tf-backend/requestManager.js";
 import {Canceller} from "../tf-backend/canceller.js";
 import {compareTagNames} from "../vz-sorting/sorting.js";
 import {getRouter} from "../tf-backend/router.js";
+import {addParams} from "../tf-backend/urlPathHelpers.js";
 import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
+import * as storage from '../tf-storage/storage.js';
+
+/**
+ * The (string) name for the run of the selected dataset in the graph dashboard.
+ */
+const RUN_STORAGE_KEY = 'run';
 
 Polymer({
   is: 'tf-graph-dashboard',
   properties: {
-    _datasets: Object,
+    _datasets: Array,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
       type: Object,
@@ -193,6 +205,20 @@ Polymer({
       value: true,  // TODO(@chihuahua): Reconcile this setting with Health Pills.
       readOnly: true,
     },
+    run: {
+      type: String,
+      notify: true,
+      value: storage.getStringInitializer(
+          RUN_STORAGE_KEY, {
+            defaultValue: '',
+            useLocalStorage: false,
+          }),
+      observer: '_runObserver',
+    },
+    _selectedDataset: {
+      type: Number,
+      notify: true,
+    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
@@ -201,6 +227,8 @@ Polymer({
     '_maybeFetchHealthPills(_debuggerDataEnabled, allStepsModeEnabled, ' +
         'specificHealthPillStep, _selectedNode)',
     '_maybeInitializeDashboard(_isAttached)',
+    '_determineSelectedDataset(_datasets, run)',
+    '_updateSelectedDatasetName(_datasets, _selectedDataset)',
   ],
   attached: function() {
     this.set('_isAttached', true);
@@ -230,6 +258,12 @@ Polymer({
 
     this._maybeFetchHealthPills();
   },
+  _runObserver: storage.getStringObserver(
+      RUN_STORAGE_KEY, {
+        defaultValue: '',
+        polymerProperty: 'run',
+        useLocalStorage: false,
+      }),
   _fetchGraphRuns() {
     return this._requestManager.request(
         getRouter().pluginRoute('graphs', '/runs'));
@@ -271,7 +305,7 @@ Polymer({
       'large_attrs_key': optional(largeAttrsKey),
     };
     const extension = demoMode ? '.pbtxt' : '';
-    return base + queryEncoder(parameters) + extension;
+    return addParams(base, parameters) + extension;
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
@@ -304,12 +338,38 @@ Polymer({
             (runToMetadata[runName] || []).sort(compareTagNames),
             tag => ({
               tag: tag,
-              path: getRouter().pluginRunTagRoute(
-                'graphs', '/run_metadata')(tag, runName),
+              path: addParams(
+                getRouter().pluginRoute('graphs', '/run_metadata'),
+                {tag: tag, run: runName}),
             })),
         }));
         this.set('_datasets', datasets);
       });
+  },
+  _determineSelectedDataset(datasets, run) {
+    // By default, load the first dataset.
+    if (!run) {
+      // By default, load the first dataset. 
+      this.set('_selectedDataset', 0);
+      return;
+    }
+    
+    // If the URL specifies a dataset, load it.
+    const dataset = datasets.findIndex(d => d.name === run);
+    if (dataset === -1) {
+      // Tell the user if the dataset cannot be found to avoid misleading
+      // the user.
+      const dialog = this.$$('#error-dialog');
+      dialog.textContent =
+          `No dataset named "${run}" could be found.`;
+      dialog.open();
+      return;
+    }
+
+    this.set('_selectedDataset', dataset);
+  },
+  _updateSelectedDatasetName(datasets, selectedDataset) {
+    this.set('run', datasets[selectedDataset].name);
   },
   _requestHealthPills: function() {
     this.set('_areHealthPillsLoading', true);

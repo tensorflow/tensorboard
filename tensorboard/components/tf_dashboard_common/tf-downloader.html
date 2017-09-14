@@ -36,12 +36,12 @@ limitations under the License.
     <div class="center">
       <span>
         <a
-          download="[[_csvName(_run)]]"
-          href="[[_csvUrl(_run, urlFn)]]"
+          download="[[_csvName(tag, _run)]]"
+          href="[[_csvUrl(tag, _run, urlFn)]]"
           >CSV</a>
         <a
-          download="[[_jsonName(_run)]]"
-          href="[[_jsonUrl(_run, urlFn)]]"
+          download="[[_jsonName(tag, _run)]]"
+          href="[[_jsonUrl(tag, _run, urlFn)]]"
           >JSON</a>
       </span>
     </div>
@@ -74,6 +74,7 @@ limitations under the License.
     </style>
   </template>
   <script>
+    import {addParams} from "../tf-backend/urlPathHelpers.js";
     Polymer({
       is: "tf-downloader",
       properties: {
@@ -82,17 +83,17 @@ limitations under the License.
         tag: String,
         urlFn: Function,
       },
-      _csvUrl: function(_run, urlFn) {
-        return urlFn(this.tag, _run) + "&format=csv";
+      _csvUrl(tag, run, urlFn) {
+        return addParams(urlFn(tag, run), {format: "csv"});
       },
-      _jsonUrl: function(_run, urlFn) {
-        return urlFn(this.tag, _run);
+      _jsonUrl(tag, run, urlFn) {
+        return urlFn(tag, run);
       },
-      _csvName: function(_run) {
-        return "run_" + _run + ",tag_" + this.tag + ".csv";
+      _csvName(tag, run) {
+        return `run_${run},tag_${tag}.csv`;
       },
-      _jsonName: function(_run) {
-        return "run-" + _run + "-tag-" + this.tag + ".json";
+      _jsonName(tag, run) {
+        return `run_${run},tag_${tag}.json`;
       },
     });
   </script>

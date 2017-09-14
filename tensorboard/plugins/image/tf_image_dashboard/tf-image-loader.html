@@ -181,11 +181,11 @@ future for loading older images.
   </template>
   <script>
     "use strict";
+    import {addParams} from '../tf-backend/urlPathHelpers.js';
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
     import {formatDate} from '../tf-card-heading/util.js';
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
-    import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
 
     Polymer({
       is: "tf-image-loader",
@@ -306,9 +306,11 @@ future for loading older images.
         }
         this._metadataCanceller.cancelAll();
         const router = getRouter();
-        const route = router.pluginRunTagRoute("images", "/images")(
-            this.tag, this.run);
-        const url = `${route}&sample=${this.sample}`;
+        const url = addParams(router.pluginRoute('images', '/images'), {
+            tag: this.tag,
+            run: this.run,
+            sample: this.sample,
+        });
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -321,28 +323,13 @@ future for loading older images.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(imageMetadata) {
-        const route = getRouter().pluginRoute('images', '/individualImage');
-        let query = imageMetadata.query;
-        if (route.indexOf('?') > -1) {
-          // The route already has GET parameters. Append ours.
-          query = '&' + query;
-        } else {
-          // The route lacks GET parameters. Just use ours.
-          query = '?' + query;
-        }
-        if (getRouter().isDemoMode()) {
-          query = urlPathHelpers.demoify(query);
-        }
+        let url = getRouter().pluginRoute('images', '/individualImage');
+        // Include wall_time just to disambiguate the URL and force
+        // the browser to reload the image when the URL changes. The
+        // backend doesn't care about the value.
+        url = addParams(url, {ts: imageMetadata.wall_time});
+        url += '&' + imageMetadata.query;
 
-        let individualImageUrl = route + query;
-        if (getRouter().isDemoMode()) {
-          individualImageUrl += '.png';
-        } else {
-          // Include wall_time just to disambiguate the URL and force
-          // the browser to reload the image when the URL changes. The
-          // backend doesn't care about the value.
-          individualImageUrl += `&ts=${imageMetadata.wall_time}`;
-        }
         return {
           width: imageMetadata.width,
           height: imageMetadata.height,
@@ -350,7 +337,7 @@ future for loading older images.
           // constructor accepts a time in milliseconds, so we multiply by 1000.
           wall_time: new Date(imageMetadata.wall_time * 1000),
           step: imageMetadata.step,
-          url: individualImageUrl,
+          url,
         };
       },
       _updateImageUrl(steps, stepIndex) {

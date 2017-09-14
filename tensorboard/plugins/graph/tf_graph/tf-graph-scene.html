@@ -48,42 +48,53 @@ limitations under the License.
 
 /* --- Node and annotation-node for Metanode --- */
 
-::content .meta > .nodeshape > rect,
-::content .meta > .annotation-node > rect {
-  cursor: pointer;
+::content .meta > .nodeshape > rect.nodecolortarget,
+::content .meta > .annotation-node > rect.nodecolortarget {
   fill: hsl(0, 0%, 70%);
 }
 
-::content .node.meta.highlighted > .nodeshape > rect,
-::content .node.meta.highlighted > .annotation-node > rect {
+::content .meta > .nodeshape > rect.function-indicator-layer,
+::content .meta > .annotation-node > rect.function-indicator-layer {
+  fill: url(#stripe-pattern);
+  fill-opacity: 0.07;
+}
+
+::content .node.meta > .nodeshape > rect.event-handling-layer,
+::content .node.meta > .annotation-node > rect.event-handling-layer {
+  cursor: pointer;
+  fill-opacity: 0;
+}
+
+::content .node.meta.highlighted > .nodeshape > rect.event-handling-layer,
+::content .node.meta.highlighted > .annotation-node > rect.event-handling-layer {
   stroke-width: 2;
 }
 
-::content .annotation.meta.highlighted > .nodeshape > rect,
-::content .annotation.meta.highlighted > .annotation-node > rect {
+::content .annotation.meta.highlighted > .nodeshape > rect.event-handling-layer,
+::content .annotation.meta.highlighted > .annotation-node > rect.event-handling-layer {
   stroke-width: 1;
 }
 
-::content .meta.selected > .nodeshape > rect,
-::content .meta.selected > .annotation-node > rect {
+::content .meta.selected > .nodeshape > rect.event-handling-layer,
+::content .meta.selected > .annotation-node > rect.event-handling-layer {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .node.meta.selected.expanded > .nodeshape > rect,
-::content .node.meta.selected.expanded > .annotation-node > rect {
+::content .node.meta.selected.expanded > .nodeshape > rect.event-handling-layer,
+::content .node.meta.selected.expanded > .annotation-node > rect.event-handling-layer {
   stroke: red;
   stroke-width: 3;
 }
 
-::content .annotation.meta.selected > .nodeshape > rect,
-::content .annotation.meta.selected > .annotation-node > rect {
+::content .annotation.meta.selected > .nodeshape > rect.event-handling-layer,
+::content .annotation.meta.selected > .annotation-node > rect.event-handling-layer {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .node.meta.selected.expanded.highlighted > .nodeshape > rect,
-::content .node.meta.selected.expanded.highlighted > .annotation-node > rect {
+::content .node.meta.selected.expanded.highlighted > .nodeshape > rect.event-handling-layer,
+::content .node.meta.selected.expanded.highlighted > .annotation-node > rect.event-handling-layer {
   stroke: red;
   stroke-width: 4;
 }
@@ -630,6 +641,15 @@ limitations under the License.
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+
+    <!-- A striped background pattern. -->
+    <pattern id="stripe-pattern"
+             width="6"
+             height="6"
+             patternTransform="rotate(45)"
+             patternUnits="userSpaceOnUse">
+      <rect width="3" height="6" fill="#000"></rect>
+    </pattern>
   </defs>
   <!-- Make a large rectangle that fills the svg space so that
   zoom events get captured on safari -->
@@ -762,6 +782,9 @@ Polymer({
       value: 18
     },
     progress: Object,
+    // An array of ContextMenuItem objects. Items that appear in the context
+    // menu for a node.
+    nodeContextMenuItems: Array,
     // A mapping between node name to the tf.graph.scene.HealthPill to render.
     nodeNamesToHealthPills: Object,
     // The step of health pills to show throughout the graph.
@@ -1017,6 +1040,21 @@ Polymer({
 
     if (nodeGroup) {
       tf.graph.scene.node.stylize(nodeGroup, node, this);
+    }
+    
+    if (node.node.type === tf.graph.NodeType.META &&
+        node.node.associatedFunction &&
+        !node.isLibraryFunction) {
+      // The node is that of a function call. Also link the node within the
+      // function library. This clarifies to the user that the library function
+      // is being used.
+      var libraryFunctionNodeName = tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
+          node.node.associatedFunction;
+      var functionGroup = d3.select(
+          '.' + tf.graph.scene.Class.Scene.GROUP + '>.' +
+          tf.graph.scene.Class.Scene.FUNCTION_LIBRARY + ' g[data-name="' +
+          libraryFunctionNodeName + '"]');
+      tf.graph.scene.node.stylize(functionGroup, node, this);
     }
 
     var annotationGroupIndex = this.getAnnotationGroupsIndex(n);

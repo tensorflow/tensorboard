@@ -154,6 +154,7 @@ limitations under the License.
     </style>
   </template>
   <script>
+    import {addParams} from "../tf-backend/urlPathHelpers.js";
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
@@ -293,10 +294,10 @@ limitations under the License.
         this._canceller.cancelAll();
         const router = getRouter();
 
-        let url = router.pluginRoute('pr_curves', '/pr_curves');
-        url += url.indexOf('?') > -1 ? '&' : '?';
-        url += `tag=${encodeURIComponent(this.tag)}`;
-        url += this.runs.map(r => `&run=${encodeURIComponent(r)}`).join('');
+        const url = addParams(router.pluginRoute('pr_curves', '/pr_curves'), {
+            tag: this.tag,
+            run: this.runs,  // repeated URL parameter
+        });
 
         const updateData = this._canceller.cancellable(result => {
           if (result.cancelled) {

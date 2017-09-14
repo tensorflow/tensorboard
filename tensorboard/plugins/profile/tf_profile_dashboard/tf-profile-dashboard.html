@@ -105,6 +105,7 @@ profile run can have multiple tools that present the performance profile as diff
 <script>
   "use strict";
 
+  import {addParams} from "../tf-backend/urlPathHelpers.js";
   import {RequestManager} from '../tf-backend/requestManager.js';
   import {compareTagNames} from "../vz-sorting/sorting.js";
   import {getRouter} from '../tf-backend/router.js';
@@ -199,8 +200,9 @@ profile run can have multiple tools that present the performance profile as diff
     },
     _maybeUpdateTool: function(datasets, selectedDataset, currentTool) {
       if (currentTool == "trace_viewer") {
-        var trace_data_url = (getRouter().pluginRunTagRoute('profile', '/data')(
-            'trace_viewer', datasets[selectedDataset].name));
+        var trace_data_url = addParams(
+            getRouter().pluginRoute('profile', '/data'),
+            {tag: 'trace_viewer', run: datasets[selectedDataset].name});
         // Make the trace data url relative to the root.
         if (trace_data_url[0] != '/') {
           trace_data_url = '/' + trace_data_url;

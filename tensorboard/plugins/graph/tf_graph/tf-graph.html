@@ -64,6 +64,7 @@ paper-button {
           selected-node="{{selectedNode}}"
           color-by="[[colorBy]]"
           progress="[[progress]]"
+          node-context-menu-items="[[nodeContextMenuItems]]"
           node-names-to-health-pills="[[nodeNamesToHealthPills]]"
           health-pill-step-index="{{healthPillStepIndex}}"
     ></tf-graph-scene>
@@ -112,6 +113,9 @@ Polymer({
       readOnly: true,
       notify: true,
     },
+    // An array of ContextMenuItem objects. Items that appear in the context
+    // menu for a node.
+    nodeContextMenuItems: Array,
     _renderDepth: {
       type: Number,
       value: 1

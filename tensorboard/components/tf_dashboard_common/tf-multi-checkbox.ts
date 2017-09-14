@@ -27,7 +27,7 @@ Polymer({
     },  // All the runs in consideration
     regexInput: {
       type: String,
-      value: storage.getStringInitializer('regexInput', ''),
+      value: storage.getStringInitializer('regexInput', {defaultValue: ''}),
       observer: '_regexInputObserver',
     },  // Regex for filtering the runs
     regex: {type: Object, computed: '_makeRegex(regexInput)'},
@@ -39,7 +39,8 @@ Polymer({
       // if a run is explicitly enabled, True, if explicitly disabled, False.
       // if undefined, default value (enable for first k runs, disable after).
       type: Object,
-      value: storage.getObjectInitializer('runSelectionState', {}),
+      value: storage.getObjectInitializer(
+          'runSelectionState', {defaultValue: {}}),
       observer: '_storeRunToIsCheckedMapping',
     },
     // (Allows state to persist across regex filtering)
@@ -87,7 +88,7 @@ Polymer({
     '_setIsolatorIcon(runSelectionState, names)',
   ],
   _storeRunToIsCheckedMapping:
-      storage.getObjectObserver('runSelectionState', {}),
+      storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
   _makeRegex: function(regex) {
     try {
       return new RegExp(regex)
@@ -166,7 +167,7 @@ Polymer({
   _isChecked: function(item, outSelectedChange) {
     return this.outSelected.indexOf(item) != -1;
   },
-  _regexInputObserver: storage.getStringObserver('regexInput', ''),
+  _regexInputObserver: storage.getStringObserver('regexInput', {defaultValue: ''}),
   toggleAll: function() {
     var _this = this;
     var anyToggledOn = this.namesMatchingRegex.some(function(n) {

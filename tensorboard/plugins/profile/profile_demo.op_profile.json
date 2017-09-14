@@ -1,0 +1,96 @@
+{
+  "byCategory": {
+    "name": "byCategory",
+    "metrics": {
+      "time": 1,
+      "flops": 0.4
+    },
+    "children": [{
+      "name": "Good ops",
+      "metrics": {
+        "time": 0.6,
+        "flops": 0.4
+      },
+      "category": {},
+      "children": [{
+        "name": "%convolution",
+        "metrics": {
+          "time": 0.2,
+          "flops": 0.18
+        },
+        "xla": {
+          "op": "convolution",
+          "expression": "%convolution = something",
+          "provenance": "Convolution2D",
+          "category": "Good ops",
+          "layout": {"dimensions":[{
+            "size": 200,
+            "alignment": 128,
+            "semantics": "feature"
+          }, {
+            "size": 8,
+            "alignment": 8,
+            "semantics": "batch"
+          }, {
+            "size": 256,
+            "alignment": 0,
+            "semantics": "spatial"
+          }]}
+        },
+        "children": []
+      }, {
+        "name": "%fusion",
+        "metrics": {
+          "time": 0.4,
+          "flops": 0.22
+        },
+        "xla": {
+          "op": "fusion:kOutput",
+          "expression": "%fusion = something",
+          "provenance": "",
+          "category": "Good ops"
+        },
+        "children": [{
+          "name": "%dot.1",
+          "xla": {
+            "op": "dot",
+            "expression": "%dot.1 = something",
+            "provenance": "TfOpForFusedDot",
+            "category": "Good ops"
+          },
+          "children": []
+        }, {
+          "name": "%dot.2",
+          "xla": {
+            "op": "dot",
+            "expression": "%dot.2 = something",
+            "provenance": "",
+            "category": "Good ops"
+          },
+          "children": []
+        }]
+      }]
+    }, {
+      "name": "Overhead",
+      "metrics": {
+        "time": 0.4,
+        "flops": 0
+      },
+      "category": {},
+      "children": [{
+        "name": "%infeed",
+        "metrics": {
+          "time": 0.4,
+          "flops": 0
+        },
+        "xla": {
+          "op": "infeed",
+          "expression": "%infeed = something",
+          "provenance": "",
+          "category": "Overhead"
+        },
+        "children": []
+      }]
+    }]
+  }
+}
