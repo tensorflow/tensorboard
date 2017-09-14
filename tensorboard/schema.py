@@ -28,7 +28,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from google.cloud import spanner
 from google.gax import errors
 from google.api.core import exceptions
 import logging
