@@ -153,7 +153,7 @@ EVENT_LOGS_TABLE = TableSchema(
     columns=[ColumnSchema('rowid', Int64ColumnType()),
              ColumnSchema('customer_number', Int64ColumnType()),
              ColumnSchema('run_id', Int64ColumnType(), not_null=True),
-             ColumnSchema('event_log_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('event_log_id', Int64ColumnType()),
              ColumnSchema('path', StringColumnType(
                  length=1023), not_null=True),
              ColumnSchema('offset', Int64ColumnType(), not_null=True)],
