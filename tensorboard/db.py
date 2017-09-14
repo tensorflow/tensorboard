@@ -195,7 +195,8 @@ def to_sqllite_ddl(spec):
                columns=', '.join(spec.columns))
   return ddl
 
-
+# TODO(jlewi): Should we refactor this class to make it easier for each Database implementation
+# to customize DB creation; e.g. Cloud Spanner?
 class Schema(object):
   """SQL schema creation tool for TensorBase."""
 
@@ -393,6 +394,9 @@ class Cursor(object):
     self._init_delegate()
     self._delegate.executemany(sql, seq_of_parameters)
 
+  # TODO(jlewi): Do we really need this method? Its not part of the PEP249. Its an SQLLite convenience
+  # function. This method isn't being used anywhere in the codebase so I think we should get rid
+  # of it until we have a use case rather than create more work for adding new DBs.
   def executescript(self, sql):
     """Executes a script of many queries.
 

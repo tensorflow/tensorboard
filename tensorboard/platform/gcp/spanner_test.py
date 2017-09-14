@@ -21,9 +21,10 @@ import functools
 import os
 
 from tensorboard import db
-from tensorboard import spanner as tb_spanner
+from tensorboard.platform.gcp import spanner as tb_spanner
 from tensorboard import loader
 from tensorboard import loader_test
+from tensorboard import schema
 import tensorflow as tf
 import tempfile
 import unittest
@@ -32,18 +33,25 @@ CODE_ALREADY_EXISTS = 409
 
 class SchemaToSpannerDDL(tf.test.TestCase):
   def testSchemas(self):
-    table = tb_spanner.TableSchema(
+    table = schema.TableSchema(
       name = 'SomeTable',
-      columns=[tb_spanner.ColumnSchema('k_int64', tb_spanner.Int64ColumnType()),
-               tb_spanner.ColumnSchema('k_str', tb_spanner.StringColumnType(length=23)),
-               tb_spanner.ColumnSchema('str_max', tb_spanner.StringColumnType())],
+      columns=[schema.ColumnSchema('k_int64', schema.Int64ColumnType()),
+               schema.ColumnSchema('k_str', schema.StringColumnType(length=23)),
+               schema.ColumnSchema('str_max', schema.StringColumnType())],
       keys=['k_int64', 'k_str'])
 
-    ddl = tb_spanner.schema_to_spanner_ddl(table)
+    ddl = tb_spanner.to_spanner_ddl(table)
     expected = ('CREATE TABLE SomeTable ('
                 'k_int64 INT64, k_str STRING(23), str_max STRING(MAX))'
                 ' PRIMARY KEY (k_int64, k_str)')
     self.assertEqual(expected, ddl)
+
+  def testIndexSchemaToDdl(self):
+    # Test to make sure we can generate valid DDL statements.
+    expected = ('CREATE UNIQUE INDEX ExperimentsNameIndex '
+                'ON Experiments (customer_number, name)')
+    actual = tb_spanner.to_spanner_ddl(schema.EXPERIMENTS_NAME_INDEX)
+    self.assertEqual(expected, actual)
 
 class SqlParserTest(tf.test.TestCase):
   def testParseInsert(self):
@@ -66,6 +74,8 @@ class SqlParserTest(tf.test.TestCase):
     self.assertIsInstance(select_sql, tb_spanner.SelectSQL)
     self.assertEquals('SELECT rowid, offset FROM EventLogs WHERE run_id = a AND path = b',
                       select_sql.sql)
+    self.assertEquals('EventLogs', select_sql.table)
+    self.assertAllEqual(['rowid', 'offset'], select_sql.columns)
 
 class CloudSpannerCursorTest(tf.test.TestCase):
   @classmethod
@@ -79,12 +89,10 @@ class CloudSpannerCursorTest(tf.test.TestCase):
     now = datetime.datetime.now()
     database_name = "tb-test-{0}".format(now.strftime("%Y%m%d-%H%M%S"))
     self.conn = tb_spanner.CloudSpannerConnection(project, instance_name, database_name)
-    schema = tb_spanner.CloudSpannerSchema(self.conn)
-    schema.create_tables()
+    tb_spanner.create_database(self.conn.client, instance_name, database_name)
 
   def testInsertSql(self):
     """Test that insert SQL statements work."""
-    schema = tb_spanner.CloudSpannerSchema(self.conn)
 
     # Insert a row into EventLogs
     now = datetime.datetime.now()
@@ -100,9 +108,8 @@ class CloudSpannerCursorTest(tf.test.TestCase):
                ' VALUES (?, ?, ?, ?, ?, ?)'),
               (rowid, customer_number, run_id, event_log_id, path, offset))
 
-
     with self.conn.database.snapshot() as snapshot:
-      # TODO(jlewi): Verify that we can read the row.
+      # Verify that we can read the row.
       keyset = spanner.KeySet([[rowid, customer_number, run_id, event_log_id]])
 
       results = snapshot.read(
@@ -143,6 +150,11 @@ class CloudSpannerCursorTest(tf.test.TestCase):
 
       # According to PEP 249 fetchone should return None if no more rows.
       self.assertIsNone(c.fetchone())
+
+      # Check the descriptions.
+      description = c.description
+      names = [d[0] for d in description]
+      self.assertAllEqual(['rowid', 'customer_number', 'run_id', 'event_log_id', 'path', 'offset'], names)
 
 if __name__ == "__main__":
   tf.test.main()

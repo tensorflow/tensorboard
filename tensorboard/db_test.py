@@ -40,12 +40,6 @@ class SqlliteDdlTest(test_util.TestCase):
 
   def testIndexSchemaToDdl(self):
     # Test to make sure we can generate valid DDL statements.
-    expected = ('CREATE TABLE IF NOT EXISTS Runs ('
-                'rowid INTEGER PRIMARY KEY, '
-                'customer_number INTEGER, '
-                'experiment_id INTEGER NOT NULL, '
-                'run_id INTEGER NOT NULL, '
-                'name VARCHAR(1900) NOT NULL)')
     expected = ('CREATE UNIQUE INDEX IF NOT EXISTS ExperimentsNameIndex '
                 'ON Experiments (customer_number, name)')
     actual = db.to_sqllite_ddl(schema.EXPERIMENTS_NAME_INDEX)

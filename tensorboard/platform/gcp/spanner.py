@@ -48,36 +48,54 @@ def to_spanner_type(column_type):
   Returns:
     string identify the spanner column type.
   """
-  if isinstance(column_type, Int64ColumnType):
+  if isinstance(column_type, schema.BoolColumnType):
+    return "BOOL"
+
+  if isinstance(column_type, schema.BytesColumnType):
+    if column_type.length:
+      return 'BYTES({0})'.format(column_type.length)
+    else:
+      return 'BYTES(MAX)'
+
+  if isinstance(column_type, schema.Int64ColumnType):
     return 'INT64'
 
-  if isinstance(column_type, StringColumnType):
+  if isinstance(column_type, schema.StringColumnType):
     if column_type.length:
       return 'STRING({0})'.format(column_type.length)
     else:
       return 'STRING(MAX)'
 
-def to_spanner_ddl(schema):
+  raise ValueError(
+    '{0} is not a support ColumnType'.format(column_type.__class__))
+
+def to_spanner_ddl(spec):
   """Convert a TableSchema object to a spanner DDL statement.
 
   Args:
-    schema: TableSchema object representing the schema for the table.
+    spec: TableSchema object representing the schema for the table.
 
   Returns:
     ddl statement to create the table.
 
-  : type schema: TableSchema
+  : type spec: TableSchema
   : rtype : str
   """
   # TODO(jlewi): Add support for not null modifier.
-  columns = []
-  for c in spec.columns:
-    s = '{0} {1}'.format(c.name, to_spanner_type(c.value_type))
-    columns.append(s)
-  columns = ', '.join(columns)
-  keys = ', '.join(schema.keys)
-  ddl = 'CREATE TABLE {name} ({columns}) PRIMARY KEY ({key_fields})'.format(
-    name = schema.name, columns = columns, key_fields=keys)
+  if isinstance(spec, schema.TableSchema):
+    columns = []
+    for c in spec.columns:
+      s = '{0} {1}'.format(c.name, to_spanner_type(c.value_type))
+      columns.append(s)
+    columns = ', '.join(columns)
+    keys = ', '.join(spec.keys)
+    ddl = 'CREATE TABLE {name} ({columns}) PRIMARY KEY ({key_fields})'.format(
+      name = spec.name, columns = columns, key_fields=keys)
+
+  elif isinstance(spec, schema.IndexSchema):
+    ddl = ('CREATE UNIQUE INDEX {name} ON {table} ({columns})').format(
+               name=spec.name, table=spec.table,
+               columns=', '.join(spec.columns))
   return ddl
 
 class CloudSpannerConnection(object):
@@ -154,6 +172,7 @@ class CloudSpannerCursor(object):
     # rindex points to the position in _results of the next row to return.
     self._results = []
     self._rindex = 0
+    self._descriptions = []
 
   def execute(self, sql, parameters=()):
     """Executes a single query.
@@ -189,34 +208,36 @@ class CloudSpannerCursor(object):
       results.consume_all()
       self._results = results.rows
       self._rindex = 0
+
+      # TODO(jlewi): We should support the type_code as well.
+      # According to https://www.python.org/dev/peps/pep-0249/#cursor-attributes
+      # name and type_code are the only two attributes required for a column description.
+      # However, it wasn't clear from the spec what values we should use for the type_code
+      # so I just it to None for now.
+      self._descriptions = []
+      t = schema.get_table(parsed.table)
+      for c in parsed.columns:
+        self._descriptions.append([c, None, None, None, None, None, None])
       return
 
-    # TODO(jlewi): Update the code to handle update ddl statements.
-    #else:
-      #try:
-        #op = self.database.update_ddl([sql.format(parameters)])
-      #except errors.RetryError as e:
-        #logging.error("There was a problem creating the database. %s", e.cause.details())
-        #raise
-      ## TODO(jlewi): Does this block until op completes?
-      #op.result()
 
-  #def executemany(self, sql, seq_of_parameters=()):
-    #"""Executes a single query many times.
+  def executemany(self, sql, seq_of_parameters=()):
+    """Executes a single query many times.
 
-    #:type sql: str
-    #:type seq_of_parameters: list[tuple[object]]
-    #"""
-    #self._init_delegate()
-    #self._delegate.executemany(sql, seq_of_parameters)
+    :type sql: str
+    :type seq_of_parameters: list[tuple[object]]
+    """
+    for p in seq_of_parameters:
+      self.execute(sql, p)
 
-  #def executescript(self, sql):
-    #"""Executes a script of many queries.
+  def executescript(self, sql):
+    """Executes a script of many queries.
 
-    #:type sql: str
-    #"""
-    #self._init_delegate()
-    #self._delegate.executescript(sql)
+    :type sql: str
+    """
+    raise NotImplementedError(
+      'executescript is not a PEP249 method and is not currently '
+      'supported for Cloud Spanner')
 
   def fetchone(self):
     """Returns next row in result set.
@@ -251,16 +272,17 @@ class CloudSpannerCursor(object):
     self._rindex = end_index
     return self._results[start_index:end_index]
 
-  #@property
-  #def description(self):
-    #"""Returns information about each column in result set.
+  @property
+  def description(self):
+    """Returns information about each column in result set.
 
-    #See: https://www.python.org/dev/peps/pep-0249/
+    See: https://www.python.org/dev/peps/pep-0249/
 
-    #:rtype: list[tuple[str, int, int, int, int, int, bool]]
-    #"""
-    #self._check_that_read_query_was_issued()
-    #return self._delegate.description
+    :rtype: list[tuple[str, int, int, int, int, int, bool]]
+    """
+    # First two columns are name and typecode and required.
+    # The others are optional.
+    return self._descriptions
 
   #@property
   #def rowcount(self):
@@ -335,22 +357,30 @@ class CloudSpannerCursor(object):
       #raise ValueError('cursor was closed')
 
 
-# TODO(jlewi): Do we really need to subclass db.Schema? With Cloud Spanner Database creation
-# is a one time setup event. We shouldn't be creating tables dynamically. If we are something
-# is probably wrong.
-class CloudSpannerSchema(db.Schema):
-  def create_tables(self):
-    # Create an empty database.
-    ddl = [schema_to_spanner_ddl(t) for t in schema.TABLES]
-    ddl.extend([schema_to_spanner_ddl(t) for t in schema.INDEXES])
-    database = self._db_conn.instance.database(self._db_conn.database_id, ddl)
-    try:
-      op = database.create()
-      op.result()
-    except errors.RetryError as e:
-      logging.error("There was a problem creating the database. %s", e.cause.details())
-      raise
+def create_database(client, instance_id, database_id):
+  """Creates a Cloud Spanner Database with the tables and indexes needed for TensorBoard.
 
+  Args:
+    client: A cloud spanner client.
+    instance_id: The id of the instance.
+    database_id: The id of the database
+
+  Raises:
+    RetryError if there is a problem creating the tables or indexes.
+  """
+  ddl = [to_spanner_ddl(t) for t in schema.TABLES]
+  ddl.extend([to_spanner_ddl(t) for t in schema.INDEXES])
+
+  client = client
+  instance = spanner.client.Instance(instance_id, client)
+
+  database = instance.database(database_id, ddl)
+  try:
+    op = database.create()
+    op.result()
+  except errors.RetryError as e:
+    logging.error("There was a problem creating the database. %s", e.cause.details())
+    raise
 
 class InsertSQL(object):
   """Represent and InsertSQL statement."""
@@ -368,8 +398,23 @@ SELECT_PATTERN = re.compile("\s*select.*", flags=re.IGNORECASE)
 class SelectSQL(object):
   """Reprsent a Select SQL statement."""
 
+  _PATTERN = re.compile("\s*select\s*([a-z0-9_,\s]*)from\s*([a-z0-9,_]*).*", flags=re.IGNORECASE)
+  _COL_NAME_PATTERN= re.compile('\s*([a-zA-z0-9_]*)\s*.*')
   def __init__(self, sql):
+    """Construct an SQL query."""
     self.sql = sql
+
+    m = self._PATTERN.match(sql)
+    if not m:
+      raise ValueError('Could not parse columns and table name from query: {0}'.format(sql))
+    self.table = m.group(2)
+    columns = m.group(1).split(',')
+    self.columns = []
+    for c in columns:
+      m = self._COL_NAME_PATTERN.match(c)
+      if not m:
+        raise ValueError('Could not parse column name from: {0}'.format(c))
+      self.columns.append(m.group(1))
 
 def parse_sql(sql, parameters):
   """Parse an sql statement.
@@ -396,6 +441,6 @@ def parse_sql(sql, parameters):
     values = [v.strip() for v in m.group(3).split(',')]
     return InsertSQL(table, columns, values)
 
-  m= SELECT_PATTERN.match(sql)
+  m = SELECT_PATTERN.match(sql)
   if m:
     return SelectSQL(sql)

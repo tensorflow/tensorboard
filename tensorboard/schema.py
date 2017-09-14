@@ -167,7 +167,7 @@ EXPERIMENTS_TABLE = TableSchema(
              ColumnSchema('name', StringColumnType(500), not_null=True),
              ColumnSchema('description', StringColumnType(
                  65535), not_null=True),],
-    keys=['rowid', 'customer_number', 'experiment_id'])
+    keys=['customer_number', 'experiment_id'])
 
 PLUGINS_TABLE = TableSchema(
     name='Plugins',
@@ -212,6 +212,19 @@ TENSORS_TABLE = TableSchema(
 TABLES = [BIG_TENSORS_TABLE, EVENT_LOGS_TABLE, EXPERIMENTS_TABLE, PLUGINS_TABLE,
           RUNS_TABLE, TAGS_TABLE, TENSORS_TABLE]
 
+
+TABLES_DICT = dict([(t.name, t) for t in TABLES])
+
+def get_table(name):
+  """Return the schema for the table with the specified name.
+
+  Args
+    name: Name of the table.
+
+  : type name: str
+  : rtype: TableSchema
+  """
+  return TABLES_DICT[name]
 
 class IndexSchema(object):
   """Define the schema for an index."""
