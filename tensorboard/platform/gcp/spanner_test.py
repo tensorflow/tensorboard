@@ -148,6 +148,7 @@ class CloudSpannerCursorTest(tf.test.TestCase):
       row = c.fetchone()
       self.assertAllEqual([297, 0 , 0,  0, 'path_0', 0], row)
 
+      self.assertEqual(1, c.rowcount)
       # According to PEP 249 fetchone should return None if no more rows.
       self.assertIsNone(c.fetchone())
 
@@ -155,6 +156,22 @@ class CloudSpannerCursorTest(tf.test.TestCase):
       description = c.description
       names = [d[0] for d in description]
       self.assertAllEqual(['rowid', 'customer_number', 'run_id', 'event_log_id', 'path', 'offset'], names)
+
+    # Test that a cursor is iterable.
+    with contextlib.closing(self.conn.cursor()) as c:
+        c.execute(
+              ('SELECT rowid, customer_number, run_id, event_log_id, path, offset '
+                 ' from EventLogs where rowid = ?'),
+                (392,))
+
+        self.assertEqual(2, c.rowcount)
+
+        results = []
+        for row in c:
+          results.append(row)
+
+        self.assertAllEqual(rows[2], results[0])
+        self.assertAllEqual(rows[3], results[1])
 
 if __name__ == "__main__":
   tf.test.main()

@@ -174,6 +174,12 @@ class CloudSpannerCursor(object):
     self._rindex = 0
     self._descriptions = []
 
+    # PEP 249 says that arraysize should be an attribute the controls batch size for various operations
+    # e.g. when streaming the results from a query we could fetch them in batches of arraysize.
+    # TODO(jlewi): The value of 10 was a randomly picked number. I have no idea what a sensible default
+    # would be.
+    self.arraysize = 10
+
   def execute(self, sql, parameters=()):
     """Executes a single query.
 
@@ -284,77 +290,52 @@ class CloudSpannerCursor(object):
     # The others are optional.
     return self._descriptions
 
-  #@property
-  #def rowcount(self):
-    #"""Returns number of rows retrieved by last read query.
+  @property
+  def rowcount(self):
+    """Returns number of rows retrieved by last read query.
 
-    #:rtype: int
-    #"""
-    #self._check_that_read_query_was_issued()
-    #return self._delegate.rowcount
+    :rtype: int
+    """
+    return len(self._results)
 
-  #@property
-  #def lastrowid(self):
-    #"""Returns last row ID.
+  @property
+  def lastrowid(self):
+    """Returns last row ID.
 
-    #:rtype: int
-    #"""
-    #self._check_that_read_query_was_issued()
-    #return self._delegate.lastrowid
-
-  #def _get_arraysize(self):
-    #self._init_delegate()
-    #return self._delegate.arraysize
-
-  #def _set_arraysize(self, arraysize):
-    #self._init_delegate()
-    #self._delegate.arraysize = arraysize
-
-  #arraysize = property(_get_arraysize, _set_arraysize)
+    :rtype: int
+    """
+    # According to PEP249 this should be set to None if the Database doesn't support
+    # RowIDs.
+    return None
 
   def close(self):
     """Closes resources associated with cursor."""
     # TODO(jlewi): Are there any spanner resources that should be released
     pass
 
-  #def __iter__(self):
-    #"""Returns iterator over results of last read query.
+  def __iter__(self):
+    """Returns iterator over results of last read query.
 
-    #:rtype: types.GeneratorType[tuple[object]]
-    #"""
-    #self._check_that_read_query_was_issued()
-    #for row in self._delegate:
-      #yield row
+    :rtype: types.GeneratorType[tuple[object]]
+    """
+    for row in self._results:
+      yield row
 
-  #def nextset(self):
-    #"""Raises NotImplementedError."""
-    #raise NotImplementedError('Cursor.nextset not supported')
+  def nextset(self):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.nextset not supported')
 
-  #def callproc(self, procname, parameters=()):
-    #"""Raises NotImplementedError."""
-    #raise NotImplementedError('Cursor.callproc not supported')
+  def callproc(self, procname, parameters=()):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.callproc not supported')
 
-  #def setinputsizes(self, sizes):
-    #"""Raises NotImplementedError."""
-    #raise NotImplementedError('Cursor.setinputsizes not supported')
+  def setinputsizes(self, sizes):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.setinputsizes not supported')
 
-  #def setoutputsize(self, size, column):
-    #"""Raises NotImplementedError."""
-    #raise NotImplementedError('Cursor.setoutputsize not supported')
-
-  #def _init_delegate(self):
-    #self._check_closed()
-    #if self._delegate is None:
-      #self._delegate = self.connection._delegate.cursor()
-
-  #def _check_that_read_query_was_issued(self):
-    #self._check_closed()
-    #if self._delegate is None:
-      #raise ValueError('no read query was issued')
-
-  #def _check_closed(self):
-    #if self._is_closed:
-      #raise ValueError('cursor was closed')
+  def setoutputsize(self, size, column):
+    """Raises NotImplementedError."""
+    raise NotImplementedError('Cursor.setoutputsize not supported')
 
 
 def create_database(client, instance_id, database_id):
@@ -427,6 +408,7 @@ def parse_sql(sql, parameters):
     obj: InsertSQL or SelectSQL or UpdateSQL object containing the result.
 
   : type sql:str
+  : type paramters: List[Object]
   : rtype: InsertSQL | SelectSQL | UpdateSQL | None
   """
 

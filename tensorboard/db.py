@@ -195,8 +195,6 @@ def to_sqllite_ddl(spec):
                columns=', '.join(spec.columns))
   return ddl
 
-# TODO(jlewi): Should we refactor this class to make it easier for each Database implementation
-# to customize DB creation; e.g. Cloud Spanner?
 class Schema(object):
   """SQL schema creation tool for TensorBase."""
 
@@ -364,6 +362,12 @@ class Connection(object):
       raise ValueError('connection was closed')
 
 
+# TODO(jlewi): Should we remove parts of the PEP 249 cursor API that we don't
+# want to depend on? The PEP 249 allows some methods to not be implemented for
+# all databases. For example lastrowid can return None if the database doesn't
+# support it. So should we remove the method lastrowid from the Cursor class
+# so that code doesn't end up depending on it leading to problems for databases
+# that don't support rowid (e.g. Spanner)?
 class Cursor(object):
   """Delegate for PEP 249 Cursor object."""
 
