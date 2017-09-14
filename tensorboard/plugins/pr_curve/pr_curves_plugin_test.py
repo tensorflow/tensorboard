@@ -30,6 +30,12 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import pr_curve_demo
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 
+# We use an absolute error instead of a relative one because the expected values
+# are small. The default relative error (rtol) of 1e-7 yields many undesired
+# test failures.
+assert_allclose = functools.partial(
+    np.testing.assert_allclose, rtol=0, atol=1e-7)
+
 
 class PrCurvesPluginTest(tf.test.TestCase):
 
@@ -77,14 +83,8 @@ class PrCurvesPluginTest(tf.test.TestCase):
       pr_curve_entry: The PR curve entry to evaluate.
     """
     self.assertEqual(expected_step, pr_curve_entry['step'])
-    # We use an absolute error instead of a relative one because the expected
-    # values are small. The default relative error (rtol) of 1e-7 yields many
-    # undesired test failures.
-    atol = 1e-7
-    np.testing.assert_allclose(
-        expected_precision, pr_curve_entry['precision'], rtol=0, atol=atol)
-    np.testing.assert_allclose(
-        expected_recall, pr_curve_entry['recall'], rtol=0, atol=atol)
+    assert_allclose(expected_precision, pr_curve_entry['precision'])
+    assert_allclose(expected_recall, pr_curve_entry['recall'])
     self.assertListEqual(
         expected_true_positives, pr_curve_entry['true_positives'])
     self.assertListEqual(
@@ -93,9 +93,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
         expected_true_negatives, pr_curve_entry['true_negatives'])
     self.assertListEqual(
         expected_false_negatives, pr_curve_entry['false_negatives'])
-    np.testing.assert_allclose(
-        expected_thresholds,
-        pr_curve_entry['thresholds'], rtol=0, atol=atol)
+    assert_allclose(expected_thresholds, pr_curve_entry['thresholds'])
 
   def computeCorrectDescription(self, standard_deviation):
     """Generates a correct description.
