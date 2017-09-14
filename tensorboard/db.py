@@ -138,6 +138,9 @@ def to_sqllite_type(column_type):
 
   Raises:
     ValueError if column_type is not a supported type.
+
+  : type column_type: Type[schema.ColumnType]
+  : rtype: str
   """
   if isinstance(column_type, schema.Int64ColumnType):
     return 'INTEGER'
@@ -158,7 +161,7 @@ def to_sqllite_type(column_type):
       '{0} is not a support ColumnType'.format(column_type.__class__))
 
 
-def schema_to_sqllite_ddl(spec):
+def to_sqllite_ddl(spec):
   """Convert a TableSchema or IndexSchema object to an SQLLite DDL statement.
 
   Args:
@@ -215,7 +218,7 @@ class Schema(object):
     """
     for t in schema.TABLES:
       with self._cursor() as c:
-        c.execute(schema_to_sqllite_ddl(t))
+        c.execute(to_sqllite_ddl(t))
 
   def create_indexes(self):
     """Creates SQL tables and indexes needed by TensorBoard.
@@ -224,7 +227,7 @@ class Schema(object):
     """
     for t in schema.INDEXES:
       with self._cursor() as c:
-        c.execute(schema_to_sqllite_ddl(t))
+        c.execute(to_sqllite_ddl(t))
 
   def _cursor(self):
     return contextlib.closing(self._db_conn.cursor())  # type: Cursor

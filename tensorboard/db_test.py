@@ -35,7 +35,7 @@ class SqlliteDdlTest(test_util.TestCase):
                 'experiment_id INTEGER NOT NULL, '
                 'run_id INTEGER NOT NULL, '
                 'name VARCHAR(1900) NOT NULL)')
-    actual = db.schema_to_sqllite_ddl(schema.RUNS_TABLE)
+    actual = db.to_sqllite_ddl(schema.RUNS_TABLE)
     self.assertEqual(expected, actual)
 
   def testIndexSchemaToDdl(self):
@@ -48,7 +48,7 @@ class SqlliteDdlTest(test_util.TestCase):
                 'name VARCHAR(1900) NOT NULL)')
     expected = ('CREATE UNIQUE INDEX IF NOT EXISTS ExperimentsNameIndex '
                 'ON Experiments (customer_number, name)')
-    actual = db.schema_to_sqllite_ddl(schema.EXPERIMENTS_NAME_INDEX)
+    actual = db.to_sqllite_ddl(schema.EXPERIMENTS_NAME_INDEX)
     self.assertEqual(expected, actual)
 
 class PluginsTest(test_util.TestCase):

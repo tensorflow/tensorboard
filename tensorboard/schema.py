@@ -44,6 +44,9 @@ class BytesColumnType(ColumnType):
     Args:
       length: The length of the string. None indicates column
         should have maximum length allowed.
+
+    : type lenth: int | None
+    : rtype: BytesColumnType
     """
     self.length = length
 
@@ -60,6 +63,9 @@ class StringColumnType(ColumnType):
     Args:
       length: The length of the string. None indicates column
         should have maximum length allowed.
+
+    : type lenth: int | None
+    : rtype: StringColumnType
     """
     self.length = length
 
@@ -77,6 +83,11 @@ class ColumnSchema(object):
       value_type: A ColumnType object describing the type for the
         column.
       not_null: If true then column is required to be not null.
+
+    : type name: str
+    : type value_type: list[ColumnType]
+    : type not_null: list[bool]
+    : rtype: ColumnSchema
     """
     self.name = name
     self.value_type = value_type
@@ -97,6 +108,11 @@ class TableSchema(object):
 
     Returns:
       schema: Schema for the table.
+
+    : type name: str
+    : type columns: list[ColumnSchema]
+    : type keys: list[str]
+    : rtype: TableSchema
     """
     self.name = name
     self._columns = columns
@@ -210,6 +226,11 @@ class IndexSchema(object):
 
     Returns:
       IndexSchema representing the schema.
+
+    : type name: str
+    : type table: str
+    : type columns: list[str]
+    : rtype: IndexSchema
     """
 
     self.name = name
