@@ -154,7 +154,9 @@ def to_sqllite_type(column_type):
   if isinstance(column_type, schema.BytesColumnType):
     return 'BLOB'
 
-  raise ValueError('%s is not a support ColumnType'.format(column_type.__class__))
+  raise ValueError(
+      '{0} is not a support ColumnType'.format(column_type.__class__))
+
 
 def schema_to_sqllite_ddl(spec):
   """Convert a TableSchema or IndexSchema object to an SQLLite DDL statement.
@@ -172,7 +174,7 @@ def schema_to_sqllite_ddl(spec):
     columns = []
     for c in spec.columns:
       s = '{0} {1}'.format(c.name, to_sqllite_type(c.value_type))
-      if len(columns) == 0:
+      if not columns:
         # With SQLLite the first column should always be the primary key.
         # We don't use multi field primary keys with sqllite because we want
         # data localization to be keyed off the primary key.
@@ -181,13 +183,15 @@ def schema_to_sqllite_ddl(spec):
         s += ' NOT NULL'
       columns.append(s)
     columns = ', '.join(columns)
-    keys = ', '.join(spec.keys)
     ddl = 'CREATE TABLE IF NOT EXISTS {name} ({columns})'.format(
-      name = spec.name, columns = columns, key_fields=keys)
+        name=spec.name, columns=columns)
   elif isinstance(spec, schema.IndexSchema):
-    ddl = 'CREATE UNIQUE INDEX IF NOT EXISTS {name} ON {table} ({columns})'.format(
-      name=spec.name, table=spec.table, columns=', '.join(spec.columns))
+    ddl = ('CREATE UNIQUE INDEX IF NOT EXISTS {name} ON {table} '
+           '({columns})').format(
+               name=spec.name, table=spec.table,
+               columns=', '.join(spec.columns))
   return ddl
+
 
 class Schema(object):
   """SQL schema creation tool for TensorBase."""
@@ -680,6 +684,7 @@ def _check_id(id_, bits, name):
 def _mask(bits):
   """Returns highest integer that can be stored in `bits` unsigned bits."""
   return (1 << bits) - 1
+
 
 EXPERIMENT_ID = Id('experiment_id', 28)
 RUN_ID = Id('run_id', 29)
