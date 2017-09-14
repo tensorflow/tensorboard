@@ -92,7 +92,9 @@ def pb(name, data, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
-  if isinstance(data, six.binary_type):
+  if isinstance(data, six.binary_type) or isinstance(command, six.string_types):
+    # Check if data is of type bytes or string. For python3, binary_type checks
+    # for bytes instead of string, so we also check for six.string_types.
     if isinstance(data, six.text_type):
       raise ValueError(
           'Unicode text (%r) is not supported. Only byte strings are.' % data)
