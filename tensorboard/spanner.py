@@ -37,97 +37,7 @@ from google.api.core import exceptions
 import logging
 import re
 from tensorboard import db
-
-class ColumnType(object):
-  pass
-
-class Int64ColumnType(ColumnType):
-  pass
-
-class StringColumnType(ColumnType):
-
-  def __init__(self, length=None):
-    """Define a string column.
-
-    Args:
-      length: The length of the string. None indicates column
-        should have maximum length allowed.
-    """
-    self.length = length
-
-class ColumnSchema(object):
-  """Defines the schema for a column."""
-
-  def __init__(self, name, value_type):
-    """Define a column.
-
-    Args:
-      name: Name of the column.
-      value_type: A ColumnType object describing the type for the
-        column.
-    """
-    self.name = name
-    self.value_type = value_type
-
-class TableSchema(object):
-  """Define the schema for a table."""
-
-  def __init__(self, name, columns, keys):
-    """Create a table schema.
-
-    Args:
-      name: Name for the table.
-      columns: List of ColumnSchema objects describing the
-        schema.
-      keys: List of column names comprising the key.
-
-    Returns:
-      schema: Schema for the table.
-    """
-    self.name = name
-    self._columns = columns
-    self._keys = keys
-
-    self._name_to_column = {}
-    for c in self._columns:
-      self._name_to_column[c.name] = c
-
-  @property
-  def keys(self):
-    return self._keys
-
-  @property
-  def columns(self):
-    return self._columns
-
-  def get_column(self, name):
-    """Get the column with the specified name.
-
-    Raises:
-      ValueError if no column with the specified name.
-    """
-    return self._name_to_column[name]
-
-RUNS_TABLE = TableSchema(
-  name = 'Runs',
-  columns=[ColumnSchema('rowid', Int64ColumnType()),
-           ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('experiment_id', Int64ColumnType()),
-           ColumnSchema('run_id', Int64ColumnType()),
-           ColumnSchema('name', StringColumnType(length=1900))],
-  keys=['rowid', 'customer_number','experiment_id', 'run_id'])
-
-EVENT_LOGS_TABLE = TableSchema(
-  name = 'EventLogs',
-  columns=[ColumnSchema('rowid', Int64ColumnType()),
-           ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('run_id', Int64ColumnType()),
-           ColumnSchema('event_log_id', Int64ColumnType()),
-           ColumnSchema('path', StringColumnType(length=1023)),
-           ColumnSchema('offset', Int64ColumnType())],
-  keys=['rowid', 'customer_number', 'run_id', 'event_log_id'])
-
-
+from tensorboard import schema
 
 def to_spanner_type(column_type):
   """Return the Cloud Spanner type corresponding to the supplied type.
@@ -160,7 +70,10 @@ def schema_to_spanner_ddl(schema):
   : rtype : str
   """
   # TODO(jlewi): Add support for not null modifier.
-  columns = [ '{0} {1}'.format(c.name, to_spanner_type(c.value_type)) for c in schema.columns]
+  columns = []
+  for c in spec.columns:
+    s = '{0} {1}'.format(c.name, to_spanner_type(c.value_type))
+    columns.append(s)
   columns = ', '.join(columns)
   keys = ', '.join(schema.keys)
   ddl = 'CREATE TABLE {name} ({columns}) PRIMARY KEY ({key_fields})'.format(
@@ -422,15 +335,14 @@ class CloudSpannerCursor(object):
       #raise ValueError('cursor was closed')
 
 
-# TODO(jlewi): We need to override Schema because Cloud Spanner uses a slightly
-# different syntax than sqlite; see: https://cloud.google.com/spanner/docs/data-definition-language#table_statements
-# Cloud Spanner doesn't support 'VARCHAR' or 'IF NOT EXISTS'.
-# Furthermore in the case of Cloud Spanner we want to use a multi-field primary key.
-#
+# TODO(jlewi): Do we really need to subclass db.Schema? With Cloud Spanner Database creation
+# is a one time setup event. We shouldn't be creating tables dynamically. If we are something
+# is probably wrong.
 class CloudSpannerSchema(db.Schema):
   def create_tables(self):
     # Create an empty database.
-    ddl = [schema_to_spanner_ddl(RUNS_TABLE), schema_to_spanner_ddl(EVENT_LOGS_TABLE)]
+    ddl = [schema_to_spanner_ddl(t) for t in schema.TABLES]
+    ddl.extend([schema_to_spanner_ddl(t) for t in schema.INDEXES])
     database = self._db_conn.instance.database(self._db_conn.database_id, ddl)
     try:
       op = database.create()
@@ -455,22 +367,12 @@ class CloudSpannerSchema(db.Schema):
       description: Arbitrary markdown text describing the experiment.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE Experiments (
-          customer_number INT64,
-          experiment_id INT64,
-          name STRING(500) NOT NULL,
-          description STRING(65535) NOT NULL
-        ) PRIMARY KEY(customer_number, experiment_id)
-      ''')
+      c.execute(schema_to_spanner_ddl(EXPERIMENTS_TABLE))
 
   def create_experiments_table_name_index(self):
     """Uniquely indexes the customer_number, name field on the Experiments table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF ExperimentsNameIndex
-        ON Experiments (customer_number, name)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.EXPERIMENTS_NAME_INDEX))
 
   def create_runs_table(self):
     """Creates the Runs table.
@@ -499,22 +401,12 @@ class CloudSpannerSchema(db.Schema):
 
     # TODO(jlewi): Should experiment_id be before run_id in the primary key?
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE Runs (
-          rowid INT64,
-          customer_number INT64,
-          experiment_id INT64 NOT NULL,
-          run_id INT64 NOT NULL,
-          name STRING(1900) NOT NULL
-        ) PRIMARY KEY(rowid, customer_number,  experiment_id, run_id)
-      ''')
+      c.execute(schema_to_spanner_ddl(RUNS_TABLE))
 
   def create_runs_table_id_index(self):
     """Uniquely indexes the run_id field on the Runs table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX RunsIdIndex ON Runs (customer_number, run_id)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.RUNS_ID_INDEX))
 
   def create_runs_table_name_index(self):
     """Uniquely indexes the name field on the Runs table.
@@ -522,10 +414,7 @@ class CloudSpannerSchema(db.Schema):
     More accurately, this indexes (experiment_id, name).
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX RunsNameIndex
-        ON Runs (customer_number, experiment_id, name)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.RUNS_NAME_INDEX))
 
   def create_tags_table(self):
     """Creates the Tags table.
@@ -546,33 +435,17 @@ class CloudSpannerSchema(db.Schema):
           if set. This is Markdown describing the summary.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE Tags (
-          rowid INT64,
-          customer_number INT64,
-          run_id INT64 NOT NULL,
-          tag_id INT64 NOT NULL,
-          plugin_id INT64 NOT NULL,
-          name STRING(500) NOT NULL,
-          display_name STRING(500),
-          summary_description STRING(65535)
-        ) PRIMARY KEY(rowid, customer_number, run_id, tag_id)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.TAGS_TABLE))
 
   def create_tags_table_id_index(self):
     """Indexes the tag_id field on the Tags table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX TagsIdIndex ON Tags (customer_number, tag_id)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.TAGS_ID_INDEX))
 
   def create_tags_table_name_index(self):
     """Indexes the name field on the Tags table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX TagsNameIndex
-        ON Tags (customer_number, run_id, name)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.TAGS_NAME_INDEX))
 
   # TODO(jlewi): Unlike the sqllite schema, we use a multi-field key
   # and have separate fields for step count and tag id. Discuss with jart@
@@ -603,17 +476,7 @@ class CloudSpannerSchema(db.Schema):
           if the is_big field is true.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE Tensors (
-          rowid INT64,
-          customer_number INT64,
-          tag_id INT64 NOT NULL,
-          step_count INT64 NOT NULL,
-          encoding INT64 NOT NULL,
-          is_big BOOL NOT NULL,
-          tensor BYTES(MAX) NOT NULL
-        ) PRIMARY KEY(rowid, customer_number, tag_id, step_count)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.TENSORS_TABLE))
 
   # TODO(jlewi): bytes fields can be a max of 10Mb. Is this going to be an issue?
   # Should we consider storing Tensors as URIs pointing at other locations?
@@ -630,15 +493,7 @@ class CloudSpannerSchema(db.Schema):
           specified in the corresponding Tensors table row.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE BigTensors (
-          rowid INT64,
-          customer_number INT64,
-          tag_id INT64 NOT NULL,
-          step_count INT64 NOT NULL,
-          tensor BYTES(MAX) NOT NULL
-        ) PRIMARY KEY(rowid, customer_number, tag_id, step_count)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.BIG_TENSORS_TABLE))
 
   # TODO(jlewi): Should this table include a customer_number? I don't think
   # so because the plugins would be determined by the TB service not users.
@@ -661,20 +516,12 @@ class CloudSpannerSchema(db.Schema):
     """
     # TODO(jlewi): Should plugins be customer specific.
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE Plugins (
-          plugin_id INT64,
-          name STRING(255) NOT NULL
-        ) PRIMARY KEY(plugin_id)
-      ''')
+      c.execute(schema.PLUGINS_TABLE)
 
   def create_plugins_table_name_index(self):
     """Uniquely indexes the name field on the plugins table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX PluginsNameIndex
-        ON Plugins (name)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.PLUGINS_NAME_INDEX))
 
   def create_event_logs_table(self):
     """Creates the EventLogs table.
@@ -702,24 +549,12 @@ class CloudSpannerSchema(db.Schema):
           successfully committed event record.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE EventLogs (
-          rowid INT64,
-          customer_number INT64,
-          run_id INT64 NOT NULL,
-          event_log_id INT64 NOT NULL,
-          path STRING(1023) NOT NULL,
-          offset INT64 NOT NULL
-        ) PRIMARY KEY(rowid, customer_number, run_id, event_log_id)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.EVENT_LOGS_TABLE))
 
   def create_event_logs_table_path_index(self):
     """Uniquely indexes the (name, path) fields on the event_logs table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX EventLogsPathIndex
-        ON EventLogs (customer_number, run_id, path)
-      ''')
+      c.execute(schema_to_spanner_ddl(schema.EVENT_LOGS_PATH_INDEX))
 
 
 class InsertSQL(object):

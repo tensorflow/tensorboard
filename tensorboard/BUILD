@@ -149,7 +149,8 @@ py_test(
 
 py_library(
     name = "db",
-    srcs = ["db.py"],
+    srcs = ["db.py",
+            "schema.py",],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
