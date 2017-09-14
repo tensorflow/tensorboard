@@ -24,8 +24,11 @@ from tensorboard.plugins.pr_curve import plugin_data_pb2
 
 PLUGIN_NAME = 'pr_curves'
 
-# Indices for obtaining precision and recall values from the tensor
-# stored in a summary.
+# Indices for obtaining various values from the tensor stored in a summary.
+TRUE_POSITIVES_INDEX = 0
+FALSE_POSITIVES_INDEX = 1
+TRUE_NEGATIVES_INDEX = 2
+FALSE_NEGATIVES_INDEX = 3
 PRECISION_INDEX = 4
 RECALL_INDEX = 5
 
