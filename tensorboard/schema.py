@@ -28,11 +28,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+
 class ColumnType(object):
   pass
 
+
 class BoolColumnType(ColumnType):
   pass
+
 
 class BytesColumnType(ColumnType):
   def __init__(self, length=None):
@@ -44,8 +47,10 @@ class BytesColumnType(ColumnType):
     """
     self.length = length
 
+
 class Int64ColumnType(ColumnType):
   pass
+
 
 class StringColumnType(ColumnType):
 
@@ -59,6 +64,8 @@ class StringColumnType(ColumnType):
     self.length = length
 
 # TODO(jlewi): Add a description field to columns?
+
+
 class ColumnSchema(object):
   """Defines the schema for a column."""
 
@@ -74,6 +81,7 @@ class ColumnSchema(object):
     self.name = name
     self.value_type = value_type
     self.not_null = not_null
+
 
 class TableSchema(object):
   """Define the schema for a table."""
@@ -114,77 +122,80 @@ class TableSchema(object):
     """
     return self._name_to_column[name]
 
+
 BIG_TENSORS_TABLE = TableSchema(
-  name = 'BigTensors',
-        columns=[ColumnSchema('rowid', Int64ColumnType()),
-               ColumnSchema('customer_number', Int64ColumnType()),
-               ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
-               ColumnSchema('step_count', Int64ColumnType(), not_null=True),
-               ColumnSchema('tensor', BytesColumnType())],
-      keys=['rowid', 'customer_number','tag_id', 'step_count'])
+    name='BigTensors',
+    columns=[ColumnSchema('rowid', Int64ColumnType()),
+             ColumnSchema('customer_number', Int64ColumnType()),
+             ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('step_count', Int64ColumnType(), not_null=True),
+             ColumnSchema('tensor', BytesColumnType())],
+    keys=['rowid', 'customer_number', 'tag_id', 'step_count'])
 
 EVENT_LOGS_TABLE = TableSchema(
-  name = 'EventLogs',
+    name='EventLogs',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
-           ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('run_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('event_log_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('path', StringColumnType(length=1023), not_null=True),
-           ColumnSchema('offset', Int64ColumnType(), not_null=True)],
-  keys=['rowid', 'customer_number', 'run_id', 'event_log_id'])
+             ColumnSchema('customer_number', Int64ColumnType()),
+             ColumnSchema('run_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('event_log_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('path', StringColumnType(
+                 length=1023), not_null=True),
+             ColumnSchema('offset', Int64ColumnType(), not_null=True)],
+    keys=['rowid', 'customer_number', 'run_id', 'event_log_id'])
 
 
 EXPERIMENTS_TABLE = TableSchema(
-  name = 'Experiments',
+    name='Experiments',
     columns=[ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('experiment_id', Int64ColumnType()),
-           ColumnSchema('name', StringColumnType(500), not_null=True),
-           ColumnSchema('description', StringColumnType(65535), not_null=True),
-           ],
-  keys = ['rowid', 'customer_number', 'experiment_id'])
+             ColumnSchema('experiment_id', Int64ColumnType()),
+             ColumnSchema('name', StringColumnType(500), not_null=True),
+             ColumnSchema('description', StringColumnType(
+                 65535), not_null=True),],
+    keys=['rowid', 'customer_number', 'experiment_id'])
 
 PLUGINS_TABLE = TableSchema(
-  name = 'Plugins',
+    name='Plugins',
     columns=[ColumnSchema('plugin_id', Int64ColumnType()),
              ColumnSchema('name', StringColumnType(length=255), not_null=True)],
-  keys=['plugin_id'])
+    keys=['plugin_id'])
 
 RUNS_TABLE = TableSchema(
-  name = 'Runs',
+    name='Runs',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
-           ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('experiment_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('run_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('name', StringColumnType(length=1900), not_null=True)],
-  keys=['rowid', 'customer_number','experiment_id', 'run_id'])
+             ColumnSchema('customer_number', Int64ColumnType()),
+             ColumnSchema('experiment_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('run_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('name', StringColumnType(length=1900),
+                          not_null=True)],
+    keys=['rowid', 'customer_number', 'experiment_id', 'run_id'])
 
 TAGS_TABLE = TableSchema(
-  name='Tags',
-  columns=[ColumnSchema('rowid', Int64ColumnType()),
-           ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('run_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('plugin_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('name', StringColumnType(500)),
-           ColumnSchema('display_name', StringColumnType(500)),
-           ColumnSchema('summary_description', StringColumnType(65535)),
-           ],
-           keys=['rowid', 'customer_number', 'run_id', 'tag_id'])
+    name='Tags',
+    columns=[ColumnSchema('rowid', Int64ColumnType()),
+             ColumnSchema('customer_number', Int64ColumnType()),
+             ColumnSchema('run_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('plugin_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('name', StringColumnType(500)),
+             ColumnSchema('display_name', StringColumnType(500)),
+             ColumnSchema('summary_description', StringColumnType(65535)),],
+    keys=['rowid', 'customer_number', 'run_id', 'tag_id'])
 
 TENSORS_TABLE = TableSchema(
-  name = 'Tensors',
+    name='Tensors',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
-           ColumnSchema('customer_number', Int64ColumnType()),
-           ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
-           ColumnSchema('step_count', Int64ColumnType(), not_null=True),
-           ColumnSchema('encoding', Int64ColumnType(), not_null=True),
-           ColumnSchema('is_big', BoolColumnType(), not_null=True),
-           ColumnSchema('tensor', BytesColumnType(), not_null=True)],
-  keys=['rowid', 'customer_number','tag_id', 'step_count'])
+             ColumnSchema('customer_number', Int64ColumnType()),
+             ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
+             ColumnSchema('step_count', Int64ColumnType(), not_null=True),
+             ColumnSchema('encoding', Int64ColumnType(), not_null=True),
+             ColumnSchema('is_big', BoolColumnType(), not_null=True),
+             ColumnSchema('tensor', BytesColumnType(), not_null=True)],
+    keys=['rowid', 'customer_number', 'tag_id', 'step_count'])
 
 # List of all tables.
-TABLES = [BIG_TENSORS_TABLE, EVENT_LOGS_TABLE, EXPERIMENTS_TABLE, PLUGINS_TABLE, RUNS_TABLE,
-          TAGS_TABLE, TENSORS_TABLE]
+TABLES = [BIG_TENSORS_TABLE, EVENT_LOGS_TABLE, EXPERIMENTS_TABLE, PLUGINS_TABLE,
+          RUNS_TABLE, TAGS_TABLE, TENSORS_TABLE]
+
 
 class IndexSchema(object):
   """Define the schema for an index."""
@@ -205,19 +216,26 @@ class IndexSchema(object):
     self.table = table
     self.columns = columns
 
-EXPERIMENTS_NAME_INDEX = IndexSchema('ExperimentsNameIndex', 'Experiments', ['customer_number', 'name'])
 
-EVENT_LOGS_PATH_INDEX = IndexSchema('EventLogsPathIndex', 'EventLogs', ['customer_number', 'run_id', 'path'])
+EXPERIMENTS_NAME_INDEX = IndexSchema('ExperimentsNameIndex', 'Experiments', [
+    'customer_number', 'name'])
+
+EVENT_LOGS_PATH_INDEX = IndexSchema('EventLogsPathIndex', 'EventLogs', [
+    'customer_number', 'run_id', 'path'])
 
 PLUGINS_NAME_INDEX = IndexSchema('PluginsNameIndex', 'Plugins', ['name'])
 
-RUNS_ID_INDEX = IndexSchema('RunsIdIndex', 'Runs', ['customer_number', 'run_id'])
+RUNS_ID_INDEX = IndexSchema('RunsIdIndex', 'Runs', [
+    'customer_number', 'run_id'])
 
-RUNS_NAME_INDEX = IndexSchema('RunsNameIndex', 'Runs', ['customer_number', 'experiment_id', 'name'])
+RUNS_NAME_INDEX = IndexSchema('RunsNameIndex', 'Runs', [
+    'customer_number', 'experiment_id', 'name'])
 
-TAGS_ID_INDEX = IndexSchema('TagsIdIndex', 'Tags', ['customer_number', 'tag_id'])
+TAGS_ID_INDEX = IndexSchema('TagsIdIndex', 'Tags', [
+    'customer_number', 'tag_id'])
 
-TAGS_NAME_INDEX = IndexSchema('TagsNameIndex', 'Tags', ['customer_number', 'run_id', 'name'])
+TAGS_NAME_INDEX = IndexSchema('TagsNameIndex', 'Tags', [
+    'customer_number', 'run_id', 'name'])
 
 INDEXES = [EXPERIMENTS_NAME_INDEX, EVENT_LOGS_PATH_INDEX, PLUGINS_NAME_INDEX,
            RUNS_ID_INDEX, RUNS_NAME_INDEX, TAGS_ID_INDEX, TAGS_NAME_INDEX]
