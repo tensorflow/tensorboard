@@ -21,17 +21,31 @@ limitations under the License.
 <dom-module id="tf-op-table-styles">
   <template>
     <style>
-#time {
-  display: inline-block;
-  width: 80px;
+#time, #utilization {
+  width: 60px;
 }
 #name {
   display: inline-block;
   min-width: 40%;
-  box-sizing: border-box;
 }
 #row, #header {
+  display: flex;
+  align-items: center;
+}
+#row > *, #header > * {
   padding: 0.5em;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+#header > * {
+  padding-bottom: 0;
+}
+#provenance {
+  flex: 1 1 0 ! important;
+}
+#utilization {
+  text-align: right;
 }
     </style>
   </template>
@@ -55,14 +69,16 @@ limitations under the License.
   padding-bottom: 0.25em;
   border-bottom: 1px solid #666;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 /* Match indented names */
-#name { padding-left: 2em; }
+#header > #name { padding-left: 2em; }
     </style>
     <div id="header">
       <span id="time">Time</span>
       <span id="name">Name</span>
       <span id="provenance">TensorFlow Op</span>
+      <span id="utilization">FLOPS</span>
     </div>
     <tf-op-table-entry node="[[rootNode]]"
         header-hover="[[_onHeaderHover]]"
@@ -147,6 +163,7 @@ Polymer({
   left: 0;
   bottom: 0;
   z-index: -1;
+  background-color: #cde;
 }
 :host {
   display: block;
@@ -167,6 +184,13 @@ Polymer({
 #name {
   font-family: monospace;
 }
+#time, #utilization {
+  font-size: smaller;
+}
+/* Utilization has a background color, so it stretches to fill the row.
+   Its text is in an inner div that remains vertically centered. */
+#utilization { align-self: stretch; }
+#utilization div { position: relative; top: 50%; transform: translateY(-50%); }
     </style>
     <div id="row"
          on-click="_handleHeaderClick"
@@ -183,7 +207,8 @@ Polymer({
           </span>
         </span>{{node.name}}
       </span>
-      <span id="provenance">{{_provenance(node)}}</span>
+      <span id="provenance">{{_provenance(node)}}&nbsp;</span>
+      <span id="utilization"><div></div></span>
     </div>
     <template is="dom-if" if="[[expanded]]">
       <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
@@ -244,7 +269,9 @@ Polymer({
   ready: function() {
     if (!this.node || !this.node.metrics || !this.$.bar) return;
     this.$.bar.style.width = percent(this.node.metrics.time);
-    this.$.bar.style.backgroundColor = flameColor(utilization(this.node), 1, 0.2);
+    this.$.utilization.firstChild.innerText = percent(utilization(this.node));
+    this.$.utilization.style.backgroundColor =
+        flameColor(utilization(this.node), 1, 0.2);
   },
   _nextLevel: function(level) { return level + 1; },
   _handleHeaderClick: function(e) {
