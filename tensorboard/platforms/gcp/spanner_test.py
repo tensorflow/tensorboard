@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tensorboard.platform.gcp import spanner as tb_spanner
+from tensorboard.platforms.gcp import spanner as tb_spanner
 from tensorboard import schema
 import tensorflow as tf
 

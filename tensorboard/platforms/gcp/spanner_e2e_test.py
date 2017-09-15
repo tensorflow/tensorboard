@@ -21,7 +21,7 @@ import datetime
 
 from google.cloud import spanner  # pylint: disable=import-error
 
-from tensorboard.platform.gcp import spanner as tb_spanner
+from tensorboard.platforms.gcp import spanner as tb_spanner
 import tensorflow as tf
 
 
