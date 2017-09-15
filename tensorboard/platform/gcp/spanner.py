@@ -14,12 +14,15 @@
 
 """Cloud Spanner support.
 
-This module adds functionality to use Cloud Spanner as the backing database for TensorBoard.
-TensorBoard is designed to use a PEP 249 db. Cloud Spanner doesn't have a PEP 249 compliant DB.
-See: https://github.com/GoogleCloudPlatform/google-cloud-python/wiki/Feature-Backlog.
+This module adds functionality to use Cloud Spanner as the backing database for
+TensorBoard. TensorBoard is designed to use a PEP 249 db. Cloud Spanner doesn't
+have a PEP 249 compliant DB.
+See:
+https://github.com/GoogleCloudPlatform/google-cloud-python/wiki/Feature-Backlog.
 
-A PEP 249 API for Cloud Spanner is blocked by lack of DML support for Cloud Spanner. This shouldn't block supporting
-Cloud Spanner with TensorBoard because TensorBoard is largely read only.
+A PEP 249 API for Cloud Spanner is blocked by lack of DML support for Cloud
+Spanner. This shouldn't block supporting Cloud Spanner with TensorBoard because
+TensorBoard is largely read only.
 
 WARNING: This module is EXPERIMENTAL. It will not be considered stable
 until data migration tools are put into place. Until that time, any
@@ -31,12 +34,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from google.cloud import spanner
-from google.gax import errors
 import logging
 import re
+from google.cloud import spanner  # pylint: disable=import-error
+from google.gax import errors
 from tensorboard import db
 from tensorboard import schema
+
 
 def to_spanner_type(column_type):
   """Return the Cloud Spanner type corresponding to the supplied type.
@@ -66,7 +70,8 @@ def to_spanner_type(column_type):
       return 'STRING(MAX)'
 
   raise ValueError(
-    '{0} is not a support ColumnType'.format(column_type.__class__))
+      '{0} is not a support ColumnType'.format(column_type.__class__))
+
 
 def to_spanner_ddl(spec):
   """Convert a TableSchema object to a spanner DDL statement.
@@ -89,13 +94,14 @@ def to_spanner_ddl(spec):
     columns = ', '.join(columns)
     keys = ', '.join(spec.keys)
     ddl = 'CREATE TABLE {name} ({columns}) PRIMARY KEY ({key_fields})'.format(
-      name = spec.name, columns = columns, key_fields=keys)
+        name=spec.name, columns=columns, key_fields=keys)
 
   elif isinstance(spec, schema.IndexSchema):
     ddl = ('CREATE UNIQUE INDEX {name} ON {table} ({columns})').format(
-               name=spec.name, table=spec.table,
-               columns=', '.join(spec.columns))
+        name=spec.name, table=spec.table,
+        columns=', '.join(spec.columns))
   return ddl
+
 
 class CloudSpannerConnection(object):
   """Connection to Cloud Spanner database.
@@ -120,7 +126,8 @@ class CloudSpannerConnection(object):
     """Construct a cursor for Cloud Spanner."""
     # TODO(jlewi): Is constructing a db.Cursor with delegate set to
     # CloudSpannerCursor the right pattern?
-    delegate = CloudSpannerCursor(self.client, self.database_id, self.instance_id)
+    delegate = CloudSpannerCursor(
+        self.client, self.database_id, self.instance_id)
     cursor = db.Cursor(self)
     cursor._delegate = delegate
     return cursor
@@ -145,13 +152,15 @@ class CloudSpannerConnection(object):
       self._instance = spanner.client.Instance(self.instance_id, self.client)
     return self._instance
 
+
 class CloudSpannerCursor(object):
   """Cursor for Cloud Spanner.
 
-  When executing an SQL select query, the cursor will load all rows into memory when execute
-  as called as opposed to streaming the results based on calls to fetchone and fetchmany.
-  This is a pretty naive implementation that could be inefficient when returning many rows.
-  We should consider improving that in the future.
+  When executing an SQL select query, the cursor will load all rows into memory
+  when execute as called as opposed to streaming the results based on calls to
+  fetchone and fetchmany. This is a pretty naive implementation that could be
+  inefficient when returning many rows. We should consider improving that in
+  the future.
   """
 
   def __init__(self, client, database_id, instance_id):
@@ -163,8 +172,9 @@ class CloudSpannerCursor(object):
     self.client = client
     self.database_id = database_id
     self.instance_id = instance_id
-    # TODO(jlewi): Should we take in a CloudSpannerConnection and reuse the instance and db associated with
-    # that connection?
+    self.database = None
+    # TODO(jlewi): Should we take in a CloudSpannerConnection and reuse the
+    # instance and db associated with that connection?
     self.instance = spanner.client.Instance(instance_id, client)
 
     # Store results of an SQL query for use in cursor operation
@@ -173,10 +183,11 @@ class CloudSpannerCursor(object):
     self._rindex = 0
     self._descriptions = []
 
-    # PEP 249 says that arraysize should be an attribute the controls batch size for various operations
-    # e.g. when streaming the results from a query we could fetch them in batches of arraysize.
-    # TODO(jlewi): The value of 10 was a randomly picked number. I have no idea what a sensible default
-    # would be.
+    # PEP 249 says that arraysize should be an attribute the controls batch
+    # size for various operations e.g. when streaming the results from a query
+    # we could fetch them in batches of arraysize.
+    # TODO(jlewi): The value of 10 was a randomly picked number. I have no idea
+    # what a sensible default would be.
     self.arraysize = 10
 
   def execute(self, sql, parameters=()):
@@ -186,23 +197,25 @@ class CloudSpannerCursor(object):
     :type parameters: tuple[object]
     """
     # TODO(jlewi): Should we check that the DB exists and if not raise an error?
-    # TODO(jlewi): What is the substitution syntax for parameters? Is this a PEP 249 convention?
-    # TODO(jlewi): According to db.Connection.execute execute shouldn't execute until end
-    # of transaction so we may need to rethink how this works.
+    # TODO(jlewi): What is the substitution syntax for parameters? Is this a PEP
+    # 249 convention?
+    # TODO(jlewi): According to db.Connection.execute execute shouldn't execute
+    # until end of transaction so we may need to rethink how this works.
     # I just guessed that Python format would work.
     self.database = self.instance.database(self.database_id)
 
     parsed = parse_sql(sql, parameters)
 
     if not parsed:
-      raise ValueError('SQL query {} is not supported for Cloud Spanner.'.format(sql))
+      raise ValueError(
+          'SQL query {} is not supported for Cloud Spanner.'.format(sql))
 
     if isinstance(parsed, InsertSQL):
       with self.database.batch() as batch:
         batch.insert(
-              table=parsed.table,
-                columns=parsed.columns,
-                values=[parsed.values])
+            table=parsed.table,
+            columns=parsed.columns,
+            values=[parsed.values])
 
       return
 
@@ -216,15 +229,13 @@ class CloudSpannerCursor(object):
 
       # TODO(jlewi): We should support the type_code as well.
       # According to https://www.python.org/dev/peps/pep-0249/#cursor-attributes
-      # name and type_code are the only two attributes required for a column description.
-      # However, it wasn't clear from the spec what values we should use for the type_code
-      # so I just it to None for now.
+      # name and type_code are the only two attributes required for a column
+      # description. However, it wasn't clear from the spec what values we
+      # should use for the type_code so I just it to None for now.
       self._descriptions = []
-      t = schema.get_table(parsed.table)
       for c in parsed.columns:
         self._descriptions.append([c, None, None, None, None, None, None])
       return
-
 
   def executemany(self, sql, seq_of_parameters=()):
     """Executes a single query many times.
@@ -241,8 +252,8 @@ class CloudSpannerCursor(object):
     :type sql: str
     """
     raise NotImplementedError(
-      'executescript is not a PEP249 method and is not currently '
-      'supported for Cloud Spanner')
+        'executescript is not a PEP249 method and is not currently '
+        'supported for Cloud Spanner')
 
   def fetchone(self):
     """Returns next row in result set.
@@ -303,8 +314,8 @@ class CloudSpannerCursor(object):
 
     :rtype: int
     """
-    # According to PEP249 this should be set to None if the Database doesn't support
-    # RowIDs.
+    # According to PEP249 this should be set to None if the Database doesn't
+    # support RowIDs.
     return None
 
   def close(self):
@@ -338,7 +349,7 @@ class CloudSpannerCursor(object):
 
 
 def create_database(client, instance_id, database_id):
-  """Creates a Cloud Spanner Database with the tables and indexes needed for TensorBoard.
+  """Creates a Cloud Spanner Database for TensorBoard.
 
   Args:
     client: A cloud spanner client.
@@ -359,8 +370,10 @@ def create_database(client, instance_id, database_id):
     op = database.create()
     op.result()
   except errors.RetryError as e:
-    logging.error("There was a problem creating the database. %s", e.cause.details())
+    logging.error("There was a problem creating the database. %s",
+                  e.cause.details())
     raise
+
 
 class InsertSQL(object):
   """Represent and InsertSQL statement."""
@@ -370,23 +383,30 @@ class InsertSQL(object):
     self.columns = columns
     self.values = values
 
-# \s matches any whitespace
-INSERT_PATTERN = re.compile("\s*insert\s*into\s*([a-z0-9_]*)\s*\(([a-z0-9,_\s]*)\)\s*values\s*\(([a-z0-9,_\s]*)\)", flags=re.IGNORECASE)
 
-SELECT_PATTERN = re.compile("\s*select.*", flags=re.IGNORECASE)
+# \s matches any whitespace
+INSERT_PATTERN = re.compile(
+    r'\s*insert\s*into\s*([a-z0-9_]*)\s*\(([a-z0-9,_\s]*)\)\s*values\s*'
+    r'\(([a-z0-9,_\s]*)\)', flags=re.IGNORECASE)
+
+SELECT_PATTERN = re.compile(r'\s*select.*', flags=re.IGNORECASE)
+
 
 class SelectSQL(object):
   """Reprsent a Select SQL statement."""
 
-  _PATTERN = re.compile("\s*select\s*([a-z0-9_,\s]*)from\s*([a-z0-9,_]*).*", flags=re.IGNORECASE)
-  _COL_NAME_PATTERN= re.compile('\s*([a-zA-z0-9_]*)\s*.*')
+  _PATTERN = re.compile(
+      r'\s*select\s*([a-z0-9_,\s]*)from\s*([a-z0-9,_]*).*', flags=re.IGNORECASE)
+  _COL_NAME_PATTERN = re.compile(r'\s*([a-zA-z0-9_]*)\s*.*')
+
   def __init__(self, sql):
     """Construct an SQL query."""
     self.sql = sql
 
     m = self._PATTERN.match(sql)
     if not m:
-      raise ValueError('Could not parse columns and table name from query: {0}'.format(sql))
+      raise ValueError(
+          'Could not parse columns and table name from query: {0}'.format(sql))
     self.table = m.group(2)
     columns = m.group(1).split(',')
     self.columns = []
@@ -395,6 +415,7 @@ class SelectSQL(object):
       if not m:
         raise ValueError('Could not parse column name from: {0}'.format(c))
       self.columns.append(m.group(1))
+
 
 def parse_sql(sql, parameters):
   """Parse an sql statement.

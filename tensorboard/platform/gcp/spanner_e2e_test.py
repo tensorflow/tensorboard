@@ -15,22 +15,19 @@
 
 This test requires access to GCP.
 """
-from google.cloud import spanner
 
 import contextlib
 import datetime
-import functools
 
-import os
+from google.cloud import spanner  # pylint: disable=import-error
 
-from tensorboard import db
 from tensorboard.platform.gcp import spanner as tb_spanner
-from tensorboard import schema
 import tensorflow as tf
+
 
 class CloudSpannerCursorTest(tf.test.TestCase):
   @classmethod
-  def setUpClass(self):
+  def setUpClass(cls):
     # Use an existing database
     # TODO(jlewi): Should we make this a command line argument?
     project = "cloud-ml-dev"
@@ -38,8 +35,9 @@ class CloudSpannerCursorTest(tf.test.TestCase):
     # Use a unique DB on each test run.
     now = datetime.datetime.now()
     database_name = "tb-test-{0}".format(now.strftime("%Y%m%d-%H%M%S"))
-    self.conn = tb_spanner.CloudSpannerConnection(project, instance_name, database_name)
-    tb_spanner.create_database(self.conn.client, instance_name, database_name)
+    cls.conn = tb_spanner.CloudSpannerConnection(
+        project, instance_name, database_name)
+    tb_spanner.create_database(cls.conn.client, instance_name, database_name)
 
   def testInsertSql(self):
     """Test that insert SQL statements work."""
@@ -54,17 +52,18 @@ class CloudSpannerCursorTest(tf.test.TestCase):
     offset = 23
     with contextlib.closing(self.conn.cursor()) as c:
       c.execute(
-            ('INSERT INTO EventLogs (rowid, customer_number, run_id, event_log_id, path, offset)'
-               ' VALUES (?, ?, ?, ?, ?, ?)'),
-              (rowid, customer_number, run_id, event_log_id, path, offset))
+          ('INSERT INTO EventLogs (rowid, customer_number, run_id, '
+           'event_log_id, path, offset) VALUES (?, ?, ?, ?, ?, ?)'),
+          (rowid, customer_number, run_id, event_log_id, path, offset))
 
     with self.conn.database.snapshot() as snapshot:
       # Verify that we can read the row.
       keyset = spanner.KeySet([[rowid, customer_number, run_id, event_log_id]])
 
       results = snapshot.read(
-        table='EventLogs',
-          columns=('rowid', 'customer_number', 'run_id', 'event_log_id', 'path', 'offset',),
+          table='EventLogs',
+          columns=('rowid', 'customer_number', 'run_id',
+                   'event_log_id', 'path', 'offset',),
           keyset=keyset,)
 
       rows = []
@@ -72,31 +71,32 @@ class CloudSpannerCursorTest(tf.test.TestCase):
         rows.append(row)
 
       self.assertEquals(1, len(rows))
-      self.assertAllEqual([rowid, customer_number, run_id, event_log_id, path, offset], rows[0])
-
+      self.assertAllEqual([rowid, customer_number, run_id,
+                           event_log_id, path, offset], rows[0])
 
   def testSelectSql(self):
     """Test verifies we can issue select queries against Cloud Spanner."""
     rows = [
-      [297, 0 , 0,  0, 'path_0', 0],
-      [297, 0 , 0,  1, 'path_1', 1],
-      [392, 0 , 1,  0, 'path_0', 0],
-      [392, 0 , 1,  1, 'path_1', 1],
+        [297, 0, 0, 0, 'path_0', 0],
+        [297, 0, 0, 1, 'path_1', 1],
+        [392, 0, 1, 0, 'path_0', 0],
+        [392, 0, 1, 1, 'path_1', 1],
     ]
 
     with self.conn.database.batch() as batch:
       batch.insert(
-        table='EventLogs',
-        columns=['rowid','customer_number', 'run_id', 'event_log_id', 'path', 'offset'],
-        values = rows)
+          table='EventLogs',
+          columns=['rowid', 'customer_number',
+                   'run_id', 'event_log_id', 'path', 'offset'],
+          values=rows)
 
     with contextlib.closing(self.conn.cursor()) as c:
       c.execute(
-            ('SELECT rowid, customer_number, run_id, event_log_id, path, offset '
-               ' from EventLogs where rowid = ? and event_log_id = ?'),
-              (297, 0))
+          ('SELECT rowid, customer_number, run_id, event_log_id, path, offset '
+           ' from EventLogs where rowid = ? and event_log_id = ?'),
+          (297, 0))
       row = c.fetchone()
-      self.assertAllEqual([297, 0 , 0,  0, 'path_0', 0], row)
+      self.assertAllEqual([297, 0, 0, 0, 'path_0', 0], row)
 
       self.assertEqual(1, c.rowcount)
       # According to PEP 249 fetchone should return None if no more rows.
@@ -105,23 +105,25 @@ class CloudSpannerCursorTest(tf.test.TestCase):
       # Check the descriptions.
       description = c.description
       names = [d[0] for d in description]
-      self.assertAllEqual(['rowid', 'customer_number', 'run_id', 'event_log_id', 'path', 'offset'], names)
+      self.assertAllEqual(['rowid', 'customer_number',
+                           'run_id', 'event_log_id', 'path', 'offset'], names)
 
     # Test that a cursor is iterable.
     with contextlib.closing(self.conn.cursor()) as c:
-        c.execute(
-              ('SELECT rowid, customer_number, run_id, event_log_id, path, offset '
-                 ' from EventLogs where rowid = ?'),
-                (392,))
+      c.execute(
+          ('SELECT rowid, customer_number, run_id, event_log_id, path, offset '
+           ' from EventLogs where rowid = ?'),
+          (392,))
 
-        self.assertEqual(2, c.rowcount)
+      self.assertEqual(2, c.rowcount)
 
-        results = []
-        for row in c:
-          results.append(row)
+      results = []
+      for row in c:  # pylint: disable=not-an-iterable
+        results.append(row)
 
-        self.assertAllEqual(rows[2], results[0])
-        self.assertAllEqual(rows[3], results[1])
+      self.assertAllEqual(rows[2], results[0])
+      self.assertAllEqual(rows[3], results[1])
+
 
 if __name__ == "__main__":
   tf.test.main()
