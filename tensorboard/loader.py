@@ -820,14 +820,10 @@ class RunReader(object):
     name: Display name of this run.
   """
 
-  def __init__(self, customer_number, experiment_id, run_id, name):
+  def __init__(self, rowid, name):
     """Creates new instance.
 
     Args:
-      customer_number: Integer identifying the customer that owns the
-        row.
-      experiment_id: The experiment ID.
-      run_id: Run id.
       rowid: Primary key of run in `Runs` table, which should already
           be inserted. This is a bit-packed int made by db.RUN_ROWID.
       name: Display name of run.
@@ -835,10 +831,8 @@ class RunReader(object):
     :type rowid: int
     :type name: str
     """
-    self.customer_number = customer_number
-    self.experiment_id = experiment_id
-    self.run_id = run_id
-    self.rowid = db.RUN_ROWID.create(self.experiment_id, self.run_id)
+    self.rowid = db.RUN_ROWID.check(rowid)
+    self.run_id = db.RUN_ROWID.parse(rowid)[1]
     self.name = tf.compat.as_text(name)
     self._mark = -1
     self._logs = []  # type: list[EventLogReader]
@@ -881,8 +875,8 @@ class RunReader(object):
         event_log_id = db.EVENT_LOG_ID.generate()
         log.rowid = db.EVENT_LOG_ROWID.create(self.run_id, event_log_id)
         c.execute(
-            ('INSERT INTO EventLogs (rowid, customer_number, run_id, event_log_id, path, offset)'
-             ' VALUES (?, ?, ?, ?, ?, 0)'),
+            ('INSERT INTO EventLogs (rowid, run_id, path, offset)'
+             ' VALUES (?, ?, ?, 0)'),
             (log.rowid, self.run_id, log.path))
     tf.logging.debug('Adding %s', log)
     self._logs.append(log)
