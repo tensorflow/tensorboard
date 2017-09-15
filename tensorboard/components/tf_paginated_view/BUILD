@@ -6,12 +6,17 @@ licenses(["notice"])  # Apache 2.0
 
 ts_web_library(
     name = "tf_paginated_view",
-    srcs = ["tf-paginated-view.html"],
+    srcs = [
+        "paginatedViewStore.ts",
+        "tf-paginated-view.html",
+        "tf-paginated-view-store.html",
+    ],
     path = "/tf-paginated-view",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_storage",
         "@org_polymer_paper_button",
         "@org_polymer_paper_input",
         "@org_polymer_paper_styles",
