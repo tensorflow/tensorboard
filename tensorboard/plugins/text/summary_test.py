@@ -127,11 +127,11 @@ class SummaryTest(tf.test.TestCase):
       summary.pb('la', np.array(range(42)))
 
   def test_unicode_numpy_array_value_in_pb(self):
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        r'Type \'unicode\d+\' is not supported. Only strings are.'):
-      summary.pb('ti', np.array(u'A drink with jam and bread.'))
+    pb = self.compute_and_check_summary_pb(
+        'ti', u'A drink with jam and bread.')
+    value = tf.make_ndarray(pb.value[0].tensor).item()
+    self.assertEqual(str, type(value))
+    self.assertEqual('A drink with jam and bread.', value)
 
 
 if __name__ == '__main__':
