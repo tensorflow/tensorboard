@@ -33,7 +33,6 @@ from __future__ import print_function
 
 from google.cloud import spanner
 from google.gax import errors
-from google.api.core import exceptions
 import logging
 import re
 from tensorboard import db
