@@ -233,7 +233,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         int(v) for v in data_array[metadata.FALSE_POSITIVES_INDEX])
     tp_index = metadata.TRUE_POSITIVES_INDEX
     fp_index = metadata.FALSE_POSITIVES_INDEX
-    positives = data_array[[tp_index, fp_index], :].astype(int).sum(axis=0)
+    positives = data_array[[tp_index, fp_index], :].astype(
+        int).sum(axis=0).tolist()
     end_index_inclusive = len(positives) - 1
     while end_index_inclusive > 0 and positives[end_index_inclusive] == 0:
       end_index_inclusive -= 1
