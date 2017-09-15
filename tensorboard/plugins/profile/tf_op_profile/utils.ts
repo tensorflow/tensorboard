@@ -23,11 +23,13 @@ function rgba(red: number, green: number, blue: number, alpha: number) {
  * @param {number} fraction
  * @param {number=} brightness
  * @param {number=} opacity
+ * @param {Function=} curve mapping [0-1] to [0-1]
  * @return {string} An RGBA color.
  */
-export function flameColor(fraction: number, brightness = 1, opacity = 1) {
+export function flameColor(
+    fraction: number, brightness = 1, opacity = 1, curve = Math.sqrt) {
   if (isNaN(fraction)) return rgba(brightness, brightness, brightness, opacity);
-  fraction = Math.sqrt(fraction);  // Or everything is depressing and red.
+  fraction = curve(fraction); // Or everything is depressing and red.
   return (fraction < 0.5) ?
     rgba(brightness, 2 * fraction * brightness, 0, opacity) :
     rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
