@@ -219,30 +219,32 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Args:
       event: The TensorEvent to convert.
       thresholds: An array of floats that ranges from 0 to 1 (in that
-        direction). This list of thresholds is not culled. We span the whole
-        range from 0 to 1. This method filters the thresholds based on the
-        indices of positive classifications that are 0.
+        direction and inclusive of 0 and 1).
 
     Returns:
       A JSON-able dictionary of PR curve data for 1 step.
     """
     data_array = tf.make_ndarray(event.tensor_proto)
 
-    # Remove entries for which TP + FP = 0 (precision is undefined).
-    true_positives = [int(v) for v in data_array[metadata.TRUE_POSITIVES_INDEX]]
-    false_positives = [
-        int(v) for v in data_array[metadata.FALSE_POSITIVES_INDEX]]
-    positives = tuple(sum(t) for t in zip(true_positives, false_positives))
-    for end_index in range(len(positives) - 1, -1, -1):
-      if positives[end_index] > 0:
-        break
-    end_index += 1
+    # Trim entries for which TP + FP = 0 (precision is undefined) at the tail of
+    # the data.
+    true_positives = (int(v) for v in data_array[metadata.TRUE_POSITIVES_INDEX])
+    false_positives = (
+        int(v) for v in data_array[metadata.FALSE_POSITIVES_INDEX])
+    positives = (
+        data_array[
+            [metadata.TRUE_POSITIVES_INDEX, metadata.FALSE_POSITIVES_INDEX], :]
+        .astype(int).sum(axis=0)
+    end_index_inclusive = len(positives) - 1
+    while end_index_inclusive > 0 and positives[end_index_inclusive] == 0:
+      end_index_inclusive -= 1
+    end_index = end_index_inclusive + 1
 
     return {
         'wall_time': event.wall_time,
         'step': event.step,
-        'precision': data_array[metadata.PRECISION_INDEX][:end_index].tolist(),
-        'recall': data_array[metadata.RECALL_INDEX][:end_index].tolist(),
+        'precision': data_array[metadata.PRECISION_INDEX][:end_index],
+        'recall': data_array[metadata.RECALL_INDEX][:end_index],
         'true_positives': true_positives[:end_index],
         'false_positives': false_positives[:end_index],
         'true_negatives':
