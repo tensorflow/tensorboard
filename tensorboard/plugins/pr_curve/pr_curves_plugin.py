@@ -214,29 +214,43 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return any(six.itervalues(all_runs))
 
   def _process_tensor_event(self, event, thresholds):
-    """Converts a TensorEvent into an dict that encapsulates information on it.
+    """Converts a TensorEvent into a dict that encapsulates information on it.
 
     Args:
       event: The TensorEvent to convert.
       thresholds: An array of floats that ranges from 0 to 1 (in that
-        direction).
+        direction and inclusive of 0 and 1).
 
     Returns:
       A JSON-able dictionary of PR curve data for 1 step.
     """
     data_array = tf.make_ndarray(event.tensor_proto)
+
+    # Trim entries for which TP + FP = 0 (precision is undefined) at the tail of
+    # the data.
+    true_positives = [int(v) for v in data_array[metadata.TRUE_POSITIVES_INDEX]]
+    false_positives = [
+        int(v) for v in data_array[metadata.FALSE_POSITIVES_INDEX]]
+    tp_index = metadata.TRUE_POSITIVES_INDEX
+    fp_index = metadata.FALSE_POSITIVES_INDEX
+    positives = data_array[[tp_index, fp_index], :].astype(int).sum(axis=0)
+    end_index_inclusive = len(positives) - 1
+    while end_index_inclusive > 0 and positives[end_index_inclusive] == 0:
+      end_index_inclusive -= 1
+    end_index = end_index_inclusive + 1
+
     return {
         'wall_time': event.wall_time,
         'step': event.step,
-        'precision': data_array[metadata.PRECISION_INDEX].tolist(),
-        'recall': data_array[metadata.RECALL_INDEX].tolist(),
-        'true_positives':
-            [int(v) for v in data_array[metadata.TRUE_POSITIVES_INDEX]],
-        'false_positives':
-            [int(v) for v in data_array[metadata.FALSE_POSITIVES_INDEX]],
+        'precision': data_array[metadata.PRECISION_INDEX][:end_index],
+        'recall': data_array[metadata.RECALL_INDEX][:end_index],
+        'true_positives': true_positives[:end_index],
+        'false_positives': false_positives[:end_index],
         'true_negatives':
-            [int(v) for v in data_array[metadata.TRUE_NEGATIVES_INDEX]],
+            [int(v) for v in
+             data_array[metadata.TRUE_NEGATIVES_INDEX][:end_index]],
         'false_negatives':
-            [int(v) for v in data_array[metadata.FALSE_NEGATIVES_INDEX]],
-        'thresholds': thresholds,
+            [int(v) for v in
+             data_array[metadata.FALSE_NEGATIVES_INDEX][:end_index]],
+        'thresholds': thresholds[:end_index],
     }
