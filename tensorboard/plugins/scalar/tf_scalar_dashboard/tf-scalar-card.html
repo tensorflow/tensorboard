@@ -36,24 +36,27 @@ limitations under the License.
     display-name="[[tagMetadata.displayName]]"
     description="[[tagMetadata.description]]"
   ></tf-card-heading>
-  <tf-scalar-chart
-    x-type="[[xType]]"
-    x-components-creation-method="[[_xComponentsCreationMethod]]"
-    y-value-accessor="[[_yValueAccessor]]"
-    tooltip-columns="[[_tooltipColumns]]"
-    smoothing-enabled="[[smoothingEnabled]]"
-    smoothing-weight="[[smoothingWeight]]"
-    tooltip-sorting-method="[[tooltipSortingMethod]]"
-    ignore-y-outliers="[[ignoreYOutliers]]"
-    request-manager="[[requestManager]]"
-    runs="[[runs]]"
-    tag="[[tag]]"
-    tag-metadata="[[tagMetadata]]"
-    active="[[active]]"
-    data-url="[[_dataUrl]]"
-    log-scale-active="[[_logScaleActive]]"
-    process-data="[[_processData]]"
-  >
+  <div id="tf-scalar-chart-container">
+    <tf-scalar-chart
+      x-type="[[xType]]"
+      x-components-creation-method="[[_xComponentsCreationMethod]]"
+      y-value-accessor="[[_yValueAccessor]]"
+      tooltip-columns="[[_tooltipColumns]]"
+      smoothing-enabled="[[smoothingEnabled]]"
+      smoothing-weight="[[smoothingWeight]]"
+      tooltip-sorting-method="[[tooltipSortingMethod]]"
+      ignore-y-outliers="[[ignoreYOutliers]]"
+      request-manager="[[requestManager]]"
+      runs="[[runs]]"
+      tag="[[tag]]"
+      tag-metadata="[[tagMetadata]]"
+      active="[[active]]"
+      data-url="[[_dataUrl]]"
+      log-scale-active="[[_logScaleActive]]"
+      process-data="[[_processData]]"
+    >
+    </tf-scalar-chart>
+  </div>
   <div id="buttons">
     <paper-icon-button
       selected$="[[_expanded]]"
@@ -96,21 +99,28 @@ limitations under the License.
       </div>
     </template>
   </div>
-  </tf-scalar-chart>
   <style>
     :host {
-      height: 235px;
-      width: 330px;
       margin: 5px;
       display: block;
+      width: 330px;
     }
 
     :host[_expanded] {
+      width: 100%;
+    }
+
+    :host[_expanded] #tf-scalar-chart-container {
       height: 400px;
+    }
+
+    #tf-scalar-chart-container {
+      height: 200px;
       width: 100%;
     }
 
     tf-card-heading {
+      display: block;
       margin-bottom: 10px;
     }
 
@@ -158,7 +168,7 @@ limitations under the License.
   import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
   import {getRouter} from '../tf-backend/router.js';
 
-  /** 
+  /**
    * Allows:
    * - "step" - Linear scale using the "step" property of the datum.
    * - "wall_time" - Temporal scale using the "wall_time" property of the
@@ -289,7 +299,7 @@ limitations under the License.
         this.set('_logScaleActive', !this._logScaleActive);
       },
       _resetDomain() {
-        const chart = this.$$('vz-line-chart');
+        const chart = this.$$('tf-scalar-chart');
         if (chart) {
           chart.resetDomain();
         }
