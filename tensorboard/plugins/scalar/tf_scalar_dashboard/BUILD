@@ -7,6 +7,7 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "tf_scalar_dashboard",
     srcs = [
+        "tf-scalar-card.html",
         "tf-scalar-chart.html",
         "tf-scalar-dashboard.html",
         "tf-smoothing-input.html",

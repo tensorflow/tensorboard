@@ -1,0 +1,308 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="tf-scalar-chart.html">
+
+<!--
+  A card that handles loading data (at the right times), rendering a scalar
+  chart, and providing UI affordances (such as buttons) for scalar data.
+-->
+<dom-module id="tf-scalar-card">
+<template>
+  <tf-card-heading
+    tag="[[tag]]"
+    display-name="[[tagMetadata.displayName]]"
+    description="[[tagMetadata.description]]"
+  ></tf-card-heading>
+  <tf-scalar-chart
+    x-type="[[xType]]"
+    x-components-creation-method="[[_xComponentsCreationMethod]]"
+    y-value-accessor="[[_yValueAccessor]]"
+    tooltip-columns="[[_tooltipColumns]]"
+    smoothing-enabled="[[smoothingEnabled]]"
+    smoothing-weight="[[smoothingWeight]]"
+    tooltip-sorting-method="[[tooltipSortingMethod]]"
+    ignore-y-outliers="[[ignoreYOutliers]]"
+    request-manager="[[requestManager]]"
+    runs="[[runs]]"
+    tag="[[tag]]"
+    tag-metadata="[[tagMetadata]]"
+    active="[[active]]"
+    data-url="[[_dataUrl]]"
+    log-scale-active="[[_logScaleActive]]"
+    process-data="[[_processData]]"
+  >
+  <div id="buttons">
+    <paper-icon-button
+      selected$="[[_expanded]]"
+      icon="fullscreen"
+      on-tap="_toggleExpanded"
+    ></paper-icon-button>
+    <paper-icon-button
+      selected$="[[_logScaleActive]]"
+      icon="line-weight"
+      on-tap="_toggleLogScale"
+      title="Toggle y-axis log scale"
+    ></paper-icon-button>
+    <paper-icon-button
+      icon="settings-overscan"
+      on-tap="_resetDomain"
+      title="Fit domain to data"
+    ></paper-icon-button>
+    <span style="flex-grow: 1"></span>
+    <template is="dom-if" if="[[showDownloadLinks]]">
+      <div class="download-links">
+        <paper-dropdown-menu
+          no-label-float="true"
+          label="run to download"
+          selected-item-label="{{_runToDownload}}"
+        >
+          <paper-menu class="dropdown-content" slot="dropdown-content">
+            <template is="dom-repeat" items="[[runs]]">
+              <paper-item no-label-float=true>[[item]]</paper-item>
+            </template>
+          </paper-menu>
+        </paper-dropdown-menu>
+        <a
+          download="run_[[_runToDownload]]-tag-[[tag]].csv"
+          href="[[_csvUrl(tag, _runToDownload)]]"
+        >CSV</a> <a
+          download="run_[[_runToDownload]]-tag-[[tag]].json"
+          href="[[_jsonUrl(tag, _runToDownload)]]"
+        >JSON</a>
+        </div>
+      </div>
+    </template>
+  </div>
+  </tf-scalar-chart>
+  <style>
+    :host {
+      height: 235px;
+      width: 330px;
+      margin: 5px;
+      display: block;
+    }
+
+    :host[_expanded] {
+      height: 400px;
+      width: 100%;
+    }
+
+    tf-card-heading {
+      margin-bottom: 10px;
+    }
+
+    #buttons {
+      display: flex;
+      flex-direction: row;
+    }
+
+    paper-icon-button {
+      color: #2196F3;
+      border-radius: 100%;
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+    }
+
+    paper-icon-button[selected] {
+      background: var(--tb-ui-light-accent);
+    }
+
+    .download-links {
+      display: flex;
+      height: 32px;
+    }
+
+    .download-links a {
+      font-size: 10px;
+      align-self: center;
+      margin: 2px;
+    }
+
+    .download-links paper-dropdown-menu {
+      width: 100px;
+      --paper-input-container-label: {
+        font-size: 10px;
+      }
+      --paper-input-container-input: {
+        font-size: 10px;
+      }
+    }
+  </style>
+</template>
+<script>
+  import {addParams} from '../tf-backend/urlPathHelpers.js';
+  import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
+  import {getRouter} from '../tf-backend/router.js';
+
+  /** 
+   * Allows:
+   * - "step" - Linear scale using the "step" property of the datum.
+   * - "wall_time" - Temporal scale using the "wall_time" property of the
+   * datum.
+   * - "relative" - Temporal scale using the "relative" property of the
+   * datum if it is present or calculating from "wall_time" if it isn't.
+   * @enum {string}
+   */
+  const X_TYPE = {
+    STEP: 'step',
+    RELATIVE: 'relative',
+    WALL_TIME: 'wall_time',
+  };
+
+  Polymer({
+      is: 'tf-scalar-card',
+      properties: {
+        runs: Array,  // of String
+        tag: String,
+
+        /**
+         * @type {X_TYPE}
+         */
+        xType: String,
+
+        active: Boolean,
+        ignoreYOutliers: Boolean,
+        requestManager: Object,
+        showDownloadLinks: Boolean,
+        smoothingEnabled: Boolean,
+        smoothingWeight: Number,
+        tagMetadata: Object,
+        tooltipSortingMethod: String,
+
+        // This function is called when data is received from the backend.
+        _processData: {
+          type: Object,
+          value: () => ((scalarChart, run, data) => {
+            const formattedData = data.map(datum => ({
+              wall_time: new Date(datum[0] * 1000),
+              step: datum[1],
+              scalar: datum[2],
+            }));
+            scalarChart.setSeriesData(run, formattedData);
+          }),
+          readOnly: true,
+        },
+
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+
+        _logScaleActive: Boolean,
+
+        _dataUrl: {
+          type: Function,
+          value: () => (tag, run) => addParams(
+              getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
+        },
+
+        _xComponentsCreationMethod: {
+          type: Object,
+          computed: '_computeXComponentsCreationMethod(xType)',
+        },
+
+        _yValueAccessor: {
+          type: Object,
+          readOnly: true,
+          value: () => {
+            return d => d.scalar;
+          },
+        },
+
+        _tooltipColumns: {
+          type: Array,
+          readOnly: true,
+          value: () => {
+            const valueFormatter = ChartHelpers.multiscaleFormatter(
+                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
+            const formatValueOrNaN =
+                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+            return [
+              {
+                title: 'Name',
+                evaluate: (d) => d.dataset.metadata().name,
+              },
+              {
+                title: 'Smoothed',
+                evaluate: (d, statusObject) => formatValueOrNaN(
+                    statusObject.smoothingEnabled ?
+                        d.datum.smoothed : d.datum.scalar),
+              },
+              {
+                title: 'Value',
+                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
+              },
+              {
+                title: 'Step',
+                evaluate: (d) => ChartHelpers.stepFormatter(d.datum.step),
+              },
+              {
+                title: 'Time',
+                evaluate: (d) => ChartHelpers.timeFormatter(d.datum.wall_time),
+              },
+              {
+                title: 'Relative',
+                evaluate:
+                    (d) => ChartHelpers.relativeFormatter(
+                        ChartHelpers.relativeAccessor(d.datum, -1, d.dataset)),
+              },
+            ]
+          },
+        },
+      },
+      reload() {
+        this.$$('tf-scalar-chart').reload();
+      },
+      redraw() {
+        this.$$('tf-scalar-chart').redraw();
+      },
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+      _toggleLogScale() {
+        this.set('_logScaleActive', !this._logScaleActive);
+      },
+      _resetDomain() {
+        const chart = this.$$('vz-line-chart');
+        if (chart) {
+          chart.resetDomain();
+        }
+      },
+      _csvUrl(tag, run) {
+        return addParams(this._dataUrl(tag, run), {format: 'csv'});
+      },
+      _jsonUrl(tag, run) {
+        return this._dataUrl(tag, run);
+      },
+      _computeXComponentsCreationMethod(xType) {
+        return () => ChartHelpers.getXComponents(xType);
+      },
+  });
+</script>
+</dom-module>
