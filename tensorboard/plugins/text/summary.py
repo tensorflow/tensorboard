@@ -97,7 +97,7 @@ def pb(name, data, display_name=None, description=None):
       # This is a unicode string.
       data = tf.compat.as_bytes(data)
     data = np.array(data)
-  if data.dtype.kind != 'S':
+  if data.dtype.kind not in ('S', 'U'):
     raise ValueError(
         'Type %r is not supported. Only strings are.' % data.dtype.name)
   tensor = tf.make_tensor_proto(data, dtype=tf.string)

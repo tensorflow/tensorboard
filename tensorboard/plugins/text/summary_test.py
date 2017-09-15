@@ -105,8 +105,14 @@ class SummaryTest(tf.test.TestCase):
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual('A name I call myself.', value)
 
-  def test_np_array_value(self):
+  def test_np_array_string_value(self):
     pb = self.compute_and_check_summary_pb('fa', 'A long, long way to run.')
+    value = tf.make_ndarray(pb.value[0].tensor).item()
+    self.assertIsInstance(value, six.binary_type)
+    self.assertEqual('A long, long way to run.', value)
+
+  def test_np_array_unicode_value(self):
+    pb = self.compute_and_check_summary_pb('fa', u'A long, long way to run.')
     value = tf.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual('A long, long way to run.', value)
