@@ -100,22 +100,38 @@ class SummaryTest(tf.test.TestCase):
     metadata.parse_plugin_metadata(content)
 
   def test_string_value(self):
-    pb = self.compute_and_check_summary_pb('mi', 'A name I call myself.')
+    pb = self.compute_and_check_summary_pb('mi', b'A name I call myself.')
+    value = tf.make_ndarray(pb.value[0].tensor).item()
+    self.assertIsInstance(value, six.binary_type)
+    self.assertEqual(b'A name I call myself.', value)
+
+  def test_unicode_value(self):
+    pb = self.compute_and_check_summary_pb('mi', u'A name I call myself.')
     value = tf.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual(b'A name I call myself.', value)
 
   def test_np_array_string_value(self):
-    pb = self.compute_and_check_summary_pb('fa', 'A long, long way to run.')
-    value = tf.make_ndarray(pb.value[0].tensor).item()
-    self.assertIsInstance(value, six.binary_type)
-    self.assertEqual(b'A long, long way to run.', value)
+    pb = self.compute_and_check_summary_pb(
+        'fa', np.array([[b'A', b'long', b'long'], [b'way', b'to', b'run']]))
+    values = tf.make_ndarray(pb.value[0].tensor).tolist()
+    self.assertEqual(
+        [[b'A', b'long', b'long'], [b'way', b'to', b'run']], values)
+    # Check that all entries are byte strings.
+    for vectors in values:
+      for value in vectors:
+        self.assertIsInstance(value, six.binary_type)
 
   def test_np_array_unicode_value(self):
-    pb = self.compute_and_check_summary_pb('fa', u'A long, long way to run.')
-    value = tf.make_ndarray(pb.value[0].tensor).item()
-    self.assertIsInstance(value, six.binary_type)
-    self.assertEqual(b'A long, long way to run.', value)
+    pb = self.compute_and_check_summary_pb(
+        'fa', np.array([[u'A', u'long', u'long'], [u'way', u'to', u'run']]))
+    values = tf.make_ndarray(pb.value[0].tensor).tolist()
+    self.assertEqual(
+        [[b'A', b'long', b'long'], [b'way', b'to', b'run']], values)
+    # Check that all entries are byte strings.
+    for vectors in values:
+      for value in vectors:
+        self.assertIsInstance(value, six.binary_type)
 
   def test_non_string_value_in_op(self):
     with six.assertRaisesRegex(
@@ -128,16 +144,9 @@ class SummaryTest(tf.test.TestCase):
   def test_non_string_value_in_pb(self):
     with six.assertRaisesRegex(
         self,
-        ValueError,
-        r'Type \'int\d+\' is not supported. Only strings are.'):
+        TypeError,
+        r'Expected binary or unicode string, got 0'):
       summary.pb('la', np.array(range(42)))
-
-  def test_unicode_numpy_array_value_in_pb(self):
-    pb = self.compute_and_check_summary_pb(
-        'ti', u'A drink with jam and bread.')
-    value = tf.make_ndarray(pb.value[0].tensor).item()
-    self.assertIsInstance(value, six.binary_type)
-    self.assertEqual(b'A drink with jam and bread.', value)
 
 
 if __name__ == '__main__':

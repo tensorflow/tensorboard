@@ -20,8 +20,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 import six
 
 from tensorboard.plugins.text import metadata
@@ -79,27 +79,21 @@ def pb(name, data, display_name=None, description=None):
   Arguments:
     name: A name for the generated node. Will also serve as a series name in
       TensorBoard.
-    data: A Python bytestring (of type bytes), or Unicode string, or numpy array
-      of one of these types.
+    data: A Python bytestring (of type bytes), or Unicode string. Or a numpy
+      data array of those types.
     display_name: Optional name for this summary in TensorBoard, as a
       `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
       `str`. Markdown is supported. Defaults to empty.
 
   Raises:
-    ValueError: If the data is of the wrong type.
+    TypeError: If the type of the data is unsupported.
 
   Returns:
     A `tf.Summary` protobuf object.
   """
-  if isinstance(data, (six.binary_type, six.string_types)):
-    if isinstance(data, six.text_type):
-      # This is a unicode string.
-      data = tf.compat.as_bytes(data)
+  if not isinstance(data, np.ndarray):
     data = np.array(data)
-  if data.dtype.kind not in ('S', 'U'):
-    raise ValueError(
-        'Type %r is not supported. Only strings are.' % data.dtype.name)
   tensor = tf.make_tensor_proto(data, dtype=tf.string)
 
   if display_name is None:
