@@ -144,7 +144,7 @@ class SummaryTest(tf.test.TestCase):
   def test_non_string_value_in_pb(self):
     with six.assertRaisesRegex(
         self,
-        TypeError,
+        ValueError,
         r'Expected binary or unicode string, got 0'):
       summary.pb('la', np.array(range(42)))
 

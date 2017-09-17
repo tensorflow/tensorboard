@@ -87,14 +87,18 @@ def pb(name, data, display_name=None, description=None):
       `str`. Markdown is supported. Defaults to empty.
 
   Raises:
-    TypeError: If the type of the data is unsupported.
+    ValueError: If the type of the data is unsupported.
 
   Returns:
     A `tf.Summary` protobuf object.
   """
   if not isinstance(data, np.ndarray):
     data = np.array(data)
-  tensor = tf.make_tensor_proto(data, dtype=tf.string)
+
+  try:
+    tensor = tf.make_tensor_proto(data, dtype=tf.string)
+  except TypeError as e:
+    raise ValueError(e)
 
   if display_name is None:
     display_name = name
