@@ -99,7 +99,7 @@ class SummaryTest(tf.test.TestCase):
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
 
-  def test_string_value(self):
+  def test_bytes_value(self):
     pb = self.compute_and_check_summary_pb('mi', b'A name I call myself.')
     value = tf.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
