@@ -111,7 +111,7 @@ class SummaryTest(tf.test.TestCase):
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual(b'A name I call myself.', value)
 
-  def test_np_array_string_value(self):
+  def test_np_array_bytes_value(self):
     pb = self.compute_and_check_summary_pb(
         'fa', np.array([[b'A', b'long', b'long'], [b'way', b'to', b'run']]))
     values = tf.make_ndarray(pb.value[0].tensor).tolist()
