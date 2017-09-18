@@ -61,7 +61,7 @@ class SqlParserTest(tf.test.TestCase):
     select_sql = tb_spanner.parse_sql(sql, parameters)
     self.assertIsInstance(select_sql, tb_spanner.SelectSQL)
     self.assertEqual('SELECT rowid, offset FROM EventLogs WHERE '
-                      'run_id = a AND path = b', select_sql.sql)
+                     'run_id = a AND path = b', select_sql.sql)
     self.assertEqual('EventLogs', select_sql.table)
     self.assertAllEqual(['rowid', 'offset'], select_sql.columns)
 
