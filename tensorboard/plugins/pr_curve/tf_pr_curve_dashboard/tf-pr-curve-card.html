@@ -41,6 +41,8 @@ limitations under the License.
         y-value-accessor="[[_yValueAccessor]]"
         tooltip-columns="[[_tooltipColumns]]"
         color-scale="[[_colorScaleFunction]]"
+        default-x-range="[[_defaultXRange]]"
+        default-y-range="[[_defaultYRange]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[loading]]">
         <div id="loading-spinner-container">
@@ -300,6 +302,16 @@ limitations under the License.
           ],
           readOnly: true,
         },
+        _defaultXRange: {
+          type: Array,
+          value: [0, 1],
+          readOnly: true,
+        },
+        _defaultYRange: {
+          type: Array,
+          value: [0, 1],
+          readOnly: true,
+        },
       },
       observers: [
         'reload(runs, tag)',
@@ -316,6 +328,13 @@ limitations under the License.
         // sometimes)
         this._attached = true;
         this.reload();
+      },
+      ready() {
+        this.$$('vz-line-chart').addEventListener('chart-rendered', () => {
+          // Reset the chart's X and Y domains to [0, 1] only after the chart is
+          // rendered. Otherwise, the call to resetDomain no-ops. 
+          this.$$('vz-line-chart').resetDomain();
+        }, false);
       },
       reload() {
         if (!this._attached) {

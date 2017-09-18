@@ -93,6 +93,22 @@ Polymer({
     tooltipColumns: Array,
 
     /**
+     * An optional array of 2 numbers for the min and max of the default range
+     * of the Y axis. If not provided, a reasonable range will be generated.
+     * This property is a list instead of 2 individual properties to emphasize
+     * that both the min and the max must be specified (or neither at all).
+     */
+    defaultXRange: Array,
+
+    /**
+     * An optional array of 2 numbers for the min and max of the default range
+     * of the Y axis. If not provided, a reasonable range will be generated.
+     * This property is a list instead of 2 individual properties to emphasize
+     * that both the min and the max must be specified (or neither at all).
+     */
+    defaultYRange: Array,
+
+    /**
      * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
      * table element because Polymer does not support that. This seems like
      * a bug in Polymer. Hence, we manually generate the HTML for creating a row
@@ -194,7 +210,8 @@ Polymer({
   },
 
   /**
-   * Reset the chart domain to fit its data.
+   * Reset the chart domain. If the chart has not rendered yet, a call to this
+   * method no-ops.
    */
   resetDomain: function() {
     if (this._chart) {
@@ -220,6 +237,11 @@ Polymer({
     this.scopeSubtree(this.$.tooltip, true);
     this.scopeSubtree(this.$.chartdiv, true);
   },
+
+  /**
+   * Creates a chart, and asynchronously renders it. Fires a chart-rendered
+   * event after the chart is rendered.
+   */
   _makeChart: function(
       xComponentsCreationMethod,
       yValueAccessor,
@@ -251,10 +273,14 @@ Polymer({
           yScaleType,
           colorScale,
           tooltip,
-          this.tooltipColumns);
+          this.tooltipColumns,
+          this.defaultXRange,
+          this.defaultYRange);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
+
+      this.dispatchEvent(new CustomEvent('chart-rendered'));
     }, 350);
   },
   _reloadFromCache: function() {
@@ -335,6 +361,11 @@ class LineChart {
   private tooltipPosition: string;
   private _ignoreYOutliers: boolean;
 
+  // An optional list of 2 numbers.
+  private _defaultXRange: number[];
+  // An optional list of 2 numbers.
+  private _defaultYRange: number[];
+
   private targetSVG: d3.Selection<any, any, any, any>;
 
   constructor(
@@ -343,7 +374,9 @@ class LineChart {
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>,
-      tooltipColumns: ChartHelpers.TooltipColumn[]) {
+      tooltipColumns: ChartHelpers.TooltipColumn[],
+      defaultXRange?: number[],
+      defaultYRange?: number[]) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -358,6 +391,10 @@ class LineChart {
     // need to do a single bind, so we can deregister the callback from
     // old Plottable.Datasets. (Deregistration is done by identity checks.)
     this.onDatasetChanged = this._onDatasetChanged.bind(this);
+
+    this._defaultXRange = defaultXRange;
+    this._defaultYRange = defaultYRange;
+
     this.buildChart(
         xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns);
   }
@@ -534,23 +571,36 @@ class LineChart {
   }
 
   private resetXDomain() {
-    // (Copied from DragZoomLayer.unzoom.)
-    const xScale = this.xScale as any;
-    xScale._domainMin = null;
-    xScale._domainMax = null;
-    const xDomain = xScale._getExtent();
+    let xDomain;
+    if (this._defaultXRange) {
+      // Use the range specified by the caller.
+      xDomain = d3.scaleLinear().domain(this._defaultXRange).domain();
+    } else {
+      // (Copied from DragZoomLayer.unzoom.)
+      const xScale = this.xScale as any;
+      xScale._domainMin = null;
+      xScale._domainMax = null;
+      xDomain = xScale._getExtent();
+    }
     this.xScale.domain(xDomain);
   }
 
   private resetYDomain() {
-    const accessor = this.getAccessor();
-    let datasetToValues: (d: Plottable.Dataset) => number[] = (d) => {
-      return d.data().map((x) => accessor(x, -1, d));
-    };
-    let vals = _.flatten(this.datasets.map(datasetToValues));
-    vals = vals.filter((x) => x === x && x !== Infinity && x !== -Infinity);
-    let domain = ChartHelpers.computeDomain(vals, this._ignoreYOutliers);
-    this.yScale.domain(domain);
+    let yDomain;
+    if (this._defaultYRange) {
+      // Use the range specified by the caller.
+      yDomain = d3.scaleLinear().domain(this._defaultYRange).domain();
+    } else {
+      // Generate a reasonable range.
+      const accessor = this.getAccessor();
+      let datasetToValues: (d: Plottable.Dataset) => number[] = (d) => {
+        return d.data().map((x) => accessor(x, -1, d));
+      };
+      let vals = _.flatten(this.datasets.map(datasetToValues));
+      vals = vals.filter((x) => x === x && x !== Infinity && x !== -Infinity);
+      yDomain = ChartHelpers.computeDomain(vals, this._ignoreYOutliers);
+    }
+    this.yScale.domain(yDomain);
   }
 
   private getAccessor(): Plottable.IAccessor<number> {
