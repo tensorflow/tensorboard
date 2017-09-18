@@ -22,7 +22,6 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-import six
 
 from tensorboard.plugins.text import metadata
 
@@ -36,10 +35,10 @@ def op(name,
 
   Text data summarized via this plugin will be visible in the Text Dashboard
   in TensorBoard. The standard TensorBoard Text Dashboard will render markdown
-  in the strings, and will automatically organize 1d and 2d tensors into tables.
-  If a tensor with more than 2 dimensions is provided, a 2d subarray will be
+  in the strings, and will automatically organize 1D and 2D tensors into tables.
+  If a tensor with more than 2 dimensions is provided, a 2D subarray will be
   displayed along with a warning message. (Note that this behavior is not
-  intrinsic to the text summary api, but rather to the default TensorBoard text
+  intrinsic to the text summary API, but rather to the default TensorBoard text
   plugin.)
 
   Args:
@@ -50,8 +49,8 @@ def op(name,
       constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
       constant `str`. Markdown is supported. Defaults to empty.
-    collections: Optional list of ops.GraphKeys.  The collections to add the
-      summary to.  Defaults to [_ops.GraphKeys.SUMMARIES]
+    collections: Optional list of ops.GraphKeys. The collections to which to add
+      the summary. Defaults to [Graph Keys.SUMMARIES].
 
   Returns:
     A TensorSummary op that is configured so that TensorBoard will recognize

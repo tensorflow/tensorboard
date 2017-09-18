@@ -100,23 +100,27 @@ class SummaryTest(tf.test.TestCase):
     metadata.parse_plugin_metadata(content)
 
   def test_bytes_value(self):
-    pb = self.compute_and_check_summary_pb('mi', b'A name I call myself.')
+    pb = self.compute_and_check_summary_pb(
+        'mi', b'A name\xe2\x80\xa6I call myself')
     value = tf.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
-    self.assertEqual(b'A name I call myself.', value)
+    self.assertEqual(b'A name\xe2\x80\xa6I call myself', value)
 
   def test_unicode_value(self):
-    pb = self.compute_and_check_summary_pb('mi', u'A name I call myself.')
+    pb = self.compute_and_check_summary_pb('mi', u'A name\u2026I call myself')
     value = tf.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
-    self.assertEqual(b'A name I call myself.', value)
+    self.assertEqual(b'A name\xe2\x80\xa6I call myself', value)
 
   def test_np_array_bytes_value(self):
     pb = self.compute_and_check_summary_pb(
-        'fa', np.array([[b'A', b'long', b'long'], [b'way', b'to', b'run']]))
+        'fa',
+        np.array(
+            [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']]))
     values = tf.make_ndarray(pb.value[0].tensor).tolist()
     self.assertEqual(
-        [[b'A', b'long', b'long'], [b'way', b'to', b'run']], values)
+        [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']],
+        values)
     # Check that all entries are byte strings.
     for vectors in values:
       for value in vectors:
@@ -124,10 +128,13 @@ class SummaryTest(tf.test.TestCase):
 
   def test_np_array_unicode_value(self):
     pb = self.compute_and_check_summary_pb(
-        'fa', np.array([[u'A', u'long', u'long'], [u'way', u'to', u'run']]))
+        'fa',
+        np.array(
+            [[u'A', u'long', u'long'], [u'way', u'to', u'run \u203C']]))
     values = tf.make_ndarray(pb.value[0].tensor).tolist()
     self.assertEqual(
-        [[b'A', b'long', b'long'], [b'way', b'to', b'run']], values)
+        [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']],
+        values)
     # Check that all entries are byte strings.
     for vectors in values:
       for value in vectors:

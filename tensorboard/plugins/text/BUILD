@@ -67,7 +67,6 @@ py_library(
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:util",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -81,6 +80,7 @@ py_test(
         ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 
