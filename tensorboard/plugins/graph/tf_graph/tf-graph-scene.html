@@ -1076,9 +1076,6 @@ Polymer({
       return;
     }
 
-    if (selectedNode) {
-      this._updateNodeState(selectedNode);
-    }
     if (oldSelectedNode) {
       this._updateNodeState(oldSelectedNode);
     }
@@ -1117,6 +1114,10 @@ Polymer({
     if (topParentNodeToBeExpanded) {
       this.setNodeExpanded(topParentNodeToBeExpanded);
       this._zoomed = true;
+    }
+
+    if (selectedNode) {
+      this._updateNodeState(selectedNode);
     }
 
     if (tf.graph.scene.panToNode(selectedNode, this.$.svg, this.$.root,
