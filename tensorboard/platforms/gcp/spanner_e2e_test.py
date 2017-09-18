@@ -70,7 +70,7 @@ class CloudSpannerCursorTest(tf.test.TestCase):
       for row in results:
         rows.append(row)
 
-      self.assertEquals(1, len(rows))
+      self.assertEqual(1, len(rows))
       self.assertAllEqual([rowid, customer_number, run_id,
                            event_log_id, path, offset], rows[0])
 

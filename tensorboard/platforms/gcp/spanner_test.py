@@ -49,7 +49,7 @@ class SqlParserTest(tf.test.TestCase):
 
     insert_sql = tb_spanner.parse_sql(sql, parameters)
     self.assertIsInstance(insert_sql, tb_spanner.InsertSQL)
-    self.assertEquals('EventLogs', insert_sql.table)
+    self.assertEqual('EventLogs', insert_sql.table)
     self.assertAllEqual(['rowid', 'customer_number', 'run_id', 'event_log_id',
                          'path', 'offset'], insert_sql.columns)
     self.assertAllEqual(['a', 'b', 'c', 0], insert_sql.values)
@@ -60,9 +60,9 @@ class SqlParserTest(tf.test.TestCase):
 
     select_sql = tb_spanner.parse_sql(sql, parameters)
     self.assertIsInstance(select_sql, tb_spanner.SelectSQL)
-    self.assertEquals('SELECT rowid, offset FROM EventLogs WHERE '
+    self.assertEqual('SELECT rowid, offset FROM EventLogs WHERE '
                       'run_id = a AND path = b', select_sql.sql)
-    self.assertEquals('EventLogs', select_sql.table)
+    self.assertEqual('EventLogs', select_sql.table)
     self.assertAllEqual(['rowid', 'offset'], select_sql.columns)
 
 
