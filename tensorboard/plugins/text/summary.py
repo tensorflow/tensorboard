@@ -31,7 +31,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Summarizes textual data.
+  """Create a text summary op.
 
   Text data summarized via this plugin will be visible in the Text Dashboard
   in TensorBoard. The standard TensorBoard Text Dashboard will render markdown
@@ -44,7 +44,7 @@ def op(name,
   Args:
     name: A name for the generated node. Will also serve as a series name in
       TensorBoard.
-    data: a string-type Tensor to summarize. The text should be UTF-encoded.
+    data: A string-type Tensor to summarize. The text must be encoded in UTF-8.
     display_name: Optional name for this summary in TensorBoard, as a
       constant `str`. Defaults to `name`.
     description: Optional long-form description for this summary, as a
@@ -91,9 +91,6 @@ def pb(name, data, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
-  if not isinstance(data, np.ndarray):
-    data = np.array(data)
-
   try:
     tensor = tf.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:
