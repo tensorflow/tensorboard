@@ -55,6 +55,11 @@ limitations under the License.
         icon="fullscreen"
         on-tap="_toggleExpanded"
       ></paper-icon-button>
+      <paper-icon-button
+        icon="settings-overscan"
+        on-tap="_resetDomain"
+        title="Reset axes to [0, 1]."
+      ></paper-icon-button>
     </div>
 
     <div id="step-legend">
@@ -453,6 +458,9 @@ limitations under the License.
       _toggleExpanded(e) {
         this.set('_expanded', !this._expanded);
         this.redraw();
+      },
+      _resetDomain() {
+        this.$$('vz-line-chart').resetDomain();
       },
       redraw() {
         this.$$('vz-line-chart').redraw();
