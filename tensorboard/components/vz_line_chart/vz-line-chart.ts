@@ -279,8 +279,6 @@ Polymer({
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
-
-      this.dispatchEvent(new CustomEvent('chart-rendered'));
     }, 350);
   },
   _reloadFromCache: function() {
@@ -572,9 +570,9 @@ class LineChart {
 
   private resetXDomain() {
     let xDomain;
-    if (this._defaultXRange) {
+    if (this._defaultXRange != null) {
       // Use the range specified by the caller.
-      xDomain = d3.scaleLinear().domain(this._defaultXRange).domain();
+      xDomain = this._defaultXRange;
     } else {
       // (Copied from DragZoomLayer.unzoom.)
       const xScale = this.xScale as any;
@@ -587,9 +585,9 @@ class LineChart {
 
   private resetYDomain() {
     let yDomain;
-    if (this._defaultYRange) {
+    if (this._defaultYRange != null) {
       // Use the range specified by the caller.
-      yDomain = d3.scaleLinear().domain(this._defaultYRange).domain();
+      yDomain = this._defaultYRange;
     } else {
       // Generate a reasonable range.
       const accessor = this.getAccessor();
@@ -905,6 +903,18 @@ class LineChart {
   public renderTo(targetSVG: d3.Selection<any, any, any, any>) {
     this.targetSVG = targetSVG;
     this.outer.renderTo(targetSVG);
+
+    if (this._defaultXRange != null) {
+      // A higher-level component provided a default range for the X axis.
+      // Start with that range.
+      this.resetXDomain();
+    }
+
+    if (this._defaultYRange != null) {
+      // A higher-level component provided a default range for the Y axis.
+      // Start with that range.
+      this.resetYDomain();
+    }
   }
 
   public redraw() {
