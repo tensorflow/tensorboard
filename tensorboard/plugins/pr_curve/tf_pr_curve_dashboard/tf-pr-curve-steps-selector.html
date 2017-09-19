@@ -23,7 +23,7 @@ limitations under the License.
 -->
 <dom-module id="tf-pr-curve-steps-selector">
   <template>
-    <template is="dom-repeat" items="[[runs]]" as="run">
+    <template is="dom-repeat" items="[[_runsWithSliders]]" as="run">
       <div class="run-widget">
         <div class="run-display-container">
           <div class="run-color-box" style="background:[[_computeColorForRun(run)]];"></div>
@@ -72,7 +72,7 @@ limitations under the License.
   Polymer({
     is: "tf-pr-curve-steps-selector",
     properties: {
-      // A list of runs to create sliders for.
+      // A list of selected runs.
       runs: Array,
       // A mapping between run and list of steps to use for the slider for that
       // run. This component indexes into this object to retrieve the steps.
@@ -90,6 +90,10 @@ limitations under the License.
       _runToStepIndex: {
         type: Object,
         value: () => ({}),
+      },
+      _runsWithSliders: {
+        type: Array,
+        computed: "_computeRunsWithSliders(runs, runToAvailableTimeEntries)",
       },
     },
     listeners: {
@@ -190,6 +194,10 @@ limitations under the License.
         runToStep[run] = entries[index].step;
       });
       return runToStep;
+    },
+    _computeRunsWithSliders(runs, runToAvailableTimeEntries) {
+      // Only create sliders for selected runs with steps available.
+      return runs.filter(r => runToAvailableTimeEntries[r]);
     },
   });
   </script>
