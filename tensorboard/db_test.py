@@ -22,7 +22,6 @@ import itertools
 import tensorflow as tf
 
 from tensorboard import db
-from tensorboard import schema
 from tensorboard import test_util
 
 
