@@ -36,6 +36,7 @@ from __future__ import print_function
 
 import logging
 import re
+import six
 from google.cloud import spanner  # pylint: disable=import-error
 from google.gax import errors
 from tensorboard import db
@@ -385,9 +386,11 @@ class InsertSQL(object):
 
 
 # \s matches any whitespace
+# For the values we allow any character inside the parantheses because
+# string values could include any character.
 INSERT_PATTERN = re.compile(
     r'\s*insert\s*into\s*([a-z0-9_]*)\s*\(([a-z0-9,_\s]*)\)\s*values\s*'
-    r'\(([a-z0-9,_\s]*)\)', flags=re.IGNORECASE)
+    r'\((.*)\)', flags=re.IGNORECASE)
 
 SELECT_PATTERN = re.compile(r'\s*select.*', flags=re.IGNORECASE)
 
@@ -434,6 +437,12 @@ def parse_sql(sql, parameters):
 
   # Perform variable substitution
   sql = sql.replace("?", "{}")
+  # Convert tuple to list so its modifiable.
+  parameters = list(parameters)
+  # strings need to be quoted
+  for i, p in enumerate(parameters):
+    if isinstance(p, six.string_types):
+      parameters[i] = '"{0}"'.format(p)
   sql = sql.format(*parameters)
 
   m = INSERT_PATTERN.match(sql)

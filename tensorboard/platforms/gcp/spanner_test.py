@@ -45,23 +45,23 @@ class SqlParserTest(tf.test.TestCase):
   def testParseInsert(self):
     sql = ('INSERT INTO EventLogs (rowid, customer_number, run_id, '
            'event_log_id, path, offset) VALUES (?, ?, ?, 0)')
-    parameters = ('a', 'b', 'c')
+    parameters = ('a', 10, 'c')
 
     insert_sql = tb_spanner.parse_sql(sql, parameters)
     self.assertIsInstance(insert_sql, tb_spanner.InsertSQL)
     self.assertEqual('EventLogs', insert_sql.table)
     self.assertAllEqual(['rowid', 'customer_number', 'run_id', 'event_log_id',
                          'path', 'offset'], insert_sql.columns)
-    self.assertAllEqual(['a', 'b', 'c', 0], insert_sql.values)
+    self.assertAllEqual(['"a"', 10, '"c"', 0], insert_sql.values)
 
   def testParseSelect(self):
     sql = ('SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?')
-    parameters = ('a', 'b')
+    parameters = (5, 'b')
 
     select_sql = tb_spanner.parse_sql(sql, parameters)
     self.assertIsInstance(select_sql, tb_spanner.SelectSQL)
     self.assertEqual('SELECT rowid, offset FROM EventLogs WHERE '
-                     'run_id = a AND path = b', select_sql.sql)
+                     'run_id = 5 AND path = "b"', select_sql.sql)
     self.assertEqual('EventLogs', select_sql.table)
     self.assertAllEqual(['rowid', 'offset'], select_sql.columns)
 
