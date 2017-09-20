@@ -28,45 +28,61 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# Maximum length of string & bytes columns.
+# Cloud Spanner has a limit of 10Mb per column.
+# https://cloud.google.com/spanner/quotas
+# MySQL can support columns larger than 10Mb.
+# https://dev.mysql.com/doc/refman/5.7/en/storage-requirements.html#data-types-storage-reqs-strings
+MAX_LENGTH = 10485760
 
 class ColumnType(object):
-  pass
+  """Base class for column types."""
+
+  def __init__(self, not_null=False):
+    self.not_null = not_null
 
 
 class BoolColumnType(ColumnType):
+  """Defines a bool column."""
   pass
 
 
 class BytesColumnType(ColumnType):
-  def __init__(self, length=None):
+  """Defines a bytes column."""
+  def __init__(self, length=None, **kwargs):
     """Define a bytes column.
 
     Args:
-      length: The length of the string. None indicates column
-        should have maximum length allowed.
+      length: The length of the string.
 
     : type lenth: int | None
     : rtype: BytesColumnType
     """
+    super(BytesColumnType, self).__init__(self, **kwargs)
+    if not length:
+      raise ValueError('length is required')
     self.length = length
 
 
 class Int64ColumnType(ColumnType):
+  """Defines an integer column."""
   pass
 
 
 class StringColumnType(ColumnType):
-
-  def __init__(self, length=None):
+  """Defines a string column."""
+  def __init__(self, length=None, **kwargs):
     """Define a string column.
 
     Args:
-      length: The length of the string. None indicates column
-        should have maximum length allowed.
+      length: The length of the string.
 
-    : type lenth: int | None
-    : rtype: StringColumnType
+    :type lenth: int
+    :rtype: StringColumnType
     """
+    super(StringColumnType, self).__init__(self, **kwargs)
+    if not length:
+      raise ValueError('length is required')
     self.length = length
 
 # TODO(jlewi): Add a description field to columns?
@@ -94,8 +110,25 @@ class ColumnSchema(object):
     self.not_null = not_null
 
 
-class TableSchema(object):
+class Meta(type):
+  """Meta class for preserving order of attributes.
+
+  See: https://www.python.org/dev/peps/pep-0520/#specification.
+  We want to preserve the order of attributes in our Table classes.
+  In 3.6 this is the default behavior but to support earlier versions of
+  Python we use a meta class.
+  """
+  @classmethod
+  def __prepare__(cls, *args, **kwargs):
+    return collections.OrderedDict()
+
+
+class Table():
   """Define the schema for a table."""
+  __meta__ = Meta
+  _columns = None
+
+  __definition_order__ = tuple(locals())
 
   def __init__(self, name, columns, keys):
     """Create a table schema.
@@ -112,7 +145,7 @@ class TableSchema(object):
     : type name: str
     : type columns: list[ColumnSchema]
     : type keys: list[str]
-    : rtype: TableSchema
+    : rtype: Table
     """
     self.name = name
     self._columns = columns
@@ -126,29 +159,39 @@ class TableSchema(object):
   def keys(self):
     return self._keys
 
-  @property
-  def columns(self):
-    return self._columns
+  @classmethod
+  def columns(cls):
+    """Return a dictionary mapping names to columns."""
+    if not cls._columns:
+      cls._columns = {}
+      for k in cls.__dict__.keys():
+        v = getattr(cls, k)
+        if isinstance(v, ColumnType):
+          cls._columns[k] = v
+    return cls._columns
 
-  def get_column(self, name):
-    """Get the column with the specified name.
-
-    Raises:
-      ValueError if no column with the specified name.
-    """
-    return self._name_to_column[name]
 
 
-BIG_TENSORS_TABLE = TableSchema(
+class BigTensorsTable(object):
+  __meta__ = Meta
+  rowid = Int64ColumnType()
+  customer_number = Int64ColumnType()
+  tag_id = Int64ColumnType(not_null=True)
+  step_count = Int64ColumnType(not_null=True)
+  tensor = BytesColumnType(MAX_LENGTH)
+
+  __definition_order__ = tuple(locals())
+
+BIG_TENSORS_TABLE = Table(
     name='BigTensors',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
              ColumnSchema('customer_number', Int64ColumnType()),
              ColumnSchema('tag_id', Int64ColumnType(), not_null=True),
              ColumnSchema('step_count', Int64ColumnType(), not_null=True),
-             ColumnSchema('tensor', BytesColumnType())],
+             ColumnSchema('tensor', BytesColumnType(MAX_LENGTH))],
     keys=['rowid', 'customer_number', 'tag_id', 'step_count'])
 
-EVENT_LOGS_TABLE = TableSchema(
+EVENT_LOGS_TABLE = Table(
     name='EventLogs',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
              ColumnSchema('customer_number', Int64ColumnType()),
@@ -160,7 +203,7 @@ EVENT_LOGS_TABLE = TableSchema(
     keys=['rowid', 'customer_number', 'run_id', 'event_log_id'])
 
 
-EXPERIMENTS_TABLE = TableSchema(
+EXPERIMENTS_TABLE = Table(
     name='Experiments',
     columns=[ColumnSchema('customer_number', Int64ColumnType()),
              ColumnSchema('experiment_id', Int64ColumnType()),
@@ -169,13 +212,13 @@ EXPERIMENTS_TABLE = TableSchema(
                  65535), not_null=True),],
     keys=['rowid', 'customer_number', 'experiment_id'])
 
-PLUGINS_TABLE = TableSchema(
+PLUGINS_TABLE = Table(
     name='Plugins',
     columns=[ColumnSchema('plugin_id', Int64ColumnType()),
              ColumnSchema('name', StringColumnType(length=255), not_null=True)],
     keys=['plugin_id'])
 
-RUNS_TABLE = TableSchema(
+RUNS_TABLE = Table(
     name='Runs',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
              ColumnSchema('customer_number', Int64ColumnType()),
@@ -185,7 +228,7 @@ RUNS_TABLE = TableSchema(
                           not_null=True)],
     keys=['rowid', 'customer_number', 'experiment_id', 'run_id'])
 
-TAGS_TABLE = TableSchema(
+TAGS_TABLE = Table(
     name='Tags',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
              ColumnSchema('customer_number', Int64ColumnType()),
@@ -197,7 +240,7 @@ TAGS_TABLE = TableSchema(
              ColumnSchema('summary_description', StringColumnType(65535)),],
     keys=['rowid', 'customer_number', 'run_id', 'tag_id'])
 
-TENSORS_TABLE = TableSchema(
+TENSORS_TABLE = Table(
     name='Tensors',
     columns=[ColumnSchema('rowid', Int64ColumnType()),
              ColumnSchema('customer_number', Int64ColumnType()),
@@ -205,7 +248,7 @@ TENSORS_TABLE = TableSchema(
              ColumnSchema('step_count', Int64ColumnType(), not_null=True),
              ColumnSchema('encoding', Int64ColumnType(), not_null=True),
              ColumnSchema('is_big', BoolColumnType(), not_null=True),
-             ColumnSchema('tensor', BytesColumnType(), not_null=True)],
+             ColumnSchema('tensor', BytesColumnType(MAX_LENGTH), not_null=True)],
     keys=['rowid', 'customer_number', 'tag_id', 'step_count'])
 
 # List of all tables.
@@ -227,10 +270,10 @@ class IndexSchema(object):
     Returns:
       IndexSchema representing the schema.
 
-    : type name: str
-    : type table: str
-    : type columns: list[str]
-    : rtype: IndexSchema
+    :type name: str
+    :type table: str
+    :type columns: list[str]
+    :rtype: IndexSchema
     """
 
     self.name = name

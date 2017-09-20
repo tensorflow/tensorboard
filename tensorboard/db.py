@@ -127,8 +127,8 @@ def _sync_plugins(names, connection):
   return the_whole_table
 
 
-def to_sqllite_type(column_type):
-  """Return the SQLLite type corresponding to the supplied type.
+def to_sqlite_type(column_type):
+  """Return the SQLite type corresponding to the supplied type.
 
   Args:
     column_type: Instance of ColumnType.
@@ -139,14 +139,14 @@ def to_sqllite_type(column_type):
   Raises:
     ValueError if column_type is not a supported type.
 
-  : type column_type: Type[schema.ColumnType]
-  : rtype: str
+  :type column_type: schema.ColumnType
+  :rtype: str
   """
   if isinstance(column_type, schema.Int64ColumnType):
     return 'INTEGER'
 
   if isinstance(column_type, schema.StringColumnType):
-    if column_type.length:
+    if column_type.length < 65535:
       return 'VARCHAR({0})'.format(column_type.length)
     else:
       return 'TEXT'
@@ -155,14 +155,17 @@ def to_sqllite_type(column_type):
     return 'BOOLEAN'
 
   if isinstance(column_type, schema.BytesColumnType):
-    return 'BLOB'
+    if column_type.length < 65535:
+      return 'VARBINARY({0})'.format(column_type.length)
+    else:
+      return 'BLOB'
 
   raise ValueError(
       '{0} is not a support ColumnType'.format(column_type.__class__))
 
 
-def to_sqllite_ddl(spec):
-  """Convert a TableSchema or IndexSchema object to an SQLLite DDL statement.
+def to_sqlite_ddl(spec):
+  """Convert a TableSchema or IndexSchema object to an SQLite DDL statement.
 
   Args:
     spec: TableSchema or IndexSchema object representing the schema.
@@ -170,16 +173,16 @@ def to_sqllite_ddl(spec):
   Returns:
     ddl statement to create the table.
 
-  : type spec: TableSchema | IndexSchema
-  : rtype : str
+  :type spec: TableSchema | IndexSchema
+  :rtype : str
   """
   if isinstance(spec, schema.TableSchema):
     columns = []
     for c in spec.columns:
       s = '{0} {1}'.format(c.name, to_sqllite_type(c.value_type))
       if not columns:
-        # With SQLLite the first column should always be the primary key.
-        # We don't use multi field primary keys with sqllite because we want
+        # With SQLite the first column should always be the primary key.
+        # We don't use multi field primary keys with sqlite because we want
         # data localization to be keyed off the primary key.
         s += ' PRIMARY KEY'
       if c.not_null:
