@@ -41,6 +41,8 @@ limitations under the License.
         y-value-accessor="[[_yValueAccessor]]"
         tooltip-columns="[[_tooltipColumns]]"
         color-scale="[[_colorScaleFunction]]"
+        default-x-range="[[_defaultXRange]]"
+        default-y-range="[[_defaultYRange]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[loading]]">
         <div id="loading-spinner-container">
@@ -303,6 +305,16 @@ limitations under the License.
             'true_negatives',
             'false_negatives'
           ],
+          readOnly: true,
+        },
+        _defaultXRange: {
+          type: Array,
+          value: [-0.05, 1.05],
+          readOnly: true,
+        },
+        _defaultYRange: {
+          type: Array,
+          value: [-0.05, 1.05],
           readOnly: true,
         },
       },
