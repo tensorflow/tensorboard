@@ -103,7 +103,7 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
     const value = useLocalStorage ?
       window.localStorage.getItem(key) :
       componentToDict(readComponent())[key];
-    return value === undefined ? undefined : fromString(value);
+    return value == undefined ? undefined : fromString(value);
   }
 
   function set(key: string, value: T, useLocalStorage = false): void {
