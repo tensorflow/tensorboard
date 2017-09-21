@@ -679,9 +679,9 @@ export class RenderGraphInfo {
       _.each(metagraph.nodes(), childName => {
         // Why is this so often undefined?
         const originalNode = metagraph.node(childName) as OpNode;
-        const libraryMetanode =
+        const libraryFunctionData =
             this.hierarchy.libraryFunctions[originalNode.op];
-        if (!libraryMetanode) {
+        if (!libraryFunctionData) {
           // This node is not a function call.
           return;
         }
@@ -698,8 +698,8 @@ export class RenderGraphInfo {
         const clonedMetanode = this.cloneFunctionLibraryMetanode(
             metagraph,
             originalNode,
-            libraryMetanode,
-            libraryMetanode.name,
+            libraryFunctionData.node,
+            libraryFunctionData.node.name,
             originalNode.name);
         nodesThatGotCloned.push(originalNode);
         functionCallMetanodesToAdd.push(clonedMetanode);
@@ -761,7 +761,10 @@ export class RenderGraphInfo {
     if (nodeName === tf.graph.ROOT_NAME) {
       // Add all metanodes representing library function templates into the
       // library function scene group for the root node.
-      _.forOwn(this.hierarchy.libraryFunctions, (node, functionName) => {
+      _.forOwn(
+          this.hierarchy.libraryFunctions,
+          (libraryFunctionData, functionName) => {
+        const node = libraryFunctionData.node;
         const childRenderInfo = this.getOrCreateRenderNodeByName(node.name);
         renderGroupNodeInfo.libraryFunctionsExtract.push(childRenderInfo);
 
