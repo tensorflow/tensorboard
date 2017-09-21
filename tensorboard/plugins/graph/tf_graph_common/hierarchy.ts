@@ -33,7 +33,7 @@ export interface LibraryFunctionData {
   // The metanode representing this function in the library scene group.
   node: Metanode; 
 
-  // A list of metanodes that represent calls to this library function.
+  // A list of nodes that represent calls to this library function.
   usages: Node[];
 }
 
