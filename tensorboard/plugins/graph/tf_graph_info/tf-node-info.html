@@ -677,7 +677,6 @@ limitations under the License.
         },
         _computeFunctionUsages(nodeName, graphHierarchy) {
           const node = this._getNode(nodeName, graphHierarchy);
-          console.log('_computeFunctionUsages', nodeName, graphHierarchy, node);
           if (!node || node.type !== tf.graph.NodeType.META) {
             // Functions must be represented by metanodes.
             return [];
