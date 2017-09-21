@@ -336,6 +336,28 @@ limitations under the License.
             </div>
           </div>
         </template>
+
+        <template is="dom-if" if="[[_functionUsages.length]]">
+          <div class="sub-list-group predecessors">
+            Usages of the Function
+            (<span>[[_functionUsages.length]]</span>)
+            <iron-list class="sub-list" id ="inputsList"
+                      items="[[_functionUsages]]">
+              <template>
+                <tf-node-list-item
+                    class="non-control-list-item"
+                    card-node="[[_node]]"
+                    item-node="[[item]]"
+                    name="[[item.name]]"
+                    item-type="functionUsages"
+                    color-by="[[colorBy]]"
+                    template-index="[[_templateIndex]]">
+                </tf-node-list-item>
+              </template>
+            </iron-list>
+          </div>
+        </template>
+
         <div class="toggle-include-group">
           <paper-button raised class="toggle-include" on-click="_toggleInclude">
             <span>[[_auxButtonText]]</span>
@@ -440,7 +462,13 @@ limitations under the License.
             value: false
           },
           _auxButtonText: String,
-          _groupButtonText: String
+          _groupButtonText: String,
+          // Only relevant if this is a library function. A list of nodes that
+          // represent where the function is used.
+          _functionUsages: {
+            type: Array,
+            computed: '_computeFunctionUsages(nodeName, graphHierarchy)',
+          },
         },
         expandNode: function() {
           this.fire('_node.expand', this.node);
@@ -646,7 +674,25 @@ limitations under the License.
         },
         _isInSeries: function(node) {
           return tf.graph.scene.node.canBeInSeries(node);
-        }
+        },
+        _computeFunctionUsages(nodeName, graphHierarchy) {
+          const node = this._getNode(nodeName, graphHierarchy);
+          console.log('_computeFunctionUsages', nodeName, graphHierarchy, node);
+          if (!node || node.type !== tf.graph.NodeType.META) {
+            // Functions must be represented by metanodes.
+            return [];
+          }
+
+          const libraryFunctionData = graphHierarchy.libraryFunctions[
+              node.associatedFunction];
+          if (!libraryFunctionData) {
+            // This is no function.
+            return [];
+          }
+
+          // Return where the function is used.
+          return libraryFunctionData.usages;
+        },
       });
     })();
   </script>

@@ -25,9 +25,21 @@ export interface Edges {
   regular: Metaedge[];
 }
 
+/**
+ * Class used to store data on library functions. This specifically stores data
+ * on the library function, not individual calls to those functions.
+ */
+export interface LibraryFunctionData {
+  // The metanode representing this function in the library scene group.
+  node: Metanode; 
+
+  // A list of metanodes that represent calls to this library function.
+  usages: Node[];
+}
+
 export interface Hierarchy {
   root: Metanode;
-  libraryFunctions: {[key: string]: Metanode};
+  libraryFunctions: {[key: string]: LibraryFunctionData};
   templates: {[templateId: string]: string[]};
   /** List of all device names */
   devices: string[];
@@ -52,7 +64,7 @@ export interface Hierarchy {
  */
 class HierarchyImpl implements Hierarchy {
   root: Metanode;
-  libraryFunctions: {[key: string]: Metanode};
+  libraryFunctions: {[key: string]: LibraryFunctionData};
   templates: {[templateId: string]: string[]};
   private index: {[nodeName: string]: GroupNode|OpNode};
   devices: string[];
@@ -533,14 +545,25 @@ export function getIncompatibleOps(hierarchy: Hierarchy,
 
 /**
  * Creates the metanodes in the hierarchical graph and assigns parent-child
- * relationship between them.
+ * relationship between them. Also assigns relationships between library
+ * functions and their usages throughout the graph.
  */
 function addNodes(h: Hierarchy, graph: SlimGraph) {
+  // Maps the op of a node to names of nodes that have the op. Used to populate
+  // the libraryFunctions field of the hierarchy.
+  const opToNode = {};
+
   _.each(graph.nodes, (node, nodeName) => {
     let path = getHierarchicalPath(node.name);
     let parent: Metanode = h.root;
 
     parent.depth = Math.max(path.length, parent.depth);
+
+    // Track which nodes are associated with which ops.
+    if (!opToNode[node.op]) {
+      opToNode[node.op] = [];
+    }
+    opToNode[node.op].push(node);
 
     // Create parent metanodes for each depth. For example if the node name
     // is 'a/b/c', then create metanodes 'a' and 'a/b', where 'a/b' is a child
@@ -603,7 +626,13 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
 
           // For now, remember the metanode that represents the function with
           // this name.
-          h.libraryFunctions[functionName] = child;
+          if (!opToNode[functionName]) {
+            opToNode[functionName] = [];
+          }
+          h.libraryFunctions[functionName] = {
+            node: child,
+            usages: opToNode[functionName],
+          };
           child.associatedFunction = functionName;
         }
       }
