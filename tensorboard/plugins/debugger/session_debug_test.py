@@ -205,14 +205,14 @@ class SessionDebugTestBase(tf.test.TestCase):
 
     report = self._debug_data_server.numerics_alert_report()
     self.assertEqual(2, len(report))
-    self.assertEqual("/job:localhost/replica:0/task:0/cpu:0",
+    self.assertEqual("/job:localhost/replica:0/task:0/device/cpu:0",
                      report[0].device_name)
     self.assertEqual("u:0", report[0].tensor_name)
     self.assertGreater(report[0].first_timestamp, 0)
     self.assertEqual(0, report[0].nan_event_count)
     self.assertEqual(0, report[0].neg_inf_event_count)
     self.assertEqual(1, report[0].pos_inf_event_count)
-    self.assertEqual("/job:localhost/replica:0/task:0/cpu:0",
+    self.assertEqual("/job:localhost/replica:0/task:0/device/cpu:0",
                      report[1].device_name)
     self.assertEqual("u:0", report[0].tensor_name)
     self.assertGreaterEqual(report[1].first_timestamp,
@@ -312,14 +312,14 @@ class SessionDebugTestBase(tf.test.TestCase):
 
     report = self._debug_data_server.numerics_alert_report()
     self.assertEqual(2, len(report))
-    self.assertEqual("/job:localhost/replica:0/task:0/cpu:0",
+    self.assertEqual("/job:localhost/replica:0/task:0/device/cpu:0",
                      report[0].device_name)
     self.assertEqual("u:0", report[0].tensor_name)
     self.assertGreater(report[0].first_timestamp, 0)
     self.assertEqual(0, report[0].nan_event_count)
     self.assertEqual(0, report[0].neg_inf_event_count)
     self.assertEqual(total_num_runs, report[0].pos_inf_event_count)
-    self.assertEqual("/job:localhost/replica:0/task:0/cpu:0",
+    self.assertEqual("/job:localhost/replica:0/task:0/device/cpu:0",
                      report[1].device_name)
     self.assertEqual("u:0", report[0].tensor_name)
     self.assertGreaterEqual(report[1].first_timestamp,
