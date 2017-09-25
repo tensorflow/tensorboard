@@ -191,12 +191,16 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
 
   def assertPlatformSpecificLogdirParsing(self, pathObj, logdir, expected):
     """
-    A custom assertion to test :func:`parse_event_files_spec` under various systems.
+    A custom assertion to test :func:`parse_event_files_spec` under various
+    systems.
 
     Args:
-        pathObj: a custom replacement object for `os.path`, typically `posixpath` or `ntpath`
-        logdir: the string to be parsed by :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
-        expected: the expected dictionary as returned by `application.parse_event_files_spec`
+        pathObj: a custom replacement object for `os.path`, typically
+          `posixpath` or `ntpath`
+        logdir: the string to be parsed by
+          :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
+        expected: the expected dictionary as returned by
+          :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
 
     """
 
@@ -206,49 +210,70 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
 
 
   def testRunName(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'lol:/cat', {'/cat': 'lol'})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'lol:C:\\cat', {'C:\\cat': 'lol'})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'lol:/cat', {'/cat': 'lol'})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'lol:C:\\cat', {'C:\\cat': 'lol'})
 
   def testPathWithColonThatComesAfterASlash_isNotConsideredARunName(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, '/lol:/cat', {'/lol:/cat': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, '/lol:/cat', {'/lol:/cat': None})
 
   def testMultipleDirectories(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, '/a,/b', {'/a': None, '/b': None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'C:\\a,C:\\b', {'C:\\a': None, 'C:\\b': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, '/a,/b', {'/a': None, '/b': None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'C:\\a,C:\\b', {'C:\\a': None, 'C:\\b': None})
 
   def testNormalizesPaths(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, '/lol/.//cat/../cat', {'/lol/cat': None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'C:\\lol\\.\\\\cat\\..\\cat', {'C:\\lol\\cat': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, '/lol/.//cat/../cat', {'/lol/cat': None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'C:\\lol\\.\\\\cat\\..\\cat', {'C:\\lol\\cat': None})
 
   def testAbsolutifies(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'lol/cat', {posixpath.realpath('lol/cat'): None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'lol\\cat', {ntpath.realpath('lol\\cat'): None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'lol/cat', {posixpath.realpath('lol/cat'): None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'lol\\cat', {ntpath.realpath('lol\\cat'): None})
 
   def testRespectsGCSPath(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'gs://foo/path', {'gs://foo/path': None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'gs://foo/path', {'gs://foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'gs://foo/path', {'gs://foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'gs://foo/path', {'gs://foo/path': None})
 
   def testRespectsHDFSPath(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
 
   def testDoesNotExpandUserInGCSPath(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
 
   def testDoesNotNormalizeGCSPath(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
 
   def testRunNameWithGCSPath(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
-    self.assertPlatformSpecificLogdirParsing(ntpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
+    self.assertPlatformSpecificLogdirParsing(
+      ntpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
 
   def testSingleLetterGroup(self):
-    self.assertPlatformSpecificLogdirParsing(posixpath, 'A:/foo/path', {'/foo/path': 'A'})
+    self.assertPlatformSpecificLogdirParsing(
+      posixpath, 'A:/foo/path', {'/foo/path': 'A'})
     # single letter groups are not supported on Windows
     with self.assertRaises(AssertionError):
-      self.assertPlatformSpecificLogdirParsing(ntpath, 'A:C:\\foo\\path', {'C:\\foo\\path': 'A'})
+      self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'A:C:\\foo\\path', {'C:\\foo\\path': 'A'})
 
 
 class TensorBoardPluginsTest(tf.test.TestCase):
