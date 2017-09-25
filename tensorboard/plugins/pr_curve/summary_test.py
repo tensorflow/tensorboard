@@ -274,10 +274,10 @@ class PrCurveTest(tf.test.TestCase):
         [1.0, 0.8133333, 0.2133333, 0.0266667, 0.0],  # Recall.
     ], tensor_events[2])
 
-  def testRawMetricsOp(self):
+  def testRawDataOp(self):
     with tf.summary.FileWriter(self.logdir) as writer, tf.Session() as sess:
       # We pass raw counts and precision/recall values.
-      writer.add_summary(sess.run(summary.raw_metrics_op(
+      writer.add_summary(sess.run(summary.raw_data_op(
           tag='foo',
           true_positive_counts=tf.constant([75, 64, 21, 5, 0]),
           false_positive_counts=tf.constant([150, 105, 18, 0, 0]),
