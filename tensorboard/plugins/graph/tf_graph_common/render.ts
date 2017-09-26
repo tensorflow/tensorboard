@@ -622,20 +622,22 @@ export class RenderGraphInfo {
       const originalMetaEdges = this.hierarchy.getSuccessors(
           opNodeToReplace.name);
       _.each(originalMetaEdges.regular, (metaedge) => {
-        const destinationNode = metagraph.node(metaedge.w) as OpNode;
-        _.each(destinationNode.inputs, normalizedInput => {
-          // If an output of the function is an input into this op, map it back
-          // to the output within the function so bridge edges are computed.
-          if (normalizedInput.name === opNodeToReplace.name) {
-            // Map the output tensor index (which in this case is for sure
-            // numeric because it is an output of a metanode) to the correct
-            // function output.
-            const outputNode = functionOutputIndexToNode[
-                normalizedInput.outputTensorKey];
-            normalizedInput.name = outputNode.name;
-            // Each function output node only has 1 slot.
-            normalizedInput.outputTensorKey = '0';
-          }
+        _.each(metaedge.baseEdgeList, baseEdge => {
+          // Destination nodes within regular base edges are op nodes.
+          const destinationNode = this.hierarchy.node(baseEdge.w) as OpNode;
+          _.each(destinationNode.inputs, normalizedInput => {
+            // If an output of the function is an input into the op, map it back
+            // to the output within the function so bridge edges are computed.
+            if (normalizedInput.name === opNodeToReplace.name) {
+              // Map the output tensor index (which in this case is for sure
+              // numeric because it is an output of a metanode) to the correct
+              // function output.
+              const outputNode = functionOutputIndexToNode[
+                  normalizedInput.outputTensorKey];
+              normalizedInput.name = outputNode.name;
+              normalizedInput.outputTensorKey = baseEdge.outputTensorKey;
+            }
+          });
         });
 
         // Modify the list of base edges to point from the output so that bridge
