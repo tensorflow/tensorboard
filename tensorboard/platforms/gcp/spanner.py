@@ -39,8 +39,8 @@ import re
 import six
 from google.cloud import spanner  # pylint: disable=import-error
 from google.gax import errors
-from tensorboard import db
 
+from tensorboard import db
 
 BIG_TENSORS_TABLE = ('CREATE TABLE BigTensors ('
                      'rowid INT64, '

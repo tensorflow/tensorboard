@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from tensorboard.platforms.gcp import spanner as tb_spanner
-from tensorboard import schema
 import tensorflow as tf
 
 class SqlParserTest(tf.test.TestCase):
