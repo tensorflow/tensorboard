@@ -583,7 +583,13 @@ limitations under the License.
             return;  // we just triggered that handler; don't need another
           }
         }
-        setString(TAB, selectedDashboard || '', /*useLocalStorage=*/false);
+
+        const pluginString = selectedDashboard || '';
+        setString(TAB, pluginString, /*useLocalStorage=*/false);
+
+        // Record this dashboard selection as a page view.
+        ga('set', 'page', '/' + pluginString);
+        ga('send', 'pageview');
       },
 
       _updateSelectedDashboardFromHash() {
