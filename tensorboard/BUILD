@@ -252,9 +252,7 @@ py_library(
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/plugins/image:summary",
-        "//tensorboard/plugins/pr_curve:summary",
         "//tensorboard/plugins/scalar:summary",
-        "//tensorboard/plugins/text:summary",
     ],
 )
 
