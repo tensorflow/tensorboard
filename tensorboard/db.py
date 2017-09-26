@@ -182,8 +182,8 @@ class Schema(object):
     """
     with self._cursor() as c:
       c.execute('CREATE TABLE IF NOT EXISTS Experiments ('
-                'customer_number INTEGER PRIMARY KEY, '
-                'experiment_id INTEGER, '
+                'experiment_id INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
                 'name VARCHAR(500) NOT NULL, '
                 'description TEXT NOT NULL)')
 
