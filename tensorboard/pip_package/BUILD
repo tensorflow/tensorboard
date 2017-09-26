@@ -26,5 +26,6 @@ sh_binary(
           "setup.py",
           "//tensorboard",
           "//tensorboard:version",
+          "//tensorboard:summary",
         ],
 )
