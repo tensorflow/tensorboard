@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TensorBoard core database support.
+"""TensorBoard core database schema.
 
 Currently the only database supported is SQLite.
 
@@ -34,7 +34,6 @@ import sqlite3
 import threading
 import types  # pylint: disable=unused-import
 
-from tensorboard import schema
 from tensorboard import util
 
 TESTING_MODE = False
@@ -147,18 +146,264 @@ class Schema(object):
     hold off on calling that method, for example when loading a really
     large backup into a fresh database.
     """
-    for t in schema.TABLES:
-      with self._cursor() as c:
-        c.execute(t)
+    self.create_experiments_table()
+    self.create_runs_table()
+    self.create_tags_table()
+    self.create_tensors_table()
+    self.create_big_tensors_table()
+    self.create_event_logs_table()
+    self.create_plugins_table()
 
   def create_indexes(self):
     """Creates SQL tables and indexes needed by TensorBoard.
 
     If the indexes are already created, this function has no effect.
     """
-    for t in schema.INDEXES:
-      with self._cursor() as c:
-        c.execute(t)
+    self.create_experiments_table_name_index()
+    self.create_runs_table_id_index()
+    self.create_runs_table_name_index()
+    self.create_tags_table_id_index()
+    self.create_tags_table_name_index()
+    self.create_event_logs_table_path_index()
+    self.create_plugins_table_name_index()
+
+  def create_experiments_table(self):
+    """Creates the Experiments table.
+
+    This table stores information about experiments, which are sets of
+    runs.
+
+    Fields:
+      experiment_id: Random integer primary key in range [0,2^28).
+      name: (Uniquely indexed) Arbitrary string which is displayed to
+          the user in the TensorBoard UI, which can be no greater than
+          500 characters.
+      description: Arbitrary markdown text describing the experiment.
+    """
+    with self._cursor() as c:
+      c.execute('CREATE TABLE IF NOT EXISTS Experiments ('
+                'customer_number INTEGER PRIMARY KEY, '
+                'experiment_id INTEGER, '
+                'name VARCHAR(500) NOT NULL, '
+                'description TEXT NOT NULL)')
+
+  def create_experiments_table_name_index(self):
+    """Uniquely indexes the name field on the Experiments table."""
+    with self._cursor() as c:
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'ExperimentsNameIndex ON Experiments '
+                '(customer_number, name)')
+
+  def create_runs_table(self):
+    """Creates the Runs table.
+
+    This table stores information about runs. Each row usually
+    represents a single attempt at training or testing a TensorFlow
+    model, with a given set of hyper-parameters, whose summaries are
+    written out to a single event logs directory with a monotonic step
+    counter.
+
+    When a run is deleted from this table, TensorBoard SHOULD treat all
+    information associated with it as deleted, even if those rows in
+    different tables still exist.
+
+    Fields:
+      rowid: Row ID which has run_id in the low 29 bits and
+          experiment_id in the higher 28 bits. This is used to control
+          locality.
+      experiment_id: The 28-bit experiment ID.
+      run_id: Unique randomly generated 29-bit ID for this run.
+      name: Arbitrary string which is displayed to the user in the
+          TensorBoard UI, which is unique within a given experiment,
+          which can be no greater than 1900 characters.
+    """
+    with self._cursor() as c:
+      c.execute('CREATE TABLE IF NOT EXISTS Runs ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'experiment_id INTEGER NOT NULL, '
+                'run_id INTEGER NOT NULL, '
+                'name VARCHAR(1900) NOT NULL)')
+
+  def create_runs_table_id_index(self):
+    """Uniquely indexes the run_id field on the Runs table."""
+    with self._cursor() as c:
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'RunsIdIndex ON Runs '
+                '(customer_number, run_id)')
+
+  def create_runs_table_name_index(self):
+    """Uniquely indexes the name field on the Runs table.
+
+    More accurately, this indexes (experiment_id, name).
+    """
+    with self._cursor() as c:
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'RunsNameIndex ON Runs '
+                '(customer_number, experiment_id, name)')
+
+  def create_tags_table(self):
+    """Creates the Tags table.
+
+    Fields:
+      rowid: The rowid which has tag_id field in the low 31 bits and the
+          experiment ID in the higher 28 bits.
+      tag_id: Unique randomly distributed 31-bit ID for this tag.
+      run_id: The id of the row in the runs table, with which this tag
+          is associated.
+      plugin_id: The ID of the related row in the Plugins table.
+      name: The tag. See the tag field in summary.proto for more
+          information, which can be no greater than 500 characters.
+      display_name: Same as SummaryMetadata.display_name, if set, which
+          can be no greater than 500 characters.
+      summary_description: Same as SummaryMetadata.summary_description,
+          if set. This is Markdown describing the summary.
+    """
+    with self._cursor() as c:
+      c.execute('CREATE TABLE IF NOT EXISTS Tags ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'run_id INTEGER NOT NULL, '
+                'tag_id INTEGER NOT NULL, '
+                'plugin_id INTEGER NOT NULL, '
+                'name VARCHAR(500), '
+                'display_name VARCHAR(500), '
+                'summary_description TEXT)')
+
+  def create_tags_table_id_index(self):
+    """Indexes the tag_id field on the Tags table."""
+    with self._cursor() as c:
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'TagsIdIndex ON Tags '
+                '(customer_number, tag_id)')
+
+  def create_tags_table_name_index(self):
+    """Indexes the name field on the Tags table."""
+    with self._cursor() as c:
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'TagsNameIndex ON Tags '
+                '(customer_number, run_id, name)')
+
+  def create_tensors_table(self):
+    """Creates the Tensors table.
+
+    This table is designed to offer contiguous in-page data storage.
+
+    Fields:
+      rowid: A 63-bit number containing the step count in the low 32
+          bits, and the randomly generated tag ID in the higher 31 bits.
+      encoding: A number indicating how the tensor was encoded to the
+          tensor blob field. 0 indicates an uncompressed binary Tensor
+          proto. 1..9 indicates a binary Tensor proto gzipped at the
+          corresponding level. 10..255 are reserved for future encoding
+          methods.
+      is_big: A boolean indicating that the tensor field is empty and a
+          separate asynchronous lookup should be performed on the
+          BigTensors table.
+      tensor: A binary representation of this tensor. This will be empty
+          if the is_big field is true.
+    """
+    with self._cursor() as c:
+      c.execute('CREATE TABLE IF NOT EXISTS Tensors ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'tag_id INTEGER NOT NULL, '
+                'step_count INTEGER NOT NULL, '
+                'encoding INTEGER NOT NULL, '
+                'is_big BOOLEAN NOT NULL, '
+                'tensor BLOB NOT NULL)')
+
+  def create_big_tensors_table(self):
+    """Creates the BigTensors table.
+
+    This table is meant for tensors larger than half a b-tree page.
+    Please note that some databases, e.g. MySQL, will store these
+    tensors off-page.
+
+    Fields:
+      rowid: Must be same as corresponding Tensors table row.
+      tensor: A binary representation of this tensor, using the encoding
+          specified in the corresponding Tensors table row.
+    """
+    with self._cursor() as c:
+      c.execute('CREATE TABLE IF NOT EXISTS BigTensors ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'tag_id INTEGER NOT NULL, '
+                'step_count INTEGER NOT NULL, '
+                'tensor BLOB)')
+
+  def create_plugins_table(self):
+    """Creates the Plugins table.
+
+    This table exists to assign arbitrary IDs to TBPlugin names. These
+    IDs are handed out in monotonically increasing order, but that's OK,
+    because the size of this table will be extremely small. These IDs
+    will not be the same across TensorBoard installs.
+
+    It is assumed that once an ID is mapped to a name, that the mapping
+    will never change.
+
+    Fields:
+      plugin_id: Arbitrary integer arbitrarily limited to 16-bits.
+      name: Arbitrary string which is the same as the
+          TBPlugin.plugin_name field, which can be no greater than 255
+          characters.
+    """
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE TABLE IF NOT EXISTS Plugins (
+          plugin_id INTEGER PRIMARY KEY,
+          name VARCHAR(255) NOT NULL
+        )
+      ''')
+
+  def create_plugins_table_name_index(self):
+    """Uniquely indexes the name field on the plugins table."""
+    with self._cursor() as c:
+      c.execute('''\
+        CREATE UNIQUE INDEX IF NOT EXISTS PluginsNameIndex
+        ON Plugins (name)
+      ''')
+
+  def create_event_logs_table(self):
+    """Creates the EventLogs table.
+
+    Event logs are files written to disk by TensorFlow via FileWriter,
+    which uses PyRecordWriter to output records containing
+    binary-encoded tf.Event protocol buffers.
+
+    This table is used by FileLoader to track the progress of files
+    being loaded off disk into the database.
+
+    Each time FileLoader runs a transaction committing events to the
+    database, it updates the offset field.
+
+    Fields:
+      rowid: An arbitrary event_log_id in the first 29 bits, and the
+          run_id in the higher 29 bits.
+      run_id: A reference to the id field of the associated row in the
+          runs table. Must be the same as what's in those rowid bits.
+      path: The basename of the path of the event log file. It SHOULD be
+          formatted: events.out.tfevents.UNIX_TIMESTAMP.HOSTNAME[SUFFIX]
+      offset: The byte offset in the event log file *after* the last
+          successfully committed event record.
+    """
+    with self._cursor() as c:
+      c.execute('CREATE TABLE IF NOT EXISTS EventLogs ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'run_id INTEGER NOT NULL, '
+                'event_log_id INTEGER, '
+                'path VARCHAR(1023) NOT NULL, '
+                'offset INTEGER NOT NULL)')
+
+  def create_event_logs_table_path_index(self):
+    """Uniquely indexes the (name, path) fields on the event_logs table."""
+    with self._cursor() as c:
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'EventLogsPathIndex ON EventLogs '
+                '(customer_number, run_id, path)')
 
   def _cursor(self):
     return contextlib.closing(self._db_conn.cursor())  # type: Cursor
@@ -567,7 +812,7 @@ class RowId(object):
   def check(self, rowid):
     """Throws ValueError if rowid isn't in proper ranges.
 
-    :type rowid: int or PrimaryKey
+    :type rowid: int
     :rtype: int
     """
     self.parse(rowid)
