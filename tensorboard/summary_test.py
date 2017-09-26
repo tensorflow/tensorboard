@@ -32,9 +32,7 @@ STANDARD_PLUGINS = frozenset([
     'audio',
     'histogram',
     'image',
-    'pr_curve',
     'scalar',
-    'text',
 ])
 
 # The subset of `STANDARD_PLUGINS` for which we do not currently have
@@ -42,7 +40,6 @@ STANDARD_PLUGINS = frozenset([
 # graph. This set should ideally be empty; any entries here should be
 # considered temporary.
 PLUGINS_WITHOUT_PB_FUNCTIONS = frozenset([
-    'pr_curve',  # TODO(@chihuahua, #445): Fix this.
 ])
 
 
