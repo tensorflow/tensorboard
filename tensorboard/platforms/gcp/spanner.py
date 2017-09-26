@@ -40,69 +40,134 @@ import six
 from google.cloud import spanner  # pylint: disable=import-error
 from google.gax import errors
 from tensorboard import db
-from tensorboard import schema
 
 
-def to_spanner_type(column_type):
-  """Return the Cloud Spanner type corresponding to the supplied type.
+BIG_TENSORS_TABLE = ('CREATE TABLE BigTensors ('
+                     'rowid INT64, '
+                     'customer_number INT64, '
+                     'tag_id INT64, '
+                     'step_count INT64, '
+                     'tensor BYTES(10485760)) '
+                     'PRIMARY KEY ('
+                     'rowid, '
+                     'customer_number, '
+                     'tag_id, '
+                     'step_count)')
 
-  Args:
-    column_type: Instance of ColumnType.
+EVENT_LOGS_TABLE = ('CREATE TABLE EventLogs ('
+                    'rowid INT64, '
+                    'customer_number INT64, '
+                    'run_id INT64, '
+                    'event_log_id INT64, '
+                    'path STRING(1023), '
+                    'offset INT64) '
+                    'PRIMARY KEY ('
+                    'rowid, '
+                    'customer_number, '
+                    'run_id, '
+                    'event_log_id)')
 
-  Returns:
-    string identify the spanner column type.
-  """
-  if isinstance(column_type, schema.BoolColumnType):
-    return "BOOL"
+EXPERIMENTS_TABLE = ('CREATE TABLE Experiments ('
+                     'rowid INT64, '
+                     'customer_number INT64, '
+                     'experiment_id INT64, '
+                     'name STRING(500), '
+                     'description STRING(65535)) '
+                     'PRIMARY KEY ('
+                     'rowid, '
+                     'customer_number, '
+                     'experiment_id)')
 
-  if isinstance(column_type, schema.BytesColumnType):
-    if column_type.length:
-      return 'BYTES({0})'.format(column_type.length)
-    else:
-      return 'BYTES(MAX)'
+PLUGINS_TABLE = ('CREATE TABLE Plugins ('
+                 'plugin_id INT64, '
+                 'name STRING(255)) '
+                 'PRIMARY KEY ('
+                 'plugin_id)')
 
-  if isinstance(column_type, schema.Int64ColumnType):
-    return 'INT64'
+RUNS_TABLE = ('CREATE TABLE Runs ('
+              'rowid INT64, '
+              'customer_number INT64, '
+              'experiment_id INT64, '
+              'run_id INT64, '
+              'name STRING(1900)) '
+              'PRIMARY KEY ('
+              'rowid, '
+              'customer_number, '
+              'experiment_id, '
+              'run_id)')
 
-  if isinstance(column_type, schema.StringColumnType):
-    if column_type.length:
-      return 'STRING({0})'.format(column_type.length)
-    else:
-      return 'STRING(MAX)'
+TAGS_TABLE = ('CREATE TABLE Tags ('
+              'rowid INT64, '
+              'customer_number INT64, '
+              'run_id INT64, '
+              'tag_id INT64, '
+              'plugin_id INT64, '
+              'name STRING(500), '
+              'display_name STRING(500), '
+              'summary_description STRING(65535)) '
+              'PRIMARY KEY ('
+              'rowid, '
+              'customer_number, '
+              'run_id, '
+              'tag_id)')
 
-  raise ValueError(
-      '{0} is not a support ColumnType'.format(column_type.__class__))
+TENSORS_TABLE = ('CREATE TABLE Tensors ('
+                 'rowid INT64, '
+                 'customer_number INT64, '
+                 'tag_id INT64, '
+                 'step_count INT64, '
+                 'encoding INT64, '
+                 'is_big BOOL, '
+                 'tensor BYTES(10485760)) '
+                 'PRIMARY KEY ('
+                 'rowid, '
+                 'customer_number, '
+                 'tag_id, '
+                 'step_count)')
 
+EXPERIMENTS_NAME_INDEX = ('CREATE UNIQUE INDEX ExperimentsNameIndex '
+                          'ON Experiments ('
+                          'customer_number, '
+                          'name)')
 
-def to_spanner_ddl(spec):
-  """Convert a TableSchema object to a spanner DDL statement.
+EVENT_LOGS_PATH_INDEX = ('CREATE UNIQUE INDEX EventLogsPathIndex '
+                         'ON EventLogs ('
+                         'customer_number, '
+                         'run_id, '
+                         'path)')
 
-  Args:
-    spec: TableSchema object representing the schema for the table.
+PLUGINS_NAME_INDEX = ('CREATE UNIQUE INDEX PluginsNameIndex '
+                      'ON Plugins ('
+                      'name)')
 
-  Returns:
-    ddl statement to create the table.
+RUNS_ID_INDEX = ('CREATE UNIQUE INDEX RunsIdIndex '
+                 'ON Runs ('
+                 'customer_number, '
+                 'run_id)')
 
-  : type spec: TableSchema
-  : rtype : str
-  """
-  # TODO(jlewi): Add support for not null modifier.
-  if isinstance(spec, schema.TableSchema):
-    columns = []
-    for c in spec.columns:
-      s = '{0} {1}'.format(c.name, to_spanner_type(c.value_type))
-      columns.append(s)
-    columns = ', '.join(columns)
-    keys = ', '.join(spec.keys)
-    ddl = 'CREATE TABLE {name} ({columns}) PRIMARY KEY ({key_fields})'.format(
-        name=spec.name, columns=columns, key_fields=keys)
+RUNS_NAME_INDEX = ('CREATE UNIQUE INDEX RunsNameIndex '
+                   'ON Runs ('
+                   'customer_number, '
+                   'experiment_id, '
+                   'name)')
 
-  elif isinstance(spec, schema.IndexSchema):
-    ddl = ('CREATE UNIQUE INDEX {name} ON {table} ({columns})').format(
-        name=spec.name, table=spec.table,
-        columns=', '.join(spec.columns))
-  return ddl
+TAGS_ID_INDEX = ('CREATE UNIQUE INDEX TagsIdIndex '
+                 'ON Tags ('
+                 'customer_number, '
+                 'tag_id)')
 
+TAGS_NAME_INDEX = ('CREATE UNIQUE INDEX TagsNameIndex '
+                   'ON Tags ('
+                   'customer_number, '
+                   'run_id, '
+                   'name)')
+
+# List of all tables.
+TABLES = [BIG_TENSORS_TABLE, EVENT_LOGS_TABLE, EXPERIMENTS_TABLE, PLUGINS_TABLE,
+          RUNS_TABLE, TAGS_TABLE, TENSORS_TABLE]
+
+INDEXES = [EXPERIMENTS_NAME_INDEX, EVENT_LOGS_PATH_INDEX, PLUGINS_NAME_INDEX,
+           RUNS_ID_INDEX, RUNS_NAME_INDEX, TAGS_ID_INDEX, TAGS_NAME_INDEX]
 
 class CloudSpannerConnection(object):
   """Connection to Cloud Spanner database.
@@ -360,8 +425,9 @@ def create_database(client, instance_id, database_id):
   Raises:
     RetryError if there is a problem creating the tables or indexes.
   """
-  ddl = [to_spanner_ddl(t) for t in schema.TABLES]
-  ddl.extend([to_spanner_ddl(t) for t in schema.INDEXES])
+  ddl = []
+  ddl.extend(TABLES)
+  ddl.extend(INDEXES)
 
   client = client
   instance = spanner.client.Instance(instance_id, client)

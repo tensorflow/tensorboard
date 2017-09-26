@@ -47,7 +47,7 @@ class CloudSpannerCursorTest(tf.test.TestCase):
     rowid = int(now.strftime("%Y%m%d%H%M%S"))
     run_id = rowid
     event_log_id = rowid
-    path = "some_path_{0}".format(rowid)
+    path = 'some_path_{0}'.format(rowid)
     customer_number = 10
     offset = 23
     with contextlib.closing(self.conn.cursor()) as c:

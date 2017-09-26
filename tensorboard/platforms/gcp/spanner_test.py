@@ -16,31 +16,6 @@ from tensorboard.platforms.gcp import spanner as tb_spanner
 from tensorboard import schema
 import tensorflow as tf
 
-
-class SchemaToSpannerDDL(tf.test.TestCase):
-  def testSchemas(self):
-    table = schema.TableSchema(
-        name='SomeTable',
-        columns=[schema.ColumnSchema('k_int64', schema.Int64ColumnType()),
-                 schema.ColumnSchema(
-                     'k_str', schema.StringColumnType(length=23)),
-                 schema.ColumnSchema('str_max', schema.StringColumnType())],
-        keys=['k_int64', 'k_str'])
-
-    ddl = tb_spanner.to_spanner_ddl(table)
-    expected = ('CREATE TABLE SomeTable ('
-                'k_int64 INT64, k_str STRING(23), str_max STRING(MAX))'
-                ' PRIMARY KEY (k_int64, k_str)')
-    self.assertEqual(expected, ddl)
-
-  def testIndexSchemaToDdl(self):
-    # Test to make sure we can generate valid DDL statements.
-    expected = ('CREATE UNIQUE INDEX ExperimentsNameIndex '
-                'ON Experiments (customer_number, name)')
-    actual = tb_spanner.to_spanner_ddl(schema.EXPERIMENTS_NAME_INDEX)
-    self.assertEqual(expected, actual)
-
-
 class SqlParserTest(tf.test.TestCase):
   def testParseInsert(self):
     sql = ('INSERT INTO EventLogs (rowid, customer_number, run_id, '
