@@ -27,7 +27,7 @@ class SqlParserTest(tf.test.TestCase):
     self.assertEqual('EventLogs', insert_sql.table)
     self.assertAllEqual(['rowid', 'customer_number', 'run_id', 'event_log_id',
                          'path', 'offset'], insert_sql.columns)
-    self.assertAllEqual(['"a"', 10, '"c"', 0], insert_sql.values)
+    self.assertAllEqual(['a', 10, 'c', 0], insert_sql.values)
 
   def testParseSelect(self):
     sql = ('SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?')

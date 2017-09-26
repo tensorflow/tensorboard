@@ -68,13 +68,11 @@ EVENT_LOGS_TABLE = ('CREATE TABLE EventLogs ('
                     'event_log_id)')
 
 EXPERIMENTS_TABLE = ('CREATE TABLE Experiments ('
-                     'rowid INT64, '
                      'customer_number INT64, '
                      'experiment_id INT64, '
                      'name STRING(500), '
                      'description STRING(65535)) '
                      'PRIMARY KEY ('
-                     'rowid, '
                      'customer_number, '
                      'experiment_id)')
 
@@ -516,6 +514,12 @@ def parse_sql(sql, parameters):
     table = m.group(1)
     columns = [c.strip() for c in m.group(2).split(',')]
     values = [v.strip() for v in m.group(3).split(',')]
+
+    # Strip leading and trailing quotes from strings
+    for i, v in enumerate(values):
+      if (v[0] == '"' and v[-1] == '"') or (v[0] == "'" and v[-1] == "'"):
+        values[i] = v[1:-1]
+
     return InsertSQL(table, columns, values)
 
   m = SELECT_PATTERN.match(sql)
