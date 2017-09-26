@@ -164,7 +164,7 @@ def op(
         description,
         collections)
 
-def raw_metrics_op(
+def raw_data_op(
     tag,
     true_positive_counts,
     false_positive_counts,
@@ -246,10 +246,10 @@ def _create_tensor_summary(
     collections=None):
   """A private helper method for generating a tensor summary.
 
-  We use a helper method instead of having `op` directly call `raw_metrics_op`
-  to prevent the scope of `raw_metrics_op` from being embedded within `op`.
+  We use a helper method instead of having `op` directly call `raw_data_op`
+  to prevent the scope of `raw_data_op` from being embedded within `op`.
 
-  Arguments are the same as for raw_metrics_op.
+  Arguments are the same as for raw_data_op.
 
   Returns:
     A tensor summary that collects data for PR curves.
