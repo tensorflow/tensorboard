@@ -25,7 +25,7 @@ limitations under the License.
   A component that fetches data from the TensorBoard server and renders it into
   a vz-line-chart.
 -->
-<dom-module id="tf-scalar-chart">
+<dom-module id="tf-line-chart-data-loader">
   <template>
     <div id="chart-and-spinner-container">
       <vz-line-chart
@@ -105,7 +105,7 @@ limitations under the License.
     }, 100);
 
     Polymer({
-      is: 'tf-scalar-chart',
+      is: 'tf-line-chart-data-loader',
       properties: {
         // An array of selected runs (strings).
         runs: Array,
@@ -123,7 +123,7 @@ limitations under the License.
 
         /**
          * A function that takes as inputs:
-         * 1. This tf-scalar-chart component.
+         * 1. This tf-line-chart-data-loader component.
          * 2. The run (string) the response is relevant to.
          * 3. The response received from the data URL.
          * This function will be called when a response from a request to that

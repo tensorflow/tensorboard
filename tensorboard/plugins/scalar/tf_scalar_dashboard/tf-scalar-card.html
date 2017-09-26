@@ -21,9 +21,8 @@ limitations under the License.
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
-<link rel="import" href="tf-scalar-chart.html">
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
@@ -36,8 +35,8 @@ limitations under the License.
     display-name="[[tagMetadata.displayName]]"
     description="[[tagMetadata.description]]"
   ></tf-card-heading>
-  <div id="tf-scalar-chart-container">
-    <tf-scalar-chart
+  <div id="tf-line-chart-data-loader-container">
+    <tf-line-chart-data-loader
       x-type="[[xType]]"
       x-components-creation-method="[[_xComponentsCreationMethod]]"
       y-value-accessor="[[_yValueAccessor]]"
@@ -55,7 +54,7 @@ limitations under the License.
       log-scale-active="[[_logScaleActive]]"
       process-data="[[_processData]]"
     >
-    </tf-scalar-chart>
+    </tf-line-chart-data-loader>
   </div>
   <div id="buttons">
     <paper-icon-button
@@ -110,11 +109,11 @@ limitations under the License.
       width: 100%;
     }
 
-    :host[_expanded] #tf-scalar-chart-container {
+    :host[_expanded] #tf-line-chart-data-loader-container {
       height: 400px;
     }
 
-    #tf-scalar-chart-container {
+    #tf-line-chart-data-loader-container {
       height: 200px;
       width: 100%;
     }
@@ -286,10 +285,10 @@ limitations under the License.
         },
       },
       reload() {
-        this.$$('tf-scalar-chart').reload();
+        this.$$('tf-line-chart-data-loader').reload();
       },
       redraw() {
-        this.$$('tf-scalar-chart').redraw();
+        this.$$('tf-line-chart-data-loader').redraw();
       },
       _toggleExpanded(e) {
         this.set('_expanded', !this._expanded);
@@ -299,7 +298,7 @@ limitations under the License.
         this.set('_logScaleActive', !this._logScaleActive);
       },
       _resetDomain() {
-        const chart = this.$$('tf-scalar-chart');
+        const chart = this.$$('tf-line-chart-data-loader');
         if (chart) {
           chart.resetDomain();
         }
