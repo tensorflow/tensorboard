@@ -660,6 +660,10 @@ export class RenderGraphInfo {
       return;
     }
 
+    // Record that we constructed the rendering hierarchy for this node, so we
+    // don't construct it another time.
+    this.hasSubhierarchy[nodeName] = true;
+
     let renderNodeInfo = this.index[nodeName];
 
     // If it is not a meta node or a series node, don't do anything.
@@ -755,6 +759,49 @@ export class RenderGraphInfo {
       coreGraph.setEdge(edgeObj.v, edgeObj.w, renderMetaedgeInfo);
     });
 
+    // If there are functions, it is possible for metanodes to be dynamically
+    // added later. Construct the hierarchies for nodes that are predecessors to
+    // nodes in the current hierarchy so that edges are drawn correctly.
+    if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
+      console.log('buildSubhierarchy', nodeName, metagraph.edges());
+      _.each(metagraph.edges(), edgeObj => {
+        let metaedge = metagraph.edge(edgeObj);
+        let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge);
+        _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList,
+            baseEdge => {
+          const sourcePathList = baseEdge.v.split(tf.graph.NAMESPACE_DELIM);
+          console.log('baseedge', baseEdge, baseEdge.v);
+
+          for (let i = sourcePathList.length; i >= 0; i--) {
+            const fromBeginningPathList = sourcePathList.slice(0, i);
+            const node = this.hierarchy.node(
+                fromBeginningPathList.join(tf.graph.NAMESPACE_DELIM));
+            console.log('observing', fromBeginningPathList, node);
+            if (node) {
+              if (node.type === NodeType.OP &&
+                  this.hierarchy.libraryFunctions[(node as OpNode).op]) {
+                console.log('library function found', node, fromBeginningPathList);
+                for (let j = 1; j < fromBeginningPathList.length; j++) {
+                  // Expand all hierarchies including the parent.
+                  const currentNodeName = fromBeginningPathList
+                      .slice(0, j).join(tf.graph.NAMESPACE_DELIM);
+                  if (!currentNodeName) {
+                    continue;
+                  }
+
+                  console.log('try buildSubhierarchy', currentNodeName, this.index, this.index[currentNodeName]);
+                  this.buildSubhierarchy(currentNodeName);
+                }
+              }
+
+              // No need to analyze the other higher hierarchies.
+              break;
+            }
+          }
+        });
+      });
+    }
+
     if (PARAMS.enableExtraction &&
         renderGroupNodeInfo.node.type === NodeType.META) {
       extractHighDegrees(renderGroupNodeInfo);
@@ -775,10 +822,6 @@ export class RenderGraphInfo {
         coreGraph.removeNode(node.name);
       });
     }
-
-    // Record that we constructed the rendering hierarchy for this node, so we
-    // don't construct it another time.
-    this.hasSubhierarchy[nodeName] = true;
 
     // Look up the parent node's render information and short circuit if none.
     let parentNode = renderGroupNodeInfo.node.parentNode;
