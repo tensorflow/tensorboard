@@ -763,24 +763,20 @@ export class RenderGraphInfo {
     // added later. Construct the hierarchies for nodes that are predecessors to
     // nodes in the current hierarchy so that edges are drawn correctly.
     if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
-      console.log('buildSubhierarchy', nodeName, metagraph.edges());
       _.each(metagraph.edges(), edgeObj => {
         let metaedge = metagraph.edge(edgeObj);
         let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge);
         _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList,
             baseEdge => {
           const sourcePathList = baseEdge.v.split(tf.graph.NAMESPACE_DELIM);
-          console.log('baseedge', baseEdge, baseEdge.v);
 
           for (let i = sourcePathList.length; i >= 0; i--) {
             const fromBeginningPathList = sourcePathList.slice(0, i);
             const node = this.hierarchy.node(
                 fromBeginningPathList.join(tf.graph.NAMESPACE_DELIM));
-            console.log('observing', fromBeginningPathList, node);
             if (node) {
               if (node.type === NodeType.OP &&
                   this.hierarchy.libraryFunctions[(node as OpNode).op]) {
-                console.log('library function found', node, fromBeginningPathList);
                 for (let j = 1; j < fromBeginningPathList.length; j++) {
                   // Expand all hierarchies including the parent.
                   const currentNodeName = fromBeginningPathList
@@ -789,7 +785,6 @@ export class RenderGraphInfo {
                     continue;
                   }
 
-                  console.log('try buildSubhierarchy', currentNodeName, this.index, this.index[currentNodeName]);
                   this.buildSubhierarchy(currentNodeName);
                 }
               }
