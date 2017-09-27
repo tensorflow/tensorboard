@@ -38,6 +38,8 @@ limitations under the License.
         tooltip-sorting-method="[[tooltipSortingMethod]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
         style="[[_computeLineChartStyle(_loading)]]"
+        default-x-range="[[defaultXRange]]"
+        default-y-range="[[defaultYRange]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -120,6 +122,9 @@ limitations under the License.
         smoothingWeight: Number,
         tooltipSortingMethod: String,
         ignoreYOutliers: Boolean,
+
+        defaultXRange: Array,
+        defaultYRange: Array,
 
         /**
          * A function that takes as inputs:
