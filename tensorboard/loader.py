@@ -1140,8 +1140,8 @@ def process_event_logs(run_reader, event_logs, tbase):
       step = event.step
       for v in event.summary.value:
         if v.HasField('simple_value'):
-          # TODO(jlewi): Should simple_values be stored as Tensors in the Tensors
-          # table?
+          # TODO(jlewi): Should simple_values be stored as Tensors in the
+          # Tensors table?
           # See https://github.com/tensorflow/tensorboard/issues/92#issuecomment-331034076  # pylint: disable=line-too-long
           continue
         if v.HasField('tensor'):
