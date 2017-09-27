@@ -622,20 +622,22 @@ export class RenderGraphInfo {
       const originalMetaEdges = this.hierarchy.getSuccessors(
           opNodeToReplace.name);
       _.each(originalMetaEdges.regular, (metaedge) => {
-        const destinationNode = metagraph.node(metaedge.w) as OpNode;
-        _.each(destinationNode.inputs, normalizedInput => {
-          // If an output of the function is an input into this op, map it back
-          // to the output within the function so bridge edges are computed.
-          if (normalizedInput.name === opNodeToReplace.name) {
-            // Map the output tensor index (which in this case is for sure
-            // numeric because it is an output of a metanode) to the correct
-            // function output.
-            const outputNode = functionOutputIndexToNode[
-                normalizedInput.outputTensorKey];
-            normalizedInput.name = outputNode.name;
-            // Each function output node only has 1 slot.
-            normalizedInput.outputTensorKey = '0';
-          }
+        _.each(metaedge.baseEdgeList, baseEdge => {
+          // Destination nodes within regular base edges are op nodes.
+          const destinationNode = this.hierarchy.node(baseEdge.w) as OpNode;
+          _.each(destinationNode.inputs, normalizedInput => {
+            // If an output of the function is an input into the op, map it back
+            // to the output within the function so bridge edges are computed.
+            if (normalizedInput.name === opNodeToReplace.name) {
+              // Map the output tensor index (which in this case is for sure
+              // numeric because it is an output of a metanode) to the correct
+              // function output.
+              const outputNode = functionOutputIndexToNode[
+                  normalizedInput.outputTensorKey];
+              normalizedInput.name = outputNode.name;
+              normalizedInput.outputTensorKey = baseEdge.outputTensorKey;
+            }
+          });
         });
 
         // Modify the list of base edges to point from the output so that bridge
@@ -657,6 +659,10 @@ export class RenderGraphInfo {
     if (nodeName in this.hasSubhierarchy) {
       return;
     }
+
+    // Record that we constructed the rendering hierarchy for this node, so we
+    // don't construct it another time.
+    this.hasSubhierarchy[nodeName] = true;
 
     let renderNodeInfo = this.index[nodeName];
 
@@ -753,6 +759,44 @@ export class RenderGraphInfo {
       coreGraph.setEdge(edgeObj.v, edgeObj.w, renderMetaedgeInfo);
     });
 
+    // If there are functions, it is possible for metanodes to be dynamically
+    // added later. Construct the hierarchies for nodes that are predecessors to
+    // nodes in the current hierarchy so that edges are drawn correctly.
+    if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
+      _.each(metagraph.edges(), edgeObj => {
+        let metaedge = metagraph.edge(edgeObj);
+        let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge);
+        _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList,
+            baseEdge => {
+          const sourcePathList = baseEdge.v.split(tf.graph.NAMESPACE_DELIM);
+
+          for (let i = sourcePathList.length; i >= 0; i--) {
+            const fromBeginningPathList = sourcePathList.slice(0, i);
+            const node = this.hierarchy.node(
+                fromBeginningPathList.join(tf.graph.NAMESPACE_DELIM));
+            if (node) {
+              if (node.type === NodeType.OP &&
+                  this.hierarchy.libraryFunctions[(node as OpNode).op]) {
+                for (let j = 1; j < fromBeginningPathList.length; j++) {
+                  // Expand all hierarchies including the parent.
+                  const currentNodeName = fromBeginningPathList
+                      .slice(0, j).join(tf.graph.NAMESPACE_DELIM);
+                  if (!currentNodeName) {
+                    continue;
+                  }
+
+                  this.buildSubhierarchy(currentNodeName);
+                }
+              }
+
+              // No need to analyze the other higher hierarchies.
+              break;
+            }
+          }
+        });
+      });
+    }
+
     if (PARAMS.enableExtraction &&
         renderGroupNodeInfo.node.type === NodeType.META) {
       extractHighDegrees(renderGroupNodeInfo);
@@ -773,10 +817,6 @@ export class RenderGraphInfo {
         coreGraph.removeNode(node.name);
       });
     }
-
-    // Record that we constructed the rendering hierarchy for this node, so we
-    // don't construct it another time.
-    this.hasSubhierarchy[nodeName] = true;
 
     // Look up the parent node's render information and short circuit if none.
     let parentNode = renderGroupNodeInfo.node.parentNode;
