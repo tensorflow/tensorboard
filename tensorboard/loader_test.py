@@ -19,11 +19,11 @@ from __future__ import print_function
 import functools
 import contextlib
 import locale
-import numpy as np
 from operator import itemgetter
 import os
 import tempfile
 
+import numpy as np
 import six
 import tensorflow as tf
 from tensorflow.core.framework import tensor_pb2
@@ -480,7 +480,7 @@ class ProcessEventsTest(LoaderTestCase):
     customer_number = 29
     experiment_id = 3
     run_id = 4
-    name =  'test-run'
+    name = 'test-run'
     run_reader = loader.RunReader(customer_number, experiment_id, run_id, name)
 
     loader.process_event_logs(run_reader, [log], self.tbase)
@@ -557,8 +557,9 @@ class TagsTest(test_util.TestCase):
 
     with contextlib.closing(self.connect_db()) as conn:
       with contextlib.closing(conn.cursor()) as c:
-        c.execute('select tag_id, customer_number, plugin_id, name, display_name, '
-                  'summary_description from Tags where run_id = ? and name = ?',
+        c.execute('select tag_id, customer_number, plugin_id, name, '
+                  'display_name, summary_description from Tags '
+                  'where run_id = ? and name = ?',
                   (run_id, tag_name))
         row = c.fetchone()
 
