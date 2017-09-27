@@ -17,11 +17,17 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
+import contextlib
 import locale
+import numpy as np
+from operator import itemgetter
 import os
+import tempfile
 
 import six
 import tensorflow as tf
+from tensorflow.core.framework import tensor_pb2
+from tensorflow.core.framework import types_pb2
 
 from tensorboard import db
 from tensorboard import loader
@@ -304,54 +310,54 @@ class RunReaderTest(LoaderTestCase):
 
   def testBadRowId_throwsValueError(self):
     with self.assertRaises(ValueError):
-      loader.RunReader(0, 'doodle')
+      loader.RunReader(0, 0, 0, 'doodle')
 
   def testEqualAndSortsByRowId(self):
-    a = loader.RunReader(db.RUN_ROWID.create(1, 1), 'doodle')
-    b = loader.RunReader(db.RUN_ROWID.create(1, 2), 'doodle')
-    c = loader.RunReader(db.RUN_ROWID.create(2, 1), 'doodle')
+    customer_number = 27
+    a = loader.RunReader(customer_number, 1, 1, 'doodle')
+    b = loader.RunReader(customer_number, 1, 2, 'doodle')
+    c = loader.RunReader(customer_number, 2, 1, 'doodle')
     self.assertEqual([a, b, c], sorted([c, b, a]))
 
   def testFields(self):
-    id_ = db.RUN_ROWID.create(1, 1)
-    with loader.RunReader(id_, 'doodle') as run:
+    id_ = db.RUN_ROWID.create(2, 3)
+    with loader.RunReader(1, 2, 3, 'doodle') as run:
       self.assertEqual('doodle', run.name)
+      self.assertEqual(1, run.customer_number)
+      self.assertEqual(2, run.experiment_id)
+      self.assertEqual(3, run.run_id)
       self.assertEqual(id_, run.rowid)
 
   def testClose_canBeCalledMultipleTimes(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     path = self._save_records('events.out.tfevents.0.localhost', [])
     with self.connect_db() as db_conn, self.EventLog(path) as log:
-      run = loader.RunReader(id_, 'doodle')
+      run = loader.RunReader(1, 2, 3, 'doodle')
       run.add_event_log(db_conn, log)
       run.close()
       run.close()
 
   def testNoEventLogs_returnsNone(self):
-    id_ = db.RUN_ROWID.create(1, 1)
-    with loader.RunReader(id_, 'doodle') as run:
+    with loader.RunReader(2, 1, 1, 'doodle') as run:
       self.assertIsNone(run.get_next_event())
 
   def testReadOneEvent(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     event = tf.Event(step=123)
     path = self._save_records('events.out.tfevents.0.localhost',
                               [event.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path) as log:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log)
           self.assertEqual(event, run.get_next_event())
           self.assertIsNone(run.get_next_event())
 
   def testProgress(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     event = tf.Event(step=123)
     path = self._save_records('events.out.tfevents.0.localhost',
                               [event.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path) as log:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log)
           self.assertEqual(0, run.get_offset())
           self.assertGreater(run.get_size(), 0)
@@ -360,7 +366,6 @@ class RunReaderTest(LoaderTestCase):
           self.assertEqual(run.get_offset(), run.get_size())
 
   def testMarkReset(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     event1 = tf.Event(step=123)
     event2 = tf.Event(step=456)
     path1 = self._save_records('events.out.tfevents.1.localhost',
@@ -369,7 +374,7 @@ class RunReaderTest(LoaderTestCase):
                                [event2.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path1) as log1, self.EventLog(path2) as log2:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log1)
           run.add_event_log(db_conn, log2)
           self.assertIsNotNone(run.mark_peek_reset())
@@ -383,7 +388,6 @@ class RunReaderTest(LoaderTestCase):
           self.assertIsNone(run.mark_peek_reset())
 
   def testMarkReset_acrossFiles(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     event1 = tf.Event(step=123)
     event2 = tf.Event(step=456)
     path1 = self._save_records('events.out.tfevents.1.localhost',
@@ -392,7 +396,7 @@ class RunReaderTest(LoaderTestCase):
                                [event2.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path1) as log1, self.EventLog(path2) as log2:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log1)
           run.add_event_log(db_conn, log2)
           run.mark()
@@ -406,7 +410,6 @@ class RunReaderTest(LoaderTestCase):
           run.mark()
 
   def testMarkWithShrinkingBatchSize_raisesValueError(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     event1 = tf.Event(step=123)
     event2 = tf.Event(step=456)
     path1 = self._save_records('events.out.tfevents.1.localhost',
@@ -415,7 +418,7 @@ class RunReaderTest(LoaderTestCase):
                                [event2.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path1) as log1, self.EventLog(path2) as log2:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log1)
           run.add_event_log(db_conn, log2)
           run.mark()
@@ -428,7 +431,6 @@ class RunReaderTest(LoaderTestCase):
             run.mark()
 
   def testRestartProgram_resumesThings(self):
-    id_ = db.RUN_ROWID.create(1, 1)
     event1 = tf.Event(step=123)
     event2 = tf.Event(step=456)
     path = self._save_records('events.out.tfevents.1.localhost',
@@ -436,15 +438,90 @@ class RunReaderTest(LoaderTestCase):
                                event2.SerializeToString()])
     with self.connect_db() as db_conn:
       with self.EventLog(path) as log:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log)
           self.assertEqual(event1, run.get_next_event())
           run.save_progress(db_conn)
       with self.EventLog(path) as log:
-        with loader.RunReader(id_, 'doodle') as run:
+        with loader.RunReader(2, 1, 1, 'doodle') as run:
           run.add_event_log(db_conn, log)
           self.assertEqual(event2, run.get_next_event())
 
+
+class ProcessEventsTest(LoaderTestCase):
+  def testProcessEvents(self):
+
+    # Create a summary file with some events.
+    records = []
+
+    tensors = []
+    tag_name = 'some_tag'
+    for i in range(5):
+      event = tf.Event(step=i+1)
+      # TODO(jlewi): We should probably add multiple values to make sure
+      # we cover that case.
+      v = event.summary.value.add()
+      v.tag = tag_name
+      v.tensor.dtype = types_pb2.DT_INT64
+      nums = np.zeros(10, dtype=np.int64)
+      nums[0:i+1] = np.arange(i+1, dtype=np.int64) + 1
+      v.tensor.int64_val.extend(nums)
+      v.metadata.plugin_data.plugin_name = 'some-plugin'
+      records.append(event.SerializeToString())
+      tensors.append(v.tensor)
+    # Events file must have a name matching the expected pattern.
+    events_path = os.path.join(tempfile.mkdtemp(),
+                               'somevents.tfevents.1234.somehost')
+    with RecordWriter(events_path) as writer:
+      for record in records:
+        writer.write(record)
+
+    log = loader.EventLogReader(events_path)
+    customer_number = 29
+    experiment_id = 3
+    run_id = 4
+    name =  'test-run'
+    run_reader = loader.RunReader(customer_number, experiment_id, run_id, name)
+
+    loader.process_event_logs(run_reader, [log], self.tbase)
+
+    # Check that a row in the tags table was created.
+    with contextlib.closing(self.connect_db()) as conn:
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select tag_id from Tags where name = ?',
+                  (tag_name,))
+        rows = c.fetchall()
+        self.assertEqual(1, len(rows))
+        tag_id = rows[0][0]
+
+    with contextlib.closing(self.connect_db()) as conn:
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select tag_id, encoding, step_count, is_big, tensor '
+                  'from tensors where tag_id = ?',
+                  (tag_id,))
+        # There should be 5 different tensors associated with this tag.
+        rows = c.fetchall()
+        self.assertEqual(5, len(rows))
+        # Make sure the rows are sorted by step.
+        rows = sorted(rows, key=itemgetter(2))
+
+        for i, r in enumerate(rows):
+          self.assertEqual(0, r[1])
+          self.assertEqual(i+1, r[2])
+          self.assertEqual(False, r[3])
+          actual = tensor_pb2.TensorProto()
+          actual.ParseFromString(r[4])
+          self.assertEqual(tensors[i], actual)
+
+    # TODO(jlewi): Check that progress was saved to the DB.
+    with contextlib.closing(self.connect_db()) as conn:
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select event_log_id, path, offset from EventLogs')
+        rows = c.fetchall()
+        self.assertEqual(1, len(rows))
+        row = rows[0]
+        self.assertEqual(events_path, row[1])
+        self.assertGreater(row[2], 0)
 
 @util.closeable
 class RecordWriter(object):
@@ -464,6 +541,57 @@ class RecordWriter(object):
     with tf.errors.raise_exception_on_not_ok_status() as status:
       return tf.pywrap_tensorflow.PyRecordWriter_New(
           self.path, tf.compat.as_bytes(''), status)
+
+
+class TagsTest(test_util.TestCase):
+
+  def testInsertTagId(self):
+    customer_number = 22
+    experiment_id = 2
+    run_id = 10
+    tag_name = '237_tag_name'
+    plugin_id = 30
+    loader.insert_tag_id(self.connect_db(),
+                         customer_number, experiment_id, run_id,
+                         plugin_id, tag_name, 'display tag', 'description')
+
+    with contextlib.closing(self.connect_db()) as conn:
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select tag_id, customer_number, plugin_id, name, display_name, '
+                  'summary_description from Tags where run_id = ? and name = ?',
+                  (run_id, tag_name))
+        row = c.fetchone()
+
+        # Check tag_id is > 0
+        self.assertGreater(row[0], 0)
+        self.assertEqual(customer_number, row[1])
+        self.assertEqual(plugin_id, row[2])
+        self.assertEqual(tag_name, row[3])
+        self.assertEqual('display tag', row[4])
+        self.assertEqual('description', row[5])
+
+class TensorsTest(test_util.TestCase):
+
+  def testInsertTagId(self):
+    tensor = tensor_pb2.TensorProto()
+    tensor.dtype = types_pb2.DT_INT64
+    tensor.int64_val.extend([1, 2, 3])
+    customer_number = 22
+    tag_id = 20
+    step_count = 30
+    loader.insert_tensor(self.connect_db(), customer_number, tag_id,
+                         step_count, tensor)
+
+    # Try reading the tensor.
+    with contextlib.closing(self.connect_db()) as conn:
+      with contextlib.closing(conn.cursor()) as c:
+        c.execute('select tensor from tensors where customer_number = ? and '
+                  'tag_id = ? and step_count = ?',
+                  (customer_number, tag_id, step_count))
+        row = c.fetchone()
+        stored = tensor_pb2.TensorProto()
+        stored.ParseFromString(row[0])
+        self.assertEqual(tensor, stored)
 
 
 if __name__ == '__main__':
