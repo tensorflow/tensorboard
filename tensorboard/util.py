@@ -532,6 +532,6 @@ def parse_proto(message, data):
   # empty messages. This function provides a work around.
   #
   # In Python 3 unicode is undefined so we need to display lint.
-  if six.PY2 and isinstance(data, unicode): # pylint: disable-msg=undefined-variable
+  if six.PY2 and isinstance(data, unicode):   # pylint: disable=undefined-variable
     data = data.encode('utf-8')
   message.ParseFromString(data)
