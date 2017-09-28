@@ -592,6 +592,7 @@ class TensorsTest(test_util.TestCase):
                   'tag_id = ? and step_count = ?',
                   (customer_number, tag_id, step_count))
         row = c.fetchone()
+        print('DO NOT SUBMIT: Raw tensor: {0}'.format(row[0]))
         stored = tensor_pb2.TensorProto()
         stored.ParseFromString(row[0])
         self.assertEqual(tensor, stored,
