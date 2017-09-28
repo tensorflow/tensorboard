@@ -449,8 +449,7 @@ class RunReaderTest(LoaderTestCase):
 
 
 class ProcessEventsTest(LoaderTestCase):
-  def testProcessEvents(self):
-
+  def testProcessEvents(self):  # pylint: disable-msg=too-many-statements
     # Create a summary file with some events.
     records = []
 
@@ -511,9 +510,8 @@ class ProcessEventsTest(LoaderTestCase):
           self.assertEqual(False, r[3])
           actual = tensor_pb2.TensorProto()
           tensor_data = r[4]
-          if type(tensor_data) == unicode:
-            data = bytearray(tensor_data, "utf-8")
-            tensor_data = bytes(data)
+          if isinstance(tensor_data, unicode):
+            tensor_data = tensor_data.encode('utf-8')
           actual.ParseFromString(tensor_data)
           self.assertEqual(tensors[i], actual,
                            'Got {0} want {1}'.format(tensors[i], actual))
@@ -589,8 +587,6 @@ class TensorsTest(test_util.TestCase):
     loader.insert_tensor(self.connect_db(), customer_number, tag_id,
                          step_count, tensor)
 
-    import google.protobuf as pb
-    print("DO NOT SUBMIT google protobuf version: {0}".format(pb.__version__))
     # Try reading the tensor.
     with contextlib.closing(self.connect_db()) as conn:
       with contextlib.closing(conn.cursor()) as c:
@@ -598,13 +594,11 @@ class TensorsTest(test_util.TestCase):
                   'tag_id = ? and step_count = ?',
                   (customer_number, tag_id, step_count))
         row = c.fetchone()
-        print('DO NOT SUBMIT: Raw tensor: {0}'.format(repr(row[0])))
         stored = tensor_pb2.TensorProto()
 
         tensor_data = row[0]
-        if type(tensor_data) == unicode:
-          data = bytearray(tensor_data, "utf-8")
-          tensor_data = bytes(data)
+        if isinstance(tensor_data, unicode):
+          tensor_data = tensor_data.encode('utf-8')
         stored.ParseFromString(tensor_data)
         self.assertEqual(tensor, stored,
                          'Got {0} want {1}'.format(stored, tensor))
