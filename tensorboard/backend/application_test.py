@@ -26,7 +26,12 @@ import shutil
 import socket
 import tempfile
 
-from unittest import mock
+try:
+    # python version >= 3.3
+    from unittest import mock
+except ImportError:
+    import mock
+
 import posixpath
 import ntpath
 
