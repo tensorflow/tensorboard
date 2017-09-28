@@ -511,7 +511,8 @@ class ProcessEventsTest(LoaderTestCase):
           self.assertEqual(False, r[3])
           actual = tensor_pb2.TensorProto()
           actual.ParseFromString(r[4])
-          self.assertEqual(tensors[i], actual)
+          self.assertEqual(tensors[i], actual,
+                           'Got {0} want {1}'.format(tensors[i], actual))
 
     # TODO(jlewi): Check that progress was saved to the DB.
     with contextlib.closing(self.connect_db()) as conn:
@@ -576,6 +577,7 @@ class TensorsTest(test_util.TestCase):
   def testInsertTagId(self):
     tensor = tensor_pb2.TensorProto()
     tensor.dtype = types_pb2.DT_INT64
+    tensor.version_number = 15
     tensor.int64_val.extend([1, 2, 3])
     customer_number = 22
     tag_id = 20
@@ -592,7 +594,8 @@ class TensorsTest(test_util.TestCase):
         row = c.fetchone()
         stored = tensor_pb2.TensorProto()
         stored.ParseFromString(row[0])
-        self.assertEqual(tensor, stored)
+        self.assertEqual(tensor, stored,
+                         'Got {0} want {1}'.format(stored, tensor))
 
 
 if __name__ == '__main__':
