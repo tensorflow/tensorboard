@@ -27,10 +27,10 @@ import socket
 import tempfile
 
 try:
-    # python version >= 3.3
-    from unittest import mock
+  # python version >= 3.3
+  from unittest import mock
 except ImportError:
-    import mock
+  import mock
 
 import posixpath
 import ntpath
