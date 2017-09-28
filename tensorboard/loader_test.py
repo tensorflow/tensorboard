@@ -509,12 +509,7 @@ class ProcessEventsTest(LoaderTestCase):
           self.assertEqual(i+1, r[2])
           self.assertEqual(False, r[3])
           actual = tensor_pb2.TensorProto()
-          tensor_data = r[4]
-          # TODO(jlewi): On Python 2.7 we need to encode as utf-8 to convert
-          # from unicode to str. Otherwise ParseFromString returns an empty proto.
-          # This is only a problem inside the Travis 2.7 environment.
-          tensor_data = tensor_data.encode('utf-8')
-          actual.ParseFromString(tensor_data)
+          util.parse_proto(actual, r[4])
           self.assertEqual(tensors[i], actual,
                            'Got {0} want {1}'.format(tensors[i], actual))
 
@@ -598,12 +593,7 @@ class TensorsTest(test_util.TestCase):
         row = c.fetchone()
         stored = tensor_pb2.TensorProto()
 
-        tensor_data = row[0]
-        # TODO(jlewi): On Python 2.7 we need to encode as utf-8 to convert
-        # from unicode to str. Otherwise ParseFromString returns an empty proto.
-        # This is only a problem inside the Travis 2.7 environment.
-        tensor_data = tensor_data.encode('utf-8')
-        stored.ParseFromString(tensor_data)
+        util.parse_proto(stored, row[0])
         self.assertEqual(tensor, stored,
                          'Got {0} want {1}'.format(stored, tensor))
 
