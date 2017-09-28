@@ -510,7 +510,11 @@ class ProcessEventsTest(LoaderTestCase):
           self.assertEqual(i+1, r[2])
           self.assertEqual(False, r[3])
           actual = tensor_pb2.TensorProto()
-          actual.ParseFromString(r[4])
+          tensor_data = r[4]
+          if type(tensor_data) == unicode:
+            data = bytearray(tensor_data, "utf-8")
+            tensor_data = bytes(data)
+          actual.ParseFromString(tensor_data)
           self.assertEqual(tensors[i], actual,
                            'Got {0} want {1}'.format(tensors[i], actual))
 
