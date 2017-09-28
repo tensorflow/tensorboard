@@ -530,6 +530,8 @@ def parse_proto(message, data):
   # This causes problems in some Python 2.7 environments when deserializing
   # these protos. In particular, we observed ParseFromString ended up returning
   # empty messages. This function provides a work around.
-  if six.PY2 and isinstance(data, unicode):
+  #
+  # In Python 3 unicode is undefined so we need to display lint.
+  if six.PY2 and isinstance(data, unicode): # pylint: disable-msg=undefined-variable
     data = data.encode('utf-8')
   message.ParseFromString(data)
