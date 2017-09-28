@@ -1244,8 +1244,10 @@ def insert_tensor(conn, customer_number, tag_id, step_count, tensor):
   with contextlib.closing(conn.cursor()) as c:
     # TODO(jlewi): experiment_id should probably be stored in the table as
     # well.
+    tensor_data = tensor.SerializeToString()
+    print("DO NOT SUBMIT raw data to store: {0}".format(repr(tensor_data)))
     c.execute(
         ('INSERT INTO Tensors (rowid, customer_number, tag_id, step_count, '
          'encoding, is_big, tensor) VALUES (?, ?, ?, ?, ?, ?, ?)'),
         (rowid, customer_number, tag_id, step_count, encoding, is_big,
-         tensor.SerializeToString()))
+         tensor_data))
