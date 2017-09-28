@@ -585,6 +585,8 @@ class TensorsTest(test_util.TestCase):
     loader.insert_tensor(self.connect_db(), customer_number, tag_id,
                          step_count, tensor)
 
+    import google.protobuf as pb
+    print("DO NOT SUBMIT google protobuf version: {0}".format(pb.__version__))
     # Try reading the tensor.
     with contextlib.closing(self.connect_db()) as conn:
       with contextlib.closing(conn.cursor()) as c:
@@ -594,7 +596,12 @@ class TensorsTest(test_util.TestCase):
         row = c.fetchone()
         print('DO NOT SUBMIT: Raw tensor: {0}'.format(repr(row[0])))
         stored = tensor_pb2.TensorProto()
-        stored.ParseFromString(row[0])
+
+        tensor_data = row[0]
+        if type(tensor_data) == unicode:
+          data = bytearray(tensor_data, "utf-8")
+          tensor_data = bytes(data)
+        stored.ParseFromString(tensor_data)
         self.assertEqual(tensor, stored,
                          'Got {0} want {1}'.format(stored, tensor))
 
