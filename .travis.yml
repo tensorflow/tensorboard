@@ -49,6 +49,8 @@ before_install:
     pip install pylint
     pip install futures==3.1.1
     pip install grpcio==1.4.0
+    # Pin the version of google-protobuf.
+    pip install google-protobuf==3.4.0
 
 script:
   - |
