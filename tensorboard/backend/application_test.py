@@ -270,7 +270,7 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
 
   def testSingleLetterGroup(self):
     self.assertPlatformSpecificLogdirParsing(
-          posixpath, 'A:/foo/path', {'/foo/path': 'A'})
+        posixpath, 'A:/foo/path', {'/foo/path': 'A'})
     # single letter groups are not supported on Windows
     with self.assertRaises(AssertionError):
       self.assertPlatformSpecificLogdirParsing(
