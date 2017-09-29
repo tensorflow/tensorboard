@@ -320,5 +320,81 @@ class PrCurveTest(tf.test.TestCase):
     ], tensor_events[0])
 
 
+class StreamingOpTest(tf.test.TestCase):
+
+  def setUp(self):
+    super(StreamingOpTest, self).setUp()
+    tf.reset_default_graph()
+    np.random.seed(1)
+
+  def pb_via_op(self, summary_op):
+    actual_pbtxt = summary_op.eval()
+    actual_proto = tf.Summary()
+    actual_proto.ParseFromString(actual_pbtxt)
+    return actual_proto
+
+  def tensor_via_op(self, summary_op):
+    actual_pbtxt = summary_op.eval()
+    actual_proto = tf.Summary()
+    actual_proto.ParseFromString(actual_pbtxt)
+    return actual_proto
+
+  def testMatchesOp(self):
+    predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
+    labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
+
+    pr_curve, update_op = summary.streaming_op(tag='pr_curve',
+                                               predictions=predictions,
+                                               labels=labels,
+                                               num_thresholds=10)
+    expected_pr_curve = summary.op(tag='pr_curve',
+                                   predictions=predictions,
+                                   labels=labels,
+                                   num_thresholds=10)
+    with self.test_session() as sess:
+      sess.run(tf.local_variables_initializer())
+      sess.run([update_op])
+
+      proto = self.pb_via_op(pr_curve)
+      expected_proto = self.pb_via_op(expected_pr_curve)
+
+      # Need to detect and fix the automatic _1 appended to second namespace.
+      self.assertEqual(proto.value[0].tag, 'pr_curve/pr_curves')
+      self.assertEqual(expected_proto.value[0].tag, 'pr_curve_1/pr_curves')
+      expected_proto.value[0].tag = 'pr_curve/pr_curves'
+
+      self.assertProtoEquals(expected_proto, proto)
+
+  def testMatchesOpWithUpdates(self):
+    predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
+    labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
+    pr_curve, update_op = summary.streaming_op(tag='pr_curve',
+                                               predictions=predictions,
+                                               labels=labels,
+                                               num_thresholds=10)
+
+    complete_predictions = tf.tile(predictions, [3])
+    complete_labels = tf.tile(labels, [3])
+    expected_pr_curve = summary.op(tag='pr_curve',
+                                   predictions=complete_predictions,
+                                   labels=complete_labels,
+                                   num_thresholds=10)
+    with self.test_session() as sess:
+      sess.run(tf.local_variables_initializer())
+      sess.run([update_op])
+      sess.run([update_op])
+      sess.run([update_op])
+
+      proto = self.pb_via_op(pr_curve)
+      expected_proto = self.pb_via_op(expected_pr_curve)
+
+      # Need to detect and fix the automatic _1 appended to second namespace.
+      self.assertEqual(proto.value[0].tag, 'pr_curve/pr_curves')
+      self.assertEqual(expected_proto.value[0].tag, 'pr_curve_1/pr_curves')
+      expected_proto.value[0].tag = 'pr_curve/pr_curves'
+
+      self.assertProtoEquals(expected_proto, proto)
+
+
 if __name__ == "__main__":
   tf.test.main()
