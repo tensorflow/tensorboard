@@ -128,10 +128,15 @@ Polymer({
     nodeNamesToHealthPills: Object,
     // The step of health pills to show throughout the graph.
     healthPillStepIndex: Number,
+    // An optional function that takes a node selected event (whose `detail`
+    // property is the selected node ... which could be null if a node is
+    // deselected). Called whenever a node is selected or deselected.
+    handleNodeSelected: Object,
   },
   observers: [
     '_statsChanged(stats, devicesForStats)',
-    '_buildRenderHierarchy(graphHierarchy)'
+    '_buildRenderHierarchy(graphHierarchy)',
+    '_selectedNodeChanged(selectedNode)',
   ],
   _statsChanged: function(stats, devicesForStats) {
     if (this.graphHierarchy) {
@@ -242,6 +247,15 @@ Polymer({
   _enableClick: function(event) {
     this._allowGraphSelect = true;
   },
+  // Called when the selected node changes, ie there is a new selected node or
+  // the current one is unselected.
+  _selectedNodeChanged(selectedNode) {
+    if (this.handleNodeSelected) {
+      // A higher-level component provided a callback. Run it.
+      this.handleNodeSelected(selectedNode);
+    }
+  },
+  // Called only when a new (non-null) node is selected.
   _nodeSelected: function(event) {
     if (this._allowGraphSelect) {
       this.set('selectedNode', event.detail.name);
