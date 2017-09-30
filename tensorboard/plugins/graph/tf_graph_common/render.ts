@@ -1787,7 +1787,11 @@ function extractSpecifiedNodes(renderNode: RenderGroupNodeInfo) {
   let graph = renderNode.coreGraph;
   _.each(graph.nodes(), n => {
     let renderInfo = graph.node(n);
-    if (renderInfo.node.include === InclusionType.EXCLUDE) {
+    if (renderInfo.node.include === InclusionType.EXCLUDE &&
+        !n.startsWith(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX)) {
+      // Move the node if the node is excluded and not part of the library
+      // function scene group, which contains nodes that do not represent ops in
+      // the graph and should thus never have its nodes added to the core graph.
       if (renderNode.coreGraph.outEdges(n).length >
           renderNode.coreGraph.inEdges(n).length) {
         makeOutExtract(renderNode, n, true);
