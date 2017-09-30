@@ -357,11 +357,14 @@ limitations under the License.
           </div>
         </template>
 
-        <div class="toggle-include-group">
-          <paper-button raised class="toggle-include" on-click="_toggleInclude">
-            <span>[[_auxButtonText]]</span>
-          </paper-button>
-        </div>
+        <template is="dom-if" if="[[!_isLibraryFunction(_node)]]">
+          <div class="toggle-include-group">
+            <paper-button raised class="toggle-include" on-click="_toggleInclude">
+              <span>[[_auxButtonText]]</span>
+            </paper-button>
+          </div>
+        </template>
+
         <template is="dom-if" if="{{_isInSeries(_node)}}">
           <div class="toggle-include-group">
             <paper-button raised class="toggle-include" on-click="_toggleGroup">
@@ -670,6 +673,14 @@ limitations under the License.
           var graphElem = document.querySelector("#graph");
           var seriesName = tf.graph.scene.node.getSeriesName(this._node);
           graphElem.fire("node-toggle-seriesgroup", { name: seriesName });
+        },
+        _isLibraryFunction(node) {
+          // If the node name starts with this string, the node is either a
+          // library function or a node within it. Those nodes should never be
+          // extracted into the auxiliary scene group because they represent
+          // templates for function call nodes, not ops in the graph themselves.
+          return node &&
+                 node.name.startsWith(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX);
         },
         _isInSeries: function(node) {
           return tf.graph.scene.node.canBeInSeries(node);
