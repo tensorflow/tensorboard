@@ -341,7 +341,7 @@ limitations under the License.
           <div class="sub-list-group predecessors">
             Usages of the Function
             (<span>[[_functionUsages.length]]</span>)
-            <iron-list class="sub-list" id="inputsList" items="[[_functionUsages]]">
+            <iron-list class="sub-list" id="functionUsagesList" items="[[_functionUsages]]">
               <template>
                 <tf-node-list-item
                     class="non-control-list-item"
@@ -439,6 +439,12 @@ limitations under the License.
             type: Object,
             computed: '_getPredecessors(_node, graphHierarchy)'
           },
+          // Only relevant if this is a library function. A list of nodes that
+          // represent where the function is used.
+          _functionUsages: {
+            type: Array,
+            computed: '_getFunctionUsages(_node, graphHierarchy)',
+          },
           _subnodes: {
             type: Array,
             computed: '_getSubnodes(_node)'
@@ -465,12 +471,6 @@ limitations under the License.
           },
           _auxButtonText: String,
           _groupButtonText: String,
-          // Only relevant if this is a library function. A list of nodes that
-          // represent where the function is used.
-          _functionUsages: {
-            type: Array,
-            computed: '_computeFunctionUsages(nodeName, graphHierarchy)',
-          },
         },
         expandNode: function() {
           this.fire('_node.expand', this.node);
@@ -555,21 +555,43 @@ limitations under the License.
         _getDevice: function(node) {
           return node ? node.device : null;
         },
-        _getSuccessors: function(node, hierarchy) {
-          this.async(this._resizeList.bind(this, "#inputsList"));
+        _getSuccessors(node, hierarchy) {
+          this._refreshNodeItemList("inputsList");
           if (!node) {
             return {regular: [], control: []}
           }
           return this._convertEdgeListToEdgeInfoList(
             hierarchy.getSuccessors(node.name), false, node.isGroupNode);
         },
-        _getPredecessors: function(node, hierarchy) {
-          this.async(this._resizeList.bind(this, "#outputsList"));
+        _getPredecessors(node, hierarchy) {
+          this._refreshNodeItemList("outputsList");
           if (!node) {
             return {regular: [], control: []}
           }
           return this._convertEdgeListToEdgeInfoList(
             hierarchy.getPredecessors(node.name), true, node.isGroupNode);
+        },
+        _getFunctionUsages(node, hierarchy) {
+          this._refreshNodeItemList("functionUsagesList");
+          if (!node || node.type !== tf.graph.NodeType.META) {
+            // Functions must be represented by metanodes.
+            return [];
+          }
+
+          const libraryFunctionData = hierarchy.libraryFunctions[
+              node.associatedFunction];
+          if (!libraryFunctionData) {
+            // This is no function.
+            return [];
+          }
+
+          // Return where the function is used.
+          return libraryFunctionData.usages;
+        },
+        // The iron lists that enumerate ops must be asynchronously updated when
+        // the data they render changes. This function triggers that update.
+        _refreshNodeItemList(nodeListId) {
+          this.async(this._resizeList.bind(this, `#${nodeListId}`));
         },
         _convertEdgeListToEdgeInfoList: function(list, isPredecessor, isGroupNode) {
 
@@ -684,23 +706,6 @@ limitations under the License.
         },
         _isInSeries: function(node) {
           return tf.graph.scene.node.canBeInSeries(node);
-        },
-        _computeFunctionUsages(nodeName, graphHierarchy) {
-          const node = this._getNode(nodeName, graphHierarchy);
-          if (!node || node.type !== tf.graph.NodeType.META) {
-            // Functions must be represented by metanodes.
-            return [];
-          }
-
-          const libraryFunctionData = graphHierarchy.libraryFunctions[
-              node.associatedFunction];
-          if (!libraryFunctionData) {
-            // This is no function.
-            return [];
-          }
-
-          // Return where the function is used.
-          return libraryFunctionData.usages;
         },
       });
     })();
