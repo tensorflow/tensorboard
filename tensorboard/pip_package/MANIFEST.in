@@ -1,2 +1,1 @@
-include README.md
-recursive-include * *.py
+recursive-include tensorboard *

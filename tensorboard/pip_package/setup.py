@@ -44,12 +44,16 @@ CONSOLE_SCRIPTS = [
     'tensorboard = tensorboard.main:main',
 ]
 
+def get_readme():
+  with open('tensorboard/pip_package/README.rst') as f:
+    return f.read()
+
 setup(
     name='tensorflow-tensorboard',
     version=tensorboard.version.VERSION.replace('-', ''),
     description='TensorBoard lets you watch Tensors Flow',
-    long_description='',
-    url='http://tensorflow.org/',
+    long_description=get_readme(),
+    url='https://github.com/tensorflow/tensorboard',
     author='Google Inc.',
     author_email='opensource@google.com',
     # Contained modules and scripts.
@@ -59,8 +63,6 @@ setup(
     },
     package_data={
         'tensorboard': [
-            'TAG',
-            'components/index.html',
             'webfiles.zip',
         ],
     },
