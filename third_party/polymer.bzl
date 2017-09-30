@@ -404,7 +404,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "11347e6ba6d73bfddb93e3188e61019c40ef150e03e916a5f8e1c1ac0d3b1f0e",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-image/archive/1.2.6.tar.gz",
+          "http://mirror.bazel.build/github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
           "https://github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
       ],
       strip_prefix = "iron-image-1.2.6",
