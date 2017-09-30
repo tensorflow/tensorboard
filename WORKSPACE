@@ -21,16 +21,6 @@ http_archive(
 )
 
 http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "4781af250cd34ca10369124c82dc0b8d48633db709997cfb965dc779a205eaee",
-    strip_prefix = "rules_go-aa9a9cfed3d23e2821807d90b288fecd9f68124c",
-    urls = [
-        "http://mirror.bazel.build/github.com/bazelbuild/rules_go/archive/aa9a9cfed3d23e2821807d90b288fecd9f68124c.tar.gz",  # 2017-09-29
-        "https://github.com/bazelbuild/rules_go/archive/aa9a9cfed3d23e2821807d90b288fecd9f68124c.tar.gz",
-    ],
-)
-
-http_archive(
     name = "io_bazel_rules_webtesting",
     sha256 = "4a34918cdb57b7c0976c1d6a9a7af1d657266b239c9c1066c87d6f9a4058bc7d",
     strip_prefix = "rules_webtesting-a9f624ac542d2be75f6f0bdd255f108f2795924a",
