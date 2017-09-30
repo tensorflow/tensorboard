@@ -143,6 +143,7 @@ paper-progress {
               color-by="[[colorBy]]"
               color-by-params="{{colorByParams}}"
               progress="{{progress}}"
+              edge-width-function="[[edgeWidthFunction]]"
               node-names-to-health-pills="[[nodeNamesToHealthPills]]"
               health-pill-step-index="[[healthPillStepIndex]]"
               handle-node-selected="[[handleNodeSelected]]"
@@ -230,6 +231,9 @@ Polymer({
       type: String,
       notify: true,
     },
+    // A function with signature EdgeThicknessFunction that computes the
+    // thickness of a given edge.
+    edgeWidthFunction: Object,
     // The enum value of the include property of the selected node.
     _selectedNodeInclude: Number,
     _highlightedNode: String,
