@@ -144,7 +144,7 @@ class SummaryTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         Exception,
-        r'Const:0 must be of type <dtype: \'string\'>'):
+        r'must be of type <dtype: \'string\'>'):
       with tf.Session() as sess:
         sess.run(summary.op('so', tf.constant(5)))
 
