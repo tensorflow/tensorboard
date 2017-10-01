@@ -132,6 +132,9 @@ Polymer({
     // property is the selected node ... which could be null if a node is
     // deselected). Called whenever a node is selected or deselected.
     handleNodeSelected: Object,
+    // An optional function that computes the label for an edge. Should
+    // implement the EdgeLabelFunction signature.
+    edgeLabelFunction: Object,
   },
   observers: [
     '_statsChanged(stats, devicesForStats)',
@@ -158,6 +161,7 @@ Polymer({
       }
       var renderGraph = new tf.graph.render.RenderGraphInfo(
           graphHierarchy, !!this.stats /** displayingStats */);
+      renderGraph.edgeLabelFunction = this.edgeLabelFunction;
       // Producing the 'color by' parameters to be consumed
       // by the tf-graph-controls panel. It contains information about the
       // min and max values and their respective colors, as well as list

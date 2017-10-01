@@ -76,6 +76,18 @@ export let SeriesNodeColors = {
 };
 
 /**
+ * Function that computes edge label strings. This function accepts a Metaedge,
+ * which could actually encapsulate several base edges. For instance, several
+ * base edges may merge into a single metaedge.
+ *
+ * To determine whether a metaedge represents several edges, check the length of
+ * its baseEdgeList property.
+ */
+export interface EdgeLabelFunction {
+  (metaedge: Metaedge, renderInfo: render.RenderGraphInfo): string;
+}
+
+/**
  * Parameters that affect how the graph is rendered on the screen.
  */
 const PARAMS = {
@@ -189,6 +201,7 @@ export class RenderGraphInfo {
   private hasSubhierarchy: {[nodeName: string]: boolean};
   root: RenderGroupNodeInfo;
   traceInputs: Boolean;
+  edgeLabelFunction: EdgeLabelFunction;
 
   constructor(hierarchy: hierarchy.Hierarchy, displayingStats: boolean) {
     this.hierarchy = hierarchy;

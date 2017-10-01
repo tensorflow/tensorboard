@@ -146,6 +146,12 @@ export function getLabelForBaseEdge(
  */
 export function getLabelForEdge(metaedge: Metaedge,
     renderInfo: render.RenderGraphInfo): string {
+  if (renderInfo.edgeLabelFunction) {
+    // The user has specified a means of computing the label.
+    return renderInfo.edgeLabelFunction(metaedge, renderInfo);
+  }
+
+  // Compute the label based on either tensor count or size.
   let isMultiEdge = metaedge.baseEdgeList.length > 1;
   return isMultiEdge ?
       metaedge.baseEdgeList.length + ' tensors' :
