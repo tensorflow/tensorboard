@@ -517,24 +517,8 @@ export function buildShape(nodeGroup, d, nodeClass: string): d3.Selection<any, a
           .attr('rx', d.radius).attr('ry', d.radius);
       break;
     case NodeType.META:
-      // Create 1 rect that will be responsible for coloring (by structure,
-      // device, etc).
-      const rects = [
-          scene.selectOrCreateChild(
-              shapeGroup, 'rect', Class.Node.COLOR_TARGET)];
-      if ((d.node as Metanode).associatedFunction) {
-        // Create a rect that uses a pattern to distinguish this shape as a
-        // TensorFlow function.
-        rects.push(scene.selectOrCreateChild(
-            shapeGroup, 'rect', Class.Node.FUNCTION_INDICATOR_LAYER));
-      }
-      // Create a rect for actually handling events (clicks, etc).
-      rects.push(scene.selectOrCreateChild(
-          shapeGroup, 'rect', Class.Node.EVENT_HANDLING_LAYER));
-      // Round the corners of the rects.
-      _.forEach(rects, rect => {
-        rect.attr('rx', d.radius).attr('ry', d.radius);
-      });
+      scene.selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
+          .attr('rx', d.radius).attr('ry', d.radius);
       break;
     default:
       throw Error('Unrecognized node type: ' + d.node.type);
