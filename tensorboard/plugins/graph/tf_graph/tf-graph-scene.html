@@ -429,6 +429,19 @@ limitations under the License.
   stroke-width: 0.75;
 }
 
+::content .edge .selectableedge {
+  cursor: pointer;
+}
+
+::content .selectededge > path.edgeline {
+  cursor: default;
+  stroke: #f00;
+}
+
+::content .edge.selectededge text {
+  fill: #000;
+}
+
 /* Labels showing tensor shapes on edges */
 ::content .edge > text {
   font-size: 3.5px;
@@ -441,6 +454,10 @@ limitations under the License.
 
 ::content .reference-arrowhead {
   fill: #FFB74D;
+}
+
+::content .selected-arrowhead {
+  fill: #f00;
 }
 
 ::content .edge .control-dep {
@@ -660,6 +677,9 @@ Polymer({
       type: String,
       observer: '_selectedNodeChanged'
     },
+    // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
+    // provided, edges are selectable, and this callback is run when an edge is selected.
+    handleEdgeSelected: Object,
     /** Keeps track of if the graph has been zoomed/panned since loading */
     _zoomed: {
       type: Boolean,

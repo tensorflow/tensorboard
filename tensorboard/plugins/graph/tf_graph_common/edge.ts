@@ -46,6 +46,13 @@ const CENTER_EDGE_LABEL_MIN_STROKE_WIDTH = 2.5;
 
 export type EdgeData = {v: string, w: string, label: render.RenderMetaedgeInfo};
 
+/**
+ * Function run when an edge is selected.
+ */
+export interface EdgeSelectionCallback {
+  (edgeData: scene.edge.EdgeData): void;
+}
+
 export function getEdgeKey(edgeObj: EdgeData) {
   return edgeObj.v + EDGE_KEY_DELIM + edgeObj.w;
 }
@@ -100,6 +107,21 @@ export function buildGroup(sceneGroup,
         d.label.edgeGroup = edgeGroup;
         // index node group for quick highlighting
         sceneElement._edgeGroupIndex[getEdgeKey(d)] = edgeGroup;
+
+        if (sceneElement.handleEdgeSelected) {
+          // The user or some higher-level component has opted to make edges selectable.
+          edgeGroup
+              .on('click',
+                  d => {
+                    // Stop this event's propagation so that it isn't also considered
+                    // a graph-select.
+                    (<Event>d3.event).stopPropagation();
+                    sceneElement.fire('edge-select', {
+                      edgeData: d,
+                      edgeGroup: edgeGroup
+                    });
+                  });
+        }
 
         // Add line during enter because we're assuming that type of line
         // normally does not change.
@@ -249,7 +271,10 @@ function adjustPathPointsForMarker(points: render.Point[],
  * there is no underlying Metaedge in the hierarchical graph.
  */
 export function appendEdge(edgeGroup, d: EdgeData,
-    sceneElement: {renderHierarchy: render.RenderGraphInfo},
+    sceneElement: {
+        renderHierarchy: render.RenderGraphInfo,
+        handleEdgeSelected: Function,
+    },
     edgeClass?: string) {
   edgeClass = edgeClass || Class.Edge.LINE; // set default type
 
@@ -258,6 +283,10 @@ export function appendEdge(edgeGroup, d: EdgeData,
   }
   if (d.label && d.label.metaedge && d.label.metaedge.numRefEdges) {
     edgeClass += ' ' + Class.Edge.REFERENCE_EDGE;
+  }
+  if (sceneElement.handleEdgeSelected) {
+    // The user has opted to make edges selectable.
+    edgeClass += ' ' + Class.Edge.SELECTABLE;
   }
   // Give the path a unique id, which will be used to link
   // the textPath (edge label) to this path.

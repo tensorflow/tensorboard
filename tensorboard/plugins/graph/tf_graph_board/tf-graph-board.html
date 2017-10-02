@@ -148,6 +148,7 @@ paper-progress {
               node-names-to-health-pills="[[nodeNamesToHealthPills]]"
               health-pill-step-index="[[healthPillStepIndex]]"
               handle-node-selected="[[handleNodeSelected]]"
+              handle-edge-selected="[[handleEdgeSelected]]"
     ></tf-graph>
   </div>
   <div id="info">
@@ -245,6 +246,9 @@ Polymer({
     // An optional function that computes the label for an edge. Should
     // implement the EdgeLabelFunction signature.
     edgeLabelFunction: Object,
+    // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
+    // provided, edges are selectable, and this callback is run when an edge is selected.
+    handleEdgeSelected: Object,
   },
   listeners: {
     'node-toggle-extract': '_nodeToggleExtract'
