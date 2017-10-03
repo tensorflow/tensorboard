@@ -39,6 +39,7 @@ py_binary(
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
