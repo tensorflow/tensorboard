@@ -165,9 +165,15 @@ def op(
         collections)
 
 
-def streaming_op(tag, labels, predictions, num_thresholds=200, weights=None,
-                 metrics_collections=None, updates_collections=None,
-                 display_name=None, description=None):
+def streaming_op(tag,
+                 labels,
+                 predictions,
+                 num_thresholds=200,
+                 weights=None,
+                 metrics_collections=None,
+                 updates_collections=None,
+                 display_name=None,
+                 description=None):
   """Computes a precision-recall curve summary across batches of data.
 
   This function is similar to op() above, but can be used to compute the PR
