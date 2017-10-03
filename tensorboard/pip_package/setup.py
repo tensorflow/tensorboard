@@ -26,10 +26,10 @@ import tensorboard.version
 
 REQUIRED_PACKAGES = [
     'futures >= 3.1.1',
-    'grpcio >= 1.4.0',
+    'grpcio >= 1.6.3',
     'numpy >= 1.11.0',
     'six >= 1.10.0',
-    'protobuf >= 3.2.0',
+    'protobuf >= 3.3.0',
     'werkzeug >= 0.11.10',
     'html5lib == 0.999999999',  # identical to 1.0b10
     'markdown >= 2.6.8',
