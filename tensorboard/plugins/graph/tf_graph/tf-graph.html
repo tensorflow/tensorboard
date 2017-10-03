@@ -140,15 +140,25 @@ Polymer({
     nodeNamesToHealthPills: Object,
     // The step of health pills to show throughout the graph.
     healthPillStepIndex: Number,
-    // An optional function that takes a node selected event (whose `detail`
-    // property is the selected node ... which could be null if a node is
-    // deselected). Called whenever a node is selected or deselected.
+    /**
+     * An optional function that takes a node selected event (whose `detail`
+     * property is the selected node ... which could be null if a node is
+     * deselected). Called whenever a node is selected or deselected.
+     * @type {Function}
+     */
     handleNodeSelected: Object,
-    // An optional function that computes the label for an edge. Should
-    // implement the EdgeLabelFunction signature.
+    /**
+     * An optional function that computes the label for an edge. Should
+     * implement the EdgeLabelFunction signature.
+     * @type {Function}
+     */
     edgeLabelFunction: Object,
-    // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
-    // provided, edges are selectable, and this callback is run when an edge is selected.
+    /**
+     * An optional callback that implements the
+     * tf.graph.edge.EdgeSelectionCallback signature. If provided, edges are
+     * selectable, and this callback is run when an edge is selected.
+     * @type {Function}
+     */
     handleEdgeSelected: Object,
   },
   observers: [
