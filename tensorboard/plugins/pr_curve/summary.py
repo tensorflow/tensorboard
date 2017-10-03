@@ -207,7 +207,7 @@ def streaming_op(tag, labels, predictions, num_thresholds=200, weights=None,
       positives, true negatives, false negatives, precision, recall.
     update_op: An operation that updates the summary with the latest data.
   """
-  thresholds = [i * 1.0 / float(num_thresholds - 1)
+  thresholds = [i / float(num_thresholds - 1)
                 for i in range(num_thresholds)]
 
   with tf.name_scope(tag, values=[labels, predictions, weights]):
