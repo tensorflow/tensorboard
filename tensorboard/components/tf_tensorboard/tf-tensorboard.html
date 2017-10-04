@@ -30,6 +30,7 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view-store.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="registry.html">
 
 <!--
   tf-tensorboard is the frontend entry point for TensorBoard.
@@ -316,6 +317,7 @@ limitations under the License.
   <script src="autoReloadBehavior.js"></script>
   <script>
     import {AutoReloadBehavior} from "./autoReloadBehavior.js";
+    import {dashboardRegistry} from "./registry.js";
     import {setUseHash} from "../tf-globals/globals.js";
     import {getString, setString, TAB} from "../tf-storage/storage.js";
     import {Canceller} from "../tf-backend/canceller.js";
@@ -323,6 +325,10 @@ limitations under the License.
     import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
     import {fetchRuns} from "../tf-backend/runsStore.js";
     import * as paginatedViewStore from "../tf-paginated-view/paginatedViewStore.js";
+
+    if (Object.keys(dashboardRegistry).length === 0) {
+      throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
+    }
 
     /** @enum {string} */ const ActiveDashboardsLoadState = {
       NOT_LOADED: 'NOT_LOADED',
@@ -399,7 +405,7 @@ limitations under the License.
         _dashboardData: {
           type: Array,
           readOnly: true,
-          value: Object.values(PLUGIN_TO_DASHBOARD_DATUM),
+          value: Object.values(dashboardRegistry),
         },
 
         /**
@@ -628,7 +634,7 @@ limitations under the License.
         }
         if (container.childNodes.length === 0) {
           const component = document.createElement(
-              PLUGIN_TO_DASHBOARD_DATUM[selectedDashboard].elementName);
+              dashboardRegistry[selectedDashboard].elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }

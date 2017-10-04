@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-no-data-warning.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="vz-projector.html">
 
 <dom-module id="vz-projector-dashboard">
@@ -62,6 +63,7 @@ limitations under the License.
 </template>
 <script>
 import {getRouter} from '../tf-backend/router.js';
+import {registerDashboard} from '../tf-tensorboard/registry.js';
 
 Polymer({
   is: 'vz-projector-dashboard',
@@ -103,5 +105,8 @@ Polymer({
     xhr.send();
   },
 });
+
+registerDashboard('projector', 'vz-projector-dashboard');
+
 </script>
 </dom-module>

@@ -21,6 +21,7 @@ limitations under the License.
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
 <!--
@@ -137,6 +138,7 @@ import {getRouter} from "../tf-backend/router.js";
 import {addParams} from "../tf-backend/urlPathHelpers.js";
 import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
 import * as storage from '../tf-storage/storage.js';
+import {registerDashboard} from '../tf-tensorboard/registry.js';
 
 /**
  * The (string) name for the run of the selected dataset in the graph dashboard.
@@ -470,4 +472,7 @@ Polymer({
     this._requestHealthPills();
   },
 });
+
+registerDashboard('graphs', 'tf-graph-dashboard');
+
 </script>

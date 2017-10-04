@@ -33,6 +33,7 @@ limitations under the License.
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
 <link rel="import" href="tf-scalar-card.html">
 <link rel="import" href="tf-smoothing-input.html">
@@ -196,6 +197,7 @@ limitations under the License.
     import {getTags} from '../tf-backend/backend.js';
     import {RequestManager} from '../tf-backend/requestManager.js';
     import * as storage from '../tf-storage/storage.js';
+    import {registerDashboard} from '../tf-tensorboard/registry.js';
 
     /** @enum {string} */ const X_TYPE = {
       STEP: 'step',
@@ -307,5 +309,8 @@ limitations under the License.
         return aggregateTagInfo(runToTagInfo, defaultDisplayName);
       },
     });
+
+    registerDashboard('scalars', 'tf-scalar-dashboard');
+
   </script>
 </dom-module>
