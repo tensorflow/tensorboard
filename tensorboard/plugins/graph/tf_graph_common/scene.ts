@@ -44,6 +44,8 @@ module tf.graph.scene {
       LINE: 'edgeline',
       REFERENCE_EDGE: 'referenceedge',
       REF_LINE: 'refline',
+      SELECTABLE: 'selectableedge',
+      SELECTED: 'selectededge',
       STRUCTURAL: 'structural'
     },
     Annotation: {
