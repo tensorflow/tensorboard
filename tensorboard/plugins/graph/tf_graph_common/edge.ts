@@ -29,11 +29,12 @@ const EDGE_WIDTH_SCALE_EXPONENT = 0.3;
 /** The domain (min and max value) for the edge width. */
 const DOMAIN_EDGE_WIDTH_SCALE = [1, 5E6];
 
-export const EDGE_WIDTH_SCALE: d3.ScalePower<number, number> = d3.scalePow()
-      .exponent(EDGE_WIDTH_SCALE_EXPONENT)
-      .domain(DOMAIN_EDGE_WIDTH_SCALE)
-      .range([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH])
-      .clamp(true);
+export const EDGE_WIDTH_SIZE_BASED_SCALE: d3.ScalePower<number, number> =
+    d3.scalePow()
+        .exponent(EDGE_WIDTH_SCALE_EXPONENT)
+        .domain(DOMAIN_EDGE_WIDTH_SCALE)
+        .range([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH])
+        .clamp(true);
 
 let arrowheadMap =
     d3.scaleQuantize<String>().domain([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH]).range([
@@ -244,11 +245,6 @@ function adjustPathPointsForMarker(points: render.Point[],
 export function appendEdge(edgeGroup, d: EdgeData,
     sceneElement: {renderHierarchy: render.RenderGraphInfo},
     edgeClass?: string) {
-  let size = 1;
-  if (d.label != null && d.label.metaedge != null) {
-    // There is an underlying Metaedge.
-    size = d.label.metaedge.totalSize;
-  }
   edgeClass = edgeClass || Class.Edge.LINE; // set default type
 
   if (d.label && d.label.structural) {
@@ -260,7 +256,20 @@ export function appendEdge(edgeGroup, d: EdgeData,
   // Give the path a unique id, which will be used to link
   // the textPath (edge label) to this path.
   let pathId = 'path_' + getEdgeKey(d);
-  let strokeWidth = sceneElement.renderHierarchy.edgeWidthScale(size);
+  
+  let strokeWidth;
+  if (sceneElement.renderHierarchy.edgeWidthFunction) {
+    // Compute edge thickness based on the user-specified method.
+    strokeWidth = sceneElement.renderHierarchy.edgeWidthFunction(d, edgeClass);
+  } else {
+    // Encode tensor size within edge thickness.
+    let size = 1;
+    if (d.label != null && d.label.metaedge != null) {
+      // There is an underlying Metaedge.
+      size = d.label.metaedge.totalSize;
+    }
+    strokeWidth = sceneElement.renderHierarchy.edgeWidthSizedBasedScale(size);
+  }
 
   let path = edgeGroup.append('path')
                  .attr('id', pathId)
