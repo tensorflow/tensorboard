@@ -48,7 +48,7 @@ py_library(
     ":visualizer",
     ":file_system_tools",
     ":video_writing",
-    "@org_tensorflow_tensorboard//tensorboard/backend/event_processing:plugin_asset_util",
+    "//tensorboard/backend/event_processing:plugin_asset_util",
   ],
   srcs_version = "PY2AND3",
 )

@@ -1,6 +1,6 @@
 py_binary(
   name = "demo",
-  deps = ["//beholder"],
+  deps = ["//tensorboard/plugins/beholder"],
   srcs = ["demo.py"],
   srcs_version = "PY2AND3",
 )
