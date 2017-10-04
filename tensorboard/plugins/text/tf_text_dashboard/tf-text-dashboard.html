@@ -161,7 +161,10 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
       },
     });
 
-    registerDashboard('text', 'tf-text-dashboard');
+    registerDashboard({
+      plugin: 'text',
+      elementName: 'tf-text-dashboard',
+    });
 
   </script>
 </dom-module>

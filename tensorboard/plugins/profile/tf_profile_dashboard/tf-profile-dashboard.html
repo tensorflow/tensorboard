@@ -246,7 +246,10 @@ profile run can have multiple tools that present the performance profile as diff
     _run(datasets, index) { return datasets[index].name; },
   });
 
-  registerDashboard('profile', 'tf-profile-dashboard');
+  registerDashboard({
+    plugin: 'profile',
+    elementName: 'tf-profile-dashboard',
+  });
 
 </script>
 </dom-module>

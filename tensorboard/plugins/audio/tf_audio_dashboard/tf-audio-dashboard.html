@@ -187,7 +187,10 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       },
     });
 
-    registerDashboard('audio', 'tf-audio-dashboard');
+    registerDashboard({
+      plugin: 'audio',
+      elementName: 'tf-audio-dashboard',
+    });
 
   </script>
 </dom-module>

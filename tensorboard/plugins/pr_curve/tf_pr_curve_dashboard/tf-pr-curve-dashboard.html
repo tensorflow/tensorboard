@@ -152,12 +152,6 @@ limitations under the License.
   Polymer({
     is: 'tf-pr-curve-dashboard',
     properties: {
-      // Read by tf-tensorboard when choosing text for tab in GUI.
-      tabName: {
-        type: String,
-        value: 'PR Curves',
-      },
-
       // Determines how the time entry is shown. One of step, relative, or
       // wall_time.
       _timeDisplayType : {
@@ -272,7 +266,11 @@ limitations under the License.
     },
   });
 
-  registerDashboard('pr_curves', 'tf-pr-curve-dashboard');
+  registerDashboard({
+    plugin: 'pr_curves',
+    elementName: 'tf-pr-curve-dashboard',
+    tabName: 'PR Curves',
+  });
 
   </script>
 </dom-module>

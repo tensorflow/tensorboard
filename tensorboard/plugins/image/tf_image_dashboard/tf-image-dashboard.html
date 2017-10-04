@@ -199,7 +199,10 @@ TensorFlow run.
       },
     });
 
-    registerDashboard('images', 'tf-image-dashboard');
+    registerDashboard({
+      plugin: 'images',
+      elementName: 'tf-image-dashboard',
+    });
 
   </script>
 </dom-module>

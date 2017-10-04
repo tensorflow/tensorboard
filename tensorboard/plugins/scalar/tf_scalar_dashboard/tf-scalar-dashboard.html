@@ -310,7 +310,10 @@ limitations under the License.
       },
     });
 
-    registerDashboard('scalars', 'tf-scalar-dashboard');
+    registerDashboard({
+      plugin: 'scalars',
+      elementName: 'tf-scalar-dashboard',
+    });
 
   </script>
 </dom-module>

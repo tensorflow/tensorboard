@@ -199,7 +199,10 @@ limitations under the License.
       },
     });
 
-    registerDashboard('distributions', 'tf-distribution-dashboard');
+    registerDashboard({
+      plugin: 'distributions',
+      elementName: 'tf-distribution-dashboard',
+    });
 
   </script>
 </dom-module>

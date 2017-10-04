@@ -212,7 +212,10 @@ limitations under the License.
       },
     });
 
-    registerDashboard('histograms', 'tf-histogram-dashboard');
+    registerDashboard({
+      plugin: 'histograms',
+      elementName: 'tf-histogram-dashboard',
+    });
 
   </script>
 </dom-module>

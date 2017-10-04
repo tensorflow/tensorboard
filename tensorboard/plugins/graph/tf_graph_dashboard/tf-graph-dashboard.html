@@ -200,13 +200,6 @@ Polymer({
       readOnly: true,
     },
     runs: Array,
-    // Whether or not the reload button in the tf-tensorboard GUI should be
-    // shaded out.
-    isReloadDisabled: {
-      type: Boolean,
-      value: true,  // TODO(@chihuahua): Reconcile this setting with Health Pills.
-      readOnly: true,
-    },
     run: {
       type: String,
       notify: true,
@@ -473,6 +466,11 @@ Polymer({
   },
 });
 
-registerDashboard('graphs', 'tf-graph-dashboard');
+registerDashboard({
+  plugin: 'graphs',
+  elementName: 'tf-graph-dashboard',
+  // TODO(@chihuahua): Reconcile this setting with Health Pills.
+  isReloadDisabled: true,
+});
 
 </script>

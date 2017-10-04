@@ -632,13 +632,13 @@ limitations under the License.
           // This dashboard doesn't exist. Nothing to do here.
           return;
         }
+        const dashboard = dashboardRegistry[selectedDashboard];
         if (container.childNodes.length === 0) {
-          const component = document.createElement(
-              dashboardRegistry[selectedDashboard].elementName);
+          const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }
-        this.set('_isReloadDisabled', !!container.childNodes[0].isReloadDisabled);
+        this.set('_isReloadDisabled', dashboard.isReloadDisabled);
       },
 
       /**

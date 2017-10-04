@@ -13,67 +13,75 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Registry entry for a plugin's dashboard UI.
+/** Registration for a plugin dashboard UI. */
 export interface Dashboard {
-  // The name of the element for the dashboard (excluding the angle brackets on
-  // either side). For instance, tf-scalar-dashboard. Used to select the correct
-  // dashboard when a user enters it.
+
+  /**
+   * Name of the element for the dashboard (excluding the angle brackets on
+   * either side). For instance, tf-scalar-dashboard. Used to select the
+   * correct dashboard when a user enters it.
+   */
   elementName: string;
 
-  // The name of the plugin associated with this dashboard. This string must
-  // match the PLUGIN_NAME specified by the backend of the plugin. Each plugin
-  // can be associated with no more than 1 plugin - this also means that each
-  // dashboard has a unique plugin field.
+  /**
+   * The name of the plugin associated with this dashboard. This string must
+   * match the PLUGIN_NAME specified by the backend of the plugin. Each plugin
+   * can be associated with no more than 1 plugin - this also means that each
+   * dashboard has a unique plugin field.
+   */
   plugin: string;
 
-  // The string to show in the menu item for this dashboard within the
-  // navigation bar. That tab name may differ from the plugin name. For
-  // instance, the tab name should not use underscores to separate words.
+  /**
+   * The string to show in the menu item for this dashboard within the
+   * navigation bar. That tab name may differ from the plugin name. For
+   * instance, the tab name should not use underscores to separate words.
+   */
   tabName: string;
+
+  /**
+   * Whether or not tf-tensorboard reload functionality should be disabled.
+   *
+   * If true, then: 1) the reload button in the top right corner of the
+   * TensorBoard UI will be shaded out; and 2) the timer that triggers the
+   * reload() method to be called every few seconds will be disabled.
+   */
+  isReloadDisabled: boolean;
 }
 
-// Maps plugin names to Dashboard.
+/** Typedef mapping plugin names to Dashboard registrations. */
 export type DashboardRegistry = {[key: string]: Dashboard};
 
-// Map of all registered dashboards.
-//
-// This object should only be mutated by the registerDashboard() function.
+/**
+ * Map of all registered dashboards.
+ *
+ * This object should only be mutated by the registerDashboard() function.
+ */
 export let dashboardRegistry : DashboardRegistry = {};
 
-// Registers Dashboard for plugin into TensorBoard frontend.
-//
-// This function should be called after the Polymer custom element is defined.
-// It's what allows the <tf-tensorboard> component to dynamically load it as a
-// tab in TensorBoard's GUI.
-//
-// The name of the tab defaults to `plugin`. To specify a custom tab name, make
-// `tabName: {type: String, value: 'My Plugin'}` a property on the Polymer
-// custom element.
-export function registerDashboard(plugin: string, elementName: string) {
-  if (!plugin) {
+/**
+ * Registers Dashboard for plugin into TensorBoard frontend.
+ *
+ * This function should be called after the Polymer custom element is defined.
+ * It's what allows the tf-tensorboard component to dynamically load it as a
+ * tab in TensorBoard's GUI.
+ *
+ * `elementName` and `plugin` are mandatory. If `tabName` is not set, it will
+ * default to `plugin` capitalized.
+ */
+export function registerDashboard(dashboard: Dashboard) {
+  if (!dashboard.plugin) {
     throw new Error('Dashboard.plugin must be present');
   }
-  if (!elementName) {
+  if (!dashboard.elementName) {
     throw new Error('Dashboard.elementName must be present');
   }
-  if (plugin in dashboardRegistry) {
-    throw new Error(`Plugin already registered: ${plugin}`);
+  if (dashboard.plugin in dashboardRegistry) {
+    throw new Error(`Plugin already registered: ${dashboard.plugin}`);
   }
-  const element = document.createElement(elementName);
-  if (element.constructor === HTMLElement) {
-    throw new Error('Call Polymer() before calling registerDashboard()');
+  if (!dashboard.tabName) {
+    dashboard.tabName = capitalize(dashboard.plugin);
   }
-  let tabName;
-  if (element['tabName']) {
-    tabName = element['tabName'];
-  } else {
-    tabName = capitalize(plugin);
-  }
-  dashboardRegistry[plugin] = {
-    plugin: plugin,
-    elementName: elementName,
-    tabName: tabName,
-  };
+  dashboardRegistry[dashboard.plugin] = dashboard;
 }
 
 function capitalize(value: string): string {
