@@ -45,7 +45,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from beholder import im_util
+from tensorboard.plugins.beholder import im_util
 
 DEVNULL = open(os.devnull, 'wb')
 PY3 = sys.version_info.major >= 3

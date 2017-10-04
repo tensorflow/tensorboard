@@ -7,12 +7,13 @@ import time
 
 import tensorflow as tf
 
-from beholder import im_util
-from beholder.file_system_tools import read_pickle, write_pickle, write_file
-from beholder.shared_config import PLUGIN_NAME, TAG_NAME, SUMMARY_FILENAME,\
-  DEFAULT_CONFIG, CONFIG_FILENAME
-from beholder import video_writing
-from beholder.visualizer import Visualizer
+from tensorboard.plugins.beholder import im_util
+from tensorboard.plugins.beholder.file_system_tools import read_pickle,\
+  write_pickle, write_file
+from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME, TAG_NAME,\
+  SUMMARY_FILENAME, DEFAULT_CONFIG, CONFIG_FILENAME
+from tensorboard.plugins.beholder import video_writing
+from tensorboard.plugins.beholder.visualizer import Visualizer
 
 class Beholder(object):
 

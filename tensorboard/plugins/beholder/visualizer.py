@@ -8,10 +8,10 @@ from math import floor, sqrt
 import numpy as np
 import tensorflow as tf
 
-from beholder import im_util
-from beholder.shared_config import SECTION_HEIGHT, IMAGE_WIDTH, DEFAULT_CONFIG,\
-  SECTION_INFO_FILENAME
-from beholder.file_system_tools import write_pickle
+from tensorboard.plugins.beholder import im_util
+from tensorboard.plugins.beholder.shared_config import SECTION_HEIGHT,\
+  IMAGE_WIDTH, DEFAULT_CONFIG, SECTION_INFO_FILENAME
+from tensorboard.plugins.beholder.file_system_tools import write_pickle
 
 MIN_SQUARE_SIZE = 3
 

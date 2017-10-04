@@ -8,7 +8,7 @@ import threading
 import numpy as np
 import tensorflow as tf
 
-from beholder.file_system_tools import resources_path
+from tensorboard.plugins.beholder.file_system_tools import resources_path
 
 # pylint: disable=not-context-manager
 
