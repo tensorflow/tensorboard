@@ -116,6 +116,9 @@ Polymer({
     // An array of ContextMenuItem objects. Items that appear in the context
     // menu for a node.
     nodeContextMenuItems: Array,
+    // A function with signature EdgeThicknessFunction that computes the
+    // thickness of a given edge.
+    edgeWidthFunction: Object,
     _renderDepth: {
       type: Number,
       value: 1
@@ -162,11 +165,12 @@ Polymer({
       var renderGraph = new tf.graph.render.RenderGraphInfo(
           graphHierarchy, !!this.stats /** displayingStats */);
       renderGraph.edgeLabelFunction = this.edgeLabelFunction;
+      renderGraph.edgeWidthFunction = this.edgeWidthFunction;
+
       // Producing the 'color by' parameters to be consumed
       // by the tf-graph-controls panel. It contains information about the
       // min and max values and their respective colors, as well as list
       // of devices with their respective colors.
-
       function getColorParamsFromScale(scale) {
         return {
           minValue: scale.domain()[0],

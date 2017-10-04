@@ -75,6 +75,14 @@ export let SeriesNodeColors = {
   DEFAULT_STROKE: '#b2b2b2'
 };
 
+
+/**
+ * Function that computes edge thickness in pixels.
+ */
+export interface EdgeThicknessFunction {
+  (edgeData: scene.edge.EdgeData, edgeClass: string): number;
+}
+
 /**
  * Function that computes edge label strings. This function accepts a Metaedge,
  * which could actually encapsulate several base edges. For instance, several
@@ -192,7 +200,7 @@ export class RenderGraphInfo {
   private memoryUsageScale: d3.ScaleLinear<string, string>;
   private computeTimeScale: d3.ScaleLinear<string, string>;
   /** Scale for the thickness of edges when there is no shape information. */
-  edgeWidthScale:
+  edgeWidthSizedBasedScale:
       d3.ScaleLinear<number, number> | d3.ScalePower<number, number>;
   // Since the rendering information for each node is constructed lazily,
   // upon node's expansion by the user, we keep a map between the node's name
@@ -202,6 +210,9 @@ export class RenderGraphInfo {
   root: RenderGroupNodeInfo;
   traceInputs: Boolean;
   edgeLabelFunction: EdgeLabelFunction;
+  // An optional function that computes the thickness of an edge given edge
+  // data. If not provided, defaults to encoding tensor size in thickness.
+  edgeWidthFunction: EdgeThicknessFunction;
 
   constructor(hierarchy: hierarchy.Hierarchy, displayingStats: boolean) {
     this.hierarchy = hierarchy;
@@ -261,8 +272,8 @@ export class RenderGraphInfo {
         .domain([0, maxComputeTime])
         .range(PARAMS.minMaxColors);
 
-    this.edgeWidthScale = this.hierarchy.hasShapeInfo ?
-      scene.edge.EDGE_WIDTH_SCALE :
+    this.edgeWidthSizedBasedScale = this.hierarchy.hasShapeInfo ?
+      scene.edge.EDGE_WIDTH_SIZE_BASED_SCALE :
       d3.scaleLinear()
         .domain([1, this.hierarchy.maxMetaEdgeSize])
         .range([scene.edge.MIN_EDGE_WIDTH, scene.edge.MAX_EDGE_WIDTH]);
