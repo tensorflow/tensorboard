@@ -326,7 +326,7 @@ limitations under the License.
     import {fetchRuns} from "../tf-backend/runsStore.js";
     import * as paginatedViewStore from "../tf-paginated-view/paginatedViewStore.js";
 
-    if (Object.keys(dashboardRegistry).length === 0) {
+    if (_.isEmpty(dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
 

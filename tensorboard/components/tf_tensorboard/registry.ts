@@ -65,8 +65,7 @@ export let dashboardRegistry : DashboardRegistry = {};
  * It's what allows the tf-tensorboard component to dynamically load it as a
  * tab in TensorBoard's GUI.
  *
- * `elementName` and `plugin` are mandatory. If `tabName` is not set, it will
- * default to `plugin` capitalized.
+ * `elementName` and `plugin` are mandatory. `tabName` defaults to `plugin`.
  */
 export function registerDashboard(dashboard: Dashboard) {
   if (!dashboard.plugin) {
@@ -79,11 +78,7 @@ export function registerDashboard(dashboard: Dashboard) {
     throw new Error(`Plugin already registered: ${dashboard.plugin}`);
   }
   if (!dashboard.tabName) {
-    dashboard.tabName = capitalize(dashboard.plugin);
+    dashboard.tabName = dashboard.plugin;
   }
   dashboardRegistry[dashboard.plugin] = dashboard;
-}
-
-function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }
