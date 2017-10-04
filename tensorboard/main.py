@@ -286,8 +286,8 @@ def main(unused_argv=None):
             ImportError,
             ImportError(
                 err.message +
-                "\n\nTo use the debugger plugin, you need to have futures and "
-                "grpcio installed:\n  pip install futures grpcio"),
+                "\n\nTo use the debugger plugin, you need to have "
+                "gRPC installed:\n  pip install grpcio"),
             traceback)
       tf.logging.info("Starting Debugger Plugin at gRPC port %d",
                       FLAGS.debugger_data_server_grpc_port)
