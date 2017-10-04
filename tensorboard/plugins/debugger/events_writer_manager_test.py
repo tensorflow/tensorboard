@@ -31,17 +31,6 @@ from tensorboard.plugins.debugger import numerics_alert
 
 class DebuggerPluginTest(debugger_plugin_testlib.DebuggerPluginTestBase):
 
-  def setUp(self):
-    # Importing the debugger_plugin can sometimes unfortunately produce errors.
-    try:
-      # pylint: disable=g-import-not-at-top
-      from tensorboard.plugins.debugger import debugger_plugin
-      # pylint: enable=g-import-not-at-top
-    except Exception as e:  # pylint: disable=broad-except
-      self.skipTest(
-          'Skipping test because importing debugger_plugin failed: %r' % e)
-    self.debugger_plugin_module = debugger_plugin
-
   def testHealthPillsRouteProvided(self):
     """Tests that the plugin offers the route for requesting health pills."""
     apps = self.plugin.get_plugin_apps()
