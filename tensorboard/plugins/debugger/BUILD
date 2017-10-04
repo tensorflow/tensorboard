@@ -129,6 +129,7 @@ py_library(
     name = "debugger_plugin",
     srcs = ["debugger_plugin.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":constants",
         ":debugger_server_lib",
@@ -138,6 +139,18 @@ py_library(
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "debugger_plugin_loader",
+    srcs = ["debugger_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":debugger_plugin",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 

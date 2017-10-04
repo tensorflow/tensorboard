@@ -21,6 +21,7 @@ py_library(
     name = "pr_curves_plugin",
     srcs = ["pr_curves_plugin.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
@@ -40,8 +41,8 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
-        ":pr_curves_plugin",
         ":pr_curve_demo",
+        ":pr_curves_plugin",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
@@ -55,9 +56,7 @@ py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
+    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
