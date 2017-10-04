@@ -261,6 +261,13 @@ def main(unused_argv=None):
     efi.inspect(FLAGS.logdir, event_file, FLAGS.tag)
     return 0
   else:
+
+    # The default is HTTP/1.0 for some strange reason. If we don't use
+    # HTTP/1.1 then a new TCP socket and Python thread is created for
+    # each HTTP request. The tradeoff is we must always specify the
+    # Content-Length header, or do chunked encoding for streaming.
+    serving.WSGIRequestHandler.protocol_version = 'HTTP/1.1'
+
     plugins = [
         core_plugin.CorePlugin,
         scalars_plugin.ScalarsPlugin,
