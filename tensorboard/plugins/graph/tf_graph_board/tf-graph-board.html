@@ -143,6 +143,7 @@ paper-progress {
               color-by="[[colorBy]]"
               color-by-params="{{colorByParams}}"
               progress="{{progress}}"
+              edge-label-function="[[edgeLabelFunction]]"
               edge-width-function="[[edgeWidthFunction]]"
               node-names-to-health-pills="[[nodeNamesToHealthPills]]"
               health-pill-step-index="[[healthPillStepIndex]]"
@@ -241,6 +242,9 @@ Polymer({
     // property is the selected node ... which could be null if a node is
     // deselected). Called whenever a node is selected or deselected.
     handleNodeSelected: Object,
+    // An optional function that computes the label for an edge. Should
+    // implement the EdgeLabelFunction signature.
+    edgeLabelFunction: Object,
   },
   listeners: {
     'node-toggle-extract': '_nodeToggleExtract'
