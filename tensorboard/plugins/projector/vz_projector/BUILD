@@ -64,6 +64,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:threejs",
         "//tensorboard/components/tf_imports:weblas",
+        "//tensorboard/components/tf_tensorboard:registry",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
@@ -102,4 +103,3 @@ ts_web_library(
     path = "/vz-projector",
     deps = [":sptree"],
 )
-

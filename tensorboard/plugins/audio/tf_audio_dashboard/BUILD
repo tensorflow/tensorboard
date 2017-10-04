@@ -25,6 +25,7 @@ ts_web_library(
         "//tensorboard/components/tf_markdown_view",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
+        "//tensorboard/components/tf_tensorboard:registry",
         "@org_polymer_iron_icon",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",

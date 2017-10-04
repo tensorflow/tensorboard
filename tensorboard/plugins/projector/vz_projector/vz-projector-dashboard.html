@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-no-data-warning.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="vz-projector.html">
 
 <dom-module id="vz-projector-dashboard">
@@ -62,18 +63,12 @@ limitations under the License.
 </template>
 <script>
 import {getRouter} from '../tf-backend/router.js';
+import {registerDashboard} from '../tf-tensorboard/registry.js';
 
 Polymer({
   is: 'vz-projector-dashboard',
   properties: {
     dataNotFound: Boolean,
-    // Whether or not the reload button in the tf-tensorboard GUI should be
-    // shaded out.
-    isReloadDisabled: {
-      type: Boolean,
-      value: true,
-      readOnly: true,
-    },
     _routePrefix: {
       type: String,
       value: () => getRouter().pluginRoute('projector', ''),
@@ -103,5 +98,12 @@ Polymer({
     xhr.send();
   },
 });
+
+registerDashboard({
+  plugin: 'projector',
+  elementName: 'vz-projector-dashboard',
+  isReloadDisabled: true,
+});
+
 </script>
 </dom-module>

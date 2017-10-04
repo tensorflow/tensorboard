@@ -15,6 +15,7 @@ ts_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/vz_sorting",
         "//tensorboard/plugins/graph/tf_graph",
         "//tensorboard/plugins/graph/tf_graph_board",
