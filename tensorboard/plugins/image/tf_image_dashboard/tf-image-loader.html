@@ -49,7 +49,7 @@ future for loading older images.
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
         <div class="heading-row">
           <div class="heading-label">
-            step <span style="font-weight: bold">[[_stepValue]]</span>
+            step <span style="font-weight: bold">[[_toLocaleString(_stepValue)]]</span>
           </div>
           <div class="heading-label heading-right">
             <template is="dom-if" if="[[_currentWallTime]]">
@@ -366,6 +366,10 @@ future for loading older images.
       },
       _handleTap(e) {
         this.set('actualSize', !this.actualSize);
+      },
+      _toLocaleString(number) {
+        // Shows commas (or locale-appropriate punctuation) for large numbers.
+        return number.toLocaleString();
       },
     });
   </script>
