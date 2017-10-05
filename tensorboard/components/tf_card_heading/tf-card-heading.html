@@ -62,7 +62,10 @@ limitations under the License.
         <template is="dom-if" if="[[_tagLabel]]">
           <div class="heading-row">
             <div class="heading-label">
-              tag: <span itemprop="tag">[[_tagLabel]]</span>
+              tag: <div
+                     itemprop="tag"
+                     inner-h-t-m-l="[[_breakString(_tagLabel)]]"
+                   ></div>
             </div>
           </div>
         </template>
@@ -167,6 +170,11 @@ limitations under the License.
       _toggleDescriptionDialog(e) {
         this.$.descriptionDialog.positionTarget = e.target;
         this.$.descriptionDialog.toggle();
+      },
+
+      // Break the string at natural points, including commas, equals, and slashes
+      _breakString: function(originalString) {
+        return originalString.replace(/([\/=\-_,])/g, "$1<wbr>");
       },
     });
   </script>
