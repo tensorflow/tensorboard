@@ -1,10 +1,10 @@
 # How to Develop TensorBoard
 
-TensorBoard at HEAD relies on the nightly installation of TensorFlow, so please install TensorFlow nightly for development. To install TensorFlow nightly, `pip install` the link to the [appropriate whl file listed at the TensorFlow repository](https://github.com/tensorflow/tensorflow).
+TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, you can simply run `pip install tf-nightly`.
 
-Our decision to develop on TensorFlow nightly has pros and cons. A main advantage is that plugin authors can use the latest features of TensorFlow. A disadvantage is that the previous release of TensorFlow does not suffice for development.
+TensorBoard builds are done with [Bazel](https://bazel.build), so you may need to [install Bazel](https://docs.bazel.build/versions/master/install.html).
 
-Running TensorBoard automatically asks Bazel to create a vulcanized HTML binary:
+Running TensorBoard via Bazel will automatically create a vulcanized HTML python binary:
 
 ```sh
 bazel run //tensorboard -- --logdir /path/to/logs
