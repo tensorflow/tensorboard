@@ -65,8 +65,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     if not self._multiplexer:
       return False
 
-    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-    return any(mapping.values())
+    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def index_impl(self):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
