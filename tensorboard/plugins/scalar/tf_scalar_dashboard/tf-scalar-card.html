@@ -38,9 +38,6 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
-      x-components-creation-method="[[_xComponentsCreationMethod]]"
-      y-value-accessor="[[_yValueAccessor]]"
-      tooltip-columns="[[_tooltipColumns]]"
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
@@ -164,7 +161,6 @@ limitations under the License.
 </template>
 <script>
   import {addParams} from '../tf-backend/urlPathHelpers.js';
-  import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
   import {getRouter} from '../tf-backend/router.js';
 
   /**
@@ -229,60 +225,6 @@ limitations under the License.
           value: () => (tag, run) => addParams(
               getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
         },
-
-        _xComponentsCreationMethod: {
-          type: Object,
-          computed: '_computeXComponentsCreationMethod(xType)',
-        },
-
-        _yValueAccessor: {
-          type: Object,
-          readOnly: true,
-          value: () => {
-            return d => d.scalar;
-          },
-        },
-
-        _tooltipColumns: {
-          type: Array,
-          readOnly: true,
-          value: () => {
-            const valueFormatter = ChartHelpers.multiscaleFormatter(
-                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
-            const formatValueOrNaN =
-                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
-            return [
-              {
-                title: 'Name',
-                evaluate: (d) => d.dataset.metadata().name,
-              },
-              {
-                title: 'Smoothed',
-                evaluate: (d, statusObject) => formatValueOrNaN(
-                    statusObject.smoothingEnabled ?
-                        d.datum.smoothed : d.datum.scalar),
-              },
-              {
-                title: 'Value',
-                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
-              },
-              {
-                title: 'Step',
-                evaluate: (d) => ChartHelpers.stepFormatter(d.datum.step),
-              },
-              {
-                title: 'Time',
-                evaluate: (d) => ChartHelpers.timeFormatter(d.datum.wall_time),
-              },
-              {
-                title: 'Relative',
-                evaluate:
-                    (d) => ChartHelpers.relativeFormatter(
-                        ChartHelpers.relativeAccessor(d.datum, -1, d.dataset)),
-              },
-            ]
-          },
-        },
       },
       reload() {
         this.$$('tf-line-chart-data-loader').reload();
@@ -308,9 +250,6 @@ limitations under the License.
       },
       _jsonUrl(tag, run) {
         return this._dataUrl(tag, run);
-      },
-      _computeXComponentsCreationMethod(xType) {
-        return () => ChartHelpers.getXComponents(xType);
       },
   });
 </script>
