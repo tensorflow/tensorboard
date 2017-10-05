@@ -555,7 +555,8 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
         // This shape represents the input into or output out of a TensorFlow
         // function.
         let shape = scene.selectChild(shapeGroup, 'polygon');
-        scene.positionTriangle(shape, d.x, d.y, d.width, d.height);
+        scene.positionTriangle(
+            shape, d.x, d.y, d.coreBox.width, d.coreBox.height);
       } else {
         let shape = scene.selectChild(shapeGroup, 'ellipse');
         scene.positionEllipse(
