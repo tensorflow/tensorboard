@@ -89,11 +89,17 @@ def standard_tensorboard_wsgi(
     path_prefix: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
         data, or empty for memory-only mode.
-    assets_zip_provider: Delegates to TBContext or uses default if None.
+    assets_zip_provider: See TBContext documentation for more information.
+        If this value is not specified, this function will attempt to load
+        the `tensorboard.default` module to use the default. This behavior
+        might be removed in the future.
 
   Returns:
     The new TensorBoard WSGI application.
   """
+  if assets_zip_provider is None:
+    from tensorboard import default
+    assets_zip_provider = default.get_assets_zip_provider()
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
@@ -109,8 +115,7 @@ def standard_tensorboard_wsgi(
       db_connection_provider=db_connection_provider,
       logdir=logdir,
       multiplexer=multiplexer,
-      assets_zip_provider=(assets_zip_provider or
-                           get_default_assets_zip_provider()))
+      assets_zip_provider=assets_zip_provider)
   plugins = [constructor(context) for constructor in plugins]
   return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
                             path_prefix)
@@ -344,23 +349,6 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   thread.daemon = True
   thread.start()
   return thread
-
-
-def get_default_assets_zip_provider():
-  """Opens stock TensorBoard web assets collection.
-
-  Returns:
-    Returns function that returns a newly opened file handle to zip file
-    containing static assets for stock TensorBoard, or None if webfiles.zip
-    could not be found. The value the callback returns must be closed. The
-    paths inside the zip file are considered absolute paths on the web server.
-  """
-  path = os.path.join(
-      tf.resource_loader.get_data_files_path(), os.pardir, 'webfiles.zip')
-  if not os.path.exists(path):
-    tf.logging.warning('webfiles.zip static assets not found: %s', path)
-    return None
-  return lambda: open(path, 'rb')
 
 
 def get_database_info(db_uri):

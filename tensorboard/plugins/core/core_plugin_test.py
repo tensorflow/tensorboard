@@ -44,7 +44,7 @@ class CorePluginTest(tf.test.TestCase):
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
     self._context = base_plugin.TBContext(
-        assets_zip_provider=application.get_default_assets_zip_provider(),
+        assets_zip_provider=get_test_assets_zip_provider(),
         logdir=self.logdir,
         multiplexer=self.multiplexer)
     self.plugin = core_plugin.CorePlugin(self._context)
@@ -187,6 +187,15 @@ class CorePluginTest(tf.test.TestCase):
 class CorePluginUsingMetagraphOnlyTest(CorePluginTest):
   # Tests new ability to use only the MetaGraphDef
   _only_use_meta_graph = True  # Server data contains only a MetaGraphDef
+
+
+def get_test_assets_zip_provider():
+  path = os.path.join(tf.resource_loader.get_data_files_path(),
+                      'test_webfiles.zip')
+  if not os.path.exists(path):
+    tf.logging.warning('test_webfiles.zip static assets not found: %s', path)
+    return None
+  return lambda: open(path, 'rb')
 
 
 if __name__ == '__main__':
