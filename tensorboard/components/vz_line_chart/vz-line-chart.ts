@@ -76,21 +76,72 @@ Polymer({
      * an object itself because the Axis must be made right when we make the
      * LineChart object, lest we use a previously destroyed Axis. See the async
      * logic below that uses this property.
+     *
+     * Note that this function returns a function because polymer calls the
+     * outer function to compute the value. We actually want the value of this
+     * property to be the inner function.
+     *
      * @type {function(): ChartHelpers.XComponents}
      */
-    xComponentsCreationMethod: Object,
+    xComponentsCreationMethod: {type: Object, value: () => ChartHelpers.stepX},
 
     /**
      * A method that implements the Plottable.IAccessor<number> interface. Used
      * for accessing the y value from a data point.
+     *
+     * Note that this function returns a function because polymer calls the
+     * outer function to compute the value. We actually want the value of this
+     * property to be the inner function.
      */
-    yValueAccessor: Object,
+    yValueAccessor: {type: Object, value: () => (d => d.scalar)},
 
     /**
      * An array of ChartHelper.TooltipColumn objects. Used to populate the table
      * within the tooltip. The table contains 1 row per run.
+     *
+     * Note that this function returns a function because polymer calls the
+     * outer function to compute the value. We actually want the value of this
+     * property to be the inner function.
+     *
      */
-    tooltipColumns: Array,
+    tooltipColumns: {
+      type: Array,
+      value: function() {
+        const valueFormatter = ChartHelpers.multiscaleFormatter(
+            ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
+        const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+
+        return [
+          {
+            title: 'Name',
+            evaluate: (d) => d.dataset.metadata().name,
+          },
+          {
+            title: 'Smoothed',
+            evaluate: (d, statusObject) => formatValueOrNaN(
+                statusObject.smoothingEnabled ? d.datum.smoothed :
+                                                d.datum.scalar),
+          },
+          {
+            title: 'Value',
+            evaluate: (d) => formatValueOrNaN(d.datum.scalar),
+          },
+          {
+            title: 'Step',
+            evaluate: (d) => ChartHelpers.stepFormatter(d.datum.step),
+          },
+          {
+            title: 'Time',
+            evaluate: (d) => ChartHelpers.timeFormatter(d.datum.wall_time),
+          },
+          {
+            title: 'Relative',
+            evaluate: (d) => ChartHelpers.relativeFormatter(
+                ChartHelpers.relativeAccessor(d.datum, -1, d.dataset)),
+          },
+        ];
+      }
+    },
 
     /**
      * An optional array of 2 numbers for the min and max of the default range
