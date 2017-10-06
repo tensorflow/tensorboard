@@ -1589,7 +1589,18 @@ export class RenderNodeInfo {
       // to see that in the graph, as the node would already be within
       // the functions scene group.
       const match = this.displayName.match(nodeDisplayNameRegex);
-      this.displayName = match[1];
+      if (match) {
+        // The display name had been successfully extracted. This is the most
+        // common scenario.
+        this.displayName = match[1];
+      } else if (_.startsWith(
+          this.displayName, tf.graph.FUNCTION_LIBRARY_NODE_PREFIX)) {
+        // The string does not match the usual pattern for how functions are
+        // named. Just use the entire second portion of the string as the name
+        // if we can successfully remove the prefix.
+        this.displayName = this.displayName.substring(
+            tf.graph.FUNCTION_LIBRARY_NODE_PREFIX.length);
+      }
     }
   }
 
