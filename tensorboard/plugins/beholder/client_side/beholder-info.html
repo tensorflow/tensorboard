@@ -1,0 +1,89 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+
+<dom-module id="beholder-info">
+  <template>
+  
+    <template id="repeater" is="dom-repeat" items="{{items}}">
+      <div class="section-info" style$="height: [[item.height]]px">
+        <ul>
+          <li>[[item.name]]</li>
+          <li>shape: [[item.shape]]</li>
+          <li>range: [ [[item.min]], [[item.max]] ] </li>
+          <li>mean: [[item.mean]]</li>
+        </ul>
+      </div>
+    </template>
+
+    <style>
+    .section-info {
+      margin: 0 0 5px 0;
+    }
+    .section-info ul {
+      list-style-type: none;
+      margin: 0;
+      padding-left: 10px;
+    }
+    </style>
+
+  </template>
+
+  <script>
+    "use strict";
+
+    import {RequestManager} from '../tf-backend/requestManager.js';
+    import {getRouter} from '../tf-backend/router.js';
+
+    const INFO_ROUTE = getRouter().pluginRoute('beholder', '/section-info')
+
+    Polymer({
+      is: "beholder-info",
+      properties: {
+        _requestManager: {
+          type: Object,
+          value: () => new RequestManager(),
+        },
+
+        items: {
+          type: Array,
+          value: [{name:'Loading...'}],
+        },
+      },
+
+      _reloaditems() {
+        window.setTimeout(function(){
+          this._requestManager.request(INFO_ROUTE).then(function(response){
+            this.splice('items', 0)
+
+            for (var item of response) {
+             this.push('items', item)
+            }
+          }.bind(this))
+
+          this._reloaditems()
+        }.bind(this), 1000/(this.fps === 0 ? 1 : this.fps))
+      },
+
+      ready() {
+        this._reloaditems()
+      }
+    });
+  </script>
+</dom-module>
