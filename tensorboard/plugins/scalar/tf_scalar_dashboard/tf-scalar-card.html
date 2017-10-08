@@ -219,8 +219,8 @@ limitations under the License.
           type: Object,
           readOnly: true,
           value: {
-            lowerAccessor: d => d.scalar - Math.random() * 0.05 - 0.03,
-            higherAccessor: d => d.scalar + Math.random() * 0.05 + 0.03,
+            lowerAccessor: d => d.scalar - Math.abs(Math.cos(d.scalar)) * 0.05 - 0.03,
+            higherAccessor: d => d.scalar + Math.abs(Math.cos(d.scalar)) * 0.05 + 0.03,
           },
         },
 

@@ -17,6 +17,10 @@ limitations under the License.
 import {DragZoomLayer} from './dragZoomInteraction.js';
 import * as ChartHelpers from './vz-chart-helpers.js';
 
+/**
+ * An interface that describes the lower and higher bounds for margins to
+ * visualize.
+ */
 export interface MarginSpecification {
   // The lower end of the margin.
   lowerAccessor: Plottable.IAccessor<number>;
@@ -153,7 +157,10 @@ Polymer({
 
     /**
      * An optional MarginSpecification object. If provided, the chart will
-     * visualize margins alongside the primary line for each series.
+     * visualize margins alongside the primary line for each series. If set,
+     * consider setting ignoreYOutliers to false. Otherwise, outlier
+     * calculations may deem some margins to be outliers, and some portions of
+     * the margin may not display.
      */
     marginSpecification: Object,
 
@@ -194,7 +201,6 @@ Polymer({
     /**
      * Whether to ignore outlier data when computing the yScale domain.
      */
-
     ignoreYOutliers: {
       type: Boolean,
       value: false,
@@ -411,7 +417,7 @@ class LineChart {
 
   private linePlot: Plottable.Plots.Line<number|Date>;
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
-  private marginLinePlot: Plottable.Plots.Line<number|Date>;
+  private marginAreaPlot: Plottable.Plots.Area<number|Date>;
   private scatterPlot: Plottable.Plots.Scatter<number|Date, Number>;
   private nanDisplay: Plottable.Plots.Scatter<number|Date, Number>;
   private yValueAccessor: Plottable.IAccessor<number>;
@@ -517,53 +523,39 @@ class LineChart {
 
   private buildPlot(xScale, yScale, tooltipColumns, marginSpecification):
       Plottable.Component {
-    const groups = [];
-
     if (marginSpecification) {
       // Plot the margin.
-      this.marginLinePlot = new Plottable.Plots.Line<number|Date>();
-      this.marginLinePlot.x(this.xAccessor, xScale);
-      this.marginLinePlot.y(((
-          d: ChartHelpers.Datum,
-          i: number,
-          dataset: Plottable.Dataset) => {
-        // The margin line plot consists of a broad line that varies in stroke
-        // width. The line is centered in the middle of lower and higher bounds.
-        return (
-            marginSpecification.lowerAccessor(d, i, dataset) +
-            marginSpecification.higherAccessor(d, i, dataset)) / 2;
-      }), yScale);
-      this.marginLinePlot.attr(
-          'stroke',
+      this.marginAreaPlot = new Plottable.Plots.Area<number|Date>();
+      this.marginAreaPlot.x(this.xAccessor, xScale);
+      this.marginAreaPlot.y(marginSpecification.higherAccessor, yScale);
+      this.marginAreaPlot.y0(marginSpecification.lowerAccessor);
+      this.marginAreaPlot.attr(
+          'fill',
           (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
               this.colorScale.scale(dataset.metadata().name));
-      this.marginLinePlot.attr(
-          'stroke-width',
-          (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) => {
-            // The stroke width varies. The line is centered at the average
-            // between the lower and higher bounds. The width in turn is the
-            // difference between the higher and lower bounds.
-            const lower = yScale.scale(
-                marginSpecification.lowerAccessor(d, i, dataset));
-            const higher = yScale.scale(
-                marginSpecification.higherAccessor(d, i, dataset));
-            console.log(Math.max(0, higher - lower));
-            return Math.max(0, higher - lower);
-          });
-      this.marginLinePlot.attr('opacity', 0.5);
-      groups.push(this.marginLinePlot);
+      this.marginAreaPlot.attr('fill-opacity', 0.3);
+      this.marginAreaPlot.attr('stroke-width', 0);
     }
 
-    let nanDisplay = new Plottable.Plots.Scatter<number|Date, number>();
-    nanDisplay.x(this.xAccessor, xScale);
-    nanDisplay.y((x) => x.displayY, yScale);
-    nanDisplay.attr('fill', (d: any) => this.colorScale.scale(d.name));
-    nanDisplay.attr('opacity', 1);
-    nanDisplay.size(ChartHelpers.NAN_SYMBOL_SIZE * 2);
-    nanDisplay.datasets([this.nanDataset]);
-    nanDisplay.symbol(Plottable.SymbolFactories.triangle);
-    this.nanDisplay = nanDisplay;
-    groups.push(this.nanDisplay);
+    this.smoothedAccessor = (d: ChartHelpers.ScalarDatum) => d.smoothed;
+    let linePlot = new Plottable.Plots.Line<number|Date>();
+    linePlot.x(this.xAccessor, xScale);
+    linePlot.y(this.yValueAccessor, yScale);
+    linePlot.attr(
+        'stroke',
+        (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
+            this.colorScale.scale(dataset.metadata().name));
+    this.linePlot = linePlot;
+    const group = this.setupTooltips(linePlot, tooltipColumns);
+
+    let smoothLinePlot = new Plottable.Plots.Line<number|Date>();
+    smoothLinePlot.x(this.xAccessor, xScale);
+    smoothLinePlot.y(this.smoothedAccessor, yScale);
+    smoothLinePlot.attr(
+        'stroke',
+        (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
+            this.colorScale.scale(dataset.metadata().name));
+    this.smoothLinePlot = smoothLinePlot;
 
     // The scatterPlot will display the last point for each dataset.
     // This way, if there is only one datum for the series, it is still
@@ -576,30 +568,21 @@ class LineChart {
     scatterPlot.size(ChartHelpers.TOOLTIP_CIRCLE_SIZE * 2);
     scatterPlot.datasets([this.lastPointsDataset]);
     this.scatterPlot = scatterPlot;
-    groups.push(this.scatterPlot);
 
-    let smoothLinePlot = new Plottable.Plots.Line<number|Date>();
-    smoothLinePlot.x(this.xAccessor, xScale);
-    smoothLinePlot.y(this.smoothedAccessor, yScale);
-    smoothLinePlot.attr(
-        'stroke',
-        (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
-            this.colorScale.scale(dataset.metadata().name));
-    this.smoothLinePlot = smoothLinePlot;
-    groups.push(this.smoothLinePlot);
+    let nanDisplay = new Plottable.Plots.Scatter<number|Date, number>();
+    nanDisplay.x(this.xAccessor, xScale);
+    nanDisplay.y((x) => x.displayY, yScale);
+    nanDisplay.attr('fill', (d: any) => this.colorScale.scale(d.name));
+    nanDisplay.attr('opacity', 1);
+    nanDisplay.size(ChartHelpers.NAN_SYMBOL_SIZE * 2);
+    nanDisplay.datasets([this.nanDataset]);
+    nanDisplay.symbol(Plottable.SymbolFactories.triangle);
+    this.nanDisplay = nanDisplay;
 
-    this.smoothedAccessor = (d: ChartHelpers.ScalarDatum) => d.smoothed;
-    let linePlot = new Plottable.Plots.Line<number|Date>();
-    linePlot.x(this.xAccessor, xScale);
-    linePlot.y(this.yValueAccessor, yScale);
-    linePlot.attr(
-        'stroke',
-        (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
-            this.colorScale.scale(dataset.metadata().name));
-    this.linePlot = linePlot;
-    const group = this.setupTooltips(linePlot, tooltipColumns);
-    groups.push(group);
-
+    const groups = [nanDisplay, scatterPlot, smoothLinePlot, group];
+    if (this.marginAreaPlot) {
+      groups.push(this.marginAreaPlot);
+    }
     return new Plottable.Components.Group(groups);
   }
 
@@ -709,7 +692,7 @@ class LineChart {
       // Generate a reasonable range.
       const accessors = this.getAccessorsForComputingYRange();
       let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
-        return d.data().map(x => accessors.map(accessor => accessor(x, -1, d)));
+        return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
       };
       let vals = _.flattenDeep<number>(this.datasets.map(datasetToValues));
       vals = vals.filter(isFinite);
@@ -986,8 +969,8 @@ class LineChart {
     if (this.smoothingEnabled) {
       this.smoothLinePlot.datasets(this.datasets);
     }
-    if (this.marginLinePlot) {
-      this.marginLinePlot.datasets(this.datasets)
+    if (this.marginAreaPlot) {
+      this.marginAreaPlot.datasets(this.datasets)
     }
     this.updateSpecialDatasets();
   }
