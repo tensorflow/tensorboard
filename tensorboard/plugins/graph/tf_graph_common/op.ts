@@ -19,8 +19,8 @@ module tf.graph.op {
    * Whitelist of current Tensorflow ops valid on the TPU
    */
   export const WHITELIST = [
-    'Abs',                                                                                                                                                                                                        
-    'Acosh',                                                                                                                                                                                                      
+    'Abs',
+    'Acosh',
     'Add',                                                                                                                                                                                                        
     'AddN',                                                                                                                                                                                                       
     'All',                                                                                                                                                                                                        
