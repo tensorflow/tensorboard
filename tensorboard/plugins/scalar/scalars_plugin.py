@@ -62,7 +62,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The scalars plugin is active iff any run has at least one scalar tag."""
-    return bool(self._multiplexer) and any(self.index_impl().values())
+    if not self._multiplexer:
+      return False
+
+    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def index_impl(self):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""

@@ -25,6 +25,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-text-loader.html">
 
 <!--
@@ -106,6 +107,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
     import {getTags} from '../tf-backend/backend.js';
     import {getRouter} from '../tf-backend/router.js';
     import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
+    import {registerDashboard} from '../tf-tensorboard/registry.js';
 
     Polymer({
       is: "tf-text-dashboard",
@@ -158,5 +160,11 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
       },
     });
+
+    registerDashboard({
+      plugin: 'text',
+      elementName: 'tf-text-dashboard',
+    });
+
   </script>
 </dom-module>

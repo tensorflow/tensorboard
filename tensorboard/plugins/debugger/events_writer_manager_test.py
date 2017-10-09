@@ -25,7 +25,6 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.debugger import debugger_plugin
 from tensorboard.plugins.debugger import debugger_plugin_testlib
 from tensorboard.plugins.debugger import numerics_alert
 
@@ -43,7 +42,7 @@ class DebuggerPluginTest(debugger_plugin_testlib.DebuggerPluginTestBase):
     self.assertTrue(self.plugin.is_active())
 
   def testHealthPillsPluginIsInactive(self):
-    plugin = debugger_plugin.DebuggerPlugin(
+    plugin = self.debugger_plugin_module.DebuggerPlugin(
         base_plugin.TBContext(
             logdir=self.log_dir,
             multiplexer=event_multiplexer.EventMultiplexer({})))
@@ -253,7 +252,7 @@ class DebuggerPluginTest(debugger_plugin_testlib.DebuggerPluginTestBase):
     self.mock_debugger_data_server_class.reset_mock()
 
     # Initialize a debugger plugin with no GRPC port provided.
-    debugger_plugin.DebuggerPlugin(self.context).get_plugin_apps()
+    self.debugger_plugin_module.DebuggerPlugin(self.context).get_plugin_apps()
 
     # No debugger data server should have been started.
     # assert_not_called is not available in Python 3.4.

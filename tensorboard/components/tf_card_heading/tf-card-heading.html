@@ -48,11 +48,15 @@ limitations under the License.
             </div>
           </template>
           <template is="dom-if" if="[[run]]">
-            <div itemprop="run"
-                 class="heading-label heading-right run"
-                 style="background: [[_runBackground]]; color: [[_runColor]]">
-              [[run]]
-            </div>
+            <!-- Extra wrapping span needed to avoid flexbox blockification. -->
+            <!-- (see flexbox spec, section 4 "Flex Items") -->
+            <span>
+              <span
+                itemprop="run"
+                class="heading-label heading-right run"
+                style="background: [[_runBackground]]; color: [[_runColor]]"
+              >[[run]]</span>
+            </span>
           </template>
         </div>
         <template is="dom-if" if="[[_tagLabel]]">

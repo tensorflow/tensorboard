@@ -15,39 +15,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <!--
-  A component that fetches scalar data from the TensorBoard server and
-  renders it into a vz-line-chart.
+  A component that fetches data from the TensorBoard server and renders it into
+  a vz-line-chart.
 -->
-<dom-module id="tf-scalar-chart">
+<dom-module id="tf-line-chart-data-loader">
   <template>
-    <tf-card-heading
-      tag="[[tag]]"
-      display-name="[[tagMetadata.displayName]]"
-      description="[[tagMetadata.description]]"
-    ></tf-card-heading>
     <div id="chart-and-spinner-container">
       <vz-line-chart
-        x-components-creation-method="[[_xComponentsCreationMethod]]"
-        y-value-accessor="[[_yValueAccessor]]"
+        x-components-creation-method="[[xComponentsCreationMethod]]"
+        y-value-accessor="[[yValueAccessor]]"
         color-scale="[[_runsColorScale]]"
-        tooltip-columns="[[_tooltipColumns]]"
+        tooltip-columns="[[tooltipColumns]]"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
         tooltip-sorting-method="[[tooltipSortingMethod]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
         style="[[_computeLineChartStyle(_loading)]]"
+        default-x-range="[[defaultXRange]]"
+        default-y-range="[[defaultYRange]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -55,59 +47,12 @@ limitations under the License.
         </div>
       </template>
     </div>
-    <div style="display: flex; flex-direction: row;">
-      <paper-icon-button
-        selected$="[[_expanded]]"
-        icon="fullscreen"
-        on-tap="_toggleExpanded"
-      ></paper-icon-button>
-      <paper-icon-button
-        selected$="[[_logScaleActive]]"
-        icon="line-weight"
-        on-tap="_toggleLogScale"
-        title="Toggle y-axis log scale"
-      ></paper-icon-button>
-      <paper-icon-button
-        icon="settings-overscan"
-        on-tap="_resetDomain"
-        title="Fit domain to data"
-      ></paper-icon-button>
-      <span style="flex-grow: 1"></span>
-      <template is="dom-if" if="[[showDownloadLinks]]">
-        <div class="download-links">
-          <paper-dropdown-menu
-            no-label-float="true"
-            label="run to download"
-            selected-item-label="{{_runToDownload}}"
-          >
-            <paper-menu class="dropdown-content" slot="dropdown-content">
-              <template is="dom-repeat" items="[[runs]]">
-                <paper-item no-label-float=true>[[item]]</paper-item>
-              </template>
-            </paper-menu>
-          </paper-dropdown-menu>
-          <a
-            download="run_[[_runToDownload]]-tag-[[tag]].csv"
-            href="[[_csvUrl(tag, _runToDownload)]]"
-          >CSV</a> <a
-            download="run_[[_runToDownload]]-tag-[[tag]].json"
-            href="[[_jsonUrl(tag, _runToDownload)]]"
-          >JSON</a>
-          </div>
-        </div>
-      </template>
-    </div>
     <style>
       :host {
-        height: 235px;
-        width: 330px;
-        margin: 5px;
+        height: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
-      }
-      :host[_expanded] {
-        height: 400px;
-        width: 100%;
       }
 
       :host[_maybe-rendered-in-bad-state] vz-line-chart {
@@ -119,6 +64,7 @@ limitations under the License.
         flex-grow: 1;
         position: relative;
       }
+
       #loading-spinner-container {
         align-items: center;
         bottom: 0;
@@ -131,51 +77,16 @@ limitations under the License.
         right: 0;
         top: 0;
       }
+
       vz-line-chart {
         -webkit-user-select: none;
         -moz-user-select: none;
       }
-      paper-icon-button {
-        color: #2196F3;
-        border-radius: 100%;
-        width: 32px;
-        height: 32px;
-        padding: 4px;
-      }
-      paper-icon-button[selected] {
-        background: var(--tb-ui-light-accent);
-      }
-
-      tf-card-heading {
-        margin-bottom: 10px;
-      }
-
-      .download-links {
-        display: flex;
-        height: 32px;
-      }
-      .download-links a {
-        font-size: 10px;
-        align-self: center;
-        margin: 2px;
-      }
-      .download-links paper-dropdown-menu {
-        width: 100px;
-        --paper-input-container-label: {
-          font-size: 10px;
-        }
-        --paper-input-container-input: {
-          font-size: 10px;
-        }
-      }
     </style>
   </template>
   <script>
-    import {addParams} from '../tf-backend/urlPathHelpers.js';
     import {Canceller} from '../tf-backend/canceller.js';
-    import {getRouter} from '../tf-backend/router.js';
     import {runsColorScale} from '../tf-color-scale/colorScale.js';
-    import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
 
     // The chart can sometimes get in a bad state, when it redraws while
     // it is display: none due to the user having switched to a different
@@ -195,92 +106,36 @@ limitations under the License.
       }
     }, 100);
 
-    /** 
-     * Allows:
-     * - "step" - Linear scale using the "step" property of the datum.
-     * - "wall_time" - Temporal scale using the "wall_time" property of the
-     * datum.
-     * - "relative" - Temporal scale using the "relative" property of the
-     * datum if it is present or calculating from "wall_time" if it isn't.
-     * @enum {string}
-     * */
-    
-    const X_TYPE = {
-      STEP: 'step',
-      RELATIVE: 'relative',
-      WALL: 'wall',
-    };
-
     Polymer({
-      is: 'tf-scalar-chart',
+      is: 'tf-line-chart-data-loader',
       properties: {
-        runs: Array,  // of String
+        // An array of selected runs (strings).
+        runs: Array,
         tag: String,
 
-        /**
-         * @type {X_TYPE}
-         */
+        xComponentsCreationMethod: Object,
         xType: String,
-
-        _xComponentsCreationMethod: {
-          type: Object,
-          computed: '_computeXComponentsCreationMethod(xType)',
-        },
-
-        _yValueAccessor: {
-          type: Object,
-          readOnly: true,
-          value: () => {
-            return d => d.scalar;
-          },
-        },
-
-        _tooltipColumns: {
-          type: Array,
-          readOnly: true,
-          value: () => {
-            const valueFormatter = ChartHelpers.multiscaleFormatter(
-                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
-            const formatValueOrNaN =
-                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
-            return [
-              {
-                title: 'Name',
-                evaluate: (d) => d.dataset.metadata().name,
-              },
-              {
-                title: 'Smoothed',
-                evaluate: (d, statusObject) => formatValueOrNaN(
-                    statusObject.smoothingEnabled ?
-                        d.datum.smoothed : d.datum.scalar),
-              },
-              {
-                title: 'Value',
-                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
-              },
-              {
-                title: 'Step',
-                evaluate: (d) => ChartHelpers.stepFormatter(d.datum.step),
-              },
-              {
-                title: 'Time',
-                evaluate: (d) => ChartHelpers.timeFormatter(d.datum.wall_time),
-              },
-              {
-                title: 'Relative',
-                evaluate:
-                    (d) => ChartHelpers.relativeFormatter(
-                        ChartHelpers.relativeAccessor(d.datum, -1, d.dataset)),
-              },
-            ]
-          },
-        },
+        yValueAccessor: Object,
+        tooltipColumns: Array,
 
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
         tooltipSortingMethod: String,
         ignoreYOutliers: Boolean,
-        showDownloadLinks: Boolean,
+
+        defaultXRange: Array,
+        defaultYRange: Array,
+
+        /**
+         * A function that takes as inputs:
+         * 1. This tf-line-chart-data-loader component.
+         * 2. The run (string) the response is relevant to.
+         * 3. The response received from the data URL.
+         * This function will be called when a response from a request to that
+         * data URL is successfully received.
+         * @type {Function}
+         */
+        processData: Object,
 
         active: {
           type: Boolean,
@@ -289,15 +144,13 @@ limitations under the License.
 
         requestManager: Object,
 
-        _logScaleActive: {
+        // A function that takes 2 string arguments (tag and run) and returns a
+        // string URL for fetching data.
+        dataUrl: Function,
+
+        logScaleActive: {
           type: Boolean,
           observer: '_logScaleChanged',
-        },
-
-        _expanded: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,  // for CSS
         },
 
         _runsColorScale: {
@@ -318,14 +171,6 @@ limitations under the License.
         _canceller: {
           type: Object,
           value: () => new Canceller(),
-        },
-
-        // Usage: this._scalarUrl('tag', 'run') yields the URL to the
-        // scalar data for the appropriate run and tag.
-        _scalarUrl: {
-          type: Function,
-          value: () => (tag, run) => addParams(
-              getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
         },
 
         /*
@@ -369,6 +214,18 @@ limitations under the License.
         this._loadedRuns = {};
         this._loadData();
       },
+      resetDomain() {
+        const chart = this.$$('vz-line-chart');
+        if (chart) {
+          chart.resetDomain();
+        }
+      },
+      setSeriesData(run, data) {
+        this.$$('vz-line-chart').setSeriesData(run, data);
+      },
+      redraw() {
+        this.$$('vz-line-chart').redraw();
+      },
       _tagChanged(attached, tagUpdateRecord) {
         this._loadedRuns = {};
         this._resetDomainOnNextLoad = true;
@@ -396,17 +253,11 @@ limitations under the License.
             if (this._loadedRuns[run]) {
               return Promise.resolve();
             }
-            const url = this._scalarUrl(tag, run);
+            const url = this.dataUrl(tag, run);
             const updateSeries = this._canceller.cancellable(result => {
               if (result.cancelled) {
                 return;
               }
-              const data = result.value;
-              const formattedData = data.map(datum => ({
-                wall_time: new Date(datum[0] * 1000),
-                step: datum[1],
-                scalar: datum[2],
-              }));
               if (tag === this.tag) {
                 // Only update the runs cache for the current tag. If we
                 // load data for Tag A, then the tag changes to Tag B
@@ -414,7 +265,7 @@ limitations under the License.
                 // should not poison the cache.
                 this._loadedRuns[run] = true;
               }
-              this.$$('vz-line-chart').setSeriesData(run, formattedData);
+              this.processData(this, run, result.value);
             });
             return this.requestManager.request(url).then(updateSeries);
           });
@@ -447,24 +298,11 @@ limitations under the License.
         this.$$('vz-line-chart').setVisibleSeries(this.runs);
         this._loadData();
       },
-      redraw() {
-        this.$$('vz-line-chart').redraw();
-      },
-
-      _toggleLogScale() {
-        this.set('_logScaleActive', !this._logScaleActive);
-      },
       _logScaleChanged(logScaleActive) {
         var chart = this.$$('vz-line-chart');
         chart.yScaleType = logScaleActive ? 'log' : 'linear';
         this.redraw();
       },
-
-      _toggleExpanded(e) {
-        this.set('_expanded', !this._expanded);
-        this.redraw();
-      },
-
       _computeLineChartStyle(loading) {
         return loading ? 'opacity: 0.3;' : '';
       },
@@ -478,23 +316,6 @@ limitations under the License.
           redrawQueue.push(this);
           cascadingRedraw();
         }
-      },
-
-      _resetDomain() {
-        const chart = this.$$('vz-line-chart');
-        if (chart) {
-          chart.resetDomain();
-        }
-      },
-
-      _csvUrl(tag, run) {
-        return addParams(this._scalarUrl(tag, run), {format: 'csv'});
-      },
-      _jsonUrl(tag, run) {
-        return this._scalarUrl(tag, run);
-      },
-      _computeXComponentsCreationMethod(xType) {
-        return () => ChartHelpers.getXComponents(xType);
       },
     });
   </script>

@@ -22,13 +22,38 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":default",
+        ":program",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "program",
+    srcs = ["program.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
         ":util",
         ":version",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "default",
+    srcs = ["default.py"],
+    data = ["webfiles.zip"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
-        "//tensorboard/plugins/debugger:debugger_plugin",
+        "//tensorboard/plugins/debugger:debugger_plugin_loader",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
@@ -38,7 +63,6 @@ py_binary(
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
-        "@org_pocoo_werkzeug",
     ],
 )
 
@@ -258,6 +282,32 @@ py_test(
         ":util",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
+    name = "summary",
+    srcs = ["summary.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/plugins/audio:summary",
+        "//tensorboard/plugins/histogram:summary",
+        "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/pr_curve:summary",
+        "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/plugins/text:summary",
+    ],
+)
+
+py_test(
+    name = "summary_test",
+    size = "small",
+    srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 

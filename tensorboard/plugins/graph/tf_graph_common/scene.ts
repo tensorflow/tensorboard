@@ -26,10 +26,6 @@ module tf.graph.scene {
       SHAPE: 'nodeshape',
       // <*> element(s) under SHAPE that should receive color updates.
       COLOR_TARGET: 'nodecolortarget',
-      // The layer (or shape in the stack) that handles events (clicks, etc).
-      EVENT_HANDLING_LAYER: 'event-handling-layer',
-      // The layer that visually distinguishes a shape as a TensorFlow function.
-      FUNCTION_INDICATOR_LAYER: 'function-indicator-layer',
       // <text> element showing the node's label.
       LABEL: 'nodelabel',
       // <g> element that contains all visuals for the expand/collapse
@@ -48,6 +44,8 @@ module tf.graph.scene {
       LINE: 'edgeline',
       REFERENCE_EDGE: 'referenceedge',
       REF_LINE: 'refline',
+      SELECTABLE: 'selectableedge',
+      SELECTED: 'selectededge',
       STRUCTURAL: 'structural'
     },
     Annotation: {

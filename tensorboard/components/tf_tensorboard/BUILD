@@ -15,11 +15,13 @@ ts_web_library(
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],
     deps = [
+        ":registry",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_storage",
         "@org_polymer_font_roboto",
         "@org_polymer_iron_icons",
@@ -34,11 +36,18 @@ ts_web_library(
 )
 
 ts_web_library(
-    name = "default_plugins",
+    name = "registry",
     srcs = [
-        "default-plugins.html",
-        "default-plugins.ts",
+        "registry.html",
+        "registry.ts",
     ],
+    path = "/tf-tensorboard",
+    visibility = ["//visibility:public"],
+)
+
+ts_web_library(
+    name = "default_plugins",
+    srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],
     deps = [

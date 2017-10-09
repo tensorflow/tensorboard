@@ -44,9 +44,10 @@ tensorboard --logdir path/to/logs
 
 Or, if you are building from source:
 
-```
+```bash
 bazel build tensorboard:tensorboard
 ./bazel-bin/tensorboard/tensorboard --logdir path/to/logs
+
 # or even more succinctly
 bazel run tensorboard -- --logdir path/to/logs
 ```

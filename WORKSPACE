@@ -2,37 +2,37 @@ workspace(name = "org_tensorflow_tensorboard")
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "e9e2538b1f7f27de73fa2914b7d2cb1ce2ac01d1abe8390cfe51fb2558ef8b27",
-    strip_prefix = "rules_closure-4c559574447f90751f05155faba4f3344668f666",
+    sha256 = "110fe68753413777944b473c25eed6368c4a0487cee23a7bac1b13cc49d3e257",
+    strip_prefix = "rules_closure-4af89ef1db659eb41f110df189b67d4cf14073e1",
     urls = [
-        "http://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/4c559574447f90751f05155faba4f3344668f666.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/4c559574447f90751f05155faba4f3344668f666.tar.gz",  # 2017-06-21
+        "http://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/4af89ef1db659eb41f110df189b67d4cf14073e1.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/4af89ef1db659eb41f110df189b67d4cf14073e1.tar.gz",  # 2017-08-28
+    ],
+)
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "8c333df68fb0096221e2127eda2807384e00cc211ee7e7ea4ed08d212e6a69c1",
+    strip_prefix = "rules_go-0.5.4",
+    urls = [
+        "http://mirror.bazel.build/github.com/bazelbuild/rules_go/archive/0.5.4.tar.gz",
+        "https://github.com/bazelbuild/rules_go/archive/0.5.4.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "io_bazel_rules_webtesting",
+    sha256 = "4a34918cdb57b7c0976c1d6a9a7af1d657266b239c9c1066c87d6f9a4058bc7d",
+    strip_prefix = "rules_webtesting-a9f624ac542d2be75f6f0bdd255f108f2795924a",
+    urls = [
+        "http://mirror.bazel.build/github.com/bazelbuild/rules_webtesting/archive/a9f624ac542d2be75f6f0bdd255f108f2795924a.tar.gz",  # 2017-09-11
+        "https://github.com/bazelbuild/rules_webtesting/archive/a9f624ac542d2be75f6f0bdd255f108f2795924a.tar.gz",
     ],
 )
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
 
 closure_repositories()
-
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "f7e42a4c1f9f31abff9b2bdee6fe4db18bc373287b7e07a5b844446e561e67e2",
-    strip_prefix = "rules_go-4c9a52aba0b59511c5646af88d2f93a9c0193647",
-    urls = [
-        "http://mirror.bazel.build/github.com/bazelbuild/rules_go/archive/4c9a52aba0b59511c5646af88d2f93a9c0193647.tar.gz",  # 2017-05-05
-        "https://github.com/bazelbuild/rules_go/archive/4c9a52aba0b59511c5646af88d2f93a9c0193647.tar.gz",
-    ],
-)
-
-http_archive(
-    name = "io_bazel_rules_webtesting",
-    sha256 = "bb278df2afe88ed01490e4b25e2c048d453a518cb77d4795f6232a10fbae6c1f",
-    strip_prefix = "rules_webtesting-dc0530015f201c2707085deba93ad210e89e6d18",
-    urls = [
-        "http://mirror.bazel.build/github.com/bazelbuild/rules_webtesting/archive/dc0530015f201c2707085deba93ad210e89e6d18.tar.gz",  # 2017-05-10
-        "https://github.com/bazelbuild/rules_webtesting/archive/dc0530015f201c2707085deba93ad210e89e6d18.tar.gz",
-    ],
-)
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 
@@ -53,4 +53,3 @@ load("//third_party:workspace.bzl", "tensorboard_workspace")
 
 # Please add all new dependencies in workspace.bzl.
 tensorboard_workspace()
-

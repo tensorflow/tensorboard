@@ -57,7 +57,6 @@ py_test(
 py_library(
     name = "application",
     srcs = ["application.py"],
-    data = ["//tensorboard:webfiles.zip"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [

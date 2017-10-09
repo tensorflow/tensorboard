@@ -75,6 +75,26 @@ export let SeriesNodeColors = {
   DEFAULT_STROKE: '#b2b2b2'
 };
 
+
+/**
+ * Function that computes edge thickness in pixels.
+ */
+export interface EdgeThicknessFunction {
+  (edgeData: scene.edge.EdgeData, edgeClass: string): number;
+}
+
+/**
+ * Function that computes edge label strings. This function accepts a Metaedge,
+ * which could actually encapsulate several base edges. For instance, several
+ * base edges may merge into a single metaedge.
+ *
+ * To determine whether a metaedge represents several edges, check the length of
+ * its baseEdgeList property.
+ */
+export interface EdgeLabelFunction {
+  (metaedge: Metaedge, renderInfo: render.RenderGraphInfo): string;
+}
+
 /**
  * Parameters that affect how the graph is rendered on the screen.
  */
@@ -180,7 +200,7 @@ export class RenderGraphInfo {
   private memoryUsageScale: d3.ScaleLinear<string, string>;
   private computeTimeScale: d3.ScaleLinear<string, string>;
   /** Scale for the thickness of edges when there is no shape information. */
-  edgeWidthScale:
+  edgeWidthSizedBasedScale:
       d3.ScaleLinear<number, number> | d3.ScalePower<number, number>;
   // Since the rendering information for each node is constructed lazily,
   // upon node's expansion by the user, we keep a map between the node's name
@@ -189,6 +209,10 @@ export class RenderGraphInfo {
   private hasSubhierarchy: {[nodeName: string]: boolean};
   root: RenderGroupNodeInfo;
   traceInputs: Boolean;
+  edgeLabelFunction: EdgeLabelFunction;
+  // An optional function that computes the thickness of an edge given edge
+  // data. If not provided, defaults to encoding tensor size in thickness.
+  edgeWidthFunction: EdgeThicknessFunction;
 
   constructor(hierarchy: hierarchy.Hierarchy, displayingStats: boolean) {
     this.hierarchy = hierarchy;
@@ -248,8 +272,8 @@ export class RenderGraphInfo {
         .domain([0, maxComputeTime])
         .range(PARAMS.minMaxColors);
 
-    this.edgeWidthScale = this.hierarchy.hasShapeInfo ?
-      scene.edge.EDGE_WIDTH_SCALE :
+    this.edgeWidthSizedBasedScale = this.hierarchy.hasShapeInfo ?
+      scene.edge.EDGE_WIDTH_SIZE_BASED_SCALE :
       d3.scaleLinear()
         .domain([1, this.hierarchy.maxMetaEdgeSize])
         .range([scene.edge.MIN_EDGE_WIDTH, scene.edge.MAX_EDGE_WIDTH]);
@@ -540,35 +564,7 @@ export class RenderGraphInfo {
           if (_.isNumber(newOpNode.functionInputIndex)) {
             // This node represents an input_arg of the library function. Give
             // it edges so that its bridge edges are created correctly.
-            let inputIndex = newOpNode.functionInputIndex;
-            let newInput = _.clone(opNodeToReplace.inputs[inputIndex]);
-            while (newInput.isControlDependency) {
-              // Ignore control dependencies - they are not assigned to
-              // input_args.
-              inputIndex++;
-              newInput = opNodeToReplace.inputs[inputIndex];
-            }
-            // Clone the normalized input object.
-            newOpNode.inputs.push(newInput);
-
-            // Update values in the corresponding edge in the high-level
-            // metagraph.
-            const originalMetaEdges = this.hierarchy.getPredecessors(
-                opNodeToReplace.name);
-            const originalMetaEdge = originalMetaEdges.regular[
-                newOpNode.functionInputIndex];
-
-            // Also change any base edges that point into the original node to
-            // point to the input arg within the function. These are used to
-            // make bridge edges.
-            _.each(originalMetaEdge.baseEdgeList, edge => {
-              if (edge.w === opNodeToReplace.name) {
-                edge.w = newOpNode.name;
-              }
-              if (edge.v === opNodeToReplace.name) {
-                edge.v = newOpNode.name;
-              }
-            });
+            this.patchEdgesIntoFunctionInputs(opNodeToReplace, newOpNode);
           }
 
           if (_.isNumber(newOpNode.functionOutputIndex)) {
@@ -584,7 +580,32 @@ export class RenderGraphInfo {
       }
     });
 
-    // Clone the edges.
+    // Clone the edges within the function library metanode.
+    this.cloneLibraryMetanodeEdges(
+        libraryMetanode, newMetanode, oldPrefix, newPrefix);
+
+    if (!_.isEmpty(functionOutputIndexToNode)) {
+      // After we have cloned the edges within the metanode, we still must add
+      // edges that emanate out of output ops within the function.
+      this.patchEdgesFromFunctionOutputs(
+          opNodeToReplace, functionOutputIndexToNode);
+    }
+
+    return newMetanode;
+  }
+
+  /**
+   * Clones the edges within `libraryMetanode` and adds them to `newMetanode`.
+   * The names of edge sources and destinations have their prefixes replaced
+   * with new prefixes that reflect their hierarchical positions in the graph
+   * instead of within the function library template. This is a subroutine for
+   * dynamically injecting a function metanode into the graph.
+   */
+  private cloneLibraryMetanodeEdges(
+      libraryMetanode: Metanode,
+      newMetanode: Metanode,
+      oldPrefix: string,
+      newPrefix: string) {
     _.each(libraryMetanode.metagraph.edges(),
         (edgeObject: graphlib.EdgeObject) => {
       const edge = libraryMetanode.metagraph.edge(edgeObject);
@@ -616,39 +637,85 @@ export class RenderGraphInfo {
         newMetanode.metagraph.setEdge(newW, newV, newMetaEdge);
       }
     });
+  }
 
-    if (!_.isEmpty(functionOutputIndexToNode)) {
-      // Connect the outputs of the function to other ops.
-      const originalMetaEdges = this.hierarchy.getSuccessors(
-          opNodeToReplace.name);
-      _.each(originalMetaEdges.regular, (metaedge) => {
-        const destinationNode = metagraph.node(metaedge.w) as OpNode;
+  /**
+   * When a metanode representing a function is cloned and placed into the
+   * graph, we must create edges between inputs into the function call and the
+   * input ops within the function. This function performs that patching.
+   */
+  private patchEdgesIntoFunctionInputs(
+      opNodeToReplace: OpNode, newOpNode: OpNode) {
+    let inputIndex = newOpNode.functionInputIndex;
+    let newInput = _.clone(opNodeToReplace.inputs[inputIndex]);
+    while (newInput.isControlDependency) {
+      // Ignore control dependencies - they are not assigned to
+      // input_args.
+      inputIndex++;
+      newInput = opNodeToReplace.inputs[inputIndex];
+    }
+    // Clone the normalized input object.
+    newOpNode.inputs.push(newInput);
+
+    // Update values in the corresponding edge in the high-level
+    // metagraph.
+    const originalMetaEdges = this.hierarchy.getPredecessors(
+        opNodeToReplace.name);
+    const originalMetaEdge = originalMetaEdges.regular[
+        newOpNode.functionInputIndex];
+
+    // Also change any base edges that point into the original node to
+    // point to the input arg within the function. These are used to
+    // make bridge edges.
+    _.each(originalMetaEdge.baseEdgeList, edge => {
+      if (edge.w === opNodeToReplace.name) {
+        edge.w = newOpNode.name;
+      }
+      if (edge.v === opNodeToReplace.name) {
+        edge.v = newOpNode.name;
+      }
+    });
+  }
+
+  /**
+   * When a metanode representing a function is cloned and placed into the
+   * graph, we must create edges between output ops within the new function
+   * metanode to its successors. This function does that after scanning the
+   * successors of the function call.
+   */
+  private patchEdgesFromFunctionOutputs(
+      opNodeToReplace: OpNode,
+      functionOutputIndexToDestinationNode: {[key: string]: Node}) {
+    // Connect the outputs of the function to other ops.
+    const originalMetaEdges = this.hierarchy.getSuccessors(
+        opNodeToReplace.name);
+    _.each(originalMetaEdges.regular, (metaedge) => {
+      _.each(metaedge.baseEdgeList, baseEdge => {
+        // Destination nodes within regular base edges are op nodes.
+        const destinationNode = this.hierarchy.node(baseEdge.w) as OpNode;
         _.each(destinationNode.inputs, normalizedInput => {
-          // If an output of the function is an input into this op, map it back
+          // If an output of the function is an input into the op, map it back
           // to the output within the function so bridge edges are computed.
           if (normalizedInput.name === opNodeToReplace.name) {
             // Map the output tensor index (which in this case is for sure
             // numeric because it is an output of a metanode) to the correct
             // function output.
-            const outputNode = functionOutputIndexToNode[
+            const outputNode = functionOutputIndexToDestinationNode[
                 normalizedInput.outputTensorKey];
             normalizedInput.name = outputNode.name;
-            // Each function output node only has 1 slot.
-            normalizedInput.outputTensorKey = '0';
+            normalizedInput.outputTensorKey = baseEdge.outputTensorKey;
           }
         });
-
-        // Modify the list of base edges to point from the output so that bridge
-        // edges are correct.
-        _.each(metaedge.baseEdgeList, (baseEdge) => {
-          baseEdge.v =
-              functionOutputIndexToNode[baseEdge.outputTensorKey].name;
-          baseEdge.outputTensorKey = '0';
-        });
       });
-    }
 
-    return newMetanode;
+      // Modify the list of base edges to point from the output so that bridge
+      // edges are correct.
+      _.each(metaedge.baseEdgeList, (baseEdge) => {
+        baseEdge.v =
+            functionOutputIndexToDestinationNode[baseEdge.outputTensorKey].name;
+        baseEdge.outputTensorKey = '0';
+      });
+    });
   }
 
   buildSubhierarchy(nodeName: string): void {
@@ -657,6 +724,10 @@ export class RenderGraphInfo {
     if (nodeName in this.hasSubhierarchy) {
       return;
     }
+
+    // Record that we constructed the rendering hierarchy for this node, so we
+    // don't construct it another time.
+    this.hasSubhierarchy[nodeName] = true;
 
     let renderNodeInfo = this.index[nodeName];
 
@@ -679,9 +750,9 @@ export class RenderGraphInfo {
       _.each(metagraph.nodes(), childName => {
         // Why is this so often undefined?
         const originalNode = metagraph.node(childName) as OpNode;
-        const libraryMetanode =
+        const libraryFunctionData =
             this.hierarchy.libraryFunctions[originalNode.op];
-        if (!libraryMetanode) {
+        if (!libraryFunctionData) {
           // This node is not a function call.
           return;
         }
@@ -698,8 +769,8 @@ export class RenderGraphInfo {
         const clonedMetanode = this.cloneFunctionLibraryMetanode(
             metagraph,
             originalNode,
-            libraryMetanode,
-            libraryMetanode.name,
+            libraryFunctionData.node,
+            libraryFunctionData.node.name,
             originalNode.name);
         nodesThatGotCloned.push(originalNode);
         functionCallMetanodesToAdd.push(clonedMetanode);
@@ -753,6 +824,13 @@ export class RenderGraphInfo {
       coreGraph.setEdge(edgeObj.v, edgeObj.w, renderMetaedgeInfo);
     });
 
+    // If there are functions, it is possible for metanodes to be dynamically
+    // added later. Construct the hierarchies for nodes that are predecessors to
+    // nodes in the current hierarchy so that edges are drawn correctly.
+    if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
+      this.buildSubhierarchiesForNeededFunctions(metagraph);
+    }
+
     if (PARAMS.enableExtraction &&
         renderGroupNodeInfo.node.type === NodeType.META) {
       extractHighDegrees(renderGroupNodeInfo);
@@ -761,7 +839,10 @@ export class RenderGraphInfo {
     if (nodeName === tf.graph.ROOT_NAME) {
       // Add all metanodes representing library function templates into the
       // library function scene group for the root node.
-      _.forOwn(this.hierarchy.libraryFunctions, (node, functionName) => {
+      _.forOwn(
+          this.hierarchy.libraryFunctions,
+          (libraryFunctionData, functionName) => {
+        const node = libraryFunctionData.node;
         const childRenderInfo = this.getOrCreateRenderNodeByName(node.name);
         renderGroupNodeInfo.libraryFunctionsExtract.push(childRenderInfo);
 
@@ -770,10 +851,6 @@ export class RenderGraphInfo {
         coreGraph.removeNode(node.name);
       });
     }
-
-    // Record that we constructed the rendering hierarchy for this node, so we
-    // don't construct it another time.
-    this.hasSubhierarchy[nodeName] = true;
 
     // Look up the parent node's render information and short circuit if none.
     let parentNode = renderGroupNodeInfo.node.parentNode;
@@ -1146,6 +1223,51 @@ export class RenderGraphInfo {
       });
     });
   }
+
+  /**
+   * This method builds subhierarchies for function calls that are needed for
+   * rendering edges in the current subhierarchy being built.
+   *
+   * When building subhierarchies for a metagraph M, the subhierarchies of
+   * metanodes containing endpoint nodes for edges within metagraph M must
+   * already be built. Otherwise, bridge edges will be missing from the graph.
+   */
+  private buildSubhierarchiesForNeededFunctions(
+      metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>) {
+    _.each(metagraph.edges(), edgeObj => {
+      let metaedge = metagraph.edge(edgeObj);
+      let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge);
+      _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList,
+          baseEdge => {
+        const sourcePathList = baseEdge.v.split(tf.graph.NAMESPACE_DELIM);
+
+        for (let i = sourcePathList.length; i >= 0; i--) {
+          const fromBeginningPathList = sourcePathList.slice(0, i);
+          const node = this.hierarchy.node(
+              fromBeginningPathList.join(tf.graph.NAMESPACE_DELIM));
+          if (node) {
+            if (node.type === NodeType.OP &&
+                this.hierarchy.libraryFunctions[(node as OpNode).op]) {
+              for (let j = 1; j < fromBeginningPathList.length; j++) {
+                // Expand all hierarchies including the parent.
+                const currentNodeName = fromBeginningPathList
+                    .slice(0, j).join(tf.graph.NAMESPACE_DELIM);
+                if (!currentNodeName) {
+                  continue;
+                }
+
+                // Build the hierarchy for this current level.
+                this.buildSubhierarchy(currentNodeName);
+              }
+            }
+
+            // No need to analyze the other higher hierarchies.
+            break;
+          }
+        }
+      });
+    });
+  }
 }
 
 /**
@@ -1467,7 +1589,18 @@ export class RenderNodeInfo {
       // to see that in the graph, as the node would already be within
       // the functions scene group.
       const match = this.displayName.match(nodeDisplayNameRegex);
-      this.displayName = match[1];
+      if (match) {
+        // The display name had been successfully extracted. This is the most
+        // common scenario.
+        this.displayName = match[1];
+      } else if (_.startsWith(
+          this.displayName, tf.graph.FUNCTION_LIBRARY_NODE_PREFIX)) {
+        // The string does not match the usual pattern for how functions are
+        // named. Just use the entire second portion of the string as the name
+        // if we can successfully remove the prefix.
+        this.displayName = this.displayName.substring(
+            tf.graph.FUNCTION_LIBRARY_NODE_PREFIX.length);
+      }
     }
   }
 
@@ -1744,7 +1877,11 @@ function extractSpecifiedNodes(renderNode: RenderGroupNodeInfo) {
   let graph = renderNode.coreGraph;
   _.each(graph.nodes(), n => {
     let renderInfo = graph.node(n);
-    if (renderInfo.node.include === InclusionType.EXCLUDE) {
+    if (renderInfo.node.include === InclusionType.EXCLUDE &&
+        !n.startsWith(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX)) {
+      // Move the node if the node is excluded and not part of the library
+      // function scene group, which contains nodes that do not represent ops in
+      // the graph and should thus never have its nodes added to the core graph.
       if (renderNode.coreGraph.outEdges(n).length >
           renderNode.coreGraph.inEdges(n).length) {
         makeOutExtract(renderNode, n, true);

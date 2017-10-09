@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-image-loader.html">
 
 <!--
@@ -123,6 +124,7 @@ TensorFlow run.
     import {getTags} from '../tf-backend/backend.js';
     import {getRouter} from '../tf-backend/router.js';
     import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
+    import {registerDashboard} from '../tf-tensorboard/registry.js';
 
     Polymer({
       is: 'tf-image-dashboard',
@@ -196,5 +198,11 @@ TensorFlow run.
         return runToTagInfo[run][tag];
       },
     });
+
+    registerDashboard({
+      plugin: 'images',
+      elementName: 'tf-image-dashboard',
+    });
+
   </script>
 </dom-module>

@@ -33,15 +33,29 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
-from tensorboard.plugins.debugger import debugger_plugin
-from tensorboard.plugins.debugger import debugger_server_lib
 from tensorflow.core.debug import debugger_event_metadata_pb2
 # pylint: enable=ungrouped-imports, wrong-import-order
 
 
 class DebuggerPluginTestBase(tf.test.TestCase):
 
+  def __init__(self, *args, **kwargs):
+    super(DebuggerPluginTestBase, self).__init__(*args, **kwargs)
+    self.debugger_plugin_module = None
+
   def setUp(self):
+    super(DebuggerPluginTestBase, self).setUp()
+    # Importing the debugger_plugin can sometimes unfortunately produce errors.
+    try:
+      # pylint: disable=g-import-not-at-top
+      from tensorboard.plugins.debugger import debugger_plugin
+      from tensorboard.plugins.debugger import debugger_server_lib
+      # pylint: enable=g-import-not-at-top
+    except Exception as e:  # pylint: disable=broad-except
+      raise self.skipTest(
+          'Skipping test because importing some modules failed: %r' % e)
+    self.debugger_plugin_module = debugger_plugin
+
     # Populate the log directory with debugger event for run '.'.
     self.log_dir = self.get_temp_dir()
     file_prefix = tf.compat.as_bytes(

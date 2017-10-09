@@ -25,6 +25,7 @@ function main() {
 
   DEST=$1
   TMPDIR=$(mktemp -d -t tmp.XXXXXXXXXX)
+  RUNFILES="bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard"
 
   echo $(date) : "=== Using tmpdir: ${TMPDIR}"
 
@@ -35,13 +36,10 @@ function main() {
     exit 1
   fi
 
-  cp -R bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard/external "${TMPDIR}"
-  cp -R bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard/tensorboard "${TMPDIR}"
-  echo $(ls $TMPDIR)
-
-  cp tensorboard/pip_package/MANIFEST.in ${TMPDIR}
-  cp README.md ${TMPDIR}
-  cp tensorboard/pip_package/setup.py ${TMPDIR}
+  cp "${RUNFILES}/tensorboard/pip_package/setup.py" "${TMPDIR}"
+  cp "${RUNFILES}/tensorboard/pip_package/setup.cfg" "${TMPDIR}"
+  cp "${RUNFILES}/tensorboard/pip_package/MANIFEST.in" "${TMPDIR}"
+  cp -R "${RUNFILES}/tensorboard" "${TMPDIR}"
 
   pushd ${TMPDIR}
   rm -f MANIFEST
