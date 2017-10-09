@@ -22,13 +22,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 
 # A value that we use as the minimum value during division of counts to prevent
-# division by 0. 1 suffices because counts of course must be whole numbers.
-_MINIMUM_COUNT = 1.0
+# division by 0.
+_MINIMUM_COUNT = 1e-7
+
+# The default number of thresholds.
+_DEFAULT_NUM_THRESHOLDS = 200
 
 def op(
     tag,
@@ -78,7 +82,7 @@ def op(
 
   """
   if num_thresholds is None:
-    num_thresholds = 200
+    num_thresholds = _DEFAULT_NUM_THRESHOLDS
 
   if weights is None:
     weights = 1.0
@@ -164,6 +168,74 @@ def op(
         description,
         collections)
 
+def pb(tag,
+       labels,
+       predictions,
+       num_thresholds=None,
+       weights=None,
+       display_name=None,
+       description=None):
+  """Creates a PR curves summary protobuf
+
+  Arguments:
+    tag: A name for the generated node. Will also serve as a series name in
+        TensorBoard.
+    labels: The ground truth values. A bool numpy array.
+    predictions: A float32 numpy array whose values are in the range `[0, 1]`.
+        Dimensions must match those of `labels`.
+    num_thresholds: Optional number of thresholds, evenly distributed in
+        `[0, 1]`, to compute PR metrics for. Should be `>= 2`. This value should
+        be a python int. Defaults to 200.
+    weights: Optional python float or float32 numpy array. Individual counts are
+        multiplied by this value. This tensor must be either the same shape as
+        or broadcastable to the `labels` numpy array.
+    display_name: Optional name for this summary in TensorBoard, as a
+        constant `str`. Defaults to `name`.
+    description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
+  """
+  if num_thresholds is None:
+    num_thresholds = _DEFAULT_NUM_THRESHOLDS
+
+  if weights is None:
+    weights = 1.0
+
+  # Compute bins of true positives and false positives.
+  bucket_indices = np.int32(np.floor(predictions * (num_thresholds - 1)))
+  float_labels = labels.astype(np.float)
+  histogram_range = (0, num_thresholds - 1)
+  tp_buckets, _ = np.histogram(
+      bucket_indices,
+      bins=num_thresholds,
+      range=histogram_range,
+      weights=float_labels * weights)
+  fp_buckets, _ = np.histogram(
+      bucket_indices,
+      bins=num_thresholds,
+      range=histogram_range,
+      weights=(1.0 - float_labels) * weights)
+
+  # Obtain the reverse cumulative sum.
+  tp = np.cumsum(tp_buckets[::-1])[::-1]
+  fp = np.cumsum(fp_buckets[::-1])[::-1]
+  tn = fp[0] - fp
+  fn = tp[0] - tp
+  precision = tp / np.maximum(_MINIMUM_COUNT, tp + fp)
+  recall = tp / np.maximum(_MINIMUM_COUNT, tp + fn)
+
+  if display_name is None:
+    display_name = tag
+  summary_metadata = metadata.create_summary_metadata(
+      display_name=display_name if display_name is not None else tag,
+      description=description or '',
+      num_thresholds=num_thresholds)
+  summary = tf.Summary()
+  data = np.stack((tp, fp, tn, fn, precision, recall))
+  tensor = tf.make_tensor_proto(data, dtype=tf.float32)
+  summary.value.add(tag='%s/pr_curves' % tag,
+                    metadata=summary_metadata,
+                    tensor=tensor)
+  return summary
 
 def streaming_op(tag,
                  labels,
