@@ -51,7 +51,6 @@ limitations under the License.
       data-url="[[_dataUrl]]"
       log-scale-active="[[_logScaleActive]]"
       process-data="[[_processData]]"
-      margin-specification="[[_marginSpecification]]"
     >
     </tf-line-chart-data-loader>
   </div>
@@ -213,15 +212,6 @@ limitations under the License.
             scalarChart.setSeriesData(run, formattedData);
           }),
           readOnly: true,
-        },
-
-        _marginSpecification: {
-          type: Object,
-          readOnly: true,
-          value: {
-            lowerAccessor: d => d.scalar - Math.abs(Math.cos(d.scalar)) * 0.05 - 0.03,
-            higherAccessor: d => d.scalar + Math.abs(Math.cos(d.scalar)) * 0.05 + 0.03,
-          },
         },
 
         _expanded: {
