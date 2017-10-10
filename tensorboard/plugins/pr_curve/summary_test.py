@@ -73,7 +73,7 @@ class PrCurveTest(tf.test.TestCase):
     predictions_tensor = tf.constant(predictions)
     weights_tensor = None if weights is None else tf.constant(weights)
     op = summary.op(
-        tag=name,
+        name=name,
         labels=labels_tensor,
         predictions=predictions_tensor,
         num_thresholds=num_thresholds,
@@ -81,7 +81,7 @@ class PrCurveTest(tf.test.TestCase):
         display_name=display_name,
         description=description)
     pb = self.normalize_summary_pb(summary.pb(
-        tag=name,
+        name=name,
         labels=labels,
         predictions=predictions,
         num_thresholds=num_thresholds,
@@ -93,12 +93,12 @@ class PrCurveTest(tf.test.TestCase):
     self.assertProtoEquals(pb, pb_via_op)
     return pb
 
-  def verify_float_arrays_are_equal(self, expected, gotten):
+  def verify_float_arrays_are_equal(self, expected, actual):
     # We use an absolute error instead of a relative one because the expected
     # values are small. The default relative error (trol) of 1e-7 yields many
     # undesired test failures.
     np.testing.assert_allclose(
-        expected, gotten, rtol=0, atol=1e-7)
+        expected, actual, rtol=0, atol=1e-7)
 
   def test_metadata(self):
     pb = self.compute_and_check_summary_pb(
@@ -307,14 +307,14 @@ class StreamingOpTest(tf.test.TestCase):
   def test_matches_op_with_updates(self):
     predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
     labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
-    pr_curve, update_op = summary.streaming_op(tag='pr_curve',
+    pr_curve, update_op = summary.streaming_op(name='pr_curve',
                                                predictions=predictions,
                                                labels=labels,
                                                num_thresholds=10)
 
     complete_predictions = tf.tile(predictions, [3])
     complete_labels = tf.tile(labels, [3])
-    expected_pr_curve = summary.op(tag='pr_curve',
+    expected_pr_curve = summary.op(name='pr_curve',
                                    predictions=complete_predictions,
                                    labels=complete_labels,
                                    num_thresholds=10)
