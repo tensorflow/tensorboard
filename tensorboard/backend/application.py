@@ -289,9 +289,11 @@ def parse_event_files_spec(logdir):
   for specification in logdir.split(','):
     # Check if the spec contains group. A spec start with xyz:// is regarded as
     # URI path spec instead of group spec. If the spec looks like /foo:bar/baz,
-    # then we assume it's a path with a colon.
+    # then we assume it's a path with a colon. If the spec looks like
+    # [a-zA-z]:\foo then we assume its a Windows path and not a single letter
+    # group
     if (uri_pattern.match(specification) is None and ':' in specification and
-        specification[0] != '/'):
+        specification[0] != '/' and not os.path.splitdrive(specification)[0]):
       # We split at most once so run_name:/path:with/a/colon will work.
       run_name, _, path = specification.partition(':')
     else:
