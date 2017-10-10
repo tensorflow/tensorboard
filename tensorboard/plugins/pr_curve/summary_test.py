@@ -219,22 +219,20 @@ class PrCurveTest(tf.test.TestCase):
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_raw_data_op(self):
-    with tf.Session() as sess:
-      # We pass raw counts and precision/recall values.
-      op = summary.raw_data_op(
-          tag='foo',
-          true_positive_counts=tf.constant([75, 64, 21, 5, 0]),
-          false_positive_counts=tf.constant([150, 105, 18, 0, 0]),
-          true_negative_counts=tf.constant([0, 45, 132, 150, 150]),
-          false_negative_counts=tf.constant([0, 11, 54, 70, 75]),
-          precision=tf.constant(
-              [0.3333333, 0.3786982, 0.5384616, 1.0, 0.0]),
-          recall=tf.constant([1.0, 0.8533334, 0.28, 0.0666667, 0.0]),
-          num_thresholds=5,
-          display_name='some_raw_values',
-          description='We passed raw values into a summary op.')
-      sess.run(op)
-      pb = self.pb_via_op(op)
+    # We pass raw counts and precision/recall values.
+    op = summary.raw_data_op(
+        tag='foo',
+        true_positive_counts=tf.constant([75, 64, 21, 5, 0]),
+        false_positive_counts=tf.constant([150, 105, 18, 0, 0]),
+        true_negative_counts=tf.constant([0, 45, 132, 150, 150]),
+        false_negative_counts=tf.constant([0, 11, 54, 70, 75]),
+        precision=tf.constant(
+            [0.3333333, 0.3786982, 0.5384616, 1.0, 0.0]),
+        recall=tf.constant([1.0, 0.8533334, 0.28, 0.0666667, 0.0]),
+        num_thresholds=5,
+        display_name='some_raw_values',
+        description='We passed raw values into a summary op.')
+    pb = self.pb_via_op(op)
 
     # Test the metadata.
     summary_metadata = pb.value[0].metadata
