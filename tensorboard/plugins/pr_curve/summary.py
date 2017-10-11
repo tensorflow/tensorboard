@@ -36,7 +36,7 @@ _MINIMUM_COUNT = 1e-7
 _DEFAULT_NUM_THRESHOLDS = 200
 
 def op(
-    tag,
+    name,
     labels,
     predictions,
     num_thresholds=None,
@@ -90,7 +90,7 @@ def op(
 
   dtype = predictions.dtype
 
-  with tf.name_scope(tag, values=[labels, predictions, weights]):
+  with tf.name_scope(name, values=[labels, predictions, weights]):
     tf.assert_type(labels, tf.bool)
     # We cast to float to ensure we have 0.0 or 1.0.
     f_labels = tf.cast(labels, dtype)

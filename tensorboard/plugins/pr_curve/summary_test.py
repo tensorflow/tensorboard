@@ -221,7 +221,7 @@ class PrCurveTest(tf.test.TestCase):
   def test_raw_data_op(self):
     # We pass raw counts and precision/recall values.
     op = summary.raw_data_op(
-        tag='foo',
+        name='foo',
         true_positive_counts=tf.constant([75, 64, 21, 5, 0]),
         false_positive_counts=tf.constant([150, 105, 18, 0, 0]),
         true_negative_counts=tf.constant([0, 45, 132, 150, 150]),
@@ -282,11 +282,11 @@ class StreamingOpTest(tf.test.TestCase):
     predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
     labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
 
-    pr_curve, update_op = summary.streaming_op(tag='pr_curve',
+    pr_curve, update_op = summary.streaming_op(name='pr_curve',
                                                predictions=predictions,
                                                labels=labels,
                                                num_thresholds=10)
-    expected_pr_curve = summary.op(tag='pr_curve',
+    expected_pr_curve = summary.op(name='pr_curve',
                                    predictions=predictions,
                                    labels=labels,
                                    num_thresholds=10)
