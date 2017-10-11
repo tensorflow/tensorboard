@@ -89,7 +89,7 @@ class CorePlugin(base_plugin.TBPlugin):
       with zipfile.ZipFile(fp) as zip_:
         with zip_.open(path) as file_:
           html = file_.read()
-    return http_util.Respond(request, html, mimetype, expires=3600)
+    return http_util.Respond(request, html, mimetype)
 
   @wrappers.Request.application
   def _serve_logdir(self, request):
