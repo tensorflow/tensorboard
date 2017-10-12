@@ -31,6 +31,7 @@ class PrCurveTest(tf.test.TestCase):
   def setUp(self):
     super(PrCurveTest, self).setUp()
     tf.reset_default_graph()
+    np.random.seed(42)
 
   def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
@@ -214,6 +215,25 @@ class PrCurveTest(tf.test.TestCase):
         [0.0, 0.0, 1.5],
         [0.375, 1.0, 0.0],
         [1.0, 1.0, 0.0]
+    ]
+    values = tf.make_ndarray(pb.value[0].tensor)
+    self.verify_float_arrays_are_equal(expected, values)
+
+  def test_exhaustive_random_values(self):
+    # Most other tests check for specific cases.
+    data_points = 420
+    pb = self.compute_and_check_summary_pb(
+        name='foo',
+        labels=np.random.uniform(size=(data_points,)) > 0.5,
+        predictions=np.float32(np.random.uniform(size=(data_points,))),
+        num_thresholds=5)
+    expected = [
+        [218.0, 162.0, 111.0, 55.0, 0.0],
+        [202.0, 148.0, 98.0, 51.0, 0.0],
+        [0.0, 54.0, 104.0, 151.0, 202.0],
+        [0.0, 56.0, 107.0, 163.0, 218.0],
+        [0.5190476, 0.5225806, 0.5311005, 0.5188679, 0.0],
+        [1.0, 0.7431192, 0.5091743, 0.2522936, 0.0]
     ]
     values = tf.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)

@@ -188,15 +188,15 @@ def pb(name,
     predictions: A float32 numpy array whose values are in the range `[0, 1]`.
         Dimensions must match those of `labels`.
     num_thresholds: Optional number of thresholds, evenly distributed in
-        `[0, 1]`, to compute PR metrics for. Should be `>= 2`. This value should
-        be a python int. Defaults to 200.
-    weights: Optional python float or float32 numpy array. Individual counts are
+        `[0, 1]`, to compute PR metrics for. When provided, should be an int of
+        value at least 2. Defaults to 200.
+    weights: Optional float or float32 numpy array. Individual counts are
         multiplied by this value. This tensor must be either the same shape as
         or broadcastable to the `labels` numpy array.
-    display_name: Optional name for this summary in TensorBoard, as a
-        constant `str`. Defaults to `name`.
-    description: Optional long-form description for this summary, as a
-        constant `str`. Markdown is supported. Defaults to empty.
+    display_name: Optional name for this summary in TensorBoard, as a `str`.
+        Defaults to `name`.
+    description: Optional long-form description for this summary, as a `str`.
+        Markdown is supported. Defaults to empty.
   """
   if num_thresholds is None:
     num_thresholds = _DEFAULT_NUM_THRESHOLDS
