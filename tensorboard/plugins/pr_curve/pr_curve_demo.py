@@ -161,7 +161,7 @@ def start_runs(
       weights = tf.cast(consecutive_indices % 2, dtype=tf.float32)
 
     summary.op(
-        tag=color,
+        name=color,
         labels=labels[:, i],
         predictions=predictions[i],
         num_thresholds=thresholds,
