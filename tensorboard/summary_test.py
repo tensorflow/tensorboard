@@ -37,14 +37,6 @@ STANDARD_PLUGINS = frozenset([
     'text',
 ])
 
-# The subset of `STANDARD_PLUGINS` for which we do not currently have
-# functions to generate a summary protobuf outside of a TensorFlow
-# graph. This set should ideally be empty; any entries here should be
-# considered temporary.
-PLUGINS_WITHOUT_PB_FUNCTIONS = frozenset([
-    'pr_curve',  # TODO(@chihuahua, #445): Fix this.
-])
-
 
 class SummaryExportsTest(tf.test.TestCase):
 
@@ -54,9 +46,8 @@ class SummaryExportsTest(tf.test.TestCase):
 
   def test_plugins_export_pb_functions(self):
     for plugin in STANDARD_PLUGINS:
-      if plugin not in PLUGINS_WITHOUT_PB_FUNCTIONS:
-        self.assertIsInstance(
-            getattr(summary, '%s_pb' % plugin), collections.Callable)
+      self.assertIsInstance(
+          getattr(summary, '%s_pb' % plugin), collections.Callable)
 
   def test_all_exports_correspond_to_plugins(self):
     exports = [name for name in dir(summary) if not name.startswith('_')]
