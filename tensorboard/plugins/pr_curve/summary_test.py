@@ -220,7 +220,8 @@ class PrCurveTest(tf.test.TestCase):
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_exhaustive_random_values(self):
-    # Most other tests check for specific cases.
+    # Most other tests use small and crafted predictions and labels.
+    # This test exhaustively generates many data points.
     data_points = 420
     pb = self.compute_and_check_summary_pb(
         name='foo',
