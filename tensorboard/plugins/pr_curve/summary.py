@@ -32,7 +32,7 @@ from tensorboard.plugins.pr_curve import metadata
 _MINIMUM_COUNT = 1.0
 
 # The default number of thresholds.
-_DEFAULT_NUM_THRESHOLDS = 200
+_DEFAULT_NUM_THRESHOLDS = 201
 
 def op(
     name,
@@ -185,7 +185,7 @@ def pb(name,
         Dimensions must match those of `labels`.
     num_thresholds: Optional number of thresholds, evenly distributed in
         `[0, 1]`, to compute PR metrics for. When provided, should be an int of
-        value at least 2. Defaults to 200.
+        value at least 2. Defaults to 201.
     weights: Optional float or float32 numpy array. Individual counts are
         multiplied by this value. This tensor must be either the same shape as
         or broadcastable to the `labels` numpy array.
@@ -240,7 +240,7 @@ def pb(name,
 def streaming_op(name,
                  labels,
                  predictions,
-                 num_thresholds=200,
+                 num_thresholds=None,
                  weights=None,
                  metrics_collections=None,
                  updates_collections=None,
@@ -264,7 +264,7 @@ def streaming_op(name,
     predictions: A floating point `Tensor` of arbitrary shape and whose values
       are in the range `[0, 1]`.
     num_thresholds: The number of evenly spaced thresholds to generate for
-      computing the PR curve.
+      computing the PR curve. Defaults to 201.
     weights: Optional `Tensor` whose rank is either 0, or the same rank as
       `labels`, and must be broadcastable to `labels` (i.e., all dimensions must
       be either `1`, or the same as the corresponding `labels` dimension).
@@ -285,6 +285,9 @@ def streaming_op(name,
       positives, true negatives, false negatives, precision, recall.
     update_op: An operation that updates the summary with the latest data.
   """
+  if num_thresholds is None:
+    num_thresholds = _DEFAULT_NUM_THRESHOLDS
+
   thresholds = [i / float(num_thresholds - 1)
                 for i in range(num_thresholds)]
 
