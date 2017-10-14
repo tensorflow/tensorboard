@@ -28,8 +28,8 @@ import tensorflow as tf
 from tensorboard.plugins.pr_curve import metadata
 
 # A value that we use as the minimum value during division of counts to prevent
-# division by 0. 1 suffices because counts of course must be whole numbers.
-_MINIMUM_COUNT = 1.0
+# division by 0. 1.0 does not work: Certain weights could cause counts below 1.
+_MINIMUM_COUNT = 1e-7
 
 # The default number of thresholds.
 _DEFAULT_NUM_THRESHOLDS = 201

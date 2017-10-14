@@ -239,6 +239,28 @@ class PrCurveTest(tf.test.TestCase):
     values = tf.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
+  def test_counts_below_1(self):
+    """Tests support for counts below 1.
+
+    Certain weights cause TP, FP, TN, FN counts to be below 1.
+    """
+    pb = self.compute_and_check_summary_pb(
+        name='foo',
+        labels=np.array([True, False, False, True, True, True]),
+        predictions=np.float32([0.2, 0.3, 0.4, 0.6, 0.7, 0.8]),
+        num_thresholds=3,
+        weights=np.float32([0.0, 0.1, 0.2, 0.1, 0.1, 0.0]))
+    expected = [
+        [0.2, 0.2, 0.0],
+        [0.3, 0.0, 0.0],
+        [0.0, 0.3, 0.3],
+        [0.0, 0.0, 0.2],
+        [0.4, 1.0, 0.0],
+        [1.0, 1.0, 0.0]
+    ]
+    values = tf.make_ndarray(pb.value[0].tensor)
+    self.verify_float_arrays_are_equal(expected, values)
+
   def test_raw_data_op(self):
     # We pass raw counts and precision/recall values.
     op = summary.raw_data_op(
