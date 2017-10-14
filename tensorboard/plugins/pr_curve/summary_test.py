@@ -261,21 +261,47 @@ class PrCurveTest(tf.test.TestCase):
     values = tf.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
-  def test_raw_data_op(self):
-    # We pass raw counts and precision/recall values.
+  def test_raw_data(self):
+    # We pass these raw counts and precision/recall values.
+    name = 'foo'
+    true_positive_counts = [75, 64, 21, 5, 0]
+    false_positive_counts = [150, 105, 18, 0, 0]
+    true_negative_counts = [0, 45, 132, 150, 150]
+    false_negative_counts = [0, 11, 54, 70, 75]
+    precision = [0.3333333, 0.3786982, 0.5384616, 1.0, 0.0]
+    recall = [1.0, 0.8533334, 0.28, 0.0666667, 0.0]
+    num_thresholds = 5
+    display_name = 'some_raw_values'
+    description = 'We passed raw values into a summary op.'
+
     op = summary.raw_data_op(
-        name='foo',
-        true_positive_counts=tf.constant([75, 64, 21, 5, 0]),
-        false_positive_counts=tf.constant([150, 105, 18, 0, 0]),
-        true_negative_counts=tf.constant([0, 45, 132, 150, 150]),
-        false_negative_counts=tf.constant([0, 11, 54, 70, 75]),
-        precision=tf.constant(
-            [0.3333333, 0.3786982, 0.5384616, 1.0, 0.0]),
-        recall=tf.constant([1.0, 0.8533334, 0.28, 0.0666667, 0.0]),
-        num_thresholds=5,
-        display_name='some_raw_values',
-        description='We passed raw values into a summary op.')
-    pb = self.pb_via_op(op)
+        name=name,
+        true_positive_counts=tf.constant(true_positive_counts),
+        false_positive_counts=tf.constant(false_positive_counts),
+        true_negative_counts=tf.constant(true_negative_counts),
+        false_negative_counts=tf.constant(false_negative_counts),
+        precision=tf.constant(precision),
+        recall=tf.constant(recall),
+        num_thresholds=num_thresholds,
+        display_name=display_name,
+        description=description)
+    pb_via_op = self.normalize_summary_pb(self.pb_via_op(op))
+
+    # Call the corresponding method that is decoupled from TensorFlow.
+    pb = self.normalize_summary_pb(summary.raw_data_pb(
+        name=name,
+        true_positive_counts=true_positive_counts,
+        false_positive_counts=false_positive_counts,
+        true_negative_counts=true_negative_counts,
+        false_negative_counts=false_negative_counts,
+        precision=precision,
+        recall=recall,
+        num_thresholds=num_thresholds,
+        display_name=display_name,
+        description=description))
+
+    # The 2 methods above should write summaries with the same data.
+    self.assertProtoEquals(pb, pb_via_op)
 
     # Test the metadata.
     summary_metadata = pb.value[0].metadata

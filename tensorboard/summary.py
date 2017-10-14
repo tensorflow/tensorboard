@@ -41,7 +41,8 @@ image_pb = _image_summary.pb
 pr_curve = _pr_curve_summary.op
 pr_curve_pb = _pr_curve_summary.pb
 pr_curve_streaming_op = _pr_curve_summary.streaming_op
-pr_curve_raw_data = _pr_curve_summary.raw_data_op
+pr_curve_raw_data_op = _pr_curve_summary.raw_data_op
+pr_curve_raw_data_pb = _pr_curve_summary.raw_data_pb
 
 scalar = _scalar_summary.op
 scalar_pb = _scalar_summary.pb
