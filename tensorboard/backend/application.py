@@ -227,10 +227,15 @@ class TensorBoardWSGI(object):
     Returns:
       A werkzeug.Response object.
     """
-    return http_util.Respond(
-        request,
-        {plugin.plugin_name: plugin.is_active() for plugin in self._plugins},
-        'application/json')
+    response = {}
+    for plugin in self._plugins:
+      start = time.time()
+      response[plugin.plugin_name] = plugin.is_active()
+      elapsed = time.time() - start
+      tf.logging.info(
+          'Plugin listing: is_active() for %s took %0.3f seconds',
+          plugin.plugin_name, elapsed);
+    return http_util.Respond(request, response, 'application/json')
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
     """Central entry point for the TensorBoard application.
