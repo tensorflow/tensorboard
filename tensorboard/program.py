@@ -57,7 +57,7 @@ tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
 
 tf.flags.DEFINE_string(
     'host', '', 'What host to listen to. Defaults to '
-    'serving on all interfaces, set to 127.0.0.1 (localhost) to'
+    'serving on all interfaces, set to 127.0.0.1 (localhost) to '
     'disable remote access (also quiets security warnings).')
 
 tf.flags.DEFINE_integer('port', 6006, 'What port to serve TensorBoard on.')
