@@ -13,9 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {demoify, queryEncoder} from './urlPathHelpers.js';
-
-export type RunTagUrlFn = (tag: string, run: string) => string;
+import {addParams} from './urlPathHelpers.js';
 
 export interface Router {
   logdir: () => string;
@@ -23,7 +21,6 @@ export interface Router {
   pluginsListing: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
-  pluginRunTagRoute: (pluginName: string, route: string) => RunTagUrlFn;
 }
 ;
 
@@ -35,28 +32,17 @@ export interface Router {
  * @param demoMode {boolean} Whether to modify urls for filesystem demo usage.
  */
 export function createRouter(dataDir = 'data', demoMode = false): Router {
-  var clean = demoMode ? demoify : (x) => x;
   if (dataDir[dataDir.length - 1] === '/') {
     dataDir = dataDir.slice(0, dataDir.length - 1);
   }
   function standardRoute(route: string, demoExtension = '.json'):
       ((tag: string, run: string) => string) {
     return function(tag: string, run: string): string {
-      var url =
-          dataDir + '/' + route + clean(queryEncoder({tag: tag, run: run}));
-      if (demoMode) {
-        url += demoExtension;
-      }
-      return url;
+      return dataDir + '/' + addParams(route, {tag, run});
     };
   }
   function pluginRoute(pluginName: string, route: string): string {
     return `${dataDir}/plugin/${pluginName}${route}`;
-  }
-  function pluginRunTagRoute(pluginName: string, route: string):
-      ((tag: string, run: string) => string) {
-    const base = pluginRoute(pluginName, route);
-    return (tag, run) => base + clean(queryEncoder({tag, run}));
   }
   return {
     logdir: () => dataDir + '/logdir',
@@ -64,7 +50,6 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     pluginsListing: () => dataDir + '/plugins_listing',
     isDemoMode: () => demoMode,
     pluginRoute,
-    pluginRunTagRoute,
   };
 };
 

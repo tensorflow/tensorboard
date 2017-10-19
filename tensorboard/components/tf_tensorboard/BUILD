@@ -15,11 +15,13 @@ ts_web_library(
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],
     deps = [
+        ":registry",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_storage",
         "@org_polymer_font_roboto",
         "@org_polymer_iron_icons",
@@ -34,6 +36,16 @@ ts_web_library(
 )
 
 ts_web_library(
+    name = "registry",
+    srcs = [
+        "registry.html",
+        "registry.ts",
+    ],
+    path = "/tf-tensorboard",
+    visibility = ["//visibility:public"],
+)
+
+ts_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
@@ -44,6 +56,7 @@ ts_web_library(
         "//tensorboard/plugins/graph/tf_graph_dashboard",
         "//tensorboard/plugins/histogram/tf_histogram_dashboard",
         "//tensorboard/plugins/image/tf_image_dashboard",
+        "//tensorboard/plugins/pr_curve/tf_pr_curve_dashboard",
         "//tensorboard/plugins/profile/tf_profile_dashboard",
         "//tensorboard/plugins/projector/vz_projector",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",

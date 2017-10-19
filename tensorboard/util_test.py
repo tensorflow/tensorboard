@@ -253,19 +253,6 @@ class PersistentOpEvaluatorTest(tf.test.TestCase):
 
     self._square = Squarer()
 
-  def test_preserves_existing_graph(self):
-    tf.constant(1) + tf.constant(2)  # pylint: disable=expression-not-assigned
-    original_graph = tf.get_default_graph()
-    original_proto = original_graph.as_graph_def().SerializeToString()
-    assert len(original_proto) > 10, original_graph
-
-    result = self._square(123)
-    self.assertEqual(123 * 123, result)
-
-    self.assertIs(original_graph, tf.get_default_graph())
-    self.assertEqual(original_proto,
-                     tf.get_default_graph().as_graph_def().SerializeToString())
-
   def test_preserves_existing_session(self):
     with tf.Session() as sess:
       op = tf.reduce_sum([2, 2])

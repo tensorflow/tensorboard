@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-graph-common/tf-graph-common.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="tf-graph-minimap.html">
 
@@ -52,35 +53,29 @@ limitations under the License.
   cursor: pointer;
   fill: hsl(0, 0%, 70%);
 }
-
 ::content .node.meta.highlighted > .nodeshape > rect,
 ::content .node.meta.highlighted > .annotation-node > rect {
   stroke-width: 2;
 }
-
 ::content .annotation.meta.highlighted > .nodeshape > rect,
 ::content .annotation.meta.highlighted > .annotation-node > rect {
   stroke-width: 1;
 }
-
 ::content .meta.selected > .nodeshape > rect,
 ::content .meta.selected > .annotation-node > rect {
   stroke: red;
   stroke-width: 2;
 }
-
 ::content .node.meta.selected.expanded > .nodeshape > rect,
 ::content .node.meta.selected.expanded > .annotation-node > rect {
   stroke: red;
   stroke-width: 3;
 }
-
 ::content .annotation.meta.selected > .nodeshape > rect,
 ::content .annotation.meta.selected > .annotation-node > rect {
   stroke: red;
   stroke-width: 2;
 }
-
 ::content .node.meta.selected.expanded.highlighted > .nodeshape > rect,
 ::content .node.meta.selected.expanded.highlighted > .annotation-node > rect {
   stroke: red;
@@ -98,7 +93,6 @@ limitations under the License.
   fill: white;
   stroke: #e0d4b3 !important;
 }
-
 
 ::content .faded path {
   stroke-width: 1px !important;
@@ -194,21 +188,21 @@ limitations under the License.
 
 /* --- Op Node --- */
 
-::content .op > .nodeshape > ellipse,
-::content .op > .annotation-node > ellipse {
+::content .op > .nodeshape > .nodecolortarget,
+::content .op > .annotation-node > .nodecolortarget {
   cursor: pointer;
   fill: #fff;
   stroke: #ccc;
 }
 
-::content .op.selected > .nodeshape > ellipse,
-::content .op.selected > .annotation-node > ellipse {
+::content .op.selected > .nodeshape > .nodecolortarget,
+::content .op.selected > .annotation-node > .nodecolortarget {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .op.highlighted > .nodeshape > ellipse,
-::content .op.highlighted > .annotation-node > ellipse {
+::content .op.highlighted > .nodeshape > .nodecolortarget,
+::content .op.highlighted > .annotation-node > .nodecolortarget {
   stroke-width: 2;
 }
 
@@ -435,6 +429,19 @@ limitations under the License.
   stroke-width: 0.75;
 }
 
+::content .edge .selectableedge {
+  cursor: pointer;
+}
+
+::content .selectededge > path.edgeline {
+  cursor: default;
+  stroke: #f00;
+}
+
+::content .edge.selectededge text {
+  fill: #000;
+}
+
 /* Labels showing tensor shapes on edges */
 ::content .edge > text {
   font-size: 3.5px;
@@ -447,6 +454,10 @@ limitations under the License.
 
 ::content .reference-arrowhead {
   fill: #FFB74D;
+}
+
+::content .selected-arrowhead {
+  fill: #f00;
 }
 
 ::content .edge .control-dep {
@@ -504,11 +515,7 @@ limitations under the License.
   top: 20px;
 }
 
-.title {
-  position: absolute;
-}
-
-.auxTitle {
+.title, .auxTitle, .functionLibraryTitle {
   position: absolute;
 }
 
@@ -521,6 +528,7 @@ limitations under the License.
 <div class="titleContainer">
   <div id="title" class="title">Main Graph</div>
   <div id="auxTitle" class="auxTitle">Auxiliary Nodes</div>
+  <div id="functionLibraryTitle" class="functionLibraryTitle">Functions</div>
 </div>
 <svg id="svg">
   <defs>
@@ -669,6 +677,9 @@ Polymer({
       type: String,
       observer: '_selectedNodeChanged'
     },
+    // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
+    // provided, edges are selectable, and this callback is run when an edge is selected.
+    handleEdgeSelected: Object,
     /** Keeps track of if the graph has been zoomed/panned since loading */
     _zoomed: {
       type: Boolean,
@@ -764,6 +775,9 @@ Polymer({
       value: 18
     },
     progress: Object,
+    // An array of ContextMenuItem objects. Items that appear in the context
+    // menu for a node.
+    nodeContextMenuItems: Array,
     // A mapping between node name to the tf.graph.scene.HealthPill to render.
     nodeNamesToHealthPills: Object,
     // The step of health pills to show throughout the graph.
@@ -899,7 +913,10 @@ Polymer({
   _updateLabels: function(showLabels) {
     var mainGraphTitleElement = this.getElementsByClassName('title')[0];
     var titleStyle = mainGraphTitleElement.style;
-    var auxTitleStyle = this.getElementsByClassName('auxTitle')[0].style;
+    var auxTitleElement = this.getElementsByClassName('auxTitle')[0];
+    var auxTitleStyle = auxTitleElement.style;
+    var functionLibraryTitleStyle =
+        this.getElementsByClassName('functionLibraryTitle')[0].style;
     var core = d3.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
       tf.graph.scene.Class.Scene.CORE).node();
     // Only show labels if the graph is fully loaded.
@@ -925,9 +942,29 @@ Polymer({
       } else {
         auxTitleStyle.display = 'none';
       }
+
+      let functionLibrary = d3.select(
+          "." + tf.graph.scene.Class.Scene.GROUP + ">." +
+              tf.graph.scene.Class.Scene.FUNCTION_LIBRARY).node();
+      let functionLibraryX =
+          functionLibrary ? functionLibrary.getCTM().e : null;
+      if (functionLibraryX !== null && functionLibraryX !== auxX) {
+        functionLibraryTitleStyle.display = 'inline';
+
+        // Make sure that the function library title is positioned rightwards
+        // enough so as to prevent overlap with other content.
+        functionLibraryX = Math.max(
+            auxX + auxTitleElement.getBoundingClientRect().width,
+            functionLibraryX);
+
+        functionLibraryTitleStyle.left = functionLibraryX + 'px';
+      } else {
+        functionLibraryTitleStyle.display = 'none';
+      }
     } else {
-      titleStyle.display='none';
+      titleStyle.display = 'none';
       auxTitleStyle.display = 'none';
+      functionLibraryTitleStyle.display = 'none';
     }
   },
   /**
@@ -997,6 +1034,21 @@ Polymer({
     if (nodeGroup) {
       tf.graph.scene.node.stylize(nodeGroup, node, this);
     }
+    
+    if (node.node.type === tf.graph.NodeType.META &&
+        node.node.associatedFunction &&
+        !node.isLibraryFunction) {
+      // The node is that of a function call. Also link the node within the
+      // function library. This clarifies to the user that the library function
+      // is being used.
+      var libraryFunctionNodeName = tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
+          node.node.associatedFunction;
+      var functionGroup = d3.select(
+          '.' + tf.graph.scene.Class.Scene.GROUP + '>.' +
+          tf.graph.scene.Class.Scene.FUNCTION_LIBRARY + ' g[data-name="' +
+          libraryFunctionNodeName + '"]');
+      tf.graph.scene.node.stylize(functionGroup, node, this);
+    }
 
     var annotationGroupIndex = this.getAnnotationGroupsIndex(n);
     _.each(annotationGroupIndex, function(aGroup, hostName) {
@@ -1017,9 +1069,6 @@ Polymer({
       return;
     }
 
-    if (selectedNode) {
-      this._updateNodeState(selectedNode);
-    }
     if (oldSelectedNode) {
       this._updateNodeState(oldSelectedNode);
     }
@@ -1058,6 +1107,10 @@ Polymer({
     if (topParentNodeToBeExpanded) {
       this.setNodeExpanded(topParentNodeToBeExpanded);
       this._zoomed = true;
+    }
+
+    if (selectedNode) {
+      this._updateNodeState(selectedNode);
     }
 
     if (tf.graph.scene.panToNode(selectedNode, this.$.svg, this.$.root,

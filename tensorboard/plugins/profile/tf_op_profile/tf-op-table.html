@@ -1,0 +1,292 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="utils.html">
+
+<!-- tf-op-table-styles contains shared styles used in this file -->
+<dom-module id="tf-op-table-styles">
+  <template>
+    <style>
+#time, #utilization {
+  width: 60px;
+}
+#name {
+  display: inline-block;
+  min-width: 40%;
+}
+#row, #header {
+  display: flex;
+  align-items: center;
+}
+#row > *, #header > * {
+  padding: 0.5em;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+#header > * {
+  padding-bottom: 0;
+}
+#provenance {
+  flex: 1 1 0 ! important;
+}
+#utilization {
+  text-align: right;
+}
+    </style>
+  </template>
+</dom-module>
+
+<!--
+  A tf-op-table shows a hierarchical profile using a tree of tf-op-table-entrys.
+  One entry at a time can be made active (by clicking on it).
+-->
+<dom-module id="tf-op-table">
+  <template>
+    <style include="tf-op-table-styles">
+:host {
+  display: block;
+  background-color: white;
+}
+#header {
+  font-size: smaller;
+  font-weight: bold;
+  color: #666;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid #666;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Match indented names */
+#header > #name { padding-left: 2em; }
+    </style>
+    <div id="header">
+      <span id="time">Time</span>
+      <span id="name">Name</span>
+      <span id="provenance">TensorFlow Op</span>
+      <span id="utilization">FLOPS</span>
+    </div>
+    <tf-op-table-entry node="[[rootNode]]"
+        header-hover="[[_onHeaderHover]]"
+        header-click="[[_onHeaderClick]]"
+        expanded="true">
+    </tf-op-table-entry>
+  </template>
+
+  <script>
+Polymer({
+  is: 'tf-op-table',
+  properties: {
+    rootNode: {
+      type: Object,
+    },
+    active: {
+      type: Object,
+      computed: '_active(_selected, _hover)',
+      notify: true,
+    },
+    _selected: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
+    _hover: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
+    /**
+     * Handlers for hover/click events on entries.
+     * We don't use two-way data binding on _hover and _selected, because
+     * we get slowdown when they change.
+     * @type {Function}
+     */
+    _onHeaderHover: {
+      type: Object,
+      value: function() { return (entry) => this._hover = entry; },
+    },
+    /** @type {Function} */
+    _onHeaderClick: {
+      type: Object,
+      value: function() {
+        return (entry) => {
+          if (this._selected) this._selected.selected = false;
+          this._selected = entry;
+          entry.selected = true;
+        };
+      },
+    },
+  },
+  _active: function(selected, hover) {
+    if (hover) return hover.node;
+    if (selected) return selected.node;
+  },
+});
+  </script>
+</dom-module>
+
+<!--
+  tf-op-table-entry is a row in a tf-op-table.
+  It is an implementation detail of tf-op-table and should not be used directly.
+
+  It describes an op, or group of ops (the node property).
+  Its background contains a bar, whose size shows the time taken, and whose
+  color shows the op's utilization.
+  If the node has children, the tf-op-table-entry has child entries, and can be
+  expanded/collapsed.
+-->
+<dom-module id="tf-op-table-entry">
+  <template>
+    <style include="tf-op-table-styles">
+#row {
+  position: relative;
+  box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.06);
+  z-index: 0;
+}
+#bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: -1;
+  background-color: #cde;
+}
+:host {
+  display: block;
+}
+:host.selected {
+  background-color: rgba(0,0,0,0.04);
+}
+:host.selected > #row {
+  font-weight: bold;
+}
+#row:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+#disclosure {
+  display: inline-block;
+  width: 1em;
+}
+#name {
+  font-family: monospace;
+}
+#time, #utilization {
+  font-size: smaller;
+}
+/* Utilization has a background color, so it stretches to fill the row.
+   Its text is in an inner div that remains vertically centered. */
+#utilization { align-self: stretch; }
+#utilization div { position: relative; top: 50%; transform: translateY(-50%); }
+    </style>
+    <div id="row"
+         on-click="_handleHeaderClick"
+         on-mouseenter="_handleHeaderMouseEnter"
+         on-mouseleave="_handleHeaderMouseLeave"
+         hidden="[[!level]]">
+      <div id="bar"></div>
+      <span id="time">{{_percent(node.metrics.time)}}</span>
+      <span id="name" style$="padding-left:[[level]]em;">
+        <span id="disclosure">
+          <span hidden="[[!node.children.length]]">
+            <span hidden="[[expanded]]">&#x25b6;</span>
+            <span hidden="[[!expanded]]">&#x25bc;</span>
+          </span>
+        </span>{{node.name}}
+      </span>
+      <span id="provenance">{{_provenance(node)}}&nbsp;</span>
+      <span id="utilization"><div></div></span>
+    </div>
+    <template is="dom-if" if="[[expanded]]">
+      <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
+        <tf-op-table-entry
+          node="[[item]]"
+          level={{_nextLevel(level)}}
+          header-hover="{{headerHover}}"
+          header-click="{{headerClick}}">
+        </tf-op-table-entry>
+      </template>
+    </template>
+  </template>
+
+  <script>
+import {flameColor, percent, utilization} from './utils.js';
+
+Polymer({
+  is: 'tf-op-table-entry',
+  properties: {
+    node: {
+      type: Object,
+    },
+    level: {
+      type: Number,
+      value: 0,
+    },
+    /** @type {Function} */
+    headerHover: {
+      type: Object,
+      value: () => function(entry) {},
+      notify: true,
+    },
+    /** @type {Function} */
+    headerClick: {
+      type: Object,
+      value: () => function(entry) {},
+      notify: true,
+    },
+    expanded: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+    selected: {
+      type: Boolean,
+      value: false,
+      observer: '_selectedChanged',
+    },
+  },
+  _eq: function(x, y) {
+    return x == y;
+  },
+  _sortEntry: function(left, right) {
+    var leftTime = left.metrics ? left.metrics.time : 0;
+    var rightTime = right.metrics ? right.metrics.time : 0;
+    return rightTime - leftTime;
+  },
+  ready: function() {
+    if (!this.node || !this.node.metrics || !this.$.bar) return;
+    this.$.bar.style.width = percent(this.node.metrics.time);
+    this.$.utilization.firstChild.innerText = percent(utilization(this.node));
+    this.$.utilization.style.backgroundColor =
+        flameColor(utilization(this.node), 1, 0.2);
+  },
+  _nextLevel: function(level) { return level + 1; },
+  _handleHeaderClick: function(e) {
+    this.expanded ^= true;
+    this.headerClick(this);
+  },
+  _handleHeaderMouseEnter: function(e) { this.headerHover(this); },
+  _handleHeaderMouseLeave: function(e) { this.headerHover(null); },
+  _percent: percent,
+  _provenance: function(node) {
+    return (node.xla && node.xla.provenance)
+              ? node.xla.provenance.replace(/^.*\//, '') : "";
+  },
+  _selectedChanged: function(v) { this.classList.toggle('selected', v); }
+});
+  </script>
+</dom-module>
+

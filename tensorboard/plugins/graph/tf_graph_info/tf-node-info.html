@@ -211,7 +211,7 @@ limitations under the License.
         <div class="sub-list-group predecessors">
           Inputs
           (<span>[[_totalPredecessors]]</span>)
-          <iron-list class="sub-list" id ="inputsList"
+          <iron-list class="sub-list" id="inputsList"
                     items="[[_predecessors.regular]]">
             <template>
               <tf-node-list-item
@@ -336,11 +336,35 @@ limitations under the License.
             </div>
           </div>
         </template>
-        <div class="toggle-include-group">
-          <paper-button raised class="toggle-include" on-click="_toggleInclude">
-            <span>[[_auxButtonText]]</span>
-          </paper-button>
-        </div>
+
+        <template is="dom-if" if="[[_functionUsages.length]]">
+          <div class="sub-list-group predecessors">
+            Usages of the Function
+            (<span>[[_functionUsages.length]]</span>)
+            <iron-list class="sub-list" id="functionUsagesList" items="[[_functionUsages]]">
+              <template>
+                <tf-node-list-item
+                    class="non-control-list-item"
+                    card-node="[[_node]]"
+                    item-node="[[item]]"
+                    name="[[item.name]]"
+                    item-type="functionUsages"
+                    color-by="[[colorBy]]"
+                    template-index="[[_templateIndex]]">
+                </tf-node-list-item>
+              </template>
+            </iron-list>
+          </div>
+        </template>
+
+        <template is="dom-if" if="[[!_isLibraryFunction(_node)]]">
+          <div class="toggle-include-group">
+            <paper-button raised class="toggle-include" on-click="_toggleInclude">
+              <span>[[_auxButtonText]]</span>
+            </paper-button>
+          </div>
+        </template>
+
         <template is="dom-if" if="{{_isInSeries(_node)}}">
           <div class="toggle-include-group">
             <paper-button raised class="toggle-include" on-click="_toggleGroup">
@@ -415,6 +439,12 @@ limitations under the License.
             type: Object,
             computed: '_getPredecessors(_node, graphHierarchy)'
           },
+          // Only relevant if this is a library function. A list of nodes that
+          // represent where the function is used.
+          _functionUsages: {
+            type: Array,
+            computed: '_getFunctionUsages(_node, graphHierarchy)',
+          },
           _subnodes: {
             type: Array,
             computed: '_getSubnodes(_node)'
@@ -440,7 +470,7 @@ limitations under the License.
             value: false
           },
           _auxButtonText: String,
-          _groupButtonText: String
+          _groupButtonText: String,
         },
         expandNode: function() {
           this.fire('_node.expand', this.node);
@@ -525,21 +555,43 @@ limitations under the License.
         _getDevice: function(node) {
           return node ? node.device : null;
         },
-        _getSuccessors: function(node, hierarchy) {
-          this.async(this._resizeList.bind(this, "#inputsList"));
+        _getSuccessors(node, hierarchy) {
+          this._refreshNodeItemList("inputsList");
           if (!node) {
             return {regular: [], control: []}
           }
           return this._convertEdgeListToEdgeInfoList(
             hierarchy.getSuccessors(node.name), false, node.isGroupNode);
         },
-        _getPredecessors: function(node, hierarchy) {
-          this.async(this._resizeList.bind(this, "#outputsList"));
+        _getPredecessors(node, hierarchy) {
+          this._refreshNodeItemList("outputsList");
           if (!node) {
             return {regular: [], control: []}
           }
           return this._convertEdgeListToEdgeInfoList(
             hierarchy.getPredecessors(node.name), true, node.isGroupNode);
+        },
+        _getFunctionUsages(node, hierarchy) {
+          this._refreshNodeItemList("functionUsagesList");
+          if (!node || node.type !== tf.graph.NodeType.META) {
+            // Functions must be represented by metanodes.
+            return [];
+          }
+
+          const libraryFunctionData = hierarchy.libraryFunctions[
+              node.associatedFunction];
+          if (!libraryFunctionData) {
+            // This is no function.
+            return [];
+          }
+
+          // Return where the function is used.
+          return libraryFunctionData.usages;
+        },
+        // The iron lists that enumerate ops must be asynchronously updated when
+        // the data they render changes. This function triggers that update.
+        _refreshNodeItemList(nodeListId) {
+          this.async(this._resizeList.bind(this, `#${nodeListId}`));
         },
         _convertEdgeListToEdgeInfoList: function(list, isPredecessor, isGroupNode) {
 
@@ -644,9 +696,17 @@ limitations under the License.
           var seriesName = tf.graph.scene.node.getSeriesName(this._node);
           graphElem.fire("node-toggle-seriesgroup", { name: seriesName });
         },
+        _isLibraryFunction(node) {
+          // If the node name starts with this string, the node is either a
+          // library function or a node within it. Those nodes should never be
+          // extracted into the auxiliary scene group because they represent
+          // templates for function call nodes, not ops in the graph themselves.
+          return node &&
+                 node.name.startsWith(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX);
+        },
         _isInSeries: function(node) {
           return tf.graph.scene.node.canBeInSeries(node);
-        }
+        },
       });
     })();
   </script>

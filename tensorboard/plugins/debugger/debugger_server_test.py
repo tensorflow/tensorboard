@@ -98,8 +98,9 @@ class DebuggerDataServerTest(tf.test.TestCase):
     plugin_content = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device="/job:localhost/replica:0/task:0/cpu:0", output_slot=output_slot)
     value.metadata.plugin_data.plugin_name = constants.DEBUGGER_PLUGIN_NAME
-    value.metadata.plugin_data.content = json_format.MessageToJson(
-        plugin_content, including_default_value_fields=True)
+    value.metadata.plugin_data.content = tf.compat.as_bytes(
+        json_format.MessageToJson(
+            plugin_content, including_default_value_fields=True))
     return event
 
   def _verify_event_lists_have_same_tensor_values(self, expected, gotten):

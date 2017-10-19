@@ -1,0 +1,190 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="utils.html">
+
+<!--
+  tf-op-bar shows a small % utilization bar, colored using flameColor.
+-->
+<dom-module id="tf-op-bar">
+  <style>
+:host {
+  display: inline-block;
+  height: 1.5em;
+  line-height: 1.5em;
+}
+  </style>
+  <template>
+&nbsp;[[_percent(value)]]
+  </template>
+  <script>
+import {flameColor, percent} from './utils.js';
+
+Polymer({
+  is: 'tf-op-bar',
+  properties: {
+    value: {
+      type: Number,
+      notify: true,
+      observer: '_updateValue',
+    },
+  },
+  _percent: percent,
+  _updateValue: function(value) {
+    const color = flameColor(value);
+    const length = percent(value);
+    this.style.background =
+        `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
+  },
+});
+  </script>
+</dom-module>
+
+<!--
+  tf-op-details is a card that describes an op or group of ops (the 'node').
+-->
+<dom-module id="tf-op-details">
+  <style>
+paper-card {
+  --paper-card-header-color: white;
+  width: 100%;
+}
+tf-op-bar {
+  width: 100%;
+}
+#subheader {
+  padding: 0 16px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  top: -10px;
+}
+.card-content > div {
+  margin-bottom: 1em;
+}
+.expression {
+  display: block;
+  word-wrap: break-word;
+}
+.unavailable {
+  font-style: italic;
+  color: #666;
+}
+
+.layout {
+  display: table;
+  width: 50%;
+  border-spacing: 1em 0.3em;
+}
+.layout > * { display: table-row; }
+.layout > * > * { display: table-cell; }
+.layout .size, .layout .size-x { text-align: center; }
+.layout .size-x { font-weight: bold; color: #888; }
+.layout .semantics {
+  font-size: smaller;
+  font-weight: bold;
+  color: #48c;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.layout .alignment {
+  /* Make the background extend outside the box */
+  position: absolute;
+  padding: 0.5em;
+  margin-top: -0.5em;
+  width: 50%;
+  box-sizing: border-box;
+}
+  </style>
+  <template>
+    <paper-card id="card" heading="[[node.name]]" elevation="2">
+      <div id="subheader">[[_subheader(node)]]</div>
+      <div class="card-content">
+        <div hidden="[[!node.metrics]]">
+          <b>FLOPS utilization: </b>
+          <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
+        </div>
+        <div hidden="[[!node.xla.expression]]">
+          <b>Expression: </b>
+          <code class="expression">[[node.xla.expression]]</code>
+        </div>
+        <div class="unavailable" hidden="[[!_fused(node)]]">
+          Performance information for individual fused operations is not available.
+        </div>
+        <div class="unavailable" hidden="[[!node.category]]">
+          Select items within this category for performace details.
+        </div>
+        <div hidden="[[!node.xla.layout]]">
+          <b>Layout: </b>
+          <div class="layout" hidden="[[!node.xla.layout]]">
+            <template is="dom-repeat" items="[[node.xla.layout.dimensions]]">
+              <div hidden="[[!index]]"><span class="size-x">×</span></div>
+              <div>
+                <span class="size">[[item.size]]</span>
+                <span class="semantics">[[item.semantics]]</span>
+                <span class="alignment" style$="background-color:[[_dimensionColor(item)]]">[[_dimensionHint(item)]]</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </paper-card>
+  </template>
+
+  <script>
+import {flameColor, utilization} from './utils.js';
+
+Polymer({
+  is: 'tf-op-details',
+  properties: {
+    node: {
+      type: Object,
+      notify: true,
+      observer: '_updateCard',
+    },
+  },
+  _utilization: utilization,
+  _updateCard: function(node){
+    if (node == null) return;
+    var color = flameColor(utilization(node), 0.7);
+    this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
+    this.$.subheader.style.backgroundColor = color;
+  },
+  _subheader: function(node) {
+    if (!node) return null;
+    if (node.xla) return node.xla.category + " operation";
+    if (node.category) return "Operation category";
+    return "Unknown";
+  },
+  _fused: function(node){ return node && node.xla && !node.metrics; },
+  _dimensionColor: function(dim) {
+    if (!dim || !dim.alignment) return null;
+    var ratio = dim.size / dim.alignment;
+    // Colors should grade harshly: 50% in a dimension is already very bad.
+    var harshCurve = (x) => 1 - Math.sqrt(1 - x);
+    return flameColor(ratio / Math.ceil(ratio), 1, 0.25, harshCurve);
+  },
+  _dimensionHint: function(dim) {
+    if (!dim || !dim.alignment) return null;
+    var mul = Math.ceil(dim.size / dim.alignment);
+    var mulSuffix = (mul == 1) ? "" : ": " + mul + " × " + dim.alignment;
+    if (dim.size % dim.alignment == 0) return "Exact fit" + mulSuffix;
+    return "Pad to " + (mul * dim.alignment) + mulSuffix;
+  },
+});
+  </script>
+</dom-module>

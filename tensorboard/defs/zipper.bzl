@@ -16,9 +16,9 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl", "long_path")
 
 def _tensorboard_zip_file(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
-  manifests = set(order="link")
-  files = set()
-  webpaths = set()
+  manifests = depset(order="topological")
+  files = depset()
+  webpaths = depset()
   for dep in deps:
     manifests += dep.webfiles.manifests
     webpaths += dep.webfiles.webpaths
@@ -30,11 +30,11 @@ def _tensorboard_zip_file(ctx):
       arguments=([ctx.outputs.zip.path] +
                  [m.path for m in manifests]),
       progress_message="Zipping %d files" % len(webpaths))
-  transitive_runfiles = set()
+  transitive_runfiles = depset()
   for dep in deps:
     transitive_runfiles += dep.data_runfiles.files
   return struct(
-      files=set([ctx.outputs.zip]),
+      files=depset([ctx.outputs.zip]),
       runfiles=ctx.runfiles(
           files=ctx.files.data + [ctx.outputs.zip],
           transitive_files=transitive_runfiles))

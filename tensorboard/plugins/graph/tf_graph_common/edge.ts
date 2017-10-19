@@ -29,11 +29,12 @@ const EDGE_WIDTH_SCALE_EXPONENT = 0.3;
 /** The domain (min and max value) for the edge width. */
 const DOMAIN_EDGE_WIDTH_SCALE = [1, 5E6];
 
-export const EDGE_WIDTH_SCALE: d3.ScalePower<number, number> = d3.scalePow()
-      .exponent(EDGE_WIDTH_SCALE_EXPONENT)
-      .domain(DOMAIN_EDGE_WIDTH_SCALE)
-      .range([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH])
-      .clamp(true);
+export const EDGE_WIDTH_SIZE_BASED_SCALE: d3.ScalePower<number, number> =
+    d3.scalePow()
+        .exponent(EDGE_WIDTH_SCALE_EXPONENT)
+        .domain(DOMAIN_EDGE_WIDTH_SCALE)
+        .range([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH])
+        .clamp(true);
 
 let arrowheadMap =
     d3.scaleQuantize<String>().domain([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH]).range([
@@ -44,6 +45,13 @@ let arrowheadMap =
 const CENTER_EDGE_LABEL_MIN_STROKE_WIDTH = 2.5;
 
 export type EdgeData = {v: string, w: string, label: render.RenderMetaedgeInfo};
+
+/**
+ * Function run when an edge is selected.
+ */
+export interface EdgeSelectionCallback {
+  (edgeData: scene.edge.EdgeData): void;
+}
 
 export function getEdgeKey(edgeObj: EdgeData) {
   return edgeObj.v + EDGE_KEY_DELIM + edgeObj.w;
@@ -100,6 +108,21 @@ export function buildGroup(sceneGroup,
         // index node group for quick highlighting
         sceneElement._edgeGroupIndex[getEdgeKey(d)] = edgeGroup;
 
+        if (sceneElement.handleEdgeSelected) {
+          // The user or some higher-level component has opted to make edges selectable.
+          edgeGroup
+              .on('click',
+                  d => {
+                    // Stop this event's propagation so that it isn't also considered
+                    // a graph-select.
+                    (<Event>d3.event).stopPropagation();
+                    sceneElement.fire('edge-select', {
+                      edgeData: d,
+                      edgeGroup: edgeGroup
+                    });
+                  });
+        }
+
         // Add line during enter because we're assuming that type of line
         // normally does not change.
         appendEdge(edgeGroup, d, sceneElement);
@@ -146,10 +169,44 @@ export function getLabelForBaseEdge(
  */
 export function getLabelForEdge(metaedge: Metaedge,
     renderInfo: render.RenderGraphInfo): string {
+  if (renderInfo.edgeLabelFunction) {
+    // The user has specified a means of computing the label.
+    return renderInfo.edgeLabelFunction(metaedge, renderInfo);
+  }
+
+  // Compute the label based on either tensor count or size.
   let isMultiEdge = metaedge.baseEdgeList.length > 1;
   return isMultiEdge ?
       metaedge.baseEdgeList.length + ' tensors' :
       getLabelForBaseEdge(metaedge.baseEdgeList[0], renderInfo);
+}
+
+/**
+ * Computes the index into a set of points that constitute a path for which the
+ * distance along the path from the initial point is as large as possible
+ * without exceeding the length. This function was introduced after the
+ * native getPathSegAtLength method got deprecated by SVG 2.
+ * @param points Array of path control points. A point has x and y properties.
+ *   Must be of length at least 2.
+ * @param length The length (float).
+ * @param lineFunc A function that takes points and returns the "d" attribute
+ *   of a path made from connecting the points.
+ * @return The index into the points array.
+ */
+function getPathSegmentIndexAtLength(
+    points: render.Point[],
+    length: number,
+    lineFunc: (points: render.Point[]) => string): number {
+  const path = document.createElementNS(tf.graph.scene.SVG_NAMESPACE, 'path');
+  for (let i = 1; i < points.length; i++) {
+    path.setAttribute("d", lineFunc(points.slice(0, i)));
+    if (path.getTotalLength() > length) {
+      // This many points has already exceeded the length.
+      return i - 1;
+    }
+  }
+  // The entire path is shorter than the specified length.
+  return points.length - 1;
 }
 
 /**
@@ -183,7 +240,7 @@ function adjustPathPointsForMarker(points: render.Point[],
     const point = pathNode.getPointAtLength(length);
     // Figure out how many segments of the path we need to remove in order
     // to shorten the path.
-    const segIndex = pathNode.getPathSegAtLength(length);
+    const segIndex = getPathSegmentIndexAtLength(points, length, lineFunc);
     // Update the very first segment.
     points[segIndex - 1] = {x: point.x, y: point.y};
     // Ignore every point before segIndex - 1.
@@ -197,7 +254,7 @@ function adjustPathPointsForMarker(points: render.Point[],
     const point = pathNode.getPointAtLength(length);
     // Figure out how many segments of the path we need to remove in order
     // to shorten the path.
-    const segIndex = pathNode.getPathSegAtLength(length);
+    const segIndex = getPathSegmentIndexAtLength(points, length, lineFunc);
     // Update the very last segment.
     points[segIndex] = {x: point.x, y: point.y};
     // Ignore every point after segIndex.
@@ -214,13 +271,11 @@ function adjustPathPointsForMarker(points: render.Point[],
  * there is no underlying Metaedge in the hierarchical graph.
  */
 export function appendEdge(edgeGroup, d: EdgeData,
-    sceneElement: {renderHierarchy: render.RenderGraphInfo},
+    sceneElement: {
+        renderHierarchy: render.RenderGraphInfo,
+        handleEdgeSelected: Function,
+    },
     edgeClass?: string) {
-  let size = 1;
-  if (d.label != null && d.label.metaedge != null) {
-    // There is an underlying Metaedge.
-    size = d.label.metaedge.totalSize;
-  }
   edgeClass = edgeClass || Class.Edge.LINE; // set default type
 
   if (d.label && d.label.structural) {
@@ -229,10 +284,27 @@ export function appendEdge(edgeGroup, d: EdgeData,
   if (d.label && d.label.metaedge && d.label.metaedge.numRefEdges) {
     edgeClass += ' ' + Class.Edge.REFERENCE_EDGE;
   }
+  if (sceneElement.handleEdgeSelected) {
+    // The user has opted to make edges selectable.
+    edgeClass += ' ' + Class.Edge.SELECTABLE;
+  }
   // Give the path a unique id, which will be used to link
   // the textPath (edge label) to this path.
   let pathId = 'path_' + getEdgeKey(d);
-  let strokeWidth = sceneElement.renderHierarchy.edgeWidthScale(size);
+  
+  let strokeWidth;
+  if (sceneElement.renderHierarchy.edgeWidthFunction) {
+    // Compute edge thickness based on the user-specified method.
+    strokeWidth = sceneElement.renderHierarchy.edgeWidthFunction(d, edgeClass);
+  } else {
+    // Encode tensor size within edge thickness.
+    let size = 1;
+    if (d.label != null && d.label.metaedge != null) {
+      // There is an underlying Metaedge.
+      size = d.label.metaedge.totalSize;
+    }
+    strokeWidth = sceneElement.renderHierarchy.edgeWidthSizedBasedScale(size);
+  }
 
   let path = edgeGroup.append('path')
                  .attr('id', pathId)

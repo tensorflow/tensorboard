@@ -12,8 +12,10 @@ ts_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/vz_sorting",
         "//tensorboard/plugins/graph/tf_graph_controls",
+        "//tensorboard/plugins/profile/tf_op_profile",
         "@org_polymer",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_item",

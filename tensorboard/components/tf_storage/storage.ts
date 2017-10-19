@@ -33,7 +33,7 @@ type StringDict = {[key: string]: string};
  * A key that users cannot use, since TensorBoard uses this to store info
  * about the active tab.
  */
-export let TAB = '__tab__';
+export const TAB = '__tab__';
 
 /**
  * The name of the property for users to set on a Polymer component
@@ -51,82 +51,155 @@ export let TAB = '__tab__';
  * it is NOT safe to change the disambiguator string without find+replace
  * across the codebase.
  */
-export let DISAMBIGUATOR = 'disambiguator';
+export const DISAMBIGUATOR = 'disambiguator';
 
-/**
- * Return a string stored in URI or localStorage.
- * Undefined if not found.
- */
-export function getString(key: string, useLocalStorage: boolean): string {
-  if (useLocalStorage) {
-    return window.localStorage.getItem(key);
-  } else {
-    return _componentToDict(_readComponent())[key];
+export const {
+  get: getString,
+  set: setString,
+  getInitializer: getStringInitializer,
+  getObserver: getStringObserver,
+} = makeBindings(x => x, x => x);
+
+export const {
+  get: getBoolean,
+  set: setBoolean,
+  getInitializer: getBooleanInitializer,
+  getObserver: getBooleanObserver,
+} = makeBindings(
+  s => (s === 'true' ? true: s === 'false' ? false : undefined),
+  b => b.toString());
+
+export const {
+  get: getNumber,
+  set: setNumber,
+  getInitializer: getNumberInitializer,
+  getObserver: getNumberObserver,
+} = makeBindings(
+  s => +s,
+  n => n.toString());
+
+export const {
+  get: getObject,
+  set: setObject,
+  getInitializer: getObjectInitializer,
+  getObserver: getObjectObserver,
+} = makeBindings(
+  s => JSON.parse(atob(s)),
+  o => btoa(JSON.stringify(o)));
+
+export interface StorageOptions<T> {
+  defaultValue: T;
+  polymerProperty?: string;
+  useLocalStorage?: boolean;
+}
+
+function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
+    get: (key: string, useLocalStorage?: boolean) => T,
+    set: (key: string, value: T, useLocalStorage?: boolean) => void,
+    getInitializer: (key: string, options: StorageOptions<T>) => Function,
+    getObserver: (key: string, options: StorageOptions<T>) => Function,
+} {
+  function get(key: string, useLocalStorage = false): T {
+    const value = useLocalStorage ?
+      window.localStorage.getItem(key) :
+      componentToDict(readComponent())[key];
+    return value == undefined ? undefined : fromString(value);
   }
-}
 
-/**
- * Set a string in URI or localStorage.
- */
-export function setString(
-    key: string, value: string, useLocalStorage: boolean) {
-  if (useLocalStorage) {
-    window.localStorage.setItem(key, value);
-  } else {
-    const items = _componentToDict(_readComponent());
-    items[key] = value;
-    _writeComponent(_dictToComponent(items));
+  function set(key: string, value: T, useLocalStorage = false): void {
+    const stringValue = toString(value);
+    if (useLocalStorage) {
+      window.localStorage.setItem(key, stringValue);
+    } else {
+      const items = componentToDict(readComponent());
+      items[key] = stringValue;
+      writeComponent(dictToComponent(items));
+    }
   }
-}
 
-/**
- * Return a boolean stored in stored in URI or localStorage.
- * Undefined if not found.
- */
-export function getBoolean(key: string, useLocalStorage: boolean): boolean {
-  const item = getString(key, useLocalStorage);
-  return item === 'true' ? true : item === 'false' ? false : undefined;
-}
+  function getInitializer(key: string, options: StorageOptions<T>): Function {
+    const fullOptions = {
+      defaultValue: options.defaultValue,
+      polymerProperty: key,
+      useLocalStorage: false,
+      ...options,
+    };
+    return function() {
+      const uriStorageName = getURIStorageName(this, key);
+      // setComponentValue will be called every time the hash changes,
+      // and is responsible for ensuring that new state in the hash will
+      // be propagated to the component with that property. It is
+      // important that this function does not re-assign needlessly,
+      // to avoid Polymer observer churn.
+      const setComponentValue = () => {
+        const uriValue = get(uriStorageName, false);
+        const currentValue = this[fullOptions.polymerProperty];
+        // if uriValue is undefined, we will ensure that the property has the
+        // default value
+        if (uriValue === undefined) {
+          let valueToSet: T;
+          // if we are using localStorage, we will set the value to the value
+          // from localStorage. Then, the corresponding observer will proxy
+          // the localStorage value into URI storage.
+          // in this way, localStorage takes precedence over the default val
+          // but not over the URI value.
+          if (fullOptions.useLocalStorage) {
+            const useLocalStorageValue = get(uriStorageName, true);
+            valueToSet = useLocalStorageValue === undefined ?
+              fullOptions.defaultValue :
+              useLocalStorageValue;
+          } else {
+            valueToSet = fullOptions.defaultValue;
+          }
+          if (!_.isEqual(currentValue, valueToSet)) {
+            // If we don't have an explicit URI value, then we need to ensure
+            // the property value is equal to the default value.
+            // We will assign a clone rather than the canonical default, because
+            // the component receiving this property may mutate it, and we need
+            // to keep a pristine copy of the default.
+            this[fullOptions.polymerProperty] = _.cloneDeep(valueToSet);
+          }
+          // In this case, we have an explicit URI value, so we will ensure that
+          // the component has an equivalent value.
+        } else {
+          if (!_.isEqual(uriValue, currentValue)) {
+            this[fullOptions.polymerProperty] = uriValue;
+          }
+        }
+      };
+      // Set the value on the property.
+      setComponentValue();
+      // Update it when the hashchanges.
+      window.addEventListener('hashchange', setComponentValue);
+    };
+  }
 
-/**
- * Store a boolean in URI or localStorage.
- */
-export function setBoolean(
-    key: string, value: boolean, useLocalStorage = false) {
-  setString(key, value.toString(), useLocalStorage);
-}
+  function getObserver(key: string, options: StorageOptions<T>): Function {
+    const fullOptions = {
+      defaultValue: options.defaultValue,
+      polymerProperty: key,
+      useLocalStorage: false,
+      ...options,
+    };
+    return function() {
+      const uriStorageName = getURIStorageName(this, key);
+      const newVal = this[fullOptions.polymerProperty];
+      // if this is a localStorage property, we always synchronize the value
+      // in localStorage to match the one currently in the URI.
+      if (fullOptions.useLocalStorage) {
+        set(uriStorageName, newVal, true);
+      }
+      if (!_.isEqual(newVal, get(uriStorageName, false))) {
+        if (_.isEqual(newVal, fullOptions.defaultValue)) {
+          unsetFromURI(uriStorageName);
+        } else {
+          set(uriStorageName, newVal, false);
+        }
+      }
+    };
+  }
 
-/**
- * Return a number stored in stored in URI or localStorage.
- * Undefined if not found.
- */
-export function getNumber(key: string, useLocalStorage: boolean): number {
-  const item = getString(key, useLocalStorage);
-  return item === undefined ? undefined : +item;
-}
-
-/**
- * Store a number in URI or localStorage.
- */
-export function setNumber(
-    key: string, value: number, useLocalStorage: boolean) {
-  setString(key, '' + value, useLocalStorage);
-}
-
-/**
- * Return an object stored in stored in URI or localStorage.
- * Undefined if not found.
- */
-export function getObject(key: string, useLocalStorage: boolean): {} {
-  const item = getString(key, useLocalStorage);
-  return item === undefined ? undefined : JSON.parse(atob(item));
-}
-
-/**
- * Store an object in URI or localStorage.
- */
-export function setObject(key: string, value: {}, useLocalStorage: boolean) {
-  setString(key, btoa(JSON.stringify(value)), useLocalStorage);
+  return {get, set, getInitializer, getObserver};
 }
 
 /**
@@ -135,134 +208,25 @@ export function setObject(key: string, value: {}, useLocalStorage: boolean) {
  * DISAMBIGUATOR must be set on the component, if other components use the
  * same propertyName.
  */
-export function getURIStorageName(
+function getURIStorageName(
     component: {}, propertyName: string): string {
   const d = component[DISAMBIGUATOR];
   const components = d == null ? [propertyName] : [d, propertyName];
   return components.join('.');
 }
 
-/**
- * Return a function that:
- * (1) Initializes a Polymer boolean property with a default value, if its
- *     value is not already set
- * (2) Sets up listener that updates Polymer property on hash change.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getBooleanInitializer(
-    propertyName: string, defaultVal: boolean,
-    useLocalStorage = false): Function {
-  return _getInitializer(
-      getBoolean, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that:
- * (1) Initializes a Polymer string property with a default value, if its
- *     value is not already set
- * (2) Sets up listener that updates Polymer property on hash change.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getStringInitializer(
-    propertyName: string, defaultVal: string,
-    useLocalStorage = false): Function {
-  return _getInitializer(
-      getString, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that:
- * (1) Initializes a Polymer number property with a default value, if its
- *     value is not already set
- * (2) Sets up listener that updates Polymer property on hash change.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getNumberInitializer(
-    propertyName: string, defaultVal: number,
-    useLocalStorage = false): Function {
-  return _getInitializer(
-      getNumber, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that:
- * (1) Initializes a Polymer Object property with a default value, if its
- *     value is not already set
- * (2) Sets up listener that updates Polymer property on hash change.
- *
- * Generates a deep clone of the defaultVal to avoid mutation issues.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getObjectInitializer(
-    propertyName: string, defaultVal: {}, useLocalStorage = false): Function {
-  return _getInitializer(
-      getObject, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that updates URIStorage when a string property changes.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getBooleanObserver(
-    propertyName: string, defaultVal: boolean,
-    useLocalStorage = false): Function {
-  return _getObserver(
-      getBoolean, setBoolean, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that updates URIStorage when a string property changes.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getStringObserver(
-    propertyName: string, defaultVal: string,
-    useLocalStorage = false): Function {
-  return _getObserver(
-      getString, setString, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that updates URIStorage when a number property changes.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getNumberObserver(
-    propertyName: string, defaultVal: number,
-    useLocalStorage = false): Function {
-  return _getObserver(
-      getNumber, setNumber, propertyName, defaultVal, useLocalStorage);
-}
-
-/**
- * Return a function that updates URIStorage when an object property changes.
- * Generates a deep clone of the defaultVal to avoid mutation issues.
- *
- * @param {boolean=} useLocalStorage
- */
-export function getObjectObserver(
-    propertyName: string, defaultVal: {}, useLocalStorage = false): Function {
-  const clone = _.cloneDeep(defaultVal);
-  return _getObserver(
-      getObject, setObject, propertyName, clone, useLocalStorage);
-}
 
 /**
  * Read component from URI (e.g. returns "events&runPrefix=train*").
  */
-function _readComponent(): string {
+function readComponent(): string {
   return useHash() ? window.location.hash.slice(1) : getFakeHash();
 }
 
 /**
  * Write component to URI.
  */
-function _writeComponent(component: string) {
+function writeComponent(component: string) {
   if (useHash()) {
     window.location.hash = component;
   } else {
@@ -277,7 +241,7 @@ function _writeComponent(component: string) {
  * gets prepended to the URI Component string for backwards compatibility
  * reasons.
  */
-function _dictToComponent(items: StringDict): string {
+function dictToComponent(items: StringDict): string {
   let component = '';
 
   // Add the tab name e.g. 'events', 'images', 'histograms' as a prefix
@@ -305,7 +269,7 @@ function _dictToComponent(items: StringDict): string {
  * Returns dict consisting of all key-value pairs and
  * dict[TAB] = tabName
  */
-function _componentToDict(component: string): StringDict {
+function componentToDict(component: string): StringDict {
   const items = {} as StringDict;
 
   const tokens = component.split('&');
@@ -322,95 +286,10 @@ function _componentToDict(component: string): StringDict {
 }
 
 /**
- * Return a function that:
- * (1) Initializes a Polymer property with a default value, if its
- *     value is not already set
- * (2) Sets up listener that updates Polymer property on hash change.
- */
-function _getInitializer<T>(
-    get: (name: string, useLocalStorage: boolean) => T, propertyName: string,
-    defaultVal: T, useLocalStorage): Function {
-  return function() {
-    const URIStorageName = getURIStorageName(this, propertyName);
-    // setComponentValue will be called every time the hash changes, and is
-    // responsible for ensuring that new state in the hash will be propagated
-    // to the component with that property.
-    // It is important that this function does not re-assign needlessly,
-    // to avoid Polymer observer churn.
-    const setComponentValue = () => {
-      const uriValue = get(URIStorageName, false);
-      const currentValue = this[propertyName];
-      // if uriValue is undefined, we will ensure that the property has the
-      // default value
-      if (uriValue === undefined) {
-        let valueToSet: T;
-        // if we are using localStorage, we will set the value to the value
-        // from localStorage. Then, the corresponding observer will proxy
-        // the localStorage value into URI storage.
-        // in this way, localStorage takes precedence over the default val
-        // but not over the URI value.
-        if (useLocalStorage) {
-          const useLocalStorageValue = get(URIStorageName, true);
-          valueToSet = useLocalStorageValue === undefined ?
-              defaultVal :
-              useLocalStorageValue;
-        } else {
-          valueToSet = defaultVal;
-        }
-        if (!_.isEqual(currentValue, valueToSet)) {
-          // If we don't have an explicit URI value, then we need to ensure
-          // the property value is equal to the default value.
-          // We will assign a clone rather than the canonical default, because
-          // the component receiving this property may mutate it, and we need
-          // to keep a pristine copy of the default.
-          this[propertyName] = _.clone(valueToSet);
-        }
-        // In this case, we have an explicit URI value, so we will ensure that
-        // the component has an equivalent value.
-      } else {
-        if (!_.isEqual(uriValue, currentValue)) {
-          this[propertyName] = uriValue;
-        }
-      }
-    };
-    // Set the value on the property.
-    setComponentValue();
-    // Update it when the hashchanges.
-    window.addEventListener('hashchange', setComponentValue);
-  };
-}
-
-/**
- * Return a function that updates URIStorage when a property changes.
- */
-function _getObserver<T>(
-    get: (name: string, useLocalStorage: boolean) => T,
-    set: (name: string, newVal: T, useLocalStorage: boolean) => void,
-    propertyName: string, defaultVal: T, useLocalStorage: boolean): Function {
-  return function() {
-    const URIStorageName = getURIStorageName(this, propertyName);
-    const newVal = this[propertyName];
-    // if this is a localStorage property, we always synchronize the value
-    // in localStorage to match the one currently in the URI.
-    if (useLocalStorage) {
-      set(URIStorageName, newVal, true);
-    }
-    if (!_.isEqual(newVal, get(URIStorageName, false))) {
-      if (_.isEqual(newVal, defaultVal)) {
-        _unsetFromURI(URIStorageName);
-      } else {
-        set(URIStorageName, newVal, false);
-      }
-    }
-  };
-}
-
-/**
  * Delete a key from the URI.
  */
-function _unsetFromURI(key) {
-  const items = _componentToDict(_readComponent());
+function unsetFromURI(key) {
+  const items = componentToDict(readComponent());
   delete items[key];
-  _writeComponent(_dictToComponent(items));
+  writeComponent(dictToComponent(items));
 }
-

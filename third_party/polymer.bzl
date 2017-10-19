@@ -400,6 +400,24 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
+      name = "org_polymer_iron_image",
+      licenses = ["notice"],  # BSD-3-Clause
+      sha256 = "11347e6ba6d73bfddb93e3188e61019c40ef150e03e916a5f8e1c1ac0d3b1f0e",
+      urls = [
+          "http://mirror.bazel.build/github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
+          "https://github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
+      ],
+      strip_prefix = "iron-image-1.2.6",
+      path = "/iron-image",
+      srcs = ["iron-image.html"],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_flex_layout",
+      ],
+  )
+
+
+  web_library_external(
       name = "org_polymer_iron_input",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "c505101ead08ab25526b1f49baecc8c28b4221b92a65e7334c783bdc81553c36",
@@ -676,6 +694,26 @@ def tensorboard_polymer_workspace():
           "@org_polymer_iron_behaviors",
           "@org_polymer_iron_checked_element_behavior",
           "@org_polymer_paper_ripple",
+      ],
+  )
+
+  web_library_external(
+      name = "org_polymer_paper_card",
+      licenses = ["notice"],  # BSD-3-Clause
+      sha256 = "bcfecab0d28dcc5f7b8dd784d71b3c5a90c645fc984f7f57974211b82eccc31b",
+      urls = [
+          "http://mirror.bazel.build/github.com/PolymerElements/paper-card/archive/v1.1.6.tar.gz",
+          "https://github.com/PolymerElements/paper-card/archive/v1.1.6.tar.gz",
+      ],
+      strip_prefix = "paper-card-1.1.6",
+      path = "/paper-card",
+      srcs = ["paper-card.html"],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_flex_layout",
+          "@org_polymer_iron_image",
+          "@org_polymer_paper_styles",
+          "@org_polymer_paper_material",
       ],
   )
 

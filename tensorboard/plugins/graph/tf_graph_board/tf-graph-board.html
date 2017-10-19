@@ -143,8 +143,12 @@ paper-progress {
               color-by="[[colorBy]]"
               color-by-params="{{colorByParams}}"
               progress="{{progress}}"
+              edge-label-function="[[edgeLabelFunction]]"
+              edge-width-function="[[edgeWidthFunction]]"
               node-names-to-health-pills="[[nodeNamesToHealthPills]]"
               health-pill-step-index="[[healthPillStepIndex]]"
+              handle-node-selected="[[handleNodeSelected]]"
+              handle-edge-selected="[[handleEdgeSelected]]"
     ></tf-graph>
   </div>
   <div id="info">
@@ -229,9 +233,22 @@ Polymer({
       type: String,
       notify: true,
     },
+    // A function with signature EdgeThicknessFunction that computes the
+    // thickness of a given edge.
+    edgeWidthFunction: Object,
     // The enum value of the include property of the selected node.
     _selectedNodeInclude: Number,
-    _highlightedNode: String
+    _highlightedNode: String,
+    // An optional function that takes a node selected event (whose `detail`
+    // property is the selected node ... which could be null if a node is
+    // deselected). Called whenever a node is selected or deselected.
+    handleNodeSelected: Object,
+    // An optional function that computes the label for an edge. Should
+    // implement the EdgeLabelFunction signature.
+    edgeLabelFunction: Object,
+    // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
+    // provided, edges are selectable, and this callback is run when an edge is selected.
+    handleEdgeSelected: Object,
   },
   listeners: {
     'node-toggle-extract': '_nodeToggleExtract'

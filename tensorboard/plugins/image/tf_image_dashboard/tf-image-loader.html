@@ -21,6 +21,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading-style.html">
+<link rel="import" href="../tf-card-heading/util.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-imports/d3.html">
@@ -45,14 +47,19 @@ future for loading older images.
         <div>sample: [[_sampleText]] of [[ofSamples]]</div>
       </template>
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-        <div>
-          step
-          <span style="font-weight: bold">[[_stepValue]]</span>
-          <template is="dom-if" if="[[_currentWallTime]]">
-            ([[_currentWallTime]])
-          </template>
-          <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
-          </paper-spinner-lite>
+        <div class="heading-row">
+          <div class="heading-label">
+            step <span style="font-weight: bold">[[_toLocaleString(_stepValue)]]</span>
+          </div>
+          <div class="heading-label heading-right">
+            <template is="dom-if" if="[[_currentWallTime]]">
+              [[_currentWallTime]]
+            </template>
+          </div>
+          <div class="label right">
+            <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
+            </paper-spinner-lite>
+          </div>
         </div>
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
@@ -69,9 +76,33 @@ future for loading older images.
         </div>
       </template>
     </tf-card-heading>
-    <div id="main-image-container"></div>
 
-    <style>
+    <button aria-label="Toggle actual size"
+            id="main-image-container"
+            on-tap="_handleTap"></button>
+
+    <style include="tf-card-heading-style">
+      /** Make button a div. */
+      button {
+        width: 100%;
+        display: block;
+        background: none;
+        border: 0;
+        padding: 0;
+      }
+
+      /** Firefox: Get rid of dotted line inside button. */
+      button::-moz-focus-inner {
+        border: 0;
+        padding: 0;
+      }
+
+      /** Firefox: Simulate Chrome's outer glow on button when focused. */
+      button:-moz-focusring {
+        outline: none;
+        box-shadow: 0px 0px 1px 2px Highlight;
+      }
+
       :host {
         display: block;
         width: 350px;
@@ -89,6 +120,7 @@ future for loading older images.
 
       :host[actual-size] #main-image-container {
         max-height: none;
+        width: auto;
       }
 
       :host[actual-size] #main-image-container img {
@@ -127,9 +159,10 @@ future for loading older images.
       }
 
       #main-image-container img {
+        cursor: pointer;
+        display: block;
         image-rendering: -moz-crisp-edges;
         image-rendering: pixelated;
-        display: block;
         width: 100%;
         height: auto;
       }
@@ -148,10 +181,11 @@ future for loading older images.
   </template>
   <script>
     "use strict";
+    import {addParams} from '../tf-backend/urlPathHelpers.js';
     import {Canceller} from "../tf-backend/canceller.js";
     import {getRouter} from "../tf-backend/router.js";
+    import {formatDate} from '../tf-card-heading/util.js';
     import {runsColorScale} from "../tf-color-scale/colorScale.js";
-    import * as urlPathHelpers from "../tf-backend/urlPathHelpers.js";
 
     Polymer({
       is: "tf-image-loader",
@@ -209,11 +243,11 @@ future for loading older images.
         },
         _stepValue: {
           type: Number,
-          computed: "_computeStepValue(_stepIndex)",
+          computed: "_computeStepValue(_steps, _stepIndex)",
         },
         _currentWallTime: {
           type: Number,
-          computed: "_computeCurrentWallTime(_stepIndex)",
+          computed: "_computeCurrentWallTime(_steps, _stepIndex)",
         },
         _maxStepIndex: {
           type: Number,
@@ -246,11 +280,11 @@ future for loading older images.
       _computeHasMultipleSteps(steps) {
         return !!steps && steps.length > 1;
       },
-      _computeStepValue(stepIndex) {
-        return this._steps[stepIndex].step;
+      _computeStepValue(steps, stepIndex) {
+        return steps[stepIndex].step;
       },
-      _computeCurrentWallTime(stepIndex) {
-        return this._steps[stepIndex].wall_time.toString();
+      _computeCurrentWallTime(steps, stepIndex) {
+        return formatDate(steps[stepIndex].wall_time);
       },
       _computeMaxStepIndex(steps) {
         return steps.length - 1;
@@ -272,9 +306,11 @@ future for loading older images.
         }
         this._metadataCanceller.cancelAll();
         const router = getRouter();
-        const baseURL = router.pluginRoute("images", "/images");
-        const query = `run=${this.run}&tag=${this.tag}&sample=${this.sample}`;
-        const url = baseURL + (baseURL.indexOf('?') !== -1 ? '&' : '?') + query;
+        const url = addParams(router.pluginRoute('images', '/images'), {
+            tag: this.tag,
+            run: this.run,
+            sample: this.sample,
+        });
         const updateSteps = this._metadataCanceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -287,28 +323,13 @@ future for loading older images.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(imageMetadata) {
-        const route = getRouter().pluginRoute('images', '/individualImage');
-        let query = imageMetadata.query;
-        if (route.indexOf('?') > -1) {
-          // The route already has GET parameters. Append ours.
-          query = '&' + query;
-        } else {
-          // The route lacks GET parameters. Just use ours.
-          query = '?' + query;
-        }
-        if (getRouter().isDemoMode()) {
-          query = urlPathHelpers.demoify(query);
-        }
+        let url = getRouter().pluginRoute('images', '/individualImage');
+        // Include wall_time just to disambiguate the URL and force
+        // the browser to reload the image when the URL changes. The
+        // backend doesn't care about the value.
+        url = addParams(url, {ts: imageMetadata.wall_time});
+        url += '&' + imageMetadata.query;
 
-        let individualImageUrl = route + query;
-        if (getRouter().isDemoMode()) {
-          individualImageUrl += '.png';
-        } else {
-          // Include wall_time just to disambiguate the URL and force
-          // the browser to reload the image when the URL changes. The
-          // backend doesn't care about the value.
-          individualImageUrl += `&ts=${imageMetadata.wall_time}`;
-        }
         return {
           width: imageMetadata.width,
           height: imageMetadata.height,
@@ -316,7 +337,7 @@ future for loading older images.
           // constructor accepts a time in milliseconds, so we multiply by 1000.
           wall_time: new Date(imageMetadata.wall_time * 1000),
           step: imageMetadata.step,
-          url: individualImageUrl,
+          url,
         };
       },
       _updateImageUrl(steps, stepIndex) {
@@ -342,6 +363,13 @@ future for loading older images.
         // Load the new image.
         this.set("_isImageLoading", true);
         img.src = steps[stepIndex].url;
+      },
+      _handleTap(e) {
+        this.set('actualSize', !this.actualSize);
+      },
+      _toLocaleString(number) {
+        // Shows commas (or locale-appropriate punctuation) for large numbers.
+        return number.toLocaleString();
       },
     });
   </script>

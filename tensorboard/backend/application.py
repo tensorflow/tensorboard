@@ -76,7 +76,8 @@ def standard_tensorboard_wsgi(
     reload_interval,
     plugins,
     db_uri="",
-    assets_zip_provider=None):
+    assets_zip_provider=None,
+    path_prefix=""):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -85,13 +86,20 @@ def standard_tensorboard_wsgi(
     reload_interval: The interval at which the backend reloads more data in
         seconds.
     plugins: A list of constructor functions for TBPlugin subclasses.
+    path_prefix: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
         data, or empty for memory-only mode.
-    assets_zip_provider: Delegates to TBContext or uses default if None.
+    assets_zip_provider: See TBContext documentation for more information.
+        If this value is not specified, this function will attempt to load
+        the `tensorboard.default` module to use the default. This behavior
+        might be removed in the future.
 
   Returns:
     The new TensorBoard WSGI application.
   """
+  if assets_zip_provider is None:
+    from tensorboard import default
+    assets_zip_provider = default.get_assets_zip_provider()
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
@@ -107,13 +115,14 @@ def standard_tensorboard_wsgi(
       db_connection_provider=db_connection_provider,
       logdir=logdir,
       multiplexer=multiplexer,
-      assets_zip_provider=(assets_zip_provider or
-                           get_default_assets_zip_provider()))
+      assets_zip_provider=assets_zip_provider)
   plugins = [constructor(context) for constructor in plugins]
-  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval)
+  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
+                            path_prefix)
 
 
-def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
+def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
+                       path_prefix):
   """Constructs the TensorBoard application.
 
   Args:
@@ -123,6 +132,7 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
     plugins: A list of base_plugin.TBPlugin subclass instances.
     multiplexer: The EventMultiplexer with TensorBoard data to serve
     reload_interval: How often (in seconds) to reload the Multiplexer
+    path_prefix: A prefix of the path when app isn't served from root.
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
@@ -135,17 +145,18 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval):
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
   else:
     reload_multiplexer(multiplexer, path_to_run)
-  return TensorBoardWSGI(plugins)
+  return TensorBoardWSGI(plugins, path_prefix)
 
 
 class TensorBoardWSGI(object):
   """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-  def __init__(self, plugins):
+  def __init__(self, plugins, path_prefix=""):
     """Constructs TensorBoardWSGI instance.
 
     Args:
       plugins: A list of base_plugin.TBPlugin subclass instances.
+      path_prefix: A prefix of the path when app isn't served from root.
 
     Returns:
       A WSGI application for the set of all TBPlugin instances.
@@ -159,12 +170,17 @@ class TensorBoardWSGI(object):
           with a slash
     """
     self._plugins = plugins
+    if path_prefix.endswith('/'):
+      self._path_prefix = path_prefix[:-1]
+    else:
+      self._path_prefix = path_prefix
 
     self.data_applications = {
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
         # obviate the need for the frontend to determine which plugins are
         # active.
-        DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
+        self._path_prefix + DATA_PREFIX + PLUGINS_LISTING_ROUTE:
+            self._serve_plugins_listing,
     }
 
     # Serve the routes from the registered plugins using their name as the route
@@ -195,9 +211,10 @@ class TensorBoardWSGI(object):
                            'route does not start with a slash' %
                            (plugin.plugin_name, route))
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
-          path = route
+          path = self._path_prefix + route
         else:
-          path = DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
+          path = self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' + \
+                    plugin.plugin_name + route
         self.data_applications[path] = app
 
   @wrappers.Request.application
@@ -233,7 +250,8 @@ class TensorBoardWSGI(object):
     """
     request = wrappers.Request(environ)
     parsed_url = urlparse.urlparse(request.path)
-    clean_path = _clean_path(parsed_url.path)
+    clean_path = _clean_path(parsed_url.path, self._path_prefix)
+
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
@@ -271,9 +289,11 @@ def parse_event_files_spec(logdir):
   for specification in logdir.split(','):
     # Check if the spec contains group. A spec start with xyz:// is regarded as
     # URI path spec instead of group spec. If the spec looks like /foo:bar/baz,
-    # then we assume it's a path with a colon.
+    # then we assume it's a path with a colon. If the spec looks like
+    # [a-zA-z]:\foo then we assume its a Windows path and not a single letter
+    # group
     if (uri_pattern.match(specification) is None and ':' in specification and
-        specification[0] != '/'):
+        specification[0] != '/' and not os.path.splitdrive(specification)[0]):
       # We split at most once so run_name:/path:with/a/colon will work.
       run_name, _, path = specification.partition(':')
     else:
@@ -333,23 +353,6 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   return thread
 
 
-def get_default_assets_zip_provider():
-  """Opens stock TensorBoard web assets collection.
-
-  Returns:
-    Returns function that returns a newly opened file handle to zip file
-    containing static assets for stock TensorBoard, or None if webfiles.zip
-    could not be found. The value the callback returns must be closed. The
-    paths inside the zip file are considered absolute paths on the web server.
-  """
-  path = os.path.join(
-      tf.resource_loader.get_data_files_path(), os.pardir, 'webfiles.zip')
-  if not os.path.exists(path):
-    tf.logging.warning('webfiles.zip static assets not found: %s', path)
-    return None
-  return lambda: open(path, 'rb')
-
-
 def get_database_info(db_uri):
   """Returns TBContext fields relating to SQL database.
 
@@ -405,8 +408,21 @@ def _get_connect_params(query):
   return {k: json.loads(v[0]) for k, v in params.items()}
 
 
-def _clean_path(path):
-  """Removes trailing slash if present, unless it's the root path."""
-  if len(path) > 1 and path.endswith('/'):
+def _clean_path(path, path_prefix=""):
+  """Cleans the path of the request.
+
+  Removes the ending '/' if the request begins with the path prefix and pings a
+  non-empty route.
+
+  Arguments:
+    path: The path of a request.
+    path_prefix: The prefix string that every route of this TensorBoard instance
+    starts with.
+
+  Returns:
+    The route to use to serve the request (with the path prefix stripped if
+    applicable).
+  """
+  if path != path_prefix + '/' and path.endswith('/'):
     return path[:-1]
   return path

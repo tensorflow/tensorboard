@@ -19,6 +19,12 @@ limitations under the License.
  *     graph.proto
  *     step_stats.proto
  * These should stay in sync.
+ * 
+ * When adding a repeated field to this file, make sure to update the
+ * GRAPH_REPEATED_FIELDS and METADATA_REPEATED_FIELDS lists within parser.ts.
+ * Otherwise, the parser has no way of differentiating between a field with a
+ * certain value and a repeated field that has only 1 occurence, resulting in
+ * subtle bugs.
  */
 module tf.graph.proto {
   /**
@@ -88,7 +94,7 @@ module tf.graph.proto {
    */
   export interface FunctionDefLibraryDef {
     // A list of functions.
-    function: FunctionDef | FunctionDef[];
+    function: FunctionDef[];
   };
 
   /**

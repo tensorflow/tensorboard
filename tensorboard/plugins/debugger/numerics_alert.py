@@ -26,6 +26,8 @@ import collections
 import json
 import re
 
+import tensorflow as tf
+
 from tensorflow.python import debug as tf_debug
 from tensorboard.plugins.debugger import constants
 
@@ -313,6 +315,8 @@ def extract_numerics_alert(event):
   if not debugger_plugin_metadata_content:
     raise ValueError("Event proto input lacks debugger plugin SummaryMetadata.")
 
+  debugger_plugin_metadata_content = tf.compat.as_text(
+      debugger_plugin_metadata_content)
   try:
     content_object = json.loads(debugger_plugin_metadata_content)
     device_name = content_object["device"]

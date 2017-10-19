@@ -1,0 +1,141 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<link rel="import" href="tf-op-table.html">
+<link rel="import" href="tf-op-details.html">
+<link rel="import" href="utils.html">
+
+<!--
+  tf-op-profile is a view within the tf-profile-dashboard.
+  It shows a hierarchical profile of XLA operations broken (a tf-op-table).
+  A single node can be selected, and its details are shown (with tf-op-details).
+  Summary information and the most expensive op are described at the top, as
+  a gentle introduction.
+-->
+<dom-module id="tf-op-profile">
+  <template>
+    <style>
+/* The detail box lives in the left navigation column.
+ * This is weird, but makes good use of our horizontal space. */
+tf-op-details {
+  position: fixed;
+  /* don't set top, so it ends up next to tf-op-table */
+  left: 16px;
+  width: 330px;
+}
+:host {
+  display: block;
+  margin-right: 1.5em;
+}
+    </style>
+    <div class="tf-op-profile">
+      <h4>Overall TPU utilization is
+        <span style$="color:[[_textColor(_root)]]">[[_utilizationPercent(_root)]]</span>
+      </h4>
+      <p>Modifying your model's architecture, data dimensions, and improving the
+      efficiency of CPU operations may help reach the TPU's FLOPS potential.</p>
+      <h4>The most time was spent in a <b>[[_costlyOp.xla.category]] operation</b>
+        ([[_percent(_costlyOp.metrics.time)]])</h4>
+      <p hidden$="[[_hasFlops(_costlyOp)]]">
+        [[_costlyOp.name]] is
+        <span style$="color:[[_textColor(_costlyOp)]];">overhead</span>,
+        and a good target for optimization.
+      </p>
+      <!-- extra div to avoid HTML parsing bugs in polymer/vulcanize -->
+      <div hidden$="[[!_hasFlops(_costlyOp)]]">
+      <p>
+      While active, <code>[[_costlyOp.name]]</code> uses
+        <span style="color:[[_textColor(_costlyOp)]]">[[_utilizationPercent(_costlyOp)]]</span>
+        of the computational potential of the chip.
+        <span hidden$="[[_goodFlops(_costlyOp)]]">
+          This is a good target for optimization.
+        </span>
+        <span hidden$="[[!_goodFlops(_costlyOp)]]">
+          This is pretty good - other operations may be better targets for optimization.
+        </span>
+      </p>
+      </div>
+      <tf-op-details hidden="[[!_active]]" node="[[_active]]"></tf-op-details>
+      <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
+    </div>
+  </template>
+
+  <script>
+import {addParams} from "../tf-backend/urlPathHelpers.js";
+import {RequestManager} from '../tf-backend/requestManager.js';
+import {getRouter} from '../tf-backend/router.js';
+import {flameColor, utilization, percent} from './utils.js';
+
+Polymer({
+  is: 'tf-op-profile',
+  properties: {
+    _requestManager: {
+      type: Object,
+      readOnly: true,
+      value: () => new RequestManager(),
+    },
+    run: {
+      type: String,
+      observer: '_load'
+    },
+    _data: {
+      type: Object,
+      notify: true,
+    },
+    _root: {
+      type: Object,
+      computed: '_getRoot(_data, "byCategory")',
+      notify: true,
+    },
+    _active: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
+    _costlyOp: {
+      type: Object,
+      computed: '_worstOp(_data.byCategory, "time")',
+    },
+  },
+  _load: function(run) {
+    this._requestManager.request(addParams(
+        getRouter().pluginRoute('profile', '/data'), {tag: 'op_profile', run})
+    ).then((data) => {
+      this._data = data;
+    });
+  },
+  _getRoot: function(data, breakdown) { return data[breakdown]; },
+  _percent: percent,
+  _utilizationPercent: function(node) { return percent(utilization(node)); },
+  _worstOp: function(root, metric) {
+    var worst = null, worstValue = -Infinity;
+    function visit(node) {
+      if (node.xla != null && node.metrics != null && node.metrics[metric] > worstValue) {
+        worst = node;
+        worstValue = node.metrics[metric];
+      }
+      node.children.forEach(visit);
+    }
+    visit(root);
+    return worst;
+  },
+  _hasFlops: function(node) { return node.metrics.flops > 0; },
+  _goodFlops: function(node) { return utilization(node) > 0.4; },
+  _textColor: function(node) { return flameColor(utilization(node), 0.7); },
+});
+  </script>
+</dom-module>

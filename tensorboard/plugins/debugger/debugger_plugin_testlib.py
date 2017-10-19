@@ -33,15 +33,29 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
-from tensorboard.plugins.debugger import debugger_plugin
-from tensorboard.plugins.debugger import debugger_server_lib
 from tensorflow.core.debug import debugger_event_metadata_pb2
 # pylint: enable=ungrouped-imports, wrong-import-order
 
 
 class DebuggerPluginTestBase(tf.test.TestCase):
 
+  def __init__(self, *args, **kwargs):
+    super(DebuggerPluginTestBase, self).__init__(*args, **kwargs)
+    self.debugger_plugin_module = None
+
   def setUp(self):
+    super(DebuggerPluginTestBase, self).setUp()
+    # Importing the debugger_plugin can sometimes unfortunately produce errors.
+    try:
+      # pylint: disable=g-import-not-at-top
+      from tensorboard.plugins.debugger import debugger_plugin
+      from tensorboard.plugins.debugger import debugger_server_lib
+      # pylint: enable=g-import-not-at-top
+    except Exception as e:  # pylint: disable=broad-except
+      raise self.skipTest(
+          'Skipping test because importing some modules failed: %r' % e)
+    self.debugger_plugin_module = debugger_plugin
+
     # Populate the log directory with debugger event for run '.'.
     self.log_dir = self.get_temp_dir()
     file_prefix = tf.compat.as_bytes(
@@ -120,16 +134,18 @@ class DebuggerPluginTestBase(tf.test.TestCase):
         debugger_server_lib.DebuggerDataServer,
         return_value=self.mock_debugger_data_server)
 
-    tf.test.mock.patch('tensorboard.plugins.debugger.'
-                       'debugger_server_lib.DebuggerDataServer',
-                       self.mock_debugger_data_server_class).start()
+    tf.test.mock.patch.object(
+        debugger_server_lib,
+        'DebuggerDataServer',
+        self.mock_debugger_data_server_class).start()
 
     self.context = base_plugin.TBContext(
         logdir=self.log_dir, multiplexer=self.multiplexer)
     self.plugin = debugger_plugin.DebuggerPlugin(self.context)
     self.plugin.listen(self.debugger_data_server_grpc_port)
     wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin], self.multiplexer, reload_interval=0)
+        self.log_dir, [self.plugin], self.multiplexer, reload_interval=0,
+        path_prefix='')
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
     # The debugger data server should be started at the correct port.
@@ -138,7 +154,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
 
     mock_debugger_data_server = self.mock_debugger_data_server
     start = mock_debugger_data_server.start_the_debugger_data_receiving_server
-    start.assert_called_once()
+    self.assertEqual(1, start.call_count)
 
   def tearDown(self):
     # Remove the directory with debugger-related events files.
@@ -168,8 +184,9 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     content_proto = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device=device_name, output_slot=output_slot)
     value.metadata.plugin_data.plugin_name = constants.DEBUGGER_PLUGIN_NAME
-    value.metadata.plugin_data.content = json_format.MessageToJson(
-        content_proto, including_default_value_fields=True)
+    value.metadata.plugin_data.content = tf.compat.as_bytes(
+        json_format.MessageToJson(
+            content_proto, including_default_value_fields=True))
     return event
 
   def _DeserializeResponse(self, byte_content):

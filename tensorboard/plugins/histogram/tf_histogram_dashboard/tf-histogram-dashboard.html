@@ -27,6 +27,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-histogram-loader.html">
 
 <!--
@@ -140,6 +141,7 @@ limitations under the License.
     import {getTags} from '../tf-backend/backend.js';
     import {getRouter} from '../tf-backend/router.js';
     import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
+    import {registerDashboard} from '../tf-tensorboard/registry.js';
 
     Polymer({
       is: "tf-histogram-dashboard",
@@ -160,7 +162,7 @@ limitations under the License.
 
         _tagFilter: {
           type: String,  // upward bound from paper-input
-          value: '.*',
+          value: '',
         },
         _categories: {
           type: Array,
@@ -209,5 +211,11 @@ limitations under the License.
         return runToTagInfo[run][tag];
       },
     });
+
+    registerDashboard({
+      plugin: 'histograms',
+      elementName: 'tf-histogram-dashboard',
+    });
+
   </script>
 </dom-module>

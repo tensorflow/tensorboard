@@ -1,0 +1,455 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
+
+<!--
+  Renders precision–recall curves.
+-->
+<dom-module id="tf-pr-curve-card">
+  <template>
+    <tf-card-heading
+      tag="[[tag]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+    ></tf-card-heading>
+
+    <tf-line-chart-data-loader
+      x-components-creation-method="[[_xComponentsCreationMethod]]"
+      y-value-accessor="[[_yValueAccessor]]"
+      tooltip-columns="[[_tooltipColumns]]"
+      color-scale="[[_colorScaleFunction]]"
+      default-x-range="[[_defaultXRange]]"
+      default-y-range="[[_defaultYRange]]"
+      smoothing-enabled="[[_smoothingEnabled]]"
+      request-manager="[[requestManager]]"
+      runs="[[runs]]"
+      tag="[[tag]]"
+      data-url="[[_dataUrl]]"
+      process-data="[[_createProcessDataFunction()]]"
+      active="[[active]]"
+    ></tf-line-chart-data-loader>
+
+    <div id="buttons-row">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+      <paper-icon-button
+        icon="settings-overscan"
+        on-tap="_resetDomain"
+        title="Reset axes to [0, 1]."
+      ></paper-icon-button>
+    </div>
+
+    <div id="step-legend">
+      <template is="dom-repeat" items="[[_runsWithStepAvailable]]" as="run">
+        <div class="legend-row">
+          <div class="color-box"
+               style="background: [[_computeRunColor(run)]];">
+          </div>
+          [[run]] is at
+          <span class="step-label-text">
+            step [[_computeCurrentStepForRun(_runToPrCurveEntry, run)]]
+          </span><br>
+          <span class="wall-time-label-text">
+            ([[_computeCurrentWallTimeForRun(_runToPrCurveEntry, run)]])
+          </span>
+        </div>
+      </template>
+    </div>
+
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 500px;
+        margin-right: 10px;
+        margin-bottom: 25px;
+      }
+      :host[_expanded] {
+        width: 100%;
+      }
+      tf-line-chart-data-loader {
+        height: 300px;
+        position: relative;
+      }
+      :host[_expanded] tf-line-chart-data-loader {
+        height: 600px;
+      }
+      #buttons-row {
+        display: flex;
+        flex-direction: row;
+      }
+      #buttons-row paper-icon-button {
+        color: #2196F3;
+        border-radius: 100%;
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+      #buttons-row paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+      #step-legend {
+        box-sizing: border-box;
+        font-size: 0.8em;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 0 0 0 10px;
+        width: 100%;
+      }
+      .legend-row {
+        margin: 5px 0 5px 0;
+        width: 100%;
+      }
+      .color-box {
+        display: inline-block;
+        border-radius: 1px;
+        width: 10px;
+        height: 10px;
+      }
+      .step-label-text {
+        font-weight: bold;
+      }
+      .wall-time-label-text {
+        color: #888;
+        font-size: 0.8em;
+      }
+    </style>
+  </template>
+  <script>
+    import {addParams} from "../tf-backend/urlPathHelpers.js";
+    import {Canceller} from "../tf-backend/canceller.js";
+    import {getRouter} from "../tf-backend/router.js";
+    import {runsColorScale} from "../tf-color-scale/colorScale.js";
+    import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
+
+    Polymer({
+      is: "tf-pr-curve-card",
+      properties: {
+        runs: Array,
+        tag: String,
+        /** @type {{displayName: string, description: string}} */
+        tagMetadata: Object,
+
+        // For each run, the card will display the PR curve at this step or the
+        // one closest to it, but less than it.
+        runToStepCap: Object,
+        requestManager: Object,
+        active: Boolean,
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+        // This maps run to the PR curve entry that contains the PR data to
+        // plot. The entry is based on which step the user currently selects.
+        _runToPrCurveEntry: {
+          type: Object,
+          value: () => ({}),
+        },
+        // We also cache the previous run to entry mapping in order to prevent
+        // redrawing PR curves for runs that did not change. Ideally, we would
+        // use polymer property observers to implement this behavior, but that
+        // does not work for run names that contain periods.
+        _previousRunToPrCurveEntry: {
+          type: Object,
+          value: () => ({}),
+        },
+        // A list of runs with an available step. Used to populate the table of
+        // steps per run.
+        _runsWithStepAvailable: {
+          type: Array,
+          computed: "_computeRunsWithStepAvailable(runs, _runToPrCurveEntry)",
+        },
+        // An object whose keys are the list of runs that both are selected and
+        // have data loaded. We use this mapping (which is really a set in
+        // practice) to determine whether or not to clear a data series.
+        _setOfRelevantRuns: {
+          type: Object,
+          computed: "_computeSetOfRelevantRuns(_runsWithStepAvailable)",
+        },
+        // This property is set after PR curve data from the backend is
+        // received. We index into this object after determining which step to
+        // draw PR curves for.
+        _runToDataOverTime: Object,
+        _colorScaleFunction: {
+          type: Object,  // function: string => string
+          value: () => ({scale: runsColorScale}),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new Canceller(),
+        },
+        _attached: Boolean,
+        // The value field is a function that returns a function because Polymer
+        // will actually call the value field if the field is a function.
+        // However, we actually want the value itself to be a function.
+        _xComponentsCreationMethod: {
+          type: Object,
+          readOnly: true,
+          value: () => (() => {
+            const scale = new Plottable.Scales.Linear();
+            return {
+              scale: scale,
+              axis: new Plottable.Axes.Numeric(scale, 'bottom'),
+              accessor: d => d.recall,
+            };
+          }),
+        },
+        _yValueAccessor: {
+          type: Object,
+          readOnly: true,
+          // This function returns a function because polymer calls the outer
+          // function to compute the value. We actually want the value of this
+          // property to be the inner function.
+          value: () => (d => d.precision),
+        },
+        _tooltipColumns: {
+          type: Array,
+          readOnly: true,
+          value: () => {
+            const valueFormatter = ChartHelpers.multiscaleFormatter(
+                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
+            const formatValueOrNaN =
+                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+            return [
+              {
+                title: 'Run',
+                evaluate: (d) => d.dataset.metadata().name,
+              },
+              {
+                title: 'Threshold',
+                evaluate: (d) => formatValueOrNaN(d.datum.thresholds),
+              },
+              {
+                title: 'Precision',
+                evaluate: (d) => formatValueOrNaN(d.datum.precision),
+              },
+              {
+                title: 'Recall',
+                evaluate: (d) => formatValueOrNaN(d.datum.recall),
+              },
+              {
+                title: 'TP',
+                evaluate: (d) => d.datum.true_positives,
+              },
+              {
+                title: 'FP',
+                evaluate: (d) => d.datum.false_positives,
+              },
+              {
+                title: 'TN',
+                evaluate: (d) => d.datum.true_negatives,
+              },
+              {
+                title: 'FN',
+                evaluate: (d) => d.datum.false_negatives,
+              }];
+          },
+        },
+        // These are all the fields we must obtain from PR curve data
+        // retrieved from the backend in order to allow
+        // tf-line-chart-data-loader to plot curves and populate tooltips.
+        _seriesDataFields: {
+          type: Array,
+          value: [
+            'thresholds',
+            'precision',
+            'recall',
+            'true_positives',
+            'false_positives',
+            'true_negatives',
+            'false_negatives'
+          ],
+          readOnly: true,
+        },
+        _defaultXRange: {
+          type: Array,
+          value: [-0.05, 1.05],
+          readOnly: true,
+        },
+        _defaultYRange: {
+          type: Array,
+          value: [-0.05, 1.05],
+          readOnly: true,
+        },
+        _dataUrl: {
+          type: Function,
+          value: () => (tag, run) => addParams(
+              getRouter().pluginRoute('pr_curves', '/pr_curves'), {tag, run}),
+        },
+        _smoothingEnabled: {
+          type: Boolean,
+          value: false,
+          readOnly: true,
+        },
+      },
+      observers: [
+        'reload(runs, tag)',
+        '_setChartData(_runToPrCurveEntry, _previousRunToPrCurveEntry, _setOfRelevantRuns)',
+        '_updateRunToPrCurveEntry(_runToDataOverTime, runToStepCap)',
+      ],
+      _createProcessDataFunction() {
+        // This function is called when data is received from the backend.
+        return (chart, run, data) => {
+          // The data maps a single run to a series of data. We merge that data
+          // with the data already fetched.
+          this.set(
+              '_runToDataOverTime',
+              Object.assign({}, this._runToDataOverTime, data));
+        };
+      },
+      _computeRunColor(run) {
+        return this._colorScaleFunction.scale(run);
+      },
+      attached() {
+        // Defer reloading until after we're attached, because that ensures that
+        // the requestManager has been set from above. (Polymer is tricky
+        // sometimes)
+        this._attached = true;
+        this.reload();
+      },
+      reload() {
+        if (!this._attached) {
+          return;
+        }
+        if (this.runs.length === 0) {
+          // There are no selected runs.
+          this.set('_runToDataOverTime', {});
+          return;
+        }
+
+        this.$$('tf-line-chart-data-loader').reload();
+      },
+      _setChartData(
+          runToPrCurveEntry, previousRunToPrCurveEntry, setOfRelevantRuns) {
+        _.forOwn(runToPrCurveEntry, (entry, run) => {
+          const previousEntry = previousRunToPrCurveEntry[run];
+          if (previousEntry &&
+              runToPrCurveEntry[run].step === previousEntry.step) {
+            // The PR curve for this run does not need to be updated.
+            return;
+          }
+
+          if (!setOfRelevantRuns[run]) {
+            // Clear this dataset - the user has unselected it.
+            this._clearSeriesData(run);
+            return;
+          }
+
+          this._updateSeriesDataForRun(run, entry);
+        });
+      },
+      _updateSeriesDataForRun(run, entryForOneStep) {
+        // Reverse the values so they are plotted in order. The logic within
+        // the line chart for associating information to show in the tooltip
+        // with points in the chart assumes that the series data is ordered
+        // by the variable on the X axis. If the values are not in order,
+        // tooltips will not work because the tooltip will always be stuck on
+        // one side of the chart.
+        const fieldsToData = _.reduce(
+            this._seriesDataFields,
+            (result, field) => {
+              result[field] = entryForOneStep[field].slice().reverse();
+              return result;
+            },
+            {});
+
+        // The number of series data is equal to the number of entries in any of
+        // the fields. We just use the first field to gauge the length.
+        const seriesData = new Array(
+            fieldsToData[this._seriesDataFields[0]].length);
+        // Create a list of data for visualization.
+        for (let i = 0; i < seriesData.length; i++) {
+          seriesData[i] = _.mapValues(fieldsToData, values => values[i]);
+        }
+        this.$$('tf-line-chart-data-loader').setSeriesData(run, seriesData);
+      },
+      _clearSeriesData(run) {
+        // Clears data for a run in the chart.
+        this.$$('tf-line-chart-data-loader').setSeriesData(run, []);
+      },
+      _updateRunToPrCurveEntry(runToDataOverTime, runToStepCap) {
+        const runToEntry = {};
+        _.forOwn(runToDataOverTime, (entries, run) => {
+          if (!entries || !entries.length) {
+            return;
+          }
+
+          runToEntry[run] = this._computeEntryClosestOrEqualToStepCap(
+              runToStepCap[run], entries);
+        });
+
+        // Set the previous PR curve entry so we can later compare and only
+        // redraw for runs that changed in step.
+        this.set('_previousRunToPrCurveEntry', this._runToPrCurveEntry);
+
+        this.set('_runToPrCurveEntry', runToEntry);
+      },
+      _computeEntryClosestOrEqualToStepCap(stepCap, entries) {
+        const entryIndex = Math.min(
+            _.sortedIndex(entries.map(entry => entry.step), stepCap),
+            entries.length - 1);
+        return entries[entryIndex];
+      },
+      _computeRunsWithStepAvailable(runs, actualPrCurveEntryPerRun) {
+        return _.filter(runs, run => actualPrCurveEntryPerRun[run]).sort();
+      },
+      _computeSetOfRelevantRuns(runsWithStepAvailable) {
+        const setOfRelevantRuns = {};
+        _.forEach(runsWithStepAvailable, run => {
+          setOfRelevantRuns[run] = true;
+        });
+        return setOfRelevantRuns;
+      },
+      _computeCurrentStepForRun(runToPrCurveEntry, run) {
+        // If there is no data for the run, then the run is not being shown, so
+        // the return value is not used. We return null as a reasonable value.
+        const entry = runToPrCurveEntry[run];
+        return entry ? entry.step : null;
+      },
+      _computeCurrentWallTimeForRun(runToPrCurveEntry, run) {
+        const entry = runToPrCurveEntry[run];
+        // If there is no data for the run, then the run is not being shown, so
+        // the return value is not used. We return null as a reasonable value.
+        if (!entry) {
+          return null;
+        }
+        return new Date(entry.wall_time * 1000).toString();
+      },
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+      _resetDomain() {
+        this.$$('tf-line-chart-data-loader').resetDomain();
+      },
+      redraw() {
+        this.$$('tf-line-chart-data-loader').redraw();
+      },
+    });
+  </script>
+</dom-module>

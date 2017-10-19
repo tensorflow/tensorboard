@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
@@ -25,6 +25,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-audio-loader.html">
 
 <!--
@@ -112,6 +113,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
     import {getTags} from '../tf-backend/backend.js';
     import {getRouter} from '../tf-backend/router.js';
     import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
+    import {registerDashboard} from '../tf-tensorboard/registry.js';
 
     Polymer({
       is: 'tf-audio-dashboard',
@@ -122,7 +124,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
 
         _tagFilter: {
           type: String,  // upward bound from paper-input
-          value: '.*',
+          value: '',
         },
         _categories: {
           type: Array,
@@ -184,5 +186,11 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         return runToTagInfo[run][tag];
       },
     });
+
+    registerDashboard({
+      plugin: 'audio',
+      elementName: 'tf-audio-dashboard',
+    });
+
   </script>
 </dom-module>

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 module tf.graph.scene {
-  const svgNamespace = 'http://www.w3.org/2000/svg';
+  export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
   /** Enums element class of objects in the scene */
   export let Class = {
@@ -44,6 +44,8 @@ module tf.graph.scene {
       LINE: 'edgeline',
       REFERENCE_EDGE: 'referenceedge',
       REF_LINE: 'refline',
+      SELECTABLE: 'selectableedge',
+      SELECTED: 'selectededge',
       STRUCTURAL: 'structural'
     },
     Annotation: {
@@ -59,6 +61,7 @@ module tf.graph.scene {
     Scene: {
       GROUP: 'scene',
       CORE: 'core',
+      FUNCTION_LIBRARY: 'function-library',
       INEXTRACT: 'in-extract',
       OUTEXTRACT: 'out-extract'
     },
@@ -389,6 +392,16 @@ export function buildGroup(container,
     selectChild(sceneGroup, 'g', Class.Scene.OUTEXTRACT).remove();
   }
 
+  // Library functions
+  if (renderNode.libraryFunctionsExtract.length > 0) {
+    let outExtractGroup =
+        selectOrCreateChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY);
+    node.buildGroup(outExtractGroup, renderNode.libraryFunctionsExtract,
+        sceneElement);
+  } else {
+    selectChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY).remove();
+  }
+
   position(sceneGroup, renderNode);
 
   // Fade in the scene group if it didn't already exist.
@@ -420,12 +433,31 @@ function position(sceneGroup, renderNode: render.RenderGroupNodeInfo) {
   // in-extract
   let hasInExtract = renderNode.isolatedInExtract.length > 0;
   let hasOutExtract = renderNode.isolatedOutExtract.length > 0;
+  let hasLibraryFunctions = renderNode.libraryFunctionsExtract.length > 0;
+
+  let offset = layout.PARAMS.subscene.meta.extractXOffset;
+
+  let auxWidth = 0;
+  if (hasInExtract) {
+    auxWidth += renderNode.outExtractBox.width;
+  }
+  if (hasOutExtract) {
+    auxWidth += renderNode.outExtractBox.width;
+  }
 
   if (hasInExtract) {
-    let offset = layout.PARAMS.subscene.meta.extractXOffset;
-    let inExtractX = renderNode.coreBox.width -
-      renderNode.inExtractBox.width / 2 - renderNode.outExtractBox.width -
+    let inExtractX = renderNode.coreBox.width;
+    if (auxWidth < layout.MIN_AUX_WIDTH) {
+      inExtractX = inExtractX - layout.MIN_AUX_WIDTH +
+          renderNode.inExtractBox.width / 2;
+    } else {
+      inExtractX = inExtractX -
+          renderNode.inExtractBox.width / 2 - renderNode.outExtractBox.width -
           (hasOutExtract ? offset : 0);
+    }
+    inExtractX = inExtractX -
+        renderNode.libraryFunctionsBox.width -
+        (hasLibraryFunctions ? offset : 0);
     translate(
         selectChild(sceneGroup, 'g', Class.Scene.INEXTRACT), inExtractX,
         yTranslate);
@@ -433,10 +465,27 @@ function position(sceneGroup, renderNode: render.RenderGroupNodeInfo) {
 
   // out-extract
   if (hasOutExtract) {
-    let outExtractX = renderNode.coreBox.width -
-      renderNode.outExtractBox.width / 2;
+    let outExtractX = renderNode.coreBox.width;
+    if (auxWidth < layout.MIN_AUX_WIDTH) {
+      outExtractX = outExtractX - layout.MIN_AUX_WIDTH +
+          renderNode.outExtractBox.width / 2;
+    } else {
+      outExtractX -= renderNode.outExtractBox.width / 2;
+    }
+    outExtractX = outExtractX -
+      renderNode.libraryFunctionsBox.width -
+      (hasLibraryFunctions ? offset : 0);
     translate(
         selectChild(sceneGroup, 'g', Class.Scene.OUTEXTRACT), outExtractX,
+        yTranslate);
+  }
+
+  if (hasLibraryFunctions) {
+    let libraryFunctionsExtractX = renderNode.coreBox.width -
+        renderNode.libraryFunctionsBox.width / 2;
+    translate(
+        selectChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY),
+        libraryFunctionsExtractX,
         yTranslate);
   }
 };
@@ -459,7 +508,7 @@ export function translate(selection, x0: number, y0: number) {
 
 /**
  * Helper for setting position of a svg rect
- * @param rect rect to set position of.
+ * @param rect A d3 selection of rect(s) to set position of.
  * @param cx Center x.
  * @param cy Center x.
  * @param width Width to set.
@@ -472,6 +521,26 @@ export function positionRect(rect, cx: number, cy: number, width: number,
     .attr('y', cy - height / 2)
     .attr('width', width)
     .attr('height', height);
+};
+
+/**
+ * Positions a triangle and sizes it.
+ * @param polygon polygon to set position of.
+ * @param cx Center x.
+ * @param cy Center y.
+ * @param width Width of bounding box for triangle.
+ * @param height Height of bounding box for triangle.
+ */
+export function positionTriangle(polygon, cx, cy, width, height) {
+  const halfHeight = height / 2;
+  const halfWidth = width / 2;
+  const points = [
+    [cx, cy - halfHeight],
+    [cx + halfWidth, cy + halfHeight],
+    [cx - halfWidth, cy + halfHeight]
+  ];
+  polygon.transition().attr(
+      'points', points.map(point => point.join(',')).join(' '));
 };
 
 /**
@@ -610,14 +679,14 @@ function _addHealthPill(
     healthPillHeight /= 2;
   }
 
-  let healthPillGroup = document.createElementNS(svgNamespace, 'g');
+  let healthPillGroup = document.createElementNS(SVG_NAMESPACE, 'g');
   healthPillGroup.classList.add('health-pill');
 
   // Define the gradient for the health pill.
-  let healthPillDefs = document.createElementNS(svgNamespace, 'defs');
+  let healthPillDefs = document.createElementNS(SVG_NAMESPACE, 'defs');
   healthPillGroup.appendChild(healthPillDefs);
   let healthPillGradient =
-      document.createElementNS(svgNamespace, 'linearGradient');
+      document.createElementNS(SVG_NAMESPACE, 'linearGradient');
 
   // Every element in a web page must have a unique ID.
   const healthPillGradientId = 'health-pill-gradient-' + healthPillId;
@@ -633,13 +702,13 @@ function _addHealthPill(
     cumulativeCount += lastHealthPillElementsBreakdown[i];
 
     // Create a color interval using 2 stop elements.
-    let stopElement0 = document.createElementNS(svgNamespace, 'stop');
+    let stopElement0 = document.createElementNS(SVG_NAMESPACE, 'stop');
     stopElement0.setAttribute('offset', previousOffset);
     stopElement0.setAttribute(
         'stop-color', healthPillEntries[i].background_color);
     healthPillGradient.appendChild(stopElement0);
 
-    let stopElement1 = document.createElementNS(svgNamespace, 'stop');
+    let stopElement1 = document.createElementNS(SVG_NAMESPACE, 'stop');
     let percent = (cumulativeCount * 100 / totalCount) + '%';
     stopElement1.setAttribute('offset', percent);
     stopElement1.setAttribute(
@@ -650,14 +719,14 @@ function _addHealthPill(
   healthPillDefs.appendChild(healthPillGradient);
 
   // Create the rectangle for the health pill.
-  let rect = document.createElementNS(svgNamespace, 'rect');
+  let rect = document.createElementNS(SVG_NAMESPACE, 'rect');
   rect.setAttribute('fill', 'url(#' + healthPillGradientId + ')');
   rect.setAttribute('width', String(healthPillWidth));
   rect.setAttribute('height', String(healthPillHeight));
   healthPillGroup.appendChild(rect);
 
   // Show a title with specific counts on hover.
-  let titleSvg = document.createElementNS(svgNamespace, 'title');
+  let titleSvg = document.createElementNS(SVG_NAMESPACE, 'title');
   titleSvg.textContent = _getHealthPillTextContent(
       healthPill, totalCount, lastHealthPillElementsBreakdown, numericStats);
   healthPillGroup.appendChild(titleSvg);
@@ -694,7 +763,7 @@ function _addHealthPill(
       }
     }
 
-    let statsSvg = document.createElementNS(svgNamespace, 'text');
+    let statsSvg = document.createElementNS(SVG_NAMESPACE, 'text');
     const minString =
         humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
     const maxString =

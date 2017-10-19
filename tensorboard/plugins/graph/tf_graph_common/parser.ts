@@ -164,6 +164,11 @@ export function streamParse(
  * object.
  */
 const GRAPH_REPEATED_FIELDS: {[attrPath: string]: boolean} = {
+  'library.function': true,
+  'library.function.node_def': true,
+  'library.function.signature.input_arg': true,
+  'library.function.signature.output_arg': true,
+  'library.versions': true,
   'node': true,
   'node.input': true,
   'node.attr': true,
@@ -211,7 +216,7 @@ export function parseStatsPbTxt(input: ArrayBuffer):
  */
 function parsePbtxtFile(
     input: ArrayBuffer,
-    repeatedFields: {[attrPath: string]: boolean}): Promise<Object> {
+    repeatedFields: {[attrPath: string]: boolean}): Promise<any> {
   let output: { [name: string]: any; } = {};
   let stack = [];
   let path: string[] = [];

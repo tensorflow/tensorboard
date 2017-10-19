@@ -62,10 +62,13 @@ paper-button {
           render-hierarchy="[[renderHierarchy]]"
           highlighted-node="[[_getVisible(highlightedNode)]]"
           selected-node="{{selectedNode}}"
+          selected-edge="{{selectedEdge}}"
           color-by="[[colorBy]]"
           progress="[[progress]]"
+          node-context-menu-items="[[nodeContextMenuItems]]"
           node-names-to-health-pills="[[nodeNamesToHealthPills]]"
           health-pill-step-index="{{healthPillStepIndex}}"
+          handle-edge-selected="[[handleEdgeSelected]]"
     ></tf-graph-scene>
   </div>
 </div>
@@ -96,6 +99,13 @@ Polymer({
       type: String,
       notify: true,
     },
+    // An EdgeData object if an edge is selected. Otherwise, null.
+    selectedEdge: {
+      type: Object,
+      notify: true,
+    },
+    // The <g> element of the last selected edge. Used to mark the edge as selected.
+    _lastSelectedEdgeGroup: Object,
     highlightedNode: {
       type: String,
       notify: true
@@ -112,6 +122,12 @@ Polymer({
       readOnly: true,
       notify: true,
     },
+    // An array of ContextMenuItem objects. Items that appear in the context
+    // menu for a node.
+    nodeContextMenuItems: Array,
+    // A function with signature EdgeThicknessFunction that computes the
+    // thickness of a given edge.
+    edgeWidthFunction: Object,
     _renderDepth: {
       type: Number,
       value: 1
@@ -124,10 +140,32 @@ Polymer({
     nodeNamesToHealthPills: Object,
     // The step of health pills to show throughout the graph.
     healthPillStepIndex: Number,
+    /**
+     * An optional function that takes a node selected event (whose `detail`
+     * property is the selected node ... which could be null if a node is
+     * deselected). Called whenever a node is selected or deselected.
+     * @type {Function}
+     */
+    handleNodeSelected: Object,
+    /**
+     * An optional function that computes the label for an edge. Should
+     * implement the EdgeLabelFunction signature.
+     * @type {Function}
+     */
+    edgeLabelFunction: Object,
+    /**
+     * An optional callback that implements the
+     * tf.graph.edge.EdgeSelectionCallback signature. If provided, edges are
+     * selectable, and this callback is run when an edge is selected.
+     * @type {Function}
+     */
+    handleEdgeSelected: Object,
   },
   observers: [
     '_statsChanged(stats, devicesForStats)',
-    '_buildRenderHierarchy(graphHierarchy)'
+    '_buildRenderHierarchy(graphHierarchy)',
+    '_selectedNodeChanged(selectedNode)',
+    '_selectedEdgeChanged(selectedEdge)',
   ],
   _statsChanged: function(stats, devicesForStats) {
     if (this.graphHierarchy) {
@@ -149,11 +187,13 @@ Polymer({
       }
       var renderGraph = new tf.graph.render.RenderGraphInfo(
           graphHierarchy, !!this.stats /** displayingStats */);
+      renderGraph.edgeLabelFunction = this.edgeLabelFunction;
+      renderGraph.edgeWidthFunction = this.edgeWidthFunction;
+
       // Producing the 'color by' parameters to be consumed
       // by the tf-graph-controls panel. It contains information about the
       // min and max values and their respective colors, as well as list
       // of devices with their respective colors.
-
       function getColorParamsFromScale(scale) {
         return {
           minValue: scale.domain()[0],
@@ -204,6 +244,8 @@ Polymer({
     'node-unhighlight': '_nodeUnhighlighted',
     'node-toggle-extract': '_nodeToggleExtract',
     'node-toggle-seriesgroup': '_nodeToggleSeriesGroup',
+    // Edges
+    'edge-select': '_edgeSelected',
 
     // Annotations
 
@@ -227,6 +269,7 @@ Polymer({
     // indicate a user desire to click on a specific section of the graph.
     if (this._allowGraphSelect) {
       this.set('selectedNode', null);
+      this.set('selectedEdge', null);
     }
     // Reset this variable as a bug in d3 zoom behavior can cause zoomend
     // callback not to be called if a right-click happens during a zoom event.
@@ -238,9 +281,46 @@ Polymer({
   _enableClick: function(event) {
     this._allowGraphSelect = true;
   },
+  // Called when the selected node changes, ie there is a new selected node or
+  // the current one is unselected.
+  _selectedNodeChanged(selectedNode) {
+    if (this.handleNodeSelected) {
+      // A higher-level component provided a callback. Run it.
+      this.handleNodeSelected(selectedNode);
+    }
+  },
+  // Called when the selected edge changes, ie there is a new selected edge or
+  // the current one is unselected.
+  _selectedEdgeChanged(selectedEdge) {
+    this._deselectPreviousEdge();
+
+    // Visually mark this new edge as selected.
+    if (selectedEdge) {
+      this._lastSelectedEdgeGroup.classed(
+          tf.graph.scene.Class.Edge.SELECTED, true);
+
+      // Update the color of the marker too if the edge has one.
+      this._updateMarkerOfSelectedEdge(selectedEdge);
+    }
+
+    if (this.handleEdgeSelected) {
+      // A higher-level component provided a callback. Run it.
+      this.handleEdgeSelected(selectedEdge);
+    }
+  },
+  // Called only when a new (non-null) node is selected.
   _nodeSelected: function(event) {
     if (this._allowGraphSelect) {
       this.set('selectedNode', event.detail.name);
+    }
+    // Reset this variable as a bug in d3 zoom behavior can cause zoomend
+    // callback not to be called if a right-click happens during a zoom event.
+    this._allowGraphSelect = true;
+  },
+  _edgeSelected(event) {
+    if (this._allowGraphSelect) {
+      this.set('_lastSelectedEdgeGroup', event.detail.edgeGroup);
+      this.set('selectedEdge', event.detail.edgeData);
     }
     // Reset this variable as a bug in d3 zoom behavior can cause zoomend
     // callback not to be called if a right-click happens during a zoom event.
@@ -308,6 +388,49 @@ Polymer({
       this.set('graphHierarchy', graphHierarchy);
       this._buildRenderHierarchy(this.graphHierarchy);
     }.bind(this));
+  },
+  _deselectPreviousEdge() {
+    const selectedSelector = '.' + tf.graph.scene.Class.Edge.SELECTED;
+    // Visually mark the previously selected edge (if any) as deselected.
+    d3.select(selectedSelector)
+        .classed(tf.graph.scene.Class.Edge.SELECTED, false)
+        .each((d, i) => {
+          // Reset its marker.
+          if (d.label) {
+            const paths = d3.select(this).selectAll('path.edgeline');
+            if (d.label.startMarkerId) {
+              paths.style('marker-start', `url(#${d.label.startMarkerId})`);
+            }
+            if (d.label.endMarkerId) {
+              paths.style('marker-end', `url(#${d.label.endMarkerId})`);
+            }
+          }
+        });
+  },
+  _updateMarkerOfSelectedEdge(selectedEdge) {
+    if (selectedEdge.label) {
+      // The marker will vary based on the direction of the edge.
+      const markerId = selectedEdge.label.startMarkerId || selectedEdge.label.endMarkerId;
+      if (markerId) {
+        // Find the corresponding marker for a selected edge.
+        const selectedMarkerId = markerId.replace('dataflow-', 'selected-');
+        let selectedMarker = this.$$('#' + selectedMarkerId);
+
+        if (!selectedMarker) {
+          // The marker for a selected edge of this size does not exist yet. Create it.
+          const originalMarker = this.$$('tf-graph-scene').querySelector('#' + markerId);
+          selectedMarker = originalMarker.cloneNode(true);
+          selectedMarker.setAttribute('id', selectedMarkerId);
+          selectedMarker.classList.add('selected-arrowhead');
+          originalMarker.parentNode.appendChild(selectedMarker);
+        }
+
+        // Make the path use this new marker while it is selected.
+        const markerAttribute = selectedEdge.label.startMarkerId ? 'marker-start' : 'marker-end';
+        this._lastSelectedEdgeGroup.selectAll('path.edgeline').style(
+            markerAttribute, `url(#${selectedMarkerId})`);
+      }
+    }
   },
   not: function(x) {
     return !x;
