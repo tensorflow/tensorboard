@@ -234,7 +234,7 @@ class TensorBoardWSGI(object):
       elapsed = time.time() - start
       tf.logging.info(
           'Plugin listing: is_active() for %s took %0.3f seconds',
-          plugin.plugin_name, elapsed);
+          plugin.plugin_name, elapsed)
     return http_util.Respond(request, response, 'application/json')
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
