@@ -173,7 +173,7 @@ class EventMultiplexer(object):
     """
     tf.logging.info('Starting AddRunsFromDirectory: %s', path)
     for subdir in GetLogdirSubdirectories(path):
-      tf.logging.info('Adding events from directory %s', subdir)
+      tf.logging.info('Adding run from directory %s', subdir)
       rpath = os.path.relpath(subdir, path)
       subname = os.path.join(name, rpath) if name else rpath
       self.AddRun(subdir, name=subname)
