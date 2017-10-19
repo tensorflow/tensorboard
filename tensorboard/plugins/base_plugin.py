@@ -119,3 +119,10 @@ class TBContext(object):
     self.db_module = db_module
     self.logdir = logdir
     self.multiplexer = multiplexer
+
+    # A mapping between plugin name to instance. Plugins may use this property
+    # to access other plugins. The context object is passed to plugins during
+    # their construction, so a given plugin may be absent from this mapping
+    # until it is registered. Plugin logic should handle cases in which a plugin
+    # is absent from this mapping, lest a KeyError is raised.
+    self.plugin_name_to_instance = {}

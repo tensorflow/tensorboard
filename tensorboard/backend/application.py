@@ -116,9 +116,12 @@ def standard_tensorboard_wsgi(
       logdir=logdir,
       multiplexer=multiplexer,
       assets_zip_provider=assets_zip_provider)
-  plugins = [constructor(context) for constructor in plugins]
-  return TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-                            path_prefix)
+  plugin_instances = [constructor(context) for constructor in plugins]
+  context.plugin_name_to_instance = {
+      plugin_instance.plugin_name: plugin_instance
+      for plugin_instance in plugin_instances}
+  return TensorBoardWSGIApp(
+      logdir, plugin_instances, multiplexer, reload_interval, path_prefix)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,

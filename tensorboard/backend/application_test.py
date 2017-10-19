@@ -49,19 +49,30 @@ from tensorboard.plugins import base_plugin
 class FakePlugin(base_plugin.TBPlugin):
   """A plugin with no functionality."""
 
-  def __init__(self, unused_context, plugin_name, is_active_value,
-               routes_mapping):
+  def __init__(self,
+               context,
+               plugin_name,
+               is_active_value,
+               routes_mapping,
+               construction_callback=None):
     """Constructs a fake plugin.
 
     Args:
+      context: The TBContext magic container. Contains properties that are
+        potentially useful to this plugin.
       plugin_name: The name of this plugin.
       is_active_value: Whether the plugin is active.
       routes_mapping: A dictionary mapping from route (string URL path) to the
         method called when a user issues a request to that route.
+      construction_callback: An optional callback called when the plugin is
+        constructed. The callback is passed the TBContext.
     """
     self.plugin_name = plugin_name
     self._is_active_value = is_active_value
     self._routes_mapping = routes_mapping
+
+    if construction_callback:
+      construction_callback(context)
 
   def get_plugin_apps(self):
     """Returns a mapping from routes to handlers offered by this plugin.
@@ -113,6 +124,7 @@ class TensorboardServerTest(tf.test.TestCase):
     parsed_object = self._get_json('/data/plugins_listing')
     # Plugin foo is active. Plugin bar is not.
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
+
 
 class TensorboardServerBaseUrlTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
@@ -327,35 +339,48 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
 
 class TensorBoardPluginsTest(tf.test.TestCase):
 
-  def testPluginsAdded(self):
-
-    def foo_handler():
-      pass
-
-    def bar_handler():
-      pass
-
+  def setUp(self):
     plugins = [
         functools.partial(
             FakePlugin,
             plugin_name='foo',
             is_active_value=True,
-            routes_mapping={'/foo_route': foo_handler}),
+            routes_mapping={'/foo_route': self._foo_handler},
+            construction_callback=self._construction_callback),
         functools.partial(
             FakePlugin,
             plugin_name='bar',
             is_active_value=True,
-            routes_mapping={'/bar_route': bar_handler}),
+            routes_mapping={'/bar_route': self._bar_handler},
+            construction_callback=self._construction_callback),
     ]
 
     # The application should have added routes for both plugins.
-    app = application.standard_tensorboard_wsgi('', True, 60, plugins)
+    self.app = application.standard_tensorboard_wsgi('', True, 60, plugins)
 
+  def _foo_handler(self):
+    pass
+
+  def _bar_handler(self):
+    pass
+
+  def _construction_callback(self, context):
+    """Called when a plugin is constructed."""
+    self.context = context
+
+  def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
     self.assertDictContainsSubset({
-        '/data/plugin/foo/foo_route': foo_handler,
-        '/data/plugin/bar/bar_route': bar_handler,
-    }, app.data_applications)
+        '/data/plugin/foo/foo_route': self._foo_handler,
+        '/data/plugin/bar/bar_route': self._bar_handler,
+    }, self.app.data_applications)
+
+  def testNameToPluginMapping(self):
+    # The mapping from plugin name to instance should include both plugins.
+    mapping = self.context.plugin_name_to_instance
+    self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
+    self.assertEqual('foo', mapping['foo'].plugin_name)
+    self.assertEqual('bar', mapping['bar'].plugin_name)
 
 
 class TensorboardSimpleServerConstructionTest(tf.test.TestCase):
