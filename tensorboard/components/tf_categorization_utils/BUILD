@@ -19,6 +19,7 @@ ts_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_sorting",
         "@org_polymer_iron_collapse",
     ],
 )

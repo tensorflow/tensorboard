@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {compareTagNames} from '../vz-sorting/sorting.js';
 import {getTags} from '../tf-backend/backend.js';
 
 /**
@@ -130,6 +131,14 @@ export function categorizeTags(
   }));
 }
 
+function compareTagRun(a, b: {tag: string, run: string}): number {
+  const c = compareTagNames(a.tag, b.tag);
+  if (c != 0) {
+    return c;
+  }
+  return compareTagNames(a.run, b.run);
+}
+
 export function categorizeRunTagCombinations(
     runToTag: RunToTag,
     selectedRuns: string[],
@@ -139,6 +148,7 @@ export function categorizeRunTagCombinations(
   function explodeCategory(tagCategory: TagCategory): RunTagCategory {
     const items = _.flatten(tagCategory.items.map(
       ({tag, runs}) => runs.map(run => ({tag, run}))));
+    items.sort(compareTagRun);
     return {
       name: tagCategory.name,
       metadata: tagCategory.metadata,
