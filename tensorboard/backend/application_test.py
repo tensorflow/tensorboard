@@ -340,6 +340,7 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
 class TensorBoardPluginsTest(tf.test.TestCase):
 
   def setUp(self):
+    self.context = None
     plugins = [
         functools.partial(
             FakePlugin,
