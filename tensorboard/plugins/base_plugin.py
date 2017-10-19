@@ -87,7 +87,8 @@ class TBContext(object):
       db_connection_provider=None,
       db_module=None,
       logdir=None,
-      multiplexer=None):
+      multiplexer=None,
+      plugin_name_to_instance=None):
     """Instantiates magic container.
 
     The argument list is sorted and may be extended in the future; therefore,
@@ -113,16 +114,16 @@ class TBContext(object):
       logdir: The string logging directory TensorBoard was started with.
       multiplexer: An EventMultiplexer with underlying TB data. Plugins should
           copy this data over to the database when the db fields are set.
+      plugin_name_to_instance: A mapping between plugin name to instance.
+          Plugins may use this property to access other plugins. The context
+          object is passed to plugins during their construction, so a given
+          plugin may be absent from this mapping until it is registered. Plugin
+          logic should handle cases in which a plugin is absent from this
+          mapping, lest a KeyError is raised.
     """
     self.assets_zip_provider = assets_zip_provider
     self.db_connection_provider = db_connection_provider
     self.db_module = db_module
     self.logdir = logdir
     self.multiplexer = multiplexer
-
-    # A mapping between plugin name to instance. Plugins may use this property
-    # to access other plugins. The context object is passed to plugins during
-    # their construction, so a given plugin may be absent from this mapping
-    # until it is registered. Plugin logic should handle cases in which a plugin
-    # is absent from this mapping, lest a KeyError is raised.
-    self.plugin_name_to_instance = {}
+    self.plugin_name_to_instance = plugin_name_to_instance

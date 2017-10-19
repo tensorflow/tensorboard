@@ -110,16 +110,17 @@ def standard_tensorboard_wsgi(
       schema = db.Schema(db_conn)
       schema.create_tables()
       schema.create_indexes()
+  plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
       logdir=logdir,
       multiplexer=multiplexer,
-      assets_zip_provider=assets_zip_provider)
+      assets_zip_provider=assets_zip_provider,
+      plugin_name_to_instance=plugin_name_to_instance)
   plugin_instances = [constructor(context) for constructor in plugins]
-  context.plugin_name_to_instance = {
-      plugin_instance.plugin_name: plugin_instance
-      for plugin_instance in plugin_instances}
+  for plugin_instance in plugin_instances:
+    plugin_name_to_instance[plugin_instance.plugin_name] = plugin_instance
   return TensorBoardWSGIApp(
       logdir, plugin_instances, multiplexer, reload_interval, path_prefix)
 
