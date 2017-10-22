@@ -171,10 +171,14 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
     this.runTsneButton.addEventListener('click', () => this.runTSNE());
     this.pauseTsneButton.addEventListener('click', () => {
-      this.dataSet.pauseTSNE();
-      if (this.pauseTsneButton.innerText == 'Pause')
+      if (this.dataSet.tSNEShouldPause) {
+        this.dataSet.tSNEShouldPause = false;
+        this.pauseTsneButton.innerText = 'Pause';
+      }
+      else {
+        this.dataSet.tSNEShouldPause = true;
         this.pauseTsneButton.innerText = 'Resume';
-      else this.pauseTsneButton.innerText = 'Pause';
+      }
     });
     this.stopTsneButton.addEventListener(
         'click', () => this.dataSet.stopTSNE());
@@ -439,6 +443,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
           } else {
             this.runTsneButton.disabled = null;
             this.pauseTsneButton.disabled = true;
+            this.pauseTsneButton.innerText = 'Pause';
             this.stopTsneButton.disabled = true;
           }
         });

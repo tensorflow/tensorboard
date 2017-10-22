@@ -130,7 +130,7 @@ export class DataSet {
   nearest: knn.NearestEntry[][];
   nearestK: number;
   tSNEIteration: number = 0;
-  tSNEShouldPause = true;
+  tSNEShouldPause = false;
   tSNEShouldStop = true;
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
@@ -407,12 +407,6 @@ export class DataSet {
     metadata.pointsInfo.slice(0, this.points.length)
         .forEach((m, i) => this.points[i].metadata = m);
     return true;
-  }
-
-  pauseTSNE() {
-    if (this.tSNEShouldPause)
-        this.tSNEShouldPause = false;
-    else this.tSNEShouldPause = true;
   }
 
   stopTSNE() {
