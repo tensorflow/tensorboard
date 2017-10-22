@@ -20,7 +20,7 @@ def tensorboard_python_workspace():
   native.new_http_archive(
       name = "org_pythonhosted_markdown",
       urls = [
-          "http://mirror.bazel.build/pypi.python.org/packages/1d/25/3f6d2cb31ec42ca5bd3bfbea99b63892b735d76e26f20dd2dcc34ffe4f0d/Markdown-2.6.8.tar.gz",
+          "https://mirror.bazel.build/pypi.python.org/packages/1d/25/3f6d2cb31ec42ca5bd3bfbea99b63892b735d76e26f20dd2dcc34ffe4f0d/Markdown-2.6.8.tar.gz",
           "https://pypi.python.org/packages/1d/25/3f6d2cb31ec42ca5bd3bfbea99b63892b735d76e26f20dd2dcc34ffe4f0d/Markdown-2.6.8.tar.gz",
       ],
       strip_prefix = "Markdown-2.6.8",
@@ -31,7 +31,7 @@ def tensorboard_python_workspace():
   native.new_http_archive(
       name = "org_html5lib",
       urls = [
-          "http://mirror.bazel.build/github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",
+          "https://mirror.bazel.build/github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",
           "https://github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",  # identical to 1.0b8
       ],
       sha256 = "184257f98539159a433e2a2197309657ae1283b4c44dbd9c87b2f02ff36adce8",
@@ -42,7 +42,7 @@ def tensorboard_python_workspace():
   native.new_http_archive(
       name = "org_mozilla_bleach",
       urls = [
-          "http://mirror.bazel.build/github.com/mozilla/bleach/archive/v1.5.tar.gz",
+          "https://mirror.bazel.build/github.com/mozilla/bleach/archive/v1.5.tar.gz",
           "https://github.com/mozilla/bleach/archive/v1.5.tar.gz",
       ],
       strip_prefix = "bleach-1.5",
@@ -53,7 +53,7 @@ def tensorboard_python_workspace():
   native.new_http_archive(
       name = "org_pocoo_werkzeug",
       urls = [
-          "http://mirror.bazel.build/pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
+          "https://mirror.bazel.build/pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
           "https://pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
       ],
       strip_prefix = "Werkzeug-0.11.10",
@@ -64,7 +64,7 @@ def tensorboard_python_workspace():
   native.new_http_archive(
       name = "org_pythonhosted_six",
       urls = [
-          "http://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
+          "https://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
           "http://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
       ],
       sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
@@ -75,7 +75,7 @@ def tensorboard_python_workspace():
   native.new_http_archive(
       name = "org_python_pypi_portpicker",
       urls = [
-          "http://mirror.bazel.build/pypi.python.org/packages/96/48/0e1f20fdc0b85cc8722284da3c5b80222ae4036ad73210a97d5362beaa6d/portpicker-1.1.1.tar.gz",
+          "https://mirror.bazel.build/pypi.python.org/packages/96/48/0e1f20fdc0b85cc8722284da3c5b80222ae4036ad73210a97d5362beaa6d/portpicker-1.1.1.tar.gz",
           "https://pypi.python.org/packages/96/48/0e1f20fdc0b85cc8722284da3c5b80222ae4036ad73210a97d5362beaa6d/portpicker-1.1.1.tar.gz",
       ],
       sha256 = "2f88edf7c6406034d7577846f224aff6e53c5f4250e3294b1904d8db250f27ec",
