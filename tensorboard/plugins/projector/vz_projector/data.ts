@@ -341,7 +341,7 @@ export class DataSet {
         requestAnimationFrame(step);
       }
       else {
-        setTimeout(function (){requestAnimationFrame(step); }, 500);
+        setTimeout(function (){requestAnimationFrame(step); }, 100);
       }
     };
 
