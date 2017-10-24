@@ -61,6 +61,15 @@ const VERTEX_SHADER = `
     if (sizeAttenuation) {
       outputPointSize = -pointSize / cameraSpacePos.z;
     }
+    else {  // Create size attenuation (if we're in 2D mode)
+      const float shrinkFactor = 0.5;
+      const float enlargeSpeed = 50.0;
+      const float enlargeFactor = 8.0;
+      float zoom = projectionMatrix[0][0];
+      float shrink = atan(zoom + shrinkFactor) / atan(1. + shrinkFactor);
+      float enlarge = atan(zoom / enlargeSpeed) - atan(1. / enlargeSpeed);
+      outputPointSize = pointSize * shrink * (1.0 + enlargeFactor * enlarge);
+    }
 
     gl_PointSize =
       max(outputPointSize * scaleFactor, ${MIN_POINT_SIZE.toFixed(1)});
