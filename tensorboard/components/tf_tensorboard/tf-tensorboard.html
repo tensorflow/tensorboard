@@ -454,12 +454,13 @@ limitations under the License.
 
         /**
          * The plugin name of the currently selected dashboard, or `null` if no
-         * dashboard is selected. A `null` value here is represented by
-         * an empty string in the hash, and vice versa.
+         * dashboard is selected, which corresponds to an empty hash. Defaults
+         * to the value stored in the hash.
          */
         _selectedDashboard: {
           type: String,
-          value: null,
+          value: getString(TAB, /*useLocalStorage=*/false) || null,
+          observer: '_selectedDashboardChanged'
         },
 
         /*
@@ -497,7 +498,8 @@ limitations under the License.
         },
       },
       observers: [
-        '_updateSelectedDashboard(_selectedDashboard, _activeDashboards)',
+        ('_updateSelectedDashboardFromActive(' +
+         '_selectedDashboard, _activeDashboards)'),
         ('_ensureSelectedDashboardStamped(' +
          '_dashboardContainersStamped, _activeDashboards, ' +
          '_selectedDashboard)'),
@@ -571,31 +573,36 @@ limitations under the License.
         return dashboards[index];
       },
 
-      _displayStyle(currentDashboard, candidateDashboard) {
+      _displayStyle(selectedDashboard, candidateDashboard) {
          // Display only the selected dashboard.
-        return currentDashboard === candidateDashboard ? 'inherit' : 'none';
+        return selectedDashboard === candidateDashboard ? 'inherit' : 'none';
+      },
+
+      /**
+       * Handle a change in the selected dashboard by persisting the current
+       * selection to the hash and logging a pageview if analytics are enabled.
+       */
+      _selectedDashboardChanged(selectedDashboard) {
+        const pluginString = selectedDashboard || '';
+        setString(TAB, pluginString, /*useLocalStorage=*/false);
+        // Record this dashboard selection as a page view.
+        ga('set', 'page', '/' + pluginString);
+        ga('send', 'pageview');
       },
 
       /**
        * If no dashboard is selected but dashboards are available,
-       * select the first active dashboard. In any case, synchronize the
-       * state to the hash.
+       * set the selected dashboard to the first active one.
        */
-      _updateSelectedDashboard(selectedDashboard, activeDashboards) {
+      _updateSelectedDashboardFromActive(selectedDashboard, activeDashboards) {
         if (activeDashboards && selectedDashboard == null) {
           selectedDashboard = activeDashboards[0] || null;
           if (selectedDashboard != null) {
+            // Note: the following line will re-trigger this handler, but it
+            // will be a no-op since selectedDashboard is no longer null.
             this._selectedDashboard = selectedDashboard;
-            return;  // we just triggered that handler; don't need another
           }
         }
-
-        const pluginString = selectedDashboard || '';
-        setString(TAB, pluginString, /*useLocalStorage=*/false);
-
-        // Record this dashboard selection as a page view.
-        ga('set', 'page', '/' + pluginString);
-        ga('send', 'pageview');
       },
 
       _updateSelectedDashboardFromHash() {
