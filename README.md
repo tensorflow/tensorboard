@@ -344,7 +344,7 @@ TensorBoard uses [reservoir
 sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to downsample your
 data so that it can be loaded into RAM. You can modify the number of elements it
 will keep per tag in
-[tensorboard/backend/application.py](https://www.github.com/tensorflow/tensorflow/blob/r1.1/tensorflow/tensorboard/backend/application.py).
+[tensorboard/backend/application.py](tensorboard/backend/application.py).
 See this [StackOverflow question](http://stackoverflow.com/questions/43702546/tensorboard-doesnt-show-all-data-points/)
 for some more information.
 
@@ -356,7 +356,7 @@ startup.
 
 ### How can I contribute to TensorBoard development?
 
-See [DEVELOPMENT.md](https://github.com/tensorflow/tensorboard/blob/master/DEVELOPMENT.md).
+See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ### I have a different issue that wasn't addressed here!
 
