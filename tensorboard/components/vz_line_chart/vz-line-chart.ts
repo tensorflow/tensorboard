@@ -18,14 +18,14 @@ import {DragZoomLayer} from './dragZoomInteraction.js';
 import * as ChartHelpers from './vz-chart-helpers.js';
 
 /**
- * An interface that describes the lower and higher bounds for margins to
- * visualize.
+ * An interface that describes a fill area to visualize. The fill area is
+ * visualized with a less intense version of the color for a given series.
  */
-export interface MarginSpecification {
-  // The lower end of the margin.
+export interface FillArea {
+  // The lower end of the fill area.
   lowerAccessor: Plottable.IAccessor<number>;
 
-  // The higher end of the margin.
+  // The higher end of the fill area.
   higherAccessor: Plottable.IAccessor<number>;
 }
 
@@ -156,13 +156,13 @@ Polymer({
     },
 
     /**
-     * An optional MarginSpecification object. If provided, the chart will
-     * visualize margins alongside the primary line for each series. If set,
+     * An optional FillArea object. If provided, the chart will
+     * visualize fill area alongside the primary line for each series. If set,
      * consider setting ignoreYOutliers to false. Otherwise, outlier
      * calculations may deem some margins to be outliers, and some portions of
-     * the margin may not display.
+     * the fill area may not display.
      */
-    marginSpecification: Object,
+    fillArea: Object,
 
     /**
      * An optional array of 2 numbers for the min and max of the default range
@@ -345,7 +345,7 @@ Polymer({
           colorScale,
           tooltip,
           this.tooltipColumns,
-          this.marginSpecification,
+          this.fillArea,
           this.defaultXRange,
           this.defaultYRange);
       var div = d3.select(this.$.chartdiv);
@@ -417,13 +417,13 @@ class LineChart {
 
   private linePlot: Plottable.Plots.Line<number|Date>;
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
-  private marginAreaPlot: Plottable.Plots.Area<number|Date>;
+  private marginAreaPlot: Plottable.Plots.Area<number|Date>?;
   private scatterPlot: Plottable.Plots.Scatter<number|Date, Number>;
   private nanDisplay: Plottable.Plots.Scatter<number|Date, Number>;
   private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number>;
   private lastPointsDataset: Plottable.Dataset;
-  private marginSpecification: MarginSpecification;
+  private fillArea: FillArea?;
   private datasets: Plottable.Dataset[];
   private onDatasetChanged: (dataset: Plottable.Dataset) => void;
   private nanDataset: Plottable.Dataset;
@@ -447,7 +447,7 @@ class LineChart {
       colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>,
       tooltipColumns: ChartHelpers.TooltipColumn[],
-      marginSpecification: MarginSpecification,
+      fillArea: FillArea,
       defaultXRange?: number[],
       defaultYRange?: number[]) {
     this.seriesNames = [];
@@ -473,7 +473,7 @@ class LineChart {
         yValueAccessor,
         yScaleType,
         tooltipColumns,
-        marginSpecification);
+        fillArea);
   }
 
   private buildChart(
@@ -481,7 +481,7 @@ class LineChart {
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       tooltipColumns: ChartHelpers.TooltipColumn[],
-      marginSpecification: MarginSpecification) {
+      fillArea: FillArea) {
     if (this.outer) {
       this.outer.destroy();
     }
@@ -496,7 +496,7 @@ class LineChart {
         ChartHelpers.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
-    this.marginSpecification = marginSpecification;
+    this.fillArea = fillArea;
 
     this.dzl = new DragZoomLayer(
         this.xScale, this.yScale, this.resetYDomain.bind(this));
@@ -505,7 +505,7 @@ class LineChart {
         this.xScale,
         this.yScale,
         tooltipColumns,
-        marginSpecification);
+        fillArea);
 
     this.gridlines =
         new Plottable.Components.Gridlines(this.xScale, this.yScale);
@@ -521,14 +521,13 @@ class LineChart {
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
 
-  private buildPlot(xScale, yScale, tooltipColumns, marginSpecification):
+  private buildPlot(xScale, yScale, tooltipColumns, fillArea):
       Plottable.Component {
-    if (marginSpecification) {
-      // Plot the margin.
+    if (fillArea) {
       this.marginAreaPlot = new Plottable.Plots.Area<number|Date>();
       this.marginAreaPlot.x(this.xAccessor, xScale);
-      this.marginAreaPlot.y(marginSpecification.higherAccessor, yScale);
-      this.marginAreaPlot.y0(marginSpecification.lowerAccessor);
+      this.marginAreaPlot.y(fillArea.higherAccessor, yScale);
+      this.marginAreaPlot.y0(fillArea.lowerAccessor);
       this.marginAreaPlot.attr(
           'fill',
           (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
@@ -691,11 +690,8 @@ class LineChart {
     } else {
       // Generate a reasonable range.
       const accessors = this.getAccessorsForComputingYRange();
-      let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
-        return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
-      };
-      let vals = _.flattenDeep<number>(this.datasets.map(datasetToValues));
-      vals = vals.filter(isFinite);
+      const vals = _.flatMap(d, d => _.flatMap(accessors, accessor =>
+          d.data().map(accessor(x, -1, d)).filter(isFinite)));
       yDomain = ChartHelpers.computeDomain(vals, this._ignoreYOutliers);
     }
     this.yScale.domain(yDomain);
@@ -703,11 +699,11 @@ class LineChart {
 
   private getAccessorsForComputingYRange(): Plottable.IAccessor<number>[] {
     const accessors = [this.getYAxisAccessor()];
-    if (this.marginSpecification) {
+    if (this.fillArea) {
       // Make the Y domain take margins into account.
       accessors.push(
-          this.marginSpecification.lowerAccessor,
-          this.marginSpecification.higherAccessor);
+          this.fillArea.lowerAccessor,
+          this.fillArea.higherAccessor);
     }
     return accessors;
   }
@@ -970,7 +966,7 @@ class LineChart {
       this.smoothLinePlot.datasets(this.datasets);
     }
     if (this.marginAreaPlot) {
-      this.marginAreaPlot.datasets(this.datasets)
+      this.marginAreaPlot.datasets(this.datasets);
     }
     this.updateSpecialDatasets();
   }
