@@ -316,9 +316,6 @@ Polymer({
       // Either this dashboard is already initialized ... or we are not yet ready to initialize.
       return;
     }
-    if (typeof ga !== 'undefined' && ga != null) {
-      ga('send', {hitType: 'pageview', page: '/v/graph'});
-    }
     // Set this to true so we only initialize once.
     this._initialized = true;
     Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])
