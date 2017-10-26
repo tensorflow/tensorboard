@@ -21,6 +21,8 @@ from __future__ import print_function
 import collections
 import json
 import textwrap
+import threading
+import time
 
 # pylint: disable=g-bad-import-order
 # Necessary for an internal test with special behavior for numpy.
@@ -203,6 +205,66 @@ class TextPlugin(base_plugin.TBPlugin):
     """
     self._multiplexer = context.multiplexer
 
+    # Cache the last result of index_impl() so that methods that depend on it
+    # can return without blocking (while kicking off a background thread to
+    # recompute the current index).
+    self._index_cached = None
+
+    # Lock that ensures that only one thread attempts to compute index_impl()
+    # at a given time, since it's expensive.
+    self._index_impl_lock = threading.Lock()
+
+    # Pointer to the current thread computing index_impl(), if any.  This is
+    # stored on TextPlugin only to facilitate testing.
+    self._index_impl_thread = None
+
+  def is_active(self):
+    """Determines whether this plugin is active.
+
+    This plugin is only active if TensorBoard sampled any text summaries.
+
+    Returns:
+      Whether this plugin is active.
+    """
+    if not self._multiplexer:
+      return False
+
+    if self._index_cached is not None:
+      # If we already have computed the index, use it to determine whether
+      # the plugin should be active, and if so, return immediately.
+      if any(self._index_cached.values()):
+        return True
+
+    # We haven't conclusively determined if the plugin should be active. Launch
+    # a thread to compute index_impl() and return False to avoid blocking.
+    self._maybe_launch_index_impl_thread()
+    return False
+
+  def _maybe_launch_index_impl_thread(self):
+    """Attempts to launch a thread to compute index_impl().
+
+    This may not launch a new thread if one is already running to compute
+    index_impl(); in that case, this function is a no-op.
+    """
+    # Try to acquire the lock for computing index_impl(), without blocking.
+    if self._index_impl_lock.acquire(False):
+      # We got the lock. Start the thread, which will unlock the lock when done.
+      self._index_impl_thread = threading.Thread(
+          target=self._async_index_impl,
+          name='TextPluginIndexImplThread')
+      self._index_impl_thread.start()
+
+  def _async_index_impl(self):
+    """Computes index_impl() asynchronously on a separate thread."""
+    start = time.time()
+    tf.logging.info('TextPlugin computing index_impl() in a new thread')
+    self._index_cached = self.index_impl()
+    self._index_impl_thread = None
+    self._index_impl_lock.release()
+    elapsed = time.time() - start
+    tf.logging.info(
+        'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
+
   def index_impl(self):
     # A previous system of collecting and serving text summaries involved
     # storing the tags of text summaries within tensors.json files. See if we
@@ -231,13 +293,19 @@ class TextPlugin(base_plugin.TBPlugin):
       run_to_series[run] += tags.keys()
     return run_to_series
 
+  def tags_impl(self):
+    # Recompute the index on demand whenever tags are requested, but do it
+    # in a separate thread to avoid blocking.
+    self._maybe_launch_index_impl_thread()
+
+    # Use the cached index if present; if it's not, this route shouldn't have
+    # been reached anyway (since the plugin should be saying it's inactive)
+    # so just return an empty response.
+    return self._index_cached if self._index_cached else {}
+
   @wrappers.Request.application
   def tags_route(self, request):
-    # Map from run to a list of tags.
-    response = {
-        run: tag_listing
-        for (run, tag_listing) in self.index_impl().items()
-    }
+    response = self.tags_impl()
     return http_util.Respond(request, response, 'application/json')
 
   def text_impl(self, run, tag):
@@ -260,13 +328,3 @@ class TextPlugin(base_plugin.TBPlugin):
         TAGS_ROUTE: self.tags_route,
         TEXT_ROUTE: self.text_route,
     }
-
-  def is_active(self):
-    """Determines whether this plugin is active.
-
-    This plugin is only active if TensorBoard sampled any text summaries.
-
-    Returns:
-      Whether this plugin is active.
-    """
-    return bool(self._multiplexer and any(self.index_impl().values()))
