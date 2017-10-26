@@ -279,13 +279,15 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     # The plugin is currently not active. The frontend might check again later.
     # For now, spin off a separate thread to determine whether the plugin is
     # active.
-    new_thread = threading.Thread(target=self._determine_is_active)
+    new_thread = threading.Thread(
+        target=self._determine_is_active,
+        name='ProjectorPluginIsActiveThread')
     self._thread_for_determining_is_active = new_thread
     new_thread.start()
     return False
 
   def _determine_is_active(self):
-    """Determines whether the thread is active.
+    """Determines whether the plugin is active.
 
     This method is run in a separate thread so that the plugin can offer an
     immediate response to whether it is active and determine whether it should
