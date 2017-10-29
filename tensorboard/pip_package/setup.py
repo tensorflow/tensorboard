@@ -32,17 +32,15 @@ REQUIRED_PACKAGES = [
     'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
     'bleach == 1.5.0',
+
+    # futures is a backport of the concurrent.futures module added in
+    # python 3.2
+    'futures >= 3.1.1;python_version < "3.2"',
+
+    # python3 specifically requires wheel 0.26
+    'wheel;python_version < "3"',
+    'wheel >= 0.26;python_version >= "3"',
 ]
-
-# python3 requires wheel 0.26
-if sys.version_info.major == 3:
-  REQUIRED_PACKAGES.append('wheel >= 0.26')
-else:
-  REQUIRED_PACKAGES.append('wheel')
-
-# futures is a backport of python3's concurrent.futures module
-if sys.version_info.major < 3:
-  REQUIRED_PACKAGES.append('futures >= 3.1.1')
 
 CONSOLE_SCRIPTS = [
     'tensorboard = tensorboard.main:main',
