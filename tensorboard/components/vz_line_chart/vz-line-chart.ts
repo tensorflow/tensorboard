@@ -417,13 +417,13 @@ class LineChart {
 
   private linePlot: Plottable.Plots.Line<number|Date>;
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
-  private marginAreaPlot: Plottable.Plots.Area<number|Date>?;
+  private marginAreaPlot?: Plottable.Plots.Area<number|Date>;
   private scatterPlot: Plottable.Plots.Scatter<number|Date, Number>;
   private nanDisplay: Plottable.Plots.Scatter<number|Date, Number>;
   private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number>;
   private lastPointsDataset: Plottable.Dataset;
-  private fillArea: FillArea?;
+  private fillArea?: FillArea;
   private datasets: Plottable.Dataset[];
   private onDatasetChanged: (dataset: Plottable.Dataset) => void;
   private nanDataset: Plottable.Dataset;
