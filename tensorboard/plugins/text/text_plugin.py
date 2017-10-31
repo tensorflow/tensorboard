@@ -166,8 +166,7 @@ def text_array_to_html(text_arr):
   """
   if not text_arr.shape:
     # It is a scalar. No need to put it in a table, just apply markdown
-    return plugin_util.markdown_to_safe_html(
-        text_arr.astype(np.dtype(str)).tostring())
+    return plugin_util.markdown_to_safe_html(np.asscalar(text_arr))
   warning = ''
   if len(text_arr.shape) > 2:
     warning = plugin_util.markdown_to_safe_html(WARNING_TEMPLATE
