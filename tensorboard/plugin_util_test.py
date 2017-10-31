@@ -113,7 +113,7 @@ class MarkdownToSafeHTMLTest(tf.test.TestCase):
     # there will probably be a bunch of null bytes. These would be stripped by
     # the sanitizer no matter what, but make sure we remove them before markdown
     # interpretation to avoid affecting output (e.g. "_with_" gets italicized).
-    s = u'word_with_underscores'.encode('utf-16')[2:]  # Strip byte-order mark
+    s = u'word_with_underscores'.encode('utf-32-le')
     self._test(s, u'<p>word_with_underscores</p>')
 
 
