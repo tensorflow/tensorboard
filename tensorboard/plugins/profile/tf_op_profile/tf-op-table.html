@@ -212,7 +212,7 @@ Polymer({
         {{_utilization(node)}}</span>
     </div>
     <template is="dom-if" if="[[expanded]]">
-      <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
+      <template is="dom-repeat" items="{{node.children}}">
         <tf-op-table-entry
           node="[[item]]"
           level={{_nextLevel(level)}}
@@ -262,11 +262,6 @@ Polymer({
   _eq: function(x, y) {
     return x == y;
   },
-  _sortEntry: function(left, right) {
-    var leftTime = left.metrics ? left.metrics.time : 0;
-    var rightTime = right.metrics ? right.metrics.time : 0;
-    return rightTime - leftTime;
-  },
   _nextLevel: function(level) { return level + 1; },
   _handleHeaderClick: function(e) {
     this.expanded ^= true;
@@ -283,7 +278,7 @@ Polymer({
     return percent(utilization(node));
   },
   _flameColor: function(node) {
-    return flameColor(utilization(node), 1, 0.2);
+    return flameColor(utilization(this.node), 1, 0.2);
   },
   _barWidth: function(node) {
     return percent(node.metrics.time);
