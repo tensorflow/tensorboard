@@ -278,7 +278,7 @@ Polymer({
     return percent(utilization(node));
   },
   _flameColor: function(node) {
-    return flameColor(utilization(this.node), 1, 0.2);
+    return flameColor(utilization(node), 1, 0.2);
   },
   _barWidth: function(node) {
     return percent(node.metrics.time);
