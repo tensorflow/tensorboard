@@ -263,11 +263,18 @@ class TextPluginTest(tf.test.TestCase):
       np.testing.assert_array_equal(actual, expected)
 
   def test_text_array_to_html(self):
-
     convert = text_plugin.text_array_to_html
     scalar = np.array('foo')
     scalar_expected = '<p>foo</p>'
     self.assertEqual(convert(scalar), scalar_expected)
+
+    # Check that underscores are preserved correctly; this detects erroneous
+    # use of UTF-16 or UTF-32 encoding when calling markdown_to_safe_html(),
+    # which would introduce spurious null bytes and cause undesired <em> tags
+    # around the underscores.
+    scalar_underscores = np.array('word_with_underscores')
+    scalar_underscores_expected = '<p>word_with_underscores</p>'
+    self.assertEqual(convert(scalar_underscores), scalar_underscores_expected)
 
     vector = np.array(['foo', 'bar'])
     vector_expected = textwrap.dedent("""\
