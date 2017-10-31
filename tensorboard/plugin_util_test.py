@@ -108,6 +108,14 @@ class MarkdownToSafeHTMLTest(tf.test.TestCase):
     self._test(s,
                u'<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>')
 
+  def test_null_bytes_stripped_before_markdown_processing(self):
+    # If this function is mistakenly called with UTF-16 or UTF-32 encoded text,
+    # there will probably be a bunch of null bytes. These would be stripped by
+    # the sanitizer no matter what, but make sure we remove them before markdown
+    # interpretation to avoid affecting output (e.g. "_with_" gets italicized).
+    s = u'word_with_underscores'.encode('utf-32-le')
+    self._test(s, u'<p>word_with_underscores</p>')
+
 
 if __name__ == '__main__':
   tf.test.main()
