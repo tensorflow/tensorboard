@@ -24,6 +24,7 @@ import bleach
 import markdown
 import six
 
+import tensorflow as tf
 
 _ALLOWED_ATTRIBUTES = {
     'a': ['href', 'title'],
@@ -71,7 +72,14 @@ def markdown_to_safe_html(markdown_string):
   """
   # Convert to utf-8 whenever we have a binary input.
   if isinstance(markdown_string, six.binary_type):
-    markdown_string = markdown_string.decode('utf-8')
+    markdown_string_decoded = markdown_string.decode('utf-8')
+    # Remove null bytes and warn if there were any, since it probably means
+    # we were given a bad encoding.
+    markdown_string = markdown_string_decoded.replace(u'\x00', u'')
+    num_null_bytes = len(markdown_string_decoded) - len(markdown_string)
+    if num_null_bytes:
+      tf.logging.warning('Found %d null bytes when decoding markdown as UTF-8',
+                         num_null_bytes)
 
   string_html = markdown.markdown(
       markdown_string, extensions=['markdown.extensions.tables'])
