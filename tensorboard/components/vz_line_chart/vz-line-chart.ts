@@ -690,8 +690,11 @@ class LineChart {
     } else {
       // Generate a reasonable range.
       const accessors = this.getAccessorsForComputingYRange();
-      const vals = _.flatMap(d, d => _.flatMap(accessors, accessor =>
-          d.data().map(accessor(x, -1, d)).filter(isFinite)));
+      let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
+        return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
+      };		
+      const vals = _.flattenDeep<number>(this.datasets.map(datasetToValues))
+          .filter(isFinite);
       yDomain = ChartHelpers.computeDomain(vals, this._ignoreYOutliers);
     }
     this.yScale.domain(yDomain);
