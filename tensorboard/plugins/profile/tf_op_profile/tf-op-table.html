@@ -197,7 +197,7 @@ Polymer({
          on-mouseenter="_handleHeaderMouseEnter"
          on-mouseleave="_handleHeaderMouseLeave"
          hidden="[[!level]]">
-      <div id="bar"></div>
+      <div id="bar" style$="width:{{_barWidth(node)}}"></div>
       <span id="time">{{_percent(node.metrics.time)}}</span>
       <span id="name" style$="padding-left:[[level]]em;">
         <span id="disclosure">
@@ -208,7 +208,8 @@ Polymer({
         </span>{{node.name}}
       </span>
       <span id="provenance">{{_provenance(node)}}&nbsp;</span>
-      <span id="utilization"><div></div></span>
+      <span id="utilization" style$="background-color:{{_flameColor(node)}}">
+        {{_utilization(node)}}</span>
     </div>
     <template is="dom-if" if="[[expanded]]">
       <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
@@ -266,13 +267,6 @@ Polymer({
     var rightTime = right.metrics ? right.metrics.time : 0;
     return rightTime - leftTime;
   },
-  ready: function() {
-    if (!this.node || !this.node.metrics || !this.$.bar) return;
-    this.$.bar.style.width = percent(this.node.metrics.time);
-    this.$.utilization.firstChild.innerText = percent(utilization(this.node));
-    this.$.utilization.style.backgroundColor =
-        flameColor(utilization(this.node), 1, 0.2);
-  },
   _nextLevel: function(level) { return level + 1; },
   _handleHeaderClick: function(e) {
     this.expanded ^= true;
@@ -285,8 +279,16 @@ Polymer({
     return (node.xla && node.xla.provenance)
               ? node.xla.provenance.replace(/^.*\//, '') : "";
   },
+  _utilization: function(node) {
+    return percent(utilization(node));
+  },
+  _flameColor: function(node) {
+    return flameColor(utilization(node), 1, 0.2);
+  },
+  _barWidth: function(node) {
+    return percent(node.metrics.time);
+  },
   _selectedChanged: function(v) { this.classList.toggle('selected', v); }
 });
   </script>
 </dom-module>
-
