@@ -25,7 +25,7 @@ import tensorboard.version
 REQUIRED_PACKAGES = [
     'numpy >= 1.12.0',
     'six >= 1.10.0',
-    'protobuf >= 3.3.0',
+    'protobuf >= 3.4.0',
     'werkzeug >= 0.11.10',
     'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
