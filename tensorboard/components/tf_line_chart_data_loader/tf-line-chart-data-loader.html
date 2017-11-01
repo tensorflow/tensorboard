@@ -40,6 +40,7 @@ limitations under the License.
         style="[[_computeLineChartStyle(_loading)]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
+        fill-area="[[fillArea]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -117,6 +118,7 @@ limitations under the License.
         xType: String,
         yValueAccessor: Object,
         tooltipColumns: Array,
+        fillArea: Object,
 
         smoothingEnabled: Boolean,
         smoothingWeight: Number,

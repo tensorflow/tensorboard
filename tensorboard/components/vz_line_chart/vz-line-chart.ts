@@ -17,6 +17,18 @@ limitations under the License.
 import {DragZoomLayer} from './dragZoomInteraction.js';
 import * as ChartHelpers from './vz-chart-helpers.js';
 
+/**
+ * An interface that describes a fill area to visualize. The fill area is
+ * visualized with a less intense version of the color for a given series.
+ */
+export interface FillArea {
+  // The lower end of the fill area.
+  lowerAccessor: Plottable.IAccessor<number>;
+
+  // The higher end of the fill area.
+  higherAccessor: Plottable.IAccessor<number>;
+}
+
 Polymer({
   is: 'vz-line-chart',
   properties: {
@@ -144,6 +156,15 @@ Polymer({
     },
 
     /**
+     * An optional FillArea object. If provided, the chart will
+     * visualize fill area alongside the primary line for each series. If set,
+     * consider setting ignoreYOutliers to false. Otherwise, outlier
+     * calculations may deem some margins to be outliers, and some portions of
+     * the fill area may not display.
+     */
+    fillArea: Object,
+
+    /**
      * An optional array of 2 numbers for the min and max of the default range
      * of the Y axis. If not provided, a reasonable range will be generated.
      * This property is a list instead of 2 individual properties to emphasize
@@ -180,7 +201,6 @@ Polymer({
     /**
      * Whether to ignore outlier data when computing the yScale domain.
      */
-
     ignoreYOutliers: {
       type: Boolean,
       value: false,
@@ -325,6 +345,7 @@ Polymer({
           colorScale,
           tooltip,
           this.tooltipColumns,
+          this.fillArea,
           this.defaultXRange,
           this.defaultYRange);
       var div = d3.select(this.$.chartdiv);
@@ -396,11 +417,13 @@ class LineChart {
 
   private linePlot: Plottable.Plots.Line<number|Date>;
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
+  private marginAreaPlot?: Plottable.Plots.Area<number|Date>;
   private scatterPlot: Plottable.Plots.Scatter<number|Date, Number>;
   private nanDisplay: Plottable.Plots.Scatter<number|Date, Number>;
   private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number>;
   private lastPointsDataset: Plottable.Dataset;
+  private fillArea?: FillArea;
   private datasets: Plottable.Dataset[];
   private onDatasetChanged: (dataset: Plottable.Dataset) => void;
   private nanDataset: Plottable.Dataset;
@@ -424,6 +447,7 @@ class LineChart {
       colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>,
       tooltipColumns: ChartHelpers.TooltipColumn[],
+      fillArea: FillArea,
       defaultXRange?: number[],
       defaultYRange?: number[]) {
     this.seriesNames = [];
@@ -445,14 +469,19 @@ class LineChart {
     this._defaultYRange = defaultYRange;
 
     this.buildChart(
-        xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns);
+        xComponentsCreationMethod,
+        yValueAccessor,
+        yScaleType,
+        tooltipColumns,
+        fillArea);
   }
 
   private buildChart(
       xComponentsCreationMethod: () => ChartHelpers.XComponents,
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
-      tooltipColumns: ChartHelpers.TooltipColumn[]) {
+      tooltipColumns: ChartHelpers.TooltipColumn[],
+      fillArea: FillArea) {
     if (this.outer) {
       this.outer.destroy();
     }
@@ -467,6 +496,7 @@ class LineChart {
         ChartHelpers.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
+    this.fillArea = fillArea;
 
     this.dzl = new DragZoomLayer(
         this.xScale, this.yScale, this.resetYDomain.bind(this));
@@ -474,7 +504,8 @@ class LineChart {
     let center = this.buildPlot(
         this.xScale,
         this.yScale,
-        tooltipColumns);
+        tooltipColumns,
+        fillArea);
 
     this.gridlines =
         new Plottable.Components.Gridlines(this.xScale, this.yScale);
@@ -490,7 +521,21 @@ class LineChart {
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
 
-  private buildPlot(xScale, yScale, tooltipColumns): Plottable.Component {
+  private buildPlot(xScale, yScale, tooltipColumns, fillArea):
+      Plottable.Component {
+    if (fillArea) {
+      this.marginAreaPlot = new Plottable.Plots.Area<number|Date>();
+      this.marginAreaPlot.x(this.xAccessor, xScale);
+      this.marginAreaPlot.y(fillArea.higherAccessor, yScale);
+      this.marginAreaPlot.y0(fillArea.lowerAccessor);
+      this.marginAreaPlot.attr(
+          'fill',
+          (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
+              this.colorScale.scale(dataset.metadata().name));
+      this.marginAreaPlot.attr('fill-opacity', 0.3);
+      this.marginAreaPlot.attr('stroke-width', 0);
+    }
+
     this.smoothedAccessor = (d: ChartHelpers.ScalarDatum) => d.smoothed;
     let linePlot = new Plottable.Plots.Line<number|Date>();
     linePlot.x(this.xAccessor, xScale);
@@ -533,8 +578,11 @@ class LineChart {
     nanDisplay.symbol(Plottable.SymbolFactories.triangle);
     this.nanDisplay = nanDisplay;
 
-    return new Plottable.Components.Group(
-        [nanDisplay, scatterPlot, smoothLinePlot, group]);
+    const groups = [nanDisplay, scatterPlot, smoothLinePlot, group];
+    if (this.marginAreaPlot) {
+      groups.push(this.marginAreaPlot);
+    }
+    return new Plottable.Components.Group(groups);
   }
 
   /** Updates the chart when a dataset changes. Called every time the data of
@@ -561,7 +609,7 @@ class LineChart {
    * (since usually those are context in the surrounding dataset).
    */
   private updateSpecialDatasets() {
-    const accessor = this.getAccessor();
+    const accessor = this.getYAxisAccessor();
 
     let lastPointsData =
         this.datasets
@@ -641,18 +689,29 @@ class LineChart {
       yDomain = this._defaultYRange;
     } else {
       // Generate a reasonable range.
-      const accessor = this.getAccessor();
-      let datasetToValues: (d: Plottable.Dataset) => number[] = (d) => {
-        return d.data().map((x) => accessor(x, -1, d));
+      const accessors = this.getAccessorsForComputingYRange();
+      let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
+        return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
       };
-      let vals = _.flatten(this.datasets.map(datasetToValues));
-      vals = vals.filter((x) => x === x && x !== Infinity && x !== -Infinity);
+      const vals = _.flattenDeep<number>(this.datasets.map(datasetToValues))
+          .filter(isFinite);
       yDomain = ChartHelpers.computeDomain(vals, this._ignoreYOutliers);
     }
     this.yScale.domain(yDomain);
   }
 
-  private getAccessor(): Plottable.IAccessor<number> {
+  private getAccessorsForComputingYRange(): Plottable.IAccessor<number>[] {
+    const accessors = [this.getYAxisAccessor()];
+    if (this.fillArea) {
+      // Make the Y domain take margins into account.
+      accessors.push(
+          this.fillArea.lowerAccessor,
+          this.fillArea.higherAccessor);
+    }
+    return accessors;
+  }
+
+  private getYAxisAccessor() {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
@@ -908,6 +967,9 @@ class LineChart {
 
     if (this.smoothingEnabled) {
       this.smoothLinePlot.datasets(this.datasets);
+    }
+    if (this.marginAreaPlot) {
+      this.marginAreaPlot.datasets(this.datasets);
     }
     this.updateSpecialDatasets();
   }
