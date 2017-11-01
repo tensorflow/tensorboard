@@ -30,9 +30,12 @@ def tensorboard_workspace():
 
   native.http_archive(
       name = "protobuf",
-      urls = ["https://mirror.bazel.build/github.com/google/protobuf/archive/0b059a3d8a8f8aa40dde7bea55edca4ec5dfea66.tar.gz"],
-      sha256 = "6d43b9d223ce09e5d4ce8b0060cb8a7513577a35a64c7e3dad10f0703bf3ad93",
-      strip_prefix = "protobuf-0b059a3d8a8f8aa40dde7bea55edca4ec5dfea66",
+      urls = [
+          "http://mirror.bazel.build/github.com/google/protobuf/archive/v3.4.1.tar.gz",
+          "https://github.com/google/protobuf/archive/v3.4.1.tar.gz",
+      ],
+      sha256 = "8e0236242106e680b4f9f576cc44b8cd711e948b20a9fc07769b0a20ceab9cc4",
+      strip_prefix = "protobuf-3.4.1",
       # TODO: remove patching when tensorflow stops linking same protos into
       #       multiple shared libraries loaded in runtime by python.
       #       This patch fixes a runtime crash when tensorflow is compiled
