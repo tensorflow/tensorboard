@@ -861,17 +861,33 @@ class LineChart {
   private resmoothDataset(dataset: Plottable.Dataset) {
     let data = dataset.data();
     const smoothingWeight = this.smoothingWeight;
-    let last = data.length > 0 ? this.yValueAccessor(data[0], 0, dataset) : NaN;
+    // 1st-order IIR low-pass filter to attenuate the higher-
+    // frequency components of the time-series.
+    let last = data.length > 0 ? 0 : NaN;
+    let numAccum = 0;
     data.forEach((d, i) => {
-      if (!_.isFinite(last)) {
-        d.smoothed = this.yValueAccessor(d, i, dataset);
+      let nextVal = this.yValueAccessor(d, i, dataset);
+      if (!_.isFinite(nextVal)) {
+        d.smoothed = nextVal;
       } else {
-        // 1st-order IIR low-pass filter to attenuate the higher-
-        // frequency components of the time-series.
-        d.smoothed = last * smoothingWeight + (
-            1 - smoothingWeight) * this.yValueAccessor(d, i, dataset);
+        last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;
+        numAccum++;
+        // The uncorrected moving average is biased towards the initial value.
+        // For example, if initialized with `0`, with smoothingWeight `s`, where
+        // every data point is `c`, after `t` steps the moving average is
+        // ```
+        //   EMA = 0*s^(t) + c*(1 - s)*s^(t-1) + c*(1 - s)*s^(t-2) + ...
+        //       = c*(1 - s^t)
+        // ```
+        // If initialized with `0`, dividing by (1 - s^t) is enough to debias
+        // the moving average. We count the number of finite data points and
+        // divide appropriately before storing the data.
+        let debiasWeight = 1;
+        if (smoothingWeight !== 1.0) {
+          debiasWeight = 1.0 - Math.pow(smoothingWeight, numAccum);
+        }
+        d.smoothed = last / debiasWeight;
       }
-      last = d.smoothed;
     });
   }
 
