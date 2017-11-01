@@ -692,7 +692,7 @@ class LineChart {
       const accessors = this.getAccessorsForComputingYRange();
       let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
         return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
-      };		
+      };
       const vals = _.flattenDeep<number>(this.datasets.map(datasetToValues))
           .filter(isFinite);
       yDomain = ChartHelpers.computeDomain(vals, this._ignoreYOutliers);
