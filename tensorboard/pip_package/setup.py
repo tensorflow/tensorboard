@@ -17,15 +17,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys
-
 from setuptools import find_packages, setup
 
 import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
-    'futures >= 3.1.1',
     'numpy >= 1.12.0',
     'six >= 1.10.0',
     'protobuf >= 3.4.0',
@@ -33,13 +30,15 @@ REQUIRED_PACKAGES = [
     'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
     'bleach == 1.5.0',
-]
 
-# python3 requires wheel 0.26
-if sys.version_info.major == 3:
-  REQUIRED_PACKAGES.append('wheel >= 0.26')
-else:
-  REQUIRED_PACKAGES.append('wheel')
+    # futures is a backport of the concurrent.futures module added in
+    # python 3.2
+    'futures >= 3.1.1;python_version < "3.2"',
+
+    # python3 specifically requires wheel 0.26
+    'wheel;python_version < "3"',
+    'wheel >= 0.26;python_version >= "3"',
+]
 
 CONSOLE_SCRIPTS = [
     'tensorboard = tensorboard.main:main',
@@ -76,7 +75,12 @@ setup(
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',
