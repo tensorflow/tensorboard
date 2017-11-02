@@ -112,9 +112,15 @@ class MarkdownToSafeHTMLTest(tf.test.TestCase):
     # If this function is mistakenly called with UTF-16 or UTF-32 encoded text,
     # there will probably be a bunch of null bytes. These would be stripped by
     # the sanitizer no matter what, but make sure we remove them before markdown
-    # interpretation to avoid affecting output (e.g. "_with_" gets italicized).
-    s = u'word_with_underscores'.encode('utf-32-le')
-    self._test(s, u'<p>word_with_underscores</p>')
+    # interpretation to avoid affecting output (e.g. middle-word underscores
+    # would generate erroneous <em> tags like "un<em>der</em>score") and add an
+    # HTML comment with a warning.
+    s = u'un_der_score'.encode('utf-32-le')
+    # UTF-32 encoding of ASCII will have 3 null bytes per char. 36 = 3 * 12.
+    self._test(s,
+               u'<!-- WARNING: discarded 36 null bytes in markdown string '
+               'after UTF-8 decoding -->\n'
+               '<p>un_der_score</p>')
 
 
 if __name__ == '__main__':
