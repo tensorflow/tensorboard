@@ -130,6 +130,7 @@ export class DataSet {
   nearest: knn.NearestEntry[][];
   nearestK: number;
   tSNEIteration: number = 0;
+  tSNEShouldPause = false;
   tSNEShouldStop = true;
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
@@ -312,6 +313,7 @@ export class DataSet {
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
     this.tSNEIteration = 0;
 
@@ -322,19 +324,21 @@ export class DataSet {
         this.tsne = null;
         return;
       }
-      this.tsne.step();
-      let result = this.tsne.getSolution();
-      sampledIndices.forEach((index, i) => {
-        let dataPoint = this.points[index];
+      if (!this.tSNEShouldPause) {
+        this.tsne.step();
+        let result = this.tsne.getSolution();
+        sampledIndices.forEach((index, i) => {
+          let dataPoint = this.points[index];
 
-        dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
-        dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
-        if (tsneDim === 3) {
-          dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
-        }
-      });
-      this.tSNEIteration++;
-      stepCallback(this.tSNEIteration);
+          dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+          dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
+          if (tsneDim === 3) {
+            dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+          }
+        });
+        this.tSNEIteration++;
+        stepCallback(this.tSNEIteration);
+      }
       requestAnimationFrame(step);
     };
 
