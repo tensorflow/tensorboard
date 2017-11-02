@@ -80,7 +80,7 @@ following databases are supported:
 
 - sqlite: Use SQLite built in to Python. URI must specify the path of the
   database file, which will be created if it doesn't exist. For example:
-  --db sqlite3:~/.tensorboard.db
+  --db sqlite:~/.tensorboard.db
 
 Warning: This feature is a work in progress and only has limited support.
 """)
