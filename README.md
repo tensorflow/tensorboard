@@ -1,5 +1,7 @@
 # TensorBoard ![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)
 
+![Animated example of using TensorBoard](images/tensorboard.gif)
+
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
 
@@ -7,7 +9,7 @@ This README gives an overview of key concepts in TensorBoard, as well as how to
 interpret the visualizations TensorBoard provides. For an in-depth example of
 using TensorBoard, see the tutorial: [TensorBoard: Visualizing
 Learning][].
-For in-depth information on the Graph Visualizer, see this tutorial: 
+For in-depth information on the Graph Visualizer, see this tutorial:
 [TensorBoard: Graph Visualization][].
 
 [TensorBoard: Visualizing Learning]: https://www.tensorflow.org/get_started/summaries_and_tensorboard
@@ -15,7 +17,7 @@ For in-depth information on the Graph Visualizer, see this tutorial:
 
 You may also want to watch
 [this video tutorial][] that walks
-through setting up and using TensorBoard. There's an associated 
+through setting up and using TensorBoard. There's an associated
 [tutorial with an end-to-end example of training TensorFlow and using TensorBoard][].
 
 [this video tutorial]: https://www.youtube.com/watch?v=eBbEDRsCmv4
@@ -33,7 +35,7 @@ directory by creating a summary writer:
 file_writer = tf.summary.FileWriter('/path/to/logs', sess.graph)
 ```
 
-For more details, see 
+For more details, see
 [the TensorBoard tutorial](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 Once you have event files, run TensorBoard and provide the log directory. If
 you're using a precompiled TensorFlow package (e.g. you installed via pip), run:
@@ -66,7 +68,7 @@ work, but there may be bugs or performance issues.
 ### Summary Ops: How TensorBoard gets data from TensorFlow
 
 The first step in using TensorBoard is acquiring data from your TensorFlow run.
-For this, you need 
+For this, you need
 [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
 Summary ops are ops, like
 [`tf.matmul`](https://www.tensorflow.org/versions/r1.2/api_docs/python/tf/matmul)
