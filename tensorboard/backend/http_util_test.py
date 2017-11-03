@@ -36,6 +36,7 @@ class RespondTest(tf.test.TestCase):
     r = http_util.Respond(q, '<b>hello world</b>', 'text/html')
     self.assertEqual(r.status_code, 200)
     self.assertEqual(r.response, [six.b('<b>hello world</b>')])
+    self.assertEqual(r.headers.get('Content-Length'), '18')
 
   def testHeadRequest_doesNotWrite(self):
     builder = wtest.EnvironBuilder(method='HEAD')
@@ -43,7 +44,8 @@ class RespondTest(tf.test.TestCase):
     request = wrappers.Request(env)
     r = http_util.Respond(request, '<b>hello world</b>', 'text/html')
     self.assertEqual(r.status_code, 200)
-    self.assertEqual(r.response, [six.b('')])
+    self.assertEqual(r.response, [])
+    self.assertEqual(r.headers.get('Content-Length'), '18')
 
   def testPlainText_appendsUtf8ToContentType(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -136,6 +138,20 @@ class RespondTest(tf.test.TestCase):
     self.assertEqual(
         r.response, [fall_of_hyperion_canto1_stanza1.encode('utf-8')])
 
+  def testAcceptGzip_alreadyCompressed_sendsPrecompressedResponse(self):
+    gzipped_text = _gzip('hello hello hello world')
+    e = wtest.EnvironBuilder(headers={'Accept-Encoding': 'gzip'}).get_environ()
+    q = wrappers.Request(e)
+    r = http_util.Respond(q, gzipped_text, 'text/plain', content_encoding='gzip')
+    self.assertEqual(r.response, [gzipped_text])  # Still singly zipped
+
+  def testPrecompressedResponse_noAcceptGzip_decompressesResponse(self):
+    orig_text = 'hello hello hello world'
+    gzipped_text = _gzip(orig_text)
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, gzipped_text, 'text/plain', content_encoding='gzip')
+    self.assertEqual(r.response, [orig_text])
+
   def testJson_getsAutoSerialized(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, [1, 2, 3], 'application/json')
@@ -147,8 +163,16 @@ class RespondTest(tf.test.TestCase):
     self.assertEqual(r.headers.get('Cache-Control'), 'private, max-age=60')
 
 
+def _gzip(bs):
+  out = six.BytesIO()
+  with gzip.GzipFile(fileobj=out, mode='wb') as f:
+    f.write(bs)
+  return out.getvalue()
+
+
 def _gunzip(bs):
-  return gzip.GzipFile('', 'rb', 9, six.BytesIO(bs)).read()
+  with gzip.GzipFile(fileobj=six.BytesIO(bs), mode='rb') as f:
+    return f.read()
 
 
 if __name__ == '__main__':

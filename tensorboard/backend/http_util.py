@@ -119,18 +119,24 @@ def Respond(request,
   content = tf.compat.as_bytes(content, charset)
   if textual and not charset_match and mimetype not in _JSON_MIMETYPES:
     content_type += '; charset=' + charset
-  if (not content_encoding and textual and
-      _ALLOWS_GZIP_PATTERN.search(request.headers.get('Accept-Encoding', ''))):
+  gzip_accepted = _ALLOWS_GZIP_PATTERN.search(
+      request.headers.get('Accept-Encoding', ''))
+  # Automatically gzip uncompressed text data if accepted.
+  if textual and not content_encoding and gzip_accepted:
+    orig_len = len(content)
     out = six.BytesIO()
-    f = gzip.GzipFile(fileobj=out, mode='wb', compresslevel=3)
-    f.write(content)
-    f.close()
+    # Set mtime to zero to make payload for a given input deterministic.
+    with gzip.GzipFile(fileobj=out, mode='wb', compresslevel=3, mtime=0) as f:
+      f.write(content)
     content = out.getvalue()
     content_encoding = 'gzip'
-  if request.method == 'HEAD':
-    content = ''
-  headers = []
+  # Automatically unzip precompressed data if not accepted.
+  if content_encoding == 'gzip' and not gzip_accepted:
+    with gzip.GzipFile(fileobj=six.BytesIO(content), mode='rb') as f:
+      content = f.read()
+    content_encoding = None
 
+  headers = []
   headers.append(('Content-Length', str(len(content))))
   if content_encoding:
     headers.append(('Content-Encoding', content_encoding))
@@ -141,6 +147,9 @@ def Respond(request,
   else:
     headers.append(('Expires', '0'))
     headers.append(('Cache-Control', 'no-cache, must-revalidate'))
+
+  if request.method == 'HEAD':
+    content = None
 
   return wrappers.Response(
       response=content, status=code, headers=headers, content_type=content_type)
