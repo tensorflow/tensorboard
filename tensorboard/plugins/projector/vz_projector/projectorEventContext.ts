@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DistanceFunction, Projection} from './data.js';
+import {DistanceFunction, DistanceSpace, Projection} from './data.js';
 import {NearestEntry} from './knn.js';
 
 export type HoverListener = (index: number) => void;
@@ -23,6 +23,8 @@ export type SelectionChangedListener =
 export type ProjectionChangedListener = (projection: Projection) => void;
 export type DistanceMetricChangedListener =
     (distanceMetric: DistanceFunction) => void;
+export type DistanceSpaceChangedListener =
+    (distanceSpace: DistanceSpace) => void;
 export interface ProjectorEventContext {
   /** Register a callback to be invoked when the mouse hovers over a point. */
   registerHoverListener(listener: HoverListener);
@@ -42,4 +44,7 @@ export interface ProjectorEventContext {
   registerDistanceMetricChangedListener(listener:
                                             DistanceMetricChangedListener);
   notifyDistanceMetricChanged(distMetric: DistanceFunction);
+  registerDistanceSpaceChangedListener(listener:
+                                            DistanceSpaceChangedListener);
+  notifyDistanceSpaceChanged(distSpace: DistanceSpace);
 }
