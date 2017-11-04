@@ -138,7 +138,7 @@ limitations under the License.
       </paper-toolbar>
 
       <div id="content" class="fit">
-        <content id="injected-overview"></content>
+        <slot id="injected-overview"></slot>
         <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
           <div class="warning-message">
             <h3>Failed to load the set of active dashboards.</h3>
