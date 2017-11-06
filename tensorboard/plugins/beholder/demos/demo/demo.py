@@ -152,8 +152,7 @@ def train():
   test_writer = tf.summary.FileWriter(LOG_DIRECTORY + '/test')
   tf.global_variables_initializer().run()
 
-  visualizer = Beholder(session=sess,
-                        logdir=LOG_DIRECTORY)
+  visualizer = Beholder(logdir=LOG_DIRECTORY)
 
 
   def feed_dict(train):
@@ -188,6 +187,7 @@ def train():
         first_of_batch = sess.run(x, feed_dict=feed_dictionary)[0].reshape(28, 28)
 
         visualizer.update(
+          session=sess,
           arrays=activations + [first_of_batch] + gradient_arrays,
           frame=first_of_batch,
         )

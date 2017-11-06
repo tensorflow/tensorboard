@@ -19,6 +19,7 @@ from __future__ import print_function
 import os
 import time
 
+import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.beholder import im_util
@@ -32,14 +33,14 @@ from tensorboard.plugins.beholder.visualizer import Visualizer
 
 class Beholder(object):
 
-  def __init__(self, session, logdir):
+  def __init__(self, logdir):
     self.video_writer = None
 
     self.PLUGIN_LOGDIR = logdir + '/plugins/' + PLUGIN_NAME
-    self.SESSION = session
 
-    self.frame_placeholder = None
-    self.summary_op = None
+    self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
+    self.summary_op = tf.summary.tensor_summary(TAG_NAME,
+                                                self.frame_placeholder)
 
     self.last_image_shape = []
     self.last_update_time = time.time()
@@ -69,17 +70,16 @@ class Beholder(object):
     return config
 
 
-  def _write_summary(self, frame):
+  def _write_summary(self, session, frame):
     '''Writes the frame to disk as a tensor summary.'''
-    summary = self.SESSION.run(self.summary_op, feed_dict={
+    summary = session.run(self.summary_op, feed_dict={
         self.frame_placeholder: frame
     })
     path = '{}/{}'.format(self.PLUGIN_LOGDIR, SUMMARY_FILENAME)
     write_file(summary, path)
 
 
-
-  def _get_final_image(self, config, arrays=None, frame=None):
+  def _get_final_image(self, session, config, arrays=None, frame=None):
     if config['values'] == 'frames':
       if frame is None:
         final_image = im_util.get_image_relative_to_script('frame-missing.png')
@@ -96,8 +96,12 @@ class Beholder(object):
         final_image = self.visualizer.build_frame(arrays)
 
     elif config['values'] == 'trainable_variables':
-      arrays = [self.SESSION.run(x) for x in tf.trainable_variables()]
+      arrays = [session.run(x) for x in tf.trainable_variables()]
       final_image = self.visualizer.build_frame(arrays)
+
+    if len(final_image.shape) == 2:
+      # Map grayscale images to 3D tensors.
+      final_image = np.expand_dims(final_image, -1)
 
     return final_image
 
@@ -111,14 +115,9 @@ class Beholder(object):
       return time.time() >= earliest_time
 
 
-  def _update_frame(self, arrays, frame, config):
-    final_image = self._get_final_image(config, arrays, frame)
-
-    if self.summary_op is None or self.last_image_shape != final_image.shape:
-      self.frame_placeholder = tf.placeholder(tf.uint8, final_image.shape)
-      self.summary_op = tf.summary.tensor_summary(TAG_NAME,
-                                                  self.frame_placeholder)
-    self._write_summary(final_image)
+  def _update_frame(self, session, arrays, frame, config):
+    final_image = self._get_final_image(session, config, arrays, frame)
+    self._write_summary(session, final_image)
     self.last_image_shape = final_image.shape
 
     return final_image
@@ -152,7 +151,7 @@ class Beholder(object):
 
   # TODO: blanket try and except for production? I don't someone's script to die
   #       after weeks of running because of a visualization.
-  def update(self, arrays=None, frame=None):
+  def update(self, session, arrays=None, frame=None):
     '''Creates a frame and writes it to disk.
 
     Args:
@@ -168,7 +167,7 @@ class Beholder(object):
     if self._enough_time_has_passed(self.previous_config['FPS']):
       self.visualizer.update(new_config)
       self.last_update_time = time.time()
-      final_image = self._update_frame(arrays, frame, new_config)
+      final_image = self._update_frame(session, arrays, frame, new_config)
       self._update_recording(final_image, new_config)
 
 
@@ -191,3 +190,31 @@ class Beholder(object):
     grads = [pair[0] for pair in grads_and_vars]
 
     return grads, optimizer.apply_gradients(grads_and_vars)
+
+
+class BeholderHook(tf.train.SessionRunHook):
+  """SessionRunHook implementation that run Beholder every step.
+
+  Convinient when using tf.train.MonitoredSession:
+  ```python
+  beholder_hook = BeholderHook('MY_LOG_DIR')
+  with MonitoredSession(session_creator=ChiefSessionCreator(...),
+                        hooks=[beholder_hook]) as sess:
+    while not sess.should_stop():
+      sess.run(train_op)
+  ```
+  """
+  def __init__(self, logdir):
+    """Creates new Hook instance
+
+    Args:
+      logdir: Directory where Beholder is to write data.
+    """
+    self._logdir = logdir
+    self.visualizer = None
+
+  def begin(self):
+    self.visualizer = Beholder(self._logdir)
+
+  def after_run(self, run_context, unused_run_values):
+    self.visualizer.update(run_context.session)
