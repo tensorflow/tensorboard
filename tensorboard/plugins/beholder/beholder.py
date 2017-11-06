@@ -39,7 +39,11 @@ class Beholder(object):
     self.PLUGIN_LOGDIR = logdir + '/plugins/' + PLUGIN_NAME
 
     self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
+<<<<<<< HEAD
     self.summary_op = tf.summary.tensor_summary(TAG_NAME,
+=======
+    self.summary_op = tf.summary.tensor_summary(beholder.TAG_NAME,
+>>>>>>> 19749df8fc4626a757c08093b87b69b1c948a5c9
                                                 self.frame_placeholder)
 
     self.last_image_shape = []
