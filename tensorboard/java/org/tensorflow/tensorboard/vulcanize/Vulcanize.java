@@ -375,7 +375,6 @@ public final class Vulcanize {
     // Nice options.
     options.setColorizeErrorOutput(true);
     options.setContinueAfterErrors(true);
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2016);
     options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
     options.setGenerateExports(true);
     options.setStrictModeInput(false);
@@ -528,7 +527,6 @@ public final class Vulcanize {
   private static String minify(Webpath path, String script) {
     CompilerOptions options = new CompilerOptions();
     options.skipAllCompilerPasses();
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2016);
     options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
     options.setContinueAfterErrors(true);
     CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
