@@ -123,7 +123,6 @@ def Respond(request,
       request.headers.get('Accept-Encoding', ''))
   # Automatically gzip uncompressed text data if accepted.
   if textual and not content_encoding and gzip_accepted:
-    orig_len = len(content)
     out = six.BytesIO()
     # Set mtime to zero to make payload for a given input deterministic.
     with gzip.GzipFile(fileobj=out, mode='wb', compresslevel=3, mtime=0) as f:

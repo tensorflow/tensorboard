@@ -139,17 +139,17 @@ class RespondTest(tf.test.TestCase):
         r.response, [fall_of_hyperion_canto1_stanza1.encode('utf-8')])
 
   def testAcceptGzip_alreadyCompressed_sendsPrecompressedResponse(self):
-    gzipped_text = _gzip('hello hello hello world')
+    gzip_text = _gzip(b'hello hello hello world')
     e = wtest.EnvironBuilder(headers={'Accept-Encoding': 'gzip'}).get_environ()
     q = wrappers.Request(e)
-    r = http_util.Respond(q, gzipped_text, 'text/plain', content_encoding='gzip')
-    self.assertEqual(r.response, [gzipped_text])  # Still singly zipped
+    r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
+    self.assertEqual(r.response, [gzip_text])  # Still singly zipped
 
   def testPrecompressedResponse_noAcceptGzip_decompressesResponse(self):
-    orig_text = 'hello hello hello world'
-    gzipped_text = _gzip(orig_text)
+    orig_text = b'hello hello hello world'
+    gzip_text = _gzip(orig_text)
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, gzipped_text, 'text/plain', content_encoding='gzip')
+    r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
     self.assertEqual(r.response, [orig_text])
 
   def testJson_getsAutoSerialized(self):
