@@ -14,9 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {ColorOption, ColumnStats, SpriteAndMetadataInfo} from './data.js';
-import {DataProvider, EmbeddingInfo, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider.js';
+import {DataProvider, EmbeddingInfo, analyzeMetadata, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider.js';
+import * as knn from './knn.js';
 import * as util from './util.js';
 import {Projector} from './vz-projector.js';
+import {ProjectorInput} from './vz-projector-input.js';
 import {ColorLegendRenderInfo, ColorLegendThreshold} from './vz-projector-legend.js';
 // tslint:disable-next-line:no-unused-variable
 import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
@@ -51,6 +53,10 @@ export class DataPanel extends DataPanelPolymer {
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
 
+  private labelingBox: ProjectorInput;
+  private selectedPointIndices: number[];
+  private neighborsOfFirstPoint: knn.NearestEntry[];
+
   private selectedTensor: string;
   private selectedRun: string;
   private dataProvider: DataProvider;
@@ -70,6 +76,55 @@ export class DataPanel extends DataPanelPolymer {
     this.projector = projector;
     this.dataProvider = dp;
     this.setupUploadButtons();
+    this.labelingBox = this.querySelector('#labeling-box') as ProjectorInput;
+    this.labelingBox.toggleRegexVisibility();
+    this.applyLabel = this.querySelector('#apply-label') as HTMLButtonElement;
+    this.applyLabel.disabled = true;
+
+    // Called whenever the labeling text input changes.
+    const updateInput = (value: string, inRegexMode: boolean) => {
+      if (value == null || value.trim() === '') {
+        this.labelingBox.message = '';
+        this.applyLabel.disabled = true;
+        return;
+      }
+      let selectionSize = this.selectedPointIndices.length + 
+          this.neighborsOfFirstPoint.length;
+
+      if (selectionSize > 0) {
+        this.applyLabel.disabled = false;
+      }
+      const indices = this.projector.dataSet.query(
+          value, inRegexMode, this.selectedMetadataField);
+
+      if (indices.length === 0) {
+        this.labelingBox.message = `${selectionSize} selected, class empty.`;
+      } else {
+        this.labelingBox.message = 
+            `${selectionSize} selected, ${indices.length} existing.`;
+      }
+    };
+    
+    this.labelingBox.registerInputChangedListener((value, inRegexMode) => {
+      updateInput(value, inRegexMode);
+    });
+
+    this.applyLabel.addEventListener('click', () => {
+      this.applyLabel.disabled = true;
+      let selectionSize = this.selectedPointIndices.length + 
+          this.neighborsOfFirstPoint.length;
+      this.labelingBox.message = `${selectionSize} labeled as '${this.labelingBox.getValue()}'.`;
+      this.selectedPointIndices.forEach(i =>
+          this.projector.dataSet.points[i].metadata[this.selectedMetadataField] =
+          this.labelingBox.getValue());
+      this.neighborsOfFirstPoint.forEach(p =>
+          this.projector.dataSet.points[p.index].metadata[this.selectedMetadataField] =
+          this.labelingBox.getValue());
+      this.spriteAndMetadata.stats = analyzeMetadata(
+          this.spriteAndMetadata.stats.map(s => s.name),
+          this.projector.dataSet.points.map(p => p.metadata));
+      this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
+    });
 
     // Tell the projector whenever the data normalization changes.
     // Unknown why, but the polymer checkbox button stops working as soon as
@@ -125,9 +180,46 @@ export class DataPanel extends DataPanelPolymer {
       spriteAndMetadata: SpriteAndMetadataInfo, metadataFile: string) {
     this.spriteAndMetadata = spriteAndMetadata;
     this.metadataFile = metadataFile;
-
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-    this.selectedColorOptionName = this.colorOptions[0].name;
+    
+    if (this.selectedColorOptionName == null || this.colorOptions.filter(c =>
+        c.name == this.selectedColorOptionName).length == 0) {
+      this.selectedColorOptionName = this.colorOptions[0].name;
+    }
+
+    let labelIndex = -1;
+    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+      if (!stats.isNumeric && labelIndex === -1) {
+        labelIndex = i;
+      }
+      return stats.name;
+    });
+
+    if (this.selectedMetadataField == null || this.metadataFields.filter(name =>
+        name == this.selectedMetadataField).length == 0) {
+      // Make the default label the first non-numeric column.
+      this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
+    }
+  }
+
+  onProjectorSelectionChanged(
+      selectedPointIndices: number[],
+      neighborsOfFirstPoint: knn.NearestEntry[]) {
+    this.selectedPointIndices = selectedPointIndices;
+    this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+    let selectionSize = selectedPointIndices.length + 
+        neighborsOfFirstPoint.length;
+
+    if (selectionSize > 0) {
+      if (this.labelingBox.getValue() != null && 
+          this.labelingBox.getValue().trim() != '') {
+        this.applyLabel.disabled = false;
+        this.labelingBox.message = `${selectionSize} selected.`;
+      }
+    } else {
+      this.applyLabel.disabled = true;
+      this.labelingBox.message = '';
+    }
   }
 
   private addWordBreaks(longString: string): string {
@@ -152,7 +244,11 @@ export class DataPanel extends DataPanelPolymer {
       }
       return stats.name;
     });
-    this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+    
+    if (this.selectedLabelOption == null || this.labelOptions.filter(name =>
+        name == this.selectedLabelOption).length == 0) {
+      this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+    }
 
     // Color by options.
     const standardColorOption: ColorOption[] = [

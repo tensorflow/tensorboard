@@ -103,6 +103,10 @@ export class ProjectorInput extends PolymerClass {
     return this.inRegexMode;
   }
 
+  toggleRegexVisibility() {
+    this.inRegexModeButton.hidden = !this.inRegexModeButton.hidden;
+  }
+
   set(value: string, inRegexMode: boolean) {
     (this.inRegexModeButton as any).active = inRegexMode;
     this.paperInput.value = value;
