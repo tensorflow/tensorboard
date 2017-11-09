@@ -214,7 +214,7 @@ limitations under the License.
       }
 
       #toolbar {
-        background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        background-color: var(--tb-toolbar-background-color, var(--tb-orange-strong));
         -webkit-font-smoothing: antialiased;
       }
 
@@ -267,7 +267,7 @@ limitations under the License.
       }
 
       #inactive-dashboards-menu {
-        --paper-menu-background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        --paper-menu-background-color: var(--tb-toolbar-background-color, var(--tb-orange-strong));
         --paper-menu-color: white;
         --paper-menu: {
           text-transform: uppercase;
