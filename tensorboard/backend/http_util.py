@@ -22,12 +22,13 @@ from __future__ import unicode_literals
 import gzip
 import json
 import re
+import struct
 import time
 import wsgiref.handlers
 
 import six
 import tensorflow as tf
-from werkzeug import wrappers
+import werkzeug
 
 from tensorboard.backend import json_util
 
@@ -129,14 +130,22 @@ def Respond(request,
       f.write(content)
     content = out.getvalue()
     content_encoding = 'gzip'
-  # Automatically unzip precompressed data if not accepted.
+
+  content_length = len(content)
+  direct_passthrough = False
+  # Automatically streamwise-gunzip precompressed data if not accepted.
   if content_encoding == 'gzip' and not gzip_accepted:
-    with gzip.GzipFile(fileobj=six.BytesIO(content), mode='rb') as f:
-      content = f.read()
+    gzip_file = gzip.GzipFile(fileobj=six.BytesIO(content), mode='rb')
+    # Last 4 bytes of gzip formatted data (little-endian) store the original
+    # content length mod 2^32; we just assume it's the content length. That
+    # means we can't streamwise-gunzip >4 GB precompressed file; this is ok.
+    content_length = struct.unpack('<I', content[-4:])[0]
+    content = werkzeug.wsgi.wrap_file(request.environ, gzip_file)
     content_encoding = None
+    direct_passthrough = True
 
   headers = []
-  headers.append(('Content-Length', str(len(content))))
+  headers.append(('Content-Length', str(content_length)))
   if content_encoding:
     headers.append(('Content-Encoding', content_encoding))
   if expires > 0:
@@ -150,5 +159,6 @@ def Respond(request,
   if request.method == 'HEAD':
     content = None
 
-  return wrappers.Response(
-      response=content, status=code, headers=headers, content_type=content_type)
+  return werkzeug.wrappers.Response(
+      response=content, status=code, headers=headers, content_type=content_type,
+      direct_passthrough=direct_passthrough)

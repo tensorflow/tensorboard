@@ -21,6 +21,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import gzip
+import struct
 
 import six
 import tensorflow as tf
@@ -150,7 +151,23 @@ class RespondTest(tf.test.TestCase):
     gzip_text = _gzip(orig_text)
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
-    self.assertEqual(r.response, [orig_text])
+    # Streaming gunzip produces file-wrapper application iterator as response,
+    # so rejoin it into the full response before comparison.
+    full_response = b''.join(r.response)
+    self.assertEqual(full_response, orig_text)
+
+  def testPrecompressedResponse_streamingDecompression_catchesBadSize(self):
+    orig_text = b'hello hello hello world'
+    gzip_text = _gzip(orig_text)
+    # Corrupt the gzipped data's stored content size (last 4 bytes).
+    bad_text = gzip_text[:-4] + _bitflip(gzip_text[-4:])
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, bad_text, 'text/plain', content_encoding='gzip')
+    # Streaming gunzip defers actual unzipping until response is used; once
+    # we iterate over the whole file-wrapper application iterator, the
+    # underlying GzipFile should be closed, and throw the size check error.
+    with six.assertRaisesRegex(self, IOError, 'Incorrect length'):
+      _ = list(r.response)
 
   def testJson_getsAutoSerialized(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -174,6 +191,10 @@ def _gunzip(bs):
   with gzip.GzipFile(fileobj=six.BytesIO(bs), mode='rb') as f:
     return f.read()
 
+def _bitflip(bs):
+  # Return bytestring with all its bits flipped.
+  return b''.join(struct.pack('B', 0xFF ^ struct.unpack_from('B', bs, i)[0])
+                  for i in range(len(bs)))
 
 if __name__ == '__main__':
   tf.test.main()
