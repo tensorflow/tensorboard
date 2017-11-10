@@ -1,0 +1,297 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--
+  input-pipeline-analyzer is a view within the tf-profile-dashboard.
+  It shows an graphical analysis for tensorflow input pipeline on TPU by comparing the average step
+  time on host and on device.
+-->
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<dom-module id="input-pipeline-analyzer">
+  <template>
+    <style>
+    </style>
+    <div>
+      <div id="section_summary">
+        <div id="title_summary">
+           <p style = "text-decoration:underline;">
+             <font size="5"><b>Section 1: Summary of input-pipeline analysis</b></font>
+          </p>
+        </div>
+        <p id="summary">
+          The overall performance is <i><b><span style=[[_summary_color]]>[[_summary_text]]</span></b></i> input-bounded because on average (over all steps) the device has spent <b><span style=[[_summary_color]]>[[_infeed_percent_average]]</span></b> of time (standard deviation = <span>[[_infeed_percent_stddev]]</span>) waiting for input data [see Section 2 below for details].
+        </p>
+        <p id="summary-host">
+          <span id="summary-host-analysis-conclusion">[[_host_conclusion]]</span>
+        </p>
+      </div>
+      <div id="section_device_side_analysis">
+        <div id="title_device_side_analysis">
+          <p style = "text-decoration:underline;"><font size="5"><b>Section 2: Device-side analysis details</b></font></p>
+        </div>
+        <div id="section_device_step_time">
+          <div id="title_device_step_time">
+            <p style = "text-decoration:underline;"><font size="4"><b>Section 2.1: Device step time</b></font></p>
+          </div>
+          <table>
+            <tr>
+              <td>
+                <div id="title_device_steptime_stats">
+                  <p style = "text-decoration:underline;"><b><font size="3">Device step-time statistics (in ms)</font></b></p>
+                </div>
+                <p><b>Average:</b> [[_steptime_ms_average]] ms <i style="opacity:0.7">(σ = [[_steptime_ms_stddev]] ms)</i></p>
+                <p><b>Range:</b> [[_steptime_ms_minimum]] - [[_steptime_ms_maximum]] ms</p>
+              </td>
+              <td width="70%" height=300>
+                <div id='device_steptime_chart' style="border: 0px solid #ccc;"></div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div id="section_device_infeeddeq_time">
+          <div id="title_device_infeeddeq_time">
+            <p style = "text-decoration:underline;"><font size="4"><b>Section 2.2: Range of device time waiting for input data <i style="opacity:0.5">across cores</i> at each step </b></font></p>
+          </div>
+          <table class="charts_device_infeeddeq_time">
+            <tr>
+              <td>
+                <div id="title_device_infeeddeq_stats" align="center">
+                  <p style = "text-decoration:underline;"><font size="3"><b>% of device step time waiting for input data</b></font><font size="2"> (average over the <i>maximum</i> waiting time across cores at each step)</font> </p>
+                </div>
+                <p><b>Average:</b> [[_infeed_percent_average]] % <i style="opacity:0.7">(σ = [[_infeed_percent_stddev]] %)</i></p>
+                <p><b>Range:</b> [[_infeed_percent_minimum]] - [[_infeed_percent_maximum]] %</p>
+              </td>
+              <td width="70%">
+                <div id='device_infeeddeq_chart' style="border: 0px solid #ccc;"></div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div id="section_host_side_analysis">
+        <div id="title_host_side_analysis">
+          <p style = "text-decoration:underline;"><font size="5"><b>Section 3: Host-side analysis details</b></font></p>
+        </div>
+        <div id='host_side_chart' style="border: 0px solid #ccc;"></div>
+        <p><b>Explanation:</b> To improve performance, you should try to convert from "Reading data from files on demand" (if any) to "Reading data from files in advance". </p>
+        <p> Click the "Show" button below to see the source data of the breakdown.</p>
+        <button on-click="onClick">[[_toggle_button_text]]</button>
+        <template is="dom-if" if="{{_show_host_side_table}}">
+          <div id="host_side_table" style="width: 100%; height: 100%"></div>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  import {addParams} from "../tf-backend/urlPathHelpers.js";
+  import {RequestManager} from '../tf-backend/requestManager.js';
+  import {getRouter} from '../tf-backend/router.js';
+
+  Polymer({
+    is: 'input-pipeline-analyzer',
+    properties: {
+      _requestManager: {
+        type: Object,
+        readOnly: true,
+        value: () => new RequestManager(),
+      },
+      run: {
+        type: String,
+        observer: '_reloadToolData',
+      },
+      _data: {
+        type: Object,
+        observer: '_updateView',
+      },
+      _show_host_side_table: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      _toggle_button_text: {
+        type: String,
+        computed: '_getToggleButtonText(_show_host_side_table)'
+    }
+    },
+    _summary_text: String,
+    _summary_color: String,
+    _infeed_percent_average: String,
+    _infeed_percent_stddev: String,
+    _infeed_percent_minimum: String,
+    _infeed_percent_maximum: String,
+    _steptime_ms_average: String,
+    _steptime_ms_stddev: String,
+    _steptime_ms_minimum: String,
+    _steptime_ms_maximum: String,
+    _host_conclusion: String,
+    onClick: function(e) {
+      this.set('_show_host_side_table', !this._show_host_side_table);
+    },
+    _reloadToolData: function(run) {
+      this._requestManager.request(addParams(
+          getRouter().pluginRoute('profile', '/data'), {tag: 'input_pipeline_analyzer', run})
+      ).then((data) => {
+        if (data) {
+          this.set('_data', data);
+        }
+      });
+    },
+    _getToggleButtonText: function(show_host_side_table) {
+      return (show_host_side_table ? 'Hide' : 'Show') + ' Input Op Statistics';
+    },
+
+    /* Update view according to new data */
+    _updateView: function() {
+      google.charts.load('current', {packages: ['table', 'corechart']});
+      google.charts.setOnLoadCallback(this._drawChart.bind(this));
+    },
+
+    _drawChart: function() {
+      var deviceJson = this._data[0];
+      var deviceData = new google.visualization.DataTable(deviceJson);
+      var hostJson = this._data[1];
+      var hostData = new google.visualization.DataTable(hostJson);
+      this.set('_summary_text', deviceData.getTableProperty('summary_text'));
+      this.set('_summary_color', 'color:' + deviceData.getTableProperty('summary_color'));
+      this.set('_infeed_percent_average', deviceData.getTableProperty('infeed_percent_average'));
+      this.set('_infeed_percent_stddev', deviceData.getTableProperty('infeed_percent_standard_deviation'));
+      this.set('_infeed_percent_minimum', deviceData.getTableProperty('infeed_percent_minimum'));
+      this.set('_infeed_percent_maximum', deviceData.getTableProperty('infeed_percent_maximum'));
+      this.set('_steptime_ms_average', deviceData.getTableProperty('steptime_ms_average'));
+      this.set('_steptime_ms_stddev', deviceData.getTableProperty('steptime_ms_standard_deviation'));
+      this.set('_steptime_ms_minimum', deviceData.getTableProperty('steptime_ms_minimum'));
+      this.set('_steptime_ms_maximum', deviceData.getTableProperty('steptime_ms_maximum'));
+      this.set('_host_conclusion', hostData.getTableProperty('conclusion'));
+      var columns = {};
+      for (var i = 0; i < deviceData.getNumberOfColumns(); i++)
+        columns[deviceData.getColumnId(i)] = i;
+      this._showDeviceStepChart(deviceData, columns);
+      this._showDeviceInfeedChart(deviceData, columns);
+      this._showHostChart(hostData);
+      this._showHostTable(hostData);
+    },
+
+    /* Plots a graph of step time (in ms) against step number */
+    _showDeviceStepChart : function(deviceData, columns) {
+      var chartData = new google.visualization.DataView(deviceData);
+      chartData.setColumns([columns['stepnum'],
+                            columns['noninfeedTimeMs'],
+                            columns['infeedTimeMs'],
+                            columns['tooltip']]);
+      var options = {
+          title: "Step time (in milliseconds)",
+          hAxis: {title: "Step number"},
+          vAxis: {title: "Milliseconds", format:"###.####ms", minValue:0},
+          chartArea: {width: '60%', height: '50%'},
+          width: 1200,
+          height: 350,
+          colors: ['green', 'crimson'],
+          isStacked: true,
+      };
+      var chart = new google.visualization.AreaChart(document.getElementById('device_steptime_chart'));
+      chart.draw(chartData, options);
+    },
+
+    /* Plots a graph of infeed dequeue time (in % of the step time) against step number */
+    _showDeviceInfeedChart: function (deviceData, columns) {
+      var dataView = new google.visualization.DataView(deviceData);
+      dataView.setColumns([columns['stepnum'],
+                           columns['infeedPercentAverage'],
+                           columns['infeedPercentMin'],
+                           columns['infeedPercentMax']]);
+      var options = {
+          title: "Range of device time waiting for input data across cores at each step (in % of step time)",
+          hAxis: {title: "Step number"},
+          vAxis: {title: "% of step time", format:"###.###\'%\'"},
+          width: '100%',
+          height: 300,
+          legend: {position: 'none'},
+          lineWidth: 1,
+          intervals: {style: 'boxes', 'color':'red'},
+          colors: ['none']
+      };
+      var chart = new google.visualization.LineChart(document.getElementById('device_infeeddeq_chart'));
+      chart.draw(dataView, options);
+    },
+
+    /* Plots a stacked bar chart for the breakdown of input processing time on the host. */
+    _showHostChart: function(hostData) {
+      const kUsPerMs = 1000.0;
+      var demandedFileReadMs = Number(hostData.getTableProperty('demanded_file_read_us')) / kUsPerMs;
+      var advancedFileReadMs = Number(hostData.getTableProperty('advanced_file_read_us')) / kUsPerMs;
+      var preprocessingMs = Number(hostData.getTableProperty('preprocessing_us')) / kUsPerMs;
+      var enqueueMs = Number(hostData.getTableProperty('enqueue_us')) / kUsPerMs;
+
+      var data = google.visualization.arrayToDataTable([
+          ['Input time breakdown',
+           'Reading data from files on demand (in ms)',
+           'Reading data from files in advance [including caching, prefetching, interleaving] (in ms)',
+           'Data preprocessing (in ms)',
+           'Enqueuing data to be transferred to device (in ms)'],
+          ['', demandedFileReadMs, advancedFileReadMs, preprocessingMs, enqueueMs]]);
+
+      var options = {
+          title: "Breakdown of input processing time on the host",
+          width: 1200,
+          height: 400,
+          legend: { position: 'right', maxLines: 3 },
+          bar: { groupWidth: '35%' },
+          chartArea: {width: '40%', height: '70%'},
+          colors: ['red', 'blue', 'orange', 'green', 'purple'],
+          isStacked: 'percent',
+      };
+
+      var chart = new google.visualization.ColumnChart(document.getElementById('host_side_chart'));
+      chart.draw(data, options);
+    },
+
+    /* Draws a table of Dataset Op statistics */
+    _showHostTable: function(hostData) {
+      var columns = {}
+      for (var i = 0; i < hostData.getNumberOfColumns(); i++)
+        columns[hostData.getColumnId(i)] = i;
+
+      var percent_formatter = new google.visualization.NumberFormat({pattern: '##.#%'});
+      percent_formatter.format(hostData, columns['timeInPercent']);
+      percent_formatter.format(hostData, columns['selfTimeInPercent']);
+      var zero_decimal_pt_formatter = new google.visualization.NumberFormat({fractionDigits: 0});
+      zero_decimal_pt_formatter.format(hostData, columns['timeInMs']);
+      zero_decimal_pt_formatter.format(hostData, columns['selfTimeInMs']);
+      var hostTable = new google.visualization.Table(document.getElementById('host_side_table'));
+      /* Set the width of table columns */
+      hostData.setProperty(0, columns['opName'], 'style', 'width:40%');
+      hostData.setProperty(0, columns['count'], 'style', 'width:15%');
+      hostData.setProperty(0, columns['timeInMs'], 'style', 'width:10%');
+      hostData.setProperty(0, columns['timeInPercent'], 'style', 'width:5%');
+      hostData.setProperty(0, columns['selfTimeInMs'], 'style', 'width:10%');
+      hostData.setProperty(0, columns['selfTimeInPercent'], 'style', 'width:5%');
+      hostData.setProperty(0, columns['category'], 'style', 'width:15%');
+      var myCssClassNames = {
+        'headerCell': 'tableHeaderCell',
+        'tableCell': 'tableTableCell'
+      };
+      hostTable.draw(hostData, {showRowNumber: false, width: '90%', height: '90%', cssClassNames: myCssClassNames});
+      this.set('_show_host_side_table', false);
+    }
+  });
+
+  </script>
+</dom-module>
+
