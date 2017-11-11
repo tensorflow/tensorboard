@@ -41,6 +41,7 @@ limitations under the License.
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
         fill-area="[[fillArea]]"
+        symbol-function="[[symbolFunction]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -135,6 +136,8 @@ limitations under the License.
 
         defaultXRange: Array,
         defaultYRange: Array,
+
+        symbolFunction: Object,
 
         /**
          * A function that takes as inputs:
