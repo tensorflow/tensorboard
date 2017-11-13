@@ -24,7 +24,7 @@ import six
 import tensorflow as tf
 
 tf.flags.DEFINE_integer(
-    'debugger_data_server_grpc_port', None,
+    'debugger_data_server_grpc_port', '',
     'The port at which the debugger data server (to be started by the debugger '
     'plugin) should receive debugging data via gRPC from one or more '
     'debugger-enabled TensorFlow runtimes. No debugger plugin or debugger data '
@@ -43,7 +43,7 @@ def get_debugger_plugin():
     The TBPlugin constructor for the debugger plugin, or None if
     the necessary flag was not set.
   """
-  if FLAGS.debugger_data_server_grpc_port is None:
+  if not FLAGS.debugger_data_server_grpc_port:
     return None
   return _ConstructDebuggerPluginWithGrpcPort
 
@@ -59,10 +59,10 @@ def _ConstructDebuggerPluginWithGrpcPort(context):
         ImportError,
         ImportError(
             err.message +
-            "\n\nTo use the debugger plugin, you need to have "
-            "gRPC installed:\n  pip install grpcio"),
+            '\n\nTo use the debugger plugin, you need to have '
+            'gRPC installed:\n  pip install grpcio'),
         traceback)
-  tf.logging.info("Starting Debugger Plugin at gRPC port %d",
+  tf.logging.info('Starting Debugger Plugin at gRPC port %d',
                   FLAGS.debugger_data_server_grpc_port)
   debugger_plugin = debugger_plugin_lib.DebuggerPlugin(context)
   debugger_plugin.listen(FLAGS.debugger_data_server_grpc_port)
