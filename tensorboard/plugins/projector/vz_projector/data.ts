@@ -21,7 +21,10 @@ import * as scatterPlot from './scatterPlot.js';
 import * as util from './util.js';
 import * as vector from './vector.js';
 
-export type DistanceFunction = (a: number[], b: number[]) => number;
+export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
+
+export type DistanceSpace = (_: DataPoint) => Float32Array;
+
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
@@ -130,6 +133,7 @@ export class DataSet {
   nearest: knn.NearestEntry[][];
   nearestK: number;
   tSNEIteration: number = 0;
+  tSNEShouldPause = false;
   tSNEShouldStop = true;
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
@@ -312,6 +316,7 @@ export class DataSet {
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
     this.tSNEIteration = 0;
 
@@ -322,19 +327,21 @@ export class DataSet {
         this.tsne = null;
         return;
       }
-      this.tsne.step();
-      let result = this.tsne.getSolution();
-      sampledIndices.forEach((index, i) => {
-        let dataPoint = this.points[index];
+      if (!this.tSNEShouldPause) {
+        this.tsne.step();
+        let result = this.tsne.getSolution();
+        sampledIndices.forEach((index, i) => {
+          let dataPoint = this.points[index];
 
-        dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
-        dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
-        if (tsneDim === 3) {
-          dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
-        }
-      });
-      this.tSNEIteration++;
-      stepCallback(this.tSNEIteration);
+          dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+          dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
+          if (tsneDim === 3) {
+            dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+          }
+        });
+        this.tSNEIteration++;
+        stepCallback(this.tSNEIteration);
+      }
       requestAnimationFrame(step);
     };
 
@@ -359,6 +366,32 @@ export class DataSet {
             this.tsne.initDataDist(this.nearest);
           }).then(step);
     });
+  }
+
+  setTSNESupervision(superviseFactor: number, superviseColumn?: string,
+      unlabeledClass?: string) {
+    if (this.tsne) {
+      if (superviseFactor != null) {
+        this.tsne.superviseFactor = superviseFactor;
+      }
+      if (superviseColumn) {
+        this.tsne.superviseColumn = superviseColumn;
+        let labelCounts = {};
+        this.spriteAndMetadataInfo.stats
+            .find(s => s.name == superviseColumn).uniqueEntries
+            .forEach(e => labelCounts[e.label] = e.count);
+        this.tsne.labelCounts = labelCounts;
+
+        let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+        let labels = new Array(sampledIndices.length);
+        sampledIndices.forEach((index, i) => 
+          labels[i] = this.points[index].metadata[superviseColumn].toString());
+        this.tsne.labels = labels;
+      }
+      if (unlabeledClass != null) {
+        this.tsne.unlabeledClass = unlabeledClass;
+      }
+    }
   }
 
   /**
@@ -410,11 +443,54 @@ export class DataSet {
    * Finds the nearest neighbors of the query point using a
    * user-specified distance metric.
    */
-  findNeighbors(pointIndex: number, distFunc: DistanceFunction, numNN: number):
-      knn.NearestEntry[] {
+  findNeighbors(pointIndex: number, distFunc: DistanceFunction, distGeo: boolean,
+      distSpace: DistanceSpace, numNN: number): knn.NearestEntry[] {
     // Find the nearest neighbors of a particular point.
     let neighbors = knn.findKNNofPoint(
-        this.points, pointIndex, numNN, (d => d.vector), distFunc);
+        this.points, pointIndex, numNN, distSpace, distFunc);
+
+    if (distGeo) {  // Use approximate geodesic distance to grow neighborhood over manifold
+      let K = 5;  // number of nearest neighbors
+      let neighborhood = neighbors.map(n => n.index);  // use direct neighborhood
+      let manifold = neighbors.slice(0, K);  // growing manifold to select from
+      let dist_sum = manifold.reduce((sum, n) => sum + n.dist, 0);  // sum of edge distances traversed
+      let dist_count = manifold.length;
+      neighbors = [];  // neighbor selection to return after populating
+
+      while (neighbors.length < numNN && manifold.length > 0) {  // grow to max numNN points
+        let knn = [];  // store list of dist ordered neighbors
+        let neighbor = manifold.shift();  // get next candidate, referred to as 'candidate'
+
+        if (neighbor.dist <= 2.0 * dist_sum / dist_count  // within 2x avg edge distance
+            && neighbors.filter(f => f.index == neighbor.index).length == 0) {  // previously unchosen
+          neighbors.push({index: neighbor.index, dist: neighbor.dist});  // add suitable candidate
+          dist_sum = dist_sum + neighbor.dist;  // update dist_sum
+          dist_count = dist_count + 1;  // increment number of manifold
+          let point = distSpace(this.points[neighbor.index]);  // find point vector representation
+          
+          neighborhood.forEach(n => {  // choose only from initial neighborhood points
+            let n_dist = distFunc(point, distSpace(this.points[n]));  // distance from candidate to n
+            let k = K;  // start checking ordered list at larger distance end
+
+            if (knn.length < K+1)  // add up to K neighbors of candidate
+              knn.push({index: n, dist: n_dist});  // add n as neighbor
+            else {  // already have K neighbors
+              while (k >= 0 && n_dist < knn[k].dist)  // find sorted insertion position
+                k = k - 1;  // move down the dist list
+
+              if (k < K)  // n is closer than existing knn
+                knn.splice(k + 1, 0, {index: n, dist: n_dist});  // insert n into list to grow list
+            }
+          });
+
+          knn.slice(0, K).forEach(n => {  // add up to K new points to manifold
+            if (manifold.filter(f => f.index == n.index).length == 0)  // not already in manifold
+              manifold.push(n);  // add new point to manifold, allow reconsideration of earlier points
+          });
+          neighborhood = neighborhood.filter(n => n != neighbor.index);  // don't reuse successful candidate
+        }
+      }
+    }
     // TODO(@dsmilkov): Figure out why we slice.
     let result = neighbors.slice(0, numNN);
     return result;
