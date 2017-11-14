@@ -368,13 +368,14 @@ export class DataSet {
     });
   }
 
-  setTSNESupervision(labelsChanged: boolean, superviseColumn: string,
-      superviseFactor?: number, unlabeledClass?: string) {
+  setTSNESupervision(superviseFactor: number, superviseColumn?: string,
+      unlabeledClass?: string) {
     if (this.tsne) {
-      if (labelsChanged || this.tsne.superviseColumn != superviseColumn) {
+      if (superviseFactor != null) {
+        this.tsne.superviseFactor = superviseFactor;
+      }
+      if (superviseColumn) {
         this.tsne.superviseColumn = superviseColumn;
-        console.log(this.tsne.superviseColumn);
-
         let labelCounts = {};
         this.spriteAndMetadataInfo.stats
             .find(s => s.name == superviseColumn).uniqueEntries
@@ -386,9 +387,6 @@ export class DataSet {
         sampledIndices.forEach((index, i) => 
           labels[i] = this.points[index].metadata[superviseColumn].toString());
         this.tsne.labels = labels;
-      }
-      if (superviseFactor != null) {
-        this.tsne.superviseFactor = superviseFactor;
       }
       if (unlabeledClass != null) {
         this.tsne.unlabeledClass = unlabeledClass;

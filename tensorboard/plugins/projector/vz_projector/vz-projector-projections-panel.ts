@@ -88,6 +88,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private perplexity: number;
   /** T-SNE learning rate. */
   private learningRate: number;
+  /** T-SNE supervise factor. */
+  private superviseFactor: number;
 
   private searchByMetadataOptions: string[];
 
@@ -178,27 +180,24 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   private updateTSNESuperviseFactorFromUIChange() {
     if (this.dataSet) {
-      let superviseFactor = 0;
+      this.superviseFactor = 0;
       if (+this.superviseFactorInput.value > 0) {
-        superviseFactor = Math.exp(Math.log(1./100) * 
+        this.superviseFactor = Math.exp(Math.log(1./100) * 
             (1. - +this.superviseFactorInput.value / 100));
       }
       (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
-      .innerText = ('' + (100 * superviseFactor).toFixed(0));
-      this.dataSet.setTSNESupervision(false, this.superviseColumn, superviseFactor);
+      .innerText = ('' + (100 * this.superviseFactor).toFixed(0));
+      this.dataSet.setTSNESupervision(this.superviseFactor);
     }
   }
 
   private unlabeledClassInputChange() {
     if (this.dataSet) {
       let value = this.unlabeledClassInput;
-      this.superviseFactorInput.value = "0";
-      (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
-      .innerText = "0";
 
       if (value == null || value.trim() === '') {
         this.unlabeledClassInputLabel = 'Unlabeled class';
-        this.dataSet.setTSNESupervision(false, this.superviseColumn, 0, '');
+        this.dataSet.setTSNESupervision(this.superviseFactor, this.superviseColumn, '');
         return;
       }
       let numMatches = this.dataSet.points.filter(p =>
@@ -206,10 +205,11 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       
       if (numMatches === 0) {
         this.unlabeledClassInputLabel = 'Unlabeled class [0 matches]';
-        this.dataSet.setTSNESupervision(false, this.superviseColumn, 0, '');
-      } else {
+        this.dataSet.setTSNESupervision(this.superviseFactor, this.superviseColumn, '');
+      }
+      else {
         this.unlabeledClassInputLabel = `Unlabeled class [${numMatches} matches]`;
-        this.dataSet.setTSNESupervision(false, this.superviseColumn, 0, value);
+        this.dataSet.setTSNESupervision(this.superviseFactor, this.superviseColumn, value);
       }
     }
   }
@@ -413,11 +413,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       // Make the default supervise class the first non-numeric column.
       this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
       this.unlabeledClassInput = '';
-      this.unlabeledClassInputChange();
     }
-
-    if (this.dataSet)  // Handle possible metadata change in supervision
-      this.dataSet.setTSNESupervision(true, this.superviseColumn);
+    this.unlabeledClassInputChange();
 
     // Project by options for custom projections.
     let searchByMetadataIndex = -1;
