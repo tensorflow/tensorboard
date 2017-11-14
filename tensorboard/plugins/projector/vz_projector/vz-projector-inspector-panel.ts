@@ -36,6 +36,7 @@ export let PolymerClass = PolymerElement({
 export class InspectorPanel extends PolymerClass {
   distFunc: DistanceFunction;
   distSpace: DistanceSpace;
+  distGeo: boolean;
   numNN: number;
 
   private projectorEventContext: ProjectorEventContext;
@@ -250,6 +251,7 @@ export class InspectorPanel extends PolymerClass {
   private setupUI(projector: Projector) {
     this.distFunc = vector.cosDist;
     this.distSpace = d => d.vector;
+    this.distGeo = false;
     const eucDist =
         this.querySelector('.distance a.euclidean') as HTMLLinkElement;
     eucDist.onclick = () => {
@@ -263,7 +265,7 @@ export class InspectorPanel extends PolymerClass {
       this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
       this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
       const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distSpace, this.numNN);
+          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
       this.updateNeighborsList(neighbors);
     };
 
@@ -279,7 +281,24 @@ export class InspectorPanel extends PolymerClass {
       this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
       this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
       const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distSpace, this.numNN);
+          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
+      this.updateNeighborsList(neighbors);
+    };
+
+    const geoDist = this.querySelector('.distance a.geodesic') as HTMLLinkElement;
+    geoDist.onclick = () => {
+      if (this.distGeo) {
+        this.distGeo = false;
+        util.classed(geoDist, 'selected-geo', false);
+      }
+      else {
+        this.distGeo = true;
+        util.classed(geoDist, 'selected-geo', true);
+      }
+
+      this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
+      const neighbors = projector.dataSet.findNeighbors(
+          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
       this.updateNeighborsList(neighbors);
     };
 
@@ -295,7 +314,7 @@ export class InspectorPanel extends PolymerClass {
       this.projectorEventContext.notifyDistanceSpaceChanged(this.distSpace);
       this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
       const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distSpace, this.numNN);
+          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
       this.updateNeighborsList(neighbors);
     };
 
@@ -316,7 +335,7 @@ export class InspectorPanel extends PolymerClass {
       this.projectorEventContext.notifyDistanceSpaceChanged(this.distSpace);
       this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
       const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distSpace, this.numNN);
+          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
       this.updateNeighborsList(neighbors);
     };
 
@@ -338,7 +357,7 @@ export class InspectorPanel extends PolymerClass {
         this.projectorEventContext.notifyDistanceSpaceChanged(this.distSpace);
         this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
         const neighbors = projector.dataSet.findNeighbors(
-            this.selectedPointIndices[0], this.distFunc, this.distSpace, this.numNN);
+            this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
         this.updateNeighborsList(neighbors);
       }
     };

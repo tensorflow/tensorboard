@@ -249,7 +249,8 @@ export class Projector extends ProjectorPolymer implements
     if (newSelectedPointIndices.length === 1) {
       neighbors = this.dataSet.findNeighbors(
           newSelectedPointIndices[0], this.inspectorPanel.distFunc,
-          this.inspectorPanel.distSpace, this.inspectorPanel.numNN);
+          this.inspectorPanel.distGeo, this.inspectorPanel.distSpace, 
+          this.inspectorPanel.numNN);
       this.metadataCard.updateMetadata(
           this.dataSet.points[newSelectedPointIndices[0]].metadata);
     } else {
