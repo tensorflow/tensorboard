@@ -273,6 +273,12 @@ export class TSNE {
       (force: number[], mult: number, pointA: number[],
        pointB: number[]) => void;
 
+  superviseFactor: number;
+  unlabeledClass: string;
+  superviseColumn: string;
+  labels: string[];
+  labelCounts: {[key: string]: number};
+
   constructor(opt: TSNEOptions) {
     opt = opt || {dim: 2};
     this.perplexity = opt.perplexity || 30;
@@ -365,6 +371,15 @@ export class TSNE {
     // Trick that helps with local optima.
     let alpha = this.iter < 100 ? 4 : 1;
 
+    let superviseFactor = this.superviseFactor;
+    let unlabeledClass = this.unlabeledClass;
+    let labels = this.labels;
+    let labelCounts = this.labelCounts;
+    let supervise = superviseFactor != null && superviseFactor > 0 &&
+        labels != null && labelCounts != null;
+    let unlabeledCount = supervise && unlabeledClass != null &&
+        unlabeledClass != '' ? labelCounts[unlabeledClass] : 0;
+
     // Make data for the SP tree.
     let points: number[][] = new Array(N);  // (x, y)[]
     for (let i = 0; i < N; ++i) {
@@ -418,15 +433,32 @@ export class TSNE {
     // compute current Q distribution, unnormalized first
     let grad: number[][] = [];
     let Z = 0;
+    let sum_pij = 0;
     let forces: [number[], number[]][] = new Array(N);
     for (let i = 0; i < N; ++i) {
       let pointI = points[i];
+      if (supervise) {
+        var sameCount = labelCounts[labels[i]];
+        var otherCount = N - sameCount - unlabeledCount;
+      }
       // Compute the positive forces for the i-th node.
       let Fpos = this.dim === 3 ? [0, 0, 0] : [0, 0];
       let neighbors = this.nearest[i];
       for (let k = 0; k < neighbors.length; ++k) {
         let j = neighbors[k].index;
         let pij = P[i * N + j];
+        if (supervise) {  // apply semi-supervised prior probabilities
+          if (labels[i] == unlabeledClass || labels[j] == unlabeledClass) {
+            pij *= 1. / N;
+          }
+          else if (labels[i] != labels[j]) {
+            pij *= Math.max(1. / N - superviseFactor / otherCount, 1E-7);
+          }
+          else if (labels[i] == labels[j]) {
+            pij *= Math.min(1. / N + superviseFactor / sameCount, 1. - 1E-7);
+          }
+          sum_pij += pij;
+        }
         let pointJ = points[j];
         let squaredDistItoJ = this.dist2(pointI, pointJ);
         let premult = pij / (1 + squaredDistItoJ);
@@ -458,7 +490,9 @@ export class TSNE {
       forces[i] = [Fpos, FnegZ];
     }
     // Normalize the negative forces and compute the gradient.
-    const A = 4 * alpha;
+    let A = 4 * alpha;
+    if (supervise)
+      A /= sum_pij;
     const B = 4 / Z;
     for (let i = 0; i < N; ++i) {
       let [FPos, FNegZ] = forces[i];

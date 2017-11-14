@@ -365,6 +365,34 @@ export class DataSet {
     });
   }
 
+  setTSNESupervision(superviseColumn: string, superviseFactor?: number,
+      unlabeledClass?: string) {
+    if (this.tsne) {
+      if (this.tsne.superviseColumn != superviseColumn) {
+        this.tsne.superviseColumn = superviseColumn;
+        console.log(this.tsne.superviseColumn);
+
+        let labelCounts = {};
+        this.spriteAndMetadataInfo.stats
+            .find(s => s.name == superviseColumn).uniqueEntries
+            .forEach(e => labelCounts[e.label] = e.count);
+        this.tsne.labelCounts = labelCounts;
+
+        let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+        let labels = new Array(sampledIndices.length);
+        sampledIndices.forEach((index, i) => 
+          labels[i] = this.points[index].metadata[superviseColumn].toString());
+        this.tsne.labels = labels;
+      }
+      if (superviseFactor != null) {
+        this.tsne.superviseFactor = superviseFactor;
+      }
+      if (unlabeledClass != null) {
+        this.tsne.unlabeledClass = unlabeledClass;
+      }
+    }
+  }
+
   /**
    * Merges metadata to the dataset and returns whether it succeeded.
    */

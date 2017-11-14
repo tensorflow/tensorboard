@@ -43,6 +43,20 @@ export let ProjectionsPanelPolymer = PolymerElement({
       type: String,
       observer: '_customSelectedSearchByMetadataOptionChanged'
     },
+    unlabeledClassInput: {
+      type: String
+    },
+    unlabeledClassInputLabel: {
+      type: String,
+      value: 'Unlabeled class'
+    },
+    unlabeledClassInputChange: {
+      type: Object
+    },
+    superviseColumn: {
+      type: String,
+      observer: '_superviseColumnOptionChanged'
+    }
   }
 });
 
@@ -91,12 +105,17 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   public pcaY: number;
   public pcaZ: number;
   public customSelectedSearchByMetadataOption: string;
+  private unlabeledClassInput: string;
+  private unlabeledClassInputLabel: string;
+  private superviseColumn: string;
+  private metadataFields: string[];
 
   /** Polymer elements. */
   private runTsneButton: HTMLButtonElement;
   private pauseTsneButton: HTMLButtonElement;
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
+  private superviseFactorInput: HTMLInputElement;
   private zDropdown: HTMLElement;
   private iterationLabel: HTMLElement;
 
@@ -128,6 +147,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         this.querySelector('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
         this.querySelector('#learning-rate-slider') as HTMLInputElement;
+    this.superviseFactorInput =
+        this.querySelector('#supervise-factor-slider') as HTMLInputElement;
     this.iterationLabel = this.querySelector('.run-tsne-iter') as HTMLElement;
   }
 
@@ -153,6 +174,44 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     }
     (this.querySelector('.tsne-learning-rate span') as HTMLSpanElement)
         .innerText = '' + this.learningRate;
+  }
+
+  private updateTSNESuperviseFactorFromUIChange() {
+    if (this.dataSet) {
+      let superviseFactor = 0;
+      if (+this.superviseFactorInput.value > 0) {
+        superviseFactor = Math.exp(Math.log(1./100) * 
+            (1. - +this.superviseFactorInput.value / 100));
+      }
+      (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
+      .innerText = ('' + (100 * superviseFactor).toFixed(0));
+      this.dataSet.setTSNESupervision(this.superviseColumn, superviseFactor);
+    }
+  }
+
+  private unlabeledClassInputChange() {
+    if (this.dataSet) {
+      let value = this.unlabeledClassInput;
+      this.superviseFactorInput.value = "0";
+      (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
+      .innerText = "0";
+
+      if (value == null || value.trim() === '') {
+        this.unlabeledClassInputLabel = 'Unlabeled class';
+        this.dataSet.setTSNESupervision(this.superviseColumn, 0, '');
+        return;
+      }
+      let numMatches = this.dataSet.points.filter(p =>
+          p.metadata[this.superviseColumn] == value).length;
+      
+      if (numMatches === 0) {
+        this.unlabeledClassInputLabel = 'Unlabeled class [0 matches]';
+        this.dataSet.setTSNESupervision(this.superviseColumn, 0, '');
+      } else {
+        this.unlabeledClassInputLabel = `Unlabeled class [${numMatches} matches]`;
+        this.dataSet.setTSNESupervision(this.superviseColumn, 0, value);
+      }
+    }
   }
 
   private setupUIControls() {
@@ -186,6 +245,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.learningRateInput.addEventListener(
         'change', () => this.updateTSNELearningRateFromUIChange());
     this.updateTSNELearningRateFromUIChange();
+
+    this.superviseFactorInput.addEventListener(
+        'change', () => this.updateTSNESuperviseFactorFromUIChange());
+    this.updateTSNESuperviseFactorFromUIChange();
 
     this.setupCustomProjectionInputFields();
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
@@ -338,6 +401,21 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo) {
+    let labelIndex = -1;
+    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+      if (!stats.isNumeric && labelIndex === -1)
+        labelIndex = i;
+      return stats.name;
+    });
+    
+    if (this.superviseColumn == null || this.metadataFields.filter(name =>
+        name == this.superviseColumn).length == 0) {
+      // Make the default supervise class the first non-numeric column.
+      this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
+      this.unlabeledClassInput = '';
+      this.unlabeledClassInputChange();
+    }
+
     // Project by options for custom projections.
     let searchByMetadataIndex = -1;
     this.searchByMetadataOptions = spriteAndMetadata.stats.map((stats, i) => {
@@ -515,6 +593,14 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     if (this.currentProjection === 'custom') {
       this.computeAllCentroids();
       this.reprojectCustom();
+    }
+  }
+
+  _superviseColumnOptionChanged(newVal: string, oldVal: string) {
+    if (this.dataSet) {
+      this.superviseColumn = newVal;
+      this.unlabeledClassInput = '';
+      this.unlabeledClassInputChange();
     }
   }
 
