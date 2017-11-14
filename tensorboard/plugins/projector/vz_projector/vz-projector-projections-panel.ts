@@ -185,7 +185,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       }
       (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
       .innerText = ('' + (100 * superviseFactor).toFixed(0));
-      this.dataSet.setTSNESupervision(this.superviseColumn, superviseFactor);
+      this.dataSet.setTSNESupervision(false, this.superviseColumn, superviseFactor);
     }
   }
 
@@ -198,7 +198,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
       if (value == null || value.trim() === '') {
         this.unlabeledClassInputLabel = 'Unlabeled class';
-        this.dataSet.setTSNESupervision(this.superviseColumn, 0, '');
+        this.dataSet.setTSNESupervision(false, this.superviseColumn, 0, '');
         return;
       }
       let numMatches = this.dataSet.points.filter(p =>
@@ -206,10 +206,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       
       if (numMatches === 0) {
         this.unlabeledClassInputLabel = 'Unlabeled class [0 matches]';
-        this.dataSet.setTSNESupervision(this.superviseColumn, 0, '');
+        this.dataSet.setTSNESupervision(false, this.superviseColumn, 0, '');
       } else {
         this.unlabeledClassInputLabel = `Unlabeled class [${numMatches} matches]`;
-        this.dataSet.setTSNESupervision(this.superviseColumn, 0, value);
+        this.dataSet.setTSNESupervision(false, this.superviseColumn, 0, value);
       }
     }
   }
@@ -415,6 +415,9 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       this.unlabeledClassInput = '';
       this.unlabeledClassInputChange();
     }
+
+    if (this.dataSet)  // Handle possible metadata change in supervision
+      this.dataSet.setTSNESupervision(true, this.superviseColumn);
 
     // Project by options for custom projections.
     let searchByMetadataIndex = -1;

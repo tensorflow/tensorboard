@@ -368,10 +368,10 @@ export class DataSet {
     });
   }
 
-  setTSNESupervision(superviseColumn: string, superviseFactor?: number,
-      unlabeledClass?: string) {
+  setTSNESupervision(labelsChanged: boolean, superviseColumn: string,
+      superviseFactor?: number, unlabeledClass?: string) {
     if (this.tsne) {
-      if (this.tsne.superviseColumn != superviseColumn) {
+      if (labelsChanged || this.tsne.superviseColumn != superviseColumn) {
         this.tsne.superviseColumn = superviseColumn;
         console.log(this.tsne.superviseColumn);
 
