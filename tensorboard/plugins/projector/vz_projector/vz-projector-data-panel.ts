@@ -14,7 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {ColorOption, ColumnStats, SpriteAndMetadataInfo} from './data.js';
-import {DataProvider, EmbeddingInfo, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider.js';
+import {DataProvider, EmbeddingInfo, analyzeMetadata, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider.js';
+import * as knn from './knn.js';
 import * as util from './util.js';
 import {Projector} from './vz-projector.js';
 import {ColorLegendRenderInfo, ColorLegendThreshold} from './vz-projector-legend.js';
@@ -34,7 +35,29 @@ export let DataPanelPolymer = PolymerElement({
     selectedLabelOption:
         {type: String, notify: true, observer: '_selectedLabelOptionChanged'},
     normalizeData: Boolean,
-    showForceCategoricalColorsCheckbox: Boolean
+    showForceCategoricalColorsCheckbox: Boolean,
+    editLabelInput: {
+      type: String
+    },
+    editLabelInputLabel: {
+      type: String,
+      value: 'Tag selection as'
+    },
+    editLabelInputChange: {
+      type: Object
+    },
+    editLabelColumn: {
+      type: String,
+    },
+    editLabelColumnChange: {
+      type: Object
+    },
+    metadataEditButtonClicked: {
+      type: Object
+    },
+    metadataEditButtonDisabled: {
+      type: Boolean
+    }
   },
   observers: [
     '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -50,7 +73,12 @@ export class DataPanel extends DataPanelPolymer {
   private labelOptions: string[];
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
+  private editLabelInput: string;
+  private editLabelInputLabel: string;
+  private metadataEditButtonDisabled: boolean;
 
+  private selectedPointIndices: number[];
+  private neighborsOfFirstPoint: knn.NearestEntry[];
   private selectedTensor: string;
   private selectedRun: string;
   private dataProvider: DataProvider;
@@ -127,7 +155,33 @@ export class DataPanel extends DataPanelPolymer {
     this.metadataFile = metadataFile;
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-    this.selectedColorOptionName = this.colorOptions[0].name;
+
+    if (this.selectedColorOptionName == null || this.colorOptions.filter(c =>
+        c.name == this.selectedColorOptionName).length == 0) {
+      this.selectedColorOptionName = this.colorOptions[0].name;
+    }
+
+    let labelIndex = -1;
+    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+      if (!stats.isNumeric && labelIndex === -1) {
+        labelIndex = i;
+      }
+      return stats.name;
+    });
+
+    if (this.editLabelColumn == null || this.metadataFields.filter(name =>
+        name == this.editLabelColumn).length == 0) {
+      // Make the default label the first non-numeric column.
+      this.editLabelColumn = this.metadataFields[Math.max(0, labelIndex)];
+    }
+  }
+
+  onProjectorSelectionChanged(
+      selectedPointIndices: number[],
+      neighborsOfFirstPoint: knn.NearestEntry[]) {
+    this.selectedPointIndices = selectedPointIndices;
+    this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+    this.editLabelInputChange();
   }
 
   private addWordBreaks(longString: string): string {
@@ -152,7 +206,11 @@ export class DataPanel extends DataPanelPolymer {
       }
       return stats.name;
     });
-    this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+
+    if (this.selectedLabelOption == null || this.labelOptions.filter(name =>
+        name == this.selectedLabelOption).length == 0) {
+      this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+    }
 
     // Color by options.
     const standardColorOption: ColorOption[] = [
@@ -212,6 +270,62 @@ export class DataPanel extends DataPanelPolymer {
       standardColorOption.push({name: 'Metadata', isSeparator: true});
     }
     this.colorOptions = standardColorOption.concat(metadataColorOption);
+  }
+
+  private editLabelInputChange() {
+    let value = this.editLabelInput;
+    let selectionSize = this.selectedPointIndices.length + 
+        this.neighborsOfFirstPoint.length;
+    
+    if (selectionSize > 0) {
+      if (value != null && value.trim() != '') {
+        let numMatches = this.projector.dataSet.points.filter(p =>
+            p.metadata[this.editLabelColumn].toString() == value).length;
+
+        if (numMatches === 0) {
+          this.editLabelInputLabel = `Tag ${selectionSize} with new label`;
+        }
+        else {
+          this.editLabelInputLabel = 
+              `Add ${selectionSize} to ${numMatches} found`;
+        }
+        this.metadataEditButtonDisabled = false;
+      }
+      else {
+        this.editLabelInputLabel = 'Tag selection as';
+        this.metadataEditButtonDisabled = true;
+      }
+    }
+    else {
+      this.metadataEditButtonDisabled = true;
+      if (value != null && value.trim() != '') {
+        this.editLabelInputLabel = 'Select points to tag';
+      }
+      else {
+        this.editLabelInputLabel = 'Tag selection as';
+      }
+    }
+  }
+
+  private editLabelColumnChange() {
+    this.editLabelInputChange();
+  }
+
+  private metadataEditButtonClicked() {
+    this.metadataEditButtonDisabled = true;
+    let selectionSize = this.selectedPointIndices.length + 
+        this.neighborsOfFirstPoint.length;
+    this.editLabelInputLabel = `${selectionSize} labeled as '${this.editLabelInput}'`;
+    this.selectedPointIndices.forEach(i =>
+        this.projector.dataSet.points[i].metadata[this.editLabelColumn] =
+        this.editLabelInput);
+    this.neighborsOfFirstPoint.forEach(p =>
+        this.projector.dataSet.points[p.index].metadata[this.editLabelColumn] =
+        this.editLabelInput);
+    this.spriteAndMetadata.stats = analyzeMetadata(
+        this.spriteAndMetadata.stats.map(s => s.name),
+        this.projector.dataSet.points.map(p => p.metadata));
+    this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
   }
 
   setNormalizeData(normalizeData: boolean) {
