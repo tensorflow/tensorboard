@@ -131,7 +131,7 @@ limitations under the License.
   width: 100px;
 }
 
-.distance .options {
+.distance .options, .distance-space .options {
   float: right;
 }
 
@@ -146,15 +146,19 @@ limitations under the License.
   color: #009EFE;
 }
 
-.neighbors {
-  margin-bottom: 30px;
+.options a.selected-geo {
+  color: #F57C00;
 }
 
-.neighbors-options {
+.neighbors {
+  margin-bottom: 10px;
+}
+
+.neighbors-options, .distance, .distance-space {
   margin-top: 6px;
 }
 
-.neighbors-options .option-label, .distance .option-label {
+.neighbors-options .option-label, .distance .option-label, .distance-space .option-label {
   color: #727272;
   margin-right: 2px;
   width: auto;
@@ -175,7 +179,7 @@ limitations under the License.
   };
 }
 
-.euclidean {
+.geodesic, .tsne-space {
   margin-right: 10px;
 }
 
@@ -225,7 +229,7 @@ limitations under the License.
           <span class="option-label">neighbors</span>
           <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
           <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
-            The number of neighbors (in the original space) to show when clicking on a point.
+            The number of neighbors (in the selected space) to show when clicking on a point.
           </paper-tooltip>
           <paper-slider id="nn-slider" pin min="5" max="999" value="100" editable></paper-slider>
         </div>
@@ -233,12 +237,21 @@ limitations under the License.
       <div class="distance">
         <span class="option-label">distance</span>
         <div class="options">
-          <a class="selected cosine" href="javascript:void(0);">COSINE</a>
-          <a class="euclidean" href="javascript:void(0);">EUCLIDEAN</a>
+          <a class="selected cosine" href="javascript:void(0);">COS</a>
+          <a class="euclidean" href="javascript:void(0);">EUCLID</a>
+          <a class="geodesic" href="javascript:void(0);">GEODESIC</a>
+        </div>
+      </div>
+      <div class="distance-space">
+        <span class="option-label">dist. space</span>
+        <div class="options">
+          <a class="selected original-space" href="javascript:void(0);">ORIGINAL</a>
+          <a class="pca-space" href="javascript:void(0);">PCA</a>
+          <a class="tsne-space" href="javascript:void(0);">T-SNE</a>
         </div>
       </div>
     </div>
-    <p>Nearest points in the original space:
+    <p>Nearest points in the selected space:
     <div class="nn-list"></div>
   </div>
   <div class="matches-list" style="display: none">
