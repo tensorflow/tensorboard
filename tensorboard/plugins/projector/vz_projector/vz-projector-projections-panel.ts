@@ -505,11 +505,14 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   private runTSNE() {
     this.runTsneButton.disabled = true;
-    this.pauseTsneButton.disabled = null;
+    this.pauseTsneButton.disabled = true;
+    this.pauseTsneButton.innerText = 'Pause';
     this.dataSet.projectTSNE(
         this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2,
         (iteration: number) => {
           if (iteration != null) {
+            this.runTsneButton.disabled = false;
+            this.pauseTsneButton.disabled = false;
             this.iterationLabel.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
           } else {
