@@ -94,7 +94,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   /** Polymer elements. */
   private runTsneButton: HTMLButtonElement;
-  private stopTsneButton: HTMLButtonElement;
+  private pauseTsneButton: HTMLButtonElement;
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
   private zDropdown: HTMLElement;
@@ -123,7 +123,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   ready() {
     this.zDropdown = this.querySelector('#z-dropdown') as HTMLElement;
     this.runTsneButton = this.querySelector('.run-tsne') as HTMLButtonElement;
-    this.stopTsneButton = this.querySelector('.stop-tsne') as HTMLButtonElement;
+    this.pauseTsneButton = this.querySelector('.pause-tsne') as HTMLButtonElement;
     this.perplexitySlider =
         this.querySelector('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
@@ -168,8 +168,15 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     }
 
     this.runTsneButton.addEventListener('click', () => this.runTSNE());
-    this.stopTsneButton.addEventListener(
-        'click', () => this.dataSet.stopTSNE());
+    this.pauseTsneButton.addEventListener('click', () => {
+      if (this.dataSet.tSNEShouldPause) {
+        this.dataSet.tSNEShouldPause = false;
+        this.pauseTsneButton.innerText = 'Pause';
+      } else {
+        this.dataSet.tSNEShouldPause = true;
+        this.pauseTsneButton.innerText = 'Resume';
+      }
+    });
 
     this.perplexitySlider.value = this.perplexity.toString();
     this.perplexitySlider.addEventListener(
@@ -420,7 +427,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   private runTSNE() {
     this.runTsneButton.disabled = true;
-    this.stopTsneButton.disabled = null;
+    this.pauseTsneButton.disabled = null;
     this.dataSet.projectTSNE(
         this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2,
         (iteration: number) => {
@@ -429,7 +436,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
             this.projector.notifyProjectionPositionsUpdated();
           } else {
             this.runTsneButton.disabled = null;
-            this.stopTsneButton.disabled = true;
+            this.pauseTsneButton.disabled = true;
+            this.pauseTsneButton.innerText = 'Pause';
           }
         });
   }
