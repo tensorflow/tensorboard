@@ -78,6 +78,7 @@ export class Projector extends ProjectorPolymer implements
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
   private hoverPointIndex: number;
+  private editMode: boolean;
 
   private dataProvider: DataProvider;
   private inspectorPanel: InspectorPanel;
@@ -121,6 +122,7 @@ export class Projector extends ProjectorPolymer implements
     this.distanceSpaceChangedListeners = [];
     this.selectedPointIndices = [];
     this.neighborsOfFirstPoint = [];
+    this.editMode = false;
 
     this.dataPanel = this.$['data-panel'] as DataPanel;
     this.inspectorPanel = this.$['inspector-panel'] as InspectorPanel;
@@ -260,20 +262,62 @@ export class Projector extends ProjectorPolymer implements
    * Used by clients to indicate that a selection has occurred.
    */
   notifySelectionChanged(newSelectedPointIndices: number[]) {
-    this.selectedPointIndices = newSelectedPointIndices;
     let neighbors: knn.NearestEntry[] = [];
 
-    if (newSelectedPointIndices.length === 1) {
-      neighbors = this.dataSet.findNeighbors(
-          newSelectedPointIndices[0], this.inspectorPanel.distFunc,
-          this.inspectorPanel.distGeo, this.inspectorPanel.distSpace, 
-          this.inspectorPanel.numNN);
-      this.metadataCard.updateMetadata(
-          this.dataSet.points[newSelectedPointIndices[0]].metadata);
-    } else {
-      this.metadataCard.updateMetadata(null);
-    }
+    if (this.editMode  // point selection toggle in existing selection
+        && newSelectedPointIndices.length > 0) {  // selection required
+      if (this.selectedPointIndices.length === 1) {  // main point with neighbors
+        let main_point_vector = this.inspectorPanel.distSpace(  // main point coords
+            this.dataSet.points[this.selectedPointIndices[0]]);
+        neighbors = this.neighborsOfFirstPoint.filter(n =>  // deselect
+            newSelectedPointIndices.filter(p => p == n.index).length == 0);
 
+        newSelectedPointIndices.forEach(p => {  // add additional neighbors
+          if (p != this.selectedPointIndices[0]  // not main point
+              && this.neighborsOfFirstPoint.filter(n => n.index == p).length == 0) {
+            let p_vector = this.inspectorPanel.distSpace(this.dataSet.points[p]);
+            let n_dist = this.inspectorPanel.distFunc(main_point_vector, p_vector);
+            let pos = 0;  // insertion position into dist ordered neighbors
+
+            while (pos < neighbors.length && neighbors[pos].dist < n_dist)  // find pos
+              pos = pos + 1;  // move up the sorted neighbors list according to dist
+            neighbors.splice(pos, 0, {index: p, dist: n_dist});  // add new neighbor
+          }
+        });
+      }
+      else {  // multiple selections
+        let updatedSelectedPointIndices = this.selectedPointIndices.filter(n =>
+            newSelectedPointIndices.filter(p => p == n).length == 0);  // deselect
+        
+        newSelectedPointIndices.forEach(p => {  // add additional selections
+          if (this.selectedPointIndices.filter(s => s == p).length == 0)  // unselected
+            updatedSelectedPointIndices.push(p);
+        });
+        this.selectedPointIndices = updatedSelectedPointIndices;  // update selection
+
+        if (this.selectedPointIndices.length > 0) {  // at least one selected point
+          this.metadataCard.updateMetadata(  // show metadata for first selected point
+              this.dataSet.points[this.selectedPointIndices[0]].metadata);
+        } else {  // no points selected
+          this.metadataCard.updateMetadata(null);  // clear metadata
+        }
+      }
+    }
+    else {  // normal selection mode
+      this.selectedPointIndices = newSelectedPointIndices;
+
+      if (newSelectedPointIndices.length === 1) {
+        neighbors = this.dataSet.findNeighbors(
+            newSelectedPointIndices[0], this.inspectorPanel.distFunc,
+            this.inspectorPanel.distGeo, this.inspectorPanel.distSpace, 
+            this.inspectorPanel.numNN);
+        this.metadataCard.updateMetadata(
+            this.dataSet.points[newSelectedPointIndices[0]].metadata);
+      } else {
+        this.metadataCard.updateMetadata(null);
+      }
+    }
+    
     this.selectionChangedListeners.forEach(
         l => l(this.selectedPointIndices, neighbors));
   }
@@ -444,6 +488,11 @@ export class Projector extends ProjectorPolymer implements
     nightModeButton.addEventListener('click', () => {
       this.projectorScatterPlotAdapter.scatterPlot.setDayNightMode(
           (nightModeButton as any).active);
+    });
+
+    let editModeButton = this.querySelector('#editMode');
+      editModeButton.addEventListener('click', (event) => {
+        this.editMode = (editModeButton as any).active;
     });
 
     const labels3DModeButton = this.get3DLabelModeButton();

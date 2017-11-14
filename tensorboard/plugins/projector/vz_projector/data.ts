@@ -22,7 +22,9 @@ import * as util from './util.js';
 import * as vector from './vector.js';
 
 export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
+
 export type DistanceSpace = (_: DataPoint) => Float32Array;
+
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
