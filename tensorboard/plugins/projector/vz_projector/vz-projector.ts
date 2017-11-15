@@ -15,14 +15,14 @@ limitations under the License.
 
 import {AnalyticsLogger} from './analyticsLogger.js';
 import * as data from './data.js';
-import {ColorOption, ColumnStats, DataPoint, DataProto, DataSet, DistanceFunction, PointMetadata, Projection, SpriteAndMetadataInfo, State, stateGetAccessorDimensions} from './data.js';
+import {ColorOption, ColumnStats, DataPoint, DataProto, DataSet, DistanceFunction, DistanceSpace, PointMetadata, Projection, SpriteAndMetadataInfo, State, stateGetAccessorDimensions} from './data.js';
 import {DataProvider, EmbeddingInfo, ServingMode} from './data-provider.js';
 import {DemoDataProvider} from './data-provider-demo.js';
 import {ProtoDataProvider} from './data-provider-proto.js';
 import {ServerDataProvider} from './data-provider-server.js';
 import * as knn from './knn.js';
 import * as logging from './logging.js';
-import {DistanceMetricChangedListener, HoverListener, ProjectionChangedListener, ProjectorEventContext, SelectionChangedListener} from './projectorEventContext.js';
+import {DistanceMetricChangedListener, DistanceSpaceChangedListener, HoverListener, ProjectionChangedListener, ProjectorEventContext, SelectionChangedListener} from './projectorEventContext.js';
 import {ProjectorScatterPlotAdapter} from './projectorScatterPlotAdapter.js';
 import {MouseMode} from './scatterPlot.js';
 import * as util from './util.js';
@@ -67,6 +67,7 @@ export class Projector extends ProjectorPolymer implements
   private hoverListeners: HoverListener[];
   private projectionChangedListeners: ProjectionChangedListener[];
   private distanceMetricChangedListeners: DistanceMetricChangedListener[];
+  private distanceSpaceChangedListeners: DistanceSpaceChangedListener[];
 
   private originalDataSet: DataSet;
   private dataSetBeforeFilter: DataSet;
@@ -117,6 +118,7 @@ export class Projector extends ProjectorPolymer implements
     this.hoverListeners = [];
     this.projectionChangedListeners = [];
     this.distanceMetricChangedListeners = [];
+    this.distanceSpaceChangedListeners = [];
     this.selectedPointIndices = [];
     this.neighborsOfFirstPoint = [];
 
@@ -247,6 +249,7 @@ export class Projector extends ProjectorPolymer implements
     if (newSelectedPointIndices.length === 1) {
       neighbors = this.dataSet.findNeighbors(
           newSelectedPointIndices[0], this.inspectorPanel.distFunc,
+          this.inspectorPanel.distGeo, this.inspectorPanel.distSpace, 
           this.inspectorPanel.numNN);
       this.metadataCard.updateMetadata(
           this.dataSet.points[newSelectedPointIndices[0]].metadata);
@@ -286,6 +289,14 @@ export class Projector extends ProjectorPolymer implements
 
   notifyDistanceMetricChanged(distMetric: DistanceFunction) {
     this.distanceMetricChangedListeners.forEach(l => l(distMetric));
+  }
+
+  registerDistanceSpaceChangedListener(l: DistanceSpaceChangedListener) {
+    this.distanceSpaceChangedListeners.push(l);
+  }
+
+  notifyDistanceSpaceChanged(distSpace: DistanceSpace) {
+    this.distanceSpaceChangedListeners.forEach(l => l(distSpace));
   }
 
   _dataProtoChanged(dataProtoString: string) {
