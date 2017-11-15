@@ -36,26 +36,26 @@ export let DataPanelPolymer = PolymerElement({
         {type: String, notify: true, observer: '_selectedLabelOptionChanged'},
     normalizeData: Boolean,
     showForceCategoricalColorsCheckbox: Boolean,
-    editLabelInput: {
+    metadataEditorInput: {
       type: String
     },
-    editLabelInputLabel: {
+    metadataEditorInputLabel: {
       type: String,
       value: 'Tag selection as'
     },
-    editLabelInputChange: {
+    metadataEditorInputChange: {
       type: Object
     },
-    editLabelColumn: {
+    metadataEditorColumn: {
       type: String,
     },
-    editLabelColumnChange: {
+    metadataEditorColumnChange: {
       type: Object
     },
-    metadataEditButtonClicked: {
+    metadataEditorButtonClicked: {
       type: Object
     },
-    metadataEditButtonDisabled: {
+    metadataEditorButtonDisabled: {
       type: Boolean
     }
   },
@@ -73,9 +73,9 @@ export class DataPanel extends DataPanelPolymer {
   private labelOptions: string[];
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
-  private editLabelInput: string;
-  private editLabelInputLabel: string;
-  private metadataEditButtonDisabled: boolean;
+  private metadataEditorInput: string;
+  private metadataEditorInputLabel: string;
+  private metadataEditorButtonDisabled: boolean;
 
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
@@ -169,10 +169,10 @@ export class DataPanel extends DataPanelPolymer {
       return stats.name;
     });
 
-    if (this.editLabelColumn == null || this.metadataFields.filter(name =>
-        name == this.editLabelColumn).length == 0) {
+    if (this.metadataEditorColumn == null || this.metadataFields.filter(name =>
+        name == this.metadataEditorColumn).length == 0) {
       // Make the default label the first non-numeric column.
-      this.editLabelColumn = this.metadataFields[Math.max(0, labelIndex)];
+      this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
     }
   }
 
@@ -181,7 +181,7 @@ export class DataPanel extends DataPanelPolymer {
       neighborsOfFirstPoint: knn.NearestEntry[]) {
     this.selectedPointIndices = selectedPointIndices;
     this.neighborsOfFirstPoint = neighborsOfFirstPoint;
-    this.editLabelInputChange();
+    this.metadataEditorInputChange();
   }
 
   private addWordBreaks(longString: string): string {
@@ -272,56 +272,60 @@ export class DataPanel extends DataPanelPolymer {
     this.colorOptions = standardColorOption.concat(metadataColorOption);
   }
 
-  private editLabelInputChange() {
-    let value = this.editLabelInput;
+  private metadataEditorInputChange() {
+    let value = this.metadataEditorInput;
     let selectionSize = this.selectedPointIndices.length + 
         this.neighborsOfFirstPoint.length;
     
     if (selectionSize > 0) {
       if (value != null && value.trim() != '') {
         let numMatches = this.projector.dataSet.points.filter(p =>
-            p.metadata[this.editLabelColumn].toString() == value).length;
+            p.metadata[this.metadataEditorColumn].toString() == value).length;
 
         if (numMatches === 0) {
-          this.editLabelInputLabel = `Tag ${selectionSize} with new label`;
+          this.metadataEditorInputLabel = `Tag ${selectionSize} with new label`;
         }
         else {
-          this.editLabelInputLabel = 
-              `Add ${selectionSize} to ${numMatches} found`;
+          this.metadataEditorInputLabel = 
+              `Tag ${selectionSize} points as`;
         }
-        this.metadataEditButtonDisabled = false;
+        this.metadataEditorButtonDisabled = false;
       }
       else {
-        this.editLabelInputLabel = 'Tag selection as';
-        this.metadataEditButtonDisabled = true;
+        this.metadataEditorInputLabel = 'Tag selection as';
+        this.metadataEditorButtonDisabled = true;
       }
     }
     else {
-      this.metadataEditButtonDisabled = true;
+      this.metadataEditorButtonDisabled = true;
+
       if (value != null && value.trim() != '') {
-        this.editLabelInputLabel = 'Select points to tag';
+        this.metadataEditorInputLabel = 'Select points to tag';
       }
       else {
-        this.editLabelInputLabel = 'Tag selection as';
+        this.metadataEditorInputLabel = 'Tag selection as';
       }
     }
   }
 
-  private editLabelColumnChange() {
-    this.editLabelInputChange();
+  private metadataEditorColumnChange() {
+    this.metadataEditorInputChange();
   }
 
-  private metadataEditButtonClicked() {
-    this.metadataEditButtonDisabled = true;
+  private metadataEditorButtonClicked() {
     let selectionSize = this.selectedPointIndices.length + 
         this.neighborsOfFirstPoint.length;
-    this.editLabelInputLabel = `${selectionSize} labeled as '${this.editLabelInput}'`;
+    this.metadataEditorButtonDisabled = true;
+    this.metadataEditorInputLabel = `${selectionSize} labeled as '${this.metadataEditorInput}'`;
+
     this.selectedPointIndices.forEach(i =>
-        this.projector.dataSet.points[i].metadata[this.editLabelColumn] =
-        this.editLabelInput);
+        this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
+        this.metadataEditorInput);
+    
     this.neighborsOfFirstPoint.forEach(p =>
-        this.projector.dataSet.points[p.index].metadata[this.editLabelColumn] =
-        this.editLabelInput);
+        this.projector.dataSet.points[p.index].metadata[this.metadataEditorColumn] =
+        this.metadataEditorInput);
+    
     this.spriteAndMetadata.stats = analyzeMetadata(
         this.spriteAndMetadata.stats.map(s => s.name),
         this.projector.dataSet.points.map(p => p.metadata));
@@ -611,6 +615,10 @@ export class DataPanel extends DataPanelPolymer {
   _getNumRunsLabel(): string {
     return this.runNames.length === 1 ? '1 run' :
                                         this.runNames.length + ' runs';
+  }
+
+  _hasChoice(choices: any[]): boolean {
+    return choices.length > 0;
   }
 
   _hasChoices(choices: any[]): boolean {

@@ -122,20 +122,27 @@ paper-dropdown-menu paper-item {
 
 .metadata-editor paper-input {
   width: calc(100%-150px);
+  --paper-input-container-label-floating: {
+    white-space: normal;
+    line-height: normal;
+  };
 }
 
-.metadata-editor paper-dropdown-menu {
-  margin-left: 10px;
-  width: 100px;
-}
-
-#metadata-edit-button {
+.metadata-editor paper-button {
   margin-left: 10px;
   margin-right: 0px;
   margin-top: 20px;
   min-width: 40px;
   height: 36px;
   vertical-align: bottom;
+}
+
+.metadata-editor paper-dropdown-menu {
+  margin-left: 10px;
+  width: 100px;
+  --paper-input-container-label-floating: {
+    line-height: normal;
+  };
 }
 
 .config-checkbox {
@@ -286,12 +293,13 @@ paper-dropdown-menu paper-item {
   </div>
 
   <!-- Tag selection as -->
-  <div class="metadata-editor">
-    <paper-input value="{{editLabelInput}}" label="{{editLabelInputLabel}}"
-    on-input="editLabelInputChange"></paper-input>
+  <div hidden$="[[!_hasChoice(labelOptions)]]" class="metadata-editor">
+    <paper-input value="{{metadataEditorInput}}" label="{{metadataEditorInputLabel}}"
+    on-input="metadataEditorInputChange"></paper-input>
     <paper-dropdown-menu no-animations label="in">
       <paper-listbox attr-for-selected="value" class="dropdown-content" slot="dropdown-content"
-          selected="{{editLabelColumn}}" on-selected-item-changed="editLabelColumnChange">
+          on-selected-item-changed="metadataEditorColumnChange"
+          selected="{{metadataEditorColumn}}" >
         <template is="dom-repeat" items="[[metadataFields]]">
           <paper-item value="[[item]]" label="[[item]]">
             [[item]]
@@ -299,9 +307,8 @@ paper-dropdown-menu paper-item {
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
-    <paper-button id="metadata-edit-button" class="ink-button"
-    on-click="metadataEditButtonClicked"
-    disabled="[[metadataEditButtonDisabled]]">Label</paper-button>
+    <paper-button class="ink-button" on-click="metadataEditorButtonClicked"
+        disabled="[[metadataEditorButtonDisabled]]">Label</paper-button>
   </div>
 
   <paper-checkbox id="normalize-data-checkbox" checked="{{normalizeData}}">
