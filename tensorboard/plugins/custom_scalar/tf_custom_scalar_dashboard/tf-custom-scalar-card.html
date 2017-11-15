@@ -1,0 +1,500 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+
+<!--
+  A card that handles loading data (at the right times), rendering a scalar
+  chart, and providing UI affordances (such as buttons) for scalar data.
+-->
+<dom-module id="tf-custom-scalar-card">
+<template>
+  <h1>[[_titleDisplayString]]</h1>
+  <div id="tf-line-chart-data-loader-container">
+    <tf-line-chart-data-loader
+      x-type="[[xType]]"
+      x-components-creation-method="[[_xComponentsCreationMethod]]"
+      smoothing-enabled="[[smoothingEnabled]]"
+      smoothing-weight="[[smoothingWeight]]"
+      tooltip-sorting-method="[[tooltipSortingMethod]]"
+      ignore-y-outliers="[[ignoreYOutliers]]"
+      request-manager="[[requestManager]]"
+      runs="[[runs]]"
+      tag="[[_tagFilter]]"
+      active="[[active]]"
+      data-url="[[_dataUrl]]"
+      log-scale-active="[[_logScaleActive]]"
+      process-data="[[_createProcessDataFunction()]]"
+      color-scale="[[_colorScale]]"
+      data-series="[[_dataSeriesStrings]]"
+      symbol-function="[[_createSymbolFunction()]]"
+    >
+    </tf-line-chart-data-loader>
+  </div>
+  <div id="buttons">
+    <paper-icon-button
+      selected$="[[_expanded]]"
+      icon="fullscreen"
+      on-tap="_toggleExpanded"
+    ></paper-icon-button>
+    <paper-icon-button
+      selected$="[[_logScaleActive]]"
+      icon="line-weight"
+      on-tap="_toggleLogScale"
+      title="Toggle y-axis log scale"
+    ></paper-icon-button>
+    <paper-icon-button
+      icon="settings-overscan"
+      on-tap="_resetDomain"
+      title="Fit domain to data"
+    ></paper-icon-button>
+    <span style="flex-grow: 1"></span>
+    <template is="dom-if" if="[[showDownloadLinks]]">
+      <div class="download-links">
+        <paper-dropdown-menu
+          no-label-float="true"
+          label="series to download"
+          selected-item-label="{{_dataSeriesNameToDownload}}"
+        >
+          <paper-menu class="dropdown-content" slot="dropdown-content">
+            <template is="dom-repeat" items="[[_dataSeriesStrings]]" as="dataSeriesName">
+              <paper-item no-label-float=true>[[dataSeriesName]]</paper-item>
+            </template>
+          </paper-menu>
+        </paper-dropdown-menu>
+        <a
+          download="[[_dataSeriesNameToDownload]].csv"
+          href="[[_csvUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
+        >CSV</a> <a
+          download="[[_dataSeriesNameToDownload]].json"
+          href="[[_jsonUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
+        >JSON</a>
+      </div>
+    </template>
+  </div>
+  <div id="matches-container">
+    <div id="matches-list-title">
+      <template is="dom-if" if="[[_dataSeriesStrings.length]]">
+        <paper-icon-button
+          icon="[[_getToggleMatchesIcon(_matchesListOpened)]]"
+          on-click="_toggleMatchesOpen"
+          class="toggle-matches-button">
+        </paper-icon-button>
+      </template>
+
+      <span class="matches-text">
+        Matches ([[_dataSeriesStrings.length]])
+      </span>
+    </div>
+    <template is="dom-if" if="[[_dataSeriesStrings.length]]">
+      <iron-collapse opened="[[_matchesListOpened]]">
+        <div id="matches-list">
+          <template is="dom-repeat"
+                    items="[[_dataSeriesStrings]]"
+                    as="seriesName">
+              <div class="match-list-entry"
+                   style="color: [[_determineColor(_colorScale, seriesName)]];">
+                <span class="match-entry-symbol">
+                  [[_determineSymbol(_nameToDataSeries, seriesName)]]
+                </span>
+                [[seriesName]]
+              </div>
+          </template>
+        </div>
+      </iron-collapse>
+    </template>
+  </div>
+
+  </div>
+  <style>
+    :host {
+      margin: 5px 10px;
+      display: inline-block;
+      width: 330px;
+      vertical-align: text-top;
+    }
+
+    :host[_expanded] {
+      width: 100%;
+    }
+
+    :host[_expanded] #tf-line-chart-data-loader-container {
+      height: 400px;
+    }
+
+    h1 {
+      font-size: 19px;
+      font-weight: normal;
+    }
+
+    #tf-line-chart-data-loader-container {
+      height: 200px;
+      width: 100%;
+    }
+
+    #buttons {
+      display: flex;
+      flex-direction: row;
+    }
+
+    paper-icon-button {
+      color: #2196F3;
+      border-radius: 100%;
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+    }
+
+    paper-icon-button[selected] {
+      background: var(--tb-ui-light-accent);
+    }
+
+    .download-links {
+      display: flex;
+      height: 32px;
+    }
+
+    .download-links a {
+      font-size: 10px;
+      align-self: center;
+      margin: 2px;
+    }
+
+    .download-links paper-dropdown-menu {
+      width: 100px;
+      --paper-input-container-label: {
+        font-size: 10px;
+      }
+      --paper-input-container-input: {
+        font-size: 10px;
+      }
+    }
+
+    #matches-list-title {
+      margin: 10px 0 5px 0;
+    }
+
+    #matches-list {
+      font-size: 0.8em;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .match-list-entry {
+      margin: 0 0 5px 0;
+    }
+
+    .match-entry-symbol {
+      font-family: arial, sans-serif;
+      display: inline-block;
+      width: 10px;
+    }
+
+    .matches-text {
+      vertical-align: middle;
+    }
+  </style>
+</template>
+<script src='tf-custom-scalar-helpers.js'></script>
+<script>
+  import * as CustomScalarCardHelpers from './tf-custom-scalar-helpers.js';
+  import {addParams} from '../tf-backend/urlPathHelpers.js';
+  import {getRouter} from '../tf-backend/router.js';
+  import {runsColorScale} from '../tf-color-scale/colorScale.js';
+  import * as storage from '../tf-storage/storage.js';
+  import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
+
+  /**
+   * Allows:
+   * - "step" - Linear scale using the "step" property of the datum.
+   * - "wall_time" - Temporal scale using the "wall_time" property of the
+   * datum.
+   * - "relative" - Temporal scale using the "relative" property of the
+   * datum if it is present or calculating from "wall_time" if it isn't.
+   * @enum {string}
+   */
+  const X_TYPE = {
+    STEP: 'step',
+    RELATIVE: 'relative',
+    WALL_TIME: 'wall_time',
+  };
+
+  Polymer({
+      is: 'tf-custom-scalar-card',
+      properties: {
+        runs: Array,  // of String
+
+        /**
+         * TODO: Add type.
+         */
+        xType: String,
+
+        active: {
+          type: Boolean,
+          value: true,
+          readOnly: true,
+        },
+        title: String,
+        tagRegexes: Array,
+        ignoreYOutliers: Boolean,
+        requestManager: Object,
+        showDownloadLinks: Boolean,
+        smoothingEnabled: Boolean,
+        smoothingWeight: Number,
+        tagMetadata: Object,
+        tooltipSortingMethod: String,
+
+        // We use a special color scale that wraps the run-based one.
+        _colorScale: {
+          type: Object,
+          value: new CustomScalarCardHelpers.DataSeriesColorScale({scale: runsColorScale}),
+          readOnly: true,
+        },
+
+        /**
+         * A regular expression to use for matching tags.
+         */
+        _tagFilter: {
+          type: String,
+          computed: '_computeTagFilter(tagRegexes)',
+        },
+
+        /**
+         * Maps from the name of the data series to the DataSeries object.
+         */
+        _nameToDataSeries: {
+          type: Object,
+          value: {},
+        },
+
+        /**
+         * A mapping between selected runs (strings) to the value 1. This is
+         * effectively a set of strings.
+         */
+        _selectedRunsSet: {
+          type: Object,
+          computed: '_computeSelectedRunsSet(runs)',
+        },
+        _dataSeriesStrings: {
+          type: Array,
+          computed: '_computeDataSeriesStrings(_selectedRunsSet, _nameToDataSeries)',
+        },
+        _dataSeriesObjects: {
+          type: Array,
+          computed: '_computeDataSeriesObjects(_nameToDataSeries, _dataSeriesStrings)',
+        },
+        _expanded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,  // for CSS
+        },
+        _logScaleActive: Boolean,
+        _dataUrl: {
+          type: Function,
+          value: () => (tag, run) => addParams(
+              getRouter().pluginRoute(
+                  'custom_scalars', '/scalars'), {tag, run}),
+        },
+        _xComponentsCreationMethod: {
+          type: Object,
+          computed: '_computeXComponentsCreationMethod(xType)',
+        },
+        /**
+         * A mapping from run to the next available symbol for that run. We use
+         * symbols to differentiate data series within the same run.
+         */
+        _runToNextAvailableSymbolIndex: {
+          type: Object,
+          value: {},
+        },
+        _matchesListOpened: {
+          type: Boolean,
+          value: false,
+        },
+        _titleDisplayString: {
+          type: String,
+          computed: '_computeTitleDisplayString(title, _tagFilter)',
+        },
+      },
+      observers: [
+        '_updateChart(_nameToDataSeries)',
+        // Clear the data series when the tag filter changes.
+        '_refreshDataSeries(_tagFilter)',
+      ],
+      reload() {
+        this.$$('tf-line-chart-data-loader').reload();
+      },
+      redraw() {
+        this.$$('tf-line-chart-data-loader').redraw();
+      },
+      _toggleExpanded(e) {
+        this.set('_expanded', !this._expanded);
+        this.redraw();
+      },
+      _toggleLogScale() {
+        this.set('_logScaleActive', !this._logScaleActive);
+      },
+      _resetDomain() {
+        const chart = this.$$('tf-line-chart-data-loader');
+        if (chart) {
+          chart.resetDomain();
+        }
+      },
+      _csvUrl(nameToDataSeries, dataSeriesName) {
+        const baseUrl = this._downloadDataUrl(nameToDataSeries, dataSeriesName);
+        return addParams(baseUrl, {format: 'csv'});
+      },
+      _jsonUrl(nameToDataSeries, dataSeriesName) {
+        const baseUrl = this._downloadDataUrl(nameToDataSeries, dataSeriesName);
+        return addParams(baseUrl, {format: 'json'});
+      },
+      _downloadDataUrl(nameToDataSeries, dataSeriesName) {
+        const dataSeries = nameToDataSeries[dataSeriesName];
+        const getVars = {
+            tag: dataSeries.getTag(),
+            run: dataSeries.getRun(),
+        };
+        return addParams(
+              getRouter().pluginRoute(
+                  'custom_scalars', '/download_data'), getVars);
+      },
+      _computeXComponentsCreationMethod(xType) {
+        return () => ChartHelpers.getXComponents(xType);
+      },
+      _createProcessDataFunction() {
+        // This function is called when data is received from the backend.
+        return ((scalarChart, run, data) => {
+          if (data.regex_valid) {
+            // The user's regular expression was valid.
+            // Incorporate these newly loaded values.
+            const newMapping = _.clone(this._nameToDataSeries);
+            _.forOwn(data.tag_to_events, (scalarEvents, tag) => {
+              const data = scalarEvents.map(datum => ({
+                wall_time: new Date(datum[0] * 1000),
+                step: datum[1],
+                scalar: datum[2],
+              }));
+
+              const seriesName = CustomScalarCardHelpers.generateDataSeriesName(
+                  run, tag);
+              let series = newMapping[seriesName];
+
+              if (series) {
+                // This series already exists.
+                series.setData(data);
+              } else {
+                if (_.isUndefined(this._runToNextAvailableSymbolIndex[run])) {
+                  // The run has not been seen before. Define the next available
+                  // marker index.
+                  this._runToNextAvailableSymbolIndex[run] = 0;
+                }
+
+                // Every data series within a run has a unique symbol.
+                const lineChartSymbol = ChartHelpers.SYMBOLS_LIST[
+                    this._runToNextAvailableSymbolIndex[run]];
+
+                // Create a series with this name.
+                series = new CustomScalarCardHelpers.DataSeries(
+                    run,
+                    tag,
+                    seriesName,
+                    data,
+                    lineChartSymbol);
+                newMapping[seriesName] = series;
+
+                // Loop back to the beginning if we are out of symbols.
+                const numSymbols = ChartHelpers.SYMBOLS_LIST.length;
+                this._runToNextAvailableSymbolIndex[run] =
+                    (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
+              }
+            });
+
+            this.set('_nameToDataSeries', newMapping);
+          } else {
+            // The user's regular expression was invalid.
+            // TODO(chihuahua): Handle this.
+          }
+        });
+      },
+      _updateChart(nameToDataSeries) {
+        // Add new data series.
+        _.forOwn(nameToDataSeries, dataSeries => {
+          this.$$('tf-line-chart-data-loader').setSeriesData(
+              dataSeries.getName(), dataSeries.getData());
+        });
+      },
+      _computeSelectedRunsSet(runs) {
+        const mapping = {};
+        _.forEach(runs, run => {
+          mapping[run] = 1;
+        });
+        return mapping;
+      },
+      _computeDataSeriesStrings(selectedRunsSet, nameToDataSeries) {
+        return _.values(nameToDataSeries)
+            .filter(series => selectedRunsSet[series.getRun()])
+            .map(series => series.getName());
+      },
+      _computeDataSeriesObjects(nameToDataSeries, dataSeriesStrings) {
+        return dataSeriesStrings.map(
+            seriesName => nameToDataSeries[seriesName]);
+      },
+      _determineColor(colorScale, seriesName) {
+        return colorScale.scale(seriesName);
+      },
+      _refreshDataSeries(_tagFilter) {
+        this.set('_nameToDataSeries', {});
+      },
+      _createSymbolFunction() {
+        return seriesName => (
+            this._nameToDataSeries[seriesName].getSymbol().method());
+      },
+      _determineSymbol(nameToDataSeries, seriesName) {
+        return nameToDataSeries[seriesName].getSymbol().character;
+      },
+      _computeTagFilter(tagRegexes) {
+        if (tagRegexes.length === 1) {
+          return tagRegexes[0];
+        }
+        // Combine the different regexes into a single regex.
+        return tagRegexes.map(r => '(' + r + ')').join('|');
+      },
+      _getToggleMatchesIcon(matchesListOpened) {
+        return matchesListOpened ? 'expand-less' : 'expand-more';
+      },
+      _toggleMatchesOpen() {
+        this.set('_matchesListOpened', !this._matchesListOpened);
+      },
+      _computeTitleDisplayString(title, tagFilter) {
+        // If no title is provided, use the tag filter.
+        return title || tagFilter;
+      },
+  });
+</script>
+</dom-module>

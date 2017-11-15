@@ -131,6 +131,8 @@ export class DataSet {
   nearestK: number;
   tSNEIteration: number = 0;
   tSNEShouldStop = true;
+  tSNEShouldPerturb = false;
+  perturbFactor: number = 0.4;
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
   spriteAndMetadataInfo: SpriteAndMetadataInfo;
@@ -313,6 +315,7 @@ export class DataSet {
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
     this.tSNEShouldStop = false;
+    this.tSNEShouldPerturb = false;
     this.tSNEIteration = 0;
 
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
@@ -322,7 +325,8 @@ export class DataSet {
         this.tsne = null;
         return;
       }
-      this.tsne.step();
+      this.tsne.step(this.tSNEShouldPerturb ? this.perturbFactor : 0.0);
+      this.tSNEShouldPerturb = false;
       let result = this.tsne.getSolution();
       sampledIndices.forEach((index, i) => {
         let dataPoint = this.points[index];

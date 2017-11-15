@@ -34,6 +34,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.debugger import debugger_plugin_loader
@@ -57,6 +58,7 @@ def get_plugins():
   plugins = [
       core_plugin.CorePlugin,
       scalars_plugin.ScalarsPlugin,
+      custom_scalars_plugin.CustomScalarsPlugin,
       images_plugin.ImagesPlugin,
       audio_plugin.AudioPlugin,
       graphs_plugin.GraphsPlugin,
