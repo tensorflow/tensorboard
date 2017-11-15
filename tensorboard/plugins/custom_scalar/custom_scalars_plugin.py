@@ -90,20 +90,19 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
 
     1. The scalars plugin is registered and active.
     2. There is a custom layout for the dashboard.
+
+    Returns: A boolean. Whether the plugin is active.
     """
+    if not self._multiplexer:
+      return False
+
     scalars_plugin_instance = self._get_scalars_plugin()
     if not (scalars_plugin_instance and
             scalars_plugin_instance.is_active()):
       return False
 
-    for run in self._multiplexer.Runs():
-      try:
-        self._multiplexer.Tensors(run, metadata.CONFIG_SUMMARY_TAG)
-      except KeyError:
-        continue
-      return True
-
-    return False
+    # This plugin is active if any run has a layout.
+    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   @wrappers.Request.application
   def download_data_route(self, request):
@@ -286,15 +285,11 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     title_to_category = {}
 
     merged_layout = None
-    runs = list(self._multiplexer.Runs())
+    runs = list(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
     runs.sort()
     for run in runs:
-      try:
-        tensor_events = self._multiplexer.Tensors(
-            run, metadata.CONFIG_SUMMARY_TAG)
-      except KeyError:
-        # This run lacks a layout.
-        continue
+      tensor_events = self._multiplexer.Tensors(
+          run, metadata.CONFIG_SUMMARY_TAG)
 
       # This run has a layout. Merge it with the ones currently found.
       string_array = tf.make_ndarray(tensor_events[0].tensor_proto)
