@@ -105,9 +105,14 @@ export class InspectorPanel extends PolymerClass {
       }
       return stats.name;
     });
-    labelIndex = Math.max(0, labelIndex);
-    // Make the default label the first non-numeric column.
-    this.selectedMetadataField = spriteAndMetadata.stats[labelIndex].name;
+    
+    if (this.selectedMetadataField == null || this.metadataFields.filter(name =>
+        name == this.selectedMetadataField).length == 0) {
+      // Make the default label the first non-numeric column.
+      this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
+    }
+    this.updateInspectorPane(this.selectedPointIndices, 
+        this.neighborsOfFirstPoint);
   }
 
   datasetChanged() {
