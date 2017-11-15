@@ -1,6 +1,6 @@
 <!--
 @license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ You may obtain a copy of the License at
   time on host and on device.
 -->
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <dom-module id="input-pipeline-analyzer">
@@ -263,7 +262,7 @@ You may obtain a copy of the License at
                              "low_watermark": row.c[1].v})
         maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
       })
-      var chart = document.querySelector('#device_step_chart');
+      var chart = this.$.device_step_chart;
       if (chart) {
         chart.setVisibleSeries(['total step time', 'device step time']);
         chart.setSeriesData('total step time', hostStepSeries);
@@ -290,7 +289,7 @@ You may obtain a copy of the License at
                                  "min": row.c[5].v,
                                  "max": row.c[6].v});
       })
-      var chart = document.querySelector('#device_infeed_chart');
+      var chart = this.$.device_infeed_chart;
       if (chart) {
         chart.setVisibleSeries(['infeed deque time%']);
         chart.setSeriesData('infeed deque time%', deviceInfeedSeries);
