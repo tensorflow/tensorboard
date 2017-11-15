@@ -217,7 +217,6 @@ You may obtain a copy of the License at
       this._requestManager.request(addParams(
           getRouter().pluginRoute('profile', '/data'), {tag: 'input_pipeline_analyzer', run})
       ).then((data) => {
-        if (window.console) window.console.log(data);
         if (data) {
           this.set('_data', data);
         }

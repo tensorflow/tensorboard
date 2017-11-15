@@ -9,4 +9,8 @@ ts_web_library(
     srcs = ["input-pipeline-analyzer.html"],
     path = "/tf-input-pipeline",
     visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/vz_line_chart",
+    ],
 )
