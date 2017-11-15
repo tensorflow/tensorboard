@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataSet, DistanceFunction, Projection, ProjectionComponents3D, State} from './data.js';
+import {DataSet, DistanceFunction, DistanceSpace, Projection, ProjectionComponents3D, State} from './data.js';
 import {NearestEntry} from './knn.js';
 import {ProjectorEventContext} from './projectorEventContext.js';
 import {LabelRenderParams} from './renderContext.js';
@@ -84,6 +84,7 @@ export class ProjectorScatterPlotAdapter {
   private labelPointAccessor: string;
   private legendPointColorer: (ds: DataSet, index: number) => string;
   private distanceMetric: DistanceFunction;
+  private distanceSpace: DistanceSpace;
 
   private spriteVisualizer: ScatterPlotVisualizerSprites;
   private labels3DVisualizer: ScatterPlotVisualizer3DLabels;
@@ -115,6 +116,12 @@ export class ProjectorScatterPlotAdapter {
     projectorEventContext.registerDistanceMetricChangedListener(
         distanceMetric => {
           this.distanceMetric = distanceMetric;
+          this.updateScatterPlotAttributes();
+          this.scatterPlot.render();
+        });
+    projectorEventContext.registerDistanceSpaceChangedListener(
+        distanceSpace => {
+          this.distanceSpace = distanceSpace;
           this.updateScatterPlotAttributes();
           this.scatterPlot.render();
         });

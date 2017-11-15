@@ -131,7 +131,7 @@ limitations under the License.
   width: 100px;
 }
 
-.distance .options {
+.distance .options, .distance-space .options {
   float: right;
 }
 
@@ -147,14 +147,14 @@ limitations under the License.
 }
 
 .neighbors {
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
-.neighbors-options {
+.neighbors-options, .distance, .distance-space {
   margin-top: 6px;
 }
 
-.neighbors-options .option-label, .distance .option-label {
+.neighbors-options .option-label, .distance .option-label, .distance-space .option-label {
   color: #727272;
   margin-right: 2px;
   width: auto;
@@ -175,7 +175,7 @@ limitations under the License.
   };
 }
 
-.euclidean {
+.euclidean, .tsne-space {
   margin-right: 10px;
 }
 
@@ -235,6 +235,14 @@ limitations under the License.
         <div class="options">
           <a class="selected cosine" href="javascript:void(0);">COSINE</a>
           <a class="euclidean" href="javascript:void(0);">EUCLIDEAN</a>
+        </div>
+      </div>
+      <div class="distance-space">
+        <span class="option-label">dist. space</span>
+        <div class="options">
+          <a class="selected original-space" href="javascript:void(0);">ORIGINAL</a>
+          <a class="pca-space" href="javascript:void(0);">PCA</a>
+          <a class="tsne-space" href="javascript:void(0);">T-SNE</a>
         </div>
       </div>
     </div>

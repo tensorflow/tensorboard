@@ -22,6 +22,7 @@ import * as util from './util.js';
 import * as vector from './vector.js';
 
 export type DistanceFunction = (a: number[], b: number[]) => number;
+export type DistanceSpace = (_: DataPoint) => Float32Array;
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
@@ -414,11 +415,11 @@ export class DataSet {
    * Finds the nearest neighbors of the query point using a
    * user-specified distance metric.
    */
-  findNeighbors(pointIndex: number, distFunc: DistanceFunction, numNN: number):
-      knn.NearestEntry[] {
+  findNeighbors(pointIndex: number, distFunc: DistanceFunction,
+      distSpace: DistanceSpace, numNN: number): knn.NearestEntry[] {
     // Find the nearest neighbors of a particular point.
     let neighbors = knn.findKNNofPoint(
-        this.points, pointIndex, numNN, (d => d.vector), distFunc);
+        this.points, pointIndex, numNN, distSpace, distFunc);
     // TODO(@dsmilkov): Figure out why we slice.
     let result = neighbors.slice(0, numNN);
     return result;
