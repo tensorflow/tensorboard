@@ -35,34 +35,34 @@ def tensorboard_js_workspace():
       # - Artistic 2.0
       licenses = ["notice"],
       sha256_urls_extract_macos = {
-          "47109a00cac344d80296c195451bb5eee7c21727fcef1594384ddfe1f852957a": [
-              "https://mirror.bazel.build/nodejs.org/dist/v4.3.2/node-v4.3.2-darwin-x64.tar.xz",
-              "http://nodejs.org/dist/v4.3.2/node-v4.3.2-darwin-x64.tar.xz",
+          "910395e1e98fb351c62b5702a9deef22aaecf05d6df1d7edc283337542207f3f": [
+              "https://mirror.bazel.build/nodejs.org/dist/v6.9.1/node-v6.9.1-darwin-x64.tar.xz",
+              "http://nodejs.org/dist/v6.9.1/node-v6.9.1-darwin-x64.tar.xz",
           ],
       },
       sha256_urls_windows = {
-          "3d4cfca9dcec556a077a2324bf5bd165ea3e6e64a2bfd7fc6e7a1f0dc4eb552b": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/nodejs/node/v4.3.2/LICENSE",
-              "https://raw.githubusercontent.com/nodejs/node/v4.3.2/LICENSE",
+          "1914bfb950be8d576ce9e49c8a0e51c9f2402560fe3c19093e69bc1306a56e9e": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/nodejs/node/v6.9.1/LICENSE",
+              "https://raw.githubusercontent.com/nodejs/node/v6.9.1/LICENSE",
           ],
-          "606c44c42d17866c017c50c0afadad411d9492ac4281d2431b937f881911614e": [
-              "https://mirror.bazel.build/nodejs.org/dist/v4.3.2/win-x64/node.exe",
-              "http://nodejs.org/dist/v4.3.2/win-x64/node.exe",
+          "513923b0490ebb7466a56483a62595814ed9d036d6f35476debb0cd606bec526": [
+              "https://mirror.bazel.build/nodejs.org/dist/v6.9.1/win-x64/node.exe",
+              "http://nodejs.org/dist/v6.9.1/win-x64/node.exe",
           ],
-          "451a40570099a95488d6438f175813629e0430f87f23c8659bc18dc42494820a": [
-              "https://mirror.bazel.build/nodejs.org/dist/v4.3.2/win-x64/node.lib",
-              "http://nodejs.org/dist/v4.3.2/win-x64/node.lib",
+          "3951aefa4afd6fb836ab06468b1fc2a69fa75bd66ec2f5a0e08c4e32547681e3": [
+              "https://mirror.bazel.build/nodejs.org/dist/v6.9.1/win-x64/node.lib",
+              "http://nodejs.org/dist/v6.9.1/win-x64/node.lib",
           ],
       },
       sha256_urls_extract = {
-          "4350d0431b49697517c6cca5d66adf5f74eb9101c52f52ae959fa94225822d44": [
-              "https://mirror.bazel.build/nodejs.org/dist/v4.3.2/node-v4.3.2-linux-x64.tar.xz",
-              "http://nodejs.org/dist/v4.3.2/node-v4.3.2-linux-x64.tar.xz",
+          "d4eb161e4715e11bbef816a6c577974271e2bddae9cf008744627676ff00036a": [
+              "https://mirror.bazel.build/nodejs.org/dist/v6.9.1/node-v6.9.1-linux-x64.tar.xz",
+              "http://nodejs.org/dist/v6.9.1/node-v6.9.1-linux-x64.tar.xz",
           ],
       },
       strip_prefix = {
-          "node-v4.3.2-darwin-x64.tar.xz": "node-v4.3.2-darwin-x64",
-          "node-v4.3.2-linux-x64.tar.xz": "node-v4.3.2-linux-x64",
+          "node-v6.9.1-darwin-x64.tar.xz": "node-v6.9.1-darwin-x64",
+          "node-v6.9.1-linux-x64.tar.xz": "node-v6.9.1-linux-x64",
       },
       executable = [
           "node",
@@ -75,16 +75,16 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
           "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.3.1/LICENSE.txt",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.3.1/LICENSE.txt",
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/LICENSE.txt",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/LICENSE.txt",
           ],
-          "8465342c318f9c4cf0a29b109fa63ee3742dd4dc7080d05d9fd8f604814d04cf": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.3.1/lib/tsc.js",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.3.1/lib/tsc.js",
+          "f0e4b0878e34aefc2e2c688b9bde0633c46c3184afc45dde21eca4d94b363f20": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/tsc.js",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/tsc.js",
           ],
-          "a67e36da3029d232e4e938e61a0a3302f516d71e7100d54dbf5362ad8618e994": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.3.1/lib/lib.es6.d.ts",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.3.1/lib/lib.es6.d.ts",
+          "68a49bf51313783f533d2e0db400f5d16cba71233f5c01dfca55ce5f97015f0c": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/lib.es6.d.ts",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/lib.es6.d.ts",
           ],
       },
       extra_build_file_content = "\n".join([
@@ -113,15 +113,14 @@ def tensorboard_js_workspace():
       ]),
   )
 
-
   native.new_http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
-      sha256 = "2981de41d1ff4774b544423da9a2cd8beb3be649e95aef2ef2fd83957300b3fe",
-      strip_prefix = "clutz-b0db5ade9bb535d387f05292316c422790c9848e",
+      sha256 = "00c24702517628953dbb5aaf40e7e587d860bbb64ac71a2cdc1687dd691382f2",
+      strip_prefix = "clutz-1d731dc0e9bd3ca652e41240298a3693369d1289",
       urls = [
-          "https://mirror.bazel.build/github.com/angular/clutz/archive/b0db5ade9bb535d387f05292316c422790c9848e.tar.gz",  # 2017-05-22
-          "https://github.com/angular/clutz/archive/b0db5ade9bb535d387f05292316c422790c9848e.tar.gz",
+          "https://mirror.bazel.build/github.com/angular/clutz/archive/1d731dc0e9bd3ca652e41240298a3693369d1289.tar.gz",  # 2017-11-02
+          "https://github.com/angular/clutz/archive/1d731dc0e9bd3ca652e41240298a3693369d1289.tar.gz",
       ],
   )
 
@@ -129,12 +128,12 @@ def tensorboard_js_workspace():
       name = "com_google_javascript_closure_compiler_externs",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls_extract = {
-          "0f515a6ebfa138490b3c5ea9f3591ea1a7e4a930d3074f18b3eca86084ad9b66": [
-              "https://mirror.bazel.build/github.com/google/closure-compiler/archive/b37e6000001b0a6bf4c0be49024ebda14a8711d9.tar.gz",  # 2017-06-02
-              "https://github.com/google/closure-compiler/archive/b37e6000001b0a6bf4c0be49024ebda14a8711d9.tar.gz",
+          "1dfaafac60eb3826b2cda4a4bd293d139d6a631c0035c43b66cd444ebee11228": [
+              "https://mirror.bazel.build/github.com/google/closure-compiler/archive/v20171023.tar.gz",
+              "https://github.com/google/closure-compiler/archive/v20171023.tar.gz",
           ],
       },
-      strip_prefix = {"b37e6000001b0a6bf4c0be49024ebda14a8711d9.tar.gz": "closure-compiler-b37e6000001b0a6bf4c0be49024ebda14a8711d9/externs"},
+      strip_prefix = {"v20171023.tar.gz": "closure-compiler-20171023/externs"},
   )
 
   filegroup_external(
