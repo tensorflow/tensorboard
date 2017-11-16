@@ -372,13 +372,13 @@ export class TSNE {
     // Trick that helps with local optima.
     let alpha = this.iter < 100 ? 4 : 1;
 
-    let superviseFactor = this.superviseFactor;
+    let superviseFactor = this.superviseFactor / 100.;  // set in range [0, 1]
     let unlabeledClass = this.unlabeledClass;
     let labels = this.labels;
     let labelCounts = this.labelCounts;
-    let supervise = superviseFactor != null && superviseFactor > 0 &&
+    let supervised = superviseFactor != null && superviseFactor > 0 &&
         labels != null && labelCounts != null;
-    let unlabeledCount = supervise && unlabeledClass != null &&
+    let unlabeledCount = supervised && unlabeledClass != null &&
         unlabeledClass != '' ? labelCounts[unlabeledClass] : 0;
 
     // Make data for the SP tree.
@@ -438,7 +438,7 @@ export class TSNE {
     let forces: [number[], number[]][] = new Array(N);
     for (let i = 0; i < N; ++i) {
       let pointI = points[i];
-      if (supervise) {
+      if (supervised) {
         var sameCount = labelCounts[labels[i]];
         var otherCount = N - sameCount - unlabeledCount;
       }
@@ -448,7 +448,7 @@ export class TSNE {
       for (let k = 0; k < neighbors.length; ++k) {
         let j = neighbors[k].index;
         let pij = P[i * N + j];
-        if (supervise) {  // apply semi-supervised prior probabilities
+        if (supervised) {  // apply semi-supervised prior probabilities
           if (labels[i] == unlabeledClass || labels[j] == unlabeledClass) {
             pij *= 1. / N;
           }
@@ -492,8 +492,9 @@ export class TSNE {
     }
     // Normalize the negative forces and compute the gradient.
     let A = 4 * alpha;
-    if (supervise)
+    if (supervised) {
       A /= sum_pij;
+    }
     const B = 4 / Z;
     for (let i = 0; i < N; ++i) {
       let [FPos, FNegZ] = forces[i];
