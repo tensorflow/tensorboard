@@ -21,7 +21,7 @@ import * as scatterPlot from './scatterPlot.js';
 import * as util from './util.js';
 import * as vector from './vector.js';
 
-export type DistanceFunction = (a: number[], b: number[]) => number;
+export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
