@@ -36,28 +36,13 @@ export let DataPanelPolymer = PolymerElement({
         {type: String, notify: true, observer: '_selectedLabelOptionChanged'},
     normalizeData: Boolean,
     showForceCategoricalColorsCheckbox: Boolean,
-    metadataEditorInput: {
-      type: String
-    },
-    metadataEditorInputLabel: {
-      type: String,
-      value: 'Tag selection as'
-    },
-    metadataEditorInputChange: {
-      type: Object
-    },
-    metadataEditorColumn: {
-      type: String,
-    },
-    metadataEditorColumnChange: {
-      type: Object
-    },
-    metadataEditorButtonClicked: {
-      type: Object
-    },
-    metadataEditorButtonDisabled: {
-      type: Boolean
-    }
+    metadataEditorInput: {type: String},
+    metadataEditorInputLabel: {type: String, value: 'Tag selection as'},
+    metadataEditorInputChange: {type: Object},
+    metadataEditorColumn: {type: String},
+    metadataEditorColumnChange: {type: Object},
+    metadataEditorButtonClicked: {type: Object},
+    metadataEditorButtonDisabled: {type: Boolean}
   },
   observers: [
     '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -316,15 +301,16 @@ export class DataPanel extends DataPanelPolymer {
     let selectionSize = this.selectedPointIndices.length + 
         this.neighborsOfFirstPoint.length;
     this.metadataEditorButtonDisabled = true;
-    this.metadataEditorInputLabel = `${selectionSize} labeled as '${this.metadataEditorInput}'`;
+    this.metadataEditorInputLabel =
+        `${selectionSize} labeled as '${this.metadataEditorInput}'`;
 
     this.selectedPointIndices.forEach(i =>
         this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
         this.metadataEditorInput);
     
     this.neighborsOfFirstPoint.forEach(p =>
-        this.projector.dataSet.points[p.index].metadata[this.metadataEditorColumn] =
-        this.metadataEditorInput);
+        this.projector.dataSet.points[p.index]
+            .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
     
     this.spriteAndMetadata.stats = analyzeMetadata(
         this.spriteAndMetadata.stats.map(s => s.name),
