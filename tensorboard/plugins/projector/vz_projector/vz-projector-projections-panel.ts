@@ -205,7 +205,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       }
       else {
         this.unlabeledClassLabel =
-            `Supervising with '${this.unlabeledClassSelected}'`;
+            `Supervising without '${this.unlabeledClassSelected}'`;
       }
       return;
     }
@@ -240,7 +240,11 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       let numMatches = this.dataSet.points.filter(p =>
           p.metadata[this.superviseColumn].toString().trim() == value).length;
       
-      if (numMatches > 0) {
+      if (numMatches === 0) {
+        this.unlabeledClassLabel = 
+            `Supervising without '${this.unlabeledClassSelected}'`;
+      }
+      else {
         this.unlabeledClassSelected = value;
         this.unlabeledClassLabel = 
             `Supervising without '${value}' [${numMatches} points]`;
