@@ -31,6 +31,11 @@ from tensorboard import default
 from tensorboard import program
 
 
+def run_main():
+  """Initializes flags and calls main()."""
+  tf.app.run(main)
+
+
 def main(unused_argv=None):
   """Standard TensorBoard program CLI.
 
@@ -59,4 +64,4 @@ def run_simple_server(*args, **kwargs):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  run_main()

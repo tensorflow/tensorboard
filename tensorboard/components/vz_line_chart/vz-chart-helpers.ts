@@ -27,6 +27,42 @@ export type ScalarDatum = Datum & Scalar;
 
 export type DataFn = (run: string, tag: string) => Promise<Array<Datum>>;
 
+export interface LineChartSymbol {
+  // A single unicode character string representing the symbol. Maybe a diamond
+  // unicode character for instance. 
+  character: string;
+  // A special method used by Plottable to draw the symbol in the line chart.
+  method: (() => Plottable.SymbolFactories.SymbolFactory);
+}
+
+/**
+ * A list of symbols that line charts can cycle through per data series.
+ */
+export const SYMBOLS_LIST: LineChartSymbol[] = [
+  {
+    character: '\u25FC',
+    method: Plottable.SymbolFactories.square,
+  },
+  {
+    character: '\u25c6',
+    method: Plottable.SymbolFactories.diamond,
+  },
+  {
+    character: '\u25B2',
+    method: Plottable.SymbolFactories.triangle,
+  },
+  {
+    character: '\u2605',
+    method: Plottable.SymbolFactories.star,
+  },
+  {
+    character: '\u271a',
+    method: Plottable.SymbolFactories.cross,
+  },
+];
+
+export type SymbolFn = (series: string) => Plottable.SymbolFactory;
+
 export let Y_TOOLTIP_FORMATTER_PRECISION = 4;
 export let STEP_FORMATTER_PRECISION = 4;
 export let Y_AXIS_FORMATTER_PRECISION = 3;

@@ -321,7 +321,7 @@ export class TSNE {
   getSolution() { return this.Y; }
 
   // perform a single step of optimization to improve the embedding
-  step() {
+  step(perturb: number) {
     this.iter += 1;
     let N = this.N;
 
@@ -350,6 +350,7 @@ export class TSNE {
         // step!
         let i_d = i * this.dim + d;
         this.Y[i_d] += newsid;
+        this.Y[i_d] *= 1.0 + perturb * (Math.random() - 1.0);
         ymean[d] += this.Y[i_d];  // accumulate mean so that we
                                   // can center later
       }

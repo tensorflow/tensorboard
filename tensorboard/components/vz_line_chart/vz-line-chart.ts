@@ -29,6 +29,12 @@ export interface FillArea {
   higherAccessor: Plottable.IAccessor<number>;
 }
 
+/**
+ * The maximum number of marker symbols within any line for a data series. Too
+ * many markers clutter the chart.
+ */
+const _MAX_MARKERS = 20;
+
 Polymer({
   is: 'vz-line-chart',
   properties: {
@@ -45,6 +51,13 @@ Polymer({
         return new Plottable.Scales.Color().range(d3.schemeCategory10);
       }
     },
+
+    /**
+     * A function that takes a data series string and returns a
+     * Plottable.SymbolFactory to use for rendering that series. This property
+     * implements the ChartHelpers.SymbolFn interface.
+     */
+    symbolFunction: Object,
 
     /**
      * Whether smoothing is enabled or not. If true, smoothed lines will be
@@ -236,7 +249,7 @@ Polymer({
         return {}
       }
     },
-    _makeChartAsyncCallbackId: {type: Number, value: null}
+    _makeChartAsyncCallbackId: {type: Number, value: null},
   },
   observers: [
     '_makeChart(xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
@@ -347,7 +360,8 @@ Polymer({
           this.tooltipColumns,
           this.fillArea,
           this.defaultXRange,
-          this.defaultYRange);
+          this.defaultYRange,
+          this.symbolFunction);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
@@ -412,6 +426,7 @@ class LineChart {
   private yAxis: Plottable.Axes.Numeric;
   private outer: Plottable.Components.Table;
   private colorScale: Plottable.Scales.Color;
+  private symbolFunction: ChartHelpers.SymbolFn;
   private tooltip: d3.Selection<any, any, any, any>;
   private dzl: DragZoomLayer;
 
@@ -420,6 +435,8 @@ class LineChart {
   private marginAreaPlot?: Plottable.Plots.Area<number|Date>;
   private scatterPlot: Plottable.Plots.Scatter<number|Date, Number>;
   private nanDisplay: Plottable.Plots.Scatter<number|Date, Number>;
+  private markersScatterPlot: Plottable.Plots.Scatter<number|Date, number>;
+
   private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number>;
   private lastPointsDataset: Plottable.Dataset;
@@ -449,7 +466,8 @@ class LineChart {
       tooltipColumns: ChartHelpers.TooltipColumn[],
       fillArea: FillArea,
       defaultXRange?: number[],
-      defaultYRange?: number[]) {
+      defaultYRange?: number[],
+      symbolFunction?: ChartHelpers.SymbolFn) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -461,6 +479,11 @@ class LineChart {
     this.lastPointsDataset = new Plottable.Dataset();
     this.nanDataset = new Plottable.Dataset();
     this.yValueAccessor = yValueAccessor;
+
+    // The symbol function maps series to marker. It uses a special dataset that
+    // varies based on whether smoothing is enabled.
+    this.symbolFunction = symbolFunction;
+
     // need to do a single bind, so we can deregister the callback from
     // old Plottable.Datasets. (Deregistration is done by identity checks.)
     this.onDatasetChanged = this._onDatasetChanged.bind(this);
@@ -556,6 +579,25 @@ class LineChart {
             this.colorScale.scale(dataset.metadata().name));
     this.smoothLinePlot = smoothLinePlot;
 
+    if (this.symbolFunction) {
+      const markersScatterPlot = new Plottable.Plots.Scatter<number|Date, number>();
+      markersScatterPlot.x(this.xAccessor, xScale);
+      markersScatterPlot.y(this.yValueAccessor, yScale);
+      markersScatterPlot.attr(
+          'fill',
+          (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) =>
+              this.colorScale.scale(dataset.metadata().name));
+      markersScatterPlot.attr('opacity', 1);
+      markersScatterPlot.size(ChartHelpers.TOOLTIP_CIRCLE_SIZE * 2);
+      markersScatterPlot.symbol(
+          (d: ChartHelpers.Datum, i: number, dataset: Plottable.Dataset) => {
+            return this.symbolFunction(dataset.metadata().name);
+          });
+      // Use a special dataset because this scatter plot should use the accesor
+      // that depends on whether smoothing is enabled.
+      this.markersScatterPlot = markersScatterPlot;
+    }
+
     // The scatterPlot will display the last point for each dataset.
     // This way, if there is only one datum for the series, it is still
     // visible. We hide it when tooltips are active to keep things clean.
@@ -581,6 +623,9 @@ class LineChart {
     const groups = [nanDisplay, scatterPlot, smoothLinePlot, group];
     if (this.marginAreaPlot) {
       groups.push(this.marginAreaPlot);
+    }
+    if (this.markersScatterPlot) {
+      groups.push(this.markersScatterPlot);
     }
     return new Plottable.Components.Group(groups);
   }
@@ -628,6 +673,11 @@ class LineChart {
             })
             .filter((x) => x != null);
     this.lastPointsDataset.data(lastPointsData);
+
+    if (this.markersScatterPlot) {
+      this.markersScatterPlot.datasets(
+          this.datasets.map(this.createSampledDatasetForMarkers));
+    }
 
     // Take a dataset, return an array of NaN data points
     // the NaN points will have a "displayY" property which is the
@@ -991,6 +1041,28 @@ class LineChart {
   }
 
   /**
+   * Samples a dataset so that it contains no more than _MAX_MARKERS number of
+   * data points. This function returns the original dataset if it does not
+   * exceed that many points.
+   */
+  public createSampledDatasetForMarkers(original: Plottable.Dataset):
+      Plottable.Dataset {
+    const originalData = original.data();
+    if (originalData.length <= _MAX_MARKERS) {
+      // This dataset is small enough. Do not sample.
+      return original;
+    }
+
+    // Downsample the data. Otherwise, too many markers clutter the chart.
+    const skipLength = Math.ceil(originalData.length / _MAX_MARKERS);
+    const data = new Array(Math.floor(originalData.length / skipLength));
+    for (let i = 0, j = 0; i < data.length; i++, j += skipLength) {
+      data[i] = originalData[j];
+    }
+    return new Plottable.Dataset(data, original.metadata());
+  }
+
+  /**
    * Set the data of a series on the chart.
    */
   public setSeriesData(name: string, data: ChartHelpers.ScalarDatum[]) {
@@ -1008,6 +1080,11 @@ class LineChart {
       this.smoothLinePlot.datasets(this.datasets);
     }
 
+    if (this.markersScatterPlot) {
+      // Use the correct accessor for marker positioning.
+      this.markersScatterPlot.y(this.getYAxisAccessor(), this.yScale);
+    }
+
     this.updateSpecialDatasets();
   }
 
@@ -1018,6 +1095,11 @@ class LineChart {
       this.smoothLinePlot.datasets([]);
       this.smoothingEnabled = false;
       this.updateSpecialDatasets();
+    }
+    if (this.markersScatterPlot) {
+      // Use the correct accessor (which depends on whether smoothing is
+      // enabled) for marker positioning.
+      this.markersScatterPlot.y(this.getYAxisAccessor(), this.yScale);
     }
   }
 

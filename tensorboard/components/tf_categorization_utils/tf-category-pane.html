@@ -23,7 +23,7 @@ limitations under the License.
     <template is="dom-if" if="[[_rendered]]">
       <button class="heading"
               on-tap="_togglePane"
-              open-button$="[[_opened]]">
+              open-button$="[[opened]]">
         <span class="name">
           <template is="dom-if" if="[[_isSearchResults]]"><!--
             --><span class="light">Tags matching /</span><!--
@@ -42,9 +42,9 @@ limitations under the License.
         </span>
         <span class="count"><span>[[_count]]</span></span>
       </button>
-      <iron-collapse opened="[[_opened]]">
+      <iron-collapse opened="[[opened]]">
         <div class="content">
-          <template is="dom-if" if="[[_opened]]" restamp="[[restamp]]">
+          <template is="dom-if" if="[[opened]]" restamp="[[restamp]]">
             <slot></slot>
           </template>
         </div>
@@ -125,6 +125,15 @@ limitations under the License.
         category: Object,
 
         /**
+         * Allows opening and closing the pane, which is open by default.
+         */
+        opened: {
+          type: Boolean,
+          value: true,
+          notify: true,
+        },
+
+        /**
          * When the category is closed and reopened, should its contents
          * be restamped (default) or retained?
          */
@@ -136,10 +145,6 @@ limitations under the License.
         _count: {
           type: Number,
           computed: '_computeCount(category.items)',
-        },
-        _opened: {
-          type: Boolean,
-          value: false,
         },
         _rendered: {
           type: Boolean,
@@ -159,34 +164,12 @@ limitations under the License.
         },
       },
 
-      observers: ["_nameChanged(category.name)"],
-
       _computeCount() {
         return this.category.items.length;
       },
 
-      _nameChanged(newName) {
-        // Polymer will fire this observer whenever the category
-        // changes, whether the name actually changed or not. Thus, we
-        // have to perform the requisite checks ourselves.
-        if (this._previousName === (this._previousName = newName)) {
-          return;
-        }
-        if (this.category.metadata.type === CategoryType['SEARCH_RESULTS']) {
-          // When a search result category's name changes, this means
-          // that the search query has changed. Surely the user will
-          // wish to see the new results.
-          this._opened = true;
-        } else {
-          // Otherwise, we don't know what happened. Maybe new runs were
-          // loaded, maybe a tag group was added that shifted all the
-          // categories. To be safe, we'll close all the categories.
-          this._opened = false;
-        }
-      },
-
       _togglePane() {
-        this._opened = !this._opened;
+        this.set('opened', !this.opened);
       },
 
       _computeRendered(category) {

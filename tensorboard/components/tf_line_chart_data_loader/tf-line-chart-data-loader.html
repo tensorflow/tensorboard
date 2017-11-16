@@ -41,6 +41,7 @@ limitations under the License.
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
         fill-area="[[fillArea]]"
+        symbol-function="[[symbolFunction]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -117,7 +118,10 @@ limitations under the License.
         // An optional list of data series. Each data series is a string that
         // corresponds to a line in the chart. If this property is not provided,
         // the list of data series consists of the list of runs.
-        dataSeries: Array,
+        dataSeries: {
+          type: Array,
+          value: [],
+        },
 
         xComponentsCreationMethod: Object,
         xType: String,
@@ -132,6 +136,8 @@ limitations under the License.
 
         defaultXRange: Array,
         defaultYRange: Array,
+
+        symbolFunction: Object,
 
         /**
          * A function that takes as inputs:
@@ -246,8 +252,12 @@ limitations under the License.
           return;
         }
 
-        this.$$('vz-line-chart').setVisibleSeries(
-            dataSeries || runsUpdateRecord.base);
+        let visibleSeries = dataSeries;
+        if (visibleSeries.length === 0) {
+          // The data series is not explicitly set. Default to using runs.
+          visibleSeries = runsUpdateRecord.base;
+        }
+        this.$$('vz-line-chart').setVisibleSeries(visibleSeries);
         this._loadData();
       },
       _loadData() {
@@ -307,7 +317,13 @@ limitations under the License.
         });
       },
       _changeSeries() {
-        this.$$('vz-line-chart').setVisibleSeries(this.dataSeries || this.runs);
+        let visibleSeries = this.dataSeries;
+        if (this.dataSeries.length === 0) {
+          // The data series is not explicitly set. Default to using runs.
+          visibleSeries = this.runs;
+        }
+
+        this.$$('vz-line-chart').setVisibleSeries(visibleSeries);
         this._loadData();
       },
       _logScaleChanged(logScaleActive) {
