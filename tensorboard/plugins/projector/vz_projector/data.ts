@@ -311,10 +311,10 @@ export class DataSet {
   projectTSNE(
       perplexity: number, learningRate: number, tsneDim: number,
       stepCallback: (iter: number) => void) {
-    this.hasTSNERun = true;
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.hasTSNERun = true;
     this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
     this.tSNEShouldPerturb = false;
@@ -323,8 +323,9 @@ export class DataSet {
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
     let step = () => {
       if (this.tSNEShouldStop) {
-        stepCallback(null);
         this.tsne = null;
+        this.hasTSNERun = false;
+        stepCallback(null);
         return;
       }
 

@@ -180,7 +180,15 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       }
     }
 
-    this.runTsneButton.addEventListener('click', () => this.runTSNE());
+    this.runTsneButton.addEventListener('click', () => {
+      if (this.dataSet.hasTSNERun) {
+        this.dataSet.stopTSNE();
+      }
+      else {
+        this.runTSNE();
+      }
+    });
+
     this.pauseTsneButton.addEventListener('click', () => {
       if (this.dataSet.tSNEShouldPause) {
         this.dataSet.tSNEShouldPause = false;
@@ -450,24 +458,28 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   private runTSNE() {
+    this.runTsneButton.innerText = 'Stop';
     this.runTsneButton.disabled = true;
-    this.perturbTsneButton.disabled = true;
-    this.pauseTsneButton.disabled = true;
     this.pauseTsneButton.innerText = 'Pause';
+    this.pauseTsneButton.disabled = true;
+    this.perturbTsneButton.disabled = true;
+
     this.dataSet.projectTSNE(
         this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2,
         (iteration: number) => {
           if (iteration != null) {
             this.runTsneButton.disabled = false;
-            this.perturbTsneButton.disabled = false;
             this.pauseTsneButton.disabled = false;
+            this.perturbTsneButton.disabled = false;
             this.iterationLabel.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
-          } else {
-            this.runTsneButton.disabled = null;
-            this.perturbTsneButton.disabled = true;
-            this.pauseTsneButton.disabled = true;
+          }
+          else {
+            this.runTsneButton.innerText = 'Re-run';
+            this.runTsneButton.disabled = false;
             this.pauseTsneButton.innerText = 'Pause';
+            this.pauseTsneButton.disabled = true;
+            this.perturbTsneButton.disabled = true;
           }
         });
   }
