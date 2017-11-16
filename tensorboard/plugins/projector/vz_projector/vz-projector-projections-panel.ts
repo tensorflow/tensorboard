@@ -14,7 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import * as data from './data.js';
-import {DataSet, Projection, ProjectionType, SpriteAndMetadataInfo, State} from './data.js';
+import {DataSet, Projection, ProjectionType, SpriteAndMetadataInfo, State}
+    from './data.js';
 import * as util from './util.js';
 import * as vector from './vector.js';
 import {Vector} from './vector.js';
@@ -43,6 +44,12 @@ export let ProjectionsPanelPolymer = PolymerElement({
       type: String,
       observer: '_customSelectedSearchByMetadataOptionChanged'
     },
+    unlabeledClass: {type: String},
+    unlabeledClassTyping: {type: Object},
+    unlabeledClassChange: {type: Object},
+    unlabeledClassLabel: {type: String, value: 'Ignored label'},
+    superviseColumn: {type: String},
+    superviseColumnChanged: {type: Object}
   }
 });
 
@@ -74,6 +81,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private perplexity: number;
   /** T-SNE learning rate. */
   private learningRate: number;
+  /** T-SNE supervise factor. */
+  private superviseFactor: number;
+
+  private unlabeledClassSelected: string;
 
   private searchByMetadataOptions: string[];
 
@@ -91,6 +102,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   public pcaY: number;
   public pcaZ: number;
   public customSelectedSearchByMetadataOption: string;
+  private unlabeledClass: string;
+  private unlabeledClassLabel: string;
+  private superviseColumn: string;
+  private metadataFields: string[];
 
   /** Polymer elements. */
   private runTsneButton: HTMLButtonElement;
@@ -99,6 +114,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
   private perturbFactorInput: HTMLInputElement;
+  private superviseFactorInput: HTMLInputElement;
   private zDropdown: HTMLElement;
   private iterationLabel: HTMLElement;
 
@@ -115,6 +131,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.perplexity = 30;
     this.learningRate = 10;
 
+    this.unlabeledClassSelected = '';
+
     // Setup Custom projections.
     this.centroidValues = {xLeft: null, xRight: null, yUp: null, yDown: null};
     this.clearCentroids();
@@ -125,14 +143,18 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   ready() {
     this.zDropdown = this.querySelector('#z-dropdown') as HTMLElement;
     this.runTsneButton = this.querySelector('.run-tsne') as HTMLButtonElement;
-    this.pauseTsneButton = this.querySelector('.pause-tsne') as HTMLButtonElement;
-    this.perturbTsneButton = this.querySelector('.perturb-tsne') as HTMLButtonElement;
+    this.pauseTsneButton =
+        this.querySelector('.pause-tsne') as HTMLButtonElement;
+    this.perturbTsneButton =
+        this.querySelector('.perturb-tsne') as HTMLButtonElement;
     this.perplexitySlider =
         this.querySelector('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
         this.querySelector('#learning-rate-slider') as HTMLInputElement;
     this.perturbFactorInput =
         this.querySelector('#perturb-factor-slider') as HTMLInputElement;
+    this.superviseFactorInput =
+        this.querySelector('#supervise-factor-slider') as HTMLInputElement;
     this.iterationLabel = this.querySelector('.run-tsne-iter') as HTMLElement;
   }
 
@@ -168,6 +190,82 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         .innerText = '' + this.perturbFactorInput.value;
   }
 
+  private updateTSNESuperviseFactorFromUIChange() {
+    (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
+    .innerText = ('' + this.superviseFactor);
+    this.setSupervision(this.superviseFactor);
+  }
+
+  private unlabeledClassTyping() {
+    let value = this.unlabeledClass.trim();
+
+    if (value == null || value.trim() === '') {
+      if (this.unlabeledClassSelected == '') {
+        this.unlabeledClassLabel = 'No ignored label';
+      }
+      else {
+        this.unlabeledClassLabel =
+            `Supervising without '${this.unlabeledClassSelected}'`;
+      }
+      return;
+    }
+
+    if (this.dataSet) {
+      let numMatches = this.dataSet.points.filter(p =>
+          p.metadata[this.superviseColumn].toString().trim() == value).length;
+      
+      if (numMatches === 0) {
+        this.unlabeledClassLabel = 'Label not found';
+      }
+      else {
+        if (this.dataSet.unlabeledClass != value) {
+          this.unlabeledClassLabel =
+              `Supervise without '${value}' [${numMatches} points]`;
+        }
+      }
+    }
+  }
+
+  private unlabeledClassChange() {
+    let value = this.unlabeledClass.trim();
+
+    if (value == null || value.trim() === '') {
+      this.unlabeledClassSelected = '';
+      this.unlabeledClassLabel = 'No ignored label';
+      this.setSupervision(this.superviseFactor, this.superviseColumn, '');
+      return;
+    }
+
+    if (this.dataSet) {
+      let numMatches = this.dataSet.points.filter(p =>
+          p.metadata[this.superviseColumn].toString().trim() == value).length;
+      
+      if (numMatches === 0) {
+        this.unlabeledClassLabel = 
+            `Supervising without '${this.unlabeledClassSelected}'`;
+      }
+      else {
+        this.unlabeledClassSelected = value;
+        this.unlabeledClassLabel = 
+            `Supervising without '${value}' [${numMatches} points]`;
+        this.setSupervision(this.superviseFactor, this.superviseColumn, value);
+      }
+    }
+  }
+
+  private superviseColumnChanged() {
+    this.unlabeledClass = '';
+    this.unlabeledClassChange();
+  }
+
+  private setSupervision(superviseFactor: number, superviseColumn?: string,
+      unlabeledClass?: string) {
+    if (this.dataSet) {
+      this.dataSet.setSupervision(superviseFactor, superviseColumn,
+          unlabeledClass);
+    }
+  }
+
   private setupUIControls() {
     {
       const self = this;
@@ -180,7 +278,15 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       }
     }
 
-    this.runTsneButton.addEventListener('click', () => this.runTSNE());
+    this.runTsneButton.addEventListener('click', () => {
+      if (this.dataSet.hasTSNERun) {
+        this.dataSet.stopTSNE();
+      }
+      else {
+        this.runTSNE();
+      }
+    });
+
     this.pauseTsneButton.addEventListener('click', () => {
       if (this.dataSet.tSNEShouldPause) {
         this.dataSet.tSNEShouldPause = false;
@@ -209,6 +315,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.perturbFactorInput.addEventListener(
         'change', () => this.updateTSNEPerturbFactorFromUIChange());
     this.updateTSNEPerturbFactorFromUIChange();
+
+    this.superviseFactorInput.addEventListener(
+        'change', () => this.updateTSNESuperviseFactorFromUIChange());
+    this.updateTSNESuperviseFactorFromUIChange();
 
     this.setupCustomProjectionInputFields();
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
@@ -362,6 +472,22 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo) {
+    let labelIndex = -1;
+    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+      if (!stats.isNumeric && labelIndex === -1)
+        labelIndex = i;
+      return stats.name;
+    });
+    
+    if (this.superviseColumn == null || this.metadataFields.filter(name =>
+        name == this.superviseColumn).length == 0) {
+      // Make the default supervise class the first non-numeric column.
+      this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
+      this.unlabeledClass = '';
+    }
+
+    this.unlabeledClassChange();
+
     // Project by options for custom projections.
     let searchByMetadataIndex = -1;
     this.searchByMetadataOptions = spriteAndMetadata.stats.map((stats, i) => {
@@ -369,7 +495,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       if (!stats.isNumeric && searchByMetadataIndex === -1) {
         searchByMetadataIndex = i;
       }
-      return stats.name;
+      return stats.name.trim();
     });
     this.customSelectedSearchByMetadataOption =
         this.searchByMetadataOptions[Math.max(0, searchByMetadataIndex)];
@@ -450,24 +576,27 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   private runTSNE() {
+    this.runTsneButton.innerText = 'Stop';
     this.runTsneButton.disabled = true;
-    this.perturbTsneButton.disabled = true;
-    this.pauseTsneButton.disabled = true;
     this.pauseTsneButton.innerText = 'Pause';
+    this.pauseTsneButton.disabled = true;
+    this.perturbTsneButton.disabled = true;
     this.dataSet.projectTSNE(
         this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2,
         (iteration: number) => {
           if (iteration != null) {
             this.runTsneButton.disabled = false;
-            this.perturbTsneButton.disabled = false;
             this.pauseTsneButton.disabled = false;
+            this.perturbTsneButton.disabled = false;
             this.iterationLabel.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
-          } else {
+          }
+          else {
+            this.runTsneButton.innerText = 'Re-run';
             this.runTsneButton.disabled = null;
-            this.perturbTsneButton.disabled = true;
-            this.pauseTsneButton.disabled = true;
             this.pauseTsneButton.innerText = 'Pause';
+            this.pauseTsneButton.disabled = true;
+            this.perturbTsneButton.disabled = true;
           }
         });
   }

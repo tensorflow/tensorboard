@@ -134,6 +134,9 @@ export class DataSet {
   tSNEShouldStop = true;
   tSNEShouldPerturb = false;
   perturbFactor: number = 0.4;
+  superviseFactor: number = 0;
+  superviseColumn: string = '';
+  unlabeledClass: string = '';
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
   spriteAndMetadataInfo: SpriteAndMetadataInfo;
@@ -315,6 +318,8 @@ export class DataSet {
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.setTSNESupervision(this.superviseFactor, this.superviseColumn,
+        this.unlabeledClass);
     this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
     this.tSNEShouldPerturb = false;
@@ -325,6 +330,7 @@ export class DataSet {
       if (this.tSNEShouldStop) {
         stepCallback(null);
         this.tsne = null;
+        this.hasTSNERun = false;
         return;
       }
 
@@ -368,6 +374,53 @@ export class DataSet {
             this.tsne.initDataDist(this.nearest);
           }).then(step);
     });
+  }
+
+  setSupervision(superviseFactor: number, superviseColumn?: string,
+      unlabeledClass?: string) {
+    this.setTSNESupervision(superviseFactor, superviseColumn, unlabeledClass);
+
+    if (superviseFactor != null) {
+      this.superviseFactor = superviseFactor;
+    }
+
+    if (superviseColumn != null) {
+      this.superviseColumn = superviseColumn;
+    }
+
+    if (unlabeledClass != null) {
+      this.unlabeledClass = unlabeledClass;
+    }
+  }
+
+  setTSNESupervision(superviseFactor: number, superviseColumn?: string,
+      unlabeledClass?: string) {
+    if (this.tsne) {
+      if (superviseFactor != null) {
+        this.tsne.superviseFactor = superviseFactor;
+      }
+
+      if (superviseColumn != null) {
+        this.tsne.superviseColumn = superviseColumn;
+
+        let labelCounts = {};
+        this.spriteAndMetadataInfo.stats
+            .find(s => s.name == superviseColumn).uniqueEntries
+            .forEach(e => labelCounts[e.label] = e.count);
+        this.tsne.labelCounts = labelCounts;
+
+        let sampledIndices =
+            this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+        let labels = new Array(sampledIndices.length);
+        sampledIndices.forEach((index, i) => 
+          labels[i] = this.points[index].metadata[superviseColumn].toString());
+        this.tsne.labels = labels;
+      }
+
+      if (unlabeledClass != null) {
+        this.tsne.unlabeledClass = unlabeledClass;
+      }
+    }
   }
 
   /**

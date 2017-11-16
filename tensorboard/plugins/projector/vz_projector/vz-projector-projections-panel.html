@@ -101,6 +101,31 @@ limitations under the License.
   min-height: 35px;
 }
 
+.tsne-supervise-factor {
+  margin-bottom: -8px;
+}
+
+.tsne-supervise-by {
+  display: flex;
+  padding-top: 0px;
+}
+
+.tsne-supervise-by paper-input {
+  width: 100%;
+  --paper-input-container-label-floating: {
+    white-space: normal;
+    line-height: normal;
+  };
+}
+
+.tsne-supervise-by paper-dropdown-menu {
+  margin-left: 10px;
+  width: 130px;
+  --paper-input-container-label-floating: {
+    line-height: normal;
+  };
+}
+
 #z-container {
   display: flex;
   align-items: center;
@@ -226,8 +251,38 @@ limitations under the License.
         </paper-slider>
         <span></span>
       </div>
+      <div class="slider tsne-supervise-factor">
+        <label>
+          Supervise
+          <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+          <paper-tooltip position="right" animation-delay="0" fit-to-visible-bounds>
+            The label importance used for supervision, from 0 (disabled) to 100
+            (full importance).
+          </paper-tooltip>
+        </label>
+        <paper-slider id="supervise-factor-slider" min="0" max="100" pin
+            value="{{superviseFactor}}">
+        </paper-slider>
+        <span></span>
+      </div>
+      <div class="tsne-supervise-by">
+        <paper-input value="{{unlabeledClass}}" label="{{unlabeledClassLabel}}"
+            on-change="unlabeledClassChange" on-input="unlabeledClassTyping">
+        </paper-input>
+        <paper-dropdown-menu no-animations label="Supervise with">
+          <paper-listbox attr-for-selected="value" class="dropdown-content"
+              on-selected-item-changed="superviseColumnChanged"
+              selected="{{superviseColumn}}" slot="dropdown-content">
+            <template is="dom-repeat" items="[[metadataFields]]">
+              <paper-item value="[[item]]" label="[[item]]">
+                [[item]]
+              </paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </div>
       <p>
-        <button class="run-tsne ink-button" title="Re-run t-SNE">Re-run</button>
+        <button class="run-tsne ink-button" title="Re-run t-SNE">Run</button>
         <button class="pause-tsne ink-button" title="Pause t-SNE">Pause</button>
         <button class="perturb-tsne ink-button" title="Perturb t-SNE">Perturb</button>
       </p>
