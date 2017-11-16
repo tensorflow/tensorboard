@@ -323,9 +323,9 @@ export class DataSet {
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
     let step = () => {
       if (this.tSNEShouldStop) {
+        stepCallback(null);
         this.tsne = null;
         this.hasTSNERun = false;
-        stepCallback(null);
         return;
       }
 
