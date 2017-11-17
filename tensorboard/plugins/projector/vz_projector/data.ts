@@ -325,6 +325,7 @@ export class DataSet {
       if (this.tSNEShouldStop) {
         stepCallback(null);
         this.tsne = null;
+        this.hasTSNERun = false;
         return;
       }
 
