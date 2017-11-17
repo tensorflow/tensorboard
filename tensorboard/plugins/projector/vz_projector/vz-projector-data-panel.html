@@ -116,6 +116,35 @@ paper-dropdown-menu paper-item {
   margin: 10px 0;
 }
 
+.metadata-editor {
+  display: flex;
+}
+
+.metadata-editor paper-input {
+  width: calc(100%-150px);
+  --paper-input-container-label-floating: {
+    white-space: normal;
+    line-height: normal;
+  };
+}
+
+.metadata-editor paper-button {
+  margin-left: 10px;
+  margin-right: 0px;
+  margin-top: 20px;
+  min-width: 40px;
+  height: 36px;
+  vertical-align: bottom;
+}
+
+.metadata-editor paper-dropdown-menu {
+  margin-left: 10px;
+  width: 100px;
+  --paper-input-container-label-floating: {
+    line-height: normal;
+  };
+}
+
 .config-checkbox {
   display: inline-block;
   font-size: 11px;
@@ -190,7 +219,7 @@ paper-dropdown-menu paper-item {
 }
 
 .colorby-container {
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 </style>
 <div class="title">DATA</div>
@@ -262,6 +291,26 @@ paper-dropdown-menu paper-item {
       <vz-projector-legend render-info="[[colorLegendRenderInfo]]"></vz-projector-legend>
     </template>
   </div>
+
+  <!-- Tag selection as -->
+  <div hidden$="[[!_hasChoice(labelOptions)]]" class="metadata-editor">
+    <paper-input value="{{metadataEditorInput}}" label="{{metadataEditorInputLabel}}"
+    on-input="metadataEditorInputChange"></paper-input>
+    <paper-dropdown-menu no-animations label="in">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" slot="dropdown-content"
+          on-selected-item-changed="metadataEditorColumnChange"
+          selected="{{metadataEditorColumn}}" >
+        <template is="dom-repeat" items="[[metadataFields]]">
+          <paper-item value="[[item]]" label="[[item]]">
+            [[item]]
+          </paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+    <paper-button class="ink-button" on-click="metadataEditorButtonClicked"
+        disabled="[[metadataEditorButtonDisabled]]">Label</paper-button>
+  </div>
+
   <paper-checkbox id="normalize-data-checkbox" checked="{{normalizeData}}">
     Sphereize data
     <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
