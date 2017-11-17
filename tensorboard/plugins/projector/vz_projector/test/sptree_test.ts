@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {SPTree} from '../sptree.js';
+namespace vz_projector.test {
 
 it('simple 2D data', () => {
   let data = [
@@ -100,3 +99,5 @@ it('Search in random data', () => {
   assert.equal(found, true);
   assert.isBelow(numVisits, N / 4);
 });
+
+}  // namespace vz_projector.test

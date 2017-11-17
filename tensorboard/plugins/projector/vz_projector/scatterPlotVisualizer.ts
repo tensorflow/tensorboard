@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {RenderContext} from './renderContext.js';
+namespace vz_projector {
 
 /**
  * ScatterPlotVisualizer is an interface used by ScatterPlotContainer
@@ -49,3 +48,5 @@ export interface ScatterPlotVisualizer {
    */
   onResize(newWidth: number, newHeight: number);
 }
+
+}  // namespace vz_projector

@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_globals {
 
 // If true, TensorBoard stores its hash in the URI state.
 // If false, tab switching in TensorBoard will not update location hash,
@@ -35,3 +36,5 @@ export function setFakeHash(h: string) {
 export function getFakeHash() {
   return _fakeHash;
 }
+
+}  // namespace tf_globals

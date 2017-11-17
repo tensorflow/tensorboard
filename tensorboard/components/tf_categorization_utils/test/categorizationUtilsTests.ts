@@ -12,16 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as CategorizationUtils from '../categorizationUtils';
+namespace tf_categorization_utils {
 
 const assert = chai.assert;
 
 describe('categorizationUtils', () => {
-  const {CategoryType} = CategorizationUtils;
+  const {CategoryType} = tf_categorization_utils;
 
   describe('categorizeByPrefix', () => {
-    const {categorizeByPrefix} = CategorizationUtils;
+    const {categorizeByPrefix} = tf_categorization_utils;
     const metadata = {type: CategoryType.PREFIX_GROUP};
 
     it('returns empty array on empty tags', () => {
@@ -79,7 +78,7 @@ describe('categorizationUtils', () => {
   });
 
   describe('categorizeBySearchQuery', () => {
-    const {categorizeBySearchQuery} = CategorizationUtils;
+    const {categorizeBySearchQuery} = tf_categorization_utils;
     const baseMetadata = {
       type: CategoryType.SEARCH_RESULTS,
       validRegex: true,
@@ -152,7 +151,7 @@ describe('categorizationUtils', () => {
   });
 
   describe('categorize', () => {
-    const {categorize} = CategorizationUtils;
+    const {categorize} = tf_categorization_utils;
 
     it('merges the results of the query and the prefix groups', () => {
       const query = 'ba(?:na){2,}s';
@@ -197,3 +196,5 @@ describe('categorizationUtils', () => {
   });
 
 });
+
+} // namespace tf_categorization_utils

@@ -12,14 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {TSNE} from './bh_tsne.js';
-import {SpriteMetadata} from './data-provider.js';
-import * as knn from './knn.js';
-import * as logging from './logging.js';
-import * as scatterPlot from './scatterPlot.js';
-import * as util from './util.js';
-import * as vector from './vector.js';
+namespace vz_projector {
 
 export type DistanceFunction = (a: number[], b: number[]) => number;
 export type ProjectionComponents3D = [string, string, string];
@@ -512,7 +505,7 @@ export class State {
   selectedPoints: number[] = [];
 
   /** Camera state (2d/3d, position, target, zoom, etc). */
-  cameraDef: scatterPlot.CameraDef;
+  cameraDef: CameraDef;
 
   /** Color by option. */
   selectedColorOptionName: string;
@@ -559,3 +552,5 @@ export function stateGetAccessorDimensions(state: State): Array<number|string> {
   }
   return dimensions;
 }
+
+}  // namespace vz_projector

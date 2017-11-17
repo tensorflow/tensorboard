@@ -141,13 +141,6 @@ limitations under the License.
   </template>
 
   <script>
-  import {aggregateTagInfo} from '../tf-utils/utils.js';
-  import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
-  import {getRouter} from '../tf-backend/router.js';
-  import {getTags} from '../tf-backend/backend.js';
-  import {RequestManager} from '../tf-backend/requestManager.js';
-  import {runsColorScale} from "../tf-color-scale/colorScale.js";
-  import {registerDashboard} from '../tf-tensorboard/registry.js';
 
   Polymer({
     is: 'tf-pr-curve-dashboard',
@@ -189,7 +182,7 @@ limitations under the License.
       },
       _requestManager: {
         type: Object,
-        value: () => new RequestManager(),
+        value: () => new tf_backend.RequestManager(),
       },
       _step: {
         type: Number,
@@ -207,20 +200,20 @@ limitations under the License.
       });
     },
     _fetchTags() {
-      const url = getRouter().pluginRoute('pr_curves', '/tags');
+      const url = tf_backend.getRouter().pluginRoute('pr_curves', '/tags');
       return this._requestManager.request(url).then(runToTagInfo => {
         if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
           // No need to update anything if there are no changes.
           return;
         }
         const runToTag = _.mapValues(runToTagInfo, o => _.keys(o));
-        const tags = getTags(runToTag);
+        const tags = tf_backend.getTags(runToTag);
         this.set('_dataNotFound', tags.length === 0);
         this.set('_runToTagInfo', runToTagInfo);
       });
     },
     _fetchTimeEntriesPerRun() {
-      const url = getRouter().pluginRoute(
+      const url = tf_backend.getRouter().pluginRoute(
           'pr_curves', '/available_time_entries');
       return this._requestManager.request(url).then(timeEntriesPerRun => {
         // Compute the relative field for each time entry. For each step, the
@@ -246,10 +239,10 @@ limitations under the License.
     },
     _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
       const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-      return categorizeTags(runToTag, selectedRuns, tagFilter);
+      return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
     },
     _computeColorForRun(run) {
-      return runsColorScale(run);
+      return tf_color_scale.runsColorScale(run);
     },
     _computeRelevantSelectedRuns(selectedRuns, runToTagInfo) {
       return selectedRuns.filter(run => runToTagInfo[run]);
@@ -262,11 +255,11 @@ limitations under the License.
       // All PR curve tags include the `/pr_curves` suffix. We can trim
       // that from the display name.
       const defaultDisplayName = tag.replace(/\/pr_curves$/, '');
-      return aggregateTagInfo(runToTagInfo, defaultDisplayName);
+      return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
     },
   });
 
-  registerDashboard({
+  tf_tensorboard.registerDashboard({
     plugin: 'pr_curves',
     elementName: 'tf-pr-curve-dashboard',
     tabName: 'PR Curves',

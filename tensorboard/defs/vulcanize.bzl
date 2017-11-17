@@ -42,6 +42,7 @@ def _tensorboard_html_binary(ctx):
       outputs=[ctx.outputs.html],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
+                  "true" if ctx.attr.compile else "false",
                   "true" if ctx.attr.testonly else "false",
                   ctx.attr.input_path,
                   ctx.attr.output_path,
@@ -106,6 +107,7 @@ tensorboard_html_binary = rule(
         "compilation_level": attr.string(default="ADVANCED"),
         "input_path": attr.string(mandatory=True),
         "output_path": attr.string(mandatory=True),
+        "compile": attr.bool(),
         "data": attr.label_list(cfg="data", allow_files=True),
         "deps": attr.label_list(
             aspects=[

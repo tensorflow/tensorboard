@@ -140,12 +140,6 @@ limitations under the License.
     </style>
   </template>
   <script>
-    import {addParams} from "../tf-backend/urlPathHelpers.js";
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {getRouter} from "../tf-backend/router.js";
-    import {runsColorScale} from "../tf-color-scale/colorScale.js";
-    import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
-
     Polymer({
       is: "tf-pr-curve-card",
       properties: {
@@ -197,11 +191,11 @@ limitations under the License.
         _runToDataOverTime: Object,
         _colorScaleFunction: {
           type: Object,  // function: string => string
-          value: () => ({scale: runsColorScale}),
+          value: () => ({scale: tf_color_scale.runsColorScale}),
         },
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
         _attached: Boolean,
         // The value field is a function that returns a function because Polymer
@@ -231,8 +225,8 @@ limitations under the License.
           type: Array,
           readOnly: true,
           value: () => {
-            const valueFormatter = ChartHelpers.multiscaleFormatter(
-                ChartHelpers.Y_TOOLTIP_FORMATTER_PRECISION);
+            const valueFormatter = vz_line_chart.multiscaleFormatter(
+                vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
             const formatValueOrNaN =
                 (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
             return [
@@ -298,8 +292,8 @@ limitations under the License.
         },
         _dataUrl: {
           type: Function,
-          value: () => (tag, run) => addParams(
-              getRouter().pluginRoute('pr_curves', '/pr_curves'), {tag, run}),
+          value: () => (tag, run) => tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('pr_curves', '/pr_curves'), {tag, run}),
         },
         _smoothingEnabled: {
           type: Boolean,

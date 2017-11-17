@@ -27,4 +27,3 @@ ts_web_library(
         "//tensorboard/plugins/projector/vz_projector",
     ],
 )
-

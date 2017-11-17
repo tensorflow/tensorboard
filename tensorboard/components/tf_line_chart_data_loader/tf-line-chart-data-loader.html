@@ -87,8 +87,7 @@ limitations under the License.
     </style>
   </template>
   <script>
-    import {Canceller} from '../tf-backend/canceller.js';
-    import {runsColorScale} from '../tf-color-scale/colorScale.js';
+    (function() {
 
     // The chart can sometimes get in a bad state, when it redraws while
     // it is display: none due to the user having switched to a different
@@ -171,7 +170,7 @@ limitations under the License.
          */
         colorScale: {
           type: Object,
-          value: () => ({scale: runsColorScale}),
+          value: () => ({scale: tf_color_scale.runsColorScale}),
         },
 
         _loading: {
@@ -186,7 +185,7 @@ limitations under the License.
 
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
 
         /*
@@ -346,5 +345,6 @@ limitations under the License.
         }
       },
     });
+    })();
   </script>
 </dom-module>

@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {RenderContext} from './renderContext.js';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
-import * as util from './util.js';
+namespace vz_projector {
 
 const FONT_SIZE = 80;
 const ONE_OVER_FONT_SIZE = 1 / FONT_SIZE;
@@ -365,3 +362,5 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
 
   onResize(newWidth: number, newHeight: number) {}
 }
+
+}  // namespace vz_projector

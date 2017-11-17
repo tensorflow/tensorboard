@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataPoint, DataProto, DataSet, SpriteAndMetadataInfo, PointMetadata, State} from './data.js';
-import {analyzeMetadata, ProjectorConfig, DataProvider} from './data-provider.js';
-
+namespace vz_projector {
 
 export class ProtoDataProvider implements DataProvider {
   private dataProto: DataProto;
@@ -105,3 +102,5 @@ export class ProtoDataProvider implements DataProvider {
     return new DataSet(points);
   }
 }
+
+}  // namespace vz_projector

@@ -44,14 +44,13 @@ limitations under the License.
         <tf-distribution-dashboard id="demo"></tf-distribution-dashboard>
       </template>
       <script>
-        import {createRouter, setRouter} from "../../tf-backend/router.js";
 
         Polymer({
           is: "distribution-dash-demo",
           created: function() {
             var path = "data";
-            var router = createRouter(path, true);
-            setRouter(router);
+            var router = tf_backend.createRouter(path, true);
+            tf_backend.setRouter(router);
           },
         });
       </script>

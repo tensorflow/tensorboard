@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 export interface BoundingBox {
   loX: number;
@@ -149,3 +150,5 @@ export class CollisionGrid {
     return Math.floor((y - this.bound.loY) / this.cellHeight);
   };
 }
+
+}  // namespace vz_projector

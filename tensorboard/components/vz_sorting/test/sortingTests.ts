@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {compareTagNames} from '../sorting.js';
+namespace vz_sorting {
 
 describe('compareTagNames', () => {
 
@@ -75,3 +74,5 @@ describe('compareTagNames', () => {
     assert.deepEqual(sortTagNames(['.2', '.03']), ['.2', '.03']);
   });
 });
+
+}  // namespace vz_sorting

@@ -12,9 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 // tslint:disable-next-line
 export let LegendPolymer = PolymerElement({
@@ -96,3 +94,5 @@ export class Legend extends LegendPolymer {
 }
 
 document.registerElement(Legend.prototype.is, Legend);
+
+}  // namespace vz_projector

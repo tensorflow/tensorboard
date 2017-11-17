@@ -161,25 +161,6 @@ limitations under the License.
   </style>
 </template>
 <script>
-  import {addParams} from '../tf-backend/urlPathHelpers.js';
-  import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
-  import {getRouter} from '../tf-backend/router.js';
-
-  /**
-   * Allows:
-   * - "step" - Linear scale using the "step" property of the datum.
-   * - "wall_time" - Temporal scale using the "wall_time" property of the
-   * datum.
-   * - "relative" - Temporal scale using the "relative" property of the
-   * datum if it is present or calculating from "wall_time" if it isn't.
-   * @enum {string}
-   */
-  const X_TYPE = {
-    STEP: 'step',
-    RELATIVE: 'relative',
-    WALL_TIME: 'wall_time',
-  };
-
   Polymer({
       is: 'tf-scalar-card',
       properties: {
@@ -187,7 +168,7 @@ limitations under the License.
         tag: String,
 
         /**
-         * @type {X_TYPE}
+         * @type {vz_line_chart.XType}
          */
         xType: String,
 
@@ -224,8 +205,8 @@ limitations under the License.
 
         _dataUrl: {
           type: Function,
-          value: () => (tag, run) => addParams(
-              getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
+          value: () => (tag, run) => tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
         },
 
         _xComponentsCreationMethod: {
@@ -253,13 +234,13 @@ limitations under the License.
         }
       },
       _csvUrl(tag, run) {
-        return addParams(this._dataUrl(tag, run), {format: 'csv'});
+        return tf_backend.addParams(this._dataUrl(tag, run), {format: 'csv'});
       },
       _jsonUrl(tag, run) {
         return this._dataUrl(tag, run);
       },
       _computeXComponentsCreationMethod(xType) {
-        return () => ChartHelpers.getXComponents(xType);
+        return () => vz_line_chart.getXComponents(xType);
       },
   });
 </script>

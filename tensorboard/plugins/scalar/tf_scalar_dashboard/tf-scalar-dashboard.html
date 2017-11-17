@@ -191,34 +191,20 @@ limitations under the License.
   </template>
 
   <script>
-    import {aggregateTagInfo} from '../tf-utils/utils.js';
-    import {categorizeTags} from '../tf-categorization-utils/categorizationUtils.js';
-    import {getRouter} from '../tf-backend/router.js';
-    import {getTags} from '../tf-backend/backend.js';
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import * as storage from '../tf-storage/storage.js';
-    import {registerDashboard} from '../tf-tensorboard/registry.js';
-
-    /** @enum {string} */ const X_TYPE = {
-      STEP: 'step',
-      RELATIVE: 'relative',
-      WALL: 'wall',
-    };
-
     Polymer({
       is: 'tf-scalar-dashboard',
       properties: {
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
-          value: storage.getBooleanInitializer('_showDownloadLinks',
+          value: tf_storage.getBooleanInitializer('_showDownloadLinks',
               {defaultValue: false, useLocalStorage: true}),
           observer: '_showDownloadLinksObserver',
         },
         _smoothingWeight: {
           type: Number,
           notify: true,
-          value: storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
+          value: tf_storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
           observer: '_smoothingWeightObserver',
         },
         _smoothingEnabled: {
@@ -227,14 +213,14 @@ limitations under the License.
         },
         _ignoreYOutliers: {
           type: Boolean,
-          value: storage.getBooleanInitializer('_ignoreYOutliers',
+          value: tf_storage.getBooleanInitializer('_ignoreYOutliers',
               {defaultValue: true, useLocalStorage: true}),
           observer: '_ignoreYOutliersObserver',
         },
-        /** @type {X_TYPE} */
+        /** @type {vz_line_chart.XType} */
         _xType: {
           type: String,
-          value: X_TYPE.STEP,
+          value: vz_line_chart.XType.STEP,
         },
 
         _selectedRuns: Array,
@@ -253,14 +239,14 @@ limitations under the License.
 
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(50),
+          value: () => new tf_backend.RequestManager(50),
         },
       },
-      _showDownloadLinksObserver: storage.getBooleanObserver(
+      _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
-      _smoothingWeightObserver: storage.getNumberObserver(
+      _smoothingWeightObserver: tf_storage.getNumberObserver(
           '_smoothingWeight', {defaultValue: 0.6}),
-      _ignoreYOutliersObserver: storage.getBooleanObserver(
+      _ignoreYOutliersObserver: tf_storage.getBooleanObserver(
           '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
       _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
@@ -276,14 +262,14 @@ limitations under the License.
         });
       },
       _fetchTags() {
-        const url = getRouter().pluginRoute('scalars', '/tags');
+        const url = tf_backend.getRouter().pluginRoute('scalars', '/tags');
         return this._requestManager.request(url).then(runToTagInfo => {
           if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
             // No need to update anything if there are no changes.
             return;
           }
           const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-          const tags = getTags(runToTag);
+          const tags = tf_backend.getTags(runToTag);
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTagInfo', runToTagInfo);
         });
@@ -296,7 +282,7 @@ limitations under the License.
 
       _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
         const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-        return categorizeTags(runToTag, selectedRuns, tagFilter);
+        return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
       },
       _tagMetadata(runToTagsInfo, runs, tag) {
         const runToTagInfo = {};
@@ -306,11 +292,11 @@ limitations under the License.
         // All new-style scalar tags include the `/scalar_summary`
         // suffix. We can trim that from the display name.
         const defaultDisplayName = tag.replace(/\/scalar_summary$/, '');
-        return aggregateTagInfo(runToTagInfo, defaultDisplayName);
+        return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
       },
     });
 
-    registerDashboard({
+    tf_tensorboard.registerDashboard({
       plugin: 'scalars',
       elementName: 'tf-scalar-dashboard',
     });

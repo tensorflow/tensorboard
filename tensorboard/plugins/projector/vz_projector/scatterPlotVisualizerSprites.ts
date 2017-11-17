@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {CameraType, RenderContext} from './renderContext.js';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
-import * as util from './util.js';
+namespace vz_projector {
 
 const NUM_POINTS_FOG_THRESHOLD = 5000;
 const MIN_POINT_SIZE = 5.0;
@@ -445,3 +442,5 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
   onResize(newWidth: number, newHeight: number) {}
 }
+
+}  // namespace vz_projector

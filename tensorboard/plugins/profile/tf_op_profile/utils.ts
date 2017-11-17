@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_op_profile {
 
 function rgba(red: number, green: number, blue: number, alpha: number) {
   return "rgba(" + Math.round(red * 255) + "," + Math.round(green * 255) +
@@ -48,3 +49,5 @@ export function percent(fraction: number) {
   return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
     (fraction * 100).toPrecision(2) + "%";
 }
+
+}  // namespace tf_op_profile

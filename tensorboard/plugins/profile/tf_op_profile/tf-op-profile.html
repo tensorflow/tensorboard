@@ -75,18 +75,13 @@ tf-op-details {
   </template>
 
   <script>
-import {addParams} from "../tf-backend/urlPathHelpers.js";
-import {RequestManager} from '../tf-backend/requestManager.js';
-import {getRouter} from '../tf-backend/router.js';
-import {flameColor, utilization, percent} from './utils.js';
-
 Polymer({
   is: 'tf-op-profile',
   properties: {
     _requestManager: {
       type: Object,
       readOnly: true,
-      value: () => new RequestManager(),
+      value: () => new tf_backend.RequestManager(),
     },
     run: {
       type: String,
@@ -112,15 +107,15 @@ Polymer({
     },
   },
   _load: function(run) {
-    this._requestManager.request(addParams(
-        getRouter().pluginRoute('profile', '/data'), {tag: 'op_profile', run})
+    this._requestManager.request(tf_backend.addParams(
+        tf_backend.getRouter().pluginRoute('profile', '/data'), {tag: 'op_profile', run})
     ).then((data) => {
       this._data = data;
     });
   },
   _getRoot: function(data, breakdown) { return data[breakdown]; },
-  _percent: percent,
-  _utilizationPercent: function(node) { return percent(utilization(node)); },
+  _percent: tf_op_profile.percent,
+  _utilizationPercent: function(node) { return tf_op_profile.percent(tf_op_profile.utilization(node)); },
   _worstOp: function(root, metric) {
     var worst = null, worstValue = -Infinity;
     function visit(node) {
@@ -134,8 +129,8 @@ Polymer({
     return worst;
   },
   _hasFlops: function(node) { return node.metrics.flops > 0; },
-  _goodFlops: function(node) { return utilization(node) > 0.4; },
-  _textColor: function(node) { return flameColor(utilization(node), 0.7); },
+  _goodFlops: function(node) { return tf_op_profile.utilization(node) > 0.4; },
+  _textColor: function(node) { return tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7); },
 });
   </script>
 </dom-module>

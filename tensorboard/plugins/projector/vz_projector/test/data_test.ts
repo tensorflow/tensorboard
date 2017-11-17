@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataPoint, DataSet, State, stateGetAccessorDimensions} from '../data.js';
+namespace vz_projector.test {
 
 /**
  * Helper method that makes a list of points given an array of
@@ -102,3 +101,5 @@ describe('stateGetAccessorDimensions', () => {
     assert.deepEqual(['x', 'y'], stateGetAccessorDimensions(state));
   });
 });
+
+}  // namespace vz_projector.test

@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {assert} from './util.js';
+namespace vz_projector.vector {
 
 /**
  * @fileoverview Useful vector utilities.
@@ -25,7 +24,7 @@ export type Point3D = [number, number, number];
 
 /** Returns the dot product of two vectors. */
 export function dot(a: Vector, b: Vector): number {
-  assert(a.length === b.length, 'Vectors a and b must be of same length');
+  util.assert(a.length === b.length, 'Vectors a and b must be of same length');
   let result = 0;
   for (let i = 0; i < a.length; ++i) {
     result += a[i] * b[i];
@@ -44,7 +43,7 @@ export function sum(a: Vector): number {
 
 /** Returns the sum of two vectors, i.e. a + b */
 export function add(a: Vector, b: Vector): Float32Array {
-  assert(a.length === b.length, 'Vectors a and b must be of same length');
+  util.assert(a.length === b.length, 'Vectors a and b must be of same length');
   let result = new Float32Array(a.length);
   for (let i = 0; i < a.length; ++i) {
     result[i] = a[i] + b[i];
@@ -54,7 +53,7 @@ export function add(a: Vector, b: Vector): Float32Array {
 
 /** Subtracts vector b from vector a, i.e. returns a - b */
 export function sub(a: Vector, b: Vector): Float32Array {
-  assert(a.length === b.length, 'Vectors a and b must be of same length');
+  util.assert(a.length === b.length, 'Vectors a and b must be of same length');
   let result = new Float32Array(a.length);
   for (let i = 0; i < a.length; ++i) {
     result[i] = a[i] - b[i];
@@ -78,7 +77,7 @@ export function dist(a: Vector, b: Vector): number {
 
 /** Returns the square euclidean distance between two vectors. */
 export function dist2(a: Vector, b: Vector): number {
-  assert(a.length === b.length, 'Vectors a and b must be of same length');
+  util.assert(a.length === b.length, 'Vectors a and b must be of same length');
   let result = 0;
   for (let i = 0; i < a.length; ++i) {
     let diff = a[i] - b[i];
@@ -112,7 +111,7 @@ export function dist_3D(a: Vector, b: Vector): number {
  * exit (returns -1) if the distance is >= to the provided limit.
  */
 export function dist2WithLimit(a: Vector, b: Vector, limit: number): number {
-  assert(a.length === b.length, 'Vectors a and b must be of same length');
+  util.assert(a.length === b.length, 'Vectors a and b must be of same length');
   let result = 0;
   for (let i = 0; i < a.length; ++i) {
     let diff = a[i] - b[i];
@@ -134,7 +133,7 @@ export function dist22D(a: Point2D, b: Point2D): number {
 /** Modifies the vector in-place to have unit norm. */
 export function unit(a: Vector): void {
   let norm = Math.sqrt(norm2(a));
-  assert(norm >= 0, 'Norm of the vector must be > 0');
+  util.assert(norm >= 0, 'Norm of the vector must be > 0');
   for (let i = 0; i < a.length; ++i) {
     a[i] /= norm;
   }
@@ -183,7 +182,7 @@ export function centroid<T>(dataPoints: T[], accessor?: (a: T) => Vector):
   if (accessor == null) {
     accessor = (a: T) => <any>a;
   }
-  assert(dataPoints.length >= 0, '`vectors` must be of length >= 1');
+  util.assert(dataPoints.length >= 0, '`vectors` must be of length >= 1');
   let centroid = new Float32Array(accessor(dataPoints[0]).length);
   for (let i = 0; i < dataPoints.length; ++i) {
     let dataPoint = dataPoints[i];
@@ -263,3 +262,5 @@ export function transposeTypedArray(
   }
   return result;
 }
+
+}  // namespace vz_projector.vector

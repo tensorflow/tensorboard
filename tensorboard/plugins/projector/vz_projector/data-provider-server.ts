@@ -12,11 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataSet, SpriteAndMetadataInfo, State} from './data.js';
-import * as dataProvider from './data-provider.js';
-import {DataProvider, EmbeddingInfo, ProjectorConfig} from './data-provider.js';
-import * as logging from './logging.js';
+namespace vz_projector {
 
 // Limit for the number of data points we receive from the server.
 export const LIMIT_NUM_POINTS = 100000;
@@ -90,7 +86,7 @@ export class ServerDataProvider implements DataProvider {
   retrieveTensor(run: string, tensorName: string,
       callback: (ds: DataSet) => void) {
     this.getEmbeddingInfo(run, tensorName, embedding => {
-      dataProvider.retrieveTensorAsBytes(
+      retrieveTensorAsBytes(
           this, embedding, run, tensorName,
           `${this.routePrefix}/tensor?run=${run}&name=${tensorName}` +
               `&num_rows=${LIMIT_NUM_POINTS}`,
@@ -112,7 +108,7 @@ export class ServerDataProvider implements DataProvider {
         spriteImagePath =
             `${this.routePrefix}/sprite_image?run=${run}&name=${tensorName}`;
       }
-      dataProvider.retrieveSpriteAndMetadataInfo(metadataPath, spriteImagePath,
+      retrieveSpriteAndMetadataInfo(metadataPath, spriteImagePath,
           embedding.sprite, callback);
     });
   }
@@ -135,3 +131,5 @@ export class ServerDataProvider implements DataProvider {
     xhr.send();
   }
 }
+
+}  // namespace vz_projector

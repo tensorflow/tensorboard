@@ -12,9 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as RunsStore from '../tf-backend/runsStore.js';
-import {standard as standardPalette} from './palettes.js';
+namespace tf_color_scale {
 
 // Example usage:
 // runs = ["train", "test", "test1", "test2"]
@@ -32,7 +30,7 @@ export class ColorScale {
    *   Array of hex strings. Defaults to the standard palette.
    */
   constructor(
-      private readonly palette: string[] = standardPalette) {}
+      private readonly palette: string[] = standard) {}
 
   /**
    * Set the domain of strings.
@@ -70,7 +68,9 @@ export const runsColorScale: ((runName: string) => string) =
     _runsColorScale.scale.bind(_runsColorScale);
 
 function updateRunsColorScale(): void {
-  _runsColorScale.domain(RunsStore.getRuns());
+  _runsColorScale.domain(tf_backend.getRuns());
 }
-RunsStore.addListener(updateRunsColorScale);
+tf_backend.addListener(updateRunsColorScale);
 updateRunsColorScale();
+
+}  // tf_color_scale

@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_line_chart {
 
 export interface Datum {
   wall_time: Date;
@@ -60,6 +61,22 @@ export const SYMBOLS_LIST: LineChartSymbol[] = [
     method: Plottable.SymbolFactories.cross,
   },
 ];
+
+/** X axis choices for TensorBoard charts. */
+export enum XType {
+
+  /** Linear scale using the "step" property of the datum. */
+  STEP = 'step',
+
+  /** Temporal scale using the "wall_time" property of the datum. */
+  RELATIVE = 'relative',
+
+  /**
+   * Temporal scale using the "relative" property of the datum if it is present
+   * or calculating from "wall_time" if it isn't.
+   */
+  WALL_TIME = 'wall_time',
+}
 
 export type SymbolFn = (series: string) => Plottable.SymbolFactory;
 
@@ -254,13 +271,15 @@ export let isNaN = (x) => +x !== x;
 
 export function getXComponents(xType: string): XComponents {
   switch (xType) {
-    case 'step':
+    case XType.STEP:
       return stepX();
-    case 'wall_time':
+    case XType.WALL_TIME:
       return wallX();
-    case 'relative':
+    case XType.RELATIVE:
       return relativeX();
     default:
       throw new Error('invalid xType: ' + xType);
   }
 }
+
+}  // namespace vz_line_chart

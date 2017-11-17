@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 /**
  * LabelRenderParams describes the set of points that should have labels
@@ -51,3 +52,5 @@ export class RenderContext {
       public polylineOpacities: Float32Array,
       public polylineWidths: Float32Array) {}
 }
+
+}  // namespace vz_projector

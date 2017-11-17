@@ -114,7 +114,6 @@ limitations under the License.
     </style>
   </template>
   <script>
-    import {CategoryType} from "./categorizationUtils.js";
     Polymer({
       is: "tf-category-pane",
       properties: {
@@ -176,23 +175,23 @@ limitations under the License.
         // Show a category unless it's a search results category where
         // there wasn't actually a search query.
         return !(
-          category.metadata.type === CategoryType['SEARCH_RESULTS']
+          category.metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
           && category.name === "");
       },
 
       _computeIsSearchResults(type) {
-        return type === CategoryType['SEARCH_RESULTS'];
+        return type === tf_categorization_utils.CategoryType['SEARCH_RESULTS'];
       },
 
       _computeIsInvalidSearchResults(metadata) {
         return (
-          metadata.type === CategoryType['SEARCH_RESULTS']
+          metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
           && !metadata.validRegex);
       },
 
       _computeIsUniversalSearchQuery(metadata) {
         return (
-          metadata.type === CategoryType['SEARCH_RESULTS']
+          metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
           && metadata.universalRegex);
       },
     });

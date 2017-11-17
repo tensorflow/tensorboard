@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector.logging {
 
 /** Duration in ms for showing warning messages to the user */
 const WARNING_DURATION_MS = 10000;
@@ -101,3 +102,5 @@ export function setWarningMessage(msg: string): void {
   toast.duration = WARNING_DURATION_MS;
   toast.open();
 }
+
+}  // namespace vz_projector.logging

@@ -74,7 +74,6 @@ limitations under the License.
     </style>
   </template>
   <script>
-    import {addParams} from "../tf-backend/urlPathHelpers.js";
     Polymer({
       is: "tf-downloader",
       properties: {
@@ -84,7 +83,7 @@ limitations under the License.
         urlFn: Function,
       },
       _csvUrl(tag, run, urlFn) {
-        return addParams(urlFn(tag, run), {format: "csv"});
+        return tf_backend.addParams(urlFn(tag, run), {format: "csv"});
       },
       _jsonUrl(tag, run, urlFn) {
         return urlFn(tag, run);

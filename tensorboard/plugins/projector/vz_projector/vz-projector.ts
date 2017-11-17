@@ -12,27 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {AnalyticsLogger} from './analyticsLogger.js';
-import * as data from './data.js';
-import {ColorOption, ColumnStats, DataPoint, DataProto, DataSet, DistanceFunction, PointMetadata, Projection, SpriteAndMetadataInfo, State, stateGetAccessorDimensions} from './data.js';
-import {DataProvider, EmbeddingInfo, ServingMode} from './data-provider.js';
-import {DemoDataProvider} from './data-provider-demo.js';
-import {ProtoDataProvider} from './data-provider-proto.js';
-import {ServerDataProvider} from './data-provider-server.js';
-import * as knn from './knn.js';
-import * as logging from './logging.js';
-import {DistanceMetricChangedListener, HoverListener, ProjectionChangedListener, ProjectorEventContext, SelectionChangedListener} from './projectorEventContext.js';
-import {ProjectorScatterPlotAdapter} from './projectorScatterPlotAdapter.js';
-import {MouseMode} from './scatterPlot.js';
-import * as util from './util.js';
-import {BookmarkPanel} from './vz-projector-bookmark-panel.js';
-import {DataPanel} from './vz-projector-data-panel.js';
-import {InspectorPanel} from './vz-projector-inspector-panel.js';
-import {MetadataCard} from './vz-projector-metadata-card.js';
-import {ProjectionsPanel} from './vz-projector-projections-panel.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 /**
  * The minimum number of dimensions the data should have to automatically
@@ -555,7 +535,7 @@ export class Projector extends ProjectorPolymer implements
     {
       const dimensions = stateGetAccessorDimensions(state);
       const components =
-          data.getProjectionComponents(state.selectedProjection, dimensions);
+          getProjectionComponents(state.selectedProjection, dimensions);
       const projection = new Projection(
           state.selectedProjection, components, dimensions.length,
           this.dataSet);
@@ -566,3 +546,5 @@ export class Projector extends ProjectorPolymer implements
 }
 
 document.registerElement(Projector.prototype.is, Projector);
+
+}  // namespace vz_projector

@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_utils {
 
 /*
  * Miscellaneous utilities that may be useful to plugin frontends.
  */
-
 export interface TagInfo {
     displayName: string;
     description: string;
@@ -99,3 +99,5 @@ function ngettext(k: number, enSingular: string, enPlural: string): string {
   // ever implement it.
   return k === 1 ? enSingular : enPlural;
 }
+
+}  // namespace tf_utils

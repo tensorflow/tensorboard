@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TAB, getString, getNumber, getObject, setString, setNumber, setObject} from '../storage.js';
+namespace tf_storage {
 
 /* tslint:disable:no-namespace */
 describe('URIStorage', () => {
@@ -61,3 +61,4 @@ describe('URIStorage', () => {
   });
 });
 
+}  // namespace tf_storage

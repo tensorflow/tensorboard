@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_card_heading {
 
 /**
  * Formats timestamp for the card header.
@@ -25,7 +26,6 @@ export function formatDate(date) {
   // Turn things like "GMT-0700 (PDT)" into just "PDT".
   return date.toString().replace(/GMT-\d+ \(([^)]+)\)/, '$1');
 }
-
 
 /**
  * Returns CSS color that will contrast against background.
@@ -43,7 +43,6 @@ export function pickTextColor(background) {
                                  rgb[2] * 114) / 1000);
   return brightness > 125 ? 'inherit' : '#eee';
 }
-
 
 /**
  * Turns a hex string into an RGB array.
@@ -67,3 +66,5 @@ function convertHexToRgb(color) {
           parseInt(m[2], 16),
           parseInt(m[3], 16)];
 }
+
+}  // namespace tf_card_heading

@@ -12,6 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_tensorboard {
+
+export enum ActiveDashboardsLoadState {
+  NOT_LOADED = 'NOT_LOADED',
+  LOADED = 'LOADED',
+  FAILED = 'FAILED',
+}
 
 /** Registration for a plugin dashboard UI. */
 export interface Dashboard {
@@ -82,3 +89,5 @@ export function registerDashboard(dashboard: Dashboard) {
   }
   dashboardRegistry[dashboard.plugin] = dashboard;
 }
+
+}  // namespace tf_tensorboard

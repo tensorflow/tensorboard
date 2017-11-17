@@ -201,35 +201,29 @@ summary_writer.add_summary(
   <script>
     "use strict";
 
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getRouter} from '../tf-backend/router.js';
-    import * as storage from '../tf-storage/storage.js';
-    import {registerDashboard} from '../tf-tensorboard/registry.js';
-
     Polymer({
       is: 'tf-custom-scalar-dashboard',
       properties: {
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(50),
+          value: () => new tf_backend.RequestManager(50),
         },
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
         _selectedRuns: Array,
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
-          value: storage.getBooleanInitializer('_showDownloadLinks',
+          value: tf_storage.getBooleanInitializer('_showDownloadLinks',
               {defaultValue: false, useLocalStorage: true}),
           observer: '_showDownloadLinksObserver',
         },
         _smoothingWeight: {
           type: Number,
           notify: true,
-          value: storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
+          value: tf_storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
           observer: '_smoothingWeightObserver',
         },
         _smoothingEnabled: {
@@ -238,7 +232,7 @@ summary_writer.add_summary(
         },
         _ignoreYOutliers: {
           type: Boolean,
-          value: storage.getBooleanInitializer('_ignoreYOutliers',
+          value: tf_storage.getBooleanInitializer('_ignoreYOutliers',
               {defaultValue: true, useLocalStorage: true}),
           observer: '_ignoreYOutliersObserver',
         },
@@ -278,7 +272,7 @@ summary_writer.add_summary(
         this.reload();
       },
       reload() {
-        const url = getRouter().pluginsListing();
+        const url = tf_backend.getRouter().pluginsListing();
         const handlePluginsListingResponse = this._canceller.cancellable(
             result => {
           if (result.cancelled) {
@@ -299,7 +293,7 @@ summary_writer.add_summary(
         });
       },
       _retrieveLayoutAndData() {
-        const url = getRouter().pluginRoute('custom_scalars', '/layout');
+        const url = tf_backend.getRouter().pluginRoute('custom_scalars', '/layout');
         const update = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -313,11 +307,11 @@ summary_writer.add_summary(
         });
         this._requestManager.request(url).then(update);
       },
-      _showDownloadLinksObserver: storage.getBooleanObserver(
+      _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
-      _smoothingWeightObserver: storage.getNumberObserver(
+      _smoothingWeightObserver: tf_storage.getNumberObserver(
           '_smoothingWeight', {defaultValue: 0.6}),
-      _ignoreYOutliersObserver: storage.getBooleanObserver(
+      _ignoreYOutliersObserver: tf_storage.getBooleanObserver(
           '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
       _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
@@ -359,7 +353,7 @@ summary_writer.add_summary(
       },
     });
 
-    registerDashboard({
+    tf_tensorboard.registerDashboard({
       plugin: 'custom_scalars',
       elementName: 'tf-custom-scalar-dashboard',
       tabName: 'Custom Scalars',

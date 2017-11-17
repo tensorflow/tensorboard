@@ -12,15 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as storage from '../tf-storage/storage.js';
+namespace tf_dashboard_common {
 
 Polymer({
   is: 'tf-regex-group',
   properties: {
     rawRegexes: {
       type: Array,
-      value: storage.getObjectInitializer(
+      value: tf_storage.getObjectInitializer(
           'rawRegexes',
           {defaultValue: [{regex: '', valid: true}]}),
     },
@@ -32,7 +31,7 @@ Polymer({
     'checkValidity(rawRegexes.*)',
     '_uriStoreRegexes(rawRegexes.*)',
   ],
-  _uriStoreRegexes: storage.getObjectObserver(
+  _uriStoreRegexes: tf_storage.getObjectObserver(
       'rawRegexes',
       {defaultValue: [{regex: '', valid: true}]}),
   checkValidity: function(x) {
@@ -86,3 +85,5 @@ Polymer({
     }
   }
 });
+
+}  // namespace tf_dashboard_common

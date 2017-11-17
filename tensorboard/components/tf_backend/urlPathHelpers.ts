@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_backend {
+
 /**
  * A query parameter value can either be a string or a list of strings.
  * A string `"foo"` is encoded as `key=foo`; a list `["foo", "bar"]` is
@@ -51,3 +53,5 @@ function _encodeURIComponent(x: string): string {
   // Replace parentheses for consistency with Python's urllib.urlencode.
   return encodeURIComponent(x).replace(/\(/g, '%28').replace(/\)/g, '%29');
 }
+
+}  // namespace tf_backend

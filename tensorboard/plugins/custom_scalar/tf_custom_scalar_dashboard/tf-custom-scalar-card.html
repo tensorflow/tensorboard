@@ -223,28 +223,6 @@ limitations under the License.
 </template>
 <script src='tf-custom-scalar-helpers.js'></script>
 <script>
-  import * as CustomScalarCardHelpers from './tf-custom-scalar-helpers.js';
-  import {addParams} from '../tf-backend/urlPathHelpers.js';
-  import {getRouter} from '../tf-backend/router.js';
-  import {runsColorScale} from '../tf-color-scale/colorScale.js';
-  import * as storage from '../tf-storage/storage.js';
-  import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
-
-  /**
-   * Allows:
-   * - "step" - Linear scale using the "step" property of the datum.
-   * - "wall_time" - Temporal scale using the "wall_time" property of the
-   * datum.
-   * - "relative" - Temporal scale using the "relative" property of the
-   * datum if it is present or calculating from "wall_time" if it isn't.
-   * @enum {string}
-   */
-  const X_TYPE = {
-    STEP: 'step',
-    RELATIVE: 'relative',
-    WALL_TIME: 'wall_time',
-  };
-
   Polymer({
       is: 'tf-custom-scalar-card',
       properties: {
@@ -273,7 +251,7 @@ limitations under the License.
         // We use a special color scale that wraps the run-based one.
         _colorScale: {
           type: Object,
-          value: new CustomScalarCardHelpers.DataSeriesColorScale({scale: runsColorScale}),
+          value: new tf_custom_scalar_dashboard.DataSeriesColorScale({scale: tf_color_scale.runsColorScale}),
           readOnly: true,
         },
 
@@ -317,8 +295,8 @@ limitations under the License.
         _logScaleActive: Boolean,
         _dataUrl: {
           type: Function,
-          value: () => (tag, run) => addParams(
-              getRouter().pluginRoute(
+          value: () => (tag, run) => tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute(
                   'custom_scalars', '/scalars'), {tag, run}),
         },
         _xComponentsCreationMethod: {
@@ -368,11 +346,11 @@ limitations under the License.
       },
       _csvUrl(nameToDataSeries, dataSeriesName) {
         const baseUrl = this._downloadDataUrl(nameToDataSeries, dataSeriesName);
-        return addParams(baseUrl, {format: 'csv'});
+        return tf_backend.addParams(baseUrl, {format: 'csv'});
       },
       _jsonUrl(nameToDataSeries, dataSeriesName) {
         const baseUrl = this._downloadDataUrl(nameToDataSeries, dataSeriesName);
-        return addParams(baseUrl, {format: 'json'});
+        return tf_backend.addParams(baseUrl, {format: 'json'});
       },
       _downloadDataUrl(nameToDataSeries, dataSeriesName) {
         const dataSeries = nameToDataSeries[dataSeriesName];
@@ -380,12 +358,12 @@ limitations under the License.
             tag: dataSeries.getTag(),
             run: dataSeries.getRun(),
         };
-        return addParams(
-              getRouter().pluginRoute(
+        return tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute(
                   'custom_scalars', '/download_data'), getVars);
       },
       _computeXComponentsCreationMethod(xType) {
-        return () => ChartHelpers.getXComponents(xType);
+        return () => vz_line_chart.getXComponents(xType);
       },
       _createProcessDataFunction() {
         // This function is called when data is received from the backend.
@@ -401,7 +379,7 @@ limitations under the License.
                 scalar: datum[2],
               }));
 
-              const seriesName = CustomScalarCardHelpers.generateDataSeriesName(
+              const seriesName = tf_custom_scalar_dashboard.generateDataSeriesName(
                   run, tag);
               let series = newMapping[seriesName];
 
@@ -416,11 +394,11 @@ limitations under the License.
                 }
 
                 // Every data series within a run has a unique symbol.
-                const lineChartSymbol = ChartHelpers.SYMBOLS_LIST[
+                const lineChartSymbol = vz_line_chart.SYMBOLS_LIST[
                     this._runToNextAvailableSymbolIndex[run]];
 
                 // Create a series with this name.
-                series = new CustomScalarCardHelpers.DataSeries(
+                series = new tf_custom_scalar_dashboard.DataSeries(
                     run,
                     tag,
                     seriesName,
@@ -429,7 +407,7 @@ limitations under the License.
                 newMapping[seriesName] = series;
 
                 // Loop back to the beginning if we are out of symbols.
-                const numSymbols = ChartHelpers.SYMBOLS_LIST.length;
+                const numSymbols = vz_line_chart.SYMBOLS_LIST.length;
                 this._runToNextAvailableSymbolIndex[run] =
                     (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
               }

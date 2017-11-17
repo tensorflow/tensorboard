@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {AUTORELOAD_LOCALSTORAGE_KEY, AutoReloadBehavior} from '../autoReloadBehavior.js';
+namespace tf_tensorboard {
 
 declare function fixture(id: string): void;
 
@@ -87,3 +86,5 @@ window.HTMLImports.whenReady(() => {
     });
   });
 });
+
+}  // namespace tf_tensorboard

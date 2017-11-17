@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {ColumnStats, DataPoint, DataSet, SpriteAndMetadataInfo, PointMetadata, State} from './data.js';
-import * as logging from './logging.js';
-import {runAsyncTask} from './util.js';
+namespace vz_projector {
 
 /** Maximum number of colors supported in the color map. */
 const NUM_COLORS_COLOR_MAP = 50;
@@ -249,7 +246,7 @@ export function parseTensors(
 /** Parses a tsv text file. */
 export function parseTensorsFromFloat32Array(data: Float32Array,
     dim: number): Promise<DataPoint[]> {
-  return runAsyncTask('Parsing tensors...', () => {
+  return util.runAsyncTask('Parsing tensors...', () => {
     const N = data.length / dim;
     const dataPoints: DataPoint[] = [];
     let offset = 0;
@@ -441,3 +438,5 @@ export function retrieveSpriteAndMetadataInfo(metadataPath: string,
     }
   });
 }
+
+}  // namespace vz_projector

@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {PointMetadata} from './data.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 // tslint:disable-next-line
 export let MetadataCardPolymer = PolymerElement({
@@ -86,3 +83,5 @@ export class MetadataCard extends MetadataCardPolymer {
 }
 
 document.registerElement(MetadataCard.prototype.is, MetadataCard);
+
+}  // namespace vz_projector
