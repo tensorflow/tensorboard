@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 const FILL = '#dddddd';
 const FILL_OPACITY = .2;
@@ -19,7 +20,7 @@ const STROKE = '#aaaaaa';
 const STROKE_WIDTH = 2;
 const STROKE_DASHARRAY = '10 5';
 
-export interface BoundingBox {
+export interface ScatterBoundingBox {
   // The bounding box (x, y) position refers to the bottom left corner of the
   // rect.
   x: number;
@@ -37,9 +38,9 @@ export class ScatterPlotRectangleSelector {
 
   private isMouseDown: boolean;
   private startCoordinates: [number, number];
-  private lastBoundingBox: BoundingBox;
+  private lastBoundingBox: ScatterBoundingBox;
 
-  private selectionCallback: (boundingBox: BoundingBox) => void;
+  private selectionCallback: (boundingBox: ScatterBoundingBox) => void;
 
   /**
    * @param container The container HTML element that the selection SVG rect
@@ -50,7 +51,7 @@ export class ScatterPlotRectangleSelector {
    */
   constructor(
       container: HTMLElement,
-      selectionCallback: (boundingBox: BoundingBox) => void) {
+      selectionCallback: (boundingBox: ScatterBoundingBox) => void) {
     this.svgElement = container.querySelector('#selector') as SVGElement;
     this.rectElement =
         document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -105,3 +106,5 @@ export class ScatterPlotRectangleSelector {
     this.selectionCallback(this.lastBoundingBox);
   }
 }
+
+}  // namespace vz_projector

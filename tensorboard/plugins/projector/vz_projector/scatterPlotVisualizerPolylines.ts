@@ -12,11 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataSet} from './data.js';
-import {RenderContext} from './renderContext.js';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
-import * as util from './util.js';
+namespace vz_projector {
 
 const RGB_NUM_ELEMENTS = 3;
 const XYZ_NUM_ELEMENTS = 3;
@@ -147,3 +143,5 @@ export class ScatterPlotVisualizerPolylines implements ScatterPlotVisualizer {
   onPickingRender(renderContext: RenderContext) {}
   onResize(newWidth: number, newHeight: number) {}
 }
+
+}  // namespace vz_projector

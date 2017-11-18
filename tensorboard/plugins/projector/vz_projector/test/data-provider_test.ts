@@ -12,9 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataPoint, SpriteAndMetadataInfo} from '../data.js';
-import * as data_provider from '../data-provider.js';
+namespace vz_projector.test {
 
 /**
  * Converts a string to an ArrayBuffer.
@@ -46,7 +44,7 @@ describe('parse tensors', () => {
     let tensors = [[1.0, 2.0], [2.0, 3.0]];
     stringToArrayBuffer(dataToTsv(tensors))
         .then((tensorsArrayBuffer: ArrayBuffer) => {
-          data_provider.parseTensors(tensorsArrayBuffer)
+          parseTensors(tensorsArrayBuffer)
               .then((data: DataPoint[]) => {
                 assert.equal(2, data.length);
 
@@ -66,7 +64,7 @@ describe('parse tensors', () => {
 
     stringToArrayBuffer(dataToTsv(metadata))
         .then((metadataArrayBuffer: ArrayBuffer) => {
-          data_provider.parseMetadata(metadataArrayBuffer)
+          parseMetadata(metadataArrayBuffer)
               .then((spriteAndMetadataInfo: SpriteAndMetadataInfo) => {
                 assert.equal(2, spriteAndMetadataInfo.stats.length);
                 assert.equal(metadata[0][0],
@@ -94,3 +92,5 @@ describe('parse tensors', () => {
         });
   });
 });
+
+}  // namespace vz_projector.test

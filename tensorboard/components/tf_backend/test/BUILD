@@ -22,4 +22,3 @@ ts_web_library(
         "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
-

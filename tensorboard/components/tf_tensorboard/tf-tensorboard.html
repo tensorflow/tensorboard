@@ -314,29 +314,13 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    import {AutoReloadBehavior} from "./autoReloadBehavior.js";
-    import {dashboardRegistry} from "./registry.js";
-    import {setUseHash} from "../tf-globals/globals.js";
-    import {getString, setString, TAB} from "../tf-storage/storage.js";
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {RequestManager} from "../tf-backend/requestManager.js";
-    import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
-    import {fetchRuns} from "../tf-backend/runsStore.js";
-    import * as paginatedViewStore from "../tf-paginated-view/paginatedViewStore.js";
-
-    if (_.isEmpty(dashboardRegistry)) {
+    if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
 
-    /** @enum {string} */ const ActiveDashboardsLoadState = {
-      NOT_LOADED: 'NOT_LOADED',
-      LOADED: 'LOADED',
-      FAILED: 'FAILED',
-    };
-
     Polymer({
       is: "tf-tensorboard",
-      behaviors: [AutoReloadBehavior],
+      behaviors: [tf_tensorboard.AutoReloadBehavior],
       properties: {
 
         /**
@@ -361,7 +345,7 @@ limitations under the License.
         /**
          * We accept a router property only for backward compatibility:
          * setting it triggers an observer that simply calls
-         * `setRouter`.
+         * `tf_backend.setRouter`.
          */
         router: {
           type: Object,
@@ -403,7 +387,7 @@ limitations under the License.
         _dashboardData: {
           type: Array,
           readOnly: true,
-          value: Object.values(dashboardRegistry),
+          value: Object.values(tf_tensorboard.dashboardRegistry),
         },
 
         /**
@@ -419,10 +403,10 @@ limitations under the License.
           value: null,
         },
 
-        /** @type {ActiveDashboardsLoadState} */
+        /** @type {tf_tensorboard.ActiveDashboardsLoadState} */
         _activeDashboardsLoadState: {
           type: String,
-          value: ActiveDashboardsLoadState.NOT_LOADED,
+          value: tf_tensorboard.ActiveDashboardsLoadState.NOT_LOADED,
         },
         _activeDashboardsNotLoaded: {
           type: Boolean,
@@ -457,7 +441,7 @@ limitations under the License.
          */
         _selectedDashboard: {
           type: String,
-          value: getString(TAB, /*useLocalStorage=*/false) || null,
+          value: tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false) || null,
           observer: '_selectedDashboardChanged'
         },
 
@@ -488,11 +472,11 @@ limitations under the License.
 
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(),
+          value: () => new tf_backend.RequestManager(),
         },
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
       },
       observers: [
@@ -582,7 +566,7 @@ limitations under the License.
        */
       _selectedDashboardChanged(selectedDashboard) {
         const pluginString = selectedDashboard || '';
-        setString(TAB, pluginString, /*useLocalStorage=*/false);
+        tf_storage.setString(tf_storage.TAB, pluginString, /*useLocalStorage=*/false);
         // Record this dashboard selection as a page view.
         ga('set', 'page', '/' + pluginString);
         ga('send', 'pageview');
@@ -604,7 +588,7 @@ limitations under the License.
       },
 
       _updateSelectedDashboardFromHash() {
-        const dashboardName = getString(TAB, /*useLocalStorage=*/false);
+        const dashboardName = tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false);
         this.set('_selectedDashboard', dashboardName || null);
       },
 
@@ -637,7 +621,7 @@ limitations under the License.
           // This dashboard doesn't exist. Nothing to do here.
           return;
         }
-        const dashboard = dashboardRegistry[selectedDashboard];
+        const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
         if (container.childNodes.length === 0) {
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
@@ -668,7 +652,7 @@ limitations under the License.
       },
 
       ready() {
-        setUseHash(this.useHash);
+        tf_globals.setUseHash(this.useHash);
         this._updateSelectedDashboardFromHash();
         window.addEventListener('hashchange', () => {
           this._updateSelectedDashboardFromHash();
@@ -684,14 +668,14 @@ limitations under the License.
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
 
-        fetchRuns();
+        tf_backend.fetchRuns();
         this._fetchLogdir();
         this._fetchActiveDashboards();
         this._lastReloadTime = new Date().toString();
       },
 
       _fetchLogdir() {
-        const url = getRouter().logdir();
+        const url = tf_backend.getRouter().logdir();
         return this._requestManager.request(url).then(result => {
           this._logdir = result.logdir;
         });
@@ -706,30 +690,30 @@ limitations under the License.
           const activePlugins = result.value;
           this._activeDashboards = this._dashboardData.map(
               d => d.plugin).filter(p => activePlugins[p]);
-          this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
+          this._activeDashboardsLoadState = tf_tensorboard.ActiveDashboardsLoadState.LOADED;
         });
         const onFailure = () => {
           if (this._activeDashboardsLoadState
               === ActiveDashboardsLoadState.NOT_LOADED) {
-            this._activeDashboardsLoadState = ActiveDashboardsLoadState.FAILED;
+            this._activeDashboardsLoadState = tf_tensorboard.ActiveDashboardsLoadState.FAILED;
           } else {
             console.warn(
               "Failed to reload the set of active plugins; using old value.");
           }
         };
         return this._requestManager
-          .request(getRouter().pluginsListing())
+          .request(tf_backend.getRouter().pluginsListing())
           .then(updateActiveDashboards, onFailure);
       },
 
       _computeActiveDashboardsNotLoaded(state) {
-        return state === ActiveDashboardsLoadState.NOT_LOADED;
+        return state === tf_tensorboard.ActiveDashboardsLoadState.NOT_LOADED;
       },
       _computeActiveDashboardsLoaded(state) {
-        return state === ActiveDashboardsLoadState.LOADED;
+        return state === tf_tensorboard.ActiveDashboardsLoadState.LOADED;
       },
       _computeActiveDashboardsFailedToLoad(state) {
-        return state === ActiveDashboardsLoadState.FAILED;
+        return state === tf_tensorboard.ActiveDashboardsLoadState.FAILED;
       },
       _computeShowNoDashboardsMessage(loaded, activeDashboards, selectedDashboard) {
         return (loaded
@@ -742,7 +726,7 @@ limitations under the License.
       },
 
       _updateRouter(router) {
-        setRouter(router);
+        tf_backend.setRouter(router);
       },
 
       _updateTitle(title) {
@@ -756,7 +740,7 @@ limitations under the License.
           return;
         }
         this._fetchLogdir();
-        Promise.all([this._fetchActiveDashboards(), fetchRuns()]).then(() => {
+        Promise.all([this._fetchActiveDashboards(), tf_backend.fetchRuns()]).then(() => {
           const dashboard = this._selectedDashboardComponent();
           if (dashboard) {
             dashboard.reload();
@@ -767,14 +751,14 @@ limitations under the License.
 
       openSettings() {
         this.$.settings.open();
-        this.$.paginationLimitInput.value = paginatedViewStore.getLimit();
+        this.$.paginationLimitInput.value = tf_paginated_view.getLimit();
       },
       _paginationLimitChanged(e) {
         const value = e.target.valueAsNumber;
         // We set type="number" and min="1" on the input, but Polymer
         // doesn't actually enforce those, so we have to check manually.
         if (value === +value && value > 0) {
-          paginatedViewStore.setLimit(e.target.valueAsNumber);
+          tf_paginated_view.setLimit(e.target.valueAsNumber);
         }
       },
     });

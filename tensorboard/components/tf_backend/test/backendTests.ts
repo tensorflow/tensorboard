@@ -12,11 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {filterTags, getRuns, getTags, RunToTag, TYPES} from '../backend.js';
-import {RequestManager} from '../requestManager.js';
-import {createRouter, setRouter} from '../router.js';
-import {addParams} from '../urlPathHelpers.js';
+namespace tf_backend {
 
 describe('urlPathHelpers', () => {
   it('addParams leaves input untouched when there are no parameters', () => {
@@ -67,17 +63,19 @@ describe('backend tests', () => {
     };
     const empty1: RunToTag = {};
     const empty2: RunToTag = {run1: [], run2: []};
-    chai.assert.deepEqual(getRuns(r2t), ['a', 'run1', 'run2']);
+    chai.assert.deepEqual(getRunsNamed(r2t), ['a', 'run1', 'run2']);
     chai.assert.deepEqual(getTags(r2t), ['bar', 'foo', 'zod', 'zoink']);
     chai.assert.deepEqual(filterTags(r2t, ['run1', 'run2']), getTags(r2t));
     chai.assert.deepEqual(filterTags(r2t, ['run1']), ['bar', 'foo', 'zod']);
     chai.assert.deepEqual(
         filterTags(r2t, ['run2', 'a']), ['foo', 'zod', 'zoink']);
 
-    chai.assert.deepEqual(getRuns(empty1), []);
+    chai.assert.deepEqual(getRunsNamed(empty1), []);
     chai.assert.deepEqual(getTags(empty1), []);
 
-    chai.assert.deepEqual(getRuns(empty2), ['run1', 'run2']);
+    chai.assert.deepEqual(getRunsNamed(empty2), ['run1', 'run2']);
     chai.assert.deepEqual(getTags(empty2), []);
   });
 });
+
+}  // namespace tf_backend

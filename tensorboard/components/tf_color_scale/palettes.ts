@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_color_scale {
 
 export const palettes = {
   googleStandard: [
@@ -98,3 +99,5 @@ export const palettes = {
 };
 
 export const standard = palettes.tensorboardColorBlindAssist;
+
+}  // namespace tf_color_scale

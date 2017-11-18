@@ -92,10 +92,6 @@ tf-text-loader displays markdown text data from the Text plugin.
     </style>
   </template>
   <script>
-    import {addParams} from "../tf-backend/urlPathHelpers.js";
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {getRouter} from "../tf-backend/router.js";
-    import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
     Polymer({
       is: "tf-text-loader",
@@ -121,11 +117,11 @@ tf-text-loader displays markdown text data from the Text plugin.
         requestManager: Object,
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
       },
       _computeRunColor(run) {
-        return runsColorScale(run);
+        return tf_color_scale.runsColorScale(run);
       },
       attached() {
         this._attached = true;
@@ -136,8 +132,8 @@ tf-text-loader displays markdown text data from the Text plugin.
           return;
         }
         this._canceller.cancelAll();
-        const router = getRouter();
-        const url = addParams(router.pluginRoute("text", "/text"), {
+        const router = tf_backend.getRouter();
+        const url = tf_backend.addParams(router.pluginRoute("text", "/text"), {
           tag: this.tag,
           run: this.run,
         });

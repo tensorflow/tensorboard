@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_sorting {
 
 /**
  * Compares tag names asciinumerically broken into components.
@@ -105,3 +106,5 @@ function isBreak(c: string): boolean {
   // TODO(@jart): Remove underscore when people stop using it like a slash.
   return c === '/' || c === '_' || isDigit(c);
 }
+
+}  // namespace vz_sorting

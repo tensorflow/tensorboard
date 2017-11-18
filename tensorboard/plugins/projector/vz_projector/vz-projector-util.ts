@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 export type Spec = {
   is: string; properties?: {
@@ -32,3 +33,5 @@ export function PolymerElement(spec: Spec) {
 }
 
 export interface PolymerHTMLElement extends HTMLElement, polymer.Base {}
+
+}  // namespace vz_projector

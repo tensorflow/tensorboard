@@ -12,11 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_backend {
 
 interface ResolveReject {
   resolve: Function;
   reject: Function;
 }
+
 /**
  * Manages many fetch requests. Launches up to nSimultaneousRequests
  * simultaneously, and maintains a LIFO queue of requests to process when
@@ -175,3 +177,5 @@ export class RequestManager {
     });
   }
 }
+
+}  // namespace tf_backend

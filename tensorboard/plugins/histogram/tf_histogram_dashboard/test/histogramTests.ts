@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {intermediateToD3} from '../histogramCore.js';
+namespace tf_histogram_dashboard {
 
 describe('Verify that the histogram format conversion works.', () => {
 
@@ -135,3 +134,5 @@ describe('Verify that the histogram format conversion works.', () => {
     assertHistogramEquality(actual, expected);
   });
 });
+
+}  // namespace tf_histogram_dashboard

@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {State} from '../data.js';
-import {ProjectionsPanel} from '../vz-projector-projections-panel.js';
+namespace vz_projector.test {
 
 describe('restoreUIFromBookmark', () => {
   let projectionsPanel: ProjectionsPanel;
@@ -105,3 +104,5 @@ describe('populateBookmarkFromUI', () => {
     assert.deepEqual([0, 1, 2], s.pcaComponentDimensions);
   });
 });
+
+}  // namespace vz_projector.test

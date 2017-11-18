@@ -33,8 +33,6 @@ You may obtain a copy of the License at
 &nbsp;[[_percent(value)]]
   </template>
   <script>
-import {flameColor, percent} from './utils.js';
-
 Polymer({
   is: 'tf-op-bar',
   properties: {
@@ -44,10 +42,10 @@ Polymer({
       observer: '_updateValue',
     },
   },
-  _percent: percent,
+  _percent: tf_op_profile.percent,
   _updateValue: function(value) {
-    const color = flameColor(value);
-    const length = percent(value);
+    const color = tf_op_profile.flameColor(value);
+    const length = tf_op_profile.percent(value);
     this.style.background =
         `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
   },
@@ -146,8 +144,6 @@ tf-op-bar {
   </template>
 
   <script>
-import {flameColor, utilization} from './utils.js';
-
 Polymer({
   is: 'tf-op-details',
   properties: {
@@ -157,10 +153,10 @@ Polymer({
       observer: '_updateCard',
     },
   },
-  _utilization: utilization,
+  _utilization: tf_op_profile.utilization,
   _updateCard: function(node){
     if (node == null) return;
-    var color = flameColor(utilization(node), 0.7);
+    var color = tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
     this.$.subheader.style.backgroundColor = color;
   },
@@ -176,7 +172,7 @@ Polymer({
     var ratio = dim.size / dim.alignment;
     // Colors should grade harshly: 50% in a dimension is already very bad.
     var harshCurve = (x) => 1 - Math.sqrt(1 - x);
-    return flameColor(ratio / Math.ceil(ratio), 1, 0.25, harshCurve);
+    return tf_op_profile.flameColor(ratio / Math.ceil(ratio), 1, 0.25, harshCurve);
   },
   _dimensionHint: function(dim) {
     if (!dim || !dim.alignment) return null;

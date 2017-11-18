@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 /**
  * This is a fork of the Karpathy's TSNE.js (original license below).
@@ -42,8 +43,6 @@ limitations under the License.
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-import {SPNode, SPTree} from './sptree.js';
 
 type AugmSPNode = SPNode&{numCells: number, yCell: number[], rCell: number};
 
@@ -472,3 +471,5 @@ export class TSNE {
     return grad;
   }
 }
+
+}  // namespace vz_projector

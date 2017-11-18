@@ -12,13 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DistanceFunction, Projection} from './data.js';
-import {NearestEntry} from './knn.js';
+namespace vz_projector {
 
 export type HoverListener = (index: number) => void;
 export type SelectionChangedListener =
-    (selectedPointIndices: number[], neighborsOfFirstPoint: NearestEntry[]) =>
+    (selectedPointIndices: number[], neighborsOfFirstPoint: knn.NearestEntry[]) =>
         void;
 export type ProjectionChangedListener = (projection: Projection) => void;
 export type DistanceMetricChangedListener =
@@ -43,3 +41,5 @@ export interface ProjectorEventContext {
                                             DistanceMetricChangedListener);
   notifyDistanceMetricChanged(distMetric: DistanceFunction);
 }
+
+}  // namespace vz_projector

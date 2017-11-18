@@ -12,9 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {compareTagNames} from '../vz-sorting/sorting.js';
-import {getTags} from '../tf-backend/backend.js';
+namespace tf_categorization_utils {
 
 /**
  * Functions to extract categories of tags and/or run-tag combinations
@@ -110,7 +108,7 @@ export function categorizeTags(
     runToTag: RunToTag,
     selectedRuns: string[],
     query?: string): TagCategory[] {
-  const tags = getTags(runToTag);
+  const tags = tf_backend.getTags(runToTag);
   const categories = categorize(tags, query);
   const tagToRuns: {[tag: string]: string[]} = {};
   tags.forEach(tag => {
@@ -132,11 +130,11 @@ export function categorizeTags(
 }
 
 function compareTagRun(a, b: {tag: string, run: string}): number {
-  const c = compareTagNames(a.tag, b.tag);
+  const c = vz_sorting.compareTagNames(a.tag, b.tag);
   if (c != 0) {
     return c;
   }
-  return compareTagNames(a.run, b.run);
+  return vz_sorting.compareTagNames(a.run, b.run);
 }
 
 export function categorizeRunTagCombinations(
@@ -157,3 +155,5 @@ export function categorizeRunTagCombinations(
   }
   return tagCategories.map(explodeCategory);
 }
+
+}  // namespace tf_categorization_utils

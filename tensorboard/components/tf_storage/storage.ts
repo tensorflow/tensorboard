@@ -12,11 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_storage {
 
-import {getFakeHash, setFakeHash, useHash} from '../tf-globals/globals.js';
-
-
-/* tslint:disable:no-namespace variable-name */
 /**
  * The Storage Module provides storage for URL parameters, and an API for
  * getting and setting TensorBoard's stateful URI.
@@ -220,17 +217,17 @@ function getURIStorageName(
  * Read component from URI (e.g. returns "events&runPrefix=train*").
  */
 function readComponent(): string {
-  return useHash() ? window.location.hash.slice(1) : getFakeHash();
+  return tf_globals.useHash() ? window.location.hash.slice(1) : tf_globals.getFakeHash();
 }
 
 /**
  * Write component to URI.
  */
 function writeComponent(component: string) {
-  if (useHash()) {
+  if (tf_globals.useHash()) {
     window.location.hash = component;
   } else {
-    setFakeHash(component);
+    tf_globals.setFakeHash(component);
   }
 }
 
@@ -293,3 +290,5 @@ function unsetFromURI(key) {
   delete items[key];
   writeComponent(dictToComponent(items));
 }
+
+}  // namespace tf_storage

@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {ColorScale} from '../colorScale.js';
+namespace tf_color_scale {
 
 let assert = chai.assert;
 
@@ -46,3 +45,5 @@ describe('ColorScale', function() {
     }, 'String was not in the domain.');
   });
 });
+
+}  // namespace tf_color_scale

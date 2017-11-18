@@ -75,11 +75,3 @@ ts_web_library(
         "//tensorboard/demo:demo_data",
     ],
 )
-
-tensorboard_html_binary(
-    name = "devserver",
-    testonly = 1,
-    input_path = "/tf-tensorboard/demo.html",
-    output_path = "/index.html",
-    deps = [":demo"],
-)

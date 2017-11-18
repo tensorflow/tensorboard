@@ -225,8 +225,6 @@ Polymer({
   </template>
 
   <script>
-import {flameColor, percent, utilization} from './utils.js';
-
 Polymer({
   is: 'tf-op-table-entry',
   properties: {
@@ -272,21 +270,21 @@ Polymer({
   _handleHeaderMouseLeave: function(e) { this.headerHover(null); },
   _percent: function(node) {
     return (node.metrics && node.metrics.time)
-              ? percent(node.metrics.time) : "";
+              ? tf_op_profile.percent(node.metrics.time) : "";
   },
   _provenance: function(node) {
     return (node.xla && node.xla.provenance)
               ? node.xla.provenance.replace(/^.*\//, '') : "";
   },
   _utilization: function(node) {
-    return percent(utilization(node));
+    return tf_op_profile.percent(tf_op_profile.utilization(node));
   },
   _flameColor: function(node) {
-    return flameColor(utilization(node), 1, 0.2);
+    return tf_op_profile.flameColor(tf_op_profile.utilization(node), 1, 0.2);
   },
   _barWidth: function(node) {
     return (node.metrics && node.metrics.time)
-              ? percent(node.metrics.time) : 0;
+              ? tf_op_profile.percent(node.metrics.time) : 0;
   },
   _selectedChanged: function(v) { this.classList.toggle('selected', v); }
 });

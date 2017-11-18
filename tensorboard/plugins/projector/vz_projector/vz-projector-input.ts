@@ -12,12 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 // tslint:disable-next-line
-export let PolymerClass = PolymerElement(
+export let ProjectorInputPolymer = PolymerElement(
     {is: 'vz-projector-input', properties: {label: String, message: String}});
 
 export interface InputChangedListener {
@@ -25,7 +23,7 @@ export interface InputChangedListener {
 }
 
 /** Input control with custom capabilities (e.g. regex). */
-export class ProjectorInput extends PolymerClass {
+export class ProjectorInput extends ProjectorInputPolymer {
   private textChangedListeners: InputChangedListener[];
   private paperInput: HTMLInputElement;
   private inRegexModeButton: HTMLButtonElement;
@@ -111,3 +109,5 @@ export class ProjectorInput extends PolymerClass {
 }
 
 document.registerElement(ProjectorInput.prototype.is, ProjectorInput);
+
+}  // namespace vz_projector

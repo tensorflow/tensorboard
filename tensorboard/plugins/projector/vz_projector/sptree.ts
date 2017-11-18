@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 /** N-dimensional point. Usually 2D or 3D. */
 export type Point = number[];
@@ -173,3 +174,5 @@ function fillArray<T>(arr: T[], value: T): void {
     arr[i] = value;
   }
 }
+
+}  // namespace vz_projector

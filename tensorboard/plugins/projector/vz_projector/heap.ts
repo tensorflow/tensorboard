@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 /** Min key heap. */
 export type HeapItem<T> = {
@@ -144,3 +145,5 @@ export class KMin<T> {
     return this.maxHeap.size() === 0 ? null : -this.maxHeap.peek().key;
   }
 }
+
+}  // namespace vz_projector

@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {createRouter, setRouter} from '../../tf-backend/router.js';
+namespace tf_audio_dashboard {
 
 // TODO(@dandelionmane): Fix me.
 declare function fixture(id: string): any;
@@ -24,8 +23,8 @@ describe('audio dashboard tests', () => {
   let reloadCount = 0;
   beforeEach(() => {
     audioDash = fixture('testElementFixture');
-    const router = createRouter('/data', true);
-    setRouter(router);
+    const router = tf_backend.createRouter('/data', true);
+    tf_backend.setRouter(router);
     stub('tf-audio-loader', {
       reload: () => { reloadCount++; },
     });
@@ -44,3 +43,5 @@ describe('audio dashboard tests', () => {
     });
   });
 });
+
+}  // namespace tf_audio_dashboard

@@ -106,11 +106,6 @@ profile run can have multiple tools that present the performance profile as diff
 <script>
   "use strict";
 
-  import {addParams} from "../tf-backend/urlPathHelpers.js";
-  import {RequestManager} from '../tf-backend/requestManager.js';
-  import {compareTagNames} from "../vz-sorting/sorting.js";
-  import {getRouter} from '../tf-backend/router.js';
-  import {registerDashboard} from '../tf-tensorboard/registry.js';
 
 
   Polymer({
@@ -118,7 +113,7 @@ profile run can have multiple tools that present the performance profile as diff
     properties: {
       _requestManager: {
         type: Object,
-        value: () => new RequestManager(),
+        value: () => new tf_backend.RequestManager(),
       },
       _isAttached: Boolean,
       // Whether this dashboard is initialized. This dashboard should only be
@@ -183,8 +178,8 @@ profile run can have multiple tools that present the performance profile as diff
       // Set this to true so we only initialize once.
       this._initialized = true;
       const profileTagsURL =
-        getRouter().pluginRoute('profile', '/tools') +
-        (getRouter().isDemoMode() ? '.json' : '');
+        tf_backend.getRouter().pluginRoute('profile', '/tools') +
+        (tf_backend.getRouter().isDemoMode() ? '.json' : '');
       this._requestManager.request(profileTagsURL).then((runToTool) => {
         var datasets = _.map(runToTool, (tools, run) => ({
           name: run,
@@ -194,7 +189,7 @@ profile run can have multiple tools that present the performance profile as diff
           // The run name is currently a timestamp like "YYYY-MM-DD_HH:MM:SS".
           // Sort runs by timestamp in reversed order so that the latest run
           // comes first.
-          return 0 - compareTagNames(a.name, b.name);
+          return 0 - vz_sorting.compareTagNames(a.name, b.name);
         });
         this.set('_dataNotFound', datasets.length === 0);
         this.set('_datasets', datasets);
@@ -202,8 +197,8 @@ profile run can have multiple tools that present the performance profile as diff
     },
     _maybeUpdateTool: function(datasets, selectedDataset, currentTool) {
       if (currentTool == "trace_viewer") {
-        var trace_data_url = addParams(
-            getRouter().pluginRoute('profile', '/data'),
+        var trace_data_url = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('profile', '/data'),
             {tag: 'trace_viewer', run: datasets[selectedDataset].name});
         // Make the trace data url relative to the root.
         if (trace_data_url[0] != '/') {
@@ -246,7 +241,7 @@ profile run can have multiple tools that present the performance profile as diff
     _run(datasets, index) { return datasets[index].name; },
   });
 
-  registerDashboard({
+  tf_tensorboard.registerDashboard({
     plugin: 'profile',
     elementName: 'tf-profile-dashboard',
   });

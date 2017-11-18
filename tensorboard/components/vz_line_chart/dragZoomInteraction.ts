@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_line_chart {
 
 export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
   private _dragInteraction: Plottable.Interactions.Drag;
@@ -192,3 +193,5 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
     draw();
   }
 }
+
+}  // namespace vz_line_chart

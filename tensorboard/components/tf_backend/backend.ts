@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {compareTagNames} from '../vz-sorting/sorting.js';
-import {RequestManager} from './requestManager.js';
-import {getRouter} from './router.js';
+namespace tf_backend {
 
 export type RunToTag = {
   [run: string]: string[];
@@ -44,13 +41,13 @@ export type DebuggerNumericsAlertReportResponse = DebuggerNumericsAlertReport[];
 export const TYPES = [];
 
 /** Given a RunToTag, return sorted array of all runs */
-export function getRuns(r: RunToTag): string[] {
-  return _.keys(r).sort(compareTagNames);
+export function getRunsNamed(r: RunToTag): string[] {
+  return _.keys(r).sort(vz_sorting.compareTagNames);
 }
 
 /** Given a RunToTag, return array of all tags (sorted + dedup'd) */
 export function getTags(r: RunToTag): string[] {
-  return _.union.apply(null, _.values(r)).sort(compareTagNames);
+  return _.union.apply(null, _.values(r)).sort(vz_sorting.compareTagNames);
 }
 
 /**
@@ -61,7 +58,7 @@ export function getTags(r: RunToTag): string[] {
 export function filterTags(r: RunToTag, runs: string[]): string[] {
   let result = [];
   runs.forEach((x) => result = result.concat(r[x]));
-  return _.uniq(result).sort(compareTagNames);
+  return _.uniq(result).sort(vz_sorting.compareTagNames);
 }
 
 function timeToDate(x: number): Date {
@@ -91,9 +88,10 @@ function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
   };
 };
 
-
 /**
  * The following interface (TupleData) describes how the data is sent
  * over from the backend.
  */
 type TupleData<T> = [number, number, T];  // wall_time, step
+
+}  // namespace tf_backend

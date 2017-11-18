@@ -12,9 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {runsColorScale} from '../tf-color-scale/colorScale.js';
-import * as storage from '../tf-storage/storage.js';
+namespace tf_dashboard_common {
 
 Polymer({
   is: 'tf-multi-checkbox',
@@ -27,7 +25,7 @@ Polymer({
     },  // All the runs in consideration
     regexInput: {
       type: String,
-      value: storage.getStringInitializer('regexInput', {defaultValue: ''}),
+      value: tf_storage.getStringInitializer('regexInput', {defaultValue: ''}),
       observer: '_regexInputObserver',
     },  // Regex for filtering the runs
     regex: {type: Object, computed: '_makeRegex(regexInput)'},
@@ -39,7 +37,7 @@ Polymer({
       // if a run is explicitly enabled, True, if explicitly disabled, False.
       // if undefined, default value (enable for first k runs, disable after).
       type: Object,
-      value: storage.getObjectInitializer(
+      value: tf_storage.getObjectInitializer(
           'runSelectionState', {defaultValue: {}}),
       observer: '_storeRunToIsCheckedMapping',
     },
@@ -88,7 +86,7 @@ Polymer({
     '_setIsolatorIcon(runSelectionState, names)',
   ],
   _storeRunToIsCheckedMapping:
-      storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
+      tf_storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
   _makeRegex: function(regex) {
     try {
       return new RegExp(regex)
@@ -129,7 +127,7 @@ Polymer({
 
     const checkboxes = this.querySelectorAll('paper-checkbox');
     checkboxes.forEach(p => {
-      const color = runsColorScale(p.name);
+      const color = tf_color_scale.runsColorScale(p.name);
       p.customStyle['--paper-checkbox-checked-color'] = color;
       p.customStyle['--paper-checkbox-checked-ink-color'] = color;
       p.customStyle['--paper-checkbox-unchecked-color'] = color;
@@ -137,7 +135,7 @@ Polymer({
     });
     const buttons = this.querySelectorAll('.isolator');
     buttons.forEach(p => {
-      const color = runsColorScale(p.name);
+      const color = tf_color_scale.runsColorScale(p.name);
       p.style['color'] = color;
     });
     // The updateStyles call fails silently if the browser doesn't have focus,
@@ -167,7 +165,7 @@ Polymer({
   _isChecked: function(item, outSelectedChange) {
     return this.outSelected.indexOf(item) != -1;
   },
-  _regexInputObserver: storage.getStringObserver('regexInput', {defaultValue: ''}),
+  _regexInputObserver: tf_storage.getStringObserver('regexInput', {defaultValue: ''}),
   toggleAll: function() {
     var _this = this;
     var anyToggledOn = this.namesMatchingRegex.some(function(n) {
@@ -195,3 +193,5 @@ Polymer({
     this.runSelectionState = newRunsDisabled;
   },
 });
+
+}  // namespace tf_dashboard_common

@@ -12,14 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {ColorOption, ColumnStats, SpriteAndMetadataInfo} from './data.js';
-import {DataProvider, EmbeddingInfo, parseRawMetadata, parseRawTensors, ProjectorConfig} from './data-provider.js';
-import * as util from './util.js';
-import {Projector} from './vz-projector.js';
-import {ColorLegendRenderInfo, ColorLegendThreshold} from './vz-projector-legend.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 export let DataPanelPolymer = PolymerElement({
   is: 'vz-projector-data-panel',
@@ -505,3 +498,5 @@ export class DataPanel extends DataPanelPolymer {
 }
 
 document.registerElement(DataPanel.prototype.is, DataPanel);
+
+}  // namespace vz_projector

@@ -181,11 +181,6 @@ future for loading older images.
   </template>
   <script>
     "use strict";
-    import {addParams} from '../tf-backend/urlPathHelpers.js';
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {getRouter} from "../tf-backend/router.js";
-    import {formatDate} from '../tf-card-heading/util.js';
-    import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
     Polymer({
       is: "tf-image-loader",
@@ -210,11 +205,11 @@ future for loading older images.
         requestManager: Object,
         _metadataCanceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
         _imageCanceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
 
         // steps: {
@@ -272,7 +267,7 @@ future for loading older images.
       ],
 
       _computeRunColor(run) {
-        return runsColorScale(run);
+        return tf_color_scale.runsColorScale(run);
       },
       _computeHasAtLeastOneStep(steps) {
         return !!steps && steps.length > 0;
@@ -284,7 +279,7 @@ future for loading older images.
         return steps[stepIndex].step;
       },
       _computeCurrentWallTime(steps, stepIndex) {
-        return formatDate(steps[stepIndex].wall_time);
+        return tf_card_heading.formatDate(steps[stepIndex].wall_time);
       },
       _computeMaxStepIndex(steps) {
         return steps.length - 1;
@@ -305,8 +300,8 @@ future for loading older images.
           return;
         }
         this._metadataCanceller.cancelAll();
-        const router = getRouter();
-        const url = addParams(router.pluginRoute('images', '/images'), {
+        const router = tf_backend.getRouter();
+        const url = tf_backend.addParams(router.pluginRoute('images', '/images'), {
             tag: this.tag,
             run: this.run,
             sample: this.sample,
@@ -323,11 +318,11 @@ future for loading older images.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(imageMetadata) {
-        let url = getRouter().pluginRoute('images', '/individualImage');
+        let url = tf_backend.getRouter().pluginRoute('images', '/individualImage');
         // Include wall_time just to disambiguate the URL and force
         // the browser to reload the image when the URL changes. The
         // backend doesn't care about the value.
-        url = addParams(url, {ts: imageMetadata.wall_time});
+        url = tf_backend.addParams(url, {ts: imageMetadata.wall_time});
         url += '&' + imageMetadata.query;
 
         return {

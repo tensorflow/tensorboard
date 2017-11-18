@@ -8,6 +8,7 @@ ts_web_library(
     name = "tf_histogram_dashboard",
     srcs = [
         "histogramCore.ts",
+        "tf-histogram-core.html",
         "tf-histogram-dashboard.html",
         "tf-histogram-loader.html",
     ],

@@ -12,14 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
+namespace tf_custom_scalar_dashboard {
 
 export interface CustomScalarResponse {
   regex_valid: boolean;
 
   // Maps tag name to a list of scalar data.
-  tag_to_events: {[key: string]: ChartHelpers.ScalarDatum[]};
+  tag_to_events: {[key: string]: vz_line_chart.ScalarDatum[]};
 }
 
 /**
@@ -59,14 +58,14 @@ export class DataSeries {
   private run: string;
   private tag: string;
   private name: string;
-  private scalarData: ChartHelpers.ScalarDatum[];
-  private symbol: ChartHelpers.LineChartSymbol;
+  private scalarData: vz_line_chart.ScalarDatum[];
+  private symbol: vz_line_chart.LineChartSymbol;
 
   constructor(run: string,
               tag: string,
               name: string,
-              scalarData: ChartHelpers.ScalarDatum[],
-              symbol: ChartHelpers.LineChartSymbol) {
+              scalarData: vz_line_chart.ScalarDatum[],
+              symbol: vz_line_chart.LineChartSymbol) {
     this.run = run;
     this.tag = tag;
     this.name = name;
@@ -78,11 +77,11 @@ export class DataSeries {
     return this.name;
   }
 
-  setData(scalarData: ChartHelpers.ScalarDatum[]) {
+  setData(scalarData: vz_line_chart.ScalarDatum[]) {
     this.scalarData = scalarData;
   }
 
-  getData(): ChartHelpers.ScalarDatum[] {
+  getData(): vz_line_chart.ScalarDatum[] {
     return this.scalarData;
   }
 
@@ -94,7 +93,7 @@ export class DataSeries {
     return this.tag;
   }
 
-  getSymbol(): ChartHelpers.LineChartSymbol {
+  getSymbol(): vz_line_chart.LineChartSymbol {
     return this.symbol;
   }
 }
@@ -137,3 +136,5 @@ export class DataSeriesColorScale {
     return match[1];
   }
 }
+
+}  // namespace tf_custom_scalar_dashboard

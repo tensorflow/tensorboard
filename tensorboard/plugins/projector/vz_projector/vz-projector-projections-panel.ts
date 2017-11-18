@@ -12,16 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as data from './data.js';
-import {DataSet, Projection, ProjectionType, SpriteAndMetadataInfo, State} from './data.js';
-import * as util from './util.js';
-import * as vector from './vector.js';
-import {Vector} from './vector.js';
-import {Projector} from './vz-projector.js';
-import {ProjectorInput} from './vz-projector-input.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 const NUM_PCA_COMPONENTS = 10;
 
@@ -49,12 +40,15 @@ export let ProjectionsPanelPolymer = PolymerElement({
 type InputControlName = 'xLeft'|'xRight'|'yUp'|'yDown';
 
 type CentroidResult = {
-  centroid?: Vector; numMatches?: number;
+  centroid?: vector.Vector; numMatches?: number;
 };
 
 type Centroids = {
-  [key: string]: Vector; xLeft: Vector; xRight: Vector; yUp: Vector;
-  yDown: Vector;
+  [key: string]: vector.Vector;
+  xLeft: vector.Vector;
+  xRight: vector.Vector;
+  yUp: vector.Vector;
+  yDown: vector.Vector;
 };
 
 /**
@@ -351,10 +345,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.clearCentroids();
 
     (this.querySelector('#tsne-sampling') as HTMLElement).style.display =
-        pointCount > data.TSNE_SAMPLE_SIZE ? null : 'none';
+        pointCount > TSNE_SAMPLE_SIZE ? null : 'none';
     const wasSampled =
-        (dataSet == null) ? false : (dataSet.dim[0] > data.PCA_SAMPLE_DIM ||
-                                     dataSet.dim[1] > data.PCA_SAMPLE_DIM);
+        (dataSet == null) ? false : (dataSet.dim[0] > PCA_SAMPLE_DIM ||
+                                     dataSet.dim[1] > PCA_SAMPLE_DIM);
     (this.querySelector('#pca-sampling') as HTMLElement).style.display =
         wasSampled ? null : 'none';
     this.showTab('pca');
@@ -444,7 +438,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       return;
     }
     const accessors =
-        data.getProjectionComponents('tsne', [0, 1, this.tSNEis3d ? 2 : null]);
+        getProjectionComponents('tsne', [0, 1, this.tSNEis3d ? 2 : null]);
     const dimensionality = this.tSNEis3d ? 3 : 2;
     const projection =
         new Projection('tsne', accessors, dimensionality, dataSet);
@@ -508,7 +502,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     }
     this.dataSet.projectPCA().then(() => {
       // Polymer properties are 1-based.
-      const accessors = data.getProjectionComponents(
+      const accessors = getProjectionComponents(
           'pca', [this.pcaX, this.pcaY, this.pcaZ]);
 
       const dimensionality = this.pcaIs3d ? 3 : 2;
@@ -540,7 +534,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     const yDir = vector.sub(this.centroids.yUp, this.centroids.yDown);
     this.dataSet.projectLinear(yDir, 'linear-y');
 
-    const accessors = data.getProjectionComponents('custom', ['x', 'y']);
+    const accessors = getProjectionComponents('custom', ['x', 'y']);
     const projection = new Projection('custom', accessors, 2, this.dataSet);
     this.projector.setProjection(projection);
   }
@@ -624,16 +618,18 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   getPcaSampledDimText() {
-    return data.PCA_SAMPLE_DIM.toLocaleString();
+    return PCA_SAMPLE_DIM.toLocaleString();
   }
 
   getPcaSampleSizeText() {
-    return data.PCA_SAMPLE_SIZE.toLocaleString();
+    return PCA_SAMPLE_SIZE.toLocaleString();
   }
 
   getTsneSampleSizeText() {
-    return data.TSNE_SAMPLE_SIZE.toLocaleString();
+    return TSNE_SAMPLE_SIZE.toLocaleString();
   }
 }
 
 document.registerElement(ProjectionsPanel.prototype.is, ProjectionsPanel);
+
+}  // namespace vz_projector

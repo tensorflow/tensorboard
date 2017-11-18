@@ -35,12 +35,10 @@ limitations under the License.
 
   <script>
     "use strict";
+    (function() {
 
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getRouter} from '../tf-backend/router.js';
-
-    const FEED_ROUTE = getRouter().pluginRoute('beholder', '/beholder-frame')
-    const PING_ROUTE = getRouter().pluginRoute('beholder', '/ping')
+    const FEED_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/beholder-frame')
+    const PING_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/ping')
 
     var connectionFailed = false
 
@@ -49,7 +47,7 @@ limitations under the License.
       properties: {
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(),
+          value: () => new tf_backend.RequestManager(),
         },
 
         _imageURL: {
@@ -86,5 +84,7 @@ limitations under the License.
       },
 
     });
+
+    })();
   </script>
 </dom-module>
