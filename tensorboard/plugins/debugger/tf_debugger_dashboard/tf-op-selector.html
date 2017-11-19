@@ -1,0 +1,473 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Offers a hierarchical UI for selecting ops.
+-->
+<dom-module id="tf-op-selector">
+  <template>
+    <div>
+      <paper-dropdown-menu
+        id="f-mode"
+        no-label-float="true"
+        label="Filter Mode"
+        selected-item-label="{{_filterMode}}"
+      >
+        <paper-menu class="dropdown-content" slot="dropdown-content">
+          <paper-item no-label-float=true>Node Name</paper-item>
+          <paper-item no-label-float=true>Op Type</paper-item>
+        </paper-menu>
+      </paper-dropdown-menu>
+      <paper-input
+        id="filter-input"
+        label="Filter Regex"
+        always-float-label
+        value="{{_filterInput}}"
+      ></paper-input>
+    </div>
+    <div id="selector-hierarchy">
+    </div>
+    <style>
+      :host .indented-level-container .content-container {
+        margin: 0 0 0 20px;
+      }
+
+      :host .level-container iron-collapse {
+        padding: 0 0 0 20px;
+      }
+
+      :host paper-checkbox {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        margin: 0 8px 0 0;
+      }
+
+      :host .op-type {
+        padding-right: 10px;
+        color: #444;
+      }
+
+      :host .op-title-leaf {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      :host .partial-checkbox {
+        background: #f57c00;
+      }
+
+      :host .node-expand-button {
+        margin: 0 0 0 -13px;
+      }
+
+      :host .level-title-text {
+        display: inline-block;
+        font-weight: 800;
+        margin: 0 0 0 -1px;
+      }
+
+      :host .op-description {
+        font-weight: 300;
+        margin: 0 0 0 27px;
+        padding: 10px 0;
+      }
+
+      :host #filter-mode {
+        width: 100px;
+        display: inline-block;
+      }
+
+      :host #filter-input {
+        width: 250px;
+        display: inline-block;
+      }
+    </style>
+  </template>
+  <script src="selection-tree-node.js"></script>
+  <script>
+
+  Polymer({
+    is: "tf-op-selector",
+    properties: {
+      // A list of debug watches. A debug watch object has 3 properties:
+      // node_name (string), output_slot (number), and debug_op (string).
+      debugWatches: Array,
+      // A function called when a debug watch is toggled. This function takes
+      // the click event.
+      debugWatchChange: Object,
+      // A function called when a node in the list (not the state checkbox or
+      // the expand button) is clicked,
+      nodeClicked: Function,
+
+      // Name of the node externally forced to expand to.
+      forceExpansionNodeName: {
+        type: String,
+        value: null,
+      },
+
+      // A mapping between node name and debug watch. Only nodes that are
+      // currently selected reside within this mapping. A node that is
+      // deselected will be removed from this mapping.
+      _selectedDebugWatchMapping: {
+        type: Object,
+        value: () => ({}),
+      },
+
+      // A map from non-leaf node name to containers. Used during externally
+      // forced expansion.
+      _levelName2Container: {
+        type: Object,
+        value: null,
+      },
+      // A map from node/level names to checkboxes. Used during externally
+      // triggered click events.
+      _levelName2Node: {
+        type: Object,
+        value: null,
+      },
+
+      // This is the SelectionTreeNode.SelectionTreeNode object that is the root
+      // of the tree for node selection.
+      _watchHierarchy: {
+        type: Object,
+        computed: "_computeWatchHierarchy(debugWatches, debugWatchChange, _filterMode, _filterInput)",
+      },
+
+      _filterMode: {
+        type: String,
+        value: 'Node Name',
+        notify: true,
+      },
+
+      _filterInput: {
+        type: String,
+        value: '',
+        notify: true,
+      },
+    },
+    observers: [
+      "_renderHierarchy(_watchHierarchy, debugWatchChange)",
+      "_handleForceNodeExpansion(forceExpansionNodeName)",
+    ],
+    _computeWatchHierarchy(debugWatches, debugWatchChange, filterMode, filterInput) {
+      filterInput = filterInput.trim();
+      let filteredDebugWatches = debugWatches;
+      if (filterMode != null && filterInput.length > 0) {
+        filteredDebugWatches = tf_debugger_dashboard.filterDebugWatches(
+            debugWatches, filterMode, filterInput);
+      }
+
+      const hierarchy = new tf_debugger_dashboard.SelectionTreeNode('', debugWatchChange);
+      hierarchy.isRoot = true;
+
+      _.forEach(filteredDebugWatches, debugWatch => {
+        const portions = tf_debugger_dashboard.splitNodeName(debugWatch.node_name);
+        // Start at the highest level.
+        let currentNode = hierarchy;
+        _.forEach(portions, (portion, i) => {
+          if (i === portions.length - 1) {
+            // This is the last portion. Map it to the original debug watch.
+            const newNode = new tf_debugger_dashboard.SelectionTreeNode(
+                portion, debugWatchChange, currentNode, debugWatch);
+            currentNode.children[portion] = newNode;
+            return;
+          }
+
+          // Create a new level if it does not already exist.
+          if (!currentNode.children[portion]) {
+            currentNode.children[portion] =
+                new tf_debugger_dashboard.SelectionTreeNode(
+                    portion, debugWatchChange, currentNode);
+          }
+          currentNode = currentNode.children[portion];
+        });
+      });
+
+      return hierarchy;
+    },
+
+    _renderHierarchy(watchHierarchy, debugWatchChange, filterMode, filterInput) {
+      this.set('_levelName2Container', {});
+      this.set('_levelName2Node', {});
+      this.$$('#selector-hierarchy').innerHTML = '';
+      const dom = this._renderLevel(null, null, watchHierarchy, debugWatchChange);
+
+      // After rendering the hierarchy, check the boxes that correspond to
+      // breakpoints. Otherwise, breakpoints will be initially unselected.
+      _.forOwn(this._selectedDebugWatchMapping, (debugWatch, nodeName) => {
+        // Traverse to the leaf node that is a break point.
+        const portions = tf_debugger_dashboard.splitNodeName(nodeName);
+        let currentNode = this._watchHierarchy;
+        for (let i = 0; i < portions.length; i++) {
+          currentNode = currentNode.children[portions[i]];
+          if (!currentNode) {
+            // This node no longer exists. Perhaps the model changed.
+            break;
+          }
+        }
+
+        if (!currentNode) {
+          return;
+        }
+
+        // Select the node.
+        currentNode.setCheckboxState(tf_debugger_dashboard.CheckboxState['CHECKED']);
+
+        // Possibly change metanodes above it to be checked or partial. This
+        // has to be manually called because the checkbox has not been rendered
+        // in the DOM yet. Therefore, checkbox event handlers (which take care
+        // of this logic) are not called.
+        currentNode.setNodesAboveToChecked();
+      });
+
+      // Append the hierarchy to the DOM.
+      Polymer.dom(this.$$('#selector-hierarchy')).appendChild(dom);
+    },
+
+    _renderLevel(levelName, parentLevelName, levelObject, debugWatchChange) {
+      const levelContainer = document.createElement('div');
+      if (levelName != null) {
+        levelContainer.setAttribute('level-name', levelName);
+      }
+      let fullLevelName;
+      if (parentLevelName == null) {
+        fullLevelName = levelName;
+      } else {
+        fullLevelName = parentLevelName + '/' + levelName;
+      }
+
+      Polymer.dom(levelContainer).classList.add('level-container');
+      const contentContainer = document.createElement('iron-collapse');
+      if (levelName) {
+        // This level is an expandable.
+        this._levelName2Container[fullLevelName] = contentContainer;
+
+        // Close this entry of nodes. Let the user expand later if necessary.
+        contentContainer.removeAttribute('opened');
+
+        Polymer.dom(levelContainer).classList.add('indented-level-container');
+        const levelTitle = document.createElement('div');
+        Polymer.dom(levelTitle).classList.add('level-title');
+
+        // Add a little button for expanding or collapsing the section.
+        const expandButton = document.createElement('paper-icon-button');
+        Polymer.dom(expandButton).classList.add('node-expand-button');
+        const setExpandButtonIcon = () => {
+          expandButton.setAttribute(
+              'icon',
+              contentContainer.hasAttribute('opened') ? 'expand-less' : 'expand-more');
+        };
+        // When the user clicks the expand button, toggle expansion.
+        expandButton.addEventListener('click', () => {
+          if (contentContainer.hasAttribute('opened')) {
+            // Close the section.
+            contentContainer.removeAttribute('opened');
+          } else {
+            // Open the section.
+            contentContainer.setAttribute('opened', true);
+          }
+          setExpandButtonIcon();
+        }, false);
+        setExpandButtonIcon();
+        Polymer.dom(levelTitle).appendChild(expandButton);
+
+        // Give the title a checkbox.
+        Polymer.dom(levelTitle).appendChild(levelObject.checkbox);
+
+        // Title the expandable.
+        const titleText = document.createElement('span');
+        Polymer.dom(titleText).classList.add('level-title-text');
+        titleText.textContent = levelName;
+        Polymer.dom(levelTitle).appendChild(titleText);
+
+        Polymer.dom(levelContainer).appendChild(levelTitle);
+
+        // If this is a device name level, fire its click event to expand it
+        // immediately.
+        if (levelName.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN)) {
+          contentContainer.setAttribute('opened', true);
+        }
+      } else {
+        // This entry should be opened by default.
+        contentContainer.setAttribute('opened', true);
+      }
+
+      const levelContainers = [];
+      const ops = [];
+
+      Polymer.dom(contentContainer).classList.add('content-container');
+      _.forEach(levelObject.children, (objectToRender, childLevelName) => {
+        const debugWatch = objectToRender.debugWatch;
+        let childFullLevelName = fullLevelName;
+        if (fullLevelName == null) {
+          childFullLevelName = '';
+        }
+        childFullLevelName += '/' + childLevelName;
+        this._levelName2Node[childFullLevelName] = objectToRender;
+
+        if (debugWatch) {
+          // The debug watch exists, so this is a leaf node.
+          const opDescription = document.createElement('div');
+          Polymer.dom(opDescription).classList.add('op-description');
+
+          objectToRender.checkbox.addEventListener('change', (event) => {
+            this._handleLeafNodeSelected(
+                debugWatchChange, debugWatch, event.target.checked);
+          }, false);
+          Polymer.dom(opDescription).appendChild(objectToRender.checkbox);
+
+          const opType = document.createElement('span');
+          opType.textContent = '[' + debugWatch.op_type + ']';
+          opType.setAttribute('class', 'op-type');
+          Polymer.dom(opDescription).appendChild(opType);
+
+          const opTitle = document.createElement('span');
+          opTitle.textContent = childLevelName;
+          opTitle.setAttribute('class', 'op-title-leaf');
+          opTitle.addEventListener('click', () => {
+            const deviceAndNodeNames = this._getDeviceAndNodeNames(
+                childLevelName, levelContainer);
+            this.nodeClicked(deviceAndNodeNames[0], deviceAndNodeNames[1]);
+          }, false);
+          Polymer.dom(opDescription).appendChild(opTitle);
+
+          ops.push(opDescription);
+        } else {
+          objectToRender.checkbox.addEventListener('change', (event) => {
+            this._handleMetaNodeChange(
+                objectToRender, debugWatchChange, event.target.checked);
+          });
+
+          // Based on duck-typing, this is another level. Add the level.
+          levelContainers.push(
+              this._renderLevel(childLevelName, fullLevelName,
+                                objectToRender, debugWatchChange));
+        }
+      });
+
+      // Append checkboxes for ops before other level containers.
+      const appendToContainer = element => {
+        Polymer.dom(contentContainer).appendChild(element);
+      };
+      _.forEach(ops, appendToContainer);
+      _.forEach(levelContainers, appendToContainer);
+      Polymer.dom(levelContainer).appendChild(contentContainer);
+
+      return levelContainer;
+    },
+
+    _getLeafDebugWatches(node, leafDebugWatches) {
+      if (node.debugWatch) {
+        leafDebugWatches.push(node.debugWatch);
+      } else {
+        _.forEach(node.children, (child, key, object) => {
+          // Recursive call.
+          this._getLeafDebugWatches(child, leafDebugWatches);
+        });
+      }
+    },
+
+    /* Determine the device name and full node name from level name and level
+     * container */
+    _getDeviceAndNodeNames(levelName, levelContainer) {
+      let levelNameItems = [levelName];
+      let parentNode = levelContainer;
+      // Figure out the full name of the node (including device name, if any),
+      // by going up the hierarchy.
+      while (true) {
+        const currLevelName = parentNode.getAttribute('level-name');
+        if (currLevelName == null) {
+          break;
+        } else {
+          levelNameItems.push(currLevelName);
+        }
+        parentNode = Polymer.dom(parentNode).parentNode.parentNode;
+      }
+      levelNameItems.reverse();
+      return tf_debugger_dashboard.assembleDeviceAndNodeNames(levelNameItems);
+    },
+
+    _handleMetaNodeChange(levelObject, debugWatchChangeMethod, isChecked) {
+      // Get all leaf nodes.
+      let leafDebugWatches = [];
+      this._getLeafDebugWatches(levelObject, leafDebugWatches);
+      _.forEach(leafDebugWatches, (debugWatch) => {
+        this._handleLeafNodeSelected(
+            debugWatchChangeMethod, debugWatch, isChecked);
+      });
+    },
+
+    _handleLeafNodeSelected(debugWatchChangeMethod, debugWatch, isChecked) {
+      if (isChecked) {
+        this._selectedDebugWatchMapping[debugWatch.node_name] = debugWatch;
+      } else {
+        delete this._selectedDebugWatchMapping[debugWatch.node_name];
+      }
+      debugWatchChangeMethod(debugWatch, isChecked);
+    },
+
+    _handleForceNodeExpansion(forceExpansionNodeName) {
+      this.set('_filterInput', '');
+
+      if (forceExpansionNodeName == null) {
+        return;
+      }
+      if (this._levelName2Container == null) {
+        return;  // No node tree has been rendered yet.
+      }
+      const levelItems = tf_debugger_dashboard.splitNodeName(forceExpansionNodeName);
+      for (let i = 1; i <= levelItems.length; ++i) {
+        let currLevelName = levelItems.slice(0, i).join('/');
+        const currTreeNode = this._levelName2Node[currLevelName];
+
+        if (i < levelItems.length) {
+          // At non-lowest level.
+          if (this._levelName2Container[currLevelName] != null) {
+            // It is possible that the node is not present in the tree, e.g.,
+            // due to node-name filtering or other types of filtering.
+            this._levelName2Container[currLevelName].setAttribute('opened', true);
+          }
+        } else {
+          // At lowest level.
+          // If the lowest level is a meta node, send enable-breakpoint request
+          // for all its children.
+          if (!currTreeNode.debugWatch) {
+            this._handleMetaNodeChange(currTreeNode, currTreeNode.debugWatchChange, true);
+          }
+
+          currTreeNode.setToAllCheckedExternally();
+          const debugWatch = currTreeNode.debugWatch;
+          if (debugWatch) {
+            if (this._selectedDebugWatchMapping[debugWatch.node_name] == null) {
+              this._selectedDebugWatchMapping[debugWatch.node_name] = debugWatch;
+            }
+          }
+        }
+      }
+    },
+  });
+  </script>
+</dom-module>

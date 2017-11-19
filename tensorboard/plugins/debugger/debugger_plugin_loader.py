@@ -25,10 +25,25 @@ import tensorflow as tf
 
 tf.flags.DEFINE_integer(
     'debugger_data_server_grpc_port', -1,
-    'The port at which the debugger data server (to be started by the debugger '
-    'plugin) should receive debugging data via gRPC from one or more '
-    'debugger-enabled TensorFlow runtimes. No debugger plugin or debugger data '
-    'server will be started if this flag is <=0.')
+    'The port at which the non-interactive debugger data server '
+    'should receive debugging data via gRPC from one '
+    'or more debugger-enabled TensorFlow runtimes. No debugger plugin or '
+    'debugger data server will be started if this flag is not provided. This '
+    'flag differs from the `--debugger_port` flag in that it starts a '
+    'non-interactive mode. It is for use with the "health pills" feature '
+    'of the Graph Dashboard. This flag is mutually exclusive with '
+    '`--debugger_port`.')
+tf.flags.DEFINE_integer(
+    'debugger_port', -1,
+    'The port at which the interactive debugger data server (to be started by '
+    'the debugger plugin) should receive debugging data via gRPC from one or '
+    'more debugger-enabled TensorFlow runtimes. No debugger plugin or debugger '
+    'data server will be started if this flag is not provided. This flag '
+    'differs from the `--debugger_data_server_grpc_port` flag in that it '
+    'starts an interactive mode that allows user to pause at selected nodes '
+    'inside a TensorFlow Graph or between Session.runs. It is for use with the '
+    'interactive Debugger Dashboard. This flag is mutually exclusive with '
+    '`--debugger_data_server_grpc_port`.')
 
 FLAGS = tf.flags.FLAGS
 
@@ -43,15 +58,21 @@ def get_debugger_plugin():
     The TBPlugin constructor for the debugger plugin, or None if
     the necessary flag was not set.
   """
-  if FLAGS.debugger_data_server_grpc_port <= 0:
-    return None
-  return _ConstructDebuggerPluginWithGrpcPort
+  # Check that not both grpc port flags are specified.
+  error_msg = ('--debugger_data_server_grpc_port and --debugger_port are '
+               'mutually exclusive. Do not use more than one of them.')
+  assert (FLAGS.debugger_data_server_grpc_port <= 0 or
+          FLAGS.debugger_port <= 0), error_msg
+
+  if FLAGS.debugger_data_server_grpc_port > 0 or FLAGS.debugger_port > 0:
+    return _ConstructDebuggerPluginWithGrpcPort
 
 
 def _ConstructDebuggerPluginWithGrpcPort(context):
   try:
     # pylint: disable=line-too-long,g-import-not-at-top
     from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
+    from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
     # pylint: enable=line-too-long,g-import-not-at-top
   except ImportError as err:
     (unused_type, unused_value, traceback) = sys.exc_info()
@@ -59,11 +80,20 @@ def _ConstructDebuggerPluginWithGrpcPort(context):
         ImportError,
         ImportError(
             err.message +
-            "\n\nTo use the debugger plugin, you need to have "
-            "gRPC installed:\n  pip install grpcio"),
+            '\n\nTo use the debugger plugin, you need to have '
+            'gRPC installed:\n  pip install grpcio'),
         traceback)
-  tf.logging.info("Starting Debugger Plugin at gRPC port %d",
-                  FLAGS.debugger_data_server_grpc_port)
-  debugger_plugin = debugger_plugin_lib.DebuggerPlugin(context)
-  debugger_plugin.listen(FLAGS.debugger_data_server_grpc_port)
-  return debugger_plugin
+
+  if FLAGS.debugger_port > 0:
+    interactive_plugin = (
+        interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
+    tf.logging.info('Starting Interactive Debugger Plugin at gRPC port %d',
+                    FLAGS.debugger_data_server_grpc_port)
+    interactive_plugin.listen(FLAGS.debugger_port)
+    return interactive_plugin
+  elif FLAGS.debugger_data_server_grpc_port > 0:
+    noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
+    tf.logging.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
+                    FLAGS.debugger_data_server_grpc_port)
+    noninteractive_plugin.listen(FLAGS.debugger_data_server_grpc_port)
+    return noninteractive_plugin

@@ -1,0 +1,348 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="tf-debugger-line-chart.html">
+
+<!--
+  Offers a UI for displaying the value of a single tensor.
+-->
+<dom-module id="tf-tensor-value-view">
+  <template>
+    <paper-toast id="tensorValueToast" text="" always-on-top></paper-toast>
+    <table class="tensor-value-view-table">
+      <tr>
+        <td colspan="2">
+          <div>
+            <paper-input
+              class="inline"
+              id="tensor-name"
+              value="[[tensorName]]"
+              readOnly="true">
+            </paper-input>
+            <span
+              class="value-view-close-button"
+              id="value-view-close-button"
+              on-click="closeButtonCallback">
+              X
+            </span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div>
+            <paper-input
+              class="inline"
+              label="Debug Op"
+              id="debug-op"
+              width="200px"
+              value="[[debugOp]]"
+              readOnly="true"></paper-input>
+          </div>
+          <div>
+            <paper-input
+              class="inline"
+              label="Slicing"
+              id="slicing"
+              width="200px",
+              value="{{slicing}}">
+            </paper-input>
+          </div>
+          <div>
+            <paper-input
+              class="inline"
+              label="Time Indices"
+              id="time-indices"
+              width="200px"
+              value="{{timeIndices}}">
+            </paper-input>
+            <paper-button raised
+              id='time-indices-toggle-button'
+              class='tensor-value-buttons'
+              on-click='_timeIndicesToggleButtonCallback'
+            >Full History</paper-button>
+            <paper-button raised
+              class="tensor-value-buttons"
+              on-click="refresh"
+            >Refresh</paper-button>
+          </div>
+        </td>
+        <td class="tensor-value-view-td">
+          <template is="dom-if" if="[[_isValueScalar]]">
+            <paper-input
+              class="inline"
+              label="Scalar Value"
+              id="value-scalar"
+              value="[[_dataScalar]]">
+            </paper-input>
+          </template>
+          <template is="dom-if" if="[[_isValueLineChart]]">
+            <tf-debugger-line-chart
+              x-data="[[_dataLineChartX]]"
+              y-data="[[_dataLineChartY]]"
+            ></tf-debugger-line-chart>
+          </template>
+          <template is="dom-if" if="[[_isValueImage]]">
+            <img
+              class="value-image"
+              height="250px"
+              width="250px"
+              src="[[_dataImageSrc]]"></img>
+          </template>
+        </td>
+      </tr>
+    </table>
+  </template>
+  <style>
+    .tensor-value-buttons {
+      height: 75%;
+      font-size: 10px;
+    }
+    .tensor-value-view-table {
+      width: 500px;
+      display: inline-table;
+      border-spacing: 5px;
+      padding-top: 3px;
+      padding-bottom: 3px;
+      padding-left: 3px;
+      padding-right: 3px;
+      background-color: #f8f8f8;
+      box-shadow: 3px 3px 1px 1px #d8d8d8;
+    }
+    .tensor-value-view-td {
+      width: 350px;
+    }
+    #tensor-name {
+      display: inline-block;
+      width: 80%;
+    }
+    .value-image {
+      image-rendering: pixelated;
+    }
+    .value-view-close-button {
+      display: inline-block;
+      float: right;
+      text-align: right;
+      width: 20%;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 90%;
+      color: blue;
+    }
+  </style>
+  <script>
+
+  Polymer({
+    is: 'tf-tensor-value-view',
+    properties: {
+      // A unique identifier for this tensor value view. "Unique" within the
+      // lifetime of a TDP frontend session.
+      viewId: String,
+
+      tensorName: String,
+      debugOp: String,
+      slicing: String,
+      timeIndices: String,
+
+      closeButtonCallback: Object,
+
+      _isTensorValueScalar: {
+        type: Boolean,
+        value: false,
+      },
+      _isTensorValueLineChart: {
+        type: Boolean,
+        value: false,
+      },
+      _isTensorValueImage: {
+        type: Boolean,
+        value: false,
+      },
+
+      _dataScalar: {
+        type: Number,
+        value: null,
+      },
+      _dataLineChartX: {
+        type: Array,
+        value: [],
+      },
+      _dataLineChartY: {
+        type: Array,
+        value: [],
+      },
+      _dataImageSrc: {
+        type: String,
+        value: null,
+      },
+
+      _requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(20),
+      },
+    },
+    observers: [
+      "_updateTimeIndicesToggle(timeIndices)",
+    ],
+
+    ready() {
+      this.renderTensorValue();
+    },
+
+    renderTensorValue() {
+      if (!this.tensorName) {
+        return;
+      }
+      const tensorRank = this._rankFromSlicing(this.slicing.trim());
+      const isSingleTimeStep = this._isTimeIndicesSingleStep(this.timeIndices);
+      let tensorRankWithTime = tensorRank;
+      if (!isSingleTimeStep) {
+        if (tensorRank > 1) {
+          this._showToast('History for tensors > 1D is not yet supported.');
+          return;
+        } else {
+          tensorRankWithTime += 1;
+        }
+      }
+
+      let mapping = tensorRankWithTime >= 2 ? 'image/png' : 'none';
+      const parameters = {
+        'watch_key': this.tensorName + ':' + this.debugOp,
+        'slicing': this.slicing,
+        'time_indices': this.timeIndices,
+        'mapping': mapping,
+      };
+      const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/tensor_data');
+      const url = tf_backend.addParams(baseUrl, parameters);
+      this._requestManager.request(url).then(response => {
+        if (response.error != null) {
+          this._showToast(
+              response.error.type + ': ' + response.error.message);
+          return;
+        }
+
+        const tensorData =
+            isSingleTimeStep ? response.tensor_data[0] : response.tensor_data;
+        if (tensorRankWithTime === 0) {
+          // Scalar.
+          this._setVisualizationType('scalar');
+          this.set('_dataScalar', tensorData);
+        } else if (tensorRankWithTime === 1) {
+          this._setVisualizationType('lineChart');
+          let xData = [];
+          // TODO(cais): For history mode, this should be time steps.
+          for (let i = 0; i < tensorData.length; ++i) {
+            xData.push(i + 1);
+          }
+          this.set('_dataLineChartX', xData);
+          this.set('_dataLineChartY', tensorData);
+        } else if (tensorRankWithTime >= 2) {
+          this._setVisualizationType('image');
+          this.set('_dataImageSrc', 'data:image/png;base64,' + tensorData);
+        } else {
+          this._showToast(
+              'Visualization of rank-' + tensorRankWithTime  + ' tensors ' +
+              'is not yet supported.');
+        }
+      });
+    },
+
+    refresh() {
+      if (!this.tensorName.trim()) {
+        return;
+      }
+      this.renderTensorValue();
+    },
+
+    // TODO(cais): Deduplicate with .ts
+    _rankFromSlicing(slicing) {
+      if (slicing.startsWith('[')) {
+        slicing = slicing.slice(1, slicing.length - 1);
+      }
+      if (slicing.length === 0) {
+        // Scalar: no slicing.
+        return 0;
+      } else {
+        const slicingElements = slicing.split(',');
+        let rank = slicingElements.length;
+        // Examinehow many of the slicing elements are single numbers, which leads
+        // to a decrement in rank.
+        for (const element of slicingElements) {
+          if (!isNaN(Number(element))) {
+            rank--;
+          }
+        }
+        return rank;
+      }
+    },
+
+    _setVisualizationType(visualizationType) {
+      if (visualizationType === 'scalar') {
+        this.set('_isValueScalar', true);
+        this.set('_isValueLineChart', false);
+        this.set('_isValueImage', false);
+      } else if (visualizationType === 'lineChart') {
+        this.set('_isValueScalar', false);
+        this.set('_isValueLineChart', true);
+        this.set('_isValueImage', false);
+      } else if (visualizationType === 'image') {
+        this.set('_isValueScalar', false);
+        this.set('_isValueLineChart', false);
+        this.set('_isValueImage', true);
+      } else {
+        console.error('Invalid visualizationType:', visualizationType);
+      }
+    },
+
+    _timeIndicesToggleButtonCallback() {
+      const buttonText = Polymer.dom(this.$$('#time-indices-toggle-button')).textContent;
+      if (buttonText.toLowerCase() === 'full history') {
+        this.set('timeIndices', ':');
+      } else {
+        this.set('timeIndices', '-1');
+      }
+      this.renderTensorValue();
+    },
+
+    _updateTimeIndicesToggle(timeIndices) {
+      if (this._isTimeIndicesSingleStep(timeIndices)) {
+        Polymer.dom(this.$$('#time-indices-toggle-button')).textContent = 'Full History';
+      } else {
+        Polymer.dom(this.$$('#time-indices-toggle-button')).textContent = 'Latest Time Point';
+      }
+    },
+
+    // Determine whether a timing indices string represents a single time step.
+    _isTimeIndicesSingleStep(timeIndices) {
+      let s = timeIndices;
+      if (s.startsWith('[')) {
+        s = s.slice(1, s.length - 1);
+      }
+      return !isNaN(Number(s));
+    },
+
+    _showToast(text) {  // TODO(cais): Move to Scrolling Message View.
+      this.$.tensorValueToast.setAttribute('text', text);
+      this.$.tensorValueToast.open();
+    },
+  });
+  </script>
+</dom-module>
