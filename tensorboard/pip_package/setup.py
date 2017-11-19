@@ -41,7 +41,7 @@ REQUIRED_PACKAGES = [
 ]
 
 CONSOLE_SCRIPTS = [
-    'tensorboard = tensorboard.main:main',
+    'tensorboard = tensorboard.main:run_main',
 ]
 
 def get_readme():

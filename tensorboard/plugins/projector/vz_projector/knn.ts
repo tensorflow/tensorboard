@@ -24,6 +24,10 @@ export type NearestEntry = {
   dist: number
 };
 
+export type KNNFunction<T> = (dataPoints: T[], pointIndex: number,
+    numNN: number, accessor: (dataPoint: T) => Float32Array,
+    distance: (a: Vector, b: Vector) => number) => NearestEntry[];
+
 /**
  * Optimal size for the height of the matrix when doing computation on the GPU
  * using WebGL. This was found experimentally.
@@ -42,11 +46,11 @@ const KNN_GPU_MSG_ID = 'knn-gpu';
  *
  * @param dataPoints List of data points, where each data point holds an
  *   n-dimensional vector.
- * @param k Number of nearest neighbors to find.
+ * @param numNN Number of nearest neighbors to find.
  * @param accessor A method that returns the vector, given the data point.
  */
 export function findKNNGPUCosine<T>(
-    dataPoints: T[], k: number,
+    dataPoints: T[], numNN: number,
     accessor: (dataPoint: T) => Float32Array): Promise<NearestEntry[][]> {
   let N = dataPoints.length;
   let dim = accessor(dataPoints[0]).length;
@@ -93,7 +97,7 @@ export function findKNNGPUCosine<T>(
       result.delete();
       progress += progressDiff;
       for (let i = 0; i < B; i++) {
-        let kMin = new KMin<NearestEntry>(k);
+        let kMin = new KMin<NearestEntry>(numNN);
         let iReal = offset + i;
         for (let j = 0; j < N; j++) {
           if (j === iReal) {
@@ -119,7 +123,7 @@ export function findKNNGPUCosine<T>(
       // GPU failed. Reverting back to CPU.
       logging.setModalMessage(null, KNN_GPU_MSG_ID);
       let distFunc = (a, b, limit) => vector.cosDistNorm(a, b);
-      findKNN(dataPoints, k, accessor, distFunc).then(nearest => {
+      findKNN(dataPoints, numNN, accessor, distFunc).then(nearest => {
         resolve(nearest);
       });
     });
@@ -133,14 +137,14 @@ export function findKNNGPUCosine<T>(
  *
  * @param dataPoints List of data points, where each data point holds an
  *   n-dimensional vector.
- * @param k Number of nearest neighbors to find.
+ * @param numNN Number of nearest neighbors to find.
  * @param accessor A method that returns the vector, given the data point.
  * @param dist Method that takes two vectors and a limit, and computes the
  *   distance between two vectors, with the ability to stop early if the
  *   distance is above the limit.
  */
 export function findKNN<T>(
-    dataPoints: T[], k: number, accessor: (dataPoint: T) => Float32Array,
+    dataPoints: T[], numNN: number, accessor: (dataPoint: T) => Float32Array,
     dist: (a: Vector, b: Vector, limit: number) =>
         number): Promise<NearestEntry[][]> {
   return runAsyncTask<NearestEntry[][]>('Finding nearest neighbors...', () => {
@@ -149,17 +153,17 @@ export function findKNN<T>(
     // Find the distances from node i.
     let kMin: KMin<NearestEntry>[] = new Array(N);
     for (let i = 0; i < N; i++) {
-      kMin[i] = new KMin<NearestEntry>(k);
+      kMin[i] = new KMin<NearestEntry>(numNN);
     }
     for (let i = 0; i < N; i++) {
       let a = accessor(dataPoints[i]);
       let kMinA = kMin[i];
       for (let j = i + 1; j < N; j++) {
         let kMinB = kMin[j];
-        let limitI = kMinA.getSize() === k ?
+        let limitI = kMinA.getSize() === numNN ?
             kMinA.getLargestKey() || Number.MAX_VALUE :
             Number.MAX_VALUE;
-        let limitJ = kMinB.getSize() === k ?
+        let limitJ = kMinB.getSize() === numNN ?
             kMinB.getLargestKey() || Number.MAX_VALUE :
             Number.MAX_VALUE;
         let limit = Math.max(limitI, limitJ);
@@ -213,15 +217,15 @@ function minDist(
  *
  * @param dataPoints List of data points.
  * @param pointIndex The index of the point we need the nearest neighbors of.
- * @param k Number of nearest neighbors to search for.
+ * @param numNN Number of nearest neighbors to search for.
  * @param accessor Method that maps a data point => vector (array of numbers).
  * @param distance Method that takes two vectors and returns their distance.
  */
 export function findKNNofPoint<T>(
-    dataPoints: T[], pointIndex: number, k: number,
+    dataPoints: T[], pointIndex: number, numNN: number,
     accessor: (dataPoint: T) => Float32Array,
     distance: (a: Vector, b: Vector) => number) {
-  let kMin = new KMin<NearestEntry>(k);
+  let kMin = new KMin<NearestEntry>(numNN);
   let a = accessor(dataPoints[pointIndex]);
   for (let i = 0; i < dataPoints.length; ++i) {
     if (i === pointIndex) {
@@ -233,3 +237,95 @@ export function findKNNofPoint<T>(
   }
   return kMin.getMinKItems();
 }
+
+/**
+ * Use approximate geodesic distance to grow neighborhood over manifold
+ * @param dataPoints List of data points.
+ * @param pointIndex The index of the point we need the nearest neighbors of.
+ * @param numNN Number of nearest neighbors to search for.
+ * @param accessor Method that maps a data point => vector (array of numbers).
+ * @param distance Method that takes two vectors and returns their distance.
+*/
+export function findGeodesicKNNofPoint<T>(
+    dataPoints: T[], pointIndex: number, numNN: number,
+    accessor: (dataPoint: T) => Float32Array,
+    distance: (a: Vector, b: Vector) => number) {
+
+  let selectedPoint = accessor(dataPoints[pointIndex]);
+  let neighbors = findKNNofPoint(dataPoints, pointIndex, numNN, accessor,
+      distance);
+  // number of nearest neighbors for k-NN
+  let K = 5;
+  // use direct neighborhood
+  let neighborhood = neighbors.map(n => n.index);
+  // growing manifold to select from
+  let manifold = neighbors.slice(0, K);
+  // sum of edge distances traversed
+  let dist_sum = manifold.reduce((sum, n) => sum + n.dist, 0);
+  let dist_count = manifold.length;
+  // neighbor selection to return after populating
+  neighbors = [];
+
+  // grow to max numNN points
+  while (neighbors.length < numNN && manifold.length > 0) {
+    // store list of dist ordered neighbors
+    let knn = [];
+    // get next candidate, referred to as 'candidate'
+    let neighbor = manifold.shift();
+
+    // within 2x avg edge distance && previously unchosen
+    if (neighbor.dist <= 2.0 * dist_sum / dist_count
+        && neighbors.filter(f => f.index == neighbor.index).length == 0) {
+      // add suitable candidate
+      neighbors.push({index: neighbor.index, dist:
+          distance(selectedPoint, accessor(dataPoints[neighbor.index]))});
+      // update dist_sum
+      dist_sum = dist_sum + neighbor.dist;
+      // increment number of manifold
+      dist_count = dist_count + 1;
+      // find point vector representation
+      let point = accessor(dataPoints[neighbor.index]);
+      // choose only from initial neighborhood points
+      neighborhood.forEach(n => {
+        // distance from candidate to n
+        let n_dist = distance(point, accessor(dataPoints[n]));
+        // start checking ordered list at larger distance end
+        let k = K;
+        // add up to K neighbors of candidate
+        if (knn.length < K+1) {
+          // add n as neighbor
+          knn.push({index: n, dist: n_dist});
+        }
+        // already have K neighbors
+        else {
+          // find sorted insertion position
+          while (k >= 0 && n_dist < knn[k].dist) {
+            // move down the distance list
+            k = k - 1;
+          }
+          // n is closer than existing knn
+          if (k < K) {
+            // insert n into list to grow list
+            knn.splice(k + 1, 0, {index: n, dist: n_dist});
+          }
+        }
+      });
+      // add up to K new points to manifold
+      knn.slice(0, K).forEach(n => {
+        // not already in manifold
+        if (manifold.filter(f => f.index == n.index).length == 0) {
+          // add new point, allow reconsideration of earlier failed points
+          manifold.push(n);
+        }
+      });
+      // don't reuse successful candidate
+      neighborhood = neighborhood.filter(n => n != neighbor.index);
+    }
+  }
+  neighbors = neighbors.map(n => {
+    return {index: n.index, dist:
+        distance(selectedPoint, accessor(dataPoints[n.index]))};
+  });
+  return neighbors;
+}
+

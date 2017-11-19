@@ -198,7 +198,7 @@ Polymer({
          on-mouseleave="_handleHeaderMouseLeave"
          hidden="[[!level]]">
       <div id="bar" style$="width:{{_barWidth(node)}}"></div>
-      <span id="time">{{_percent(node.metrics.time)}}</span>
+      <span id="time">{{_percent(node)}}</span>
       <span id="name" style$="padding-left:[[level]]em;">
         <span id="disclosure">
           <span hidden="[[!node.children.length]]">
@@ -208,11 +208,12 @@ Polymer({
         </span>{{node.name}}
       </span>
       <span id="provenance">{{_provenance(node)}}&nbsp;</span>
-      <span id="utilization" style$="background-color:{{_flameColor(node)}}">
+      <span id="utilization" hidden="[[!node.metrics]]"
+        style$="background-color:{{_flameColor(node)}}">
         {{_utilization(node)}}</span>
     </div>
     <template is="dom-if" if="[[expanded]]">
-      <template is="dom-repeat" items="{{node.children}}" sort="_sortEntry">
+      <template is="dom-repeat" items="{{node.children}}">
         <tf-op-table-entry
           node="[[item]]"
           level={{_nextLevel(level)}}
@@ -262,11 +263,6 @@ Polymer({
   _eq: function(x, y) {
     return x == y;
   },
-  _sortEntry: function(left, right) {
-    var leftTime = left.metrics ? left.metrics.time : 0;
-    var rightTime = right.metrics ? right.metrics.time : 0;
-    return rightTime - leftTime;
-  },
   _nextLevel: function(level) { return level + 1; },
   _handleHeaderClick: function(e) {
     this.expanded ^= true;
@@ -274,7 +270,10 @@ Polymer({
   },
   _handleHeaderMouseEnter: function(e) { this.headerHover(this); },
   _handleHeaderMouseLeave: function(e) { this.headerHover(null); },
-  _percent: percent,
+  _percent: function(node) {
+    return (node.metrics && node.metrics.time)
+              ? percent(node.metrics.time) : "";
+  },
   _provenance: function(node) {
     return (node.xla && node.xla.provenance)
               ? node.xla.provenance.replace(/^.*\//, '') : "";
@@ -286,7 +285,8 @@ Polymer({
     return flameColor(utilization(node), 1, 0.2);
   },
   _barWidth: function(node) {
-    return percent(node.metrics.time);
+    return (node.metrics && node.metrics.time)
+              ? percent(node.metrics.time) : 0;
   },
   _selectedChanged: function(v) { this.classList.toggle('selected', v); }
 });

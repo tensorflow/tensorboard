@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DistanceFunction, DistanceSpace, DataPoint, SpriteAndMetadataInfo, State} from './data.js';
+import {DistanceFunction, DistanceSpace, DataPoint, SpriteAndMetadataInfo, State, Projection} from './data.js';
 import * as knn from './knn.js';
 import {ProjectorEventContext} from './projectorEventContext.js';
 import * as adapter from './projectorScatterPlotAdapter.js';
@@ -30,19 +30,33 @@ const LIMIT_RESULTS = 100;
 // tslint:disable-next-line
 export let PolymerClass = PolymerElement({
   is: 'vz-projector-inspector-panel',
-  properties: {selectedMetadataField: String, metadataFields: Array}
+  properties: {
+    selectedMetadataField: String,
+    metadataFields: Array,
+    selectedDistance: String,
+    distanceFields: Array,
+    distanceChanged: Object,
+    selectedNeighborhood: String,
+    neighborhoodFields: Array,
+    neighborhoodChanged: Object
+  }
 });
 
 export class InspectorPanel extends PolymerClass {
   distFunc: DistanceFunction;
   distSpace: DistanceSpace;
-  distGeo: boolean;
+  knnFunc: knn.KNNFunction<DataPoint>;
   numNN: number;
 
   private projectorEventContext: ProjectorEventContext;
 
   private selectedMetadataField: string;
   private metadataFields: string[];
+  private selectedDistance: string;
+  private distanceFields: string[];
+  private selectedNeighborhood: string;
+  private neighborhoodFields: string[];
+
   private projector: Projector;
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
@@ -76,25 +90,6 @@ export class InspectorPanel extends PolymerClass {
             this.updateInspectorPane(selection, neighbors));
   }
 
-  /** Updates the nearest neighbors list in the inspector. */
-  private updateInspectorPane(
-      indices: number[], neighbors: knn.NearestEntry[]) {
-    this.neighborsOfFirstPoint = neighbors;
-    this.selectedPointIndices = indices;
-
-    this.updateFilterButtons(indices.length + neighbors.length);
-    this.updateNeighborsList(neighbors);
-    if (neighbors.length === 0) {
-      this.updateSearchResults(indices);
-    } else {
-      this.updateSearchResults([]);
-    }
-  }
-
-  private enableResetFilterButton(enabled: boolean) {
-    this.resetFilterButton.disabled = !enabled;
-  }
-
   restoreUIFromBookmark(bookmark: State) {
     this.enableResetFilterButton(bookmark.filteredPoints != null);
   }
@@ -114,6 +109,130 @@ export class InspectorPanel extends PolymerClass {
 
   datasetChanged() {
     this.enableResetFilterButton(false);
+  }
+
+  projectionChanged() {
+    if (this.projector && this.projector.dataSet) {
+      let pTypes : string[] = [];
+      let projections = this.projector.dataSet.projections;
+      // Find the available projections, removing dimensions, e.g. pca-1 to pca
+      for (let entry in projections) {
+        if (projections[entry]) {
+          pTypes.push(entry.split('-')[0]);
+        }
+      }
+      // Removing duplicate entries, needed due to multiple dimensions for pca
+      pTypes = Array.from(new Set(pTypes));
+      // Add new projections to distanceFields
+      pTypes.forEach(pType => {
+        if (this.distanceFields.indexOf(pType) == -1) {
+          this.push('distanceFields', pType);
+        }
+      });
+      // Remove unavailable projections from distanceFields
+      let removeFields = [];
+      this.distanceFields.forEach((field, index) => {
+        if (pTypes.indexOf(field) == -1
+            && field != 'cosine' && field != 'euclidean') {
+          removeFields.push(index);
+        }
+      });
+      removeFields.forEach(index => this.splice('distanceFields', index, 1));
+      // Set selected distance to last element
+      this.selectedDistance = this.distanceFields[this.distanceFields.length-1];
+    }
+  }
+
+  private setupUI(projector: Projector) {
+    this.distFunc = vector.cosDist;
+    this.distSpace = d => d.vector;
+    this.knnFunc = knn.findKNNofPoint;
+
+    this.distanceFields = ['cosine', 'euclidean', 'pca'];
+    this.selectedDistance = 'pca';
+    this.neighborhoodFields = ['knn', 'geodesic'];
+    this.selectedNeighborhood = 'knn';
+
+    // Called whenever the search text input changes.
+    const updateInput = (value: string, inRegexMode: boolean) => {
+      if (value == null || value.trim() === '') {
+        this.searchBox.message = '';
+        this.projectorEventContext.notifySelectionChanged([]);
+        return;
+      }
+      const indices = projector.dataSet.query(
+          value, inRegexMode, this.selectedMetadataField);
+      if (indices.length === 0) {
+        this.searchBox.message = '0 matches.';
+      } else {
+        this.searchBox.message = `${indices.length} matches.`;
+      }
+      this.projectorEventContext.notifySelectionChanged(indices);
+    };
+    this.searchBox.registerInputChangedListener((value, inRegexMode) => {
+      updateInput(value, inRegexMode);
+    });
+
+    // Nearest neighbors controls.
+    const numNNInput = this.$$('#nn-slider') as HTMLInputElement;
+    const updateNumNN = () => {
+      this.numNN = +numNNInput.value;
+      if (this.selectedPointIndices != null) {
+        this.projectorEventContext.notifySelectionChanged(
+            [this.selectedPointIndices[0]]);
+      }
+    };
+    numNNInput.addEventListener('change', updateNumNN);
+    updateNumNN();
+
+    // Filtering dataset.
+    this.setFilterButton.onclick = () => {
+      const indices = this.selectedPointIndices.concat(
+          this.neighborsOfFirstPoint.map(n => n.index));
+      projector.filterDataset(indices);
+      this.enableResetFilterButton(true);
+      this.updateFilterButtons(0);
+    };
+
+    this.resetFilterButton.onclick = () => {
+      projector.resetFilterDataset();
+      this.enableResetFilterButton(false);
+    };
+
+    this.clearSelectionButton.onclick = () => {
+      projector.adjustSelectionAndHover([]);
+    };
+    this.enableResetFilterButton(false);
+  }
+
+  /** Updates the nearest neighbors list in the inspector. */
+  private updateInspectorPane(
+      indices: number[], neighbors: knn.NearestEntry[]) {
+    this.neighborsOfFirstPoint = neighbors;
+    this.selectedPointIndices = indices;
+
+    this.updateFilterButtons(indices.length + neighbors.length);
+    this.updateNeighborsList(neighbors);
+    if (neighbors.length === 0) {
+      this.updateSearchResults(indices);
+    } else {
+      this.updateSearchResults([]);
+    }
+  }
+
+  private enableResetFilterButton(enabled: boolean) {
+    this.resetFilterButton.disabled = !enabled;
+  }
+
+  private updateFilterButtons(numPoints: number) {
+    if (numPoints > 1) {
+      this.setFilterButton.innerText = `Isolate ${numPoints} points`;
+      this.setFilterButton.disabled = null;
+      this.clearSelectionButton.disabled = null;
+    } else {
+      this.setFilterButton.disabled = true;
+      this.clearSelectionButton.disabled = true;
+    }
   }
 
   private updateSearchResults(indices: number[]) {
@@ -237,183 +356,70 @@ export class InspectorPanel extends PolymerClass {
     }
   }
 
-  private updateFilterButtons(numPoints: number) {
-    if (numPoints > 1) {
-      this.setFilterButton.innerText = `Isolate ${numPoints} points`;
-      this.setFilterButton.disabled = null;
-      this.clearSelectionButton.disabled = null;
-    } else {
-      this.setFilterButton.disabled = true;
-      this.clearSelectionButton.disabled = true;
+  private updateNeighborsDisplay() {
+    if (this.projectorEventContext && this.projector
+        && this.projector.dataSet) {
+      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
+
+      if (this.selectedPointIndices.length == 1) {
+        this.projectorEventContext.notifySelectionChanged(
+          this.selectedPointIndices);
+        const neighbors = this.projector.dataSet.findNeighbors(
+            this.selectedPointIndices[0], this.numNN,
+            this.distSpace, this.distFunc, this.knnFunc);
+        this.updateNeighborsList(neighbors);
+      }
     }
   }
 
-  private setupUI(projector: Projector) {
-    this.distFunc = vector.cosDist;
-    this.distSpace = d => d.vector;
-    this.distGeo = false;
-    const eucDist =
-        this.querySelector('.distance a.euclidean') as HTMLLinkElement;
-    eucDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(eucDist as HTMLElement, 'selected', true);
+  private distanceChanged() {
+    switch (this.selectedDistance) {
+      case 'cosine':
+        this.distFunc = vector.cosDist;
+        this.distSpace = d => d.vector;
+        break;
 
-      this.distFunc = vector.dist;
-      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
-      this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
+      case 'euclidean':
+        this.distFunc = vector.dist;
+        this.distSpace = d => d.vector;
+        break;
 
-    const cosDist = this.querySelector('.distance a.cosine') as HTMLLinkElement;
-    cosDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(cosDist, 'selected', true);
-
-      this.distFunc = vector.cosDist;
-      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
-      this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
-
-    const geoDist = this.querySelector('.distance a.geodesic') as HTMLLinkElement;
-    geoDist.onclick = () => {
-      if (this.distGeo) {
-        this.distGeo = false;
-        util.classed(geoDist, 'selected-geo', false);
-      }
-      else {
-        this.distGeo = true;
-        util.classed(geoDist, 'selected-geo', true);
-      }
-
-      this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
-
-    const originalSpace = this.querySelector('.distance-space a.original-space') as HTMLLinkElement;
-    originalSpace.onclick = () => {
-      const links = this.querySelectorAll('.distance-space a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(originalSpace, 'selected', true);
-
-      this.distSpace = d => d.vector;
-      this.projectorEventContext.notifyDistanceSpaceChanged(this.distSpace);
-      this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
-
-    const pcaSpace = this.querySelector('.distance-space a.pca-space') as HTMLLinkElement;
-    pcaSpace.onclick = () => {
-      const links = this.querySelectorAll('.distance-space a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(pcaSpace, 'selected', true);
-
-      this.distSpace = d => new Float32Array(
-        ('pca-2' in d.projections)?
-        [d.projections['pca-0'], d.projections['pca-1'], d.projections['pca-2']]:
-        ('pca-1' in d.projections)?
-        [d.projections['pca-0'], d.projections['pca-1']]:
-        d.vector);
-      this.projectorEventContext.notifyDistanceSpaceChanged(this.distSpace);
-      this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
-
-    const tsneSpace = this.querySelector('.distance-space a.tsne-space') as HTMLLinkElement;
-    tsneSpace.onclick = () => {
-      if (projector.dataSet.hasTSNERun) {
-        const links = this.querySelectorAll('.distance-space a');
-        for (let i = 0; i < links.length; i++) {
-          util.classed(links[i] as HTMLElement, 'selected', false);
-        }
-        util.classed(tsneSpace, 'selected', true);
-
+      case 'pca':
+        this.distFunc = vector.dist;
         this.distSpace = d => new Float32Array(
-          ('tsne-2' in d.projections)?
-          [d.projections['tsne-0'], d.projections['tsne-1'], d.projections['tsne-2']]:
-          ('tsne-1' in d.projections)?
-          [d.projections['tsne-0'], d.projections['tsne-1']]:
+          ('pca-2' in d.projections)?
+          [d.projections['pca-0'], d.projections['pca-1'],
+              d.projections['pca-2']]:
+          ('pca-1' in d.projections)?
+          [d.projections['pca-0'], d.projections['pca-1']]:
           d.vector);
-        this.projectorEventContext.notifyDistanceSpaceChanged(this.distSpace);
-        this.projectorEventContext.notifySelectionChanged(this.selectedPointIndices);
-        const neighbors = projector.dataSet.findNeighbors(
-            this.selectedPointIndices[0], this.distFunc, this.distGeo, this.distSpace, this.numNN);
-        this.updateNeighborsList(neighbors);
-      }
-    };
+        break;
 
-    // Called whenever the search text input changes.
-    const updateInput = (value: string, inRegexMode: boolean) => {
-      if (value == null || value.trim() === '') {
-        this.searchBox.message = '';
-        this.projectorEventContext.notifySelectionChanged([]);
-        return;
-      }
-      const indices = projector.dataSet.query(
-          value, inRegexMode, this.selectedMetadataField);
-      if (indices.length === 0) {
-        this.searchBox.message = '0 matches.';
-      } else {
-        this.searchBox.message = `${indices.length} matches.`;
-      }
-      this.projectorEventContext.notifySelectionChanged(indices);
-    };
-    this.searchBox.registerInputChangedListener((value, inRegexMode) => {
-      updateInput(value, inRegexMode);
-    });
+      case 'tsne':
+        if (this.projector.dataSet.hasTSNERun) {
+          this.distFunc = vector.dist;
+          this.distSpace = d => new Float32Array(
+            ('tsne-2' in d.projections)?
+            [d.projections['tsne-0'], d.projections['tsne-1'],
+                d.projections['tsne-2']]:
+            ('tsne-1' in d.projections)?
+            [d.projections['tsne-0'], d.projections['tsne-1']]:
+            d.vector);
+        }
+    }
+    this.updateNeighborsDisplay();
+  }
 
-    // Nearest neighbors controls.
-    const numNNInput = this.$$('#nn-slider') as HTMLInputElement;
-    const updateNumNN = () => {
-      this.numNN = +numNNInput.value;
-      (this.querySelector('.num-nn .nn-count') as HTMLSpanElement).innerText =
-          '' + this.numNN;
-      if (this.selectedPointIndices != null) {
-        this.projectorEventContext.notifySelectionChanged(
-            [this.selectedPointIndices[0]]);
-      }
-    };
-    numNNInput.addEventListener('change', updateNumNN);
-    updateNumNN();
+  private neighborhoodChanged() {
+    switch (this.selectedNeighborhood) {
+      case 'knn':
+        this.knnFunc = knn.findKNNofPoint;
+        break;
 
-    // Filtering dataset.
-    this.setFilterButton.onclick = () => {
-      const indices = this.selectedPointIndices.concat(
-          this.neighborsOfFirstPoint.map(n => n.index));
-      projector.filterDataset(indices);
-      this.enableResetFilterButton(true);
-      this.updateFilterButtons(0);
-    };
-
-    this.resetFilterButton.onclick = () => {
-      projector.resetFilterDataset();
-      this.enableResetFilterButton(false);
-    };
-
-    this.clearSelectionButton.onclick = () => {
-      projector.adjustSelectionAndHover([]);
-    };
-    this.enableResetFilterButton(false);
+      case 'geodesic':
+        this.knnFunc = knn.findGeodesicKNNofPoint;
+    }
+    this.updateNeighborsDisplay();
   }
 }
 

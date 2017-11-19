@@ -65,12 +65,10 @@ limitations under the License.
             </span>
           </template>
           <template is="dom-if" if="[[_activeDashboardsLoaded]]">
-            <paper-tabs
-              selected="{{_selectedDashboard}}"
-              attr-for-selected="data-dashboard"
-              noink
-              id="tabs"
-            >
+            <paper-tabs noink
+                        scrollable
+                        selected="{{_selectedDashboard}}"
+                        attr-for-selected="data-dashboard">
               <template
                 is="dom-repeat"
                 items="[[_dashboardData]]"
@@ -79,7 +77,8 @@ limitations under the License.
                   is="dom-if"
                   if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboardDatum)]]"
                 >
-                  <paper-tab data-dashboard$="[[dashboardDatum.plugin]]">
+                  <paper-tab data-dashboard$="[[dashboardDatum.plugin]]"
+                             title="[[dashboardDatum.tabName]]">
                     [[dashboardDatum.tabName]]
                   </paper-tab>
                 </template>
@@ -138,7 +137,7 @@ limitations under the License.
       </paper-toolbar>
 
       <div id="content" class="fit">
-        <content id="injected-overview"></content>
+        <slot id="injected-overview"></slot>
         <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
           <div class="warning-message">
             <h3>Failed to load the set of active dashboards.</h3>
@@ -214,7 +213,7 @@ limitations under the License.
       }
 
       #toolbar {
-        background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        background-color: var(--tb-toolbar-background-color, var(--tb-orange-strong));
         -webkit-font-smoothing: antialiased;
       }
 
@@ -224,7 +223,6 @@ limitations under the License.
         text-rendering: optimizeLegibility;
         letter-spacing: -0.025em;
         font-weight: 500;
-        flex-grow: 1;
         display: var(--tb-toolbar-title-display, block);
       }
 
@@ -235,14 +233,15 @@ limitations under the License.
         font-weight: 500;
       }
 
-      #tabs {
-        flex-grow: 1;
-        text-transform: uppercase;
-        height: 100%;
-      }
-
       paper-tabs {
+        flex-grow: 1;
+        width: 100%;
+        height: 100%;
         --paper-tabs-selection-bar-color: white;
+        --paper-tabs-content: {
+          -webkit-font-smoothing: antialiased;
+          text-transform: uppercase;
+        }
       }
 
       paper-dropdown-menu {
@@ -267,7 +266,7 @@ limitations under the License.
       }
 
       #inactive-dashboards-menu {
-        --paper-menu-background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        --paper-menu-background-color: var(--tb-toolbar-background-color, var(--tb-orange-strong));
         --paper-menu-color: white;
         --paper-menu: {
           text-transform: uppercase;
@@ -275,7 +274,6 @@ limitations under the License.
       }
 
       .global-actions {
-        flex-grow: 1;
         display: inline-flex; /* Ensure that icons stay aligned */
         justify-content: flex-end;
         text-align: right;

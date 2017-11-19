@@ -78,6 +78,7 @@ export class Projector extends ProjectorPolymer implements
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
   private hoverPointIndex: number;
+  private editMode: boolean;
 
   private dataProvider: DataProvider;
   private inspectorPanel: InspectorPanel;
@@ -121,6 +122,7 @@ export class Projector extends ProjectorPolymer implements
     this.distanceSpaceChangedListeners = [];
     this.selectedPointIndices = [];
     this.neighborsOfFirstPoint = [];
+    this.editMode = false;
 
     this.dataPanel = this.$['data-panel'] as DataPanel;
     this.inspectorPanel = this.$['inspector-panel'] as InspectorPanel;
@@ -243,20 +245,82 @@ export class Projector extends ProjectorPolymer implements
    * Used by clients to indicate that a selection has occurred.
    */
   notifySelectionChanged(newSelectedPointIndices: number[]) {
-    this.selectedPointIndices = newSelectedPointIndices;
     let neighbors: knn.NearestEntry[] = [];
 
-    if (newSelectedPointIndices.length === 1) {
-      neighbors = this.dataSet.findNeighbors(
-          newSelectedPointIndices[0], this.inspectorPanel.distFunc,
-          this.inspectorPanel.distGeo, this.inspectorPanel.distSpace, 
-          this.inspectorPanel.numNN);
-      this.metadataCard.updateMetadata(
-          this.dataSet.points[newSelectedPointIndices[0]].metadata);
-    } else {
-      this.metadataCard.updateMetadata(null);
-    }
+    // point selection toggle in existing selection && selection required
+    if (this.editMode && newSelectedPointIndices.length > 0) {
+      // main point with neighbors
+      if (this.selectedPointIndices.length === 1) {
+        let main_point_vector = this.dataSet.points[
+            this.selectedPointIndices[0]].vector;
+        // deselect
+        neighbors = this.neighborsOfFirstPoint.filter(n =>
+            newSelectedPointIndices.filter(p => p == n.index).length == 0);
+        // add additional neighbors
+        newSelectedPointIndices.forEach(p => {
+          // not main point
+          if (p != this.selectedPointIndices[0]
+              && this.neighborsOfFirstPoint.filter(n => 
+                  n.index == p).length == 0) {
+            let p_vector = this.dataSet.points[p].vector;
+            let n_dist =
+                this.inspectorPanel.distFunc(main_point_vector, p_vector);
+            // insertion position into dist ordered neighbors
+            let pos = 0;
 
+            // move up sorted neighbors list according to dist
+            while (pos < neighbors.length && neighbors[pos].dist < n_dist) {
+              pos = pos + 1;
+            }
+            // add new neighbor
+            neighbors.splice(pos, 0, {index: p, dist: n_dist});
+          }
+        });
+      }
+      // multiple selections
+      else {
+        // deselect
+        let updatedSelectedPointIndices = this.selectedPointIndices.filter(n =>
+            newSelectedPointIndices.filter(p => p == n).length == 0);
+        // add additional selections
+        newSelectedPointIndices.forEach(p => {
+          if (this.selectedPointIndices.filter(s => s == p).length == 0) {
+            // unselected
+            updatedSelectedPointIndices.push(p);
+          }
+        });
+        // update selected points
+        this.selectedPointIndices = updatedSelectedPointIndices;
+        // at least one point selected
+        if (this.selectedPointIndices.length > 0) {
+          // show metadata for first point
+          this.metadataCard.updateMetadata(
+              this.dataSet.points[this.selectedPointIndices[0]].metadata);
+        }
+        // no points selected
+        else {
+          // clear metadata
+          this.metadataCard.updateMetadata(null);
+        }
+      }
+    }
+    // normal selection mode
+    else {
+      this.selectedPointIndices = newSelectedPointIndices;
+
+      if (newSelectedPointIndices.length === 1) {
+        neighbors = this.dataSet.findNeighbors(
+            newSelectedPointIndices[0], this.inspectorPanel.numNN,
+            this.inspectorPanel.distSpace, this.inspectorPanel.distFunc,
+            this.inspectorPanel.knnFunc);
+        this.metadataCard.updateMetadata(
+            this.dataSet.points[newSelectedPointIndices[0]].metadata);
+      }
+      else {
+        this.metadataCard.updateMetadata(null);
+      }
+    }
+    
     this.selectionChangedListeners.forEach(
         l => l(this.selectedPointIndices, neighbors));
   }
@@ -429,6 +493,11 @@ export class Projector extends ProjectorPolymer implements
           (nightModeButton as any).active);
     });
 
+    let editModeButton = this.querySelector('#editMode');
+      editModeButton.addEventListener('click', (event) => {
+        this.editMode = (editModeButton as any).active;
+    });
+
     const labels3DModeButton = this.get3DLabelModeButton();
     labels3DModeButton.addEventListener('click', () => {
       this.projectorScatterPlotAdapter.set3DLabelMode(this.get3DLabelMode());
@@ -453,6 +522,9 @@ export class Projector extends ProjectorPolymer implements
 
     this.registerHoverListener(
         (hoverIndex: number) => this.onHover(hoverIndex));
+
+    this.registerProjectionChangedListener(
+        () => this.onProjectionChanged());
 
     this.registerSelectionChangedListener(
         (selectedPointIndices: number[],
@@ -489,6 +561,10 @@ export class Projector extends ProjectorPolymer implements
         this.selectedPointIndices.length + neighborsOfFirstPoint.length;
     this.statusBar.innerText = `Selected ${totalNumPoints} points`;
     this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';
+  }
+
+  onProjectionChanged(projection?: Projection) {
+    this.inspectorPanel.projectionChanged();
   }
 
   setProjection(projection: Projection) {

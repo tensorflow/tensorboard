@@ -162,13 +162,13 @@ limitations under the License.
 
             <pre>
 from beholder.beholder import Beholder
-visualizer = Beholder(session=sess,
-                      logdir=LOG_DIRECTORY)</pre>
+visualizer = Beholder(logdir=LOG_DIRECTORY)</pre>
 
             <p>And call the update function after every train step (both arguments are optional):</p>
 
             <pre>
 visualizer.update(
+  session=sess,
   arrays=list_of_np_arrays,
   frame=two_dimensional_np_array,
 )</pre>

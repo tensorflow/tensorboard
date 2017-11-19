@@ -375,7 +375,7 @@ public final class Vulcanize {
     // Nice options.
     options.setColorizeErrorOutput(true);
     options.setContinueAfterErrors(true);
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2016);
+    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2017);
     options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
     options.setGenerateExports(true);
     options.setStrictModeInput(false);

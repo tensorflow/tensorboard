@@ -67,7 +67,7 @@ limitations under the License.
         >Next page</paper-button>
       </div>
     </template>
-    <div><content></content></div>
+    <div><slot></slot></div>
     <template is="dom-if" if="[[_multiplePagesExist]]">
       <div id="controls-container">
         <div style="display: inline-block; padding: 0 5px">
