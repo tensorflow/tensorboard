@@ -24,10 +24,15 @@ export let DataPanelPolymer = PolymerElement({
       notify: true,
       observer: '_selectedColorOptionNameChanged'
     },
-    selectedLabelOption:
-        {type: String, notify: true, observer: '_selectedLabelOptionChanged'},
     normalizeData: Boolean,
-    showForceCategoricalColorsCheckbox: Boolean
+    showForceCategoricalColorsCheckbox: Boolean,
+    metadataEditorInput: {type: String},
+    metadataEditorInputLabel: {type: String, value: 'Tag selection as'},
+    metadataEditorInputChange: {type: Object},
+    metadataEditorColumn: {type: String},
+    metadataEditorColumnChange: {type: Object},
+    metadataEditorButtonClicked: {type: Object},
+    metadataEditorButtonDisabled: {type: Boolean}
   },
   observers: [
     '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -35,7 +40,6 @@ export let DataPanelPolymer = PolymerElement({
 });
 
 export class DataPanel extends DataPanelPolymer {
-  selectedLabelOption: string;
   selectedColorOptionName: string;
   showForceCategoricalColorsCheckbox: boolean;
 
@@ -44,6 +48,12 @@ export class DataPanel extends DataPanelPolymer {
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
 
+  private metadataEditorInput: string;
+  private metadataEditorInputLabel: string;
+  private metadataEditorButtonDisabled: boolean;
+
+  private selectedPointIndices: number[];
+  private neighborsOfFirstPoint: knn.NearestEntry[];
   private selectedTensor: string;
   private selectedRun: string;
   private dataProvider: DataProvider;
@@ -120,7 +130,33 @@ export class DataPanel extends DataPanelPolymer {
     this.metadataFile = metadataFile;
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-    this.selectedColorOptionName = this.colorOptions[0].name;
+    
+    if (this.selectedColorOptionName == null || this.colorOptions.filter(c =>
+        c.name == this.selectedColorOptionName).length == 0) {
+      this.selectedColorOptionName = this.colorOptions[0].name;
+    }
+
+    let labelIndex = -1;
+    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+      if (!stats.isNumeric && labelIndex === -1) {
+        labelIndex = i;
+      }
+      return stats.name;
+    });
+
+    if (this.metadataEditorColumn == null || this.metadataFields.filter(name =>
+        name == this.metadataEditorColumn).length == 0) {
+      // Make the default label the first non-numeric column.
+      this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
+    }
+  }
+
+  onProjectorSelectionChanged(
+      selectedPointIndices: number[],
+      neighborsOfFirstPoint: knn.NearestEntry[]) {
+    this.selectedPointIndices = selectedPointIndices;
+    this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+    this.metadataEditorInputChange();
   }
 
   private addWordBreaks(longString: string): string {
@@ -145,7 +181,11 @@ export class DataPanel extends DataPanelPolymer {
       }
       return stats.name;
     });
-    this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+
+    if (this.metadataEditorColumn == null || this.labelOptions.filter(name =>
+        name == this.metadataEditorColumn).length == 0) {
+      this.metadataEditorColumn = this.labelOptions[Math.max(0, labelIndex)];
+    }
 
     // Color by options.
     const standardColorOption: ColorOption[] = [
@@ -205,6 +245,68 @@ export class DataPanel extends DataPanelPolymer {
       standardColorOption.push({name: 'Metadata', isSeparator: true});
     }
     this.colorOptions = standardColorOption.concat(metadataColorOption);
+  }
+
+  private metadataEditorInputChange() {
+    let value = this.metadataEditorInput;
+    let selectionSize = this.selectedPointIndices.length + 
+        this.neighborsOfFirstPoint.length;
+    
+    if (selectionSize > 0) {
+      if (value != null && value.trim() != '') {
+        let numMatches = this.projector.dataSet.points.filter(p =>
+            p.metadata[this.metadataEditorColumn].toString() == value).length;
+
+        if (numMatches === 0) {
+          this.metadataEditorInputLabel = `Tag ${selectionSize} with new label`;
+        }
+        else {
+          this.metadataEditorInputLabel = 
+              `Tag ${selectionSize} points as`;
+        }
+        this.metadataEditorButtonDisabled = false;
+      }
+      else {
+        this.metadataEditorInputLabel = 'Tag selection as';
+        this.metadataEditorButtonDisabled = true;
+      }
+    }
+    else {
+      this.metadataEditorButtonDisabled = true;
+
+      if (value != null && value.trim() != '') {
+        this.metadataEditorInputLabel = 'Select points to tag';
+      }
+      else {
+        this.metadataEditorInputLabel = 'Tag selection as';
+      }
+    }
+  }
+
+  private metadataEditorColumnChange() {
+    this.projector.setSelectedLabelOption(this.metadataEditorColumn);
+    this.metadataEditorInputChange();
+  }
+
+  private metadataEditorButtonClicked() {
+    let selectionSize = this.selectedPointIndices.length + 
+        this.neighborsOfFirstPoint.length;
+    this.metadataEditorButtonDisabled = true;
+    this.metadataEditorInputLabel =
+        `${selectionSize} labeled as '${this.metadataEditorInput}'`;
+
+    this.selectedPointIndices.forEach(i =>
+        this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
+        this.metadataEditorInput);
+    
+    this.neighborsOfFirstPoint.forEach(p =>
+        this.projector.dataSet.points[p.index]
+            .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
+    
+    this.spriteAndMetadata.stats = analyzeMetadata(
+        this.spriteAndMetadata.stats.map(s => s.name),
+        this.projector.dataSet.points.map(p => p.metadata));
+    this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
   }
 
   setNormalizeData(normalizeData: boolean) {
@@ -286,10 +388,6 @@ export class DataPanel extends DataPanelPolymer {
         this.selectedTensor = defaultTensor;
       }
     });
-  }
-
-  _selectedLabelOptionChanged() {
-    this.projector.setSelectedLabelOption(this.selectedLabelOption);
   }
 
   _selectedColorOptionNameChanged() {
@@ -492,8 +590,8 @@ export class DataPanel extends DataPanelPolymer {
                                         this.runNames.length + ' runs';
   }
 
-  _hasChoices(choices: any[]): boolean {
-    return choices.length > 1;
+  _hasChoice(choices: any[]): boolean {
+    return choices.length > 0;
   }
 }
 

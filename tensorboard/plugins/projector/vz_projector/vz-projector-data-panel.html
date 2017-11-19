@@ -79,6 +79,13 @@ paper-item {
 
 paper-dropdown-menu {
   width: 100%;
+  --paper-input-container-input: {
+    font-size: 15px;
+  };
+  --paper-input-container-label-floating: {
+    white-space: normal;
+    line-height: normal;
+  };
 }
 
 paper-dropdown-menu paper-item {
@@ -114,6 +121,34 @@ paper-dropdown-menu paper-item {
 
 #projector-share-button-container {
   margin: 10px 0;
+}
+
+.metadata-editor {
+  display: flex;
+}
+
+.metadata-editor paper-input {
+  width: calc(100%-150px);
+  --paper-input-container-label-floating: {
+    white-space: normal;
+    line-height: normal;
+  };
+}
+
+.metadata-editor paper-button {
+  margin-left: 10px;
+  margin-right: 0px;
+  margin-top: 20px;
+  padding-left: 8px;
+  padding-right: 8px;
+  min-width: 35px;
+  height: 36px;
+  vertical-align: bottom;
+}
+
+.metadata-editor paper-dropdown-menu {
+  margin-right: 10px;
+  width: 120px;
 }
 
 .config-checkbox {
@@ -190,7 +225,7 @@ paper-dropdown-menu paper-item {
 }
 
 .colorby-container {
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 </style>
 <div class="title">DATA</div>
@@ -223,19 +258,6 @@ paper-dropdown-menu paper-item {
       </paper-listbox>
     </paper-dropdown-menu>
   </template>
-  <!-- Label by -->
-  <template is="dom-if" if="[[_hasChoices(labelOptions)]]">
-    <paper-dropdown-menu no-animations label="Label by">
-      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedLabelOption}}" slot="dropdown-content">
-        <template is="dom-repeat" items="[[labelOptions]]">
-          <paper-item value="[[item]]" label="[[item]]">
-            [[item]]
-          </paper-item>
-        </template>
-      </paper-listbox>
-    </paper-dropdown-menu>
-  </template>
-
   <!-- Color by -->
   <div hidden$="[[!_hasChoices(colorOptions)]]" class="colorby-container">
     <paper-dropdown-menu id="colorby" no-animations label="Color by">
@@ -262,6 +284,25 @@ paper-dropdown-menu paper-item {
       <vz-projector-legend render-info="[[colorLegendRenderInfo]]"></vz-projector-legend>
     </template>
   </div>
+  <template is="dom-if" if="[[_hasChoice(labelOptions)]]">
+    <div class="metadata-editor">
+      <paper-dropdown-menu no-animations label="Label by">
+        <paper-listbox attr-for-selected="value" class="dropdown-content" slot="dropdown-content"
+            on-selected-item-changed="metadataEditorColumnChange"
+            selected="{{metadataEditorColumn}}" >
+          <template is="dom-repeat" items="[[metadataFields]]">
+            <paper-item value="[[item]]" label="[[item]]">
+              [[item]]
+            </paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <paper-input value="{{metadataEditorInput}}" label="{{metadataEditorInputLabel}}"
+      on-input="metadataEditorInputChange"></paper-input>
+      <paper-button class="ink-button" on-click="metadataEditorButtonClicked"
+          disabled="[[metadataEditorButtonDisabled]]">Label</paper-button>
+    </div>
+  </template>
   <paper-checkbox id="normalize-data-checkbox" checked="{{normalizeData}}">
     Sphereize data
     <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
