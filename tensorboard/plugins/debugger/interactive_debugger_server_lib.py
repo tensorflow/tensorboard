@@ -44,7 +44,7 @@ RunKey = collections.namedtuple(
 def _extract_device_name_from_event(event):
   """Extract device name from a tf.Event proto carrying tensor value."""
   plugin_data_content = json.loads(
-      event.summary.value[0].metadata.plugin_data.content)
+      tf.compat.as_str(event.summary.value[0].metadata.plugin_data.content))
   return plugin_data_content['device']
 
 
@@ -140,7 +140,7 @@ class RunStates(object):
                   self._run_key_to_original_graphs)
     if not run_key in graph_dict:
       graph_dict[run_key] = dict()  # Mapping device_name to GraphDef.
-    graph_dict[run_key][device_name] = graph_def
+    graph_dict[run_key][tf.compat.as_str(device_name)] = graph_def
 
   def get_graphs(self, run_key, debug=False):
     """Get the runtime graphs associated with a run key.
@@ -188,6 +188,7 @@ class RunStates(object):
       run_key: The run key to which the node belongs.
       graph_def: GraphDef to which the node belongs.
     """
+    device_name = tf.compat.as_str(device_name)
     if (run_key in self._maybe_expanded_node_names and
         device_name in self._maybe_expanded_node_names[run_key] and
         node_name in self._maybe_expanded_node_names[run_key][device_name]):

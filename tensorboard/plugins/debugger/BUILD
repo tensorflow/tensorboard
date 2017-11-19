@@ -33,6 +33,7 @@ py_test(
     deps = [
         ":debug_graphs_helper",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_python_pypi_portpicker",
     ],
 )
 
@@ -87,6 +88,9 @@ py_library(
     name = "comm_channel",
     srcs = ["comm_channel.py"],
     srcs_version = "PY2AND3",
+    deps = [
+        "@org_pythonhosted_six",
+    ],
 )
 
 py_test(

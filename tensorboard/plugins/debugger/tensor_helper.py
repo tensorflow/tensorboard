@@ -27,9 +27,7 @@ from tensorboard import util
 
 
 class TimeIndexingError(Exception):
-
-  def __init__(self, msg):
-    super(TimeIndexingError, self).__init__(msg)
+  pass
 
 
 def numel(shape):

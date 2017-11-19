@@ -168,7 +168,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
                                                                debug=True)
       if mode == 'retrieve_device_names':
         return http_util.Respond(request, {
-            'device_names': debug_graph_defs.keys(),
+            'device_names': list(debug_graph_defs.keys()),
         }, 'application/json')
 
       gated = {}
@@ -181,7 +181,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, {
           'gated_grpc_tensors': gated,
           'breakpoints': self._debugger_data_server.breakpoints,
-          'device_names': debug_graph_defs.keys(),
+          'device_names': list(debug_graph_defs.keys()),
       }, 'application/json')
     elif mode == 'breakpoints':
       # Retrieve currently enabled breakpoints.
