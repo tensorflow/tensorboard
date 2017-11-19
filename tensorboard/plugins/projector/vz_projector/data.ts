@@ -15,6 +15,7 @@ limitations under the License.
 namespace vz_projector {
 
 export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
+export type DistanceSpace = (_: DataPoint) => Float32Array;
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
@@ -316,6 +317,7 @@ export class DataSet {
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
     let step = () => {
       if (this.tSNEShouldStop) {
+        this.projections['tsne'] = false;
         stepCallback(null);
         this.tsne = null;
         this.hasTSNERun = false;
@@ -335,6 +337,7 @@ export class DataSet {
             dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
           }
         });
+        this.projections['tsne'] = true;
         this.tSNEIteration++;
         stepCallback(this.tSNEIteration);
       }
@@ -411,13 +414,14 @@ export class DataSet {
 
   /**
    * Finds the nearest neighbors of the query point using a
-   * user-specified distance metric.
+   * user-specified distance space, distance metric and neighborhood function.
    */
-  findNeighbors(pointIndex: number, distFunc: DistanceFunction, numNN: number):
+  findNeighbors(pointIndex: number, numNN: number, distSpace: DistanceSpace,
+      distFunc: DistanceFunction, knnFunc: knn.KNNFunction<DataPoint>):
       knn.NearestEntry[] {
     // Find the nearest neighbors of a particular point.
-    let neighbors = knn.findKNNofPoint(
-        this.points, pointIndex, numNN, (d => d.vector), distFunc);
+    let neighbors = knnFunc(
+        this.points, pointIndex, numNN, distSpace, distFunc);
     // TODO(@dsmilkov): Figure out why we slice.
     let result = neighbors.slice(0, numNN);
     return result;
