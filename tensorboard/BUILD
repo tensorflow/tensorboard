@@ -86,6 +86,7 @@ ts_web_library(
         "//tensorboard/components:trace_viewer_index.html",
     ],
     path = "/",
+    deps = ["@com_google_fonts_roboto"],
 )
 
 py_library(
