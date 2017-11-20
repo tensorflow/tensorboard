@@ -37,7 +37,7 @@ limitations under the License.
 <style include="vz-projector-styles"></style>
 <style>
 .container {
-  padding: 10px 20px 20px 20px;
+  padding: 5px 20px 20px 20px;
 }
 
 input[type=file] {
@@ -77,8 +77,22 @@ paper-item {
   font-size: 12px;
 }
 
+paper-input {
+  font-size: 15px;
+  --paper-input-container: {
+    padding: 5px 0;
+  };
+  --paper-input-container-label-floating: {
+    white-space: normal;
+    line-height: normal;
+  };
+}
+
 paper-dropdown-menu {
   width: 100%;
+  --paper-input-container: {
+    padding: 5px 0;
+  };
   --paper-input-container-input: {
     font-size: 15px;
   };
@@ -123,32 +137,26 @@ paper-dropdown-menu paper-item {
   margin: 10px 0;
 }
 
-.metadata-editor {
+.metadata-editor, .supervise-settings {
   display: flex;
 }
 
-.metadata-editor paper-input {
-  width: calc(100%-150px);
-  --paper-input-container-label-floating: {
-    white-space: normal;
-    line-height: normal;
-  };
+.supervise-settings paper-dropdown-menu {
+  width: 100px;
+  margin-right: 10px;
 }
 
-.metadata-editor paper-button {
-  margin-left: 10px;
-  margin-right: 0px;
-  margin-top: 20px;
-  padding-left: 8px;
-  padding-right: 8px;
-  min-width: 35px;
-  height: 36px;
-  vertical-align: bottom;
+.supervise-settings paper-input {
+  width: calc(100% - 110px);
 }
 
 .metadata-editor paper-dropdown-menu {
+  width: 100px;
   margin-right: 10px;
-  width: 120px;
+}
+
+.metadata-editor paper-input {
+  width: calc(100% - 110px);
 }
 
 .config-checkbox {
@@ -175,6 +183,20 @@ paper-dropdown-menu paper-item {
 
 .delimiter {
   color: #B71C1C;
+}
+
+.button-container {
+  flex: 1 100%;
+  margin-right: 5px;
+}
+
+.button-container paper-button {
+  min-width: 50px;
+  width: 100%;
+}
+
+#label-button {
+  margin-right: 0px;
 }
 
 .upload-step {
@@ -222,10 +244,7 @@ paper-dropdown-menu paper-item {
 
 #demo-data-buttons-container {
   display: none;
-}
-
-.colorby-container {
-  margin-bottom: 0px;
+  margin-top: 10px;
 }
 </style>
 <div class="title">DATA</div>
@@ -285,6 +304,22 @@ paper-dropdown-menu paper-item {
     </template>
   </div>
   <template is="dom-if" if="[[_hasChoice(labelOptions)]]">
+    <div hidden$="[[!showSuperviseSettings]]" class="supervise-settings">
+      <paper-dropdown-menu no-animations label="Supervise with">
+        <paper-listbox attr-for-selected="value" class="dropdown-content"
+            on-selected-item-changed="superviseColumnChanged"
+            selected="{{superviseColumn}}" slot="dropdown-content">
+          <template is="dom-repeat" items="[[metadataFields]]">
+            <paper-item value="[[item]]" label="[[item]]">
+              [[item]]
+            </paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <paper-input value="{{superviseInput}}" label="{{superviseInputLabel}}"
+          on-change="superviseInputChange" on-input="superviseInputTyping">
+      </paper-input>
+    </div>
     <div class="metadata-editor">
       <paper-dropdown-menu no-animations label="Label by">
         <paper-listbox attr-for-selected="value" class="dropdown-content" slot="dropdown-content"
@@ -299,32 +334,29 @@ paper-dropdown-menu paper-item {
       </paper-dropdown-menu>
       <paper-input value="{{metadataEditorInput}}" label="{{metadataEditorInputLabel}}"
       on-input="metadataEditorInputChange"></paper-input>
-      <paper-button class="ink-button" on-click="metadataEditorButtonClicked"
-          disabled="[[metadataEditorButtonDisabled]]">Label</paper-button>
     </div>
   </template>
-  <paper-checkbox id="normalize-data-checkbox" checked="{{normalizeData}}">
-    Sphereize data
-    <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-    <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
-      The data is normalized by shifting each point by the centroid and making
-      it unit norm.
-    </paper-tooltip>
-  </paper-checkbox>
-  <p id="demo-data-buttons-container">
-    <span>
+  <div id="demo-data-buttons-container">
+    <span class="button-container">
       <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
         Load data from your computer
       </paper-tooltip>
-      <paper-button id="upload" class="ink-button" onclick="dataDialog.open()">Load data</paper-button>
+      <paper-button id="upload" class="ink-button" onclick="dataDialog.open()">Load</paper-button>
     </span>
-    <span id="publish-container">
+    <span id="publish-container" class="button-container">
       <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
         Publish your embedding visualization and data
       </paper-tooltip>
       <paper-button id="host-embedding" class="ink-button" onclick="projectorConfigDialog.open()">Publish</paper-button>
     </span>
-  </p>
+    <span id="label-button" class="button-container">
+      <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
+        Label selected metadata
+      </paper-tooltip>
+      <paper-button class="ink-button" on-click="metadataEditorButtonClicked"
+          disabled="[[metadataEditorButtonDisabled]]">Label</paper-button>
+    </span>
+  </div>
   <div>
     <paper-dialog id="dataDialog" with-backdrop>
       <h2>Load data from your computer</h2>
@@ -424,6 +456,14 @@ paper-dropdown-menu paper-item {
       <div class="dismiss-dialog-note">Click outside to dismiss.</div>
     </paper-dialog>
   </div>
+  <paper-checkbox id="normalize-data-checkbox" checked="{{normalizeData}}">
+    Sphereize data
+    <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+    <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
+      The data is normalized by shifting each point by the centroid and making
+      it unit norm.
+    </paper-tooltip>
+  </paper-checkbox>
   <div class="dirs">
     <table>
       <tr>

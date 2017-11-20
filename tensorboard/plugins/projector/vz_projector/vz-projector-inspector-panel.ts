@@ -109,6 +109,9 @@ export class InspectorPanel extends InspectorPanelPolymer {
     this.enableResetFilterButton(false);
   }
 
+  projectionChanged() {
+  }
+
   private updateSearchResults(indices: number[]) {
     const container = this.querySelector('.matches-list') as HTMLDivElement;
     container.style.display = indices.length ? null : 'none';

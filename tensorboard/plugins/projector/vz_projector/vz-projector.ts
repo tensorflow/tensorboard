@@ -486,6 +486,9 @@ export class Projector extends ProjectorPolymer implements
     this.registerHoverListener(
         (hoverIndex: number) => this.onHover(hoverIndex));
 
+    this.registerProjectionChangedListener((projection: Projection) =>
+        this.onProjectionChanged(projection));
+
     this.registerSelectionChangedListener(
         (selectedPointIndices: number[],
          neighborsOfFirstPoint: knn.NearestEntry[]) =>
@@ -523,6 +526,11 @@ export class Projector extends ProjectorPolymer implements
         this.selectedPointIndices.length + neighborsOfFirstPoint.length;
     this.statusBar.innerText = `Selected ${totalNumPoints} points`;
     this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';
+  }
+
+  onProjectionChanged(projection?: Projection) {
+    this.dataPanel.projectionChanged(projection);
+    this.inspectorPanel.projectionChanged();
   }
 
   setProjection(projection: Projection) {
