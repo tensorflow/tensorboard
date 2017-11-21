@@ -349,6 +349,13 @@ paper-dropdown-menu paper-item {
       </paper-tooltip>
       <paper-button id="host-embedding" class="ink-button" onclick="projectorConfigDialog.open()">Publish</paper-button>
     </span>
+    <span class="button-container">
+      <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
+        Download the metadata with applied modifications
+      </paper-tooltip>
+      <paper-button class="ink-button" on-click="downloadMetadataClicked">Download</paper-button>
+      <a href="#" id="downloadMetadataLink" hidden"></a>
+    </span>
     <span id="label-button" class="button-container">
       <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
         Label selected metadata

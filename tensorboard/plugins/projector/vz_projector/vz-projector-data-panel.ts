@@ -33,6 +33,7 @@ export let DataPanelPolymer = PolymerElement({
     metadataEditorColumnChange: {type: Object},
     metadataEditorButtonClicked: {type: Object},
     metadataEditorButtonDisabled: {type: Boolean},
+    downloadMetadataClicked: {type: Boolean},
     superviseInput: {type: String},
     superviseInputTyping: {type: Object},
     superviseInputChange: {type: Object},
@@ -342,6 +343,28 @@ export class DataPanel extends DataPanelPolymer {
         this.spriteAndMetadata.stats.map(s => s.name),
         this.projector.dataSet.points.map(p => p.metadata));
     this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
+  }
+
+  private downloadMetadataClicked() {
+    if (this.projector && this.projector.dataSet
+        && this.projector.dataSet.spriteAndMetadataInfo) {
+      let tsvFile = this.projector.dataSet.spriteAndMetadataInfo.stats.map(s =>
+          s.name).join('\t');
+      
+      this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(p => {
+        let vals = [];
+
+        for (const column in p) {
+          vals.push(p[column]);
+        }
+        tsvFile += '\n' + vals.join('\t');
+      });
+
+      const textBlob = new Blob([tsvFile], {type: 'text/plain'});
+      this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
+      this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
+      this.$.downloadMetadataLink.click();
+    }
   }
 
   private superviseInputTyping() {
