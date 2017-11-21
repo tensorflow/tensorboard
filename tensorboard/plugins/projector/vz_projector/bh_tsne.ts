@@ -316,11 +316,71 @@ export class TSNE {
     this.iter = 0;
   }
 
+  getDim() {
+    return this.dim;
+  }
+
   // return pointer to current solution
   getSolution() { return this.Y; }
 
+  // For each point, randomly offset point within a 5% hypersphere centered
+  // around it, whilst remaining in the assumed t-SNE plot hypersphere
+  perturb() {
+    let N = this.N;
+    let maxArea = 0;
+    let ymean = this.dim === 3 ? [0, 0, 0] : [0, 0];
+
+    // Determine radius of t-SNE hypersphere, assumed zero mean and normalized
+    // dimensions. Here area is proportional to pi*radius^2, to skip root calc.
+    for (let i = 0; i < N; ++i) {
+      let area = 0;
+      
+      for (let d = 0; d < this.dim; ++d) {
+        area += Math.pow(this.Y[i * this.dim + d], 2);
+      }
+
+      if (area > maxArea) {
+        maxArea = area;
+      }
+    }
+
+    let maxRadius = Math.pow(maxArea, 0.5);
+
+    for (let i = 0; i < N; ++i) {
+      let diff = new Array(this.dim);
+
+      // Find a perturbation of point that fits inside t-SNE hypersphere
+      while (true) {
+        let area = 0;
+
+        for (let d = 0; d < this.dim; ++d) {
+          diff[d] = 0.1 * maxRadius * (Math.random() - 0.5);
+          area +=
+              Math.pow(this.Y[i * this.dim + d] + diff[d], 2);
+        }
+
+        if (area < maxArea) {
+          break;
+        }
+      }
+
+      // Apply offset to point
+      for (let d = 0; d < this.dim; ++d) {
+        this.Y[i * this.dim + d] += diff[d];
+        ymean[d] += this.Y[i * this.dim + d];
+      }
+    }
+
+    // reproject Y to be zero mean
+    for (let i = 0; i < N; ++i) {
+      for (let d = 0; d < this.dim; ++d) {
+        this.Y[i * this.dim + d] -= ymean[d] / N;
+      }
+    }
+  }
+
   // perform a single step of optimization to improve the embedding
-  step(perturb: number) {
+  step() {
     this.iter += 1;
     let N = this.N;
 
@@ -349,7 +409,6 @@ export class TSNE {
         // step!
         let i_d = i * this.dim + d;
         this.Y[i_d] += newsid;
-        this.Y[i_d] *= 1.0 + perturb * (Math.random() - 1.0);
         ymean[d] += this.Y[i_d];  // accumulate mean so that we
                                   // can center later
       }
