@@ -68,6 +68,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private perplexity: number;
   /** T-SNE learning rate. */
   private learningRate: number;
+  /** T-SNE perturb interval identifier, required to terminate perturbation. */
+  private perturbInterval: number;
 
   private searchByMetadataOptions: string[];
 
@@ -92,7 +94,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private perturbTsneButton: HTMLButtonElement;
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
-  private perturbFactorInput: HTMLInputElement;
   private zDropdown: HTMLElement;
   private iterationLabel: HTMLElement;
 
@@ -125,8 +126,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         this.querySelector('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
         this.querySelector('#learning-rate-slider') as HTMLInputElement;
-    this.perturbFactorInput =
-        this.querySelector('#perturb-factor-slider') as HTMLInputElement;
     this.iterationLabel = this.querySelector('.run-tsne-iter') as HTMLElement;
   }
 
@@ -154,14 +153,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         .innerText = '' + this.learningRate;
   }
 
-  private updateTSNEPerturbFactorFromUIChange() {
-    if (this.perturbFactorInput && this.dataSet) {
-      this.dataSet.perturbFactor = +this.perturbFactorInput.value;
-    }
-    (this.querySelector('.tsne-perturb-factor span') as HTMLSpanElement)
-        .innerText = '' + this.perturbFactorInput.value;
-  }
-
   private setupUIControls() {
     {
       const self = this;
@@ -186,17 +177,26 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.pauseTsneButton.addEventListener('click', () => {
       if (this.dataSet.tSNEShouldPause) {
         this.dataSet.tSNEShouldPause = false;
-        this.perturbTsneButton.disabled = false;
         this.pauseTsneButton.innerText = 'Pause';
       } else {
         this.dataSet.tSNEShouldPause = true;
-        this.perturbTsneButton.disabled = true;
         this.pauseTsneButton.innerText = 'Resume';
       }
     });
 
-    this.perturbTsneButton.addEventListener('click', () => {
-      this.dataSet.tSNEShouldPerturb = !this.dataSet.tSNEShouldPerturb;
+    this.perturbTsneButton.addEventListener('mousedown', () => {
+      if (this.dataSet && this.projector) {
+        this.dataSet.perturbTsne();
+        this.projector.notifyProjectionPositionsUpdated();
+        this.perturbInterval = setInterval(() => {
+            this.dataSet.perturbTsne();
+            this.projector.notifyProjectionPositionsUpdated();
+        }, 100);
+      }
+    });
+
+    this.perturbTsneButton.addEventListener('mouseup', () => {
+      clearInterval(this.perturbInterval);
     });
 
     this.perplexitySlider.value = this.perplexity.toString();
@@ -207,10 +207,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.learningRateInput.addEventListener(
         'change', () => this.updateTSNELearningRateFromUIChange());
     this.updateTSNELearningRateFromUIChange();
-
-    this.perturbFactorInput.addEventListener(
-        'change', () => this.updateTSNEPerturbFactorFromUIChange());
-    this.updateTSNEPerturbFactorFromUIChange();
 
     this.setupCustomProjectionInputFields();
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
@@ -266,7 +262,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.setZDropdownEnabled(this.pcaIs3d);
     this.updateTSNEPerplexityFromSliderChange();
     this.updateTSNELearningRateFromUIChange();
-    this.updateTSNEPerturbFactorFromUIChange();
+
     if (this.iterationLabel) {
       this.iterationLabel.innerText = bookmark.tSNEIteration.toString();
     }
@@ -456,7 +452,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.runTsneButton.disabled = true;
     this.pauseTsneButton.innerText = 'Pause';
     this.pauseTsneButton.disabled = true;
-    this.perturbTsneButton.disabled = true;
+    this.perturbTsneButton.disabled = false;
 
     this.dataSet.projectTSNE(
         this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2,
@@ -464,7 +460,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
           if (iteration != null) {
             this.runTsneButton.disabled = false;
             this.pauseTsneButton.disabled = false;
-            this.perturbTsneButton.disabled = false;
             this.iterationLabel.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
           }
