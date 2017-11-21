@@ -358,13 +358,23 @@ def raw_data_op(
   Args:
     name: A tag attached to the summary. Used by TensorBoard for organization.
     true_positive_counts: A rank-1 tensor of true positive counts. Must contain
-        `num_thresholds` elements and be castable to float32.
+        `num_thresholds` elements and be castable to float32. Values correspond
+        to thresholds that increase from left to right (from 0 to 1).
     false_positive_counts: A rank-1 tensor of false positive counts. Must
-        contain `num_thresholds` elements and be castable to float32.
+        contain `num_thresholds` elements and be castable to float32. Values
+        correspond to thresholds that increase from left to right (from 0 to 1).
     true_negative_counts: A rank-1 tensor of true negative counts. Must contain
-        `num_thresholds` elements and be castable to float32.
+        `num_thresholds` elements and be castable to float32. Values
+        correspond to thresholds that increase from left to right (from 0 to 1).
     false_negative_counts: A rank-1 tensor of false negative counts. Must
-        contain `num_thresholds` elements and be castable to float32.
+        contain `num_thresholds` elements and be castable to float32. Values
+        correspond to thresholds that increase from left to right (from 0 to 1).
+    precision: A rank-1 tensor of precision values. Must contain
+        `num_thresholds` elements and be castable to float32. Values correspond
+        to thresholds that increase from left to right (from 0 to 1).
+    recall: A rank-1 tensor of recall values. Must contain `num_thresholds`
+        elements and be castable to float32. Values correspond to thresholds
+        that increase from left to right (from 0 to 1).
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
         compute PR metrics for. Should be `>= 2`. This value should be a
         constant integer value, not a Tensor that stores an integer.

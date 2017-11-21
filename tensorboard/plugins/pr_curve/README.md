@@ -252,7 +252,7 @@ The buttons beneath a chart respectively let users
 1. expand a chart to fill the whole width.
 2. reset to the default scale (to undo all zooms).
 
-Hovering over the exclamation mark (!) on the top right reveals the description.
+Hovering over the icon on the top right reveals the description.
 
 ![A single PR Curve Chart](images/single_chart.png)
 
