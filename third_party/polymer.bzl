@@ -35,19 +35,6 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
-      name = "org_polymer_font_roboto",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "fae51429b56a4a4c15f1f0c23b733c7095940cc9c04c275fa7adb3bf055b23b3",
-      urls = [
-          "https://mirror.bazel.build/github.com/PolymerElements/font-roboto/archive/v1.0.1.tar.gz",
-          "https://github.com/PolymerElements/font-roboto/archive/v1.0.1.tar.gz",
-      ],
-      strip_prefix = "font-roboto-1.0.1",
-      path = "/font-roboto",
-      srcs = ["roboto.html"],
-  )
-
-  web_library_external(
       name = "org_polymer_hydrolysis",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "703b50f6b00f9e0546b5a3451da57bb20f77a166e27e4967923b9e835bab9b80",
@@ -229,7 +216,7 @@ def tensorboard_polymer_workspace():
       ],
       deps = [
           "@org_polymer",
-          "@org_polymer_font_roboto",
+          "@com_google_fonts_roboto",
           "@org_polymer_iron_flex_layout",
           "@org_polymer_iron_icons",
           "@org_polymer_marked_element",
@@ -1173,7 +1160,7 @@ def tensorboard_polymer_workspace():
       ],
       deps = [
           "@org_polymer",
-          "@org_polymer_font_roboto",
+          "@com_google_fonts_roboto",
           "@org_polymer_iron_flex_layout",
       ],
   )

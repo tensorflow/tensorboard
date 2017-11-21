@@ -8,10 +8,10 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "vz_line_chart",
     srcs = [
-        "dragZoomInteraction.ts",
-        "vz-chart-helpers.ts",
+        "dragZoomInteraction.js",
+        "vz-chart-helpers.js",
         "vz-line-chart.html",
-        "vz-line-chart.ts",
+        "vz-line-chart.js",
     ],
     path = "/vz-line-chart",
     visibility = ["//visibility:public"],

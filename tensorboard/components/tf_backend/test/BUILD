@@ -11,8 +11,8 @@ ts_web_library(
     name = "test",
     srcs = [
         "tests.html",
-        "backendTests.ts",
-        "requestManagerTests.ts",
+        "backendTests.js",
+        "requestManagerTests.js",
     ] + glob(["data/**"]),
     path = "/tf-backend/test",
     deps = [

@@ -9,7 +9,7 @@ ts_web_library(
     srcs = [
         "tf-custom-scalar-card.html",
         "tf-custom-scalar-dashboard.html",
-        "tf-custom-scalar-helpers.ts",
+        "tf-custom-scalar-helpers.js",
     ],
     path = "/tf-custom-scalar-dashboard",
     visibility = ["//visibility:public"],

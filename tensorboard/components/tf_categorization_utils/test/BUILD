@@ -11,7 +11,7 @@ ts_web_library(
     name = "test",
     srcs = [
         "tests.html",
-        "categorizationUtilsTests.ts",
+        "categorizationUtilsTests.js",
     ],
     path = "/tf-categorization-utils/test",
     deps = [

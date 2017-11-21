@@ -8,7 +8,7 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "tf_tensorboard",
     srcs = [
-        "autoReloadBehavior.ts",
+        "autoReloadBehavior.js",
         "style.html",
         "tf-tensorboard.html",
     ],
@@ -23,7 +23,7 @@ ts_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_storage",
-        "@org_polymer_font_roboto",
+        "@com_google_fonts_roboto",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
         "@org_polymer_paper_checkbox",
@@ -39,7 +39,7 @@ ts_web_library(
     name = "registry",
     srcs = [
         "registry.html",
-        "registry.ts",
+        "registry.js",
     ],
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],

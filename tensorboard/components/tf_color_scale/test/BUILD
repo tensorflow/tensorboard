@@ -10,7 +10,7 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "test",
     srcs = [
-        "colorScaleTests.ts",
+        "colorScaleTests.js",
         "tests.html",
     ],
     path = "/tf-color-scale/test",

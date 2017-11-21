@@ -7,7 +7,7 @@ licenses(["notice"])  # Apache 2.0
 ts_web_library(
     name = "tf_paginated_view",
     srcs = [
-        "paginatedViewStore.ts",
+        "paginatedViewStore.js",
         "tf-paginated-view.html",
         "tf-paginated-view-store.html",
     ],
