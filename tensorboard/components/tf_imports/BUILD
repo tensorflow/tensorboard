@@ -1,11 +1,11 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:hacks.bzl", "tensorboard_typescript_bundle")
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "webcomponentsjs",
     srcs = ["@org_definitelytyped//:webcomponents.js.d.ts"],
     path = "/webcomponentsjs",
@@ -13,7 +13,7 @@ ts_web_library(
     exports = ["@org_polymer_webcomponentsjs"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "polymer",
     srcs = ["@org_definitelytyped//:polymer.d.ts"],
     path = "/polymer",
@@ -22,7 +22,7 @@ ts_web_library(
     deps = [":webcomponentsjs"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "lodash",
     srcs = [
         "lodash.html",
@@ -33,7 +33,7 @@ ts_web_library(
     deps = ["@com_lodash"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "threejs",
     srcs = [
         "threejs.html",
@@ -45,7 +45,7 @@ ts_web_library(
     visibility = ["//visibility:public"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "numericjs",
     srcs = [
         "numericjs.html",
@@ -55,7 +55,7 @@ ts_web_library(
     visibility = ["//visibility:public"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "weblas",
     srcs = [
         "weblas.html",
@@ -65,7 +65,7 @@ ts_web_library(
     visibility = ["//visibility:public"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "graphlib",
     srcs = [
         "graphlib.html",
@@ -76,7 +76,7 @@ ts_web_library(
     deps = [":lodash"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "dagre",
     srcs = [
         "dagre.html",
@@ -90,7 +90,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "d3",
     srcs = [
         "d3.d.ts",
@@ -101,7 +101,7 @@ ts_web_library(
     visibility = ["//visibility:public"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "plottable",
     srcs = [
         "plottable.d.ts",
@@ -115,7 +115,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "plottable_js_css",
     srcs = [
         "@com_palantir_plottable//:package/plottable.css",
@@ -126,7 +126,7 @@ ts_web_library(
     visibility = ["//visibility:private"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "web_component_tester",
     testonly = 1,
     visibility = ["//visibility:public"],
@@ -138,7 +138,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "chai_typings",
     testonly = 1,
     srcs = ["@org_definitelytyped//:chai.d.ts"],
@@ -146,7 +146,7 @@ ts_web_library(
     visibility = ["//visibility:private"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "mocha_typings",
     testonly = 1,
     srcs = ["@org_definitelytyped//:mocha.d.ts"],
@@ -154,7 +154,7 @@ ts_web_library(
     visibility = ["//visibility:private"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "sinon_typings",
     testonly = 1,
     srcs = ["@org_definitelytyped//:sinon.d.ts"],

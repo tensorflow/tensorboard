@@ -1,11 +1,11 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tf_tensorboard",
     srcs = [
         "autoReloadBehavior.ts",
@@ -35,7 +35,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "registry",
     srcs = [
         "registry.html",
@@ -45,7 +45,7 @@ ts_web_library(
     visibility = ["//visibility:public"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
@@ -65,7 +65,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "demo",
     srcs = ["demo.html"],
     path = "/tf-tensorboard",

@@ -1,11 +1,11 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
 # bazel run //tensorboard/plugins/graph/tf_graph_controls/demo
-ts_web_library(
+tf_web_library(
     name = "demo",
     srcs = ["index.html"],
     path = "/tf-graph-controls/demo",
