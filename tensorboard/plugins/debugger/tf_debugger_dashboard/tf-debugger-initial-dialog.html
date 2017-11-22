@@ -24,8 +24,24 @@ limitations under the License.
     <paper-dialog with-backdrop id="dialog" width="320" modal>
       <h2 id='dialog-title'>Waiting for first Session.run() to connect...</h2>
       <div class='code-example'>
-        <span id='session-run-code-example' ></span>
-        <span id='hook-code-example'></span>
+        <!-- TODO(cais): Rename id. -->
+        <pre id="session-run-code-example">
+# To connect to the debugger from your tf.Session:
+from tensorflow.python import debug as tf_debug
+sess = tf.Session()
+def watch_fn(fetches, feeds):
+  return tf_debug.WatchOptions(debug_ops=["DebugIdentity(gated_grpc=true)"])
+sess = tf_debug.GrpcDebugWrapperSession(sess, "[[_host]]:[[_port]]", watch_fn=watch_fn)
+sess.run(my_fetches)
+        </pre>
+        <pre id="hook-code-example">
+# To connect to the debugger using hooks, e.g., from tf.Estimator:
+from tensorflow.python import debug as tf_debug
+def watch_fn(fetches, feeds):
+  return tf_debug.WatchOptions(debug_ops=["DebugIdentity(gated_grpc=true)"])
+hook = tf_debug.GrpcDebugHook("[[_host]]:[[_port]]", watch_fn=watch_fn)
+my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
+        </pre>
       </div>
     </paper-dialog>
   </template>
@@ -40,14 +56,22 @@ limitations under the License.
   Polymer({
     is: "tf-debugger-initial-dialog",
     properties: {
+      _host: {
+        type: String,
+        value: null,
+      },
+      _port: {
+        type: String,
+        value: null,
+      },
     },
 
     openDialog(host, port) {
       this.$.dialog.open();
       if (host != null && port != null) {
         // TODO(cais): Use markdown; syntax highlight Python code.
-        this._renderSessionRunCodeExample(host, port);
-        this._renderHookCodeExample(host, port);
+        this.set('_host', host);
+        this.set('_port', port);
       }
     },
     closeDialog() {
@@ -56,36 +80,11 @@ limitations under the License.
     renderDebuggerNotEnabledMessage() {
       this.$.dialog.open();
       Polymer.dom(this.$$('#dialog-title')).textContent =
-          'ERROR: debugger is not enabled in this TensorBoard instance';
-      let ex = '<br/># To enable the debugger in tensorboard, use the flag:<br/>'
-      ex += '&nbsp&nbsp--debugger_data_server_grpc_port port_number<br/>'
-      Polymer.dom(this.$$('#hook-code-example')).innerHTML = ex;
-    },
-
-    _renderSessionRunCodeExample(host, port) {
-      let ex = '<br/># To connect to the debugger from your tf.Session:<br/>';
-      ex += 'from tensorflow.python import debug as tf_debug<br/>';
-      ex += 'sess = tf.Session()<br/>';
-      ex += 'def watch_fn(fetches, feeds):<br/>';
-      ex += '&nbsp&nbspreturn tf_debug.WatchOptions(debug_ops=["DebugIdentity(gated_grpc=true)"])<br/>';
-      // TODO(cais): GrpcDebugWrapperSession should provide a gated option to
-      // avoid the tedious watch_fn.
-      ex += 'sess = tf_debug.GrpcDebugWrapperSession(sess, "' +
-            host + ':' + port + '", watch_fn=watch_fn)<br/>';
-      ex += 'sess.run(my_fetches)<br/>';
-      Polymer.dom(this.$$('#session-run-code-example')).innerHTML = ex;
-    },
-    _renderHookCodeExample(host, port) {
-      let ex = '<br/># To connect to the debugger using hooks, e.g., from tf.Estimator:<br/>';
-      ex += 'from tensorflow.python import debug as tf_debug<br/>';
-      ex += 'def watch_fn(fetches, feeds):<br/>';
-      ex += '&nbsp&nbspreturn tf_debug.WatchOptions(debug_ops=["DebugIdentity(gated_grpc=true)"])<br/>';
-      ex += 'hook = tf_debug.GrpcDebugHook("' +
-            host + ':' + port + '", watch_fn=watch_fn)<br/>';
-      // TODO(cais): GrpcDebugWrapperSession should provide a gated option to
-      // avoid the tedious watch_fn.
-      ex += 'my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])<br/>';
-      Polymer.dom(this.$$('#hook-code-example')).innerHTML = ex;
+          'ERROR: debugger is not enabled in this TensorBoard instance.';
+      let ex = 'To enable the debugger in tensorboard, use the flag: ' +
+               '--debugger_port <port_number>'
+      Polymer.dom(this.$$('#session-run-code-example')).textContent = ex;
+      Polymer.dom(this.$$('#hook-code-example')).textContent = '';
     },
   });
   </script>

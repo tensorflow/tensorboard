@@ -37,12 +37,11 @@ limitations under the License.
               value="[[tensorName]]"
               readOnly="true">
             </paper-input>
-            <span
+            <paper-icon-button
+              icon="close"
               class="value-view-close-button"
               id="value-view-close-button"
-              on-click="closeButtonCallback">
-              X
-            </span>
+              on-tap="closeButtonCallback">X</paper-icon-button>
           </div>
         </td>
       </tr>
@@ -53,25 +52,22 @@ limitations under the License.
               class="inline"
               label="Debug Op"
               id="debug-op"
-              width="200px"
               value="[[debugOp]]"
               readOnly="true"></paper-input>
           </div>
           <div>
             <paper-input
-              class="inline"
+              class="inline value-card-input"
               label="Slicing"
               id="slicing"
-              width="200px",
               value="{{slicing}}">
             </paper-input>
           </div>
           <div>
             <paper-input
-              class="inline"
+              class="inline value-card-input"
               label="Time Indices"
               id="time-indices"
-              width="200px"
               value="{{timeIndices}}">
             </paper-input>
             <paper-button raised
@@ -129,6 +125,9 @@ limitations under the License.
     }
     .tensor-value-view-td {
       width: 350px;
+    }
+    .value-card-input {
+      width: 150px;
     }
     #tensor-name {
       display: inline-block;
@@ -196,7 +195,7 @@ limitations under the License.
 
       _requestManager: {
           type: Object,
-          value: () => new tf_backend.RequestManager(20),
+          value: () => new tf_backend.RequestManager(10),
       },
     },
     observers: [
@@ -283,8 +282,8 @@ limitations under the License.
       } else {
         const slicingElements = slicing.split(',');
         let rank = slicingElements.length;
-        // Examinehow many of the slicing elements are single numbers, which leads
-        // to a decrement in rank.
+        // Examine how many of the slicing elements are single numbers, which
+        // leads to a decrement in rank.
         for (const element of slicingElements) {
           if (!isNaN(Number(element))) {
             rank--;

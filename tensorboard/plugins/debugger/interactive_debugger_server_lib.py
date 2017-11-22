@@ -120,7 +120,7 @@ class RunStates(object):
     """
     self._run_key_to_original_graphs = dict()
     self._run_key_to_debug_graphs = dict()
-    self._maybe_expanded_node_names = dict()
+    self._maybe_expanded_node_names = collections.defaultdict(lambda: {})
 
     if breakpoints_func:
       assert callable(breakpoints_func)
@@ -189,10 +189,9 @@ class RunStates(object):
       graph_def: GraphDef to which the node belongs.
     """
     device_name = tf.compat.as_str(device_name)
-    if (run_key in self._maybe_expanded_node_names and
-        device_name in self._maybe_expanded_node_names[run_key] and
-        node_name in self._maybe_expanded_node_names[run_key][device_name]):
-      return self._maybe_expanded_node_names[run_key][device_name][node_name]
+    if ((run_key, device_name) in self._maybe_expanded_node_names and
+        node_name in self._maybe_expanded_node_names[(run_key, device_name)]):
+      return self._maybe_expanded_node_names[(run_key, device_name)][node_name]
 
     if run_key not in self._run_key_to_original_graphs:
       raise ValueError('Unknown run_key: %s' % run_key)
@@ -202,12 +201,8 @@ class RunStates(object):
     graph_def = self._run_key_to_original_graphs[run_key][device_name]
     base_expanded = debug_graphs_helper.maybe_base_expanded_node_name(
         node_name, graph_def)
-    if run_key not in self._maybe_expanded_node_names:
-      self._maybe_expanded_node_names[run_key] = dict()
-    if device_name not in self._maybe_expanded_node_names[run_key]:
-      self._maybe_expanded_node_names[run_key][device_name] = dict()
     self._maybe_expanded_node_names[
-        run_key][device_name][node_name] = base_expanded
+        (run_key, device_name)][node_name] = base_expanded
     return base_expanded
 
 
@@ -329,10 +324,10 @@ class InteractiveDebuggerDataStreamHandler(
         self._run_states.get_maybe_base_expanded_node_name(node_name,
                                                            self._run_key,
                                                            device_name))
+    self._tensor_store.add(watch_key, tensor_value)
     self._comm_channel.put_outgoing(_comm_tensor_data(
         device_name, node_name, maybe_base_expanded_node_name, output_slot,
         debug_op, tensor_value, event.wall_time))
-    self._tensor_store.add(watch_key, tensor_value)
 
     tf.logging.info('on_value_event(): waiting for client ack (tensors)...')
     self._comm_channel.get_incoming()

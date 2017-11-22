@@ -154,13 +154,23 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
     graph_def = self._debugger_data_server.get_graph(run_key, device_name)
     tf.logging.info('_serve_debugger_graph(): type(graph_def) = %s',
                     type(graph_def))
+    # TODO(cais): Sending text proto may be slow in Python. Investigate whether
+    # there are ways to optimize it.
     return http_util.Respond(request, str(graph_def), 'text/x-protobuf')
+
+  def _error_response(self, request, error_msg):
+    tf.logging.error(error_msg)
+    return http_util.Respond(
+        request, {'error': error_msg}, 'application/json', 400)
 
   @wrappers.Request.application
   def _serve_gated_grpc(self, request):
     mode = request.args.get('mode')
     if mode == 'retrieve_all' or mode == 'retrieve_device_names':
-      # Retrieve all gated-gRPC debug tensors and currently enabled breakpoints.
+      # 'retrieve_all': Retrieve all gated-gRPC debug tensors and currently
+      #   enabled breakpoints associated with the given run_key.
+      # 'retrieve_device_names': Retrieve all device names associated with the
+      #   given run key.
       run_key = interactive_debugger_server_lib.RunKey(
           *json.loads(request.args.get('run_key')))
       # debug_graph_defs is a map from device_name to GraphDef.
@@ -206,8 +216,11 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
         self._debugger_data_server.request_watch(
             node_name, output_slot, debug_op, breakpoint=True)
       else:
-        tf.logging.error('Unrecognized new state for %s:%d:%s: %s' %
-                         (node_name, output_slot, debug_op, state))
+        return self._error_response(
+            request, 'Unrecognized new state for %s:%d:%s: %s' % (node_name,
+                                                                  output_slot,
+                                                                  debug_op,
+                                                                  state))
       return http_util.Respond(
           request,
           {'node_name': node_name,
@@ -216,7 +229,8 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
            'state': state},
           'application/json')
     else:
-      tf.logging.error('Unrecognized mode for the gated_grpc route: %s' % mode)
+      return self._error_response(
+          request, 'Unrecognized mode for the gated_grpc route: %s' % mode)
 
   @wrappers.Request.application
   def _serve_debugger_grpc_host_port(self, request):
@@ -240,7 +254,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
           'tensor_data': sliced_tensor_data,
           'error': None
       }
-      return http_util.Respond(request, response, response_encoding)
+      status_code = 200
     except (IndexError, ValueError) as e:
       response = {
           'tensor_data': None,
@@ -249,4 +263,5 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
               'message': str(e),
           },
       }
-      return http_util.Respond(request, response, response_encoding)
+      status_code = 400
+    return http_util.Respond(request, response, response_encoding, status_code)

@@ -177,7 +177,9 @@ limitations under the License.
       let filteredDebugWatches = debugWatches;
       if (filterMode != null && filterInput.length > 0) {
         filteredDebugWatches = tf_debugger_dashboard.filterDebugWatches(
-            debugWatches, filterMode, filterInput);
+            debugWatches,
+            tf_debugger_dashboard.DebugWatchFilterMode[filterMode.replace(/\s/g, '')],
+            new RegExp(filterInput));
       }
 
       const hierarchy = new tf_debugger_dashboard.SelectionTreeNode('', debugWatchChange);
@@ -209,10 +211,18 @@ limitations under the License.
       return hierarchy;
     },
 
+    _clearSelectorHierarchy() {
+      const selectorHierarchy = this.$$('#selector-hierarchy');
+      while (selectorHierarchy.firstChild) {
+        selectorHierarchy.removeChild(selectorHierarchy.firstChild);
+      }
+    },
+
     _renderHierarchy(watchHierarchy, debugWatchChange, filterMode, filterInput) {
       this.set('_levelName2Container', {});
       this.set('_levelName2Node', {});
-      this.$$('#selector-hierarchy').innerHTML = '';
+      this._clearSelectorHierarchy();
+
       const dom = this._renderLevel(null, null, watchHierarchy, debugWatchChange);
 
       // After rendering the hierarchy, check the boxes that correspond to

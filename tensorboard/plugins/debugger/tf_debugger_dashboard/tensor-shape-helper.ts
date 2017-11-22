@@ -86,7 +86,7 @@ export function rankFromSlicing(slicing: string): number {
   } else {
     const slicingElements: string[] = slicing.split(',');
     let rank = slicingElements.length;
-    // Examinehow many of the slicing elements are single numbers, which leads
+    // Examine how many of the slicing elements are single numbers, which leads
     // to a decrement in rank.
     for (const element of slicingElements) {
       if (!isNaN(Number(element))) {

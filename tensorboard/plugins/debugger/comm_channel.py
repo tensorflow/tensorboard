@@ -19,9 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import threading
-import time
 
-from six.moves import queue as Queue  # pylint: disable=redefined-builtin
+from six.moves import queue
 
 
 class CommChannel(object):
@@ -31,8 +30,8 @@ class CommChannel(object):
     self._outgoing = []
     self._outgoing_counter = 0
     self._outgoing_lock = threading.Lock()
-
-    self._incoming = Queue.Queue()
+    self._outgoing_pending_queues = dict()
+    self._incoming = queue.Queue()
 
   def put_outgoing(self, message):
     """Put a message into the outgoing message stack.
@@ -42,6 +41,12 @@ class CommChannel(object):
     with self._outgoing_lock:
       self._outgoing.append(message)
       self._outgoing_counter += 1
+
+      # Check to see if there are pending queues waiting for the item.
+      if self._outgoing_counter in self._outgoing_pending_queues:
+        for q in self._outgoing_pending_queues[self._outgoing_counter]:
+          q.put(message)
+        del self._outgoing_pending_queues[self._outgoing_counter]
 
   def get_outgoing(self, pos):
     """Get message(s) from the outgoing message stack.
@@ -57,15 +62,28 @@ class CommChannel(object):
     Returns:
       1. The item at stack position pos.
       2. The height of the stack when the retun values are generated.
-    """
-    assert pos > 0, "Invalid pos %d: pos must be > 0" % pos
-    self._wait_till_stack_height(pos)
-    with self._outgoing_lock:
-      return self._outgoing[pos - 1], self._outgoing_counter
 
-  def _wait_till_stack_height(self, pos, polling_period=0.01):
-    while self._outgoing_counter < pos:
-      time.sleep(polling_period)
+    Raises:
+      ValueError: If input `pos` is zero or negative.
+    """
+    if pos <= 0:
+      raise ValueError('Invalid pos %d: pos must be > 0' % pos)
+    with self._outgoing_lock:
+      if self._outgoing_counter >= pos:
+        # If the stack already has the requested position, return the value
+        # immediately.
+        return self._outgoing[pos - 1], self._outgoing_counter
+      else:
+        # If the stack has not reached the requested position yet, create a
+        # queue and block on get().
+        if pos not in self._outgoing_pending_queues:
+          self._outgoing_pending_queues[pos] = []
+        q = queue.Queue(maxsize=1)
+        self._outgoing_pending_queues[pos].append(q)
+
+    value = q.get()
+    with self._outgoing_lock:
+      return value, self._outgoing_counter
 
   def put_incoming(self, message):
     self._incoming.put(message)

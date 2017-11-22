@@ -69,16 +69,24 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     self._server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
   def tearDown(self):
-    self._debugger_plugin._debugger_data_server.stop_server()
+    # In some cases (e.g., an empty test method body), the stop_server() method
+    # may get called before the server is started, leading to a ValueError.
+    while True:
+      try:
+        self._debugger_plugin._debugger_data_server.stop_server()
+        break
+      except ValueError:
+        pass
     shutil.rmtree(self._dummy_logdir, ignore_errors=True)
     super(InteractiveDebuggerPluginTest, self).tearDown()
 
-  def _serverGet(self, path, params=None):
+  def _serverGet(self, path, params=None, expected_status_code=200):
     """Send the serve a GET request and obtain the response.
 
     Args:
       path: URL path (excluding the prefix), without parameters encoded.
       params: Query parameters to be encoded in the URL, as a dict.
+      expected_status_code: Expected status code.
 
     Returns:
       Response from server.
@@ -87,7 +95,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     if params:
       url += '?' + urllib.parse.urlencode(params)
     response = self._server.get(url)
-    self.assertEqual(200, response.status_code)
+    self.assertEqual(expected_status_code, response.status_code)
     return response
 
   def _deserializeResponse(self, response):
@@ -568,6 +576,43 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     self.assertEqual(comm_data_2, self._deserializeResponse(comm_response))
     comm_response = self._serverGet('comm', {'pos': 3})
     self.assertEqual(comm_data_3, self._deserializeResponse(comm_response))
+
+  def testInvalidBreakpointStateLeadsTo400Response(self):
+    session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
+    self._serverGet('comm', {'pos': 1})
+
+    # Use an invalid state ('bad_state') when setting a breakpoint state.
+    response = self._serverGet(
+        'gated_grpc',
+        {'mode': 'set_state', 'node_name': 'x', 'output_slot': 0,
+         'debug_op': 'DebugIdentity', 'state': 'bad_state'},
+        expected_status_code=400)
+    data = self._deserializeResponse(response)
+    self.assertEqual('Unrecognized new state for x:0:DebugIdentity: bad_state',
+                     data['error'])
+
+    self._serverGet('ack')
+    session_run_thread.join()
+    self.assertAllClose([[230.0]], session_run_results)
+
+  def testInvalidModeArgForGatedGrpcRouteLeadsTo400Response(self):
+    session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
+    self._serverGet('comm', {'pos': 1})
+
+    # Use an invalid mode argument ('bad_mode') when calling the 'gated_grpc'
+    # endpoint.
+    response = self._serverGet(
+        'gated_grpc',
+        {'mode': 'bad_mode', 'node_name': 'x', 'output_slot': 0,
+         'debug_op': 'DebugIdentity', 'state': 'break'},
+        expected_status_code=400)
+    data = self._deserializeResponse(response)
+    self.assertEqual('Unrecognized mode for the gated_grpc route: bad_mode',
+                     data['error'])
+
+    self._serverGet('ack')
+    session_run_thread.join()
+    self.assertAllClose([[230.0]], session_run_results)
 
   def testDebuggerHostAndGrpcPortEndpoint(self):
     response = self._serverGet('debugger_grpc_host_port')

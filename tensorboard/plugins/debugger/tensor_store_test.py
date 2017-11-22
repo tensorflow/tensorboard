@@ -19,10 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
-import glob
-import os
-import shutil
-import tempfile
 
 import numpy as np
 import tensorflow as tf
@@ -31,123 +27,21 @@ from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.debugger import tensor_store
 
 
-class TensorValueDeferredToDiskTest(tf.test.TestCase):
-
-  def setUp(self):
-    super(TensorValueDeferredToDiskTest, self).setUp()
-    self._temp_root_dir = tempfile.mkdtemp()
-
-  def tearDown(self):
-    shutil.rmtree(self._temp_root_dir)
-    super(TensorValueDeferredToDiskTest, self).tearDown()
-
-  def testConstructorAndGetValue(self):
-    watch_key = 'Dense/BiasAdd:0:DebugIdentity'
-    time_index = 10
-    value = np.eye(3)
-    disk_value = tensor_store._TensorValueDeferredToDisk(
-        watch_key, time_index, value, self._temp_root_dir)
-
-    self.assertEqual(watch_key, disk_value.watch_key)
-    self.assertEqual(time_index, disk_value.time_index)
-    self.assertEqual(value.nbytes, disk_value.nbytes)
-    self.assertAllEqual(value, disk_value.get_value())
-
-  def testDispose(self):
-    watch_key = 'Dense/BiasAdd:0:DebugIdentity'
-    time_index = 10
-    value = np.eye(3)
-    disk_value = tensor_store._TensorValueDeferredToDisk(
-        watch_key, time_index, value, self._temp_root_dir)
-
-    self.assertTrue(tf.gfile.Exists(os.path.join(
-        self._temp_root_dir, 'Dense', 'BiasAdd', '0', 'DebugIdentity',
-        '00010.npy')))
-    self.assertAllEqual(value, disk_value.get_value())
-    disk_value.dispose()
-    self.assertFalse(tf.gfile.Exists(os.path.join(
-        self._temp_root_dir, 'Dense', 'BiasAdd', '0', 'DebugIdentity',
-        '00010.npy')))
-    with self.assertRaises(ValueError):
-      disk_value.get_value()
-
-
 class WatchStoreTest(tf.test.TestCase):
-
-  def setUp(self):
-    super(WatchStoreTest, self).setUp()
-    self._temp_root_dir = tempfile.mkdtemp()
-
-  def tearDown(self):
-    shutil.rmtree(self._temp_root_dir)
-    super(WatchStoreTest, self).tearDown()
-
-  def testDeferToDisk(self):
-    watch_key = 'Dense/BiasAdd:0:DebugIdentity'
-    watch_store = tensor_store._WatchStore(watch_key,
-                                           self._temp_root_dir,
-                                           mem_bytes_limit=100,
-                                           disk_bytes_limit=10e6)
-
-    value = np.eye(3, dtype=np.float64)
-    self.assertEqual(72, value.nbytes)
-    self.assertEqual(0, watch_store.num_total())
-    self.assertEqual(0, watch_store.num_in_memory())
-    self.assertEqual(0, watch_store.num_on_disk())
-    self.assertEqual(0, watch_store.num_discarded())
-    self.assertEqual(0, watch_store.num_on_disk())
-
-    watch_store.add(value)
-    self.assertEqual(1, watch_store.num_total())
-    self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(0, watch_store.num_on_disk())
-    self.assertEqual(0, watch_store.num_discarded())
-    self.assertAllEqual([value], watch_store.query(0))
-    self.assertAllEqual([value], watch_store.query([0]))
-    with self.assertRaises(IndexError):
-      watch_store.query([1])
-
-    watch_store.add(value * 2)
-    self.assertEqual(2, watch_store.num_total())
-    self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(1, watch_store.num_on_disk())
-    self.assertEqual(0, watch_store.num_discarded())
-    self.assertAllEqual([value], watch_store.query([0]))
-    self.assertAllEqual([value, value * 2], watch_store.query([0, 1]))
-    with self.assertRaises(IndexError):
-      watch_store.query(2)
-
-    watch_store.add(value * 3)
-    self.assertEqual(3, watch_store.num_total())
-    self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(2, watch_store.num_on_disk())
-    self.assertEqual(0, watch_store.num_discarded())
-    self.assertAllEqual([value], watch_store.query([0]))
-    self.assertAllEqual([value, value * 2], watch_store.query([0, 1]))
-    self.assertAllEqual([value, value * 2, value * 3],
-                        watch_store.query([0, 1, 2]))
-    with self.assertRaises(IndexError):
-      watch_store.query(3)
 
   def testAlwaysKeepsOneValueInMemory(self):
     watch_key = 'Dense/BiasAdd:0:DebugIdentity'
-    watch_store = tensor_store._WatchStore(watch_key,
-                                           self._temp_root_dir,
-                                           mem_bytes_limit=50,
-                                           disk_bytes_limit=10e6)
+    watch_store = tensor_store._WatchStore(watch_key, mem_bytes_limit=50)
 
     value = np.eye(3, dtype=np.float64)
     self.assertEqual(72, value.nbytes)
     self.assertEqual(0, watch_store.num_total())
     self.assertEqual(0, watch_store.num_in_memory())
-    self.assertEqual(0, watch_store.num_on_disk())
     self.assertEqual(0, watch_store.num_discarded())
-    self.assertEqual(0, watch_store.num_on_disk())
 
     watch_store.add(value)
     self.assertEqual(1, watch_store.num_total())
     self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(0, watch_store.num_on_disk())
     self.assertEqual(0, watch_store.num_discarded())
     self.assertAllEqual([value], watch_store.query(0))
     self.assertAllEqual([value], watch_store.query([0]))
@@ -157,27 +51,24 @@ class WatchStoreTest(tf.test.TestCase):
     watch_store.add(value * 2)
     self.assertEqual(2, watch_store.num_total())
     self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(1, watch_store.num_on_disk())
-    self.assertEqual(0, watch_store.num_discarded())
-    self.assertAllEqual([value], watch_store.query([0]))
-    self.assertAllEqual([value, value * 2], watch_store.query([0, 1]))
+    self.assertEqual(1, watch_store.num_discarded())
+    self.assertEqual([None], watch_store.query([0]))
+    self.assertIsNone(watch_store.query([0, 1])[0])
+    self.assertAllEqual(value * 2, watch_store.query([0, 1])[-1])
     with self.assertRaises(IndexError):
       watch_store.query(2)
 
   def testDiscarding(self):
     watch_key = 'Dense/BiasAdd:0:DebugIdentity'
-    watch_store = tensor_store._WatchStore(watch_key,
-                                           self._temp_root_dir,
-                                           mem_bytes_limit=100,
-                                           disk_bytes_limit=100)
+    watch_store = tensor_store._WatchStore(watch_key, mem_bytes_limit=150)
 
     value = np.eye(3, dtype=np.float64)
+    self.assertEqual(72, value.nbytes)
 
     watch_store.add(value)
     watch_store.add(value * 2)
     self.assertEqual(2, watch_store.num_total())
-    self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(1, watch_store.num_on_disk())
+    self.assertEqual(2, watch_store.num_in_memory())
     self.assertEqual(0, watch_store.num_discarded())
     self.assertAllEqual([value], watch_store.query([0]))
     self.assertAllEqual([value, value * 2], watch_store.query([0, 1]))
@@ -186,8 +77,7 @@ class WatchStoreTest(tf.test.TestCase):
 
     watch_store.add(value * 3)
     self.assertEqual(3, watch_store.num_total())
-    self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(1, watch_store.num_on_disk())
+    self.assertEqual(2, watch_store.num_in_memory())
     self.assertEqual(1, watch_store.num_discarded())
     self.assertEqual([None], watch_store.query([0]))
     result = watch_store.query([0, 1])
@@ -201,8 +91,7 @@ class WatchStoreTest(tf.test.TestCase):
 
     watch_store.add(value * 4)
     self.assertEqual(4, watch_store.num_total())
-    self.assertEqual(1, watch_store.num_in_memory())
-    self.assertEqual(1, watch_store.num_on_disk())
+    self.assertEqual(2, watch_store.num_in_memory())
     self.assertEqual(2, watch_store.num_discarded())
     self.assertEqual([None], watch_store.query([0]))
     result = watch_store.query([0, 1])
@@ -326,9 +215,8 @@ class TensorHelperTest(tf.test.TestCase):
     decoded = im_util.decode_png(base64.b64decode(output))
     self.assertEqual((2, 5, 3), decoded.shape)
 
-  def testTensorValuesExceedingDiskBytesLimitAreDiscarded(self):
-    store = tensor_store.TensorStore(
-        watch_mem_bytes_limit=100, watch_disk_bytes_limit=100)
+  def testTensorValuesExceedingMemBytesLimitAreDiscarded(self):
+    store = tensor_store.TensorStore(watch_mem_bytes_limit=150)
     watch_key = "A:0:DebugIdentity"
     value = np.eye(3, dtype=np.float64)
     self.assertEqual(72, value.nbytes)
@@ -344,19 +232,6 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertIsNone(result[0])
     self.assertAllEqual([value * 2, value * 3], result[1:])
 
-  def testDisposingTensorStoreErasesDataFiles(self):
-    store = tensor_store.TensorStore(
-        watch_mem_bytes_limit=10, watch_disk_bytes_limit=1000)
-    watch_key = "A:0:DebugIdentity"
-    value = np.eye(3, dtype=np.float64)
-    for _ in range(10):
-      store.add(watch_key, value)
-
-    self.assertTrue(
-        glob.glob(os.path.join(
-            store._root_dir, "A", "0", "DebugIdentity", "*")))
-    store.dispose()
-    self.assertFalse(glob.glob(os.path.join(store._root_dir)))
 
 if __name__ == '__main__':
   tf.test.main()

@@ -57,12 +57,15 @@ def get_debugger_plugin():
   Returns:
     The TBPlugin constructor for the debugger plugin, or None if
     the necessary flag was not set.
+
+  Raises:
+    ValueError: If both the `debugger_data_server_grpc_port` and `debugger_port`
+      flags are specified as >= 0.
   """
   # Check that not both grpc port flags are specified.
-  error_msg = ('--debugger_data_server_grpc_port and --debugger_port are '
-               'mutually exclusive. Do not use more than one of them.')
-  assert (FLAGS.debugger_data_server_grpc_port <= 0 or
-          FLAGS.debugger_port <= 0), error_msg
+  if FLAGS.debugger_data_server_grpc_port > 0 and FLAGS.debugger_port <= 0:
+    raise ValueError('--debugger_data_server_grpc_port and --debugger_port are '
+                     'mutually exclusive. Do not use more than one of them.')
 
   if FLAGS.debugger_data_server_grpc_port > 0 or FLAGS.debugger_port > 0:
     return _ConstructDebuggerPluginWithGrpcPort

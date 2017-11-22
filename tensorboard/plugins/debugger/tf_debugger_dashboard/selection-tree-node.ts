@@ -40,7 +40,7 @@ export interface DebugWatchChange {
 
 /**
  * Split a node name, potentially with a device name prefix.
- * @param string: Input node name, potentially with a device name prefix, e.g.,
+ * @param name: Input node name, potentially with a device name prefix, e.g.,
  *   '/job:localhost/replica:0/task:0/device:CPU:0/Dense/BiasAdd'
  * @return Split items. The device name, if present, will be the first item.
  */
@@ -50,19 +50,18 @@ export function splitNodeName(name: string): string[] {
   let nodeName = name;
   if (deviceNameMatches != null) {
     items.push(deviceNameMatches[0]);
-    // Expect there to be a slash after the device name. Skip it.
+    // Expect there to be a slash after the device name, and skip it.
     if (nodeName[deviceNameMatches[0].length] !== '/') {
       console.error('No slash ("/") after device name in node name:', nodeName);
     }
     nodeName = nodeName.slice(deviceNameMatches[0].length + 1);
   }
-  items = items.concat(nodeName.split(NODE_NAME_SEPARATOR));
-  return items;
+  return items.concat(nodeName.split(NODE_NAME_SEPARATOR));
 }
 
 /**
  * Get a node name without device name prefix or base-expansion suffix.
- * @param name The node name, possibly with a device name prefix, e.g.,
+ * @param name: The node name, possibly with a device name prefix, e.g.,
  *   '/job:localhost/replica:0/task:0/device:CPU:0/Dense/BiasAdd'
  * @return The node name without any device name prefixes or '/' at the front.
  *   E.g., 'Dense/BiasAdd'
@@ -89,10 +88,11 @@ export function getCleanNodeName(name: string): string {
 }
 
 /**
- * Sort and base-expand an `Array` of `DebugWatch`es in place.
+ * Sort and base-expand an Array of DebugWatches in place.
  * "Base-expand" means adding a '/(baseName)' suffix to nodes whose names are
  * the name scope of some other node's name.
- * @param debugWatches
+ * @param debugWatches: An array of `DebugWatch`es to sort and base-expand.
+ * @returns Sorted and base-expanded `DebugWatch`es.
  */
 export function sortAndBaseExpandDebugWatches(debugWatches: DebugWatch[]) {
   // Sort the debug watches.
@@ -139,29 +139,31 @@ export function assembleDeviceAndNodeNames(nameItems: string[]): string[] {
   return deviceAndNodeNames;
 }
 
+export enum DebugWatchFilterMode {
+  NodeName,
+  OpType,
+}
+
 /**
  * Filter debug watches according to given filter mode and filter input.
  * @param debugWatches An array of `DebugWatch` instances.
- * @param filterMode Filter mode, e.g., 'Node Name', 'Op Type'.
- * @param filterInput Filter input, as a regular expression, e.g., for
+ * @param filterMode
+ * @param filterRegex Filter regular expression, e.g., for
  *   filterMode === 'Op Type': 'Variable.'.
  * @returns An array of `DebugWatch` instances from the input `debugWatches`
  *   that pass the filter.
  */
 export function filterDebugWatches(
     debugWatches: DebugWatch[],
-    filterMode: string,
-    filterInput: string): DebugWatch[] {
-  const filterRegex = new RegExp(filterInput, 'g');
-  return debugWatches.filter((debugWatch) => {
-    if (filterMode === 'Node Name') {
-      return debugWatch.node_name.match(filterRegex) != null;
-    } else if (filterMode === 'Op Type') {
-      return debugWatch.op_type.match(filterRegex) != null;
-    } else {
-      throw new Error(`Invalid filterMode: ${filterMode}`);
-    }
-  });
+    filterMode: DebugWatchFilterMode,
+    filterRegex: RegExp): DebugWatch[] {
+  if (filterMode === DebugWatchFilterMode.NodeName) {
+    return debugWatches.filter(
+        debugWatch => debugWatch.node_name.match(filterRegex));
+  } else if (filterMode === DebugWatchFilterMode.OpType) {
+    return debugWatches.filter(
+        debugWatch => debugWatch.op_type.match(filterRegex));
+  }
 }
 
 export class SelectionTreeNode {

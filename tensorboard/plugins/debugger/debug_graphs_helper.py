@@ -49,7 +49,7 @@ def extract_gated_grpc_tensors(graph_def, match_debug_op=None):
       continue
 
     for attr_key in node.attr:
-      if attr_key == "gated_grpc" and node.attr[attr_key].b:
+      if attr_key == 'gated_grpc' and node.attr[attr_key].b:
 
         node_name, output_slot, _, debug_op = (
             debug_graphs.parse_debug_node_name(node.name))
@@ -75,6 +75,6 @@ def maybe_base_expanded_node_name(node_name, graph_def):
     Possibly base-expanded node name.
   """
   for node in graph_def.node:
-    if node.name.startswith(node_name + "/"):
-      return node_name + "/(" + node_name.split("/")[-1] + ")"
+    if node.name.startswith(node_name + '/'):
+      return node_name + '/(' + node_name.split('/')[-1] + ')'
   return node_name

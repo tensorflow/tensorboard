@@ -30,52 +30,80 @@ class CommChannelTest(tf.test.TestCase):
 
   def testGetOutgoingWithInvalidPosLeadsToAssertionError(self):
     channel = comm_channel.CommChannel()
-    with self.assertRaises(AssertionError):
+    with self.assertRaises(ValueError):
       channel.get_outgoing(0)
+    with self.assertRaises(ValueError):
+      channel.get_outgoing(-1)
 
   def testOutgoingSerialPutOneAndGetOne(self):
     channel = comm_channel.CommChannel()
-    channel.put_outgoing("A")
-    self.assertEqual(("A", 1), channel.get_outgoing(1))
+    channel.put_outgoing('A')
+    self.assertEqual(('A', 1), channel.get_outgoing(1))
 
   def testOutgoingSerialPutTwoGetOne(self):
     channel = comm_channel.CommChannel()
-    channel.put_outgoing("A")
-    channel.put_outgoing("B")
-    channel.put_outgoing("C")
-    self.assertEqual(("A", 3), channel.get_outgoing(1))
-    self.assertEqual(("B", 3), channel.get_outgoing(2))
-    self.assertEqual(("C", 3), channel.get_outgoing(3))
+    channel.put_outgoing('A')
+    channel.put_outgoing('B')
+    channel.put_outgoing('C')
+    self.assertEqual(('A', 3), channel.get_outgoing(1))
+    self.assertEqual(('B', 3), channel.get_outgoing(2))
+    self.assertEqual(('C', 3), channel.get_outgoing(3))
 
-  def testOutgoingConcurrentPutAndGet(self):
+  def testOutgoingConcurrentPutAndOneGetter(self):
     channel = comm_channel.CommChannel()
 
-    result = {"outgoing": []}
+    result = {'outgoing': []}
     def get_two():
-      result["outgoing"].append(channel.get_outgoing(1))
-      result["outgoing"].append(channel.get_outgoing(2))
+      result['outgoing'].append(channel.get_outgoing(1))
+      result['outgoing'].append(channel.get_outgoing(2))
 
     t = threading.Thread(target=get_two)
     t.start()
-    channel.put_outgoing("A")
+    channel.put_outgoing('A')
     time.sleep(0.025)  # Greater than the default polling interval (0.01).
-    channel.put_outgoing("B")
+    channel.put_outgoing('B')
     t.join()
-    self.assertEqual([("A", 1), ("B", 2)], result["outgoing"])
+    self.assertEqual([('A', 1), ('B', 2)], result['outgoing'])
+
+  def testOutgoingConcurrentPutAndTwoGetters(self):
+    channel = comm_channel.CommChannel()
+
+    result1 = {'outgoing': []}
+    result2 = {'outgoing': []}
+    def getter1():
+      result1['outgoing'].append(channel.get_outgoing(1))
+      result1['outgoing'].append(channel.get_outgoing(2))
+    def getter2():
+      result2['outgoing'].append(channel.get_outgoing(1))
+      result2['outgoing'].append(channel.get_outgoing(2))
+
+    t1 = threading.Thread(target=getter1)
+    t1.start()
+    t2 = threading.Thread(target=getter2)
+    t2.start()
+
+    channel.put_outgoing('A')
+    time.sleep(0.025)  # Greater than the default polling interval (0.01).
+    channel.put_outgoing('B')
+    t1.join()
+    t2.join()
+
+    self.assertEqual([('A', 1), ('B', 2)], result1['outgoing'])
+    self.assertEqual([('A', 1), ('B', 2)], result2['outgoing'])
 
   def testIncomingQueue(self):
     channel = comm_channel.CommChannel()
 
-    result = {"incoming": None}
+    result = {'incoming': None}
     def get_one():
-      result["incoming"] = channel.get_incoming()
+      result['incoming'] = channel.get_incoming()
 
     t = threading.Thread(target=get_one)
     t.start()
-    channel.put_incoming("Z")
+    channel.put_incoming('Z')
     t.join()
-    self.assertEqual("Z", result["incoming"])
+    self.assertEqual('Z', result['incoming'])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   tf.test.main()

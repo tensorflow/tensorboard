@@ -134,7 +134,7 @@ limitations under the License.
     },
 
     _renderSessionRunTable() {
-      this.$$('#session-runs-table').innerHTML = '';
+      this._clearTable();
       // TODO(cais): Support sorting.
       this._renderHeader();
       for (const runKey in this._runKey2Count) {
@@ -145,6 +145,13 @@ limitations under the License.
           const numDevices = this._runKey2NumDevices[runKey];
           this._renderRow(sessionRun, numDevices, count, isActive, this.soleActive);
         }
+      }
+    },
+
+    _clearTable() {
+      const table = this.$$('#session-runs-table');
+      while (table.firstChild) {
+        table.removeChild(table.firstChild);
       }
     },
 

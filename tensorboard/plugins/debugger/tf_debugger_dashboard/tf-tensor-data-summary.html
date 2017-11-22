@@ -146,11 +146,18 @@ limitations under the License.
       this._watchKey2ValueShort[watchKey] = valueShort;
       this._activeWatchKey = watchKey;
 
-      this.$$('#tensor-data-table').innerHTML = '';
+      this._clearTensorDataTable();
       // TODO(cais): Support sorting by clicking headers.
       this._renderHeader();
       for (let i = 0; i < this._watchKeys.length; ++i) {
         this._renderRow(this._watchKeys[i]);
+      }
+    },
+
+    _clearTensorDataTable() {
+      const tensorDataTable = this.$$('#tensor-data-table');
+      while (tensorDataTable.firstChild) {
+        tensorDataTable.removeChild(tensorDataTable.firstChild);
       }
     },
 
