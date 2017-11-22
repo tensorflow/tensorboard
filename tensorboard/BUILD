@@ -3,7 +3,7 @@
 
 package(default_visibility = [":internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
 licenses(["notice"])  # Apache 2.0
@@ -79,7 +79,7 @@ tensorboard_zip_file(
     deps = [":assets"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "assets",
     srcs = [
         "//tensorboard/components:index.html",
@@ -129,7 +129,7 @@ py_library(
 )
 
 filegroup(
-    name = "ts_web_library_default_typings",
+    name = "tf_web_library_default_typings",
     srcs = [
         # Ordering probably matters.
         "@com_microsoft_typescript//:lib.es6.d.ts",

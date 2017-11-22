@@ -1,11 +1,11 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tensorboard",
     srcs = [
         "analytics.html",
@@ -26,7 +26,7 @@ tensorboard_html_binary(
     deps = [":tensorboard"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "trace_viewer",
     srcs = ["trace_viewer.html"],
     path = "/",

@@ -1,10 +1,10 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tf_op_profile",
     srcs = ["tf-op-profile.html"],
     path = "/tf-op-profile",
@@ -16,7 +16,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "tf_op_details",
     srcs = ["tf-op-details.html"],
     path = "/tf-op-profile",
@@ -26,7 +26,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "tf_op_table",
     srcs = ["tf-op-table.html"],
     path = "/tf-op-profile",
@@ -35,7 +35,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "utils",
     srcs = [
         "utils.html",

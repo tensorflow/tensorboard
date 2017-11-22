@@ -3,7 +3,7 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
 licenses(["notice"])  # Apache 2.0
@@ -41,7 +41,7 @@ py_test(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "test_assets",
     testonly = 1,
     srcs = ["index.html"],

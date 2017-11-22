@@ -1,10 +1,10 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tf_histogram_dashboard",
     srcs = [
         "histogramCore.js",
@@ -36,7 +36,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "demo",
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-histogram-dashboard",

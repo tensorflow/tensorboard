@@ -1,10 +1,10 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "vz_projector",
     srcs = [
         "analyticsLogger.js",
@@ -85,19 +85,19 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "heap",
     srcs = ["heap.js"],
     path = "/vz-projector",
 )
 
-ts_web_library(
+tf_web_library(
     name = "sptree",
     srcs = ["sptree.js"],
     path = "/vz-projector",
 )
 
-ts_web_library(
+tf_web_library(
     name = "bh_tsne",
     srcs = ["bh_tsne.js"],
     path = "/vz-projector",
