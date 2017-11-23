@@ -550,12 +550,12 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       return;
     }
     const xDir = vector.sub(this.centroids.xRight, this.centroids.xLeft);
-    this.dataSet.projectLinear(xDir, 'linear-x');
+    this.dataSet.projectLinear(xDir, 'custom-0');
 
     const yDir = vector.sub(this.centroids.yUp, this.centroids.yDown);
-    this.dataSet.projectLinear(yDir, 'linear-y');
+    this.dataSet.projectLinear(yDir, 'custom-1');
 
-    const accessors = getProjectionComponents('custom', ['x', 'y']);
+    const accessors = getProjectionComponents('custom', [0, 1]);
     const projection = new Projection('custom', accessors, 2, this.dataSet);
     this.projector.setProjection(projection);
   }

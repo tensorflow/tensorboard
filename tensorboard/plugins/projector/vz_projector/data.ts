@@ -598,7 +598,7 @@ export function getProjectionComponents(
     throw new RangeError('components length must be <= 3');
   }
   const projectionComponents: [string, string, string] = [null, null, null];
-  const prefix = (projection === 'custom') ? 'linear' : projection;
+  const prefix = projection;
   for (let i = 0; i < components.length; ++i) {
     if (components[i] == null) {
       continue;
@@ -621,7 +621,7 @@ export function stateGetAccessorDimensions(state: State): Array<number|string> {
       }
       break;
     case 'custom':
-      dimensions = ['x', 'y'];
+      dimensions = [0, 1];
       break;
     default:
       throw new Error('Unexpected fallthrough');

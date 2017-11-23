@@ -389,25 +389,30 @@ export class InspectorPanel extends InspectorPanelPolymer {
       case 'pca':
         this.distFunc = vector.dist;
         this.distSpace = d => new Float32Array(
-          ('pca-2' in d.projections)?
+          ('pca-2' in d.projections) ?
           [d.projections['pca-0'], d.projections['pca-1'],
-              d.projections['pca-2']]:
-          ('pca-1' in d.projections)?
-          [d.projections['pca-0'], d.projections['pca-1']]:
-          d.vector);
+              d.projections['pca-2']] :
+          ('pca-1' in d.projections) ?
+          [d.projections['pca-0'], d.projections['pca-1']] : d.vector);
         break;
 
       case 'tsne':
         if (this.projector.dataSet.hasTSNERun) {
           this.distFunc = vector.dist;
           this.distSpace = d => new Float32Array(
-            ('tsne-2' in d.projections)?
+            ('tsne-2' in d.projections) ?
             [d.projections['tsne-0'], d.projections['tsne-1'],
-                d.projections['tsne-2']]:
-            ('tsne-1' in d.projections)?
-            [d.projections['tsne-0'], d.projections['tsne-1']]:
-            d.vector);
+                d.projections['tsne-2']] :
+            ('tsne-1' in d.projections) ?
+            [d.projections['tsne-0'], d.projections['tsne-1']] : d.vector);
         }
+        break;
+
+      case 'custom':
+        this.distFunc = vector.dist;
+        this.distSpace = d => new Float32Array(
+            ('custom-0' in d.projections) ?
+            [d.projections['custom-0'], d.projections['custom-1']] : d.vector);
     }
     this.updateNeighborsDisplay();
   }
