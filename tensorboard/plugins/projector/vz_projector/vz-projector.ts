@@ -241,11 +241,13 @@ export class Projector extends ProjectorPolymer implements
   /**
    * Used by clients to indicate that a selection has occurred.
    */
-  notifySelectionChanged(newSelectedPointIndices: number[]) {
+  notifySelectionChanged(newSelectedPointIndices: number[],
+      selectionMode: SelectionMode) {
+    let editMode = this.editMode || selectionMode == 'edit';
     let neighbors: knn.NearestEntry[] = [];
 
     // point selection toggle in existing selection && selection required
-    if (this.editMode && newSelectedPointIndices.length > 0) {
+    if (editMode && newSelectedPointIndices.length > 0) {
       // main point with neighbors
       if (this.selectedPointIndices.length === 1) {
         let main_point_vector = this.dataSet.points[
@@ -436,7 +438,7 @@ export class Projector extends ProjectorPolymer implements
   }
 
   adjustSelectionAndHover(selectedPointIndices: number[], hoverIndex?: number) {
-    this.notifySelectionChanged(selectedPointIndices);
+    this.notifySelectionChanged(selectedPointIndices, 'normal');
     this.notifyHoverOverPoint(hoverIndex);
     this.setMouseMode(MouseMode.CAMERA_AND_CLICK_SELECT);
   }
@@ -648,7 +650,7 @@ export class Projector extends ProjectorPolymer implements
           this.dataSet);
       this.setProjection(projection);
     }
-    this.notifySelectionChanged(state.selectedPoints);
+    this.notifySelectionChanged(state.selectedPoints, 'normal');
   }
 }
 

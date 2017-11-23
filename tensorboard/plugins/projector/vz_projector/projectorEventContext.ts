@@ -15,6 +15,7 @@ limitations under the License.
 namespace vz_projector {
 
 export type HoverListener = (index: number) => void;
+export type SelectionMode = 'normal' | 'edit';
 export type SelectionChangedListener =
     (selectedPointIndices: number[], neighborsOfFirstPoint: knn.NearestEntry[]) =>
         void;
@@ -32,9 +33,10 @@ export interface ProjectorEventContext {
   registerSelectionChangedListener(listener: SelectionChangedListener);
   /**
    * Notify the selection system that a client has changed the selected point
-   * set.
+   * set under a specified selection mode.
    */
-  notifySelectionChanged(newSelectedPointIndices: number[]);
+  notifySelectionChanged(newSelectedPointIndices: number[],
+      selectionMode: SelectionMode);
   /** Registers a callback to be invoked when the projection changes. */
   registerProjectionChangedListener(listener: ProjectionChangedListener);
   /** Notify listeners that a reprojection occurred. */

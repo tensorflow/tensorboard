@@ -131,6 +131,8 @@ export class ScatterPlot {
     this.container.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.container.addEventListener('mouseup', this.onMouseUp.bind(this));
     this.container.addEventListener('click', this.onClick.bind(this));
+    this.container.addEventListener('contextmenu',
+        this.onRightClick.bind(this));
     window.addEventListener('keydown', this.onKeyDown.bind(this), false);
     window.addEventListener('keyup', this.onKeyUp.bind(this), false);
   }
@@ -276,7 +278,20 @@ export class ScatterPlot {
     // Only call event handlers if the click originated from the scatter plot.
     if (!this.isDragSequence && notify) {
       const selection = (this.nearestPoint != null) ? [this.nearestPoint] : [];
-      this.projectorEventContext.notifySelectionChanged(selection);
+      this.projectorEventContext.notifySelectionChanged(selection, 'normal');
+    }
+    this.isDragSequence = false;
+    this.render();
+  }
+
+  private onRightClick(e: MouseEvent) {
+    if (e && this.selecting) {
+      return;
+    }
+
+    if (!this.isDragSequence) {
+      const selection = (this.nearestPoint != null) ? [this.nearestPoint] : [];
+      this.projectorEventContext.notifySelectionChanged(selection, 'edit');
     }
     this.isDragSequence = false;
     this.render();
@@ -413,7 +428,7 @@ export class ScatterPlot {
 
   private selectBoundingBox(boundingBox: ScatterBoundingBox) {
     let pointIndices = this.getPointIndicesFromPickingTexture(boundingBox);
-    this.projectorEventContext.notifySelectionChanged(pointIndices);
+    this.projectorEventContext.notifySelectionChanged(pointIndices, 'normal');
   }
 
   private setNearestPointToMouse(e: MouseEvent) {

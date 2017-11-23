@@ -195,7 +195,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
         this.projectorEventContext.notifyHoverOverPoint(null);
       };
       rowLink.onclick = () => {
-        this.projectorEventContext.notifySelectionChanged([index]);
+        this.projectorEventContext.notifySelectionChanged([index], 'normal');
       };
 
       row.appendChild(rowLink);
@@ -279,7 +279,8 @@ export class InspectorPanel extends InspectorPanelPolymer {
         this.projectorEventContext.notifyHoverOverPoint(null);
       };
       neighborElementLink.onclick = () => {
-        this.projectorEventContext.notifySelectionChanged([neighbor.index]);
+        this.projectorEventContext.notifySelectionChanged([neighbor.index],
+            'normal');
       };
     }
   }
@@ -309,7 +310,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
     const updateInput = (value: string, inRegexMode: boolean) => {
       if (value == null || value.trim() === '') {
         this.searchBox.message = '';
-        this.projectorEventContext.notifySelectionChanged([]);
+        this.projectorEventContext.notifySelectionChanged([], 'normal');
         return;
       }
       const indices = projector.dataSet.query(
@@ -319,7 +320,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
       } else {
         this.searchBox.message = `${indices.length} matches.`;
       }
-      this.projectorEventContext.notifySelectionChanged(indices);
+      this.projectorEventContext.notifySelectionChanged(indices, 'normal');
     };
     this.searchBox.registerInputChangedListener((value, inRegexMode) => {
       updateInput(value, inRegexMode);
@@ -331,7 +332,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
       this.numNN = +numNNInput.value;
       if (this.selectedPointIndices != null) {
         this.projectorEventContext.notifySelectionChanged(
-            [this.selectedPointIndices[0]]);
+            [this.selectedPointIndices[0]], 'normal');
       }
     };
     numNNInput.addEventListener('change', updateNumNN);
@@ -364,7 +365,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
 
       if (this.selectedPointIndices.length == 1) {
         this.projectorEventContext.notifySelectionChanged(
-          this.selectedPointIndices);
+          this.selectedPointIndices, 'normal');
         const neighbors = this.projector.dataSet.findNeighbors(
             this.selectedPointIndices[0], this.numNN,
             this.distSpace, this.distFunc, this.knnFunc);
