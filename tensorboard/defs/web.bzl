@@ -41,7 +41,7 @@ _CLOSURE_WORKER = attr.label(
     executable=True,
     cfg="host")
 
-def _ts_web_library(ctx):
+def _tf_web_library(ctx):
   if not ctx.attr.srcs:
     if ctx.attr.deps:
       fail("deps can not be set when srcs is not")
@@ -379,8 +379,8 @@ web_aspect = aspect(
     attr_aspects=["deps", "sticky_deps", "module_deps"],
     attrs={"_ClosureWorkerAspect": _CLOSURE_WORKER})
 
-ts_web_library = rule(
-    implementation=_ts_web_library,
+tf_web_library = rule(
+    implementation=_tf_web_library,
     executable=True,
     attrs=CLUTZ_ATTRIBUTES + {
         "path": attr.string(),
@@ -407,7 +407,7 @@ ts_web_library = rule(
             executable=True,
             cfg="host"),
         "_default_typings": attr.label(
-            default=Label("//tensorboard:ts_web_library_default_typings"),
+            default=Label("//tensorboard:tf_web_library_default_typings"),
             allow_files=True),
         "_WebfilesServer": attr.label(
             default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles/server:WebfilesServer"),
@@ -418,3 +418,7 @@ ts_web_library = rule(
         "_closure_library_deps": CLOSURE_LIBRARY_DEPS_ATTR,
     },
     outputs=CLUTZ_OUTPUTS)
+
+def ts_web_library(**kwargs):
+  print("DEPRECATION: ts_web_library is now tf_web_library")
+  tf_web_library(**kwargs)
