@@ -131,8 +131,6 @@ export class ScatterPlot {
     this.container.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.container.addEventListener('mouseup', this.onMouseUp.bind(this));
     this.container.addEventListener('click', this.onClick.bind(this));
-    this.container.addEventListener('contextmenu',
-        this.onRightClick.bind(this));
     window.addEventListener('keydown', this.onKeyDown.bind(this), false);
     window.addEventListener('keyup', this.onKeyUp.bind(this), false);
   }
@@ -284,19 +282,6 @@ export class ScatterPlot {
     this.render();
   }
 
-  private onRightClick(e: MouseEvent) {
-    if (e && this.selecting) {
-      return;
-    }
-
-    if (!this.isDragSequence) {
-      const selection = (this.nearestPoint != null) ? [this.nearestPoint] : [];
-      this.projectorEventContext.notifySelectionChanged(selection, 'edit');
-    }
-    this.isDragSequence = false;
-    this.render();
-  }
-
   private onMouseDown(e: MouseEvent) {
     this.isDragSequence = false;
     this.mouseIsDown = true;
@@ -326,6 +311,12 @@ export class ScatterPlot {
     if (this.selecting) {
       this.orbitCameraControls.enabled = true;
       this.rectangleSelector.onMouseUp();
+      this.render();
+    }
+    // right-click and not isDragSequence
+    else if (e.button == 2 && !this.isDragSequence) {
+      const selection = (this.nearestPoint != null) ? [this.nearestPoint] : [];
+      this.projectorEventContext.notifySelectionChanged(selection, 'edit');
       this.render();
     }
     this.mouseIsDown = false;
