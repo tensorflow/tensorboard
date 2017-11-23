@@ -333,7 +333,8 @@ paper-dropdown-menu paper-item {
         </paper-listbox>
       </paper-dropdown-menu>
       <paper-input value="{{metadataEditorInput}}" label="{{metadataEditorInputLabel}}"
-      on-input="metadataEditorInputChange"></paper-input>
+          on-input="metadataEditorInputChange" on-keydown="metadataEditorInputKeydown">
+      </paper-input>
     </div>
   </template>
   <div id="demo-data-buttons-container">
