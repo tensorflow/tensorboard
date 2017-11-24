@@ -23,6 +23,7 @@ export let InspectorPanelPolymer = PolymerElement({
   properties: {
     selectedMetadataField: String,
     metadataFields: Array,
+    metadataColumn: String,
     selectedDistance: String,
     distanceFields: Array,
     distanceChanged: Object,
@@ -42,10 +43,12 @@ export class InspectorPanel extends InspectorPanelPolymer {
 
   private selectedMetadataField: string;
   private metadataFields: string[];
+  private metadataColumn: string;
   private selectedDistance: string;
   private distanceFields: string[];
   private selectedNeighborhood: string;
   private neighborhoodFields: string[];
+  private displayContexts: string[];
 
   private projector: Projector;
   private selectedPointIndices: number[];
@@ -66,6 +69,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
         this.querySelector('.clear-selection') as HTMLButtonElement;
     this.limitMessage = this.querySelector('.limit-msg') as HTMLDivElement;
     this.searchBox = this.querySelector('#search-box') as ProjectorInput;
+    this.displayContexts = [];
     // https://www.polymer-project.org/1.0/docs/devguide/styling#scope-subtree
     this.scopeSubtree(this, true);
   }
@@ -163,14 +167,109 @@ export class InspectorPanel extends InspectorPanelPolymer {
     }
   }
 
+  metadataEditorContext(enabled: boolean, metadataColumn: string) {
+    if (!this.projector || !this.projector.dataSet) {
+      return;
+    }
+
+    let stat = this.projector.dataSet.spriteAndMetadataInfo.stats.filter(s =>
+        s.name == metadataColumn);
+
+    if (!enabled || stat.length == 0 || stat[0].tooManyUniqueValues) {
+      this.removeContext('.metadata-info');
+      return;
+    }
+
+    this.metadataColumn = metadataColumn;
+    this.addContext('.metadata-info');
+    let list = this.querySelector('.metadata-list') as HTMLDivElement;
+    list.innerHTML = '';
+
+    let entries = stat[0].uniqueEntries.sort((a, b) => a.count - b.count);
+    let maxCount = entries[entries.length - 1].count;
+
+    entries.forEach(e => {
+      const metadataElement = document.createElement('div');
+      metadataElement.className = 'metadata';
+
+      const metadataElementLink = document.createElement('a');
+      metadataElementLink.className = 'metadata-link';
+      metadataElementLink.title = e.label;
+
+      const labelValueElement = document.createElement('div');
+      labelValueElement.className = 'label-and-value';
+
+      const labelElement = document.createElement('div');
+      labelElement.className = 'label';
+      labelElement.style.color =
+          dist2color(this.distFunc, maxCount, e.count);
+      labelElement.innerText = e.label;
+
+      const valueElement = document.createElement('div');
+      valueElement.className = 'value';
+      valueElement.innerText = e.count.toString();
+
+      labelValueElement.appendChild(labelElement);
+      labelValueElement.appendChild(valueElement);
+
+      const barElement = document.createElement('div');
+      barElement.className = 'bar';
+
+      const barFillElement = document.createElement('div');
+      barFillElement.className = 'fill';
+      barFillElement.style.borderTopColor =
+          dist2color(this.distFunc, maxCount, e.count);
+      barFillElement.style.width =
+          normalizeDist(this.distFunc, maxCount, e.count) * 100 + '%';
+      barElement.appendChild(barFillElement);
+
+      for (let j = 1; j < 4; j++) {
+        const tickElement = document.createElement('div');
+        tickElement.className = 'tick';
+        tickElement.style.left = j * 100 / 4 + '%';
+        barElement.appendChild(tickElement);
+      }
+
+      metadataElementLink.appendChild(labelValueElement);
+      metadataElementLink.appendChild(barElement);
+      metadataElement.appendChild(metadataElementLink);
+      list.appendChild(metadataElement);
+
+      metadataElementLink.onclick = () => {
+        this.projector.metadataEdit(metadataColumn, e.label);
+      };
+    })
+  }
+
+  private addContext(context: string) {
+    if (this.displayContexts.indexOf(context) == -1) {
+      this.displayContexts.push(context);
+    }
+    this.displayContexts.forEach( c => {
+      (this.querySelector(c) as HTMLDivElement).style.display = 'none';
+    });
+    (this.querySelector(context) as HTMLDivElement).style.display = null;
+  }
+
+  private removeContext(context: string) {
+    this.displayContexts = this.displayContexts.filter(c => c != context);
+    (this.querySelector(context) as HTMLDivElement).style.display = 'none';
+
+    if (this.displayContexts.length > 0) {
+      let lastContext = this.displayContexts[this.displayContexts.length-1];
+      (this.querySelector(lastContext) as HTMLDivElement).style.display = null;
+    }
+  }
+
   private updateSearchResults(indices: number[]) {
     const container = this.querySelector('.matches-list') as HTMLDivElement;
-    container.style.display = indices.length ? null : 'none';
     const list = container.querySelector('.list') as HTMLDivElement;
     list.innerHTML = '';
     if (indices.length === 0) {
+      this.removeContext('.matches-list');
       return;
     }
+    this.addContext('.matches-list');
 
     this.limitMessage.style.display =
         indices.length <= LIMIT_RESULTS ? 'none' : null;
@@ -212,12 +311,11 @@ export class InspectorPanel extends InspectorPanelPolymer {
     const nnlist = this.querySelector('.nn-list') as HTMLDivElement;
     nnlist.innerHTML = '';
 
-    (this.querySelector('.nn') as HTMLDivElement).style.display =
-        neighbors.length ? null : 'none';
-
     if (neighbors.length === 0) {
+      this.removeContext('.nn');
       return;
     }
+    this.addContext('.nn');
 
     this.searchBox.message = '';
     const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;

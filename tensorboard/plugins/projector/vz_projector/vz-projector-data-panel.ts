@@ -139,9 +139,12 @@ export class DataPanel extends DataPanelPolymer {
   }
 
   metadataChanged(
-      spriteAndMetadata: SpriteAndMetadataInfo, metadataFile: string) {
+      spriteAndMetadata: SpriteAndMetadataInfo, metadataFile?: string) {
     this.spriteAndMetadata = spriteAndMetadata;
-    this.metadataFile = metadataFile;
+
+    if (metadataFile != null) {
+      this.metadataFile = metadataFile;
+    }
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
     
@@ -283,6 +286,14 @@ export class DataPanel extends DataPanelPolymer {
     this.colorOptions = standardColorOption.concat(metadataColorOption);
   }
 
+  private metadataEditorContext(enabled: boolean) {
+    this.metadataEditorButtonDisabled = !enabled;
+
+    if (this.projector) {
+      this.projector.metadataEditorContext(enabled, this.metadataEditorColumn);
+    }
+  }
+
   private metadataEditorInputChange() {
     let value = this.metadataEditorInput;
     let selectionSize = this.selectedPointIndices.length + 
@@ -297,18 +308,17 @@ export class DataPanel extends DataPanelPolymer {
           this.metadataEditorInputLabel = `Tag ${selectionSize} with new label`;
         }
         else {
-          this.metadataEditorInputLabel = 
-              `Tag ${selectionSize} points as`;
+          this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
         }
-        this.metadataEditorButtonDisabled = false;
+        this.metadataEditorContext(true);
       }
       else {
         this.metadataEditorInputLabel = 'Tag selection as';
-        this.metadataEditorButtonDisabled = true;
+        this.metadataEditorContext(false);
       }
     }
     else {
-      this.metadataEditorButtonDisabled = true;
+      this.metadataEditorContext(false);
 
       if (value != null && value.trim() != '') {
         this.metadataEditorInputLabel = 'Select points to tag';
@@ -333,23 +343,12 @@ export class DataPanel extends DataPanelPolymer {
 
   private metadataEditorButtonClicked() {
     if (!this.metadataEditorButtonDisabled) {
-      this.metadataEditorButtonDisabled = true;
-
       let selectionSize = this.selectedPointIndices.length + 
           this.neighborsOfFirstPoint.length;
 
-      this.selectedPointIndices.forEach(i =>
-          this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
+      this.projector.metadataEdit(this.metadataEditorColumn,
           this.metadataEditorInput);
-      
-      this.neighborsOfFirstPoint.forEach(p =>
-          this.projector.dataSet.points[p.index]
-              .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
-      
-      this.spriteAndMetadata.stats = analyzeMetadata(
-          this.spriteAndMetadata.stats.map(s => s.name),
-          this.projector.dataSet.points.map(p => p.metadata));
-      this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
+      this.projector.metadataEditorContext(true, this.metadataEditorColumn);
 
       this.metadataEditorInputLabel =
           `${selectionSize} labeled as '${this.metadataEditorInput}'`;
