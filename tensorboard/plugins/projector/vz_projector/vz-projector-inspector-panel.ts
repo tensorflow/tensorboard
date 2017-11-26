@@ -29,7 +29,9 @@ export let InspectorPanelPolymer = PolymerElement({
     distanceChanged: Object,
     selectedNeighborhood: String,
     neighborhoodFields: Array,
-    neighborhoodChanged: Object
+    neighborhoodChanged: Object,
+    numNN: {type: Number, value: 100},
+    updateNumNN: Object
   }
 });
 
@@ -424,18 +426,6 @@ export class InspectorPanel extends InspectorPanelPolymer {
       updateInput(value, inRegexMode);
     });
 
-    // Nearest neighbors controls.
-    const numNNInput = this.$$('#nn-slider') as HTMLInputElement;
-    const updateNumNN = () => {
-      this.numNN = +numNNInput.value;
-      if (this.selectedPointIndices != null) {
-        this.projectorEventContext.notifySelectionChanged(
-            [this.selectedPointIndices[0]], 'normal');
-      }
-    };
-    numNNInput.addEventListener('change', updateNumNN);
-    updateNumNN();
-
     // Filtering dataset.
     this.setFilterButton.onclick = () => {
       const indices = this.selectedPointIndices.concat(
@@ -455,6 +445,13 @@ export class InspectorPanel extends InspectorPanelPolymer {
     };
     this.enableResetFilterButton(false);
   }
+
+  private updateNumNN() {
+    if (this.selectedPointIndices != null) {
+      this.projectorEventContext.notifySelectionChanged(
+          [this.selectedPointIndices[0]], 'normal');
+    }
+  };
 
   private updateNeighborsDisplay() {
     if (this.projectorEventContext && this.projector
