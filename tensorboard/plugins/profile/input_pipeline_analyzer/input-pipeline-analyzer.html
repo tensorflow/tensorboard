@@ -169,17 +169,13 @@ You may obtain a copy of the License at
   </template>
 
   <script>
-  import {addParams} from "../tf-backend/urlPathHelpers.js";
-  import {RequestManager} from '../tf-backend/requestManager.js';
-  import {getRouter} from '../tf-backend/router.js';
-
   Polymer({
     is: 'input-pipeline-analyzer',
     properties: {
       _requestManager: {
         type: Object,
         readOnly: true,
-        value: () => new RequestManager(),
+        value: () => new tf_backend.RequestManager(),
       },
       run: {
         type: String,
@@ -213,8 +209,9 @@ You may obtain a copy of the License at
       this.set('_show_host_side_table', !this._show_host_side_table);
     },
     _reloadToolData: function(run) {
-      this._requestManager.request(addParams(
-          getRouter().pluginRoute('profile', '/data'), {tag: 'input_pipeline_analyzer', run})
+      this._requestManager.request(tf_backend.addParams(
+          tf_backend.getRouter().pluginRoute('profile', '/data'),
+          {tag: 'input_pipeline_analyzer', run})
       ).then((data) => {
         if (data) {
           this.set('_data', data);
