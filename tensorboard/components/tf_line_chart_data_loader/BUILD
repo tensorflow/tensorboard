@@ -1,11 +1,10 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tf_line_chart_data_loader",
     srcs = [
         "tf-line-chart-data-loader.html",

@@ -108,6 +108,20 @@ class MarkdownToSafeHTMLTest(tf.test.TestCase):
     self._test(s,
                u'<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>')
 
+  def test_null_bytes_stripped_before_markdown_processing(self):
+    # If this function is mistakenly called with UTF-16 or UTF-32 encoded text,
+    # there will probably be a bunch of null bytes. These would be stripped by
+    # the sanitizer no matter what, but make sure we remove them before markdown
+    # interpretation to avoid affecting output (e.g. middle-word underscores
+    # would generate erroneous <em> tags like "un<em>der</em>score") and add an
+    # HTML comment with a warning.
+    s = u'un_der_score'.encode('utf-32-le')
+    # UTF-32 encoding of ASCII will have 3 null bytes per char. 36 = 3 * 12.
+    self._test(s,
+               u'<!-- WARNING: discarded 36 null bytes in markdown string '
+               'after UTF-8 decoding -->\n'
+               '<p>un_der_score</p>')
+
 
 if __name__ == '__main__':
   tf.test.main()

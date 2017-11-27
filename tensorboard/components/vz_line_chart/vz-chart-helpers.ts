@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_line_chart {
 
 export interface Datum {
   wall_time: Date;
@@ -26,6 +27,58 @@ export interface Scalar {
 export type ScalarDatum = Datum & Scalar;
 
 export type DataFn = (run: string, tag: string) => Promise<Array<Datum>>;
+
+export interface LineChartSymbol {
+  // A single unicode character string representing the symbol. Maybe a diamond
+  // unicode character for instance. 
+  character: string;
+  // A special method used by Plottable to draw the symbol in the line chart.
+  method: (() => Plottable.SymbolFactories.SymbolFactory);
+}
+
+/**
+ * A list of symbols that line charts can cycle through per data series.
+ */
+export const SYMBOLS_LIST: LineChartSymbol[] = [
+  {
+    character: '\u25FC',
+    method: Plottable.SymbolFactories.square,
+  },
+  {
+    character: '\u25c6',
+    method: Plottable.SymbolFactories.diamond,
+  },
+  {
+    character: '\u25B2',
+    method: Plottable.SymbolFactories.triangle,
+  },
+  {
+    character: '\u2605',
+    method: Plottable.SymbolFactories.star,
+  },
+  {
+    character: '\u271a',
+    method: Plottable.SymbolFactories.cross,
+  },
+];
+
+/** X axis choices for TensorBoard charts. */
+export enum XType {
+
+  /** Linear scale using the "step" property of the datum. */
+  STEP = 'step',
+
+  /** Temporal scale using the "wall_time" property of the datum. */
+  RELATIVE = 'relative',
+
+  /**
+   * Temporal scale using the "relative" property of the datum if it is present
+   * or calculating from "wall_time" if it isn't.
+   */
+  WALL_TIME = 'wall_time',
+}
+
+export type SymbolFn = (series: string) => Plottable.SymbolFactory;
 
 export let Y_TOOLTIP_FORMATTER_PRECISION = 4;
 export let STEP_FORMATTER_PRECISION = 4;
@@ -218,13 +271,15 @@ export let isNaN = (x) => +x !== x;
 
 export function getXComponents(xType: string): XComponents {
   switch (xType) {
-    case 'step':
+    case XType.STEP:
       return stepX();
-    case 'wall_time':
+    case XType.WALL_TIME:
       return wallX();
-    case 'relative':
+    case XType.RELATIVE:
       return relativeX();
     default:
       throw new Error('invalid xType: ' + xType);
   }
 }
+
+}  // namespace vz_line_chart

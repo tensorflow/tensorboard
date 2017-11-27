@@ -103,11 +103,6 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
     </style>
   </template>
   <script>
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getTags} from '../tf-backend/backend.js';
-    import {getRouter} from '../tf-backend/router.js';
-    import {categorizeRunTagCombinations} from '../tf-categorization-utils/categorizationUtils.js';
-    import {registerDashboard} from '../tf-tensorboard/registry.js';
 
     Polymer({
       is: "tf-text-dashboard",
@@ -118,7 +113,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 
         _tagFilter: {
           type: String,  // upward bound from paper-input
-          value: '.*',
+          value: '',
         },
         _categories: {
           type: Array,
@@ -128,7 +123,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(),
+          value: () => new tf_backend.RequestManager(),
         },
       },
       ready() {
@@ -140,13 +135,13 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         });
       },
       _fetchTags() {
-        const url = getRouter().pluginRoute('text', '/tags');
+        const url = tf_backend.getRouter().pluginRoute('text', '/tags');
         return this._requestManager.request(url).then(runToTag => {
           if (_.isEqual(runToTag, this._runToTag)) {
             // No need to update anything if there are no changes.
             return;
           }
-          const tags = getTags(runToTag);
+          const tags = tf_backend.getTags(runToTag);
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTag', runToTag);
         });
@@ -157,11 +152,11 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         });
       },
       _makeCategories(runToTag, selectedRuns, tagFilter) {
-        return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+        return tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
       },
     });
 
-    registerDashboard({
+    tf_tensorboard.registerDashboard({
       plugin: 'text',
       elementName: 'tf-text-dashboard',
     });

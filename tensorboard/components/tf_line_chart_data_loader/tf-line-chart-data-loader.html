@@ -31,7 +31,7 @@ limitations under the License.
       <vz-line-chart
         x-components-creation-method="[[xComponentsCreationMethod]]"
         y-value-accessor="[[yValueAccessor]]"
-        color-scale="[[_runsColorScale]]"
+        color-scale="[[colorScale]]"
         tooltip-columns="[[tooltipColumns]]"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
@@ -40,6 +40,8 @@ limitations under the License.
         style="[[_computeLineChartStyle(_loading)]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
+        fill-area="[[fillArea]]"
+        symbol-function="[[symbolFunction]]"
       ></vz-line-chart>
       <template is="dom-if" if="[[_loading]]">
         <div id="loading-spinner-container">
@@ -85,8 +87,7 @@ limitations under the License.
     </style>
   </template>
   <script>
-    import {Canceller} from '../tf-backend/canceller.js';
-    import {runsColorScale} from '../tf-color-scale/colorScale.js';
+    (function() {
 
     // The chart can sometimes get in a bad state, when it redraws while
     // it is display: none due to the user having switched to a different
@@ -113,10 +114,19 @@ limitations under the License.
         runs: Array,
         tag: String,
 
+        // An optional list of data series. Each data series is a string that
+        // corresponds to a line in the chart. If this property is not provided,
+        // the list of data series consists of the list of runs.
+        dataSeries: {
+          type: Array,
+          value: [],
+        },
+
         xComponentsCreationMethod: Object,
         xType: String,
         yValueAccessor: Object,
         tooltipColumns: Array,
+        fillArea: Object,
 
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
@@ -125,6 +135,8 @@ limitations under the License.
 
         defaultXRange: Array,
         defaultYRange: Array,
+
+        symbolFunction: Object,
 
         /**
          * A function that takes as inputs:
@@ -153,9 +165,12 @@ limitations under the License.
           observer: '_logScaleChanged',
         },
 
-        _runsColorScale: {
+        /**
+         * An object with a scale method that maps from data series to color.
+         */
+        colorScale: {
           type: Object,
-          value: () => ({scale: runsColorScale}),
+          value: () => ({scale: tf_color_scale.runsColorScale}),
         },
 
         _loading: {
@@ -170,7 +185,7 @@ limitations under the License.
 
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
 
         /*
@@ -200,7 +215,7 @@ limitations under the License.
       },
       observers: [
         '_tagChanged(_attached, tag)',
-        '_runsChanged(_attached, runs.*)'
+        '_dataChanged(_attached, dataSeries, runs.*)'
       ],
       created() {
         this._loadData = _.debounce(
@@ -231,11 +246,17 @@ limitations under the License.
         this._resetDomainOnNextLoad = true;
         this._loadData();
       },
-      _runsChanged(attached, runsUpdateRecord) {
+      _dataChanged(attached, dataSeries, runsUpdateRecord) {
         if (!attached) {
           return;
         }
-        this.$$('vz-line-chart').setVisibleSeries(this.runs);
+
+        let visibleSeries = dataSeries;
+        if (visibleSeries.length === 0) {
+          // The data series is not explicitly set. Default to using runs.
+          visibleSeries = runsUpdateRecord.base;
+        }
+        this.$$('vz-line-chart').setVisibleSeries(visibleSeries);
         this._loadData();
       },
       _loadData() {
@@ -295,7 +316,13 @@ limitations under the License.
         });
       },
       _changeSeries() {
-        this.$$('vz-line-chart').setVisibleSeries(this.runs);
+        let visibleSeries = this.dataSeries;
+        if (this.dataSeries.length === 0) {
+          // The data series is not explicitly set. Default to using runs.
+          visibleSeries = this.runs;
+        }
+
+        this.$$('vz-line-chart').setVisibleSeries(visibleSeries);
         this._loadData();
       },
       _logScaleChanged(logScaleActive) {
@@ -318,5 +345,6 @@ limitations under the License.
         }
       },
     });
+    })();
   </script>
 </dom-module>

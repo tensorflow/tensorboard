@@ -1,16 +1,16 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tf_card_heading",
     srcs = [
         "tf-card-heading.html",
         "tf-card-heading-style.html",
         "util.html",
-        "util.js",
+        "util.ts",
     ],
     path = "/tf-card-heading",
     visibility = ["//visibility:public"],

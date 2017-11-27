@@ -131,15 +131,6 @@ paper-dialog {
 </dom-module>
 
 <script>
-import {RequestManager} from "../tf-backend/requestManager.js";
-import {Canceller} from "../tf-backend/canceller.js";
-import {compareTagNames} from "../vz-sorting/sorting.js";
-import {getRouter} from "../tf-backend/router.js";
-import {addParams} from "../tf-backend/urlPathHelpers.js";
-import {queryEncoder} from "../tf-backend/urlPathHelpers.js";
-import * as storage from '../tf-storage/storage.js';
-import {registerDashboard} from '../tf-tensorboard/registry.js';
-
 /**
  * The (string) name for the run of the selected dataset in the graph dashboard.
  */
@@ -152,11 +143,11 @@ Polymer({
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
       type: Object,
-      value: () => new RequestManager(),
+      value: () => new tf_backend.RequestManager(),
     },
     _canceller: {
       type: Object,
-      value: () => new Canceller(),
+      value: () => new tf_backend.Canceller(),
     },
     _debuggerDataEnabled: Boolean,
     allStepsModeEnabled: Boolean,
@@ -203,7 +194,7 @@ Polymer({
     run: {
       type: String,
       notify: true,
-      value: storage.getStringInitializer(
+      value: tf_storage.getStringInitializer(
           RUN_STORAGE_KEY, {
             defaultValue: '',
             useLocalStorage: false,
@@ -235,7 +226,7 @@ Polymer({
     if (!this._debuggerDataEnabled) {
       // Check if the debugger plugin is enabled now.
       this._requestManager
-          .request(getRouter().pluginsListing())
+          .request(tf_backend.getRouter().pluginsListing())
           .then(this._canceller.cancellable(result => {
             if (result.cancelled) {
               return;
@@ -253,7 +244,7 @@ Polymer({
 
     this._maybeFetchHealthPills();
   },
-  _runObserver: storage.getStringObserver(
+  _runObserver: tf_storage.getStringObserver(
       RUN_STORAGE_KEY, {
         defaultValue: '',
         polymerProperty: 'run',
@@ -261,11 +252,11 @@ Polymer({
       }),
   _fetchGraphRuns() {
     return this._requestManager.request(
-        getRouter().pluginRoute('graphs', '/runs'));
+        tf_backend.getRouter().pluginRoute('graphs', '/runs'));
   },
   _fetchRunMetadataTags() {
     return this._requestManager.request(
-        getRouter().pluginRoute('graphs', '/run_metadata_tags'));
+        tf_backend.getRouter().pluginRoute('graphs', '/run_metadata_tags'));
   },
   /*
    * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.
@@ -283,16 +274,16 @@ Polymer({
       // might be slow since the backend reads events sequentially from disk.
       postData['step'] = step;
     }
-    const url = getRouter().pluginRoute('debugger', '/health_pills');
+    const url = tf_backend.getRouter().pluginRoute('debugger', '/health_pills');
     return this._requestManager.request(url, postData);
   },
   _fetchDebuggerNumericsAlerts() {
     return this._requestManager.request(
-        getRouter().pluginRoute('debugger', '/numerics_alert_report'));
+        tf_backend.getRouter().pluginRoute('debugger', '/numerics_alert_report'));
   },
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
-    const demoMode = getRouter().isDemoMode();
-    const base = getRouter().pluginRoute('graphs', '/graph');
+    const demoMode = tf_backend.getRouter().isDemoMode();
+    const base = tf_backend.getRouter().pluginRoute('graphs', '/graph');
     const optional = (p) => (p != null && !demoMode || undefined) && p;
     const parameters = {
       'run': run,
@@ -300,7 +291,7 @@ Polymer({
       'large_attrs_key': optional(largeAttrsKey),
     };
     const extension = demoMode ? '.pbtxt' : '';
-    return addParams(base, parameters) + extension;
+    return tf_backend.addParams(base, parameters) + extension;
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
@@ -316,25 +307,22 @@ Polymer({
       // Either this dashboard is already initialized ... or we are not yet ready to initialize.
       return;
     }
-    if (typeof ga !== 'undefined' && ga != null) {
-      ga('send', {hitType: 'pageview', page: '/v/graph'});
-    }
     // Set this to true so we only initialize once.
     this._initialized = true;
     Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])
       .then(result => {
-        const runsWithGraph = result[0].sort(compareTagNames);
+        const runsWithGraph = result[0].sort(vz_sorting.compareTagNames);
         const runToMetadata = result[1];
         const datasets = _.map(runsWithGraph, runName => ({
           name: runName,
           path: this._graphUrl(
               runName, tf.graph.LIMIT_ATTR_SIZE, tf.graph.LARGE_ATTRS_KEY),
           runMetadata: _.map(
-            (runToMetadata[runName] || []).sort(compareTagNames),
+            (runToMetadata[runName] || []).sort(vz_sorting.compareTagNames),
             tag => ({
               tag: tag,
-              path: addParams(
-                getRouter().pluginRoute('graphs', '/run_metadata'),
+              path: tf_backend.addParams(
+                tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
                 {tag: tag, run: runName}),
             })),
         }));
@@ -466,7 +454,7 @@ Polymer({
   },
 });
 
-registerDashboard({
+tf_tensorboard.registerDashboard({
   plugin: 'graphs',
   elementName: 'tf-graph-dashboard',
   // TODO(@chihuahua): Reconcile this setting with Health Pills.

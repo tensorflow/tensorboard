@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,17 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataSet, DistanceFunction, Projection, ProjectionComponents3D, State} from './data.js';
-import {NearestEntry} from './knn.js';
-import {ProjectorEventContext} from './projectorEventContext.js';
-import {LabelRenderParams} from './renderContext.js';
-import {ScatterPlot} from './scatterPlot.js';
-import {ScatterPlotVisualizer3DLabels} from './scatterPlotVisualizer3DLabels.js';
-import {ScatterPlotVisualizerCanvasLabels} from './scatterPlotVisualizerCanvasLabels.js';
-import {ScatterPlotVisualizerPolylines} from './scatterPlotVisualizerPolylines.js';
-import {ScatterPlotVisualizerSprites} from './scatterPlotVisualizerSprites.js';
-import * as vector from './vector.js';
+namespace vz_projector {
 
 const LABEL_FONT_SIZE = 10;
 const LABEL_SCALE_DEFAULT = 1.0;
@@ -79,7 +69,7 @@ export class ProjectorScatterPlotAdapter {
   private projection: Projection;
   private hoverPointIndex: number;
   private selectedPointIndices: number[];
-  private neighborsOfFirstSelectedPoint: NearestEntry[];
+  private neighborsOfFirstSelectedPoint: knn.NearestEntry[];
   private renderLabelsIn3D: boolean = false;
   private labelPointAccessor: string;
   private legendPointColorer: (ds: DataSet, index: number) => string;
@@ -297,7 +287,7 @@ export class ProjectorScatterPlotAdapter {
 
   generateVisibleLabelRenderParams(
       ds: DataSet, selectedPointIndices: number[],
-      neighborsOfFirstPoint: NearestEntry[],
+      neighborsOfFirstPoint: knn.NearestEntry[],
       hoverPointIndex: number): LabelRenderParams {
     if (ds == null) {
       return null;
@@ -382,7 +372,7 @@ export class ProjectorScatterPlotAdapter {
 
   generatePointScaleFactorArray(
       ds: DataSet, selectedPointIndices: number[],
-      neighborsOfFirstPoint: NearestEntry[],
+      neighborsOfFirstPoint: knn.NearestEntry[],
       hoverPointIndex: number): Float32Array {
     if (ds == null) {
       return new Float32Array(0);
@@ -506,7 +496,7 @@ export class ProjectorScatterPlotAdapter {
   generatePointColorArray(
       ds: DataSet, legendPointColorer: (ds: DataSet, index: number) => string,
       distFunc: DistanceFunction, selectedPointIndices: number[],
-      neighborsOfFirstPoint: NearestEntry[], hoverPointIndex: number,
+      neighborsOfFirstPoint: knn.NearestEntry[], hoverPointIndex: number,
       label3dMode: boolean, spriteImageMode: boolean): Float32Array {
     if (ds == null) {
       return new Float32Array(0);
@@ -709,3 +699,5 @@ export function dist2color(
     distFunc: DistanceFunction, d: number, minDist: number): string {
   return NN_COLOR_SCALE(normalizeDist(distFunc, d, minDist));
 }
+
+}  // namespace vz_projector

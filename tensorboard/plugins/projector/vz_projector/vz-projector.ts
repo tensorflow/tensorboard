@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,27 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {AnalyticsLogger} from './analyticsLogger.js';
-import * as data from './data.js';
-import {ColorOption, ColumnStats, DataPoint, DataProto, DataSet, DistanceFunction, PointMetadata, Projection, SpriteAndMetadataInfo, State, stateGetAccessorDimensions} from './data.js';
-import {DataProvider, EmbeddingInfo, ServingMode} from './data-provider.js';
-import {DemoDataProvider} from './data-provider-demo.js';
-import {ProtoDataProvider} from './data-provider-proto.js';
-import {ServerDataProvider} from './data-provider-server.js';
-import * as knn from './knn.js';
-import * as logging from './logging.js';
-import {DistanceMetricChangedListener, HoverListener, ProjectionChangedListener, ProjectorEventContext, SelectionChangedListener} from './projectorEventContext.js';
-import {ProjectorScatterPlotAdapter} from './projectorScatterPlotAdapter.js';
-import {MouseMode} from './scatterPlot.js';
-import * as util from './util.js';
-import {BookmarkPanel} from './vz-projector-bookmark-panel.js';
-import {DataPanel} from './vz-projector-data-panel.js';
-import {InspectorPanel} from './vz-projector-inspector-panel.js';
-import {MetadataCard} from './vz-projector-metadata-card.js';
-import {ProjectionsPanel} from './vz-projector-projections-panel.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 /**
  * The minimum number of dimensions the data should have to automatically
@@ -77,6 +57,7 @@ export class Projector extends ProjectorPolymer implements
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
   private hoverPointIndex: number;
+  private editMode: boolean;
 
   private dataProvider: DataProvider;
   private inspectorPanel: InspectorPanel;
@@ -119,6 +100,7 @@ export class Projector extends ProjectorPolymer implements
     this.distanceMetricChangedListeners = [];
     this.selectedPointIndices = [];
     this.neighborsOfFirstPoint = [];
+    this.editMode = false;
 
     this.dataPanel = this.$['data-panel'] as DataPanel;
     this.inspectorPanel = this.$['inspector-panel'] as InspectorPanel;
@@ -241,19 +223,58 @@ export class Projector extends ProjectorPolymer implements
    * Used by clients to indicate that a selection has occurred.
    */
   notifySelectionChanged(newSelectedPointIndices: number[]) {
-    this.selectedPointIndices = newSelectedPointIndices;
     let neighbors: knn.NearestEntry[] = [];
 
-    if (newSelectedPointIndices.length === 1) {
-      neighbors = this.dataSet.findNeighbors(
-          newSelectedPointIndices[0], this.inspectorPanel.distFunc,
-          this.inspectorPanel.numNN);
-      this.metadataCard.updateMetadata(
-          this.dataSet.points[newSelectedPointIndices[0]].metadata);
-    } else {
-      this.metadataCard.updateMetadata(null);
-    }
+    if (this.editMode  // point selection toggle in existing selection
+        && newSelectedPointIndices.length > 0) {  // selection required
+      if (this.selectedPointIndices.length === 1) {  // main point with neighbors
+        let main_point_vector = this.dataSet.points[
+            this.selectedPointIndices[0]].vector;
+        neighbors = this.neighborsOfFirstPoint.filter(n =>  // deselect
+            newSelectedPointIndices.filter(p => p == n.index).length == 0);
+        newSelectedPointIndices.forEach(p => {  // add additional neighbors
+          if (p != this.selectedPointIndices[0]  // not main point
+              && this.neighborsOfFirstPoint.filter(n => n.index == p).length == 0) {
+            let p_vector = this.dataSet.points[p].vector;
+            let n_dist = this.inspectorPanel.distFunc(main_point_vector, p_vector);
+            let pos = 0;  // insertion position into dist ordered neighbors
+            while (pos < neighbors.length && neighbors[pos].dist < n_dist)  // find pos
+              pos = pos + 1;  // move up the sorted neighbors list according to dist
+            neighbors.splice(pos, 0, {index: p, dist: n_dist});  // add new neighbor
+          }
+        });
+      }
+      else {  // multiple selections
+        let updatedSelectedPointIndices = this.selectedPointIndices.filter(n =>
+            newSelectedPointIndices.filter(p => p == n).length == 0);  // deselect
+        newSelectedPointIndices.forEach(p => {  // add additional selections
+          if (this.selectedPointIndices.filter(s => s == p).length == 0)  // unselected
+            updatedSelectedPointIndices.push(p);
+        });
+        this.selectedPointIndices = updatedSelectedPointIndices;  // update selection
 
+        if (this.selectedPointIndices.length > 0) {  // at least one selected point
+          this.metadataCard.updateMetadata(  // show metadata for first selected point
+              this.dataSet.points[this.selectedPointIndices[0]].metadata);
+        } else {  // no points selected
+          this.metadataCard.updateMetadata(null);  // clear metadata
+        }
+      }
+    }
+    else {  // normal selection mode
+      this.selectedPointIndices = newSelectedPointIndices;
+
+      if (newSelectedPointIndices.length === 1) {
+        neighbors = this.dataSet.findNeighbors(
+            newSelectedPointIndices[0], this.inspectorPanel.distFunc,
+            this.inspectorPanel.numNN);
+        this.metadataCard.updateMetadata(
+            this.dataSet.points[newSelectedPointIndices[0]].metadata);
+      } else {
+        this.metadataCard.updateMetadata(null);
+      }
+    }
+    
     this.selectionChangedListeners.forEach(
         l => l(this.selectedPointIndices, neighbors));
   }
@@ -418,6 +439,11 @@ export class Projector extends ProjectorPolymer implements
           (nightModeButton as any).active);
     });
 
+    let editModeButton = this.querySelector('#editMode');
+      editModeButton.addEventListener('click', (event) => {
+        this.editMode = (editModeButton as any).active;
+    });
+
     const labels3DModeButton = this.get3DLabelModeButton();
     labels3DModeButton.addEventListener('click', () => {
       this.projectorScatterPlotAdapter.set3DLabelMode(this.get3DLabelMode());
@@ -555,7 +581,7 @@ export class Projector extends ProjectorPolymer implements
     {
       const dimensions = stateGetAccessorDimensions(state);
       const components =
-          data.getProjectionComponents(state.selectedProjection, dimensions);
+          getProjectionComponents(state.selectedProjection, dimensions);
       const projection = new Projection(
           state.selectedProjection, components, dimensions.length,
           this.dataSet);
@@ -566,3 +592,5 @@ export class Projector extends ProjectorPolymer implements
 }
 
 document.registerElement(Projector.prototype.is, Projector);
+
+}  // namespace vz_projector

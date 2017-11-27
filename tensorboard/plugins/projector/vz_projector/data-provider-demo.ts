@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,11 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataSet, SpriteAndMetadataInfo, State} from './data.js';
-import {ProjectorConfig, DataProvider, EmbeddingInfo, TENSORS_MSG_ID} from './data-provider.js';
-import * as dataProvider from './data-provider.js';
-import * as logging from './logging.js';
+namespace vz_projector {
 
 const BYTES_EXTENSION = '.bytes';
 
@@ -75,7 +71,7 @@ export class DemoDataProvider implements DataProvider {
     let url = `${embedding.tensorPath}`;
     if (embedding.tensorPath.substr(-1 * BYTES_EXTENSION.length) ===
         BYTES_EXTENSION) {
-      dataProvider.retrieveTensorAsBytes(
+      retrieveTensorAsBytes(
           this, this.getEmbeddingInfo(tensorName), run, tensorName, url,
           callback);
     } else {
@@ -88,7 +84,7 @@ export class DemoDataProvider implements DataProvider {
         logging.setErrorMessage(request.responseText, 'fetching tensors');
       };
       request.onload = () => {
-        dataProvider.parseTensors(request.response).then(points => {
+        parseTensors(request.response).then(points => {
           callback(new DataSet(points));
         });
       };
@@ -103,7 +99,7 @@ export class DemoDataProvider implements DataProvider {
     if (embedding.sprite && embedding.sprite.imagePath) {
       spriteImagePath = embedding.sprite.imagePath;
     }
-    dataProvider.retrieveSpriteAndMetadataInfo(
+    retrieveSpriteAndMetadataInfo(
         embedding.metadataPath, spriteImagePath, embedding.sprite, callback);
   }
 
@@ -125,3 +121,5 @@ export class DemoDataProvider implements DataProvider {
     xhr.send();
   }
 }
+
+}  // namespace vz_projector

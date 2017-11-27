@@ -23,7 +23,7 @@ def tensorboard_polymer_workspace():
       sha256 = "2c38cf73bdd09e0f80a4b7210fd58f88a6bdd8624da73fb3e028e66a84c9e095",
       strip_prefix = "polymer-1.8.1",
       urls = [
-          "http://mirror.bazel.build/github.com/polymer/polymer/archive/v1.8.1.tar.gz",
+          "https://mirror.bazel.build/github.com/polymer/polymer/archive/v1.8.1.tar.gz",
           "https://github.com/polymer/polymer/archive/v1.8.1.tar.gz",
       ],
       path = "/polymer",
@@ -35,24 +35,11 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
-      name = "org_polymer_font_roboto",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "fae51429b56a4a4c15f1f0c23b733c7095940cc9c04c275fa7adb3bf055b23b3",
-      urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/font-roboto/archive/v1.0.1.tar.gz",
-          "https://github.com/PolymerElements/font-roboto/archive/v1.0.1.tar.gz",
-      ],
-      strip_prefix = "font-roboto-1.0.1",
-      path = "/font-roboto",
-      srcs = ["roboto.html"],
-  )
-
-  web_library_external(
       name = "org_polymer_hydrolysis",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "703b50f6b00f9e0546b5a3451da57bb20f77a166e27e4967923b9e835bab9b80",
       urls = [
-          "http://mirror.bazel.build/github.com/Polymer/polymer-analyzer/archive/v1.19.3.tar.gz",
+          "https://mirror.bazel.build/github.com/Polymer/polymer-analyzer/archive/v1.19.3.tar.gz",
           "https://github.com/Polymer/polymer-analyzer/archive/v1.19.3.tar.gz",
       ],
       strip_prefix = "polymer-analyzer-1.19.3",
@@ -70,7 +57,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "53114ceb57d9f33a7a8058488cf06450e48502e5d033adf51c91330f61620353",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-a11y-announcer/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-a11y-announcer/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-a11y-announcer/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-a11y-announcer-2.0.0",
@@ -84,7 +71,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "09274155c8d537f8bb567b3be5e747253ef760995a59ee06cb0ab38e704212fb",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-a11y-keys-behavior/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-a11y-keys-behavior/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-a11y-keys-behavior/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-a11y-keys-behavior-2.0.0",
@@ -98,7 +85,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "9162d8af4611e911ac3ebbfc08bb7038ac04f6e79a9287b1476fe36ad6770bc5",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-ajax/archive/v1.2.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-ajax/archive/v1.2.0.tar.gz",
           "https://github.com/PolymerElements/iron-ajax/archive/v1.2.0.tar.gz",
       ],
       strip_prefix = "iron-ajax-1.2.0",
@@ -118,7 +105,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "50bbb901d2c8f87462e3552e3d671a552faa12c37c485e548d7a234ebffbc427",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-autogrow-textarea/archive/v1.0.12.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-autogrow-textarea/archive/v1.0.12.tar.gz",
           "https://github.com/PolymerElements/iron-autogrow-textarea/archive/v1.0.12.tar.gz",
       ],
       strip_prefix = "iron-autogrow-textarea-1.0.12",
@@ -138,7 +125,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "a1e8d4b7a13f3d36beba9c2a6b186ed33a53e6af2e79f98c1fcc7e85e7b53f89",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-behaviors/archive/v1.0.17.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-behaviors/archive/v1.0.17.tar.gz",
           "https://github.com/PolymerElements/iron-behaviors/archive/v1.0.17.tar.gz",
       ],
       strip_prefix = "iron-behaviors-1.0.17",
@@ -158,7 +145,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "539a0e1c4df0bc702d3bd342388e4e56c77ec4c2066cce69e41426a69f92e8bd",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-checked-element-behavior/archive/v1.0.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-checked-element-behavior/archive/v1.0.4.tar.gz",
           "https://github.com/PolymerElements/iron-checked-element-behavior/archive/v1.0.4.tar.gz",
       ],
       strip_prefix = "iron-checked-element-behavior-1.0.4",
@@ -176,7 +163,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "3636e8b9a1f229fc33b5aad3933bd02a9825f66e679a0be31855d7c8245c4b4b",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-component-page/archive/v1.1.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-component-page/archive/v1.1.4.tar.gz",
           "https://github.com/PolymerElements/iron-component-page/archive/v1.1.4.tar.gz",
       ],
       strip_prefix = "iron-component-page-1.1.4",
@@ -201,7 +188,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "eb72f459a2a5adbcd922327eea02ed909e8056ad72fd8a32d04a14ce54b2e480",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-collapse/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-collapse/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-collapse/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-collapse-2.0.0",
@@ -218,7 +205,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "e196985cb7e50108283c3fc189a3a018e697b4648107d597df71a5c17f5ee907",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-demo-helpers/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-demo-helpers/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-demo-helpers/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-demo-helpers-2.0.0",
@@ -229,7 +216,7 @@ def tensorboard_polymer_workspace():
       ],
       deps = [
           "@org_polymer",
-          "@org_polymer_font_roboto",
+          "@com_google_fonts_roboto",
           "@org_polymer_iron_flex_layout",
           "@org_polymer_iron_icons",
           "@org_polymer_marked_element",
@@ -244,7 +231,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "5d487c99dd0cf626c800ae8667b0c8c88095f4482a68e837a1d3f58484ca8fb4",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-doc-viewer/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-doc-viewer/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-doc-viewer/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-doc-viewer-2.0.0",
@@ -269,7 +256,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "db9d6598157f8b114f1be1e6ed1c74917d4c37e660b2dda1e31f6873f1a33b80",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-dropdown/archive/v1.5.5.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-dropdown/archive/v1.5.5.tar.gz",
           "https://github.com/PolymerElements/iron-dropdown/archive/v1.5.5.tar.gz",
       ],
       strip_prefix = "iron-dropdown-1.5.5",
@@ -293,7 +280,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "10132a2ea309a37c4c07b8fead71f64abc588ee6107931e34680f5f36dd8291e",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-fit-behavior/archive/v1.2.5.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-fit-behavior/archive/v1.2.5.tar.gz",
           "https://github.com/PolymerElements/iron-fit-behavior/archive/v1.2.5.tar.gz",
       ],
       strip_prefix = "iron-fit-behavior-1.2.5",
@@ -307,7 +294,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "79287f6ca1c2d4e003f68b88fe19d03a1b6a0011e2b4cae579fe4d1474163a2e",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-flex-layout/archive/v1.3.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-flex-layout/archive/v1.3.0.tar.gz",
           "https://github.com/PolymerElements/iron-flex-layout/archive/v1.3.0.tar.gz",
       ],
       strip_prefix = "iron-flex-layout-1.3.0",
@@ -326,7 +313,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "1dd9371c638e5bc2ecba8a64074aa680dfb8712198e9612f9ed24d387efc8f26",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-form-element-behavior/archive/v1.0.6.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-form-element-behavior/archive/v1.0.6.tar.gz",
           "https://github.com/PolymerElements/iron-form-element-behavior/archive/v1.0.6.tar.gz",
       ],
       strip_prefix = "iron-form-element-behavior-1.0.6",
@@ -340,7 +327,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "9ed58a69159a02c07a6050d242e6d4e585a29f3245b8c8c390cfd52ddb786dc4",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-icon/archive/v1.0.11.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-icon/archive/v1.0.11.tar.gz",
           "https://github.com/PolymerElements/iron-icon/archive/v1.0.11.tar.gz",
       ],
       strip_prefix = "iron-icon-1.0.11",
@@ -358,7 +345,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "3b18542c147c7923dc3a36b1a51984a73255d610f297d43c9aaccc52859bd0d0",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-icons/archive/v1.1.3.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-icons/archive/v1.1.3.tar.gz",
           "https://github.com/PolymerElements/iron-icons/archive/v1.1.3.tar.gz",
       ],
       strip_prefix = "iron-icons-1.1.3",
@@ -387,7 +374,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "75cfb41e78f86ef6cb5d201ad12021785ef9e192b490ad46dcc15a9c19bdf71a",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-iconset-svg/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-iconset-svg/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-iconset-svg/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-iconset-svg-2.0.0",
@@ -404,7 +391,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "11347e6ba6d73bfddb93e3188e61019c40ef150e03e916a5f8e1c1ac0d3b1f0e",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
           "https://github.com/PolymerElements/iron-image/archive/v1.2.6.tar.gz",
       ],
       strip_prefix = "iron-image-1.2.6",
@@ -422,7 +409,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "c505101ead08ab25526b1f49baecc8c28b4221b92a65e7334c783bdc81553c36",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-input/archive/1.0.10.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-input/archive/1.0.10.tar.gz",
           "https://github.com/PolymerElements/iron-input/archive/1.0.10.tar.gz",
       ],
       strip_prefix = "iron-input-1.0.10",
@@ -440,7 +427,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "72a6530b9f0ad5557f5d287845792a0ada74d8b159198e27f940e226313dc116",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-list/archive/v1.3.9.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-list/archive/v1.3.9.tar.gz",
           "https://github.com/PolymerElements/iron-list/archive/v1.3.9.tar.gz",
       ],
       strip_prefix = "iron-list-1.3.9",
@@ -459,7 +446,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "35d33d1ae55c6efaa0c3744ebe8a06cc0a8b2af9286dd8d36e20726a8540a11a",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-menu-behavior/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-menu-behavior/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/iron-menu-behavior/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "iron-menu-behavior-2.0.0",
@@ -480,7 +467,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "fb05e6031bae6b4effe5f15d44b3f548d5807f9e3b3aa2442ba17cf4b8b84361",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-meta/archive/v1.1.1.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-meta/archive/v1.1.1.tar.gz",
           "https://github.com/PolymerElements/iron-meta/archive/v1.1.1.tar.gz",
       ],
       strip_prefix = "iron-meta-1.1.1",
@@ -494,7 +481,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "3df5b54ff2e0510c87a2aff8c9d730d3fe83d3d11277cc1a49fa29b549acb46c",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-overlay-behavior/archive/v1.10.1.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-overlay-behavior/archive/v1.10.1.tar.gz",
           "https://github.com/PolymerElements/iron-overlay-behavior/archive/v1.10.1.tar.gz",
       ],
       strip_prefix = "iron-overlay-behavior-1.10.1",
@@ -518,7 +505,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "b2f2b6d52284542330bd30b586e217926eb0adec5e13934a3cef557717c22dc2",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-range-behavior/archive/v1.0.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-range-behavior/archive/v1.0.4.tar.gz",
           "https://github.com/PolymerElements/iron-range-behavior/archive/v1.0.4.tar.gz",
       ],
       strip_prefix = "iron-range-behavior-1.0.4",
@@ -532,7 +519,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "a87a78ee9223c2f6afae7fc94a3ff91cbce6f7e2a7ed3f2979af7945c9281616",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-resizable-behavior/archive/v1.0.3.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-resizable-behavior/archive/v1.0.3.tar.gz",
           "https://github.com/PolymerElements/iron-resizable-behavior/archive/v1.0.3.tar.gz",
       ],
       strip_prefix = "iron-resizable-behavior-1.0.3",
@@ -546,7 +533,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "7c6614c07d354375666ee96eea9f6d485dbf7898146a444ec26094a70d4e0afa",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-scroll-target-behavior/archive/v1.1.1.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-scroll-target-behavior/archive/v1.1.1.tar.gz",
           "https://github.com/PolymerElements/iron-scroll-target-behavior/archive/v1.1.1.tar.gz",
       ],
       strip_prefix = "iron-scroll-target-behavior-1.1.1",
@@ -560,7 +547,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "ba28a47443bad3b744611c9d7a79fb21dbdf2e35edc5ef8f812e2dcd72b16747",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-selector/archive/v1.5.2.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-selector/archive/v1.5.2.tar.gz",
           "https://github.com/PolymerElements/iron-selector/archive/v1.5.2.tar.gz",
       ],
       strip_prefix = "iron-selector-1.5.2",
@@ -579,7 +566,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "aef4901e68043824f36104799269573dd345ffaac494186e466fdc79c06fdb63",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/iron-validatable-behavior/archive/v1.1.1.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-validatable-behavior/archive/v1.1.1.tar.gz",
           "https://github.com/PolymerElements/iron-validatable-behavior/archive/v1.1.1.tar.gz",
       ],
       strip_prefix = "iron-validatable-behavior-1.1.1",
@@ -596,7 +583,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # MIT
       sha256 = "93d30bd593736ca440938d77808b7ef5972da0f3fcfe4ae63ae7b4ce117da2cb",
       urls = [
-          "http://mirror.bazel.build/github.com/chjj/marked/archive/v0.3.2.zip",
+          "https://mirror.bazel.build/github.com/chjj/marked/archive/v0.3.2.zip",
           "https://github.com/chjj/marked/archive/v0.3.2.zip",
       ],
       strip_prefix = "marked-0.3.2",
@@ -609,7 +596,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "2ac1f7fae0c1b656e671b2772492809714d836f27c9efa7f2c5fe077ee760f3c",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/marked-element/archive/v2.1.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/marked-element/archive/v2.1.0.tar.gz",
           "https://github.com/PolymerElements/marked-element/archive/v2.1.0.tar.gz",
       ],
       strip_prefix = "marked-element-2.1.0",
@@ -629,7 +616,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "8800c314a76b2da190a2b203259c1091f6d38e0057ed37c2a3d0b734980fa9a5",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/neon-animation/archive/v1.2.2.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/neon-animation/archive/v1.2.2.tar.gz",
           "https://github.com/PolymerElements/neon-animation/archive/v1.2.2.tar.gz",
       ],
       strip_prefix = "neon-animation-1.2.2",
@@ -678,7 +665,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "7cfcb9082ef9909da262df6b5c120bc62dbeaff278cb563e8fc60465ddd387e5",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-behaviors/archive/v1.0.12.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-behaviors/archive/v1.0.12.tar.gz",
           "https://github.com/PolymerElements/paper-behaviors/archive/v1.0.12.tar.gz",
       ],
       strip_prefix = "paper-behaviors-1.0.12",
@@ -702,7 +689,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "bcfecab0d28dcc5f7b8dd784d71b3c5a90c645fc984f7f57974211b82eccc31b",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-card/archive/v1.1.6.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-card/archive/v1.1.6.tar.gz",
           "https://github.com/PolymerElements/paper-card/archive/v1.1.6.tar.gz",
       ],
       strip_prefix = "paper-card-1.1.6",
@@ -722,7 +709,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "896c0a7e34bfcce63fc23c63e105ed9c4d62fa3a6385b7161e1e5cd4058820a6",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-button/archive/v1.0.11.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-button/archive/v1.0.11.tar.gz",
           "https://github.com/PolymerElements/paper-button/archive/v1.0.11.tar.gz",
       ],
       strip_prefix = "paper-button-1.0.11",
@@ -742,7 +729,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "0a291d0c64de1b6b807d66697bead9c66c0d7bc3c68b8037e6667f3d66a5904c",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-checkbox/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-checkbox/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/paper-checkbox/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "paper-checkbox-2.0.0",
@@ -760,7 +747,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "cf60d3aa6ad57ba4eb8b1c16713e65057735eed94b009aeebdbcf3436c95a161",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-dialog/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-dialog/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/paper-dialog/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "paper-dialog-2.0.0",
@@ -778,7 +765,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "d78e4f7d008c22537a9255ccda1e919fddae5cc125ef26a66eb2c47f648c20ab",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-dialog-behavior/archive/v1.2.7.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-dialog-behavior/archive/v1.2.7.tar.gz",
           "https://github.com/PolymerElements/paper-dialog-behavior/archive/v1.2.7.tar.gz",
       ],
       strip_prefix = "paper-dialog-behavior-1.2.7",
@@ -801,7 +788,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "a2e69283e7674f782c44d811387a0f8da2d01fac0172743d1add65e253e6b5ff",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-dialog-scrollable/archive/1.1.5.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-dialog-scrollable/archive/1.1.5.tar.gz",
           "https://github.com/PolymerElements/paper-dialog-scrollable/archive/1.1.5.tar.gz",
       ],
       strip_prefix = "paper-dialog-scrollable-1.1.5",
@@ -820,7 +807,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "9d88f654ec03ee9be211df9e69bede9e8a22b51bf1dbcc63b79762e4256d81ad",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-dropdown-menu/archive/v1.4.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-dropdown-menu/archive/v1.4.0.tar.gz",
           "https://github.com/PolymerElements/paper-dropdown-menu/archive/v1.4.0.tar.gz",
       ],
       strip_prefix = "paper-dropdown-menu-1.4.0",
@@ -852,7 +839,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "0db4bd8a4bf6f20dcd0dffb4f907b31c93a8647c9c021344239cf30b40b87075",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-header-panel/archive/v1.1.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-header-panel/archive/v1.1.4.tar.gz",
           "https://github.com/PolymerElements/paper-header-panel/archive/v1.1.4.tar.gz",
       ],
       strip_prefix = "paper-header-panel-1.1.4",
@@ -869,7 +856,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "9cba5bcfd6aeb4c41581c1392c678cf2278d360e9d122f4d9db54a9ebb404496",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-icon-button/archive/v1.1.3.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-icon-button/archive/v1.1.3.tar.gz",
           "https://github.com/PolymerElements/paper-icon-button/archive/v1.1.3.tar.gz",
       ],
       strip_prefix = "paper-icon-button-1.1.3",
@@ -891,7 +878,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "17c3dea9bb1c2026cc61324696c6c774214a0dc37686b91ca214a6af550994db",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-input/archive/v1.1.18.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-input/archive/v1.1.18.tar.gz",
           "https://github.com/PolymerElements/paper-input/archive/v1.1.18.tar.gz",
       ],
       strip_prefix = "paper-input-1.1.18",
@@ -922,7 +909,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "12ee0dcb61b0d5721c5988571f6974d7b2211e97724f4195893fbcc9058cdac8",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-item/archive/v1.1.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-item/archive/v1.1.4.tar.gz",
           "https://github.com/PolymerElements/paper-item/archive/v1.1.4.tar.gz",
       ],
       strip_prefix = "paper-item-1.1.4",
@@ -947,7 +934,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "674992d882b18a0618fa697180f196dbc052fb2f5d9ce4e19026a918b568ffd6",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-listbox/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-listbox/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/paper-listbox/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "paper-listbox-2.0.0",
@@ -965,7 +952,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "913e9c63cf5c8286b0fab817079d7dc900a343d2c05809995d8d9ba0e41f8a29",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-material/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-material/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/paper-material/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "paper-material-2.0.0",
@@ -985,7 +972,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "a3cee220926e315f7412236b3628288774694447c0da4428345f36d0f127ba3b",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-menu/archive/v1.2.2.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-menu/archive/v1.2.2.tar.gz",
           "https://github.com/PolymerElements/paper-menu/archive/v1.2.2.tar.gz",
       ],
       strip_prefix = "paper-menu-1.2.2",
@@ -1010,7 +997,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "be3290c288a2bd4f9887213db22c75add99cc29ff4d088100c0bc4eb0e57997b",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-menu-button/archive/v1.5.1.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-menu-button/archive/v1.5.1.tar.gz",
           "https://github.com/PolymerElements/paper-menu-button/archive/v1.5.1.tar.gz",
       ],
       strip_prefix = "paper-menu-button-1.5.1",
@@ -1034,7 +1021,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "2b6776b2f023c1f344feea17ba29b58d879e46f8ed43b7256495054b5183fff6",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-progress/archive/v1.0.9.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-progress/archive/v1.0.9.tar.gz",
           "https://github.com/PolymerElements/paper-progress/archive/v1.0.9.tar.gz",
       ],
       strip_prefix = "paper-progress-1.0.9",
@@ -1053,7 +1040,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "6e911d0c308aa388136b3af79d1bdcbe5a1f4159cbc79d71efb4ff3b6c0b4e91",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-radio-button/archive/v1.1.2.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-radio-button/archive/v1.1.2.tar.gz",
           "https://github.com/PolymerElements/paper-radio-button/archive/v1.1.2.tar.gz",
       ],
       strip_prefix = "paper-radio-button-1.1.2",
@@ -1071,7 +1058,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "7885ad1f81e9dcc03dcea4139b54a201ff55c18543770cd44f94530046c9e163",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-radio-group/archive/v1.0.9.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-radio-group/archive/v1.0.9.tar.gz",
           "https://github.com/PolymerElements/paper-radio-group/archive/v1.0.9.tar.gz",
       ],
       strip_prefix = "paper-radio-group-1.0.9",
@@ -1090,7 +1077,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "ba76bfb1c737260a8a103d3ca97faa1f7c3288c7db9b2519f401b7a782147c09",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-ripple/archive/v1.0.5.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-ripple/archive/v1.0.5.tar.gz",
           "https://github.com/PolymerElements/paper-ripple/archive/v1.0.5.tar.gz",
       ],
       strip_prefix = "paper-ripple-1.0.5",
@@ -1107,7 +1094,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "8bb4db532e8b11b11f78006d9aefa217841392c1aeb449ee2a12e3b56748b774",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-slider/archive/v1.0.14.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-slider/archive/v1.0.14.tar.gz",
           "https://github.com/PolymerElements/paper-slider/archive/v1.0.14.tar.gz",
       ],
       strip_prefix = "paper-slider-1.0.14",
@@ -1131,7 +1118,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "6a752907fab7899cbeed15b478e7b9299047c15fbf9d1561d6eb4d204bdbd178",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-spinner/archive/v1.1.1.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-spinner/archive/v1.1.1.tar.gz",
           "https://github.com/PolymerElements/paper-spinner/archive/v1.1.1.tar.gz",
       ],
       strip_prefix = "paper-spinner-1.1.1",
@@ -1152,7 +1139,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "6d26b0a4c286402098853dc7388f6b22f30dfb7a74e47b34992ac03380144bb2",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-styles/archive/v1.1.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-styles/archive/v1.1.4.tar.gz",
           "https://github.com/PolymerElements/paper-styles/archive/v1.1.4.tar.gz",
       ],
       strip_prefix = "paper-styles-1.1.4",
@@ -1173,7 +1160,7 @@ def tensorboard_polymer_workspace():
       ],
       deps = [
           "@org_polymer",
-          "@org_polymer_font_roboto",
+          "@com_google_fonts_roboto",
           "@org_polymer_iron_flex_layout",
       ],
   )
@@ -1183,7 +1170,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "c23b6a5221db35e5b1ed3eb8e8696b952572563e285adaec96aba1e3134db825",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-tabs/archive/v1.7.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-tabs/archive/v1.7.0.tar.gz",
           "https://github.com/PolymerElements/paper-tabs/archive/v1.7.0.tar.gz",
       ],
       strip_prefix = "paper-tabs-1.7.0",
@@ -1212,7 +1199,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "b1c677e1681ef8d3f688a83da8f7b263902f757f395a9354a1c35f93b9125b60",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-toast/archive/v2.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-toast/archive/v2.0.0.tar.gz",
           "https://github.com/PolymerElements/paper-toast/archive/v2.0.0.tar.gz",
       ],
       strip_prefix = "paper-toast-2.0.0",
@@ -1230,7 +1217,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "4aa7cf0396fa2994a8bc2ac6e8428f48b07b945bb7c41bd52041ef5827b45de3",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-toggle-button/archive/v1.2.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-toggle-button/archive/v1.2.0.tar.gz",
           "https://github.com/PolymerElements/paper-toggle-button/archive/v1.2.0.tar.gz",
       ],
       strip_prefix = "paper-toggle-button-1.2.0",
@@ -1249,7 +1236,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "dbddffc0654d9fb5fb48843087eebe16bf7a134902495a664c96c11bf8a2c63d",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-toolbar/archive/v1.1.4.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-toolbar/archive/v1.1.4.tar.gz",
           "https://github.com/PolymerElements/paper-toolbar/archive/v1.1.4.tar.gz",
       ],
       strip_prefix = "paper-toolbar-1.1.4",
@@ -1267,7 +1254,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "4c6667acf01f73da14c3cbc0aa574bf14280304567987ee0314534328377d2ad",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/paper-tooltip/archive/v1.1.2.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/paper-tooltip/archive/v1.1.2.tar.gz",
           "https://github.com/PolymerElements/paper-tooltip/archive/v1.1.2.tar.gz",
       ],
       strip_prefix = "paper-tooltip-1.1.2",
@@ -1284,7 +1271,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # MIT
       sha256 = "e06eb54f2a80e6b3cd0bd4d59f900423bcaee53fc03998a056df63740c684683",
       urls = [
-          "http://mirror.bazel.build/github.com/PrismJS/prism/archive/abee2b7587f1925e57777044270e2a1860810994.tar.gz",
+          "https://mirror.bazel.build/github.com/PrismJS/prism/archive/abee2b7587f1925e57777044270e2a1860810994.tar.gz",
           "https://github.com/PrismJS/prism/archive/abee2b7587f1925e57777044270e2a1860810994.tar.gz",
       ],
       strip_prefix = "prism-abee2b7587f1925e57777044270e2a1860810994",
@@ -1300,7 +1287,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "c5c03c17520d4992a3576e397aa7a375e64c7f6794ec2af58031f47eef458945",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerElements/prism-element/archive/v1.2.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerElements/prism-element/archive/v1.2.0.tar.gz",
           "https://github.com/PolymerElements/prism-element/archive/v1.2.0.tar.gz",
       ],
       strip_prefix = "prism-element-1.2.0",
@@ -1322,7 +1309,7 @@ def tensorboard_polymer_workspace():
       sha256 = "4495450e5d884c3e16b537b43afead7f84d17c7dc061bcfcbf440eac083e4ef5",
       strip_prefix = "promise-polyfill-1.0.0",
       urls = [
-          "http://mirror.bazel.build/github.com/PolymerLabs/promise-polyfill/archive/v1.0.0.tar.gz",
+          "https://mirror.bazel.build/github.com/PolymerLabs/promise-polyfill/archive/v1.0.0.tar.gz",
           "https://github.com/PolymerLabs/promise-polyfill/archive/v1.0.0.tar.gz",
       ],
       path = "/promise-polyfill",
@@ -1340,7 +1327,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "f8bd760cbdeba131f6790bd5abe170bcbf7b1755ff58ed16d0b82fa8a7f34a7f",
       urls = [
-          "http://mirror.bazel.build/github.com/web-animations/web-animations-js/archive/2.2.1.tar.gz",
+          "https://mirror.bazel.build/github.com/web-animations/web-animations-js/archive/2.2.1.tar.gz",
           "https://github.com/web-animations/web-animations-js/archive/2.2.1.tar.gz",
       ],
       strip_prefix = "web-animations-js-2.2.1",
@@ -1353,7 +1340,7 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "1f58decac693deb926e6b62b5dbd459fb7c2e961f7241e6e646d1cd9a60281d2",
       urls = [
-          "http://mirror.bazel.build/github.com/webcomponents/webcomponentsjs/archive/v0.7.23.tar.gz",
+          "https://mirror.bazel.build/github.com/webcomponents/webcomponentsjs/archive/v0.7.23.tar.gz",
           "https://github.com/webcomponents/webcomponentsjs/archive/v0.7.23.tar.gz",
       ],
       strip_prefix = "webcomponentsjs-0.7.23",

@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataPoint} from './data.js';
-import * as logging from './logging.js';
-import {Point2D} from './vector.js';
+namespace vz_projector.util {
 
 /**
  * Delay for running expensive tasks, in milliseconds.
@@ -71,12 +68,12 @@ export function classed(
 
 /** Projects a 3d point into screen space */
 export function vector3DToScreenCoords(
-    cam: THREE.Camera, w: number, h: number, v: THREE.Vector3): Point2D {
+    cam: THREE.Camera, w: number, h: number, v: THREE.Vector3): vector.Point2D {
   let dpr = window.devicePixelRatio;
   let pv = new THREE.Vector3().copy(v).project(cam);
 
   // The screen-space origin is at the middle of the screen, with +y up.
-  let coords: Point2D =
+  let coords: vector.Point2D =
       [((pv.x + 1) / 2 * w) * dpr, -((pv.y - 1) / 2 * h) * dpr];
   return coords;
 }
@@ -250,3 +247,5 @@ export function hasWebGLSupport(): boolean {
     return false;
   }
 }
+
+}  // namespace vz_projector.util

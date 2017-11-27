@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,16 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
-import {TSNE} from './bh_tsne.js';
-import {SpriteMetadata} from './data-provider.js';
-import * as knn from './knn.js';
-import * as logging from './logging.js';
-import * as scatterPlot from './scatterPlot.js';
-import * as util from './util.js';
-import * as vector from './vector.js';
-
-export type DistanceFunction = (a: number[], b: number[]) => number;
+export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
@@ -130,7 +123,10 @@ export class DataSet {
   nearest: knn.NearestEntry[][];
   nearestK: number;
   tSNEIteration: number = 0;
+  tSNEShouldPause = false;
   tSNEShouldStop = true;
+  tSNEShouldPerturb = false;
+  perturbFactor: number = 0.4;
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
   spriteAndMetadataInfo: SpriteAndMetadataInfo;
@@ -312,7 +308,9 @@ export class DataSet {
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
+    this.tSNEShouldPerturb = false;
     this.tSNEIteration = 0;
 
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
@@ -320,21 +318,26 @@ export class DataSet {
       if (this.tSNEShouldStop) {
         stepCallback(null);
         this.tsne = null;
+        this.hasTSNERun = false;
         return;
       }
-      this.tsne.step();
-      let result = this.tsne.getSolution();
-      sampledIndices.forEach((index, i) => {
-        let dataPoint = this.points[index];
 
-        dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
-        dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
-        if (tsneDim === 3) {
-          dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
-        }
-      });
-      this.tSNEIteration++;
-      stepCallback(this.tSNEIteration);
+      if (!this.tSNEShouldPause) {
+        this.tsne.step(this.tSNEShouldPerturb ? this.perturbFactor : 0.0);
+        this.tSNEShouldPerturb = false;
+        let result = this.tsne.getSolution();
+        sampledIndices.forEach((index, i) => {
+          let dataPoint = this.points[index];
+
+          dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+          dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
+          if (tsneDim === 3) {
+            dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+          }
+        });
+        this.tSNEIteration++;
+        stepCallback(this.tSNEIteration);
+      }
       requestAnimationFrame(step);
     };
 
@@ -503,7 +506,7 @@ export class State {
   selectedPoints: number[] = [];
 
   /** Camera state (2d/3d, position, target, zoom, etc). */
-  cameraDef: scatterPlot.CameraDef;
+  cameraDef: CameraDef;
 
   /** Color by option. */
   selectedColorOptionName: string;
@@ -550,3 +553,5 @@ export function stateGetAccessorDimensions(state: State): Array<number|string> {
   }
   return dimensions;
 }
+
+}  // namespace vz_projector

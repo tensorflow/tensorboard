@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {addParams} from './urlPathHelpers.js';
+namespace tf_backend {
 
 export interface Router {
   logdir: () => string;
@@ -76,3 +75,5 @@ export function setRouter(router: Router): void {
   }
   _router = router;
 }
+
+}  // namespace tf_backend

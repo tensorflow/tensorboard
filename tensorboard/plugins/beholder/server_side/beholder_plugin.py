@@ -1,28 +1,41 @@
+# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import io
+import sys
 import time
 
-from google.protobuf import message
 import numpy as np
-import tensorboard
+import tensorflow as tf
+from google.protobuf import message
+from werkzeug import wrappers
+
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util as pau
 from tensorboard.plugins import base_plugin
-import tensorflow as tf
-from werkzeug import wrappers
 
-from beholder.im_util import get_image_relative_to_script, encode_png
-from beholder.shared_config import PLUGIN_NAME, SECTION_HEIGHT, IMAGE_WIDTH
-from beholder.shared_config import SECTION_INFO_FILENAME, CONFIG_FILENAME,\
+from tensorboard.plugins.beholder.im_util import get_image_relative_to_script, encode_png
+from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME, SECTION_HEIGHT, IMAGE_WIDTH
+from tensorboard.plugins.beholder.shared_config import SECTION_INFO_FILENAME, CONFIG_FILENAME,\
   TAG_NAME, SUMMARY_FILENAME, DEFAULT_CONFIG
-from beholder.file_system_tools import read_tensor_summary, read_pickle,\
+from tensorboard.plugins.beholder.file_system_tools import read_tensor_summary, read_pickle,\
   write_pickle
 
-import sys
-print(sys.version)
 
 class BeholderPlugin(base_plugin.TBPlugin):
 

@@ -67,7 +67,6 @@ limitations under the License.
     </style>
   </template>
   <script>
-  import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
   Polymer({
     is: "tf-pr-curve-steps-selector",
@@ -104,7 +103,7 @@ limitations under the License.
       "_updateStepsForNewRuns(runs, runToAvailableTimeEntries, _runToStepIndex)",
     ],
     _computeColorForRun(run) {
-      return runsColorScale(run);
+      return tf_color_scale.runsColorScale(run);
     },
     _computeTimeTextForRun(
         runToAvailableTimeEntries, runToStepIndex, run, timeDisplayType) {

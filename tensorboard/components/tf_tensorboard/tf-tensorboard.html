@@ -65,12 +65,10 @@ limitations under the License.
             </span>
           </template>
           <template is="dom-if" if="[[_activeDashboardsLoaded]]">
-            <paper-tabs
-              selected="{{_selectedDashboard}}"
-              attr-for-selected="data-dashboard"
-              noink
-              id="tabs"
-            >
+            <paper-tabs noink
+                        scrollable
+                        selected="{{_selectedDashboard}}"
+                        attr-for-selected="data-dashboard">
               <template
                 is="dom-repeat"
                 items="[[_dashboardData]]"
@@ -79,7 +77,8 @@ limitations under the License.
                   is="dom-if"
                   if="[[_isDashboardActive(disabledDashboards, _activeDashboards, dashboardDatum)]]"
                 >
-                  <paper-tab data-dashboard$="[[dashboardDatum.plugin]]">
+                  <paper-tab data-dashboard$="[[dashboardDatum.plugin]]"
+                             title="[[dashboardDatum.tabName]]">
                     [[dashboardDatum.tabName]]
                   </paper-tab>
                 </template>
@@ -138,7 +137,7 @@ limitations under the License.
       </paper-toolbar>
 
       <div id="content" class="fit">
-        <content id="injected-overview"></content>
+        <slot id="injected-overview"></slot>
         <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
           <div class="warning-message">
             <h3>Failed to load the set of active dashboards.</h3>
@@ -214,7 +213,7 @@ limitations under the License.
       }
 
       #toolbar {
-        background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        background-color: var(--tb-toolbar-background-color, var(--tb-orange-strong));
         -webkit-font-smoothing: antialiased;
       }
 
@@ -224,7 +223,6 @@ limitations under the License.
         text-rendering: optimizeLegibility;
         letter-spacing: -0.025em;
         font-weight: 500;
-        flex-grow: 1;
         display: var(--tb-toolbar-title-display, block);
       }
 
@@ -235,14 +233,15 @@ limitations under the License.
         font-weight: 500;
       }
 
-      #tabs {
-        flex-grow: 1;
-        text-transform: uppercase;
-        height: 100%;
-      }
-
       paper-tabs {
+        flex-grow: 1;
+        width: 100%;
+        height: 100%;
         --paper-tabs-selection-bar-color: white;
+        --paper-tabs-content: {
+          -webkit-font-smoothing: antialiased;
+          text-transform: uppercase;
+        }
       }
 
       paper-dropdown-menu {
@@ -267,7 +266,7 @@ limitations under the License.
       }
 
       #inactive-dashboards-menu {
-        --paper-menu-background-color: var(--tb-toolbar-background-color, --tb-orange-strong);
+        --paper-menu-background-color: var(--tb-toolbar-background-color, var(--tb-orange-strong));
         --paper-menu-color: white;
         --paper-menu: {
           text-transform: uppercase;
@@ -275,7 +274,6 @@ limitations under the License.
       }
 
       .global-actions {
-        flex-grow: 1;
         display: inline-flex; /* Ensure that icons stay aligned */
         justify-content: flex-end;
         text-align: right;
@@ -316,29 +314,13 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    import {AutoReloadBehavior} from "./autoReloadBehavior.js";
-    import {dashboardRegistry} from "./registry.js";
-    import {setUseHash} from "../tf-globals/globals.js";
-    import {getString, setString, TAB} from "../tf-storage/storage.js";
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {RequestManager} from "../tf-backend/requestManager.js";
-    import {getRouter, setRouter, createRouter} from "../tf-backend/router.js";
-    import {fetchRuns} from "../tf-backend/runsStore.js";
-    import * as paginatedViewStore from "../tf-paginated-view/paginatedViewStore.js";
-
-    if (_.isEmpty(dashboardRegistry)) {
+    if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
 
-    /** @enum {string} */ const ActiveDashboardsLoadState = {
-      NOT_LOADED: 'NOT_LOADED',
-      LOADED: 'LOADED',
-      FAILED: 'FAILED',
-    };
-
     Polymer({
       is: "tf-tensorboard",
-      behaviors: [AutoReloadBehavior],
+      behaviors: [tf_tensorboard.AutoReloadBehavior],
       properties: {
 
         /**
@@ -363,7 +345,7 @@ limitations under the License.
         /**
          * We accept a router property only for backward compatibility:
          * setting it triggers an observer that simply calls
-         * `setRouter`.
+         * `tf_backend.setRouter`.
          */
         router: {
           type: Object,
@@ -405,7 +387,7 @@ limitations under the License.
         _dashboardData: {
           type: Array,
           readOnly: true,
-          value: Object.values(dashboardRegistry),
+          value: Object.values(tf_tensorboard.dashboardRegistry),
         },
 
         /**
@@ -421,10 +403,10 @@ limitations under the License.
           value: null,
         },
 
-        /** @type {ActiveDashboardsLoadState} */
+        /** @type {tf_tensorboard.ActiveDashboardsLoadState} */
         _activeDashboardsLoadState: {
           type: String,
-          value: ActiveDashboardsLoadState.NOT_LOADED,
+          value: tf_tensorboard.ActiveDashboardsLoadState.NOT_LOADED,
         },
         _activeDashboardsNotLoaded: {
           type: Boolean,
@@ -454,12 +436,13 @@ limitations under the License.
 
         /**
          * The plugin name of the currently selected dashboard, or `null` if no
-         * dashboard is selected. A `null` value here is represented by
-         * an empty string in the hash, and vice versa.
+         * dashboard is selected, which corresponds to an empty hash. Defaults
+         * to the value stored in the hash.
          */
         _selectedDashboard: {
           type: String,
-          value: null,
+          value: tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false) || null,
+          observer: '_selectedDashboardChanged'
         },
 
         /*
@@ -489,15 +472,16 @@ limitations under the License.
 
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(),
+          value: () => new tf_backend.RequestManager(),
         },
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
       },
       observers: [
-        '_updateSelectedDashboard(_selectedDashboard, _activeDashboards)',
+        ('_updateSelectedDashboardFromActive(' +
+         '_selectedDashboard, _activeDashboards)'),
         ('_ensureSelectedDashboardStamped(' +
          '_dashboardContainersStamped, _activeDashboards, ' +
          '_selectedDashboard)'),
@@ -571,35 +555,40 @@ limitations under the License.
         return dashboards[index];
       },
 
-      _displayStyle(currentDashboard, candidateDashboard) {
+      _displayStyle(selectedDashboard, candidateDashboard) {
          // Display only the selected dashboard.
-        return currentDashboard === candidateDashboard ? 'inherit' : 'none';
+        return selectedDashboard === candidateDashboard ? 'inherit' : 'none';
       },
 
       /**
-       * If no dashboard is selected but dashboards are available,
-       * select the first active dashboard. In any case, synchronize the
-       * state to the hash.
+       * Handle a change in the selected dashboard by persisting the current
+       * selection to the hash and logging a pageview if analytics are enabled.
        */
-      _updateSelectedDashboard(selectedDashboard, activeDashboards) {
-        if (activeDashboards && selectedDashboard == null) {
-          selectedDashboard = activeDashboards[0] || null;
-          if (selectedDashboard != null) {
-            this._selectedDashboard = selectedDashboard;
-            return;  // we just triggered that handler; don't need another
-          }
-        }
-
+      _selectedDashboardChanged(selectedDashboard) {
         const pluginString = selectedDashboard || '';
-        setString(TAB, pluginString, /*useLocalStorage=*/false);
-
+        tf_storage.setString(tf_storage.TAB, pluginString, /*useLocalStorage=*/false);
         // Record this dashboard selection as a page view.
         ga('set', 'page', '/' + pluginString);
         ga('send', 'pageview');
       },
 
+      /**
+       * If no dashboard is selected but dashboards are available,
+       * set the selected dashboard to the first active one.
+       */
+      _updateSelectedDashboardFromActive(selectedDashboard, activeDashboards) {
+        if (activeDashboards && selectedDashboard == null) {
+          selectedDashboard = activeDashboards[0] || null;
+          if (selectedDashboard != null) {
+            // Note: the following line will re-trigger this handler, but it
+            // will be a no-op since selectedDashboard is no longer null.
+            this._selectedDashboard = selectedDashboard;
+          }
+        }
+      },
+
       _updateSelectedDashboardFromHash() {
-        const dashboardName = getString(TAB, /*useLocalStorage=*/false);
+        const dashboardName = tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false);
         this.set('_selectedDashboard', dashboardName || null);
       },
 
@@ -632,7 +621,7 @@ limitations under the License.
           // This dashboard doesn't exist. Nothing to do here.
           return;
         }
-        const dashboard = dashboardRegistry[selectedDashboard];
+        const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
         if (container.childNodes.length === 0) {
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
@@ -663,7 +652,7 @@ limitations under the License.
       },
 
       ready() {
-        setUseHash(this.useHash);
+        tf_globals.setUseHash(this.useHash);
         this._updateSelectedDashboardFromHash();
         window.addEventListener('hashchange', () => {
           this._updateSelectedDashboardFromHash();
@@ -679,14 +668,14 @@ limitations under the License.
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
 
-        fetchRuns();
+        tf_backend.fetchRuns();
         this._fetchLogdir();
         this._fetchActiveDashboards();
         this._lastReloadTime = new Date().toString();
       },
 
       _fetchLogdir() {
-        const url = getRouter().logdir();
+        const url = tf_backend.getRouter().logdir();
         return this._requestManager.request(url).then(result => {
           this._logdir = result.logdir;
         });
@@ -701,30 +690,30 @@ limitations under the License.
           const activePlugins = result.value;
           this._activeDashboards = this._dashboardData.map(
               d => d.plugin).filter(p => activePlugins[p]);
-          this._activeDashboardsLoadState = ActiveDashboardsLoadState.LOADED;
+          this._activeDashboardsLoadState = tf_tensorboard.ActiveDashboardsLoadState.LOADED;
         });
         const onFailure = () => {
           if (this._activeDashboardsLoadState
               === ActiveDashboardsLoadState.NOT_LOADED) {
-            this._activeDashboardsLoadState = ActiveDashboardsLoadState.FAILED;
+            this._activeDashboardsLoadState = tf_tensorboard.ActiveDashboardsLoadState.FAILED;
           } else {
             console.warn(
               "Failed to reload the set of active plugins; using old value.");
           }
         };
         return this._requestManager
-          .request(getRouter().pluginsListing())
+          .request(tf_backend.getRouter().pluginsListing())
           .then(updateActiveDashboards, onFailure);
       },
 
       _computeActiveDashboardsNotLoaded(state) {
-        return state === ActiveDashboardsLoadState.NOT_LOADED;
+        return state === tf_tensorboard.ActiveDashboardsLoadState.NOT_LOADED;
       },
       _computeActiveDashboardsLoaded(state) {
-        return state === ActiveDashboardsLoadState.LOADED;
+        return state === tf_tensorboard.ActiveDashboardsLoadState.LOADED;
       },
       _computeActiveDashboardsFailedToLoad(state) {
-        return state === ActiveDashboardsLoadState.FAILED;
+        return state === tf_tensorboard.ActiveDashboardsLoadState.FAILED;
       },
       _computeShowNoDashboardsMessage(loaded, activeDashboards, selectedDashboard) {
         return (loaded
@@ -737,7 +726,7 @@ limitations under the License.
       },
 
       _updateRouter(router) {
-        setRouter(router);
+        tf_backend.setRouter(router);
       },
 
       _updateTitle(title) {
@@ -751,7 +740,7 @@ limitations under the License.
           return;
         }
         this._fetchLogdir();
-        Promise.all([this._fetchActiveDashboards(), fetchRuns()]).then(() => {
+        Promise.all([this._fetchActiveDashboards(), tf_backend.fetchRuns()]).then(() => {
           const dashboard = this._selectedDashboardComponent();
           if (dashboard) {
             dashboard.reload();
@@ -762,14 +751,14 @@ limitations under the License.
 
       openSettings() {
         this.$.settings.open();
-        this.$.paginationLimitInput.value = paginatedViewStore.getLimit();
+        this.$.paginationLimitInput.value = tf_paginated_view.getLimit();
       },
       _paginationLimitChanged(e) {
         const value = e.target.valueAsNumber;
         // We set type="number" and min="1" on the input, but Polymer
         // doesn't actually enforce those, so we have to check manually.
         if (value === +value && value > 0) {
-          paginatedViewStore.setLimit(e.target.valueAsNumber);
+          tf_paginated_view.setLimit(e.target.valueAsNumber);
         }
       },
     });

@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,13 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {ProjectorEventContext} from './projectorEventContext.js';
-import {CameraType, LabelRenderParams, RenderContext} from './renderContext.js';
-import {BoundingBox, ScatterPlotRectangleSelector} from './scatterPlotRectangleSelector.js';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
-import * as util from './util.js';
-import {Point2D, Point3D} from './vector.js';
+namespace vz_projector {
 
 const BACKGROUND_COLOR = 0xffffff;
 
@@ -60,8 +54,8 @@ export enum MouseMode {
 /** Defines a camera, suitable for serialization. */
 export class CameraDef {
   orthographic: boolean = false;
-  position: Point3D;
-  target: Point3D;
+  position: vector.Point3D;
+  target: vector.Point3D;
   zoom: number;
 }
 
@@ -128,7 +122,7 @@ export class ScatterPlot {
 
     this.rectangleSelector = new ScatterPlotRectangleSelector(
         this.container,
-        (boundingBox: BoundingBox) => this.selectBoundingBox(boundingBox));
+        (boundingBox: ScatterBoundingBox) => this.selectBoundingBox(boundingBox));
     this.addInteractionListeners();
   }
 
@@ -375,7 +369,7 @@ export class ScatterPlot {
    * texture.
    * @param boundingBox The bounding box to select from.
    */
-  private getPointIndicesFromPickingTexture(boundingBox: BoundingBox):
+  private getPointIndicesFromPickingTexture(boundingBox: ScatterBoundingBox):
       number[] {
     if (this.worldSpacePointPositions == null) {
       return null;
@@ -417,7 +411,7 @@ export class ScatterPlot {
   }
 
 
-  private selectBoundingBox(boundingBox: BoundingBox) {
+  private selectBoundingBox(boundingBox: ScatterBoundingBox) {
     let pointIndices = this.getPointIndicesFromPickingTexture(boundingBox);
     this.projectorEventContext.notifySelectionChanged(pointIndices);
   }
@@ -428,12 +422,12 @@ export class ScatterPlot {
       return;
     }
     const boundingBox:
-        BoundingBox = {x: e.offsetX, y: e.offsetY, width: 1, height: 1};
+        ScatterBoundingBox = {x: e.offsetX, y: e.offsetY, width: 1, height: 1};
     const pointIndices = this.getPointIndicesFromPickingTexture(boundingBox);
     this.nearestPoint = (pointIndices != null) ? pointIndices[0] : null;
   }
 
-  private getLayoutValues(): Point2D {
+  private getLayoutValues(): vector.Point2D {
     this.width = this.container.offsetWidth;
     this.height = Math.max(1, this.container.offsetHeight);
     return [this.width, this.height];
@@ -493,19 +487,19 @@ export class ScatterPlot {
   }
 
   /** Gets the current camera position. */
-  getCameraPosition(): Point3D {
+  getCameraPosition(): vector.Point3D {
     const currPos = this.camera.position;
     return [currPos.x, currPos.y, currPos.z];
   }
 
   /** Gets the current camera target. */
-  getCameraTarget(): Point3D {
+  getCameraTarget(): vector.Point3D {
     let currTarget = this.orbitCameraControls.target;
     return [currTarget.x, currTarget.y, currTarget.z];
   }
 
   /** Sets up the camera from given position and target coordinates. */
-  setCameraPositionAndTarget(position: Point3D, target: Point3D) {
+  setCameraPositionAndTarget(position: vector.Point3D, target: vector.Point3D) {
     this.stopOrbitAnimation();
     this.camera.position.set(position[0], position[1], position[2]);
     this.orbitCameraControls.target.set(target[0], target[1], target[2]);
@@ -721,3 +715,5 @@ export class ScatterPlot {
     this.onClick(null, false);
   }
 }
+
+}  // namespace vz_projector

@@ -46,6 +46,7 @@ class EventFileLoader(object):
     Yields:
       All values that were written to disk that have not been yielded yet.
     """
+    tf.logging.debug('Loading events from %s', self._file_path)
     while True:
       try:
         with tf.errors.raise_exception_on_not_ok_status() as status:

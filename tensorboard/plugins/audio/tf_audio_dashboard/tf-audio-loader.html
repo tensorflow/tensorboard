@@ -114,11 +114,6 @@ backend.
   </template>
   <script>
     "use strict";
-    import {addParams} from "../tf-backend/urlPathHelpers.js";
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {getRouter} from "../tf-backend/router.js";
-    import {formatDate} from '../tf-card-heading/util.js';
-    import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
     Polymer({
       is: "tf-audio-loader",
@@ -138,7 +133,7 @@ backend.
         requestManager: Object,
         _metadataCanceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
 
         // _steps: {
@@ -180,7 +175,7 @@ backend.
       },
       observers: ['reload(run, tag)'],
       _computeRunColor(run) {
-        return runsColorScale(run);
+        return tf_color_scale.runsColorScale(run);
       },
       _computeHasAtLeastOneStep(steps) {
         return !!steps && steps.length > 0;
@@ -210,8 +205,8 @@ backend.
           return;
         }
         this._metadataCanceller.cancelAll();
-        const router = getRouter();
-        const url = addParams(router.pluginRoute('audio', '/audio'), {
+        const router = tf_backend.getRouter();
+        const url = tf_backend.addParams(router.pluginRoute('audio', '/audio'), {
             tag: this.tag,
             run: this.run,
             sample: this.sample,
@@ -228,15 +223,15 @@ backend.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(audioMetadata) {
-        let url = getRouter().pluginRoute('audio', '/individualAudio');
+        let url = tf_backend.getRouter().pluginRoute('audio', '/individualAudio');
         // Include wall_time just to disambiguate the URL and force
         // the browser to reload the audio when the URL changes. The
         // backend doesn't care about the value.
-        url = addParams(url, {ts: audioMetadata.wall_time});
+        url = tf_backend.addParams(url, {ts: audioMetadata.wall_time});
         url += '&' + audioMetadata.query;
 
         return {
-          wall_time: formatDate(new Date(audioMetadata.wall_time * 1000)),
+          wall_time: tf_card_heading.formatDate(new Date(audioMetadata.wall_time * 1000)),
           step: audioMetadata.step,
           label: audioMetadata.label,
           contentType: audioMetadata.contentType,

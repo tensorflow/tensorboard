@@ -162,13 +162,13 @@ limitations under the License.
 
             <pre>
 from beholder.beholder import Beholder
-visualizer = Beholder(session=sess,
-                      logdir=LOG_DIRECTORY)</pre>
+visualizer = Beholder(logdir=LOG_DIRECTORY)</pre>
 
             <p>And call the update function after every train step (both arguments are optional):</p>
 
             <pre>
 visualizer.update(
+  session=sess,
   arrays=list_of_np_arrays,
   frame=two_dimensional_np_array,
 )</pre>
@@ -282,9 +282,7 @@ visualizer.update(
   </template>
   <script>
     "use strict";
-
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getRouter} from '../tf-backend/router.js';
+    (function() {
 
     const PLUGIN_NAME = 'beholder'
 
@@ -295,7 +293,7 @@ visualizer.update(
 
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(10, 0),
+          value: () => new tf_backend.RequestManager(10, 0),
         },
 
         ////
@@ -391,7 +389,7 @@ visualizer.update(
           }
         }
 
-        const url = getRouter().pluginRoute(PLUGIN_NAME, '/change-config');
+        const url = tf_backend.getRouter().pluginRoute(PLUGIN_NAME, '/change-config');
         const postData = {
           values: this._values,
           mode: this._mode,
@@ -423,12 +421,13 @@ visualizer.update(
       },
 
       reload() {
-        const url = getRouter().pluginRoute(PLUGIN_NAME, '/is-active');
+        const url = tf_backend.getRouter().pluginRoute(PLUGIN_NAME, '/is-active');
 
         this._requestManager.request(url).then(response => {
           this.set('_is_active', response['is_active'])
         })
       },
     });
+    })();
   </script>
 </dom-module>

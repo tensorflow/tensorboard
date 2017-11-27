@@ -86,10 +86,6 @@ limitations under the License.
     </style>
   </template>
   <script>
-    import {addParams} from "../tf-backend/urlPathHelpers.js";
-    import {Canceller} from "../tf-backend/canceller.js";
-    import {getRouter} from "../tf-backend/router.js";
-    import {runsColorScale} from "../tf-color-scale/colorScale.js";
 
     Polymer({
       is: "tf-distribution-loader",
@@ -102,7 +98,7 @@ limitations under the License.
 
         _colorScale: {
           type: Object,
-          value: () => ({scale: runsColorScale}),
+          value: () => ({scale: tf_color_scale.runsColorScale}),
           readOnly: true,
         },
         _runColor: {
@@ -118,7 +114,7 @@ limitations under the License.
         requestManager: Object,
         _canceller: {
           type: Object,
-          value: () => new Canceller(),
+          value: () => new tf_backend.Canceller(),
         },
       },
 
@@ -142,8 +138,8 @@ limitations under the License.
           return;
         }
         this._canceller.cancelAll();
-        const router = getRouter();
-        const url = addParams(
+        const router = tf_backend.getRouter();
+        const url = tf_backend.addParams(
           router.pluginRoute("distributions", "/distributions"),
           {tag: this.tag, run: this.run});
         const updateData = this._canceller.cancellable(result => {

@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace vz_projector {
 
 /**
  * This is a fork of the Karpathy's TSNE.js (original license below).
@@ -42,8 +43,6 @@ limitations under the License.
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-import {SPNode, SPTree} from './sptree.js';
 
 type AugmSPNode = SPNode&{numCells: number, yCell: number[], rCell: number};
 
@@ -315,7 +314,7 @@ export class TSNE {
   getSolution() { return this.Y; }
 
   // perform a single step of optimization to improve the embedding
-  step() {
+  step(perturb: number) {
     this.iter += 1;
     let N = this.N;
 
@@ -344,6 +343,7 @@ export class TSNE {
         // step!
         let i_d = i * this.dim + d;
         this.Y[i_d] += newsid;
+        this.Y[i_d] *= 1.0 + perturb * (Math.random() - 1.0);
         ymean[d] += this.Y[i_d];  // accumulate mean so that we
                                   // can center later
       }
@@ -471,3 +471,5 @@ export class TSNE {
     return grad;
   }
 }
+
+}  // namespace vz_projector

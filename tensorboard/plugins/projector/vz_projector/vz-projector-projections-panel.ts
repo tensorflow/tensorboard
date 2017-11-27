@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,16 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as data from './data.js';
-import {DataSet, Projection, ProjectionType, SpriteAndMetadataInfo, State} from './data.js';
-import * as util from './util.js';
-import * as vector from './vector.js';
-import {Vector} from './vector.js';
-import {Projector} from './vz-projector.js';
-import {ProjectorInput} from './vz-projector-input.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 const NUM_PCA_COMPONENTS = 10;
 
@@ -49,12 +40,15 @@ export let ProjectionsPanelPolymer = PolymerElement({
 type InputControlName = 'xLeft'|'xRight'|'yUp'|'yDown';
 
 type CentroidResult = {
-  centroid?: Vector; numMatches?: number;
+  centroid?: vector.Vector; numMatches?: number;
 };
 
 type Centroids = {
-  [key: string]: Vector; xLeft: Vector; xRight: Vector; yUp: Vector;
-  yDown: Vector;
+  [key: string]: vector.Vector;
+  xLeft: vector.Vector;
+  xRight: vector.Vector;
+  yUp: vector.Vector;
+  yDown: vector.Vector;
 };
 
 /**
@@ -94,9 +88,11 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   /** Polymer elements. */
   private runTsneButton: HTMLButtonElement;
-  private stopTsneButton: HTMLButtonElement;
+  private pauseTsneButton: HTMLButtonElement;
+  private perturbTsneButton: HTMLButtonElement;
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
+  private perturbFactorInput: HTMLInputElement;
   private zDropdown: HTMLElement;
   private iterationLabel: HTMLElement;
 
@@ -123,11 +119,14 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   ready() {
     this.zDropdown = this.querySelector('#z-dropdown') as HTMLElement;
     this.runTsneButton = this.querySelector('.run-tsne') as HTMLButtonElement;
-    this.stopTsneButton = this.querySelector('.stop-tsne') as HTMLButtonElement;
+    this.pauseTsneButton = this.querySelector('.pause-tsne') as HTMLButtonElement;
+    this.perturbTsneButton = this.querySelector('.perturb-tsne') as HTMLButtonElement;
     this.perplexitySlider =
         this.querySelector('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
         this.querySelector('#learning-rate-slider') as HTMLInputElement;
+    this.perturbFactorInput =
+        this.querySelector('#perturb-factor-slider') as HTMLInputElement;
     this.iterationLabel = this.querySelector('.run-tsne-iter') as HTMLElement;
   }
 
@@ -155,6 +154,14 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         .innerText = '' + this.learningRate;
   }
 
+  private updateTSNEPerturbFactorFromUIChange() {
+    if (this.perturbFactorInput && this.dataSet) {
+      this.dataSet.perturbFactor = +this.perturbFactorInput.value;
+    }
+    (this.querySelector('.tsne-perturb-factor span') as HTMLSpanElement)
+        .innerText = '' + this.perturbFactorInput.value;
+  }
+
   private setupUIControls() {
     {
       const self = this;
@@ -167,9 +174,30 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       }
     }
 
-    this.runTsneButton.addEventListener('click', () => this.runTSNE());
-    this.stopTsneButton.addEventListener(
-        'click', () => this.dataSet.stopTSNE());
+    this.runTsneButton.addEventListener('click', () => {
+      if (this.dataSet.hasTSNERun) {
+        this.dataSet.stopTSNE();
+      }
+      else {
+        this.runTSNE();
+      }
+    });
+
+    this.pauseTsneButton.addEventListener('click', () => {
+      if (this.dataSet.tSNEShouldPause) {
+        this.dataSet.tSNEShouldPause = false;
+        this.perturbTsneButton.disabled = false;
+        this.pauseTsneButton.innerText = 'Pause';
+      } else {
+        this.dataSet.tSNEShouldPause = true;
+        this.perturbTsneButton.disabled = true;
+        this.pauseTsneButton.innerText = 'Resume';
+      }
+    });
+
+    this.perturbTsneButton.addEventListener('click', () => {
+      this.dataSet.tSNEShouldPerturb = !this.dataSet.tSNEShouldPerturb;
+    });
 
     this.perplexitySlider.value = this.perplexity.toString();
     this.perplexitySlider.addEventListener(
@@ -179,6 +207,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.learningRateInput.addEventListener(
         'change', () => this.updateTSNELearningRateFromUIChange());
     this.updateTSNELearningRateFromUIChange();
+
+    this.perturbFactorInput.addEventListener(
+        'change', () => this.updateTSNEPerturbFactorFromUIChange());
+    this.updateTSNEPerturbFactorFromUIChange();
 
     this.setupCustomProjectionInputFields();
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
@@ -234,6 +266,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.setZDropdownEnabled(this.pcaIs3d);
     this.updateTSNEPerplexityFromSliderChange();
     this.updateTSNELearningRateFromUIChange();
+    this.updateTSNEPerturbFactorFromUIChange();
     if (this.iterationLabel) {
       this.iterationLabel.innerText = bookmark.tSNEIteration.toString();
     }
@@ -312,10 +345,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.clearCentroids();
 
     (this.querySelector('#tsne-sampling') as HTMLElement).style.display =
-        pointCount > data.TSNE_SAMPLE_SIZE ? null : 'none';
+        pointCount > TSNE_SAMPLE_SIZE ? null : 'none';
     const wasSampled =
-        (dataSet == null) ? false : (dataSet.dim[0] > data.PCA_SAMPLE_DIM ||
-                                     dataSet.dim[1] > data.PCA_SAMPLE_DIM);
+        (dataSet == null) ? false : (dataSet.dim[0] > PCA_SAMPLE_DIM ||
+                                     dataSet.dim[1] > PCA_SAMPLE_DIM);
     (this.querySelector('#pca-sampling') as HTMLElement).style.display =
         wasSampled ? null : 'none';
     this.showTab('pca');
@@ -405,7 +438,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       return;
     }
     const accessors =
-        data.getProjectionComponents('tsne', [0, 1, this.tSNEis3d ? 2 : null]);
+        getProjectionComponents('tsne', [0, 1, this.tSNEis3d ? 2 : null]);
     const dimensionality = this.tSNEis3d ? 3 : 2;
     const projection =
         new Projection('tsne', accessors, dimensionality, dataSet);
@@ -419,17 +452,28 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   private runTSNE() {
+    this.runTsneButton.innerText = 'Stop';
     this.runTsneButton.disabled = true;
-    this.stopTsneButton.disabled = null;
+    this.pauseTsneButton.innerText = 'Pause';
+    this.pauseTsneButton.disabled = true;
+    this.perturbTsneButton.disabled = true;
+
     this.dataSet.projectTSNE(
         this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2,
         (iteration: number) => {
           if (iteration != null) {
+            this.runTsneButton.disabled = false;
+            this.pauseTsneButton.disabled = false;
+            this.perturbTsneButton.disabled = false;
             this.iterationLabel.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
-          } else {
-            this.runTsneButton.disabled = null;
-            this.stopTsneButton.disabled = true;
+          }
+          else {
+            this.runTsneButton.innerText = 'Re-run';
+            this.runTsneButton.disabled = false;
+            this.pauseTsneButton.innerText = 'Pause';
+            this.pauseTsneButton.disabled = true;
+            this.perturbTsneButton.disabled = true;
           }
         });
   }
@@ -458,7 +502,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     }
     this.dataSet.projectPCA().then(() => {
       // Polymer properties are 1-based.
-      const accessors = data.getProjectionComponents(
+      const accessors = getProjectionComponents(
           'pca', [this.pcaX, this.pcaY, this.pcaZ]);
 
       const dimensionality = this.pcaIs3d ? 3 : 2;
@@ -490,7 +534,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     const yDir = vector.sub(this.centroids.yUp, this.centroids.yDown);
     this.dataSet.projectLinear(yDir, 'linear-y');
 
-    const accessors = data.getProjectionComponents('custom', ['x', 'y']);
+    const accessors = getProjectionComponents('custom', ['x', 'y']);
     const projection = new Projection('custom', accessors, 2, this.dataSet);
     this.projector.setProjection(projection);
   }
@@ -574,16 +618,18 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   getPcaSampledDimText() {
-    return data.PCA_SAMPLE_DIM.toLocaleString();
+    return PCA_SAMPLE_DIM.toLocaleString();
   }
 
   getPcaSampleSizeText() {
-    return data.PCA_SAMPLE_SIZE.toLocaleString();
+    return PCA_SAMPLE_SIZE.toLocaleString();
   }
 
   getTsneSampleSizeText() {
-    return data.TSNE_SAMPLE_SIZE.toLocaleString();
+    return TSNE_SAMPLE_SIZE.toLocaleString();
   }
 }
 
 document.registerElement(ProjectionsPanel.prototype.is, ProjectionsPanel);
+
+}  // namespace vz_projector

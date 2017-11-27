@@ -73,11 +73,6 @@ class CorePluginTest(tf.test.TestCase):
       self.assertEqual(200, response.status_code, msg=path)
       self.assertEqual('0', response.headers.get('Expires'), msg=path)
 
-  def testIndex_hasCaching(self):
-    """Test the format of the /data/runs endpoint."""
-    response = self.server.get('/')
-    self.assertNotEqual('0', response.headers.get('Expires'))
-
   def testLogdir(self):
     """Test the format of the data/logdir endpoint."""
     parsed_object = self._get_json('/data/logdir')

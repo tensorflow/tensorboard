@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,12 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {runAsyncTask} from './util.js';
-import * as logging from './logging.js';
-import {KMin} from './heap.js';
-import {Vector} from './vector.js';
-import * as vector from './vector.js';
+namespace vz_projector.knn {
 
 export type NearestEntry = {
   index: number,
@@ -75,7 +70,7 @@ export function findKNNGPUCosine<T>(
   function step(resolve: (result: NearestEntry[][]) => void) {
     let progressMsg =
         'Finding nearest neighbors: ' + (progress * 100).toFixed() + '%';
-    runAsyncTask(progressMsg, () => {
+    util.runAsyncTask(progressMsg, () => {
       let B = piece < modulo ? M + 1 : M;
       let typedB = new Float32Array(B * dim);
       for (let i = 0; i < B; ++i) {
@@ -141,9 +136,9 @@ export function findKNNGPUCosine<T>(
  */
 export function findKNN<T>(
     dataPoints: T[], k: number, accessor: (dataPoint: T) => Float32Array,
-    dist: (a: Vector, b: Vector, limit: number) =>
+    dist: (a: vector.Vector, b: vector.Vector, limit: number) =>
         number): Promise<NearestEntry[][]> {
-  return runAsyncTask<NearestEntry[][]>('Finding nearest neighbors...', () => {
+  return util.runAsyncTask<NearestEntry[][]>('Finding nearest neighbors...', () => {
     let N = dataPoints.length;
     let nearest: NearestEntry[][] = new Array(N);
     // Find the distances from node i.
@@ -220,7 +215,7 @@ function minDist(
 export function findKNNofPoint<T>(
     dataPoints: T[], pointIndex: number, k: number,
     accessor: (dataPoint: T) => Float32Array,
-    distance: (a: Vector, b: Vector) => number) {
+    distance: (a: vector.Vector, b: vector.Vector) => number) {
   let kMin = new KMin<NearestEntry>(k);
   let a = accessor(dataPoints[pointIndex]);
   for (let i = 0; i < dataPoints.length; ++i) {
@@ -233,3 +228,5 @@ export function findKNNofPoint<T>(
   }
   return kMin.getMinKItems();
 }
+
+}  // namespace vz_projector.knn

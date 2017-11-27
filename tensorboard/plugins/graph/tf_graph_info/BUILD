@@ -1,11 +1,11 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-ts_web_library(
+tf_web_library(
     name = "tf_graph_info",
     srcs = [
         "tf-graph-info.html",
@@ -31,7 +31,7 @@ ts_web_library(
     ],
 )
 
-ts_web_library(
+tf_web_library(
     name = "tf_graph_icon",
     srcs = [
         "tf-graph-icon.html",

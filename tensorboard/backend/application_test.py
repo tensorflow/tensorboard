@@ -26,6 +26,15 @@ import shutil
 import socket
 import tempfile
 
+try:
+  # python version >= 3.3
+  from unittest import mock
+except ImportError:
+  import mock
+
+import posixpath
+import ntpath
+
 import six
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
@@ -40,19 +49,30 @@ from tensorboard.plugins import base_plugin
 class FakePlugin(base_plugin.TBPlugin):
   """A plugin with no functionality."""
 
-  def __init__(self, unused_context, plugin_name, is_active_value,
-               routes_mapping):
+  def __init__(self,
+               context,
+               plugin_name,
+               is_active_value,
+               routes_mapping,
+               construction_callback=None):
     """Constructs a fake plugin.
 
     Args:
+      context: The TBContext magic container. Contains properties that are
+        potentially useful to this plugin.
       plugin_name: The name of this plugin.
       is_active_value: Whether the plugin is active.
       routes_mapping: A dictionary mapping from route (string URL path) to the
         method called when a user issues a request to that route.
+      construction_callback: An optional callback called when the plugin is
+        constructed. The callback is passed the TBContext.
     """
     self.plugin_name = plugin_name
     self._is_active_value = is_active_value
     self._routes_mapping = routes_mapping
+
+    if construction_callback:
+      construction_callback(context)
 
   def get_plugin_apps(self):
     """Returns a mapping from routes to handlers offered by this plugin.
@@ -104,6 +124,7 @@ class TensorboardServerTest(tf.test.TestCase):
     parsed_object = self._get_json('/data/plugins_listing')
     # Plugin foo is active. Plugin bar is not.
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
+
 
 class TensorboardServerBaseUrlTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
@@ -229,88 +250,138 @@ class TensorboardServerUsingMetagraphOnlyTest(TensorboardServerTest):
 
 class ParseEventFilesSpecTest(tf.test.TestCase):
 
+  def assertPlatformSpecificLogdirParsing(self, pathObj, logdir, expected):
+    """
+    A custom assertion to test :func:`parse_event_files_spec` under various
+    systems.
+
+    Args:
+        pathObj: a custom replacement object for `os.path`, typically
+          `posixpath` or `ntpath`
+        logdir: the string to be parsed by
+          :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
+        expected: the expected dictionary as returned by
+          :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
+
+    """
+
+    with mock.patch('os.path', pathObj):
+      self.assertEqual(application.parse_event_files_spec(logdir), expected)
+
+
+
   def testRunName(self):
-    logdir = 'lol:/cat'
-    expected = {'/cat': 'lol'}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'lol:/cat', {'/cat': 'lol'})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'lol:C:\\cat', {'C:\\cat': 'lol'})
 
   def testPathWithColonThatComesAfterASlash_isNotConsideredARunName(self):
-    logdir = '/lol:/cat'
-    expected = {'/lol:/cat': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, '/lol:/cat', {'/lol:/cat': None})
 
   def testMultipleDirectories(self):
-    logdir = '/a,/b'
-    expected = {'/a': None, '/b': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, '/a,/b', {'/a': None, '/b': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'C:\\a,C:\\b', {'C:\\a': None, 'C:\\b': None})
 
   def testNormalizesPaths(self):
-    logdir = '/lol/.//cat/../cat'
-    expected = {'/lol/cat': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, '/lol/.//cat/../cat', {'/lol/cat': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'C:\\lol\\.\\\\cat\\..\\cat', {'C:\\lol\\cat': None})
 
   def testAbsolutifies(self):
-    logdir = 'lol/cat'
-    expected = {os.path.realpath('lol/cat'): None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'lol/cat', {posixpath.realpath('lol/cat'): None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'lol\\cat', {ntpath.realpath('lol\\cat'): None})
 
   def testRespectsGCSPath(self):
-    logdir = 'gs://foo/path'
-    expected = {'gs://foo/path': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'gs://foo/path', {'gs://foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'gs://foo/path', {'gs://foo/path': None})
 
   def testRespectsHDFSPath(self):
-    logdir = 'hdfs://foo/path'
-    expected = {'hdfs://foo/path': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'hdfs://foo/path', {'hdfs://foo/path': None})
 
   def testDoesNotExpandUserInGCSPath(self):
-    logdir = 'gs://~/foo/path'
-    expected = {'gs://~/foo/path': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'gs://~/foo/path', {'gs://~/foo/path': None})
 
   def testDoesNotNormalizeGCSPath(self):
-    logdir = 'gs://foo/./path//..'
-    expected = {'gs://foo/./path//..': None}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'gs://foo/./path//..', {'gs://foo/./path//..': None})
 
   def testRunNameWithGCSPath(self):
-    logdir = 'lol:gs://foo/path'
-    expected = {'gs://foo/path': 'lol'}
-    self.assertEqual(application.parse_event_files_spec(logdir), expected)
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'lol:gs://foo/path', {'gs://foo/path': 'lol'})
+
+  def testSingleLetterGroup(self):
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, 'A:/foo/path', {'/foo/path': 'A'})
+    # single letter groups are not supported on Windows
+    with self.assertRaises(AssertionError):
+      self.assertPlatformSpecificLogdirParsing(
+          ntpath, 'A:C:\\foo\\path', {'C:\\foo\\path': 'A'})
 
 
 class TensorBoardPluginsTest(tf.test.TestCase):
 
-  def testPluginsAdded(self):
-
-    def foo_handler():
-      pass
-
-    def bar_handler():
-      pass
-
+  def setUp(self):
+    self.context = None
     plugins = [
         functools.partial(
             FakePlugin,
             plugin_name='foo',
             is_active_value=True,
-            routes_mapping={'/foo_route': foo_handler}),
+            routes_mapping={'/foo_route': self._foo_handler},
+            construction_callback=self._construction_callback),
         functools.partial(
             FakePlugin,
             plugin_name='bar',
             is_active_value=True,
-            routes_mapping={'/bar_route': bar_handler}),
+            routes_mapping={'/bar_route': self._bar_handler},
+            construction_callback=self._construction_callback),
     ]
 
     # The application should have added routes for both plugins.
-    app = application.standard_tensorboard_wsgi('', True, 60, plugins)
+    self.app = application.standard_tensorboard_wsgi('', True, 60, plugins)
 
+  def _foo_handler(self):
+    pass
+
+  def _bar_handler(self):
+    pass
+
+  def _construction_callback(self, context):
+    """Called when a plugin is constructed."""
+    self.context = context
+
+  def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
     self.assertDictContainsSubset({
-        '/data/plugin/foo/foo_route': foo_handler,
-        '/data/plugin/bar/bar_route': bar_handler,
-    }, app.data_applications)
+        '/data/plugin/foo/foo_route': self._foo_handler,
+        '/data/plugin/bar/bar_route': self._bar_handler,
+    }, self.app.data_applications)
+
+  def testNameToPluginMapping(self):
+    # The mapping from plugin name to instance should include both plugins.
+    mapping = self.context.plugin_name_to_instance
+    self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
+    self.assertEqual('foo', mapping['foo'].plugin_name)
+    self.assertEqual('bar', mapping['bar'].plugin_name)
 
 
 class TensorboardSimpleServerConstructionTest(tf.test.TestCase):

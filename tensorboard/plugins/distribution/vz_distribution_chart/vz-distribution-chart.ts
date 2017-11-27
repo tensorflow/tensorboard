@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import * as ChartHelpers from '../vz-line-chart/vz-chart-helpers.js';
+namespace vz_distribution_chart {
 
 export class DistributionChart {
   private run2datasets: {[run: string]: Plottable.Dataset};
@@ -51,15 +50,15 @@ export class DistributionChart {
     if (this.outer) {
       this.outer.destroy();
     }
-    let xComponents = ChartHelpers.getXComponents(xType);
+    let xComponents = vz_line_chart.getXComponents(xType);
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;
     this.xAxis.margin(0).tickLabelPadding(3);
     this.yScale = new Plottable.Scales.Linear();
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = ChartHelpers.multiscaleFormatter(
-        ChartHelpers.Y_AXIS_FORMATTER_PRECISION);
+    let yFormatter = vz_line_chart.multiscaleFormatter(
+        vz_line_chart.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
 
@@ -235,3 +234,5 @@ Polymer({
     this._attached = false;
   }
 });
+
+}  // namespace vz_distribution_chart

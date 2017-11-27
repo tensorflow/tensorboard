@@ -67,7 +67,7 @@ limitations under the License.
         >Next page</paper-button>
       </div>
     </template>
-    <div><content></content></div>
+    <div><slot></slot></div>
     <template is="dom-if" if="[[_multiplePagesExist]]">
       <div id="controls-container">
         <div style="display: inline-block; padding: 0 5px">
@@ -133,8 +133,6 @@ limitations under the License.
     </style>
   </template>
   <script>
-  import * as store from './paginatedViewStore.js';
-
   Polymer({
     is: "tf-paginated-view",
     properties: {
@@ -239,14 +237,14 @@ limitations under the License.
 
     attached() {
       this._limitListener = () => {
-        this.set('_limit', store.getLimit());
+        this.set('_limit', tf_paginated_view.getLimit());
       };
-      store.addLimitListener(this._limitListener);
+      tf_paginated_view.addLimitListener(this._limitListener);
       this._limitListener();
     },
 
     detached() {
-      store.removeLimitListener(this._limitListener);
+      tf_paginated_view.removeLimitListener(this._limitListener);
     },
 
     _computePages(items, limit, activeIndex, pageCount) {

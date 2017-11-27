@@ -1,0 +1,362 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-scalar-dashboard/tf-smoothing-input.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../tf-utils/tf-utils.html">
+<link rel="import" href="tf-custom-scalar-card.html">
+
+<!--
+  A frontend that displays a custom set of line charts.
+-->
+<dom-module id="tf-custom-scalar-dashboard">
+  <template>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <div class="line-item">
+            <paper-checkbox
+              checked="{{_showDownloadLinks}}"
+            >Show data download links</paper-checkbox>
+          </div>
+          <div class="line-item">
+            <paper-checkbox
+              checked="{{_ignoreYOutliers}}"
+            >Ignore outliers in chart scaling</paper-checkbox>
+          </div>
+          <div id="tooltip-sorting">
+            <div id="tooltip-sorting-label">Tooltip sorting method:</div>
+            <paper-dropdown-menu
+              no-label-float
+              selected-item-label="{{_tooltipSortingMethod}}"
+            >
+              <paper-menu class="dropdown-content" selected="0" slot="dropdown-content">
+                <paper-item>default</paper-item>
+                <paper-item>descending</paper-item>
+                <paper-item>ascending</paper-item>
+                <paper-item>nearest</paper-item>
+              </paper-menu>
+            </paper-dropdown-menu>
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <tf-smoothing-input
+            weight="{{_smoothingWeight}}"
+            step="0.001"
+            min="0"
+            max="1"
+          ></tf-smoothing-input>
+        </div>
+        <div class="sidebar-section">
+          <tf-option-selector
+            id="x-type-selector"
+            name="Horizontal Axis"
+            selected-id="{{_xType}}"
+          >
+            <paper-button id="step">step</paper-button><!--
+            --><paper-button id="relative">relative</paper-button><!--
+            --><paper-button id="wall_time">wall</paper-button>
+          </tf-option-selector>
+        </div>
+        <div class="sidebar-section">
+          <tf-runs-selector selected-runs="{{_selectedRuns}}">
+          </tf-runs-selector>
+        </div>
+      </div>
+      <div class="center" id="categories-container">
+        <template is="dom-if" if="[[_dataNotFound]]">
+          <div class="no-data-warning">
+            <h3>The custom scalars dashboard is inactive.</h3>
+            <p>Probable causes:</p>
+            <ol>
+              <li>You haven't laid out the dashboard.
+              <li>You haven’t written any scalar data to your event files.
+            </ol>
+            <p>
+              To lay out the dashboard, pass a <code>Layout</code> protobuffer
+              to the <code>set_layout</code> method. For example,
+            </p>
+<pre>
+from tensorboard import summary
+from tensorboard.plugins.custom_scalar import layout_pb2
+...
+# This action does not have to be performed at every step, so the action is not
+# taken care of by an op in the graph. We only need to specify the layout once. 
+summary_writer.add_summary(
+    summary.custom_scalars_pb(
+        layout_pb2.Layout(category=[
+            layout_pb2.Category(
+                title='mean biases',
+                chart=[
+                    layout_pb2.Chart(
+                        title='mean layer biases',
+                        tag=[r'mean/layer\d+/biases'])
+                ],
+                closed=True),
+            layout_pb2.Category(
+                title='std weights',
+                chart=[
+                    layout_pb2.Chart(
+                        title='stddev layer weights',
+                        tag=[r'stddev/layer\d+/weights'])
+                    ])))
+)
+</pre>
+        <p>
+        If you’re new to using TensorBoard, and want to find out how
+        to add data and set up your event files, check out the
+        <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+        and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+        </p>
+         </div>
+        </template>
+        <template is="dom-if" if="[[!_dataNotFound]]">
+          <template is="dom-repeat" items="[[_categories]]" as="category">
+            <tf-category-pane
+                category="[[category]]"
+                opened="[[category.metadata.opened]]"
+                on-opened-changed="_categoryOpenedToggled"
+              >
+              <template is="dom-repeat" items="[[category.items]]" as="chart">
+                <tf-custom-scalar-card
+                  active="[[_active]]"
+                  request-manager="[[_requestManager]]"
+                  runs="[[_selectedRuns]]"
+                  title="[[chart.title]]"
+                  x-type="[[_xType]]"
+                  smoothing-enabled="[[_smoothingEnabled]]"
+                  smoothing-weight="[[_smoothingWeight]]"
+                  tooltip-sorting-method="[[tooltipSortingMethod]]"
+                  ignore-y-outliers="[[ignoreYOutliers]]"
+                  show-download-links="[[_showDownloadLinks]]"
+                  tag-regexes="[[chart.tag]]"
+                ></tf-custom-scalar-card>
+              </template>
+            </tf-category-pane>
+          </template>
+        </template>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+    <style>
+      .center {
+        height: 100%;
+        padding: 10px 20px;
+        box-sizing: border-box;
+      }
+      #tooltip-sorting {
+        display: flex;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      #tooltip-sorting-label {
+        margin-top: 13px;
+      }
+      #tooltip-sorting paper-dropdown-menu {
+        margin-left: 10px;
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        width: 105px;
+      }
+      #x-type-selector paper-button {
+        margin: 5px 3px;
+      }
+      .line-item {
+        display: block;
+        padding-top: 5px;
+      }
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+    </style>
+  </template>
+
+  <script>
+    "use strict";
+
+    Polymer({
+      is: 'tf-custom-scalar-dashboard',
+      properties: {
+        _requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(50),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new tf_backend.Canceller(),
+        },
+        _selectedRuns: Array,
+        _showDownloadLinks: {
+          type: Boolean,
+          notify: true,
+          value: tf_storage.getBooleanInitializer('_showDownloadLinks',
+              {defaultValue: false, useLocalStorage: true}),
+          observer: '_showDownloadLinksObserver',
+        },
+        _smoothingWeight: {
+          type: Number,
+          notify: true,
+          value: tf_storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
+          observer: '_smoothingWeightObserver',
+        },
+        _smoothingEnabled: {
+          type: Boolean,
+          computed: '_computeSmoothingEnabled(_smoothingWeight)',
+        },
+        _ignoreYOutliers: {
+          type: Boolean,
+          value: tf_storage.getBooleanInitializer('_ignoreYOutliers',
+              {defaultValue: true, useLocalStorage: true}),
+          observer: '_ignoreYOutliersObserver',
+        },
+        _xType: {
+          type: String,
+          value: 'step',
+        },
+        /**
+         * The layout object has type CustomScalarCardHelpers.Layout.
+         */
+        _layout: Object,
+        _dataNotFound: Boolean,
+        /**
+         * This is array of Category<string> objects. Category is an interface
+         * defined within categorizationUtils. The items for each category are
+         * regexes. Each regex is associated with a custom chart.
+         */
+        _categories: {
+          type: Array,
+          computed: '_makeCategories(_layout)',
+        },
+        /**
+         * A mapping between opened categories to 1. When the dashboard reloads,
+         * the category panes are redrawn. We then re-open the categories that
+         * had previously been open.
+         */
+        _openedCategories: {
+          type: Object,
+        },
+        _active: {
+          type: Boolean,
+          value: true,
+          readOnly: true,
+        },
+      },
+      ready() {
+        this.reload();
+      },
+      reload() {
+        const url = tf_backend.getRouter().pluginsListing();
+        const handlePluginsListingResponse = this._canceller.cancellable(
+            result => {
+          if (result.cancelled) {
+            return;
+          }
+
+          this.set('_dataNotFound', !result.value['custom_scalars']);
+          if (this._dataNotFound) {
+            return;
+          }
+          this._retrieveLayoutAndData();
+        });
+        this._requestManager.request(url).then(handlePluginsListingResponse);
+      },
+      _reloadCharts() {
+        this.querySelectorAll('tf-custom-scalar-card').forEach(chart => {
+          chart.reload();
+        });
+      },
+      _retrieveLayoutAndData() {
+        const url = tf_backend.getRouter().pluginRoute('custom_scalars', '/layout');
+        const update = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+
+          // This plugin is only active if data is available.
+          this.set('_layout', result.value);
+          if (!this._dataNotFound) {
+            this._reloadCharts();
+          }
+        });
+        this._requestManager.request(url).then(update);
+      },
+      _showDownloadLinksObserver: tf_storage.getBooleanObserver(
+          '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
+      _smoothingWeightObserver: tf_storage.getNumberObserver(
+          '_smoothingWeight', {defaultValue: 0.6}),
+      _ignoreYOutliersObserver: tf_storage.getBooleanObserver(
+          '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
+      _computeSmoothingEnabled(_smoothingWeight) {
+        return _smoothingWeight > 0;
+      },
+      _makeCategories(layout) {
+        if (!layout.category) {
+          return [];
+        }
+        let firstTimeLoad = false;
+        if (!this._openedCategories) {
+          // This is the first time the user loads the categories. Start storing
+          // which categories are open.
+          firstTimeLoad = true;
+          this._openedCategories = {};
+        }
+
+        const categories = layout.category.map(category => {
+          if (firstTimeLoad && !category.closed) {
+            // Remember whether this category is currently open.
+            this._openedCategories[category.title] = true;
+          }
+          return {
+            name: category.title,
+            items: category.chart,
+            metadata: {
+              opened: !!this._openedCategories[category.title],
+            },
+          };
+        });
+        return categories;
+      },
+      _categoryOpenedToggled(event) {
+        const pane = event.target;
+        if (pane.opened) {
+          this._openedCategories[pane.category.name] = true;
+        } else {
+          delete this._openedCategories[pane.category.name];
+        }
+      },
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'custom_scalars',
+      elementName: 'tf-custom-scalar-dashboard',
+      tabName: 'Custom Scalars',
+    });
+  </script>
+</dom-module>

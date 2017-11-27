@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,28 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DistanceFunction, SpriteAndMetadataInfo, State} from './data.js';
-import * as knn from './knn.js';
-import {ProjectorEventContext} from './projectorEventContext.js';
-import * as adapter from './projectorScatterPlotAdapter.js';
-import * as util from './util.js';
-import * as vector from './vector.js';
-import {Projector} from './vz-projector.js';
-import {ProjectorInput} from './vz-projector-input.js';
-// tslint:disable-next-line:no-unused-variable
-import {PolymerElement, PolymerHTMLElement} from './vz-projector-util.js';
+namespace vz_projector {
 
 /** Limit the number of search results we show to the user. */
 const LIMIT_RESULTS = 100;
 
 // tslint:disable-next-line
-export let PolymerClass = PolymerElement({
+export let InspectorPanelPolymer = PolymerElement({
   is: 'vz-projector-inspector-panel',
   properties: {selectedMetadataField: String, metadataFields: Array}
 });
 
-export class InspectorPanel extends PolymerClass {
+export class InspectorPanel extends InspectorPanelPolymer {
   distFunc: DistanceFunction;
   numNN: number;
 
@@ -189,7 +179,7 @@ export class InspectorPanel extends PolymerClass {
       const labelElement = document.createElement('div');
       labelElement.className = 'label';
       labelElement.style.color =
-          adapter.dist2color(this.distFunc, neighbor.dist, minDist);
+          dist2color(this.distFunc, neighbor.dist, minDist);
       labelElement.innerText = this.getLabelFromIndex(neighbor.index);
 
       const valueElement = document.createElement('div');
@@ -205,9 +195,9 @@ export class InspectorPanel extends PolymerClass {
       const barFillElement = document.createElement('div');
       barFillElement.className = 'fill';
       barFillElement.style.borderTopColor =
-          adapter.dist2color(this.distFunc, neighbor.dist, minDist);
+          dist2color(this.distFunc, neighbor.dist, minDist);
       barFillElement.style.width =
-          adapter.normalizeDist(this.distFunc, neighbor.dist, minDist) * 100 +
+          normalizeDist(this.distFunc, neighbor.dist, minDist) * 100 +
           '%';
       barElement.appendChild(barFillElement);
 
@@ -303,8 +293,6 @@ export class InspectorPanel extends PolymerClass {
     const numNNInput = this.$$('#nn-slider') as HTMLInputElement;
     const updateNumNN = () => {
       this.numNN = +numNNInput.value;
-      (this.querySelector('.num-nn .nn-count') as HTMLSpanElement).innerText =
-          '' + this.numNN;
       if (this.selectedPointIndices != null) {
         this.projectorEventContext.notifySelectionChanged(
             [this.selectedPointIndices[0]]);
@@ -335,3 +323,5 @@ export class InspectorPanel extends PolymerClass {
 }
 
 document.registerElement(InspectorPanel.prototype.is, InspectorPanel);
+
+}  // namespace vz_projector

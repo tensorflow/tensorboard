@@ -3,7 +3,7 @@
 
 package(default_visibility = [":internal"])
 
-load("//tensorboard/defs:web.bzl", "ts_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
 licenses(["notice"])  # Apache 2.0
@@ -53,6 +53,7 @@ py_library(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
         "//tensorboard/plugins/debugger:debugger_plugin_loader",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
@@ -78,13 +79,14 @@ tensorboard_zip_file(
     deps = [":assets"],
 )
 
-ts_web_library(
+tf_web_library(
     name = "assets",
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
     ],
     path = "/",
+    deps = ["@com_google_fonts_roboto"],
 )
 
 py_library(
@@ -127,7 +129,7 @@ py_library(
 )
 
 filegroup(
-    name = "ts_web_library_default_typings",
+    name = "tf_web_library_default_typings",
     srcs = [
         # Ordering probably matters.
         "@com_microsoft_typescript//:lib.es6.d.ts",
@@ -292,6 +294,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio:summary",
+        "//tensorboard/plugins/custom_scalar:summary",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/pr_curve:summary",

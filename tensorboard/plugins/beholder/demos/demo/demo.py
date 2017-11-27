@@ -1,4 +1,4 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+
 """A simple MNIST classifier which displays summaries in TensorBoard.
 
 This is an unimpressive MNIST model, but it is a good example of using
@@ -20,6 +20,7 @@ naming summary tags so that they are grouped meaningfully in TensorBoard.
 
 It demonstrates the functionality of every TensorBoard dashboard.
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -29,14 +30,14 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-
 from tensorflow.examples.tutorials.mnist import input_data
 
-from beholder.beholder import Beholder
+from tensorboard.plugins.beholder.beholder import Beholder
 
 FLAGS = None
 
 LOG_DIRECTORY = '/tmp/beholder-demo'
+
 
 def train():
   mnist = input_data.read_data_sets(FLAGS.data_dir,
@@ -151,8 +152,7 @@ def train():
   test_writer = tf.summary.FileWriter(LOG_DIRECTORY + '/test')
   tf.global_variables_initializer().run()
 
-  visualizer = Beholder(session=sess,
-                        logdir=LOG_DIRECTORY)
+  visualizer = Beholder(logdir=LOG_DIRECTORY)
 
 
   def feed_dict(train):
@@ -187,6 +187,7 @@ def train():
         first_of_batch = sess.run(x, feed_dict=feed_dictionary)[0].reshape(28, 28)
 
         visualizer.update(
+          session=sess,
           arrays=activations + [first_of_batch] + gradient_arrays,
           frame=first_of_batch,
         )

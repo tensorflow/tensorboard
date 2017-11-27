@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,10 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {CameraType, RenderContext} from './renderContext.js';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer.js';
-import * as util from './util.js';
+namespace vz_projector {
 
 const NUM_POINTS_FOG_THRESHOLD = 5000;
 const MIN_POINT_SIZE = 5.0;
@@ -60,6 +57,18 @@ const VERTEX_SHADER = `
     float outputPointSize = pointSize;
     if (sizeAttenuation) {
       outputPointSize = -pointSize / cameraSpacePos.z;
+    } else {  // Create size attenuation (if we're in 2D mode)
+      const float PI = 3.1415926535897932384626433832795;
+      const float minScale = 0.1;  // minimum scaling factor
+      const float outSpeed = 2.0;  // shrink speed when zooming out
+      const float outNorm = (1. - minScale) / atan(outSpeed);
+      const float maxScale = 15.0;  // maximum scaling factor
+      const float inSpeed = 0.02;  // enlarge speed when zooming in
+      const float zoomOffset = 0.3;  // offset zoom pivot
+      float zoom = projectionMatrix[0][0] + zoomOffset;  // zoom pivot
+      float scale = zoom < 1. ? 1. + outNorm * atan(outSpeed * (zoom - 1.)) :
+                    1. + 2. / PI * (maxScale - 1.) * atan(inSpeed * (zoom - 1.));
+      outputPointSize = pointSize * scale;
     }
 
     gl_PointSize =
@@ -433,3 +442,5 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
   onResize(newWidth: number, newHeight: number) {}
 }
+
+}  // namespace vz_projector

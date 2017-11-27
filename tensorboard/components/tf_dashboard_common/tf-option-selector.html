@@ -26,7 +26,7 @@ provides a "selectedId" property that is one of the IDs of the buttons inside it
   <template>
     <div id="wrap">
       <h3>[[name]]</h3>
-      <div class="content-wrapper"><content></content></div>
+      <div class="content-wrapper"><slot></slot></div>
     </div>
     <style>
       .content-wrapper ::content > * {

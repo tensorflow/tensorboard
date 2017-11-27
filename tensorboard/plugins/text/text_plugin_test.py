@@ -88,10 +88,7 @@ class TextPluginTest(tf.test.TestCase):
   def testIndex(self):
     index = self.plugin.index_impl()
     self.assertItemsEqual(['fry', 'leela'], index.keys())
-    # The summary made via plugin assets (the old method being phased out) is
-    # only available for run 'fry'.
-    self.assertItemsEqual(['message', 'vector'],
-                          index['fry'])
+    self.assertItemsEqual(['message', 'vector'], index['fry'])
     self.assertItemsEqual(['message', 'vector'], index['leela'])
 
   def testText(self):
@@ -266,11 +263,18 @@ class TextPluginTest(tf.test.TestCase):
       np.testing.assert_array_equal(actual, expected)
 
   def test_text_array_to_html(self):
-
     convert = text_plugin.text_array_to_html
     scalar = np.array('foo')
     scalar_expected = '<p>foo</p>'
     self.assertEqual(convert(scalar), scalar_expected)
+
+    # Check that underscores are preserved correctly; this detects erroneous
+    # use of UTF-16 or UTF-32 encoding when calling markdown_to_safe_html(),
+    # which would introduce spurious null bytes and cause undesired <em> tags
+    # around the underscores.
+    scalar_underscores = np.array('word_with_underscores')
+    scalar_underscores_expected = '<p>word_with_underscores</p>'
+    self.assertEqual(convert(scalar_underscores), scalar_underscores_expected)
 
     vector = np.array(['foo', 'bar'])
     vector_expected = textwrap.dedent("""\
@@ -322,12 +326,41 @@ class TextPluginTest(tf.test.TestCase):
       </table>""")
     self.assertEqual(convert(d3), d3_expected)
 
+  def assertIsActive(self, plugin, expected_is_active):
+    """Helper to simulate threading for asserting on is_active()."""
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    # Initial response from is_active() is always False.
+    self.assertFalse(plugin.is_active())
+    thread = plugin._index_impl_thread
+    mock.assert_called_once_with(thread)
+
+    # The thread hasn't run yet, so is_active() should still be False, and we
+    # should not have tried to launch a second thread.
+    self.assertFalse(plugin.is_active())
+    mock.assert_called_once_with(thread)
+
+    # Run the thread; it should clean up after itself.
+    thread.run()
+    self.assertIsNone(plugin._index_impl_thread)
+
+    if expected_is_active:
+      self.assertTrue(plugin.is_active())
+      # The call above shouldn't have launched a new thread.
+      mock.assert_called_once_with(thread)
+    else:
+      self.assertFalse(plugin.is_active())
+      # The call above should have launched a second thread to check again.
+      self.assertEqual(2, mock.call_count)
+
   def testPluginIsActiveWhenNoRuns(self):
     """The plugin should be inactive when there are no runs."""
     multiplexer = event_multiplexer.EventMultiplexer()
     context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
-    self.assertFalse(plugin.is_active())
+    self.assertIsActive(plugin, False)
 
   def testPluginIsActiveWhenTextRuns(self):
     """The plugin should be active when there are runs with text."""
@@ -336,7 +369,7 @@ class TextPluginTest(tf.test.TestCase):
     plugin = text_plugin.TextPlugin(context)
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
-    self.assertTrue(plugin.is_active())
+    self.assertIsActive(plugin, True)
 
   def testPluginIsActiveWhenRunsButNoText(self):
     """The plugin should be inactive when there are runs but none has text."""
@@ -347,7 +380,31 @@ class TextPluginTest(tf.test.TestCase):
     self.generate_testdata(include_text=False, logdir=logdir)
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
-    self.assertFalse(plugin.is_active())
+    self.assertIsActive(plugin, False)
+
+  def testPluginTagsImpl(self):
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    # Initially we have not computed index_impl() so we'll get the placeholder.
+    self.assertEqual({}, self.plugin.tags_impl())
+    thread = self.plugin._index_impl_thread
+    mock.assert_called_once_with(thread)
+
+    # The thread hasn't run yet, so no change in response, and we should not
+    # have tried to launch a second thread.
+    self.assertEqual({}, self.plugin.tags_impl())
+    mock.assert_called_once_with(thread)
+
+    # Run the thread; it should clean up after itself.
+    thread.run()
+    self.assertIsNone(self.plugin._index_impl_thread)
+
+    # Expect response to be identical to calling index_impl() directly.
+    self.assertEqual(self.plugin.index_impl(), self.plugin.tags_impl())
+    # The call above should have launched a second thread to check again.
+    self.assertEqual(2, mock.call_count)
 
 
 class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):

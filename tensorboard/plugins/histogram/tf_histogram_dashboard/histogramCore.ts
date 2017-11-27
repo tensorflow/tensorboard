@@ -4,7 +4,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,22 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tf_histogram_dashboard {
 
 /**
  * Functions for converting between the different representations of
  * histograms.
  */
-
 export type BackendHistogramBin = [
   number,  // left
   number,  // right
   number   // count
 ];
+
 export type BackendHistogram = [
   number,  // wall_time, in seconds
   number,  // step
   BackendHistogramBin[]
 ];
+
 export type IntermediateHistogram = {
   wall_time: number,  // in seconds
   step: number,
@@ -39,11 +41,13 @@ export type IntermediateHistogram = {
     count: number,
   }[],
 };
+
 export type D3HistogramBin = {
   x: number,
   dx: number,
   y: number,
 };
+
 export type VzHistogram = {
   wall_time: number,  // in seconds
   step: number,
@@ -140,3 +144,5 @@ export function backendToVz(histograms: BackendHistogram[]): VzHistogram[] {
     bins: intermediateToD3(h, minmin, maxmax),
   }));
 }
+
+}  // namespace tf_histogram_dashboard

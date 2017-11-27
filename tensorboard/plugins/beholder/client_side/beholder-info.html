@@ -47,18 +47,16 @@ limitations under the License.
 
   <script>
     "use strict";
+    (function() {
 
-    import {RequestManager} from '../tf-backend/requestManager.js';
-    import {getRouter} from '../tf-backend/router.js';
-
-    const INFO_ROUTE = getRouter().pluginRoute('beholder', '/section-info')
+    const INFO_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/section-info')
 
     Polymer({
       is: "beholder-info",
       properties: {
         _requestManager: {
           type: Object,
-          value: () => new RequestManager(),
+          value: () => new tf_backend.RequestManager(),
         },
 
         items: {
@@ -85,5 +83,6 @@ limitations under the License.
         this._reloaditems()
       }
     });
+    })();
   </script>
 </dom-module>

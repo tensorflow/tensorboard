@@ -22,16 +22,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 
 # A value that we use as the minimum value during division of counts to prevent
-# division by 0. 1 suffices because counts of course must be whole numbers.
-_MINIMUM_COUNT = 1.0
+# division by 0. 1.0 does not work: Certain weights could cause counts below 1.
+_MINIMUM_COUNT = 1e-7
+
+# The default number of thresholds.
+_DEFAULT_NUM_THRESHOLDS = 201
 
 def op(
-    tag,
+    name,
     labels,
     predictions,
     num_thresholds=None,
@@ -51,7 +55,7 @@ def op(
   used to reweight certain values, or more commonly used for masking values.
 
   Args:
-    tag: A tag attached to the summary. Used by TensorBoard for organization.
+    name: A tag attached to the summary. Used by TensorBoard for organization.
     labels: The ground truth values. A Tensor of `bool` values with arbitrary
         shape.
     predictions: A float32 `Tensor` whose values are in the range `[0, 1]`.
@@ -78,14 +82,14 @@ def op(
 
   """
   if num_thresholds is None:
-    num_thresholds = 200
+    num_thresholds = _DEFAULT_NUM_THRESHOLDS
 
   if weights is None:
     weights = 1.0
 
   dtype = predictions.dtype
 
-  with tf.name_scope(tag, values=[labels, predictions, weights]):
+  with tf.name_scope(name, values=[labels, predictions, weights]):
     tf.assert_type(labels, tf.bool)
     # We cast to float to ensure we have 0.0 or 1.0.
     f_labels = tf.cast(labels, dtype)
@@ -152,7 +156,7 @@ def op(
     recall = tp / tf.maximum(_MINIMUM_COUNT, tp + fn)
 
     return _create_tensor_summary(
-        tag,
+        name,
         tp,
         fp,
         tn,
@@ -164,11 +168,76 @@ def op(
         description,
         collections)
 
+def pb(name,
+       labels,
+       predictions,
+       num_thresholds=None,
+       weights=None,
+       display_name=None,
+       description=None):
+  """Create a PR curves summary protobuf.
 
-def streaming_op(tag,
+  Arguments:
+    name: A name for the generated node. Will also serve as a series name in
+        TensorBoard.
+    labels: The ground truth values. A bool numpy array.
+    predictions: A float32 numpy array whose values are in the range `[0, 1]`.
+        Dimensions must match those of `labels`.
+    num_thresholds: Optional number of thresholds, evenly distributed in
+        `[0, 1]`, to compute PR metrics for. When provided, should be an int of
+        value at least 2. Defaults to 201.
+    weights: Optional float or float32 numpy array. Individual counts are
+        multiplied by this value. This tensor must be either the same shape as
+        or broadcastable to the `labels` numpy array.
+    display_name: Optional name for this summary in TensorBoard, as a `str`.
+        Defaults to `name`.
+    description: Optional long-form description for this summary, as a `str`.
+        Markdown is supported. Defaults to empty.
+  """
+  if num_thresholds is None:
+    num_thresholds = _DEFAULT_NUM_THRESHOLDS
+
+  if weights is None:
+    weights = 1.0
+
+  # Compute bins of true positives and false positives.
+  bucket_indices = np.int32(np.floor(predictions * (num_thresholds - 1)))
+  float_labels = labels.astype(np.float)
+  histogram_range = (0, num_thresholds - 1)
+  tp_buckets, _ = np.histogram(
+      bucket_indices,
+      bins=num_thresholds,
+      range=histogram_range,
+      weights=float_labels * weights)
+  fp_buckets, _ = np.histogram(
+      bucket_indices,
+      bins=num_thresholds,
+      range=histogram_range,
+      weights=(1.0 - float_labels) * weights)
+
+  # Obtain the reverse cumulative sum.
+  tp = np.cumsum(tp_buckets[::-1])[::-1]
+  fp = np.cumsum(fp_buckets[::-1])[::-1]
+  tn = fp[0] - fp
+  fn = tp[0] - tp
+  precision = tp / np.maximum(_MINIMUM_COUNT, tp + fp)
+  recall = tp / np.maximum(_MINIMUM_COUNT, tp + fn)
+
+  return raw_data_pb(name,
+                     true_positive_counts=tp,
+                     false_positive_counts=fp,
+                     true_negative_counts=tn,
+                     false_negative_counts=fn,
+                     precision=precision,
+                     recall=recall,
+                     num_thresholds=num_thresholds,
+                     display_name=display_name,
+                     description=description)
+
+def streaming_op(name,
                  labels,
                  predictions,
-                 num_thresholds=200,
+                 num_thresholds=None,
                  weights=None,
                  metrics_collections=None,
                  updates_collections=None,
@@ -186,13 +255,13 @@ def streaming_op(tag,
   updated with the returned update_op.
 
   Args:
-    tag: A tag attached to the summary. Used by TensorBoard for organization.
+    name: A tag attached to the summary. Used by TensorBoard for organization.
     labels: The ground truth values, a `Tensor` whose dimensions must match
       `predictions`. Will be cast to `bool`.
     predictions: A floating point `Tensor` of arbitrary shape and whose values
       are in the range `[0, 1]`.
     num_thresholds: The number of evenly spaced thresholds to generate for
-      computing the PR curve.
+      computing the PR curve. Defaults to 201.
     weights: Optional `Tensor` whose rank is either 0, or the same rank as
       `labels`, and must be broadcastable to `labels` (i.e., all dimensions must
       be either `1`, or the same as the corresponding `labels` dimension).
@@ -213,10 +282,13 @@ def streaming_op(tag,
       positives, true negatives, false negatives, precision, recall.
     update_op: An operation that updates the summary with the latest data.
   """
+  if num_thresholds is None:
+    num_thresholds = _DEFAULT_NUM_THRESHOLDS
+
   thresholds = [i / float(num_thresholds - 1)
                 for i in range(num_thresholds)]
 
-  with tf.name_scope(tag, values=[labels, predictions, weights]):
+  with tf.name_scope(name, values=[labels, predictions, weights]):
     tp, update_tp = tf.metrics.true_positives_at_thresholds(
         labels=labels,
         predictions=predictions,
@@ -243,7 +315,7 @@ def streaming_op(tag,
       recall = tp / tf.maximum(_MINIMUM_COUNT, tp + fn)
 
       return _create_tensor_summary(
-          tag,
+          name,
           tp,
           fp,
           tn,
@@ -261,9 +333,8 @@ def streaming_op(tag,
 
     return pr_curve, update_op
 
-
 def raw_data_op(
-    tag,
+    name,
     true_positive_counts,
     false_positive_counts,
     true_negative_counts,
@@ -285,15 +356,25 @@ def raw_data_op(
   differently but still use the PR curves plugin.
 
   Args:
-    tag: A tag attached to the summary. Used by TensorBoard for organization.
+    name: A tag attached to the summary. Used by TensorBoard for organization.
     true_positive_counts: A rank-1 tensor of true positive counts. Must contain
-        `num_thresholds` elements and be castable to float32.
+        `num_thresholds` elements and be castable to float32. Values correspond
+        to thresholds that increase from left to right (from 0 to 1).
     false_positive_counts: A rank-1 tensor of false positive counts. Must
-        contain `num_thresholds` elements and be castable to float32.
+        contain `num_thresholds` elements and be castable to float32. Values
+        correspond to thresholds that increase from left to right (from 0 to 1).
     true_negative_counts: A rank-1 tensor of true negative counts. Must contain
-        `num_thresholds` elements and be castable to float32.
+        `num_thresholds` elements and be castable to float32. Values
+        correspond to thresholds that increase from left to right (from 0 to 1).
     false_negative_counts: A rank-1 tensor of false negative counts. Must
-        contain `num_thresholds` elements and be castable to float32.
+        contain `num_thresholds` elements and be castable to float32. Values
+        correspond to thresholds that increase from left to right (from 0 to 1).
+    precision: A rank-1 tensor of precision values. Must contain
+        `num_thresholds` elements and be castable to float32. Values correspond
+        to thresholds that increase from left to right (from 0 to 1).
+    recall: A rank-1 tensor of recall values. Must contain `num_thresholds`
+        elements and be castable to float32. Values correspond to thresholds
+        that increase from left to right (from 0 to 1).
     num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
         compute PR metrics for. Should be `>= 2`. This value should be a
         constant integer value, not a Tensor that stores an integer.
@@ -309,7 +390,7 @@ def raw_data_op(
     A summary operation for use in a TensorFlow graph. See docs for the `op`
     method for details on the float32 tensor produced by this summary.
   """
-  with tf.name_scope(tag, values=[
+  with tf.name_scope(name, values=[
       true_positive_counts,
       false_positive_counts,
       true_negative_counts,
@@ -318,7 +399,7 @@ def raw_data_op(
       recall,
   ]):
     return _create_tensor_summary(
-        tag,
+        name,
         true_positive_counts,
         false_positive_counts,
         true_negative_counts,
@@ -330,8 +411,66 @@ def raw_data_op(
         description,
         collections)
 
+def raw_data_pb(
+    name,
+    true_positive_counts,
+    false_positive_counts,
+    true_negative_counts,
+    false_negative_counts,
+    precision,
+    recall,
+    num_thresholds=None,
+    display_name=None,
+    description=None):
+  """Create a PR curves summary protobuf from raw data values.
+
+  Args:
+    name: A tag attached to the summary. Used by TensorBoard for organization.
+    true_positive_counts: A rank-1 numpy array of true positive counts. Must
+        contain `num_thresholds` elements and be castable to float32.
+    false_positive_counts: A rank-1 numpy array of false positive counts. Must
+        contain `num_thresholds` elements and be castable to float32.
+    true_negative_counts: A rank-1 numpy array of true negative counts. Must
+        contain `num_thresholds` elements and be castable to float32.
+    false_negative_counts: A rank-1 numpy array of false negative counts. Must
+        contain `num_thresholds` elements and be castable to float32.
+    precision: A rank-1 numpy array of precision values. Must contain
+        `num_thresholds` elements and be castable to float32.
+    recall: A rank-1 numpy array of recall values. Must contain `num_thresholds`
+        elements and be castable to float32.
+    num_thresholds: Number of thresholds, evenly distributed in `[0, 1]`, to
+        compute PR metrics for. Should be an int `>= 2`.
+    display_name: Optional name for this summary in TensorBoard, as a `str`.
+        Defaults to `name`.
+    description: Optional long-form description for this summary, as a `str`.
+        Markdown is supported. Defaults to empty.
+
+  Returns:
+    A summary operation for use in a TensorFlow graph. See docs for the `op`
+    method for details on the float32 tensor produced by this summary.
+  """
+  if display_name is None:
+    display_name = name
+  summary_metadata = metadata.create_summary_metadata(
+      display_name=display_name if display_name is not None else name,
+      description=description or '',
+      num_thresholds=num_thresholds)
+  summary = tf.Summary()
+  data = np.stack(
+      (true_positive_counts,
+       false_positive_counts,
+       true_negative_counts,
+       false_negative_counts,
+       precision,
+       recall))
+  tensor = tf.make_tensor_proto(np.float32(data), dtype=tf.float32)
+  summary.value.add(tag='%s/pr_curves' % name,
+                    metadata=summary_metadata,
+                    tensor=tensor)
+  return summary
+
 def _create_tensor_summary(
-    tag,
+    name,
     true_positive_counts,
     false_positive_counts,
     true_negative_counts,
@@ -355,7 +494,7 @@ def _create_tensor_summary(
   # Store the number of thresholds within the summary metadata because
   # that value is constant for all pr curve summaries with the same tag.
   summary_metadata = metadata.create_summary_metadata(
-      display_name=display_name if display_name is not None else tag,
+      display_name=display_name if display_name is not None else name,
       description=description or '',
       num_thresholds=num_thresholds)
 

@@ -84,6 +84,9 @@ import org.jsoup.parser.Tag;
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
 
+  private static final Pattern INLINE_SOURCE_MAP_PATTERN =
+      Pattern.compile("//# sourceMappingURL=.*");
+
   private static final Pattern IGNORE_PATHS_PATTERN =
       Pattern.compile("/(?:polymer|marked-element)/.*");
 
@@ -106,9 +109,11 @@ public final class Vulcanize {
   private static CompilationLevel compilationLevel;
   private static Webpath outputPath;
   private static Node firstCompiledScript;
+  private static Node firstScript;
   private static Node licenseComment;
   private static int insideDemoSnippet;
   private static boolean testOnly;
+  private static boolean wantsCompile;
   private static List<Pattern> ignoreRegExs = new ArrayList<>();
 
   // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
@@ -117,16 +122,17 @@ public final class Vulcanize {
 
   public static void main(String[] args) throws IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
-    testOnly = args[1].equals("true");
-    Webpath inputPath = Webpath.get(args[2]);
-    outputPath = Webpath.get(args[3]);
-    Path output = Paths.get(args[4]);
-    if (!args[5].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[5])), UTF_8);
+    wantsCompile = args[1].equals("true");
+    testOnly = args[2].equals("true");
+    Webpath inputPath = Webpath.get(args[3]);
+    outputPath = Webpath.get(args[4]);
+    Path output = Paths.get(args[5]);
+    if (!args[6].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[6])), UTF_8);
       Arrays.asList(ignoreFile.split("\n")).forEach(
           (str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 6; i < args.length; i++) {
+    for (int i = 7; i < args.length; i++) {
       if (args[i].endsWith(".js")) {
         String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
         SourceFile sourceFile = SourceFile.fromCode(args[i], code);
@@ -148,7 +154,19 @@ public final class Vulcanize {
     stack.add(inputPath);
     Document document = parse(Files.readAllBytes(webfiles.get(inputPath)));
     transform(document);
-    compile();
+    if (wantsCompile) {
+      compile();
+    } else if (firstScript != null) {
+      firstScript.before(
+          new Element(Tag.valueOf("script"), firstScript.baseUri())
+              .appendChild(new DataNode("var CLOSURE_NO_DEPS = true;", firstScript.baseUri())));
+      for (SourceFile source : sourcesFromJsLibraries) {
+        String code = source.getCode();
+        firstScript.before(
+            new Element(Tag.valueOf("script"), firstScript.baseUri())
+                .appendChild(new DataNode(code, firstScript.baseUri())));
+      }
+    }
     if (licenseComment != null) {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
     }
@@ -240,7 +258,11 @@ public final class Vulcanize {
         } else if (node.nodeName().equals("script")
             && !shouldIgnoreUri(node.attr("src"))
             && !node.hasAttr("jscomp-ignore")) {
-          node = visitScript(node);
+          if (wantsCompile) {
+            node = visitScript(node);
+          } else {
+            node = inlineScript(node);
+          }
         }
       }
       rootifyAttribute(node, "href");
@@ -345,6 +367,27 @@ public final class Vulcanize {
             .removeAttr("href"));
   }
 
+  private static Node inlineScript(Node node) throws IOException {
+    Node result;
+    if (node.attr("src").isEmpty()) {
+      result = node;
+    } else {
+      Webpath href = me().lookup(Webpath.get(node.attr("src")));
+      String code = new String(Files.readAllBytes(getWebfile(href)), UTF_8);
+      code = code.replace("</script>", "</JAVA_SCRIIIIPT/>");
+      code = INLINE_SOURCE_MAP_PATTERN.matcher(code).replaceAll("");
+      result = replaceNode(
+          node,
+          new Element(Tag.valueOf("script"), node.baseUri(), node.attributes())
+              .appendChild(new DataNode(code, node.baseUri()))
+              .removeAttr("src"));
+    }
+    if (firstScript == null) {
+      firstScript = result;
+    }
+    return result;
+  }
+
   private static Optional<String> getAttrTransitive(Node node, String attr) {
     while (node != null) {
       if (node.hasAttr(attr)) {
@@ -375,7 +418,7 @@ public final class Vulcanize {
     // Nice options.
     options.setColorizeErrorOutput(true);
     options.setContinueAfterErrors(true);
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2016);
+    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2017);
     options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
     options.setGenerateExports(true);
     options.setStrictModeInput(false);
