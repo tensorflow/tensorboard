@@ -2,7 +2,7 @@
 
 ## Overview
 
-In turn, the *custom* scalar dashboard lets users
+The *custom* scalar dashboard lets users
 
 1. Create line charts with custom combinations of runs and tags by assigning
 each chart a list of regular expressions for tags.
