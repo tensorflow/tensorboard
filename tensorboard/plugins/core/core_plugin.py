@@ -19,9 +19,11 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
+import gzip
 import mimetypes
 import zipfile
 
+import six
 import tensorflow as tf
 from werkzeug import utils
 from werkzeug import wrappers
@@ -65,12 +67,13 @@ class CorePlugin(base_plugin.TBPlugin):
         '/images': self._redirect_to_index,
     }
     if self._assets_zip_provider:
-      apps['/'] = functools.partial(self._serve_asset, 'index.html')
       with self._assets_zip_provider() as fp:
         with zipfile.ZipFile(fp) as zip_:
-          for info in zip_.infolist():
-            path = info.filename
-            apps['/' + path] = functools.partial(self._serve_asset, path)
+          for path in zip_.namelist():
+            gzipped_asset_bytes = _gzip(zip_.read(path))
+            apps['/' + path] = functools.partial(
+                self._serve_asset, path, gzipped_asset_bytes)
+      apps['/'] = apps['/index.html']
     return apps
 
   @wrappers.Request.application
@@ -82,14 +85,11 @@ class CorePlugin(base_plugin.TBPlugin):
     return utils.redirect('/')
 
   @wrappers.Request.application
-  def _serve_asset(self, path, request):
-    """Serves a static asset from the zip file."""
+  def _serve_asset(self, path, gzipped_asset_bytes, request):
+    """Serves a pre-gzipped static asset from the zip file."""
     mimetype = mimetypes.guess_type(path)[0] or 'application/octet-stream'
-    with self._assets_zip_provider() as fp:
-      with zipfile.ZipFile(fp) as zip_:
-        with zip_.open(path) as file_:
-          html = file_.read()
-    return http_util.Respond(request, html, mimetype)
+    return http_util.Respond(
+        request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
 
   @wrappers.Request.application
   def _serve_logdir(self, request):
@@ -129,3 +129,11 @@ class CorePlugin(base_plugin.TBPlugin):
     }
     run_names.sort(key=first_event_timestamps.get)
     return http_util.Respond(request, run_names, 'application/json')
+
+
+def _gzip(bytestring):
+  out = six.BytesIO()
+  # Set mtime to zero for deterministic results across TensorBoard launches.
+  with gzip.GzipFile(fileobj=out, mode='wb', compresslevel=3, mtime=0) as f:
+    f.write(bytestring)
+  return out.getvalue()
