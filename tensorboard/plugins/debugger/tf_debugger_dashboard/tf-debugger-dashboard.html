@@ -76,25 +76,25 @@ limitations under the License.
               force-expansion-node-name="[[_forceExpansionNodeName]]">
           </tf-op-selector>
         </div>
-        <div class="sidebar-section">
+        <div>
           <tf-session-runs-view
             id="sessionRunsView"
             latest-session-run="[[_latestSessionRun]]"
             session-run-key-to-device-names="[[_sessionRunKey2DeviceNames]]"
-            sole-active="[[_sessionRunSoleActive]]">
+            sole-active="[[_sessionRunSoleActive]]"
+            node-or-tensor-clicked="[[_createFeedFetchTargetClickedHandler()]]">
           </tf-session-runs-view>
-          <br/>
-          <div>
-              <paper-button raised class="continue-button" on-click="_step">
-                  <span>[[_stepButtonText]]</span>
-              </paper-button>
-              <paper-button
-                  raised
-                  class="continue-button"
-                  on-click="_openContinueDialog">
-                  <span>[[_continueButtonText]]</span>
-              </paper-button>
-          </div>
+        </div>
+        <div>
+          <paper-button raised class="continue-button" on-click="_step">
+              <span>[[_stepButtonText]]</span>
+          </paper-button>
+          <paper-button
+              raised
+              class="continue-button"
+              on-click="_openContinueDialog">
+              <span>[[_continueButtonText]]</span>
+          </paper-button>
         </div>
         <div class="container">
           <tf-graph-loader id="loader"
@@ -151,7 +151,7 @@ limitations under the License.
         </div>
 
         <div id="tensor-data" class="tensor-data">
-          <div class="debugger-section-title">Tensor Value Summary</div>
+          <div class="debugger-section-title">Tensor Value Overview</div>
           <tf-tensor-data-summary
             latest-tensor-data="[[_latestTensorData]]"
             expand-handler="[[_createTensorDataExpandHandler()]]">
@@ -220,6 +220,10 @@ limitations under the License.
       .no-data-warning {
         max-width: 540px;
         margin: 80px auto 0 auto;
+      }
+      .sidebar {
+        position: relative;
+        height: 100%;
       }
       .center {
         position: relative;
@@ -627,7 +631,8 @@ limitations under the License.
               const gatedGrpcTensors = response['gated_grpc_tensors'][deviceName];
               for (let i = 0; i < gatedGrpcTensors.length; ++i) {
                 debugWatches.push(
-                    {'node_name': deviceName + '/' + gatedGrpcTensors[i][0],
+                    {'device_name': deviceName,
+                     'node_name': gatedGrpcTensors[i][0],
                      'op_type': gatedGrpcTensors[i][1],
                      'output_slot': gatedGrpcTensors[i][2],
                      'debug_op': gatedGrpcTensors[i][3]});
@@ -658,18 +663,45 @@ limitations under the License.
           const state = checked ? 'break' : 'disable';
           // TODO(cais): Investigate why this is fired twice sometimes.
           this._requestBreakpointStateChange(
-              tf_debugger_dashboard.getCleanNodeName(debugObject.node_name),
+              tf_debugger_dashboard.getCleanNodeName(
+                  debugObject.device_name + '/' + debugObject.node_name),
               debugObject.output_slot, debugObject.debug_op, state);
         });
       },
+      _focusOnGraphNode(deviceName, nodeName) {
+        if (deviceName != null &&
+            this._activeRuntimeGraphDeviceName !== deviceName) {
+          this.set('_activeRuntimeGraphDeviceName', deviceName);
+        }
+        this._setTopRightRuntimeGraphsToActive();
+        this.$$('#graph').set('selectedNode', nodeName);
+      },
       _createListNodeClickedHandler() {
         return((deviceName, nodeName) => {
-          if (deviceName != null &&
-              this._activeRuntimeGraphDeviceName !== deviceName) {
-            this.set('_activeRuntimeGraphDeviceName', deviceName);
+          this._focusOnGraphNode(deviceName, nodeName);
+        });
+      },
+      _createFeedFetchTargetClickedHandler() {
+        return((graphElementName) => {
+          let nodeName = graphElementName;
+          // If it is a tensor name, get the node name.
+          if (nodeName.indexOf(':') !== -1) {
+            nodeName = nodeName.slice(0, nodeName.indexOf(':'));
           }
-          this._setTopRightRuntimeGraphsToActive();
-          this.$$('#graph').set('selectedNode', nodeName);
+          // Find the debug watch that matches the clicked node.
+          const matchingDebugWatch = _.find(this._debugWatches, debugWatch => {
+            // Take into account the possibility of base-expanded node names.
+            return (debugWatch.node_name === nodeName ||
+                debugWatch.node_name.indexOf(nodeName) === 0 &&
+                debugWatch.node_name[nodeName.length] === '(');
+          });
+          if (matchingDebugWatch == null) {
+            this._showToast(
+              'Node \'' + nodeName + '\' is not in the runtime graph of the ' +
+              'current Session.run or does not have a debug op attached.');
+          } else {
+            this._focusOnGraphNode(matchingDebugWatch.device_name, nodeName);
+          }
         });
       },
 

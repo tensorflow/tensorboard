@@ -23,7 +23,7 @@ limitations under the License.
 -->
 <dom-module id="tf-session-runs-view">
   <template>
-    <div id="tensor-data-div" class="tensor-data-div">
+    <div class="session-runs-div">
       <div class="section-title">Session Runs</div>
       <table id="session-runs-table" align="left" class="session-runs-table">
         <tr align="left">
@@ -43,15 +43,18 @@ limitations under the License.
       :host .indented-level-container .content-container {
         margin: 0 0 0 10px;
       }
+
       /* TODO(cais): This needs work: the table shouldn't get too wide when
          there are many feeds/fetches/targte names. */
       .session-runs-table {
         align-content: left;
         align-items: left;
         text-align: left;
+        font-size: 90%;
         border-style: solid 1px black;
-        width: 400px;
         table-layout: fixed;
+        min-width: 400px;
+        max-width: 450px;
         word-break: break-all;
         padding-top: 3px;
         padding-left: 3px;
@@ -65,6 +68,15 @@ limitations under the License.
       .sole-active-session-run {
         background-color: rgb(172, 232, 188);
         font-weight: bold;
+      }
+
+      .node-or-tensor-element {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .node-or-tensor-element:hover {
+        color: blue;
       }
     </style>
   </template>
@@ -86,6 +98,9 @@ limitations under the License.
       // on the beginning of a Session.run(), i.e., without any specific tensor
       // breakpoint being active.
       soleActive: Boolean,
+
+      // A function called when a node or tensor in the list is clicked.
+      nodeOrTensorClicked: Function,
 
       // A map from session.run key to count of how many the session.run's
       // execution has started.
@@ -184,12 +199,9 @@ limitations under the License.
       // clickable links, which when clicked, will focus on the corresponding
       // node in the Graph View and/or highlight corresponding tensors in the
       // Tensor Summary View and the Tensor Value View.
-      const feedsCell = document.createElement('td');
-      feedsCell.textContent = JSON.stringify(sessionRun.feeds);
-      const fetchesCell = document.createElement('td');
-      fetchesCell.textContent = JSON.stringify(sessionRun.fetches);
-      const targetsCell = document.createElement('td');
-      targetsCell.textContent = JSON.stringify(sessionRun.targets);
+      const feedsCell = this._renderGraphElements(sessionRun.feeds);
+      const fetchesCell = this._renderGraphElements(sessionRun.fetches);
+      const targetsCell = this._renderGraphElements(sessionRun.targets);
       const numDevicesCell = document.createElement('td');
       numDevicesCell.textContent = numDevices;
       const countCell = document.createElement('td');
@@ -211,6 +223,20 @@ limitations under the License.
 
       Polymer.dom(this.$$('#session-runs-table')).appendChild(sessionRunRow);
     },
+
+    _renderGraphElements(graphElements) {
+      const container = document.createElement('td');
+      _.forEach(graphElements, element => {
+        const elementDiv = document.createElement('div');
+        elementDiv.textContent = element;
+        elementDiv.setAttribute('class', 'node-or-tensor-element');
+        elementDiv.addEventListener('click', () => {
+          this.nodeOrTensorClicked(element);
+        });
+        container.appendChild(elementDiv);
+      });
+      return container;
+    }
   });
   </script>
 </dom-module>
