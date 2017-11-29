@@ -28,7 +28,6 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
-from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.plugins.debugger import interactive_debugger_server_lib
 
 # HTTP routes.

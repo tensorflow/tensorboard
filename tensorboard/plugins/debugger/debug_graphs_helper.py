@@ -66,7 +66,7 @@ class DebugGraphWrapper(object):
                     debug_graphs.parse_debug_node_name(node.name))
                 gated.append(
                     (node_name, node_name_to_op_type[node_name], output_slot,
-                    debug_op))
+                     debug_op))
                 break
         self._grpc_gated_tensors[matching_debug_op] = gated
 

@@ -26,23 +26,21 @@ from six.moves import queue
 class CommChannel(object):
   """A class that handles the queueing of outgoing and incoming messages.
 
-  A CommChannel instance has an incoming channel and an outgoing channel.
+  CommChannel is a multi-consumer interface that serves the following purposes:
 
-  The incoming channel is a simple FIFO queue.  The put_incoming() method
-  performs enqueuing; the get_incoming() method performs dequeuing.
-
-  CommChannel's outgoing channel is a multi-consumer interface that serves the
-  following purposes:
   1) Keeps track of all the messages that it has received from the caller of
      put_outgoing(). In the case of TDP, these are messages about the start of
      Session.runs() and the pausing events at tensor breakpoints. These messages
-     are kept in the order they are received.
-  2) Allows the callers of get_outgoing() to retrieve any message by a position
-     index at anytime. Notice that we want to support multiple callers because
-     more than once browser sessions may need to connect to the backend
-     simultaneously. If a caller of get_outgoing() requests a position that has
-     not been received from put_going() yet, the get_ougoing() call will block
-     until a message is received at that position.
+     are kept in the order they are received. These messages are organized in
+     memory by a serial index starting from 1. Since the messages are maintained
+     in the memory indefinitely, they ought to be small in size.
+     # TODO(cais): If the need arises, persist the messages.
+  2) Allows the callers of get_outgoing() to retrieve any message by a serial
+     index (also referred to as "position") at anytime. Notice that we want to
+     support multiple callers because more than once browser sessions may need
+     to connect to the backend simultaneously. If a caller of get_outgoing()
+     requests a serial that has not been received from put_going() yet, the
+     get_ougoing() call will block until a message is received at that position.
   """
 
   def __init__(self):
@@ -50,9 +48,8 @@ class CommChannel(object):
     self._outgoing_counter = 0
     self._outgoing_lock = threading.Lock()
     self._outgoing_pending_queues = dict()
-    self._incoming = queue.Queue()
 
-  def put_outgoing(self, message):
+  def put(self, message):
     """Put a message into the outgoing message stack.
 
     Outgoing message will be stored indefinitely to support multi-users.
@@ -67,10 +64,11 @@ class CommChannel(object):
           q.put(message)
         del self._outgoing_pending_queues[self._outgoing_counter]
 
-  def get_outgoing(self, pos):
+  def get(self, pos):
     """Get message(s) from the outgoing message stack.
 
     Blocks until an item at stack position pos becomes available.
+    This method is thread safe.
 
     Args:
        pos: An int specifying the top position of the message stack to access.
@@ -103,9 +101,3 @@ class CommChannel(object):
     value = q.get()
     with self._outgoing_lock:
       return value, self._outgoing_counter
-
-  def put_incoming(self, message):
-    self._incoming.put(message)
-
-  def get_incoming(self):
-    return self._incoming.get()

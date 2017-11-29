@@ -194,6 +194,7 @@ py_library(
         ":tensor_helper",
         ":tensor_store",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 

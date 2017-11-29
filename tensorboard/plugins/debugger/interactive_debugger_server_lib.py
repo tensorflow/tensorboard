@@ -26,6 +26,7 @@ import collections
 import functools
 import json
 
+from six.moves import queue
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 from tensorflow.core.debug import debug_service_pb2
@@ -224,12 +225,16 @@ class InteractiveDebuggerDataStreamHandler(
     3) receives tensor value Event proto(s) through its on_value_event method.
   """
 
-  def __init__(self, comm_channel, run_states, tensor_store):
+  def __init__(
+      self, incoming_channel, outgoing_channel, run_states, tensor_store):
     """Constructor of InteractiveDebuggerDataStreamHandler.
 
     Args:
-      comm_channel: An instance of `CommChannel`, which manages
-        the incoming commands and outgoing data.
+      incoming_channel: An instance of FIFO queue, which manages incoming data,
+        e.g., ACK signals from the client side unblock breakpoints.
+      outgoing_channel: An instance of `CommChannel`, which manages outgoing
+        data, i.e., data regarding the starting of Session.runs and hitting of
+        tensor breakpoint.s
       run_states: An instance of `RunStates`, which keeps track of the states
         (graphs and breakpoints) of debugged Session.run() calls.
       tensor_store: An instance of `TensorStore`, which stores Tensor values
@@ -237,7 +242,8 @@ class InteractiveDebuggerDataStreamHandler(
     """
     super(InteractiveDebuggerDataStreamHandler, self).__init__()
 
-    self._comm_channel = comm_channel
+    self._incoming_channel = incoming_channel
+    self._outgoing_channel = outgoing_channel
     self._run_states = run_states
     self._tensor_store = tensor_store
 
@@ -265,12 +271,11 @@ class InteractiveDebuggerDataStreamHandler(
       for device_name in self._graph_defs:
         self._add_graph_def(device_name, self._graph_defs[device_name])
 
-    self._comm_channel.put_outgoing(
-        _comm_metadata(self._run_key, event.wall_time))
+    self._outgoing_channel.put(_comm_metadata(self._run_key, event.wall_time))
 
     # Wait for acknowledgement from client. Blocks until an item is got.
     tf.logging.info('on_core_metadata_event() waiting for client ack (meta)...')
-    self._comm_channel.get_incoming()
+    self._incoming_channel.get()
     tf.logging.info('on_core_metadata_event() client ack received (meta).')
 
   def _add_graph_def(self, device_name, graph_def):
@@ -303,7 +308,7 @@ class InteractiveDebuggerDataStreamHandler(
 
     if not self._graph_defs_arrive_first:
       self._add_graph_def(device_name, graph_def)
-      self._comm_channel.get_incoming()
+      self._incoming_channel.get()
 
   def on_value_event(self, event):
     """Records the summary values based on an updated message from the debugger.
@@ -329,12 +334,12 @@ class InteractiveDebuggerDataStreamHandler(
                                                            self._run_key,
                                                            device_name))
     self._tensor_store.add(watch_key, tensor_value)
-    self._comm_channel.put_outgoing(_comm_tensor_data(
+    self._outgoing_channel.put(_comm_tensor_data(
         device_name, node_name, maybe_base_expanded_node_name, output_slot,
         debug_op, tensor_value, event.wall_time))
 
     tf.logging.info('on_value_event(): waiting for client ack (tensors)...')
-    self._comm_channel.get_incoming()
+    self._incoming_channel.get()
     tf.logging.info('on_value_event(): client ack received (tensor).')
 
     # Determine if the particular debug watch key is in the current list of
@@ -370,13 +375,15 @@ class InteractiveDebuggerDataServer(
     super(InteractiveDebuggerDataServer, self).__init__(
         receive_port, InteractiveDebuggerDataStreamHandler)
 
-    self._comm_channel = comm_channel_lib.CommChannel()
+    self._incoming_channel = queue.Queue()
+    self._outgoing_channel = comm_channel_lib.CommChannel()
     self._run_states = RunStates(breakpoints_func=lambda: self.breakpoints)
     self._tensor_store = tensor_store_lib.TensorStore()
 
     curried_handler_constructor = functools.partial(
         InteractiveDebuggerDataStreamHandler,
-        self._comm_channel, self._run_states, self._tensor_store,)
+        self._incoming_channel, self._outgoing_channel, self._run_states,
+        self._tensor_store)
     grpc_debug_server.EventListenerBaseServicer.__init__(
         self, receive_port, curried_handler_constructor)
 
@@ -399,11 +406,11 @@ class InteractiveDebuggerDataServer(
     return self._run_states.get_gated_grpc_tensors(run_key, device_name)
 
   def get_outgoing_message(self, pos):
-    msg, _ = self._comm_channel.get_outgoing(pos)
+    msg, _ = self._outgoing_channel.get(pos)
     return msg
 
   def put_incoming_message(self, message):
-    return self._comm_channel.put_incoming(message)
+    return self._incoming_channel.put(message)
 
   def query_tensor_store(self,
                          watch_key,
