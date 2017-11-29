@@ -118,9 +118,9 @@ class RunStates(object):
         def breakpoint_func():
         which returns all the currently activated breakpoints.
     """
+    # Maps from run key to debug_graphs_helper.DebugGraphWrapper instance.
     self._run_key_to_original_graphs = dict()
     self._run_key_to_debug_graphs = dict()
-    self._maybe_expanded_node_names = collections.defaultdict(lambda: {})
 
     if breakpoints_func:
       assert callable(breakpoints_func)
@@ -140,10 +140,11 @@ class RunStates(object):
                   self._run_key_to_original_graphs)
     if not run_key in graph_dict:
       graph_dict[run_key] = dict()  # Mapping device_name to GraphDef.
-    graph_dict[run_key][tf.compat.as_str(device_name)] = graph_def
+    graph_dict[run_key][tf.compat.as_str(device_name)] = (
+        debug_graphs_helper.DebugGraphWrapper(graph_def))
 
   def get_graphs(self, run_key, debug=False):
-    """Get the runtime graphs associated with a run key.
+    """Get the runtime GraphDef protos associated with a run key.
 
     Args:
       run_key: A Session.run kay.
@@ -154,10 +155,14 @@ class RunStates(object):
     """
     graph_dict = (self._run_key_to_debug_graphs if debug else
                   self._run_key_to_original_graphs)
-    return graph_dict.get(run_key, {})
+    graph_wrappers = graph_dict.get(run_key, {})
+    graph_defs = dict()
+    for device_name, wrapper in graph_wrappers.items():
+      graph_defs[device_name] = wrapper.graph_def
+    return graph_defs
 
   def get_graph(self, run_key, device_name, debug=False):
-    """Get the runtime graphs associated with a run key and a device.
+    """Get the runtime GraphDef proto associated with a run key and a device.
 
     Args:
       run_key: A Session.run kay.
@@ -165,13 +170,17 @@ class RunStates(object):
       debug: Whether the debugger-decoratedgraph is to be retrieved.
 
     Returns:
-      A `GraphDef`.
+      A `GraphDef` proto.
     """
     return self.get_graphs(run_key, debug=debug).get(device_name, None)
 
   def get_breakpoints(self):
     """Obtain all the currently activated breakpoints."""
     return self._breakpoints_func()
+
+  def get_gated_grpc_tensors(self, run_key, device_name):
+    return self._run_key_to_debug_graphs[
+        run_key][device_name].get_gated_grpc_tensors()
 
   def get_maybe_base_expanded_node_name(self, node_name, run_key, device_name):
     """Obtain possibly base-expanded node name.
@@ -187,23 +196,18 @@ class RunStates(object):
       node_name: Name of the node.
       run_key: The run key to which the node belongs.
       graph_def: GraphDef to which the node belongs.
+
+    Raises:
+      ValueError: If `run_key` and/or `device_name` do not exist in the record.
     """
     device_name = tf.compat.as_str(device_name)
-    if ((run_key, device_name) in self._maybe_expanded_node_names and
-        node_name in self._maybe_expanded_node_names[(run_key, device_name)]):
-      return self._maybe_expanded_node_names[(run_key, device_name)][node_name]
-
     if run_key not in self._run_key_to_original_graphs:
       raise ValueError('Unknown run_key: %s' % run_key)
     if device_name not in self._run_key_to_original_graphs[run_key]:
       raise ValueError(
           'Unknown device for run key "%s": %s' % (run_key, device_name))
-    graph_def = self._run_key_to_original_graphs[run_key][device_name]
-    base_expanded = debug_graphs_helper.maybe_base_expanded_node_name(
-        node_name, graph_def)
-    self._maybe_expanded_node_names[
-        (run_key, device_name)][node_name] = base_expanded
-    return base_expanded
+    return self._run_key_to_original_graphs[
+        run_key][device_name].maybe_base_expanded_node_name(node_name)
 
 
 class InteractiveDebuggerDataStreamHandler(
@@ -390,6 +394,9 @@ class InteractiveDebuggerDataServer(
 
   def get_graph(self, run_key, device_name, debug=False):
     return self._run_states.get_graph(run_key, device_name, debug=debug)
+
+  def get_gated_grpc_tensors(self, run_key, device_name):
+    return self._run_states.get_gated_grpc_tensors(run_key, device_name)
 
   def get_outgoing_message(self, pos):
     msg, _ = self._comm_channel.get_outgoing(pos)

@@ -211,6 +211,31 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     session_run_thread.join()
     self.assertAllClose([[230.0]], session_run_results)
 
+  def testRetrieveAllGatedGrpcTensors(self):
+    session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
+
+    comm_response = self._serverGet('comm', {'pos': 1})
+    response_data = self._deserializeResponse(comm_response)
+    run_key = json.dumps(response_data['data']['run_key'])
+
+    retrieve_all_response = self._serverGet(
+        'gated_grpc', {'mode': 'retrieve_all', 'run_key': run_key})
+    retrieve_all_data = self._deserializeResponse(retrieve_all_response)
+    self.assertTrue(retrieve_all_data['device_names'])
+    # No breakpoints have been activated.
+    self.assertEqual([], retrieve_all_data['breakpoints'])
+    device_name = retrieve_all_data['device_names'][0]
+    tensor_names = [item[0] for item
+                    in retrieve_all_data['gated_grpc_tensors'][device_name]]
+    self.assertItemsEqual(
+        ['a', 'a/read', 'b', 'b/read', 'x', 'c', 'c/read', 'y'], tensor_names)
+
+    self._serverGet('ack')
+
+    session_run_thread.join()
+    self.assertAllClose([[230.0]], session_run_results)
+
+
   def testActivateOneBreakpoint(self):
     session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
 

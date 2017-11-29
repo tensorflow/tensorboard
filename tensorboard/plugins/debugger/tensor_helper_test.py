@@ -133,9 +133,9 @@ class ParseTimeIndicesTest(tf.test.TestCase):
     self.assertEqual(slice(None, -2, None), slicing)
 
   def test2DSlicingLeadsToError(self):
-    with self.assertRaises(tensor_helper.TimeIndexingError):
+    with self.assertRaises(ValueError):
       tensor_helper.parse_time_indices('[1:2, 3:4]')
-    with self.assertRaises(tensor_helper.TimeIndexingError):
+    with self.assertRaises(ValueError):
       tensor_helper.parse_time_indices('1:2,3:4')
 
 

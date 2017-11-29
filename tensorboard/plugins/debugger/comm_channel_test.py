@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import threading
-import time
 
 import tensorflow as tf
 
@@ -60,10 +59,11 @@ class CommChannelTest(tf.test.TestCase):
     t = threading.Thread(target=get_two)
     t.start()
     channel.put_outgoing('A')
-    time.sleep(0.025)  # Greater than the default polling interval (0.01).
     channel.put_outgoing('B')
     t.join()
-    self.assertEqual([('A', 1), ('B', 2)], result['outgoing'])
+    self.assertEqual('A', result['outgoing'][0][0])
+    self.assertIn(result['outgoing'][0][1], [1, 2])
+    self.assertEqual(('B', 2), result['outgoing'][1])
 
   def testOutgoingConcurrentPutAndTwoGetters(self):
     channel = comm_channel.CommChannel()
@@ -83,13 +83,16 @@ class CommChannelTest(tf.test.TestCase):
     t2.start()
 
     channel.put_outgoing('A')
-    time.sleep(0.025)  # Greater than the default polling interval (0.01).
     channel.put_outgoing('B')
     t1.join()
     t2.join()
 
-    self.assertEqual([('A', 1), ('B', 2)], result1['outgoing'])
-    self.assertEqual([('A', 1), ('B', 2)], result2['outgoing'])
+    self.assertEqual('A', result1['outgoing'][0][0])
+    self.assertIn(result1['outgoing'][0][1], [1, 2])
+    self.assertEqual(('B', 2), result1['outgoing'][1])
+    self.assertEqual('A', result2['outgoing'][0][0])
+    self.assertIn(result2['outgoing'][0][1], [1, 2])
+    self.assertEqual(('B', 2), result2['outgoing'][1])
 
   def testIncomingQueue(self):
     channel = comm_channel.CommChannel()

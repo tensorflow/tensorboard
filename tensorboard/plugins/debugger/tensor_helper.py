@@ -26,10 +26,6 @@ from tensorflow.python.debug.cli import command_parser
 from tensorboard import util
 
 
-class TimeIndexingError(Exception):
-  pass
-
-
 def numel(shape):
   """Obtain total number of elements from a tensor (ndarray) shape.
 
@@ -46,16 +42,19 @@ def parse_time_indices(s):
   """Parse a string as time indices.
 
   Args:
-    s: A valid string for time indices. E.g., '-1', '[:]', ':', '2:10'
+    s: A valid slicing string for time indices. E.g., '-1', '[:]', ':', '2:10'
 
   Returns:
     A slice object.
+
+  Raises:
+    ValueError: If `s` does not represent valid time indices.
   """
   if not s.startswith('['):
     s = '[' + s + ']'
   parsed = command_parser._parse_slices(s)
   if len(parsed) != 1:
-    raise TimeIndexingError(
+    raise ValueError(
         'Invalid number of slicing objects in time indices (%d)' % len(parsed))
   else:
     return parsed[0]

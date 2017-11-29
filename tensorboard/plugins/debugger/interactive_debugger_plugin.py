@@ -144,16 +144,15 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def _serve_debugger_graph(self, request):
     device_name = request.args.get('device_name')
-    tf.logging.info('_serve_debugger_graph: device_name = %s', device_name)
     if not device_name or device_name == 'null':
       return http_util.Respond(request, str(None), 'text/x-protobuf')
 
     run_key = interactive_debugger_server_lib.RunKey(
         *json.loads(request.args.get('run_key')))
-    tf.logging.info('_serve_debugger_graph(): run_key = %s', run_key)
     graph_def = self._debugger_data_server.get_graph(run_key, device_name)
-    tf.logging.info('_serve_debugger_graph(): type(graph_def) = %s',
-                    type(graph_def))
+    tf.logging.debug(
+        '_serve_debugger_graph(): device_name = %s, run_key = %s, '
+        'type(graph_def) = %s', device_name, run_key, type(graph_def))
     # TODO(cais): Sending text proto may be slow in Python. Investigate whether
     # there are ways to optimize it.
     return http_util.Respond(request, str(graph_def), 'text/x-protobuf')
@@ -183,8 +182,8 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
 
       gated = {}
       for device_name in debug_graph_defs:
-        gated[device_name] = debug_graphs_helper.extract_gated_grpc_tensors(
-            debug_graph_defs[device_name])
+        gated[device_name] = self._debugger_data_server.get_gated_grpc_tensors(
+            run_key, device_name)
 
       # Both gated and self._debugger_data_server.breakpoints are lists whose
       # items are (node_name, output_slot, debug_op_name).
@@ -204,8 +203,8 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       output_slot = int(request.args.get('output_slot'))
       debug_op = request.args.get('debug_op')
       state = request.args.get('state')
-      tf.logging.info('Setting state of %s:%d:%s to: %s' %
-                      (node_name, output_slot, debug_op, state))
+      tf.logging.debug('Setting state of %s:%d:%s to: %s' %
+                       (node_name, output_slot, debug_op, state))
       if state == 'disable':
         self._debugger_data_server.request_unwatch(
             node_name, output_slot, debug_op)
@@ -260,8 +259,10 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
           'tensor_data': None,
           'error': {
               'type': type(e).__name__,
-              'message': str(e),
           },
       }
-      status_code = 400
+      # TODO(cais): Provide safe and succinct error messages for common error
+      # conditions, such as index out of bound, or invalid mapping for given
+      # tensor ranks.
+      status_code = 500
     return http_util.Respond(request, response, response_encoding, status_code)

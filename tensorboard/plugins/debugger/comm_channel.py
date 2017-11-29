@@ -24,7 +24,26 @@ from six.moves import queue
 
 
 class CommChannel(object):
-  """A class that handles the queueing of outgoing and incoming messages."""
+  """A class that handles the queueing of outgoing and incoming messages.
+
+  A CommChannel instance has an incoming channel and an outgoing channel.
+
+  The incoming channel is a simple FIFO queue.  The put_incoming() method
+  performs enqueuing; the get_incoming() method performs dequeuing.
+
+  CommChannel's outgoing channel is a multi-consumer interface that serves the
+  following purposes:
+  1) Keeps track of all the messages that it has received from the caller of
+     put_outgoing(). In the case of TDP, these are messages about the start of
+     Session.runs() and the pausing events at tensor breakpoints. These messages
+     are kept in the order they are received.
+  2) Allows the callers of get_outgoing() to retrieve any message by a position
+     index at anytime. Notice that we want to support multiple callers because
+     more than once browser sessions may need to connect to the backend
+     simultaneously. If a caller of get_outgoing() requests a position that has
+     not been received from put_going() yet, the get_ougoing() call will block
+     until a message is received at that position.
+  """
 
   def __init__(self):
     self._outgoing = []
