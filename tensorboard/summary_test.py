@@ -30,7 +30,7 @@ from tensorboard import summary
 
 STANDARD_PLUGINS = frozenset([
     'audio',
-    'custom_scalars',
+    'custom_scalar',
     'histogram',
     'image',
     'pr_curve',

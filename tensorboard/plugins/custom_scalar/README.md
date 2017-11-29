@@ -54,7 +54,7 @@ TensorBoard.
 ### Specifying a Layout
 
 To lay out the dashboard, users pass a `layout_pb2.Layout` proto to the
-`summary_lib.custom_scalars_pb` method. This method does not return a TensorFlow
+`summary_lib.custom_scalar_pb` method. This method does not return a TensorFlow
 op but rather a Summary proto that be passed to the SummaryWriter (See sample
 code.).
 
@@ -64,7 +64,7 @@ example of how to use it.
 
 ### Specifying a Layout via a TensorFlow op instead
 
-A user could optionally use the `summary_lib.custom_scalars` TensorFlow op write
+A user could optionally use the `summary_lib.custom_scalar` TensorFlow op write
 the layout to disk as part of executing the graph.
 
 This is often not needed because in many cases, users need only to specify the
@@ -94,7 +94,7 @@ merged_summary = tf.summary.merge_all()
 
 with tf.Session() as sess, tf.summary.FileWriter('/tmp/logdir') as writer:
   # We only need to specify the layout once (instead of per step).
-  summary_lib.custom_scalars_pb(layout_pb2.Layout(
+  summary_lib.custom_scalar_pb(layout_pb2.Layout(
     category=[
       layout_pb2.Category(
         title='losses in 1 chart',
@@ -130,7 +130,7 @@ The above logic produces this custom scalar dashboard.
 ![Dashboard for demo code](docs/sample_code_dashboard.png)
 
 Note that the layout mirrors the `layout_pb2.Layout` proto that we had passed to
-the `summary_lib.custom_scalars_pb` method. Specifically, we have 2 categories:
+the `summary_lib.custom_scalar_pb` method. Specifically, we have 2 categories:
 (1) losses in 1 chart and (2) trig functions (which is closed by default).
 
 Within the "losses" chart are 2 lines. They correspond to tags that had been
