@@ -29,6 +29,17 @@ py_binary(
 )
 
 py_library(
+    name = "lib",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":lazy",
+        ":summary",
+    ],
+)
+
+py_library(
     name = "program",
     srcs = ["program.py"],
     srcs_version = "PY2AND3",
@@ -309,7 +320,7 @@ py_test(
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":summary",
+        ":lib",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -325,4 +336,10 @@ py_library(
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
+)
+
+py_library(
+    name = "lazy",
+    srcs = ["lazy.py"],
+    srcs_version = "PY2AND3",
 )
