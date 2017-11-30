@@ -1,5 +1,44 @@
 # The Profile Plugin Dashboard
+  The TensorBoard Profile Dashboard includes a suite of cloud TPU tools. These
+  tools help you understand, debug and optimize TensorFlow programs to run on
+  cloud TPUs.
 
+## Prerequisites
+  Before you can use the tools in Profile Dashboard, you must have access to
+  google cloud TPUs. You also need to capture trace information while your model
+  is running. 
+
+## Trace Viewer
+  Trace Viewer contains a timeline that shows various operations in your
+  TensorFlow model that the TPUs and host machine executed over time. The
+  Timeline pane contains the following elements:
+
+  * A top bar, which contains various auxiliary controls.
+  * A time axis, which shows time relative to the beginning of the trace.
+  * Section and track labels. Each section contains multiple tracks and
+  has a triangle on the left that you can click to expand and collapse the
+  section. There is one section for every processing element in the system.
+  Sections and tracks will be explained in more detail below.
+  * A tool selector, which contains various tools for interacting with the
+  Trace Viewer. Events. These show the time during which an operation was
+  executed or the duration of meta-events, such as training steps.
+
+## Op Profile
+  Op Profile tool displays the performance statistics of [High Level Optimizer
+  (HLO)](https://www.tensorflow.org/performance/xla) operations executed during
+  the profiling period. Op Profile shows:
+
+  * How your application uses the TPU. The TPU FLOPS utilization reported is
+    defined as the measured number of floating point operations per second
+    (FLOPS) over the peak FLOPS supported by the TPU.
+  * The most time consuming operation.
+  * Details of each op, including shape, XLA expression and padding.
+
+## Input Pipeline Analyzer
+  Input pipeline analyzer tries to answer two questions:
+
+  * Is your model input bound?
+  * If it is, why?
 
 ##JSON format for input pipeline analyzer:
   Input pipeline analyzer are ported from Google internal tools where
@@ -12,7 +51,7 @@
   host side state. Each DataTable is associated with some table properties and
   some tabular data.
 
-###1. Device Side Table
+##1. Device Side Table
 1.1 Properties:
 
   * infeed_percent_average
@@ -36,7 +75,7 @@
   * infeedPercentMin: number
   * infeedPercentMax: number
 
-###2. Host Side Table
+##2. Host Side Table
 2.1 Properties:
 
   * advanced_file_read_us
@@ -55,8 +94,3 @@
   * selfTimeInMs: number
   * selfTimeInPercent: number
   * category: string
-
-
-
-
-
