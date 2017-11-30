@@ -12,3 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""TensorBoard is a webapp for understanding TensorFlow runs and graphs.
+"""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+from tensorboard import lazy
+
+pkg = lambda i: i  # helps google sync process
+mod = lambda i: lazy.LazyLoader(i[i.rindex('.') + 1:], globals(), i)
+
+summary = mod(pkg('tensorboard.summary'))
+
+del lazy
+del mod
+del pkg
