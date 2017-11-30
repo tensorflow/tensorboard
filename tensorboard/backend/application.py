@@ -44,6 +44,7 @@ from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
+from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
@@ -58,6 +59,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
     image_metadata.PLUGIN_NAME: 10,
     audio_metadata.PLUGIN_NAME: 10,
     histogram_metadata.PLUGIN_NAME: 500,
+    pr_curve_metadata.PLUGIN_NAME: 100,
 }
 
 DATA_PREFIX = '/data'
