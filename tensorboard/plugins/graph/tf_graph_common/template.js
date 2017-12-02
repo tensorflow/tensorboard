@@ -191,7 +191,7 @@ var tf;
                 function stackPushIfNotDifferent(n1, n2) {
                     var sub1 = n1.substr(g1prefix.length), sub2 = n2.substr(g2prefix.length);
                     /* tslint:disable */
-                    if (visited1[sub1] ^ visited2[sub1]) {
+                    if (visited1[sub1] ^ visited2[sub2]) {
                         console.warn('different visit pattern', '[' + g1prefix + ']', sub1, '[' + g2prefix + ']', sub2);
                         return true;
                     }
