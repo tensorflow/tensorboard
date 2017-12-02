@@ -47,29 +47,41 @@ TensorFlow run.
         </div>
         <div class="sidebar-section">
           <h3 class="tooltip-container">Brightness adjustment</h3>
-          <paper-slider
-            min="0"
-            max="2"
-            snaps
-            pin
-            step="0.01"
-            value="{{_brightnessAdjustment}}"
-            immediate-value="{{_brightnessAdjustment}}"
-            style="width: 100%;"
-          ></paper-slider>
+          <div class="resettable-slider-container">
+            <paper-slider
+              min="0"
+              max="2"
+              snaps
+              pin
+              step="0.01"
+              value="{{_brightnessAdjustment}}"
+              immediate-value="{{_brightnessAdjustment}}"
+            ></paper-slider>
+            <paper-button
+              class="x-button"
+              on-tap="_resetBrightness"
+              disabled="[[_brightnessIsDefault]]"
+            >Reset</paper-button>
+          </div>
         </div>
         <div class="sidebar-section">
-          <h3 class="tooltip-container">Contrast adjustment</h3>
-          <paper-slider
-            min="0"
-            max="500"
-            snaps
-            pin
-            step="1"
-            value="{{_contrastPercentage}}"
-            immediate-value="{{_contrastPercentage}}"
-            style="width: 100%;"
-          ></paper-slider>
+        <h3 class="tooltip-container">Contrast adjustment</h3>
+          <div class="resettable-slider-container">
+            <paper-slider
+              min="0"
+              max="500"
+              snaps
+              pin
+              step="1"
+              value="{{_contrastPercentage}}"
+              immediate-value="{{_contrastPercentage}}"
+            ></paper-slider>
+            <paper-button
+              class="x-button"
+              on-tap="_resetContrast"
+              disabled="[[_contrastIsDefault]]"
+            >Reset</paper-button>
+          </div>
         </div>
         <div class="sidebar-section">
           <tf-runs-selector
@@ -133,6 +145,23 @@ TensorFlow run.
     </tf-dashboard-layout>
     <style include="dashboard-style"></style>
     <style>
+      .resettable-slider-container {
+        display: flex;
+      }
+      .resettable-slider-container paper-slider {
+        flex-grow: 1;
+      }
+      .resettable-slider-container paper-button {
+        flex-grow: 0;
+      }
+      paper-button[disabled] {
+        background-color: unset;
+      }
+      .x-button {
+        font-size: 13px;
+        background-color: var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+      }
       h3 {
         color: var(--paper-grey-800);
         margin: 0;
@@ -173,6 +202,14 @@ TensorFlow run.
           value: 100,
         },
         _tagFilter: String,
+        _brightnessIsDefault: {
+          type: Boolean,
+          computed: '_computeBrightnessIsDefault(_brightnessAdjustment)',
+        },
+        _contrastIsDefault: {
+          type: Boolean,
+          computed: '_computeContrastIsDefault(_contrastPercentage)',
+        },
 
         // Categories must only be computed after _dataNotFound is found to be
         // true and then polymer DOM templating responds to that finding. We
@@ -219,6 +256,19 @@ TensorFlow run.
         this.querySelectorAll('tf-image-loader').forEach(image => {
           image.reload();
         });
+      },
+
+      _resetBrightness() {
+        this._brightnessAdjustment = 1;
+      },
+      _resetContrast() {
+        this._contrastPercentage = 100;
+      },
+      _computeBrightnessIsDefault(brightnessAdjustment) {
+        return brightnessAdjustment === 1;
+      },
+      _computeContrastIsDefault(contrastPercentage) {
+        return contrastPercentage === 100;
       },
 
       _makeCategories(
