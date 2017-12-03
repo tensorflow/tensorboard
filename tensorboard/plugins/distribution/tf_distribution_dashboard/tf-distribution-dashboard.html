@@ -137,10 +137,14 @@ limitations under the License.
         _dataNotFound: Boolean,
         _tagFilter: String,
 
+        // Categories must only be computed after _dataNotFound is found to be
+        // true and then polymer DOM templating responds to that finding. We
+        // thus use this property to guard when categories are computed.
+        _categoriesDomReady: Boolean,
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
+            '_makeCategories(_runToTag, _selectedRuns, _tagFilter, _categoriesDomReady)',
         },
 
         _requestManager: {
@@ -168,6 +172,10 @@ limitations under the License.
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTag', runToTag);
           this.set('_runToTagInfo', runToTagInfo);
+          this.async(() => {
+            // See the comment above `_categoriesDomReady`.
+            this.set('_categoriesDomReady', true);
+          });
         });
       },
       _reloadDistributions() {
@@ -176,7 +184,7 @@ limitations under the License.
         });
       },
 
-      _makeCategories(runToTag, selectedRuns, tagFilter) {
+      _makeCategories(runToTag, selectedRuns, tagFilter, categoriesDomReady) {
         return tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
       },
       _tagMetadata(runToTagInfo, run, tag) {
