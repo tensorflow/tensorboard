@@ -53,6 +53,7 @@ tf_web_library(
     deps = [
         "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/plugins/custom_scalar/tf_custom_scalar_dashboard",
+        "//tensorboard/plugins/debugger/tf_debugger_dashboard",
         "//tensorboard/plugins/distribution/tf_distribution_dashboard",
         "//tensorboard/plugins/graph/tf_graph_dashboard",
         "//tensorboard/plugins/histogram/tf_histogram_dashboard",

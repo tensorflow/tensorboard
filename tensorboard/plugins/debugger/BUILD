@@ -20,6 +20,94 @@ py_library(
 )
 
 py_library(
+    name = "debug_graphs_helper",
+    srcs = ["debug_graphs_helper.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "debug_graphs_helper_test",
+    size = "small",
+    srcs = ["debug_graphs_helper_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":debug_graphs_helper",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_python_pypi_portpicker",
+    ],
+)
+
+py_library(
+    name = "tensor_helper",
+    srcs = ["tensor_helper.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:util",
+        "//tensorboard:expect_numpy_installed"
+    ],
+)
+
+py_test(
+    name = "tensor_helper_test",
+    size = "small",
+    srcs = ["tensor_helper_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tensor_helper",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/beholder:im_util",
+    ],
+)
+
+py_library(
+    name = "tensor_store",
+    srcs = ["tensor_store.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tensor_helper",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_test(
+    name = "tensor_store_test",
+    size = "small",
+    srcs = ["tensor_store_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tensor_store",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/beholder:im_util",
+    ],
+)
+
+py_library(
+    name = "comm_channel",
+    srcs = ["comm_channel.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "comm_channel_test",
+    size = "small",
+    srcs = ["comm_channel_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":comm_channel",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+# TODO(cais): Incorporate debug_graphs_helper into debug_data.py in tensorflow.
+# TODO(cais): Add unit tests for code in debug_graphs_helper.py.
+
+py_library(
     name = "events_writer_manager",
     srcs = ["events_writer_manager.py"],
     srcs_version = "PY2AND3",
@@ -94,6 +182,22 @@ py_library(
     ],
 )
 
+py_library(
+    name = "interactive_debugger_server_lib",
+    srcs = ["interactive_debugger_server_lib.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":comm_channel",
+        ":debug_graphs_helper",
+        ":events_writer_manager",
+        ":numerics_alert",
+        ":tensor_helper",
+        ":tensor_store",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_test(
     name = "debugger_server_test",
     size = "small",
@@ -105,6 +209,7 @@ py_test(
         ":constants",
         ":debugger_server_lib",
         ":numerics_alert",
+        ":tensor_store",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
@@ -124,7 +229,25 @@ py_test(
     ],
 )
 
-## TensorFlow Debugger Plugin ##
+py_test(
+    name = "interactive_debugger_plugin_test",
+    size = "medium",
+    srcs = ["interactive_debugger_plugin_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":interactive_debugger_plugin",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+        "@org_python_pypi_portpicker",
+        "@org_pythonhosted_six",
+    ],
+)
+
+## Debugger Plugin: Non-interactive, for Health Pills in Graph Dashboard. ##
 py_library(
     name = "debugger_plugin",
     srcs = ["debugger_plugin.py"],
@@ -142,6 +265,25 @@ py_library(
     ],
 )
 
+## Debugger Plugin: for the interactive Debugger Dashboard. ##
+py_library(
+    name = "interactive_debugger_plugin",
+    srcs = ["interactive_debugger_plugin.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":constants",
+        ":debug_graphs_helper",
+        ":interactive_debugger_server_lib",
+        "//tensorboard:expect_futures_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:http_util",
+        "//tensorboard/backend:process_graph",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
 py_library(
     name = "debugger_plugin_loader",
     srcs = ["debugger_plugin_loader.py"],
@@ -149,6 +291,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":debugger_plugin",
+        ":interactive_debugger_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
