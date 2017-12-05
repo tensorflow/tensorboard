@@ -1,0 +1,123 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="tf-tensor-value-view.html">
+
+<dom-module id="tf-tensor-value-multi-view">
+  <template>
+    <div id="multiView">
+      <div class="section-title">Tensor Values</div>
+      <div id="multi-tensor-view-container">
+      </div>
+    </div>
+  </template>
+  <style>
+    .section-title {
+      font-size: 110%;
+      font-weight: bold;
+    }
+    #multiView{
+      background-color: #fff;
+      padding-top: 3px;
+      padding-left: 3px;
+      padding-right: 3px;
+      box-shadow: 3px 3px #eee;
+    }
+  </style>
+  <script>
+    Polymer({
+      is: 'tf-tensor-value-multi-view',
+      properties: {
+        _tensorViewCounter: {
+          type: Number,
+          value: 0
+        },
+      },
+
+      addView(view) {
+        const multiViewContainer = this.$$('#multi-tensor-view-container');
+        const viewCard = document.createElement('tf-tensor-value-view');
+        viewCard.setAttribute('class', 'debugger-tensor-view');
+        viewCard.viewId = view.viewId;
+        viewCard.tensorName = view.tensorName;
+        viewCard.debugOp = view.debugOp;
+        viewCard.slicing = view.slicing;
+        viewCard.timeIndices = view.timeIndices;
+        viewCard.closeButtonCallback = this._createCloseButtonCallback(view.viewId);
+        multiViewContainer.appendChild(viewCard);
+        viewCard.refresh();
+      },
+
+      getViews() {
+        const viewCards = this.querySelectorAll('.debugger-tensor-view');
+        const views = [];
+        _.forEach(viewCards, viewCard => {
+          views.push({
+            viewId: viewCard.viewId,
+            tensorName: viewCard.tensorName,
+            debugOp: viewCard.debugOp,
+            slicing: viewCard.slicing,
+            timeIndices: viewCard.timeIndices,
+          });
+        });
+        return views;
+      },
+
+      renderTensorValues() {
+        const tensorViews = this.querySelectorAll('.debugger-tensor-view');
+        _.forEach(tensorViews, tensorView => {
+          tensorView.renderTensorValue();
+        });
+      },
+
+      _redrawViews(views) {
+        const multiViewContainer = this.$$('#multi-tensor-view-container');
+
+        // First, clear all current views.
+        const tensorViews = this.querySelectorAll('.debugger-tensor-view');
+        _.forEach(tensorViews, tensorView => {
+          multiViewContainer.removeChild(tensorView);
+        });
+
+        _.forEach(views, view => {
+          this.addView(view);
+        });
+      },
+
+      _createCloseButtonCallback(viewId) {
+        return () => {
+          const newViews = [];
+          const tensorViews = this.querySelectorAll('.debugger-tensor-view');
+          for (let i = 0; i < tensorViews.length; ++i) {
+            const tensorView = tensorViews[i];
+            if (tensorView.viewId !== viewId) {
+              newViews.push({
+                viewId: tensorView.viewId,
+                tensorName: tensorView.tensorName,
+                debugOp: tensorView.debugOp,
+                slicing: tensorView.slicing,
+                timeIndices: tensorView.timeIndices,
+              });
+            }
+          };
+          this._redrawViews(newViews);
+        };
+      },
+    });
+  </script>
+</dom-module>
