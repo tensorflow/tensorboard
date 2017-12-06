@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import json
 import platform
+import sys
 import threading
 
 import tensorflow as tf
@@ -87,8 +88,9 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
           'gRPC port %d' % self._grpc_port)
     self._grpc_port = grpc_port
 
-    tf.logging.info('Creating InteractiveDebuggerPlugin at port %d',
-                    self._grpc_port)
+    sys.stderr.write('Creating InteractiveDebuggerPlugin at port %d\n' %
+                     self._grpc_port)
+    sys.stderr.flush()
     self._debugger_data_server = (
         interactive_debugger_server_lib.InteractiveDebuggerDataServer(
             self._grpc_port))
