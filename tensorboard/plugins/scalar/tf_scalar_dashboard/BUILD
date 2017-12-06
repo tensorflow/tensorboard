@@ -28,7 +28,6 @@ tf_web_library(
         "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/tf_utils",
         "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icon",
         "@org_polymer_paper_button",
         "@org_polymer_paper_checkbox",
         "@org_polymer_paper_dropdown_menu",
