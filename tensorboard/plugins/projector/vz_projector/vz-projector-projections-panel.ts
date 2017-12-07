@@ -119,8 +119,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   ready() {
     this.zDropdown = this.querySelector('#z-dropdown') as HTMLElement;
     this.runTsneButton = this.querySelector('.run-tsne') as HTMLButtonElement;
-    this.pauseTsneButton = this.querySelector('.pause-tsne') as HTMLButtonElement;
-    this.perturbTsneButton = this.querySelector('.perturb-tsne') as HTMLButtonElement;
+    this.pauseTsneButton =
+        this.querySelector('.pause-tsne') as HTMLButtonElement;
+    this.perturbTsneButton =
+        this.querySelector('.perturb-tsne') as HTMLButtonElement;
     this.perplexitySlider =
         this.querySelector('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
@@ -452,6 +454,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   private runTSNE() {
+    let projectionChangeNotified = false;
     this.runTsneButton.innerText = 'Stop';
     this.runTsneButton.disabled = true;
     this.pauseTsneButton.innerText = 'Pause';
@@ -467,6 +470,11 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
             this.perturbTsneButton.disabled = false;
             this.iterationLabel.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
+
+            if (!projectionChangeNotified && this.dataSet.projections['tsne']) {
+              this.projector.onProjectionChanged();
+              projectionChangeNotified = true;
+            }
           }
           else {
             this.runTsneButton.innerText = 'Re-run';
@@ -474,6 +482,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
             this.pauseTsneButton.innerText = 'Pause';
             this.pauseTsneButton.disabled = true;
             this.perturbTsneButton.disabled = true;
+            this.projector.onProjectionChanged();
           }
         });
   }
@@ -529,12 +538,12 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       return;
     }
     const xDir = vector.sub(this.centroids.xRight, this.centroids.xLeft);
-    this.dataSet.projectLinear(xDir, 'linear-x');
+    this.dataSet.projectLinear(xDir, 'custom-0');
 
     const yDir = vector.sub(this.centroids.yUp, this.centroids.yDown);
-    this.dataSet.projectLinear(yDir, 'linear-y');
+    this.dataSet.projectLinear(yDir, 'custom-1');
 
-    const accessors = getProjectionComponents('custom', ['x', 'y']);
+    const accessors = getProjectionComponents('custom', [0, 1]);
     const projection = new Projection('custom', accessors, 2, this.dataSet);
     this.projector.setProjection(projection);
   }

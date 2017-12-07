@@ -20,17 +20,33 @@ const LIMIT_RESULTS = 100;
 // tslint:disable-next-line
 export let InspectorPanelPolymer = PolymerElement({
   is: 'vz-projector-inspector-panel',
-  properties: {selectedMetadataField: String, metadataFields: Array}
+  properties: {
+    selectedMetadataField: String,
+    metadataFields: Array,
+    selectedDistance: String,
+    distanceFields: Array,
+    distanceChanged: Object,
+    selectedNeighborhood: String,
+    neighborhoodFields: Array,
+    neighborhoodChanged: Object
+  }
 });
 
 export class InspectorPanel extends InspectorPanelPolymer {
   distFunc: DistanceFunction;
+  distSpace: DistanceSpace;
+  knnFunc: knn.KNNFunction<DataPoint>;
   numNN: number;
 
   private projectorEventContext: ProjectorEventContext;
 
   private selectedMetadataField: string;
   private metadataFields: string[];
+  private selectedDistance: string;
+  private distanceFields: string[];
+  private selectedNeighborhood: string;
+  private neighborhoodFields: string[];
+
   private projector: Projector;
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
@@ -102,6 +118,38 @@ export class InspectorPanel extends InspectorPanelPolymer {
 
   datasetChanged() {
     this.enableResetFilterButton(false);
+  }
+
+  projectionChanged() {
+    if (this.projector && this.projector.dataSet) {
+      let pTypes : string[] = [];
+      let projections = this.projector.dataSet.projections;
+      // Find the available projections, removing dimensions, e.g. pca-1 to pca
+      for (let entry in projections) {
+        if (projections[entry]) {
+          pTypes.push(entry.split('-')[0]);
+        }
+      }
+      // Removing duplicate entries, needed due to multiple dimensions for pca
+      pTypes = Array.from(new Set(pTypes));
+      // Add new projections to distanceFields
+      pTypes.forEach(pType => {
+        if (this.distanceFields.indexOf(pType) == -1) {
+          this.push('distanceFields', pType);
+        }
+      });
+      // Remove unavailable projections from distanceFields
+      let removeFields = [];
+      this.distanceFields.forEach((field, index) => {
+        if (pTypes.indexOf(field) == -1
+            && field != 'cosine' && field != 'euclidean') {
+          removeFields.push(index);
+        }
+      });
+      removeFields.forEach(index => this.splice('distanceFields', index, 1));
+      // Set selected distance to last element
+      this.selectedDistance = this.distanceFields[this.distanceFields.length-1];
+    }
   }
 
   private updateSearchResults(indices: number[]) {
@@ -238,36 +286,13 @@ export class InspectorPanel extends InspectorPanelPolymer {
 
   private setupUI(projector: Projector) {
     this.distFunc = vector.cosDist;
-    const eucDist =
-        this.querySelector('.distance a.euclidean') as HTMLLinkElement;
-    eucDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(eucDist as HTMLElement, 'selected', true);
+    this.distSpace = d => d.vector;
+    this.knnFunc = knn.findKNNofPoint;
 
-      this.distFunc = vector.dist;
-      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
-
-    const cosDist = this.querySelector('.distance a.cosine') as HTMLLinkElement;
-    cosDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(cosDist, 'selected', true);
-
-      this.distFunc = vector.cosDist;
-      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
+    this.distanceFields = ['cosine', 'euclidean', 'pca'];
+    this.selectedDistance = 'pca';
+    this.neighborhoodFields = ['knn', 'geodesic'];
+    this.selectedNeighborhood = 'knn';
 
     // Called whenever the search text input changes.
     const updateInput = (value: string, inRegexMode: boolean) => {
@@ -320,6 +345,78 @@ export class InspectorPanel extends InspectorPanelPolymer {
     };
     this.enableResetFilterButton(false);
   }
+
+  private updateNeighborsDisplay() {
+    if (this.projectorEventContext && this.projector
+        && this.projector.dataSet) {
+      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
+
+      if (this.selectedPointIndices.length == 1) {
+        this.projectorEventContext.notifySelectionChanged(
+          this.selectedPointIndices);
+        const neighbors = this.projector.dataSet.findNeighbors(
+            this.selectedPointIndices[0], this.numNN,
+            this.distSpace, this.distFunc, this.knnFunc);
+        this.updateNeighborsList(neighbors);
+      }
+    }
+  }
+
+  private distanceChanged() {
+    switch (this.selectedDistance) {
+      case 'cosine':
+        this.distFunc = vector.cosDist;
+        this.distSpace = d => d.vector;
+        break;
+
+      case 'euclidean':
+        this.distFunc = vector.dist;
+        this.distSpace = d => d.vector;
+        break;
+
+      case 'pca':
+        this.distFunc = vector.dist;
+        this.distSpace = d => new Float32Array(
+          ('pca-2' in d.projections) ?
+          [d.projections['pca-0'], d.projections['pca-1'],
+              d.projections['pca-2']] :
+          ('pca-1' in d.projections) ?
+          [d.projections['pca-0'], d.projections['pca-1']] : d.vector);
+        break;
+
+      case 'tsne':
+        if (this.projector.dataSet.hasTSNERun) {
+          this.distFunc = vector.dist;
+          this.distSpace = d => new Float32Array(
+            ('tsne-2' in d.projections) ?
+            [d.projections['tsne-0'], d.projections['tsne-1'],
+                d.projections['tsne-2']] :
+            ('tsne-1' in d.projections) ?
+            [d.projections['tsne-0'], d.projections['tsne-1']] : d.vector);
+        }
+        break;
+
+      case 'custom':
+        this.distFunc = vector.dist;
+        this.distSpace = d => new Float32Array(
+            ('custom-0' in d.projections) ?
+            [d.projections['custom-0'], d.projections['custom-1']] : d.vector);
+    }
+    this.updateNeighborsDisplay();
+  }
+
+  private neighborhoodChanged() {
+    switch (this.selectedNeighborhood) {
+      case 'knn':
+        this.knnFunc = knn.findKNNofPoint;
+        break;
+
+      case 'geodesic':
+        this.knnFunc = knn.findGeodesicKNNofPoint;
+    }
+    this.updateNeighborsDisplay();
+  }
+  
 }
 
 document.registerElement(InspectorPanel.prototype.is, InspectorPanel);

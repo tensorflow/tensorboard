@@ -95,10 +95,10 @@ describe('stateGetAccessorDimensions', () => {
                      stateGetAccessorDimensions(state));
   });
 
-  it('returns ["x", "y"] for custom projections', () => {
+  it('returns [0, 1] for custom projections', () => {
     const state = new State();
     state.selectedProjection = 'custom';
-    assert.deepEqual(['x', 'y'], stateGetAccessorDimensions(state));
+    assert.deepEqual([0, 1], stateGetAccessorDimensions(state));
   });
 });
 
