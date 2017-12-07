@@ -28,12 +28,13 @@ limitations under the License.
 <link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="tf-custom-scalar-card-style.html">
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
   chart, and providing UI affordances (such as buttons) for scalar data.
 -->
-<dom-module id="tf-custom-scalar-card">
+<dom-module id="tf-custom-scalar-margin-chart-card">
 <template>
   <h1>[[_titleDisplayString]]</h1>
   <div id="tf-line-chart-data-loader-container">
@@ -50,10 +51,12 @@ limitations under the License.
       active="[[active]]"
       data-url="[[_dataUrl]]"
       log-scale-active="[[_logScaleActive]]"
-      process-data="[[_createProcessDataFunction()]]"
+      process-data="[[_createProcessDataFunction(marginChartSeries)]]"
       color-scale="[[_colorScale]]"
       data-series="[[_dataSeriesStrings]]"
       symbol-function="[[_createSymbolFunction()]]"
+      tooltip-columns="[[_tooltipColumns]]"
+      fill-area="[[_fillArea]]"
     >
     </tf-line-chart-data-loader>
   </div>
@@ -98,6 +101,22 @@ limitations under the License.
       </div>
     </template>
   </div>
+
+  <template is="dom-if" if="[[_tagsWithNoData]]">
+    <div id="warning-content">
+      &#9888;
+      No data found for these tags:
+      <ul>
+        <template is="dom-repeat" items="[[_tagsWithNoData]]">
+          <li>[[item]]</li>
+        </template>
+      </ul>
+      <br>
+      Tags for the value, lower, and upper bounds of margin charts in the Layout
+      proto must match tags in the SCALARS dashboard.
+    </div>
+  </template>
+  
   <div id="matches-container">
     <div id="matches-list-title">
       <template is="dom-if" if="[[_dataSeriesStrings.length]]">
@@ -132,68 +151,23 @@ limitations under the License.
   </div>
 
   </div>
+  <style include="tf-custom-scalar-card-style"></style>
   <style>
-    :host {
-      margin: 5px 10px;
-      display: inline-block;
-      width: 330px;
-      vertical-align: text-top;
+    #warning-content {
+      background: #f00;
+      border-radius: 5px;
+      color: #fff;
+      margin: 10px 0 0 0;
+      padding: 10px;
     }
 
-    :host[_expanded] {
-      width: 100%;
+    .warning-icon {
+      font-size: 150%;
     }
 
-    :host[_expanded] #tf-line-chart-data-loader-container {
-      height: 400px;
-    }
-
-    h1 {
-      font-size: 19px;
-      font-weight: normal;
-    }
-
-    #tf-line-chart-data-loader-container {
-      height: 200px;
-      width: 100%;
-    }
-
-    #buttons {
-      display: flex;
-      flex-direction: row;
-    }
-
-    paper-icon-button {
-      color: #2196F3;
-      border-radius: 100%;
-      width: 32px;
-      height: 32px;
-      padding: 4px;
-    }
-
-    paper-icon-button[selected] {
-      background: var(--tb-ui-light-accent);
-    }
-
-    .download-links {
-      display: flex;
-      height: 32px;
-    }
-
-    .download-links a {
-      font-size: 10px;
-      align-self: center;
-      margin: 2px;
-    }
-
-    .download-links paper-dropdown-menu {
-      width: 100px;
-      --paper-input-container-label: {
-        font-size: 10px;
-      }
-      --paper-input-container-input: {
-        font-size: 10px;
-      }
+    #warning-content ul {
+      margin: 1px 0 0 0;
+      padding: 0 0 0 19px;
     }
 
     #matches-list-title {
@@ -224,7 +198,7 @@ limitations under the License.
 <script src='tf-custom-scalar-helpers.js'></script>
 <script>
   Polymer({
-      is: 'tf-custom-scalar-card',
+      is: 'tf-custom-scalar-margin-chart-card',
       properties: {
         runs: Array,  // of String
 
@@ -239,7 +213,10 @@ limitations under the License.
           readOnly: true,
         },
         title: String,
-        tagRegexes: Array,
+        // An array of JSON objects that resemble MarginChartContent.Series
+        // protos. The properties of these series differ from those of data
+        // series used by the tf-line-chart-data-loader component.
+        marginChartSeries: Array,
         ignoreYOutliers: Boolean,
         requestManager: Object,
         showDownloadLinks: Boolean,
@@ -260,7 +237,7 @@ limitations under the License.
          */
         _tagFilter: {
           type: String,
-          computed: '_computeTagFilter(tagRegexes)',
+          computed: '_computeTagFilter(marginChartSeries)',
         },
 
         /**
@@ -317,8 +294,64 @@ limitations under the License.
         },
         _titleDisplayString: {
           type: String,
-          computed: '_computeTitleDisplayString(title, _tagFilter)',
+          computed: '_computeTitleDisplayString(title)',
         },
+        _fillArea: {
+          type: Object,
+          readOnly: true,
+          value: {
+              lowerAccessor: d => d.lower,
+              higherAccessor: d => d.upper,
+          },
+        },
+        _tooltipColumns: {
+          type: Array,
+          value: function() {
+            const valueFormatter = vz_line_chart.multiscaleFormatter(
+                vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+            const formatValueOrNaN =
+                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+
+            return [
+              {
+                title: 'Name',
+                evaluate: (d) => d.dataset.metadata().name,
+              },
+              {
+                title: 'Smoothed',
+                evaluate: (d, statusObject) => formatValueOrNaN(
+                    statusObject.smoothingEnabled ? d.datum.smoothed :
+                                                    d.datum.scalar),
+              },
+              {
+                title: 'Value',
+                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
+              },
+              {
+                title: 'Lower Margin',
+                evaluate: (d) => formatValueOrNaN(d.datum.lower),
+              },
+              {
+                title: 'Upper Margin',
+                evaluate: (d) => formatValueOrNaN(d.datum.upper),
+              },
+              {
+                title: 'Step',
+                evaluate: (d) => vz_line_chart.stepFormatter(d.datum.step),
+              },
+              {
+                title: 'Time',
+                evaluate: (d) => vz_line_chart.timeFormatter(d.datum.wall_time),
+              },
+              {
+                title: 'Relative',
+                evaluate: (d) => vz_line_chart.relativeFormatter(
+                    vz_line_chart.relativeAccessor(d.datum, -1, d.dataset)),
+              },
+            ];
+          }
+        },
+        _tagsWithNoData: String,
       },
       observers: [
         '_updateChart(_nameToDataSeries)',
@@ -365,27 +398,85 @@ limitations under the License.
       _computeXComponentsCreationMethod(xType) {
         return () => vz_line_chart.getXComponents(xType);
       },
-      _createProcessDataFunction() {
+      _createProcessDataFunction(marginChartSeries) {
         // This function is called when data is received from the backend.
         return ((scalarChart, run, data) => {
           if (data.regex_valid) {
             // The user's regular expression was valid.
             // Incorporate these newly loaded values.
             const newMapping = _.clone(this._nameToDataSeries);
-            _.forOwn(data.tag_to_events, (scalarEvents, tag) => {
-              const data = scalarEvents.map(datum => ({
+            const tagsNotFound = [];
+            _.forEach(marginChartSeries, tagsObject => {
+              let tagNotFound = false;
+              const scalarEvents = data.tag_to_events[tagsObject.value];
+              const lowerBounds = data.tag_to_events[tagsObject.lower];
+              const upperBounds = data.tag_to_events[tagsObject.upper];
+
+              if (_.isUndefined(scalarEvents)) {
+                tagsNotFound.push(tagsObject.value);
+                tagNotFound = true;
+              }
+              if (_.isUndefined(lowerBounds)) {
+                tagsNotFound.push(tagsObject.lower);
+                tagNotFound = true;
+              }
+              if (_.isUndefined(upperBounds)) {
+                tagsNotFound.push(tagsObject.upper);
+                tagNotFound = true;
+              }
+
+              if (tagNotFound) {
+                return;
+              }
+
+              const dataPoints = scalarEvents.map(datum => ({
                 wall_time: new Date(datum[0] * 1000),
                 step: datum[1],
                 scalar: datum[2],
               }));
+              
+              // Associate the lower bounds with the correct data points.
+              for (let i = j = 0;
+                   i < dataPoints.length && j < lowerBounds.length;) {
+                const boundDataPoint = lowerBounds[j];
+                const step = boundDataPoint[1];
+                const bound = boundDataPoint[2];
+                if (step < dataPoints[i].step) {
+                  j++;
+                } else if (step > dataPoints[i].step) {
+                  i++
+                } else {
+                  dataPoints[i].lower = bound;
+                  i++;
+                  j++;
+                }
+              }
 
-              const seriesName = tf_custom_scalar_dashboard.generateDataSeriesName(
-                  run, tag);
+              // Associate the upper bounds with the correct data points.
+              for (let i = j = 0;
+                   i < dataPoints.length && j < upperBounds.length;) {
+                const boundDataPoint = upperBounds[j];
+                const step = boundDataPoint[1];
+                const bound = boundDataPoint[2];
+                if (step < dataPoints[i].step) {
+                  j++;
+                } else if (step > dataPoints[i].step) {
+                  i++
+                } else {
+                  dataPoints[i].upper = bound;
+                  i++;
+                  j++;
+                }
+              }
+
+              const seriesName =
+                  tf_custom_scalar_dashboard.generateDataSeriesName(
+                      run, tagsObject.value);
               let series = newMapping[seriesName];
 
               if (series) {
                 // This series already exists.
-                series.setData(data);
+                series.setData(dataPoints);
               } else {
                 if (_.isUndefined(this._runToNextAvailableSymbolIndex[run])) {
                   // The run has not been seen before. Define the next available
@@ -400,9 +491,9 @@ limitations under the License.
                 // Create a series with this name.
                 series = new tf_custom_scalar_dashboard.DataSeries(
                     run,
-                    tag,
+                    tagsObject.value,
                     seriesName,
-                    data,
+                    dataPoints,
                     lineChartSymbol);
                 newMapping[seriesName] = series;
 
@@ -412,6 +503,10 @@ limitations under the License.
                     (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
               }
             });
+
+            if (tagsNotFound.length) {
+              this.set('_tagsWithNoData', tagsNotFound);
+            }
 
             this.set('_nameToDataSeries', newMapping);
           } else {
@@ -456,12 +551,18 @@ limitations under the License.
       _determineSymbol(nameToDataSeries, seriesName) {
         return nameToDataSeries[seriesName].getSymbol().character;
       },
-      _computeTagFilter(tagRegexes) {
-        if (tagRegexes.length === 1) {
-          return tagRegexes[0];
-        }
+      _computeTagFilter(marginChartSeries) {
+        const tags = _.flatten(
+            marginChartSeries.map(
+                series => [series.value, series.lower, series.upper]));
+        const escapedTags = tags.map(
+            r => '(' + this._escapeRegexCharacters(r) + ')');
         // Combine the different regexes into a single regex.
-        return tagRegexes.map(r => '(' + r + ')').join('|');
+        return escapedTags.join('|');
+      },
+      _escapeRegexCharacters(stringValue) {
+        return stringValue.replace(
+            /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
       },
       _getToggleMatchesIcon(matchesListOpened) {
         return matchesListOpened ? 'expand-less' : 'expand-more';
@@ -469,9 +570,9 @@ limitations under the License.
       _toggleMatchesOpen() {
         this.set('_matchesListOpened', !this._matchesListOpened);
       },
-      _computeTitleDisplayString(title, tagFilter) {
-        // If no title is provided, use the tag filter.
-        return title || tagFilter;
+      _computeTitleDisplayString(title) {
+        // If no title is provided, use a placeholder string.
+        return title || 'untitled';
       },
   });
 </script>

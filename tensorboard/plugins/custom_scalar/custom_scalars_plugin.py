@@ -245,34 +245,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     order of the runs to which the layouts are written.
 
     The response is a JSON object mirroring properties of the Layout proto if a
-    layout for any run is found:
-
-    {
-      categories: [
-        {
-          title: 'Biases',
-          chart: [
-            {
-              title: 'biases',
-              tag: 'foo/layer\d+/biases'
-            },
-            {
-              title: 'biases',
-              tag: 'foo/logits/biases'
-            },
-          ],
-        },
-        {
-          title: 'Activations',
-          chart: [
-            {
-              title: 'activations',
-              tag: 'foo/layer0/activations',
-            },
-          ],
-        },
-      ],
-    }
+    layout for any run is found.
 
     The response is an empty object if no layout could be found.
     """

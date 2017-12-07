@@ -30,7 +30,8 @@ limitations under the License.
 <link rel="import" href="../tf-scalar-dashboard/tf-smoothing-input.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
-<link rel="import" href="tf-custom-scalar-card.html">
+<link rel="import" href="tf-custom-scalar-margin-chart-card.html">
+<link rel="import" href="tf-custom-scalar-multi-line-chart-card.html">
 
 <!--
   A frontend that displays a custom set of line charts.
@@ -108,25 +109,47 @@ from tensorboard.plugins.custom_scalar import layout_pb2
 ...
 # This action does not have to be performed at every step, so the action is not
 # taken care of by an op in the graph. We only need to specify the layout once. 
-summary_writer.add_summary(
-    summary.custom_scalars_pb(
-        layout_pb2.Layout(category=[
-            layout_pb2.Category(
-                title='mean biases',
-                chart=[
-                    layout_pb2.Chart(
-                        title='mean layer biases',
-                        tag=[r'mean/layer\d+/biases'])
+# We only need to specify the layout once (instead of per step).
+layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
+  category=[
+    layout_pb2.Category(
+      title='losses',
+      chart=[
+          layout_pb2.Chart(
+              title='losses',
+              multiline=layout_pb2.MultilineChartContent(
+                tag=[r'loss.*'],
+              )),
+          layout_pb2.Chart(
+              title='baz',
+              margin=layout_pb2.MarginChartContent(
+                series=[
+                  layout_pb2.MarginChartContent.Series(
+                    value='loss/baz/scalar_summary',
+                    lower='baz_lower/baz/scalar_summary',
+                    upper='baz_upper/baz/scalar_summary'),
                 ],
-                closed=True),
-            layout_pb2.Category(
-                title='std weights',
-                chart=[
-                    layout_pb2.Chart(
-                        title='stddev layer weights',
-                        tag=[r'stddev/layer\d+/weights'])
-                    ])))
-)
+              )), 
+      ]),
+    layout_pb2.Category(
+      title='trig functions',
+      chart=[
+          layout_pb2.Chart(
+              title='wave trig functions',
+              multiline=layout_pb2.MultilineChartContent(
+                tag=[r'trigFunctions/cosine', r'trigFunctions/sine'],
+              )),
+          # The range of tangent is different. Lets give it its own chart.
+          layout_pb2.Chart(
+              title='tan',
+              multiline=layout_pb2.MultilineChartContent(
+                tag=[r'trigFunctions/tangent'],
+              )),
+      ],
+      # This category we care less about. Lets make it initially closed.
+      closed=True),
+  ]))
+writer.add_summary(layout_summary)
 </pre>
         <p>
         If you’re new to using TensorBoard, and want to find out how
@@ -144,19 +167,36 @@ summary_writer.add_summary(
                 on-opened-changed="_categoryOpenedToggled"
               >
               <template is="dom-repeat" items="[[category.items]]" as="chart">
-                <tf-custom-scalar-card
-                  active="[[_active]]"
-                  request-manager="[[_requestManager]]"
-                  runs="[[_selectedRuns]]"
-                  title="[[chart.title]]"
-                  x-type="[[_xType]]"
-                  smoothing-enabled="[[_smoothingEnabled]]"
-                  smoothing-weight="[[_smoothingWeight]]"
-                  tooltip-sorting-method="[[tooltipSortingMethod]]"
-                  ignore-y-outliers="[[ignoreYOutliers]]"
-                  show-download-links="[[_showDownloadLinks]]"
-                  tag-regexes="[[chart.tag]]"
-                ></tf-custom-scalar-card>
+                <template is="dom-if" if="[[chart.multiline]]">
+                  <tf-custom-scalar-multi-line-chart-card
+                    active="[[_active]]"
+                    request-manager="[[_requestManager]]"
+                    runs="[[_selectedRuns]]"
+                    title="[[chart.title]]"
+                    x-type="[[_xType]]"
+                    smoothing-enabled="[[_smoothingEnabled]]"
+                    smoothing-weight="[[_smoothingWeight]]"
+                    tooltip-sorting-method="[[tooltipSortingMethod]]"
+                    ignore-y-outliers="[[ignoreYOutliers]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    tag-regexes="[[chart.multiline.tag]]"
+                  ></tf-custom-scalar-multi-line-chart-card>
+                </template>
+                <template is="dom-if" if="[[chart.margin]]">
+                  <tf-custom-scalar-margin-chart-card
+                    active="[[_active]]"
+                    request-manager="[[_requestManager]]"
+                    runs="[[_selectedRuns]]"
+                    title="[[chart.title]]"
+                    x-type="[[_xType]]"
+                    smoothing-enabled="[[_smoothingEnabled]]"
+                    smoothing-weight="[[_smoothingWeight]]"
+                    tooltip-sorting-method="[[tooltipSortingMethod]]"
+                    ignore-y-outliers="[[ignoreYOutliers]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    margin-chart-series="[[chart.margin.series]]"
+                  ></tf-custom-scalar-margin-chart-card>
+                </template>
               </template>
             </tf-category-pane>
           </template>
