@@ -29,6 +29,8 @@ var vz_projector;
         is: 'vz-projector-metadata-card',
         properties: {
             hasMetadata: { type: Boolean, value: false },
+            isCollapsed: { type: Boolean, value: false },
+            collapseIcon: { type: String, value: 'expand-less' },
             metadata: { type: Array },
             label: String
         }
@@ -38,23 +40,11 @@ var vz_projector;
         function MetadataCard() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        MetadataCard.prototype.ready = function () {
-            this.expandLessButton =
-                this.querySelector('#expand-less');
-            this.expandMoreButton =
-                this.querySelector('#expand-more');
-        };
-        /** Handles a click on the expand more icon. */
-        MetadataCard.prototype._expandMore = function () {
+        /** Handles toggle of metadata-container. */
+        MetadataCard.prototype._toggleMetadataContainer = function () {
             this.$$('#metadata-container').toggle();
-            this.expandMoreButton.style.display = 'none';
-            this.expandLessButton.style.display = '';
-        };
-        /** Handles a click on the expand less icon. */
-        MetadataCard.prototype._expandLess = function () {
-            this.$$('#metadata-container').toggle();
-            this.expandMoreButton.style.display = '';
-            this.expandLessButton.style.display = 'none';
+            this.isCollapsed = !this.isCollapsed;
+            this.set('collapseIcon', this.isCollapsed ? 'expand-more' : 'expand-less');
         };
         MetadataCard.prototype.updateMetadata = function (pointMetadata) {
             this.pointMetadata = pointMetadata;
