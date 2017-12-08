@@ -41,17 +41,17 @@ function main() {
   cp "${RUNFILES}/tensorboard/pip_package/MANIFEST.in" "${TMPDIR}"
   cp -R "${RUNFILES}/tensorboard" "${TMPDIR}"
 
-  pushd ${TMPDIR}
+  pushd ${TMPDIR} >/dev/null
   rm -f MANIFEST
-  echo $(date) : "=== Building wheel"
-  echo $(pwd)
-  python setup.py bdist_wheel >/dev/null
-  python3 setup.py bdist_wheel >/dev/null
+  echo $(date) : "=== Building python2 wheel in $PWD"
+  python setup.py bdist_wheel --python-tag py2 >/dev/null
+  echo $(date) : "=== Building python3 wheel in $PWD"
+  python setup.py bdist_wheel --python-tag py3 >/dev/null
   mkdir -p ${DEST}
   cp dist/* ${DEST}
-  popd
+  popd >/dev/null
   rm -rf ${TMPDIR}
-  echo $(date) : "=== Output wheel file is in: ${DEST}"
+  echo $(date) : "=== Output wheel files are in: ${DEST}"
 }
 
 main "$@"
