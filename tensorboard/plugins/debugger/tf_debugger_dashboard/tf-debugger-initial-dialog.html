@@ -29,17 +29,13 @@ limitations under the License.
 # To connect to the debugger from your tf.Session:
 from tensorflow.python import debug as tf_debug
 sess = tf.Session()
-def watch_fn(fetches, feeds):
-  return tf_debug.WatchOptions(debug_ops=["DebugIdentity(gated_grpc=true)"])
-sess = tf_debug.GrpcDebugWrapperSession(sess, "[[_host]]:[[_port]]", watch_fn=watch_fn)
+sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
 sess.run(my_fetches)
         </pre>
         <pre id="hook-code-example">
 # To connect to the debugger using hooks, e.g., from tf.Estimator:
 from tensorflow.python import debug as tf_debug
-def watch_fn(fetches, feeds):
-  return tf_debug.WatchOptions(debug_ops=["DebugIdentity(gated_grpc=true)"])
-hook = tf_debug.GrpcDebugHook("[[_host]]:[[_port]]", watch_fn=watch_fn)
+hook = tf_debug.TensorBoardDebugHook("[[_host]]:[[_port]]")
 my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
         </pre>
       </div>
