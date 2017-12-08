@@ -45,6 +45,7 @@ ts_web_library(
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
         "@org_polymer_paper_menu",
+        "@org_polymer_paper_progress",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",
         "@org_polymer_paper_styles",

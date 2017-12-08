@@ -22,6 +22,8 @@ limitations under the License.
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
@@ -99,7 +101,7 @@ limitations under the License.
               out-graph-hierarchy="{{graphHierarchy}}"
               out-graph="{{graph}}"
               out-stats="{{stats}}"
-              progress="{{_progress}}"
+              progress="{{_graphProgress}}"
           ></tf-graph-loader>
         </div>
       </div>
@@ -124,18 +126,15 @@ limitations under the License.
               </template>
             </paper-menu>
           </paper-dropdown-menu>
+          <paper-spinner-lite class="spinner" id="top-right-spinner"></paper-spinner-lite>
+          <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
-            <div id="graph-header">
-              <span id="runtime-graph-label">
-                Runtime Graphs
-              </span>
-            </div>
             <div id="graph-container">
               <tf-graph id="graph"
                   graph-hierarchy="[[graphHierarchy]]"
                   basic-graph="[[graph]]"
                   stats="[[stats]]"
-                  progress="[[_progress]]"
+                  progress="{{_graphProgress}}"
                   color-by="structure"
                   color-by-params="{{colorByParams}}"
                   render-hierarchy="{{_renderHierarchy}}"
@@ -209,6 +208,11 @@ limitations under the License.
         width: 350px;
         display: inline-block;
       }
+      #top-right-progress-bar {
+        width: 100%;
+        display: inline-block;
+        vertical-align: middle;
+      }
       .line-item {
         display: block;
         padding-top: 5px;
@@ -229,6 +233,11 @@ limitations under the License.
         font-size: 14px;
         min-width: 150px;
         border: 1px solid #d4d4d4;
+      }
+      .spinner {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
       }
       .node-entries {
         height: 66%;
@@ -390,6 +399,10 @@ limitations under the License.
           value: -1,
         },
 
+        _graphProgress: {
+          type: Object,
+        },
+
         _requestManager: {
            type: Object,
            value: () => new tf_backend.RequestManager(50),
@@ -398,6 +411,7 @@ limitations under the License.
 
       observers: [
         "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
+        "_graphProgressUpdated(_graphProgress)",
       ],
 
       ready() {
@@ -484,6 +498,7 @@ limitations under the License.
 
             this._maybeUpdateTensorValueViews(
                 tensorName, responseData['debug_op']);
+            this._setTopRightSpinnerState(false);
           } else {
             console.error(
                 'Invalid long-polling response type: ', responseType);
@@ -733,6 +748,7 @@ limitations under the License.
         if (this._activeSessionRunKey == null) {
           return;
         }
+        this._setTopRightSpinnerState(true);
 
         // First, check to see if any new device GraphDef(s) have arrived and if
         // so, retrieve them.
@@ -787,6 +803,7 @@ limitations under the License.
         this._continueToType = '';
         this._continueToTarget = '';
         this._continueToCounterTarget = -1;
+        this._setTopRightSpinnerState(false);
       },
 
       _topRightSelectedChanged(topRightSelected) {
@@ -835,6 +852,28 @@ limitations under the License.
           console.log('Breakpoint set_state response: ', response);
         });
       },
+
+      _graphProgressUpdated(progress) {
+        const topRightProgressBar = this.$$('#top-right-progress-bar');
+        if (this._latestSessionRun == null) {
+          // No Session.run() has connected yet. Do not show the spinner(s) or
+          // the progress bar(s).
+          topRightProgressBar.setAttribute('value', 0);
+          this._setTopRightSpinnerState(false);
+        } else {
+          topRightProgressBar.setAttribute('value', progress.value);
+          this._setTopRightSpinnerState(progress.value < 100);
+        }
+      },
+
+      _setTopRightSpinnerState(isActive) {
+        const topRightSpinner = this.$$('#top-right-spinner');
+        if (isActive) {
+          topRightSpinner.setAttribute('active', true);
+        } else {
+          topRightSpinner.removeAttribute('active');
+        }
+      }
     });
 
     tf_tensorboard.registerDashboard({
