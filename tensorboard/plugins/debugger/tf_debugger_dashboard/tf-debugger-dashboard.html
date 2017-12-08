@@ -526,6 +526,7 @@ limitations under the License.
           return;
         }
 
+        this.set('alreadyStarted', true);
         const url = tf_backend.getRouter().pluginRoute(
             'debugger', '/debugger_grpc_host_port');
         this._requestManager.request(url).then(response => {
@@ -534,12 +535,10 @@ limitations under the License.
           this.$.initialDialog.openDialog(response.host, response.port);
         }).catch(error => {
           this.$.initialDialog.renderDebuggerNotEnabledMessage();
+        }).then(() => {
+          // Initiate long-polling.
+          this.long_poll();
         });
-
-        // Initiate long-polling.
-        this.long_poll();
-
-        this.set('alreadyStarted', true);
       },
 
       _openContinueDialog() {
