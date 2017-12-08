@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-imports/lodash.html">
 
@@ -47,6 +48,12 @@ limitations under the License.
         value="{{_filterInput}}"
       ></paper-input>
     </div>
+    <paper-spinner-lite
+      active
+      class="spinner"
+      id="loading-spinner"
+      hidden="[[!_isLoading]]">
+    </paper-spinner-lite>
     <div id="selector-hierarchy">
     </div>
     <style>
@@ -93,6 +100,12 @@ limitations under the License.
         font-weight: 300;
         margin: 0 0 0 27px;
         padding: 10px 0;
+      }
+
+      :host .spinner {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
       }
 
       :host #filter-mode {
@@ -167,9 +180,14 @@ limitations under the License.
         value: '',
         notify: true,
       },
+
+      _isLoading: {
+        type: Boolean,
+        value: false,
+      },
     },
     observers: [
-      "_renderHierarchy(_watchHierarchy, debugWatchChange)",
+      "_renderHierarchyWithTimeout(_watchHierarchy, debugWatchChange)",
       "_handleForceNodeExpansion(forceExpansionNodeName)",
     ],
     _computeWatchHierarchy(debugWatches, debugWatchChange, filterMode, filterInput) {
@@ -218,10 +236,17 @@ limitations under the License.
       }
     },
 
+    _renderHierarchyWithTimeout(watchHierarchy, debugWatchChange, filterMode, filterInput) {
+      this._clearSelectorHierarchy();
+      this.set('_isLoading', true);
+      setTimeout(() => {
+        this._renderHierarchy(watchHierarchy, debugWatchChange, filterMode, filterInput);
+      }, 10);
+    },
+
     _renderHierarchy(watchHierarchy, debugWatchChange, filterMode, filterInput) {
       this.set('_levelName2Container', {});
       this.set('_levelName2Node', {});
-      this._clearSelectorHierarchy();
 
       const dom = this._renderLevel(null, null, watchHierarchy, debugWatchChange);
 
@@ -255,6 +280,7 @@ limitations under the License.
 
       // Append the hierarchy to the DOM.
       Polymer.dom(this.$$('#selector-hierarchy')).appendChild(dom);
+      this.set('_isLoading', false);
     },
 
     _renderLevel(levelName, parentLevelName, levelObject, debugWatchChange) {
