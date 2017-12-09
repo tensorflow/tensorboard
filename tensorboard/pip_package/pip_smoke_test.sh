@@ -89,7 +89,8 @@ echo "Activating virtualenv at ${VENV_TMP_DIR}"
 echo
 
 export VIRTUAL_ENV="${VENV_TMP_DIR}"
-export PATH="${VENV_TMP_DIR}/bin:${PATH}"
+export VENV_BIN_DIR="${VENV_TMP_DIR}/bin"
+export PATH="${VENV_BIN_DIR}:${PATH}"
 unset PYTHON_HOME
 
 echo
@@ -122,9 +123,9 @@ elif [[ "${PY_VERSION}" == 3 ]]; then
 fi
 
 # Check tensorboard binary path.
-TB_BIN_PATH=$(which tensorboard)
-if [[ -z ${TB_BIN_PATH} ]]; then
-  die "ERROR: Cannot find tensorboard binary path after installing tensorboard pip package."
+TB_BIN_PATH="${VENV_BIN_DIR}/tensorboard"
+if ! [[ -x "${TB_BIN_PATH}" ]]; then
+  die "ERROR: No tensorboard binary found after installing tensorboard pip package."
 fi
 
 TMP_LOGDIR=$(mktemp -d --suffix _tensorboard_logdir)
