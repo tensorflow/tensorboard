@@ -20,17 +20,38 @@ const LIMIT_RESULTS = 100;
 // tslint:disable-next-line
 export let InspectorPanelPolymer = PolymerElement({
   is: 'vz-projector-inspector-panel',
-  properties: {selectedMetadataField: String, metadataFields: Array}
+  properties: {
+    selectedMetadataField: String,
+    metadataFields: Array,
+    metadataColumn: String,
+    selectedDistance: String,
+    distanceFields: Array,
+    distanceChanged: Object,
+    selectedNeighborhood: String,
+    neighborhoodFields: Array,
+    neighborhoodChanged: Object,
+    numNN: {type: Number, value: 100},
+    updateNumNN: Object
+  }
 });
 
 export class InspectorPanel extends InspectorPanelPolymer {
   distFunc: DistanceFunction;
+  distSpace: DistanceSpace;
+  knnFunc: knn.KNNFunction<DataPoint>;
   numNN: number;
 
   private projectorEventContext: ProjectorEventContext;
 
   private selectedMetadataField: string;
   private metadataFields: string[];
+  private metadataColumn: string;
+  private selectedDistance: string;
+  private distanceFields: string[];
+  private selectedNeighborhood: string;
+  private neighborhoodFields: string[];
+  private displayContexts: string[];
+
   private projector: Projector;
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
@@ -50,6 +71,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
         this.querySelector('.clear-selection') as HTMLButtonElement;
     this.limitMessage = this.querySelector('.limit-msg') as HTMLDivElement;
     this.searchBox = this.querySelector('#search-box') as ProjectorInput;
+    this.displayContexts = [];
     // https://www.polymer-project.org/1.0/docs/devguide/styling#scope-subtree
     this.scopeSubtree(this, true);
   }
@@ -95,23 +117,161 @@ export class InspectorPanel extends InspectorPanelPolymer {
       }
       return stats.name;
     });
-    labelIndex = Math.max(0, labelIndex);
-    // Make the default label the first non-numeric column.
-    this.selectedMetadataField = spriteAndMetadata.stats[labelIndex].name;
+
+    if (this.selectedMetadataField == null || this.metadataFields.filter(name =>
+        name == this.selectedMetadataField).length == 0) {
+      // Make the default label the first non-numeric column.
+      this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
+    }
+    this.updateInspectorPane(this.selectedPointIndices, 
+        this.neighborsOfFirstPoint);
   }
 
   datasetChanged() {
     this.enableResetFilterButton(false);
   }
 
+  projectionChanged(projection?: Projection) {
+    if (this.projector && this.projector.dataSet) {
+      let pTypes : string[] = [];
+      let projections = this.projector.dataSet.projections;
+      // Find the available projections, removing dimensions, e.g. pca-1 to pca
+      for (let entry in projections) {
+        if (projections[entry]) {
+          pTypes.push(entry.split('-')[0]);
+        }
+      }
+      // Removing duplicate entries, needed due to multiple dimensions for pca
+      pTypes = Array.from(new Set(pTypes));
+      // Add new projections to distanceFields
+      pTypes.forEach(pType => {
+        if (this.distanceFields.indexOf(pType) == -1) {
+          this.push('distanceFields', pType);
+        }
+      });
+      // Remove unavailable projections from distanceFields
+      let removeFields = [];
+      this.distanceFields.forEach((field, index) => {
+        if (pTypes.indexOf(field) == -1
+            && field != 'cosine' && field != 'euclidean') {
+          removeFields.push(index);
+        }
+      });
+      removeFields.forEach(index => this.splice('distanceFields', index, 1));
+
+      if (projection) {
+        this.selectedDistance = projection.projectionType;
+      }
+      else {
+        // Set selected distance to last element
+        this.selectedDistance = this.distanceFields[this.distanceFields.length-1];
+      }
+    }
+  }
+
+  metadataEditorContext(enabled: boolean, metadataColumn: string) {
+    if (!this.projector || !this.projector.dataSet) {
+      return;
+    }
+
+    let stat = this.projector.dataSet.spriteAndMetadataInfo.stats.filter(s =>
+        s.name == metadataColumn);
+
+    if (!enabled || stat.length == 0 || stat[0].tooManyUniqueValues) {
+      this.removeContext('.metadata-info');
+      return;
+    }
+
+    this.metadataColumn = metadataColumn;
+    this.addContext('.metadata-info');
+    let list = this.querySelector('.metadata-list') as HTMLDivElement;
+    list.innerHTML = '';
+
+    let entries = stat[0].uniqueEntries.sort((a, b) => a.count - b.count);
+    let maxCount = entries[entries.length - 1].count;
+
+    entries.forEach(e => {
+      const metadataElement = document.createElement('div');
+      metadataElement.className = 'metadata';
+
+      const metadataElementLink = document.createElement('a');
+      metadataElementLink.className = 'metadata-link';
+      metadataElementLink.title = e.label;
+
+      const labelValueElement = document.createElement('div');
+      labelValueElement.className = 'label-and-value';
+
+      const labelElement = document.createElement('div');
+      labelElement.className = 'label';
+      labelElement.style.color =
+          dist2color(this.distFunc, maxCount, e.count);
+      labelElement.innerText = e.label;
+
+      const valueElement = document.createElement('div');
+      valueElement.className = 'value';
+      valueElement.innerText = e.count.toString();
+
+      labelValueElement.appendChild(labelElement);
+      labelValueElement.appendChild(valueElement);
+
+      const barElement = document.createElement('div');
+      barElement.className = 'bar';
+
+      const barFillElement = document.createElement('div');
+      barFillElement.className = 'fill';
+      barFillElement.style.borderTopColor =
+          dist2color(this.distFunc, maxCount, e.count);
+      barFillElement.style.width =
+          normalizeDist(this.distFunc, maxCount, e.count) * 100 + '%';
+      barElement.appendChild(barFillElement);
+
+      for (let j = 1; j < 4; j++) {
+        const tickElement = document.createElement('div');
+        tickElement.className = 'tick';
+        tickElement.style.left = j * 100 / 4 + '%';
+        barElement.appendChild(tickElement);
+      }
+
+      metadataElementLink.appendChild(labelValueElement);
+      metadataElementLink.appendChild(barElement);
+      metadataElement.appendChild(metadataElementLink);
+      list.appendChild(metadataElement);
+
+      metadataElementLink.onclick = () => {
+        this.projector.metadataEdit(metadataColumn, e.label);
+      };
+    })
+  }
+
+  private addContext(context: string) {
+    if (this.displayContexts.indexOf(context) == -1) {
+      this.displayContexts.push(context);
+    }
+    this.displayContexts.forEach( c => {
+      (this.querySelector(c) as HTMLDivElement).style.display = 'none';
+    });
+    (this.querySelector(context) as HTMLDivElement).style.display = null;
+  }
+
+  private removeContext(context: string) {
+    this.displayContexts = this.displayContexts.filter(c => c != context);
+    (this.querySelector(context) as HTMLDivElement).style.display = 'none';
+
+    if (this.displayContexts.length > 0) {
+      let lastContext = this.displayContexts[this.displayContexts.length-1];
+      (this.querySelector(lastContext) as HTMLDivElement).style.display = null;
+    }
+  }
+
   private updateSearchResults(indices: number[]) {
     const container = this.querySelector('.matches-list') as HTMLDivElement;
-    container.style.display = indices.length ? null : 'none';
     const list = container.querySelector('.list') as HTMLDivElement;
     list.innerHTML = '';
     if (indices.length === 0) {
+      this.removeContext('.matches-list');
       return;
     }
+    this.addContext('.matches-list');
 
     this.limitMessage.style.display =
         indices.length <= LIMIT_RESULTS ? 'none' : null;
@@ -136,7 +296,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
         this.projectorEventContext.notifyHoverOverPoint(null);
       };
       rowLink.onclick = () => {
-        this.projectorEventContext.notifySelectionChanged([index]);
+        this.projectorEventContext.notifySelectionChanged([index], 'normal');
       };
 
       row.appendChild(rowLink);
@@ -153,12 +313,11 @@ export class InspectorPanel extends InspectorPanelPolymer {
     const nnlist = this.querySelector('.nn-list') as HTMLDivElement;
     nnlist.innerHTML = '';
 
-    (this.querySelector('.nn') as HTMLDivElement).style.display =
-        neighbors.length ? null : 'none';
-
     if (neighbors.length === 0) {
+      this.removeContext('.nn');
       return;
     }
+    this.addContext('.nn');
 
     this.searchBox.message = '';
     const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
@@ -220,7 +379,8 @@ export class InspectorPanel extends InspectorPanelPolymer {
         this.projectorEventContext.notifyHoverOverPoint(null);
       };
       neighborElementLink.onclick = () => {
-        this.projectorEventContext.notifySelectionChanged([neighbor.index]);
+        this.projectorEventContext.notifySelectionChanged([neighbor.index],
+            'normal');
       };
     }
   }
@@ -238,42 +398,19 @@ export class InspectorPanel extends InspectorPanelPolymer {
 
   private setupUI(projector: Projector) {
     this.distFunc = vector.cosDist;
-    const eucDist =
-        this.querySelector('.distance a.euclidean') as HTMLLinkElement;
-    eucDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(eucDist as HTMLElement, 'selected', true);
+    this.distSpace = d => d.vector;
+    this.knnFunc = knn.findKNNofPoint;
 
-      this.distFunc = vector.dist;
-      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
-
-    const cosDist = this.querySelector('.distance a.cosine') as HTMLLinkElement;
-    cosDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
-      }
-      util.classed(cosDist, 'selected', true);
-
-      this.distFunc = vector.cosDist;
-      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
-      const neighbors = projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0], this.distFunc, this.numNN);
-      this.updateNeighborsList(neighbors);
-    };
+    this.distanceFields = ['cosine', 'euclidean', 'pca'];
+    this.selectedDistance = 'pca';
+    this.neighborhoodFields = ['knn', 'geodesic'];
+    this.selectedNeighborhood = 'knn';
 
     // Called whenever the search text input changes.
     const updateInput = (value: string, inRegexMode: boolean) => {
       if (value == null || value.trim() === '') {
         this.searchBox.message = '';
-        this.projectorEventContext.notifySelectionChanged([]);
+        this.projectorEventContext.notifySelectionChanged([], 'normal');
         return;
       }
       const indices = projector.dataSet.query(
@@ -283,23 +420,11 @@ export class InspectorPanel extends InspectorPanelPolymer {
       } else {
         this.searchBox.message = `${indices.length} matches.`;
       }
-      this.projectorEventContext.notifySelectionChanged(indices);
+      this.projectorEventContext.notifySelectionChanged(indices, 'normal');
     };
     this.searchBox.registerInputChangedListener((value, inRegexMode) => {
       updateInput(value, inRegexMode);
     });
-
-    // Nearest neighbors controls.
-    const numNNInput = this.$$('#nn-slider') as HTMLInputElement;
-    const updateNumNN = () => {
-      this.numNN = +numNNInput.value;
-      if (this.selectedPointIndices != null) {
-        this.projectorEventContext.notifySelectionChanged(
-            [this.selectedPointIndices[0]]);
-      }
-    };
-    numNNInput.addEventListener('change', updateNumNN);
-    updateNumNN();
 
     // Filtering dataset.
     this.setFilterButton.onclick = () => {
@@ -320,6 +445,85 @@ export class InspectorPanel extends InspectorPanelPolymer {
     };
     this.enableResetFilterButton(false);
   }
+
+  private updateNumNN() {
+    if (this.selectedPointIndices != null) {
+      this.projectorEventContext.notifySelectionChanged(
+          [this.selectedPointIndices[0]], 'normal');
+    }
+  };
+
+  private updateNeighborsDisplay() {
+    if (this.projectorEventContext && this.projector
+        && this.projector.dataSet) {
+      this.projectorEventContext.notifyDistanceMetricChanged(this.distFunc);
+
+      if (this.selectedPointIndices.length == 1) {
+        this.projectorEventContext.notifySelectionChanged(
+          this.selectedPointIndices, 'normal');
+        const neighbors = this.projector.dataSet.findNeighbors(
+            this.selectedPointIndices[0], this.numNN,
+            this.distSpace, this.distFunc, this.knnFunc);
+        this.updateNeighborsList(neighbors);
+      }
+    }
+  }
+
+  private distanceChanged() {
+    switch (this.selectedDistance) {
+      case 'cosine':
+        this.distFunc = vector.cosDist;
+        this.distSpace = d => d.vector;
+        break;
+
+      case 'euclidean':
+        this.distFunc = vector.dist;
+        this.distSpace = d => d.vector;
+        break;
+
+      case 'pca':
+        this.distFunc = vector.dist;
+        this.distSpace = d => new Float32Array(
+          ('pca-2' in d.projections) ?
+          [d.projections['pca-0'], d.projections['pca-1'],
+              d.projections['pca-2']] :
+          ('pca-1' in d.projections) ?
+          [d.projections['pca-0'], d.projections['pca-1']] : d.vector);
+        break;
+
+      case 'tsne':
+        if (this.projector.dataSet.hasTSNERun) {
+          this.distFunc = vector.dist;
+          this.distSpace = d => new Float32Array(
+            ('tsne-2' in d.projections) ?
+            [d.projections['tsne-0'], d.projections['tsne-1'],
+                d.projections['tsne-2']] :
+            ('tsne-1' in d.projections) ?
+            [d.projections['tsne-0'], d.projections['tsne-1']] : d.vector);
+        }
+        break;
+
+      case 'custom':
+        this.distFunc = vector.dist;
+        this.distSpace = d => new Float32Array(
+            ('custom-0' in d.projections) ?
+            [d.projections['custom-0'], d.projections['custom-1']] : d.vector);
+    }
+    this.updateNeighborsDisplay();
+  }
+
+  private neighborhoodChanged() {
+    switch (this.selectedNeighborhood) {
+      case 'knn':
+        this.knnFunc = knn.findKNNofPoint;
+        break;
+
+      case 'geodesic':
+        this.knnFunc = knn.findGeodesicKNNofPoint;
+    }
+    this.updateNeighborsDisplay();
+  }
+
 }
 
 document.registerElement(InspectorPanel.prototype.is, InspectorPanel);

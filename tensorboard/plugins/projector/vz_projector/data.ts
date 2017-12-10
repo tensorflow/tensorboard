@@ -15,6 +15,7 @@ limitations under the License.
 namespace vz_projector {
 
 export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
+export type DistanceSpace = (_: DataPoint) => Float32Array;
 export type ProjectionComponents3D = [string, string, string];
 
 export interface PointMetadata { [key: string]: number|string; }
@@ -125,8 +126,9 @@ export class DataSet {
   tSNEIteration: number = 0;
   tSNEShouldPause = false;
   tSNEShouldStop = true;
-  tSNEShouldPerturb = false;
-  perturbFactor: number = 0.4;
+  superviseFactor: number = 0;
+  superviseColumn: string = '';
+  superviseInput: string = '';
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
   spriteAndMetadataInfo: SpriteAndMetadataInfo;
@@ -308,14 +310,16 @@ export class DataSet {
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.setTSNESupervision(this.superviseFactor, this.superviseColumn,
+        this.superviseInput);
     this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
-    this.tSNEShouldPerturb = false;
     this.tSNEIteration = 0;
 
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
     let step = () => {
       if (this.tSNEShouldStop) {
+        this.projections['tsne'] = false;
         stepCallback(null);
         this.tsne = null;
         this.hasTSNERun = false;
@@ -323,8 +327,7 @@ export class DataSet {
       }
 
       if (!this.tSNEShouldPause) {
-        this.tsne.step(this.tSNEShouldPerturb ? this.perturbFactor : 0.0);
-        this.tSNEShouldPerturb = false;
+        this.tsne.step();
         let result = this.tsne.getSolution();
         sampledIndices.forEach((index, i) => {
           let dataPoint = this.points[index];
@@ -335,6 +338,7 @@ export class DataSet {
             dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
           }
         });
+        this.projections['tsne'] = true;
         this.tSNEIteration++;
         stepCallback(this.tSNEIteration);
       }
@@ -362,6 +366,76 @@ export class DataSet {
             this.tsne.initDataDist(this.nearest);
           }).then(step);
     });
+  }
+
+  /* Perturb TSNE and update dataset point coordinates. */
+  perturbTsne() {
+    if (this.hasTSNERun && this.tsne) {
+      this.tsne.perturb();
+      let tsneDim = this.tsne.getDim();
+      let result = this.tsne.getSolution();
+      let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+
+      sampledIndices.forEach((index, i) => {
+        let dataPoint = this.points[index];
+
+        dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+        dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
+        if (tsneDim === 3) {
+          dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+        }
+      });
+    }
+  }
+
+  setSupervision(superviseColumn: string, superviseInput?: string) {
+    this.setTSNESupervision(this.superviseFactor, superviseColumn,
+        superviseInput);
+
+    if (superviseColumn != null) {
+      this.superviseColumn = superviseColumn;
+    }
+
+    if (superviseInput != null) {
+      this.superviseInput = superviseInput;
+    }
+  }
+
+  setSuperviseFactor(superviseFactor: number) {
+    if (superviseFactor != null) {
+      this.superviseFactor = superviseFactor;
+      this.setTSNESupervision(this.superviseFactor);
+    }
+  }
+
+  setTSNESupervision(superviseFactor: number, superviseColumn?: string,
+      superviseInput?: string) {
+    if (this.tsne) {
+      if (superviseFactor != null) {
+        this.tsne.superviseFactor = superviseFactor;
+      }
+
+      if (superviseColumn != null) {
+        this.tsne.superviseColumn = superviseColumn;
+
+        let labelCounts = {};
+        this.spriteAndMetadataInfo.stats
+            .find(s => s.name == superviseColumn).uniqueEntries
+            .forEach(e => labelCounts[e.label] = e.count);
+        this.tsne.labelCounts = labelCounts;
+
+        let sampledIndices =
+            this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+        let labels = new Array(sampledIndices.length);
+        sampledIndices.forEach((index, i) => 
+          labels[i] = this.points[index].metadata[superviseColumn].toString());
+        this.tsne.labels = labels;
+      }
+
+      if (superviseInput != null) {
+        this.tsne.unlabeledClass = superviseInput;
+      }
+    }
   }
 
   /**
@@ -411,13 +485,14 @@ export class DataSet {
 
   /**
    * Finds the nearest neighbors of the query point using a
-   * user-specified distance metric.
+   * user-specified distance space, distance metric and neighborhood function.
    */
-  findNeighbors(pointIndex: number, distFunc: DistanceFunction, numNN: number):
+  findNeighbors(pointIndex: number, numNN: number, distSpace: DistanceSpace,
+      distFunc: DistanceFunction, knnFunc: knn.KNNFunction<DataPoint>):
       knn.NearestEntry[] {
     // Find the nearest neighbors of a particular point.
-    let neighbors = knn.findKNNofPoint(
-        this.points, pointIndex, numNN, (d => d.vector), distFunc);
+    let neighbors = knnFunc(
+        this.points, pointIndex, numNN, distSpace, distFunc);
     // TODO(@dsmilkov): Figure out why we slice.
     let result = neighbors.slice(0, numNN);
     return result;
@@ -523,7 +598,7 @@ export function getProjectionComponents(
     throw new RangeError('components length must be <= 3');
   }
   const projectionComponents: [string, string, string] = [null, null, null];
-  const prefix = (projection === 'custom') ? 'linear' : projection;
+  const prefix = projection;
   for (let i = 0; i < components.length; ++i) {
     if (components[i] == null) {
       continue;
@@ -546,7 +621,7 @@ export function stateGetAccessorDimensions(state: State): Array<number|string> {
       }
       break;
     case 'custom':
-      dimensions = ['x', 'y'];
+      dimensions = [0, 1];
       break;
     default:
       throw new Error('Unexpected fallthrough');

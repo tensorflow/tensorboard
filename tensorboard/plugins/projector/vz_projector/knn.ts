@@ -203,6 +203,10 @@ function minDist(
   return Math.sqrt(vector.dist22D([x, y], corner));
 }
 
+export type KNNFunction<T> = (dataPoints: T[], pointIndex: number,
+    k: number, accessor: (dataPoint: T) => Float32Array,
+    distance: (a: vector.Vector, b: vector.Vector) => number) => NearestEntry[];
+
 /**
  * Returns the nearest neighbors of a particular point.
  *
@@ -227,6 +231,94 @@ export function findKNNofPoint<T>(
     kMin.add(dist, {index: i, dist: dist});
   }
   return kMin.getMinKItems();
+}
+
+/**
+ * Use approximate geodesic distance to grow neighborhood over manifold
+ * @param dataPoints List of data points.
+ * @param pointIndex The index of the point we need the nearest neighbors of.
+ * @param k Number of nearest neighbors to search for.
+ * @param accessor Method that maps a data point => vector (array of numbers).
+ * @param distance Method that takes two vectors and returns their distance.
+*/
+export function findGeodesicKNNofPoint<T>(
+    dataPoints: T[], pointIndex: number, k: number,
+    accessor: (dataPoint: T) => Float32Array,
+    distance: (a: vector.Vector, b: vector.Vector) => number) {
+
+  let selectedPoint = accessor(dataPoints[pointIndex]);
+  let neighbors = findKNNofPoint(dataPoints, pointIndex, k, accessor,
+      distance);
+  // number of nearest neighbors to use for manifold expansion
+  let K = 5;
+  // use direct neighborhood
+  let neighborhood = neighbors.map(n => n.index);
+  // growing manifold to select from
+  let manifold = neighbors.slice(0, K);
+  // sum of edge distances traversed
+  let dist_sum = manifold.reduce((sum, n) => sum + n.dist, 0);
+  let dist_count = manifold.length;
+  // neighbor selection to return after populating
+  neighbors = [];
+
+  // grow to max k points
+  while (neighbors.length < k && manifold.length > 0) {
+    // store list of dist ordered neighbors
+    let knn = [];
+    // get next candidate, referred to as 'candidate'
+    let neighbor = manifold.shift();
+
+    // within 2x avg edge distance && previously unchosen
+    if (neighbor.dist <= 2.0 * dist_sum / dist_count
+        && neighbors.filter(f => f.index == neighbor.index).length == 0) {
+      // add suitable candidate
+      neighbors.push({index: neighbor.index, dist:
+          distance(selectedPoint, accessor(dataPoints[neighbor.index]))});
+      // update dist_sum
+      dist_sum = dist_sum + neighbor.dist;
+      // increment number of manifold
+      dist_count = dist_count + 1;
+      // find point vector representation
+      let point = accessor(dataPoints[neighbor.index]);
+      // choose only from initial neighborhood points
+      neighborhood.forEach(n => {
+        // distance from candidate to n
+        let n_dist = distance(point, accessor(dataPoints[n]));
+        // start checking ordered list at larger distance end
+        let l = K;
+        // add up to K neighbors of candidate
+        if (knn.length < K+1) {
+          // add n as neighbor
+          knn.push({index: n, dist: n_dist});
+        }
+        // already have K neighbors
+        else {
+          // find sorted insertion position
+          while (l >= 0 && n_dist < knn[l].dist) {
+            // move down the distance list
+            l = l - 1;
+          }
+          // n is closer than existing knn
+          if (l < K) {
+            // insert n into list to grow list
+            knn.splice(l + 1, 0, {index: n, dist: n_dist});
+          }
+        }
+      });
+      // add up to K new points to manifold
+      knn.slice(0, K).forEach(n => {
+        // not already in manifold
+        if (manifold.filter(f => f.index == n.index).length == 0) {
+          // add new point, allow reconsideration of earlier failed points
+          manifold.push(n);
+        }
+      });
+      // don't reuse successful candidate
+      neighborhood = neighborhood.filter(n => n != neighbor.index);
+    }
+  }
+  neighbors = neighbors.sort((a, b) => a.dist - b.dist);
+  return neighbors;
 }
 
 }  // namespace vz_projector.knn
