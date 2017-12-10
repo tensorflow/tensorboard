@@ -88,7 +88,8 @@ class TBContext(object):
       db_module=None,
       logdir=None,
       multiplexer=None,
-      plugin_name_to_instance=None):
+      plugin_name_to_instance=None,
+      window_title=None):
     """Instantiates magic container.
 
     The argument list is sorted and may be extended in the future; therefore,
@@ -120,6 +121,7 @@ class TBContext(object):
           plugin may be absent from this mapping until it is registered. Plugin
           logic should handle cases in which a plugin is absent from this
           mapping, lest a KeyError is raised.
+      window_title: A string specifying the the window title.
     """
     self.assets_zip_provider = assets_zip_provider
     self.db_connection_provider = db_connection_provider
@@ -127,3 +129,4 @@ class TBContext(object):
     self.logdir = logdir
     self.multiplexer = multiplexer
     self.plugin_name_to_instance = plugin_name_to_instance
+    self.window_title = window_title

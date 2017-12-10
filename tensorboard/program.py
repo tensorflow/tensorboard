@@ -118,6 +118,10 @@ tf.flags.DEFINE_string(
     'based routing of an elb when the website base_url is not available '
     'e.g. "example.site.com/path/to/tensorboard/"')
 
+tf.flags.DEFINE_string(
+    'window_title', '',
+    'The title of the browser window.')
+
 FLAGS = tf.flags.FLAGS
 
 
@@ -191,7 +195,8 @@ def create_tb_app(plugins, assets_zip_provider=None):
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
       plugins=plugins,
-      path_prefix=FLAGS.path_prefix)
+      path_prefix=FLAGS.path_prefix,
+      window_title=FLAGS.window_title)
 
 
 def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
