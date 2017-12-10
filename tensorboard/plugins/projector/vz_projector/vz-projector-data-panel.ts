@@ -130,9 +130,8 @@ export class DataPanel extends DataPanelPolymer {
     this.metadataFile = metadataFile;
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-    
     if (this.selectedColorOptionName == null || this.colorOptions.filter(c =>
-        c.name == this.selectedColorOptionName).length == 0) {
+        c.name === this.selectedColorOptionName).length === 0) {
       this.selectedColorOptionName = this.colorOptions[0].name;
     }
 
@@ -145,7 +144,7 @@ export class DataPanel extends DataPanelPolymer {
     });
 
     if (this.metadataEditorColumn == null || this.metadataFields.filter(name =>
-        name == this.metadataEditorColumn).length == 0) {
+        name === this.metadataEditorColumn).length === 0) {
       // Make the default label the first non-numeric column.
       this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
     }
@@ -183,7 +182,7 @@ export class DataPanel extends DataPanelPolymer {
     });
 
     if (this.metadataEditorColumn == null || this.labelOptions.filter(name =>
-        name == this.metadataEditorColumn).length == 0) {
+        name === this.metadataEditorColumn).length === 0) {
       this.metadataEditorColumn = this.labelOptions[Math.max(0, labelIndex)];
     }
 
@@ -251,18 +250,16 @@ export class DataPanel extends DataPanelPolymer {
     let value = this.metadataEditorInput;
     let selectionSize = this.selectedPointIndices.length + 
         this.neighborsOfFirstPoint.length;
-    
     if (selectionSize > 0) {
       if (value != null && value.trim() != '') {
         let numMatches = this.projector.dataSet.points.filter(p =>
-            p.metadata[this.metadataEditorColumn].toString() == value).length;
+            p.metadata[this.metadataEditorColumn].toString() === value).length;
 
         if (numMatches === 0) {
           this.metadataEditorInputLabel = `Tag ${selectionSize} with new label`;
         }
         else {
-          this.metadataEditorInputLabel = 
-              `Tag ${selectionSize} points as`;
+          this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
         }
         this.metadataEditorButtonDisabled = false;
       }
@@ -296,12 +293,12 @@ export class DataPanel extends DataPanelPolymer {
         `${selectionSize} labeled as '${this.metadataEditorInput}'`;
 
     this.selectedPointIndices.forEach(i =>
-        this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
-        this.metadataEditorInput);
+      this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
+          this.metadataEditorInput);
     
     this.neighborsOfFirstPoint.forEach(p =>
-        this.projector.dataSet.points[p.index]
-            .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
+      this.projector.dataSet.points[p.index]
+          .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
     
     this.spriteAndMetadata.stats = analyzeMetadata(
         this.spriteAndMetadata.stats.map(s => s.name),
@@ -592,6 +589,10 @@ export class DataPanel extends DataPanelPolymer {
 
   _hasChoice(choices: any[]): boolean {
     return choices.length > 0;
+  }
+
+  _hasChoices(choices: any[]): boolean {
+    return choices.length > 1;
   }
 }
 
