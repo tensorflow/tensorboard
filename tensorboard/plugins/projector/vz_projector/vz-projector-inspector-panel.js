@@ -29,7 +29,13 @@ var vz_projector;
     // tslint:disable-next-line
     vz_projector.InspectorPanelPolymer = vz_projector.PolymerElement({
         is: 'vz-projector-inspector-panel',
-        properties: { selectedMetadataField: String, metadataFields: Array }
+        properties: {
+            selectedMetadataField: String,
+            metadataFields: Array,
+            metadataColumn: String,
+            numNN: { type: Number, value: 100 },
+            updateNumNN: Object
+        }
     });
     var InspectorPanel = /** @class */ (function (_super) {
         __extends(InspectorPanel, _super);
@@ -45,6 +51,7 @@ var vz_projector;
                 this.querySelector('.clear-selection');
             this.limitMessage = this.querySelector('.limit-msg');
             this.searchBox = this.querySelector('#search-box');
+            this.displayContexts = [];
             // https://www.polymer-project.org/1.0/docs/devguide/styling#scope-subtree
             this.scopeSubtree(this, true);
         };
@@ -77,6 +84,7 @@ var vz_projector;
             this.enableResetFilterButton(bookmark.filteredPoints != null);
         };
         InspectorPanel.prototype.metadataChanged = function (spriteAndMetadata) {
+            var _this = this;
             var labelIndex = -1;
             this.metadataFields = spriteAndMetadata.stats.map(function (stats, i) {
                 if (!stats.isNumeric && labelIndex === -1) {
@@ -84,22 +92,105 @@ var vz_projector;
                 }
                 return stats.name;
             });
-            labelIndex = Math.max(0, labelIndex);
-            // Make the default label the first non-numeric column.
-            this.selectedMetadataField = spriteAndMetadata.stats[labelIndex].name;
+            if (this.selectedMetadataField == null || this.metadataFields.filter(function (name) {
+                return name === _this.selectedMetadataField;
+            }).length === 0) {
+                // Make the default label the first non-numeric column.
+                this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
+            }
+            this.updateInspectorPane(this.selectedPointIndices, this.neighborsOfFirstPoint);
         };
         InspectorPanel.prototype.datasetChanged = function () {
             this.enableResetFilterButton(false);
         };
+        InspectorPanel.prototype.metadataEditorContext = function (enabled, metadataColumn) {
+            var _this = this;
+            if (!this.projector || !this.projector.dataSet) {
+                return;
+            }
+            var stat = this.projector.dataSet.spriteAndMetadataInfo.stats.filter(function (s) {
+                return s.name === metadataColumn;
+            });
+            if (!enabled || stat.length === 0 || stat[0].tooManyUniqueValues) {
+                this.removeContext('.metadata-info');
+                return;
+            }
+            this.metadataColumn = metadataColumn;
+            this.addContext('.metadata-info');
+            var list = this.querySelector('.metadata-list');
+            list.innerHTML = '';
+            var entries = stat[0].uniqueEntries.sort(function (a, b) { return a.count - b.count; });
+            var maxCount = entries[entries.length - 1].count;
+            entries.forEach(function (e) {
+                var metadataElement = document.createElement('div');
+                metadataElement.className = 'metadata';
+                var metadataElementLink = document.createElement('a');
+                metadataElementLink.className = 'metadata-link';
+                metadataElementLink.title = e.label;
+                var labelValueElement = document.createElement('div');
+                labelValueElement.className = 'label-and-value';
+                var labelElement = document.createElement('div');
+                labelElement.className = 'label';
+                labelElement.style.color =
+                    vz_projector.dist2color(_this.distFunc, maxCount, e.count);
+                labelElement.innerText = e.label;
+                var valueElement = document.createElement('div');
+                valueElement.className = 'value';
+                valueElement.innerText = e.count.toString();
+                labelValueElement.appendChild(labelElement);
+                labelValueElement.appendChild(valueElement);
+                var barElement = document.createElement('div');
+                barElement.className = 'bar';
+                var barFillElement = document.createElement('div');
+                barFillElement.className = 'fill';
+                barFillElement.style.borderTopColor =
+                    vz_projector.dist2color(_this.distFunc, maxCount, e.count);
+                barFillElement.style.width =
+                    vz_projector.normalizeDist(_this.distFunc, maxCount, e.count) * 100 + '%';
+                barElement.appendChild(barFillElement);
+                for (var j = 1; j < 4; j++) {
+                    var tickElement = document.createElement('div');
+                    tickElement.className = 'tick';
+                    tickElement.style.left = j * 100 / 4 + '%';
+                    barElement.appendChild(tickElement);
+                }
+                metadataElementLink.appendChild(labelValueElement);
+                metadataElementLink.appendChild(barElement);
+                metadataElement.appendChild(metadataElementLink);
+                list.appendChild(metadataElement);
+                metadataElementLink.onclick = function () {
+                    _this.projector.metadataEdit(metadataColumn, e.label);
+                };
+            });
+        };
+        InspectorPanel.prototype.addContext = function (context) {
+            var _this = this;
+            if (this.displayContexts.indexOf(context) === -1) {
+                this.displayContexts.push(context);
+            }
+            this.displayContexts.forEach(function (c) {
+                _this.querySelector(c).style.display = 'none';
+            });
+            this.querySelector(context).style.display = null;
+        };
+        InspectorPanel.prototype.removeContext = function (context) {
+            this.displayContexts = this.displayContexts.filter(function (c) { return c !== context; });
+            this.querySelector(context).style.display = 'none';
+            if (this.displayContexts.length > 0) {
+                var lastContext = this.displayContexts[this.displayContexts.length - 1];
+                this.querySelector(lastContext).style.display = null;
+            }
+        };
         InspectorPanel.prototype.updateSearchResults = function (indices) {
             var _this = this;
             var container = this.querySelector('.matches-list');
-            container.style.display = indices.length ? null : 'none';
             var list = container.querySelector('.list');
             list.innerHTML = '';
             if (indices.length === 0) {
+                this.removeContext('.matches-list');
                 return;
             }
+            this.addContext('.matches-list');
             this.limitMessage.style.display =
                 indices.length <= LIMIT_RESULTS ? 'none' : null;
             indices = indices.slice(0, LIMIT_RESULTS);
@@ -137,11 +228,11 @@ var vz_projector;
             var _this = this;
             var nnlist = this.querySelector('.nn-list');
             nnlist.innerHTML = '';
-            this.querySelector('.nn').style.display =
-                neighbors.length ? null : 'none';
             if (neighbors.length === 0) {
+                this.removeContext('.nn');
                 return;
             }
+            this.addContext('.nn');
             this.searchBox.message = '';
             var minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
             var _loop_2 = function (i) {
@@ -255,16 +346,6 @@ var vz_projector;
             this.searchBox.registerInputChangedListener(function (value, inRegexMode) {
                 updateInput(value, inRegexMode);
             });
-            // Nearest neighbors controls.
-            var numNNInput = this.$$('#nn-slider');
-            var updateNumNN = function () {
-                _this.numNN = +numNNInput.value;
-                if (_this.selectedPointIndices != null) {
-                    _this.projectorEventContext.notifySelectionChanged([_this.selectedPointIndices[0]]);
-                }
-            };
-            numNNInput.addEventListener('change', updateNumNN);
-            updateNumNN();
             // Filtering dataset.
             this.setFilterButton.onclick = function () {
                 var indices = _this.selectedPointIndices.concat(_this.neighborsOfFirstPoint.map(function (n) { return n.index; }));
@@ -281,6 +362,12 @@ var vz_projector;
             };
             this.enableResetFilterButton(false);
         };
+        InspectorPanel.prototype.updateNumNN = function () {
+            if (this.selectedPointIndices != null) {
+                this.projectorEventContext.notifySelectionChanged([this.selectedPointIndices[0]]);
+            }
+        };
+        ;
         return InspectorPanel;
     }(vz_projector.InspectorPanelPolymer));
     vz_projector.InspectorPanel = InspectorPanel;

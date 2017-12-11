@@ -59,25 +59,25 @@ limitations under the License.
   margin-right: 0;
 }
 
-.nn {
+.nn, .metadata-info {
   display: flex;
   flex-direction: column;
 }
 
-.nn > * {
+.nn > *, .metadata-info > * {
   padding: 0 20px;
 }
 
-.nn-list {
+.nn-list, .metadata-list {
   overflow-y: auto;
 }
 
-.nn-list .neighbor {
+.nn-list .neighbor, .metadata-list .metadata {
   font-size: 12px;
   margin-bottom: 8px;
 }
 
-.nn-list .label-and-value {
+.nn-list .label-and-value, .metadata-list .label-and-value {
   display: flex;
   justify-content: space-between;
 }
@@ -88,33 +88,33 @@ limitations under the License.
   white-space: nowrap;
 }
 
-.nn-list .value {
+.nn-list .value, .metadata-list .value {
   color: #666;
   float: right;
   font-weight: 300;
   margin-left: 8px;
 }
 
-.nn-list .bar {
+.nn-list .bar, .metadata-list .bar {
   position: relative;
   border-top: 1px solid rgba(0, 0, 0, 0.15);
   margin: 2px 0;
 }
 
-.nn-list .bar .fill {
+.nn-list .bar .fill, .metadata-list .bar .fill {
   position: absolute;
   top: -1px;
   border-top: 1px solid white;
 }
 
-.nn-list .tick {
+.nn-list .tick, .metadata-list .tick {
   position: absolute;
   top: 0px;
   height: 3px;
   border-left: 1px solid rgba(0, 0, 0, 0.15);
 }
 
-.nn-list .neighbor-link:hover {
+.nn-list .neighbor-link:hover, .metadata-list .metadata-link:hover {
   cursor: pointer;
 }
 
@@ -164,14 +164,12 @@ limitations under the License.
   display: inline-block;
 }
 
-#nn-slider {
-  margin: 0 -12px 0 0px;
+.nn-slider {
   --paper-slider-input: {
-    width: 66px
+    width: 64px;
   };
-  --paper-input-container-input-webkit-spinner: {
-    -webkit-appearance: none;
-    margin: 0;
+  --paper-input-container-input: {
+    font-size: 14px;
   };
 }
 
@@ -227,7 +225,8 @@ limitations under the License.
           <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
             The number of neighbors (in the original space) to show when clicking on a point.
           </paper-tooltip>
-          <paper-slider id="nn-slider" pin min="5" max="999" value="100" editable></paper-slider>
+          <paper-slider class="nn-slider" pin min="5" max="999" editable
+              value="{{numNN}}" on-change="updateNumNN"></paper-slider>
         </div>
       </div>
       <div class="distance">
@@ -240,6 +239,21 @@ limitations under the License.
     </div>
     <p>Nearest points in the original space:
     <div class="nn-list"></div>
+  </div>
+  <div class="metadata-info" style="display: none">
+    <div class="neighbors-options">
+      <div class="slider num-nn">
+        <span class="option-label">neighbors</span>
+        <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+        <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
+          The number of neighbors (in the selected space) to show when clicking on a point.
+        </paper-tooltip>
+        <paper-slider class="nn-slider" pin min="5" max="999" editable
+            value="{{numNN}}" on-change="updateNumNN"></paper-slider>
+      </div>
+    </div>
+    <p>{{metadataColumn}} labels (click to apply):</p>
+    <div class="metadata-list"></div>
   </div>
   <div class="matches-list" style="display: none">
     <div class="list"></div>

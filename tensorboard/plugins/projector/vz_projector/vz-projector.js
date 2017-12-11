@@ -137,6 +137,40 @@ var vz_projector;
                 this.setCurrentDataSet(null);
             }
         };
+        Projector.prototype.metadataEdit = function (metadataColumn, metadataLabel) {
+            var _this = this;
+            this.selectedPointIndices.forEach(function (i) {
+                return _this.dataSet.points[i].metadata[metadataColumn] = metadataLabel;
+            });
+            this.neighborsOfFirstPoint.forEach(function (p) {
+                return _this.dataSet.points[p.index].metadata[metadataColumn] = metadataLabel;
+            });
+            this.dataSet.spriteAndMetadataInfo.stats = vz_projector.analyzeMetadata(this.dataSet.spriteAndMetadataInfo.stats.map(function (s) { return s.name; }), this.dataSet.points.map(function (p) { return p.metadata; }));
+            this.metadataChanged(this.dataSet.spriteAndMetadataInfo);
+            this.metadataEditorContext(true, metadataColumn);
+        };
+        Projector.prototype.metadataChanged = function (spriteAndMetadata, metadataFile) {
+            if (metadataFile != null) {
+                this.metadataFile = metadataFile;
+            }
+            this.dataSet.spriteAndMetadataInfo = spriteAndMetadata;
+            this.projectionsPanel.metadataChanged(spriteAndMetadata);
+            this.inspectorPanel.metadataChanged(spriteAndMetadata);
+            this.dataPanel.metadataChanged(spriteAndMetadata, this.metadataFile);
+            if (this.selectedPointIndices.length > 0) {
+                this.metadataCard.updateMetadata(// show metadata for first selected point
+                this.dataSet.points[this.selectedPointIndices[0]].metadata);
+            }
+            else {
+                this.metadataCard.updateMetadata(null); // clear metadata
+            }
+            this.setSelectedLabelOption(this.selectedLabelOption);
+        };
+        Projector.prototype.metadataEditorContext = function (enabled, metadataColumn) {
+            if (this.inspectorPanel) {
+                this.inspectorPanel.metadataEditorContext(enabled, metadataColumn);
+            }
+        };
         Projector.prototype.setSelectedTensor = function (run, tensorInfo) {
             this.bookmarkPanel.setSelectedTensor(run, tensorInfo, this.dataProvider);
         };
@@ -408,6 +442,7 @@ var vz_projector;
         Projector.prototype.onSelectionChanged = function (selectedPointIndices, neighborsOfFirstPoint) {
             this.selectedPointIndices = selectedPointIndices;
             this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+            this.dataPanel.onProjectorSelectionChanged(selectedPointIndices, neighborsOfFirstPoint);
             var totalNumPoints = this.selectedPointIndices.length + neighborsOfFirstPoint.length;
             this.statusBar.innerText = "Selected " + totalNumPoints + " points";
             this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';

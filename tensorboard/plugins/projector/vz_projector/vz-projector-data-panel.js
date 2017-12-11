@@ -36,7 +36,15 @@ var vz_projector;
             },
             selectedLabelOption: { type: String, notify: true, observer: '_selectedLabelOptionChanged' },
             normalizeData: Boolean,
-            showForceCategoricalColorsCheckbox: Boolean
+            showForceCategoricalColorsCheckbox: Boolean,
+            metadataEditorInput: { type: String },
+            metadataEditorInputLabel: { type: String, value: 'Tag selection as' },
+            metadataEditorInputChange: { type: Object },
+            metadataEditorColumn: { type: String },
+            metadataEditorColumnChange: { type: Object },
+            metadataEditorButtonClicked: { type: Object },
+            metadataEditorButtonDisabled: { type: Boolean },
+            downloadMetadataClicked: { type: Boolean }
         },
         observers: [
             '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -100,10 +108,35 @@ var vz_projector;
             return isSeparator ? 'separator' : null;
         };
         DataPanel.prototype.metadataChanged = function (spriteAndMetadata, metadataFile) {
+            var _this = this;
             this.spriteAndMetadata = spriteAndMetadata;
-            this.metadataFile = metadataFile;
+            if (metadataFile != null) {
+                this.metadataFile = metadataFile;
+            }
             this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-            this.selectedColorOptionName = this.colorOptions[0].name;
+            if (this.selectedColorOptionName == null || this.colorOptions.filter(function (c) {
+                return c.name === _this.selectedColorOptionName;
+            }).length === 0) {
+                this.selectedColorOptionName = this.colorOptions[0].name;
+            }
+            var labelIndex = -1;
+            this.metadataFields = spriteAndMetadata.stats.map(function (stats, i) {
+                if (!stats.isNumeric && labelIndex === -1) {
+                    labelIndex = i;
+                }
+                return stats.name;
+            });
+            if (this.metadataEditorColumn == null || this.metadataFields.filter(function (name) {
+                return name === _this.metadataEditorColumn;
+            }).length === 0) {
+                // Make the default label the first non-numeric column.
+                this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
+            }
+        };
+        DataPanel.prototype.onProjectorSelectionChanged = function (selectedPointIndices, neighborsOfFirstPoint) {
+            this.selectedPointIndices = selectedPointIndices;
+            this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+            this.metadataEditorInputChange();
         };
         DataPanel.prototype.addWordBreaks = function (longString) {
             if (longString == null) {
@@ -125,7 +158,16 @@ var vz_projector;
                 }
                 return stats.name;
             });
-            this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+            if (this.selectedLabelOption == null || this.labelOptions.filter(function (name) {
+                return name === _this.selectedLabelOption;
+            }).length === 0) {
+                this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+            }
+            if (this.metadataEditorColumn == null || this.labelOptions.filter(function (name) {
+                return name === _this.metadataEditorColumn;
+            }).length === 0) {
+                this.metadataEditorColumn = this.labelOptions[Math.max(0, labelIndex)];
+            }
             // Color by options.
             var standardColorOption = [
                 { name: 'No color map' },
@@ -179,6 +221,92 @@ var vz_projector;
                 standardColorOption.push({ name: 'Metadata', isSeparator: true });
             }
             this.colorOptions = standardColorOption.concat(metadataColorOption);
+        };
+        DataPanel.prototype.metadataEditorContext = function (enabled) {
+            this.metadataEditorButtonDisabled = !enabled;
+            if (this.projector) {
+                this.projector.metadataEditorContext(enabled, this.metadataEditorColumn);
+            }
+        };
+        DataPanel.prototype.metadataEditorInputChange = function () {
+            var col = this.metadataEditorColumn;
+            var value = this.metadataEditorInput;
+            var selectionSize = this.selectedPointIndices.length +
+                this.neighborsOfFirstPoint.length;
+            if (selectionSize > 0) {
+                if (value != null && value.trim() !== '') {
+                    if (this.spriteAndMetadata.stats.filter(function (s) { return s.name === col; })[0].isNumeric
+                        && isNaN(+value)) {
+                        this.metadataEditorInputLabel = "Label must be numeric";
+                        this.metadataEditorContext(false);
+                    }
+                    else {
+                        var numMatches = this.projector.dataSet.points.filter(function (p) {
+                            return p.metadata[col].toString() === value.trim();
+                        }).length;
+                        if (numMatches === 0) {
+                            this.metadataEditorInputLabel =
+                                "Tag " + selectionSize + " with new label";
+                        }
+                        else {
+                            this.metadataEditorInputLabel = "Tag " + selectionSize + " points as";
+                        }
+                        this.metadataEditorContext(true);
+                    }
+                }
+                else {
+                    this.metadataEditorInputLabel = 'Tag selection as';
+                    this.metadataEditorContext(false);
+                }
+            }
+            else {
+                this.metadataEditorContext(false);
+                if (value != null && value.trim() !== '') {
+                    this.metadataEditorInputLabel = 'Select points to tag';
+                }
+                else {
+                    this.metadataEditorInputLabel = 'Tag selection as';
+                }
+            }
+        };
+        DataPanel.prototype.metadataEditorInputKeydown = function (e) {
+            // Check if 'Enter' was pressed
+            if (e.keyCode === 13) {
+                this.metadataEditorButtonClicked();
+            }
+            e.stopPropagation();
+        };
+        DataPanel.prototype.metadataEditorColumnChange = function () {
+            this.metadataEditorInputChange();
+        };
+        DataPanel.prototype.metadataEditorButtonClicked = function () {
+            if (!this.metadataEditorButtonDisabled) {
+                var value = this.metadataEditorInput.trim();
+                var selectionSize = this.selectedPointIndices.length +
+                    this.neighborsOfFirstPoint.length;
+                this.projector.metadataEdit(this.metadataEditorColumn, value);
+                this.projector.metadataEditorContext(true, this.metadataEditorColumn);
+                this.metadataEditorInputLabel = selectionSize + " labeled as '" + value + "'";
+            }
+        };
+        DataPanel.prototype.downloadMetadataClicked = function () {
+            if (this.projector && this.projector.dataSet
+                && this.projector.dataSet.spriteAndMetadataInfo) {
+                var tsvFile_1 = this.projector.dataSet.spriteAndMetadataInfo.stats.map(function (s) {
+                    return s.name;
+                }).join('\t');
+                this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(function (p) {
+                    var vals = [];
+                    for (var column in p) {
+                        vals.push(p[column]);
+                    }
+                    tsvFile_1 += '\n' + vals.join('\t');
+                });
+                var textBlob = new Blob([tsvFile_1], { type: 'text/plain' });
+                this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
+                this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
+                this.$.downloadMetadataLink.click();
+            }
         };
         DataPanel.prototype.setNormalizeData = function (normalizeData) {
             this.normalizeData = normalizeData;
@@ -353,7 +481,7 @@ var vz_projector;
                 this.$$('#upload-metadata-label').style.display = 'none';
             }
             this.$$('#demo-data-buttons-container').style.display =
-                'block';
+                'flex';
             // Fill out the projector config.
             var projectorConfigTemplate = this.$$('#projector-config-template');
             var projectorConfigTemplateJson = {
@@ -425,6 +553,9 @@ var vz_projector;
         DataPanel.prototype._getNumRunsLabel = function () {
             return this.runNames.length === 1 ? '1 run' :
                 this.runNames.length + ' runs';
+        };
+        DataPanel.prototype._hasChoice = function (choices) {
+            return choices.length > 0;
         };
         DataPanel.prototype._hasChoices = function (choices) {
             return choices.length > 1;
