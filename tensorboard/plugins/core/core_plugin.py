@@ -48,6 +48,7 @@ class CorePlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._logdir = context.logdir
+    self._window_title = context.window_title
     self._multiplexer = context.multiplexer
     self._assets_zip_provider = context.assets_zip_provider
 
@@ -60,6 +61,7 @@ class CorePlugin(base_plugin.TBPlugin):
         '/audio': self._redirect_to_index,
         '/data/logdir': self._serve_logdir,
         '/data/runs': self._serve_runs,
+        '/data/window_properties': self._serve_window_properties,
         '/events': self._redirect_to_index,
         '/favicon.ico': self._send_404_without_logging,
         '/graphs': self._redirect_to_index,
@@ -96,6 +98,12 @@ class CorePlugin(base_plugin.TBPlugin):
     """Respond with a JSON object containing this TensorBoard's logdir."""
     return http_util.Respond(
         request, {'logdir': self._logdir}, 'application/json')
+
+  @wrappers.Request.application
+  def _serve_window_properties(self, request):
+    """Serve a JSON object containing this TensorBoard's window properties."""
+    return http_util.Respond(
+        request, {'window_title': self._window_title}, 'application/json')
 
   @wrappers.Request.application
   def _serve_runs(self, request):

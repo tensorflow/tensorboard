@@ -41,6 +41,7 @@ var tf_backend;
             logdir: function () { return dataDir + '/logdir'; },
             runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
             pluginsListing: function () { return dataDir + '/plugins_listing'; },
+            windowProperties: function () { return dataDir + '/window_properties'; },
             isDemoMode: function () { return demoMode; },
             pluginRoute: pluginRoute,
         };
