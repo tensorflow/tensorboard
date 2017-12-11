@@ -34,7 +34,8 @@ export let DataPanelPolymer = PolymerElement({
     metadataEditorColumn: {type: String},
     metadataEditorColumnChange: {type: Object},
     metadataEditorButtonClicked: {type: Object},
-    metadataEditorButtonDisabled: {type: Boolean}
+    metadataEditorButtonDisabled: {type: Boolean},
+    downloadMetadataClicked: {type: Boolean}
   },
   observers: [
     '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -329,6 +330,28 @@ export class DataPanel extends DataPanelPolymer {
     }
   }
 
+  private downloadMetadataClicked() {
+    if (this.projector && this.projector.dataSet
+        && this.projector.dataSet.spriteAndMetadataInfo) {
+      let tsvFile = this.projector.dataSet.spriteAndMetadataInfo.stats.map(s =>
+          s.name).join('\t');
+      
+      this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(p => {
+        let vals = [];
+
+        for (const column in p) {
+          vals.push(p[column]);
+        }
+        tsvFile += '\n' + vals.join('\t');
+      });
+
+      const textBlob = new Blob([tsvFile], {type: 'text/plain'});
+      this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
+      this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
+      this.$.downloadMetadataLink.click();
+    }
+  }
+
   setNormalizeData(normalizeData: boolean) {
     this.normalizeData = normalizeData;
   }
@@ -525,7 +548,7 @@ export class DataPanel extends DataPanelPolymer {
     }
 
     (this.$$('#demo-data-buttons-container') as HTMLElement).style.display =
-        'block';
+        'flex';
 
     // Fill out the projector config.
     const projectorConfigTemplate =
