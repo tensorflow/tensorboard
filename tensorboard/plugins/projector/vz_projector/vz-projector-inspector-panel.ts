@@ -106,7 +106,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
     });
 
     if (this.selectedMetadataField == null || this.metadataFields.filter(name =>
-        name == this.selectedMetadataField).length == 0) {
+        name === this.selectedMetadataField).length === 0) {
       // Make the default label the first non-numeric column.
       this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
     }
