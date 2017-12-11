@@ -182,6 +182,23 @@ export class Projector extends ProjectorPolymer implements
     }
   }
 
+  metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo,
+      metadataFile: string) {
+    this.dataSet.spriteAndMetadataInfo = spriteAndMetadata;
+    this.projectionsPanel.metadataChanged(spriteAndMetadata);
+    this.inspectorPanel.metadataChanged(spriteAndMetadata);
+    this.dataPanel.metadataChanged(spriteAndMetadata, metadataFile);
+    
+    if (this.selectedPointIndices.length > 0) {  // at least one selected point
+      this.metadataCard.updateMetadata(  // show metadata for first selected point
+          this.dataSet.points[this.selectedPointIndices[0]].metadata);
+    }
+    else {  // no points selected
+      this.metadataCard.updateMetadata(null);  // clear metadata
+    }
+    this.setSelectedLabelOption(this.selectedLabelOption);
+  }
+
   setSelectedTensor(run: string, tensorInfo: EmbeddingInfo) {
     this.bookmarkPanel.setSelectedTensor(run, tensorInfo, this.dataProvider);
   }
@@ -469,6 +486,9 @@ export class Projector extends ProjectorPolymer implements
     this.registerHoverListener(
         (hoverIndex: number) => this.onHover(hoverIndex));
 
+    this.registerProjectionChangedListener((projection: Projection) =>
+        this.onProjectionChanged(projection));
+
     this.registerSelectionChangedListener(
         (selectedPointIndices: number[],
          neighborsOfFirstPoint: knn.NearestEntry[]) =>
@@ -500,10 +520,17 @@ export class Projector extends ProjectorPolymer implements
       neighborsOfFirstPoint: knn.NearestEntry[]) {
     this.selectedPointIndices = selectedPointIndices;
     this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+    this.dataPanel.onProjectorSelectionChanged(selectedPointIndices, 
+        neighborsOfFirstPoint);
     let totalNumPoints =
         this.selectedPointIndices.length + neighborsOfFirstPoint.length;
     this.statusBar.innerText = `Selected ${totalNumPoints} points`;
     this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';
+  }
+
+  onProjectionChanged(projection?: Projection) {
+    this.dataPanel.projectionChanged(projection);
+    this.inspectorPanel.projectionChanged();
   }
 
   setProjection(projection: Projection) {
