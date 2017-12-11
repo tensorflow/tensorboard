@@ -31,7 +31,7 @@ limitations under the License.
   <template>
     <div>
       <paper-dropdown-menu
-        id="f-mode"
+        id="filter-mode"
         no-label-float="true"
         label="Filter Mode"
         selected-item-label="{{_filterMode}}"
@@ -82,6 +82,10 @@ limitations under the License.
         cursor: pointer;
       }
 
+      :host .op-title-leaf:hover {
+        color: blue;
+      }
+
       :host .partial-checkbox {
         background: #f57c00;
       }
@@ -109,13 +113,17 @@ limitations under the License.
       }
 
       :host #filter-mode {
-        width: 100px;
+        width: 150px;
         display: inline-block;
       }
 
       :host #filter-input {
         width: 250px;
         display: inline-block;
+      }
+
+      #selector-hierarchy {
+        width: 100%;
       }
     </style>
   </template>
@@ -125,8 +133,9 @@ limitations under the License.
   Polymer({
     is: "tf-op-selector",
     properties: {
-      // A list of debug watches. A debug watch object has 3 properties:
-      // node_name (string), output_slot (number), and debug_op (string).
+      // A list of debug watches. A debug watch object has 4 properties:
+      // device_name (string), node_name (string), output_slot (number), and
+      // debug_op (string).
       debugWatches: Array,
       // A function called when a debug watch is toggled. This function takes
       // the click event.
@@ -204,7 +213,8 @@ limitations under the License.
       hierarchy.isRoot = true;
 
       _.forEach(filteredDebugWatches, debugWatch => {
-        const portions = tf_debugger_dashboard.splitNodeName(debugWatch.node_name);
+        const nodeNameWithDevice = debugWatch.device_name + '/' + debugWatch.node_name;
+        const portions = tf_debugger_dashboard.splitNodeName(nodeNameWithDevice);
         // Start at the highest level.
         let currentNode = hierarchy;
         _.forEach(portions, (portion, i) => {
@@ -237,6 +247,10 @@ limitations under the License.
     },
 
     _renderHierarchyWithTimeout(watchHierarchy, debugWatchChange, filterMode, filterInput) {
+      if (this._isLoading) {
+        // Wait till the ongoing rendering finishes.
+        return;
+      }
       this._clearSelectorHierarchy();
       this.set('_isLoading', true);
       setTimeout(() => {
@@ -457,10 +471,11 @@ limitations under the License.
     },
 
     _handleLeafNodeSelected(debugWatchChangeMethod, debugWatch, isChecked) {
+      const nodeNameWidthDevice = debugWatch.device_name + '/' + debugWatch.node_name;
       if (isChecked) {
-        this._selectedDebugWatchMapping[debugWatch.node_name] = debugWatch;
+        this._selectedDebugWatchMapping[nodeNameWidthDevice] = debugWatch;
       } else {
-        delete this._selectedDebugWatchMapping[debugWatch.node_name];
+        delete this._selectedDebugWatchMapping[nodeNameWidthDevice];
       }
       debugWatchChangeMethod(debugWatch, isChecked);
     },
