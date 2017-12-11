@@ -128,9 +128,11 @@ export class DataPanel extends DataPanelPolymer {
   }
 
   metadataChanged(
-      spriteAndMetadata: SpriteAndMetadataInfo, metadataFile: string) {
+      spriteAndMetadata: SpriteAndMetadataInfo, metadataFile?: string) {
     this.spriteAndMetadata = spriteAndMetadata;
-    this.metadataFile = metadataFile;
+    if (metadataFile != null) {
+      this.metadataFile = metadataFile;
+    }
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
     if (this.selectedColorOptionName == null || this.colorOptions.filter(c =>
@@ -254,6 +256,13 @@ export class DataPanel extends DataPanelPolymer {
     this.colorOptions = standardColorOption.concat(metadataColorOption);
   }
 
+  private metadataEditorContext(enabled: boolean) {
+    this.metadataEditorButtonDisabled = !enabled;
+    if (this.projector) {
+      this.projector.metadataEditorContext(enabled, this.metadataEditorColumn);
+    }
+  }
+
   private metadataEditorInputChange() {
     let col = this.metadataEditorColumn;
     let value = this.metadataEditorInput;
@@ -264,7 +273,7 @@ export class DataPanel extends DataPanelPolymer {
         if (this.spriteAndMetadata.stats.filter(s => s.name===col)[0].isNumeric
             && isNaN(+value)) {
           this.metadataEditorInputLabel = `Label must be numeric`;
-          this.metadataEditorButtonDisabled = true;
+          this.metadataEditorContext(true);
         }
         else {
           let numMatches = this.projector.dataSet.points.filter(p =>
@@ -277,16 +286,16 @@ export class DataPanel extends DataPanelPolymer {
           else {
             this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
           }
-          this.metadataEditorButtonDisabled = false;
+          this.metadataEditorContext(true);
         }
       }
       else {
         this.metadataEditorInputLabel = 'Tag selection as';
-        this.metadataEditorButtonDisabled = true;
+        this.metadataEditorContext(false);
       }
     }
     else {
-      this.metadataEditorButtonDisabled = true;
+      this.metadataEditorContext(false);
 
       if (value != null && value.trim() !== '') {
         this.metadataEditorInputLabel = 'Select points to tag';
@@ -311,22 +320,11 @@ export class DataPanel extends DataPanelPolymer {
 
   private metadataEditorButtonClicked() {
     if (!this.metadataEditorButtonDisabled) {
-      let col = this.metadataEditorColumn;
       let value = this.metadataEditorInput.trim();
       let selectionSize = this.selectedPointIndices.length +
           this.neighborsOfFirstPoint.length;
-      this.metadataEditorButtonDisabled = true;
-
-      this.selectedPointIndices.forEach(i =>
-        this.projector.dataSet.points[i].metadata[col] = value);
-      
-      this.neighborsOfFirstPoint.forEach(p =>
-        this.projector.dataSet.points[p.index].metadata[col] = value);
-      
-      this.spriteAndMetadata.stats = analyzeMetadata(
-          this.spriteAndMetadata.stats.map(s => s.name),
-          this.projector.dataSet.points.map(p => p.metadata));
-      this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
+      this.projector.metadataEdit(this.metadataEditorColumn, value);
+      this.projector.metadataEditorContext(true, this.metadataEditorColumn);
       this.metadataEditorInputLabel = `${selectionSize} labeled as '${value}'`;
     }
   }

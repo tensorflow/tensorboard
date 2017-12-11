@@ -182,12 +182,29 @@ export class Projector extends ProjectorPolymer implements
     }
   }
 
+  metadataEdit(metadataColumn: string, metadataLabel: string) {
+    this.selectedPointIndices.forEach(i =>
+        this.dataSet.points[i].metadata[metadataColumn] = metadataLabel);
+    
+    this.neighborsOfFirstPoint.forEach(p =>
+        this.dataSet.points[p.index].metadata[metadataColumn] = metadataLabel);
+    
+    this.dataSet.spriteAndMetadataInfo.stats = analyzeMetadata(
+        this.dataSet.spriteAndMetadataInfo.stats.map(s => s.name),
+        this.dataSet.points.map(p => p.metadata));
+    this.metadataChanged(this.dataSet.spriteAndMetadataInfo);
+    this.metadataEditorContext(true, metadataColumn);
+  }
+
   metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo,
-      metadataFile: string) {
+      metadataFile?: string) {
+    if (metadataFile != null) {
+      this.metadataFile = metadataFile;
+    }
     this.dataSet.spriteAndMetadataInfo = spriteAndMetadata;
     this.projectionsPanel.metadataChanged(spriteAndMetadata);
     this.inspectorPanel.metadataChanged(spriteAndMetadata);
-    this.dataPanel.metadataChanged(spriteAndMetadata, metadataFile);
+    this.dataPanel.metadataChanged(spriteAndMetadata, this.metadataFile);
     
     if (this.selectedPointIndices.length > 0) {  // at least one selected point
       this.metadataCard.updateMetadata(  // show metadata for first selected point
@@ -197,6 +214,12 @@ export class Projector extends ProjectorPolymer implements
       this.metadataCard.updateMetadata(null);  // clear metadata
     }
     this.setSelectedLabelOption(this.selectedLabelOption);
+  }
+
+  metadataEditorContext(enabled: boolean, metadataColumn: string) {
+    if (this.inspectorPanel) {
+      this.inspectorPanel.metadataEditorContext(enabled, metadataColumn);
+    }
   }
 
   setSelectedTensor(run: string, tensorInfo: EmbeddingInfo) {
