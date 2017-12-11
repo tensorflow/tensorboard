@@ -162,6 +162,11 @@ limitations under the License.
 
     <style include="dashboard-style"></style>
     <style>
+      :host {
+        display: block;
+        min-height: 100%;
+        position: relative;
+      }
       .debugger-section-title {
         font-size: 110%;
         font-weight: bold;
@@ -173,6 +178,9 @@ limitations under the License.
       paper-tab.iron-selected {
         color: black;
         font-weight: bold;
+      }
+      #initialDialog {
+        z-index: 102;
       }
       #graph-container {
         position: relative;

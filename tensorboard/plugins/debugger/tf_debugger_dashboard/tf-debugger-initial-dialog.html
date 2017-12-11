@@ -21,7 +21,11 @@ limitations under the License.
 
 <dom-module id="tf-debugger-initial-dialog">
   <template>
-    <paper-dialog with-backdrop id="dialog" width="320" modal>
+    <!-- We use a custom backdrop to avoid occluding the TensorBoard navbar. -->
+    <template is="dom-if" if="[[_open]]">
+      <div id="dashboard-backdrop"></div>
+    </template>
+    <paper-dialog id="dialog" width="320" modal with-backdrop="[[_useNativeBackdrop]]">
       <h2 id='dialog-title'>Waiting for first Session.run() to connect...</h2>
       <div class='code-example'>
         <!-- TODO(cais): Rename id. -->
@@ -42,10 +46,22 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
     </paper-dialog>
   </template>
   <style>
-      .code-example {
-        margin: 10px;
-        font-family: monospace;
-      }
+    :host, #dashboard-backdrop {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    #dashboard-backdrop {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .code-example {
+      margin: 10px;
+      font-family: monospace;
+    }
   </style>
   <script>
 
@@ -60,9 +76,19 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
         type: String,
         value: null,
       },
+      _open: {
+        type: Boolean,
+        value: false,
+      },
+      // Suppress the native paper-dialog backdrop. We use a custom one.
+      _useNativeBackdrop: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+      },
     },
-
     openDialog(host, port) {
+      this.set('_open', true);
       this.$.dialog.open();
       if (host != null && port != null) {
         // TODO(cais): Use markdown; syntax highlight Python code.
@@ -71,10 +97,11 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
       }
     },
     closeDialog() {
+      this.set('_open', false);
       this.$.dialog.close();
     },
     renderDebuggerNotEnabledMessage() {
-      this.$.dialog.open();
+      this.openDialog();
       Polymer.dom(this.$$('#dialog-title')).textContent =
           'ERROR: debugger is not enabled in this TensorBoard instance.';
       let ex = 'To enable the debugger in tensorboard, use the flag: ' +
