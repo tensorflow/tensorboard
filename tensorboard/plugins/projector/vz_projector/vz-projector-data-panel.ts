@@ -280,30 +280,39 @@ export class DataPanel extends DataPanelPolymer {
     }
   }
 
+  private metadataEditorInputKeydown(e) {
+    // Check if 'Enter' was pressed
+    if (e.keyCode === 13) {
+      this.metadataEditorButtonClicked();
+    }
+  }
+
   private metadataEditorColumnChange() {
     this.projector.setSelectedLabelOption(this.metadataEditorColumn);
     this.metadataEditorInputChange();
   }
 
   private metadataEditorButtonClicked() {
-    let selectionSize = this.selectedPointIndices.length + 
-        this.neighborsOfFirstPoint.length;
-    this.metadataEditorButtonDisabled = true;
-    this.metadataEditorInputLabel =
-        `${selectionSize} labeled as '${this.metadataEditorInput}'`;
+    if (!this.metadataEditorButtonDisabled) {
+      this.metadataEditorButtonDisabled = true;
+      let selectionSize = this.selectedPointIndices.length +
+          this.neighborsOfFirstPoint.length;
 
-    this.selectedPointIndices.forEach(i =>
-      this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
-          this.metadataEditorInput);
-    
-    this.neighborsOfFirstPoint.forEach(p =>
-      this.projector.dataSet.points[p.index]
-          .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
-    
-    this.spriteAndMetadata.stats = analyzeMetadata(
-        this.spriteAndMetadata.stats.map(s => s.name),
-        this.projector.dataSet.points.map(p => p.metadata));
-    this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
+      this.selectedPointIndices.forEach(i =>
+        this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
+            this.metadataEditorInput);
+      
+      this.neighborsOfFirstPoint.forEach(p =>
+        this.projector.dataSet.points[p.index]
+            .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
+      
+      this.spriteAndMetadata.stats = analyzeMetadata(
+          this.spriteAndMetadata.stats.map(s => s.name),
+          this.projector.dataSet.points.map(p => p.metadata));
+      this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
+      this.metadataEditorInputLabel =
+          `${selectionSize} labeled as '${this.metadataEditorInput}'`;
+    }
   }
 
   setNormalizeData(normalizeData: boolean) {
