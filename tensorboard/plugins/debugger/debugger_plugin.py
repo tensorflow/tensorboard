@@ -23,6 +23,7 @@ import glob
 import json
 import os
 import re
+import sys
 import threading
 
 import tensorflow as tf
@@ -107,8 +108,9 @@ class DebuggerPlugin(base_plugin.TBPlugin):
           self._grpc_port)
     self._grpc_port = grpc_port
 
-    tf.logging.info('Creating DebuggerDataServer at port %d and logdir %s',
-                    self._grpc_port, self._logdir)
+    sys.stderr.write('Creating DebuggerDataServer at port %d and logdir %s\n' %
+                     (self._grpc_port, self._logdir))
+    sys.stderr.flush()
     self._debugger_data_server = debugger_server_lib.DebuggerDataServer(
         self._grpc_port, self._logdir)
 

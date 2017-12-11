@@ -33,8 +33,8 @@ from tensorboard.plugins.text import summary as _text_summary
 audio = _audio_summary.op
 audio_pb = _audio_summary.pb
 
-custom_scalars = _custom_scalar_summary.op
-custom_scalars_pb = _custom_scalar_summary.pb
+custom_scalar = _custom_scalar_summary.op
+custom_scalar_pb = _custom_scalar_summary.pb
 
 histogram = _histogram_summary.op
 histogram_pb = _histogram_summary.pb

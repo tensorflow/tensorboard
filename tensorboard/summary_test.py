@@ -18,19 +18,20 @@ These tests are especially important because this module is the standard
 public entry point for end users, so we should be as careful as possible
 to ensure that we export the right things.
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import collections
 
+import tensorboard as tb
 import tensorflow as tf
-from tensorboard import summary
 
 
 STANDARD_PLUGINS = frozenset([
     'audio',
-    'custom_scalars',
+    'custom_scalar',
     'histogram',
     'image',
     'pr_curve',
@@ -43,15 +44,15 @@ class SummaryExportsTest(tf.test.TestCase):
 
   def test_each_plugin_has_an_export(self):
     for plugin in STANDARD_PLUGINS:
-      self.assertIsInstance(getattr(summary, plugin), collections.Callable)
+      self.assertIsInstance(getattr(tb.summary, plugin), collections.Callable)
 
   def test_plugins_export_pb_functions(self):
     for plugin in STANDARD_PLUGINS:
       self.assertIsInstance(
-          getattr(summary, '%s_pb' % plugin), collections.Callable)
+          getattr(tb.summary, '%s_pb' % plugin), collections.Callable)
 
   def test_all_exports_correspond_to_plugins(self):
-    exports = [name for name in dir(summary) if not name.startswith('_')]
+    exports = [name for name in dir(tb.summary) if not name.startswith('_')]
     futures = frozenset(('absolute_import', 'division', 'print_function'))
     bad_exports = [
         name for name in exports

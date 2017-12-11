@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
+<link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
@@ -63,7 +64,9 @@ profile run can have multiple tools that present the performance profile as diff
             <template is="dom-repeat" items="[[_activeTools]]">
               <paper-item>[[item]]</paper-item>
             </template>
-            <paper-item>None</paper-item>
+            <template is="dom-if" if="[[!_hasActiveTools(selectedDataset, _datasets)]]" restamp="true">
+              <paper-item>None</paper-item>
+            </template>
           </paper-menu>
         </paper-dropdown-menu>
       </div>
@@ -83,6 +86,10 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_eq(_currentTool, 'op_profile')]]" restamp="true">
       <tf-op-profile run="[[_run(_datasets, selectedDataset)]]">
       </tf-op-profile>
+    </template>
+    <template is="dom-if" if="[[_eq(_currentTool, 'input_pipeline_analyzer')]]" restamp="true">
+      <input-pipeline-analyzer run="[[_run(_datasets, selectedDataset)]]">
+      </input-pipeline-analyzer>
     </template>
   </div>
   </tf-dashboard-layout>
@@ -234,6 +241,9 @@ profile run can have multiple tools that present the performance profile as diff
         return datasets[selectedDataset].activeTools;
       }
       return [];
+    },
+    _hasActiveTools: function(selectedDataset, datasets) {
+      return datasets[selectedDataset].activeTools.length > 0;
     },
     _eq: function(actual, expected) {
       return actual == expected;

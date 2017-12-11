@@ -221,7 +221,7 @@ function isSimilarSubgraph(g1: graphlib.Graph<any, any>,
       sub2 = n2.substr(g2prefix.length);
 
     /* tslint:disable */
-    if (visited1[sub1] ^ visited2[sub1]) {
+    if (visited1[sub1] ^ visited2[sub2]) {
       console.warn(
           'different visit pattern', '[' + g1prefix + ']', sub1,
           '[' + g2prefix + ']', sub2);

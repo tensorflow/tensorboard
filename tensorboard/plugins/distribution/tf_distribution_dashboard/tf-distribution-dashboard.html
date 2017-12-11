@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
@@ -81,14 +82,7 @@ limitations under the License.
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
-          <paper-input
-            no-label-float
-            label="Filter tags (regular expressions supported)"
-            value="{{_tagFilter}}"
-            class="search-input"
-          >
-            <iron-icon prefix icon="search"></iron-icon>
-          </paper-input>
+          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
               <tf-paginated-view
@@ -141,15 +135,16 @@ limitations under the License.
         _runToTag: Object,  // map<run: string, tags: string[]>
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
+        _tagFilter: String,
 
-        _tagFilter: {
-          type: String,  // upward bound from paper-input
-          value: '',
-        },
+        // Categories must only be computed after _dataNotFound is found to be
+        // true and then polymer DOM templating responds to that finding. We
+        // thus use this property to guard when categories are computed.
+        _categoriesDomReady: Boolean,
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagFilter)',
+            '_makeCategories(_runToTag, _selectedRuns, _tagFilter, _categoriesDomReady)',
         },
 
         _requestManager: {
@@ -177,6 +172,10 @@ limitations under the License.
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTag', runToTag);
           this.set('_runToTagInfo', runToTagInfo);
+          this.async(() => {
+            // See the comment above `_categoriesDomReady`.
+            this.set('_categoriesDomReady', true);
+          });
         });
       },
       _reloadDistributions() {
@@ -185,7 +184,7 @@ limitations under the License.
         });
       },
 
-      _makeCategories(runToTag, selectedRuns, tagFilter) {
+      _makeCategories(runToTag, selectedRuns, tagFilter, categoriesDomReady) {
         return tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
       },
       _tagMetadata(runToTagInfo, run, tag) {
