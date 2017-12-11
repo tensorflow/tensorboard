@@ -24,6 +24,8 @@ export let DataPanelPolymer = PolymerElement({
       notify: true,
       observer: '_selectedColorOptionNameChanged'
     },
+    selectedLabelOption:
+        {type: String, notify: true, observer: '_selectedLabelOptionChanged'},
     normalizeData: Boolean,
     showForceCategoricalColorsCheckbox: Boolean,
     metadataEditorInput: {type: String},
@@ -40,6 +42,7 @@ export let DataPanelPolymer = PolymerElement({
 });
 
 export class DataPanel extends DataPanelPolymer {
+  selectedLabelOption: string;
   selectedColorOptionName: string;
   showForceCategoricalColorsCheckbox: boolean;
 
@@ -180,6 +183,11 @@ export class DataPanel extends DataPanelPolymer {
       }
       return stats.name;
     });
+    
+    if (this.selectedLabelOption == null || this.labelOptions.filter(name =>
+        name === this.selectedLabelOption).length === 0) {
+      this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+    }
 
     if (this.metadataEditorColumn == null || this.labelOptions.filter(name =>
         name === this.metadataEditorColumn).length === 0) {
@@ -298,7 +306,6 @@ export class DataPanel extends DataPanelPolymer {
   }
 
   private metadataEditorColumnChange() {
-    this.projector.setSelectedLabelOption(this.metadataEditorColumn);
     this.metadataEditorInputChange();
   }
 
@@ -403,6 +410,10 @@ export class DataPanel extends DataPanelPolymer {
         this.selectedTensor = defaultTensor;
       }
     });
+  }
+
+  _selectedLabelOptionChanged() {
+    this.projector.setSelectedLabelOption(this.selectedLabelOption);
   }
 
   _selectedColorOptionNameChanged() {

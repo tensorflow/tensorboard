@@ -258,6 +258,19 @@ paper-dropdown-menu paper-item {
       </paper-listbox>
     </paper-dropdown-menu>
   </template>
+  <!-- Label by -->
+  <template is="dom-if" if="[[_hasChoices(labelOptions)]]">
+    <paper-dropdown-menu no-animations label="Label by">
+      <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedLabelOption}}" slot="dropdown-content">
+        <template is="dom-repeat" items="[[labelOptions]]">
+          <paper-item value="[[item]]" label="[[item]]">
+            [[item]]
+          </paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+
   <!-- Color by -->
   <div hidden$="[[!_hasChoices(colorOptions)]]" class="colorby-container">
     <paper-dropdown-menu id="colorby" no-animations label="Color by">
@@ -284,9 +297,11 @@ paper-dropdown-menu paper-item {
       <vz-projector-legend render-info="[[colorLegendRenderInfo]]"></vz-projector-legend>
     </template>
   </div>
+
+  <!-- Metadata editor -->
   <template is="dom-if" if="[[_hasChoice(labelOptions)]]">
     <div class="metadata-editor">
-      <paper-dropdown-menu no-animations label="Label by">
+      <paper-dropdown-menu no-animations label="Edit by">
         <paper-listbox attr-for-selected="value" class="dropdown-content" slot="dropdown-content"
             on-selected-item-changed="metadataEditorColumnChange"
             selected="{{metadataEditorColumn}}" >
