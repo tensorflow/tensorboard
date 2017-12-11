@@ -27,7 +27,15 @@ export let DataPanelPolymer = PolymerElement({
     selectedLabelOption:
         {type: String, notify: true, observer: '_selectedLabelOptionChanged'},
     normalizeData: Boolean,
-    showForceCategoricalColorsCheckbox: Boolean
+    showForceCategoricalColorsCheckbox: Boolean,
+    metadataEditorInput: {type: String},
+    metadataEditorInputLabel: {type: String, value: 'Tag selection as'},
+    metadataEditorInputChange: {type: Object},
+    metadataEditorColumn: {type: String},
+    metadataEditorColumnChange: {type: Object},
+    metadataEditorButtonClicked: {type: Object},
+    metadataEditorButtonDisabled: {type: Boolean},
+    downloadMetadataClicked: {type: Boolean}
   },
   observers: [
     '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -44,6 +52,12 @@ export class DataPanel extends DataPanelPolymer {
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
 
+  private metadataEditorInput: string;
+  private metadataEditorInputLabel: string;
+  private metadataEditorButtonDisabled: boolean;
+
+  private selectedPointIndices: number[];
+  private neighborsOfFirstPoint: knn.NearestEntry[];
   private selectedTensor: string;
   private selectedRun: string;
   private dataProvider: DataProvider;
@@ -115,12 +129,39 @@ export class DataPanel extends DataPanelPolymer {
   }
 
   metadataChanged(
-      spriteAndMetadata: SpriteAndMetadataInfo, metadataFile: string) {
+      spriteAndMetadata: SpriteAndMetadataInfo, metadataFile?: string) {
     this.spriteAndMetadata = spriteAndMetadata;
-    this.metadataFile = metadataFile;
+    if (metadataFile != null) {
+      this.metadataFile = metadataFile;
+    }
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-    this.selectedColorOptionName = this.colorOptions[0].name;
+    if (this.selectedColorOptionName == null || this.colorOptions.filter(c =>
+        c.name === this.selectedColorOptionName).length === 0) {
+      this.selectedColorOptionName = this.colorOptions[0].name;
+    }
+
+    let labelIndex = -1;
+    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+      if (!stats.isNumeric && labelIndex === -1) {
+        labelIndex = i;
+      }
+      return stats.name;
+    });
+
+    if (this.metadataEditorColumn == null || this.metadataFields.filter(name =>
+        name === this.metadataEditorColumn).length === 0) {
+      // Make the default label the first non-numeric column.
+      this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
+    }
+  }
+
+  onProjectorSelectionChanged(
+      selectedPointIndices: number[],
+      neighborsOfFirstPoint: knn.NearestEntry[]) {
+    this.selectedPointIndices = selectedPointIndices;
+    this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+    this.metadataEditorInputChange();
   }
 
   private addWordBreaks(longString: string): string {
@@ -145,7 +186,16 @@ export class DataPanel extends DataPanelPolymer {
       }
       return stats.name;
     });
-    this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+    
+    if (this.selectedLabelOption == null || this.labelOptions.filter(name =>
+        name === this.selectedLabelOption).length === 0) {
+      this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
+    }
+
+    if (this.metadataEditorColumn == null || this.labelOptions.filter(name =>
+        name === this.metadataEditorColumn).length === 0) {
+      this.metadataEditorColumn = this.labelOptions[Math.max(0, labelIndex)];
+    }
 
     // Color by options.
     const standardColorOption: ColorOption[] = [
@@ -205,6 +255,101 @@ export class DataPanel extends DataPanelPolymer {
       standardColorOption.push({name: 'Metadata', isSeparator: true});
     }
     this.colorOptions = standardColorOption.concat(metadataColorOption);
+  }
+
+  private metadataEditorContext(enabled: boolean) {
+    this.metadataEditorButtonDisabled = !enabled;
+    if (this.projector) {
+      this.projector.metadataEditorContext(enabled, this.metadataEditorColumn);
+    }
+  }
+
+  private metadataEditorInputChange() {
+    let col = this.metadataEditorColumn;
+    let value = this.metadataEditorInput;
+    let selectionSize = this.selectedPointIndices.length + 
+        this.neighborsOfFirstPoint.length;
+    if (selectionSize > 0) {
+      if (value != null && value.trim() !== '') {
+        if (this.spriteAndMetadata.stats.filter(s => s.name===col)[0].isNumeric
+            && isNaN(+value)) {
+          this.metadataEditorInputLabel = `Label must be numeric`;
+          this.metadataEditorContext(false);
+        }
+        else {
+          let numMatches = this.projector.dataSet.points.filter(p =>
+              p.metadata[col].toString() === value.trim()).length;
+
+          if (numMatches === 0) {
+            this.metadataEditorInputLabel =
+                `Tag ${selectionSize} with new label`;
+          }
+          else {
+            this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
+          }
+          this.metadataEditorContext(true);
+        }
+      }
+      else {
+        this.metadataEditorInputLabel = 'Tag selection as';
+        this.metadataEditorContext(false);
+      }
+    }
+    else {
+      this.metadataEditorContext(false);
+
+      if (value != null && value.trim() !== '') {
+        this.metadataEditorInputLabel = 'Select points to tag';
+      }
+      else {
+        this.metadataEditorInputLabel = 'Tag selection as';
+      }
+    }
+  }
+
+  private metadataEditorInputKeydown(e) {
+    // Check if 'Enter' was pressed
+    if (e.keyCode === 13) {
+      this.metadataEditorButtonClicked();
+    }
+    e.stopPropagation();
+  }
+
+  private metadataEditorColumnChange() {
+    this.metadataEditorInputChange();
+  }
+
+  private metadataEditorButtonClicked() {
+    if (!this.metadataEditorButtonDisabled) {
+      let value = this.metadataEditorInput.trim();
+      let selectionSize = this.selectedPointIndices.length +
+          this.neighborsOfFirstPoint.length;
+      this.projector.metadataEdit(this.metadataEditorColumn, value);
+      this.projector.metadataEditorContext(true, this.metadataEditorColumn);
+      this.metadataEditorInputLabel = `${selectionSize} labeled as '${value}'`;
+    }
+  }
+
+  private downloadMetadataClicked() {
+    if (this.projector && this.projector.dataSet
+        && this.projector.dataSet.spriteAndMetadataInfo) {
+      let tsvFile = this.projector.dataSet.spriteAndMetadataInfo.stats.map(s =>
+          s.name).join('\t');
+      
+      this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(p => {
+        let vals = [];
+
+        for (const column in p) {
+          vals.push(p[column]);
+        }
+        tsvFile += '\n' + vals.join('\t');
+      });
+
+      const textBlob = new Blob([tsvFile], {type: 'text/plain'});
+      this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
+      this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
+      this.$.downloadMetadataLink.click();
+    }
   }
 
   setNormalizeData(normalizeData: boolean) {
@@ -403,7 +548,7 @@ export class DataPanel extends DataPanelPolymer {
     }
 
     (this.$$('#demo-data-buttons-container') as HTMLElement).style.display =
-        'block';
+        'flex';
 
     // Fill out the projector config.
     const projectorConfigTemplate =
@@ -490,6 +635,10 @@ export class DataPanel extends DataPanelPolymer {
   _getNumRunsLabel(): string {
     return this.runNames.length === 1 ? '1 run' :
                                         this.runNames.length + ' runs';
+  }
+
+  _hasChoice(choices: any[]): boolean {
+    return choices.length > 0;
   }
 
   _hasChoices(choices: any[]): boolean {
