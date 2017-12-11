@@ -273,7 +273,7 @@ export class DataPanel extends DataPanelPolymer {
         if (this.spriteAndMetadata.stats.filter(s => s.name===col)[0].isNumeric
             && isNaN(+value)) {
           this.metadataEditorInputLabel = `Label must be numeric`;
-          this.metadataEditorContext(true);
+          this.metadataEditorContext(false);
         }
         else {
           let numMatches = this.projector.dataSet.points.filter(p =>
