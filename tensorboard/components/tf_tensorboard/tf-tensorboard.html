@@ -669,6 +669,7 @@ limitations under the License.
           'dom-change', onDomChange, /*useCapture=*/false);
 
         tf_backend.fetchRuns();
+        this._fetchWindowProperties();
         this._fetchLogdir();
         this._fetchActiveDashboards();
         this._lastReloadTime = new Date().toString();
@@ -704,6 +705,15 @@ limitations under the License.
         return this._requestManager
           .request(tf_backend.getRouter().pluginsListing())
           .then(updateActiveDashboards, onFailure);
+      },
+
+      _fetchWindowProperties() {
+        const url = tf_backend.getRouter().windowProperties();
+        return this._requestManager.request(url).then(result => {
+          if (result.window_title) {
+            window.document.title = result.window_title;
+          }
+        });
       },
 
       _computeActiveDashboardsNotLoaded(state) {
