@@ -247,21 +247,30 @@ export class DataPanel extends DataPanelPolymer {
   }
 
   private metadataEditorInputChange() {
+    let col = this.metadataEditorColumn;
     let value = this.metadataEditorInput;
     let selectionSize = this.selectedPointIndices.length + 
         this.neighborsOfFirstPoint.length;
     if (selectionSize > 0) {
-      if (value != null && value.trim() != '') {
-        let numMatches = this.projector.dataSet.points.filter(p =>
-            p.metadata[this.metadataEditorColumn].toString() === value).length;
-
-        if (numMatches === 0) {
-          this.metadataEditorInputLabel = `Tag ${selectionSize} with new label`;
+      if (value != null && value.trim() !== '') {
+        if (this.spriteAndMetadata.stats.filter(s => s.name===col)[0].isNumeric
+            && isNaN(+value)) {
+          this.metadataEditorInputLabel = `Label must be numeric`;
+          this.metadataEditorButtonDisabled = true;
         }
         else {
-          this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
+          let numMatches = this.projector.dataSet.points.filter(p =>
+              p.metadata[col].toString() === value.trim()).length;
+
+          if (numMatches === 0) {
+            this.metadataEditorInputLabel =
+                `Tag ${selectionSize} with new label`;
+          }
+          else {
+            this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
+          }
+          this.metadataEditorButtonDisabled = false;
         }
-        this.metadataEditorButtonDisabled = false;
       }
       else {
         this.metadataEditorInputLabel = 'Tag selection as';
@@ -271,7 +280,7 @@ export class DataPanel extends DataPanelPolymer {
     else {
       this.metadataEditorButtonDisabled = true;
 
-      if (value != null && value.trim() != '') {
+      if (value != null && value.trim() !== '') {
         this.metadataEditorInputLabel = 'Select points to tag';
       }
       else {
@@ -285,6 +294,7 @@ export class DataPanel extends DataPanelPolymer {
     if (e.keyCode === 13) {
       this.metadataEditorButtonClicked();
     }
+    e.stopPropagation();
   }
 
   private metadataEditorColumnChange() {
@@ -294,24 +304,23 @@ export class DataPanel extends DataPanelPolymer {
 
   private metadataEditorButtonClicked() {
     if (!this.metadataEditorButtonDisabled) {
-      this.metadataEditorButtonDisabled = true;
+      let col = this.metadataEditorColumn;
+      let value = this.metadataEditorInput.trim();
       let selectionSize = this.selectedPointIndices.length +
           this.neighborsOfFirstPoint.length;
+      this.metadataEditorButtonDisabled = true;
 
       this.selectedPointIndices.forEach(i =>
-        this.projector.dataSet.points[i].metadata[this.metadataEditorColumn] =
-            this.metadataEditorInput);
+        this.projector.dataSet.points[i].metadata[col] = value);
       
       this.neighborsOfFirstPoint.forEach(p =>
-        this.projector.dataSet.points[p.index]
-            .metadata[this.metadataEditorColumn] = this.metadataEditorInput);
+        this.projector.dataSet.points[p.index].metadata[col] = value);
       
       this.spriteAndMetadata.stats = analyzeMetadata(
           this.spriteAndMetadata.stats.map(s => s.name),
           this.projector.dataSet.points.map(p => p.metadata));
       this.projector.metadataChanged(this.spriteAndMetadata, this.metadataFile);
-      this.metadataEditorInputLabel =
-          `${selectionSize} labeled as '${this.metadataEditorInput}'`;
+      this.metadataEditorInputLabel = `${selectionSize} labeled as '${value}'`;
     }
   }
 
