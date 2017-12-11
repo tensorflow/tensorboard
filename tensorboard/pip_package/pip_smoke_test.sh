@@ -30,7 +30,7 @@ die() {
 }
 
 PY_VERSION=2
-TEST_PORT=6006
+TEST_PORT=0
 NUM_RETRIES=20
 while [[ "$#" -gt 0 ]]; do
   if [[ "$1" == "--python3" ]]; then
@@ -89,7 +89,8 @@ echo "Activating virtualenv at ${VENV_TMP_DIR}"
 echo
 
 export VIRTUAL_ENV="${VENV_TMP_DIR}"
-export PATH="${VENV_TMP_DIR}/bin:${PATH}"
+export VENV_BIN_DIR="${VENV_TMP_DIR}/bin"
+export PATH="${VENV_BIN_DIR}:${PATH}"
 unset PYTHON_HOME
 
 echo
@@ -122,17 +123,42 @@ elif [[ "${PY_VERSION}" == 3 ]]; then
 fi
 
 # Check tensorboard binary path.
-TB_BIN_PATH=$(which tensorboard)
-if [[ -z ${TB_BIN_PATH} ]]; then
-  die "ERROR: Cannot find tensorboard binary path after installing tensorboard pip package."
+TB_BIN_PATH="${VENV_BIN_DIR}/tensorboard"
+if ! [[ -x "${TB_BIN_PATH}" ]]; then
+  die "ERROR: No tensorboard binary found after installing tensorboard pip package."
 fi
 
+# Start TensorBoard running in the background
+TMP_LOG_OUTPUT=${PIP_TMP_DIR}/output.log
 TMP_LOGDIR=$(mktemp -d --suffix _tensorboard_logdir)
-tensorboard --port="${TEST_PORT}" --logdir="${TMP_LOGDIR}" &
+tensorboard --host=localhost --port="${TEST_PORT}" --logdir="${TMP_LOGDIR}" \
+  >${TMP_LOG_OUTPUT} 2>&1 &
 TB_PID=$!
 
 echo
-echo "tensorboard binary should be running at pid ${TB_PID}"
+echo "waiting for tensorboard binary to start up..."
+echo
+
+# Wait until the binary has printed its serving URL so we know that it's
+# accessible and which port it's running on.
+while true; do
+  if ! ps -p $TB_PID >/dev/null 2>&1; then
+    echo
+    echo "TensorBoard exited unexpected, printing logs:"
+    echo "============================================="
+    cat ${TMP_LOG_OUTPUT}
+    echo "============================================="
+    exit 1
+  fi
+  TB_URL=$(grep -o -m 1 -E 'http://localhost:[0-9]+' ${TMP_LOG_OUTPUT} || true)
+  if [[ -n "${TB_URL}" ]]; then
+    break
+  fi
+  sleep 1
+done
+
+echo
+echo "tensorboard binary (pid ${TB_PID}) running at ${TB_URL}"
 echo
 
 test_access_url() {
@@ -174,14 +200,15 @@ test_access_url() {
 }
 
 TEST_URL_FAILED=0
-test_access_url "http://localhost:${TEST_PORT}/data/logdir" || TEST_URL_FAILED=1
-test_access_url "http://localhost:${TEST_PORT}" || TEST_URL_FAILED=1
+test_access_url "${TB_URL}/data/logdir" || TEST_URL_FAILED=1
+test_access_url "${TB_URL}" || TEST_URL_FAILED=1
 
 echo
 echo "Terminating tensorboard binary at pid ${TB_PID}"
 echo
 
 kill -9 "${TB_PID}"
+wait "${TB_PID}" 2>/dev/null || true  # Wait to suppress "Killed" message.
 
 echo
 if [[ "${TEST_URL_FAILED}" == 0 ]]; then
