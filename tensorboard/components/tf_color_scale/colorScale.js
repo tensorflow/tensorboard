@@ -52,7 +52,7 @@ var tf_color_scale;
          */
         ColorScale.prototype.scale = function (s) {
             if (!this.identifiers.has(s)) {
-                throw new Error('String was not in the domain.');
+                throw new Error("String " + s + " was not in the domain.");
             }
             return this.identifiers.get(s);
         };

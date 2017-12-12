@@ -92,8 +92,7 @@ limitations under the License.
           </template>
           <template is="dom-if" if="[[_isValueLineChart]]">
             <tf-debugger-line-chart
-              x-data="[[_dataLineChartX]]"
-              y-data="[[_dataLineChartY]]"
+              data="[[_lineChartData]]"
             ></tf-debugger-line-chart>
           </template>
           <template is="dom-if" if="[[_isValueImage]]">
@@ -180,13 +179,9 @@ limitations under the License.
         type: Number,
         value: null,
       },
-      _dataLineChartX: {
+      _lineChartData: {
         type: Array,
-        value: [],
-      },
-      _dataLineChartY: {
-        type: Array,
-        value: [],
+        value: null,
       },
       _dataImageSrc: {
         type: String,
@@ -246,13 +241,12 @@ limitations under the License.
           this.set('_dataScalar', tensorData);
         } else if (tensorRankWithTime === 1) {
           this._setVisualizationType('lineChart');
-          let xData = [];
+          let xyData = {'x': [], 'y': tensorData};
           // TODO(cais): For history mode, this should be time steps.
           for (let i = 0; i < tensorData.length; ++i) {
-            xData.push(i + 1);
+            xyData['x'].push(i + 1);
           }
-          this.set('_dataLineChartX', xData);
-          this.set('_dataLineChartY', tensorData);
+          this.set('_lineChartData', xyData);
         } else if (tensorRankWithTime >= 2) {
           this._setVisualizationType('image');
           this.set('_dataImageSrc', 'data:image/png;base64,' + tensorData);
