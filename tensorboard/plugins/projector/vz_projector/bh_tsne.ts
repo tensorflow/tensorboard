@@ -257,6 +257,10 @@ export interface TSNEOptions {
 export class TSNE {
   private perplexity: number;
   private epsilon: number;
+  private superviseFactor: number;
+  private unlabeledClass: string;
+  private labels: string[];
+  private labelCounts: {[key: string]: number};
   /** Random generator */
   private rng: () => number;
   private iter = 0;
@@ -310,11 +314,70 @@ export class TSNE {
     this.iter = 0;
   }
 
+  getDim() {
+    return this.dim;
+  }
+
   // return pointer to current solution
   getSolution() { return this.Y; }
 
+  // For each point, randomly offset point within a 5% hypersphere centered
+  // around it, whilst remaining in the assumed t-SNE plot hypersphere
+  perturb() {
+    let N = this.N;
+    let maxArea = 0;
+    let ymean = this.dim === 3 ? [0, 0, 0] : [0, 0];
+
+    // Determine radius of t-SNE hypersphere, assumed zero mean and normalized
+    // dimensions. Here area is proportional to pi*radius^2, to skip root calc.
+    for (let i = 0; i < N; ++i) {
+      let area = 0;
+      
+      for (let d = 0; d < this.dim; ++d) {
+        area += Math.pow(this.Y[i * this.dim + d], 2);
+      }
+
+      if (area > maxArea) {
+        maxArea = area;
+      }
+    }
+
+    let maxRadius = Math.pow(maxArea, 0.5);
+
+    for (let i = 0; i < N; ++i) {
+      let diff = new Array(this.dim);
+
+      // Find a perturbation of point that fits inside t-SNE hypersphere
+      while (true) {
+        let area = 0;
+
+        for (let d = 0; d < this.dim; ++d) {
+          diff[d] = 0.1 * maxRadius * (Math.random() - 0.5);
+          area += Math.pow(this.Y[i * this.dim + d] + diff[d], 2);
+        }
+
+        if (area < maxArea) {
+          break;
+        }
+      }
+
+      // Apply offset to point
+      for (let d = 0; d < this.dim; ++d) {
+        this.Y[i * this.dim + d] += diff[d];
+        ymean[d] += this.Y[i * this.dim + d];
+      }
+    }
+
+    // reproject Y to be zero mean
+    for (let i = 0; i < N; ++i) {
+      for (let d = 0; d < this.dim; ++d) {
+        this.Y[i * this.dim + d] -= ymean[d] / N;
+      }
+    }
+  }
+
   // perform a single step of optimization to improve the embedding
-  step(perturb: number) {
+  step() {
     this.iter += 1;
     let N = this.N;
 
@@ -343,7 +406,6 @@ export class TSNE {
         // step!
         let i_d = i * this.dim + d;
         this.Y[i_d] += newsid;
-        this.Y[i_d] *= 1.0 + perturb * (Math.random() - 1.0);
         ymean[d] += this.Y[i_d];  // accumulate mean so that we
                                   // can center later
       }
@@ -357,6 +419,25 @@ export class TSNE {
     }
   }
 
+  setSupervision(superviseLabels: string[], superviseInput?: string) {
+    if (superviseLabels != null) {
+      this.labels = superviseLabels;
+      this.labelCounts = {};
+      let uniqueEntries = Array.from(new Set(superviseLabels));
+      uniqueEntries.forEach(l => this.labelCounts[l] = 0);
+      superviseLabels.forEach(l => this.labelCounts[l] += 1);
+    }
+    if (superviseInput != null) {
+      this.unlabeledClass = superviseInput;
+    }
+  }
+
+  setSuperviseFactor(superviseFactor: number) {
+    if (superviseFactor != null) {
+      this.superviseFactor = superviseFactor;
+    }
+  }
+
   // return cost and gradient, given an arrangement
   costGrad(Y: Float64Array): number[][] {
     let N = this.N;
@@ -364,6 +445,15 @@ export class TSNE {
 
     // Trick that helps with local optima.
     let alpha = this.iter < 100 ? 4 : 1;
+
+    let superviseFactor = this.superviseFactor / 100.;  // set in range [0, 1]
+    let unlabeledClass = this.unlabeledClass;
+    let labels = this.labels;
+    let labelCounts = this.labelCounts;
+    let supervised = superviseFactor != null && superviseFactor > 0 &&
+        labels != null && labelCounts != null;
+    let unlabeledCount = supervised && unlabeledClass != null &&
+        unlabeledClass !== '' ? labelCounts[unlabeledClass] : 0;
 
     // Make data for the SP tree.
     let points: number[][] = new Array(N);  // (x, y)[]
@@ -418,15 +508,33 @@ export class TSNE {
     // compute current Q distribution, unnormalized first
     let grad: number[][] = [];
     let Z = 0;
+    let sum_pij = 0;
     let forces: [number[], number[]][] = new Array(N);
     for (let i = 0; i < N; ++i) {
       let pointI = points[i];
+      if (supervised) {
+        var sameCount = labelCounts[labels[i]];
+        var otherCount = N - sameCount - unlabeledCount;
+      }
       // Compute the positive forces for the i-th node.
       let Fpos = this.dim === 3 ? [0, 0, 0] : [0, 0];
       let neighbors = this.nearest[i];
       for (let k = 0; k < neighbors.length; ++k) {
         let j = neighbors[k].index;
         let pij = P[i * N + j];
+        // apply semi-supervised prior probabilities
+        if (supervised) {
+          if (labels[i] === unlabeledClass || labels[j] === unlabeledClass) {
+            pij *= 1. / N;
+          }
+          else if (labels[i] !== labels[j]) {
+            pij *= Math.max(1. / N - superviseFactor / otherCount, 1E-7);
+          }
+          else if (labels[i] === labels[j]) {
+            pij *= Math.min(1. / N + superviseFactor / sameCount, 1. - 1E-7);
+          }
+          sum_pij += pij;
+        }
         let pointJ = points[j];
         let squaredDistItoJ = this.dist2(pointI, pointJ);
         let premult = pij / (1 + squaredDistItoJ);
@@ -458,7 +566,10 @@ export class TSNE {
       forces[i] = [Fpos, FnegZ];
     }
     // Normalize the negative forces and compute the gradient.
-    const A = 4 * alpha;
+    let A = 4 * alpha;
+    if (supervised) {
+      A /= sum_pij;
+    }
     const B = 4 / Z;
     for (let i = 0; i < N; ++i) {
       let [FPos, FNegZ] = forces[i];

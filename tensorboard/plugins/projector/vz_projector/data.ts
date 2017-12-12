@@ -125,8 +125,9 @@ export class DataSet {
   tSNEIteration: number = 0;
   tSNEShouldPause = false;
   tSNEShouldStop = true;
-  tSNEShouldPerturb = false;
-  perturbFactor: number = 0.4;
+  superviseFactor: number;
+  superviseLabels: string[];
+  superviseInput: string = '';
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
   spriteAndMetadataInfo: SpriteAndMetadataInfo;
@@ -308,14 +309,16 @@ export class DataSet {
     let k = Math.floor(3 * perplexity);
     let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
     this.tsne = new TSNE(opt);
+    this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
+    this.tsne.setSuperviseFactor(this.superviseFactor);
     this.tSNEShouldPause = false;
     this.tSNEShouldStop = false;
-    this.tSNEShouldPerturb = false;
     this.tSNEIteration = 0;
 
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
     let step = () => {
       if (this.tSNEShouldStop) {
+        this.projections['tsne'] = false;
         stepCallback(null);
         this.tsne = null;
         this.hasTSNERun = false;
@@ -323,8 +326,7 @@ export class DataSet {
       }
 
       if (!this.tSNEShouldPause) {
-        this.tsne.step(this.tSNEShouldPerturb ? this.perturbFactor : 0.0);
-        this.tSNEShouldPerturb = false;
+        this.tsne.step();
         let result = this.tsne.getSolution();
         sampledIndices.forEach((index, i) => {
           let dataPoint = this.points[index];
@@ -335,6 +337,7 @@ export class DataSet {
             dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
           }
         });
+        this.projections['tsne'] = true;
         this.tSNEIteration++;
         stepCallback(this.tSNEIteration);
       }
@@ -362,6 +365,52 @@ export class DataSet {
             this.tsne.initDataDist(this.nearest);
           }).then(step);
     });
+  }
+
+  /* Perturb TSNE and update dataset point coordinates. */
+  perturbTsne() {
+    if (this.hasTSNERun && this.tsne) {
+      this.tsne.perturb();
+      let tsneDim = this.tsne.getDim();
+      let result = this.tsne.getSolution();
+      let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+
+      sampledIndices.forEach((index, i) => {
+        let dataPoint = this.points[index];
+
+        dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+        dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
+        if (tsneDim === 3) {
+          dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+        }
+      });
+    }
+  }
+
+  setSupervision(superviseColumn: string, superviseInput?: string) {
+    if (superviseColumn != null) {
+      let sampledIndices =
+          this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+      let labels = new Array(sampledIndices.length);
+      sampledIndices.forEach((index, i) => 
+          labels[i] = this.points[index].metadata[superviseColumn].toString());
+      this.superviseLabels = labels;
+    }
+    if (superviseInput != null) {
+      this.superviseInput = superviseInput;
+    }
+    if (this.tsne) {
+      this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
+    }
+  }
+
+  setSuperviseFactor(superviseFactor: number) {
+    if (superviseFactor != null) {
+      this.superviseFactor = superviseFactor;
+      if (this.tsne) {
+        this.tsne.setSuperviseFactor(superviseFactor);
+      }
+    }
   }
 
   /**
