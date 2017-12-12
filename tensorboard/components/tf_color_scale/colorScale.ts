@@ -53,7 +53,7 @@ export class ColorScale {
    */
   public scale(s: string): string {
     if (!this.identifiers.has(s)) {
-      throw new Error('String was not in the domain.');
+      throw new Error(`String ${s} was not in the domain.`);
     }
     return this.identifiers.get(s) as string;
   }
