@@ -16,7 +16,6 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <dom-module id="tf-debugger-line-chart">
@@ -24,7 +23,6 @@ limitations under the License.
     <vz-line-chart
       x-components-creation-method="[[_lineChartXComponentsCreationMethod]]"
       y-value-accessor="[[_lineChartYValueAccessor]]"
-      color-scale="[[_lineChartColorScaleFunction]]"
       tooltip-columns="[[_lineChartTooltipColumns]]"
       smoothing-enabled="[[_lineChartSmoothingEnabled]]"
     ></vz-line-chart>
@@ -40,13 +38,17 @@ limitations under the License.
     Polymer({
       is: "tf-debugger-line-chart",
       properties: {
-        xData: {
-          type: Array,
-          value: [],
+        // x and y data for the line plot, with keys 'x' and 'y'. The values
+        // are arrays of numbers.
+        data: {
+          type: Object,
+          value: null,
         },
-        yData: {
-          type: Array,
-          value: [],
+
+        _defaultSeriesName: {
+          type: String,
+          value: '__debugger_data__',
+          readonly: true,
         },
 
         _lineChartXComponentsCreationMethod: {
@@ -68,10 +70,6 @@ limitations under the License.
           // function to compute the value. We actually want the value of this
           // property to be the inner function.
           value: () => (d => d.scalar),
-        },
-        _lineChartColorScaleFunction: {
-          type: Object,  // function: string => string
-          value: () => ({scale: tf_color_scale.runsColorScale}),
         },
         _lineChartTooltipColumns: {
           type: Array,
@@ -96,18 +94,22 @@ limitations under the License.
       },
 
       observers: [
-        "render(xData, yData)",
+        "render(data)",
         // TODO(cais): Add additional data such as yAxis and title.
       ],
 
-      render(xData, yData) {
-        this.$$('vz-line-chart').setVisibleSeries(['__debugger_data__']);
-        // TODO(cais): Do not hardcode series name.
+      render(data) {
+        if (data == null) {
+          return;
+        }
+        this.$$('vz-line-chart').setVisibleSeries([this._defaultSeriesName]);
         let seriesData = [];
-        for (let i = 0; i < this.xData.length; ++i) {
+        const xData = data['x'];
+        const yData = data['y'];
+        for (let i = 0; i < xData.length; ++i) {
           seriesData.push({'step': xData[i], 'scalar': yData[i]});
         }
-        this.$$('vz-line-chart').setSeriesData('__debugger_data__', seriesData);
+        this.$$('vz-line-chart').setSeriesData(this._defaultSeriesName, seriesData);
       },
     });
   </script>
