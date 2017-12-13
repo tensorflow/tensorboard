@@ -85,7 +85,7 @@ limitations under the License.
             node-or-tensor-clicked="[[_createFeedFetchTargetClickedHandler()]]">
           </tf-session-runs-view>
         </div>
-        <div>
+        <div class="buttons-container">
           <paper-button raised class="continue-button" on-click="_step">
               <span>[[_stepButtonText]]</span>
           </paper-button>
@@ -164,8 +164,11 @@ limitations under the License.
     <style>
       :host {
         display: block;
-        min-height: 100%;
-        position: relative;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
       }
       .debugger-section-title {
         font-size: 110%;
@@ -254,15 +257,20 @@ limitations under the License.
       }
       .node-entries {
         height: 66%;
+        width: 100%;
         overflow: auto;
         padding-top: 3px;
         padding-left: 3px;
         padding-right: 3px;
         box-shadow: 3px 3px #ddd;
       }
+      .buttons-container {
+        padding: 20px 0;
+      }
       .tensor-data {
         height: 34%;
         overflow: auto;
+        padding: 20px 0;
       }
       #top-right-content-container {
         height: 66%;
