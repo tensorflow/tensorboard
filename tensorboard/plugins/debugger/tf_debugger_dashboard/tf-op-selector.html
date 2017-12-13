@@ -122,6 +122,13 @@ limitations under the License.
         display: inline-block;
       }
 
+      :host .highlighted {
+        color: magenta
+      }
+      :host .highlighted > .op-type {
+        color: magenta;
+      }
+
       #selector-hierarchy {
         width: 100%;
       }
@@ -144,8 +151,16 @@ limitations under the License.
       // the expand button) is clicked,
       nodeClicked: Function,
 
-      // Name of the node externally forced to expand to.
-      forceExpansionNodeName: {
+      // Name of the node externally forced to expand to and enable checkbox
+      // for.
+      forceExpandAndCheckNodeName: {
+        type: String,
+        value: null,
+      },
+
+      // Name of the node externally forced to expand to (but not enable
+      // checkbox for).
+      forceExpandNodeName: {
         type: String,
         value: null,
       },
@@ -194,10 +209,18 @@ limitations under the License.
         type: Boolean,
         value: false,
       },
+
+      // The currently highlighted level DOM. Used for efficient removal of
+      // highlighting.
+      _highlightedLevelDom: {
+        type: Object,
+        value: null,
+      },
     },
     observers: [
       "_renderHierarchyWithTimeout(_watchHierarchy, debugWatchChange)",
-      "_handleForceNodeExpansion(forceExpansionNodeName)",
+      "_handleForceNodeExpandAndCheck(forceExpandAndCheckNodeName)",
+      "_handleForceNodeExpand(forceExpandNodeName)",
     ],
     _computeWatchHierarchy(debugWatches, debugWatchChange, filterMode, filterInput) {
       filterInput = filterInput.trim();
@@ -251,8 +274,8 @@ limitations under the License.
         // Wait till the ongoing rendering finishes.
         return;
       }
-      this._clearSelectorHierarchy();
       this.set('_isLoading', true);
+      this._clearSelectorHierarchy();
       setTimeout(() => {
         this._renderHierarchy(watchHierarchy, debugWatchChange, filterMode, filterInput);
       }, 10);
@@ -261,38 +284,7 @@ limitations under the License.
     _renderHierarchy(watchHierarchy, debugWatchChange, filterMode, filterInput) {
       this.set('_levelName2Container', {});
       this.set('_levelName2Node', {});
-
       const dom = this._renderLevel(null, null, watchHierarchy, debugWatchChange);
-
-      // After rendering the hierarchy, check the boxes that correspond to
-      // breakpoints. Otherwise, breakpoints will be initially unselected.
-      _.forOwn(this._selectedDebugWatchMapping, (debugWatch, nodeName) => {
-        // Traverse to the leaf node that is a break point.
-        const portions = tf_debugger_dashboard.splitNodeName(nodeName);
-        let currentNode = this._watchHierarchy;
-        for (let i = 0; i < portions.length; i++) {
-          currentNode = currentNode.children[portions[i]];
-          if (!currentNode) {
-            // This node no longer exists. Perhaps the model changed.
-            break;
-          }
-        }
-
-        if (!currentNode) {
-          return;
-        }
-
-        // Select the node.
-        currentNode.setCheckboxState(tf_debugger_dashboard.CheckboxState['CHECKED']);
-
-        // Possibly change metanodes above it to be checked or partial. This
-        // has to be manually called because the checkbox has not been rendered
-        // in the DOM yet. Therefore, checkbox event handlers (which take care
-        // of this logic) are not called.
-        currentNode.setNodesAboveToChecked();
-      });
-
-      // Append the hierarchy to the DOM.
       Polymer.dom(this.$$('#selector-hierarchy')).appendChild(dom);
       this.set('_isLoading', false);
     },
@@ -308,6 +300,7 @@ limitations under the License.
       } else {
         fullLevelName = parentLevelName + '/' + levelName;
       }
+      const fullNodeName = fullLevelName + '/' + levelObject.name;
 
       Polymer.dom(levelContainer).classList.add('level-container');
       const contentContainer = document.createElement('iron-collapse');
@@ -346,6 +339,8 @@ limitations under the License.
 
         // Give the title a checkbox.
         Polymer.dom(levelTitle).appendChild(levelObject.checkbox);
+        // Register the level DOM with levelObject.
+        levelObject.setLevelDom(levelTitle);
 
         // Title the expandable.
         const titleText = document.createElement('span');
@@ -355,11 +350,13 @@ limitations under the License.
 
         Polymer.dom(levelContainer).appendChild(levelTitle);
 
-        // If this is a device name level, fire its click event to expand it
-        // immediately.
-        if (levelName.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN)) {
+        // If this is a device name level or a level that contains only one
+        // child, fire its click event to expand it immediately.
+        if (levelName.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN) ||
+            Object.keys(levelObject.children).length === 1) {
           contentContainer.setAttribute('opened', true);
         }
+
       } else {
         // This entry should be opened by default.
         contentContainer.setAttribute('opened', true);
@@ -377,6 +374,10 @@ limitations under the License.
         }
         childFullLevelName += '/' + childLevelName;
         this._levelName2Node[childFullLevelName] = objectToRender;
+        if (this._selectedDebugWatchMapping[childFullLevelName] != null) {
+          objectToRender.setCheckboxState(tf_debugger_dashboard.CheckboxState['CHECKED']);
+          objectToRender.setNodesAboveToChecked();
+        }
 
         if (debugWatch) {
           // The debug watch exists, so this is a leaf node.
@@ -388,6 +389,7 @@ limitations under the License.
                 debugWatchChange, debugWatch, event.target.checked);
           }, false);
           Polymer.dom(opDescription).appendChild(objectToRender.checkbox);
+          objectToRender.setLevelDom(opDescription);
 
           const opType = document.createElement('span');
           opType.textContent = '[' + debugWatch.op_type + ']';
@@ -480,45 +482,71 @@ limitations under the License.
       debugWatchChangeMethod(debugWatch, isChecked);
     },
 
-    _handleForceNodeExpansion(forceExpansionNodeName) {
+    // Shared method for handling externally forced expansion of a node, with
+    // optional enabling of the breakpoint by checking the checkbox and optional
+    // highlighting of the node.
+    _handleForceNode(forceNodeName, toCheck, toHighlight) {
       this.set('_filterInput', '');
+      // Use set timeout to give the tree list a chance to update.
+      setTimeout(() => {
+        if (forceNodeName == null) {
+          return;
+        }
+        if (this._levelName2Container == null) {
+          return;  // No node tree has been rendered yet.
+        }
+        const levelItems = tf_debugger_dashboard.splitNodeName(forceNodeName);
+        for (let i = 1; i <= levelItems.length; ++i) {
+          let currLevelName = levelItems.slice(0, i).join('/');
+          const currTreeNode = this._levelName2Node[currLevelName];
 
-      if (forceExpansionNodeName == null) {
-        return;
-      }
-      if (this._levelName2Container == null) {
-        return;  // No node tree has been rendered yet.
-      }
-      const levelItems = tf_debugger_dashboard.splitNodeName(forceExpansionNodeName);
-      for (let i = 1; i <= levelItems.length; ++i) {
-        let currLevelName = levelItems.slice(0, i).join('/');
-        const currTreeNode = this._levelName2Node[currLevelName];
-
-        if (i < levelItems.length) {
-          // At non-lowest level.
-          if (this._levelName2Container[currLevelName] != null) {
-            // It is possible that the node is not present in the tree, e.g.,
-            // due to node-name filtering or other types of filtering.
-            this._levelName2Container[currLevelName].setAttribute('opened', true);
-          }
-        } else {
-          // At lowest level.
-          // If the lowest level is a meta node, send enable-breakpoint request
-          // for all its children.
-          if (!currTreeNode.debugWatch) {
-            this._handleMetaNodeChange(currTreeNode, currTreeNode.debugWatchChange, true);
-          }
-
-          currTreeNode.setToAllCheckedExternally();
-          const debugWatch = currTreeNode.debugWatch;
-          if (debugWatch) {
-            if (this._selectedDebugWatchMapping[debugWatch.node_name] == null) {
-              this._selectedDebugWatchMapping[debugWatch.node_name] = debugWatch;
+          if (i < levelItems.length) {
+            // At non-lowest level.
+            if (this._levelName2Container[currLevelName] != null) {
+              // It is possible that the node is not present in the tree, e.g.,
+              // due to node-name filtering or other types of filtering.
+              this._levelName2Container[currLevelName].setAttribute('opened', true);
             }
+          } else {
+            // At lowest level.
+            // If the lowest level is a meta node, send enable-breakpoint request
+            // for all its children.
+            if (!currTreeNode.debugWatch) {
+              this._handleMetaNodeChange(
+                  currTreeNode, currTreeNode.debugWatchChange, true);
+            }
+            if (toCheck) {
+              currTreeNode.setToAllCheckedExternally();
+              const debugWatch = currTreeNode.debugWatch;
+              if (debugWatch) {
+                if (this._selectedDebugWatchMapping[debugWatch.node_name] == null) {
+                  this._selectedDebugWatchMapping[forceNodeName] = debugWatch;
+                }
+              }
+            }
+            // Remove the current highlighting and apply new highlighting.
+            if (this._highlightedLevelDom != null) {
+              this._highlightedLevelDom.classList.remove('highlighted');
+            }
+            currTreeNode.levelDom.classList.add('highlighted');
+            this.set('_highlightedLevelDom', currTreeNode.levelDom);
           }
         }
-      }
+      }, 20);
     },
+
+    // Handles externally forced expansion to a node and checking of the
+    // breakpoint checkbox.
+    _handleForceNodeExpandAndCheck(forceNodeName) {
+      this._handleForceNode(forceNodeName, true);
+    },
+
+    // Handles externally forced expansion to a node (without changing the
+    // state of the breakpoint checkbox).
+    _handleForceNodeExpand(forceNodeName) {
+      this._handleForceNode(forceNodeName, false);
+    },
+
   });
   </script>
 </dom-module>

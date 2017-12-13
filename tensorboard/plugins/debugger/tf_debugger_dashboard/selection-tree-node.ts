@@ -178,6 +178,7 @@ export class SelectionTreeNode {
 
   checkboxState: CheckboxState;
   checkbox: Element;
+  levelDom: Element;
 
   // If this is set, toggling the checkbox won't prompt ancestor or children
   // nodes to update. Used for updating various checkboxes so that invariants
@@ -332,6 +333,10 @@ export class SelectionTreeNode {
       // Move up the tree.
       currentNode = currentNode.parent;
     }
+  }
+
+  setLevelDom(levelDom) {
+    this.levelDom = levelDom;
   }
 }
 
