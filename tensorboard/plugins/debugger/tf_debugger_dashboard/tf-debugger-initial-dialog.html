@@ -50,6 +50,10 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
     </paper-dialog>
   </template>
   <style>
+    :host:not([_open]) {
+      display: none;
+    }
+
     :host, #dashboard-backdrop {
       position: absolute;
       top: 0;
@@ -80,7 +84,10 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
         type: String,
         value: null,
       },
-      _open: Boolean,
+      _open: {
+        type: Boolean,
+        reflectToAttribute: true,  // for CSS 
+      },
       // Suppress the native paper-dialog backdrop. We use a custom one. We make
       // the dialog reference this bound property instead of directly setting
       // the attribute to the string "false" in the HTML because Polymer
