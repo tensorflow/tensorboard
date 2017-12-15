@@ -39,9 +39,16 @@ limitations under the License.
             </paper-input>
             <paper-icon-button
               icon="close"
-              class="value-view-close-button"
-              id="value-view-close-button"
-              on-tap="closeButtonCallback">X</paper-icon-button>
+              class="value-view-icon-button"
+              id="value-view-icon-button"
+              title="Close"
+              on-tap="closeButtonCallback"></paper-icon-button>
+            <paper-icon-button
+              icon="forward"
+              class="value-view-icon-button"
+              id="value-view-icon-button"
+              title="Continue to"
+              on-tap="continueToButtonCallback"></paper-icon-button>
           </div>
         </td>
       </tr>
@@ -135,7 +142,7 @@ limitations under the License.
     .value-image {
       image-rendering: pixelated;
     }
-    .value-view-close-button {
+    .value-view-icon-button {
       display: inline-block;
       float: right;
       text-align: right;
@@ -160,6 +167,7 @@ limitations under the License.
       slicing: String,
       timeIndices: String,
 
+      continueToButtonCallback: Object,
       closeButtonCallback: Object,
 
       _isTensorValueScalar: {

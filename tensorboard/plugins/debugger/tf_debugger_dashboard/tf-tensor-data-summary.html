@@ -31,6 +31,7 @@ limitations under the License.
           <th>DType</th>
           <th>Shape</th>
           <th width="30%">Value</th>
+          <th width="5%"></th>
         </tr>
       </table>
     </div>
@@ -53,8 +54,11 @@ limitations under the License.
         padding-right: 3px;
         box-shadow: 3px 3px #ddd;
       }
-      .active-tensor {
+      :host .active-tensor {
         background-color: #FFFFE0;
+      }
+      :host .highlighted {
+        color: red;
       }
       .value-expansion-link {
         text-decoration: underline;
@@ -72,7 +76,10 @@ limitations under the License.
     properties: {
       // latestTensorData is an object with the following fields:
       // {
-      //   tensorName: // String, name of the tensor, e.g., 'MatMul:0'
+      //   deviceName:  // String, name of the device
+      //   tensorName:  // String, name of the tensor, e.g., 'MatMul:0'
+      //   nodeName:  // String, name of the node, e.g., 'MatMul'
+      //   maybeBaseExpandedNodeName:  // String, possibly base-expanded node name
       //   debugOp:  // String, debug op name, e.g., 'DebugIdenitty'
       //   dtype:  // String, dtype, e.g., 'float32'
       //   shape:  // Number[], shape of the tensor, e.g., [16, 28, 28]
@@ -83,19 +90,25 @@ limitations under the License.
       // Callback for clicking of the expand button.
       expandHandler: Object,
 
+      continueToCallback: Object,
+
+      // For externally ordered highlighting of a tensor row.
+      highlightedNodeName: {
+        type: String,
+        value: null,
+      },
+
       _watchKeys: {
         type: Array,
         value: [],
       },
+      // A map from watch key to data, including fields
+      //    deviceName, nodeName, dtype and shape.
+      _watchKey2Data: {
+        type: Object,
+        value: {},
+      },
       _watchKey2Count: {
-        type: Object,
-        value: {},
-      },
-      _watchKey2DType: {
-        type: Object,
-        value: {},
-      },
-      _watchKey2Shape: {
         type: Object,
         value: {},
       },
@@ -110,16 +123,14 @@ limitations under the License.
       _activeWatchKey: String,
     },
     observers: [
-      "renderLatest(latestTensorData, expandHandler)",
+      "_renderLatest(latestTensorData, expandHandler)",
+      "_highlight(highlightedNodeName)",
     ],
 
-    renderLatest(latestTensorData, expandHandler) {
-      // TODO(cais): May need to include device name for GPU and distributed, in
-      // case there are duplicate node names between devices (which is rare).
-      const watchKey = latestTensorData.tensorName + ':' +
+    _renderLatest(latestTensorData, expandHandler) {
+      const watchKey = latestTensorData.deviceName + '/' +
+                       latestTensorData.tensorName + ':' +
                        latestTensorData.debugOp;
-      const dtype = latestTensorData.dtype;
-      const shape = latestTensorData.shape;
       const instanceExpandHandler = () => {
         expandHandler(latestTensorData);
       };
@@ -134,11 +145,10 @@ limitations under the License.
         valueShort = "(Click to view)";
       }
 
+      this._watchKey2Data[watchKey] = latestTensorData;
       if (this._watchKeys.indexOf(watchKey) === -1) {
         this._watchKeys.push(watchKey);
         this._watchKey2Count[watchKey] = 1;
-        this._watchKey2DType[watchKey] = dtype;
-        this._watchKey2Shape[watchKey] = shape;
         this._watchKey2ExpandHandler[watchKey] = instanceExpandHandler;
       } else {
         this._watchKey2Count[watchKey] += 1;
@@ -184,12 +194,13 @@ limitations under the License.
     },
 
     _renderRow(watchKey) {
-      const items = watchKey.split(':');
-      const tensorName = items[0] + ':' + items[1];
+      const deviceName = this._watchKey2Data[watchKey]['deviceName'];
+      const maybeBaseExpandedNodeName =
+          this._watchKey2Data[watchKey]['maybeBaseExpandedNodeName'];
+      const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
       const count = this._watchKey2Count[watchKey];
-      const debugOp = items[2];
-      const dtype = this._watchKey2DType[watchKey];
-      const shape = this._watchKey2Shape[watchKey];
+      const tensorName = this._watchKey2Data[watchKey]['tensorName'];
+      const debugOp = this._watchKey2Data[watchKey]['debugOp'];
       const valueShort = this._watchKey2ValueShort[watchKey];
       const expandHandler = this._watchKey2ExpandHandler[watchKey];
       const isActive = (watchKey === this._activeWatchKey);
@@ -208,14 +219,22 @@ limitations under the License.
       // const debugOpCell = document.createElement('td');
       // debugOpCell.textContent = (debugOp === 'DebugIdentity') ? '' : debugOp;
       const dtypeCell = document.createElement('td');
-      dtypeCell.textContent = dtype;
+      dtypeCell.textContent = this._watchKey2Data[watchKey]['dtype'];
       const shapeCell = document.createElement('td');
-      shapeCell.textContent = JSON.stringify(shape);
+      shapeCell.textContent = JSON.stringify(
+          this._watchKey2Data[watchKey]['shape']);
       const valueCell = document.createElement('td');
       valueCell.textContent = valueShort;
       valueCell.setAttribute('class', 'value-expansion-link');
-
       valueCell.addEventListener('click', expandHandler, false);
+      const continueToCell = document.createElement('td');
+      const continueToLink = document.createElement('paper-icon-button');
+      continueToLink.setAttribute('icon', 'forward');
+      continueToLink.setAttribute('title', 'Continue to');
+      continueToLink.addEventListener('click', () => {
+        this.continueToCallback(deviceName, maybeBaseExpandedNodeName);
+      });
+      continueToCell.appendChild(continueToLink);
 
       tensorDataRow.appendChild(tensorNameCell);
       // tensorDataRow.appendChild(debugOpCell);
@@ -223,12 +242,39 @@ limitations under the License.
       tensorDataRow.appendChild(dtypeCell);
       tensorDataRow.appendChild(shapeCell);
       tensorDataRow.appendChild(valueCell);
+      tensorDataRow.appendChild(continueToCell);
+      tensorDataRow.setAttribute('nodeNameWithDevice', nodeNameWithDevice);
 
       if (isActive) {
-        tensorDataRow.setAttribute('class', 'active-tensor');
+        tensorDataRow.classList.add('active-tensor');
+        tensorDataRow.classList.add('highlighted');
       }
 
       Polymer.dom(this.$$('#tensor-data-table')).appendChild(tensorDataRow);
+    },
+
+    _highlight(nodeName) {
+      const table = Polymer.dom(this.$$('#tensor-data-table'));
+      const rowsToHighlight = [];
+      // First, remove highlight from all rows.
+      for (let i = 0; i < table.childNodes.length; ++i) {
+        const row = table.childNodes[i];
+        if (row.getAttribute != null) {
+          const nodeNameWithDevice = row.getAttribute('nodeNameWithDevice');
+          if (nodeNameWithDevice === nodeName) {
+            rowsToHighlight.push(row);
+          } else {
+            row.classList.remove('highlighted');
+          }
+        }
+      }
+      if (nodeName == null) {
+        return;
+      }
+      // Add highlight to the rows with matching node names.
+      for (let i = 0; i < rowsToHighlight.length; ++i) {
+        rowsToHighlight[i].classList.add('highlighted');
+      }
     },
   });
   </script>

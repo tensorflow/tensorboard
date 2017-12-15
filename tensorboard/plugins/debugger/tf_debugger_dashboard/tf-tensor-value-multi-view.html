@@ -43,6 +43,11 @@ limitations under the License.
     Polymer({
       is: 'tf-tensor-value-multi-view',
       properties: {
+        continueToCallback: {
+          type: Object,
+          value: null,
+        },
+
         _tensorViewCounter: {
           type: Number,
           value: 0
@@ -59,6 +64,9 @@ limitations under the License.
         viewCard.slicing = view.slicing;
         viewCard.timeIndices = view.timeIndices;
         viewCard.closeButtonCallback = this._createCloseButtonCallback(view.viewId);
+        viewCard.continueToButtonCallback = () => {
+          this.continueToCallback(view.deviceName, view.maybeBaseExpandedNodeName);
+        };
         multiViewContainer.appendChild(viewCard);
         viewCard.refresh();
       },
