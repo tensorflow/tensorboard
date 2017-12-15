@@ -46,44 +46,44 @@ logdir = '/tmp/custom_scalar_demo'
 with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
   # We only need to specify the layout once (instead of per step).
   layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
-    category=[
-      layout_pb2.Category(
-        title='losses',
-        chart=[
-            layout_pb2.Chart(
-                title='losses',
-                multiline=layout_pb2.MultilineChartContent(
-                  tag=[r'loss.*'],
-                )),
-            layout_pb2.Chart(
-                title='baz',
-                margin=layout_pb2.MarginChartContent(
-                  series=[
-                    layout_pb2.MarginChartContent.Series(
-                      value='loss/baz/scalar_summary',
-                      lower='baz_lower/scalar_summary',
-                      upper='baz_upper/scalar_summary'),
-                  ],
-                )), 
-        ]),
-      layout_pb2.Category(
-        title='trig functions',
-        chart=[
-            layout_pb2.Chart(
-                title='wave trig functions',
-                multiline=layout_pb2.MultilineChartContent(
-                  tag=[r'trigFunctions/cosine', r'trigFunctions/sine'],
-                )),
-            # The range of tangent is different. Lets give it its own chart.
-            layout_pb2.Chart(
-                title='tan',
-                multiline=layout_pb2.MultilineChartContent(
-                  tag=[r'trigFunctions/tangent'],
-                )),
-        ],
-        # This category we care less about. Lets make it initially closed.
-        closed=True),
-    ]))
+      category=[
+          layout_pb2.Category(
+              title='losses',
+              chart=[
+                  layout_pb2.Chart(
+                      title='losses',
+                      multiline=layout_pb2.MultilineChartContent(
+                        tag=[r'loss.*'],
+                      )),
+                  layout_pb2.Chart(
+                      title='baz',
+                      margin=layout_pb2.MarginChartContent(
+                          series=[
+                              layout_pb2.MarginChartContent.Series(
+                                  value='loss/baz/scalar_summary',
+                                  lower='baz_lower/scalar_summary',
+                                  upper='baz_upper/scalar_summary'),
+                          ],
+                      )), 
+            ]),
+          layout_pb2.Category(
+              title='trig functions',
+              chart=[
+                  layout_pb2.Chart(
+                      title='wave trig functions',
+                      multiline=layout_pb2.MultilineChartContent(
+                          tag=[r'trigFunctions/cosine', r'trigFunctions/sine'],
+                      )),
+                  # The range of tangent is different. Give it its own chart.
+                  layout_pb2.Chart(
+                      title='tan',
+                      multiline=layout_pb2.MultilineChartContent(
+                          tag=[r'trigFunctions/tangent'],
+                      )),
+              ],
+              # This category we care less about. Lets make it initially closed.
+              closed=True),
+      ]))
   writer.add_summary(layout_summary)
 
   for i in xrange(42):

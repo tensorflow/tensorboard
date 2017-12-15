@@ -43,7 +43,7 @@ class LayoutTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='mean layer biases',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'mean/layer\d+/biases'],
+                            tag=[r'mean/layer\d+/biases'],
                         )),
                 ]),
             layout_pb2.Category(
@@ -52,7 +52,7 @@ class LayoutTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='stddev layer weights',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'stddev/layer\d+/weights'],
+                            tag=[r'stddev/layer\d+/weights'],
                         )),
                     ]),
             layout_pb2.Category(
@@ -61,22 +61,22 @@ class LayoutTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='cross entropy',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'cross entropy'],
+                            tag=[r'cross entropy'],
                         )),
                     layout_pb2.Chart(
                         title='accuracy',
                         margin=layout_pb2.MarginChartContent(
                           series=[
-                            layout_pb2.MarginChartContent.Series(
-                              value='accuracy',
-                              lower='accuracy_lower_margin',
-                              upper='accuracy_upper_margin')
+                              layout_pb2.MarginChartContent.Series(
+                                  value='accuracy',
+                                  lower='accuracy_lower_margin',
+                                  upper='accuracy_upper_margin')
                           ]
                         )),
                     layout_pb2.Chart(
                         title='max layer weights',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'max/layer1/.*', r'max/layer2/.*'],
+                            tag=[r'max/layer1/.*', r'max/layer2/.*'],
                         )),
                 ],
                 closed=True)

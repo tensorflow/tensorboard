@@ -49,7 +49,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='cross entropy',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'cross entropy'],
+                            tag=[r'cross entropy'],
                         )),
                 ],
                 closed=True)
@@ -63,7 +63,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='mean layer biases',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'mean/layer0/biases', r'mean/layer1/biases'],
+                            tag=[r'mean/layer0/biases', r'mean/layer1/biases'],
                         )),
                 ]
             ),
@@ -73,7 +73,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='stddev layer weights',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'stddev/layer\d+/weights'],
+                            tag=[r'stddev/layer\d+/weights'],
                         )),
                 ]
             ),
@@ -86,12 +86,12 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                         title='cross entropy margin chart',
                         margin=layout_pb2.MarginChartContent(
                           series=[
-                            layout_pb2.MarginChartContent.Series(
-                              value='cross entropy',
-                              lower='cross entropy lower',
-                              upper='cross entropy upper'),
+                              layout_pb2.MarginChartContent.Series(
+                                  value='cross entropy',
+                                  lower='cross entropy lower',
+                                  upper='cross entropy upper'),
                           ],
-                        )), 
+                        )),
                 ]
             ),
         ]
@@ -166,16 +166,16 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='cross entropy',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'cross entropy'],
+                            tag=[r'cross entropy'],
                         )),
                     layout_pb2.Chart(
                         title='cross entropy margin chart',
                         margin=layout_pb2.MarginChartContent(
                           series=[
-                            layout_pb2.MarginChartContent.Series(
-                              value='cross entropy',
-                              lower='cross entropy lower',
-                              upper='cross entropy upper'),
+                              layout_pb2.MarginChartContent.Series(
+                                  value='cross entropy',
+                                  lower='cross entropy lower',
+                                  upper='cross entropy upper'),
                           ],
                         )),
                 ],
@@ -187,7 +187,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='mean layer biases',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'mean/layer0/biases', r'mean/layer1/biases'],
+                            tag=[r'mean/layer0/biases', r'mean/layer1/biases'],
                         )),
                 ]
             ),
@@ -197,7 +197,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='stddev layer weights',
                         multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'stddev/layer\d+/weights'],
+                            tag=[r'stddev/layer\d+/weights'],
                         )),
                 ]
             ),
