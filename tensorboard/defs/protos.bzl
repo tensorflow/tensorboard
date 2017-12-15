@@ -16,7 +16,7 @@ load("@protobuf//:protobuf.bzl", "cc_proto_library", "py_proto_library")
 
 def tb_proto_library(name, srcs = [], visibility = []):
   cc_proto_library(
-    name = name,
+    name = name + '_cc_proto',
     srcs = srcs,
     deps = ["@protobuf//:protobuf_proto"],
     protoc = "@protobuf//:protoc",
