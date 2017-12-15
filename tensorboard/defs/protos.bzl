@@ -13,8 +13,16 @@
 # limitations under the License.
 
 load("@protobuf//:protobuf.bzl", "py_proto_library")
+load("@protobuf//:protobuf.bzl", "cc_proto_library")
 
 def tb_proto_library(name, srcs = [], visibility = []):
+  cc_proto_library(
+    name,
+    srcs=srcs,
+    deps = [],
+    protoc = "@protobuf//:protoc",
+    visibility=visibility)
+  
   py_proto_library(
     name = name + "_py_pb2",
     srcs = srcs,
