@@ -46,7 +46,7 @@ before_install:
         ;;
     esac
 
-    pip install pylint
+    pip install pylint==1.8.1
     pip install futures==3.1.1
     pip install grpcio==1.6.3
 

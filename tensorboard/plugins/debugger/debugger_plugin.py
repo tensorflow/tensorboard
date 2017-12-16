@@ -344,7 +344,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
 
     if not file_paths:
       raise IOError(
-          'No events files found that matches the pattern %r.', pattern)
+          'No events files found that matches the pattern %r.' % pattern)
 
     # Sort by name (and thus by timestamp).
     file_paths.sort()
