@@ -216,8 +216,12 @@ export function panToNode(nodeName: String, svg, zoomG, d3zoom): boolean {
     return end < 0 || start > bound;
   };
   let svgRect = svg.getBoundingClientRect();
-  if (isOutsideOfBounds(pointTL.x, pointBR.x, svgRect.width) ||
-      isOutsideOfBounds(pointTL.y, pointBR.y, svgRect.height)) {
+
+  // Subtract to make sure that the node is not hidden behind the minimap.
+  const horizontalBound = svgRect.left + svgRect.width - 320;
+  const verticalBound = svgRect.top + svgRect.height - 150;
+  if (isOutsideOfBounds(pointTL.x, pointBR.x, horizontalBound) ||
+      isOutsideOfBounds(pointTL.y, pointBR.y, verticalBound)) {
     // Determine the amount to translate the graph in both X and Y dimensions in
     // order to center the selected node. This takes into account the position
     // of the node, the size of the svg scene, the amount the scene has been
@@ -225,14 +229,16 @@ export function panToNode(nodeName: String, svg, zoomG, d3zoom): boolean {
     // by this logic.
     let centerX = (pointTL.x + pointBR.x) / 2;
     let centerY = (pointTL.y + pointBR.y) / 2;
-    let dx = ((svgRect.width / 2) - centerX);
-    let dy = ((svgRect.height / 2) - centerY);
+    let dx = svgRect.left + svgRect.width / 2 - centerX;
+    let dy = svgRect.top + svgRect.height / 2 - centerY;
 
     // We translate by this amount. We divide the X and Y translations by the
     // scale to undo how translateBy scales the translations (in d3 v4).
     const svgTransform = d3.zoomTransform(svg);
     d3.select(svg).transition().duration(500).call(
-        d3zoom.translateBy, dx / svgTransform.k, dy / svgTransform.k);
+        d3zoom.translateBy,
+        dx / svgTransform.k,
+        dy / svgTransform.k);
 
     return true;
   }
