@@ -35,9 +35,8 @@ import time
 
 import numpy as np
 import portpicker  # pylint: disable=import-error
-import tensorflow as tf
-
-from tensorflow.python import debug as tf_debug
+import tensorflow as tf  # pylint: disable=wrong-import-order
+from tensorflow.python import debug as tf_debug  # pylint: disable=wrong-import-order
 
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib

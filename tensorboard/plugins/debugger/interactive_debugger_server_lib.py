@@ -320,7 +320,7 @@ class InteractiveDebuggerDataStreamHandler(
     """
     if not event.summary.value:
       tf.logging.info('The summary of the event lacks a value.')
-      return
+      return None
 
     # The node name property in the event proto is actually a watch key, which
     # is a concatenation of several pieces of data.
@@ -349,6 +349,7 @@ class InteractiveDebuggerDataStreamHandler(
                       event.summary.value[0].node_name)
       # TODO(cais): Support receiving and sending tensor value from front-end.
       return debug_service_pb2.EventReply()
+    return None
 
   def _is_debug_node_in_breakpoints(self, debug_node_key):
     node_name, output_slot, debug_op = debug_node_key.split(':')
