@@ -145,7 +145,7 @@ class DebuggerDataStreamHandler(
           ("A event with a health pill has an invalid node name and output "
            "slot combination, (i.e., an unexpected debug op): %r"),
           node_name_and_output_slot)
-      return None
+      return
 
     if self._session_run_index >= 0:
       event.step = self._session_run_index
