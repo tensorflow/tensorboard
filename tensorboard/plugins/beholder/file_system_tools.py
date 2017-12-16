@@ -53,12 +53,12 @@ def read_pickle(path, default=None):
     with tf.gfile.Open(path, 'rb') as pickle_file:
       result = pickle.load(pickle_file)
 
-  except (IOError, EOFError, ValueError, tf.errors.NotFoundError) as e:
+  except (IOError, EOFError, ValueError, tf.errors.NotFoundError):
     # TODO: log this somehow? Could swallow errors I don't intend.
     if default is not None:
       result = default
     else:
-      raise e
+      raise
 
   return result
 
