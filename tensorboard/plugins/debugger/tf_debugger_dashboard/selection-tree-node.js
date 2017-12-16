@@ -285,6 +285,9 @@ var tf_debugger_dashboard;
                 currentNode = currentNode.parent;
             }
         };
+        SelectionTreeNode.prototype.setLevelDom = function (levelDom) {
+            this.levelDom = levelDom;
+        };
         return SelectionTreeNode;
     }());
     tf_debugger_dashboard.SelectionTreeNode = SelectionTreeNode;
