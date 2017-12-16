@@ -18,7 +18,6 @@ def tb_proto_library(name, srcs = [], visibility = []):
   cc_proto_library(
     name = name + '_cc_proto',
     srcs = srcs,
-    deps = ["@protobuf//:protobuf_proto"],
     default_runtime = "@protobuf//:protobuf",
     protoc = "@protobuf//:protoc",
     visibility = visibility)
