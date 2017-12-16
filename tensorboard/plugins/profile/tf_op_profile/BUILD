@@ -32,6 +32,8 @@ tf_web_library(
     path = "/tf-op-profile",
     deps = [
         ":utils",
+        "@org_polymer_paper_slider",
+        "@org_polymer_paper_toggle_button",
     ],
 )
 
