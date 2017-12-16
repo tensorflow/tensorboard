@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# pylint: disable=ungrouped-imports, wrong-import-order
 import os
 import json
 import threading
@@ -27,7 +28,6 @@ import tensorflow as tf
 from werkzeug import wrappers
 from werkzeug import test as werkzeug_test
 
-# pylint: disable=ungrouped-imports, wrong-import-order
 from google.protobuf  import json_format
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
