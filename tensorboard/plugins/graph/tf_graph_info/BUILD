@@ -56,6 +56,7 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/iron-list:lib",
         "//third_party/javascript/polymer/v1/paper-icon-button:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
+        "//third_party/javascript/polymer/v1/paper-material:paper-material-html",
         "//third_party/javascript/polymer/v1/paper-slider:lib",
         "//third_party/javascript/polymer/v1/paper-spinner:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
