@@ -74,6 +74,12 @@ module tf.graph.scene {
   };
 
   /**
+   * The dimensions of the minimap including padding and margin.
+   */
+  const MINIMAP_BOX_WIDTH = 320;
+  const MINIMAP_BOX_HEIGHT = 150;
+
+  /**
    * A health pill encapsulates an overview of tensor element values. The value
    * field is a list of 12 numbers that shed light on the status of the tensor.
    * Visualized in health pills are the 3rd through 8th (inclusive) numbers of
@@ -218,8 +224,8 @@ export function panToNode(nodeName: String, svg, zoomG, d3zoom): boolean {
   let svgRect = svg.getBoundingClientRect();
 
   // Subtract to make sure that the node is not hidden behind the minimap.
-  const horizontalBound = svgRect.left + svgRect.width - 320;
-  const verticalBound = svgRect.top + svgRect.height - 150;
+  const horizontalBound = svgRect.left + svgRect.width - MINIMAP_BOX_WIDTH;
+  const verticalBound = svgRect.top + svgRect.height - MINIMAP_BOX_HEIGHT;
   if (isOutsideOfBounds(pointTL.x, pointBR.x, horizontalBound) ||
       isOutsideOfBounds(pointTL.y, pointBR.y, verticalBound)) {
     // Determine the amount to translate the graph in both X and Y dimensions in
