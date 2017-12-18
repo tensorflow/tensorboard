@@ -122,6 +122,18 @@ elif [[ "${PY_VERSION}" == 3 ]]; then
   pip install "${PIP_TMP_DIR}"/tensorflow_tensorboard*-py3-*.whl
 fi
 
+echo
+echo "Calling tensorboard public python APIs"
+echo
+
+# Check that we can now use TensorBoard's public python APIs as installed with
+# the pip package. To do this we must cd away from the bazel workspace directory
+# to one that doesn't have a local 'tensorboard' python module hierarchy.
+TEST_API_CALL="import tensorboard as tb; tb.summary.scalar_pb('test', 42)"
+echo "  python>>> $TEST_API_CALL"
+echo
+(cd "${VENV_TMP_DIR}" && python -c "$TEST_API_CALL")
+
 # Check tensorboard binary path.
 TB_BIN_PATH="${VENV_BIN_DIR}/tensorboard"
 if ! [[ -x "${TB_BIN_PATH}" ]]; then
@@ -136,7 +148,7 @@ tensorboard --host=localhost --port="${TEST_PORT}" --logdir="${TMP_LOGDIR}" \
 TB_PID=$!
 
 echo
-echo "waiting for tensorboard binary to start up..."
+echo "Waiting for tensorboard binary to start up..."
 echo
 
 # Wait until the binary has printed its serving URL so we know that it's
@@ -158,7 +170,7 @@ while true; do
 done
 
 echo
-echo "tensorboard binary (pid ${TB_PID}) running at ${TB_URL}"
+echo "Started tensorboard binary (pid ${TB_PID}) at ${TB_URL}"
 echo
 
 test_access_url() {
