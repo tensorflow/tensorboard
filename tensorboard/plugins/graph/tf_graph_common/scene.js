@@ -76,6 +76,11 @@ var tf;
                 BRIDGENODE: 'bridge',
                 ELLIPSISNODE: 'ellipsis'
             };
+            /**
+             * The dimensions of the minimap including padding and margin.
+             */
+            var MINIMAP_BOX_WIDTH = 320;
+            var MINIMAP_BOX_HEIGHT = 150;
             ;
             scene.healthPillEntries = [
                 {
@@ -180,8 +185,11 @@ var tf;
                     return end < 0 || start > bound;
                 };
                 var svgRect = svg.getBoundingClientRect();
-                if (isOutsideOfBounds(pointTL.x, pointBR.x, svgRect.width) ||
-                    isOutsideOfBounds(pointTL.y, pointBR.y, svgRect.height)) {
+                // Subtract to make sure that the node is not hidden behind the minimap.
+                var horizontalBound = svgRect.left + svgRect.width - MINIMAP_BOX_WIDTH;
+                var verticalBound = svgRect.top + svgRect.height - MINIMAP_BOX_HEIGHT;
+                if (isOutsideOfBounds(pointTL.x, pointBR.x, horizontalBound) ||
+                    isOutsideOfBounds(pointTL.y, pointBR.y, verticalBound)) {
                     // Determine the amount to translate the graph in both X and Y dimensions in
                     // order to center the selected node. This takes into account the position
                     // of the node, the size of the svg scene, the amount the scene has been
@@ -189,8 +197,8 @@ var tf;
                     // by this logic.
                     var centerX = (pointTL.x + pointBR.x) / 2;
                     var centerY = (pointTL.y + pointBR.y) / 2;
-                    var dx = ((svgRect.width / 2) - centerX);
-                    var dy = ((svgRect.height / 2) - centerY);
+                    var dx = svgRect.left + svgRect.width / 2 - centerX;
+                    var dy = svgRect.top + svgRect.height / 2 - centerY;
                     // We translate by this amount. We divide the X and Y translations by the
                     // scale to undo how translateBy scales the translations (in d3 v4).
                     var svgTransform = d3.zoomTransform(svg);
