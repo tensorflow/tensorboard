@@ -180,7 +180,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     Only file versions < 2 use this out-of-order discard logic. Later versions
     discard events based on the step value of SessionLog.START.
     """
-    self.skipTest("TODO: Implement event discarding for tensor events.")
     warnings = []
     self.stubs.Set(tf.logging, 'warn', warnings.append)
 
@@ -220,7 +219,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalarTensor('s1', wall_time=1, step=201, value=20)
     gen.AddScalarTensor('s1', wall_time=1, step=301, value=20)
     acc.Reload()
-    ## Check that we have discarded 200 and 300 from s1
+    ## Check that we have NOT discarded 200 and 300 from s1
     self.assertEqual([x.step for x in acc.Tensors('s1')],
                      [100, 200, 300, 101, 201, 301])
 
@@ -234,7 +233,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     Only file versions < 2 use this out-of-order discard logic. Later versions
     discard events based on the step value of SessionLog.START.
     """
-    self.skipTest("TODO: Implement event discarding for tensor events.")
     warnings = []
     self.stubs.Set(tf.logging, 'warn', warnings.append)
 
@@ -243,23 +241,25 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
     gen.AddEvent(tf.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
+    gen.AddScalarTensor('s2', wall_time=1, step=101, value=20)
     gen.AddScalarTensor('s1', wall_time=1, step=200, value=20)
+    gen.AddScalarTensor('s2', wall_time=1, step=201, value=20)
     gen.AddScalarTensor('s1', wall_time=1, step=300, value=20)
+    gen.AddScalarTensor('s2', wall_time=1, step=301, value=20)
     gen.AddScalarTensor('s1', wall_time=1, step=101, value=20)
+    gen.AddScalarTensor('s3', wall_time=1, step=101, value=20)
     gen.AddScalarTensor('s1', wall_time=1, step=201, value=20)
     gen.AddScalarTensor('s1', wall_time=1, step=301, value=20)
 
-    gen.AddScalarTensor('s2', wall_time=1, step=101, value=20)
-    gen.AddScalarTensor('s2', wall_time=1, step=201, value=20)
-    gen.AddScalarTensor('s2', wall_time=1, step=301, value=20)
-
     acc.Reload()
-    ## Check that we have discarded 200 and 300
+    ## Check that we have discarded 200 and 300 for s1
     self.assertEqual([x.step for x in acc.Tensors('s1')], [100, 101, 201, 301])
 
-    ## Check that s1 discards do not affect s2
+    ## Check that s1 discards do not affect s2 (written before out-of-order)
+    ## or s3 (written after out-of-order).
     ## i.e. check that only events from the out of order tag are discarded
     self.assertEqual([x.step for x in acc.Tensors('s2')], [101, 201, 301])
+    self.assertEqual([x.step for x in acc.Tensors('s3')], [101])
 
   def testOnlySummaryEventsTriggerDiscards(self):
     """Test that file version event does not trigger data purge."""
@@ -281,7 +281,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     but this logic can only be used for event protos which have the SessionLog
     enum, which was introduced to event.proto for file_version >= brain.Event:2.
     """
-    self.skipTest("TODO: Implement event discarding for tensor events.")
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
     gen.AddEvent(tf.Event(wall_time=0, step=1, file_version='brain.Event:2'))
