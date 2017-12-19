@@ -546,15 +546,15 @@ class EventAccumulator(object):
 
     num_expired = 0
     if by_tags:
-      tf.logging.warn('Purging event with tags: ' + ''.join(value.tag for value in event.summary.value))
       for value in event.summary.value:
         if value.tag in self.tensors_by_tag:
-          reservoir = self.tensors_by_tag[value.tag]
-          num_expired += reservoir.FilterItems(
+          tag_reservoir = self.tensors_by_tag[value.tag]
+          num_expired += tag_reservoir.FilterItems(
               _NotExpired, _TENSOR_RESERVOIR_KEY)
     else:
-      for reservoir in six.itervalues(self.tensors_by_tag):
-        num_expired += reservoir.FilterItems(_NotExpired, _TENSOR_RESERVOIR_KEY)
+      for tag_reservoir in six.itervalues(self.tensors_by_tag):
+        num_expired += tag_reservoir.FilterItems(
+            _NotExpired, _TENSOR_RESERVOIR_KEY)
     if num_expired > 0:
       purge_msg = _GetPurgeMessage(self.most_recent_step,
                                    self.most_recent_wall_time, event.step,
