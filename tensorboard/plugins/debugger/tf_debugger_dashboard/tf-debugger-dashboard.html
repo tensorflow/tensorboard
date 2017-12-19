@@ -127,7 +127,12 @@ limitations under the License.
               </template>
             </paper-menu>
           </paper-dropdown-menu>
-          <paper-spinner-lite class="spinner" id="top-right-spinner"></paper-spinner-lite>
+          <paper-spinner-lite
+            class="spinner"
+            id="top-right-spinner"
+            hidden="[[!_busy]]"
+            active="[[_busy]]">
+          </paper-spinner-lite>
           <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
@@ -146,7 +151,8 @@ limitations under the License.
           </template>
           <template is="dom-if" if="[[_isTopRightTensorValuesActive]]">
             <tf-tensor-value-multi-view
-              id="tensorValueMultiView">
+              id="tensorValueMultiView"
+              continue-to-callback="[[_createContinueToCallback()]]">
             </tf-tensor-value-multi-view>
           </template>
         </div>
@@ -155,7 +161,9 @@ limitations under the License.
           <div class="debugger-section-title">Tensor Value Overview</div>
           <tf-tensor-data-summary
             latest-tensor-data="[[_latestTensorData]]"
-            expand-handler="[[_createTensorDataExpandHandler()]]">
+            expand-handler="[[_createTensorDataExpandHandler()]]"
+            continue-to-callback="[[_createContinueToCallback()]]"
+            highlighted-node-name="[[_highlightNodeName]]">
           </tf-tensor-data-summary>
         </div>
       </div>
@@ -399,8 +407,13 @@ limitations under the License.
           notify: true,
         },
 
+        _highlightNodeName: {
+          type: String,
+          value: null,
+        },
+
         // What kind of entity to continue over. Possibilities:
-        // {'', 'SessionRun', 'tensor'}. TODO(cais): Implement tensor logic.
+        // {'', 'SessionRun', 'op'}.
         // '' is the default state, i.e., a state where the UI is not continuing
         // over anything.
         _continueToType: {
@@ -409,7 +422,7 @@ limitations under the License.
         },
         // The target of the continue-to action. For example, for _continueToType ==
         // 'SessionRun', this can be the session run string. For _continueToType ==
-        // 'tensor', this can be a debug tensor name.
+        // 'op', this can be a debug tensor name.
         _continueToTarget: {
           type: String,
           value: '',
@@ -431,8 +444,13 @@ limitations under the License.
         },
 
         _requestManager: {
-           type: Object,
-           value: () => new tf_backend.RequestManager(50),
+          type: Object,
+          value: () => new tf_backend.RequestManager(50),
+        },
+
+        _busy: {
+          type: Boolean,
+          value: false,
         },
       },
 
@@ -518,7 +536,10 @@ limitations under the License.
             this.set('_sessionRunSoleActive', false);
             const tensorName = nodeName + ':' + responseData['output_slot'];
             this.set('_latestTensorData', {
+              deviceName: deviceName,
               tensorName: tensorName,
+              nodeName: nodeName,
+              maybeBaseExpandedNodeName: maybeBaseExpandedNodeName,
               debugOp: responseData['debug_op'],
               dtype: responseData['dtype'],
               shape: responseData['shape'],
@@ -527,7 +548,7 @@ limitations under the License.
 
             this._maybeUpdateTensorValueViews(
                 tensorName, responseData['debug_op']);
-            this._setTopRightSpinnerState(false);
+            this.set('_busy', false);
           } else {
             console.error(
                 'Invalid long-polling response type: ', responseType);
@@ -540,6 +561,18 @@ limitations under the License.
             } else {
               this._clearContinueTo();
             }
+          } else if (this._continueToType === 'op') {
+            const deviceName = responseData['device_name'];
+            const maybeBaseExpandedNodeName = responseData[
+                'maybe_base_expanded_node_name'];
+            const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+            if (nodeNameWithDevice !== this._continueToTarget) {
+              this._step();
+            } else {
+              this._clearContinueTo();
+            }
+          } else if (this._continueToType != null && this._continueToType !== '') {
+            console.error('Invalid _continueToType:', this._continueToType);
           }
 
           // Long polling loop: initialite the next long polling.
@@ -700,10 +733,12 @@ limitations under the License.
         }
         this._setTopRightRuntimeGraphsToActive();
         this.$$('#graph').set('selectedNode', nodeName);
+        this.set('_highlightNodeName', deviceName + '/' + nodeName);
       },
       _createListNodeClickedHandler() {
         return((deviceName, nodeName) => {
           this._focusOnGraphNode(deviceName, nodeName);
+          this.set('_forceExpandNodeName', deviceName + '/' + nodeName);
         });
       },
       _createFeedFetchTargetClickedHandler() {
@@ -740,7 +775,10 @@ limitations under the License.
             const multiView = self.$$('#tensorValueMultiView');
             multiView.addView({
               viewId: self._createTensorViewId(),
+              deviceName: tensorData.deviceName,
               tensorName: tensorData.tensorName,
+              nodeName: tensorData.nodeName,
+              maybeBaseExpandedNodeName: tensorData.maybeBaseExpandedNodeName,
               debugOp: tensorData.debugOp,
               slicing: tf_debugger_dashboard.getDefaultSlicing(tensorData.shape),
               timeIndices: '-1',
@@ -762,18 +800,19 @@ limitations under the License.
         return [
           {
             title: (data) => {
-              return 'Expand and highlight in Node List';
+              return 'Expand and highlight';
             },
             action: (elem, d, i) => {
               const nodeName =
                   tf_debugger_dashboard.getCleanNodeName(elem.node.name);
-              this.set('_forceExpandNodeName',
-                       this._activeRuntimeGraphDeviceName + '/' + elem.node.name);
+              const nodeNameWithDevice =
+                  this._activeRuntimeGraphDeviceName + '/' + elem.node.name;
+              this.set('_forceExpandNodeName', nodeNameWithDevice);
+              this.set('_highlightNodeName', nodeNameWithDevice);
             },
           },
           {
             title: (data) => {
-              // TODO(cais): Make this 'Toggle breakpoint'.
               return 'Add breakpoint';
             },
             action: (elem, d, i) => {
@@ -783,6 +822,27 @@ limitations under the License.
                        this._activeRuntimeGraphDeviceName + '/' + elem.node.name);
             },
           },
+          {
+            title: (data) => {
+              return 'Continue to';
+            },
+            action: (elem, d, i) => {
+              if (['_Arg', '_Retval'].indexOf(elem.node.op) !== -1) {
+                this._showToast(
+                    'Cannot continue to node "' + elem.node.name +
+                    '", due to op type "' + elem.node.op + '".');
+                return;
+              }
+              const nodeName =
+                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
+              const nodeNameWithDevice =
+                  this._activeRuntimeGraphDeviceName + '/' + elem.node.name
+              this._requestBreakpointStateChange(nodeName, 0, 'DebugIdentity', 'break');
+              this.set('_forceExpandAndCheckNodeName', nodeNameWithDevice);
+              this._setContinueTo('op', nodeNameWithDevice);
+              this._step();
+            },
+          }
         ];
       },
 
@@ -816,7 +876,7 @@ limitations under the License.
         if (this._activeSessionRunKey == null) {
           return;
         }
-        this._setTopRightSpinnerState(true);
+        this.set('_busy', true);
 
         // First, check to see if any new device GraphDef(s) have arrived and if
         // so, retrieve them.
@@ -871,7 +931,20 @@ limitations under the License.
         this._continueToType = '';
         this._continueToTarget = '';
         this._continueToCounterTarget = -1;
-        this._setTopRightSpinnerState(false);
+        this.set('_busy', false);
+      },
+
+      _createContinueToCallback() {
+        return (deviceName, maybeBaseExpandedNodeName) => {
+          const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+          this._setContinueTo('op', nodeNameWithDevice);
+          this._step();
+          if (this._isTopRightRuntimeGraphsActive) {
+            this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
+          }
+          this.set('_forceExpandNodeName',
+                   deviceName + '/' + maybeBaseExpandedNodeName);
+        };
       },
 
       _topRightSelectedChanged(topRightSelected) {
@@ -916,7 +989,9 @@ limitations under the License.
         };
         const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
         const url = tf_backend.addParams(baseUrl, parameters);
+        this.set('_busy', true);
         this._requestManager.request(url).then(response => {
+          this.set('_busy', false);
           console.log('Breakpoint set_state response: ', response);
         });
       },
@@ -927,21 +1002,12 @@ limitations under the License.
           // No Session.run() has connected yet. Do not show the spinner(s) or
           // the progress bar(s).
           topRightProgressBar.setAttribute('value', 0);
-          this._setTopRightSpinnerState(false);
+          this.set('_busy', false);
         } else {
           topRightProgressBar.setAttribute('value', progress.value);
-          this._setTopRightSpinnerState(progress.value < 100);
+          this.set('_busy', progress.value < 100);
         }
       },
-
-      _setTopRightSpinnerState(isActive) {
-        const topRightSpinner = this.$$('#top-right-spinner');
-        if (isActive) {
-          topRightSpinner.setAttribute('active', true);
-        } else {
-          topRightSpinner.removeAttribute('active');
-        }
-      }
     });
 
     tf_tensorboard.registerDashboard({
