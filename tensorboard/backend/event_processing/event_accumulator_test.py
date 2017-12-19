@@ -514,7 +514,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalar('s1', wall_time=1, step=201, value=20)
     gen.AddScalar('s1', wall_time=1, step=301, value=20)
     acc.Reload()
-    ## Check that we have discarded 200 and 300 from s1
+    ## Check that we have NOT discarded 200 and 300 from s1
     self.assertEqual([x.step for x in acc.Scalars('s1')],
                      [100, 200, 300, 101, 201, 301])
 
