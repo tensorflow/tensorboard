@@ -120,7 +120,8 @@ limitations under the License.
   <template is="dom-if" if="[[_tagFilterInvalid]]">
     <div id="error-content">
       <iron-icon class="error-icon" icon="icons:error"></iron-icon>
-      [[_tagFilter]] is an invalid regular expression.
+      This regular expresion is invalid:<br>
+      <span class="invalid-regex">[[_tagFilter]]</span>
     </div>
   </template>
 
@@ -190,7 +191,14 @@ limitations under the License.
     }
 
     .error-icon {
+      clear: both;
+      display: block;
       fill: #fff;
+      margin: 0 auto 5px auto;
+    }
+    
+    .invalid-regex {
+      font-weight: bold;
     }
 
     #error-content ul {
@@ -495,18 +503,22 @@ limitations under the License.
             const obtainStep = datum => datum[1];
             const stepsMismatch = this._findStepMismatch(
                 tagsObject,
-                dataPoints.map(obtainStep),
+                scalarEvents.map(obtainStep),
                 lowerBounds.map(obtainStep),
                 upperBounds.map(obtainStep));
             if (stepsMismatch) {
               this.set('_stepsMismatch', stepsMismatch);
+              return;
             }
 
             // Create data points that the line chart can parse.
-            const dataPoints = scalarEvents.map(datum => ({
+            const obtainNumber = datum => datum[2];
+            const dataPoints = scalarEvents.map((datum, i) => ({
               wall_time: new Date(datum[0] * 1000),
               step: obtainStep(datum),
-              scalar: datum[2],
+              scalar: obtainNumber(datum),
+              lower: obtainNumber(lowerBounds[i]),
+              upper: obtainNumber(upperBounds[i]),
             }));
 
             // Compute the series name, which is based on both the run and the
@@ -520,7 +532,7 @@ limitations under the License.
               // This series already exists.
               series.setData(dataPoints);
             } else {
-              this._createNewDataSeries(
+              newMapping[seriesName] = this._createNewDataSeries(
                   run, tagsObject.value, seriesName, dataPoints);
             }
           });
@@ -535,8 +547,8 @@ limitations under the License.
         });
       },
       _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
-        if (lowerBounds.length != valueSteps.length ||
-            upperBounds.length != valueSteps.length) {
+        if (lowerSteps.length != valueSteps.length ||
+            upperSteps.length != valueSteps.length) {
           return {
             seriesObject: tagsObject,
             valueSteps: valueSteps,
@@ -569,12 +581,12 @@ limitations under the License.
         // Create a series with this name.
         series = new tf_custom_scalar_dashboard.DataSeries(
             run, tag, seriesName, dataPoints, lineChartSymbol);
-        newMapping[seriesName] = series;
 
         // Loop back to the beginning if we are out of symbols.
         const numSymbols = vz_line_chart.SYMBOLS_LIST.length;
         this._runToNextAvailableSymbolIndex[run] =
             (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
+        return series;
       },
       _updateChart(nameToDataSeries) {
         // Add new data series.
