@@ -167,6 +167,13 @@ Polymer({
     '_selectedNodeChanged(selectedNode)',
     '_selectedEdgeChanged(selectedEdge)',
   ],
+  /**
+   * Pans to a node. Assumes that the node exists.
+   * @param nodeName {string} The name of the node to pan to.
+   */
+  panToNode(nodeName) {
+    this.$$('tf-graph-scene').panToNode(nodeName);
+  },
   _statsChanged: function(stats, devicesForStats) {
     if (this.graphHierarchy) {
       if (stats && devicesForStats) {

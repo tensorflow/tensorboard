@@ -28,12 +28,13 @@ limitations under the License.
 <link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="tf-custom-scalar-card-style.html">
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
   chart, and providing UI affordances (such as buttons) for scalar data.
 -->
-<dom-module id="tf-custom-scalar-card">
+<dom-module id="tf-custom-scalar-margin-chart-card">
 <template>
   <h1>[[_titleDisplayString]]</h1>
   <div id="tf-line-chart-data-loader-container">
@@ -50,10 +51,12 @@ limitations under the License.
       active="[[active]]"
       data-url="[[_dataUrl]]"
       log-scale-active="[[_logScaleActive]]"
-      process-data="[[_createProcessDataFunction()]]"
+      process-data="[[_createProcessDataFunction(marginChartSeries)]]"
       color-scale="[[_colorScale]]"
       data-series="[[_dataSeriesStrings]]"
       symbol-function="[[_createSymbolFunction()]]"
+      tooltip-columns="[[_tooltipColumns]]"
+      fill-area="[[_fillArea]]"
     >
     </tf-line-chart-data-loader>
   </div>
@@ -98,6 +101,51 @@ limitations under the License.
       </div>
     </template>
   </div>
+
+  <template is="dom-if" if="[[_tagsWithNoData]]">
+    <div id="error-content">
+      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+      No data found for these tags:
+      <ul>
+        <template is="dom-repeat" items="[[_tagsWithNoData]]">
+          <li>[[item]]</li>
+        </template>
+      </ul>
+      <br>
+      Tags for the value, lower, and upper bounds of margin charts in the Layout
+      proto must match tags in the SCALARS dashboard.
+    </div>
+  </template>
+
+  <template is="dom-if" if="[[_tagFilterInvalid]]">
+    <div id="error-content">
+      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+      This regular expresion is invalid:<br>
+      <span class="invalid-regex">[[_tagFilter]]</span>
+    </div>
+  </template>
+
+  <template is="dom-if" if="[[_stepsMismatch]]">
+    <div id="error-content">
+      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+      The steps for value, lower, and upper tags do not match:
+      <ul>
+        <li>
+          <span class="tag-name">[[_stepsMismatch.seriesObject.value]]</span>:
+          [[_separateWithCommas(_stepsMismatch.valueSteps)]]
+        </li>
+        <li>
+          <span class="tag-name">[[_stepsMismatch.seriesObject.lower]]</span>:
+          [[_separateWithCommas(_stepsMismatch.lowerSteps)]]
+        </li>
+        <li>
+          <span class="tag-name">[[_stepsMismatch.seriesObject.upper]]</span>:
+          [[_separateWithCommas(_stepsMismatch.upperSteps)]]
+        </li>
+      </ul>
+    </div>
+  </template>
+  
   <div id="matches-container">
     <div id="matches-list-title">
       <template is="dom-if" if="[[_dataSeriesStrings.length]]">
@@ -132,68 +180,33 @@ limitations under the License.
   </div>
 
   </div>
+  <style include="tf-custom-scalar-card-style"></style>
   <style>
-    :host {
-      margin: 5px 10px;
-      display: inline-block;
-      width: 330px;
-      vertical-align: text-top;
+    #error-content {
+      background: #f00;
+      border-radius: 5px;
+      color: #fff;
+      margin: 10px 0 0 0;
+      padding: 10px;
     }
 
-    :host[_expanded] {
-      width: 100%;
+    .error-icon {
+      display: block;
+      fill: #fff;
+      margin: 0 auto 5px auto;
+    }
+    
+    .invalid-regex {
+      font-weight: bold;
     }
 
-    :host[_expanded] #tf-line-chart-data-loader-container {
-      height: 400px;
+    #error-content ul {
+      margin: 1px 0 0 0;
+      padding: 0 0 0 19px;
     }
 
-    h1 {
-      font-size: 19px;
-      font-weight: normal;
-    }
-
-    #tf-line-chart-data-loader-container {
-      height: 200px;
-      width: 100%;
-    }
-
-    #buttons {
-      display: flex;
-      flex-direction: row;
-    }
-
-    paper-icon-button {
-      color: #2196F3;
-      border-radius: 100%;
-      width: 32px;
-      height: 32px;
-      padding: 4px;
-    }
-
-    paper-icon-button[selected] {
-      background: var(--tb-ui-light-accent);
-    }
-
-    .download-links {
-      display: flex;
-      height: 32px;
-    }
-
-    .download-links a {
-      font-size: 10px;
-      align-self: center;
-      margin: 2px;
-    }
-
-    .download-links paper-dropdown-menu {
-      width: 100px;
-      --paper-input-container-label: {
-        font-size: 10px;
-      }
-      --paper-input-container-input: {
-        font-size: 10px;
-      }
+    .tag-name {
+      font-weight: bold;
     }
 
     #matches-list-title {
@@ -224,12 +237,13 @@ limitations under the License.
 <script src='tf-custom-scalar-helpers.js'></script>
 <script>
   Polymer({
-      is: 'tf-custom-scalar-card',
+      is: 'tf-custom-scalar-margin-chart-card',
       properties: {
         runs: Array,  // of String
 
         /**
-         * TODO: Add type.
+         * This property must take on values from the XType enum defined within
+         * the vz_line_chart component.
          */
         xType: String,
 
@@ -239,7 +253,10 @@ limitations under the License.
           readOnly: true,
         },
         title: String,
-        tagRegexes: Array,
+        // An array of JSON objects that represent MarginChartContent.Series
+        // protos. The properties of these series differ from those of data
+        // series used by the tf-line-chart-data-loader component.
+        marginChartSeries: Array,
         ignoreYOutliers: Boolean,
         requestManager: Object,
         showDownloadLinks: Boolean,
@@ -260,8 +277,13 @@ limitations under the License.
          */
         _tagFilter: {
           type: String,
-          computed: '_computeTagFilter(tagRegexes)',
+          computed: '_computeTagFilter(marginChartSeries)',
         },
+
+        /**
+         * Whether the tag filter was deemed to be invalid.
+         */
+        _tagFilterInvalid: Boolean,
 
         /**
          * Maps from the name of the data series to the DataSeries object.
@@ -317,8 +339,76 @@ limitations under the License.
         },
         _titleDisplayString: {
           type: String,
-          computed: '_computeTitleDisplayString(title, _tagFilter)',
+          computed: '_computeTitleDisplayString(title)',
         },
+        _fillArea: {
+          type: Object,
+          readOnly: true,
+          value: {
+              lowerAccessor: d => d.lower,
+              higherAccessor: d => d.upper,
+          },
+        },
+        _tooltipColumns: {
+          type: Array,
+          value: function() {
+            const valueFormatter = vz_line_chart.multiscaleFormatter(
+                vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+            const formatValueOrNaN =
+                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+
+            return [
+              {
+                title: 'Name',
+                evaluate: (d) => d.dataset.metadata().name,
+              },
+              {
+                title: 'Smoothed',
+                evaluate: (d, statusObject) => formatValueOrNaN(
+                    statusObject.smoothingEnabled ? d.datum.smoothed :
+                                                    d.datum.scalar),
+              },
+              {
+                title: 'Value',
+                evaluate: (d) => formatValueOrNaN(d.datum.scalar),
+              },
+              {
+                title: 'Lower Margin',
+                evaluate: (d) => formatValueOrNaN(d.datum.lower),
+              },
+              {
+                title: 'Upper Margin',
+                evaluate: (d) => formatValueOrNaN(d.datum.upper),
+              },
+              {
+                title: 'Step',
+                evaluate: (d) => vz_line_chart.stepFormatter(d.datum.step),
+              },
+              {
+                title: 'Time',
+                evaluate: (d) => vz_line_chart.timeFormatter(d.datum.wall_time),
+              },
+              {
+                title: 'Relative',
+                evaluate: (d) => vz_line_chart.relativeFormatter(
+                    vz_line_chart.relativeAccessor(d.datum, -1, d.dataset)),
+              },
+            ];
+          }
+        },
+        _tagsWithNoData: String,
+        /**
+         * This field is only set if data retrieved from the server exhibits a
+         * step mismatch: if the lists of values, lower bounds, and upper bounds
+         * do not match in step. If set, this object has these properties:
+         * 
+         * seriesObject: An object that represents a MarginChartContent.Series
+         *     proto.
+         * valueSteps: A list of steps (numbers) for the values.
+         * lowerSteps: A list of steps (numbers) for the lower bounds.
+         * upperSteps: A list of steps (numbers) for the upper bounds.
+         */
+        _stepsMismatch: Object,
       },
       observers: [
         '_updateChart(_nameToDataSeries)',
@@ -365,60 +455,126 @@ limitations under the License.
       _computeXComponentsCreationMethod(xType) {
         return () => vz_line_chart.getXComponents(xType);
       },
-      _createProcessDataFunction() {
+      _createProcessDataFunction(marginChartSeries) {
         // This function is called when data is received from the backend.
         return ((scalarChart, run, data) => {
-          if (data.regex_valid) {
-            // The user's regular expression was valid.
-            // Incorporate these newly loaded values.
-            const newMapping = _.clone(this._nameToDataSeries);
-            _.forOwn(data.tag_to_events, (scalarEvents, tag) => {
-              const data = scalarEvents.map(datum => ({
-                wall_time: new Date(datum[0] * 1000),
-                step: datum[1],
-                scalar: datum[2],
-              }));
-
-              const seriesName = tf_custom_scalar_dashboard.generateDataSeriesName(
-                  run, tag);
-              let series = newMapping[seriesName];
-
-              if (series) {
-                // This series already exists.
-                series.setData(data);
-              } else {
-                if (_.isUndefined(this._runToNextAvailableSymbolIndex[run])) {
-                  // The run has not been seen before. Define the next available
-                  // marker index.
-                  this._runToNextAvailableSymbolIndex[run] = 0;
-                }
-
-                // Every data series within a run has a unique symbol.
-                const lineChartSymbol = vz_line_chart.SYMBOLS_LIST[
-                    this._runToNextAvailableSymbolIndex[run]];
-
-                // Create a series with this name.
-                series = new tf_custom_scalar_dashboard.DataSeries(
-                    run,
-                    tag,
-                    seriesName,
-                    data,
-                    lineChartSymbol);
-                newMapping[seriesName] = series;
-
-                // Loop back to the beginning if we are out of symbols.
-                const numSymbols = vz_line_chart.SYMBOLS_LIST.length;
-                this._runToNextAvailableSymbolIndex[run] =
-                    (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
-              }
-            });
-
-            this.set('_nameToDataSeries', newMapping);
-          } else {
-            // The user's regular expression was invalid.
-            // TODO(chihuahua): Handle this.
+          if (!data.regex_valid) {
+            // The regular expression is constructed from frontend logic that
+            // pieces together different tags. Hence, this case should never be
+            // reached if the dashboard behaves correctly.
+            this.set('_tagFilterInvalid', true);
+            return;
           }
+
+          // The user's regular expression was valid.
+          // Incorporate these newly loaded values.
+          const newMapping = _.clone(this._nameToDataSeries);
+          const tagsNotFound = [];
+          _.forEach(marginChartSeries, tagsObject => {
+            let tagNotFound = false;
+            const scalarEvents = data.tag_to_events[tagsObject.value];
+            const lowerBounds = data.tag_to_events[tagsObject.lower];
+            const upperBounds = data.tag_to_events[tagsObject.upper];
+
+            // Make sure that data is found for each of the tags.
+            if (_.isUndefined(scalarEvents)) {
+              tagsNotFound.push(tagsObject.value);
+              tagNotFound = true;
+            }
+            if (_.isUndefined(lowerBounds)) {
+              tagsNotFound.push(tagsObject.lower);
+              tagNotFound = true;
+            }
+            if (_.isUndefined(upperBounds)) {
+              tagsNotFound.push(tagsObject.upper);
+              tagNotFound = true;
+            }
+
+            // At least one of the tags lacks data. We terminate early because
+            // the line chart requires all 3 pieces of data (value, lower bound,
+            // and upper bound).
+            if (tagNotFound) {
+              return;
+            }
+
+            // Make sure that steps for all the lists correspond with each
+            // other. Otherwise, display an error message.
+            const obtainStep = datum => datum[1];
+            const stepsMismatch = this._findStepMismatch(
+                tagsObject,
+                scalarEvents.map(obtainStep),
+                lowerBounds.map(obtainStep),
+                upperBounds.map(obtainStep));
+            if (stepsMismatch) {
+              this.set('_stepsMismatch', stepsMismatch);
+              return;
+            }
+
+            // Create data points that the line chart can parse.
+            const obtainNumber = datum => datum[2];
+            const dataPoints = scalarEvents.map((datum, i) => ({
+              wall_time: new Date(datum[0] * 1000),
+              step: obtainStep(datum),
+              scalar: obtainNumber(datum),
+              lower: obtainNumber(lowerBounds[i]),
+              upper: obtainNumber(upperBounds[i]),
+            }));
+
+            // Compute the series name, which is based on both the run and the
+            // tag of the value.
+            const seriesName =
+                tf_custom_scalar_dashboard.generateDataSeriesName(
+                    run, tagsObject.value);
+            let series = newMapping[seriesName];
+
+            if (series) {
+              // This series already exists.
+              series.setData(dataPoints);
+            } else {
+              newMapping[seriesName] = this._createNewDataSeries(
+                  run, tagsObject.value, seriesName, dataPoints);
+            }
+          });
+
+          if (tagsNotFound.length) {
+            // At least 1 tag could not be found. Show an error message.
+            this.set('_tagsWithNoData', tagsNotFound);
+          }
+
+          this.set('_nameToDataSeries', newMapping);
         });
+      },
+      _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
+        if (_.isEqual(lowerSteps, valueSteps) &&
+            _.isEqual(upperSteps, valueSteps)) {
+          // There is no mismatch.
+          return null;
+        }
+        return {
+          seriesObject: tagsObject,
+          valueSteps: valueSteps,
+          lowerSteps: lowerSteps,
+          upperSteps: upperSteps,
+        };
+      },
+      _createNewDataSeries(run, tag, seriesName, dataPoints) {
+        // If the run has not been seen before, define the next
+        // available marker index.
+        this._runToNextAvailableSymbolIndex[run] |= 0;
+
+        // Every data series within a run has a unique symbol.
+        const lineChartSymbol = vz_line_chart.SYMBOLS_LIST[
+            this._runToNextAvailableSymbolIndex[run]];
+
+        // Create a series with this name.
+        series = new tf_custom_scalar_dashboard.DataSeries(
+            run, tag, seriesName, dataPoints, lineChartSymbol);
+
+        // Loop back to the beginning if we are out of symbols.
+        const numSymbols = vz_line_chart.SYMBOLS_LIST.length;
+        this._runToNextAvailableSymbolIndex[run] =
+            (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
+        return series;
       },
       _updateChart(nameToDataSeries) {
         // Add new data series.
@@ -456,12 +612,17 @@ limitations under the License.
       _determineSymbol(nameToDataSeries, seriesName) {
         return nameToDataSeries[seriesName].getSymbol().character;
       },
-      _computeTagFilter(tagRegexes) {
-        if (tagRegexes.length === 1) {
-          return tagRegexes[0];
-        }
+      _computeTagFilter(marginChartSeries) {
+        const tags = _.flatten(
+            marginChartSeries.map(
+                series => [series.value, series.lower, series.upper]));
+        const escapedTags = tags.map(
+            r => '(' + this._escapeRegexCharacters(r) + ')');
         // Combine the different regexes into a single regex.
-        return tagRegexes.map(r => '(' + r + ')').join('|');
+        return escapedTags.join('|');
+      },
+      _escapeRegexCharacters(stringValue) {
+        return stringValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       },
       _getToggleMatchesIcon(matchesListOpened) {
         return matchesListOpened ? 'expand-less' : 'expand-more';
@@ -469,9 +630,13 @@ limitations under the License.
       _toggleMatchesOpen() {
         this.set('_matchesListOpened', !this._matchesListOpened);
       },
-      _computeTitleDisplayString(title, tagFilter) {
-        // If no title is provided, use the tag filter.
-        return title || tagFilter;
+      _computeTitleDisplayString(title) {
+        // If no title is provided, use the tag filter, which is a combination
+        // of the tags for the value, lower, and upper fields of each series.
+        return title || 'untitled';
+      },
+      _separateWithCommas(numbers) {
+        return numbers.join(', ');
       },
   });
 </script>

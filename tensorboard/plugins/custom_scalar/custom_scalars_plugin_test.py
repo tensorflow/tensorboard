@@ -48,7 +48,9 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                 chart=[
                     layout_pb2.Chart(
                         title='cross entropy',
-                        tag=[r'cross entropy']),
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'cross entropy'],
+                        )),
                 ],
                 closed=True)
             ]
@@ -60,25 +62,39 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                 chart=[
                     layout_pb2.Chart(
                         title='mean layer biases',
-                        tag=[r'mean/layer0/biases', r'mean/layer1/biases'])
-                ]),
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'mean/layer0/biases', r'mean/layer1/biases'],
+                        )),
+                ]
+            ),
             layout_pb2.Category(
                 title='std weights',
                 chart=[
                     layout_pb2.Chart(
                         title='stddev layer weights',
-                        tag=[r'stddev/layer\d+/weights'])
-                    ]),
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'stddev/layer\d+/weights'],
+                        )),
+                ]
+            ),
             # A category with this name is also present in a layout for a
             # different run (the logdir run)
             layout_pb2.Category(
                 title='cross entropy',
                 chart=[
                     layout_pb2.Chart(
-                        title='cross entropy 2',
-                        tag=[r'cross entropy 2']),
-                ])
-            ]
+                        title='cross entropy margin chart',
+                        margin=layout_pb2.MarginChartContent(
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='cross entropy',
+                                    lower='cross entropy lower',
+                                    upper='cross entropy upper'),
+                            ],
+                        )),
+                ]
+            ),
+        ]
     )
 
     # Generate test data.
@@ -142,35 +158,50 @@ class CustomScalarsPluginTest(tf.test.TestCase):
     json_format.Parse(self.plugin.layout_impl(), parsed_layout)
     correct_layout = layout_pb2.Layout(
         category=[
+            # A category with this name is also present in a layout for a
+            # different run (the logdir run)
             layout_pb2.Category(
                 title='cross entropy',
                 chart=[
-                    # Note that the "cross entropy 2" chart from layout for run
-                    # foo is now merged within the existing "cross entropy"
-                    # category because the categories have the same names.
                     layout_pb2.Chart(
                         title='cross entropy',
-                        tag=[r'cross entropy']),
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'cross entropy'],
+                        )),
                     layout_pb2.Chart(
-                        title='cross entropy 2',
-                        tag=[r'cross entropy 2']),
+                        title='cross entropy margin chart',
+                        margin=layout_pb2.MarginChartContent(
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='cross entropy',
+                                    lower='cross entropy lower',
+                                    upper='cross entropy upper'),
+                            ],
+                        )),
                 ],
-                closed=True),
+                closed=True,
+            ),
             layout_pb2.Category(
                 title='mean biases',
                 chart=[
                     layout_pb2.Chart(
                         title='mean layer biases',
-                        tag=[r'mean/layer0/biases', r'mean/layer1/biases'])
-                ]),
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'mean/layer0/biases', r'mean/layer1/biases'],
+                        )),
+                ]
+            ),
             layout_pb2.Category(
                 title='std weights',
                 chart=[
                     layout_pb2.Chart(
                         title='stddev layer weights',
-                        tag=[r'stddev/layer\d+/weights'])
-                    ]),
-            ]
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'stddev/layer\d+/weights'],
+                        )),
+                ]
+            ),
+        ]
     )
     self.assertProtoEquals(correct_layout, parsed_layout)
 

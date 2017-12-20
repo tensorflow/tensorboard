@@ -85,6 +85,12 @@ with tf.name_scope('loss'):
   summary_lib.scalar('foo', tf.pow(0.9, step))
   summary_lib.scalar('bar', tf.pow(0.85, step + 2))
 
+# Log metric baz as well as upper and lower bounds for making a margin chart.
+middle_baz_value = step + 4 * tf.random_uniform() - 2
+summary_lib.scalar('baz', middle_baz_value)
+summary_lib.scalar('baz_lower', middle_baz_value - 0.3 - tf.random_uniform())
+summary_lib.scalar('baz_upper', middle_baz_value + 0.3 + tf.random_uniform())
+
 with tf.name_scope('trigFunctions'):
   summary_lib.scalar('cosine', tf.cos(step))
   summary_lib.scalar('sine', tf.sin(step))
@@ -120,7 +126,7 @@ with tf.Session() as sess, tf.summary.FileWriter('/tmp/logdir') as writer:
 
   for i in xrange(42):
     summary = sess.run(merged_summary, feed_dict={step: i})
-    writer.add_summary(summary, global_step=step)
+    writer.add_summary(summary, global_step=i)
 ```
 
 ## The Dashboard UI

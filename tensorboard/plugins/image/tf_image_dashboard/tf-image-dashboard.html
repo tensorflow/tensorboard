@@ -156,7 +156,7 @@ TensorFlow run.
       .resettable-slider-container paper-button {
         flex-grow: 0;
       }
-      paper-button[disabled] {
+      .resettable-slider-container paper-button[disabled] {
         background-color: unset;
       }
       .x-button {
@@ -195,6 +195,16 @@ TensorFlow run.
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
         _actualSize: Boolean,
+        _defaultBrightnessAdjustment: {
+          type: Number,
+          value: 1,
+          readOnly: true,
+        },
+        _defaultContrastPercentage: {
+          type: Number,
+          value: 100,
+          readOnly: true,
+        },
         _brightnessAdjustment: {
           type: Number,
           value: 1,
@@ -261,16 +271,16 @@ TensorFlow run.
       },
 
       _resetBrightness() {
-        this._brightnessAdjustment = 1;
+        this._brightnessAdjustment = this._defaultBrightnessAdjustment;
       },
       _resetContrast() {
-        this._contrastPercentage = 100;
+        this._contrastPercentage = this._defaultContrastPercentage;
       },
       _computeBrightnessIsDefault(brightnessAdjustment) {
-        return brightnessAdjustment === 1;
+        return brightnessAdjustment === this._defaultBrightnessAdjustment;
       },
       _computeContrastIsDefault(contrastPercentage) {
-        return contrastPercentage === 100;
+        return contrastPercentage === this._defaultContrastPercentage;
       },
 
       _makeCategories(
