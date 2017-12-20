@@ -90,7 +90,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                                     value='cross entropy',
                                     lower='cross entropy lower',
                                     upper='cross entropy upper'),
-                          ],
+                            ],
                         )),
                 ]
             ),
