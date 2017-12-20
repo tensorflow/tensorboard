@@ -85,11 +85,11 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='cross entropy margin chart',
                         margin=layout_pb2.MarginChartContent(
-                          series=[
-                              layout_pb2.MarginChartContent.Series(
-                                  value='cross entropy',
-                                  lower='cross entropy lower',
-                                  upper='cross entropy upper'),
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='cross entropy',
+                                    lower='cross entropy lower',
+                                    upper='cross entropy upper'),
                           ],
                         )),
                 ]
@@ -171,12 +171,12 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='cross entropy margin chart',
                         margin=layout_pb2.MarginChartContent(
-                          series=[
-                              layout_pb2.MarginChartContent.Series(
-                                  value='cross entropy',
-                                  lower='cross entropy lower',
-                                  upper='cross entropy upper'),
-                          ],
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='cross entropy',
+                                    lower='cross entropy lower',
+                                    upper='cross entropy upper'),
+                            ],
                         )),
                 ],
                 closed=True,

@@ -66,12 +66,12 @@ class LayoutTest(tf.test.TestCase):
                     layout_pb2.Chart(
                         title='accuracy',
                         margin=layout_pb2.MarginChartContent(
-                          series=[
-                              layout_pb2.MarginChartContent.Series(
-                                  value='accuracy',
-                                  lower='accuracy_lower_margin',
-                                  upper='accuracy_upper_margin')
-                          ]
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='accuracy',
+                                    lower='accuracy_lower_margin',
+                                    upper='accuracy_upper_margin')
+                            ]
                         )),
                     layout_pb2.Chart(
                         title='max layer weights',

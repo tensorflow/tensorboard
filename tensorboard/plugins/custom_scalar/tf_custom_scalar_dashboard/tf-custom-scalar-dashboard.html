@@ -139,14 +139,14 @@ layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
               multiline=layout_pb2.MultilineChartContent(
                 tag=[r'trigFunctions/cosine', r'trigFunctions/sine'],
               )),
-          # The range of tangent is different. Lets give it its own chart.
+          # The range of tangent is different. Let's give it its own chart.
           layout_pb2.Chart(
               title='tan',
               multiline=layout_pb2.MultilineChartContent(
                 tag=[r'trigFunctions/tangent'],
               )),
       ],
-      # This category we care less about. Lets make it initially closed.
+      # This category we care less about. Let's make it initially closed.
       closed=True),
   ]))
 writer.add_summary(layout_summary)
