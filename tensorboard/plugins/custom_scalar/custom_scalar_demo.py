@@ -54,7 +54,7 @@ with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
                   layout_pb2.Chart(
                       title='losses',
                       multiline=layout_pb2.MultilineChartContent(
-                        tag=[r'loss.*'],
+                          tag=[r'loss.*'],
                       )),
                   layout_pb2.Chart(
                       title='baz',
@@ -66,7 +66,7 @@ with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
                                   upper='baz_upper/scalar_summary'),
                           ],
                       )),
-            ]),
+              ]),
           layout_pb2.Category(
               title='trig functions',
               chart=[
