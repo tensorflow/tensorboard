@@ -33,8 +33,9 @@ with tf.name_scope('loss'):
   middle_baz_value = step + 4 * tf.random_uniform([]) - 2
   summary_lib.scalar('baz', middle_baz_value)
 
-summary_lib.scalar('baz_lower', middle_baz_value - 0.3 - tf.random_uniform([]))
-summary_lib.scalar('baz_upper', middle_baz_value + 0.3 + tf.random_uniform([]))
+with tf.name_scope('bazMargins'):
+  summary_lib.scalar('lower', middle_baz_value - 0.3 - tf.random_uniform([]))
+  summary_lib.scalar('upper', middle_baz_value + 0.3 + tf.random_uniform([]))
 
 with tf.name_scope('trigFunctions'):
   summary_lib.scalar('cosine', tf.cos(step))
@@ -62,8 +63,8 @@ with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
                           series=[
                               layout_pb2.MarginChartContent.Series(
                                   value='loss/baz/scalar_summary',
-                                  lower='baz_lower/scalar_summary',
-                                  upper='baz_upper/scalar_summary'),
+                                  lower='bazMargins/lower/scalar_summary',
+                                  upper='bazMargins/upper/scalar_summary'),
                           ],
                       )),
               ]),
