@@ -15,6 +15,7 @@ package_group(
     packages = ["//tensorboard/..."],
 )
 
+# The standard TensorBoard binary that serves the webapp.
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
@@ -25,6 +26,19 @@ py_binary(
         ":default",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+# The public TensorBoard python library, bundled with the pip package and
+# available via 'import tensorboard as tb' once installed.
+py_library(
+    name = "lib",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":lazy",
+        ":summary",
     ],
 )
 
@@ -309,7 +323,7 @@ py_test(
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":summary",
+        ":lib",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -325,4 +339,10 @@ py_library(
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
+)
+
+py_library(
+    name = "lazy",
+    srcs = ["lazy.py"],
+    srcs_version = "PY2AND3",
 )

@@ -21,6 +21,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
@@ -98,14 +99,7 @@ TensorFlow run.
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
-          <paper-input
-            no-label-float
-            label="Filter tags (regular expressions supported)"
-            value="{{_tagFilter}}"
-            class="search-input"
-          >
-            <iron-icon prefix icon="search"></iron-icon>
-          </paper-input>
+          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
               <tf-paginated-view
@@ -178,15 +172,16 @@ TensorFlow run.
           type: Number,
           value: 100,
         },
+        _tagFilter: String,
 
-        _tagFilter: {
-          type: String,  // upward bound from paper-input
-          value: '',
-        },
+        // Categories must only be computed after _dataNotFound is found to be
+        // true and then polymer DOM templating responds to that finding. We
+        // thus use this property to guard when categories are computed.
+        _categoriesDomReady: Boolean,
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter)',
+            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
         },
 
         _requestManager: {
@@ -214,6 +209,10 @@ TensorFlow run.
           const tags = tf_backend.getTags(runToTag);
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTagInfo', runToTagInfo);
+          this.async(() => {
+            // See the comment above `_categoriesDomReady`.
+            this.set('_categoriesDomReady', true);
+          });
         });
       },
       _reloadImages() {
@@ -222,7 +221,8 @@ TensorFlow run.
         });
       },
 
-      _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
+      _makeCategories(
+          runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
         const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
         const baseCategories =
           tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);

@@ -1113,10 +1113,15 @@ Polymer({
       this._updateNodeState(selectedNode);
     }
 
-    if (tf.graph.scene.panToNode(selectedNode, this.$.svg, this.$.root,
-        this._zoom)) {
-      this._zoomed = true;
-    }
+    // Give time for any expanding to finish before panning to a node.
+    // Otherwise, the pan will be computed from incorrect measurements.
+    setTimeout(() => {
+      const zoomed = tf.graph.scene.panToNode(
+          selectedNode, this.$.svg, this.$.root, this._zoom);
+      if (zoomed) {
+        this._zoomed = true;
+      }
+    }, tf.graph.layout.PARAMS.animation.duration);
   },
   _highlightedNodeChanged: function(highlightedNode, oldHighlightedNode) {
     if (highlightedNode === oldHighlightedNode) {

@@ -19,6 +19,8 @@ export let MetadataCardPolymer = PolymerElement({
   is: 'vz-projector-metadata-card',
   properties: {
     hasMetadata: {type: Boolean, value: false},
+    isCollapsed: {type: Boolean, value: false},
+    collapseIcon: {type: String, value: 'expand-less'},
     metadata: {type: Array},
     label: String
   }
@@ -26,34 +28,19 @@ export let MetadataCardPolymer = PolymerElement({
 
 export class MetadataCard extends MetadataCardPolymer {
   hasMetadata: boolean;
+  isCollapsed: boolean;
+  collapseIcon: string;
   metadata: Array<{key: string, value: string}>;
   label: string;
 
   private labelOption: string;
   private pointMetadata: PointMetadata;
 
-  private expandLessButton: HTMLButtonElement;
-  private expandMoreButton: HTMLButtonElement;
-
-  ready() {
-    this.expandLessButton =
-        this.querySelector('#expand-less') as HTMLButtonElement;
-    this.expandMoreButton =
-        this.querySelector('#expand-more') as HTMLButtonElement;
-  }
-  /** Handles a click on the expand more icon. */
-  _expandMore() {
+  /** Handles toggle of metadata-container. */
+  _toggleMetadataContainer() {
     (this.$$('#metadata-container') as any).toggle();
-
-    this.expandMoreButton.style.display = 'none';
-    this.expandLessButton.style.display = '';
-  }
-
-  /** Handles a click on the expand less icon. */
-  _expandLess() {
-    (this.$$('#metadata-container') as any).toggle();
-    this.expandMoreButton.style.display = '';
-    this.expandLessButton.style.display = 'none';
+    this.isCollapsed = !this.isCollapsed;
+    this.set('collapseIcon', this.isCollapsed ? 'expand-more' : 'expand-less');
   }
 
   updateMetadata(pointMetadata?: PointMetadata) {

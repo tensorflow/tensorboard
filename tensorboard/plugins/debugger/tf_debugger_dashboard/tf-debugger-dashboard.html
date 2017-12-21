@@ -1,0 +1,1019 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-graph/tf-graph.html">
+<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="tf-debugger-initial-dialog.html">
+<link rel="import" href="tf-op-selector.html">
+<link rel="import" href="tf-session-runs-view.html">
+<link rel="import" href="tf-tensor-data-summary.html">
+<link rel="import" href="tf-tensor-value-multi-view.html">
+
+<dom-module id="tf-debugger-dashboard">
+  <template>
+    <paper-toast id="toast" text="" always-on-top></paper-toast>
+    <paper-dialog with-backdrop id="continueDialog" width="320">
+      <h2>Continue...</h2>
+      <paper-input
+        id="continueNum"
+        label="Number of times (including current one):"
+        always-float-label
+        type="number"
+        min="1"
+        step="1"
+        value="[[_continueNum]]"
+        on-change="_continueNumChanged"
+      ></paper-input>
+      <paper-button raised class="continue-go-button" on-click="_continueGo">
+        <span>Go</span>
+      </paper-button>
+    </paper-dialog>
+    <tf-debugger-initial-dialog
+      id="initialDialog"
+    >
+    </tf-debugger-initial-dialog>
+    <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
+      widget that supports showing both text, curves and images. -->
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div id="node-entries" class="node-entries">
+          <div class="debugger-section-title">Node List</div>
+          <tf-op-selector
+              debug-watches=[[_debugWatches]]
+              debug-watch-change="[[_createDebugWatchChangeHandler()]]"
+              node-clicked="[[_createListNodeClickedHandler()]]"
+              force-expand-and-check-node-name="[[_forceExpandAndCheckNodeName]]"
+              force-expand-node-name="[[_forceExpandNodeName]]">
+          </tf-op-selector>
+        </div>
+        <div>
+          <tf-session-runs-view
+            id="sessionRunsView"
+            latest-session-run="[[_latestSessionRun]]"
+            session-run-key-to-device-names="[[_sessionRunKey2DeviceNames]]"
+            sole-active="[[_sessionRunSoleActive]]"
+            node-or-tensor-clicked="[[_createFeedFetchTargetClickedHandler()]]">
+          </tf-session-runs-view>
+        </div>
+        <div class="buttons-container">
+          <paper-button raised class="continue-button" on-click="_step">
+              <span>[[_stepButtonText]]</span>
+          </paper-button>
+          <paper-button
+              raised
+              class="continue-button"
+              on-click="_openContinueDialog">
+              <span>[[_continueButtonText]]</span>
+          </paper-button>
+        </div>
+        <div class="container">
+          <tf-graph-loader id="loader"
+              out-graph-hierarchy="{{graphHierarchy}}"
+              out-graph="{{graph}}"
+              out-stats="{{stats}}"
+              progress="{{_graphProgress}}"
+          ></tf-graph-loader>
+        </div>
+      </div>
+      <div class="center">
+        <div id="top-right-content-container">
+          <paper-tabs selected="0" selected="{{_topRightSelected}}">
+            <template is="dom-repeat" items="[[_topRightTabs]]">
+              <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
+            </template>
+          </paper-tabs>
+          <span id="runtime-graph-device-name">
+          </span>
+          <paper-dropdown-menu
+            id="active-runtime-graph-device-name"
+            no-label-float="true"
+            label="Device name"
+            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+          >
+            <paper-menu class="dropdown-content" slot="dropdown-content">
+              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                <paper-item no-label-float=true>[[item]]</paper-item>
+              </template>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <paper-spinner-lite
+            class="spinner"
+            id="top-right-spinner"
+            hidden="[[!_busy]]"
+            active="[[_busy]]">
+          </paper-spinner-lite>
+          <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
+          <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
+            <div id="graph-container">
+              <tf-graph id="graph"
+                  graph-hierarchy="[[graphHierarchy]]"
+                  basic-graph="[[graph]]"
+                  stats="[[stats]]"
+                  progress="{{_graphProgress}}"
+                  color-by="structure"
+                  color-by-params="{{colorByParams}}"
+                  render-hierarchy="{{_renderHierarchy}}"
+                  node-context-menu-items="[[_createNodeContextMenuItems()]]"
+              ></tf-graph>
+              <div class="context-menu"></div>
+            </div>
+          </template>
+          <template is="dom-if" if="[[_isTopRightTensorValuesActive]]">
+            <tf-tensor-value-multi-view
+              id="tensorValueMultiView"
+              continue-to-callback="[[_createContinueToCallback()]]">
+            </tf-tensor-value-multi-view>
+          </template>
+        </div>
+
+        <div id="tensor-data" class="tensor-data">
+          <div class="debugger-section-title">Tensor Value Overview</div>
+          <tf-tensor-data-summary
+            latest-tensor-data="[[_latestTensorData]]"
+            expand-handler="[[_createTensorDataExpandHandler()]]"
+            continue-to-callback="[[_createContinueToCallback()]]"
+            highlighted-node-name="[[_highlightNodeName]]">
+          </tf-tensor-data-summary>
+        </div>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .debugger-section-title {
+        font-size: 110%;
+        font-weight: bold;
+      }
+      paper-tabs {
+        color: #555;
+        font-weight: normal;
+      }
+      paper-tab.iron-selected {
+        color: black;
+        font-weight: bold;
+      }
+      #initialDialog {
+        /** This matches the default z-index of paper-dialog backdrops. */
+        z-index: 102;
+      }
+      #graph-container {
+        position: relative;
+      }
+      #graph {
+        display: block;
+        width: 100%;
+        height: 400px;
+      }
+      #tooltip-sorting {
+        display: flex;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      #tooltip-sorting-label {
+        margin-top: 13px;
+      }
+      #tooltip-sorting paper-dropdown-menu {
+        margin-left: 10px;
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        width: 105px;
+      }
+      #x-type-selector paper-button {
+        margin: 5px 3px;
+      }
+      #runtime-graph-device-name {
+        font-size: 85%;
+        word-break: break-all;
+        display: inline-block;
+      }
+      #active-runtime-graph-device-name {
+        font-size: 85%;
+        width: 350px;
+        display: inline-block;
+      }
+      #top-right-progress-bar {
+        width: 100%;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .line-item {
+        display: block;
+        padding-top: 5px;
+      }
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+      .sidebar {
+        position: relative;
+        height: 100%;
+      }
+      .center {
+        position: relative;
+        height: 100%;
+      }
+      .context-menu {
+        position: absolute;
+        display: none;
+        background-color: #e2e2e2;
+        border-radius: 2px;
+        font-size: 14px;
+        min-width: 150px;
+        border: 1px solid #d4d4d4;
+      }
+      .spinner {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+      }
+      .node-entries {
+        height: 66%;
+        width: 100%;
+        overflow: auto;
+        padding-top: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+        box-shadow: 3px 3px #ddd;
+      }
+      .buttons-container {
+        padding: 20px 0;
+      }
+      .tensor-data {
+        height: 34%;
+        overflow: auto;
+        padding: 20px 0;
+      }
+      #top-right-content-container {
+        height: 66%;
+        overflow: auto;
+      }
+      /deep/ .context-menu ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        cursor: default;
+      }
+      /deep/ .context-menu ul li {
+        padding: 4px 16px;
+      }
+      /deep/ .context-menu ul li:hover {
+        background-color: #f3913e;
+        color: white;
+      }
+
+      paper-input {
+        width: 200px;
+      }
+      .inline, paper-item {
+        display: inline;
+      }
+
+      vz-line-chart {
+        height: 300px;
+        position: relative;
+      }
+    </style>
+  </template>
+  <script src="tensor-shape-helper.js"></script>
+  <script>
+
+    Polymer({
+      is: 'tf-debugger-dashboard',
+      properties: {
+        _topRightTabs: {
+          type: Array,
+          value: [
+            {id: 'tab-runtime-graphs', name: 'Runtime Graphs'},
+            {id: 'tab-tensor-values', name: 'Tensor Values'},
+            {id: 'tab-python-source', name: 'Python Source'}
+          ],
+          readonly: true,
+        },
+        _isTopRightRuntimeGraphsActive: {
+          type: Boolean,
+          value: true,
+        },
+        _isTopRightTensorValuesActive: {
+          type: Boolean,
+          value: false,
+        },
+        _isTopRightPythonSourceActive: {
+          type: Boolean,
+          value: false,
+        },
+        _topRightSelected: {
+          type: String,
+          value: "0",
+          observer: '_topRightSelectedChanged',
+        },
+
+        _longPollCount: {
+            type: Number,
+            value: 0,
+        },
+        _stepButtonText: {
+            type: String,
+            value: 'Step',
+        },
+        _continueButtonText: {
+            type: String,
+            value: 'Continue...',
+        },
+        _continueNum: {  // How many times to continue over, e.g., Session.Runs.
+            type: Number,
+            value: 5,
+        },
+
+        _tensorViewIdCounter: {
+            type: Number,
+            value: 0,
+        },
+
+        isReloadDisabled: {
+          type: Boolean,
+          value: true,
+          readOnly: true,
+        },
+        alreadyStarted: {
+          type: Boolean,
+          value: false,
+        },
+        _currentSessionRunInfo: {
+          type: String,
+          value: null,
+        },
+        _sessionRunCounters: {
+          type: Object,
+          value: {},
+        },
+        // A map from Session.run key to names of devices involved..
+        _sessionRunKey2DeviceNames: {
+          type: Object,
+          value: {},
+        },
+        _activeSessionRunKey: {   // TODO(cais): Maybe deduplicate with below.
+          type: String,
+          value: null,
+        },
+        _activeSessionRunDevices: {
+          type: Array,
+          value: [],
+        },
+        _activeSessionRunNumDevices: {
+          type: Number,
+          value: -1,
+        },
+        _activeRuntimeGraphDeviceName: {
+          type: String,
+          value: null,
+          notify: true,
+        },
+
+        _highlightNodeName: {
+          type: String,
+          value: null,
+        },
+
+        // What kind of entity to continue over. Possibilities:
+        // {'', 'SessionRun', 'op'}.
+        // '' is the default state, i.e., a state where the UI is not continuing
+        // over anything.
+        _continueToType: {
+          type: String,
+          value: '',
+        },
+        // The target of the continue-to action. For example, for _continueToType ==
+        // 'SessionRun', this can be the session run string. For _continueToType ==
+        // 'op', this can be a debug tensor name.
+        _continueToTarget: {
+          type: String,
+          value: '',
+        },
+        // A counter target for the continue-to action. This can be a Session.Run index
+        // if _continueToType == 'SessionRun'.
+        _continueToCounterTarget: {
+          type: Number,
+          value: -1,
+        },
+
+        // Node names (e.g., in the Node List) to force expand and/or check the
+        // checkbox for.
+        _forceExpandAndCheckNodeName: String,
+        _forceExpandNodeName: String,
+
+        _graphProgress: {
+          type: Object,
+        },
+
+        _requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(50),
+        },
+
+        _busy: {
+          type: Boolean,
+          value: false,
+        },
+      },
+
+      observers: [
+        "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
+        "_graphProgressUpdated(_graphProgress)",
+      ],
+
+      ready() {
+        this.reload();
+      },
+
+      long_poll() {
+        const parameters = {
+          'pos': ++this._longPollCount,
+        };
+        let path = tf_backend.getRouter().pluginRoute('debugger', '/comm');
+        path = tf_backend.addParams(path, parameters);
+        console.log('Sending long-polling request to: ', path);
+        this._requestManager.request(path).then(response => {
+          const responseType = response['type'];
+          const responseData = response['data'];
+          if (responseType == 'meta') {
+            const runKey = responseData['run_key'];
+            const feedNames = runKey[0].split(',');
+            const fetchNames = runKey[1].split(',');
+            const targetNames = runKey[2].split(',');
+            this.set('_activeSessionRunKey', runKey);
+            this.set('_latestSessionRun', {
+              'feeds': feedNames,
+              'fetches': fetchNames,
+              'targets': targetNames,
+            });
+            this.set('_sessionRunSoleActive', true);
+            if (this._sessionRunKey2DeviceNames[runKey] === undefined) {
+              this._sessionRunKey2DeviceNames[runKey] = [];
+              this.set('_activeSessionRunDevices', []);
+            } else {
+              this.set('_activeSessionRunDevices',
+                       this._sessionRunKey2DeviceNames[runKey]);
+            }
+
+            const runInfo = 'Feeds: ' + feedNames + '; Fetches: ' +
+                fetchNames + '; Targets: ' + targetNames;
+            this._currentSessionRunInfo = runInfo;
+            if (this._sessionRunCounters.hasOwnProperty(runInfo)) {
+              this._sessionRunCounters[runInfo] += 1;
+            } else {
+              this._sessionRunCounters[runInfo] = 1;
+            }
+            this.$.initialDialog.closeDialog();
+
+            if (!this._continueToType) {
+              // Do not refresh node list if we are in continue model.
+              this._processGatedGrpcDebugOps(runKey, false);
+              this._showToast('A new Session.run() has begun.');
+            }
+          } else if (responseType == 'tensor') {
+            const deviceName = responseData['device_name'];
+            const nodeName = responseData['node_name'];
+            const maybeBaseExpandedNodeName = responseData[
+                'maybe_base_expanded_node_name'];
+
+            if (this._activeRuntimeGraphDeviceName != deviceName) {
+              // The logic here is a workaround. When the device name needs to
+              // be changed, the graph rendering often finishes so late that
+              // the set selectedNode call will error out.
+              // TODO(cais): Find a way to change the graph and change the
+              // selectedNode in the same tensor value event.
+              this.set('_activeRuntimeGraphDeviceName', deviceName);
+            } else {
+              if (!this._continueToType) {
+                // Do not refresh graph to focus on the current node if we are
+                // in continue mode.
+                if (this._isTopRightRuntimeGraphsActive) {
+                  this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
+                  this.set('_forceExpandNodeName',
+                           deviceName + '/' + maybeBaseExpandedNodeName);
+                }
+              }
+            }
+
+            this.set('_sessionRunSoleActive', false);
+            const tensorName = nodeName + ':' + responseData['output_slot'];
+            this.set('_latestTensorData', {
+              deviceName: deviceName,
+              tensorName: tensorName,
+              nodeName: nodeName,
+              maybeBaseExpandedNodeName: maybeBaseExpandedNodeName,
+              debugOp: responseData['debug_op'],
+              dtype: responseData['dtype'],
+              shape: responseData['shape'],
+              value: responseData['values'],
+            });
+
+            this._maybeUpdateTensorValueViews(
+                tensorName, responseData['debug_op']);
+            this.set('_busy', false);
+          } else {
+            console.error(
+                'Invalid long-polling response type: ', responseType);
+          }
+
+          if (this._continueToType === 'SessionRun') {
+            if (this._sessionRunCounters[this._currentSessionRunInfo] <
+                this._continueToCounterTarget) {
+              this._step();
+            } else {
+              this._clearContinueTo();
+            }
+          } else if (this._continueToType === 'op') {
+            const deviceName = responseData['device_name'];
+            const maybeBaseExpandedNodeName = responseData[
+                'maybe_base_expanded_node_name'];
+            const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+            if (nodeNameWithDevice !== this._continueToTarget) {
+              this._step();
+            } else {
+              this._clearContinueTo();
+            }
+          } else if (this._continueToType != null && this._continueToType !== '') {
+            console.error('Invalid _continueToType:', this._continueToType);
+          }
+
+          // Long polling loop: initialite the next long polling.
+          this.long_poll();
+        });
+      },
+
+      _maybeUpdateTensorValueViews(tensorName, debugOp) {
+        const multiView = this.$$('#tensorValueMultiView');
+        if (multiView == null) {
+          return;
+        }
+        let anyTensorMatch = false;
+        _.forEach(multiView.getViews(), valueView => {
+          if (valueView.tensorName === tensorName &&
+              valueView.debugOp === debugOp) {
+            anyTensorMatch = true;
+            return false;  // lodash break.
+          }
+        });
+        if (anyTensorMatch) {
+          multiView.renderTensorValues();
+        }
+      },
+
+      reload() {
+        if (this.alreadyStarted) {
+          return;
+        }
+
+        this.set('alreadyStarted', true);
+        const url = tf_backend.getRouter().pluginRoute(
+            'debugger', '/debugger_grpc_host_port');
+        this._requestManager.request(url).then(response => {
+          // TODO(cais): If the TDP backend is not activated, display message
+          // informing the user of that.
+          this.$.initialDialog.openDialog(response.host, response.port);
+        }).catch(error => {
+          this.$.initialDialog.renderDebuggerNotEnabledMessage();
+        }).then(() => {
+          // Initiate long-polling.
+          this.long_poll();
+        });
+      },
+
+      _openContinueDialog() {
+        this.$.continueDialog.open();
+      },
+
+      _showToast(text) {  // TODO(cais): Move to Scrolling Message View.
+        this.$.toast.setAttribute('text', text);
+        this.$.toast.open();
+      },
+
+      _displayGraph(runKey, deviceName) {
+        const parameters = {
+          'run_key': JSON.stringify(runKey),
+          'device_name': deviceName,
+        };
+        const baseUrl = '/data/plugin/debugger/debugger_graph';
+        const url = tf_backend.addParams(baseUrl, parameters);
+        this.$.loader.datasets = [{
+          "name": "/debugger_graph",
+          "path": url,
+        }];
+        this.$.loader.set("selectedDataset", 0);
+        this.$$('.container').style.width = '600px';
+        this.$$('.container').style.width = '450px';
+      },
+
+      _processGatedGrpcDebugOps(runKey, pollingForFirstGraph) {
+        if (pollingForFirstGraph) {
+          console.log('Polling for first GraphDef for run key:', runKey);
+        } else {
+          this.set('_activeRuntimeGraphDeviceName', null);
+        }
+
+        const parameters = {
+          'mode': 'retrieve_all',
+          'run_key': JSON.stringify(runKey),
+        };
+        const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
+        const url = tf_backend.addParams(baseUrl, parameters);
+        let debugWatches = [];
+        this._requestManager.request(url).then(response => {
+          if (response['device_names'].length == 0) {
+            if (!pollingForFirstGraph) {
+              // Not even a single device / runtime GraphDef has been received
+              // when the Session.run starts. This is likely a Session.run
+              // controlling in-graph-distributed devices.
+              // Will send a step() ACK response to unblock the first graph send.
+              this._step();
+              this._processGatedGrpcDebugOps(runKey, true);
+            } else {
+              // GraphDef still hasn't arrived. Poll again.
+              this._processGatedGrpcDebugOps(runKey, true);
+            }
+            return;
+          }
+
+          let lastDeviceName = null;
+          for (const deviceName in response['gated_grpc_tensors']) {
+            if (response['gated_grpc_tensors'].hasOwnProperty(deviceName)) {
+              if (this._sessionRunKey2DeviceNames[runKey].indexOf(deviceName) === -1) {
+                this._sessionRunKey2DeviceNames[runKey].push(deviceName);
+                this.$.sessionRunsView.updateNumDevices(
+                    this._sessionRunKey2DeviceNames[runKey].length);
+              }
+              this.set('_activeSessionRunDevices',
+                       this._sessionRunKey2DeviceNames[runKey].slice());
+              lastDeviceName =
+                  this._activeSessionRunDevices[this._activeSessionRunDevices.length - 1];
+
+              const gatedGrpcTensors = response['gated_grpc_tensors'][deviceName];
+              for (let i = 0; i < gatedGrpcTensors.length; ++i) {
+                debugWatches.push(
+                    {'device_name': deviceName,
+                     'node_name': gatedGrpcTensors[i][0],
+                     'op_type': gatedGrpcTensors[i][1],
+                     'output_slot': gatedGrpcTensors[i][2],
+                     'debug_op': gatedGrpcTensors[i][3]});
+              }
+            }
+          }
+
+          if (lastDeviceName != null) {
+            this.set('_activeRuntimeGraphDeviceName', lastDeviceName);
+            // TODO(cais): Make automatic updating of the selected device name work?
+            const dropdownMenu = Polymer.dom(this.$$('#active-runtime-graph-device-name'));
+            if (dropdownMenu != null) {
+              dropdownMenu.setAttribute('selected', lastDeviceName);
+            }
+          }
+
+          // Sort the debug watches and maybe base-expand the leaf nodes.
+          tf_debugger_dashboard.sortAndBaseExpandDebugWatches(debugWatches);
+          this.set('_debugWatches', debugWatches);
+        });
+      },
+      _createDebugWatchChangeHandler() {
+        // This method returns a handler instead of having this method being
+        // directly passed to the property binding. This is because the handler
+        // references other properties of this component, and so the execution
+        // context of the function (this) must be bound to the dashboard.
+        return ((debugObject, checked) => {
+          const state = checked ? 'break' : 'disable';
+          // TODO(cais): Investigate why this is fired twice sometimes.
+          this._requestBreakpointStateChange(
+              tf_debugger_dashboard.getCleanNodeName(
+                  debugObject.device_name + '/' + debugObject.node_name),
+              debugObject.output_slot, debugObject.debug_op, state);
+        });
+      },
+      _focusOnGraphNode(deviceName, nodeName) {
+        if (deviceName != null &&
+            this._activeRuntimeGraphDeviceName !== deviceName) {
+          this.set('_activeRuntimeGraphDeviceName', deviceName);
+        }
+        this._setTopRightRuntimeGraphsToActive();
+        this.$$('#graph').set('selectedNode', nodeName);
+        this.set('_highlightNodeName', deviceName + '/' + nodeName);
+      },
+      _createListNodeClickedHandler() {
+        return((deviceName, nodeName) => {
+          this._focusOnGraphNode(deviceName, nodeName);
+          this.set('_forceExpandNodeName', deviceName + '/' + nodeName);
+        });
+      },
+      _createFeedFetchTargetClickedHandler() {
+        return((graphElementName) => {
+          let nodeName = graphElementName;
+          // If it is a tensor name, get the node name.
+          if (nodeName.indexOf(':') !== -1) {
+            nodeName = nodeName.slice(0, nodeName.indexOf(':'));
+          }
+          // Find the debug watch that matches the clicked node.
+          const matchingDebugWatch = _.find(this._debugWatches, debugWatch => {
+            // Take into account the possibility of base-expanded node names.
+            return (debugWatch.node_name === nodeName ||
+                debugWatch.node_name.indexOf(nodeName) === 0 &&
+                debugWatch.node_name[nodeName.length] === '(');
+          });
+          if (matchingDebugWatch == null) {
+            this._showToast(
+              'Node \'' + nodeName + '\' is not in the runtime graph of the ' +
+              'current Session.run or does not have a debug op attached.');
+          } else {
+            this._focusOnGraphNode(matchingDebugWatch.device_name, nodeName);
+          }
+        });
+      },
+
+      _createTensorDataExpandHandler() {
+        const self = this;
+        function handleTensorDataExpand(tensorData) {
+          self._setTopRightTensorValuesToActive();
+          // Use setTimeout() so that the DOMs in the top-right tabs have a
+          // chance to update.
+          setTimeout(() =>  {
+            const multiView = self.$$('#tensorValueMultiView');
+            multiView.addView({
+              viewId: self._createTensorViewId(),
+              deviceName: tensorData.deviceName,
+              tensorName: tensorData.tensorName,
+              nodeName: tensorData.nodeName,
+              maybeBaseExpandedNodeName: tensorData.maybeBaseExpandedNodeName,
+              debugOp: tensorData.debugOp,
+              slicing: tf_debugger_dashboard.getDefaultSlicing(tensorData.shape),
+              timeIndices: '-1',
+            });
+          }, 10);
+        };
+        return handleTensorDataExpand;
+      },
+
+      _createTensorViewId() {
+        const id = "debugger-tensor-view-" + this._tensorViewIdCounter;
+        this._tensorViewIdCounter++;
+        return id;
+      },
+
+      // Create menu title and callback for the node context menus in the graph
+      // visualizer.
+      _createNodeContextMenuItems() {
+        return [
+          {
+            title: (data) => {
+              return 'Expand and highlight';
+            },
+            action: (elem, d, i) => {
+              const nodeName =
+                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
+              const nodeNameWithDevice =
+                  this._activeRuntimeGraphDeviceName + '/' + elem.node.name;
+              this.set('_forceExpandNodeName', nodeNameWithDevice);
+              this.set('_highlightNodeName', nodeNameWithDevice);
+            },
+          },
+          {
+            title: (data) => {
+              return 'Add breakpoint';
+            },
+            action: (elem, d, i) => {
+              const nodeName =
+                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
+              this.set('_forceExpandAndCheckNodeName',
+                       this._activeRuntimeGraphDeviceName + '/' + elem.node.name);
+            },
+          },
+          {
+            title: (data) => {
+              return 'Continue to';
+            },
+            action: (elem, d, i) => {
+              if (['_Arg', '_Retval'].indexOf(elem.node.op) !== -1) {
+                this._showToast(
+                    'Cannot continue to node "' + elem.node.name +
+                    '", due to op type "' + elem.node.op + '".');
+                return;
+              }
+              const nodeName =
+                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
+              const nodeNameWithDevice =
+                  this._activeRuntimeGraphDeviceName + '/' + elem.node.name
+              this._requestBreakpointStateChange(nodeName, 0, 'DebugIdentity', 'break');
+              this.set('_forceExpandAndCheckNodeName', nodeNameWithDevice);
+              this._setContinueTo('op', nodeNameWithDevice);
+              this._step();
+            },
+          }
+        ];
+      },
+
+      _onActiveRuntimeGraphDeviceNameChange(deviceName) {
+        const deviceNameElement = Polymer.dom(this.$$('#runtime-graph-device-name'));
+        if (this._activeSessionRunDevices.length > 0) {
+          let deviceGraphLabel = deviceName;
+          deviceGraphLabel +=
+               ' (device ' + (this._activeSessionRunDevices.indexOf(deviceName) + 1) +
+               ' of ' + this._activeSessionRunDevices.length + ')';
+          if (this._isTopRightRuntimeGraphsActive) {
+            if (deviceNameElement != null ) {
+              deviceNameElement.textContent = deviceGraphLabel;
+            }
+          }
+        } else {
+          if (this._isTopRightRuntimeGraphsActive) {
+            if (deviceNameElement != null) {
+              deviceNameElement.textContent = 'Waiting for device...';
+            }
+          }
+        }
+        if (!this._continueToType) {
+          // Do not refresh graph if we are in continue mode.
+          this._displayGraph(this._activeSessionRunKey, deviceName);
+        }
+      },
+
+      _step() {
+        // Do nothing if we are currently not in a Session.run.
+        if (this._activeSessionRunKey == null) {
+          return;
+        }
+        this.set('_busy', true);
+
+        // First, check to see if any new device GraphDef(s) have arrived and if
+        // so, retrieve them.
+        const parameters = {
+          'mode': 'retrieve_device_names',
+          'run_key': JSON.stringify(this._activeSessionRunKey),
+        };
+        const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
+        const url = tf_backend.addParams(baseUrl, parameters);
+        let debugWatches = [];
+        this._requestManager.request(url).then(response => {
+          let anyNewDevices = false;
+          for (let i = 0; i < response['device_names'].length; ++i) {
+            const deviceName = response['device_names'][i];
+            if (this._activeSessionRunDevices.indexOf(deviceName) === -1) {
+              anyNewDevices = true;
+              break;
+            }
+          }
+          const url = tf_backend.getRouter().pluginRoute('debugger', '/ack');
+          this._requestManager.request(url).then(response => {
+            if (anyNewDevices) {
+              // If there are new device(s), display them in the graph
+              // visualizer and the node list, to allow user to select
+              // breakpoints.
+              this._processGatedGrpcDebugOps(this._activeSessionRunKey, false);
+            }
+          });
+        });
+      },
+
+      _continueGo() {
+        if (this._continueNum > 0) {
+          this._setContinueTo('SessionRun', this._currentSessionRunInfo,
+              this._sessionRunCounters[this._currentSessionRunInfo] +
+              this._continueNum);
+          this._step();
+          this.$.continueDialog.close();
+        } else {
+          this._continueNum = 1;
+        }
+      },
+      _continueNumChanged(e) {
+        this._continueNum = e.target.valueAsNumber;
+      },
+      _setContinueTo(type, target, counter_target) {
+        this._continueToType = type;
+        this._continueToTarget = target;
+        this._continueToCounterTarget = counter_target;
+      },
+      _clearContinueTo() {
+        this._continueToType = '';
+        this._continueToTarget = '';
+        this._continueToCounterTarget = -1;
+        this.set('_busy', false);
+      },
+
+      _createContinueToCallback() {
+        return (deviceName, maybeBaseExpandedNodeName) => {
+          const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+          this._setContinueTo('op', nodeNameWithDevice);
+          this._step();
+          if (this._isTopRightRuntimeGraphsActive) {
+            this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
+          }
+          this.set('_forceExpandNodeName',
+                   deviceName + '/' + maybeBaseExpandedNodeName);
+        };
+      },
+
+      _topRightSelectedChanged(topRightSelected) {
+        const selectedId = this._topRightTabs[topRightSelected].id;
+        this.set('_isTopRightRuntimeGraphsActive',
+                 selectedId === 'tab-runtime-graphs');
+        this.set('_isTopRightTensorValuesActive',
+                 selectedId === 'tab-tensor-values');
+        this.set('_isTopRightPythonSourceActive',
+                 selectedId === 'tab-python-source');
+      },
+      _setTopRightRuntimeGraphsToActive() {
+        this.set('_topRightSelected', '0');
+        this.set('_isTopRightRuntimeGraphsActive', true);
+        this.set('_isTopRightTensorValuesActive', false);
+        this.set('_isTopRightPythonSourceActive', false);
+      },
+      _setTopRightTensorValuesToActive() {
+        this.set('_topRightSelected', '1');
+        this.set('_isTopRightRuntimeGraphsActive', false);
+        this.set('_isTopRightTensorValuesActive', true);
+        this.set('_isTopRightPythonSourceActive', false);
+      },
+
+      /**
+       * Request a state change for a breakpoint associated with a debugged tensor.
+       * @param nodeName Name of the node that produces the tensor.
+       * @param outputSlot Output slot of the tensor on the node.
+       * @param debugOp Name of the debug op attached to the debugged tensor, e.g.,
+       *   'DebugIdentity'.
+       * @param newState New state, e.g., 'disable', 'break'.
+       */
+      _requestBreakpointStateChange(nodeName, outputSlot, debugOp, newState) {
+        // TODO(cais): Add deviceName to args, to handle cases in which there are
+        // duplicate node names across devices (rare).
+        const parameters = {
+          'mode': 'set_state',
+          'node_name': nodeName,
+          'output_slot': outputSlot,
+          'debug_op': debugOp,
+          'state': newState,
+        };
+        const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
+        const url = tf_backend.addParams(baseUrl, parameters);
+        this.set('_busy', true);
+        this._requestManager.request(url).then(response => {
+          this.set('_busy', false);
+          console.log('Breakpoint set_state response: ', response);
+        });
+      },
+
+      _graphProgressUpdated(progress) {
+        const topRightProgressBar = this.$$('#top-right-progress-bar');
+        if (this._latestSessionRun == null) {
+          // No Session.run() has connected yet. Do not show the spinner(s) or
+          // the progress bar(s).
+          topRightProgressBar.setAttribute('value', 0);
+          this.set('_busy', false);
+        } else {
+          topRightProgressBar.setAttribute('value', progress.value);
+          this.set('_busy', progress.value < 100);
+        }
+      },
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'debugger',
+      elementName: 'tf-debugger-dashboard',
+    });
+
+  </script>
+</dom-module>

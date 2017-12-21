@@ -1,0 +1,248 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Offers a UI for summarizing and displaying tensor data.
+-->
+<dom-module id="tf-session-runs-view">
+  <template>
+    <div class="session-runs-div">
+      <div class="section-title">Session Runs</div>
+      <table id="session-runs-table" align="left" class="session-runs-table">
+        <tr align="left">
+          <th>Feeds</th>
+          <th>Fetches</th>
+          <th>Targets</th>
+          <th>#(Devices)</th>
+          <th>Count</th>
+        </tr>
+      </table>
+    </div>
+    <style>
+      :host {
+        display: block;
+        padding: 20px 0;
+      }
+
+      .section-title {
+        font-size: 110%;
+        font-weight: bold;
+      }
+      :host .indented-level-container .content-container {
+        margin: 0 0 0 10px;
+      }
+
+      /* TODO(cais): This needs work: the table shouldn't get too wide when
+         there are many feeds/fetches/targte names. */
+      .session-runs-table {
+        align-content: left;
+        align-items: left;
+        text-align: left;
+        font-size: 90%;
+        border-style: solid 1px black;
+        table-layout: fixed;
+        width: 100%;
+        min-width: 400px;
+        max-width: 450px;
+        word-break: break-all;
+        padding-top: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+        box-shadow: 3px 3px #ddd;
+      }
+      .active-session-run {
+        background-color: #FFFFE0;
+        font-weight: bold;
+      }
+      .sole-active-session-run {
+        background-color: rgb(172, 232, 188);
+        font-weight: bold;
+      }
+
+      .node-or-tensor-element {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .node-or-tensor-element:hover {
+        color: blue;
+      }
+    </style>
+  </template>
+  <script>
+
+  Polymer({
+    is: "tf-session-runs-view",
+    properties: {
+      // latestSessionRun is an object with the following fields:
+      // {
+      //   feeds:   // String[], names of the feed tensors.
+      //   fetches:  // String[], names of the fetched tensors.
+      //   targets:  // String[], names of the target ops.
+      // }
+      latestSessionRun: Object,
+      sessionRunKeyToDeviceNames: Object,
+
+      // A flag indicating whether the debugger plugin is currently focused
+      // on the beginning of a Session.run(), i.e., without any specific tensor
+      // breakpoint being active.
+      soleActive: Boolean,
+
+      // A function called when a node or tensor in the list is clicked.
+      nodeOrTensorClicked: Function,
+
+      // A map from session.run key to count of how many the session.run's
+      // execution has started.
+      _runKey2Count: {
+        type: Object,
+        value: {},
+      },
+      // A map from session.run key to the number of devices involved in the
+      // session.run.
+      _runKey2NumDevices: {
+        type: Object,
+        value: {},
+      },
+      // Stores the current active session run object.
+      _activeRunKey: Object,
+    },
+    observers: [
+      "renderLatest(latestSessionRun)",
+      "setSoleActiveStatus(soleActive)",
+    ],
+
+    renderLatest(latestSessionRun) {
+      const runKey = JSON.stringify(latestSessionRun);
+      if (this._runKey2Count[runKey] === undefined) {
+        this._runKey2Count[runKey] = 1;
+      } else {
+        this._runKey2Count[runKey] += 1;
+      }
+      if (this._runKey2NumDevices[runKey] === undefined) {
+        this._runKey2NumDevices[runKey] = 0;
+      }
+      this.set('_activeRunKey', runKey);
+      this._renderSessionRunTable();
+    },
+
+    updateNumDevices(numDevices) {
+      if (this._activeRunKey == null) {
+        return;
+      }
+      this._runKey2NumDevices[this._activeRunKey] = numDevices;
+      this._renderSessionRunTable();
+    },
+
+    setSoleActiveStatus(soleActive) {
+      this._renderSessionRunTable();
+    },
+
+    _renderSessionRunTable() {
+      this._clearTable();
+      // TODO(cais): Support sorting.
+      this._renderHeader();
+      for (const runKey in this._runKey2Count) {
+        if (this._runKey2Count.hasOwnProperty(runKey)) {
+          const sessionRun = JSON.parse(runKey);
+          const count = this._runKey2Count[runKey];
+          const isActive = this._activeRunKey === runKey;
+          const numDevices = this._runKey2NumDevices[runKey];
+          this._renderRow(sessionRun, numDevices, count, isActive, this.soleActive);
+        }
+      }
+    },
+
+    _clearTable() {
+      const table = this.$$('#session-runs-table');
+      while (table.firstChild) {
+        table.removeChild(table.firstChild);
+      }
+    },
+
+    _renderHeader() {
+      const headerRow = document.createElement('tr');
+      const feedsCell = document.createElement('th');
+      feedsCell.textContent = 'Feeds';
+      const fetchesCell = document.createElement('th');
+      fetchesCell.textContent = 'Fetches';
+      const targetsCell = document.createElement('th');
+      targetsCell.textContent = 'Targets';
+      const numDevicesCell = document.createElement('th');
+      numDevicesCell.textContent = '#(Devices)';
+      const countCell = document.createElement('th');
+      countCell.textContent = 'Count';
+
+      headerRow.appendChild(feedsCell);
+      headerRow.appendChild(fetchesCell);
+      headerRow.appendChild(targetsCell);
+      headerRow.appendChild(numDevicesCell);
+      headerRow.appendChild(countCell);
+
+      Polymer.dom(this.$$('#session-runs-table')).appendChild(headerRow);
+    },
+
+    _renderRow(sessionRun, numDevices, count, isActive, soleActive) {
+      const sessionRunRow = document.createElement('tr');
+
+      // TOOD(cais): All feeds, and fetches and targets should be made into
+      // clickable links, which when clicked, will focus on the corresponding
+      // node in the Graph View and/or highlight corresponding tensors in the
+      // Tensor Summary View and the Tensor Value View.
+      const feedsCell = this._renderGraphElements(sessionRun.feeds);
+      const fetchesCell = this._renderGraphElements(sessionRun.fetches);
+      const targetsCell = this._renderGraphElements(sessionRun.targets);
+      const numDevicesCell = document.createElement('td');
+      numDevicesCell.textContent = numDevices;
+      const countCell = document.createElement('td');
+      countCell.textContent = count;
+
+      sessionRunRow.appendChild(feedsCell);
+      sessionRunRow.appendChild(fetchesCell);
+      sessionRunRow.appendChild(targetsCell);
+      sessionRunRow.appendChild(numDevicesCell);
+      sessionRunRow.appendChild(countCell);
+
+      if (isActive) {
+        if (soleActive) {
+          sessionRunRow.setAttribute('class', 'sole-active-session-run');
+        } else {
+          sessionRunRow.setAttribute('class', 'active-session-run');
+        }
+      }
+
+      Polymer.dom(this.$$('#session-runs-table')).appendChild(sessionRunRow);
+    },
+
+    _renderGraphElements(graphElements) {
+      const container = document.createElement('td');
+      _.forEach(graphElements, element => {
+        const elementDiv = document.createElement('div');
+        elementDiv.textContent = element;
+        elementDiv.setAttribute('class', 'node-or-tensor-element');
+        elementDiv.addEventListener('click', () => {
+          this.nodeOrTensorClicked(element);
+        });
+        container.appendChild(elementDiv);
+      });
+      return container;
+    }
+  });
+  </script>
+</dom-module>
