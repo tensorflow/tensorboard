@@ -732,7 +732,15 @@ limitations under the License.
           this.set('_activeRuntimeGraphDeviceName', deviceName);
         }
         this._setTopRightRuntimeGraphsToActive();
-        this.$$('#graph').set('selectedNode', nodeName);
+        const graph = this.$$('#graph');
+        if (graph.selectedNode === nodeName) {
+          // Instead of selecting the node, we pan to it - the node is already
+          // selected, so selecting it would do nothing.
+          graph.panToNode(nodeName);
+        } else {
+          // Selecting the node triggers a pan to it.
+          graph.set('selectedNode', nodeName);
+        }
         this.set('_highlightNodeName', deviceName + '/' + nodeName);
       },
       _createListNodeClickedHandler() {
