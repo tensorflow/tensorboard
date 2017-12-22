@@ -43,7 +43,19 @@ tf-text-loader displays markdown text data from the Text plugin.
           step <span class="step-value">[[_formatStep(item.step)]]</span>
         </paper-material>
         <paper-material elevation="1" class="text">
-          <tf-markdown-view html="[[item.text]]"></tf-markdown-view>
+          <template is="dom-if" if="[[markdownEnabled]]">
+            <tf-markdown-view html="[[item.text]]"></tf-markdown-view>
+          </template>
+          <template is="dom-if" if="[[!markdownEnabled]]">
+            <div class="raw-text-container">
+              <!-- Use comments to remove empty space. -->
+              <pre><!--
+                --><template is="dom-repeat" items="[[_splitIntoLines(item.text)]]" as="line"><!--
+                  --><span>[[line]]</span>
+<!--            --></template><!--
+           --></pre>
+            </div>
+          </template>
         </paper-material>
       </template>
     </paper-material>
@@ -70,6 +82,31 @@ tf-text-loader displays markdown text data from the Text plugin.
         border-radius: 0 3px 3px 3px;
         padding: 5px;
         word-break: break-word;
+      }
+      .raw-text-container {
+        overflow: auto;
+        max-height: 500px;
+        padding: 5px;
+        width: 100%;
+      }
+      .raw-text-container pre {
+        counter-reset: line;
+        line-height: 0;
+      }
+      .raw-text-container pre span {
+        display: block;
+        line-height: 1.5rem;
+      }
+      .raw-text-container pre span:before {
+        border-right: 1px solid var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+        content: counter(line);
+        counter-increment: line;
+        display: inline-block;
+        margin: 0 0.5em 0 0;
+        padding: 0 1em 0 0;
+        text-align: right;
+        width: 30px;
       }
       .step-container {
         background-color: var(--tb-ui-light-accent);
@@ -98,6 +135,7 @@ tf-text-loader displays markdown text data from the Text plugin.
       properties: {
         run: String,
         tag: String,
+        markdownEnabled: Boolean,
         _runColor: {
           type: String,
           computed: '_computeRunColor(run)',
@@ -152,7 +190,10 @@ tf-text-loader displays markdown text data from the Text plugin.
       },
       _formatStep(n) {
         return d3.format(",")(n);
-      }
+      },
+      _splitIntoLines(rawText) {
+        return rawText.split('\n');
+      },
     });
   </script>
 </dom-module>
