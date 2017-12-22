@@ -42,27 +42,42 @@ class LayoutTest(tf.test.TestCase):
                 chart=[
                     layout_pb2.Chart(
                         title='mean layer biases',
-                        tag=[r'mean/layer\d+/biases'])
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'mean/layer\d+/biases'],
+                        )),
                 ]),
             layout_pb2.Category(
                 title='std weights',
                 chart=[
                     layout_pb2.Chart(
                         title='stddev layer weights',
-                        tag=[r'stddev/layer\d+/weights'])
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'stddev/layer\d+/weights'],
+                        )),
                     ]),
             layout_pb2.Category(
                 title='cross entropy ... and maybe some other values',
                 chart=[
                     layout_pb2.Chart(
                         title='cross entropy',
-                        tag=[r'cross entropy']),
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'cross entropy'],
+                        )),
                     layout_pb2.Chart(
                         title='accuracy',
-                        tag=[r'accuracy']),
+                        margin=layout_pb2.MarginChartContent(
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='accuracy',
+                                    lower='accuracy_lower_margin',
+                                    upper='accuracy_upper_margin')
+                            ]
+                        )),
                     layout_pb2.Chart(
                         title='max layer weights',
-                        tag=[r'max/layer1/.*', r'max/layer2/.*'])
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'max/layer1/.*', r'max/layer2/.*'],
+                        )),
                 ],
                 closed=True)
         ])

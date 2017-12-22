@@ -22,13 +22,50 @@ package tensorboard;
  * Encapsulates information on a single chart. Many charts appear in a category.
  */
 message Chart {
-  // The title shown atop this chart. This field is optional and defaults to a
-  // comma-separated list of tag regular expressions.
+  // The title shown atop this chart. Optional. Defaults to 'untitled'.
   string title = 1;
 
+  // The content of the chart. This depends on the type of the chart.
+  oneof content {
+    MultilineChartContent multiline = 2;
+    MarginChartContent margin = 3;
+  }
+}
+
+/**
+ * Encapsulates information on a single line chart. This line chart may have
+ * lines associated with several tags.
+ */
+message MultilineChartContent {
   // A list of regular expressions for tags that should appear in this chart.
-  // Tags are matched based from beginning to end.
-  repeated string tag = 2;
+  // Tags are matched from beginning to end. Each regex captures a set of tags.
+  repeated string tag = 1;
+}
+
+/**
+ * Encapsulates information on a single margin chart. A margin chart uses fill
+ * area to visualize lower and upper bounds that surround a value.
+ */
+message MarginChartContent {
+  /**
+   * Encapsulates a tag of data for the chart.
+   */
+  message Series {
+    // The exact tag string associated with the scalar summaries making up the
+    // main value between the bounds.
+    string value = 1;
+
+    // The exact tag string associated with the scalar summaries making up the
+    // lower bound.
+    string lower = 2;
+
+    // The exact tag string associated with the scalar summaries making up the
+    // upper bound.
+    string upper = 3;
+  }
+
+  // A list of data series to include within this margin chart.
+  repeated Series series = 1;
 }
 
 /**
