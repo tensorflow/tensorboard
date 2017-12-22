@@ -32,10 +32,10 @@ with tf.name_scope('loss'):
   # Log metric baz as well as upper and lower bounds for making a margin chart.
   middle_baz_value = step + 4 * tf.random_uniform([]) - 2
   summary_lib.scalar('baz', middle_baz_value)
-
-with tf.name_scope('bazMargins'):
-  summary_lib.scalar('lower', middle_baz_value - 0.3 - tf.random_uniform([]))
-  summary_lib.scalar('upper', middle_baz_value + 0.3 + tf.random_uniform([]))
+  summary_lib.scalar(
+      'baz_lower_margin', middle_baz_value - 0.3 - tf.random_uniform([]))
+  summary_lib.scalar(
+      'baz_upper_margin', middle_baz_value + 0.3 + tf.random_uniform([]))
 
 with tf.name_scope('trigFunctions'):
   summary_lib.scalar('cosine', tf.cos(step))
@@ -55,7 +55,7 @@ with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
                   layout_pb2.Chart(
                       title='losses',
                       multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'loss.*'],
+                          tag=[r'loss(?!.*margin.*)'],
                       )),
                   layout_pb2.Chart(
                       title='baz',
@@ -63,8 +63,8 @@ with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
                           series=[
                               layout_pb2.MarginChartContent.Series(
                                   value='loss/baz/scalar_summary',
-                                  lower='bazMargins/lower/scalar_summary',
-                                  upper='bazMargins/upper/scalar_summary'),
+                                  lower='loss/baz_lower_margin/scalar_summary',
+                                  upper='loss/baz_upper_margin/scalar_summary'),
                           ],
                       )),
               ]),

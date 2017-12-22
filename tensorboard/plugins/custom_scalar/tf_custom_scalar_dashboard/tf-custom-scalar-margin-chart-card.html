@@ -339,7 +339,7 @@ limitations under the License.
         },
         _titleDisplayString: {
           type: String,
-          computed: '_computeTitleDisplayString(title, _tagFilter)',
+          computed: '_computeTitleDisplayString(title)',
         },
         _fillArea: {
           type: Object,
@@ -539,34 +539,23 @@ limitations under the License.
           if (tagsNotFound.length) {
             // At least 1 tag could not be found. Show an error message.
             this.set('_tagsWithNoData', tagsNotFound);
-            return;
           }
 
           this.set('_nameToDataSeries', newMapping);
         });
       },
       _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
-        if (lowerSteps.length != valueSteps.length ||
-            upperSteps.length != valueSteps.length) {
-          return {
-            seriesObject: tagsObject,
-            valueSteps: valueSteps,
-            lowerSteps: lowerSteps,
-            upperSteps: upperSteps,
-          };
+        if (_.isEqual(lowerSteps, valueSteps) &&
+            _.isEqual(upperSteps, valueSteps)) {
+          // There is no mismatch.
+          return null;
         }
-        for (let i = 0; i < valueSteps.length; i++) {
-          if (valueSteps[i] != lowerSteps[i] ||
-              valueSteps[i] != upperSteps[i]) {
-            return {
-              seriesObject: tagsObject,
-              valueSteps: valueSteps,
-              lowerSteps: lowerSteps,
-              upperSteps: upperSteps,
-            };
-          }
-        }
-        return null;
+        return {
+          seriesObject: tagsObject,
+          valueSteps: valueSteps,
+          lowerSteps: lowerSteps,
+          upperSteps: upperSteps,
+        };
       },
       _createNewDataSeries(run, tag, seriesName, dataPoints) {
         // If the run has not been seen before, define the next
@@ -641,10 +630,10 @@ limitations under the License.
       _toggleMatchesOpen() {
         this.set('_matchesListOpened', !this._matchesListOpened);
       },
-      _computeTitleDisplayString(title, tagFilter) {
+      _computeTitleDisplayString(title) {
         // If no title is provided, use the tag filter, which is a combination
-        // of the tags for the value, lower, and upper fields.
-        return title || tagFilter;
+        // of the tags for the value, lower, and upper fields of each series.
+        return title || 'untitled';
       },
       _separateWithCommas(numbers) {
         return numbers.join(', ');
