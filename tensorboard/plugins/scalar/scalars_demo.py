@@ -92,11 +92,13 @@ def run(logdir, run_name,
              description='The change in temperature from the previous '
                          'step, in Kelvins.')
 
-  # Now, augment the current temperature by this delta that we computed.
-  update_step = temperature.assign_add(delta)
-
   # Collect all the scalars that we want to keep track of.
   summ = tf.summary.merge_all()
+
+  # Now, augment the current temperature by this delta that we computed,
+  # blocking the assignment on summary collection to avoid race conditions.
+  with tf.control_dependencies([summ]):
+    update_step = temperature.assign_add(delta)
 
   sess = tf.Session()
   writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
