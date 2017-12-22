@@ -218,16 +218,17 @@ export function panToNode(nodeName: String, svg, zoomG, d3zoom): boolean {
   pointBR.y = nodeBox.y + nodeBox.height;
   pointTL = pointTL.matrixTransform(nodeCtm);
   pointBR = pointBR.matrixTransform(nodeCtm);
-  let isOutsideOfBounds = (start, end, bound) => {
-    return end < 0 || start > bound;
+  let isOutsideOfBounds = (start, end, lowerBound, upperBound) => {
+    // Return if even a part of the interval is out of bounds.
+    return !(start > lowerBound && end < upperBound);
   };
   let svgRect = svg.getBoundingClientRect();
 
   // Subtract to make sure that the node is not hidden behind the minimap.
   const horizontalBound = svgRect.left + svgRect.width - MINIMAP_BOX_WIDTH;
   const verticalBound = svgRect.top + svgRect.height - MINIMAP_BOX_HEIGHT;
-  if (isOutsideOfBounds(pointTL.x, pointBR.x, horizontalBound) ||
-      isOutsideOfBounds(pointTL.y, pointBR.y, verticalBound)) {
+  if (isOutsideOfBounds(pointTL.x, pointBR.x, svgRect.left, horizontalBound) ||
+      isOutsideOfBounds(pointTL.y, pointBR.y, svgRect.top, verticalBound)) {
     // Determine the amount to translate the graph in both X and Y dimensions in
     // order to center the selected node. This takes into account the position
     // of the node, the size of the svg scene, the amount the scene has been
