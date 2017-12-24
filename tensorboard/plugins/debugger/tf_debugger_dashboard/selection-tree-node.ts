@@ -124,6 +124,20 @@ export function sortAndBaseExpandDebugWatches(debugWatches: DebugWatch[]) {
   }
 }
 
+/**
+ * Remove any possible base expansion from a node name.
+ * @param nodeName: The node name, possibly with base expansion.
+ * @returns: Node name with any base expansion removed. If `nodeName` does not
+ *   contain any base expansion, the string is returned without modification.
+ */
+export function removeNodeNameBaseExpansion(nodeName: string) {
+  if (nodeName.endsWith(')')) {
+    return nodeName.slice(0, nodeName.lastIndexOf('/('));
+  } else {
+    return nodeName;
+  }
+}
+
 export function assembleDeviceAndNodeNames(nameItems: string[]): string[] {
   const deviceAndNodeNames: string[] = [null, null];
   if (nameItems[0].match(DEVICE_NAME_PATTERN)) {

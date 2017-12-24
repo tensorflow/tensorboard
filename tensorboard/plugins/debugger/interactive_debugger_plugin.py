@@ -38,6 +38,7 @@ _DEBUGGER_GRAPH_ROUTE = '/debugger_graph'
 _DEBUGGER_GRPC_HOST_PORT_ROUTE = '/debugger_grpc_host_port'
 _GATED_GRPC_ROUTE = '/gated_grpc'
 _TENSOR_DATA_ROUTE = '/tensor_data'
+_SOURCE_CODE_ROUTE = '/source_code'
 
 
 class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
@@ -115,6 +116,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
         _DEBUGGER_GRAPH_ROUTE: self._serve_debugger_graph,
         _GATED_GRPC_ROUTE: self._serve_gated_grpc,
         _TENSOR_DATA_ROUTE: self._serve_tensor_data,
+        _SOURCE_CODE_ROUTE: self._serve_source_code,
     }
 
   def is_active(self):
@@ -267,3 +269,35 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       # tensor ranks.
       status_code = 500
     return http_util.Respond(request, response, response_encoding, status_code)
+
+  @wrappers.Request.application
+  def _serve_source_code(self, request):
+    response_encoding = 'application/json'
+
+    mode = request.args.get('mode')
+    if mode == 'paths':
+      # Retrieve all file paths.
+      response = {'paths': self._debugger_data_server.query_source_file_paths()}
+      return http_util.Respond(request, response, response_encoding)
+    elif mode == 'content':
+      # Retrieve the content of a source file.
+      file_path = request.args.get('file_path')
+      response = {
+          'content': {
+              file_path: self._debugger_data_server.query_source_file_content(
+                  file_path)},
+          'lineno_to_op_name_and_stack_pos':
+              self._debugger_data_server.query_file_tracebacks(file_path)}
+      return http_util.Respond(request, response, response_encoding)
+    elif mode == 'op_traceback':
+      # Retrieve the traceback of a graph op by name of the op.
+      op_name = request.args.get('op_name')
+      response = {
+          'op_traceback': {
+              op_name: self._debugger_data_server.query_op_traceback(op_name)
+          }
+      }
+      return http_util.Respond(request, response, response_encoding)
+    else:
+      response = {'error': 'Invalid mode for source_code endpoint: %s' % mode}
+      return http_util.Response(request, response, response_encoding, 500)

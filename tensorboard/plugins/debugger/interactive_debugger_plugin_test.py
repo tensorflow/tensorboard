@@ -24,6 +24,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import json
 import shutil
 import tempfile
@@ -120,12 +121,8 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
 
         sess.run(tf.global_variables_initializer())
 
-        run_options = tf.RunOptions()
-        tf_debug.watch_graph(run_options,
-                             sess.graph,
-                             debug_ops="DebugIdentity(gated_grpc=True)",
-                             debug_urls=self._debugger_url)
-        session_run_results.append(sess.run(y, options=run_options))
+        sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
+        session_run_results.append(sess.run(y))
     session_run_thread = threading.Thread(target=session_run_job)
     session_run_thread.start()
     return session_run_thread, session_run_results
@@ -140,14 +137,9 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
 
         sess.run(tf.global_variables_initializer())
 
-        run_options = tf.RunOptions()
-        tf_debug.watch_graph(run_options,
-                             sess.graph,
-                             debug_ops="DebugIdentity(gated_grpc=True)",
-                             debug_urls=self._debugger_url)
-
+        sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         for _ in range(steps):
-          session_run_results.append(sess.run(inc_a, options=run_options))
+          session_run_results.append(sess.run(inc_a))
     session_run_thread = threading.Thread(target=session_run_job)
     session_run_thread.start()
     return session_run_thread, session_run_results
@@ -164,12 +156,9 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
         inc_ab = tf.group([inc_a, inc_b], name="inc_ab")
 
         sess.run(tf.global_variables_initializer())
-        run_options = tf.RunOptions()
-        tf_debug.watch_graph(run_options,
-                             sess.graph,
-                             debug_ops="DebugIdentity(gated_grpc=True)",
-                             debug_urls=self._debugger_url)
-        session_run_results.append(sess.run(inc_ab, options=run_options))
+
+        sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
+        session_run_results.append(sess.run(inc_ab))
     session_run_thread = threading.Thread(target=session_run_job)
     session_run_thread.start()
     return session_run_thread, session_run_results
@@ -233,7 +222,6 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
 
     session_run_thread.join()
     self.assertAllClose([[230.0]], session_run_results)
-
 
   def testActivateOneBreakpoint(self):
     session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
@@ -643,6 +631,76 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     response_data = self._deserializeResponse(response)
     self.assertTrue(response_data['host'])
     self.assertEqual(self._debugger_port, response_data['port'])
+
+  def testGetSourceFilePaths(self):
+    session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
+    self._serverGet('comm', {'pos': 1})
+
+    source_paths_response = self._serverGet('source_code', {'mode': 'paths'})
+    response_data = self._deserializeResponse(source_paths_response)
+    self.assertIn(__file__, response_data['paths'])
+
+    self._serverGet('ack')
+    session_run_thread.join()
+    self.assertAllClose([[230.0]], session_run_results)
+
+  def testGetSourceFileContentWithValidFilePath(self):
+    session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
+    self._serverGet('comm', {'pos': 1})
+
+    file_content_response = self._serverGet(
+        'source_code', {'mode': 'content', 'file_path': __file__})
+    response_data = self._deserializeResponse(file_content_response)
+    # Verify that the content of this file is included.
+    self.assertTrue(response_data['content'][__file__])
+    # Verify that for the lines of the file that create TensorFlow ops, the list
+    # of op names and their stack heights are included.
+    op_linenos = collections.defaultdict(set)
+    for lineno in response_data['lineno_to_op_name_and_stack_pos']:
+      self.assertGreater(lineno, 0)
+      for op_name, stack_pos in response_data[
+          'lineno_to_op_name_and_stack_pos'][lineno]:
+        op_linenos[op_name].add(lineno)
+        self.assertGreaterEqual(stack_pos, 0)
+    self.assertTrue(op_linenos['a'])
+    self.assertTrue(op_linenos['a/Assign'])
+    self.assertTrue(op_linenos['a/initial_value'])
+    self.assertTrue(op_linenos['a/read'])
+    self.assertTrue(op_linenos['b'])
+    self.assertTrue(op_linenos['b/Assign'])
+    self.assertTrue(op_linenos['b/initial_value'])
+    self.assertTrue(op_linenos['b/read'])
+    self.assertTrue(op_linenos['c'])
+    self.assertTrue(op_linenos['c/Assign'])
+    self.assertTrue(op_linenos['c/initial_value'])
+    self.assertTrue(op_linenos['c/read'])
+    self.assertTrue(op_linenos['x'])
+    self.assertTrue(op_linenos['y'])
+
+    self._serverGet('ack')
+    session_run_thread.join()
+    self.assertAllClose([[230.0]], session_run_results)
+
+  def testGetSourceOpTraceback(self):
+    session_run_thread, session_run_results = self._runSimpleAddMultiplyGraph()
+    self._serverGet('comm', {'pos': 1})
+
+    for op_name in ('a', 'b', 'c', 'x', 'y'):
+      op_traceback_reponse = self._serverGet(
+          'source_code', {'mode': 'op_traceback', 'op_name': op_name})
+      response_data = self._deserializeResponse(op_traceback_reponse)
+      found_current_file = False
+      for file_path, lineno in response_data['op_traceback'][op_name]:
+        self.assertGreater(lineno, 0)
+        if file_path == __file__:
+          found_current_file = True
+          break
+      self.assertTrue(found_current_file)
+
+    self._serverGet('ack')
+    session_run_thread.join()
+    self.assertAllClose([[230.0]], session_run_results)
+
 
 
 if __name__ == "__main__":
