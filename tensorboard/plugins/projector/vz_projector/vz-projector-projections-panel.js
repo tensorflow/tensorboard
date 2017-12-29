@@ -31,6 +31,7 @@ var vz_projector;
         properties: {
             pcaIs3d: { type: Boolean, value: true, observer: '_pcaDimensionToggleObserver' },
             tSNEis3d: { type: Boolean, value: true, observer: '_tsneDimensionToggleObserver' },
+            superviseFactor: { type: Number, value: 0 },
             // PCA projection.
             pcaComponents: Array,
             pcaX: { type: Number, value: 0, observer: 'showPCAIfEnabled' },
@@ -65,14 +66,16 @@ var vz_projector;
         ProjectionsPanel.prototype.ready = function () {
             this.zDropdown = this.querySelector('#z-dropdown');
             this.runTsneButton = this.querySelector('.run-tsne');
-            this.pauseTsneButton = this.querySelector('.pause-tsne');
-            this.perturbTsneButton = this.querySelector('.perturb-tsne');
+            this.pauseTsneButton =
+                this.querySelector('.pause-tsne');
+            this.perturbTsneButton =
+                this.querySelector('.perturb-tsne');
             this.perplexitySlider =
                 this.querySelector('#perplexity-slider');
             this.learningRateInput =
                 this.querySelector('#learning-rate-slider');
-            this.perturbFactorInput =
-                this.querySelector('#perturb-factor-slider');
+            this.superviseFactorInput =
+                this.querySelector('#supervise-factor-slider');
             this.iterationLabel = this.querySelector('.run-tsne-iter');
         };
         ProjectionsPanel.prototype.disablePolymerChangesTriggerReprojection = function () {
@@ -95,12 +98,12 @@ var vz_projector;
             this.querySelector('.tsne-learning-rate span')
                 .innerText = '' + this.learningRate;
         };
-        ProjectionsPanel.prototype.updateTSNEPerturbFactorFromUIChange = function () {
-            if (this.perturbFactorInput && this.dataSet) {
-                this.dataSet.perturbFactor = +this.perturbFactorInput.value;
+        ProjectionsPanel.prototype.updateTSNESuperviseFactorFromUIChange = function () {
+            this.querySelector('.tsne-supervise-factor span')
+                .innerText = ('' + this.superviseFactor);
+            if (this.dataSet) {
+                this.dataSet.setSuperviseFactor(this.superviseFactor);
             }
-            this.querySelector('.tsne-perturb-factor span')
-                .innerText = '' + this.perturbFactorInput.value;
         };
         ProjectionsPanel.prototype.setupUIControls = function () {
             var _this = this;
@@ -125,25 +128,33 @@ var vz_projector;
             this.pauseTsneButton.addEventListener('click', function () {
                 if (_this.dataSet.tSNEShouldPause) {
                     _this.dataSet.tSNEShouldPause = false;
-                    _this.perturbTsneButton.disabled = false;
                     _this.pauseTsneButton.innerText = 'Pause';
                 }
                 else {
                     _this.dataSet.tSNEShouldPause = true;
-                    _this.perturbTsneButton.disabled = true;
                     _this.pauseTsneButton.innerText = 'Resume';
                 }
             });
-            this.perturbTsneButton.addEventListener('click', function () {
-                _this.dataSet.tSNEShouldPerturb = !_this.dataSet.tSNEShouldPerturb;
+            this.perturbTsneButton.addEventListener('mousedown', function () {
+                if (_this.dataSet && _this.projector) {
+                    _this.dataSet.perturbTsne();
+                    _this.projector.notifyProjectionPositionsUpdated();
+                    _this.perturbInterval = setInterval(function () {
+                        _this.dataSet.perturbTsne();
+                        _this.projector.notifyProjectionPositionsUpdated();
+                    }, 100);
+                }
+            });
+            this.perturbTsneButton.addEventListener('mouseup', function () {
+                clearInterval(_this.perturbInterval);
             });
             this.perplexitySlider.value = this.perplexity.toString();
             this.perplexitySlider.addEventListener('change', function () { return _this.updateTSNEPerplexityFromSliderChange(); });
             this.updateTSNEPerplexityFromSliderChange();
             this.learningRateInput.addEventListener('change', function () { return _this.updateTSNELearningRateFromUIChange(); });
             this.updateTSNELearningRateFromUIChange();
-            this.perturbFactorInput.addEventListener('change', function () { return _this.updateTSNEPerturbFactorFromUIChange(); });
-            this.updateTSNEPerturbFactorFromUIChange();
+            this.superviseFactorInput.addEventListener('change', function () { return _this.updateTSNESuperviseFactorFromUIChange(); });
+            this.updateTSNESuperviseFactorFromUIChange();
             this.setupCustomProjectionInputFields();
             // TODO: figure out why `--paper-input-container-input` css mixin didn't
             // work.
@@ -188,7 +199,6 @@ var vz_projector;
             this.setZDropdownEnabled(this.pcaIs3d);
             this.updateTSNEPerplexityFromSliderChange();
             this.updateTSNELearningRateFromUIChange();
-            this.updateTSNEPerturbFactorFromUIChange();
             if (this.iterationLabel) {
                 this.iterationLabel.innerText = bookmark.tSNEIteration.toString();
             }
@@ -351,18 +361,22 @@ var vz_projector;
         };
         ProjectionsPanel.prototype.runTSNE = function () {
             var _this = this;
+            var projectionChangeNotified = false;
             this.runTsneButton.innerText = 'Stop';
             this.runTsneButton.disabled = true;
             this.pauseTsneButton.innerText = 'Pause';
             this.pauseTsneButton.disabled = true;
-            this.perturbTsneButton.disabled = true;
+            this.perturbTsneButton.disabled = false;
             this.dataSet.projectTSNE(this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2, function (iteration) {
                 if (iteration != null) {
                     _this.runTsneButton.disabled = false;
                     _this.pauseTsneButton.disabled = false;
-                    _this.perturbTsneButton.disabled = false;
                     _this.iterationLabel.innerText = '' + iteration;
                     _this.projector.notifyProjectionPositionsUpdated();
+                    if (!projectionChangeNotified && _this.dataSet.projections['tsne']) {
+                        _this.projector.onProjectionChanged();
+                        projectionChangeNotified = true;
+                    }
                 }
                 else {
                     _this.runTsneButton.innerText = 'Re-run';
@@ -370,6 +384,7 @@ var vz_projector;
                     _this.pauseTsneButton.innerText = 'Pause';
                     _this.pauseTsneButton.disabled = true;
                     _this.perturbTsneButton.disabled = true;
+                    _this.projector.onProjectionChanged();
                 }
             });
         };

@@ -244,10 +244,57 @@ var vz_projector;
             this.ystep = arrayofs(this.N, this.dim, 0.0); // momentum accumulator
             this.iter = 0;
         };
+        TSNE.prototype.getDim = function () {
+            return this.dim;
+        };
         // return pointer to current solution
         TSNE.prototype.getSolution = function () { return this.Y; };
+        // For each point, randomly offset point within a 5% hypersphere centered
+        // around it, whilst remaining in the assumed t-SNE plot hypersphere
+        TSNE.prototype.perturb = function () {
+            var N = this.N;
+            var maxArea = 0;
+            var ymean = this.dim === 3 ? [0, 0, 0] : [0, 0];
+            // Determine radius of t-SNE hypersphere, assumed zero mean and normalized
+            // dimensions. Here area is proportional to pi*radius^2, to skip root calc.
+            for (var i = 0; i < N; ++i) {
+                var area = 0;
+                for (var d = 0; d < this.dim; ++d) {
+                    area += Math.pow(this.Y[i * this.dim + d], 2);
+                }
+                if (area > maxArea) {
+                    maxArea = area;
+                }
+            }
+            var maxRadius = Math.pow(maxArea, 0.5);
+            for (var i = 0; i < N; ++i) {
+                var diff = new Array(this.dim);
+                // Find a perturbation of point that fits inside t-SNE hypersphere
+                while (true) {
+                    var area = 0;
+                    for (var d = 0; d < this.dim; ++d) {
+                        diff[d] = 0.1 * maxRadius * (Math.random() - 0.5);
+                        area += Math.pow(this.Y[i * this.dim + d] + diff[d], 2);
+                    }
+                    if (area < maxArea) {
+                        break;
+                    }
+                }
+                // Apply offset to point
+                for (var d = 0; d < this.dim; ++d) {
+                    this.Y[i * this.dim + d] += diff[d];
+                    ymean[d] += this.Y[i * this.dim + d];
+                }
+            }
+            // reproject Y to be zero mean
+            for (var i = 0; i < N; ++i) {
+                for (var d = 0; d < this.dim; ++d) {
+                    this.Y[i * this.dim + d] -= ymean[d] / N;
+                }
+            }
+        };
         // perform a single step of optimization to improve the embedding
-        TSNE.prototype.step = function (perturb) {
+        TSNE.prototype.step = function () {
             this.iter += 1;
             var N = this.N;
             var grad = this.costGrad(this.Y); // evaluate gradient
@@ -271,7 +318,6 @@ var vz_projector;
                     // step!
                     var i_d = i * this.dim + d;
                     this.Y[i_d] += newsid;
-                    this.Y[i_d] *= 1.0 + perturb * (Math.random() - 1.0);
                     ymean[d] += this.Y[i_d]; // accumulate mean so that we
                     // can center later
                 }
@@ -283,6 +329,24 @@ var vz_projector;
                 }
             }
         };
+        TSNE.prototype.setSupervision = function (superviseLabels, superviseInput) {
+            var _this = this;
+            if (superviseLabels != null) {
+                this.labels = superviseLabels;
+                this.labelCounts = {};
+                var uniqueEntries = Array.from(new Set(superviseLabels));
+                uniqueEntries.forEach(function (l) { return _this.labelCounts[l] = 0; });
+                superviseLabels.forEach(function (l) { return _this.labelCounts[l] += 1; });
+            }
+            if (superviseInput != null) {
+                this.unlabeledClass = superviseInput;
+            }
+        };
+        TSNE.prototype.setSuperviseFactor = function (superviseFactor) {
+            if (superviseFactor != null) {
+                this.superviseFactor = superviseFactor;
+            }
+        };
         // return cost and gradient, given an arrangement
         TSNE.prototype.costGrad = function (Y) {
             var _this = this;
@@ -290,6 +354,14 @@ var vz_projector;
             var P = this.P;
             // Trick that helps with local optima.
             var alpha = this.iter < 100 ? 4 : 1;
+            var superviseFactor = this.superviseFactor / 100.; // set in range [0, 1]
+            var unlabeledClass = this.unlabeledClass;
+            var labels = this.labels;
+            var labelCounts = this.labelCounts;
+            var supervised = superviseFactor != null && superviseFactor > 0 &&
+                labels != null && labelCounts != null;
+            var unlabeledCount = supervised && unlabeledClass != null &&
+                unlabeledClass !== '' ? labelCounts[unlabeledClass] : 0;
             // Make data for the SP tree.
             var points = new Array(N); // (x, y)[]
             for (var i = 0; i < N; ++i) {
@@ -339,15 +411,33 @@ var vz_projector;
             // compute current Q distribution, unnormalized first
             var grad = [];
             var Z = 0;
+            var sum_pij = 0;
             var forces = new Array(N);
             var _loop_1 = function (i) {
                 var pointI = points[i];
+                if (supervised) {
+                    sameCount = labelCounts[labels[i]];
+                    otherCount = N - sameCount - unlabeledCount;
+                }
                 // Compute the positive forces for the i-th node.
                 var Fpos = this_1.dim === 3 ? [0, 0, 0] : [0, 0];
                 var neighbors = this_1.nearest[i];
                 for (var k = 0; k < neighbors.length; ++k) {
                     var j = neighbors[k].index;
                     var pij = P[i * N + j];
+                    // apply semi-supervised prior probabilities
+                    if (supervised) {
+                        if (labels[i] === unlabeledClass || labels[j] === unlabeledClass) {
+                            pij *= 1. / N;
+                        }
+                        else if (labels[i] !== labels[j]) {
+                            pij *= Math.max(1. / N - superviseFactor / otherCount, 1E-7);
+                        }
+                        else if (labels[i] === labels[j]) {
+                            pij *= Math.min(1. / N + superviseFactor / sameCount, 1. - 1E-7);
+                        }
+                        sum_pij += pij;
+                    }
                     var pointJ = points[j];
                     var squaredDistItoJ = this_1.dist2(pointI, pointJ);
                     var premult = pij / (1 + squaredDistItoJ);
@@ -378,12 +468,15 @@ var vz_projector;
                 }, true);
                 forces[i] = [Fpos, FnegZ];
             };
-            var this_1 = this;
+            var this_1 = this, sameCount, otherCount;
             for (var i = 0; i < N; ++i) {
                 _loop_1(i);
             }
             // Normalize the negative forces and compute the gradient.
             var A = 4 * alpha;
+            if (supervised) {
+                A /= sum_pij;
+            }
             var B = 4 / Z;
             for (var i = 0; i < N; ++i) {
                 var _a = forces[i], FPos = _a[0], FNegZ = _a[1];

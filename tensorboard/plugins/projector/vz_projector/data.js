@@ -61,8 +61,7 @@ var vz_projector;
             this.tSNEIteration = 0;
             this.tSNEShouldPause = false;
             this.tSNEShouldStop = true;
-            this.tSNEShouldPerturb = false;
-            this.perturbFactor = 0.4;
+            this.superviseInput = '';
             this.dim = [0, 0];
             this.hasTSNERun = false;
             this.points = points;
@@ -225,21 +224,22 @@ var vz_projector;
             var k = Math.floor(3 * perplexity);
             var opt = { epsilon: learningRate, perplexity: perplexity, dim: tsneDim };
             this.tsne = new vz_projector.TSNE(opt);
+            this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
+            this.tsne.setSuperviseFactor(this.superviseFactor);
             this.tSNEShouldPause = false;
             this.tSNEShouldStop = false;
-            this.tSNEShouldPerturb = false;
             this.tSNEIteration = 0;
             var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
             var step = function () {
                 if (_this.tSNEShouldStop) {
+                    _this.projections['tsne'] = false;
                     stepCallback(null);
                     _this.tsne = null;
                     _this.hasTSNERun = false;
                     return;
                 }
                 if (!_this.tSNEShouldPause) {
-                    _this.tsne.step(_this.tSNEShouldPerturb ? _this.perturbFactor : 0.0);
-                    _this.tSNEShouldPerturb = false;
+                    _this.tsne.step();
                     var result_1 = _this.tsne.getSolution();
                     sampledIndices.forEach(function (index, i) {
                         var dataPoint = _this.points[index];
@@ -249,6 +249,7 @@ var vz_projector;
                             dataPoint.projections['tsne-2'] = result_1[i * tsneDim + 2];
                         }
                     });
+                    _this.projections['tsne'] = true;
                     _this.tSNEIteration++;
                     stepCallback(_this.tSNEIteration);
                 }
@@ -273,6 +274,49 @@ var vz_projector;
                     _this.tsne.initDataDist(_this.nearest);
                 }).then(step);
             });
+        };
+        /* Perturb TSNE and update dataset point coordinates. */
+        DataSet.prototype.perturbTsne = function () {
+            var _this = this;
+            if (this.hasTSNERun && this.tsne) {
+                this.tsne.perturb();
+                var tsneDim_1 = this.tsne.getDim();
+                var result_2 = this.tsne.getSolution();
+                var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
+                sampledIndices.forEach(function (index, i) {
+                    var dataPoint = _this.points[index];
+                    dataPoint.projections['tsne-0'] = result_2[i * tsneDim_1 + 0];
+                    dataPoint.projections['tsne-1'] = result_2[i * tsneDim_1 + 1];
+                    if (tsneDim_1 === 3) {
+                        dataPoint.projections['tsne-2'] = result_2[i * tsneDim_1 + 2];
+                    }
+                });
+            }
+        };
+        DataSet.prototype.setSupervision = function (superviseColumn, superviseInput) {
+            var _this = this;
+            if (superviseColumn != null) {
+                var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
+                var labels_1 = new Array(sampledIndices.length);
+                sampledIndices.forEach(function (index, i) {
+                    return labels_1[i] = _this.points[index].metadata[superviseColumn].toString();
+                });
+                this.superviseLabels = labels_1;
+            }
+            if (superviseInput != null) {
+                this.superviseInput = superviseInput;
+            }
+            if (this.tsne) {
+                this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
+            }
+        };
+        DataSet.prototype.setSuperviseFactor = function (superviseFactor) {
+            if (superviseFactor != null) {
+                this.superviseFactor = superviseFactor;
+                if (this.tsne) {
+                    this.tsne.setSuperviseFactor(superviseFactor);
+                }
+            }
         };
         /**
          * Merges metadata to the dataset and returns whether it succeeded.

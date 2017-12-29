@@ -418,6 +418,9 @@ var vz_projector;
                 return _this.bookmarkPanel.clearStateSelection();
             });
             this.registerHoverListener(function (hoverIndex) { return _this.onHover(hoverIndex); });
+            this.registerProjectionChangedListener(function (projection) {
+                return _this.onProjectionChanged(projection);
+            });
             this.registerSelectionChangedListener(function (selectedPointIndices, neighborsOfFirstPoint) {
                 return _this.onSelectionChanged(selectedPointIndices, neighborsOfFirstPoint);
             });
@@ -446,6 +449,9 @@ var vz_projector;
             var totalNumPoints = this.selectedPointIndices.length + neighborsOfFirstPoint.length;
             this.statusBar.innerText = "Selected " + totalNumPoints + " points";
             this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';
+        };
+        Projector.prototype.onProjectionChanged = function (projection) {
+            this.dataPanel.projectionChanged(projection);
         };
         Projector.prototype.setProjection = function (projection) {
             this.projection = projection;

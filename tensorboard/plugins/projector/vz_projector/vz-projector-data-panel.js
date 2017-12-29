@@ -44,7 +44,14 @@ var vz_projector;
             metadataEditorColumnChange: { type: Object },
             metadataEditorButtonClicked: { type: Object },
             metadataEditorButtonDisabled: { type: Boolean },
-            downloadMetadataClicked: { type: Boolean }
+            downloadMetadataClicked: { type: Boolean },
+            superviseInput: { type: String },
+            superviseInputTyping: { type: Object },
+            superviseInputChange: { type: Object },
+            superviseInputLabel: { type: String, value: 'Ignored label' },
+            superviseColumn: { type: String },
+            superviseColumnChanged: { type: Object },
+            showSuperviseSettings: { type: Boolean, value: false }
         },
         observers: [
             '_generateUiForNewCheckpointForRun(selectedRun)',
@@ -59,6 +66,7 @@ var vz_projector;
         }
         DataPanel.prototype.ready = function () {
             this.normalizeData = true;
+            this.superviseInputSelected = '';
         };
         DataPanel.prototype.initialize = function (projector, dp) {
             var _this = this;
@@ -131,6 +139,25 @@ var vz_projector;
             }).length === 0) {
                 // Make the default label the first non-numeric column.
                 this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
+            }
+            if (this.superviseColumn == null || this.metadataFields.filter(function (name) {
+                return name === _this.superviseColumn;
+            }).length === 0) {
+                // Make the default supervise class the first non-numeric column.
+                this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
+                this.superviseInput = '';
+            }
+            this.superviseInputChange();
+        };
+        DataPanel.prototype.projectionChanged = function (projection) {
+            if (projection) {
+                switch (projection.projectionType) {
+                    case 'tsne':
+                        this.set('showSuperviseSettings', true);
+                        break;
+                    default:
+                        this.set('showSuperviseSettings', false);
+                }
             }
         };
         DataPanel.prototype.onProjectorSelectionChanged = function (selectedPointIndices, neighborsOfFirstPoint) {
@@ -306,6 +333,68 @@ var vz_projector;
                 this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
                 this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
                 this.$.downloadMetadataLink.click();
+            }
+        };
+        DataPanel.prototype.superviseInputTyping = function () {
+            var _this = this;
+            var value = this.superviseInput.trim();
+            if (value == null || value.trim() === '') {
+                if (this.superviseInputSelected === '') {
+                    this.superviseInputLabel = 'No ignored label';
+                }
+                else {
+                    this.superviseInputLabel =
+                        "Supervising without '" + this.superviseInputSelected + "'";
+                }
+                return;
+            }
+            if (this.projector && this.projector.dataSet) {
+                var numMatches = this.projector.dataSet.points.filter(function (p) {
+                    return p.metadata[_this.superviseColumn].toString().trim() === value;
+                }).length;
+                if (numMatches === 0) {
+                    this.superviseInputLabel = 'Label not found';
+                }
+                else {
+                    if (this.projector.dataSet.superviseInput != value) {
+                        this.superviseInputLabel =
+                            "Supervise without '" + value + "' [" + numMatches + " points]";
+                    }
+                }
+            }
+        };
+        DataPanel.prototype.superviseInputChange = function () {
+            var _this = this;
+            var value = this.superviseInput.trim();
+            if (value == null || value.trim() === '') {
+                this.superviseInputSelected = '';
+                this.superviseInputLabel = 'No ignored label';
+                this.setSupervision(this.superviseColumn, '');
+                return;
+            }
+            if (this.projector && this.projector.dataSet) {
+                var numMatches = this.projector.dataSet.points.filter(function (p) {
+                    return p.metadata[_this.superviseColumn].toString().trim() === value;
+                }).length;
+                if (numMatches === 0) {
+                    this.superviseInputLabel =
+                        "Supervising without '" + this.superviseInputSelected + "'";
+                }
+                else {
+                    this.superviseInputSelected = value;
+                    this.superviseInputLabel =
+                        "Supervising without '" + value + "' [" + numMatches + " points]";
+                    this.setSupervision(this.superviseColumn, value);
+                }
+            }
+        };
+        DataPanel.prototype.superviseColumnChanged = function () {
+            this.superviseInput = '';
+            this.superviseInputChange();
+        };
+        DataPanel.prototype.setSupervision = function (superviseColumn, superviseInput) {
+            if (this.projector && this.projector.dataSet) {
+                this.projector.dataSet.setSupervision(superviseColumn, superviseInput);
             }
         };
         DataPanel.prototype.setNormalizeData = function (normalizeData) {
