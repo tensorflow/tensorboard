@@ -69,6 +69,7 @@ def main(argv):
   loader = EventFileLoader(argv[1])
   for event in loader.Load():
     print(event)
+  return 0
 
 
 if __name__ == '__main__':

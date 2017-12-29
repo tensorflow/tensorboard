@@ -419,6 +419,3 @@ tf_web_library = rule(
     },
     outputs=CLUTZ_OUTPUTS)
 
-def ts_web_library(**kwargs):
-  print("DEPRECATION: ts_web_library is now tf_web_library")
-  tf_web_library(**kwargs)

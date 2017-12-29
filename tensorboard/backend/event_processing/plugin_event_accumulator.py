@@ -21,6 +21,7 @@ import collections
 import os
 import threading
 
+import six
 import tensorflow as tf
 
 from tensorboard import data_compat
@@ -171,10 +172,6 @@ class EventAccumulator(object):
     self.most_recent_step = -1
     self.most_recent_wall_time = -1
     self.file_version = None
-
-    # The attributes that get built up by the accumulator
-    self.accumulated_attrs = ()
-    self._tensor_summaries = {}
 
   def Reload(self):
     """Loads all events added since the last call to `Reload`.
@@ -468,6 +465,10 @@ class EventAccumulator(object):
       ## If there is no file version, default to old logic of checking for
       ## out of order steps.
       self._CheckForOutOfOrderStepAndMaybePurge(event)
+    # After checking, update the most recent summary step and wall time.
+    if event.HasField('summary'):
+      self.most_recent_step = event.step
+      self.most_recent_wall_time = event.wall_time
 
   def _CheckForRestartAndMaybePurge(self, event):
     """Check and discard expired events using SessionLog.START.
@@ -501,9 +502,6 @@ class EventAccumulator(object):
     """
     if event.step < self.most_recent_step and event.HasField('summary'):
       self._Purge(event, by_tags=True)
-    else:
-      self.most_recent_step = event.step
-      self.most_recent_wall_time = event.wall_time
 
   def _ProcessTensor(self, tag, wall_time, step, tensor):
     tv = TensorEvent(wall_time=wall_time, step=step, tensor_proto=tensor)
@@ -546,34 +544,33 @@ class EventAccumulator(object):
     ## Keep data in reservoirs that has a step less than event.step
     _NotExpired = lambda x: x.step < event.step
 
+    num_expired = 0
     if by_tags:
-      def _ExpiredPerTag(value):
-        return [getattr(self, x).FilterItems(_NotExpired, value.tag)
-                for x in self.accumulated_attrs]
-
-      expired_per_tags = [_ExpiredPerTag(value)
-                          for value in event.summary.value]
-      expired_per_type = [sum(x) for x in zip(*expired_per_tags)]
+      for value in event.summary.value:
+        if value.tag in self.tensors_by_tag:
+          tag_reservoir = self.tensors_by_tag[value.tag]
+          num_expired += tag_reservoir.FilterItems(
+              _NotExpired, _TENSOR_RESERVOIR_KEY)
     else:
-      expired_per_type = [getattr(self, x).FilterItems(_NotExpired)
-                          for x in self.accumulated_attrs]
-
-    if sum(expired_per_type) > 0:
+      for tag_reservoir in six.itervalues(self.tensors_by_tag):
+        num_expired += tag_reservoir.FilterItems(
+            _NotExpired, _TENSOR_RESERVOIR_KEY)
+    if num_expired > 0:
       purge_msg = _GetPurgeMessage(self.most_recent_step,
                                    self.most_recent_wall_time, event.step,
-                                   event.wall_time, *expired_per_type)
+                                   event.wall_time, num_expired)
       tf.logging.warn(purge_msg)
 
 
 def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
-                     event_wall_time):
+                     event_wall_time, num_expired):
   """Return the string message associated with TensorBoard purges."""
-  return ('Detected out of order event.step likely caused by '
-          'a TensorFlow restart. Purging expired events from Tensorboard'
-          ' display between the previous step: {} (timestamp: {}) and '
-          'current step: {} (timestamp: {}).'
-         ).format(most_recent_step, most_recent_wall_time, event_step,
-                  event_wall_time)
+  return ('Detected out of order event.step likely caused by a TensorFlow '
+          'restart. Purging {} expired tensor events from Tensorboard display '
+          'between the previous step: {} (timestamp: {}) and current step: {} '
+          '(timestamp: {}).'
+         ).format(num_expired, most_recent_step, most_recent_wall_time,
+                  event_step, event_wall_time)
 
 
 def _GeneratorFromPath(path):

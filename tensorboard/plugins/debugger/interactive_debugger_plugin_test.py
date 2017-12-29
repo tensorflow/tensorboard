@@ -30,12 +30,11 @@ import tempfile
 import threading
 
 import portpicker  # pylint: disable=import-error
-from six.moves import urllib
-import tensorflow as tf
-from tensorflow.python import debug as tf_debug
-
-from werkzeug import test as werkzeug_test
-from werkzeug import wrappers
+from six.moves import urllib  # pylint: disable=wrong-import-order
+import tensorflow as tf  # pylint: disable=wrong-import-order
+from tensorflow.python import debug as tf_debug  # pylint: disable=wrong-import-order
+from werkzeug import test as werkzeug_test  # pylint: disable=wrong-import-order
+from werkzeug import wrappers  # pylint: disable=wrong-import-order
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long

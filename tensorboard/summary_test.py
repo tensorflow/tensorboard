@@ -25,8 +25,8 @@ from __future__ import print_function
 
 import collections
 
-import tensorboard as tb
 import tensorflow as tf
+import tensorboard as tb
 
 
 STANDARD_PLUGINS = frozenset([

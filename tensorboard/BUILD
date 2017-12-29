@@ -15,6 +15,7 @@ package_group(
     packages = ["//tensorboard/..."],
 )
 
+# The standard TensorBoard binary that serves the webapp.
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
@@ -28,6 +29,8 @@ py_binary(
     ],
 )
 
+# The public TensorBoard python library, bundled with the pip package and
+# available via 'import tensorboard as tb' once installed.
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
