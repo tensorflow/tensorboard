@@ -332,7 +332,7 @@ export class TSNE {
     // dimensions. Here area is proportional to pi*radius^2, to skip root calc.
     for (let i = 0; i < N; ++i) {
       let area = 0;
-      
+
       for (let d = 0; d < this.dim; ++d) {
         area += Math.pow(this.Y[i * this.dim + d], 2);
       }

@@ -401,7 +401,7 @@ export class DataPanel extends DataPanelPolymer {
     if (this.projector && this.projector.dataSet) {
       let numMatches = this.projector.dataSet.points.filter(p =>
           p.metadata[this.superviseColumn].toString().trim() === value).length;
-      
+
       if (numMatches === 0) {
         this.superviseInputLabel = 'Label not found';
       }
