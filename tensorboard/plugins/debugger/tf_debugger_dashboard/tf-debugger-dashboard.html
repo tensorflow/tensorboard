@@ -35,6 +35,7 @@ limitations under the License.
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-debugger-initial-dialog.html">
+<link rel="import" href="tf-debugger-vertical-resizer.html">
 <link rel="import" href="tf-op-selector.html">
 <link rel="import" href="tf-session-runs-view.html">
 <link rel="import" href="tf-tensor-data-summary.html">
@@ -66,7 +67,7 @@ limitations under the License.
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" id="left-menu">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Node List</div>
           <tf-op-selector
@@ -76,6 +77,11 @@ limitations under the License.
               force-expand-and-check-node-name="[[_forceExpandAndCheckNodeName]]"
               force-expand-node-name="[[_forceExpandNodeName]]">
           </tf-op-selector>
+          <tf-debugger-vertical-resizer
+              current-width="{{_leftMenuWidth}}"
+              min-width="[[_minLeftMenuWidth]]"
+              max-width="[[_maxLeftMenuWidth]]">
+          </tf-debugger-vertical-resizer>
         </div>
         <div>
           <tf-session-runs-view
@@ -106,7 +112,7 @@ limitations under the License.
           ></tf-graph-loader>
         </div>
       </div>
-      <div class="center">
+      <div class="center" id="center-content">
         <div id="top-right-content-container">
           <paper-tabs selected="0" selected="{{_topRightSelected}}">
             <template is="dom-repeat" items="[[_topRightTabs]]">
@@ -249,6 +255,10 @@ limitations under the License.
       .center {
         position: relative;
         height: 100%;
+      }
+      #center-content {
+        position: absolute;
+        right: 0;
       }
       .context-menu {
         position: absolute;
@@ -452,14 +462,45 @@ limitations under the License.
           type: Boolean,
           value: false,
         },
+
+        _leftMenuWidth: {
+          type: Number,
+          value: 450,
+        },
+
+        _minLeftMenuWidth: {
+          type: Number,
+          value: 450,
+          readOnly: true,
+        },
+
+        _maxLeftMenuWidth: Number,
+
+        _maxMainContentWidth: {
+          type: Number,
+          value: 350,
+          readOnly: true,
+        },
+
+        _resizerWidth: {
+          type: Number,
+          value: 30,
+          readOnly: true,
+        },
       },
 
       observers: [
         "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
+        "_sizeDashboardRegions(_leftMenuWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
 
       ready() {
+        this._handleWindowResize();
+        window.addEventListener('resize', () => {
+          this._handleWindowResize();
+        }, false);
+
         this.reload();
       },
 
@@ -639,8 +680,6 @@ limitations under the License.
           "path": url,
         }];
         this.$.loader.set("selectedDataset", 0);
-        this.$$('.container').style.width = '600px';
-        this.$$('.container').style.width = '450px';
       },
 
       _processGatedGrpcDebugOps(runKey, pollingForFirstGraph) {
@@ -1015,6 +1054,30 @@ limitations under the License.
           topRightProgressBar.setAttribute('value', progress.value);
           this.set('_busy', progress.value < 100);
         }
+      },
+      _handleWindowResize() {
+        // Do not let the main content exceed this width when the user
+        // resizes the left panel. Otherwise, the resizer would go off
+        // the viewport to the right, and the user would no longer be
+        // able to access the resizer.
+        this.set(
+            '_maxLeftMenuWidth',
+            this._getWindowWidth() -
+                this._maxMainContentWidth -
+                this._resizerWidth);
+        this._sizeDashboardRegions(this._leftMenuWidth);
+      },
+      _sizeDashboardRegions(leftMenuWidth) {
+        this.$$('#left-menu').style.width = leftMenuWidth + 'px';
+
+        const windowWidth = this._getWindowWidth();
+        this.$$('#center-content').style.width = (
+            windowWidth - leftMenuWidth - this._resizerWidth) + 'px';
+      },
+      _getWindowWidth() {
+        return window.innerWidth ||
+            document.documentElement.clientWidth ||
+            document.body.clientWidth;
       },
     });
 
