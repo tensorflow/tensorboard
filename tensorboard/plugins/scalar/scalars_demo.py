@@ -96,7 +96,8 @@ def run(logdir, run_name,
   summ = tf.summary.merge_all()
 
   # Now, augment the current temperature by this delta that we computed,
-  # blocking the assignment on summary collection to avoid race conditions.
+  # blocking the assignment on summary collection to avoid race conditions
+  # and ensure that the summary always reports the pre-update value.
   with tf.control_dependencies([summ]):
     update_step = temperature.assign_add(delta)
 
