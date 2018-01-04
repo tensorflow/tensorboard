@@ -33,7 +33,7 @@ before_install:
         ;;
       NIGHTLY)
         if [[ "${TRAVIS_PYTHON_VERSION}" == 2* ]]; then
-        DOCKER_INSTANCE_VERSION='nightly-py2'
+        DOCKER_INSTANCE_VERSION='nightly'
         else
         DOCKER_INSTANCE_VERSION='nightly-py3'
         fi
