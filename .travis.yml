@@ -59,12 +59,12 @@ before_install:
     docker exec $CONTAINER /bin/sh -c "pip install grpcio==1.6.3"
 
     docker exec $CONTAINER /bin/sh -c "export OUTPUT_BASE=\"`pwd`/.bazel-output-base\""
-    docker exec $CONTAINER /bin/sh -c "mkdir $OUTPUT_BASE"
+    docker exec $CONTAINER /bin/sh -c "mkdir \$OUTPUT_BASE"
 
 script:
   - |
     docker exec $CONTAINER /bin/sh -c "bazel \
-      --output_base=$OUTPUT_BASE \
+      --output_base=\$OUTPUT_BASE \
       --batch \
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
@@ -81,7 +81,7 @@ script:
 
   - |
     docker exec $CONTAINER /bin/sh -c "bazel \
-      --output_base=$OUTPUT_BASE \
+      --output_base=\$OUTPUT_BASE \
       --batch \
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
@@ -93,15 +93,15 @@ script:
       --spawn_strategy=sandboxed \
       --local_resources=400,2,1.0"
   - |
-    docker exec $CONTAINER /bin/sh -c "TB=$(pwd)"
+    docker exec $CONTAINER /bin/sh -c "TB=\$(pwd)"
     docker exec $CONTAINER /bin/sh -c "cd bazel-genfiles"
-    docker exec $CONTAINER /bin/sh -c "find tensorboard -name \*.py -exec cp {} \"$TB\"/{} \;"
-    docker exec $CONTAINER /bin/sh -c "cd \"$TB\""
+    docker exec $CONTAINER /bin/sh -c "find tensorboard -name \*.py -exec cp {} \"\$TB\"/{} \;"
+    docker exec $CONTAINER /bin/sh -c "cd \"\$TB\""
     docker exec $CONTAINER /bin/sh -c "pylint tensorboard"
 
 before_cache:
   - |
-    docker exec $CONTAINER /bin/sh -c "find $OUTPUT_BASE \
+    docker exec $CONTAINER /bin/sh -c "find \$OUTPUT_BASE \
       -name \*.runfiles -print0 \
       -or -name \*.tar.gz -print0 \
       -or -name \*-execroot.json -print0 \
