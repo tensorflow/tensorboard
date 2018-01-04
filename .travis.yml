@@ -53,7 +53,11 @@ before_install:
 
     BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
     docker exec $CONTAINER /bin/sh -c "apt-get install -y wget"
-    docker exec $CONTAINER /bin/sh -c "wget -t 3 -O install.sh ${BAZEL_URL};chmod +x install.sh;./install.sh --user"
+    
+    docker exec $CONTAINER /bin/sh -c "wget -t 3 -O install.sh ${BAZEL_URL}"
+    docker exec $CONTAINER /bin/sh -c "chmod +x install.sh"
+    docker exec $CONTAINER /bin/sh -c "./install.sh --user"
+
     docker exec $CONTAINER /bin/sh -c "pip install pylint==1.8.1"
     docker exec $CONTAINER /bin/sh -c "pip install futures==3.1.1"
     docker exec $CONTAINER /bin/sh -c "pip install grpcio==1.6.3"
