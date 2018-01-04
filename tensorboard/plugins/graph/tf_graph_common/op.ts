@@ -23,6 +23,9 @@ module tf.graph.op {
     'Acosh',
     'Add',
     'AddN',
+    `AdjustContrastv2`
+    `AdjustHue`
+    `AdjustSaturation`
     'All',
     'Angle',
     'Any',
@@ -72,6 +75,7 @@ module tf.graph.op {
     'Cosh',
     'Cross',
     'CrossReplicaSum',
+    `Cumsum`
     'DepthToSpace',
     'DepthwiseConv2dNative',
     'DepthwiseConv2dNativeBackpropFilter',
@@ -87,16 +91,28 @@ module tf.graph.op {
     'Exp',
     'ExpandDims',
     'Expm1',
+    `FFT`
+    `FFT2D`
+    `FFT3D`
     'Fill',
     'Floor',
     'FloorDiv',
     'FloorMod',
     'FusedBatchNorm',
     'FusedBatchNormGrad',
+    `FusedBatchNormGradV2`
+    `FusedBatchNormV2`
     'Gather',
     'GatherV2',
     'Greater',
     'GreaterEqual',
+    `HSVToRGB`
+    `IFFT`
+    `IFFT2D`
+    `IFFT3D`
+    `IRFFT`
+    `IRFFT2D`
+    `IRFFT3D`
     'Identity',
     'IdentityN',
     'If',
@@ -155,6 +171,10 @@ module tf.graph.op {
     'PreventGradient',
     'Prod',
     'QuantizeAndDequantizeV2',
+    `RFFT`
+    `RFFT2D`
+    `RFFT3D`
+    `RGBToHSV`
     'RandomStandardNormal',
     'RandomUniform',
     'RandomUniformInt',
@@ -171,6 +191,8 @@ module tf.graph.op {
     'Relu6Grad',
     'ReluGrad',
     'Reshape',
+    `ResizeBilinear`
+    `ResizeBilinearGrad`
     'ResourceApplyAdagrad',
     'ResourceApplyAdam',
     'ResourceApplyFtrl',
@@ -222,6 +244,8 @@ module tf.graph.op {
     'StackPopV2',
     'StackPushV2',
     'StackV2',
+    `StatelessRandomNormal`
+    `StatelessRandomUniform`
     'StopGradient',
     'StridedSlice',
     'StridedSliceGrad',
@@ -251,6 +275,7 @@ module tf.graph.op {
     'UnsortedSegmentSum',
     'UpdateSlice',
     'VarIsInitializedOp',
+    `VariableShape`
     'While',
     'XlaIf',
     'XlaWhile',
@@ -258,10 +283,6 @@ module tf.graph.op {
     // Ops below are whitelisted, although these technically run on the CPU.
     // Separating these to indicate that these are manually added, as opposed to
     // those above that are gleaned from the op registry.
-    'Merge',
-    'Switch',
-    'Identity',
-    'NextIteration',
     'Placeholder',
     'VarHandleOp'
   ];
