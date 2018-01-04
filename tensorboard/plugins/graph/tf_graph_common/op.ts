@@ -284,7 +284,10 @@ module tf.graph.op {
     // Separating these to indicate that these are manually added, as opposed to
     // those above that are gleaned from the op registry.
     'Placeholder',
-    'VarHandleOp'
+    'VarHandleOp',
+    'Merge',
+    'Switch',
+    'NextIteration'
   ];
 
   /**
