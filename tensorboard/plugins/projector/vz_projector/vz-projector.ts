@@ -182,6 +182,46 @@ export class Projector extends ProjectorPolymer implements
     }
   }
 
+  metadataEdit(metadataColumn: string, metadataLabel: string) {
+    this.selectedPointIndices.forEach(i =>
+        this.dataSet.points[i].metadata[metadataColumn] = metadataLabel);
+    
+    this.neighborsOfFirstPoint.forEach(p =>
+        this.dataSet.points[p.index].metadata[metadataColumn] = metadataLabel);
+    
+    this.dataSet.spriteAndMetadataInfo.stats = analyzeMetadata(
+        this.dataSet.spriteAndMetadataInfo.stats.map(s => s.name),
+        this.dataSet.points.map(p => p.metadata));
+    this.metadataChanged(this.dataSet.spriteAndMetadataInfo);
+    this.metadataEditorContext(true, metadataColumn);
+  }
+
+  metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo,
+      metadataFile?: string) {
+    if (metadataFile != null) {
+      this.metadataFile = metadataFile;
+    }
+    this.dataSet.spriteAndMetadataInfo = spriteAndMetadata;
+    this.projectionsPanel.metadataChanged(spriteAndMetadata);
+    this.inspectorPanel.metadataChanged(spriteAndMetadata);
+    this.dataPanel.metadataChanged(spriteAndMetadata, this.metadataFile);
+    
+    if (this.selectedPointIndices.length > 0) {  // at least one selected point
+      this.metadataCard.updateMetadata(  // show metadata for first selected point
+          this.dataSet.points[this.selectedPointIndices[0]].metadata);
+    }
+    else {  // no points selected
+      this.metadataCard.updateMetadata(null);  // clear metadata
+    }
+    this.setSelectedLabelOption(this.selectedLabelOption);
+  }
+
+  metadataEditorContext(enabled: boolean, metadataColumn: string) {
+    if (this.inspectorPanel) {
+      this.inspectorPanel.metadataEditorContext(enabled, metadataColumn);
+    }
+  }
+
   setSelectedTensor(run: string, tensorInfo: EmbeddingInfo) {
     this.bookmarkPanel.setSelectedTensor(run, tensorInfo, this.dataProvider);
   }
@@ -469,6 +509,9 @@ export class Projector extends ProjectorPolymer implements
     this.registerHoverListener(
         (hoverIndex: number) => this.onHover(hoverIndex));
 
+    this.registerProjectionChangedListener((projection: Projection) =>
+        this.onProjectionChanged(projection));
+
     this.registerSelectionChangedListener(
         (selectedPointIndices: number[],
          neighborsOfFirstPoint: knn.NearestEntry[]) =>
@@ -500,10 +543,16 @@ export class Projector extends ProjectorPolymer implements
       neighborsOfFirstPoint: knn.NearestEntry[]) {
     this.selectedPointIndices = selectedPointIndices;
     this.neighborsOfFirstPoint = neighborsOfFirstPoint;
+    this.dataPanel.onProjectorSelectionChanged(selectedPointIndices, 
+        neighborsOfFirstPoint);
     let totalNumPoints =
         this.selectedPointIndices.length + neighborsOfFirstPoint.length;
     this.statusBar.innerText = `Selected ${totalNumPoints} points`;
     this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';
+  }
+
+  onProjectionChanged(projection?: Projection) {
+    this.dataPanel.projectionChanged(projection);
   }
 
   setProjection(projection: Projection) {

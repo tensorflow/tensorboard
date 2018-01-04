@@ -1,0 +1,369 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--
+  input-pipeline-analyzer is a view within the tf-profile-dashboard.
+  It shows an graphical analysis for tensorflow input pipeline on TPU by comparing the average step
+  time on host and on device.
+-->
+
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+
+<dom-module id="input-pipeline-analyzer">
+  <template>
+    <style>
+      .section-header {
+        text-decoration:underline;
+        font-weight:bold;
+        font-size:200%;
+      }
+      .sub-section-header {
+        text-decoration:underline;
+        font-weight:bold;
+        font-size:150%;
+      }
+      .summary-conclusion {
+        font-weight:bold;
+        font-style:italic;
+        color:var(--summary-color, black);
+      }
+      .highlighted-text {
+        text-decoration:underline;
+        font-weight:bold;
+        font-size:120%;
+      }
+      .stddev-text{
+        font-style:italic;
+        opacity:0.7;
+      }
+      .left-pane {
+        width:30%;
+      }
+      .right-pane {
+        width:70%;
+        height:300px;
+      }
+      .table-style {
+        table-layout:fixed;
+        width:95%;
+      }
+    </style>
+    <div>
+      <div id="section_summary">
+        <div id="title_summary">
+           <p class="section-header"> Section 1: Summary of input-pipeline analysis</p>
+        </div>
+        <p id="summary">
+          <span>The overall performance is </span>
+          <span class="summary-conclusion">[[_summary_text]]</span>
+          <span>input-bounded because on average (over all steps) the device has spent </span>
+          <span><span class="summary-conclusion">[[_infeed_percent_average]]</span> of time </span>
+          <span>(standard deviation = [[_infeed_percent_stddev]]) waiting for input data </span>
+          <span>[see Section 2 below for details].</span>
+        </p>
+        <p id="summary-host">
+          <span>[[_host_conclusion]]</span>
+        </p>
+      </div>
+      <div id="section_device_side_analysis">
+        <div id="title_device_side_analysis">
+          <p class="section-header"> Section 2: Device-side analysis details</p>
+        </div>
+        <div id="section_device_step_time">
+          <div id="title_device_step_time">
+            <p class="sub-section-header">Section 2.1: Device step time</p>
+          </div>
+          <table class="table-style">
+            <tr>
+              <td class="left-pane">
+                <div><p class="highlighted-text">Device step-time statistics (in ms)</p></div>
+                <p>
+                  <span><b>Average:</b> </span>
+                  <span>[[_steptime_ms_average]] ms </span>
+                  <span class="stddev-text">(σ = [[_steptime_ms_stddev]] ms)</span>
+                </p>
+                <p>
+                  <span><b>Range:</b> </span>
+                  <span>[[_steptime_ms_minimum]] - [[_steptime_ms_maximum]] ms</span>
+                </p>
+              </td>
+              <td class="right-pane">
+                <vz-line-chart id="device_step_chart" style="height:300px;"></vz-line-chart>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div id="section_device_infeeddeq_time">
+          <div id="title_device_infeeddeq_time">
+            <p class="sub-section-header">
+              <span>Section 2.2: Range of device time waiting for input data </span>
+              <span><i style="opacity:0.5">across cores</i> at each step </span>
+            </p>
+          </div>
+          <table class="table-style">
+            <tr>
+              <td>
+                <p>
+                  <span class="highlighted-text">% of device step time waiting for input data</span>
+                  <span> (average over the maximum waiting time across cores at each step)</span>
+                </p>
+                <p>
+                  <span><b>Average:</b> </span>
+                  <span>[[_infeed_percent_average]] % </span>
+                  <span class="stddev-text">(σ = [[_infeed_percent_stddev]] %)</span>
+                </p>
+                <p>
+                  <span><b>Range:</b> </span>
+                  <span>[[_infeed_percent_minimum]] - [[_infeed_percent_maximum]] %</span>
+                </p>
+              </td>
+              <td width="70%">
+                <vz-line-chart id="device_infeed_chart" style="height:300px;"></vz-line-chart>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div id="section_host_side_analysis">
+        <div id="title_host_side_analysis">
+          <p class="section-header">Section 3: Host-side analysis details</p>
+        </div>
+        <div style="height:300px;" id="host_side_chart"></div>
+        <p>
+          <span><b>Explanation:</b> </span>
+          <span>To improve performance, you should try to convert from </span>
+          <span>"Reading data from files on demand" (if any) to </span>
+          <span>"Reading data from files in advance". </span>
+        </p>
+        <p> Click the "Show" button below to see the source data of the breakdown.</p>
+        <button on-click="onClick">[[_toggle_button_text]]</button>
+        <template is="dom-if" if="{{_show_host_side_table}}">
+          <table id="host-side-table", style="width:100%;">
+            <thead>
+              <th>Input Op</th>
+              <th>Count</th>
+              <th>Total Time (in ms)</th>
+              <th>Total Time (as % of total input-processing time)</th>
+              <th>Total Self Time (in ms)</th>
+              <th>Total Self Time (as % of total input-processing time)</th>
+              <th>Category</th>
+            </thead>
+          </table>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+    is: 'input-pipeline-analyzer',
+    properties: {
+      _requestManager: {
+        type: Object,
+        readOnly: true,
+        value: () => new tf_backend.RequestManager(),
+      },
+      run: {
+        type: String,
+        observer: '_reloadToolData',
+      },
+      _data: {
+        type: Object,
+        observer: '_updateView',
+      },
+      _show_host_side_table: {
+        type: Boolean,
+        value: true,
+        notify: true,
+      },
+      _toggle_button_text: {
+        type: String,
+        computed: '_getToggleButtonText(_show_host_side_table)'
+      },
+    },
+    _summary_text: String,
+    _infeed_percent_average: String,
+    _infeed_percent_stddev: String,
+    _infeed_percent_minimum: String,
+    _infeed_percent_maximum: String,
+    _steptime_ms_average: String,
+    _steptime_ms_stddev: String,
+    _steptime_ms_minimum: String,
+    _steptime_ms_maximum: String,
+    _host_conclusion: String,
+    onClick: function(e) {
+      this.set('_show_host_side_table', !this._show_host_side_table);
+    },
+    _reloadToolData: function(run) {
+      this._requestManager.request(tf_backend.addParams(
+          tf_backend.getRouter().pluginRoute('profile', '/data'),
+          {tag: 'input_pipeline_analyzer', run})
+      ).then((data) => {
+        if (data) {
+          this.set('_data', data);
+        }
+      });
+    },
+    _getToggleButtonText: function(show_host_side_table) {
+      return (show_host_side_table ? 'Hide' : 'Show') + ' Input Op Statistics';
+    },
+
+    /* Update view according to new data */
+    _updateView: function() {
+      var deviceJson = this._data[0];
+      var hostJson = this._data[1];
+      this.set('_summary_text', deviceJson.p['summary_text']);
+      this.set('_infeed_percent_average', deviceJson.p['infeed_percent_average']);
+      this.set('_infeed_percent_stddev', deviceJson.p['infeed_percent_standard_deviation']);
+      this.set('_infeed_percent_minimum', deviceJson.p['infeed_percent_minimum']);
+      this.set('_infeed_percent_maximum', deviceJson.p['infeed_percent_maximum']);
+      this.set('_steptime_ms_average', deviceJson.p['steptime_ms_average']);
+      this.set('_steptime_ms_stddev', deviceJson.p['steptime_ms_standard_deviation']);
+      this.set('_steptime_ms_minimum', deviceJson.p['steptime_ms_minimum']);
+      this.set('_steptime_ms_maximum', deviceJson.p['steptime_ms_maximum']);
+      this.set('_host_conclusion', hostJson.p['conclusion']);
+      this.customStyle['--summary-color'] =  deviceJson.p['summary_color'];
+      this.updateStyles();
+      this._showDeviceStepChart(deviceJson);
+      this._showDeviceInfeedChart(deviceJson);
+      this._showHostChart(hostJson);
+      this._showHostTable(hostJson);
+    },
+
+    /* Plots a graph of step time (in ms) against step number */
+    _showDeviceStepChart : function(deviceJson) {
+      var deviceStepSeries = [];
+      var hostStepSeries = [];
+      var maxStepTime = 0;
+      deviceJson.rows.forEach(function(row, index) {
+        var step = Number(row.c[0].v);
+        deviceStepSeries.push({"scalar": row.c[1].v,
+                               "step": step,
+                               "low_watermark": 0})
+        hostStepSeries.push({"scalar": row.c[1].v + row.c[2].v,
+                             "step": step,
+                             "low_watermark": row.c[1].v})
+        maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
+      })
+      var chart = this.$.device_step_chart;
+      if (chart) {
+        chart.setVisibleSeries(['total step time', 'device step time']);
+        chart.setSeriesData('total step time', hostStepSeries);
+        chart.setSeriesData('device step time', deviceStepSeries);
+        chart.defaultYRange = [0, maxStepTime * 1.1]
+        chart.smoothingEnabled = false;
+        chart.tooltipColumns = [
+          { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
+          { title: 'Time(ms)', evaluate: (d) => d.datum.scalar },
+          { title: 'Step', evaluate: (d) => d.datum.step }];
+        chart.fillArea = {
+          higherAccessor: (d) => d.scalar,
+          lowerAccessor: (d) => d.low_watermark,
+        };
+      }
+    },
+
+    /* Plots a graph of infeed dequeue time (in % of the step time) against step number */
+    _showDeviceInfeedChart: function (deviceJson) {
+      var deviceInfeedSeries = [];
+      deviceJson.rows.forEach(function(row, index) {
+        deviceInfeedSeries.push({"step": Number(row.c[0].v),
+                                 "scalar": row.c[4].v,
+                                 "min": row.c[5].v,
+                                 "max": row.c[6].v});
+      })
+      var chart = this.$.device_infeed_chart;
+      if (chart) {
+        chart.setVisibleSeries(['infeed deque time%']);
+        chart.setSeriesData('infeed deque time%', deviceInfeedSeries);
+        chart.tooltipColumns = [
+          { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
+          { title: 'Step', evaluate: (d) => d.datum.step },
+          { title: 'Average(%)', evaluate: (d) => (d.datum.scalar).toFixed(2) + '%' },
+          { title: 'Min(%)', evaluate: (d) => (d.datum.min).toFixed(2) + '%' },
+          { title: 'Max(%)', evaluate: (d) => (d.datum.max).toFixed(2) + '%' }];
+        chart.fillArea = {
+          higherAccessor: (d) => d.max,
+          lowerAccessor: (d) => d.min,
+        };
+      }
+    },
+
+    /* Plots a stacked bar chart for the breakdown of input processing time on the host. */
+    _showHostChart: function(hostJson) {
+      const kUsPerMs = 1000.0;
+      var demandedFileReadMs = Number(hostJson.p['demanded_file_read_us']) / kUsPerMs;
+      var advancedFileReadMs = Number(hostJson.p['advanced_file_read_us']) / kUsPerMs;
+      var preprocessingMs = Number(hostJson.p['preprocessing_us']) / kUsPerMs;
+      var enqueueMs = Number(hostJson.p['enqueue_us']) / kUsPerMs;
+      var totalInputTimeMs = demandedFileReadMs + advancedFileReadMs + preprocessingMs + enqueueMs;
+      if (totalInputTimeMs > 0) {
+        var pie_data = [{ Name:"Reading data from files on demand",
+                          Total:demandedFileReadMs / totalInputTimeMs * 100 },
+                        { Name:"Reading data from files in advance [including caching, prefetching, interleaving]",
+                          Total:advancedFileReadMs /totalInputTimeMs * 100 },
+                        { Name:"Data preprocessing",
+                          Total:preprocessingMs/totalInputTimeMs * 100 },
+                        { Name:"Enqueuing data to be transferred to device",
+                          Total:enqueueMs/totalInputTimeMs * 100 }];
+
+
+        var colorScale = new Plottable.Scales.Color();
+        var legend = new Plottable.Components.Legend(colorScale);
+
+        var div = d3.select(this.$.host_side_chart);
+        var pie = new Plottable.Plots.Pie()
+          .attr("fill", function(d){ return d.Name; }, colorScale)
+          .addDataset(new Plottable.Dataset(pie_data))
+          .sectorValue(function(d){ return d.Total; } )
+          .labelsEnabled(true)
+          .labelFormatter(function(n){ return Number(n).toFixed(2) + "%" ;});
+        var plot = new Plottable.Components.Table([[pie, legend]]);
+        plot.renderTo(div);
+
+      }
+    },
+
+    /* Draws a table of Dataset Op statistics */
+    _showHostTable: function(hostJson) {
+      var inputOpsTable = document.getElementById('host-side-table');
+      var inputOpsTableBody = document.createElement('tbody');
+      Polymer.dom(inputOpsTable).appendChild(inputOpsTableBody);
+      hostJson.rows.forEach(function(rowJson, index) {
+        var row = document.createElement('tr');
+        Polymer.dom(inputOpsTableBody).appendChild(row);
+        /* formatting the cell */
+        var cellTexts = [];
+        cellTexts.push(rowJson.c[0].v);
+        cellTexts.push(rowJson.c[1].v);
+        cellTexts.push((rowJson.c[2].v).toFixed(2));
+        cellTexts.push((rowJson.c[3].v * 100).toFixed(2) + '%');
+        cellTexts.push((rowJson.c[4].v).toFixed(2));
+        cellTexts.push((rowJson.c[5].v * 100).toFixed(2) + '%');
+        cellTexts.push(rowJson.c[6].v);
+        cellTexts.forEach(function(cellText, index) {
+          var td = document.createElement('td');
+          Polymer.dom(row).appendChild(td);
+          Polymer.dom(td).appendChild(document.createTextNode(cellText));
+        });
+      });
+      this.set('_show_host_side_table', false);
+    }
+  });
+
+  </script>
+</dom-module>

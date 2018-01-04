@@ -22,12 +22,13 @@ from __future__ import unicode_literals
 import gzip
 import json
 import re
+import struct
 import time
 import wsgiref.handlers
 
 import six
 import tensorflow as tf
-from werkzeug import wrappers
+import werkzeug
 
 from tensorboard.backend import json_util
 
@@ -119,19 +120,32 @@ def Respond(request,
   content = tf.compat.as_bytes(content, charset)
   if textual and not charset_match and mimetype not in _JSON_MIMETYPES:
     content_type += '; charset=' + charset
-  if (not content_encoding and textual and
-      _ALLOWS_GZIP_PATTERN.search(request.headers.get('Accept-Encoding', ''))):
+  gzip_accepted = _ALLOWS_GZIP_PATTERN.search(
+      request.headers.get('Accept-Encoding', ''))
+  # Automatically gzip uncompressed text data if accepted.
+  if textual and not content_encoding and gzip_accepted:
     out = six.BytesIO()
-    f = gzip.GzipFile(fileobj=out, mode='wb', compresslevel=3)
-    f.write(content)
-    f.close()
+    # Set mtime to zero to make payload for a given input deterministic.
+    with gzip.GzipFile(fileobj=out, mode='wb', compresslevel=3, mtime=0) as f:
+      f.write(content)
     content = out.getvalue()
     content_encoding = 'gzip'
-  if request.method == 'HEAD':
-    content = ''
-  headers = []
 
-  headers.append(('Content-Length', str(len(content))))
+  content_length = len(content)
+  direct_passthrough = False
+  # Automatically streamwise-gunzip precompressed data if not accepted.
+  if content_encoding == 'gzip' and not gzip_accepted:
+    gzip_file = gzip.GzipFile(fileobj=six.BytesIO(content), mode='rb')
+    # Last 4 bytes of gzip formatted data (little-endian) store the original
+    # content length mod 2^32; we just assume it's the content length. That
+    # means we can't streamwise-gunzip >4 GB precompressed file; this is ok.
+    content_length = struct.unpack('<I', content[-4:])[0]
+    content = werkzeug.wsgi.wrap_file(request.environ, gzip_file)
+    content_encoding = None
+    direct_passthrough = True
+
+  headers = []
+  headers.append(('Content-Length', str(content_length)))
   if content_encoding:
     headers.append(('Content-Encoding', content_encoding))
   if expires > 0:
@@ -142,5 +156,9 @@ def Respond(request,
     headers.append(('Expires', '0'))
     headers.append(('Cache-Control', 'no-cache, must-revalidate'))
 
-  return wrappers.Response(
-      response=content, status=code, headers=headers, content_type=content_type)
+  if request.method == 'HEAD':
+    content = None
+
+  return werkzeug.wrappers.Response(
+      response=content, status=code, headers=headers, content_type=content_type,
+      direct_passthrough=direct_passthrough)

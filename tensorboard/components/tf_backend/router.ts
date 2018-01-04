@@ -18,6 +18,7 @@ export interface Router {
   logdir: () => string;
   runs: () => string;
   pluginsListing: () => string;
+  windowProperties: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
 }
@@ -47,6 +48,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     pluginsListing: () => dataDir + '/plugins_listing',
+    windowProperties: () => dataDir + '/window_properties',
     isDemoMode: () => demoMode,
     pluginRoute,
   };

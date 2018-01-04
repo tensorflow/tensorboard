@@ -802,6 +802,17 @@ Polymer({
     this._updateLabels(!this._zoomed);
   },
   /**
+   * Pans to a node. Assumes that the node exists.
+   * @param nodeName {string} The name of the node to pan to.
+   */
+  panToNode(nodeName) {
+    const zoomed = tf.graph.scene.panToNode(
+        nodeName, this.$.svg, this.$.root, this._zoom);
+    if (zoomed) {
+      this._zoomed = true;
+    }
+  },
+  /**
    * Resets the state of the component. Called whenever the whole graph
    * (dataset) changes.
    */
@@ -1113,10 +1124,11 @@ Polymer({
       this._updateNodeState(selectedNode);
     }
 
-    if (tf.graph.scene.panToNode(selectedNode, this.$.svg, this.$.root,
-        this._zoom)) {
-      this._zoomed = true;
-    }
+    // Give time for any expanding to finish before panning to a node.
+    // Otherwise, the pan will be computed from incorrect measurements.
+    setTimeout(() => {
+      this.panToNode(selectedNode);
+    }, tf.graph.layout.PARAMS.animation.duration);
   },
   _highlightedNodeChanged: function(highlightedNode, oldHighlightedNode) {
     if (highlightedNode === oldHighlightedNode) {

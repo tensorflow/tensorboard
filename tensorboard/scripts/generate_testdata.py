@@ -219,6 +219,7 @@ def main(unused_argv=None):
       print("Refusing to overwrite target %s without --overwrite" % target)
       return -2
   GenerateTestData(target)
+  return 0
 
 
 if __name__ == "__main__":

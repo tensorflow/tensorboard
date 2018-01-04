@@ -85,3 +85,15 @@ tb_proto_library(
     srcs = ["layout.proto"],
     visibility = ["//visibility:public"],
 )
+
+py_binary(
+    name = "custom_scalar_demo",
+    srcs = ["custom_scalar_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:summary",
+        "@org_pythonhosted_six",
+    ],
+)
