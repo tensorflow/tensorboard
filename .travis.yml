@@ -45,6 +45,7 @@ before_install:
     docker pull tensorflow/tensorflow:${DOCKER_INSTANCE_VERSION}
 
     # Wait for docker to start.
+    docker run -v `pwd` debian:$DEBIAN /bin/sh -c "sleep 3600" &
     sleep 5
     export CONTAINER=$(docker ps -q | head -n 1)
 
