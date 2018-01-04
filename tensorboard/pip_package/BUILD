@@ -15,7 +15,7 @@ sh_binary(
         "setup.cfg",
         "setup.py",
         "//tensorboard",
-        "//tensorboard:summary",
+        "//tensorboard:lib",
         "//tensorboard:version",
     ],
 )

@@ -21,6 +21,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import gzip
+import struct
 
 import six
 import tensorflow as tf
@@ -36,6 +37,7 @@ class RespondTest(tf.test.TestCase):
     r = http_util.Respond(q, '<b>hello world</b>', 'text/html')
     self.assertEqual(r.status_code, 200)
     self.assertEqual(r.response, [six.b('<b>hello world</b>')])
+    self.assertEqual(r.headers.get('Content-Length'), '18')
 
   def testHeadRequest_doesNotWrite(self):
     builder = wtest.EnvironBuilder(method='HEAD')
@@ -43,7 +45,8 @@ class RespondTest(tf.test.TestCase):
     request = wrappers.Request(env)
     r = http_util.Respond(request, '<b>hello world</b>', 'text/html')
     self.assertEqual(r.status_code, 200)
-    self.assertEqual(r.response, [six.b('')])
+    self.assertEqual(r.response, [])
+    self.assertEqual(r.headers.get('Content-Length'), '18')
 
   def testPlainText_appendsUtf8ToContentType(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -136,6 +139,36 @@ class RespondTest(tf.test.TestCase):
     self.assertEqual(
         r.response, [fall_of_hyperion_canto1_stanza1.encode('utf-8')])
 
+  def testAcceptGzip_alreadyCompressed_sendsPrecompressedResponse(self):
+    gzip_text = _gzip(b'hello hello hello world')
+    e = wtest.EnvironBuilder(headers={'Accept-Encoding': 'gzip'}).get_environ()
+    q = wrappers.Request(e)
+    r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
+    self.assertEqual(r.response, [gzip_text])  # Still singly zipped
+
+  def testPrecompressedResponse_noAcceptGzip_decompressesResponse(self):
+    orig_text = b'hello hello hello world'
+    gzip_text = _gzip(orig_text)
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
+    # Streaming gunzip produces file-wrapper application iterator as response,
+    # so rejoin it into the full response before comparison.
+    full_response = b''.join(r.response)
+    self.assertEqual(full_response, orig_text)
+
+  def testPrecompressedResponse_streamingDecompression_catchesBadSize(self):
+    orig_text = b'hello hello hello world'
+    gzip_text = _gzip(orig_text)
+    # Corrupt the gzipped data's stored content size (last 4 bytes).
+    bad_text = gzip_text[:-4] + _bitflip(gzip_text[-4:])
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, bad_text, 'text/plain', content_encoding='gzip')
+    # Streaming gunzip defers actual unzipping until response is used; once
+    # we iterate over the whole file-wrapper application iterator, the
+    # underlying GzipFile should be closed, and throw the size check error.
+    with six.assertRaisesRegex(self, IOError, 'Incorrect length'):
+      _ = list(r.response)
+
   def testJson_getsAutoSerialized(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, [1, 2, 3], 'application/json')
@@ -147,9 +180,21 @@ class RespondTest(tf.test.TestCase):
     self.assertEqual(r.headers.get('Cache-Control'), 'private, max-age=60')
 
 
-def _gunzip(bs):
-  return gzip.GzipFile('', 'rb', 9, six.BytesIO(bs)).read()
+def _gzip(bs):
+  out = six.BytesIO()
+  with gzip.GzipFile(fileobj=out, mode='wb') as f:
+    f.write(bs)
+  return out.getvalue()
 
+
+def _gunzip(bs):
+  with gzip.GzipFile(fileobj=six.BytesIO(bs), mode='rb') as f:
+    return f.read()
+
+def _bitflip(bs):
+  # Return bytestring with all its bits flipped.
+  return b''.join(struct.pack('B', 0xFF ^ struct.unpack_from('B', bs, i)[0])
+                  for i in range(len(bs)))
 
 if __name__ == '__main__':
   tf.test.main()

@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="utils.html">
 
 <!-- tf-op-table-styles contains shared styles used in this file -->
@@ -62,6 +64,41 @@ limitations under the License.
   display: block;
   background-color: white;
 }
+#control {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+
+  overflow:auto;
+  text-transform:uppercase;
+  padding: 0.5em;
+  vertical-align: bottom;
+  text-align: bottom;
+}
+
+.controlRowLeft {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  line-height: 50px;
+  text-align: bottom;
+  justify-content: flex-start;
+}
+
+.controlRowRight{
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  line-height: 50px;
+  text-align: bottom;
+  justify-content: flex-end;
+}
+
+paper-slider {
+  --paper-slider-input: {width: 100px}
+  --paper-slider-height: 3px;
+}
+
 #header {
   font-size: smaller;
   font-weight: bold;
@@ -74,6 +111,20 @@ limitations under the License.
 /* Match indented names */
 #header > #name { padding-left: 2em; }
     </style>
+    <div id="control">
+    <!--
+      paper-slider sets how many child nodes to show for each category.
+      If paper-toggle-button is checked, then only children in top 90th
+      percentile of time spent are listed.
+    -->
+    <span class="controlRowLeft">Show top
+      <paper-slider min="10" max="100" snaps step="10"
+        value="{{childrenCount}}" editable>
+      </paper-slider>ops</span>
+    <span class="controlRowRight">off&nbsp;
+    <paper-toggle-button checked={{showP90}}>
+    </paper-toggle-button>Top 90%</span>
+    </div>
     <div id="header">
       <span id="time">Time</span>
       <span id="name">Name</span>
@@ -83,6 +134,8 @@ limitations under the License.
     <tf-op-table-entry node="[[rootNode]]"
         header-hover="[[_onHeaderHover]]"
         header-click="[[_onHeaderClick]]"
+        children-count="{{childrenCount}}"
+        show-p90="{{showP90}}"
         expanded="true">
     </tf-op-table-entry>
   </template>
@@ -97,6 +150,16 @@ Polymer({
     active: {
       type: Object,
       computed: '_active(_selected, _hover)',
+      notify: true,
+    },
+    showP90: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+    childrenCount: {
+      type: Number,
+      value: 10,
       notify: true,
     },
     _selected: {
@@ -213,9 +276,12 @@ Polymer({
         {{_utilization(node)}}</span>
     </div>
     <template is="dom-if" if="[[expanded]]">
-      <template is="dom-repeat" items="{{node.children}}">
+      <template is="dom-repeat"
+                items="{{_getKChildren(node, childrenCount, showP90, level)}}">
         <tf-op-table-entry
           node="[[item]]"
+          children-count="{{childrenCount}}"
+          show-p90="{{showP90}}"
           level={{_nextLevel(level)}}
           header-hover="{{headerHover}}"
           header-click="{{headerClick}}">
@@ -286,7 +352,22 @@ Polymer({
     return (node.metrics && node.metrics.time)
               ? tf_op_profile.percent(node.metrics.time) : 0;
   },
-  _selectedChanged: function(v) { this.classList.toggle('selected', v); }
+  _selectedChanged: function(v) { this.classList.toggle('selected', v); },
+  /*
+    Returns top K children for the node. If p90 is true, then only children
+    fallen in the top 90th percentile in time are returned. 
+  */
+  _getKChildren: function(node, k, p90, level) {
+    if (p90 && node.children.length > 0 && node.children[0].metrics) {
+      var tot = 0, i = 0, t90 = node.metrics.time * 0.9;
+      for (; i < Math.min(k, node.children.length); i++) {
+          if(tot >= t90) break;
+          tot += node.children[i].metrics.time;
+      }
+      k = i;
+    }
+    return level ? node.children.slice(0, k) : node.children;
+  },
 });
   </script>
 </dom-module>

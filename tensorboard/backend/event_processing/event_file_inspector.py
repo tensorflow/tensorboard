@@ -385,6 +385,7 @@ def get_inspection_units(logdir='', event_file='', tag=''):
         name=event_file,
         generator=generator,
         field_to_obs=get_field_to_observations_map(generator, tag))]
+  return []
 
 
 def inspect(logdir='', event_file='', tag=''):

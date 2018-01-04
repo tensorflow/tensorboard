@@ -53,9 +53,7 @@ class DebuggerDataStreamHandler(
     3) receives tensor value Event proto(s) through its on_value_event method.
   """
 
-  # TODO(@caisq): Call superclass __init__ once it doesn't raise
-  # NotImplementedError anymore.
-  def __init__(self,  # pylint: disable=super-init-not-called
+  def __init__(self,
                events_writer_manager,
                numerics_alert_callback=None):
     """Constructor of DebuggerDataStreamHandler.
@@ -66,6 +64,7 @@ class DebuggerDataStreamHandler(
         event with bad values (Nan, -Inf, or +Inf) is received. The callback
         takes the event as a parameter.
     """
+    super(DebuggerDataStreamHandler, self).__init__()
     self._events_writer_manager = events_writer_manager
     self._numerics_alert_callback = numerics_alert_callback
 
@@ -145,7 +144,7 @@ class DebuggerDataStreamHandler(
           ("A event with a health pill has an invalid node name and output "
            "slot combination, (i.e., an unexpected debug op): %r"),
           node_name_and_output_slot)
-      return None
+      return
 
     if self._session_run_index >= 0:
       event.step = self._session_run_index

@@ -327,7 +327,7 @@ def extract_numerics_alert(event):
   debug_op_suffix = ":DebugNumericSummary"
   if not value.node_name.endswith(debug_op_suffix):
     raise ValueError(
-        "Event proto input does not have the expected debug op suffix %s",
+        "Event proto input does not have the expected debug op suffix %s" %
         debug_op_suffix)
   tensor_name = value.node_name[:-len(debug_op_suffix)]
 
@@ -339,3 +339,4 @@ def extract_numerics_alert(event):
     return NumericsAlert(
         device_name, tensor_name, event.wall_time, nan_count, neg_inf_count,
         pos_inf_count)
+  return None

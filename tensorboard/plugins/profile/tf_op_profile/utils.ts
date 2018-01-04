@@ -36,7 +36,7 @@ export function flameColor(
     rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
 }
 
-export function utilization(node) {
+export function utilization(node: any) {
   // NaN indicates undefined utilization for fused operations (we can't measure
   // performance inside a fusion). It could also indicate operations with zero
   // time, but they currently don't appear in the profile.

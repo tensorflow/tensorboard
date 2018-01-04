@@ -1,0 +1,281 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Offers a UI for summarizing and displaying tensor data.
+-->
+<dom-module id="tf-tensor-data-summary">
+  <template>
+    <div id="tensor-data-div" class="tensor-data-div">
+      <table id="tensor-data-table" align="left" class="tensor-data-table">
+        <tr align="left">
+          <th>Tensor</th>
+          <th>Count</th>
+          <th>DType</th>
+          <th>Shape</th>
+          <th width="30%">Value</th>
+          <th width="5%"></th>
+        </tr>
+      </table>
+    </div>
+    <style>
+      .section-title {
+        font-size: 110%;
+        font-weight: bold;
+      }
+      :host .indented-level-container .content-container {
+        margin: 0 0 0 10px;
+      }
+      :host .tensor-data-table {
+        align-content: left;
+        align-items: left;
+        text-align: left;
+        border-style: solid 1px black;
+        width: 100%;
+        padding-top: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+        box-shadow: 3px 3px #ddd;
+      }
+      :host .active-tensor {
+        background-color: #FFFFE0;
+      }
+      :host .highlighted {
+        color: red;
+      }
+      .value-expansion-link {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .value-expansion-link :hover {
+        color: blue;
+      }
+    </style>
+  </template>
+  <script>
+
+  Polymer({
+    is: "tf-tensor-data-summary",
+    properties: {
+      // latestTensorData is an object with the following fields:
+      // {
+      //   deviceName:  // String, name of the device
+      //   tensorName:  // String, name of the tensor, e.g., 'MatMul:0'
+      //   nodeName:  // String, name of the node, e.g., 'MatMul'
+      //   maybeBaseExpandedNodeName:  // String, possibly base-expanded node name
+      //   debugOp:  // String, debug op name, e.g., 'DebugIdenitty'
+      //   dtype:  // String, dtype, e.g., 'float32'
+      //   shape:  // Number[], shape of the tensor, e.g., [16, 28, 28]
+      //   value,  // An optional nested list of values.
+      // }
+      latestTensorData: Object,
+
+      // Callback for clicking of the expand button.
+      expandHandler: Object,
+
+      continueToCallback: Object,
+
+      // For externally ordered highlighting of a tensor row.
+      highlightedNodeName: {
+        type: String,
+        value: null,
+      },
+
+      _watchKeys: {
+        type: Array,
+        value: [],
+      },
+      // A map from watch key to data, including fields
+      //    deviceName, nodeName, dtype and shape.
+      _watchKey2Data: {
+        type: Object,
+        value: {},
+      },
+      _watchKey2Count: {
+        type: Object,
+        value: {},
+      },
+      _watchKey2ExpandHandler: {
+        type: Object,
+        value: {},
+      },
+      _watchKey2ValueShort: {
+        type: Object,
+        value: {},
+      },
+      _activeWatchKey: String,
+    },
+    observers: [
+      "_renderLatest(latestTensorData, expandHandler)",
+      "_highlight(highlightedNodeName)",
+    ],
+
+    _renderLatest(latestTensorData, expandHandler) {
+      const watchKey = latestTensorData.deviceName + '/' +
+                       latestTensorData.tensorName + ':' +
+                       latestTensorData.debugOp;
+      const instanceExpandHandler = () => {
+        expandHandler(latestTensorData);
+      };
+
+      let valueShort;
+      if (latestTensorData.value !== null) {
+        valueShort = JSON.stringify(latestTensorData.value,
+            (key, val) => {
+              return val.toFixed ? Number(val.toFixed(3)) : val;
+            });
+      } else {
+        valueShort = "(Click to view)";
+      }
+
+      this._watchKey2Data[watchKey] = latestTensorData;
+      if (this._watchKeys.indexOf(watchKey) === -1) {
+        this._watchKeys.push(watchKey);
+        this._watchKey2Count[watchKey] = 1;
+        this._watchKey2ExpandHandler[watchKey] = instanceExpandHandler;
+      } else {
+        this._watchKey2Count[watchKey] += 1;
+      }
+      this._watchKey2ValueShort[watchKey] = valueShort;
+      this._activeWatchKey = watchKey;
+
+      this._clearTensorDataTable();
+      // TODO(cais): Support sorting by clicking headers.
+      this._renderHeader();
+      for (let i = 0; i < this._watchKeys.length; ++i) {
+        this._renderRow(this._watchKeys[i]);
+      }
+    },
+
+    _clearTensorDataTable() {
+      const tensorDataTable = this.$$('#tensor-data-table');
+      while (tensorDataTable.firstChild) {
+        tensorDataTable.removeChild(tensorDataTable.firstChild);
+      }
+    },
+
+    _renderHeader() {
+      const headerRow = document.createElement('tr');
+      const nameCell = document.createElement('th');
+      nameCell.textContent = 'Name';
+      const countCell = document.createElement('th');
+      countCell.textContent = 'Count';
+      const dtypeCell = document.createElement('th');
+      dtypeCell.textContent = 'DType';
+      const shapeCell = document.createElement('th');
+      shapeCell.textContent = 'Shape';
+      const valueShortCell = document.createElement('th');
+      valueShortCell.textContent = 'Value';
+
+      headerRow.appendChild(nameCell);
+      headerRow.appendChild(countCell);
+      headerRow.appendChild(dtypeCell);
+      headerRow.appendChild(shapeCell);
+      headerRow.appendChild(valueShortCell);
+
+      Polymer.dom(this.$$('#tensor-data-table')).appendChild(headerRow);
+    },
+
+    _renderRow(watchKey) {
+      const deviceName = this._watchKey2Data[watchKey]['deviceName'];
+      const maybeBaseExpandedNodeName =
+          this._watchKey2Data[watchKey]['maybeBaseExpandedNodeName'];
+      const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+      const count = this._watchKey2Count[watchKey];
+      const tensorName = this._watchKey2Data[watchKey]['tensorName'];
+      const debugOp = this._watchKey2Data[watchKey]['debugOp'];
+      const valueShort = this._watchKey2ValueShort[watchKey];
+      const expandHandler = this._watchKey2ExpandHandler[watchKey];
+      const isActive = (watchKey === this._activeWatchKey);
+
+      const tensorDataRow = document.createElement('tr');
+      const tensorNameCell = document.createElement('td');
+      tensorNameCell.textContent = tensorName;
+      const countCell = document.createElement('td');
+      countCell.textContent = count;
+      if (isActive) {
+        countCell.style.fontWeight = 'bold';
+      }
+      // TODO(cais): Display debug op only if it is not the default
+      // (DebugIdentity). The following commented-out lines of code may be
+      // useful for that purpose.
+      // const debugOpCell = document.createElement('td');
+      // debugOpCell.textContent = (debugOp === 'DebugIdentity') ? '' : debugOp;
+      const dtypeCell = document.createElement('td');
+      dtypeCell.textContent = this._watchKey2Data[watchKey]['dtype'];
+      const shapeCell = document.createElement('td');
+      shapeCell.textContent = JSON.stringify(
+          this._watchKey2Data[watchKey]['shape']);
+      const valueCell = document.createElement('td');
+      valueCell.textContent = valueShort;
+      valueCell.setAttribute('class', 'value-expansion-link');
+      valueCell.addEventListener('click', expandHandler, false);
+      const continueToCell = document.createElement('td');
+      const continueToLink = document.createElement('paper-icon-button');
+      continueToLink.setAttribute('icon', 'forward');
+      continueToLink.setAttribute('title', 'Continue to');
+      continueToLink.addEventListener('click', () => {
+        this.continueToCallback(deviceName, maybeBaseExpandedNodeName);
+      });
+      continueToCell.appendChild(continueToLink);
+
+      tensorDataRow.appendChild(tensorNameCell);
+      // tensorDataRow.appendChild(debugOpCell);
+      tensorDataRow.appendChild(countCell);
+      tensorDataRow.appendChild(dtypeCell);
+      tensorDataRow.appendChild(shapeCell);
+      tensorDataRow.appendChild(valueCell);
+      tensorDataRow.appendChild(continueToCell);
+      tensorDataRow.setAttribute('nodeNameWithDevice', nodeNameWithDevice);
+
+      if (isActive) {
+        tensorDataRow.classList.add('active-tensor');
+        tensorDataRow.classList.add('highlighted');
+      }
+
+      Polymer.dom(this.$$('#tensor-data-table')).appendChild(tensorDataRow);
+    },
+
+    _highlight(nodeName) {
+      const table = Polymer.dom(this.$$('#tensor-data-table'));
+      const rowsToHighlight = [];
+      // First, remove highlight from all rows.
+      for (let i = 0; i < table.childNodes.length; ++i) {
+        const row = table.childNodes[i];
+        if (row.getAttribute != null) {
+          const nodeNameWithDevice = row.getAttribute('nodeNameWithDevice');
+          if (nodeNameWithDevice === nodeName) {
+            rowsToHighlight.push(row);
+          } else {
+            row.classList.remove('highlighted');
+          }
+        }
+      }
+      if (nodeName == null) {
+        return;
+      }
+      // Add highlight to the rows with matching node names.
+      for (let i = 0; i < rowsToHighlight.length; ++i) {
+        rowsToHighlight[i].classList.add('highlighted');
+      }
+    },
+  });
+  </script>
+</dom-module>

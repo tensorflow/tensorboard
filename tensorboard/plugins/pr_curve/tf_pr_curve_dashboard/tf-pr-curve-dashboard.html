@@ -19,6 +19,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -89,14 +90,7 @@ limitations under the License.
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
-          <paper-input
-            no-label-float
-            label="Filter tags (regular expressions supported)"
-            value="{{_tagFilter}}"
-            class="search-input"
-          >
-            <iron-icon prefix icon="search"></iron-icon>
-          </paper-input>
+          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
               <tf-paginated-view
@@ -172,13 +166,14 @@ limitations under the License.
         notify: true,
       },
       _dataNotFound: Boolean,
-      _tagFilter: {
-        type: String,  // upward bound from paper-input
-        value: '',
-      },
+      _tagFilter: String,
+      // Categories must only be computed after _dataNotFound is found to be
+      // true and then polymer DOM templating responds to that finding. We
+      // thus use this property to guard when categories are computed.
+      _categoriesDomReady: Boolean,
       _categories: {
         type: Array,
-        computed: '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter)',
+        computed: '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
       },
       _requestManager: {
         type: Object,
@@ -210,6 +205,10 @@ limitations under the License.
         const tags = tf_backend.getTags(runToTag);
         this.set('_dataNotFound', tags.length === 0);
         this.set('_runToTagInfo', runToTagInfo);
+        this.async(() => {
+          // See the comment above `_categoriesDomReady`.
+          this.set('_categoriesDomReady', true);
+        });
       });
     },
     _fetchTimeEntriesPerRun() {
@@ -237,7 +236,7 @@ limitations under the License.
         card.reload();
       });
     },
-    _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
+    _makeCategories(runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
       const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
       return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
     },

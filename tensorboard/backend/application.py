@@ -44,6 +44,7 @@ from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
+from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
@@ -58,6 +59,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
     image_metadata.PLUGIN_NAME: 10,
     audio_metadata.PLUGIN_NAME: 10,
     histogram_metadata.PLUGIN_NAME: 500,
+    pr_curve_metadata.PLUGIN_NAME: 100,
 }
 
 DATA_PREFIX = '/data'
@@ -77,7 +79,8 @@ def standard_tensorboard_wsgi(
     plugins,
     db_uri="",
     assets_zip_provider=None,
-    path_prefix=""):
+    path_prefix="",
+    window_title=""):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -93,6 +96,7 @@ def standard_tensorboard_wsgi(
         If this value is not specified, this function will attempt to load
         the `tensorboard.default` module to use the default. This behavior
         might be removed in the future.
+    window_title: A string specifying the the window title.
 
   Returns:
     The new TensorBoard WSGI application.
@@ -117,7 +121,8 @@ def standard_tensorboard_wsgi(
       logdir=logdir,
       multiplexer=multiplexer,
       assets_zip_provider=assets_zip_provider,
-      plugin_name_to_instance=plugin_name_to_instance)
+      plugin_name_to_instance=plugin_name_to_instance,
+      window_title=window_title)
   plugin_instances = [constructor(context) for constructor in plugins]
   for plugin_instance in plugin_instances:
     plugin_name_to_instance[plugin_instance.plugin_name] = plugin_instance

@@ -118,6 +118,10 @@ tf.flags.DEFINE_string(
     'based routing of an elb when the website base_url is not available '
     'e.g. "example.site.com/path/to/tensorboard/"')
 
+tf.flags.DEFINE_string(
+    'window_title', '',
+    'The title of the browser window.')
+
 FLAGS = tf.flags.FLAGS
 
 
@@ -191,7 +195,8 @@ def create_tb_app(plugins, assets_zip_provider=None):
       purge_orphaned_data=FLAGS.purge_orphaned_data,
       reload_interval=FLAGS.reload_interval,
       plugins=plugins,
-      path_prefix=FLAGS.path_prefix)
+      path_prefix=FLAGS.path_prefix,
+      window_title=FLAGS.window_title)
 
 
 def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
@@ -245,7 +250,7 @@ def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
         server = serving.make_server('::', port, tb_app, threaded=True)
       final_host = socket.gethostname()
     server.daemon_threads = True
-  except socket.error as socket_error:
+  except socket.error:
     if port == 0:
       msg = 'TensorBoard unable to find any open port'
     else:
@@ -254,7 +259,7 @@ def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
           % port)
     tf.logging.error(msg)
     print(msg)
-    raise socket_error
+    raise
   server.handle_error = _handle_error
   final_port = server.socket.getsockname()[1]
   tensorboard_url = 'http://%s:%d%s' % (final_host, final_port, path_prefix)
