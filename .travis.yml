@@ -5,6 +5,8 @@ language: python
 python:
   - "2.7"
   - "3.4"
+services:
+  docker
 
 os:
   - linux
@@ -24,36 +26,41 @@ cache:
 before_install:
   - |
     set -e
-    BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
-    wget -t 3 -O install.sh "${BAZEL_URL}"
-    chmod +x install.sh
-    ./install.sh --user
-    rm -f install.sh
+
     case "${TF}" in
       RELEASE)
         pip install -I tensorflow
         ;;
       NIGHTLY)
         if [[ "${TRAVIS_PYTHON_VERSION}" == 2* ]]; then
-        NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON2,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.head-cp27-none-linux_x86_64.whl'
+        DOCKER_INSTANCE_VERSION='nightly-py2'
         else
-        NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON3,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.head-cp34-cp34m-linux_x86_64.whl'
+        DOCKER_INSTANCE_VERSION='nightly-py3'
         fi
-        pip install -I "${NIGHTLY_URL}"
         ;;
       *)
-        pip install -I tensorflow=="${TF}"
+        DOCKER_INSTANCE_VERSION="${TF}"
         ;;
     esac
+    docker pull tensorflow/tensorflow:${DOCKER_INSTANCE_VERSION}
 
-    pip install pylint==1.8.1
-    pip install futures==3.1.1
-    pip install grpcio==1.6.3
+    # Wait for docker to start.
+    sleep 5
+    export CONTAINER=$(docker ps -q | head -n 1)
+
+    BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
+    docker exec $CONTAINER /bin/sh -c "wget -t 3 -O install.sh ${BAZEL_URL};chmod +x install.sh;./install.sh --user"
+    docker exec $CONTAINER /bin/sh -c "pip install pylint==1.8.1"
+    docker exec $CONTAINER /bin/sh -c "pip install futures==3.1.1"
+    docker exec $CONTAINER /bin/sh -c "pip install grpcio==1.6.3"
+
+    docker exec $CONTAINER /bin/sh -c "export OUTPUT_BASE=`pwd`/.bazel-output-base"
+    docker exec $CONTAINER /bin/sh -c "mkdir $OUTPUT_BASE"
 
 script:
   - |
-    bazel \
-      --output_base="${HOME}/.bazel-output-base" \
+    docker exec $CONTAINER /bin/sh -c "bazel \
+      --output_base=$OUTPUT_BASE \
       --batch \
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
@@ -66,11 +73,11 @@ script:
       --local_resources=400,2,1.0 \
       --worker_max_instances=2 \
       --strategy=Javac=worker \
-      --strategy=Closure=worker
+      --strategy=Closure=worker"
 
   - |
-    bazel \
-      --output_base="${HOME}/.bazel-output-base" \
+    docker exec $CONTAINER /bin/sh -c "bazel \
+      --output_base=$OUTPUT_BASE \
       --batch \
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
@@ -80,17 +87,17 @@ script:
       --test_verbose_timeout_warnings \
       --test_output=errors \
       --spawn_strategy=sandboxed \
-      --local_resources=400,2,1.0
+      --local_resources=400,2,1.0"
   - |
-    TB=$(pwd)
-    cd bazel-genfiles
-    find tensorboard -name \*.py -exec cp {} "$TB"/{} \;
-    cd "$TB"
-    pylint tensorboard
+    docker exec $CONTAINER /bin/sh -c "TB=$(pwd)"
+    docker exec $CONTAINER /bin/sh -c "cd bazel-genfiles"
+    docker exec $CONTAINER /bin/sh -c "find tensorboard -name \*.py -exec cp {} \"$TB\"/{} \;"
+    docker exec $CONTAINER /bin/sh -c "cd \"$TB\""
+    docker exec $CONTAINER /bin/sh -c "pylint tensorboard"
 
 before_cache:
   - |
-    find "${HOME}/.bazel-output-base" \
+    docker exec $CONTAINER /bin/sh -c "find $OUTPUT_BASE \
       -name \*.runfiles -print0 \
       -or -name \*.tar.gz -print0 \
       -or -name \*-execroot.json -print0 \
@@ -99,7 +106,7 @@ before_cache:
       -or -name \*-args.txt -print0 \
       -or -name \*.runfiles_manifest -print0 \
       -or -name \*.server_params.pbtxt -print0 \
-      | xargs -0 rm -rf
+      | xargs -0 rm -rf"
 
 notifications:
   email: false
