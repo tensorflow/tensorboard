@@ -42,10 +42,11 @@ before_install:
         DOCKER_INSTANCE_VERSION="${TF}"
         ;;
     esac
-    docker pull tensorflow/tensorflow:${DOCKER_INSTANCE_VERSION}
+    DOCKER_INSTANCE="tensorflow/tensorflow:${DOCKER_INSTANCE_VERSION}"
+    docker pull $DOCKER_INSTANCE
 
     # Wait for docker to start.
-    docker run -v `pwd` debian:$DEBIAN /bin/sh -c "sleep 3600" &
+    docker run -v `pwd` $DOCKER_INSTANCE /bin/sh -c "sleep 3600" &
     sleep 5
     export CONTAINER=$(docker ps -q | head -n 1)
 
