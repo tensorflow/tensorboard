@@ -283,11 +283,11 @@ module tf.graph.op {
     // Ops below are whitelisted, although these technically run on the CPU.
     // Separating these to indicate that these are manually added, as opposed to
     // those above that are gleaned from the op registry.
-    'Placeholder',
-    'VarHandleOp',
     'Merge',
+    'NextIteration',
+    'Placeholder',
     'Switch',
-    'NextIteration'
+    'VarHandleOp'
   ];
 
   /**
