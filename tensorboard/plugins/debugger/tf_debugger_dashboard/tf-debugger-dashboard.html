@@ -474,7 +474,10 @@ limitations under the License.
           readOnly: true,
         },
 
-        _maxleftPaneWidth: Number,
+        _maxleftPaneWidth: {
+          type: Number,
+          computed: '_computeMaxleftPaneWidth(_windowWidth, _maxMainContentWidth, _resizerWidth)',
+        },
 
         _maxMainContentWidth: {
           type: Number,
@@ -1064,14 +1067,14 @@ limitations under the License.
                 document.documentElement.clientWidth ||
                 document.body.clientWidth);
 
+        this._sizeDashboardRegions(this._leftPaneWidth, this._windowWidth);
+      },
+      _computeMaxleftPaneWidth(windowWidth, maxMainContentWidth, resizerWidth) {
         // Do not let the main content exceed this width when the user
         // resizes the left panel. Otherwise, the resizer would go off
         // the viewport to the right, and the user would no longer be
         // able to access the resizer.
-        this.set(
-            '_maxleftPaneWidth',
-            this._windowWidth - this._maxMainContentWidth - this._resizerWidth);
-        this._sizeDashboardRegions(this._leftPaneWidth, this._windowWidth);
+        return windowWidth - maxMainContentWidth - resizerWidth;
       },
       _sizeDashboardRegions(leftPaneWidth, windowWidth) {
         this.$$('#left-pane').style.width = leftPaneWidth + 'px';
