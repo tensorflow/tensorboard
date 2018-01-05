@@ -67,7 +67,7 @@ limitations under the License.
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
-      <div class="sidebar" id="left-menu">
+      <div class="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Node List</div>
           <tf-op-selector
@@ -78,9 +78,9 @@ limitations under the License.
               force-expand-node-name="[[_forceExpandNodeName]]">
           </tf-op-selector>
           <tf-debugger-vertical-resizer
-              current-width="{{_leftMenuWidth}}"
-              min-width="[[_minLeftMenuWidth]]"
-              max-width="[[_maxLeftMenuWidth]]">
+              current-width="{{_leftPaneWidth}}"
+              min-width="[[_minleftPaneWidth]]"
+              max-width="[[_maxleftPaneWidth]]">
           </tf-debugger-vertical-resizer>
         </div>
         <div>
@@ -463,18 +463,21 @@ limitations under the License.
           value: false,
         },
 
-        _leftMenuWidth: {
+        _leftPaneWidth: {
           type: Number,
           value: 450,
         },
 
-        _minLeftMenuWidth: {
+        _minleftPaneWidth: {
           type: Number,
           value: 450,
           readOnly: true,
         },
 
-        _maxLeftMenuWidth: Number,
+        _maxleftPaneWidth: {
+          type: Number,
+          computed: '_computeMaxleftPaneWidth(_windowWidth, _maxMainContentWidth, _resizerWidth)',
+        },
 
         _maxMainContentWidth: {
           type: Number,
@@ -487,11 +490,13 @@ limitations under the License.
           value: 30,
           readOnly: true,
         },
+
+        _windowWidth: Number,
       },
 
       observers: [
         "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
-        "_sizeDashboardRegions(_leftMenuWidth)",
+        "_sizeDashboardRegions(_leftPaneWidth, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
 
@@ -1056,28 +1061,25 @@ limitations under the License.
         }
       },
       _handleWindowResize() {
+        this.set(
+            '_windowWidth',
+            window.innerWidth ||
+                document.documentElement.clientWidth ||
+                document.body.clientWidth);
+
+        this._sizeDashboardRegions(this._leftPaneWidth, this._windowWidth);
+      },
+      _computeMaxleftPaneWidth(windowWidth, maxMainContentWidth, resizerWidth) {
         // Do not let the main content exceed this width when the user
         // resizes the left panel. Otherwise, the resizer would go off
         // the viewport to the right, and the user would no longer be
         // able to access the resizer.
-        this.set(
-            '_maxLeftMenuWidth',
-            this._getWindowWidth() -
-                this._maxMainContentWidth -
-                this._resizerWidth);
-        this._sizeDashboardRegions(this._leftMenuWidth);
+        return windowWidth - maxMainContentWidth - resizerWidth;
       },
-      _sizeDashboardRegions(leftMenuWidth) {
-        this.$$('#left-menu').style.width = leftMenuWidth + 'px';
-
-        const windowWidth = this._getWindowWidth();
+      _sizeDashboardRegions(leftPaneWidth, windowWidth) {
+        this.$$('#left-pane').style.width = leftPaneWidth + 'px';
         this.$$('#center-content').style.width = (
-            windowWidth - leftMenuWidth - this._resizerWidth) + 'px';
-      },
-      _getWindowWidth() {
-        return window.innerWidth ||
-            document.documentElement.clientWidth ||
-            document.body.clientWidth;
+            windowWidth - leftPaneWidth - this._resizerWidth) + 'px';
       },
     });
 
