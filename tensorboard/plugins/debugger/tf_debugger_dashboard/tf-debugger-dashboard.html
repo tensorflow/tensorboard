@@ -324,6 +324,8 @@ limitations under the License.
   </template>
   <script src="tensor-shape-helper.js"></script>
   <script>
+    const _DEFAULT_LEFT_PANE_WIDTH = 450;
+    const _MAIN_CONTENT_LEFT_PADDING = 8;
 
     Polymer({
       is: 'tf-debugger-dashboard',
@@ -465,12 +467,14 @@ limitations under the License.
 
         _leftPaneWidth: {
           type: Number,
-          value: 450,
+          value: tf_storage.getNumberInitializer(
+              '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
+          observer: '_leftPaneWidthObserver',
         },
 
         _minleftPaneWidth: {
           type: Number,
-          value: 450,
+          value: _DEFAULT_LEFT_PANE_WIDTH,
           readOnly: true,
         },
 
@@ -1078,9 +1082,14 @@ limitations under the License.
       },
       _sizeDashboardRegions(leftPaneWidth, windowWidth) {
         this.$$('#left-pane').style.width = leftPaneWidth + 'px';
-        this.$$('#center-content').style.width = (
-            windowWidth - leftPaneWidth - this._resizerWidth) + 'px';
+        const contentWidth = windowWidth -
+            leftPaneWidth -
+            this._resizerWidth -
+            _MAIN_CONTENT_LEFT_PADDING;
+        this.$$('#center-content').style.width = contentWidth + 'px';
       },
+      _leftPaneWidthObserver: tf_storage.getNumberObserver(
+          '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
     });
 
     tf_tensorboard.registerDashboard({
