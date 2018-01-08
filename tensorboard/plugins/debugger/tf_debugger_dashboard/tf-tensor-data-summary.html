@@ -67,6 +67,10 @@ limitations under the License.
       .value-expansion-link :hover {
         color: blue;
       }
+      .tensor-name {
+        text-decoration: underline;
+        cursor: pointer;
+      }
     </style>
   </template>
   <script>
@@ -95,6 +99,16 @@ limitations under the License.
       // For externally ordered highlighting of a tensor row.
       highlightedNodeName: {
         type: String,
+        value: null,
+      },
+
+      // Callback for clicking/tapping of a tensor name.
+      // Signature of the callback:
+      // Args:
+      //   deviceName
+      //   baseExpandedNodeName
+      tensorNameClicked: {
+        type: Function,
         value: null,
       },
 
@@ -207,7 +221,14 @@ limitations under the License.
 
       const tensorDataRow = document.createElement('tr');
       const tensorNameCell = document.createElement('td');
+      tensorNameCell.classList.add('tensor-name');
       tensorNameCell.textContent = tensorName;
+      tensorNameCell.addEventListener('tap', () => {
+        if (this.tensorNameClicked != null) {
+          this.tensorNameClicked(deviceName, maybeBaseExpandedNodeName);
+        }
+      });
+
       const countCell = document.createElement('td');
       countCell.textContent = count;
       if (isActive) {
@@ -251,6 +272,7 @@ limitations under the License.
       }
 
       Polymer.dom(this.$$('#tensor-data-table')).appendChild(tensorDataRow);
+      tensorDataRow.scrollIntoView({block: 'end', inline: 'nearest', behaviour: 'smooth'});
     },
 
     _highlight(nodeName) {
@@ -274,6 +296,7 @@ limitations under the License.
       // Add highlight to the rows with matching node names.
       for (let i = 0; i < rowsToHighlight.length; ++i) {
         rowsToHighlight[i].classList.add('highlighted');
+        rowsToHighlight[i].scrollIntoView({block: 'end', inline: 'nearest', behaviour: 'smooth'});
       }
     },
   });
