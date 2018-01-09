@@ -181,21 +181,18 @@ class Schema(object):
       description: Arbitrary markdown text describing the experiment.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS Experiments (
-          experiment_id INTEGER PRIMARY KEY,
-          name VARCHAR(500) NOT NULL,
-          description TEXT NOT NULL
-        )
-      ''')
+      c.execute('CREATE TABLE IF NOT EXISTS Experiments ('
+                'experiment_id INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'name VARCHAR(500) NOT NULL, '
+                'description TEXT NOT NULL)')
 
   def create_experiments_table_name_index(self):
     """Uniquely indexes the name field on the Experiments table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF NOT EXISTS ExperimentsNameIndex
-        ON Experiments (name)
-      ''')
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'ExperimentsNameIndex ON Experiments '
+                '(customer_number, name)')
 
   def create_runs_table(self):
     """Creates the Runs table.
@@ -221,21 +218,19 @@ class Schema(object):
           which can be no greater than 1900 characters.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS Runs (
-          rowid INTEGER PRIMARY KEY,
-          run_id INTEGER NOT NULL,
-          experiment_id INTEGER NOT NULL,
-          name VARCHAR(1900) NOT NULL
-        )
-      ''')
+      c.execute('CREATE TABLE IF NOT EXISTS Runs ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'experiment_id INTEGER NOT NULL, '
+                'run_id INTEGER NOT NULL, '
+                'name VARCHAR(1900) NOT NULL)')
 
   def create_runs_table_id_index(self):
     """Uniquely indexes the run_id field on the Runs table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF NOT EXISTS RunsIdIndex ON Runs (run_id)
-      ''')
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'RunsIdIndex ON Runs '
+                '(customer_number, run_id)')
 
   def create_runs_table_name_index(self):
     """Uniquely indexes the name field on the Runs table.
@@ -243,10 +238,9 @@ class Schema(object):
     More accurately, this indexes (experiment_id, name).
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF NOT EXISTS RunsNameIndex
-        ON Runs (experiment_id, name)
-      ''')
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'RunsNameIndex ON Runs '
+                '(customer_number, experiment_id, name)')
 
   def create_tags_table(self):
     """Creates the Tags table.
@@ -266,32 +260,29 @@ class Schema(object):
           if set. This is Markdown describing the summary.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS Tags (
-          rowid INTEGER PRIMARY KEY,
-          tag_id INTEGER NOT NULL,
-          run_id INTEGER NOT NULL,
-          plugin_id INTEGER NOT NULL,
-          name VARCHAR(500) NOT NULL,
-          display_name VARCHAR(500),
-          summary_description TEXT
-        )
-      ''')
+      c.execute('CREATE TABLE IF NOT EXISTS Tags ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'run_id INTEGER NOT NULL, '
+                'tag_id INTEGER NOT NULL, '
+                'plugin_id INTEGER NOT NULL, '
+                'name VARCHAR(500), '
+                'display_name VARCHAR(500), '
+                'summary_description TEXT)')
 
   def create_tags_table_id_index(self):
     """Indexes the tag_id field on the Tags table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF NOT EXISTS TagsIdIndex ON Tags (tag_id)
-      ''')
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'TagsIdIndex ON Tags '
+                '(customer_number, tag_id)')
 
   def create_tags_table_name_index(self):
     """Indexes the name field on the Tags table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF NOT EXISTS TagsNameIndex
-        ON Tags (run_id, name)
-      ''')
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'TagsNameIndex ON Tags '
+                '(customer_number, run_id, name)')
 
   def create_tensors_table(self):
     """Creates the Tensors table.
@@ -313,14 +304,14 @@ class Schema(object):
           if the is_big field is true.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS Tensors (
-          rowid INTEGER PRIMARY KEY,
-          encoding TINYINT NOT NULL,
-          is_big BOOLEAN NOT NULL,
-          tensor BLOB NOT NULL  -- TODO(@jart): VARBINARY on MySQL, MS-SQL, etc.
-        )
-      ''')
+      c.execute('CREATE TABLE IF NOT EXISTS Tensors ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'tag_id INTEGER NOT NULL, '
+                'step_count INTEGER NOT NULL, '
+                'encoding INTEGER NOT NULL, '
+                'is_big BOOLEAN NOT NULL, '
+                'tensor BLOB NOT NULL)')
 
   def create_big_tensors_table(self):
     """Creates the BigTensors table.
@@ -335,12 +326,12 @@ class Schema(object):
           specified in the corresponding Tensors table row.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS BigTensors (
-          rowid INTEGER PRIMARY KEY,
-          tensor BLOB NOT NULL
-        )
-      ''')
+      c.execute('CREATE TABLE IF NOT EXISTS BigTensors ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'tag_id INTEGER NOT NULL, '
+                'step_count INTEGER NOT NULL, '
+                'tensor BLOB)')
 
   def create_plugins_table(self):
     """Creates the Plugins table.
@@ -399,22 +390,20 @@ class Schema(object):
           successfully committed event record.
     """
     with self._cursor() as c:
-      c.execute('''\
-        CREATE TABLE IF NOT EXISTS EventLogs (
-          rowid INTEGER PRIMARY KEY,
-          run_id INTEGER NOT NULL,
-          path VARCHAR(1023) NOT NULL,
-          offset INTEGER NOT NULL
-        )
-      ''')
+      c.execute('CREATE TABLE IF NOT EXISTS EventLogs ('
+                'rowid INTEGER PRIMARY KEY, '
+                'customer_number INTEGER, '
+                'run_id INTEGER NOT NULL, '
+                'event_log_id INTEGER, '
+                'path VARCHAR(1023) NOT NULL, '
+                'offset INTEGER NOT NULL)')
 
   def create_event_logs_table_path_index(self):
     """Uniquely indexes the (name, path) fields on the event_logs table."""
     with self._cursor() as c:
-      c.execute('''\
-        CREATE UNIQUE INDEX IF NOT EXISTS EventLogsPathIndex
-        ON EventLogs (run_id, path)
-      ''')
+      c.execute('CREATE UNIQUE INDEX IF NOT EXISTS '
+                'EventLogsPathIndex ON EventLogs '
+                '(customer_number, run_id, path)')
 
   def _cursor(self):
     return contextlib.closing(self._db_conn.cursor())  # type: Cursor
