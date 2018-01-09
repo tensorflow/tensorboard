@@ -201,6 +201,14 @@ future for loading older images.
           value: false,
           reflectToAttribute: true,  // for CSS
         },
+        brightnessAdjustment: {
+          type: Number,
+          value: 0.5,
+        },
+        contrastPercentage: {
+          type: Number,
+          value: 0,
+        },
 
         requestManager: Object,
         _metadataCanceller: {
@@ -263,7 +271,7 @@ future for loading older images.
       },
       observers: [
         "reload(run, tag)",
-        "_updateImageUrl(_steps, _stepIndex)",
+        "_updateImageUrl(_steps, _stepIndex, brightnessAdjustment, contrastPercentage)",
       ],
 
       _computeRunColor(run) {
@@ -335,7 +343,7 @@ future for loading older images.
           url,
         };
       },
-      _updateImageUrl(steps, stepIndex) {
+      _updateImageUrl(steps, stepIndex, brightnessAdjustment, contrastPercentage) {
         // We manually change the image URL (instead of binding to the
         // image's src attribute) because we would like to manage what
         // happens when the image starts and stops loading.
@@ -354,6 +362,9 @@ future for loading older images.
           Polymer.dom(mainImageContainer).appendChild(img);
           this.set("_isImageLoading", false);
         }).bind(this);
+
+        img.style.filter = `contrast(${contrastPercentage}%) `;
+        img.style.filter += `brightness(${brightnessAdjustment})`;
 
         // Load the new image.
         this.set("_isImageLoading", true);
