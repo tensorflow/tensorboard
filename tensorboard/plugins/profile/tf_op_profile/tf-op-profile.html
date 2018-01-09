@@ -90,8 +90,10 @@ Polymer({
     },
   },
   _load: function(run) {
+    if (!run) return;
     this._requestManager.request(tf_backend.addParams(
         tf_backend.getRouter().pluginRoute('profile', '/data'), {tag: 'op_profile', run})
+    ).catch(error => {}
     ).then((data) => {
       this._data = data;
     });
