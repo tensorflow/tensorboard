@@ -16,8 +16,10 @@ limitations under the License.
 -->
 
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
@@ -43,6 +45,44 @@ TensorFlow run.
             <paper-checkbox
               checked="{{_actualSize}}"
             >Show actual image size</paper-checkbox>
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <h3 class="tooltip-container">Brightness adjustment</h3>
+          <div class="resettable-slider-container">
+            <paper-slider
+              min="0"
+              max="2"
+              snaps
+              pin
+              step="0.01"
+              value="{{_brightnessAdjustment}}"
+              immediate-value="{{_brightnessAdjustment}}"
+            ></paper-slider>
+            <paper-button
+              class="x-button"
+              on-tap="_resetBrightness"
+              disabled="[[_brightnessIsDefault]]"
+            >Reset</paper-button>
+          </div>
+        </div>
+        <div class="sidebar-section">
+        <h3 class="tooltip-container">Contrast adjustment</h3>
+          <div class="resettable-slider-container">
+            <paper-slider
+              min="0"
+              max="500"
+              snaps
+              pin
+              step="1"
+              value="{{_contrastPercentage}}"
+              immediate-value="{{_contrastPercentage}}"
+            ></paper-slider>
+            <paper-button
+              class="x-button"
+              on-tap="_resetContrast"
+              disabled="[[_contrastIsDefault]]"
+            >Reset</paper-button>
           </div>
         </div>
         <div class="sidebar-section">
@@ -92,6 +132,8 @@ TensorFlow run.
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                           request-manager="[[_requestManager]]"
                           actual-size="[[_actualSize]]"
+                          brightness-adjustment="[[_brightnessAdjustment]]"
+                          contrast-percentage="[[_contrastPercentage]]"
                         ></tf-image-loader>
                       </template>
                     </div>
@@ -105,9 +147,40 @@ TensorFlow run.
     </tf-dashboard-layout>
     <style include="dashboard-style"></style>
     <style>
+      .resettable-slider-container {
+        display: flex;
+      }
+      .resettable-slider-container paper-slider {
+        flex-grow: 1;
+      }
+      .resettable-slider-container paper-button {
+        flex-grow: 0;
+      }
+      .resettable-slider-container paper-button[disabled] {
+        background-color: unset;
+      }
+      .x-button {
+        font-size: 13px;
+        background-color: var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+      }
+      h3 {
+        color: var(--paper-grey-800);
+        margin: 0;
+        font-weight: normal;
+        font-size: 14px;
+        margin-bottom: 5px;
+        display: block;
+        pointer-events: none;
+      }
       .no-data-warning {
         max-width: 540px;
         margin: 80px auto 0 auto;
+      }
+      paper-slider {
+        --paper-slider-knob-start-color: var(--google-blue-700);
+        --paper-slider-knob-start-border-color: var(--google-blue-700);
+        --paper-slider-pin-start-color: var(--google-blue-700);
       }
     </style>
   </template>
@@ -122,7 +195,33 @@ TensorFlow run.
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
         _actualSize: Boolean,
+        _defaultBrightnessAdjustment: {
+          type: Number,
+          value: 1,
+          readOnly: true,
+        },
+        _defaultContrastPercentage: {
+          type: Number,
+          value: 100,
+          readOnly: true,
+        },
+        _brightnessAdjustment: {
+          type: Number,
+          value: 1,
+        },
+        _contrastPercentage: {
+          type: Number,
+          value: 100,
+        },
         _tagFilter: String,
+        _brightnessIsDefault: {
+          type: Boolean,
+          computed: '_computeBrightnessIsDefault(_brightnessAdjustment)',
+        },
+        _contrastIsDefault: {
+          type: Boolean,
+          computed: '_computeContrastIsDefault(_contrastPercentage)',
+        },
 
         // Categories must only be computed after _dataNotFound is found to be
         // true and then polymer DOM templating responds to that finding. We
@@ -169,6 +268,19 @@ TensorFlow run.
         this.querySelectorAll('tf-image-loader').forEach(image => {
           image.reload();
         });
+      },
+
+      _resetBrightness() {
+        this._brightnessAdjustment = this._defaultBrightnessAdjustment;
+      },
+      _resetContrast() {
+        this._contrastPercentage = this._defaultContrastPercentage;
+      },
+      _computeBrightnessIsDefault(brightnessAdjustment) {
+        return brightnessAdjustment === this._defaultBrightnessAdjustment;
+      },
+      _computeContrastIsDefault(contrastPercentage) {
+        return contrastPercentage === this._defaultContrastPercentage;
       },
 
       _makeCategories(

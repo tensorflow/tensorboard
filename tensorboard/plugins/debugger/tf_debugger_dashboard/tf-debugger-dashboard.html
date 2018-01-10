@@ -38,6 +38,7 @@ limitations under the License.
 <link rel="import" href="tf-debugger-vertical-resizer.html">
 <link rel="import" href="tf-op-selector.html">
 <link rel="import" href="tf-session-runs-view.html">
+<link rel="import" href="tf-source-code-view.html">
 <link rel="import" href="tf-tensor-data-summary.html">
 <link rel="import" href="tf-tensor-value-multi-view.html">
 
@@ -67,22 +68,39 @@ limitations under the License.
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
-      <div class="sidebar" id="left-menu">
+      <div class="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Node List</div>
+          <paper-button
+            raised
+            id="toggle-source-code-button"
+            on-click="_showSourceCode">
+            <span>[[_toggleSourceCodeButtonText]]</span>
+          </paper-button>
           <tf-op-selector
               debug-watches=[[_debugWatches]]
               debug-watch-change="[[_createDebugWatchChangeHandler()]]"
-              node-clicked="[[_createListNodeClickedHandler()]]"
+              node-clicked="[[_createNodeClickedHandler()]]"
               force-expand-and-check-node-name="[[_forceExpandAndCheckNodeName]]"
               force-expand-node-name="[[_forceExpandNodeName]]">
           </tf-op-selector>
-          <tf-debugger-vertical-resizer
-              current-width="{{_leftMenuWidth}}"
-              min-width="[[_minLeftMenuWidth]]"
-              max-width="[[_maxLeftMenuWidth]]">
-          </tf-debugger-vertical-resizer>
         </div>
+        <div id="source-code-view-div" class="source-code-view-div" hidden$="{{!_sourceCodeShown}}">
+          <div class="debugger-section-title">Source Code</div>
+          <tf-source-code-view
+            id="sourceCodeView"
+            request-manager="[[_requestManager]]"
+            debug-watches="[[_debugWatches]]"
+            focus-node-name="[[_sourceFocusNodeName]]"
+            node-clicked="[[_createNodeClickedHandler()]]"
+            continue-to-node="[[_createContinueToNodeHandler()]]"
+          ></tf-source-code-view>
+        </div>
+        <tf-debugger-vertical-resizer
+          current-width="{{_leftPaneWidth}}"
+          min-width="[[_minleftPaneWidth]]"
+          max-width="[[_maxleftPaneWidth]]">
+        </tf-debugger-vertical-resizer>
         <div>
           <tf-session-runs-view
             id="sessionRunsView"
@@ -169,7 +187,8 @@ limitations under the License.
             latest-tensor-data="[[_latestTensorData]]"
             expand-handler="[[_createTensorDataExpandHandler()]]"
             continue-to-callback="[[_createContinueToCallback()]]"
-            highlighted-node-name="[[_highlightNodeName]]">
+            highlighted-node-name="[[_highlightNodeName]]"
+            tensor-name-clicked="[[_createNodeClickedHandler()]]">
           </tf-tensor-data-summary>
         </div>
       </div>
@@ -184,6 +203,7 @@ limitations under the License.
         right: 0;
         top: 0;
         bottom: 0;
+        overflow: hidden;
       }
       .debugger-section-title {
         font-size: 110%;
@@ -203,6 +223,7 @@ limitations under the License.
       }
       #graph-container {
         position: relative;
+        height: 100%;
       }
       #graph {
         display: block;
@@ -275,9 +296,22 @@ limitations under the License.
         vertical-align: middle;
       }
       .node-entries {
-        height: 66%;
+        position: relative;
+        height: 80%;
         width: 100%;
+        vertical-align: top;
         overflow: auto;
+        padding-top: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+        box-shadow: 3px 3px #ddd;
+      }
+      .source-code-view-div {
+        position: relative;
+        height: 40%;
+        width: 100%;
+        vertical-align: top;
+        overflow: hidden;
         padding-top: 3px;
         padding-left: 3px;
         padding-right: 3px;
@@ -287,13 +321,17 @@ limitations under the License.
         padding: 20px 0;
       }
       .tensor-data {
-        height: 34%;
+        height: 30%;
         overflow: auto;
         padding: 20px 0;
       }
       #top-right-content-container {
         height: 66%;
         overflow: auto;
+      }
+      #toggle-source-code-button {
+        font-size: 80%;
+        float: right;
       }
       /deep/ .context-menu ul {
         list-style-type: none;
@@ -324,6 +362,8 @@ limitations under the License.
   </template>
   <script src="tensor-shape-helper.js"></script>
   <script>
+    const _DEFAULT_LEFT_PANE_WIDTH = 450;
+    const _MAIN_CONTENT_LEFT_PADDING = 8;
 
     Polymer({
       is: 'tf-debugger-dashboard',
@@ -333,7 +373,6 @@ limitations under the License.
           value: [
             {id: 'tab-runtime-graphs', name: 'Runtime Graphs'},
             {id: 'tab-tensor-values', name: 'Tensor Values'},
-            {id: 'tab-python-source', name: 'Python Source'}
           ],
           readonly: true,
         },
@@ -342,10 +381,6 @@ limitations under the License.
           value: true,
         },
         _isTopRightTensorValuesActive: {
-          type: Boolean,
-          value: false,
-        },
-        _isTopRightPythonSourceActive: {
           type: Boolean,
           value: false,
         },
@@ -370,6 +405,10 @@ limitations under the License.
         _continueNum: {  // How many times to continue over, e.g., Session.Runs.
             type: Number,
             value: 5,
+        },
+        _toggleSourceCodeButtonText: {
+            type: String,
+            value: 'Show Code >>',
         },
 
         _tensorViewIdCounter: {
@@ -448,6 +487,12 @@ limitations under the License.
         // checkbox for.
         _forceExpandAndCheckNodeName: String,
         _forceExpandNodeName: String,
+        // Focused-on op name for source code.
+        _sourceFocusNodeName: String,
+        _sourceCodeShown: {
+          type: Boolean,
+          value: false,
+        },
 
         _graphProgress: {
           type: Object,
@@ -463,18 +508,23 @@ limitations under the License.
           value: false,
         },
 
-        _leftMenuWidth: {
+        _leftPaneWidth: {
           type: Number,
-          value: 450,
+          value: tf_storage.getNumberInitializer(
+              '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
+          observer: '_leftPaneWidthObserver',
         },
 
-        _minLeftMenuWidth: {
+        _minleftPaneWidth: {
           type: Number,
-          value: 450,
+          value: _DEFAULT_LEFT_PANE_WIDTH,
           readOnly: true,
         },
 
-        _maxLeftMenuWidth: Number,
+        _maxleftPaneWidth: {
+          type: Number,
+          computed: '_computeMaxleftPaneWidth(_windowWidth, _maxMainContentWidth, _resizerWidth)',
+        },
 
         _maxMainContentWidth: {
           type: Number,
@@ -487,11 +537,13 @@ limitations under the License.
           value: 30,
           readOnly: true,
         },
+
+        _windowWidth: Number,
       },
 
       observers: [
         "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
-        "_sizeDashboardRegions(_leftMenuWidth)",
+        "_sizeDashboardRegions(_leftPaneWidth, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
 
@@ -611,6 +663,12 @@ limitations under the License.
               this._step();
             } else {
               this._clearContinueTo();
+              if (this._sourceCodeShown) {
+                this.set(
+                    '_sourceFocusNodeName',
+                    tf_debugger_dashboard.removeNodeNameBaseExpansion(
+                        maybeBaseExpandedNodeName));
+              }
             }
           } else if (this._continueToType != null && this._continueToType !== '') {
             console.error('Invalid _continueToType:', this._continueToType);
@@ -661,6 +719,19 @@ limitations under the License.
 
       _openContinueDialog() {
         this.$.continueDialog.open();
+      },
+
+      _showSourceCode() {
+        if (this._sourceCodeShown) {
+          this.$$('#node-entries').style.height = '80%';
+          this.set('_sourceCodeShown', false);
+          this.set('_toggleSourceCodeButtonText', 'Show Code >>');
+        } else {
+          this.$$('#node-entries').style.height = '40%';
+          this.set('_sourceCodeShown', true);
+          this.set('_toggleSourceCodeButtonText', 'Hide Code <<');
+          this.$.sourceCodeView.render();
+        }
       },
 
       _showToast(text) {  // TODO(cais): Move to Scrolling Message View.
@@ -749,6 +820,7 @@ limitations under the License.
           // Sort the debug watches and maybe base-expand the leaf nodes.
           tf_debugger_dashboard.sortAndBaseExpandDebugWatches(debugWatches);
           this.set('_debugWatches', debugWatches);
+          this.$.sourceCodeView.render(debugWatches);  // TODO(cais): Is debugWatches necessary?
         });
       },
       _createDebugWatchChangeHandler() {
@@ -782,8 +854,18 @@ limitations under the License.
         }
         this.set('_highlightNodeName', deviceName + '/' + nodeName);
       },
-      _createListNodeClickedHandler() {
-        return((deviceName, nodeName) => {
+      _createNodeClickedHandler() {
+        return((deviceName, nodeName, skipSource) => {
+          // Args:
+          //   deviceName: Name of the device.
+          //   nodeName: Base-expanded node name.
+          //   skipSource: Whether focusing on the source file line is to be skipped.
+          if (this._sourceCodeShown && skipSource !== true) {
+            // If the source view is active, highlight the source lines.
+            this.set(
+                '_sourceFocusNodeName',
+                tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName));
+          }
           this._focusOnGraphNode(deviceName, nodeName);
           this.set('_forceExpandNodeName', deviceName + '/' + nodeName);
         });
@@ -856,6 +938,11 @@ limitations under the License.
                   this._activeRuntimeGraphDeviceName + '/' + elem.node.name;
               this.set('_forceExpandNodeName', nodeNameWithDevice);
               this.set('_highlightNodeName', nodeNameWithDevice);
+              if (this._sourceCodeShown) {
+                this.set(
+                    '_sourceFocusNodeName',
+                    tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName));
+              }
             },
           },
           {
@@ -867,6 +954,11 @@ limitations under the License.
                   tf_debugger_dashboard.getCleanNodeName(elem.node.name);
               this.set('_forceExpandAndCheckNodeName',
                        this._activeRuntimeGraphDeviceName + '/' + elem.node.name);
+              if (this._sourceCodeShown) {
+                this.set(
+                    '_sourceFocusNodeName',
+                    tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName));
+              }
             },
           },
           {
@@ -880,17 +972,30 @@ limitations under the License.
                     '", due to op type "' + elem.node.op + '".');
                 return;
               }
-              const nodeName =
-                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
-              const nodeNameWithDevice =
-                  this._activeRuntimeGraphDeviceName + '/' + elem.node.name
-              this._requestBreakpointStateChange(nodeName, 0, 'DebugIdentity', 'break');
-              this.set('_forceExpandAndCheckNodeName', nodeNameWithDevice);
-              this._setContinueTo('op', nodeNameWithDevice);
-              this._step();
+              this._continueToNode(this._activeRuntimeGraphDeviceName, elem.node.name);
             },
           }
         ];
+      },
+
+      _continueToNode(deviceName, baseExpandedNodeName) {
+        const cleanNodeName = tf_debugger_dashboard.getCleanNodeName(baseExpandedNodeName);
+        const nodeNameWithDevice = deviceName + '/' + baseExpandedNodeName;
+        this._requestBreakpointStateChange(cleanNodeName, 0, 'DebugIdentity', 'break');
+        this.set('_forceExpandAndCheckNodeName', nodeNameWithDevice);
+        if (this._sourceCodeShown) {
+          this.set(
+              '_sourceFocusNodeName',
+              tf_debugger_dashboard.removeNodeNameBaseExpansion(cleanNodeName));
+        }
+        this._setContinueTo('op', nodeNameWithDevice);
+        this._step();
+      },
+
+      _createContinueToNodeHandler() {
+        return (deviceName, baseExpandedNodeName) => {
+          this._continueToNode(deviceName, baseExpandedNodeName);
+        };
       },
 
       _onActiveRuntimeGraphDeviceNameChange(deviceName) {
@@ -1000,20 +1105,16 @@ limitations under the License.
                  selectedId === 'tab-runtime-graphs');
         this.set('_isTopRightTensorValuesActive',
                  selectedId === 'tab-tensor-values');
-        this.set('_isTopRightPythonSourceActive',
-                 selectedId === 'tab-python-source');
       },
       _setTopRightRuntimeGraphsToActive() {
         this.set('_topRightSelected', '0');
         this.set('_isTopRightRuntimeGraphsActive', true);
         this.set('_isTopRightTensorValuesActive', false);
-        this.set('_isTopRightPythonSourceActive', false);
       },
       _setTopRightTensorValuesToActive() {
         this.set('_topRightSelected', '1');
         this.set('_isTopRightRuntimeGraphsActive', false);
         this.set('_isTopRightTensorValuesActive', true);
-        this.set('_isTopRightPythonSourceActive', false);
       },
 
       /**
@@ -1056,29 +1157,31 @@ limitations under the License.
         }
       },
       _handleWindowResize() {
+        this.set(
+            '_windowWidth',
+            window.innerWidth ||
+                document.documentElement.clientWidth ||
+                document.body.clientWidth);
+
+        this._sizeDashboardRegions(this._leftPaneWidth, this._windowWidth);
+      },
+      _computeMaxleftPaneWidth(windowWidth, maxMainContentWidth, resizerWidth) {
         // Do not let the main content exceed this width when the user
         // resizes the left panel. Otherwise, the resizer would go off
         // the viewport to the right, and the user would no longer be
         // able to access the resizer.
-        this.set(
-            '_maxLeftMenuWidth',
-            this._getWindowWidth() -
-                this._maxMainContentWidth -
-                this._resizerWidth);
-        this._sizeDashboardRegions(this._leftMenuWidth);
+        return windowWidth - maxMainContentWidth - resizerWidth;
       },
-      _sizeDashboardRegions(leftMenuWidth) {
-        this.$$('#left-menu').style.width = leftMenuWidth + 'px';
-
-        const windowWidth = this._getWindowWidth();
-        this.$$('#center-content').style.width = (
-            windowWidth - leftMenuWidth - this._resizerWidth) + 'px';
+      _sizeDashboardRegions(leftPaneWidth, windowWidth) {
+        this.$$('#left-pane').style.width = leftPaneWidth + 'px';
+        const contentWidth = windowWidth -
+            leftPaneWidth -
+            this._resizerWidth -
+            _MAIN_CONTENT_LEFT_PADDING;
+        this.$$('#center-content').style.width = contentWidth + 'px';
       },
-      _getWindowWidth() {
-        return window.innerWidth ||
-            document.documentElement.clientWidth ||
-            document.body.clientWidth;
-      },
+      _leftPaneWidthObserver: tf_storage.getNumberObserver(
+          '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
     });
 
     tf_tensorboard.registerDashboard({

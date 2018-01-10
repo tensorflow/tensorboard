@@ -15,6 +15,7 @@ tf_web_library(
         "tf-debugger-vertical-resizer.html",
         "tf-op-selector.html",
         "tf-session-runs-view.html",
+        "tf-source-code-view.html",
         "tf-tensor-data-summary.html",
         "tf-tensor-value-multi-view.html",
         "tf-tensor-value-view.html",

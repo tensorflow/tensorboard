@@ -1,0 +1,665 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Presents source code involved in the TensorFlow execution being debugged,
+  along with associated stack traces.
+-->
+<dom-module id="tf-source-code-view">
+  <template>
+    <div id="fullStackDialog" hidden$="[[!_fullStackShown]]">
+      <div id="full-stack-title">
+        <paper-icon-button
+          icon="filter-list"
+          disabled="true">
+        </paper-icon-button>
+        Full Stack Trace of Node:
+        <div id="full-stack-node-name">"[[_fullStackNodeName]]"</div>
+        <paper-icon-button
+          icon="close"
+          id="close-full-stack-button"
+          title="Close Full Stack"
+          on-tap="_closeFullStackDialog">
+        </paper-icon-button>
+      </div>
+      <ul id="full-stack-content"></ul>
+    </div>
+    <paper-tabs id="source-files-tabs" selected="0" selected="{{_filePathSelected}}">
+      <template is="dom-repeat" items="[[_shortFilePaths]]">
+        <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
+      </template>
+    </paper-tabs>
+    <div id='source-file-content' class='source-content'>
+      <template is="dom-repeat" items="[[_fileLines]]">
+        <div class$="{{item.sourceClass}}" id="source-line-[[item.lineno]]">
+          <span class="source-line-number" id="source-lineno-[[item.lineno]]">
+            [[item.lineno]]
+          </span>
+          <span class="source-line-node-toggle" id="source-line-node-toggle-[[item.lineno]]">
+            [[item.numNodes]]
+          </span>
+          <span class="source-line-text" id="source-line-text-[[item.lineno]]">
+            [[item.text]]
+          </span>
+          <div class="source-line-nodes" id="source-line-nodes-[[item.lineno]]">
+          </div>
+        </div>
+      </template>
+    </div>
+    <style>
+      #source-files-tabs {
+        position: relative;
+        height: 8%;
+      }
+      .source-content {
+        position: relative;
+        height: 90%;
+        font-family: monospace;
+        font-size: 90%;
+        overflow-x: scroll;
+        overflow-y: scroll;
+      }
+      .source-content :hover {
+        background-color: #ffffe0;
+      }
+      .highlighted-source-line {
+        background-color: #ffd6c1;
+      }
+      .source-line-number {
+        display: inline-block;
+        color: lightblue;
+        width: 2em;
+        text-align: right;
+        padding-right: 1em;
+      }
+      .source-line-node-toggle {
+        display: inline-block;
+        color: blue;
+        width: 5em;
+        text-align: right;
+        padding-right: 1em;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .source-line-nodes {
+        padding-left: 4em;
+        text-decoration: underline;
+        cursor: pointer;
+        color: blue;
+        margin-top: 0em;
+        margin-bottom: 0em;
+        margin-right: 1em;
+      }
+      .source-line-node-entry {
+        margin-right: 1em;
+        background-color: yellow;
+      }
+      .source-line-nodes span {
+        text-decoration: none;
+        background-color: yellow;
+      }
+      .source-line-text {
+        display: inline;
+        word-wrap: break-word;
+      }
+      #fullStackDialog {
+        z-index: 1000;
+        position: absolute;
+        top:  10%;
+        left: 50%;
+        width: 45%;
+        height: 85%;
+        background-color: white;
+        border: 1px solid gray;
+        font-family: monospace;
+        box-shadow: 3px 3px #ddd;
+        overflow-y: auto;
+      }
+      #full-stack-title {
+        font-size: 110%;
+        position: relative;
+        width: 100%;
+        background-color: #eee;
+        text-align: center;
+        font-weight: bold;
+      }
+      #full-stack-node-name {
+        color: blue;
+      }
+      :host #full-stack-content {
+        padding-top: 1em;
+        padding-right: 0.5em;
+        margin-top: 0.5em;
+        font-size: 90%;
+        word-wrap: break-word;
+        overflow: auto;
+      }
+      .stack-frame-clickable {
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .stack-frame-nonclickable {
+        color: #555;
+      }
+      #close-full-stack-button {
+        float: right;
+      }
+    </style>
+  </template>
+  <script>
+  Polymer({
+    is: "tf-source-code-view",
+    properties: {
+      requestManager: {
+        type: Object,
+        value: null,
+      },
+
+      // The node to focus on. When focused on, the source lines that belong to
+      // the creation stack of the stack, if any, are highlighted in the active
+      // source file content view.
+      focusNodeName: {
+        type: String,
+        value: null,
+      },
+
+      // Keeps track of the old focus node. Used in removing highlighting.
+      _oldFocusNodeName: {
+        type: String,
+        value: null,
+      },
+
+      // A list of debug watches. A debug watch object has 4 properties:
+      // device_name (string), node_name (string), output_slot (number), and
+      // debug_op (string).
+      debugWatches: {
+        type: Array,
+        value: [],
+      },
+
+      // Callback for clicking event on a node.
+      // Signature of the callback:
+      // Args:
+      //   deviceName: Name of the device that the node is partitioned to.
+      //   baseExpandedNodeName: Name of the node, base-expanded if applicable.
+      nodeClicked: {
+        type: Function,
+        value: null,
+      },
+      // Callback for the action of continue to a node.
+      // Signature of the callback:
+      // Args:
+      //   deviceName: Name of the device that the node is partitioned to.
+      //   baseExpandedNodeName: Name of the node, base-expanded if applicable.
+      continueToNode: {
+        type: Function,
+        value: null,
+      },
+
+      // Keeps tracek of the currently highlighted elements.
+      _highlightedElements: {
+        type: Array,
+        value: [],
+      },
+
+      _filePathSelected: String,
+
+      // Full paths to the source files.
+      _fullFilePaths: {
+        type: Array,
+        value: null,
+      },
+
+      // Shortened pathst to the source files.
+      _shortFilePaths: {
+        type: Array,
+        value: null,
+      },
+      _fileLines: {
+        type: Array,
+        value: null,
+      },
+
+      // A map from non-base-expanded node name to device name.
+      _nodeName2DeviceName: {
+        type: Object,
+        value: null,
+      },
+
+      // A map from non-base-expanded node name to device base-expanded node name.
+      _nodeName2BaseExpandedNodeName: {
+        type: Object,
+        value: null,
+      },
+
+      // A map from non-base-expanded node name to node elements.
+      // A node name may correspond to multiple node elements because a source
+      // file may have multiple lines that belong to the creation stack of the
+      // node.
+      _nodeName2NodeElements: {
+        type: Object,
+        value: null,
+      },
+
+      // A map from non-base-expanded node name to node element at the top of
+      // the stack trace for the current active source file.
+      _nodeName2StackTopNodeElement: {
+        type: Object,
+        value: null,
+      },
+
+      // Keeps track of the origin of the setting node highlight (if any).
+      // If it is set, focus will not be unchanged, instead of being changed to
+      // the node element at the topmost stack position of the current source
+      // file.
+      _setHightlightOriginNodeElement: {
+        type: Object,
+        value: null,
+      },
+
+      _fullStackShown: {
+        type: Boolean,
+        value: false,
+      },
+
+      // Name of the node whose full stack is being shown (if _fullStackShown).
+      _fullStackNodeName: {
+        type: String,
+        value: null,
+      },
+
+      _renderDelayMillis: {
+        type: Number,
+        value: 50,
+        readonly: true,
+      },
+    },
+    observers: [
+      "_renderFile(_filePathSelected)",
+      "_focusOnNode(focusNodeName)",
+    ],
+
+    render(debugWatches) {
+      if (debugWatches != null) {
+        this.set('_debugWatches', debugWatches);
+      }
+      this._querySourceCodeEndPoint({'mode': 'paths'}).then(response => {
+        this.set('_fullFilePaths', response['paths']);
+        const shortFilePaths= response['paths'].map(path => {
+            return {id: path, name: this._shortenPath(path, response['paths'])};
+        });
+        this.set('_shortFilePaths', shortFilePaths);
+        if (shortFilePaths.length > 0) {
+          this.set('_filePathSelected', null);
+          this.set('_filePathSelected', 0);
+        }
+      });
+    },
+
+    _shortenPath(path, paths) {
+      // TODO(cais): More sophisticated logic for dealing with name collisions.
+      path = path.replace(/\\/g, '/');
+      const pathItems = path.split('/');
+      return pathItems[pathItems.length - 1];
+    },
+
+    _renderFile(selectedId) {
+      if (selectedId == null) {
+        return;
+      }
+      const filePathSelected = this._shortFilePaths[selectedId].id;
+      this._querySourceCodeEndPoint(
+          {'mode': 'content', 'file_path': filePathSelected}).then(response => {
+        const fileLines = [];
+        const fileContent = response['content'][filePathSelected];
+        const linenoToNodeNameAndStackPos = response['lineno_to_op_name_and_stack_pos'];
+
+        // Get the total number of nodes, to be displayed alongside the number
+        // of active nodes, i.e., the number of nodes that are present in the
+        // active runtime graph.
+        const linenoToTotalNumNodes = {};
+        for (const lineno in linenoToNodeNameAndStackPos) {
+          if (!linenoToNodeNameAndStackPos.hasOwnProperty(lineno)) {
+            continue;
+          }
+          linenoToTotalNumNodes[lineno] = linenoToNodeNameAndStackPos[lineno].length;
+        }
+        // Discard the nodes that are defined by the lines, but are not present
+        // in the watched subset of the current runtime graph.
+        this._filterFileTracebacksByDebugWatches(linenoToNodeNameAndStackPos);
+
+        for (let i = 0; i < fileContent.length; ++i) {
+          const lineno = i + 1;
+          fileLines.push({
+            lineno: lineno,
+            numNodes: linenoToNodeNameAndStackPos[lineno] != null ?
+                String(linenoToNodeNameAndStackPos[lineno].length) + '/' +
+                String(linenoToTotalNumNodes[lineno]) + ' ▼' : '',
+            text: this._htmlEscape(fileContent[i]),
+          });
+        }
+        this.set('_fileLines', fileLines);
+
+        const self = this;
+        setTimeout(() => {
+          // Add the op names to the source-line-nodes-${lineno} divs.
+          const nodeName2NodeElements = {};
+          const nodeName2StackTopNodeElement = {};
+          for (const lineno in linenoToNodeNameAndStackPos) {
+            if (!linenoToNodeNameAndStackPos.hasOwnProperty(lineno)) {
+              continue;
+            }
+            const nodesElement = self.$$('#source-line-nodes-' + lineno);
+            // First, remove all existing children.
+            while (nodesElement.firstChild) {
+              nodesElement.removeChild(nodesElement.firstChild);
+            }
+            const nodeNamesAndStackPositions = linenoToNodeNameAndStackPos[lineno];
+            nodeNamesAndStackPositions.sort(function(a, b) {
+              if (a[0] < b[0]) {
+                return -1;
+              } else if (a[0] > b[0]) {
+                return 1;
+              } else {
+                return 0;
+              }
+            });
+            // TODO(cais): Maybe instead of sorting by name, we should sort
+            // the nodes topologically according to the graph structure.
+
+            for (let i = 0; i < nodeNamesAndStackPositions.length; ++i) {
+              const nodeName = nodeNamesAndStackPositions[i][0];
+              const stackPos = nodeNamesAndStackPositions[i][1];
+
+              const nodeDiv = document.createElement('div');
+
+              const nodeElement = document.createElement('span');
+              nodeElement.setAttribute('class', 'source-line-node-enttry');
+              nodeElement.setAttribute('sourceLineno', lineno);
+              nodeElement.textContent = nodeName;
+              nodeElement.addEventListener('tap', () => {
+                this.nodeClicked(
+                    this._nodeName2DeviceName[nodeName],
+                    this._nodeName2BaseExpandedNodeName[nodeName], true);
+              });
+
+              // Icon button for showing full stack trace.
+              const fullStackLink = document.createElement('paper-icon-button');
+              fullStackLink.setAttribute('icon', 'filter-list');
+              fullStackLink.setAttribute('title', 'Show stack');
+              fullStackLink.addEventListener('tap', () => {
+                this._highlightNodeElements(nodeName);
+                this.set('_fullStackNodeName', nodeName);
+                this.set('_fullStackShown', true);
+                this._populateFullStack(
+                    nodeName, this._fullFilePaths[this._filePathSelected], Number(lineno));
+              });
+
+              // Icon button for continue-to.
+              const continueToLink = document.createElement('paper-icon-button');
+              continueToLink.setAttribute('icon', 'forward');
+              continueToLink.setAttribute('title', 'Continue to');
+              // TOOD(cais): Properly style the paper-icon-button.
+              continueToLink.addEventListener('tap', () => {
+                const deviceName = this._nodeName2DeviceName[nodeName];
+                const baseExpandedNodeName = this._nodeName2BaseExpandedNodeName[nodeName];
+                this.set('_setHightlightOriginNodeElement', nodeElement);
+                this.continueToNode(deviceName, baseExpandedNodeName);
+              });
+
+              nodeDiv.appendChild(fullStackLink);
+              nodeDiv.appendChild(continueToLink);
+              nodeDiv.appendChild(nodeElement);
+              nodesElement.appendChild(nodeDiv);
+              if (!nodeName2NodeElements.hasOwnProperty(nodeName)) {
+                nodeName2NodeElements[nodeName] = [];
+              }
+              nodeName2NodeElements[nodeName].push(nodeElement);
+
+              if (!nodeName2StackTopNodeElement.hasOwnProperty(nodeName)) {
+                nodeName2StackTopNodeElement[nodeName] = [nodeElement, stackPos];
+              }
+              if (stackPos > nodeName2StackTopNodeElement[nodeName][1]) {
+                nodeName2StackTopNodeElement[nodeName] = [nodeElement, stackPos];
+              }
+            }
+            // The node elements are initially hidden.
+            nodesElement.setAttribute('hidden', true);
+
+            const toggleNodesElement = self.$$('#source-line-node-toggle-' + lineno);
+            if (toggleNodesElement.getAttribute('tapCallbackSet') == null) {
+              toggleNodesElement.addEventListener('tap', () => {
+                self._toggleLineNodes(lineno);
+              });
+              toggleNodesElement.setAttribute('tapCallbackSet', true);
+            }
+          }
+          self.set('_nodeName2NodeElements', nodeName2NodeElements);
+
+          for (const nodeName in nodeName2StackTopNodeElement) {
+            if (!nodeName2StackTopNodeElement.hasOwnProperty(nodeName)) {
+              continue;
+            }
+            nodeName2StackTopNodeElement[nodeName] = nodeName2StackTopNodeElement[nodeName][0];
+          }
+          self.set('_nodeName2StackTopNodeElement', nodeName2StackTopNodeElement);
+        }, this._renderDelayMillis);
+      });
+    },
+
+    // Toggle the expand / collapse state of the nodes of a given source line.
+    // Args:
+    //   lineno: 1-based line number.
+    //   expansionState: (Optional) desired expansion state: a Boolean, `true`
+    //     for expanded and `false` for collapsed.
+    _toggleLineNodes(lineno, expansionState) {
+      const nodesElement = this.$$('#source-line-nodes-' + lineno);
+      if (nodesElement.getAttribute('hidden') == null && expansionState !== true) {
+        nodesElement.setAttribute('hidden', true);
+      } else {
+        nodesElement.removeAttribute('hidden');
+      }
+    },
+
+    // Filter file tracebacks by debug watches: discard nodes that are not
+    // present in the debug watches are removed.
+    //
+    // As a side effect, this function also populates the nodeName2DeviceName
+    // and nodeName2BaseExpandedNodeName maps.
+    //
+    // Args:
+    //   linenoToNodeNameAndStackPos: A map from line number (lineno) to Arrays
+    //     of [nodeName, stackPos] tuples.
+    //     nodeName is the name of the node without base expansion.
+    //     stackPos is the 0-based stack position.
+    _filterFileTracebacksByDebugWatches(linenoToNodeNameAndStackPos) {
+      // First, build an Array of node names present in the debugWatches.
+      const watchedNodeNames = this.debugWatches.map(
+          watch => tf_debugger_dashboard.removeNodeNameBaseExpansion(watch.node_name));
+      // Build a map from node name to device name, using the debugWatches.
+      const nodeName2DeviceName = {};
+      const nodeName2BaseExpandedNodeName = {};
+      for (const watch of this.debugWatches) {
+        const nodeName = tf_debugger_dashboard.removeNodeNameBaseExpansion(watch.node_name);
+        nodeName2DeviceName[nodeName] = watch.device_name;
+        nodeName2BaseExpandedNodeName[nodeName] = watch.node_name;
+      }
+      this.set('_nodeName2DeviceName', nodeName2DeviceName);
+      this.set('_nodeName2BaseExpandedNodeName', nodeName2BaseExpandedNodeName);
+
+      for (const lineno in linenoToNodeNameAndStackPos) {
+        if (!linenoToNodeNameAndStackPos.hasOwnProperty(lineno)) {
+          continue;
+        }
+        linenoToNodeNameAndStackPos[lineno] =
+            linenoToNodeNameAndStackPos[lineno].filter(line => {
+              const nodeName = line[0];
+              return _.contains(watchedNodeNames, nodeName);
+            });
+      }
+    },
+
+    _querySourceCodeEndPoint(params) {
+      const baseUrl = tf_backend.getRouter().pluginRoute('debugger',
+                                                         '/source_code');
+      const url = tf_backend.addParams(baseUrl, params);
+      return this.requestManager.request(url);
+    },
+
+    _htmlEscape(string) {
+      // TODO(cais): Deal with other charcters that require HTML-escaping, e.g.,
+      //   '>', '<'.
+      return string.replace(/ /g, '\u00a0');nodeName
+    },
+
+    // Focus on a given op: if any lines in the currently active source file
+    // content view, highlight them.
+    _focusOnNode(nodeName) {
+      if (nodeName == null) {
+        return;
+      }
+      const filePathSelected = this._shortFilePaths[this._filePathSelected].id;
+      const self = this;
+      this._querySourceCodeEndPoint(
+          {'mode': 'op_traceback', 'op_name': nodeName}).then(response => {
+        const opTraceback = response['op_traceback'][nodeName];
+        const highlightLinenos = [];
+        for (let i = 0; i < opTraceback.length; ++i) {
+          const filePath = opTraceback[i][0];
+          const lineno = opTraceback[i][1];
+          if (filePath === filePathSelected) {
+            highlightLinenos.push(lineno);
+          }
+        }
+        const scrollToLineno = highlightLinenos[highlightLinenos.length - 1];
+
+        // Remove old highlight first.
+        for (const highlightedElement of self._highlightedElements) {
+          highlightedElement.classList.remove('highlighted-source-line');
+        }
+        const highlightedElements = [];
+        // Add new highlight to line(s).
+        for (const highlightLineno of highlightLinenos) {
+          const lineElement = this.$$('#source-line-' + highlightLineno);
+          highlightedElements.push(lineElement);
+          lineElement.classList.add('highlighted-source-line');
+          // Expand the node name list.
+          self._toggleLineNodes(highlightLineno, true);
+        }
+        self.set('_highlightedElements', highlightedElements);
+
+        this._highlightNodeElements(nodeName);
+      });
+    },
+
+    // Highlight all node elements corresponding to the specified node.
+    // A node may correspond to multiple node elements, because the creation
+    // stack of the node may involve more than one line in the current source
+    // file.
+    // Args:
+    //   nodeName: Name of the node, without base expansion.
+    _highlightNodeElements(nodeName) {
+      // Remove the higlighting on the node elements of the pervious focus node.
+      if (this._oldFocusNodeName !=  null) {
+        for (const nodeElement of this._nodeName2NodeElements[this._oldFocusNodeName]) {
+          nodeElement.style['font-weight'] = 'normal';
+        }
+      }
+      // Add highlighting on the current focus node.
+      for (const nodeElement of this._nodeName2NodeElements[nodeName]) {
+        nodeElement.style['font-weight'] = 'bold';
+      }
+      // Scroll to the node element at the topmost stack position in the
+      // current source file, unless this is a continue-to action originated from
+      // a given node element, which is not necessarily the topmost stack position.
+      if (this._setHightlightOriginNodeElement == null) {
+        this._nodeName2StackTopNodeElement[nodeName].scrollIntoView(
+            {block: 'center', behaviour: 'smooth'});
+      } else {
+        this.set('_setHightlightOriginNodeElement', null);
+      }
+      this.set('_oldFocusNodeName', nodeName);
+    },
+
+    // Populate the display of node full stack.
+    // Args:
+    //   nodeName: The name of the node whose stack is to be shown.
+    //   currentFullFilePath: The full path to the source file currently being
+    //     displayed.
+    //   curerntLineno: The current source line number being displayed.
+    _populateFullStack(nodeName, currentFullFilePath, currentLineno) {
+      this._querySourceCodeEndPoint(
+          {'mode': 'op_traceback', 'op_name': nodeName}).then(response => {
+        const stackContent = this.$$('#full-stack-content');
+        // First, remove all children of the full stack content div.
+        while (stackContent.firstChild) {
+          stackContent.removeChild(stackContent.firstChild);
+        }
+        // Then, create all the clickable links.
+        for (const stackFrame of response['op_traceback'][nodeName]) {
+          const frameElement = document.createElement('li');
+          const fullFilePath = stackFrame[0];
+          const lineno = Number(stackFrame[1]);
+          frameElement.textContent = fullFilePath + ': ' + String(lineno);
+          if (_.contains(this._fullFilePaths, fullFilePath)) {
+            frameElement.classList.add('stack-frame-clickable');
+            // TODO(cais): Make class CSS work.
+            frameElement.style['color'] = 'blue';
+            frameElement.style['text-decoration'] = 'underline';
+            frameElement.style['cursor'] = 'pointer';
+            if (fullFilePath === currentFullFilePath && lineno === currentLineno) {
+              frameElement.style['font-weight'] = 'bold';
+            }
+            // Create callback for the frame element.
+            frameElement.addEventListener('tap', () => {
+              const fileId = this._fullFilePaths.indexOf(fullFilePath);
+              this.set('_filePathSelected', fileId);
+              setTimeout(() => {
+                this._toggleLineNodes(lineno, true);
+                for (const nodeElement of this._nodeName2NodeElements[nodeName]) {
+                  if (Number(nodeElement.getAttribute('sourceLineno')) === Number(lineno)) {
+                    nodeElement.scrollIntoView({block: 'center', behaviour: 'smooth'});
+                    this.set('_setHightlightOriginNodeElement', frameElement);
+                    this._highlightNodeElements(nodeName);
+                    // If going to a different stack frame, re-render the full stack.
+                    if (currentFullFilePath !== fullFilePath || currentLineno !== lineno) {
+                      this._populateFullStack(nodeName, fullFilePath, lineno);
+                    }
+                  }
+                }
+              }, this._renderDelayMillis * 2);
+            });
+          } else {
+            frameElement.classList.add('stack-frame-nonclickable');
+            // TODO(cais): Make class CSS work.
+            frameElement.style['color'] = '#555';
+          }
+          stackContent.appendChild(frameElement);
+        }
+      });
+    },
+
+    _closeFullStackDialog() {
+      this.set('_fullStackShown', false);
+    }
+  });
+  </script>
+</dom-module>
