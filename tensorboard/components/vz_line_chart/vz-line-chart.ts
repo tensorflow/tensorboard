@@ -108,6 +108,14 @@ Polymer({
     xComponentsCreationMethod: {type: Object, value: () => stepX},
 
     /**
+     * A formatter for values along the X-axis. Optional. Defaults to a
+     * reasonable formatter.
+     * 
+     * @type {@type {function(number): string}
+     */
+    xAxisFormatter: Object,
+
+    /**
      * A method that implements the Plottable.IAccessor<number> interface. Used
      * for accessing the y value from a data point.
      *
@@ -358,7 +366,8 @@ Polymer({
           this.fillArea,
           this.defaultXRange,
           this.defaultYRange,
-          this.symbolFunction);
+          this.symbolFunction,
+          this.xAxisFormatter);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       this._chart = chart;
@@ -464,7 +473,8 @@ class LineChart {
       fillArea: FillArea,
       defaultXRange?: number[],
       defaultYRange?: number[],
-      symbolFunction?: SymbolFn) {
+      symbolFunction?: SymbolFn,
+      xAxisFormatter?: (number) => string) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -493,7 +503,8 @@ class LineChart {
         yValueAccessor,
         yScaleType,
         tooltipColumns,
-        fillArea);
+        fillArea,
+        xAxisFormatter);
   }
 
   private buildChart(
@@ -501,7 +512,8 @@ class LineChart {
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       tooltipColumns: TooltipColumn[],
-      fillArea: FillArea) {
+      fillArea: FillArea,
+      xAxisFormatter: (number) => string) {
     if (this.outer) {
       this.outer.destroy();
     }
@@ -510,6 +522,9 @@ class LineChart {
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;
     this.xAxis.margin(0).tickLabelPadding(3);
+    if (xAxisFormatter) {
+      this.xAxis.formatter(xAxisFormatter);
+    }
     this.yScale = LineChart.getYScaleFromType(yScaleType);
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
     let yFormatter = multiscaleFormatter(
