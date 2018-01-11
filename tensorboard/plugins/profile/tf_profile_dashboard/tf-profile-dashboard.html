@@ -157,6 +157,10 @@ profile run can have multiple tools that present the performance profile as diff
         value: 0,
         observer: '_selectedToolChanged'
       },
+      // currentSelected will depends on selectedDataset and selectedTool.
+      // With this arrangement, we can achieve cascading Polymer effects
+      // propagation and atomic change of both dataset and tool.(e.g.
+      // when dataset change, the tool set to the first available one).
       currentSelected: {
         type: Number,
         notify: true,
