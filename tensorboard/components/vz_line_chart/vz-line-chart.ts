@@ -111,7 +111,7 @@ Polymer({
      * A formatter for values along the X-axis. Optional. Defaults to a
      * reasonable formatter.
      * 
-     * @type {@type {function(number): string}
+     * @type {function(number): string}
      */
     xAxisFormatter: Object,
 
