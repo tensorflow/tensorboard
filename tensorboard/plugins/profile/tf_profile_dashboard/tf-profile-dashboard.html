@@ -74,7 +74,6 @@ profile run can have multiple tools that present the performance profile as diff
     </div>
   </div>
   <div class="center">
-    <!-- TODO(sammccall): tool selection is buggy -->
     <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"
@@ -158,16 +157,10 @@ profile run can have multiple tools that present the performance profile as diff
         value: 0,
         observer: '_selectedToolChanged'
       },
-      // This is combination of selectedDataset and selectedTool.
-      // Most significant bits contains index of datasets;
-      // Lest Significant bits contains index of tools;
-      // With this arrangement, we can achieve cascading Polymer effects
-      // propagation and atomic change of both dataset and tool.(e.g.
-      // when dataset change, the tool set to the first available one).
       currentSelected: {
-        type: Number,  // LSB is index of tools, MSB is index of datasets.
+        type: Number,
         notify: true,
-        value: 0,
+        value: () => { return {'datasetIndex': 0, 'toolIndex': 0} },
       },
     },
     reload: function() {
@@ -211,18 +204,15 @@ profile run can have multiple tools that present the performance profile as diff
       });
     },
     _getSelectedTool: function(datasets, currentSelected) {
-      var currentDataset = currentSelected >> 16;
-      var currentTool = currentSelected & 0xFFFF;
-      var activeTools = this._getActiveTools(currentDataset, datasets);
-      if (currentTool >= 0 && currentTool < activeTools.length) {
-        return activeTools[currentTool];
+      var activeTools = this._getActiveTools(currentSelected.datasetIndex, datasets);
+      if (currentSelected.toolIndex >= 0 && currentSelected.toolIndex < activeTools.length) {
+        return activeTools[currentSelected.toolIndex];
       }
       return null;
     },
     _getSelectedDataset: function(datasets, currentSelected) {
-      var currentDataset = currentSelected >> 16;
-      if (currentDataset >= datasets.length) return null;
-      return datasets[currentDataset].name;
+      if (currentSelected.datasetIndex >= datasets.length) return null;
+      return datasets[currentSelected.datasetIndex].name;
     },
     _maybeUpdateTool: function(datasets, currentSelected) {
       var currentTool = this._getSelectedTool(datasets, currentSelected);
@@ -246,16 +236,16 @@ profile run can have multiple tools that present the performance profile as diff
       if (oldDatasets != null || this.selected == null) {
         // Select the first dataset by default.
         this.set('selectedDataset', 0);
-        this.set('currentSelected', 0);
+        this.set('currentSelected', {'datasetIndex': 0, 'toolIndex': 0});
       }
     },
     _selectedDatasetChanged: function(newDataset, oldDataset) {
       if (this._datasets) {
         // Display the first tool by default when switching to another run.
-        this.set('currentSelected', (newDataset << 16));
+        this.set('currentSelected', {'datasetIndex': newDataset, 'toolIndex': 0});
 
         // Same tool can have differernt index in different runs, therefore we force a change of
-        // 'selectedTool', to make sure everything is synced.
+        // 'selectedTool', to make sure the label of the dropdown-menu is synced.
         this.async(function() {
           this.set('selectedTool', undefined);
           this.set('selectedTool', 0);
@@ -264,7 +254,7 @@ profile run can have multiple tools that present the performance profile as diff
     },
     _selectedToolChanged: function(newTool, oldTool) {
       if (this._datasets && !(newTool === undefined)) {
-        this.set('currentSelected', ((this.selectedDataset << 16) | newTool));
+        this.set('currentSelected', {'datasetIndex': this.selectedDataset, 'toolIndex': newTool});
       }
     },
     _getActiveTools: function(selectedDataset, datasets) {

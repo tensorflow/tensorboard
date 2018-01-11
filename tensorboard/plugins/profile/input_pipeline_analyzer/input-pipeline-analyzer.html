@@ -279,14 +279,14 @@ You may obtain a copy of the License at
       })
       var chart = this.$.device_step_chart;
       if (chart) {
-        chart.setVisibleSeries(['total step time', 'device step time']);
-        chart.setSeriesData('total step time', hostStepSeries);
-        chart.setSeriesData('device step time', deviceStepSeries);
+        chart.setVisibleSeries(['device step time', 'compute time']);
+        chart.setSeriesData('device step time', hostStepSeries);
+        chart.setSeriesData('compute time', deviceStepSeries);
         chart.defaultYRange = [0, maxStepTime * 1.1]
         chart.smoothingEnabled = false;
         chart.tooltipColumns = [
           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
-          { title: 'Time(ms)', evaluate: (d) => d.datum.scalar },
+          { title: 'Time(ms)', evaluate: (d) => (d.datum.scalar).toFixed(2) },
           { title: 'Step', evaluate: (d) => d.datum.step }];
         chart.fillArea = {
           higherAccessor: (d) => d.scalar,
@@ -309,8 +309,8 @@ You may obtain a copy of the License at
       })
       var chart = this.$.device_infeed_chart;
       if (chart) {
-        chart.setVisibleSeries(['infeed deque time%']);
-        chart.setSeriesData('infeed deque time%', deviceInfeedSeries);
+        chart.setVisibleSeries(['input time%']);
+        chart.setSeriesData('input time%', deviceInfeedSeries);
         chart.tooltipColumns = [
           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
           { title: 'Step', evaluate: (d) => d.datum.tpu_step },
