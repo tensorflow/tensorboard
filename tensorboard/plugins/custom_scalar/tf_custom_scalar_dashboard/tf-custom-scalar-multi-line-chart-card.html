@@ -40,7 +40,6 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
-      x-components-creation-method="[[_xComponentsCreationMethod]]"
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
@@ -238,10 +237,6 @@ limitations under the License.
               tf_backend.getRouter().pluginRoute(
                   'custom_scalars', '/scalars'), {tag, run}),
         },
-        _xComponentsCreationMethod: {
-          type: Object,
-          computed: '_computeXComponentsCreationMethod(xType)',
-        },
         /**
          * A mapping from run to the next available symbol for that run. We use
          * symbols to differentiate data series within the same run.
@@ -300,9 +295,6 @@ limitations under the License.
         return tf_backend.addParams(
               tf_backend.getRouter().pluginRoute(
                   'custom_scalars', '/download_data'), getVars);
-      },
-      _computeXComponentsCreationMethod(xType) {
-        return () => vz_line_chart.getXComponents(xType);
       },
       _createProcessDataFunction() {
         // This function is called when data is received from the backend.

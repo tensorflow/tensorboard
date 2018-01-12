@@ -38,7 +38,6 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
-      x-components-creation-method="[[_xComponentsCreationMethod]]"
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
@@ -208,11 +207,6 @@ limitations under the License.
           value: () => (tag, run) => tf_backend.addParams(
               tf_backend.getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
         },
-
-        _xComponentsCreationMethod: {
-          type: Object,
-          computed: '_computeXComponentsCreationMethod(xType)',
-        },
       },
       reload() {
         this.$$('tf-line-chart-data-loader').reload();
@@ -238,9 +232,6 @@ limitations under the License.
       },
       _jsonUrl(tag, run) {
         return this._dataUrl(tag, run);
-      },
-      _computeXComponentsCreationMethod(xType) {
-        return () => vz_line_chart.getXComponents(xType);
       },
   });
 </script>
