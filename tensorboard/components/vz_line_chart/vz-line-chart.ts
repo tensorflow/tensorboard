@@ -94,6 +94,14 @@ Polymer({
     smoothingWeight: {type: Number, value: 0.6},
 
     /**
+     * This is a helper field for automatically generating commonly used
+     * functions for xComponentsCreationMethod. Valid values are what can
+     * be processed by vz_line_chart.getXComponents() and include
+     * "step", "wall_time", and "relative".
+     */
+    xType: {type: String, value: ''},
+
+    /**
      * We accept a function for creating an XComponents object instead of such
      * an object itself because the Axis must be made right when we make the
      * LineChart object, lest we use a previously destroyed Axis. See the async
@@ -105,12 +113,18 @@ Polymer({
      *
      * @type {function(): XComponents}
      */
-    xComponentsCreationMethod: {type: Object, value: () => stepX},
+    xComponentsCreationMethod: {
+      type: Object,
+      /* Note: We have to provide a nonsense value for
+       * xComponentsCreationMethod here, because Polymer observers only
+       * trigger after all parameters are set. */
+      value: ''
+    },
 
     /**
      * A formatter for values along the X-axis. Optional. Defaults to a
      * reasonable formatter.
-     * 
+     *
      * @type {function(number): string}
      */
     xAxisFormatter: Object,
@@ -257,7 +271,7 @@ Polymer({
     _makeChartAsyncCallbackId: {type: Number, value: null},
   },
   observers: [
-    '_makeChart(xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
+    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -333,11 +347,20 @@ Polymer({
    */
   _makeChart: function(
       xComponentsCreationMethod,
+      xType,
       yValueAccessor,
       yScaleType,
       tooltipColumns,
       colorScale,
       _attached) {
+    // Find the actual xComponentsCreationMethod.
+    if (!xType && !xComponentsCreationMethod) {
+      xComponentsCreationMethod = () => vz_line_chart.stepX;
+    } else if (xType) {
+      xComponentsCreationMethod = () =>
+          vz_line_chart.getXComponents(xType);
+    }
+
     if (this._makeChartAsyncCallbackId !== null) {
       this.cancelAsync(this._makeChartAsyncCallbackId);
       this._makeChartAsyncCallbackId = null;
@@ -346,7 +369,7 @@ Polymer({
     this._makeChartAsyncCallbackId = this.async(function() {
       this._makeChartAsyncCallbackId = null;
       if (!this._attached ||
-          !this.xComponentsCreationMethod ||
+          !xComponentsCreationMethod ||
           !this.yValueAccessor ||
           !this.tooltipColumns) {
         return;
@@ -357,7 +380,7 @@ Polymer({
       // asynchronous, and values may have changed in between the call being
       // initiated and actually being run.
       var chart = new LineChart(
-          this.xComponentsCreationMethod,
+          xComponentsCreationMethod,
           this.yValueAccessor,
           yScaleType,
           colorScale,
