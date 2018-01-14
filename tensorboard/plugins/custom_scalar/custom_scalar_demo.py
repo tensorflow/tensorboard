@@ -16,78 +16,99 @@
 
 The logic below logs scalar data and then lays out the custom scalars dashboard.
 """
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import summary as summary_lib
 from tensorboard.plugins.custom_scalar import layout_pb2
 
-step = tf.placeholder(tf.float32, shape=[])
+# Directory into which to write tensorboard data.
+LOGDIR = '/tmp/custom_scalar_demo'
 
-with tf.name_scope('loss'):
-  # Specify 2 different loss values, each tagged differently.
-  summary_lib.scalar('foo', tf.pow(0.9, step))
-  summary_lib.scalar('bar', tf.pow(0.85, step + 2))
 
-  # Log metric baz as well as upper and lower bounds for making a margin chart.
-  middle_baz_value = step + 4 * tf.random_uniform([]) - 2
-  summary_lib.scalar('baz', middle_baz_value)
-  summary_lib.scalar(
-      'baz_lower_margin', middle_baz_value - 0.3 - tf.random_uniform([]))
-  summary_lib.scalar(
-      'baz_upper_margin', middle_baz_value + 0.3 + tf.random_uniform([]))
+def main(unused_argv):
+  print('Saving output to %s.' % LOGDIR)
 
-with tf.name_scope('trigFunctions'):
-  summary_lib.scalar('cosine', tf.cos(step))
-  summary_lib.scalar('sine', tf.sin(step))
-  summary_lib.scalar('tangent', tf.tan(step))
+  step = tf.placeholder(tf.float32, shape=[])
 
-merged_summary = tf.summary.merge_all()
+  with tf.name_scope('loss'):
+    # Specify 2 different loss values, each tagged differently.
+    summary_lib.scalar('foo', tf.pow(0.9, step))
+    summary_lib.scalar('bar', tf.pow(0.85, step + 2))
 
-logdir = '/tmp/custom_scalar_demo'
-with tf.Session() as sess, tf.summary.FileWriter(logdir) as writer:
-  # We only need to specify the layout once (instead of per step).
-  layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
-      category=[
-          layout_pb2.Category(
-              title='losses',
-              chart=[
-                  layout_pb2.Chart(
-                      title='losses',
-                      multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'loss(?!.*margin.*)'],
-                      )),
-                  layout_pb2.Chart(
-                      title='baz',
-                      margin=layout_pb2.MarginChartContent(
-                          series=[
-                              layout_pb2.MarginChartContent.Series(
-                                  value='loss/baz/scalar_summary',
-                                  lower='loss/baz_lower_margin/scalar_summary',
-                                  upper='loss/baz_upper_margin/scalar_summary'),
-                          ],
-                      )),
-              ]),
-          layout_pb2.Category(
-              title='trig functions',
-              chart=[
-                  layout_pb2.Chart(
-                      title='wave trig functions',
-                      multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'trigFunctions/cosine', r'trigFunctions/sine'],
-                      )),
-                  # The range of tangent is different. Give it its own chart.
-                  layout_pb2.Chart(
-                      title='tan',
-                      multiline=layout_pb2.MultilineChartContent(
-                          tag=[r'trigFunctions/tangent'],
-                      )),
-              ],
-              # This category we care less about. Lets make it initially closed.
-              closed=True),
-      ]))
-  writer.add_summary(layout_summary)
+    # Log metric baz as well as lower + upper bounds for making a margin chart.
+    middle_baz_value = step + 4 * tf.random_uniform([]) - 2
+    summary_lib.scalar('baz', middle_baz_value)
+    summary_lib.scalar(
+        'baz_lower_margin', middle_baz_value - 0.3 - tf.random_uniform([]))
+    summary_lib.scalar(
+        'baz_upper_margin', middle_baz_value + 0.3 + tf.random_uniform([]))
 
-  for i in xrange(42):
-    summary = sess.run(merged_summary, feed_dict={step: i})
-    writer.add_summary(summary, global_step=i)
+  with tf.name_scope('trigFunctions'):
+    summary_lib.scalar('cosine', tf.cos(step))
+    summary_lib.scalar('sine', tf.sin(step))
+    summary_lib.scalar('tangent', tf.tan(step))
+
+  merged_summary = tf.summary.merge_all()
+
+  with tf.Session() as sess, tf.summary.FileWriter(LOGDIR) as writer:
+    # We only need to specify the layout once (instead of per step).
+    layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
+        category=[
+            layout_pb2.Category(
+                title='losses',
+                chart=[
+                    layout_pb2.Chart(
+                        title='losses',
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'loss(?!.*margin.*)'],
+                        )),
+                    layout_pb2.Chart(
+                        title='baz',
+                        margin=layout_pb2.MarginChartContent(
+                            series=[
+                                layout_pb2.MarginChartContent.Series(
+                                    value='loss/baz/scalar_summary',
+                                    lower=('loss/baz_lower_margin/'
+                                           'scalar_summary'),
+                                    upper=('loss/baz_upper_margin/'
+                                           'scalar_summary')),
+                            ],
+                        )),
+                ]),
+            layout_pb2.Category(
+                title='trig functions',
+                chart=[
+                    layout_pb2.Chart(
+                        title='wave trig functions',
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[
+                                r'trigFunctions/cosine',
+                                r'trigFunctions/sine'],
+                        )),
+                    # The range of tangent is different. Give it its own chart.
+                    layout_pb2.Chart(
+                        title='tan',
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'trigFunctions/tangent'],
+                        )),
+                ],
+                # This category we care less about. Lets close it initially.
+                closed=True),
+        ]))
+    writer.add_summary(layout_summary)
+
+    for i in xrange(42):
+      summary = sess.run(merged_summary, feed_dict={step: i})
+      writer.add_summary(summary, global_step=i)
+
+  print('Done. Output saved to %s.' % LOGDIR)
+
+
+if __name__ == '__main__':
+  tf.app.run()
