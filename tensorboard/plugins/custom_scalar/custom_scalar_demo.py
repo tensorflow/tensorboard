@@ -16,6 +16,11 @@
 
 The logic below logs scalar data and then lays out the custom scalars dashboard.
 """
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
@@ -70,9 +75,9 @@ def main(unused_argv):
                                 layout_pb2.MarginChartContent.Series(
                                     value='loss/baz/scalar_summary',
                                     lower=('loss/baz_lower_margin/'
-                                          'scalar_summary'),
+                                           'scalar_summary'),
                                     upper=('loss/baz_upper_margin/'
-                                          'scalar_summary')),
+                                           'scalar_summary')),
                             ],
                         )),
                 ]),
