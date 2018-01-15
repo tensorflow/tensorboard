@@ -83,7 +83,8 @@ limitations under the License.
 
       this._previousMouseMoveCallback = (e) => {
         // Update the width of the container being resized.
-        const deltaX = e.screenX - this._dragStartScreenX;
+        const deltaX =
+            this._getViewportXPosition(e) - this._dragStartScreenX;
 
         let currentWidth = this._dragStartWidth + deltaX;
         currentWidth = Math.max(currentWidth, this.minWidth);
@@ -96,12 +97,15 @@ limitations under the License.
         // Stop listening for relevant events.
         this._endDrag();
       };
-      this.set('_dragStartScreenX', e.screenX);
+      this.set('_dragStartScreenX', this._getViewportXPosition(e));
       this.set('_dragStartWidth', this.currentWidth);
 
       window.addEventListener('mouseup', this._previousMouseUpCallback, false);
       window.addEventListener(
           'mousemove', this._previousMouseMoveCallback, false);
+    },
+    _getViewportXPosition(mouseEvent) {
+      return mouseEvent.clientX;
     },
     _endDrag() {
       window.removeEventListener(

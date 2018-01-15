@@ -499,6 +499,9 @@ limitations under the License.
         for (let i = 1; i <= levelItems.length; ++i) {
           let currLevelName = levelItems.slice(0, i).join('/');
           const currTreeNode = this._levelName2Node[currLevelName];
+          if (currTreeNode != null && currTreeNode.levelDom != null) {
+            currTreeNode.levelDom.scrollIntoView({block: 'center', behaviour: 'smooth'});
+          }
 
           if (i < levelItems.length) {
             // At non-lowest level.
