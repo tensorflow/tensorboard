@@ -42,6 +42,7 @@ py_library(
     srcs = ["tensor_helper.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":health_pill_calc",
         "//tensorboard:util",
         "//tensorboard:expect_numpy_installed"
     ],
@@ -167,6 +168,16 @@ py_test(
         ":constants",
         ":numerics_alert",
         "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "health_pill_calc",
+    srcs = ["health_pill_calc.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
     ],
 )
 

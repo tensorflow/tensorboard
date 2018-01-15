@@ -61,6 +61,7 @@ limitations under the License.
         viewCard.viewId = view.viewId;
         viewCard.tensorName = view.tensorName;
         viewCard.debugOp = view.debugOp;
+        // TODO(cais): Investigate shape from uninitialized tensor.
         viewCard.slicing = view.slicing;
         viewCard.timeIndices = view.timeIndices;
         viewCard.closeButtonCallback = this._createCloseButtonCallback(view.viewId);
