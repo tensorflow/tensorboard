@@ -16,15 +16,23 @@
 
 The logic below logs scalar data and then lays out the custom scalars dashboard.
 """
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import google3
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard import summary as summary_lib
-from tensorboard.plugins.custom_scalar import layout_pb2
+from google3.third_party.tensorboard import summary as summary_lib
+from google3.third_party.tensorboard.plugins.custom_scalar import layout_pb2
 
 LOGDIR = '/tmp/custom_scalar_demo'
 
+
 def run():
+  """Run custom scalar demo and generate event files."""
   step = tf.placeholder(tf.float32, shape=[])
 
   with tf.name_scope('loss'):
@@ -32,13 +40,13 @@ def run():
     summary_lib.scalar('foo', tf.pow(0.9, step))
     summary_lib.scalar('bar', tf.pow(0.85, step + 2))
 
-    # Log metric baz as well as upper and lower bounds for making a margin chart.
+    # Log metric baz as well as upper and lower bounds for a margin chart.
     middle_baz_value = step + 4 * tf.random_uniform([]) - 2
     summary_lib.scalar('baz', middle_baz_value)
-    summary_lib.scalar(
-        'baz_lower_margin', middle_baz_value - 0.3 - tf.random_uniform([]))
-    summary_lib.scalar(
-        'baz_upper_margin', middle_baz_value + 0.3 + tf.random_uniform([]))
+    summary_lib.scalar('baz_lower',
+                       middle_baz_value - 0.3 - tf.random_uniform([]))
+    summary_lib.scalar('baz_upper',
+                       middle_baz_value + 0.3 + tf.random_uniform([]))
 
   with tf.name_scope('trigFunctions'):
     summary_lib.scalar('cosine', tf.cos(step))
@@ -49,26 +57,25 @@ def run():
 
   with tf.Session() as sess, tf.summary.FileWriter(LOGDIR) as writer:
     # We only need to specify the layout once (instead of per step).
-    layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
-        category=[
+    layout_summary = summary_lib.custom_scalar_pb(
+        layout_pb2.Layout(category=[
             layout_pb2.Category(
                 title='losses',
                 chart=[
                     layout_pb2.Chart(
                         title='losses',
                         multiline=layout_pb2.MultilineChartContent(
-                            tag=[r'loss(?!.*margin.*)'],
-                        )),
+                            tag=[r'loss(?!.*margin.*)'],)),
                     layout_pb2.Chart(
                         title='baz',
                         margin=layout_pb2.MarginChartContent(
                             series=[
                                 layout_pb2.MarginChartContent.Series(
                                     value='loss/baz/scalar_summary',
-                                    lower='loss/baz_lower_margin/scalar_summary',
-                                    upper='loss/baz_upper_margin/scalar_summary'),
-                            ],
-                        )),
+                                    lower='loss/baz_lower/scalar_summary',
+                                    upper='loss/baz_upper/scalar_summary'
+                                ),
+                            ],)),
                 ]),
             layout_pb2.Category(
                 title='trig functions',
@@ -76,16 +83,16 @@ def run():
                     layout_pb2.Chart(
                         title='wave trig functions',
                         multiline=layout_pb2.MultilineChartContent(
-                            tag=[r'trigFunctions/cosine', r'trigFunctions/sine'],
-                        )),
+                            tag=[
+                                r'trigFunctions/cosine', r'trigFunctions/sine'
+                            ],)),
                     # The range of tangent is different. Give it its own chart.
                     layout_pb2.Chart(
                         title='tan',
                         multiline=layout_pb2.MultilineChartContent(
-                            tag=[r'trigFunctions/tangent'],
-                        )),
+                            tag=[r'trigFunctions/tangent'],)),
                 ],
-                # This category we care less about. Lets make it initially closed.
+                # This category we care less about. Make it initially closed.
                 closed=True),
         ]))
     writer.add_summary(layout_summary)
@@ -93,6 +100,7 @@ def run():
     for i in xrange(42):
       summary = sess.run(merged_summary, feed_dict={step: i})
       writer.add_summary(summary, global_step=i)
+
 
 def main(unused_argv):
   print('Saving output to %s.' % LOGDIR)
