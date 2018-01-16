@@ -6,7 +6,8 @@ The *custom* scalar dashboard lets users
 
 1. Create line charts with custom combinations of runs and tags by assigning
 each chart a list of regular expressions for tags.
-2. Lay out the dashboard in a customized way.
+2. Create margin plots (for visualizing confidence intervals).
+3. Lay out the dashboard in a customized way.
 
 To use this dashboard, users first collect scalar data and then lay out the UI.
 
@@ -59,8 +60,7 @@ op but rather a Summary proto that be passed to the SummaryWriter (See sample
 code.).
 
 The `Layout` proto encapsulates the organization of the dashboard. See
-[layout.proto](layout.proto) for documentation. See the code below for an
-example of how to use it.
+[layout.proto](layout.proto) for documentation.
 
 ### Specifying a Layout via a TensorFlow op instead
 
@@ -73,61 +73,10 @@ to change the layout over time.
 
 ### Example Code
 
-```python
-from tensorboard import summary as summary_lib
-from tensorboard.plugins.custom_scalar import layout_pb2
-import tensorflow as tf
+See [custom_scalar_demo.py](custom_scalar_demo.py) for an example of collecting
+scalar data and then laying out the dashboard in a customized way.
 
-step = tf.placeholder(tf.float32, shape=[])
-
-with tf.name_scope('loss'):
-  # Specify 2 different loss values, each tagged differently.
-  summary_lib.scalar('foo', tf.pow(0.9, step))
-  summary_lib.scalar('bar', tf.pow(0.85, step + 2))
-
-# Log metric baz as well as upper and lower bounds for making a margin chart.
-middle_baz_value = step + 4 * tf.random_uniform() - 2
-summary_lib.scalar('baz', middle_baz_value)
-summary_lib.scalar('baz_lower', middle_baz_value - 0.3 - tf.random_uniform())
-summary_lib.scalar('baz_upper', middle_baz_value + 0.3 + tf.random_uniform())
-
-with tf.name_scope('trigFunctions'):
-  summary_lib.scalar('cosine', tf.cos(step))
-  summary_lib.scalar('sine', tf.sin(step))
-  summary_lib.scalar('tangent', tf.tan(step))
-
-merged_summary = tf.summary.merge_all()
-
-with tf.Session() as sess, tf.summary.FileWriter('/tmp/logdir') as writer:
-  # We only need to specify the layout once (instead of per step).
-  summary_lib.custom_scalar_pb(layout_pb2.Layout(
-    category=[
-      layout_pb2.Category(
-        title='losses in 1 chart',
-        chart=[
-            layout_pb2.Chart(
-                title='losses',
-                tag=[r'loss.*']),
-        ]),
-      layout_pb2.Category(
-        title='trig functions',
-        chart=[
-            layout_pb2.Chart(
-                title='wave trig functions',
-                tag=[r'trigFunctions/cosine', r'trigFunctions/sine']),
-            # The range of tangent is different. Lets give it its own chart.
-            layout_pb2.Chart(
-                title='tan',
-                tag=[r'trigFunctions/tangent']),
-        ],
-        # This category we care less about. Lets make it initially closed.
-        closed=True),
-    ]))
-
-  for i in xrange(42):
-    summary = sess.run(merged_summary, feed_dict={step: i})
-    writer.add_summary(summary, global_step=i)
-```
+The example layout contains both multi-line charts and margin plots.
 
 ## The Dashboard UI
 
@@ -143,6 +92,16 @@ Within the "losses" chart are 2 lines. They correspond to tags that had been
 obtained by the regular expression `r'loss.*'`. Because the 2 tags are for the
 same run, the 2 lines differ in markers (One uses squares, while the other uses
 diamonds.) to be distinct from each other. Color still encodes the run.
+
+The baz chart is a margin plot. Zoom in (by dragging a rectangle) or hover over
+points to view margin values. Lines within the margin plot may leave the
+visualized margins because the primary lines are smoothened across time (but the
+margins are not smoothened because smoothing margins might not make statistical
+sense).
+
+![Points lie outside of bounds](docs/line_leaves_bounds.png)
+
+To instead keep lines within bounds, set smoothing to 0 within the menu.
 
 If we expand the "trig functions" category, we find that lines for sine and
 cosine are within one chart, and the line for tangent resides in a separate one
