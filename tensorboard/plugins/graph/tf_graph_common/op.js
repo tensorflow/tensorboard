@@ -286,11 +286,25 @@ var tf;
                 // Ops below are whitelisted, although these technically run on the CPU.
                 // Separating these to indicate that these are manually added, as opposed to
                 // those above that are gleaned from the op registry.
+                'Placeholder',
+                'VarHandleOp',
+                // Control flow ops, trivially valid.
+                'Enter',
+                'Exit',
+                'LoopCond',
                 'Merge',
                 'NextIteration',
-                'Placeholder',
                 'Switch',
-                'VarHandleOp'
+                // Ops below are inserted by the compiler.
+                '_Arg',
+                '_ParallelConcatUpdate',
+                '_Retval',
+                '_TPUCompile',
+                '_TPUExecute',
+                // Distributed TPU ops.
+                'TPUReplicatedInput',
+                'TPUReplicatedOutput',
+                'TPUReplicateMetadata'
             ];
             /**
              * Returns true if OpNode graph object represents a
@@ -300,8 +314,12 @@ var tf;
              * @returns {boolean}
              */
             function opValid(opNode) {
-                // If assigned a device, and it is not the TPU, assume op is valid
+                // If assigned a device, and it is not the TPU, assume op is valid.
                 if (opNode.device && opNode.device.toLowerCase().search("tpu") == -1) {
+                    return true;
+                }
+                // If assigned to the TPU_SYSTEM device, assume op is valid.
+                if (opNode.device && opNode.device.search("TPU_SYSTEM") != -1) {
                     return true;
                 }
                 return op.WHITELIST.indexOf(opNode.op) != -1;
