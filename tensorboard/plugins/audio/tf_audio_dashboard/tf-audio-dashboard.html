@@ -72,7 +72,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
             <iron-icon prefix icon="search"></iron-icon>
           </paper-input>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]">
+            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
               <tf-paginated-view
                 items="[[category.items]]"
                 pages="{{category._pages}}"
@@ -158,6 +158,10 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         this.querySelectorAll('tf-audio-loader').forEach(audio => {
           audio.reload();
         });
+      },
+
+      _shouldOpen(index) {
+        return index <= 2;
       },
 
       _makeCategories(runToTagInfo, selectedRuns, tagFilter) {

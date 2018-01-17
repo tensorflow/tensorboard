@@ -40,7 +40,6 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
-      x-components-creation-method="[[_xComponentsCreationMethod]]"
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
@@ -145,7 +144,7 @@ limitations under the License.
       </ul>
     </div>
   </template>
-  
+
   <div id="matches-container">
     <div id="matches-list-title">
       <template is="dom-if" if="[[_dataSeriesStrings.length]]">
@@ -195,7 +194,7 @@ limitations under the License.
       fill: #fff;
       margin: 0 auto 5px auto;
     }
-    
+
     .invalid-regex {
       font-weight: bold;
     }
@@ -321,10 +320,6 @@ limitations under the License.
               tf_backend.getRouter().pluginRoute(
                   'custom_scalars', '/scalars'), {tag, run}),
         },
-        _xComponentsCreationMethod: {
-          type: Object,
-          computed: '_computeXComponentsCreationMethod(xType)',
-        },
         /**
          * A mapping from run to the next available symbol for that run. We use
          * symbols to differentiate data series within the same run.
@@ -401,7 +396,7 @@ limitations under the License.
          * This field is only set if data retrieved from the server exhibits a
          * step mismatch: if the lists of values, lower bounds, and upper bounds
          * do not match in step. If set, this object has these properties:
-         * 
+         *
          * seriesObject: An object that represents a MarginChartContent.Series
          *     proto.
          * valueSteps: A list of steps (numbers) for the values.
@@ -451,9 +446,6 @@ limitations under the License.
         return tf_backend.addParams(
               tf_backend.getRouter().pluginRoute(
                   'custom_scalars', '/download_data'), getVars);
-      },
-      _computeXComponentsCreationMethod(xType) {
-        return () => vz_line_chart.getXComponents(xType);
       },
       _createProcessDataFunction(marginChartSeries) {
         // This function is called when data is received from the backend.

@@ -115,7 +115,7 @@ TensorFlow run.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]">
+            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
               <tf-paginated-view
                 items="[[category.items]]"
                 pages="{{category._pages}}"
@@ -268,6 +268,10 @@ TensorFlow run.
         this.querySelectorAll('tf-image-loader').forEach(image => {
           image.reload();
         });
+      },
+
+      _shouldOpen(index) {
+        return index <= 2;
       },
 
       _resetBrightness() {
