@@ -60,6 +60,13 @@
        font-weight:bolder;
        font-style:italic;
      }
+     div.errorMessage {
+       color:red;
+       font-size:0.5cm;
+       font-weight: bolder;
+       margin-top:0.5cm;
+       margin-bottom:0.5cm;
+     }
      div.bottleneckTips{
        color:#000000;
      }
@@ -68,7 +75,9 @@
        text-decoration:underline;
      }
     </style>
-    <div class="horizontal layout">
+    <div class="errorMessage" hidden$="[[!_show_error_message]]"> <span>[[_error_message]]</span></div>
+    <div class="while_page_content" hidden$="[[_show_error_message]]">
+      <div class="horizontal layout">
 	<paper-card heading="Performance Summary">
 	  <div class="card-content">
 	    <p><b>Average step time</b> (lower is better): <b><span class="steptime-average" >[[_steptime_ms_average]] ms</span> </b> <i style="opacity:0.7">(standard deviation = <span>[[_steptime_ms_stddev]]</span> ms)</i></p>
@@ -90,41 +99,42 @@
 	    </table>
 	  </div>
 	</paper-card>
-    </div>
-    <div class="horizontal layout">
-      <paper-card heading$="[[_top_ops_heading]]">
-	<div class="card-content">
-	  <button on-click="onClickTopOps">[[_top_ops_button_text]]</button>
-	  <table class="top-ops-table" hidden$="[[!_show_top_ops_table]]">
-	    <thread>
-	      <th>Time (%)</th>
-	      <th>Cumulative time (%)</th>
-	      <th>Category</th>
-	      <th>Operation</th>
-	      <th>GFlops/sec</th>
-	    </thread>
-	    <tbody id="top_ops_table_content">
-	    </tbody>
-	  </table>
-	</div>
-      </paper-card>
-    </div>
-    <div class="horizontal layout">
-      <paper-card heading="Run Environment">
-	<div class="card-content">
-	  <p><b>Number of Hosts used</b>: <span>[[_host_count]]</span></p>
-          <p><b>TPU type</b>: Cloud TPU</span></p>
-          <p><b>Number of TPU cores</b>: <span> [[_tpu_core_count]]</span></p>
-          <p><b>Batch size</b>: <span>[[_batch_size]]</span></p>
-	</div>
-      </paper-card>
-      <paper-card heading="Recommendation for Next Steps">
-	<div class="card-content">
-	  <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
-	  <div id="host_side_tips"></div>
-          <div id="device_side_tips"></div>
-	</div>
-      </paper-card>
+      </div>
+      <div class="horizontal layout">
+	<paper-card heading$="[[_top_ops_heading]]">
+	  <div class="card-content">
+	    <button on-click="onClickTopOps">[[_top_ops_button_text]]</button>
+	    <table class="top-ops-table" hidden$="[[!_show_top_ops_table]]">
+	      <thread>
+		<th>Time (%)</th>
+		<th>Cumulative time (%)</th>
+		<th>Category</th>
+		<th>Operation</th>
+		<th>GFlops/sec</th>
+	      </thread>
+	      <tbody id="top_ops_table_content">
+	      </tbody>
+	    </table>
+	  </div>
+	</paper-card>
+      </div>
+      <div class="horizontal layout">
+	<paper-card heading="Run Environment">
+	  <div class="card-content">
+	    <p><b>Number of Hosts used</b>: <span>[[_host_count]]</span></p>
+            <p><b>TPU type</b>: Cloud TPU</span></p>
+            <p><b>Number of TPU cores</b>: <span> [[_tpu_core_count]]</span></p>
+            <p><b>Batch size</b>: <span>[[_batch_size]]</span></p>
+	  </div>
+	</paper-card>
+	<paper-card heading="Recommendation for Next Steps">
+	  <div class="card-content">
+	    <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
+	    <div id="host_side_tips"></div>
+            <div id="device_side_tips"></div>
+	  </div>
+	</paper-card>
+      </div>
     </div>
   </template>
 
@@ -153,6 +163,11 @@
        _top_ops_button_text: {
          type: String,
          computed: '_getTopOpsButtonText(_show_top_ops_table)'
+       },
+       _show_error_message: {
+         type: Boolean,
+         value: false,
+         notify: true,
        },
      },
      _host_idle_time_percent: String,
@@ -211,7 +226,8 @@
        this.set('_build_time', runEnvironmentJson.p['build_time']);
        this.set('_build_target', runEnvironmentJson.p['build_target']);
        this.set('_statement', recommendationJson.p['statement']);
-
+       this.set('_show_error_message', this._error_message!='');
+       
        this.updateStyles(); /* Do we need this? */
        this._showDeviceStepChart(inputAnalysisJson);
        this._showTopOpsTable(generalAnalysisJson);
@@ -220,26 +236,26 @@
 
      /* Plots a graph of step time (in ms) against step number */
      _showDeviceStepChart : function(deviceJson) {
-       var deviceStepSeries = [];
-       var hostStepSeries = [];
+       var computeTimeSeries = [];
+       var stepTimeSeries = [];
        var maxStepTime = 0;
        var step = -1;
        deviceJson.rows.forEach(function(row, index) {
          step = step > 0 ? ++step : Number(row.c[0].v);
-         deviceStepSeries.push({"scalar": row.c[1].v,
-				"step": step,
-				"tpu_step": Number(row.c[0].v),
-				"low_watermark": 0})
-         hostStepSeries.push({"scalar": row.c[1].v + row.c[2].v,
+         computeTimeSeries.push({"scalar": row.c[1].v,
+				 "step": step,
+				 "tpu_step": Number(row.c[0].v),
+				 "low_watermark": 0})
+         stepTimeSeries.push({"scalar": row.c[1].v + row.c[2].v,
                               "step": step,
                               "low_watermark": row.c[1].v})
          maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
        })
        var chart = this.$.device_step_chart;
        if (chart) {
-         chart.setVisibleSeries(['device step time', 'compute time']);
-         chart.setSeriesData('device step time', hostStepSeries);
-         chart.setSeriesData('compute time', deviceStepSeries);
+         chart.setVisibleSeries(['compute-time', 'step-time = input-time + compute-time']);
+	 chart.setSeriesData('compute-time', computeTimeSeries);
+         chart.setSeriesData('step-time = input-time + compute-time', stepTimeSeries);
          chart.defaultYRange = [0, maxStepTime * 1.1]
          chart.smoothingEnabled = false;
          chart.tooltipColumns = [
@@ -298,7 +314,7 @@
        var bottleneck =  recommendationJson.p['bottleneck'];
        var hostTipsBody = this.$.host_side_tips;
        var deviceTipsBody = this.$.device_side_tips;
-       
+
        if (bottleneck == 'device') {
 	 hostTipsBody.innerHTML = '';
 	 deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
