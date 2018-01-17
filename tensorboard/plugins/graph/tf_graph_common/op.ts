@@ -279,6 +279,7 @@ module tf.graph.op {
     'XlaIf',
     'XlaWhile',
     'ZerosLike',
+    
     // Ops below are manually whitelisted and should not be evaluated for
     // compatibility for various reasons.
 

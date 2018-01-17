@@ -4,7 +4,8 @@ sudo: required
 language: python
 python:
   - "2.7"
-  - "3.4"
+  # TODO(jart): Re-enable when TensorFlow builds are fixed.
+  # - "3.4"
 
 os:
   - linux
@@ -24,7 +25,7 @@ cache:
 before_install:
   - |
     set -e
-    BAZEL_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
+    BAZEL_URL="https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
     wget -t 3 -O install.sh "${BAZEL_URL}"
     chmod +x install.sh
     ./install.sh --user
@@ -34,7 +35,7 @@ before_install:
         pip install -I tensorflow
         ;;
       NIGHTLY)
-        pip install -I tf-nightly
+        pip install --no-cache-dir -I https://tensorboard-builds.storage.googleapis.com/tf_nightly_cpu_slow_ubuntu14-123-cp27-cp27mu-linux_x86_64.whl
         ;;
       *)
         pip install -I tensorflow=="${TF}"

@@ -382,7 +382,7 @@ web_aspect = aspect(
 tf_web_library = rule(
     implementation=_tf_web_library,
     executable=True,
-    attrs=CLUTZ_ATTRIBUTES + {
+    attrs=dict(CLUTZ_ATTRIBUTES.items() + {
         "path": attr.string(),
         "srcs": attr.label_list(allow_files=True),
         "deps": attr.label_list(
@@ -416,6 +416,6 @@ tf_web_library = rule(
         "_ClosureWorker": _CLOSURE_WORKER,
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
         "_closure_library_deps": CLOSURE_LIBRARY_DEPS_ATTR,
-    },
+    }.items()),
     outputs=CLUTZ_OUTPUTS)
 

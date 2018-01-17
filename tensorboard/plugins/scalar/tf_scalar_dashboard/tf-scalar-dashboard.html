@@ -121,7 +121,7 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]">
+            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
               <tf-paginated-view
                 items="[[category.items]]"
                 pages="{{category._pages}}"
@@ -243,6 +243,10 @@ limitations under the License.
           '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
       _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
+      },
+
+      _shouldOpen(index) {
+        return index <= 2;
       },
 
       ready() {

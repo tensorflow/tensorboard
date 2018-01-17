@@ -74,8 +74,7 @@ profile run can have multiple tools that present the performance profile as diff
     </div>
   </div>
   <div class="center">
-    <!-- TODO(sammccall): tool selection is buggy -->
-    <template is="dom-if" if="[[_eq(_currentTool, 'trace_viewer')]]" restamp="true">
+    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"
         height="100%"
@@ -83,12 +82,12 @@ profile run can have multiple tools that present the performance profile as diff
         src="[[_traceDataUrl]]">
       </iframe>
     </template>
-    <template is="dom-if" if="[[_eq(_currentTool, 'op_profile')]]" restamp="true">
-      <tf-op-profile run="[[_run(_datasets, selectedDataset)]]">
+    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'op_profile')]]" restamp="true">
+      <tf-op-profile run="[[_getSelectedDataset(_datasets, currentSelected)]]">
       </tf-op-profile>
     </template>
-    <template is="dom-if" if="[[_eq(_currentTool, 'input_pipeline_analyzer')]]" restamp="true">
-      <input-pipeline-analyzer run="[[_run(_datasets, selectedDataset)]]">
+    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'input_pipeline_analyzer')]]" restamp="true">
+      <input-pipeline-analyzer run="[[_getSelectedDataset(_datasets, currentSelected)]]">
       </input-pipeline-analyzer>
     </template>
   </div>
@@ -139,6 +138,7 @@ profile run can have multiple tools that present the performance profile as diff
       },
       _datasets: {
         type: Array,
+        notify: true,
         observer: '_datasetsChanged'
       },
       _activeTools: {
@@ -151,15 +151,20 @@ profile run can have multiple tools that present the performance profile as diff
         value: 0,
         observer: '_selectedDatasetChanged'
       },
-      _currentTool: {
-        type: String,
-        computed: '_getCurrentToolName(selectedTool, _activeTools)',
-        notify: true,
-      },
       selectedTool: {
         type: Number,
         notify: true,
         value: 0,
+        observer: '_selectedToolChanged'
+      },
+      // currentSelected will depends on selectedDataset and selectedTool.
+      // With this arrangement, we can achieve cascading Polymer effects
+      // propagation and atomic change of both dataset and tool.(e.g.
+      // when dataset change, the tool set to the first available one).
+      currentSelected: {
+        type: Number,
+        notify: true,
+        value: () => { return {'datasetIndex': 0, 'toolIndex': 0} },
       },
     },
     reload: function() {
@@ -168,7 +173,7 @@ profile run can have multiple tools that present the performance profile as diff
     },
     observers: [
       '_maybeInitializeDashboard(_isAttached)',
-      '_maybeUpdateTool(_datasets, selectedDataset, _currentTool)',
+      '_maybeUpdateTool(_datasets, currentSelected)',
     ],
     attached: function() {
       this.set('_isAttached', true);
@@ -202,11 +207,24 @@ profile run can have multiple tools that present the performance profile as diff
         this.set('_datasets', datasets);
       });
     },
-    _maybeUpdateTool: function(datasets, selectedDataset, currentTool) {
+    _getSelectedTool: function(datasets, currentSelected) {
+      var activeTools = this._getActiveTools(currentSelected.datasetIndex, datasets);
+      if (currentSelected.toolIndex >= 0 && currentSelected.toolIndex < activeTools.length) {
+        return activeTools[currentSelected.toolIndex];
+      }
+      return null;
+    },
+    _getSelectedDataset: function(datasets, currentSelected) {
+      if (currentSelected.datasetIndex >= datasets.length) return null;
+      return datasets[currentSelected.datasetIndex].name;
+    },
+    _maybeUpdateTool: function(datasets, currentSelected) {
+      var currentTool = this._getSelectedTool(datasets, currentSelected);
+      if (currentTool == null) return;
       if (currentTool == "trace_viewer") {
         var trace_data_url = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: 'trace_viewer', run: datasets[selectedDataset].name});
+            {tag: 'trace_viewer', run: this._getSelectedDataset(datasets, currentSelected)});
         // Make the trace data url relative to the root.
         if (trace_data_url[0] != '/') {
           trace_data_url = '/' + trace_data_url;
@@ -222,19 +240,26 @@ profile run can have multiple tools that present the performance profile as diff
       if (oldDatasets != null || this.selected == null) {
         // Select the first dataset by default.
         this.set('selectedDataset', 0);
+        this.set('currentSelected', {'datasetIndex': 0, 'toolIndex': 0});
       }
     },
     _selectedDatasetChanged: function(newDataset, oldDataset) {
       if (this._datasets) {
         // Display the first tool by default when switching to another run.
-        this.set('selectedTool', 0);
+        this.set('currentSelected', {'datasetIndex': newDataset, 'toolIndex': 0});
+
+        // Same tool can have differernt index in different runs, therefore we force a change of
+        // 'selectedTool', to make sure the label of the dropdown-menu is synced.
+        this.async(function() {
+          this.set('selectedTool', undefined);
+          this.set('selectedTool', 0);
+        }.bind(this));
       }
     },
-    _getCurrentToolName: function(selectedToolIndex, activeTools) {
-      if (selectedToolIndex >= 0 && selectedToolIndex < activeTools.length) {
-        return activeTools[selectedToolIndex];
+    _selectedToolChanged: function(newTool, oldTool) {
+      if (this._datasets && !(newTool === undefined)) {
+        this.set('currentSelected', {'datasetIndex': this.selectedDataset, 'toolIndex': newTool});
       }
-      return null;
     },
     _getActiveTools: function(selectedDataset, datasets) {
       if (datasets && selectedDataset < datasets.length) {
@@ -245,15 +270,15 @@ profile run can have multiple tools that present the performance profile as diff
     _hasActiveTools: function(selectedDataset, datasets) {
       return datasets[selectedDataset].activeTools.length > 0;
     },
-    _eq: function(actual, expected) {
-      return actual == expected;
+    _isCurrentTool: function(datasets, currentSelected, expected) {
+      return this._getSelectedTool(datasets, currentSelected) == expected;
     },
-    _run(datasets, index) { return datasets[index].name; },
   });
 
   tf_tensorboard.registerDashboard({
     plugin: 'profile',
     elementName: 'tf-profile-dashboard',
+    isReloadDisabled: true,
   });
 
 </script>
