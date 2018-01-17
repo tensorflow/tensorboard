@@ -64,7 +64,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]">
+            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
               <tf-paginated-view
                 items="[[category.items]]"
                 pages="{{category._pages}}"
@@ -127,6 +127,9 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         this._fetchTags().then(() => {
           this._reloadTexts();
         });
+      },
+      _shouldOpen(index) {
+        return index <= 2;
       },
       _fetchTags() {
         const url = tf_backend.getRouter().pluginRoute('text', '/tags');
