@@ -21,12 +21,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import google3
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from google3.third_party.tensorboard import summary as summary_lib
-from google3.third_party.tensorboard.plugins.custom_scalar import layout_pb2
+from tensorboard import summary as summary_lib
+from tensorboard.plugins.custom_scalar import layout_pb2
+
 
 LOGDIR = '/tmp/custom_scalar_demo'
 
