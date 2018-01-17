@@ -117,6 +117,21 @@ var tf_debugger_dashboard;
         }
     }
     tf_debugger_dashboard.sortAndBaseExpandDebugWatches = sortAndBaseExpandDebugWatches;
+    /**
+     * Remove any possible base expansion from a node name.
+     * @param nodeName: The node name, possibly with base expansion.
+     * @returns: Node name with any base expansion removed. If `nodeName` does not
+     *   contain any base expansion, the string is returned without modification.
+     */
+    function removeNodeNameBaseExpansion(nodeName) {
+        if (nodeName.endsWith(')')) {
+            return nodeName.slice(0, nodeName.lastIndexOf('/('));
+        }
+        else {
+            return nodeName;
+        }
+    }
+    tf_debugger_dashboard.removeNodeNameBaseExpansion = removeNodeNameBaseExpansion;
     function assembleDeviceAndNodeNames(nameItems) {
         var deviceAndNodeNames = [null, null];
         if (nameItems[0].match(tf_debugger_dashboard.DEVICE_NAME_PATTERN)) {
