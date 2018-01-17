@@ -44,7 +44,8 @@ _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
     'trace_viewer': 'trace',
     'op_profile': 'op_profile.json',
-    'input_pipeline_analyzer': 'input_pipeline.json'
+    'input_pipeline_analyzer': 'input_pipeline.json',
+    'overview_page': 'overview_page.json',
 }
 
 
@@ -158,7 +159,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return None
     if tool == 'trace_viewer':
       return process_raw_trace(raw_data)
-    if tool == 'op_profile' or tool == 'input_pipeline_analyzer':
+    if tool in set(['op_profile', 'input_pipeline_analyzer', 'overview_page']):
       return raw_data
     return None
 

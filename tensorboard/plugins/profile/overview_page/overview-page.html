@@ -1,0 +1,314 @@
+<!--
+     @license
+     Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+   -->
+
+<!--
+     The Overview Page ...??
+   -->
+
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../paper-card/paper-card.html">
+
+<dom-module id="overview-page">
+  <template>
+    <style>
+     .steptime-average {
+       font-weight:bold;
+       font-style:italic;
+       color:red;
+     }
+     .table-style {
+       table-layout:auto;
+       width:95%;
+     }
+     .top-ops-table {
+       width:100%;
+     }
+     .x-axis-title {
+       width:80%;
+       text-align:center;
+       text-transform: capitalize;
+     }
+     .y-axis-title {
+       width:10px;
+       writing-mode:bt-rl;
+       transform: rotate(270deg);
+       text-align:center;
+       white-space: nowrap;
+       text-transform: capitalize;
+     }
+     div.bottleneck-statement{
+       color:red;
+       font-weight:bolder;
+       font-style:italic;
+     }
+     div.bottleneckTips{
+       color:#000000;
+     }
+     div.bottleneckTips a{
+       color:#ff33cc;
+       text-decoration:underline;
+     }
+    </style>
+    <div class="horizontal layout">
+      <div class="flex self-stretch">
+	<paper-card heading="Performance Summary">
+	  <div class="card-content">
+	    <p><b>Average step time</b> (lower is better): <b><span class="steptime-average" >[[_steptime_ms_average]] ms</span> </b> <i style="opacity:0.7">(standard deviation = <span>[[_steptime_ms_stddev]]</span> ms)</i></p>
+	    <p><b>Host idle time</b> (lower is better): <span>[[_host_idle_time_percent]]</span></p>
+	    <p><b>TPU idle time</b> (lower is better): <span>[[_device_idle_time_percent]]</p>
+	      <p><b>Utilization of TPU Matrix Units</b> (higher is better): <span>[[_mxu_utilization_percent]]</span></p>
+	  </div>
+	</paper-card>
+      </div>
+      <div class="flex self-stretch">
+	<paper-card heading="Step-time Graph" >
+	  <div class="card-content">
+	    <table class="table-style">
+	      <tr>
+		<td><div class="y-axis-title">milliseconds</div></td>
+		<td>
+		  <vz-line-chart id="device_step_chart" style="width:600px; height:300px"></vz-line-chart>
+                  <div><p class="x-axis-title">training step number</p></div>
+		</td>
+	      </tr>
+	    </table>
+	  </div>
+	</paper-card>
+      </div>
+    </div>
+    <div class="horizontal layout">
+      <paper-card heading$="[[_top_ops_heading]]">
+	<div class="card-content">
+	  <button on-click="onClickTopOps">[[_top_ops_button_text]]</button>
+	  <table class="top-ops-table" hidden$="[[!_show_top_ops_table]]">
+	    <thread>
+	      <th>Time (%)</th>
+	      <th>Cumulative time (%)</th>
+	      <th>Category</th>
+	      <th>Operation</th>
+	      <th>GFlops/sec</th>
+	    </thread>
+	    <tbody id="top_ops_table_content">
+	    </tbody>
+	  </table>
+	</div>
+      </paper-card>
+    </div>
+    <div class="horizontal layout">
+      <paper-card heading="Run Environment">
+	<div class="card-content">
+	  <p><b>Number of Hosts used</b>: <span>[[_host_count]]</span></p>
+          <p><b>TPU type</b>: Cloud TPU</span></p>
+          <p><b>Number of TPU cores</b>: <span> [[_tpu_core_count]]</span></p>
+          <p><b>Batch size</b>: <span>[[_batch_size]]</span></p>
+	</div>
+      </paper-card>
+      <paper-card heading="Recommendation for Next Steps">
+	<div class="card-content">
+	  <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
+	  <div id="host_side_tips"></div>
+          <div id="device_side_tips"></div>
+	</div>
+      </paper-card>
+    </div>
+  </template>
+
+  <script>
+   Polymer({
+     is: 'overview-page',
+     properties: {
+       _requestManager: {
+         type: Object,
+         readOnly: true,
+         value: () => new tf_backend.RequestManager(),
+       },
+       run: {
+         type: String,
+         observer: '_reloadToolData',
+       },
+       _data: {
+         type: Object,
+         observer: '_updateView',
+       },
+       _show_top_ops_table: {
+         type: Boolean,
+         value: false,
+         notify: true,
+       },
+       _top_ops_button_text: {
+         type: String,
+         computed: '_getTopOpsButtonText(_show_top_ops_table)'
+       },
+     },
+     _host_idle_time_percent: String,
+     _device_idle_time_percent: String,
+     _mxu_utilization_percent: String,
+     _steptime_ms_average: String,
+     _steptime_ms_stddev: String,
+     _top_ops_heading: String,
+     _error_message: String,
+     _host_count: String,
+     _tpu_type: String,
+     _tpu_core_count: String,
+     _batch_size: String,
+     _change_list: String,
+     _build_time: String,
+     _build_target: String,
+     _statement: String,
+
+     _reloadToolData: function(run) {
+       this._requestManager.request(tf_backend.addParams(
+         tf_backend.getRouter().pluginRoute('profile', '/data'),
+         {tag: 'overview_page', run})
+       ).then((data) => {
+         if (data) {
+	   this.set('_data', data);
+         }
+       });
+     },
+
+     onClickTopOps: function(e) {
+       this.set('_show_top_ops_table', !this._show_top_ops_table);
+     },
+
+     _getTopOpsButtonText: function(show_top_ops_table) {
+       return (show_top_ops_table ? 'Hide' : 'Show') + ' table';
+     },
+
+     /* Update view according to new data */
+     _updateView: function() {
+       var generalAnalysisJson = this._data[0];
+       var inputAnalysisJson = this._data[1];
+       var runEnvironmentJson = this._data[2];
+       var recommendationJson = this._data[3];
+
+       this.set('_host_idle_time_percent', generalAnalysisJson.p['host_idle_time_percent']);
+       this.set('_device_idle_time_percent', generalAnalysisJson.p['device_idle_time_percent']);
+       this.set('_mxu_utilization_percent', generalAnalysisJson.p['mxu_utilization_percent']);
+       this.set('_steptime_ms_average', inputAnalysisJson.p['steptime_ms_average']);
+       this.set('_steptime_ms_stddev', inputAnalysisJson.p['steptime_ms_standard_deviation']);
+       this.set('_error_message', runEnvironmentJson.p['error_message']);
+       this.set('_host_count', runEnvironmentJson.p['host_count']);
+       this.set('_tpu_type', runEnvironmentJson.p['tpu_type']);
+       this.set('_tpu_core_count', runEnvironmentJson.p['tpu_core_count']);
+       this.set('_batch_size', runEnvironmentJson.p['batch_size']);
+       this.set('_change_list', runEnvironmentJson.p['change_list']);
+       this.set('_build_time', runEnvironmentJson.p['build_time']);
+       this.set('_build_target', runEnvironmentJson.p['build_target']);
+       this.set('_statement', recommendationJson.p['statement']);
+
+       this.updateStyles(); /* Do we need this? */
+       this._showDeviceStepChart(inputAnalysisJson);
+       this._showTopOpsTable(generalAnalysisJson);
+       this._showRecommendation(recommendationJson);
+     },
+
+     /* Plots a graph of step time (in ms) against step number */
+     _showDeviceStepChart : function(deviceJson) {
+       var deviceStepSeries = [];
+       var hostStepSeries = [];
+       var maxStepTime = 0;
+       var step = -1;
+       deviceJson.rows.forEach(function(row, index) {
+         step = step > 0 ? ++step : Number(row.c[0].v);
+         deviceStepSeries.push({"scalar": row.c[1].v,
+				"step": step,
+				"tpu_step": Number(row.c[0].v),
+				"low_watermark": 0})
+         hostStepSeries.push({"scalar": row.c[1].v + row.c[2].v,
+                              "step": step,
+                              "low_watermark": row.c[1].v})
+         maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
+       })
+       var chart = this.$.device_step_chart;
+       if (chart) {
+         chart.setVisibleSeries(['device step time', 'compute time']);
+         chart.setSeriesData('device step time', hostStepSeries);
+         chart.setSeriesData('compute time', deviceStepSeries);
+         chart.defaultYRange = [0, maxStepTime * 1.1]
+         chart.smoothingEnabled = false;
+         chart.tooltipColumns = [
+           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
+           { title: 'Time(ms)', evaluate: (d) => (d.datum.scalar).toFixed(2) },
+           { title: 'Step', evaluate: (d) => d.datum.step }];
+         chart.fillArea = {
+           higherAccessor: (d) => d.scalar,
+           lowerAccessor: (d) => d.low_watermark,
+         };
+         chart.xAxisFormatter = d3.format('d');
+       }
+     },
+
+     /* Draws a table of TensorFlow Op statistics */
+     _showTopOpsTable: function(opsTableJson) {
+       var numRows = 0;
+       var opsTableBody = this.$.top_ops_table_content;
+       opsTableBody.innerHTML = '';
+       opsTableJson.rows.forEach(function(rowJson, index) {
+	 var row = document.createElement('tr');
+	 Polymer.dom(opsTableBody).appendChild(row);
+	 var cellTexts = [];
+	 cellTexts.push((rowJson.c[0].v*100).toFixed(2)+'%');
+	 cellTexts.push((rowJson.c[1].v*100).toFixed(2)+'%');
+	 cellTexts.push(rowJson.c[2].v);
+	 cellTexts.push(rowJson.c[3].v);
+	 cellTexts.push((rowJson.c[4].v).toFixed(2));
+	 cellTexts.forEach(function(cellText, index) {
+           var td = document.createElement('td');
+           Polymer.dom(row).appendChild(td);
+           Polymer.dom(td).appendChild(document.createTextNode(cellText));
+         });
+	 numRows += 1;
+       })
+       this.set('_top_ops_heading', 'Top ' + numRows + ' TensorFlow operations executed on TPU');
+       this.set('_show_top_ops_table', false);
+     },
+
+     _generateRecommendationHtml: function(tipsTableJson, cssClassName, wantedTipType, titleString) {
+       var content = '<p>&nbsp;</p>';
+       content += '<div class="' + cssClassName + '">';
+       content += '<font size="3"><b>' + titleString + ':</b></font>';
+       tipsTableJson.rows.forEach(function(rowJson, index) {
+	 var tipType = rowJson.c[0].v;
+	 if (tipType == wantedTipType) {
+	   var link = rowJson.c[1].v;
+	   content += '<li>' + link + '</li>';
+	 }
+       });
+       content += '</div>';
+       return content;
+     },
+
+     _showRecommendation: function(recommendationJson) {
+       var bottleneck =  recommendationJson.p['bottleneck'];
+       var hostTipsBody = this.$.host_side_tips;
+       var deviceTipsBody = this.$.device_side_tips;
+       
+       if (bottleneck == 'device') {
+	 hostTipsBody.innerHTML = '';
+	 deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
+       } else if (bottleneck == 'host') {
+	 hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
+	 deviceTipsBody.innerHTML = '';
+       } else {
+	 hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
+	 deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
+       }
+     },
+   });
+  </script>
+</dom-module>

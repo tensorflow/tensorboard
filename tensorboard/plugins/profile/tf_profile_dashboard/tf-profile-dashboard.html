@@ -23,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
+<link rel="import" href="../tf-overview-page/overview-page.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
@@ -89,6 +90,10 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'input_pipeline_analyzer')]]" restamp="true">
       <input-pipeline-analyzer run="[[_getSelectedDataset(_datasets, currentSelected)]]">
       </input-pipeline-analyzer>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'overview_page')]]" restamp="true">
+      <overview-page run="[[_getSelectedDataset(_datasets, currentSelected)]]">
+      </overview-page>
     </template>
   </div>
   </tf-dashboard-layout>

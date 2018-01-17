@@ -16,6 +16,7 @@ tf_web_library(
         "//tensorboard/components/vz_sorting",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/profile/input_pipeline_analyzer",
+        "//tensorboard/plugins/profile/overview_page",
         "//tensorboard/plugins/profile/tf_op_profile",
         "@org_polymer",
         "@org_polymer_paper_dropdown_menu",
