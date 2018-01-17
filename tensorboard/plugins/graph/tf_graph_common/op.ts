@@ -329,11 +329,8 @@ module tf.graph.op {
   /**
    * Returns true if the node's inferred device is not the TPU.
    * Note that this is only a best-effort check.
-   *
-   * @param opDevice String device object
-   * @returns {boolean}
    */
-  export function isNotTpuOp(string: opDevice): boolean {
+  export function isNotTpuOp(opDevice: string): boolean {
     if (opDevice.toLowerCase().search('cpu:') != -1) {
       return true;
     }
@@ -346,9 +343,6 @@ module tf.graph.op {
   /**
    * Returns true if OpNode graph object represents a
    * Tensorflow operation that is valid for the TPU.
-   *
-   * @param opNode OpNode graph object
-   * @returns {boolean}
    */
   export function opValid(opNode: OpNode): boolean {
     // If assigned a device that is not TPU-related assume op is valid.
