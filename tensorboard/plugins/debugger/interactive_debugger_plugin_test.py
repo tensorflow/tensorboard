@@ -715,7 +715,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     session_run_thread.start()
     return session_run_thread, session_run_results
 
-  def testUnitializedTensorIsHandledCorrectly(self):
+  def testTensorDataForUnitializedTensorIsHandledCorrectly(self):
     session_run_thread, session_run_results = self._runInitializer()
     # Activate breakpoint for a:0.
     self._serverGet(
@@ -758,6 +758,27 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     self.assertEqual(2, len(tensor_data))
     self.assertIsNone(tensor_data[0])
     self.assertAllClose([10.0] * 5, tensor_data[1])
+
+  def testCommDataForUninitializedTensorIsHandledCorrectly(self):
+    session_run_thread, _ = self._runInitializer()
+    # Activate breakpoint for a:0.
+    self._serverGet(
+        'gated_grpc',
+        {'mode': 'set_state', 'node_name': 'a', 'output_slot': 0,
+         'debug_op': 'DebugIdentity', 'state': 'break'})
+    self._serverGet('ack')
+    comm_response = self._serverGet('comm', {'pos': 2})
+    comm_data = self._deserializeResponse(comm_response)
+    self.assertEqual('tensor', comm_data['type'])
+    self.assertEqual('Uninitialized', comm_data['data']['dtype'])
+    self.assertEqual('Uninitialized', comm_data['data']['shape'])
+    self.assertEqual('N/A', comm_data['data']['values'])
+    self.assertEqual(
+        'a/(a)', comm_data['data']['maybe_base_expanded_node_name'])
+    self._serverGet('ack')
+    self._serverGet('ack')
+    self._serverGet('ack')
+    session_run_thread.join()
 
   def _runHealthPillNetwork(self):
     session_run_results = []
@@ -805,6 +826,63 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     self.assertAllClose(20.0, tensor_data[10])  # Mean.
     self.assertAllClose(
         np.var([10.0, 20.0, 30.0]), tensor_data[11])  # Variance.
+
+  def _runStringNetwork(self):
+    session_run_results = []
+    def session_run_job():
+      with tf.Session() as sess:
+        str1 = tf.Variable('abc', name='str1')
+        str2 = tf.Variable('def', name='str2')
+        str_concat = tf.add(str1, str2, name='str_concat')
+        sess.run(tf.global_variables_initializer())
+        sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
+        session_run_results.append(sess.run(str_concat))
+    session_run_thread = threading.Thread(target=session_run_job)
+    session_run_thread.start()
+    return session_run_thread, session_run_results
+
+  def testStringTensorIsHandledCorrectly(self):
+    session_run_thread, session_run_results = self._runStringNetwork()
+    # Activate breakpoint for str1:0.
+    self._serverGet(
+        'gated_grpc',
+        {'mode': 'set_state', 'node_name': 'str1', 'output_slot': 0,
+         'debug_op': 'DebugIdentity', 'state': 'break'})
+    self._serverGet('ack')
+    self._serverGet('ack')
+    comm_response = self._serverGet('comm', {'pos': 2})
+    comm_data = self._deserializeResponse(comm_response)
+    self.assertEqual('tensor', comm_data['type'])
+    self.assertEqual('object', comm_data['data']['dtype'])
+    self.assertEqual([], comm_data['data']['shape'])
+    self.assertEqual('abc', comm_data['data']['values'])
+    self.assertEqual(
+        'str1/(str1)', comm_data['data']['maybe_base_expanded_node_name'])
+    session_run_thread.join()
+    self.assertEqual(1, len(session_run_results))
+    self.assertEqual("abcdef", session_run_results[0])
+
+    # Get the value of a tensor without mapping.
+    tensor_response = self._serverGet(
+        'tensor_data',
+        {'watch_key': 'str1:0:DebugIdentity',
+         'time_indices': '-1',
+         'mapping': '',
+         'slicing': ''})
+    tensor_data = self._deserializeResponse(tensor_response)
+    self.assertEqual(None, tensor_data['error'])
+    self.assertEqual(['abc'], tensor_data['tensor_data'])
+
+    # Get the health pill of a string tensor.
+    tensor_response = self._serverGet(
+        'tensor_data',
+        {'watch_key': 'str1:0:DebugIdentity',
+         'time_indices': '-1',
+         'mapping': 'health-pill',
+         'slicing': ''})
+    tensor_data = self._deserializeResponse(tensor_response)
+    self.assertEqual(None, tensor_data['error'])
+    self.assertEqual([None], tensor_data['tensor_data'])
 
 
 if __name__ == "__main__":
