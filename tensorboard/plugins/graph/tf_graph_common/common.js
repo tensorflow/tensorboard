@@ -12,20 +12,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-/**
- * @fileoverview Common interfaces for the tensorflow graph visualizer.
- */
-
-module tf {
-  /**
-   * Tracks task progress. Each task being passed a progress tracker needs
-   * to call the below-defined methods to notify the caller about the gradual
-   * progress of the task.
-   */
-  export interface ProgressTracker {
-    updateProgress(incrementValue: number): void;
-    setMessage(msg: string): void;
-    reportError(msg: string, err: Error): void;
-  }
-} // close module tf
