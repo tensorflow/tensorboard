@@ -61,6 +61,9 @@ You may obtain a copy of the License at
         table-layout:fixed;
         width:95%;
       }
+      .performance-table {
+        width: 100%;
+      }
     </style>
     <div>
       <div id="section_summary">
@@ -71,7 +74,7 @@ You may obtain a copy of the License at
           <span>The overall performance is </span>
           <span class="summary-conclusion">[[_summary_text]]</span>
           <span>input-bounded because on average (over all steps) the device has spent </span>
-          <span><span class="summary-conclusion">[[_infeed_percent_average]]</span> of time </span>
+          <span><span class="summary-conclusion">[[_infeed_percent_average]]%</span> of time </span>
           <span>(standard deviation = [[_infeed_percent_stddev]]) waiting for input data </span>
           <span>[see Section 2 below for details].</span>
         </p>
@@ -142,28 +145,33 @@ You may obtain a copy of the License at
         <div id="title_host_side_analysis">
           <p class="section-header">Section 3: Host-side analysis details</p>
         </div>
-        <div style="height:300px;" id="host_side_chart"></div>
-        <p>
-          <span><b>Explanation:</b> </span>
-          <span>To improve performance, you should try to convert from </span>
-          <span>"Reading data from files on demand" (if any) to </span>
-          <span>"Reading data from files in advance". </span>
-        </p>
+        <div hidden$="[[!_show_host_side_chart]]">
+          <div style="height:300px;" id="host_side_chart"></div>
+          <p>
+            <span><b>Explanation:</b> </span>
+            <span>To improve performance, you should try to convert from </span>
+            <span>"Reading data from files on demand" (if any) to </span>
+            <span>"Reading data from files in advance". </span>
+          </p>
+        </div>
+        <div hidden$="[[_show_host_side_chart]]">
+          Host side analysis can not be done without instrumentation.
+        </div>
         <p> Click the "Show" button below to see the source data of the breakdown.</p>
         <button on-click="onClick">[[_toggle_button_text]]</button>
-        <template is="dom-if" if="{{_show_host_side_table}}">
-          <table id="host-side-table", style="width:100%;">
-            <thead>
-              <th>Input Op</th>
-              <th>Count</th>
-              <th>Total Time (in ms)</th>
-              <th>Total Time (as % of total input-processing time)</th>
-              <th>Total Self Time (in ms)</th>
-              <th>Total Self Time (as % of total input-processing time)</th>
-              <th>Category</th>
-            </thead>
-          </table>
-        </template>
+        <table class="performance-table" hidden$="[[!_show_host_side_table]]">
+          <thead>
+            <th>Input Op</th>
+            <th>Count</th>
+            <th>Total Time (in ms)</th>
+            <th>Total Time (as % of total input-processing time)</th>
+            <th>Total Self Time (in ms)</th>
+            <th>Total Self Time (as % of total input-processing time)</th>
+            <th>Category</th>
+          </thead>
+          <tbody id="host_side_table_content">
+          </tbody>
+        </table>
       </div>
     </div>
   </template>
@@ -185,9 +193,14 @@ You may obtain a copy of the License at
         type: Object,
         observer: '_updateView',
       },
-      _show_host_side_table: {
+      _show_host_side_chart: {
         type: Boolean,
         value: true,
+        notify: true,
+      },
+      _show_host_side_table: {
+        type: Boolean,
+        value: false,
         notify: true,
       },
       _toggle_button_text: {
@@ -209,10 +222,13 @@ You may obtain a copy of the License at
       this.set('_show_host_side_table', !this._show_host_side_table);
     },
     _reloadToolData: function(run) {
+      if (!run) return;
       this._requestManager.request(tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('profile', '/data'),
           {tag: 'input_pipeline_analyzer', run})
-      ).then((data) => {
+      ).catch(error => {
+        console.error(error);
+      }).then((data) => {
         if (data) {
           this.set('_data', data);
         }
@@ -249,10 +265,12 @@ You may obtain a copy of the License at
       var deviceStepSeries = [];
       var hostStepSeries = [];
       var maxStepTime = 0;
+      var step = -1;
       deviceJson.rows.forEach(function(row, index) {
-        var step = Number(row.c[0].v);
+        step = step > 0 ? ++step : Number(row.c[0].v);
         deviceStepSeries.push({"scalar": row.c[1].v,
                                "step": step,
+                               "tpu_step": Number(row.c[0].v),
                                "low_watermark": 0})
         hostStepSeries.push({"scalar": row.c[1].v + row.c[2].v,
                              "step": step,
@@ -261,14 +279,14 @@ You may obtain a copy of the License at
       })
       var chart = this.$.device_step_chart;
       if (chart) {
-        chart.setVisibleSeries(['total step time', 'device step time']);
-        chart.setSeriesData('total step time', hostStepSeries);
-        chart.setSeriesData('device step time', deviceStepSeries);
+        chart.setVisibleSeries(['device step time', 'compute time']);
+        chart.setSeriesData('device step time', hostStepSeries);
+        chart.setSeriesData('compute time', deviceStepSeries);
         chart.defaultYRange = [0, maxStepTime * 1.1]
         chart.smoothingEnabled = false;
         chart.tooltipColumns = [
           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
-          { title: 'Time(ms)', evaluate: (d) => d.datum.scalar },
+          { title: 'Time(ms)', evaluate: (d) => (d.datum.scalar).toFixed(2) },
           { title: 'Step', evaluate: (d) => d.datum.step }];
         chart.fillArea = {
           higherAccessor: (d) => d.scalar,
@@ -280,22 +298,25 @@ You may obtain a copy of the License at
     /* Plots a graph of infeed dequeue time (in % of the step time) against step number */
     _showDeviceInfeedChart: function (deviceJson) {
       var deviceInfeedSeries = [];
+      var step = -1;
       deviceJson.rows.forEach(function(row, index) {
-        deviceInfeedSeries.push({"step": Number(row.c[0].v),
+        step = step > 0 ? ++step : Number(row.c[0].v);
+        deviceInfeedSeries.push({"step": step,
+                                 "tpu_step": Number(row.c[0].v),
                                  "scalar": row.c[4].v,
                                  "min": row.c[5].v,
                                  "max": row.c[6].v});
       })
       var chart = this.$.device_infeed_chart;
       if (chart) {
-        chart.setVisibleSeries(['infeed deque time%']);
-        chart.setSeriesData('infeed deque time%', deviceInfeedSeries);
+        chart.setVisibleSeries(['input time%']);
+        chart.setSeriesData('input time%', deviceInfeedSeries);
         chart.tooltipColumns = [
           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
-          { title: 'Step', evaluate: (d) => d.datum.step },
-          { title: 'Average(%)', evaluate: (d) => (d.datum.scalar).toFixed(2) + '%' },
-          { title: 'Min(%)', evaluate: (d) => (d.datum.min).toFixed(2) + '%' },
-          { title: 'Max(%)', evaluate: (d) => (d.datum.max).toFixed(2) + '%' }];
+          { title: 'Step', evaluate: (d) => d.datum.tpu_step },
+          { title: 'Average(%)', evaluate: (d) => (d.datum.scalar).toFixed(4) + '%' },
+          { title: 'Min(%)', evaluate: (d) => (d.datum.min).toFixed(4) + '%' },
+          { title: 'Max(%)', evaluate: (d) => (d.datum.max).toFixed(4) + '%' }];
         chart.fillArea = {
           higherAccessor: (d) => d.max,
           lowerAccessor: (d) => d.min,
@@ -311,6 +332,7 @@ You may obtain a copy of the License at
       var preprocessingMs = Number(hostJson.p['preprocessing_us']) / kUsPerMs;
       var enqueueMs = Number(hostJson.p['enqueue_us']) / kUsPerMs;
       var totalInputTimeMs = demandedFileReadMs + advancedFileReadMs + preprocessingMs + enqueueMs;
+      this.set('_show_host_side_chart', totalInputTimeMs > 0);
       if (totalInputTimeMs > 0) {
         var pie_data = [{ Name:"Reading data from files on demand",
                           Total:demandedFileReadMs / totalInputTimeMs * 100 },
@@ -334,15 +356,13 @@ You may obtain a copy of the License at
           .labelFormatter(function(n){ return Number(n).toFixed(2) + "%" ;});
         var plot = new Plottable.Components.Table([[pie, legend]]);
         plot.renderTo(div);
-
       }
     },
 
     /* Draws a table of Dataset Op statistics */
     _showHostTable: function(hostJson) {
-      var inputOpsTable = document.getElementById('host-side-table');
-      var inputOpsTableBody = document.createElement('tbody');
-      Polymer.dom(inputOpsTable).appendChild(inputOpsTableBody);
+      var inputOpsTableBody = this.$.host_side_table_content;
+      inputOpsTableBody.innerHTML = '';
       hostJson.rows.forEach(function(rowJson, index) {
         var row = document.createElement('tr');
         Polymer.dom(inputOpsTableBody).appendChild(row);
