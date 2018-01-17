@@ -235,8 +235,8 @@ You may obtain a copy of the License at
        this.set('_build_target', runEnvironmentJson.p['build_target']);
        this.set('_statement', recommendationJson.p['statement']);
        this.set('_show_error_message', this._error_message!='');
-       
-       this.updateStyles(); /* Do we need this? */
+       this.updateStyles();
+
        this._showDeviceStepChart(inputAnalysisJson);
        this._showTopOpsTable(generalAnalysisJson);
        this._showRecommendation(recommendationJson);
