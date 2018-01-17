@@ -205,15 +205,17 @@ You may obtain a copy of the License at
        });
      },
 
+     /* Toggles _show_top_ops_table */
      onClickTopOps: function(e) {
        this.set('_show_top_ops_table', !this._show_top_ops_table);
      },
 
+     /* Gets the current text of the "show-top-ops" button */
      _getTopOpsButtonText: function(show_top_ops_table) {
        return (show_top_ops_table ? 'Hide' : 'Show') + ' table';
      },
 
-     /* Update view according to new data */
+     /* Updates view according to new data */
      _updateView: function() {
        var generalAnalysisJson = this._data[0];
        var inputAnalysisJson = this._data[1];
@@ -303,6 +305,7 @@ You may obtain a copy of the License at
        this.set('_show_top_ops_table', false);
      },
 
+     /* Generates the HTML for a recommendation link */
      _generateRecommendationHtml: function(tipsTableJson, cssClassName, wantedTipType, titleString) {
        var content = '<p>&nbsp;</p>';
        content += '<div class="' + cssClassName + '">';
@@ -318,6 +321,7 @@ You may obtain a copy of the License at
        return content;
      },
 
+     /* Shows the recommendation section */
      _showRecommendation: function(recommendationJson) {
        var bottleneck =  recommendationJson.p['bottleneck'];
        var hostTipsBody = this.$.host_side_tips;
