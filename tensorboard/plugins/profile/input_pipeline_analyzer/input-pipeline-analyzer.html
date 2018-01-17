@@ -54,7 +54,7 @@ You may obtain a copy of the License at
         width:30%;
       }
       .right-pane {
-        width:70%;
+        width:100%;
         height:300px;
       }
       .table-style {
@@ -62,7 +62,18 @@ You may obtain a copy of the License at
         width:95%;
       }
       .performance-table {
-        width: 100%;
+        width:100%;
+      }
+      .x-axis-title {
+        text-align:center;
+        text-transform: capitalize;
+      }
+      .y-axis-title {
+        writing-mode:bt-rl;
+        transform: rotate(270deg);
+        text-align:center;
+        white-space: nowrap;
+        text-transform: capitalize;
       }
     </style>
     <div>
@@ -104,8 +115,10 @@ You may obtain a copy of the License at
                   <span>[[_steptime_ms_minimum]] - [[_steptime_ms_maximum]] ms</span>
                 </p>
               </td>
+              <td><div class="y-axis-title">milliseconds</div></td>
               <td class="right-pane">
                 <vz-line-chart id="device_step_chart" style="height:300px;"></vz-line-chart>
+                <div><p class="x-axis-title">training step number</p></div>
               </td>
             </tr>
           </table>
@@ -119,7 +132,7 @@ You may obtain a copy of the License at
           </div>
           <table class="table-style">
             <tr>
-              <td>
+              <td class="left-pane"> 
                 <p>
                   <span class="highlighted-text">% of device step time waiting for input data</span>
                   <span> (average over the maximum waiting time across cores at each step)</span>
@@ -134,8 +147,10 @@ You may obtain a copy of the License at
                   <span>[[_infeed_percent_minimum]] - [[_infeed_percent_maximum]] %</span>
                 </p>
               </td>
-              <td width="70%">
+              <td><div class="y-axis-title"><p>% of device step time</p></div></td>
+              <td class="right-pane">
                 <vz-line-chart id="device_infeed_chart" style="height:300px;"></vz-line-chart>
+                <div><p class="x-axis-title">training step number</p></div>
               </td>
             </tr>
           </table>
@@ -292,6 +307,7 @@ You may obtain a copy of the License at
           higherAccessor: (d) => d.scalar,
           lowerAccessor: (d) => d.low_watermark,
         };
+        chart.xAxisFormatter = d3.format('d');
       }
     },
 
@@ -321,6 +337,7 @@ You may obtain a copy of the License at
           higherAccessor: (d) => d.max,
           lowerAccessor: (d) => d.min,
         };
+        chart.xAxisFormatter = d3.format('d');
       }
     },
 
