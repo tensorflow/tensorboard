@@ -82,6 +82,13 @@ You may obtain a copy of the License at
        color:#ff33cc;
        text-decoration:underline;
      }
+     div.documentationTips {
+       color:#666699;
+     }
+     div.documentationTips a{
+       color:#33cc00;
+       text-decoration:underline;
+     }
     </style>
     <div class="errorMessage" hidden$="[[!_show_error_message]]"> <span>[[_error_message]]</span></div>
     <div class="while_page_content" hidden$="[[_show_error_message]]">
@@ -140,6 +147,7 @@ You may obtain a copy of the License at
 	    <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
 	    <div id="host_side_tips"></div>
             <div id="device_side_tips"></div>
+	    <div id="documentation_tips"></div>
 	  </div>
 	</paper-card>
       </div>
@@ -337,6 +345,8 @@ You may obtain a copy of the License at
 	 hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
 	 deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
        }
+       var documentationTipsBody = this.$.documentation_tips;
+       documentationTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'documentationTips', 'doc', 'Other useful resources');
      },
    });
   </script>
