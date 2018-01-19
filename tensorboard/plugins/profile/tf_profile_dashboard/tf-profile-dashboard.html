@@ -91,7 +91,7 @@ profile run can have multiple tools that present the performance profile as diff
       <input-pipeline-analyzer run="[[_getSelectedDataset(_datasets, currentSelected)]]">
       </input-pipeline-analyzer>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'overview_page')]]" restamp="true">
+    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'overview_page')]]">
       <overview-page run="[[_getSelectedDataset(_datasets, currentSelected)]]">
       </overview-page>
     </template>
