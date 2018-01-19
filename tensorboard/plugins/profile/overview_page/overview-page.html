@@ -17,7 +17,7 @@ You may obtain a copy of the License at
 
 <!--
   The Overview Page is a view within the tf-profile-dashboard.
-  It is the first page that users would look at in order to under
+  It is the first page that users would look at in order to understand
   the overall performance of their TPU workloads. The page has five
   sections of results:
      (1) Performance summary
@@ -39,55 +39,55 @@ You may obtain a copy of the License at
        --paper-card-header: background-color: blue;
      }
      .steptime-average {
-       font-weight:bold;
-       font-style:italic;
-       color:red;
+       font-weight: bold;
+       font-style: italic;
+       color: red;
      }
      .table-style {
-       table-layout:auto;
-       width:95%;
+       table-layout: auto;
+       width: 95%;
      }
      .top-ops-table {
-       width:100%;
+       width: 100%;
      }
      .x-axis-title {
-       width:80%;
-       text-align:center;
+       width: 80%;
+       text-align: center;
        text-transform: capitalize;
      }
      .y-axis-title {
-       width:10px;
-       writing-mode:bt-rl;
+       width: 10px;
+       writing-mode: bt-rl;
        transform: rotate(270deg);
-       text-align:center;
+       text-align: center;
        white-space: nowrap;
        text-transform: capitalize;
      }
      div.bottleneck-statement{
-       color:red;
-       font-weight:bolder;
-       font-style:italic;
+       color: red;
+       font-weight: bolder;
+       font-style: italic;
      }
      div.errorMessage {
-       color:red;
-       font-size:0.5cm;
+       color: red;
+       font-size: 0.5cm;
        font-weight: bolder;
-       margin-top:0.5cm;
-       margin-bottom:0.5cm;
+       margin-top: 0.5cm;
+       margin-bottom: 0.5cm;
      }
      div.bottleneckTips{
-       color:#000000;
+       color: #000000;
      }
      div.bottleneckTips a{
-       color:#ff33cc;
-       text-decoration:underline;
+       color: #ff33cc;
+       text-decoration: underline;
      }
      div.documentationTips {
-       color:#666699;
+       color: #666699;
      }
      div.documentationTips a{
-       color:#33cc00;
-       text-decoration:underline;
+       color: #33cc00;
+       text-decoration: underline;
      }
     </style>
     <div class="errorMessage" hidden$="[[!_show_error_message]]"> <span>[[_error_message]]</span></div>
@@ -317,7 +317,7 @@ You may obtain a copy of the License at
      _generateRecommendationHtml: function(tipsTableJson, cssClassName, wantedTipType, titleString) {
        var content = '<p>&nbsp;</p>';
        content += '<div class="' + cssClassName + '">';
-       content += '<font size="3"><b>' + titleString + ':</b></font>';
+       content += '<b>' + titleString + ':</b>';
        tipsTableJson.rows.forEach(function(rowJson, index) {
 	 var tipType = rowJson.c[0].v;
 	 if (tipType == wantedTipType) {
