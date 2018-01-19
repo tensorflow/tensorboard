@@ -48,7 +48,7 @@ def get_readme():
     return f.read()
 
 setup(
-    name='tensorflow-tensorboard',
+    name='tensorboard',
     version=tensorboard.version.VERSION.replace('-', ''),
     description='TensorBoard lets you watch Tensors Flow',
     long_description=get_readme(),
