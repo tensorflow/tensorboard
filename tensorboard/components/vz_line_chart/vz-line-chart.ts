@@ -355,7 +355,7 @@ Polymer({
       _attached) {
     // Find the actual xComponentsCreationMethod.
     if (!xType && !xComponentsCreationMethod) {
-      xComponentsCreationMethod = () => vz_line_chart.stepX;
+      xComponentsCreationMethod = vz_line_chart.stepX;
     } else if (xType) {
       xComponentsCreationMethod = () =>
           vz_line_chart.getXComponents(xType);
