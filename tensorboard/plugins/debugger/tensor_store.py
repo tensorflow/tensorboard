@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow.python.debug.lib import debug_data
 
 from tensorboard.plugins.debugger import tensor_helper
 
@@ -82,8 +83,9 @@ class _WatchStore(object):
       raise ValueError(
           'Cannot add value: this _WatchStore instance is already disposed')
     self._data.append(value)
-    self._in_mem_bytes += value.nbytes
-    self._ensure_bytes_limits()
+    if hasattr(value, 'nbytes'):
+      self._in_mem_bytes += value.nbytes
+      self._ensure_bytes_limits()
 
   def _ensure_bytes_limits(self):
     # TODO(cais): Thread safety?
@@ -93,7 +95,8 @@ class _WatchStore(object):
     i = len(self._data) - 1
     cum_mem_size = 0
     while i >= 0:
-      cum_mem_size += self._data[i].nbytes
+      if hasattr(self._data[i], 'nbytes'):
+        cum_mem_size += self._data[i].nbytes
       if i < len(self._data) - 1 and cum_mem_size > self._mem_bytes_limit:
         # Always keep at least one time index in the memory.
         break
@@ -222,7 +225,8 @@ class TensorStore(object):
     output = []
     for index in sliced_time_indices:
       value = self._tensor_data[watch_key].query(index)[0]
-      if value is not None:
+      if (value is not None and
+          not isinstance(value, debug_data.InconvertibleTensorProto)):
         output.append(tensor_helper.array_view(
             value, slicing=slicing, mapping=step_mapping)[2])
       else:
