@@ -660,14 +660,23 @@ function _getHealthPillTextContent(healthPill: HealthPill,
  * healthPill: A list of backend.HealthPill objects.
  * nodeInfo: Info on the associated node.
  * healthPillId: A unique numeric ID assigned to this health pill.
+ * healthPillWidth: Optional width of the health pill.
+ * healthPillHeight: Optional height of the health pill.
+ * healthPillYOffset: Optional y-offset of the health pill (that is, the
+ *   color-coded region).
+ * textOffset: Optional value for the x-offset of the top text label
+ *   relative to the left edge of the health pill. If not provided, will
+ *   default to `healthPillWidth / 2`.
  */
-function _addHealthPill(
+export function addHealthPill(
     nodeGroupElement: SVGElement, healthPill: HealthPill,
-    nodeInfo: render.RenderNodeInfo, healthPillId: number) {
+    nodeInfo: render.RenderNodeInfo, healthPillId: number,
+    healthPillWidth = 60, healthPillHeight = 10, healthPillYOffset = 0,
+    textXOffset?: number) {
   // Check if text already exists at location.
   d3.select(nodeGroupElement.parentNode as any).selectAll('.health-pill').remove();
 
-  if (!nodeInfo || !healthPill) {
+  if (!healthPill) {
     return;
   }
 
@@ -684,9 +693,16 @@ function _addHealthPill(
       stddev: Math.sqrt(lastHealthPillData[11])
   };
 
-  let healthPillWidth = 60;
-  let healthPillHeight = 10;
-  if (nodeInfo.node.type === tf.graph.NodeType.OP) {
+  if (healthPillWidth == null) {
+    healthPillWidth = 60;
+  }
+  if (healthPillHeight == null) {
+    healthPillHeight = 10;
+  }
+  if (healthPillYOffset == null) {
+    healthPillYOffset = 0;
+  }
+  if (nodeInfo != null && nodeInfo.node.type === tf.graph.NodeType.OP) {
     // Use a smaller health pill for op nodes (rendered as smaller ellipses).
     healthPillWidth /= 2;
     healthPillHeight /= 2;
@@ -736,6 +752,7 @@ function _addHealthPill(
   rect.setAttribute('fill', 'url(#' + healthPillGradientId + ')');
   rect.setAttribute('width', String(healthPillWidth));
   rect.setAttribute('height', String(healthPillHeight));
+  rect.setAttribute('y', String(healthPillYOffset));
   healthPillGroup.appendChild(rect);
 
   // Show a title with specific counts on hover.
@@ -743,57 +760,61 @@ function _addHealthPill(
   titleSvg.textContent = _getHealthPillTextContent(
       healthPill, totalCount, lastHealthPillElementsBreakdown, numericStats);
   healthPillGroup.appendChild(titleSvg);
-  // TODO(cais): Make the tooltip content prettier.
 
   // Center this health pill just right above the node for the op.
-  let healthPillX = nodeInfo.x - healthPillWidth / 2;
-  let healthPillY = nodeInfo.y - healthPillHeight - nodeInfo.height / 2 - 2;
-  if (nodeInfo.labelOffset < 0) {
-    // The label is positioned above the node. Do not occlude the label.
-    healthPillY += nodeInfo.labelOffset;
-  }
+  let shouldRoundOnesDigit = false;
+  if (nodeInfo != null) {
+    let healthPillX = nodeInfo.x - healthPillWidth / 2;
+    let healthPillY = nodeInfo.y - healthPillHeight - nodeInfo.height / 2 - 2;
+    if (nodeInfo.labelOffset < 0) {
+      // The label is positioned above the node. Do not occlude the label.
+      healthPillY += nodeInfo.labelOffset;
+    }
+    healthPillGroup.setAttribute(
+        'transform', 'translate(' + healthPillX + ', ' + healthPillY + ')');
 
-  if (lastHealthPillElementsBreakdown[2] ||
-      lastHealthPillElementsBreakdown[3] ||
-      lastHealthPillElementsBreakdown[4]) {
-    // At least 1 "non-Inf and non-NaN" value exists (a -, 0, or + value). Show
-    // stats on tensor values.
+    if (lastHealthPillElementsBreakdown[2] ||
+        lastHealthPillElementsBreakdown[3] ||
+        lastHealthPillElementsBreakdown[4]) {
+      // At least 1 "non-Inf and non-NaN" value exists (a -, 0, or + value). Show
+      // stats on tensor values.
 
-    // Determine if we should display the output range as integers.
-    let shouldRoundOnesDigit = false;
-    let node = nodeInfo.node as OpNode;
-    let attributes = node.attr;
-    if (attributes && attributes.length) {
-      // Find the attribute for output type if there is one.
-      for (let i = 0; i < attributes.length; i++) {
-        if (attributes[i].key === 'T') {
-          // Note whether the output type is an integer.
-          let outputType = attributes[i].value['type'];
-          shouldRoundOnesDigit =
-              outputType && /^DT_(BOOL|INT|UINT)/.test(outputType);
-          break;
+      // Determine if we should display the output range as integers.
+
+      let node = nodeInfo.node as OpNode;
+      let attributes = node.attr;
+      if (attributes && attributes.length) {
+        // Find the attribute for output type if there is one.
+        for (let i = 0; i < attributes.length; i++) {
+          if (attributes[i].key === 'T') {
+            // Note whether the output type is an integer.
+            let outputType = attributes[i].value['type'];
+            shouldRoundOnesDigit =
+                outputType && /^DT_(BOOL|INT|UINT)/.test(outputType);
+            break;
+          }
         }
       }
     }
-
-    let statsSvg = document.createElementNS(SVG_NAMESPACE, 'text');
-    const minString =
-        humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
-    const maxString =
-        humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
-    if (totalCount > 1) {
-      statsSvg.textContent = minString + ' ~ ' + maxString;
-    } else {
-      statsSvg.textContent = minString;
-    }
-    statsSvg.classList.add('health-pill-stats');
-    statsSvg.setAttribute('x', String(healthPillWidth / 2));
-    statsSvg.setAttribute('y', '-2');
-    healthPillGroup.appendChild(statsSvg);
   }
 
-  healthPillGroup.setAttribute(
-      'transform', 'translate(' + healthPillX + ', ' + healthPillY + ')');
+  let statsSvg = document.createElementNS(SVG_NAMESPACE, 'text');
+  const minString =
+      humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
+  const maxString =
+      humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
+  if (totalCount > 1) {
+    statsSvg.textContent = minString + ' ~ ' + maxString;
+  } else {
+    statsSvg.textContent = minString;
+  }
+  statsSvg.classList.add('health-pill-stats');
+  if (textXOffset == null) {
+    textXOffset = healthPillWidth / 2;
+  }
+  statsSvg.setAttribute('x', String(textXOffset));
+  statsSvg.setAttribute('y', String(healthPillYOffset - 2));
+  healthPillGroup.appendChild(statsSvg);
 
   Polymer.dom(nodeGroupElement.parentNode).appendChild(healthPillGroup);
 }
@@ -824,7 +845,7 @@ export function addHealthPills(
         const healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
         const healthPill =
             healthPills ? healthPills[healthPillStepIndex] : null;
-        _addHealthPill(
+        addHealthPill(
             (this as SVGElement), healthPill, nodeInfo, healthPillId++);
       });
 };

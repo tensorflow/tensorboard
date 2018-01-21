@@ -71,12 +71,11 @@ limitations under the License.
       <div class="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Node List</div>
-          <paper-button
-            raised
-            id="toggle-source-code-button"
-            on-click="_showSourceCode">
-            <span>[[_toggleSourceCodeButtonText]]</span>
-          </paper-button>
+          <div class="toggle-source-code">
+            Show Code:
+            <paper-toggle-button class="toggle-source-code" id="show-source-code">
+            </paper-toggle-button>
+          </div>
           <tf-op-selector
               debug-watches=[[_debugWatches]]
               debug-watch-change="[[_createDebugWatchChangeHandler()]]"
@@ -182,13 +181,13 @@ limitations under the License.
         </div>
 
         <div id="tensor-data" class="tensor-data">
-          <div class="debugger-section-title">Tensor Value Overview</div>
           <tf-tensor-data-summary
             latest-tensor-data="[[_latestTensorData]]"
             expand-handler="[[_createTensorDataExpandHandler()]]"
             continue-to-callback="[[_createContinueToCallback()]]"
             highlighted-node-name="[[_highlightNodeName]]"
-            tensor-name-clicked="[[_createNodeClickedHandler()]]">
+            tensor-name-clicked="[[_createNodeClickedHandler()]]"
+            get-health-pill="[[_createGetHealthPill()]]">
           </tf-tensor-data-summary>
         </div>
       </div>
@@ -321,7 +320,7 @@ limitations under the License.
         padding: 20px 0;
       }
       .tensor-data {
-        height: 30%;
+        height: 29%;
         overflow: auto;
         padding: 20px 0;
       }
@@ -329,7 +328,8 @@ limitations under the License.
         height: 66%;
         overflow: auto;
       }
-      #toggle-source-code-button {
+      .toggle-source-code {
+        margin-right: 1em;
         font-size: 80%;
         float: right;
       }
@@ -405,10 +405,6 @@ limitations under the License.
         _continueNum: {  // How many times to continue over, e.g., Session.Runs.
             type: Number,
             value: 5,
-        },
-        _toggleSourceCodeButtonText: {
-            type: String,
-            value: 'Show Code >>',
         },
 
         _tensorViewIdCounter: {
@@ -546,6 +542,9 @@ limitations under the License.
         "_sizeDashboardRegions(_leftPaneWidth, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
+      listeners: {
+        'show-source-code.change': '_showSourceCodeChanged',
+      },
 
       ready() {
         this._handleWindowResize();
@@ -721,16 +720,13 @@ limitations under the License.
         this.$.continueDialog.open();
       },
 
-      _showSourceCode() {
+      _showSourceCodeChanged(event) {
+        this.set('_sourceCodeShown', event.target.active);
         if (this._sourceCodeShown) {
-          this.$$('#node-entries').style.height = '80%';
-          this.set('_sourceCodeShown', false);
-          this.set('_toggleSourceCodeButtonText', 'Show Code >>');
-        } else {
           this.$$('#node-entries').style.height = '40%';
-          this.set('_sourceCodeShown', true);
-          this.set('_toggleSourceCodeButtonText', 'Hide Code <<');
           this.$.sourceCodeView.render();
+        } else {
+          this.$$('#node-entries').style.height = '80%';
         }
       },
 
@@ -895,15 +891,14 @@ limitations under the License.
       },
 
       _createTensorDataExpandHandler() {
-        const self = this;
-        function handleTensorDataExpand(tensorData) {
-          self._setTopRightTensorValuesToActive();
+        return (tensorData) => {
+          this._setTopRightTensorValuesToActive();
           // Use setTimeout() so that the DOMs in the top-right tabs have a
           // chance to update.
           setTimeout(() =>  {
-            const multiView = self.$$('#tensorValueMultiView');
+            const multiView = this.$$('#tensorValueMultiView');
             multiView.addView({
-              viewId: self._createTensorViewId(),
+              viewId: this._createTensorViewId(),
               deviceName: tensorData.deviceName,
               tensorName: tensorData.tensorName,
               nodeName: tensorData.nodeName,
@@ -914,7 +909,6 @@ limitations under the License.
             });
           }, 10);
         };
-        return handleTensorDataExpand;
       },
 
       _createTensorViewId() {
@@ -976,6 +970,22 @@ limitations under the License.
             },
           }
         ];
+      },
+
+      // Create a function that gives the health pill of a tensor.
+      _createGetHealthPill() {
+        return (watchKey, callback) => {
+          const parameters = {
+            'watch_key': watchKey,
+            'time_indices': '-1',   // '-1' means the latest time point.
+            'mapping': 'health-pill',
+          };
+          const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/tensor_data');
+          const url = tf_backend.addParams(baseUrl, parameters);
+          this._requestManager.request(url).then(response => {
+            callback(response.tensor_data[0]);
+          });
+        };
       },
 
       _continueToNode(deviceName, baseExpandedNodeName) {
