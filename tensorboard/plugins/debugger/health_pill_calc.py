@@ -14,7 +14,7 @@
 # ==============================================================================
 """Python module for calculating health pills.
 
-"Health pills" are succinct summary of tensor values, including data such as
+"Health pills" are succinct summaries of tensor values, including data such as
 total number of elements, counts of NaN and infinity elements, counts of
 positive, negative and zero elements, min, max, mean and variances, etc.
 

@@ -977,7 +977,7 @@ limitations under the License.
         return (watchKey, callback) => {
           const parameters = {
             'watch_key': watchKey,
-            'time_indices': '-1',
+            'time_indices': '-1',   // '-1' means the latest time point.
             'mapping': 'health-pill',
           };
           const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/tensor_data');

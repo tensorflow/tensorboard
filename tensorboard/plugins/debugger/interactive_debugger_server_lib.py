@@ -60,6 +60,11 @@ def _comm_metadata(run_key, timestamp):
   }
 
 
+UNINITIALIZED_TAG = 'Uninitialized'
+UNSUPPORTED_TAG = 'Unsupported'
+NA_TAG = 'N/A'
+
+
 def _comm_tensor_data(device_name,
                       node_name,
                       maybe_base_expanded_node_name,
@@ -87,12 +92,12 @@ def _comm_tensor_data(device_name,
   tensor_values = None
   if isinstance(tensor_value, debug_data.InconvertibleTensorProto):
     if not tensor_value.initialized:
-      tensor_dtype = 'Uninitialized'
-      tensor_shape = 'Uninitialized'
+      tensor_dtype = UNINITIALIZED_TAG
+      tensor_shape = UNINITIALIZED_TAG
     else:
-      tensor_dtype = 'Unsupported'
-      tensor_dtype = 'Unsupported'
-    tensor_values = 'N/A'
+      tensor_dtype = UNSUPPORTED_TAG
+      tensor_dtype = UNSUPPORTED_TAG
+    tensor_values = NA_TAG
   else:
     tensor_dtype = str(tensor_value.dtype)
     tensor_shape = tensor_value.shape
