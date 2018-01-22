@@ -14,7 +14,7 @@ tf_web_library(
         "tf-debugger-dashboard.html",
         "tf-debugger-initial-dialog.html",
         "tf-debugger-line-chart.html",
-        "tf-debugger-vertical-resizer.html",
+        "tf-debugger-resizer.html",
         "tf-op-selector.html",
         "tf-session-runs-view.html",
         "tf-source-code-view.html",

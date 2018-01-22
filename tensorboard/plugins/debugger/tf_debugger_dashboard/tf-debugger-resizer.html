@@ -16,22 +16,34 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html">
 
 
-<dom-module id="tf-debugger-vertical-resizer">
+<dom-module id="tf-debugger-resizer">
   <template>
     <div class="bars">
-      <span class="bars-text">| |</span>
+      <div class="bars-rotator">
+        <span class="bars-text">| |</span>
+      </div>
     </div>
   </template>
   <style>
     :host {
-      cursor: col-resize;
       position: absolute;
+      background: #ccc;
+      user-select: none;
+    }
+
+    :host[is-horizontal] {
+      cursor: row-resize;
+      height: 10px;
+      left: 0;
+      right: 0;
+    }
+
+    :host:not([is-horizontal]) {
+      cursor: col-resize;
       right: -15px;
       top: 0;
       bottom: 0;
       width: 10px;
-      background: #ccc;
-      user-select: none;
     }
 
     .bars {
@@ -40,8 +52,12 @@ limitations under the License.
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
       font-size: 5px;
+      transform: translate(-50%, -50%);
+    }
+
+    :host[is-horizontal] .bars-rotator {
+      transform: rotate(90deg);
     }
 
     .bars-text {
@@ -53,20 +69,29 @@ limitations under the License.
   </style>
   <script>
   Polymer({
-    is: "tf-debugger-vertical-resizer",
+    is: "tf-debugger-resizer",
     properties: {
-      // The current width of the container we are resizing.
-      currentWidth: {
+      // The current width/height (depends on whether the dragger is vertical or
+      // horizontal) of the container we are resizing.
+      currentLength: {
         type: Number,
         notify: true,
       },
-      minWidth: Number,
-      maxWidth: Number,
-      // The screen X value at the start of the previous drag.
-      _dragStartScreenX: Number,
-      // The width of the container being resized at the start of the previous
+      minLength: Number,
+      maxLength: Number,
+      // If this is true, the dragger widget looks horizontal (not vertical).
+      // Specifically, if horizontal, the user will be able to vary the height
+      // of the container (instead of its width).
+      isHorizontal: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,  // for CSS
+      },
+      // The pixel position at the start of the previous drag.
+      _dragStartPosition: Number,
+      // The length of the container being resized at the start of the previous
       // drag.
-      _dragStartWidth: Number,
+      _dragStartLength: Number,
       _previousMouseMoveCallback: Object,
       _previousMouseUpCallback: Object,
     },
@@ -83,29 +108,29 @@ limitations under the License.
 
       this._previousMouseMoveCallback = (e) => {
         // Update the width of the container being resized.
-        const deltaX =
-            this._getViewportXPosition(e) - this._dragStartScreenX;
+        const deltaPosition =
+            this._getPositionRelativeToViewport(e) - this._dragStartPosition;
 
-        let currentWidth = this._dragStartWidth + deltaX;
-        currentWidth = Math.max(currentWidth, this.minWidth);
-        currentWidth = Math.min(currentWidth, this.maxWidth);
+        let currentLength = this._dragStartLength + deltaPosition;
+        currentLength = Math.max(currentLength, this.minLength);
+        currentLength = Math.min(currentLength, this.maxLength);
 
-        this.set('currentWidth', currentWidth);
+        this.set('currentLength', currentLength);
       };
 
       this._previousMouseUpCallback = (e) => {
         // Stop listening for relevant events.
         this._endDrag();
       };
-      this.set('_dragStartScreenX', this._getViewportXPosition(e));
-      this.set('_dragStartWidth', this.currentWidth);
+      this.set('_dragStartPosition', this._getPositionRelativeToViewport(e));
+      this.set('_dragStartLength', this.currentLength);
 
       window.addEventListener('mouseup', this._previousMouseUpCallback, false);
       window.addEventListener(
           'mousemove', this._previousMouseMoveCallback, false);
     },
-    _getViewportXPosition(mouseEvent) {
-      return mouseEvent.clientX;
+    _getPositionRelativeToViewport(mouseEvent) {
+      return this.isHorizontal ? mouseEvent.clientY : mouseEvent.clientX;
     },
     _endDrag() {
       window.removeEventListener(
