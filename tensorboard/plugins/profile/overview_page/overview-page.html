@@ -20,11 +20,11 @@ You may obtain a copy of the License at
   It is the first page that users would look at in order to understand
   the overall performance of their TPU workloads. The page has five
   sections of results:
-     (1) Performance summary
-     (2) Step-time graph
-     (3) Top 10 TensorFlow Operations executed on TPU
-     (4) Run environment
-     (5) Recommendation for next steps
+    (1) Performance summary
+    (2) Step-time graph
+    (3) Top 10 TensorFlow Operations executed on TPU
+    (4) Run environment
+    (5) Recommendation for next steps
 -->
 
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
@@ -323,7 +323,7 @@ You may obtain a copy of the License at
        content += '<div class="' + cssClassName + '">';
        content += '<b>' + titleString + ':</b>';
        tipsTableJson.rows.forEach(function(rowJson, index) {
-	 var tipType = rowJson.c[0].v;
+         var tipType = rowJson.c[0].v;
 	 if (tipType == wantedTipType) {
 	   var link = rowJson.c[1].v;
 	   content += '<li>' + link + '</li>';
@@ -340,14 +340,14 @@ You may obtain a copy of the License at
        var deviceTipsBody = this.$.device_side_tips;
 
        if (bottleneck == 'device') {
-	 hostTipsBody.innerHTML = '';
-	 deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
+         hostTipsBody.innerHTML = '';
+         deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
        } else if (bottleneck == 'host') {
-	 hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
-	 deviceTipsBody.innerHTML = '';
+         hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
+         deviceTipsBody.innerHTML = '';
        } else {
-	 hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
-	 deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
+         hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
+         deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
        }
        var documentationTipsBody = this.$.documentation_tips;
        documentationTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'documentationTips', 'doc', 'Other useful resources');
