@@ -21,36 +21,38 @@ limitations under the License.
 
 <dom-module id="tf-debugger-initial-dialog">
   <template>
-    <!-- We use a custom backdrop to avoid occluding the TensorBoard navbar. -->
-    <template is="dom-if" if="[[_open]]">
-      <div id="dashboard-backdrop"></div>
-    </template>
-    <paper-dialog id="dialog"
-                  modal
-                  opened="{{_open}}"
-                  width="320"
-                  with-backdrop="[[_useNativeBackdrop]]">
-      <h2 id='dialog-title'>Waiting for first Session.run() to connect...</h2>
-      <div class='code-example'>
-        <!-- TODO(cais): Rename id. -->
-        <pre id="session-run-code-example">
-# To connect to the debugger from your tf.Session:
-from tensorflow.python import debug as tf_debug
-sess = tf.Session()
-sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
-sess.run(my_fetches)
-        </pre>
-        <pre id="hook-code-example">
-# To connect to the debugger using hooks, e.g., from tf.Estimator:
-from tensorflow.python import debug as tf_debug
-hook = tf_debug.TensorBoardDebugHook("[[_host]]:[[_port]]")
-my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
-        </pre>
-      </div>
-    </paper-dialog>
+    <div id="initial-dialog-container">
+      <!-- We use a custom backdrop to avoid occluding the TensorBoard navbar. -->
+      <template is="dom-if" if="[[_open]]">
+        <div id="dashboard-backdrop"></div>
+      </template>
+      <paper-dialog id="dialog"
+                    modal
+                    opened="{{_open}}"
+                    width="320"
+                    with-backdrop="[[_useNativeBackdrop]]">
+        <h2 id='dialog-title'>Waiting for first Session.run() to connect...</h2>
+        <div class='code-example'>
+          <!-- TODO(cais): Rename id. -->
+          <pre id="session-run-code-example">
+  # To connect to the debugger from your tf.Session:
+  from tensorflow.python import debug as tf_debug
+  sess = tf.Session()
+  sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
+  sess.run(my_fetches)
+          </pre>
+          <pre id="hook-code-example">
+  # To connect to the debugger using hooks, e.g., from tf.Estimator:
+  from tensorflow.python import debug as tf_debug
+  hook = tf_debug.TensorBoardDebugHook("[[_host]]:[[_port]]")
+  my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
+          </pre>
+        </div>
+      </paper-dialog>
+    </div>
   </template>
   <style>
-    :host:not([_open]) {
+    :host:not([_open]) #initial-dialog-container {
       display: none;
     }
 
