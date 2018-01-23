@@ -169,6 +169,8 @@ export function tensorConditionDescription2Key(description: string): string {
  * @param healthPill The health pill.
  * @param refValue The reference value required by some of the tensor-value
  *   conditions, e.g., `MEAN_LT`.
+ * @returns Whether the tensor condition specified by `key` (and potentially
+ *   also `revValue` for some `key` values) is satisfied by `healthPill`.
  */
 export function checkHealthPillAgainstTensorConditionKey(
     key: string, healthPill: number[], refValue?: number): boolean {
