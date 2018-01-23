@@ -564,7 +564,8 @@ limitations under the License.
         };
         let path = tf_backend.getRouter().pluginRoute('debugger', '/comm');
         path = tf_backend.addParams(path, parameters);
-        console.log('Sending long-polling request to: ', path);
+        // Uncomment the following line for debugging.
+        // console.log('Sending long-polling request to: ', path);
         this._requestManager.request(path).then(response => {
           const responseType = response['type'];
           const responseData = response['data'];
@@ -1045,8 +1046,16 @@ limitations under the License.
             this.set('_sourceFocusNodeName', nodeName);
           }
           this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
-          this.set('_forceExpandNodeName',
-                   deviceName + '/' + maybeBaseExpandedNodeName);
+          const nodeNameWithDeviceName =
+              deviceName + '/' + maybeBaseExpandedNodeName;
+          this.set('_forceExpandNodeName', nodeNameWithDeviceName);
+          // Wait a little for any concurrent ongoing row rendering in the
+          // Tensor Value Overview table to settle before focusing on the
+          // node that just met the tensor condition.
+          setTimeout(() => {
+            this.set('_highlightNodeName', null);
+            this.set('_highlightNodeName', nodeNameWithDeviceName);
+          }, 100);
           this._showToast('Tensor condition "' + this._continueToTarget +
                           '" is met by watch key: "' + watchKey + '".\n' +
                           'Stopping continuation.');
