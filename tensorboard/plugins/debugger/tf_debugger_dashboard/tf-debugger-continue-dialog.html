@@ -81,8 +81,9 @@ limitations under the License.
           id="ref-value"
           class="input-box"
           label="Reference value to compare to"
+          type="number"
           value="{{_tensorConditionRefValue}}"
-          hidden="[[_isRefValueInputHidden]]"
+          hidden="[[_isRefValueInputHidden]]">
         </paper-input>
       </div>
     </paper-dialog>
@@ -171,6 +172,11 @@ limitations under the License.
         if (tensorConditionKey == null) {
           console.error(
               'Invalid Tensor Condition name:' + this._selectedTensorCondition);
+        }
+        // Validate that this._tensorConditionRefValue is a number.
+        if (isNaN(this._tensorConditionRefValue)) {
+          this.set('_tensorConditionRefValue', 0);
+          return;
         }
         this.tensorConditionGo(tensorConditionKey, this._tensorConditionRefValue);
       },
