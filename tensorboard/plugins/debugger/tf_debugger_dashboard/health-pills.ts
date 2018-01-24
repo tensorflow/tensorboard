@@ -34,16 +34,16 @@ function checkRefValue(refValue: number, condition: string) {
  * @throws Error on in valid condition values or missing refValue for conditions
  *   that requires it.
  */
-export type TensoConditionPredicate =
+export type TensorConditionPredicate =
     (healthPill: number[], refValue?: number) => boolean;
 
 
 export interface TensorCondition {
   description: string;
-  predicate: TensoConditionPredicate;
+  predicate: TensorConditionPredicate;
 }
 
-function isHealthPillUninitizliedOrUnsupported(healthPill: number[]): boolean {
+function isHealthPillUninitializedOrUnsupported(healthPill: number[]): boolean {
   return healthPill == null || healthPill.length == 0 || healthPill[0] !== 1;
 }
 
@@ -145,7 +145,7 @@ const tensorConditions: {[key: string]: TensorCondition} = {
 };
 
 /**
- * Convert the human-readable description of a tensor-value conditio to its key.
+ * Convert human-readable description of a tensor-value condition to its key.
  * @param description Human-readable description.
  * @returns The key, if exists. Else, `null`.
  */
@@ -174,7 +174,7 @@ export function tensorConditionDescription2Key(description: string): string {
  */
 export function checkHealthPillAgainstTensorConditionKey(
     key: string, healthPill: number[], refValue?: number): boolean {
-  if (isHealthPillUninitizliedOrUnsupported(healthPill)) {
+  if (isHealthPillUninitializedOrUnsupported(healthPill)) {
     return false;
   }
   const predicate = tensorConditions[key].predicate;

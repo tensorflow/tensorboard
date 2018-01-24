@@ -55,6 +55,8 @@ limitations under the License.
           no-label-float="true"
           label="Tensor Condition"
           selected-item-label="{{_selectedTensorCondition}}">
+          <!-- TODO(cais): Maybe dynamically set the menu items using some variable
+                           exported from health-pills.ts. -->
           <paper-menu id="tensorConditionMenu" class="dropdown-content" slot="dropdown-content">
             <paper-item no-label-float=true>Contains +/-∞ or NaN</paper-item>
             <paper-item no-label-float=true>Contains +/-∞</paper-item>
@@ -174,11 +176,12 @@ limitations under the License.
               'Invalid Tensor Condition name:' + this._selectedTensorCondition);
         }
         // Validate that this._tensorConditionRefValue is a number.
-        if (isNaN(this._tensorConditionRefValue)) {
+        const refValue = Number(this._tensorConditionRefValue);
+        if (!_.isFinite(refValue)) {
           this.set('_tensorConditionRefValue', 0);
           return;
         }
-        this.tensorConditionGo(tensorConditionKey, this._tensorConditionRefValue);
+        this.tensorConditionGo(tensorConditionKey, refValue);
       },
 
       _onSelectedTensorConditionChanged(selectedTensorCondition) {
