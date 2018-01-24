@@ -199,7 +199,7 @@ limitations under the License.
           <div
             class="dashboard-container"
             data-dashboard$="[[dashboardDatum.plugin]]"
-            style="display: [[_displayStyle(_selectedDashboard, dashboardDatum.plugin)]]"
+            data-selected$="[[_selectedStatus(_selectedDashboard, dashboardDatum.plugin)]]"
           ><!-- Dashboards will be injected here dynamically. --></div>
         </template>
       </div>
@@ -299,6 +299,15 @@ limitations under the License.
 
       .dashboard-container {
         height: 100%;
+      }
+
+      /* Hide unselected dashboards. We still display them within a container 
+         of height 0 since Plottable produces degenerate charts when charts are 
+         reloaded while not displayed. */
+      .dashboard-container:not([data-selected]) {
+        max-height: 0;
+        overflow: hidden;
+        position: relative;
       }
 
       .warning-message {
@@ -555,9 +564,8 @@ limitations under the License.
         return dashboards[index];
       },
 
-      _displayStyle(selectedDashboard, candidateDashboard) {
-         // Display only the selected dashboard.
-        return selectedDashboard === candidateDashboard ? 'inherit' : 'none';
+      _selectedStatus(selectedDashboard, candidateDashboard) {
+        return selectedDashboard === candidateDashboard;
       },
 
       /**
