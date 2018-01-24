@@ -34,7 +34,7 @@ limitations under the License.
           <th width="25%">Value</th>
           <th width="25%">
             Health Pill
-            <paper-toggle-button id="show-health-pills" checked>
+            <paper-toggle-button id="show-health-pills" checked="{{_healthPillsEnabled}}">
             </paper-toggle-button>
             <paper-card>
               <div class="health-pill-legend" id="health-pill-legend"></div>
@@ -150,6 +150,12 @@ limitations under the License.
       //     i.e., the health pill values as an Array of Numbers.
       getHealthPill: Function,
 
+      _healthPillsEnabled: {
+        type: Boolean,
+        value: true,
+        notify: true,
+      },
+
       _watchKeys: {
         type: Array,
         value: [],
@@ -178,11 +184,6 @@ limitations under the License.
         value: {},
       },
       _activeWatchKey: String,
-      _showHealthPills: {
-        type: Boolean,
-        value: true,
-      },
-
       _healthPillWidth: {
         type: Number,
         value: 200,
@@ -206,10 +207,13 @@ limitations under the License.
       this._renderHealthPillLegend();
     },
 
+    enableHealthPills() {
+      this.set('_healthPillsEnabled', true);
+      this._renderHealthPillLegend();
+    },
+
     _showHealthPillsChanged(event) {
-      // Flip the state of the show-health-pills flag.
-      this.set('_showHealthPills', event.target.active);
-      if (this._showHealthPills) {
+      if (this._healthPillsEnabled) {
         this._renderHealthPillLegend();
       } else {
         this._clearHealthPillLegend();
@@ -226,10 +230,13 @@ limitations under the License.
       }
     },
 
+    _tensorData2WatchKey(tensorData) {
+      return tensorData.deviceName + '/' + tensorData.tensorName + ':' +
+             tensorData.debugOp;
+    },
+
     _renderLatest(latestTensorData, expandHandler) {
-      const watchKey = latestTensorData.deviceName + '/' +
-                       latestTensorData.tensorName + ':' +
-                       latestTensorData.debugOp;
+      const watchKey = this._tensorData2WatchKey(latestTensorData);
       let instanceExpandHandler = null;
       if (!(latestTensorData.dtype === 'Uninitialized' ||
             latestTensorData.dtype === 'Unsupported')) {
@@ -387,7 +394,7 @@ limitations under the License.
 
       // Create health pill.
       let healthPillCell = null;
-      if (this._showHealthPills) {
+      if (this._healthPillsEnabled) {
         const healthPillWatchKey = tensorName + ':' + debugOp;
         const healthPillWithoutValue = {
           device_name: deviceName,
@@ -457,7 +464,10 @@ limitations under the License.
       // Prepend the health pill ID with 'tdp/' to avoid duplication with health
       // pills in the graph visualizer (if present).
       const healthPillId = 'tdp/' + healthPillWatchKey;
-      this.getHealthPill(healthPillWatchKey, healthPillValue => {
+      this.getHealthPill(healthPillWatchKey,
+                         healthPillWithoutValue.device_name,
+                         healthPillWithoutValue.node_name,
+                         healthPillValue => {
         if (healthPillValue == null) {
           // DTypes unsupported by health pills, e.g, string, resource.
           healthPillCell.textContent = 'N/A';

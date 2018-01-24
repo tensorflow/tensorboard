@@ -7,8 +7,10 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_debugger_dashboard",
     srcs = [
+        "health-pills.ts",
         "selection-tree-node.ts",
         "tensor-shape-helper.ts",
+        "tf-debugger-continue-dialog.html",
         "tf-debugger-dashboard.html",
         "tf-debugger-initial-dialog.html",
         "tf-debugger-line-chart.html",
