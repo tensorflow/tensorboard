@@ -204,10 +204,9 @@ svg.icon {
   stroke: #a6a6a6;
 }
 
-#devices-checkbox
-{
-  text-align:left;
-  vertical-align:middle
+.devices-checkbox input {
+  text-align: left;
+  vertical-align: middle
 }
 
 .button-text {
@@ -427,8 +426,8 @@ table.tf-graph-controls td.input-element-table-data {
       <div>Devices included in stats:</div>
       <div class="deviceList">
         <template is="dom-repeat" items="[[_currentDevices]]">
-          <div id="devices-checkbox" class="color-legend-row">
-            <span><input style="text-align:left;vertical-align:middle" type="checkbox" value$="[[item.device]]" checked$="[[item.used]]" on-click="_deviceCheckboxClicked"/></span>
+          <div class="color-legend-row devices-checkbox">
+            <span><input type="checkbox" value$="[[item.device]]" checked$="[[item.used]]" on-click="_deviceCheckboxClicked"/></span>
             <span>[[item.suffix]]</span>
             <template is="dom-if" if="[[item.ignoredMsg]]">
               <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
