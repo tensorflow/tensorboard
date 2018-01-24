@@ -186,7 +186,11 @@ class TensorStore(object):
           mem_bytes_limit=self._watch_mem_bytes_limit)
     self._tensor_data[watch_key].add(tensor_value)
 
-  def query(self, watch_key, time_indices=None, slicing=None, mapping=None):
+  def query(self,
+            watch_key,
+            time_indices=None,
+            slicing=None,
+            mapping=None):
     """Query tensor store for a given watch_key.
 
     Args:
@@ -195,7 +199,7 @@ class TensorStore(object):
         `-1`, `:-2`, `[::2]`. If not provided (`None`), will use -1.
       slicing: A numpy-style slicing string for individual time steps.
       mapping: An mapping string or a list of them. Supported mappings:
-        `{None, 'image/png'}`.
+        `{None, 'image/png', 'health-pill'}`.
 
     Returns:
       The potentially sliced values as a nested list of values or its mapped
