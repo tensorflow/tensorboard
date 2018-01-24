@@ -309,7 +309,7 @@ var vz_line_chart;
         _makeChart: function (xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached) {
             // Find the actual xComponentsCreationMethod.
             if (!xType && !xComponentsCreationMethod) {
-                xComponentsCreationMethod = function () { return vz_line_chart.stepX; };
+                xComponentsCreationMethod = vz_line_chart.stepX;
             }
             else if (xType) {
                 xComponentsCreationMethod = function () {
