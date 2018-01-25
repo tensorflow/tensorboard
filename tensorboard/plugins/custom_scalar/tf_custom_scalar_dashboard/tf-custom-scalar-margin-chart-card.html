@@ -40,8 +40,6 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
-      smoothing-enabled="[[smoothingEnabled]]"
-      smoothing-weight="[[smoothingWeight]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
       ignore-y-outliers="[[ignoreYOutliers]]"
       request-manager="[[requestManager]]"
@@ -259,8 +257,6 @@ limitations under the License.
         ignoreYOutliers: Boolean,
         requestManager: Object,
         showDownloadLinks: Boolean,
-        smoothingEnabled: Boolean,
-        smoothingWeight: Number,
         tagMetadata: Object,
         tooltipSortingMethod: String,
 
@@ -356,12 +352,6 @@ limitations under the License.
               {
                 title: 'Name',
                 evaluate: (d) => d.dataset.metadata().name,
-              },
-              {
-                title: 'Smoothed',
-                evaluate: (d, statusObject) => formatValueOrNaN(
-                    statusObject.smoothingEnabled ? d.datum.smoothed :
-                                                    d.datum.scalar),
               },
               {
                 title: 'Value',
