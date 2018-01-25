@@ -1,0 +1,150 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
+<link rel="import" href="../tf-markdown-view/tf-markdown-view.html">
+<link rel="import" href="../tf-imports/d3.html">
+
+<!--
+tf-exp-loader displays markdown exp data from the Text plugin.
+-->
+
+<dom-module id="tf-exp-loader">
+  <template>
+    <tf-card-heading run="[[run]]" tag="[[tag]]" color="[[_runColor]]">
+    </tf-card-heading>
+    <paper-material
+      elevation="1"
+      id="steps-container"
+      class="container scrollbar"
+      style="border-color: [[_runColor]]"
+    >
+      <template is="dom-repeat" items="[[_texts]]">
+        <paper-material elevation="1" class="text">
+          <div>[[item.tag]]</div>
+          <div>[[item.text]]</div>
+        </paper-material>
+      </template>
+    </paper-material>
+    <style include="scrollbar-style"></style>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        margin-right: 10px;
+        margin-bottom: 15px;
+      }
+      #steps-container {
+        border-radius: 3px;
+        border: 2px solid  /* color computed and set as inline style */;
+        display: block;
+        max-height: 500px;
+        overflow: auto;
+        padding: 10px;
+      }
+      .text {
+        background-color: white;
+        border-radius: 0 3px 3px 3px;
+        padding: 5px;
+        word-break: break-word;
+      }
+      .step-container {
+        background-color: var(--tb-ui-light-accent);
+        border-bottom: none;
+        border-radius: 3px 3px 0 0;
+        border: 1px solid #ccc;
+        display: inline-block;
+        font-size: 12px;
+        font-style: italic;
+        margin-left: -1px;  /* to correct for border */
+        padding: 3px;
+      }
+      .step-container:not(:first-child) {
+        margin-top: 15px;
+      }
+
+      tf-card-heading {
+        margin-bottom: 10px;
+      }
+    </style>
+  </template>
+  <script>
+
+    Polymer({
+      is: "tf-exp-loader",
+      properties: {
+        run: String,
+        tag: String,
+        _runColor: {
+          type: String,
+          computed: '_computeRunColor(run)',
+        },
+
+        _texts: {
+          type: Array,
+          value: [],
+        },
+
+        requestManager: Object,
+        _canceller: {
+          type: Object,
+          value: () => new tf_backend.Canceller(),
+        },
+      },
+      _computeRunColor(run) {
+        return tf_color_scale.runsColorScale(run);
+      },
+      attached() {
+        this._attached = true;
+        this.reload();
+      },
+      reload() {
+        if (!this._attached) {
+          return;
+        }
+        this._canceller.cancelAll();
+        const router = tf_backend.getRouter();
+        const url = tf_backend.addParams(router.pluginRoute("exp", "/exp"), {
+          tag: this.tag,
+          run: this.run,
+        });
+        const updateTexts = this._canceller.cancellable(result => {
+          if (result.cancelled) {
+            return;
+          }
+          const data = result.value.map(datum => ({
+            wall_time: new Date(datum.wall_time * 1000),
+            step: datum.step,
+            text: datum.text,
+          }));
+          this.set("_texts", data.slice().reverse());
+        });
+        this.requestManager.request(url).then(updateTexts);
+      },
+      _formatStep(n) {
+        return d3.format(",")(n);
+      }
+    });
+  </script>
+</dom-module>
