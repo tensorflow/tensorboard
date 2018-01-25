@@ -1,3 +1,42 @@
+# Release 1.5.0
+
+The 1.5 minor series tracks TensorFlow 1.5.
+
+## Highlights
+
+- New Custom Scalars dashboard, which can display configurable custom line and
+  margin charts based on the same data as the regular Scalars dashboard. See
+  for details: https://github.com/tensorflow/tensorboard/tree/1.5/tensorboard/plugins/custom_scalar
+- Many projector plugin enhancements thanks to @francoisluus, which enable
+  cognitive-assisted labeling via semi-supervised t-SNE
+  - t-SNE specific features: semi-supervision (#811) plus perturb (#705) and
+    pause/resume (#691) buttons
+  - general features: metadata editor (#753), selection edit mode (#697), edit
+    box for neighbors slider (#733), 2D sprite element zooming (#696)
+
+## Features
+
+- Image dashboard brightness and constrast sliders (#771) - thanks @edmundtong
+- Top-level dashboard tabs now scroll when there are too many to fit (#730)
+- Settable browser window title with --window_title flag (#804) - thanks @tkunic
+- Tag filters are now reflected in the URL, making them saveable (#787)
+- Pane-based dashboards now only load charts from first two panes by default,
+  which should improve responsiveness (#643 defaults tag filter search string
+  to empty, and #871 makes first two panes open by default)
+- Lower latency to serve TensorBoard HTML thanks to preloading in memory (#708)
+- Lazy imports ("import tensorboard as tb") now work for summary APIs (#778)
+- PR curve summaries now have pb (#633) and raw_data_pb (#646) versions
+
+## Bug fixes
+
+- #265 - fixed `--logdir` to handle Windows drive letters - thanks @shakedel
+- #784 - fixed bug in find similar subgraph algo - thanks @trisolaran
+- Graph plugin fixed to
+  - correctly render function nodes (#817)
+  - pan to nodes more reliably (#824, #837)
+  - rebuild hierarchy if callbacks change to avoid race in rendering (#879)
+
+
 # Release 0.4.0
 
 The 0.4 minor series tracks TensorFlow 1.4.
