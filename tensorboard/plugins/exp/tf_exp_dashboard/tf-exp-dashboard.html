@@ -63,30 +63,31 @@ tf-exp-dashboard displays a dashboard that loads exp from a TensorFlow run.
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
-          <div>
-            <template is="dom-repeat" items="[[_data]]" as="run">
-              <div>
-                {{run.run}}
+          <div style="display: table;">
+            <div class="row-group" style="display: table-row-group;">
+              <div style="display: table-row;">
+                <div style="display: table-cell;"></div>
+                <template is="dom-repeat" items="[[_data.runs]]" as="run">
+                  <div style="display: table-cell;">[[run]]</div>
+                </template>
               </div>
-              <div>
-                <template is="dom-repeat" items="[[run.tags]]" as="tag">
-                  <div>
-                    {{tag.tag}}
-                  </div>
-                  <div>
-                    <template is="dom-repeat" items="[[tag.value]]" as="v">
-                      <div>
-                        <template is="dom-repeat" items="[[v]]" as="line">
+              <template is="dom-repeat" items="[[_data.tags]]" as="tag">
+                <div style="display: table-row;">
+                  <div class="tag-cell" style="display: table-cell;">[[tag.tag]]</div>
+                  <template is="dom-repeat" items="[[tag.value]]" as="v">
+                    <div style="display: table-cell; max-height: 100px;">
+                      <div class="value-cell">
+                        <template is="dom-repeat" items="[[v.0]]" as="line">
                           <div>
                             [[_toStr(tag.tag, line)]]
                           </div>
                         </template>
                       </div>
-                    </template>
-                  </div>
-                </template>
-              </div>
-            </template>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
           </div>
         </template>
       </div>
@@ -122,7 +123,7 @@ tf-exp-dashboard displays a dashboard that loads exp from a TensorFlow run.
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(),
-        },
+        }
       },
       ready() {
         this.reload();
@@ -157,27 +158,26 @@ tf-exp-dashboard displays a dashboard that loads exp from a TensorFlow run.
         });
       },
 
-      // {
-      //   runs: [],
-      //   tags: [
-      //     {
-      //       tag: 'hoge',
-      //       value: [[], []]
-      //     }
-      //   ],
-      // }
       _convert(categories) {
-        return Object.keys(categories).map(
-          (key) => ({
-            run: key,
-            tags: Object.keys(categories[key]).map(
-              (tag) => ({
-                tag,
-                value: categories[key][tag].slice()
-              })
+        const data = {};
+        const tags = {};
+        Object.keys(categories).forEach(
+          (run) => {
+            Object.keys(categories[run]).forEach(
+              (tag) => {
+                tags[tag] = true;
+              }
             )
+          }
+        );
+        data.runs = Object.keys(categories).slice();
+        data.tags = Object.keys(tags).map(
+          (tag) => ({
+            tag,
+            value: data.runs.map((run) => categories[run][tag].slice()),
           })
         );
+        return data;
       },
       _toStr(tag, line) {
         switch (tag) {
@@ -224,4 +224,16 @@ tf-exp-dashboard displays a dashboard that loads exp from a TensorFlow run.
     });
 
   </script>
+  <style>
+    .tag-cell {
+      padding: 5px;
+    }
+    .value-cell {
+      max-height: 100px;
+      overflow: scroll;
+    }
+    .row-group > div:nth-child(even) {
+      background-color: #fff;
+    }
+  </style>
 </dom-module>
