@@ -73,8 +73,6 @@ by default. The user can select a different run from a dropdown menu.
         selected-dataset="{{_selectedDataset}}"
         selected-file="{{_selectedFile}}"
         selected-metadata-tag="{{_selectedMetadataTag}}"
-        health-pills-feature-enabled="[[_debuggerDataEnabled]]"
-        health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
   <tf-graph-loader id="loader"
         datasets="[[_datasets]]"
@@ -97,13 +95,7 @@ by default. The user can select a different run from a dropdown menu.
         graph="[[_graph]]"
         hierarchy-params="[[_hierarchyParams]]"
         progress="[[_progress]]"
-        debugger-data-enabled="[[_debuggerDataEnabled]]"
-        are-health-pills-loading="[[_areHealthPillsLoading]]"
-        debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
-        node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
         all-steps-mode-enabled="{{allStepsModeEnabled}}"
-        specific-health-pill-step="{{specificHealthPillStep}}"
-        health-pill-step-index="[[_healthPillStepIndex]]"
         render-hierarchy="{{_renderHierarchy}}"
         selected-node="{{_selectedNode}}"
         stats="[[_stats]]"
@@ -149,47 +141,11 @@ Polymer({
       type: Object,
       value: () => new tf_backend.Canceller(),
     },
-    _debuggerDataEnabled: Boolean,
     allStepsModeEnabled: Boolean,
-    specificHealthPillStep: {type: Number, value: 0},
-    healthPillsToggledOn: {type: Boolean, value: true, observer: '_healthPillsToggledOnChanged'},
     _selectedNode: Object,
     _isAttached: Boolean,
     // Whether this dashboard is initialized. This dashboard should only be initialized once.
     _initialized: Boolean,
-    // Whether health pills are currently being loaded, in which case we may want to say show a
-    // spinner.
-    _areHealthPillsLoading: Boolean,
-    // An array of alerts (in chronological order) provided by debugging libraries on when bad
-    // values (NaN, +/- Inf) appear.
-    _debuggerNumericAlerts: {
-      type: Array,
-      value: [],
-      notify: true,
-    },
-    // Maps the names of nodes to an array of health pills (HealthPillDatums).
-    _nodeNamesToHealthPills: {
-      type: Object,
-      value: {},
-    },
-    _healthPillStepIndex: Number,
-    // A strictly increasing ID. Each request for health pills has a unique ID. This helps us
-    // identify stale requests.
-    _healthPillRequestId: {type: Number, value: 1},
-    /**
-     * The setTimeout ID for the pending request for health pills at a
-     * specific step.
-     *
-     * @type {number?}
-     */
-    _healthPillStepRequestTimerId: Number,
-    // The request for health pills at a specific step (as opposed to all sampled health pills) may
-    // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.
-    _healthPillStepRequestTimerDelay: {
-      type: Number,
-      value: 500,
-      readOnly: true,
-    },
     runs: Array,
     run: {
       type: String,
@@ -210,8 +166,6 @@ Polymer({
     'node-toggle-expand': '_handleNodeToggleExpand',
   },
   observers: [
-    '_maybeFetchHealthPills(_debuggerDataEnabled, allStepsModeEnabled, ' +
-        'specificHealthPillStep, _selectedNode)',
     '_maybeInitializeDashboard(_isAttached)',
     '_determineSelectedDataset(_datasets, run)',
     '_updateSelectedDatasetName(_datasets, _selectedDataset)',
@@ -222,28 +176,7 @@ Polymer({
   detached: function() {
     this.set('_isAttached', false);
   },
-  reload: function() {
-    if (!this._debuggerDataEnabled) {
-      // Check if the debugger plugin is enabled now.
-      this._requestManager
-          .request(tf_backend.getRouter().pluginsListing())
-          .then(this._canceller.cancellable(result => {
-            if (result.cancelled) {
-              return;
-            }
-
-            if (result.value['debugger']) {
-              // The debugger plugin is enabled. Request debugger-related
-              // data. Perhaps the debugger plugin had been disabled
-              // beforehand because no bad values (NaN, -/+ Inf) had been
-              // found and muted_if_healthy had been on.
-              this.set('_debuggerDataEnabled', true);
-            }
-          }));
-    }
-
-    this._maybeFetchHealthPills();
-  },
+  reload: function() {},
   _runObserver: tf_storage.getStringObserver(
       RUN_STORAGE_KEY, {
         defaultValue: '',
@@ -258,29 +191,6 @@ Polymer({
     return this._requestManager.request(
         tf_backend.getRouter().pluginRoute('graphs', '/run_metadata_tags'));
   },
-  /*
-   * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.
-   * This function returns a promise with the raw health pill data.
-   */
-  _fetchHealthPills(nodeNames, step) {
-    const postData = {
-      'node_names': JSON.stringify(nodeNames),
-
-      // Events files with debugger data fall under this special run.
-      'run': '__debugger_data__',
-    };
-    if (step !== undefined) {
-      // The user requested health pills for a specific step. This request
-      // might be slow since the backend reads events sequentially from disk.
-      postData['step'] = step;
-    }
-    const url = tf_backend.getRouter().pluginRoute('debugger', '/health_pills');
-    return this._requestManager.request(url, postData);
-  },
-  _fetchDebuggerNumericsAlerts() {
-    return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('debugger', '/numerics_alert_report'));
-  },
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
     const demoMode = tf_backend.getRouter().isDemoMode();
     const base = tf_backend.getRouter().pluginRoute('graphs', '/graph');
@@ -292,15 +202,6 @@ Polymer({
     };
     const extension = demoMode ? '.pbtxt' : '';
     return tf_backend.addParams(base, parameters) + extension;
-  },
-  _shouldRequestHealthPills: function() {
-    // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
-    // or if the graph itself has not loaded yet. We need the graph to load so that we know which
-    // nodes to request health pills for.
-    return this._debuggerDataEnabled &&
-        this.healthPillsToggledOn &&
-        this._renderHierarchy &&
-        !this._datasetsEmpty(this._datasets);
   },
   _maybeInitializeDashboard: function(isAttached) {
     if (this._initialized || !isAttached) {
@@ -354,75 +255,6 @@ Polymer({
   _updateSelectedDatasetName(datasets, selectedDataset) {
     this.set('run', datasets[selectedDataset].name);
   },
-  _requestHealthPills: function() {
-    this.set('_areHealthPillsLoading', true);
-    var requestId = ++this._healthPillRequestId;
-
-    if (this._healthPillStepRequestTimerId !== null) {
-      // A request for health pills is already scheduled to be initiated. Clear it, and schedule a
-      // new request.
-      window.clearTimeout(this._healthPillStepRequestTimerId);
-      this._healthPillStepRequestTimerId = null;
-    }
-
-    if (this.allStepsModeEnabled) {
-      // This path may be slow. Schedule network requests to start some time later. If another
-      // request is scheduled in the mean time, drop this current request.
-      this._healthPillStepRequestTimerId = setTimeout(function() {
-        this._healthPillStepRequestTimerId = null;
-        this._initiateNetworkRequestForHealthPills(requestId);
-      }.bind(this), this._healthPillStepRequestTimerDelay);
-    } else {
-      // The user is fetching sampled steps. This path is fast, so no need to throttle. Directly
-      // fetch the health pills across the network.
-      this._initiateNetworkRequestForHealthPills(requestId);
-    }
-  },
-  // Initiates the network request for health pills. Do not directly call this method - network
-  // requests may be throttled. Instead, call _requestHealthPills, which uses this method.
-  _initiateNetworkRequestForHealthPills: function(requestId) {
-    if (this._healthPillRequestId !== requestId) {
-      // This possibly scheduled request was outdated before it was even sent across the network. Do
-      // not bother initiating it.
-      return;
-    }
-
-    const specificStep =
-      this.allStepsModeEnabled ? this.specificHealthPillStep : undefined;
-
-    const healthPillsPromise = this._fetchHealthPills(
-        this._renderHierarchy.getNamesOfRenderedOps(), specificStep);
-    const alertsPromise = this._fetchDebuggerNumericsAlerts();
-
-    Promise.all([healthPillsPromise, alertsPromise]).then(
-        function(result) {
-      var healthPillsResult = result[0];
-      var alertsResult = result[1];
-
-      if (!this.healthPillsToggledOn) {
-        // The user has opted to hide health pills via the toggle button.
-        return;
-      }
-
-      if (requestId !== this._healthPillRequestId) {
-        // This response is no longer relevant.
-        return;
-      }
-
-      // Set the index for which step to show for the health pills. By default, show the last step.
-      // A precondition we assume (that Tensorboard's reservoir sampling guarantees) is that all
-      // node names should be mapped to the same number of steps.
-      for (var nodeName in healthPillsResult) {
-        this.set('_healthPillStepIndex', healthPillsResult[nodeName].length - 1);
-        break;
-      }
-
-      this.set('_debuggerNumericAlerts', alertsResult);
-      this.set('_nodeNamesToHealthPills', healthPillsResult);
-      this.set('_areHealthPillsLoading', false);
-      this.set('_healthPillStepRequestTimerId', null);
-    }.bind(this));
-  },
   _datasetsEmpty: function(datasets) {
     return !datasets || !datasets.length;
   },
@@ -431,33 +263,11 @@ Polymer({
     // rendered) changes.
     this.reload();
   },
-  _handleNodeToggleExpand: function() {
-    // Nodes were toggled. We may need to request health pills for more nodes.
-    this._maybeFetchHealthPills();
-  },
-  _healthPillsToggledOnChanged: function(healthPillsToggledOn) {
-    if (healthPillsToggledOn) {
-      // Load health pills.
-      this.reload();
-    } else {
-      // Remove all health pills by setting an empty mapping.
-      this.set('_nodeNamesToHealthPills', {});
-    }
-  },
-  // Fetch health pills for a specific step if applicable.
-  _maybeFetchHealthPills: function() {
-    if (!this._shouldRequestHealthPills()) {
-      return;
-    }
-
-    this._requestHealthPills();
-  },
 });
 
 tf_tensorboard.registerDashboard({
   plugin: 'graphs',
   elementName: 'tf-graph-dashboard',
-  // TODO(@chihuahua): Reconcile this setting with Health Pills.
   isReloadDisabled: true,
 });
 

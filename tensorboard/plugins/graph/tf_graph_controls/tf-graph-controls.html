@@ -352,12 +352,6 @@ table.tf-graph-controls td.input-element-table-data {
     <paper-toggle-button id="trace-inputs"></paper-toggle-button>
     <div class="title">Trace inputs</div>
   </div>
-  <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
-    <div class="control-holder">
-      <paper-toggle-button checked="{{healthPillsToggledOn}}"></paper-toggle-button>
-      <div class="title">Show health pills</div>
-    </div>
-  </template>
   <div class="control-holder">
     <div class="title">Color</div>
     <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
@@ -825,14 +819,6 @@ Polymer({
     showUploadButton: {
       type: Boolean,
       value: true
-    },
-    // This stores whether the feature for showing health pills is enabled in the first place.
-    healthPillsFeatureEnabled: Boolean,
-    // This stores whether to show health pills. Only relevant if healthPillsFeatureEnabled. The
-    // user can toggle this value.
-    healthPillsToggledOn: {
-      type: Boolean,
-      notify: true,
     },
     _legendOpened: {
       type: Boolean,

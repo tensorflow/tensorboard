@@ -184,6 +184,36 @@ limitations under the License.
         value: {},
       },
       _activeWatchKey: String,
+      _healthPillEntries: {
+        type: Array,
+        value: [
+            {
+                background_color: '#CC2F2C',
+                label: 'NaN',
+            },
+            {
+                background_color: '#FF8D00',
+                label: '-∞',
+            },
+            {
+                background_color: '#EAEAEA',
+                label: '-',
+            },
+            {
+                background_color: '#A5A5A5',
+                label: '0',
+            },
+            {
+                background_color: '#262626',
+                label: '+',
+            },
+            {
+                background_color: '#003ED4',
+                label: '+∞',
+            },
+        ],
+        readonly: true,
+      },
       _healthPillWidth: {
         type: Number,
         value: 200,
@@ -304,8 +334,8 @@ limitations under the License.
       legend.appendChild(legendTitle);
       legendTitle.style['margin-right'] = '0.5em';
       legendTitle.style['display'] = 'inline-block';
-      for (let i = 0; i < tf.graph.scene.healthPillEntries.length; ++i) {
-        const entry = tf.graph.scene.healthPillEntries[i];
+      for (let i = 0; i < this._healthPillEntries.length; ++i) {
+        const entry = this._healthPillEntries[i];
         const entryDiv = document.createElement('div');
         // TODO(cais): Make class css work.
         entryDiv.style['display'] = 'inline-block';
@@ -475,13 +505,236 @@ limitations under the License.
         } else {
           const healthPill = healthPillWithoutValue;
           healthPill.value = healthPillValue;
-          tf.graph.scene.addHealthPill(
+          this._addHealthPill(
               healthPillInner, healthPill, null, healthPillId,
               this._healthPillWidth, this._healthPillHeight / 2,
               this._healthPillHeight / 2, 0);
         }
       });
       return healthPillCell;
+    },
+
+    /**
+     * Renders a health pill for an op atop a node.
+     * nodeGroupElement: The SVG element in which to render.
+     * healthPill: A list of backend.HealthPill objects.
+     * nodeInfo: Info on the associated node.
+     * healthPillId: A unique numeric ID assigned to this health pill.
+     * healthPillWidth: Optional width of the health pill.
+     * healthPillHeight: Optional height of the health pill.
+     * healthPillYOffset: Optional y-offset of the health pill (that is, the
+     *   color-coded region).
+     * textOffset: Optional value for the x-offset of the top text label
+     *   relative to the left edge of the health pill. If not provided, will
+     *   default to `healthPillWidth / 2`.
+     */
+    _addHealthPill(
+        nodeGroupElement,
+        healthPill,
+        nodeInfo,
+        healthPillId,
+        healthPillWidth,
+        healthPillHeight,
+        healthPillYOffset,
+        textXOffset) {
+      // Check if text already exists at location.
+      d3.select(nodeGroupElement.parentNode).selectAll('.health-pill').remove();
+
+      if (!healthPill) {
+        return;
+      }
+
+      const lastHealthPillData = healthPill.value;
+
+      // For now, we only visualize the 6 values that summarize counts of tensor
+      // elements of various categories: -Inf, negative, 0, positive, Inf, and NaN.
+      const lastHealthPillElementsBreakdown = lastHealthPillData.slice(2, 8);
+      let totalCount = lastHealthPillData[1];
+      const numericStats = {
+          min: lastHealthPillData[8],
+          max: lastHealthPillData[9],
+          mean: lastHealthPillData[10],
+          stddev: Math.sqrt(lastHealthPillData[11])
+      };
+
+      if (healthPillWidth == null) {
+        healthPillWidth = 60;
+      }
+      if (healthPillHeight == null) {
+        healthPillHeight = 10;
+      }
+      if (healthPillYOffset == null) {
+        healthPillYOffset = 0;
+      }
+      if (nodeInfo != null && nodeInfo.node.type === tf.graph.NodeType.OP) {
+        // Use a smaller health pill for op nodes (rendered as smaller ellipses).
+        healthPillWidth /= 2;
+        healthPillHeight /= 2;
+      }
+
+      let healthPillGroup = document.createElementNS(
+          tf.graph.scene.SVG_NAMESPACE, 'g');
+      healthPillGroup.classList.add('health-pill');
+
+      // Define the gradient for the health pill.
+      let healthPillDefs = document.createElementNS(
+          tf.graph.scene.SVG_NAMESPACE, 'defs');
+      healthPillGroup.appendChild(healthPillDefs);
+      let healthPillGradient = document.createElementNS(
+          tf.graph.scene.SVG_NAMESPACE, 'linearGradient');
+
+      // Every element in a web page must have a unique ID.
+      const healthPillGradientId = 'health-pill-gradient-' + healthPillId;
+      healthPillGradient.setAttribute('id', healthPillGradientId);
+
+      let cumulativeCount = 0;
+      let previousOffset = '0%';
+      for (let i = 0; i < lastHealthPillElementsBreakdown.length; i++) {
+        if (!lastHealthPillElementsBreakdown[i]) {
+          // Exclude empty categories.
+          continue;
+        }
+        cumulativeCount += lastHealthPillElementsBreakdown[i];
+
+        // Create a color interval using 2 stop elements.
+        let stopElement0 = document.createElementNS(
+            tf.graph.scene.SVG_NAMESPACE, 'stop');
+        stopElement0.setAttribute('offset', previousOffset);
+        stopElement0.setAttribute(
+            'stop-color', healthPillEntries[i].background_color);
+        healthPillGradient.appendChild(stopElement0);
+
+        let stopElement1 = document.createElementNS(
+            tf.graph.scene.SVG_NAMESPACE, 'stop');
+        let percent = (cumulativeCount * 100 / totalCount) + '%';
+        stopElement1.setAttribute('offset', percent);
+        stopElement1.setAttribute(
+            'stop-color', healthPillEntries[i].background_color);
+        healthPillGradient.appendChild(stopElement1);
+        previousOffset = percent;
+      }
+      healthPillDefs.appendChild(healthPillGradient);
+
+      // Create the rectangle for the health pill.
+      let rect = document.createElementNS(
+          tf.graph.scene.SVG_NAMESPACE, 'rect');
+      rect.setAttribute('fill', 'url(#' + healthPillGradientId + ')');
+      rect.setAttribute('width', String(healthPillWidth));
+      rect.setAttribute('height', String(healthPillHeight));
+      rect.setAttribute('y', String(healthPillYOffset));
+      healthPillGroup.appendChild(rect);
+
+      // Show a title with specific counts on hover.
+      let titleSvg = document.createElementNS(tf.graph.scene.SVG_NAMESPACE, 'title');
+      titleSvg.textContent = this._getHealthPillTextContent(
+          healthPill, totalCount, lastHealthPillElementsBreakdown, numericStats);
+      healthPillGroup.appendChild(titleSvg);
+
+      // Center this health pill just right above the node for the op.
+      let shouldRoundOnesDigit = false;
+      if (nodeInfo != null) {
+        let healthPillX = nodeInfo.x - healthPillWidth / 2;
+        let healthPillY = nodeInfo.y - healthPillHeight - nodeInfo.height / 2 - 2;
+        if (nodeInfo.labelOffset < 0) {
+          // The label is positioned above the node. Do not occlude the label.
+          healthPillY += nodeInfo.labelOffset;
+        }
+        healthPillGroup.setAttribute(
+            'transform', 'translate(' + healthPillX + ', ' + healthPillY + ')');
+
+        if (lastHealthPillElementsBreakdown[2] ||
+            lastHealthPillElementsBreakdown[3] ||
+            lastHealthPillElementsBreakdown[4]) {
+          // At least 1 "non-Inf and non-NaN" value exists (a -, 0, or + value). Show
+          // stats on tensor values.
+          // Determine if we should display the output range as integers.
+          let node = nodeInfo.node;
+          let attributes = node.attr;
+          if (attributes && attributes.length) {
+            // Find the attribute for output type if there is one.
+            for (let i = 0; i < attributes.length; i++) {
+              if (attributes[i].key === 'T') {
+                // Note whether the output type is an integer.
+                let outputType = attributes[i].value['type'];
+                shouldRoundOnesDigit =
+                    outputType && /^DT_(BOOL|INT|UINT)/.test(outputType);
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      let statsSvg = document.createElementNS(tf.graph.scene.SVG_NAMESPACE, 'text');
+      const minString =
+          this._humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
+      const maxString =
+          this._humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
+      if (totalCount > 1) {
+        statsSvg.textContent = minString + ' ~ ' + maxString;
+      } else {
+        statsSvg.textContent = minString;
+      }
+      statsSvg.classList.add('health-pill-stats');
+      if (textXOffset == null) {
+        textXOffset = healthPillWidth / 2;
+      }
+      statsSvg.setAttribute('x', String(textXOffset));
+      statsSvg.setAttribute('y', String(healthPillYOffset - 2));
+      healthPillGroup.appendChild(statsSvg);
+
+      Polymer.dom(nodeGroupElement.parentNode).appendChild(healthPillGroup);
+    },
+
+    /**
+     * Get text content describing a health pill.
+     */
+    _getHealthPillTextContent(
+        healthPill, totalCount, elementsBreakdown, numericStats) {
+      let text = 'Device: ' + healthPill.device_name + '\n';
+      text += 'dtype: ' + healthPill.dtype + '\n';
+
+      let shapeStr = '(scalar)';
+      if (healthPill.shape.length > 0) {
+        shapeStr = '(' + healthPill.shape.join(',') + ')';
+      }
+      text += '\nshape: ' + shapeStr + '\n\n';
+
+      text += '#(elements): ' + totalCount + '\n';
+      const breakdownItems = [];
+      for (let i = 0; i < elementsBreakdown.length; i++) {
+        if (elementsBreakdown[i] > 0) {
+          breakdownItems.push(
+              '#(' + healthPillEntries[i].label + '): ' + elementsBreakdown[i]);
+        }
+      }
+      text += breakdownItems.join(', ') + '\n\n';
+
+      // In some cases (e.g., size-0 tensors; all elements are nan or inf) the
+      // min/max and mean/stddev stats are meaningless.
+      if (numericStats.max >= numericStats.min) {
+        text += 'min: ' + numericStats.min + ', max: ' + numericStats.max + '\n';
+        text += 'mean: ' + numericStats.mean + ', stddev: ' + numericStats.stddev;
+      }
+
+      return text;
+    },
+
+    /**
+     * @param {number} stat A stat for a health pill (such as mean or variance).
+     * @param {boolean} shouldRoundOnesDigit Whether to round this number to the
+     *     ones digit. Useful for say int, uint, and bool output types.
+     * @return {string} A human-friendly string representation of that stat.
+     */
+    _humanizeHealthPillStat(stat, shouldRoundOnesDigit) {
+      if (shouldRoundOnesDigit) {
+        return stat.toFixed(0);
+      }
+
+      if (Math.abs(stat) >= 1) {
+        return stat.toFixed(1);
+      }
+      return stat.toExponential(1);
     },
 
     _highlight(nodeName) {
