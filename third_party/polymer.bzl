@@ -300,7 +300,7 @@ def tensorboard_polymer_workspace():
       strip_prefix = "iron-flex-layout-1.3.0",
       path = "/iron-flex-layout",
       srcs = [
-          "classes/iron-flex-layout.html",
+          "classes/iron-flex-layout.html",  # Deprecated, but needed by paper-styles component.
           "classes/iron-shadow-flex-layout.html",
           "iron-flex-layout.html",
           "iron-flex-layout-classes.html",

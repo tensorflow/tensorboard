@@ -33,6 +33,7 @@ tf_web_library(
         "//tensorboard/components/vz_sorting",
         "@org_polymer_iron_ajax",
         "@org_polymer_iron_collapse",
+        "@org_polymer_iron_flex_layout",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
         "@org_polymer_paper_checkbox",
