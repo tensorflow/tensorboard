@@ -309,7 +309,8 @@ limitations under the License.
         overflow: hidden;
         position: relative;
         /** We further make containers invisible. Some elements may anchor to
-            the viewport instead of the container. */ 
+            the viewport instead of the container, in which case setting the max
+            height here to 0 will not hide them. */ 
         visibility: hidden;
       }
 
