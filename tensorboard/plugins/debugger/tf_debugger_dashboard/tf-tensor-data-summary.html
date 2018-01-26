@@ -537,7 +537,7 @@ limitations under the License.
         healthPillYOffset,
         textXOffset) {
       // Check if text already exists at location.
-      d3.select(nodeGroupElement.parentNode as any).selectAll('.health-pill').remove();
+      d3.select(nodeGroupElement.parentNode).selectAll('.health-pill').remove();
 
       if (!healthPill) {
         return;
@@ -549,7 +549,7 @@ limitations under the License.
       // elements of various categories: -Inf, negative, 0, positive, Inf, and NaN.
       const lastHealthPillElementsBreakdown = lastHealthPillData.slice(2, 8);
       let totalCount = lastHealthPillData[1];
-      const numericStats: HealthPillNumericStats = {
+      const numericStats = {
           min: lastHealthPillData[8],
           max: lastHealthPillData[9],
           mean: lastHealthPillData[10],
@@ -647,7 +647,7 @@ limitations under the License.
           // At least 1 "non-Inf and non-NaN" value exists (a -, 0, or + value). Show
           // stats on tensor values.
           // Determine if we should display the output range as integers.
-          let node = nodeInfo.node as OpNode;
+          let node = nodeInfo.node;
           let attributes = node.attr;
           if (attributes && attributes.length) {
             // Find the attribute for output type if there is one.
