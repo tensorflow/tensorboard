@@ -75,11 +75,18 @@ You may obtain a copy of the License at
         white-space: nowrap;
         text-transform: capitalize;
       }
+      div.recommendationDetails {
+        color:green;
+      }
+      div.recommendationDetails a{
+        color:#ff33cc;
+        text-decoration:underline;
+      }
     </style>
     <div>
       <div id="section_summary">
         <div id="title_summary">
-           <p class="section-header"> Section 1: Summary of input-pipeline analysis</p>
+          <p class="section-header"> Section 1: Summary of input-pipeline analysis</p>
         </div>
         <p id="summary">
           <span>The overall performance is </span>
@@ -132,7 +139,7 @@ You may obtain a copy of the License at
           </div>
           <table class="table-style">
             <tr>
-              <td class="left-pane"> 
+              <td class="left-pane">
                 <p>
                   <span class="highlighted-text">% of device step time waiting for input data</span>
                   <span> (average over the maximum waiting time across cores at each step)</span>
@@ -163,10 +170,8 @@ You may obtain a copy of the License at
         <div hidden$="[[!_show_host_side_chart]]">
           <div style="height:300px;" id="host_side_chart"></div>
           <p>
-            <span><b>Explanation:</b> </span>
-            <span>To improve performance, you should try to convert from </span>
-            <span>"Reading data from files on demand" (if any) to </span>
-            <span>"Reading data from files in advance". </span>
+            <span><b>What can be done to reduce above components of the host input time:</b></span>
+            <div class="recommendationDetails" id="recommendation_details"></div>
           </p>
         </div>
         <div hidden$="[[_show_host_side_chart]]">
@@ -239,8 +244,8 @@ You may obtain a copy of the License at
     _reloadToolData: function(run) {
       if (!run) return;
       this._requestManager.request(tf_backend.addParams(
-          tf_backend.getRouter().pluginRoute('profile', '/data'),
-          {tag: 'input_pipeline_analyzer', run})
+        tf_backend.getRouter().pluginRoute('profile', '/data'),
+        {tag: 'input_pipeline_analyzer', run})
       ).catch(error => {
         console.error(error);
       }).then((data) => {
@@ -257,6 +262,7 @@ You may obtain a copy of the License at
     _updateView: function() {
       var deviceJson = this._data[0];
       var hostJson = this._data[1];
+      var recommendationJson = this._data[2];
       this.set('_summary_text', deviceJson.p['summary_text']);
       this.set('_infeed_percent_average', deviceJson.p['infeed_percent_average']);
       this.set('_infeed_percent_stddev', deviceJson.p['infeed_percent_standard_deviation']);
@@ -266,13 +272,14 @@ You may obtain a copy of the License at
       this.set('_steptime_ms_stddev', deviceJson.p['steptime_ms_standard_deviation']);
       this.set('_steptime_ms_minimum', deviceJson.p['steptime_ms_minimum']);
       this.set('_steptime_ms_maximum', deviceJson.p['steptime_ms_maximum']);
-      this.set('_host_conclusion', hostJson.p['conclusion']);
+      this.set('_host_conclusion', recommendationJson.p['overall']);
       this.customStyle['--summary-color'] =  deviceJson.p['summary_color'];
       this.updateStyles();
       this._showDeviceStepChart(deviceJson);
       this._showDeviceInfeedChart(deviceJson);
       this._showHostChart(hostJson);
       this._showHostTable(hostJson);
+      this._makeRecommendations(recommendationJson);
     },
 
     /* Plots a graph of step time (in ms) against step number */
@@ -344,22 +351,25 @@ You may obtain a copy of the License at
     /* Plots a stacked bar chart for the breakdown of input processing time on the host. */
     _showHostChart: function(hostJson) {
       const kUsPerMs = 1000.0;
+      var unclassifiedNonEnqueueMs = Number(hostJson.p['unclassified_nonequeue_us']) / kUsPerMs;
       var demandedFileReadMs = Number(hostJson.p['demanded_file_read_us']) / kUsPerMs;
       var advancedFileReadMs = Number(hostJson.p['advanced_file_read_us']) / kUsPerMs;
       var preprocessingMs = Number(hostJson.p['preprocessing_us']) / kUsPerMs;
       var enqueueMs = Number(hostJson.p['enqueue_us']) / kUsPerMs;
-      var totalInputTimeMs = demandedFileReadMs + advancedFileReadMs + preprocessingMs + enqueueMs;
+      var totalInputTimeMs = unclassifiedNonEnqueueMs + demandedFileReadMs +
+			     advancedFileReadMs + preprocessingMs + enqueueMs;
       this.set('_show_host_side_chart', totalInputTimeMs > 0);
       if (totalInputTimeMs > 0) {
-        var pie_data = [{ Name:"Reading data from files on demand",
-                          Total:demandedFileReadMs / totalInputTimeMs * 100 },
-                        { Name:"Reading data from files in advance [including caching, prefetching, interleaving]",
-                          Total:advancedFileReadMs /totalInputTimeMs * 100 },
-                        { Name:"Data preprocessing",
-                          Total:preprocessingMs/totalInputTimeMs * 100 },
-                        { Name:"Enqueuing data to be transferred to device",
-                          Total:enqueueMs/totalInputTimeMs * 100 }];
-
+	var pie_data = [{ Name:"Other data reading or processing",
+			  Total:unclassifiedNonEnqueueMs / totalInputTimeMs * 100 },
+			{ Name:"Reading data from files on demand",
+			  Total:demandedFileReadMs / totalInputTimeMs * 100 },
+			{ Name:"Reading data from files in advance [including caching, prefetching, interleaving]",
+			  Total:advancedFileReadMs /totalInputTimeMs * 100 },
+			{ Name:"Data preprocessing",
+			  Total:preprocessingMs/totalInputTimeMs * 100 },
+			{ Name:"Enqueuing data to be transferred to device",
+			  Total:enqueueMs/totalInputTimeMs * 100 }];
 
         var colorScale = new Plottable.Scales.Color();
         var legend = new Plottable.Components.Legend(colorScale);
@@ -399,8 +409,17 @@ You may obtain a copy of the License at
         });
       });
       this.set('_show_host_side_table', false);
-    }
-  });
+    },
 
+    /* Makes a list of detailed recommendations */
+    _makeRecommendations: function(recommendationJson) {
+      var content = '';
+      recommendationJson.rows.forEach(function(rowJson, index) {
+	content += '<li>' + rowJson.c[0].v + '</li>';
+      });
+      var detailsBody = this.$.recommendation_details;
+      detailsBody.innerHTML = content;
+    },
+  });
   </script>
 </dom-module>
