@@ -41,6 +41,11 @@ You may obtain a copy of the License at
         font-style:italic;
         color:var(--summary-color, black);
       }
+      .host-conclusion {
+        font-weight:bold;
+        font-style:italic;
+        color:green;
+      }
       .highlighted-text {
         text-decoration:underline;
         font-weight:bold;
@@ -97,7 +102,7 @@ You may obtain a copy of the License at
           <span>[see Section 2 below for details].</span>
         </p>
         <p id="summary-host">
-          <span>[[_host_conclusion]]</span>
+          <b>Recommendation for next step: <span class="host-conclusion">[[_host_conclusion]]</span></b>
         </p>
       </div>
       <div id="section_device_side_analysis">
