@@ -163,13 +163,6 @@ paper-progress {
               highlighted-node="{{_highlightedNode}}"
               color-by="[[colorBy]]"
               color-by-params="[[colorByParams]]"
-              debugger-data-enabled="[[debuggerDataEnabled]]"
-              are-health-pills-loading="[[areHealthPillsLoading]]"
-              debugger-numeric-alerts="[[debuggerNumericAlerts]]"
-              node-names-to-health-pills="[[nodeNamesToHealthPills]]"
-              all-steps-mode-enabled="{{allStepsModeEnabled}}"
-              specific-health-pill-step="{{specificHealthPillStep}}"
-              health-pill-step-index="{{healthPillStepIndex}}"
     ></tf-graph-info>
   </div>
   <div class="context-menu"></div>
@@ -200,34 +193,6 @@ Polymer({
       type: Object,
       notify: true
     },
-    // Whether debugger data is enabled for this instance of Tensorboard.
-    debuggerDataEnabled: Boolean,
-    // Whether health pills are currently being loaded.
-    areHealthPillsLoading: Boolean,
-    // An array of alerts (in chronological order) provided by debugging libraries on when bad
-    // values (NaN, +/- Inf) appear.
-    debuggerNumericAlerts: {
-      type: Array,
-      notify: true,
-    },
-    // A mapping between node name to the tf.graph.scene.HealthPill to render.
-    nodeNamesToHealthPills: Object,
-    // Whether the user can request health pills for individual steps from the server. This can be
-    // slow compared the default of showing sampled health pills.
-    allStepsModeEnabled: {
-      type: Boolean,
-      notify: true,
-      value: false,
-    },
-    // Relevant if allStepsModeEnabled. The specific step for which to fetch health pills from the
-    // server for.
-    specificHealthPillStep: {
-      type: Number,
-      notify: true,
-      value: 0,
-    },
-    // The step of health pills to show throughout the graph.
-    healthPillStepIndex: Number,
     // Private API: Data routing between child components.
     selectedNode: {
       type: String,

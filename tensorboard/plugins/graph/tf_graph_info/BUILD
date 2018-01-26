@@ -18,7 +18,6 @@ tf_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_common",
-        "//tensorboard/plugins/graph/tf_graph_debugger_data_card",
         "//tensorboard/plugins/graph/tf_graph_op_compat_card",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_list",
@@ -50,7 +49,6 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//tensorboard/plugins/graph/tf_graph_debugger_data_card:legacy",
         "//tensorboard/plugins/graph/tf_graph_op_compat_card:legacy",
         "//third_party/javascript/polymer/v1/iron-collapse:lib",
         "//third_party/javascript/polymer/v1/iron-list:lib",
