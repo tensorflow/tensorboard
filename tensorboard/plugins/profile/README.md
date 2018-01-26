@@ -88,10 +88,11 @@ below.
 
 ### 2. JSON format for the Input-pipeline Analyzer
 
-JSON for the Input-pipeline Analyzer uses two separate DataTables: the first
+JSON for the Input-pipeline Analyzer uses three separate DataTables: the first
 DataTable contains statistics for device step time; the second DataTable
-contains statistics for host side state. Each DataTable is associated with some
-table properties and some tabular data.
+contains statistics for the host side; the third DataTable contains
+recommendations to users. Each DataTable is associated with some table
+properties and some tabular data.
 
 #### 2.1. Device Step-time DataTable
 
@@ -102,10 +103,10 @@ The same as the one described in Section 1.2.
 2.2.1 Properties:
 
 *   advanced_file_read_us
-*   conclusion
 *   demanded_file_read_us
 *   enqueue_us
 *   preprocessing_us
+*   unclassified_nonenqueue_us
 
 2.2.2 Tabular data: rows are input-pipeline related tensorflow ops. column ids
 are defined below.
@@ -117,3 +118,14 @@ are defined below.
 *   selfTimeInMs: number
 *   selfTimeInPercent: number
 *   category: string
+
+#### 2.3 Recommendation DataTable
+
+2.3.1 Properties:
+
+*   overall
+
+2.3.2 Tabular data: rows are recommendation details. column ids are defined
+below:
+
+*   link: string
