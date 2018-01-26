@@ -308,6 +308,9 @@ limitations under the License.
         max-height: 0;
         overflow: hidden;
         position: relative;
+        /** We further make containers invisible. Some elements may anchor to
+            the viewport instead of the container. */ 
+        visibility: hidden;
       }
 
       .warning-message {
