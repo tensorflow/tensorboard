@@ -47,17 +47,12 @@ limitations under the License.
   <template>
     <paper-toast id="toast" text="" always-on-top></paper-toast>
     <tf-debugger-initial-dialog id="initialDialog"></tf-debugger-initial-dialog>
-    <tf-debugger-continue-dialog
-      id="continueDialog"
-      session-run-go="[[_createSessionRunGo()]]"
-      tensor-condition-go="[[_createTensorConditionGo()]]">
-    </tf-debugger-continue-dialog>
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
       <div class="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
-          <div class="debugger-section-title">Node List</div>
+          <div class="debugger-section-title">Runtime Node List</div>
           <div class="toggle-source-code">
             Show Code:
             <paper-toggle-button class="toggle-source-code" id="show-source-code">
@@ -100,12 +95,12 @@ limitations under the License.
           <paper-button raised class="continue-button" on-click="_step">
               <span>[[_stepButtonText]]</span>
           </paper-button>
-          <paper-button
-              raised
-              class="continue-button"
-              on-click="_openContinueDialog">
-              <span>[[_continueButtonText]]</span>
-          </paper-button>
+          <tf-debugger-continue-dialog
+            id="continueDialog"
+            session-run-go="[[_createSessionRunGo()]]"
+            tensor-condition-go="[[_createTensorConditionGo()]]"
+            force-continuation-stop="[[_createForceContinuationStop()]]">
+          </tf-debugger-continue-dialog>
         </div>
         <div class="container">
           <tf-graph-loader id="loader"
@@ -118,32 +113,34 @@ limitations under the License.
       </div>
       <div class="center" id="center-content">
         <div id="top-right-content-container">
-          <paper-tabs selected="0" selected="{{_topRightSelected}}">
-            <template is="dom-repeat" items="[[_topRightTabs]]">
-              <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
-            </template>
-          </paper-tabs>
-          <span id="runtime-graph-device-name">
-          </span>
-          <paper-dropdown-menu
-            id="active-runtime-graph-device-name"
-            no-label-float="true"
-            label="Device name"
-            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
-          >
-            <paper-menu class="dropdown-content" slot="dropdown-content">
-              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
-                <paper-item no-label-float=true>[[item]]</paper-item>
+          <div id="top-right-top-contents">
+            <paper-tabs selected="0" selected="{{_topRightSelected}}">
+              <template is="dom-repeat" items="[[_topRightTabs]]">
+                <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
               </template>
-            </paper-menu>
-          </paper-dropdown-menu>
-          <paper-spinner-lite
-            class="spinner"
-            id="top-right-spinner"
-            hidden="[[!_busy]]"
-            active="[[_busy]]">
-          </paper-spinner-lite>
-          <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
+            </paper-tabs>
+            <span id="runtime-graph-device-name">
+            </span>
+            <paper-dropdown-menu
+              id="active-runtime-graph-device-name"
+              no-label-float="true"
+              label="Device name"
+              selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+            >
+              <paper-menu class="dropdown-content" slot="dropdown-content">
+                <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                  <paper-item no-label-float=true>[[item]]</paper-item>
+                </template>
+              </paper-menu>
+            </paper-dropdown-menu>
+            <paper-spinner-lite
+              class="spinner"
+              id="top-right-spinner"
+              hidden="[[!_busy]]"
+              active="[[_busy]]">
+            </paper-spinner-lite>
+            <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
+          </div>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
               <tf-graph id="graph"
@@ -216,12 +213,13 @@ limitations under the License.
       }
       #graph-container {
         position: relative;
-        height: 100%;
+        height: 80%;
       }
       #graph {
+        position: relative;
         display: block;
         width: 100%;
-        height: 400px;
+        height: 100%;
       }
       #tooltip-sorting {
         display: flex;
@@ -753,10 +751,6 @@ limitations under the License.
         });
       },
 
-      _openContinueDialog() {
-        this.$.continueDialog.open();
-      },
-
       _showSourceCodeChanged(event) {
         this.set('_sourceCodeShown', event.target.active);
         if (this._sourceCodeShown) {
@@ -1146,16 +1140,11 @@ limitations under the License.
       // Create a callback for the Session.runs Go button of the continue
       // dialog.
       _createSessionRunGo() {
-        return () => {
-          if (this.$.continueDialog.continueNum > 0) {
-            this._setContinueTo(
-                'SessionRun', this._currentSessionRunInfo,
-                this.$.continueDialog.continueNum);
-            this._step();
-            this.$.continueDialog.close();
-          } else {
-            this.$.continueDialog.set('continueNum', 1);
-          }
+        return (continueNum) => {
+          console.log('Session run go: continueNum=' + continueNum);  // DEBUG
+          this._setContinueTo(
+              'SessionRun', this._currentSessionRunInfo, continueNum);
+          this._step();
         };
       },
 
@@ -1167,7 +1156,16 @@ limitations under the License.
           // Force enable health pills during TensorCondition continuation.
           this.$.tensorDataSummary.enableHealthPills();
           this._step();
-          this.$.continueDialog.close();
+        };
+      },
+
+      // Create a callback for the continuation-force-stop button.
+      _createForceContinuationStop() {
+        return () => {
+          this._showToast(
+              'Continuation of type "' + this._continueToType +
+              '" was interrupted by user.');
+          this.set('_continueStop', true);
         };
       },
 
@@ -1179,6 +1177,7 @@ limitations under the License.
         this._continueStop = false;
       },
       _clearContinueTo() {
+        this.$.continueDialog.notifyContinuationStop();
         this._continueToType = '';
         this._continueToTarget = '';
         this._continueToCounterTarget = -1;
