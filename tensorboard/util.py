@@ -523,3 +523,15 @@ class _TensorFlowWavEncoder(PersistentOpEvaluator):
 
 
 encode_wav = _TensorFlowWavEncoder()
+
+def parse_proto(message, data):
+  """Deserialize data into the provided message."""
+  # SQLite appears to return 'unicode' objects in Python2 for BLOBs.
+  # This causes problems in some Python 2.7 environments when deserializing
+  # these protos. In particular, we observed ParseFromString ended up returning
+  # empty messages. This function provides a work around.
+  #
+  # In Python 3 unicode is undefined so we need to display lint.
+  if six.PY2 and isinstance(data, unicode):   # pylint: disable=undefined-variable
+    data = data.encode('utf-8')
+  message.ParseFromString(data)

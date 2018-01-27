@@ -690,6 +690,9 @@ class EventLogReader(object):
 
   Fields:
     rowid: An integer primary key in EventLogs table, or 0 if unknown.
+    customer_number: Id of the customer that owns this log.
+    run_id: The id of the run associated with this reader.
+    event_log_id: The unique id for this event log.
     path: A string with the path of the event log on the local or
         remote file system.
     timestamp: An integer of the number of seconds since the UNIX epoch
@@ -713,8 +716,15 @@ class EventLogReader(object):
     :type path: str
     :type record_reader_factory: (str, int) -> RecordReader
     """
-    self.rowid = 0
     self.path = tf.compat.as_text(path)
+    # TODO(jlewi): customer_number, run_id, and event_log_id get set in
+    # RunReader add_event_log. This seems a little brittle. Can we guard against
+    # accidentally using unset values for
+    # (customer_number, run_id, event_log_id)
+    self.customer_number = None
+    self.run_id = None
+    self.event_log_id = 0
+
     m = _EVENT_LOG_PATH_PATTERN.search(self.path)
     if not m:
       raise ValueError('Bad event log path: ' + self.path)
@@ -724,6 +734,10 @@ class EventLogReader(object):
     self._reader_factory = record_reader_factory
     self._reader = self._reader_factory(self.path, start_offset)
     self._key = (os.path.dirname(self.path), self.timestamp, self.hostname)
+
+  @property
+  def rowid(self):
+    return db.EVENT_LOG_ROWID.create(self.run_id, self.event_log_id)
 
   def get_next_event(self):
     """Reads an event proto from the file.
@@ -816,23 +830,35 @@ class RunReader(object):
   stream of events, ordered by step or timestamp.
 
   Fields:
-    rowid: The primary key of the corresponding row in Runs.
+    customer_number: The id of the customer that owns this run.
+    experiment_id: The id for this experiment.
+    run_id: The unique id for this number.
     name: Display name of this run.
   """
 
-  def __init__(self, rowid, name):
+  def __init__(self, customer_number, experiment_id, run_id, name):
     """Creates new instance.
 
+    A row with the primary key (customer_number, experiment_id, run_id) should
+    already exist in the table.
+
     Args:
-      rowid: Primary key of run in `Runs` table, which should already
-          be inserted. This is a bit-packed int made by db.RUN_ROWID.
+      customer_number: Integer identifying the customer that owns the
+        row.
+      experiment_id: The id of the experiment this run belongs to.
+      run_id: Run id.
+
       name: Display name of run.
 
-    :type rowid: int
+    :type customer_number: int
+    :type experiment_id: int
+    :type run_id: int
     :type name: str
     """
-    self.rowid = db.RUN_ROWID.check(rowid)
-    self.run_id = db.RUN_ROWID.parse(rowid)[1]
+    self.customer_number = customer_number
+    self.experiment_id = experiment_id
+    self.run_id = run_id
+    self.rowid = db.RUN_ROWID.create(self.experiment_id, self.run_id)
     self.name = tf.compat.as_text(name)
     self._mark = -1
     self._logs = []  # type: list[EventLogReader]
@@ -864,20 +890,26 @@ class RunReader(object):
     if self._logs and log <= self._logs[-1]:
       return False
     with contextlib.closing(db_conn.cursor()) as c:
+      # Check if we've already started loading this event log into the DB.
+      # if we have then we return the offset so that we can continue loading
+      # events.
       c.execute(
-          'SELECT rowid, offset FROM EventLogs WHERE run_id = ? AND path = ?',
-          (self.run_id, log.path))
+          'SELECT rowid, customer_number, run_id, event_log_id, offset '
+          'FROM EventLogs WHERE customer_number = ? AND run_id = ? AND '
+          'path = ?', (self.customer_number, self.run_id, log.path))
       row = c.fetchone()
+      log.run_id = self.run_id
+      log.customer_number = self.customer_number
       if row:
-        log.rowid = row[0]
-        log.set_offset(row[1])
+        log.event_log_id = [3]
+        log.set_offset(row[4])
       else:
-        event_log_id = db.EVENT_LOG_ID.generate()
-        log.rowid = db.EVENT_LOG_ROWID.create(self.run_id, event_log_id)
+        log.event_log_id = db.EVENT_LOG_ID.generate()
         c.execute(
-            ('INSERT INTO EventLogs (rowid, run_id, path, offset)'
-             ' VALUES (?, ?, ?, 0)'),
-            (log.rowid, self.run_id, log.path))
+            ('INSERT INTO EventLogs (rowid, customer_number, run_id, '
+             'event_log_id, path, offset) VALUES (?, ?, ?, ?, ?, 0)'),
+            (log.rowid, self.customer_number, self.run_id, log.event_log_id,
+             log.path))
     tf.logging.debug('Adding %s', log)
     self._logs.append(log)
     # Skip over event logs we've already read.
@@ -1066,6 +1098,73 @@ def get_event_logs(directory):
 _EVENT_LOG_PATH_PATTERN = re.compile(
     r'\.tfevents\.(?P<timestamp>\d+).(?P<hostname>[-.0-9A-Za-z]+)$')
 
+# TODO(jlewi): Should this be a member function of RunReader?
+def process_event_logs(run_reader, event_logs, tbase):
+  """Load event logs into the DB.
+
+  Args:
+    run_reader: A RunReader to read the runs.
+    event_logs: A list of EventLogReaders.
+    tbase: TensorBase object used to communicate with the DB.
+
+  :type run_reader: RunReader
+  :type event_logs: list[EventLogReader]
+  :type tbase: TensorBase
+  """
+  db_conn = tbase._db_connection_provider()
+
+  with contextlib.closing(run_reader):
+    event_logs.sort()
+    # Add all event logs to the reader.
+    for l in event_logs:
+      run_reader.add_event_log(db_conn, l)
+
+    # TODO(jlewi):
+    # Do we need to periodically checkpoint progress?
+    # Do we need to check for newly appearing files?
+    #
+    # Process wll the events:
+    # A map from tag names to tag id.
+    tags = {}
+    while True:
+      event = run_reader.get_next_event()
+      if not event:
+        # Save progress.
+        run_reader.mark()
+        run_reader.save_progress(db_conn)
+        return
+      # TODO(jlewi): Load the event into the DB.
+      if not event.HasField('summary'):
+        # Only summaries are loaded into TensorBoard's DB.
+        continue
+      step = event.step
+      for v in event.summary.value:
+        if v.HasField('simple_value'):
+          # TODO(jlewi): Should simple_values be stored as Tensors in the
+          # Tensors table?
+          # See https://github.com/tensorflow/tensorboard/issues/92#issuecomment-331034076  # pylint: disable=line-too-long
+          continue
+        if v.HasField('tensor'):
+          # Insert a row into the tags table if it doesn't already exist.
+          # TODO(jlewi): Need to add error handling for case where row already
+          # exists.
+
+          if not v.tag in tags:
+            # Look up the plugin id.
+            plugin_name = v.metadata.plugin_data.plugin_name
+
+            plugins = tbase.get_plugin_ids([plugin_name])
+            plugin_id = plugins[plugin_name]
+
+
+            tag_id = insert_tag_id(db_conn, run_reader.customer_number,
+                                   run_reader.experiment_id, run_reader.run_id,
+                                   plugin_id, v.tag, v.metadata.display_name,
+                                   v.metadata.summary_description)
+
+            tags[v.tag] = tag_id
+          insert_tensor(db_conn, run_reader.customer_number, tags[v.tag],
+                        step, v.tensor)
 
 def is_event_log_file(path):
   """Returns True if path appears to be an event log file.
@@ -1100,3 +1199,54 @@ def _localize_int(n):
   :rtype: str
   """
   return locale.format('%d', n, grouping=True)
+
+def insert_tag_id(conn, customer_number, experiment_id, run_id, plugin_id,
+                  name, display_name, summary_description):
+  """Insert a tag id."""
+  tag_id = db.TAG_ID.generate()
+  rowid = db.TAG_ROWID.create(experiment_id, tag_id)
+  with contextlib.closing(conn.cursor()) as c:
+    c.execute(
+        ('INSERT INTO Tags (rowid, customer_number, experiment_id, run_id, '
+         'tag_id, plugin_id, name, display_name, summary_description) VALUES '
+         '(?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+        (rowid, customer_number, experiment_id, run_id, tag_id,
+         plugin_id, name, display_name, summary_description))
+
+  return tag_id
+
+# TODO(jlewi): Should we allow the caller to specify the encoding?
+def insert_tensor(conn, customer_number, tag_id, step_count, tensor):
+  """Insert a Tensor into the database.
+
+  Args:
+    conn: Database connection
+    customer_number: Id of the customer that owns the tensor.
+    tag_id: The tag id of the tensors.
+    step_count: The step at which the tensor was recorded.
+    tensor: A TensorProto describing the proto.
+
+  :type conn: Connection
+  :type customer_number: int64
+  :type tag_id: int
+  :type step_count: int
+  :type tensor: TensorProto
+  """
+  rowid = db.TENSOR_ROWID.create(tag_id, step_count)
+
+  # TODO(jlewi): How should we decide how to encode the Tensor? Can we
+  # determine automatically whether we should compress it? Or should we
+  # make the caller determine how to compress it?
+  encoding = db.UNCOMPRESSED_TENSOR
+
+  # TODO(jlewi): Need to add handling for BigTensors.
+  is_big = False
+  with contextlib.closing(conn.cursor()) as c:
+    # TODO(jlewi): experiment_id should probably be stored in the table as
+    # well.
+    tensor_data = tensor.SerializeToString()
+    c.execute(
+        ('INSERT INTO Tensors (rowid, customer_number, tag_id, step_count, '
+         'encoding, is_big, tensor) VALUES (?, ?, ?, ?, ?, ?, ?)'),
+        (rowid, customer_number, tag_id, step_count, encoding, is_big,
+         tensor_data))
