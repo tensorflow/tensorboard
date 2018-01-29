@@ -104,11 +104,12 @@ The same as the one described in Section 1.2.
 
 2.2.1 Properties:
 
-*   advanced_file_read_us
-*   demanded_file_read_us
-*   enqueue_us
-*   preprocessing_us
-*   unclassified_nonenqueue_us
+*   advanced_file_read_us: string (time in us spent on reading files in advance)
+*   demanded_file_read_us: string (time in us spent on reading files on demand)
+*   enqueue_us: string (time in us spent on enqueuing data to be transferred to
+    the TPU)
+*   preprocessing_us: string (time in us spent on data pre-processing)
+*   unclassified_nonenqueue_us: string (time in us spent on other components)
 
 2.2.2 Tabular data: rows are input-pipeline related tensorflow ops. column ids
 are defined below.
@@ -125,9 +126,10 @@ are defined below.
 
 2.3.1 Properties:
 
-*   overall
+*   overall: string (the overall recommendation to users)
 
 2.3.2 Tabular data: rows are recommendation details. column ids are defined
 below:
 
-*   link: string
+*   link: string (recommendation for optimizing an individual input-processing
+    component)
