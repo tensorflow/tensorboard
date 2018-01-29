@@ -1,0 +1,239 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="tf-exp-loader.html">
+
+<!--
+tf-exp-dashboard displays a dashboard that loads exp from a TensorFlow run.
+-->
+<dom-module id="tf-exp-dashboard">
+  <template>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <tf-runs-selector selected-runs="{{_selectedRuns}}">
+          </tf-runs-selector>
+        </div>
+      </div>
+      <div class="center">
+        <template is="dom-if" if="[[_dataNotFound]]">
+          <div class="no-data-warning">
+            <h3>No exp data was found.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>You haven’t written any exp data to your event files.
+              <li>TensorBoard can’t find your event files.
+            </ul>
+            <p>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+          </div>
+        </template>
+        <template is="dom-if" if="[[!_dataNotFound]]">
+          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
+          <div style="display: table;">
+            <div class="row-group" style="display: table-row-group;">
+              <div style="display: table-row;">
+                <div style="display: table-cell;"></div>
+                <template is="dom-repeat" items="[[_data.runs]]" as="run">
+                  <div style="display: table-cell;">[[run]]</div>
+                </template>
+              </div>
+              <template is="dom-repeat" items="[[_data.tags]]" as="tag">
+                <div style="display: table-row;">
+                  <div class="tag-cell" style="display: table-cell;">[[tag.tag]]</div>
+                  <template is="dom-repeat" items="[[tag.value]]" as="v">
+                    <div style="display: table-cell; max-height: 100px;">
+                      <div class="value-cell">
+                        <template is="dom-repeat" items="[[v.0]]" as="line">
+                          <div>
+                            [[_toStr(tag.tag, line)]]
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </tf-dashboard-layout>
+    <style include="dashboard-style"></style>
+    <style>
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+    </style>
+  </template>
+  <script>
+
+    Polymer({
+      is: "tf-exp-dashboard",
+      properties: {
+        _selectedRuns: Array,
+        _runToTag: Object,  // map<run: string, tags: string[]>
+        _dataNotFound: Boolean,
+        _tagFilter: String,
+        _data: Array,
+        // Categories must only be computed after _dataNotFound is found to be
+        // true and then polymer DOM templating responds to that finding. We
+        // thus use this property to guard when categories are computed.
+        _categoriesDomReady: Boolean,
+        _categories: {
+          type: Array,
+          computed:
+            '_makeCategories(_runToTag, _selectedRuns, _tagFilter, _categoriesDomReady)',
+        },
+        _runs: Array,
+        _requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(),
+        }
+      },
+      ready() {
+        this.reload();
+      },
+      reload() {
+        this._fetchTags().then(() => {
+          this._reloadTexts();
+        });
+      },
+      _shouldOpen(index) {
+        return index <= 2;
+      },
+      _fetchTags() {
+        const url = tf_backend.getRouter().pluginRoute('exp', '/tags');
+        return this._requestManager.request(url).then(runToTag => {
+          if (_.isEqual(runToTag, this._runToTag)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          const tags = tf_backend.getTags(runToTag);
+          this.set('_dataNotFound', tags.length === 0);
+          this.set('_runToTag', runToTag);
+          this.async(() => {
+            // See the comment above `_categoriesDomReady`.
+            this.set('_categoriesDomReady', true);
+          });
+        });
+      },
+      _reloadTexts() {
+        this.querySelectorAll('tf-exp-loader').forEach(expLoader => {
+          expLoader.reload();
+        });
+      },
+
+      _convert(categories) {
+        const data = {};
+        const tags = {};
+        Object.keys(categories).forEach(
+          (run) => {
+            Object.keys(categories[run]).forEach(
+              (tag) => {
+                tags[tag] = true;
+              }
+            )
+          }
+        );
+        data.runs = Object.keys(categories).slice();
+        data.tags = Object.keys(tags).map(
+          (tag) => ({
+            tag,
+            value: data.runs.map((run) => categories[run][tag].slice()),
+          })
+        );
+        return data;
+      },
+      _toStr(tag, line) {
+        switch (tag) {
+          case 'bought_ticket':
+            return `${line.race_id} ${line.bet}`;
+          case 'features':
+            return line.name;
+          default:
+            return line;
+        }
+      },
+      _loadText(tag, run) {
+        const router = tf_backend.getRouter();
+        const url = tf_backend.addParams(router.pluginRoute("exp", "/exp"), { tag, run });
+        const updateTexts = (result) => {
+          const data = result.map(datum => {
+            this.set(['_categories', run, tag, datum.step], JSON.parse(datum.text));
+          });
+          console.log(this._convert(this.get('_categories')));
+          this.set('_data', this._convert(this.get('_categories')));
+        };
+        this._requestManager.request(url).then(updateTexts);
+      },
+      _makeCategories(runToTag, selectedRuns, tagFilter, categoriesDomReady) {
+        const category = tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+        const structuredCategory = {};
+        const runs = {};
+        category.forEach((c) => {
+          c.items.forEach((item) => {
+            if (!structuredCategory[item.run]) structuredCategory[item.run] = {};
+            structuredCategory[item.run][item.tag] = [];
+            this._loadText(item.tag, item.run);
+            runs[item.run] = true;
+          });
+        });
+        this.set('_runs', Object.keys(runs));
+        return structuredCategory;
+      },
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'exp',
+      elementName: 'tf-exp-dashboard',
+    });
+
+  </script>
+  <style>
+    .tag-cell {
+      padding: 5px;
+    }
+    .value-cell {
+      max-height: 100px;
+      overflow: scroll;
+    }
+    .row-group > div:nth-child(even) {
+      background-color: #fff;
+    }
+  </style>
+</dom-module>
