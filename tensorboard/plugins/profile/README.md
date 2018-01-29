@@ -88,11 +88,13 @@ below.
 
 ### 2. JSON format for the Input-pipeline Analyzer
 
-JSON for the Input-pipeline Analyzer uses three separate DataTables: the first
-DataTable contains statistics for device step time; the second DataTable
-contains statistics for the host side; the third DataTable contains
-recommendations to users. Each DataTable is associated with some table
-properties and some tabular data.
+JSON for the Input-pipeline Analyzer uses three separate DataTables:
+
+*   the first DataTable contains statistics for device step time
+*   the second DataTable contains statistics for the host side
+*   the third DataTable contains recommendations to users
+
+Each DataTable is associated with some table properties and some tabular data.
 
 #### 2.1. Device Step-time DataTable
 

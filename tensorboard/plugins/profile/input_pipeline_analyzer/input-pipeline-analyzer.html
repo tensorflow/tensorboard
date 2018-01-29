@@ -27,65 +27,68 @@ You may obtain a copy of the License at
   <template>
     <style>
       .section-header {
-        text-decoration:underline;
-        font-weight:bold;
-        font-size:200%;
+        text-decoration: underline;
+        font-weight: bold;
+        font-size: 200%;
       }
       .sub-section-header {
-        text-decoration:underline;
-        font-weight:bold;
-        font-size:150%;
+        text-decoration: underline;
+        font-weight: bold;
+        font-size: 150%;
+      }
+      #summary-host {
+        font-weight: bold; 
       }
       .summary-conclusion {
-        font-weight:bold;
-        font-style:italic;
-        color:var(--summary-color, black);
+        font-weight: bold;
+        font-style: italic;
+        color: var(--summary-color, black);
       }
       .host-conclusion {
-        font-weight:bold;
-        font-style:italic;
-        color:green;
+        font-weight: bold;
+        font-style: italic;
+        color: green;
       }
       .highlighted-text {
-        text-decoration:underline;
-        font-weight:bold;
-        font-size:120%;
+        text-decoration: underline;
+        font-weight: bold;
+        font-size: 120%;
       }
       .stddev-text{
-        font-style:italic;
-        opacity:0.7;
+        font-style: italic;
+        opacity: 0.7;
       }
       .left-pane {
-        width:30%;
+        width: 30%;
       }
       .right-pane {
-        width:100%;
-        height:300px;
+        width: 100%;
+        height: 300px;
       }
       .table-style {
-        table-layout:fixed;
-        width:95%;
+        table-layout: fixed;
+        width: 95%;
       }
       .performance-table {
-        width:100%;
+        width: 100%;
       }
       .x-axis-title {
-        text-align:center;
+        text-align: center;
         text-transform: capitalize;
       }
       .y-axis-title {
-        writing-mode:bt-rl;
+        writing-mode: bt-rl;
         transform: rotate(270deg);
-        text-align:center;
+        text-align: center;
         white-space: nowrap;
         text-transform: capitalize;
       }
-      div.recommendationDetails {
-        color:green;
+      #recommendation_details {
+        color: green;
       }
-      div.recommendationDetails a{
-        color:#ff33cc;
-        text-decoration:underline;
+      #recommendation_details a {
+        color: #ff33cc;
+        text-decoration: underline;
       }
     </style>
     <div>
@@ -102,7 +105,7 @@ You may obtain a copy of the License at
           <span>[see Section 2 below for details].</span>
         </p>
         <p id="summary-host">
-          <b>Recommendation for next step: <span class="host-conclusion">[[_host_conclusion]]</span></b>
+          Recommendation for next step: <span class="host-conclusion">[[_host_conclusion]]</span>
         </p>
       </div>
       <div id="section_device_side_analysis">
@@ -176,7 +179,7 @@ You may obtain a copy of the License at
           <div style="height:300px;" id="host_side_chart"></div>
           <p>
             <span><b>What can be done to reduce above components of the host input time:</b></span>
-            <div class="recommendationDetails" id="recommendation_details"></div>
+            <div id="recommendation_details"></div>
           </p>
         </div>
         <div hidden$="[[_show_host_side_chart]]">
