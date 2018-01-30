@@ -22,6 +22,12 @@ limitations under the License.
 
 <dom-module id="tf-debugger-continue-dialog">
   <template>
+    <paper-button
+      raised
+      class="continue-button"
+      on-click="_continueButtonCallback">
+      <span>[[_continueButtonText]]</span>
+    </paper-button>
     <paper-dialog with-backdrop id="continueDialog">
       <h2>Continue...</h2>
       <div class="continue-to-type">
@@ -121,6 +127,10 @@ limitations under the License.
         },
 
         // Callback for the session-runs go button.
+        // Signature of this function:
+        // Args:
+        //   continueNum: How many times to continue over Session.runs, assumed
+        //     to be a positive integer.
         sessionRunGo: Function,
 
         // Handler for tensor-condition go, invoked by the callback of the
@@ -132,6 +142,26 @@ limitations under the License.
         //   refValue: Optional reference value. It is required by some of the
         //     tensor-value conditions (e.g., STDDEV_GT).
         tensorConditionGo: Function,
+
+        // Force the ongoing continuation to stop.
+        forceContinuationStop: Function,
+
+        _continueButtonText: {
+          type: String,
+          value: 'Continue...',
+        },
+
+        _continueButtonContinueText: {
+          type: String,
+          value: 'Continue...',
+          readonly: true,
+        },
+
+        _continueButtonStopText: {
+          type: String,
+          value: 'Stop Continuation',
+          readonly: true,
+        },
 
         _selectedTensorCondition: String,
 
@@ -152,17 +182,46 @@ limitations under the License.
         "_onSelectedTensorConditionChanged(_selectedTensorCondition)",
       ],
 
+      // Notify this continuation dialog that the continuation action has
+      // stopped, either because it reached the end, or because of forced
+      // stopping.
+      notifyContinuationStop() {
+        this._updateContinueButtonText(false);
+      },
 
-      open() {
+      _openDialog() {
         this.$.continueDialog.open();
       },
 
-      close() {
+      _closeDialog() {
         this.$.continueDialog.close();
       },
 
+      _continueButtonCallback() {
+        if (this._continueButtonText === this._continueButtonStopText) {
+          this.forceContinuationStop();
+        } else {
+          this._openDialog();
+        }
+      },
+
+      // Update the text of the continue button.
+      // Args:
+      //   active: Whether continuation is currently ongoing.
+      _updateContinueButtonText(active) {
+        this.set(
+            '_continueButtonText',
+            active ? this._continueButtonStopText : this._continueButtonContinueText);
+      },
+
       _sessionRunGoButtonCallback() {
-        this.sessionRunGo();
+        if (this.continueNum > 0) {
+          this.sessionRunGo(this.continueNum);
+          this._updateContinueButtonText(true);
+          this._closeDialog();
+        } else {
+          this.set('continueNum', 1);
+        }
       },
 
       _tensorContinueGoButtonCallback() {
@@ -182,6 +241,8 @@ limitations under the License.
           return;
         }
         this.tensorConditionGo(tensorConditionKey, refValue);
+        this._updateContinueButtonText(true);
+        this._closeDialog();
       },
 
       _onSelectedTensorConditionChanged(selectedTensorCondition) {
