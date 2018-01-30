@@ -77,10 +77,10 @@ limitations under the License.
         overflow-y: scroll;
       }
       .source-content :hover {
-        background-color: #ffffe0;
+        background-color: #FFFF00;
       }
       .highlighted-source-line {
-        background-color: #ffd6c1;
+        background-color: #FFFFE0;
       }
       .source-line-number {
         display: inline-block;
@@ -200,6 +200,8 @@ limitations under the License.
       // Args:
       //   deviceName: Name of the device that the node is partitioned to.
       //   baseExpandedNodeName: Name of the node, base-expanded if applicable.
+      //   skipSource: Whether focusing on the source file line is to be
+      //     skipped.
       nodeClicked: {
         type: Function,
         value: null,
@@ -419,6 +421,9 @@ limitations under the License.
               continueToLink.setAttribute('title', 'Continue to');
               // TOOD(cais): Properly style the paper-icon-button.
               continueToLink.addEventListener('tap', () => {
+                this.nodeClicked(
+                    this._nodeName2DeviceName[nodeName],
+                    this._nodeName2BaseExpandedNodeName[nodeName], true);
                 const deviceName = this._nodeName2DeviceName[nodeName];
                 const baseExpandedNodeName = this._nodeName2BaseExpandedNodeName[nodeName];
                 this.set('_setHightlightOriginNodeElement', nodeElement);

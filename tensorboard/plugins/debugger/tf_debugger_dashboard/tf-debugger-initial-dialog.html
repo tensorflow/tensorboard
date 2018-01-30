@@ -50,7 +50,10 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
     </paper-dialog>
   </template>
   <style>
-    :host:not([_open]) {
+    /** We rely on a separate `_hidden` property instead of directly making use
+        of the `_open` attribute because this CSS specification may strangely
+        affect other elements throughout TensorBoard. See #899. */
+    :host[_hidden] {
       display: none;
     }
 
@@ -86,6 +89,10 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
       },
       _open: {
         type: Boolean,
+      },
+      _hidden: {
+        type: Boolean,
+        computed: '_computeHidden(_open)',
         reflectToAttribute: true,  // for CSS 
       },
       // Suppress the native paper-dialog backdrop. We use a custom one. We make
@@ -117,6 +124,9 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
                '--debugger_port <port_number>'
       Polymer.dom(this.$$('#session-run-code-example')).textContent = ex;
       Polymer.dom(this.$$('#hook-code-example')).textContent = '';
+    },
+    _computeHidden(open) {
+      return !open;
     },
   });
   </script>

@@ -34,6 +34,7 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="tf-debugger-continue-dialog.html">
 <link rel="import" href="tf-debugger-initial-dialog.html">
 <link rel="import" href="tf-debugger-vertical-resizer.html">
 <link rel="import" href="tf-op-selector.html">
@@ -45,38 +46,18 @@ limitations under the License.
 <dom-module id="tf-debugger-dashboard">
   <template>
     <paper-toast id="toast" text="" always-on-top></paper-toast>
-    <paper-dialog with-backdrop id="continueDialog" width="320">
-      <h2>Continue...</h2>
-      <paper-input
-        id="continueNum"
-        label="Number of times (including current one):"
-        always-float-label
-        type="number"
-        min="1"
-        step="1"
-        value="[[_continueNum]]"
-        on-change="_continueNumChanged"
-      ></paper-input>
-      <paper-button raised class="continue-go-button" on-click="_continueGo">
-        <span>Go</span>
-      </paper-button>
-    </paper-dialog>
-    <tf-debugger-initial-dialog
-      id="initialDialog"
-    >
-    </tf-debugger-initial-dialog>
+    <tf-debugger-initial-dialog id="initialDialog"></tf-debugger-initial-dialog>
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
       <div class="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
-          <div class="debugger-section-title">Node List</div>
-          <paper-button
-            raised
-            id="toggle-source-code-button"
-            on-click="_showSourceCode">
-            <span>[[_toggleSourceCodeButtonText]]</span>
-          </paper-button>
+          <div class="debugger-section-title">Runtime Node List</div>
+          <div class="toggle-source-code">
+            Show Code:
+            <paper-toggle-button class="toggle-source-code" id="show-source-code">
+            </paper-toggle-button>
+          </div>
           <tf-op-selector
               debug-watches=[[_debugWatches]]
               debug-watch-change="[[_createDebugWatchChangeHandler()]]"
@@ -114,12 +95,12 @@ limitations under the License.
           <paper-button raised class="continue-button" on-click="_step">
               <span>[[_stepButtonText]]</span>
           </paper-button>
-          <paper-button
-              raised
-              class="continue-button"
-              on-click="_openContinueDialog">
-              <span>[[_continueButtonText]]</span>
-          </paper-button>
+          <tf-debugger-continue-dialog
+            id="continueDialog"
+            session-run-go="[[_createSessionRunGo()]]"
+            tensor-condition-go="[[_createTensorConditionGo()]]"
+            force-continuation-stop="[[_createForceContinuationStop()]]">
+          </tf-debugger-continue-dialog>
         </div>
         <div class="container">
           <tf-graph-loader id="loader"
@@ -132,32 +113,34 @@ limitations under the License.
       </div>
       <div class="center" id="center-content">
         <div id="top-right-content-container">
-          <paper-tabs selected="0" selected="{{_topRightSelected}}">
-            <template is="dom-repeat" items="[[_topRightTabs]]">
-              <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
-            </template>
-          </paper-tabs>
-          <span id="runtime-graph-device-name">
-          </span>
-          <paper-dropdown-menu
-            id="active-runtime-graph-device-name"
-            no-label-float="true"
-            label="Device name"
-            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
-          >
-            <paper-menu class="dropdown-content" slot="dropdown-content">
-              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
-                <paper-item no-label-float=true>[[item]]</paper-item>
+          <div id="top-right-top-contents">
+            <paper-tabs selected="0" selected="{{_topRightSelected}}">
+              <template is="dom-repeat" items="[[_topRightTabs]]">
+                <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
               </template>
-            </paper-menu>
-          </paper-dropdown-menu>
-          <paper-spinner-lite
-            class="spinner"
-            id="top-right-spinner"
-            hidden="[[!_busy]]"
-            active="[[_busy]]">
-          </paper-spinner-lite>
-          <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
+            </paper-tabs>
+            <span id="runtime-graph-device-name">
+            </span>
+            <paper-dropdown-menu
+              id="active-runtime-graph-device-name"
+              no-label-float="true"
+              label="Device name"
+              selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+            >
+              <paper-menu class="dropdown-content" slot="dropdown-content">
+                <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                  <paper-item no-label-float=true>[[item]]</paper-item>
+                </template>
+              </paper-menu>
+            </paper-dropdown-menu>
+            <paper-spinner-lite
+              class="spinner"
+              id="top-right-spinner"
+              hidden="[[!_busy]]"
+              active="[[_busy]]">
+            </paper-spinner-lite>
+            <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
+          </div>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
               <tf-graph id="graph"
@@ -182,13 +165,14 @@ limitations under the License.
         </div>
 
         <div id="tensor-data" class="tensor-data">
-          <div class="debugger-section-title">Tensor Value Overview</div>
           <tf-tensor-data-summary
+            id="tensorDataSummary"
             latest-tensor-data="[[_latestTensorData]]"
             expand-handler="[[_createTensorDataExpandHandler()]]"
             continue-to-callback="[[_createContinueToCallback()]]"
             highlighted-node-name="[[_highlightNodeName]]"
-            tensor-name-clicked="[[_createNodeClickedHandler()]]">
+            tensor-name-clicked="[[_createNodeClickedHandler()]]"
+            get-health-pill="[[_createGetHealthPill()]]">
           </tf-tensor-data-summary>
         </div>
       </div>
@@ -204,6 +188,12 @@ limitations under the License.
         top: 0;
         bottom: 0;
         overflow: hidden;
+      }
+      :host paper-toast {
+        text-align: center;
+        font-size: 110%;
+        width: 40vw;
+        margin-left: 30vw;
       }
       .debugger-section-title {
         font-size: 110%;
@@ -223,12 +213,13 @@ limitations under the License.
       }
       #graph-container {
         position: relative;
-        height: 100%;
+        height: 85%;
       }
       #graph {
+        position: relative;
         display: block;
         width: 100%;
-        height: 400px;
+        height: 100%;
       }
       #tooltip-sorting {
         display: flex;
@@ -321,7 +312,7 @@ limitations under the License.
         padding: 20px 0;
       }
       .tensor-data {
-        height: 30%;
+        height: 29%;
         overflow: auto;
         padding: 20px 0;
       }
@@ -329,7 +320,8 @@ limitations under the License.
         height: 66%;
         overflow: auto;
       }
-      #toggle-source-code-button {
+      .toggle-source-code {
+        margin-right: 1em;
         font-size: 80%;
         float: right;
       }
@@ -360,6 +352,7 @@ limitations under the License.
       }
     </style>
   </template>
+  <script src="health-pills.js"></script>
   <script src="tensor-shape-helper.js"></script>
   <script>
     const _DEFAULT_LEFT_PANE_WIDTH = 450;
@@ -401,14 +394,6 @@ limitations under the License.
         _continueButtonText: {
             type: String,
             value: 'Continue...',
-        },
-        _continueNum: {  // How many times to continue over, e.g., Session.Runs.
-            type: Number,
-            value: 5,
-        },
-        _toggleSourceCodeButtonText: {
-            type: String,
-            value: 'Show Code >>',
         },
 
         _tensorViewIdCounter: {
@@ -462,16 +447,28 @@ limitations under the License.
         },
 
         // What kind of entity to continue over. Possibilities:
-        // {'', 'SessionRun', 'op'}.
+        // {'', 'SessionRun', 'TensorCondition', 'op'}.
         // '' is the default state, i.e., a state where the UI is not continuing
         // over anything.
         _continueToType: {
           type: String,
           value: '',
         },
-        // The target of the continue-to action. For example, for _continueToType ==
-        // 'SessionRun', this can be the session run string. For _continueToType ==
-        // 'op', this can be a debug tensor name.
+        _continueToCounter: {
+          type: Number,
+          value: 0,
+        },
+        // A flag used to force continuation to stop.
+        _continueStop: {
+          type: Boolean,
+          value: false,
+        },
+        // The target of the continue-to action.
+        // For _continueToType == 'SessionRun', this can be a number of times
+        //   to run Session.run for.
+        // For _continueToType == 'TensorCondition', this can be the string
+        //   value for a tensor value, e.g., INF_OR_NAN.
+        // For _continueToType == 'op', this can be a debug tensor name.
         _continueToTarget: {
           type: String,
           value: '',
@@ -546,6 +543,9 @@ limitations under the License.
         "_sizeDashboardRegions(_leftPaneWidth, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
+      listeners: {
+        'show-source-code.change': '_showSourceCodeChanged',
+      },
 
       ready() {
         this._handleWindowResize();
@@ -562,15 +562,17 @@ limitations under the License.
         };
         let path = tf_backend.getRouter().pluginRoute('debugger', '/comm');
         path = tf_backend.addParams(path, parameters);
-        console.log('Sending long-polling request to: ', path);
+        // Uncomment the following line for debugging.
+        // console.log('Sending long-polling request to: ', path);
         this._requestManager.request(path).then(response => {
           const responseType = response['type'];
           const responseData = response['data'];
-          if (responseType == 'meta') {
+          if (responseType === 'meta') {
             const runKey = responseData['run_key'];
             const feedNames = runKey[0].split(',');
             const fetchNames = runKey[1].split(',');
             const targetNames = runKey[2].split(',');
+            const previousRunKey = this._activeSessionRunKey;
             this.set('_activeSessionRunKey', runKey);
             this.set('_latestSessionRun', {
               'feeds': feedNames,
@@ -596,12 +598,15 @@ limitations under the License.
             }
             this.$.initialDialog.closeDialog();
 
-            if (!this._continueToType) {
-              // Do not refresh node list if we are in continue model.
+            // Do not refresh node list if we are in continue model and the
+            // the Sesssion.run key hasn't changed.
+            const toProcessNewSessionRun =
+                !this._continueToType || !_.isEqual(previousRunKey, runKey);
+            if (toProcessNewSessionRun) {
               this._processGatedGrpcDebugOps(runKey, false);
               this._showToast('A new Session.run() has begun.');
             }
-          } else if (responseType == 'tensor') {
+          } else if (responseType === 'tensor') {
             const deviceName = responseData['device_name'];
             const nodeName = responseData['node_name'];
             const maybeBaseExpandedNodeName = responseData[
@@ -647,36 +652,65 @@ limitations under the License.
                 'Invalid long-polling response type: ', responseType);
           }
 
-          if (this._continueToType === 'SessionRun') {
-            if (this._sessionRunCounters[this._currentSessionRunInfo] <
-                this._continueToCounterTarget) {
-              this._step();
-            } else {
-              this._clearContinueTo();
-            }
-          } else if (this._continueToType === 'op') {
-            const deviceName = responseData['device_name'];
-            const maybeBaseExpandedNodeName = responseData[
-                'maybe_base_expanded_node_name'];
-            const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
-            if (nodeNameWithDevice !== this._continueToTarget) {
-              this._step();
-            } else {
-              this._clearContinueTo();
-              if (this._sourceCodeShown) {
-                this.set(
-                    '_sourceFocusNodeName',
-                    tf_debugger_dashboard.removeNodeNameBaseExpansion(
-                        maybeBaseExpandedNodeName));
-              }
-            }
-          } else if (this._continueToType != null && this._continueToType !== '') {
-            console.error('Invalid _continueToType:', this._continueToType);
+          if (this._continueToType != null) {
+            this._processContinueTo(responseType, responseData);
           }
 
           // Long polling loop: initialite the next long polling.
           this.long_poll();
         });
+      },
+
+      _processContinueTo(responseType, responseData) {
+        // Check the flag for forced stop of continuation, e.g., due to user's
+        // UI action or tensor condition being met during continuation type
+        // 'TensorCondition'.
+        if (this._continueStop) {
+          this._clearContinueTo();
+        } else {
+          if (this._continueToType === 'SessionRun') {
+            this._processContinueToSessionRun(responseType === 'meta');
+          } else if (this._continueToType === 'TensorCondition') {
+            this._step();
+            // Note: _conditionalHealthPillStop() will be invoked on each
+            // health pill value. If it detects a health pill that matches the
+            // condition, it'll stop the continuation by setting _continueStop
+            // to true.
+          } else if (this._continueToType === 'op') {
+            this._processContinueToOp(responseData);
+          } else if (this._continueToType != null && this._continueToType !== '') {
+            console.error('Invalid _continueToType:', this._continueToType);
+          }
+        }
+      },
+
+      _processContinueToSessionRun(isSessionRunBeginning) {
+        if (isSessionRunBeginning) {
+          this.set('_continueToCounter',  this._continueToCounter + 1);
+        }
+        if (this._continueToCounter < this._continueToCounterTarget) {
+          this._step();
+        } else {
+          this._clearContinueTo();
+        }
+      },
+
+      _processContinueToOp(responseData) {
+        const deviceName = responseData['device_name'];
+        const maybeBaseExpandedNodeName = responseData[
+            'maybe_base_expanded_node_name'];
+        const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+        if (nodeNameWithDevice !== this._continueToTarget) {
+          this._step();
+        } else {
+          this._clearContinueTo();
+          if (this._sourceCodeShown) {
+            this.set(
+                '_sourceFocusNodeName',
+                tf_debugger_dashboard.removeNodeNameBaseExpansion(
+                    maybeBaseExpandedNodeName));
+          }
+        }
       },
 
       _maybeUpdateTensorValueViews(tensorName, debugOp) {
@@ -717,20 +751,13 @@ limitations under the License.
         });
       },
 
-      _openContinueDialog() {
-        this.$.continueDialog.open();
-      },
-
-      _showSourceCode() {
+      _showSourceCodeChanged(event) {
+        this.set('_sourceCodeShown', event.target.active);
         if (this._sourceCodeShown) {
-          this.$$('#node-entries').style.height = '80%';
-          this.set('_sourceCodeShown', false);
-          this.set('_toggleSourceCodeButtonText', 'Show Code >>');
-        } else {
           this.$$('#node-entries').style.height = '40%';
-          this.set('_sourceCodeShown', true);
-          this.set('_toggleSourceCodeButtonText', 'Hide Code <<');
           this.$.sourceCodeView.render();
+        } else {
+          this.$$('#node-entries').style.height = '80%';
         }
       },
 
@@ -895,15 +922,14 @@ limitations under the License.
       },
 
       _createTensorDataExpandHandler() {
-        const self = this;
-        function handleTensorDataExpand(tensorData) {
-          self._setTopRightTensorValuesToActive();
+        return (tensorData) => {
+          this._setTopRightTensorValuesToActive();
           // Use setTimeout() so that the DOMs in the top-right tabs have a
           // chance to update.
           setTimeout(() =>  {
-            const multiView = self.$$('#tensorValueMultiView');
+            const multiView = this.$$('#tensorValueMultiView');
             multiView.addView({
-              viewId: self._createTensorViewId(),
+              viewId: this._createTensorViewId(),
               deviceName: tensorData.deviceName,
               tensorName: tensorData.tensorName,
               nodeName: tensorData.nodeName,
@@ -914,7 +940,6 @@ limitations under the License.
             });
           }, 10);
         };
-        return handleTensorDataExpand;
       },
 
       _createTensorViewId() {
@@ -978,6 +1003,59 @@ limitations under the License.
         ];
       },
 
+      // Create a function that gives the health pill of a tensor.
+      _createGetHealthPill() {
+        return (watchKey, deviceName, maybeBaseExpandedNodeName, callback) => {
+          const parameters = {
+            'watch_key': watchKey,
+            'time_indices': '-1',   // '-1' means the latest time point.
+            'mapping': 'health-pill',
+          };
+          const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/tensor_data');
+          const url = tf_backend.addParams(baseUrl, parameters);
+          this._requestManager.request(url).then(response => {
+            const healthPill = response.tensor_data[0];
+            callback(healthPill);
+            this._conditionalHealthPillStop(
+                watchKey, deviceName, maybeBaseExpandedNodeName, healthPill);
+          });
+        };
+      },
+
+      // Under 'TensorCondition' continuation type, check health pills and stop
+      // when they meet the given condition.
+      _conditionalHealthPillStop(
+          watchKey, deviceName, maybeBaseExpandedNodeName, healthPill) {
+        if (this._continueToType !== 'TensorCondition') {
+          return;
+        }
+        if (tf_debugger_dashboard.checkHealthPillAgainstTensorConditionKey(
+                this._continueToTarget, healthPill,
+                this._continueToCounterTarget)) {
+          this.set('_continueStop', true);
+          const nodeName =
+              tf_debugger_dashboard.removeNodeNameBaseExpansion(maybeBaseExpandedNodeName);
+          if (this._sourceCodeShown) {
+            // If the source view is active, highlight the source lines.
+            this.set('_sourceFocusNodeName', nodeName);
+          }
+          this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
+          const nodeNameWithDeviceName =
+              deviceName + '/' + maybeBaseExpandedNodeName;
+          this.set('_forceExpandNodeName', nodeNameWithDeviceName);
+          // Wait a little for any concurrent ongoing row rendering in the
+          // Tensor Value Overview table to settle before focusing on the
+          // node that just met the tensor condition.
+          setTimeout(() => {
+            this.set('_highlightNodeName', null);
+            this.set('_highlightNodeName', nodeNameWithDeviceName);
+          }, 100);
+          this._showToast('Tensor condition "' + this._continueToTarget +
+                          '" is met by watch key: "' + watchKey + '".\n' +
+                          'Stopping continuation.');
+        }
+      },
+
       _continueToNode(deviceName, baseExpandedNodeName) {
         const cleanNodeName = tf_debugger_dashboard.getCleanNodeName(baseExpandedNodeName);
         const nodeNameWithDevice = deviceName + '/' + baseExpandedNodeName;
@@ -1017,8 +1095,7 @@ limitations under the License.
             }
           }
         }
-        if (!this._continueToType) {
-          // Do not refresh graph if we are in continue mode.
+        if (deviceName != null) {
           this._displayGraph(this._activeSessionRunKey, deviceName);
         }
       },
@@ -1060,29 +1137,52 @@ limitations under the License.
         });
       },
 
-      _continueGo() {
-        if (this._continueNum > 0) {
-          this._setContinueTo('SessionRun', this._currentSessionRunInfo,
-              this._sessionRunCounters[this._currentSessionRunInfo] +
-              this._continueNum);
+      // Create a callback for the Session.runs Go button of the continue
+      // dialog.
+      _createSessionRunGo() {
+        return (continueNum) => {
+          console.log('Session run go: continueNum=' + continueNum);  // DEBUG
+          this._setContinueTo(
+              'SessionRun', this._currentSessionRunInfo, continueNum);
           this._step();
-          this.$.continueDialog.close();
-        } else {
-          this._continueNum = 1;
-        }
+        };
       },
-      _continueNumChanged(e) {
-        this._continueNum = e.target.valueAsNumber;
+
+      // Create a callback for the tensor condition Go button of the continue
+      // dialog.
+      _createTensorConditionGo() {
+        return (conditionKey, refValue) => {
+          this._setContinueTo('TensorCondition', conditionKey, refValue);
+          // Force enable health pills during TensorCondition continuation.
+          this.$.tensorDataSummary.enableHealthPills();
+          this._step();
+        };
       },
-      _setContinueTo(type, target, counter_target) {
+
+      // Create a callback for the continuation-force-stop button.
+      _createForceContinuationStop() {
+        return () => {
+          this._showToast(
+              'Continuation of type "' + this._continueToType +
+              '" was interrupted by user.');
+          this.set('_continueStop', true);
+        };
+      },
+
+      _setContinueTo(type, target, counterTarget) {
         this._continueToType = type;
         this._continueToTarget = target;
-        this._continueToCounterTarget = counter_target;
+        this._continueToCounterTarget = counterTarget;
+        this._continueToCounter = 0;
+        this._continueStop = false;
       },
       _clearContinueTo() {
+        this.$.continueDialog.notifyContinuationStop();
         this._continueToType = '';
         this._continueToTarget = '';
         this._continueToCounterTarget = -1;
+        this._continueToCounter = 0;
+        this._continueStop = false;
         this.set('_busy', false);
       },
 

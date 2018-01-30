@@ -22,6 +22,7 @@ import base64
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.debug.lib import debug_data
 
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.debugger import tensor_store
@@ -108,6 +109,19 @@ class WatchStoreTest(tf.test.TestCase):
     self.assertAllEqual(value * 4, result[3])
     with self.assertRaises(IndexError):
       watch_store.query(4)
+
+  def testAddAndQueryUnitializedTensor(self):
+    watch_key = 'Dense/Bias:0:DebugIdentity'
+    watch_store = tensor_store._WatchStore(watch_key, mem_bytes_limit=50)
+    uninitialized_value = debug_data.InconvertibleTensorProto(
+        None, initialized=False)
+    watch_store.add(uninitialized_value)
+    initialized_value = np.zeros([3], dtype=np.float64)
+    watch_store.add(initialized_value)
+    result = watch_store.query([0, 1])
+    self.assertEqual(2, len(result))
+    self.assertIsInstance(result[0], debug_data.InconvertibleTensorProto)
+    self.assertAllClose(initialized_value, result[1])
 
 
 class TensorHelperTest(tf.test.TestCase):

@@ -24,6 +24,7 @@ import numpy as np
 from tensorflow.python.debug.cli import command_parser
 
 from tensorboard import util
+from tensorboard.plugins.debugger import health_pill_calc
 
 
 def numel(shape):
@@ -71,6 +72,8 @@ def array_view(array, slicing=None, mapping=None):
       `'image/png'`: Image encoding of a 2D sliced array or 3D sliced array
         with 3 as the last dimension. If the sliced array is not 2D or 3D with
         3 as the last dimension, a `ValueError` will be thrown.
+      `health-pill`: A succinct summary of the numeric values of a tensor.
+        See documentation in [`health_pill_calc.py`] for more details.
 
   Returns:
     1. dtype as a `str`.
@@ -91,6 +94,9 @@ def array_view(array, slicing=None, mapping=None):
     else:
       raise ValueError("Invalid rank for image/png mapping: %d" %
                        len(sliced_array.shape))
+  elif mapping == 'health-pill':
+    health_pill = health_pill_calc.calc_health_pill(array)
+    return dtype, shape, health_pill
   elif mapping is None or mapping == '' or  mapping.lower() == 'none':
     return dtype, shape, sliced_array.tolist()
   else:

@@ -23,6 +23,7 @@ limitations under the License.
 -->
 <dom-module id="tf-tensor-data-summary">
   <template>
+    <span class="section-title">Tensor Value Overview</span>
     <div id="tensor-data-div" class="tensor-data-div">
       <table id="tensor-data-table" align="left" class="tensor-data-table">
         <tr align="left">
@@ -30,48 +31,74 @@ limitations under the License.
           <th>Count</th>
           <th>DType</th>
           <th>Shape</th>
-          <th width="30%">Value</th>
+          <th width="25%">Value</th>
+          <th width="25%">
+            Health Pill
+            <paper-toggle-button id="show-health-pills" checked="{{_healthPillsEnabled}}">
+            </paper-toggle-button>
+            <paper-card>
+              <div class="health-pill-legend" id="health-pill-legend"></div>
+            </paper-card>
+          </th>
           <th width="5%"></th>
         </tr>
       </table>
     </div>
     <style>
-      .section-title {
-        font-size: 110%;
-        font-weight: bold;
-      }
-      :host .indented-level-container .content-container {
-        margin: 0 0 0 10px;
-      }
-      :host .tensor-data-table {
-        align-content: left;
-        align-items: left;
-        text-align: left;
-        border-style: solid 1px black;
-        width: 100%;
-        padding-top: 3px;
-        padding-left: 3px;
-        padding-right: 3px;
-        box-shadow: 3px 3px #ddd;
-      }
-      :host .active-tensor {
-        background-color: #FFFFE0;
-      }
-      :host .highlighted {
-        color: red;
-      }
-      .value-expansion-link {
-        text-decoration: underline;
-        cursor: pointer;
-      }
-      .value-expansion-link :hover {
-        color: blue;
-      }
-      .tensor-name {
-        text-decoration: underline;
-        cursor: pointer;
-      }
-    </style>
+        .section-title {
+          font-size: 110%;
+          font-weight: bold;
+        }
+        :host .indented-level-container .content-container {
+          margin: 0 0 0 10px;
+        }
+        :host .tensor-data-table {
+          align-content: left;
+          align-items: left;
+          text-align: left;
+          vertical-align: middle;
+          width: 100%;
+          padding-top: 3px;
+          padding-left: 3px;
+          padding-right: 3px;
+          box-shadow: 3px 3px #ddd;
+        }
+        :host .tensor-data-table th {
+          vertical-align: top;
+        }
+        :host .active-tensor {
+          background-color: #FFFFE0;
+          font-weight: bold;
+          border: solid 1px #888;
+        }
+        :host .highlighted {
+          color: red;
+        }
+        :host .health-pill-legend {
+          float: right;
+          font-weight: normal;
+        }
+        :host #show-health-pills {
+          display: inline-block;
+        }
+        .value-expansion-link {
+          text-decoration: underline;
+          cursor: pointer;
+        }
+        .value-expansion-link :hover {
+          color: blue;
+        }
+        .health-pill :hover {
+          cursor: pointer;
+        }
+        .tensor-name {
+          text-decoration: underline;
+          cursor: pointer;
+        }
+        .tensor-name :hover {
+          color: blue;
+        }
+      </style>
   </template>
   <script>
 
@@ -112,6 +139,23 @@ limitations under the License.
         value: null,
       },
 
+      // A function with which the latest health pill of a tensor can be
+      // obtained.
+      // Signature of the function:
+      // Args:
+      //   watchKey: Watch key of the tensor of which the health pill is to be
+      //     obtained. Does not include device name.
+      //   callback: A callback to invoke when the health pill values become
+      //     available. The callback should take exactly one input argument,
+      //     i.e., the health pill values as an Array of Numbers.
+      getHealthPill: Function,
+
+      _healthPillsEnabled: {
+        type: Boolean,
+        value: true,
+        notify: true,
+      },
+
       _watchKeys: {
         type: Array,
         value: [],
@@ -134,23 +178,73 @@ limitations under the License.
         type: Object,
         value: {},
       },
+      // A map from watch key to an existing rendered row in the table.
+      _watchKey2Row: {
+        type: Object,
+        value: {},
+      },
       _activeWatchKey: String,
+      _healthPillWidth: {
+        type: Number,
+        value: 200,
+        readonly: true,
+      },
+      _healthPillHeight: {
+        type: Number,
+        value: 32,
+        readonly: true,
+      },
     },
     observers: [
       "_renderLatest(latestTensorData, expandHandler)",
       "_highlight(highlightedNodeName)",
     ],
+    listeners: {
+      'show-health-pills.change': '_showHealthPillsChanged',
+    },
+
+    ready() {
+      this._renderHealthPillLegend();
+    },
+
+    enableHealthPills() {
+      this.set('_healthPillsEnabled', true);
+      this._renderHealthPillLegend();
+    },
+
+    _showHealthPillsChanged(event) {
+      if (this._healthPillsEnabled) {
+        this._renderHealthPillLegend();
+      } else {
+        this._clearHealthPillLegend();
+      }
+      this._renderAll();
+    },
+
+    _renderAll(sortBy) {
+      this._clearTensorDataTable();
+      for (const watchKey of this._watchKeys) {
+        const tensorData = this._watchKey2Data[watchKey];
+        const expandHandler = this._watchKey2ExpandHandler[watchKey];
+        this._renderLatest(tensorData, expandHandler);
+      }
+    },
+
+    _tensorData2WatchKey(tensorData) {
+      return tensorData.deviceName + '/' + tensorData.tensorName + ':' +
+             tensorData.debugOp;
+    },
 
     _renderLatest(latestTensorData, expandHandler) {
-      const watchKey = latestTensorData.deviceName + '/' +
-                       latestTensorData.tensorName + ':' +
-                       latestTensorData.debugOp;
-      const instanceExpandHandler = () => {
-        expandHandler(latestTensorData);
-      };
+      const watchKey = this._tensorData2WatchKey(latestTensorData);
+      let instanceExpandHandler = null;
+      if (!(latestTensorData.dtype === 'Uninitialized' ||
+            latestTensorData.dtype === 'Unsupported')) {
+        instanceExpandHandler = () =>  expandHandler(latestTensorData);
+      }
 
       let valueShort;
-      if (latestTensorData.value !== null) {
+      if (latestTensorData.value != null) {
         valueShort = JSON.stringify(latestTensorData.value,
             (key, val) => {
               return val.toFixed ? Number(val.toFixed(3)) : val;
@@ -163,51 +257,93 @@ limitations under the License.
       if (this._watchKeys.indexOf(watchKey) === -1) {
         this._watchKeys.push(watchKey);
         this._watchKey2Count[watchKey] = 1;
-        this._watchKey2ExpandHandler[watchKey] = instanceExpandHandler;
       } else {
         this._watchKey2Count[watchKey] += 1;
       }
+      // Always update instance expand handler, because the tensor's shape
+      // might have changed (e.g., from unitialized to an initialized, concrete
+      // shape), necessitating an updating to the value expand callback.
+      this._watchKey2ExpandHandler[watchKey] = instanceExpandHandler;
       this._watchKey2ValueShort[watchKey] = valueShort;
       this._activeWatchKey = watchKey;
 
-      this._clearTensorDataTable();
       // TODO(cais): Support sorting by clicking headers.
-      this._renderHeader();
-      for (let i = 0; i < this._watchKeys.length; ++i) {
-        this._renderRow(this._watchKeys[i]);
-      }
+      this._removeActiveStatusFromAllRows();
+      this._renderRow(watchKey);
     },
 
     _clearTensorDataTable() {
-      const tensorDataTable = this.$$('#tensor-data-table');
-      while (tensorDataTable.firstChild) {
-        tensorDataTable.removeChild(tensorDataTable.firstChild);
+      for (const watchKey in this._watchKey2Row) {
+        if (!this._watchKey2Row.hasOwnProperty(watchKey)) {
+          continue;
+        }
+        const row = this._watchKey2Row[watchKey];
+        row.remove();
+        delete this._watchKey2Row[watchKey];
       }
     },
 
-    _renderHeader() {
-      const headerRow = document.createElement('tr');
-      const nameCell = document.createElement('th');
-      nameCell.textContent = 'Name';
-      const countCell = document.createElement('th');
-      countCell.textContent = 'Count';
-      const dtypeCell = document.createElement('th');
-      dtypeCell.textContent = 'DType';
-      const shapeCell = document.createElement('th');
-      shapeCell.textContent = 'Shape';
-      const valueShortCell = document.createElement('th');
-      valueShortCell.textContent = 'Value';
+    _clearTensorDataRow(tensorDataRow) {
+      while (tensorDataRow.firstChild) {
+        tensorDataRow.removeChild(tensorDataRow.firstChild);
+      }
+    },
 
-      headerRow.appendChild(nameCell);
-      headerRow.appendChild(countCell);
-      headerRow.appendChild(dtypeCell);
-      headerRow.appendChild(shapeCell);
-      headerRow.appendChild(valueShortCell);
+    _clearHealthPillLegend() {
+      const legend = this.$$('#health-pill-legend');
+      while (legend.firstChild) {
+        legend.removeChild(legend.firstChild);
+      }
+    },
 
-      Polymer.dom(this.$$('#tensor-data-table')).appendChild(headerRow);
+    _renderHealthPillLegend() {
+      this._clearHealthPillLegend();
+      const legend = this.$$('#health-pill-legend');
+      const legendTitle = document.createElement('div');
+      legendTitle.textContent = 'Legend:';
+      legend.appendChild(legendTitle);
+      legendTitle.style['margin-right'] = '0.5em';
+      legendTitle.style['display'] = 'inline-block';
+      for (let i = 0; i < tf.graph.scene.healthPillEntries.length; ++i) {
+        const entry = tf.graph.scene.healthPillEntries[i];
+        const entryDiv = document.createElement('div');
+        // TODO(cais): Make class css work.
+        entryDiv.style['display'] = 'inline-block';
+        entryDiv.style['margin-right'] = '0.25em';
+        const rectangle = document.createElement('span');
+        rectangle.textContent = '■';
+        rectangle.style['color'] = entry.background_color;
+        const label = document.createElement('span');
+        label.textContent = entry.label;
+        label.style['color'] = entry.background_color;
+        entryDiv.appendChild(rectangle);
+        entryDiv.appendChild(label);
+        legend.appendChild(entryDiv);
+      }
+    },
+
+    // Remove active status from all rows.
+    _removeActiveStatusFromAllRows() {
+      for (const watchKey in this._watchKey2Row) {
+        if (!this._watchKey2Row.hasOwnProperty(watchKey)) {
+          continue;
+        }
+        const row = this._watchKey2Row[watchKey];
+        Polymer.dom(row).classList.remove('active-tensor');
+        Polymer.dom(row).classList.remove('highlighted');
+      };
     },
 
     _renderRow(watchKey) {
+      let tensorDataRow;
+      if (this._watchKey2Row[watchKey] != null) {
+        tensorDataRow = this._watchKey2Row[watchKey];
+        this._clearTensorDataRow(tensorDataRow);
+      } else {
+        tensorDataRow = document.createElement('tr');
+        Polymer.dom(this.$$('#tensor-data-table')).appendChild(tensorDataRow);
+      }
+
       const deviceName = this._watchKey2Data[watchKey]['deviceName'];
       const maybeBaseExpandedNodeName =
           this._watchKey2Data[watchKey]['maybeBaseExpandedNodeName'];
@@ -219,9 +355,11 @@ limitations under the License.
       const expandHandler = this._watchKey2ExpandHandler[watchKey];
       const isActive = (watchKey === this._activeWatchKey);
 
-      const tensorDataRow = document.createElement('tr');
       const tensorNameCell = document.createElement('td');
-      tensorNameCell.classList.add('tensor-name');
+      Polymer.dom(tensorNameCell).classList.add('tensor-name');
+      // TODO(cais): Make class CSS work.
+      tensorNameCell.style['text-decoration'] = 'underline';
+      tensorNameCell.style['cursor'] = 'pointer';
       tensorNameCell.textContent = tensorName;
       tensorNameCell.addEventListener('tap', () => {
         if (this.tensorNameClicked != null) {
@@ -231,23 +369,46 @@ limitations under the License.
 
       const countCell = document.createElement('td');
       countCell.textContent = count;
-      if (isActive) {
-        countCell.style.fontWeight = 'bold';
-      }
       // TODO(cais): Display debug op only if it is not the default
       // (DebugIdentity). The following commented-out lines of code may be
       // useful for that purpose.
       // const debugOpCell = document.createElement('td');
       // debugOpCell.textContent = (debugOp === 'DebugIdentity') ? '' : debugOp;
+      const dtype = this._watchKey2Data[watchKey]['dtype'];
       const dtypeCell = document.createElement('td');
-      dtypeCell.textContent = this._watchKey2Data[watchKey]['dtype'];
+      const shape = this._watchKey2Data[watchKey]['shape']
+      dtypeCell.textContent = dtype;
       const shapeCell = document.createElement('td');
-      shapeCell.textContent = JSON.stringify(
-          this._watchKey2Data[watchKey]['shape']);
+      shapeCell.textContent = JSON.stringify(shape);
+
+      // Create cell for a short summary of the tensor's value.
       const valueCell = document.createElement('td');
       valueCell.textContent = valueShort;
-      valueCell.setAttribute('class', 'value-expansion-link');
-      valueCell.addEventListener('click', expandHandler, false);
+      Polymer.dom(valueCell).classList.add('value-expansion-link');
+      // TODO(cais): Make class CSS work.
+      if (expandHandler != null) {
+        valueCell.addEventListener('tap', expandHandler, false);
+        valueCell.style['text-decoration'] = 'underline';
+        valueCell.style['cursor'] = 'pointer';
+      }
+
+      // Create health pill.
+      let healthPillCell = null;
+      if (this._healthPillsEnabled) {
+        const healthPillWatchKey = tensorName + ':' + debugOp;
+        const healthPillWithoutValue = {
+          device_name: deviceName,
+          node_name: maybeBaseExpandedNodeName,
+          dtype: dtype,
+          shape: shape,
+          value: null,
+        };
+        healthPillCell = this._renderHealthPill(
+            healthPillWatchKey, healthPillWithoutValue, expandHandler);
+      } else {
+        healthPillCell = document.createElement('td');
+      }
+
       const continueToCell = document.createElement('td');
       const continueToLink = document.createElement('paper-icon-button');
       continueToLink.setAttribute('icon', 'forward');
@@ -258,35 +419,86 @@ limitations under the License.
       continueToCell.appendChild(continueToLink);
 
       tensorDataRow.appendChild(tensorNameCell);
-      // tensorDataRow.appendChild(debugOpCell);
       tensorDataRow.appendChild(countCell);
       tensorDataRow.appendChild(dtypeCell);
       tensorDataRow.appendChild(shapeCell);
       tensorDataRow.appendChild(valueCell);
+      tensorDataRow.appendChild(healthPillCell);
       tensorDataRow.appendChild(continueToCell);
       tensorDataRow.setAttribute('nodeNameWithDevice', nodeNameWithDevice);
 
       if (isActive) {
-        tensorDataRow.classList.add('active-tensor');
-        tensorDataRow.classList.add('highlighted');
+        Polymer.dom(tensorDataRow).classList.add('active-tensor');
+        Polymer.dom(tensorDataRow).classList.add('highlighted');
       }
 
-      Polymer.dom(this.$$('#tensor-data-table')).appendChild(tensorDataRow);
+      this._watchKey2Row[watchKey] = tensorDataRow;
       tensorDataRow.scrollIntoView({block: 'end', inline: 'nearest', behaviour: 'smooth'});
+    },
+
+    // Render health pill for a tensor.
+    // Args:
+    //   healthPillWatchKey: a watch key for the tensor of which the health pill
+    //     is to be rendered. It should not include the device name.
+    //   healthPillWithoutValue: A HealthPill (TypeScript interface) without
+    //     the 'value' field filled in. In otherwords, it is expected to include
+    //     the following fields: device_name, node_name, dtype, shape.
+    //   tapHandler: A handler for 'tap' event on the health pill.
+    // Returns:
+    //   A rendered HTML element.
+    _renderHealthPill(
+        healthPillWatchKey, healthPillWithoutValue, tapHandler) {
+      healthPillCell = document.createElement('td');
+      Polymer.dom(healthPillCell).classList.add('health-pill');
+      if (tapHandler != null) {
+        healthPillCell.addEventListener('tap', tapHandler, false);
+      }
+      const healthPillOuter = document.createElementNS(
+          tf.graph.scene.SVG_NAMESPACE, 'svg');
+      healthPillOuter.setAttribute('width', this._healthPillWidth);
+      healthPillOuter.setAttribute('height', this._healthPillHeight);
+      const healthPillInner = document.createElementNS(
+          tf.graph.scene.SVG_NAMESPACE, 'g');
+      healthPillOuter.appendChild(healthPillInner);
+      healthPillCell.appendChild(healthPillOuter);
+      // Prepend the health pill ID with 'tdp/' to avoid duplication with health
+      // pills in the graph visualizer (if present).
+      const healthPillId = 'tdp/' + healthPillWatchKey;
+      this.getHealthPill(healthPillWatchKey,
+                         healthPillWithoutValue.device_name,
+                         healthPillWithoutValue.node_name,
+                         healthPillValue => {
+        if (healthPillValue == null) {
+          // DTypes unsupported by health pills, e.g, string, resource.
+          healthPillCell.textContent = 'N/A';
+          healthPillCell.style['color'] = 'gray';
+        } else {
+          const healthPill = healthPillWithoutValue;
+          healthPill.value = healthPillValue;
+          tf.graph.scene.addHealthPill(
+              healthPillInner, healthPill, null, healthPillId,
+              this._healthPillWidth, this._healthPillHeight / 2,
+              this._healthPillHeight / 2, 0);
+        }
+      });
+      return healthPillCell;
     },
 
     _highlight(nodeName) {
       const table = Polymer.dom(this.$$('#tensor-data-table'));
       const rowsToHighlight = [];
       // First, remove highlight from all rows.
-      for (let i = 0; i < table.childNodes.length; ++i) {
-        const row = table.childNodes[i];
+      for (const watchKey in this._watchKey2Row) {
+        if (!this._watchKey2Row.hasOwnProperty(watchKey)) {
+          continue;
+        }
+        const row = this._watchKey2Row[watchKey];
         if (row.getAttribute != null) {
           const nodeNameWithDevice = row.getAttribute('nodeNameWithDevice');
           if (nodeNameWithDevice === nodeName) {
             rowsToHighlight.push(row);
           } else {
-            row.classList.remove('highlighted');
+            Polymer.dom(row).classList.remove('highlighted');
           }
         }
       }
@@ -295,7 +507,7 @@ limitations under the License.
       }
       // Add highlight to the rows with matching node names.
       for (let i = 0; i < rowsToHighlight.length; ++i) {
-        rowsToHighlight[i].classList.add('highlighted');
+        Polymer.dom(rowsToHighlight[i]).classList.add('highlighted');
         rowsToHighlight[i].scrollIntoView({block: 'end', inline: 'nearest', behaviour: 'smooth'});
       }
     },

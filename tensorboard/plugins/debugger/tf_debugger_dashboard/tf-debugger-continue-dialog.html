@@ -1,0 +1,257 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+
+<dom-module id="tf-debugger-continue-dialog">
+  <template>
+    <paper-button
+      raised
+      class="continue-button"
+      on-click="_continueButtonCallback">
+      <span>[[_continueButtonText]]</span>
+    </paper-button>
+    <paper-dialog with-backdrop id="continueDialog">
+      <h2>Continue...</h2>
+      <div class="continue-to-type">
+        <div class="continue-to-type-name">
+          Over Session Runs:
+        </div>
+        <paper-input
+          id="continueNum"
+          class="input-box"
+          label="Number of Session Runs (including the current one):"
+          always-float-label
+          type="number"
+          min="1"
+          step="1"
+          value="{{continueNum}}"
+        ></paper-input>
+        <paper-icon-button
+          class="go-button"
+          icon="arrow-forward"
+          title="Session Runs Go"
+          on-tap="_sessionRunGoButtonCallback">
+        </paper-icon-button>
+      </div>
+      <div class="continue-to-type">
+        <div class="continue-to-type-name">
+          Till Condition Met by Watched Tensor
+        </div>
+        <paper-dropdown-menu
+          id="tensorConditionDropdown"
+          class="input-box"
+          no-label-float="true"
+          label="Tensor Condition"
+          selected-item-label="{{_selectedTensorCondition}}">
+          <!-- TODO(cais): Maybe dynamically set the menu items using some variable
+                           exported from health-pills.ts. -->
+          <paper-menu id="tensorConditionMenu" class="dropdown-content" slot="dropdown-content">
+            <paper-item no-label-float=true>Contains +/-∞ or NaN</paper-item>
+            <paper-item no-label-float=true>Contains +/-∞</paper-item>
+            <paper-item no-label-float=true>Contains NaN</paper-item>
+            <paper-item no-label-float=true>Max &gt;</paper-item>
+            <paper-item no-label-float=true>Max &lt;</paper-item>
+            <paper-item no-label-float=true>Min &gt;</paper-item>
+            <paper-item no-label-float=true>Min &lt;</paper-item>
+            <paper-item no-label-float=true>Max - Min &gt;</paper-item>
+            <paper-item no-label-float=true>Max - Min &lt;</paper-item>
+            <paper-item no-label-float=true>Mean &gt;</paper-item>
+            <paper-item no-label-float=true>Mean &lt;</paper-item>
+            <paper-item no-label-float=true>Standard deviation &gt;</paper-item>
+            <paper-item no-label-float=true>Standard deviation &lt;</paper-item>
+          </paper-menu>
+        </paper-dropdown-menu>
+        <paper-icon-button
+          class="go-button"
+          icon="arrow-forward"
+          title="Tensor Condition Go"
+          on-tap="_tensorContinueGoButtonCallback">
+        </paper-icon-button>
+        <paper-input
+          id="ref-value"
+          class="input-box"
+          label="Reference value to compare to"
+          type="number"
+          value="{{_tensorConditionRefValue}}"
+          hidden="[[_isRefValueInputHidden]]">
+        </paper-input>
+      </div>
+    </paper-dialog>
+    <style include="dashboard-style"></style>
+    <style>
+      :host .continue-to-type-name {
+        font-weight: bold;
+      }
+      :host paper-dialog {
+        width: 36vw;
+      }
+      :host .input-box {
+        display: inline-block;
+        position: relative;
+        width: 80%;
+        font-size: 110%;
+      }
+      :host .go-button {
+        position: relative;
+        width: 15%;
+        display: inline-block;
+      }
+    </style>
+  </template>
+  <script src="health-pills.js"></script>
+  <script>
+    Polymer({
+      is: 'tf-debugger-continue-dialog',
+      properties: {
+        continueNum: {  // How many times to continue over, e.g., Session.Runs.
+          type: Number,
+          value: 5,
+        },
+
+        // Callback for the session-runs go button.
+        // Signature of this function:
+        // Args:
+        //   continueNum: How many times to continue over Session.runs, assumed
+        //     to be a positive integer.
+        sessionRunGo: Function,
+
+        // Handler for tensor-condition go, invoked by the callback of the
+        // tensor-condition go button.
+        // Signature of this function:
+        // Args:
+        //   conditionKey: Key of the tensor-value condition (e.g., NAN_OR_INF),
+        //     see health-pills.ts for more details.
+        //   refValue: Optional reference value. It is required by some of the
+        //     tensor-value conditions (e.g., STDDEV_GT).
+        tensorConditionGo: Function,
+
+        // Force the ongoing continuation to stop.
+        forceContinuationStop: Function,
+
+        _continueButtonText: {
+          type: String,
+          value: 'Continue...',
+        },
+
+        _continueButtonContinueText: {
+          type: String,
+          value: 'Continue...',
+          readonly: true,
+        },
+
+        _continueButtonStopText: {
+          type: String,
+          value: 'Stop Continuation',
+          readonly: true,
+        },
+
+        _selectedTensorCondition: String,
+
+        _tensorConditionRefValue: {
+          type: Number,
+          value: 0,
+          notify: true,
+        },
+
+        _isRefValueInputHidden: {
+          type: Boolean,
+          value: true,
+          notify: true,
+        }
+      },
+
+      observers: [
+        "_onSelectedTensorConditionChanged(_selectedTensorCondition)",
+      ],
+
+      // Notify this continuation dialog that the continuation action has
+      // stopped, either because it reached the end, or because of forced
+      // stopping.
+      notifyContinuationStop() {
+        this._updateContinueButtonText(false);
+      },
+
+      _openDialog() {
+        this.$.continueDialog.open();
+      },
+
+      _closeDialog() {
+        this.$.continueDialog.close();
+      },
+
+      _continueButtonCallback() {
+        if (this._continueButtonText === this._continueButtonStopText) {
+          this.forceContinuationStop();
+        } else {
+          this._openDialog();
+        }
+      },
+
+      // Update the text of the continue button.
+      // Args:
+      //   active: Whether continuation is currently ongoing.
+      _updateContinueButtonText(active) {
+        this.set(
+            '_continueButtonText',
+            active ? this._continueButtonStopText : this._continueButtonContinueText);
+      },
+
+      _sessionRunGoButtonCallback() {
+        if (this.continueNum > 0) {
+          this.sessionRunGo(this.continueNum);
+          this._updateContinueButtonText(true);
+          this._closeDialog();
+        } else {
+          this.set('continueNum', 1);
+        }
+      },
+
+      _tensorContinueGoButtonCallback() {
+        if (this._selectedTensorCondition == null) {
+          return;
+        }
+        const tensorConditionKey =
+            tf_debugger_dashboard.tensorConditionDescription2Key(this._selectedTensorCondition);
+        if (tensorConditionKey == null) {
+          console.error(
+              'Invalid Tensor Condition name:' + this._selectedTensorCondition);
+        }
+        // Validate that this._tensorConditionRefValue is a number.
+        const refValue = Number(this._tensorConditionRefValue);
+        if (!_.isFinite(refValue)) {
+          this.set('_tensorConditionRefValue', 0);
+          return;
+        }
+        this.tensorConditionGo(tensorConditionKey, refValue);
+        this._updateContinueButtonText(true);
+        this._closeDialog();
+      },
+
+      _onSelectedTensorConditionChanged(selectedTensorCondition) {
+        const tensorConditionKey =
+            tf_debugger_dashboard.tensorConditionDescription2Key(selectedTensorCondition);
+        this.set(
+            '_isRefValueInputHidden',
+            ['INF_OR_NAN', 'INF', 'NAN'].indexOf(tensorConditionKey) !== -1);
+      }
+    });
+  </script>
+</dom-module>
