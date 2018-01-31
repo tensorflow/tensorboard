@@ -218,7 +218,7 @@ function addInteraction(selection, d: render.RenderNodeInfo,
   }
 
   let contextMenuFunction = contextmenu.getMenu(
-    getContextMenu(d.node, sceneElement));
+      sceneElement, getContextMenu(d.node, sceneElement));
   selection
       .on('dblclick',
           d => {
