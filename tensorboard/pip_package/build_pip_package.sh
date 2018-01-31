@@ -17,23 +17,32 @@
 
 set -e
 
+die() {
+  printf >&2 '%s\n' "$1"
+  exit 1
+}
+
 function main() {
   if [ $# -lt 1 ] ; then
-    echo "No destination dir provided"
-    exit 1
+    die "ERROR: no destination dir provided"
   fi
 
   DEST=$1
-  TMPDIR=$(mktemp -d -t tmp.XXXXXXXXXX)
+  TMPDIR=$(mktemp -d -t --suffix _tensorboard_pip_pkg)
+  TMPVENVDIR="${TMPDIR}/venv"
   RUNFILES="bazel-bin/tensorboard/pip_package/build_pip_package.runfiles/org_tensorflow_tensorboard"
+
+  # Check that virtualenv is installed.
+  if [[ -z "$(which virtualenv)" ]]; then
+    die "ERROR: virtualenv is required, but does not appear to be installed."
+  fi
 
   echo $(date) : "=== Using tmpdir: ${TMPDIR}"
 
   bazel build //tensorboard/pip_package:build_pip_package
 
   if [ ! -d bazel-bin/tensorboard ]; then
-    echo "Could not find bazel-bin.  Did you run from the root of the build tree?"
-    exit 1
+    die "ERROR: Could not find bazel-bin.  Did you run from the build root?"
   fi
 
   cp "${RUNFILES}/tensorboard/pip_package/setup.py" "${TMPDIR}"
@@ -43,6 +52,17 @@ function main() {
 
   pushd ${TMPDIR} >/dev/null
   rm -f MANIFEST
+
+  echo $(date) : "=== Activating virtualev ==="
+  virtualenv "${TMPVENVDIR}"
+  export VIRTUAL_ENV="${TMPVENVDIR}"
+  export PATH="${TMPVENVDIR}/bin:${PATH}"
+  unset PYTHON_HOME
+
+  # Require wheel for bdist_wheel command, and setuptools 36.3.0+ so that
+  # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
+  pip install -U wheel setuptools>=36.2.0
+
   echo $(date) : "=== Building python2 wheel in $PWD"
   python setup.py bdist_wheel --python-tag py2 >/dev/null
   echo $(date) : "=== Building python3 wheel in $PWD"
