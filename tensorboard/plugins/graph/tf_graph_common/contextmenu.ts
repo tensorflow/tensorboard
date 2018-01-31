@@ -34,11 +34,32 @@ export interface ContextMenuItem {
 }
 
 /**
+ * Returns the top and left distance of the scene element from the top left
+ * corner of the screen.
+ */
+function getOffset(sceneElement) {
+    let leftDistance = 0;
+    let topDistance = 0;
+    let currentElement = sceneElement;
+    while (currentElement &&
+           currentElement.offsetLeft >= 0 &&
+           currentElement.offsetTop >= 0) {
+        leftDistance += currentElement.offsetLeft - currentElement.scrollLeft;
+        topDistance += currentElement.offsetTop - currentElement.scrollTop;
+        currentElement = currentElement.offsetParent;
+    }
+    return {
+        left: leftDistance,
+        top: topDistance
+    };
+}
+
+/**
  * Returns the event listener, which can be used as an argument for the d3
  * selection.on function. Renders the context menu that is to be displayed
  * in response to the event.
  */
-export function getMenu(menu: ContextMenuItem[]) {
+export function getMenu(sceneElement, menu: ContextMenuItem[]) {
   let menuSelection = d3.select('.context-menu');
   // Close the menu when anything else is clicked.
   d3.select('body').on(
@@ -48,10 +69,11 @@ export function getMenu(menu: ContextMenuItem[]) {
   return function(data, index: number): void {
     // Position and display the menu.
     let event = <MouseEvent>d3.event;
+    const sceneOffset = getOffset(sceneElement);
     menuSelection
       .style('display', 'block')
-      .style('left', (event.layerX + 1) + 'px')
-      .style('top', (event.layerY + 1) + 'px');
+      .style('left', (event.clientX - sceneOffset.left + 1) + 'px')
+      .style('top', (event.clientY - sceneOffset.top + 1) + 'px');
 
     // Stop the event from propagating further.
     event.preventDefault();
