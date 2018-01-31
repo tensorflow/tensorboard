@@ -78,10 +78,8 @@ echo
 
 if [[ "${PY_VERSION}" == 2 ]]; then
   virtualenv -p python "${VENV_TMP_DIR}"
-  TF_NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON2,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.head-cp27-none-linux_x86_64.whl'
 elif [[ "${PY_VERSION}" == 3 ]]; then
   virtualenv -p python3 "${VENV_TMP_DIR}"
-  TF_NIGHTLY_URL='https://ci.tensorflow.org/view/Nightly/job/nightly-matrix-cpu/TF_BUILD_IS_OPT=OPT,TF_BUILD_IS_PIP=PIP,TF_BUILD_PYTHON_VERSION=PYTHON3,label=cpu-slave/lastSuccessfulBuild/artifact/pip_test/whl/tensorflow-1.head-cp34-cp34m-linux_x86_64.whl'
 fi
 
 echo
@@ -110,7 +108,7 @@ echo
 echo "Installing nightly tensorflow pip package."
 echo
 
-pip install "${TF_NIGHTLY_URL}"
+pip install tf-nightly
 
 echo
 echo "Installing the just-built tensorboard pip package"
