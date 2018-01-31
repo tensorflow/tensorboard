@@ -99,6 +99,8 @@ limitations under the License.
       'mousedown': '_handleMouseDown',
     },
     _handleMouseDown(e) {
+      e.preventDefault();
+
       // Start new drag (after ending the previous one if one lingered).
 
       // A drag may linger if for instance the user moused down and then
@@ -107,6 +109,8 @@ limitations under the License.
       this._endDrag();
 
       this._previousMouseMoveCallback = (e) => {
+        e.preventDefault();
+
         // Update the width of the container being resized.
         const deltaPosition =
             this._getPositionRelativeToViewport(e) - this._dragStartPosition;
@@ -119,6 +123,8 @@ limitations under the License.
       };
 
       this._previousMouseUpCallback = (e) => {
+        e.preventDefault();
+
         // Stop listening for relevant events.
         this._endDrag();
       };
