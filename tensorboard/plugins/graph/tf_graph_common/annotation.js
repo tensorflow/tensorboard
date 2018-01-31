@@ -153,7 +153,7 @@ var tf;
                     });
                     if (annotation.annotationType !== graph.render.AnnotationType.SUMMARY &&
                         annotation.annotationType !== graph.render.AnnotationType.CONSTANT) {
-                        selection.on('contextmenu', scene.contextmenu.getMenu(scene.node.getContextMenu(annotation.node, sceneElement)));
+                        selection.on('contextmenu', scene.contextmenu.getMenu(sceneElement, scene.node.getContextMenu(annotation.node, sceneElement)));
                     }
                 }
                 ;

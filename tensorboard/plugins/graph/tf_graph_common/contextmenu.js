@@ -21,11 +21,31 @@ var tf;
             var contextmenu;
             (function (contextmenu) {
                 /**
+                 * Returns the top and left distance of the scene element from the top left
+                 * corner of the screen.
+                 */
+                function getOffset(sceneElement) {
+                    var leftDistance = 0;
+                    var topDistance = 0;
+                    var currentElement = sceneElement;
+                    while (currentElement &&
+                        currentElement.offsetLeft >= 0 &&
+                        currentElement.offsetTop >= 0) {
+                        leftDistance += currentElement.offsetLeft - currentElement.scrollLeft;
+                        topDistance += currentElement.offsetTop - currentElement.scrollTop;
+                        currentElement = currentElement.offsetParent;
+                    }
+                    return {
+                        left: leftDistance,
+                        top: topDistance
+                    };
+                }
+                /**
                  * Returns the event listener, which can be used as an argument for the d3
                  * selection.on function. Renders the context menu that is to be displayed
                  * in response to the event.
                  */
-                function getMenu(menu) {
+                function getMenu(sceneElement, menu) {
                     var menuSelection = d3.select('.context-menu');
                     // Close the menu when anything else is clicked.
                     d3.select('body').on('click.context', function () { menuSelection.style('display', 'none'); });
@@ -34,10 +54,11 @@ var tf;
                         var _this = this;
                         // Position and display the menu.
                         var event = d3.event;
+                        var sceneOffset = getOffset(sceneElement);
                         menuSelection
                             .style('display', 'block')
-                            .style('left', (event.layerX + 1) + 'px')
-                            .style('top', (event.layerY + 1) + 'px');
+                            .style('left', (event.clientX - sceneOffset.left + 1) + 'px')
+                            .style('top', (event.clientY - sceneOffset.top + 1) + 'px');
                         // Stop the event from propagating further.
                         event.preventDefault();
                         event.stopPropagation();

@@ -202,7 +202,7 @@ var tf;
                         selection.attr('pointer-events', 'none');
                         return;
                     }
-                    var contextMenuFunction = scene.contextmenu.getMenu(getContextMenu(d.node, sceneElement));
+                    var contextMenuFunction = scene.contextmenu.getMenu(sceneElement, getContextMenu(d.node, sceneElement));
                     selection
                         .on('dblclick', function (d) {
                         sceneElement.fire('node-toggle-expand', { name: d.node.name });
