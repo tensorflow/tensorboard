@@ -343,6 +343,14 @@ module tf.graph.op {
    * Tensorflow operation that is valid for the TPU.
    */
   export function opValid(opNode: OpNode): boolean {
+    // Function library nodes are generally for internal use.
+    if (opNode.name.search(FUNCTION_LIBRARY_NODE_PREFIX) == 0) {
+      return true;
+    }
+    // Nodes that lack op types should be ignored.
+    if (!opNode.op) {
+      return true;
+    }
     // If assigned a device that is not TPU-related assume op is valid.
     if (opNode.device && isNotTpuOp(opNode.device)) {
       return true;
