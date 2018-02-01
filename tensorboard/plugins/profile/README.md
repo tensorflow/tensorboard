@@ -11,7 +11,9 @@
 
 ## Overview Page
   The Overview Page gives an overview of the performance of the workload
-  running on the TPU. It has five sections:
+  running on the TPU. It has five sections as shown in the following figure:
+
+  ![Overview Page](docs/overview-page.png)
 
   * Performance Summary, which includes:
 
@@ -39,8 +41,11 @@
 
 ## Trace Viewer
   Trace Viewer contains a timeline that shows various operations in your
-  TensorFlow model that the TPUs and host machine executed over time. The
-  Timeline pane contains the following elements:
+  TensorFlow model that the TPUs and host machine executed over time.
+
+  ![Trace Viewer](docs/trace-viewer.png)
+
+  The Timeline pane contains the following elements:
 
   * A top bar, which contains various auxiliary controls.
   * A time axis, which shows time relative to the beginning of the trace.
@@ -63,8 +68,22 @@
   * The most time consuming operation.
   * Details of each op, including shape, XLA expression and padding.
 
+  ![Op Profile](docs/op-profile.png)
+
 ## Input Pipeline Analyzer
   Input pipeline analyzer tries to answer two questions:
 
   * Is your model input bound?
   * If it is, why?
+
+  ![Input Pipeline](docs/input-pipeline.png)
+
+  The analysis contains three sections:
+  * Summary, which tells you the overall input pipeline analysis: whether
+  your application is input bound and by how much.
+  * Device-side analysis, which shows you the detailed device-side analysis
+  results, including the device step time and how much is spent waiting for
+  the input data.
+  * Host-side analysis, which shows you the detailed analysis on the host side,
+  including a breakdown of input processing time on the host, and a tabular
+  view of details for each input operation.
