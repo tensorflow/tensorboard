@@ -31,13 +31,12 @@ REQUIRED_PACKAGES = [
     'markdown >= 2.6.8',
     'bleach == 1.5.0',
 
-    # futures is a backport of the concurrent.futures module added in
-    # python 3.2
-    'futures >= 3.1.1;python_version < "3.2"',
+    # futures is a backport of the python 3.2+ concurrent.futures module
+    'futures >= 3.1.1; python_version < "3"',
 
     # python3 specifically requires wheel 0.26
-    'wheel;python_version < "3"',
-    'wheel >= 0.26;python_version >= "3"',
+    'wheel; python_version < "3"',
+    'wheel >= 0.26; python_version >= "3"',
 ]
 
 CONSOLE_SCRIPTS = [
@@ -66,6 +65,8 @@ setup(
             'webfiles.zip',
         ],
     },
+    # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).
+    python_requires='>= 2.7, != 3.0.*, != 3.1.*',
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
     # PyPI package information.
