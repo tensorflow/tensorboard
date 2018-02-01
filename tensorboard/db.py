@@ -194,7 +194,7 @@ class Schema(object):
     with self._cursor() as c:
       c.execute('''\
         CREATE UNIQUE INDEX IF NOT EXISTS ExperimentsNameIndex
-        ON Experiments (name)
+        ON Experiments (experiment_name)
       ''')
 
   def create_runs_table(self):
@@ -245,7 +245,7 @@ class Schema(object):
     with self._cursor() as c:
       c.execute('''\
         CREATE UNIQUE INDEX IF NOT EXISTS RunsNameIndex
-        ON Runs (experiment_id, name)
+        ON Runs (experiment_id, run_name)
       ''')
 
   def create_tags_table(self):
@@ -290,7 +290,7 @@ class Schema(object):
     with self._cursor() as c:
       c.execute('''\
         CREATE UNIQUE INDEX IF NOT EXISTS TagsNameIndex
-        ON Tags (run_id, name)
+        ON Tags (run_id, tag_name)
       ''')
 
   def create_tensors_table(self):
