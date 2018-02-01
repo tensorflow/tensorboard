@@ -59,7 +59,7 @@ function main() {
   export PATH="${TMPVENVDIR}/bin:${PATH}"
   unset PYTHON_HOME
 
-  # Require wheel for bdist_wheel command, and setuptools 36.3.0+ so that
+  # Require wheel for bdist_wheel command, and setuptools 36.2.0+ so that
   # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
   pip install -U wheel setuptools>=36.2.0
 
