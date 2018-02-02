@@ -1,19 +1,21 @@
 # The Profile Plugin Dashboard
 
-  The TensorBoard Profile Dashboard includes a suite of cloud TPU tools. These
-  tools help you understand, debug and optimize TensorFlow programs to run on
-  cloud TPUs.
+The TensorBoard Profile Dashboard includes a suite of TPU tools. These
+tools help you understand, debug and optimize TensorFlow programs to run on
+TPUs.
 
 ## Prerequisites
-  Before you can use the tools in Profile Dashboard, you must have access to
-  google cloud TPUs. You also need to capture trace information while your model
-  is running.
+
+Before you can use the tools in Profile Dashboard, you must have access to
+Google Cloud TPUs. You also need to capture trace information while your model
+is running.
 
 ## Overview Page
-  The Overview Page gives an overview of the performance of the workload
-  running on the TPU. It has five sections as shown in the following figure:
 
-  ![Overview Page](docs/overview-page.png)
+The Overview Page gives an overview of the performance of the workload
+running on the TPU. It has five sections as shown in the following figure:
+
+![Overview Page](docs/overview-page.png)
 
   * Performance Summary, which includes:
 
@@ -35,32 +37,39 @@
     - The number of TPU cores
     - The training batch size
     - Job information (both the build command and run command)
-    - Recommendation for Next Steps, which first reports if the workload is
+
+  * Recommendation for Next Steps, which first reports if the workload is
     input bounded. Then it suggests the next tools for reducing the bottleneck
     (depending on whether it is the input time, the TPU time, or both).
 
 ## Trace Viewer
-  Trace Viewer contains a timeline that shows various operations in your
-  TensorFlow model that the TPUs and host machine executed over time.
 
-  ![Trace Viewer](docs/trace-viewer.png)
+Trace Viewer contains a timeline that shows various operations in your
+TensorFlow model that the TPUs and host machine executed over time.
 
-  The Timeline pane contains the following elements:
+![Trace Viewer](docs/trace-viewer.png)
 
-  * A top bar, which contains various auxiliary controls.
-  * A time axis, which shows time relative to the beginning of the trace.
-  * Section and track labels. Each section contains multiple tracks and
+The Timeline pane contains the following elements:
+
+  1. A top bar, which contains various auxiliary controls.
+  1. A time axis, which shows time relative to the beginning of the trace.
+  1. Section and track labels. Each section contains multiple tracks and
   has a triangle on the left that you can click to expand and collapse the
-  section. There is one section for every processing element in the system.
-  Sections and tracks will be explained in more detail below.
-  * A tool selector, which contains various tools for interacting with the
-  Trace Viewer. Events. These show the time during which an operation was
+  section. There is one section for each TPU node and an additional section
+  for threads running on the host machine's CPU, labeled "CPU Threads".
+  1. A tool selector, which contains various tools for interacting with the
+  Trace Viewer.
+  1. Events. These show the time during which an operation was
   executed or the duration of meta-events, such as training steps.
+  1. A vertical tab bar. This does not have a useful purpose for TPUs. It exists
+  because Trace Viewer is a general purpose tool provided by Chrome that is used
+  for a variety of performance analysis tasks. 
 
 ## Op Profile
-  Op Profile tool displays the performance statistics of
-  [XLA](https://www.tensorflow.org/performance/xla) operations executed during
-  the profiling period. Op Profile shows:
+
+Op Profile tool displays the performance statistics of
+[XLA](https://www.tensorflow.org/performance/xla) operations executed during
+the profiling period. Op Profile shows:
 
   * How your application uses the TPU. The TPU FLOPS utilization reported is
     defined as the measured number of floating point operations per second
@@ -68,17 +77,18 @@
   * The most time consuming operation.
   * Details of each op, including shape, XLA expression and padding.
 
-  ![Op Profile](docs/op-profile.png)
+![Op Profile](docs/op-profile.png)
 
 ## Input Pipeline Analyzer
-  Input pipeline analyzer tries to answer two questions:
+
+Input pipeline analyzer tries to answer two questions:
 
   * Is your model input bound?
   * If it is, why?
 
-  ![Input Pipeline](docs/input-pipeline.png)
+![Input Pipeline](docs/input-pipeline.png)
 
-  The analysis contains three sections:
+The analysis contains three sections:
   * Summary, which tells you the overall input pipeline analysis: whether
   your application is input bound and by how much.
   * Device-side analysis, which shows you the detailed device-side analysis
