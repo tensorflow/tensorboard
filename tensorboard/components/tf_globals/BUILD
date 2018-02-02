@@ -8,7 +8,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_globals",
     srcs = [
-        "globals.js",
+        "globals.ts",
         "tf-globals.html",
     ],
     path = "/tf-globals",

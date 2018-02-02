@@ -7,8 +7,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_color_scale",
     srcs = [
-        "colorScale.js",
-        "palettes.js",
+        "colorScale.ts",
+        "palettes.ts",
         "tf-color-scale.html",
     ],
     path = "/tf-color-scale",

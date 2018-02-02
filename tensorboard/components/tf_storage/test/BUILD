@@ -10,7 +10,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "test",
     srcs = [
-        "storageTests.js",
+        "storageTests.ts",
         "tests.html",
     ],
     path = "/tf-storage/test",

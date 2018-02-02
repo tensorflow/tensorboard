@@ -8,7 +8,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_tensorboard",
     srcs = [
-        "autoReloadBehavior.js",
+        "autoReloadBehavior.ts",
         "style.html",
         "tf-tensorboard.html",
     ],
@@ -39,7 +39,7 @@ tf_web_library(
     name = "registry",
     srcs = [
         "registry.html",
-        "registry.js",
+        "registry.ts",
     ],
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],

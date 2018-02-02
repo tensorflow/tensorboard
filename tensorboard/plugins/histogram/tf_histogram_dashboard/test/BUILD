@@ -11,7 +11,7 @@ tf_web_library(
     name = "test",
     srcs = [
         "tests.html",
-        "histogramTests.js",
+        "histogramTests.ts",
     ] + glob(["data/**"]),
     path = "/tf-histogram-dashboard/test",
     deps = [

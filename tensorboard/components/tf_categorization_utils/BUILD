@@ -8,7 +8,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_categorization_utils",
     srcs = [
-        "categorizationUtils.js",
+        "categorizationUtils.ts",
         "tf-categorization-utils.html",
         "tf-category-pane.html",
         "tf-tag-filterer.html",
