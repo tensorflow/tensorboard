@@ -25,7 +25,7 @@ limitations under the License.
     </div>
   </template>
   <style>
-    :host[resizer-identifier] {
+    :host[_resizer-identifier] {
       position: absolute;
       background: #ccc;
       user-select: none;
@@ -54,6 +54,13 @@ limitations under the License.
       left: 50%;
       font-size: 5px;
       transform: translate(-50%, -50%);
+    }
+
+    /** This block prevents the bars rotator from having a height that is 
+        the entire viewport, thus occluding it and giving it an undesired cursor
+        value. */
+    .bars-rotator {
+      display: inline-block;
     }
 
     :host[is-horizontal] .bars-rotator {
@@ -87,15 +94,21 @@ limitations under the License.
         value: false,
         reflectToAttribute: true,  // for CSS
       },
-      resizerIdentifier {
+      // We explicitly use an identifier when applying styles to the host since,
+      // unfortunately, the graph explorer imports all styles within the page
+      // into it (including styles associated with the :host selector within
+      // various components).
+      _resizerIdentifier: {
         type: Boolean,
         value: true,
         readOnly: true,
+        reflectToAttribute: true,  // for CSS
       },
       _isVertical: {
         type: Boolean,
         computed: '_computeIsVertical(isHorizontal)',
         reflectToAttribute: true,  // for CSS
+        readOnly: true,
       },
       // The pixel position at the start of the previous drag.
       _dragStartPosition: Number,
