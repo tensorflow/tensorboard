@@ -109,7 +109,7 @@ def _sync_plugins(names, connection):
   the_whole_table = {}  # type: dict[str, int]
   names = set(names)
   max_id = 0
-  for id_, name in connection.execute('SELECT plugin_id, name FROM Plugins'):
+  for id_, name in connection.execute('SELECT plugin_id, plugin_name FROM Plugins'):
     if id_ > max_id:
       max_id = id_
     the_whole_table[name] = id_
@@ -121,7 +121,7 @@ def _sync_plugins(names, connection):
     new_rows.append((max_id, name))
   if new_rows:
     connection.executemany(
-        'INSERT INTO Plugins (plugin_id, name) VALUES (?, ?)',
+        'INSERT INTO Plugins (plugin_id, plugin_name) VALUES (?, ?)',
         new_rows)
   return the_whole_table
 
