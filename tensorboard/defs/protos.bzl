@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@protobuf//:protobuf.bzl", "py_proto_library")
+load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 
-def tb_proto_library(name, srcs = [], visibility = []):
+def tb_proto_library(name, srcs=None, visibility=None, testonly=None):
   py_proto_library(
-    name = name + "_py_pb2",
-    srcs = srcs,
-    srcs_version = "PY2AND3",
-    deps = ["@protobuf//:protobuf_python"],
-    protoc = "@protobuf//:protoc",
-    visibility = visibility,
-    default_runtime = "@protobuf//:protobuf_python",
-    testonly = 0,
+      name = name + "_py_pb2",
+      srcs = srcs,
+      srcs_version = "PY2AND3",
+      deps = ["@com_google_protobuf//:protobuf_python"],
+      protoc = "@com_google_protobuf//:protoc",
+      visibility = visibility,
+      default_runtime = "@com_google_protobuf//:protobuf_python",
+      testonly = testonly,
   )
