@@ -109,7 +109,7 @@ def _sync_plugins(names, connection):
   the_whole_table = {}  # type: dict[str, int]
   names = set(names)
   max_id = 0
-  for id_, name in connection.execute('SELECT plugin_id, plugin_name FROM Plugins'):
+  for id_, name in connection.execute('SELECT plugin_id, name FROM Plugins'):
     if id_ > max_id:
       max_id = id_
     the_whole_table[name] = id_
@@ -121,7 +121,7 @@ def _sync_plugins(names, connection):
     new_rows.append((max_id, name))
   if new_rows:
     connection.executemany(
-        'INSERT INTO Plugins (plugin_id, plugin_name) VALUES (?, ?)',
+        'INSERT INTO Plugins (plugin_id, name) VALUES (?, ?)',
         new_rows)
   return the_whole_table
 
@@ -363,7 +363,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Plugins (
           plugin_id INTEGER PRIMARY KEY,
-          plugin_name VARCHAR(255) NOT NULL
+          name VARCHAR(255) NOT NULL
         )
       ''')
 
@@ -372,7 +372,7 @@ class Schema(object):
     with self._cursor() as c:
       c.execute('''\
         CREATE UNIQUE INDEX IF NOT EXISTS PluginsNameIndex
-        ON Plugins (plugin_name)
+        ON Plugins (name)
       ''')
 
   def create_event_logs_table(self):
