@@ -184,7 +184,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Experiments (
           experiment_id INTEGER PRIMARY KEY,
-          name VARCHAR(500) NOT NULL,
+          experiment_name VARCHAR(500) NOT NULL,
           description TEXT NOT NULL
         )
       ''')
@@ -226,7 +226,7 @@ class Schema(object):
           rowid INTEGER PRIMARY KEY,
           run_id INTEGER NOT NULL,
           experiment_id INTEGER NOT NULL,
-          name VARCHAR(1900) NOT NULL
+          run_name VARCHAR(1900) NOT NULL
         )
       ''')
 
@@ -272,7 +272,7 @@ class Schema(object):
           tag_id INTEGER NOT NULL,
           run_id INTEGER NOT NULL,
           plugin_id INTEGER NOT NULL,
-          name VARCHAR(500) NOT NULL,
+          tag_name VARCHAR(500) NOT NULL,
           display_name VARCHAR(500),
           summary_description TEXT
         )
@@ -363,7 +363,7 @@ class Schema(object):
       c.execute('''\
         CREATE TABLE IF NOT EXISTS Plugins (
           plugin_id INTEGER PRIMARY KEY,
-          name VARCHAR(255) NOT NULL
+          plugin_name VARCHAR(255) NOT NULL
         )
       ''')
 
@@ -372,7 +372,7 @@ class Schema(object):
     with self._cursor() as c:
       c.execute('''\
         CREATE UNIQUE INDEX IF NOT EXISTS PluginsNameIndex
-        ON Plugins (name)
+        ON Plugins (plugin_name)
       ''')
 
   def create_event_logs_table(self):
