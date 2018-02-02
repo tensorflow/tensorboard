@@ -1,0 +1,179 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+
+<!--
+  Lets the user resize a container either vertically or horizontally.
+-->
+<dom-module id="tf-debugger-resizer">
+  <template>
+    <div class="bars">
+      <div class="bars-rotator">
+        <span class="bars-text">| |</span>
+      </div>
+    </div>
+  </template>
+  <style>
+    :host[_resizer-identifier] {
+      position: absolute;
+      background: #ccc;
+      user-select: none;
+    }
+
+    :host[is-horizontal] {
+      cursor: row-resize;
+      height: 10px;
+      left: 0;
+      right: 0;
+    }
+
+    :host[_is-vertical] {
+      cursor: col-resize;
+      right: -15px;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+    }
+
+    .bars {
+      width: 80%;
+      text-align: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      font-size: 5px;
+      transform: translate(-50%, -50%);
+    }
+
+    /** This block prevents the bars rotator from having a height that is 
+        the entire viewport, thus occluding it and giving it an undesired cursor
+        value. */
+    .bars-rotator {
+      display: inline-block;
+    }
+
+    :host[is-horizontal] .bars-rotator {
+      transform: rotate(90deg);
+    }
+
+    .bars-text {
+      transform: scaleY(15);
+      white-space: nowrap;
+      display: block;
+      font-weight: 400;
+    }
+  </style>
+  <script>
+  Polymer({
+    is: "tf-debugger-resizer",
+    properties: {
+      // The current width/height (depends on whether the dragger is vertical or
+      // horizontal) of the container we are resizing.
+      currentLength: {
+        type: Number,
+        notify: true,
+      },
+      minLength: Number,
+      maxLength: Number,
+      // If this is true, the dragger widget looks horizontal (not vertical).
+      // Specifically, if horizontal, the user will be able to vary the height
+      // of the container (instead of its width).
+      isHorizontal: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,  // for CSS
+      },
+      // We explicitly use an identifier when applying styles to the host since,
+      // unfortunately, the graph explorer imports all styles within the page
+      // into it (including styles associated with the :host selector within
+      // various components).
+      _resizerIdentifier: {
+        type: Boolean,
+        value: true,
+        readOnly: true,
+        reflectToAttribute: true,  // for CSS
+      },
+      _isVertical: {
+        type: Boolean,
+        computed: '_computeIsVertical(isHorizontal)',
+        reflectToAttribute: true,  // for CSS
+        readOnly: true,
+      },
+      // The pixel position at the start of the previous drag.
+      _dragStartPosition: Number,
+      // The length of the container being resized at the start of the previous
+      // drag.
+      _dragStartLength: Number,
+      _previousMouseMoveCallback: Object,
+      _previousMouseUpCallback: Object,
+    },
+    listeners: {
+      'mousedown': '_handleMouseDown',
+    },
+    _handleMouseDown(e) {
+      e.preventDefault();
+
+      // Start new drag (after ending the previous one if one lingered).
+
+      // A drag may linger if for instance the user moused down and then
+      // moved the mouse outside of the browser window, after which the
+      // browser would fail to detect the subsequent mouse up.
+      this._endDrag();
+
+      this._previousMouseMoveCallback = (e) => {
+        e.preventDefault();
+
+        // Update the width of the container being resized.
+        const deltaPosition =
+            this._getPositionRelativeToViewport(e) - this._dragStartPosition;
+
+        let currentLength = this._dragStartLength + deltaPosition;
+        currentLength = Math.max(currentLength, this.minLength);
+        currentLength = Math.min(currentLength, this.maxLength);
+
+        this.set('currentLength', currentLength);
+      };
+
+      this._previousMouseUpCallback = (e) => {
+        e.preventDefault();
+
+        // Stop listening for relevant events.
+        this._endDrag();
+      };
+      this.set('_dragStartPosition', this._getPositionRelativeToViewport(e));
+      this.set('_dragStartLength', this.currentLength);
+
+      window.addEventListener('mouseup', this._previousMouseUpCallback, false);
+      window.addEventListener(
+          'mousemove', this._previousMouseMoveCallback, false);
+    },
+    _getPositionRelativeToViewport(mouseEvent) {
+      return this.isHorizontal ? mouseEvent.clientY : mouseEvent.clientX;
+    },
+    _endDrag() {
+      window.removeEventListener(
+          'mousemove', this._previousMouseMoveCallback, false);
+      this._previousMouseMoveCallback = null;
+      window.removeEventListener(
+          'mouseup', this._previousMouseUpCallback, false);
+      this._previousMouseUpCallback = null;
+    },
+    _computeIsVertical(isHorizontal) {
+      return !isHorizontal;
+    },
+  });
+  </script>
+</dom-module>
