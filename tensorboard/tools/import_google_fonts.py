@@ -113,7 +113,7 @@ def get_mirror_url(original):
 
 def get_css(m):
   url = m.group('url')
-  path = os.path.dirname(FLAGS.path) + url[url.rindex('/'):]
+  path = os.path.dirname(FLAGS.path).lstrip("/") + url[url.rindex('/'):]
   return m.group('css').replace(url, path)
 
 
