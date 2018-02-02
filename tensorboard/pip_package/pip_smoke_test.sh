@@ -127,7 +127,12 @@ echo
 # Check that we can now use TensorBoard's public python APIs as installed with
 # the pip package. To do this we must cd away from the bazel workspace directory
 # to one that doesn't have a local 'tensorboard' python module hierarchy.
-TEST_API_CALL="import tensorboard as tb; tb.summary.scalar_pb('test', 42)"
+TEST_API_CALL="
+import tensorboard as tb
+tb.summary.scalar_pb('test', 42)
+from tensorboard.plugins.projector import visualize_embeddings
+"
+
 echo "  python>>> $TEST_API_CALL"
 echo
 (cd "${VENV_TMP_DIR}" && python -c "$TEST_API_CALL")
