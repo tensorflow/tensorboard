@@ -611,8 +611,6 @@ export function humanizeHealthPillStat(stat, shouldRoundOnesDigit) {
   if (shouldRoundOnesDigit) {
     return stat.toFixed(0);
   }
-
-  // TODO(cais): Case in which stat is inf or nan.
   if (Math.abs(stat) >= 1) {
     return stat.toFixed(1);
   }

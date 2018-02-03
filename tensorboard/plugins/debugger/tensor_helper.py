@@ -146,7 +146,6 @@ def array_to_base64_png(array):
     # Finite subset is not empty.
     minval = np.min(array[finite_indices])
     maxval = np.max(array[finite_indices])
-    # TODO(cais): Deal with the case in which minval == maxval.
     scaled = np.array((array - minval) / (maxval - minval) * 255,
                       dtype=np.uint8)
     rgb = np.repeat(np.expand_dims(scaled, -1), IMAGE_COLOR_CHANNELS, axis=-1)
