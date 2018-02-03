@@ -181,6 +181,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "health_pill_calc_test",
+    size = "small",
+    srcs = ["health_pill_calc_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":health_pill_calc",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+
 py_library(
     name = "debugger_server_lib",
     srcs = ["debugger_server_lib.py"],

@@ -612,6 +612,7 @@ export function humanizeHealthPillStat(stat, shouldRoundOnesDigit) {
     return stat.toFixed(0);
   }
 
+  // TODO(cais): Case in which stat is inf or nan.
   if (Math.abs(stat) >= 1) {
     return stat.toFixed(1);
   }
@@ -799,14 +800,18 @@ export function addHealthPill(
   }
 
   let statsSvg = document.createElementNS(SVG_NAMESPACE, 'text');
-  const minString =
-      humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
-  const maxString =
-      humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
-  if (totalCount > 1) {
-    statsSvg.textContent = minString + ' ~ ' + maxString;
+  if (Number.isFinite(numericStats.min) && Number.isFinite(numericStats.max)) {
+    const minString =
+        humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
+    const maxString =
+        humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
+    if (totalCount > 1) {
+      statsSvg.textContent = minString + ' ~ ' + maxString;
+    } else {
+      statsSvg.textContent = minString;
+    }
   } else {
-    statsSvg.textContent = minString;
+    statsSvg.textContent = '(No finite elements)';
   }
   statsSvg.classList.add('health-pill-stats');
   if (textXOffset == null) {
