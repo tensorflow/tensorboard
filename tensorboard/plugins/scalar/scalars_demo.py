@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os.path
+import random
+import string
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
@@ -67,8 +69,7 @@ def run(logdir, run_name,
                               name='temperature')
     summary.op('current', temperature,
                display_name='Temperature',
-               description='The temperature of the object under '
-               'simulation, in Kelvins.')
+               description='some random description: ' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5)))
 
     # Compute how much the object's temperature differs from that of its
     # environment, and track this, too: likewise, as
