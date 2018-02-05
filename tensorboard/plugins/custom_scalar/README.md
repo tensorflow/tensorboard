@@ -4,10 +4,10 @@
 
 The *custom* scalar dashboard lets users
 
-1. Create line charts with custom combinations of runs and tags by assigning
+* Create line charts with custom combinations of runs and tags by assigning
 each chart a list of regular expressions for tags.
-2. Create margin plots (for visualizing confidence intervals).
-3. Lay out the dashboard in a customized way.
+* Create margin plots (for visualizing confidence intervals).
+* Lay out the dashboard in a customized way.
 
 To use this dashboard, users first collect scalar data and then lay out the UI.
 
@@ -78,9 +78,9 @@ scalar data and then laying out the dashboard in a customized way.
 
 The example layout contains both multi-line charts and margin plots.
 
-## The Dashboard UI
+## Example of the Custom Scalar Dashboard UI
 
-The above logic produces this custom scalar dashboard.
+The logic within the demo produces this custom scalar dashboard.
 
 ![Dashboard for demo code](docs/sample_code_dashboard.png)
 
