@@ -87,14 +87,27 @@ def calc_health_pill(tensor):
 
   finite_subset = tensor[
       np.logical_and(np.logical_not(nan_mask), np.logical_not(inf_mask))]
-  # Minimum of the non-NaN non-Inf elements.
-  health_pill[8] = float(np.min(finite_subset))
-  # Maximum of the non-NaN non-Inf elements.
-  health_pill[9] = float(np.max(finite_subset))
-  # Mean of the non-NaN non-Inf elements.
-  health_pill[10] = float(np.mean(finite_subset))
-  # Variance of the non-NaN non-Inf elements.
-  health_pill[11] = float(np.var(finite_subset))
+  if np.size(finite_subset):
+    # Finite subset is not empty.
+    # Minimum of the non-NaN non-Inf elements.
+    health_pill[8] = float(np.min(finite_subset))
+    # Maximum of the non-NaN non-Inf elements.
+    health_pill[9] = float(np.max(finite_subset))
+    # Mean of the non-NaN non-Inf elements.
+    health_pill[10] = float(np.mean(finite_subset))
+    # Variance of the non-NaN non-Inf elements.
+    health_pill[11] = float(np.var(finite_subset))
+  else:
+    # If no finite element exists:
+    # Set minimum to +inf.
+    health_pill[8] = np.inf
+    # Set maximum to -inf.
+    health_pill[9] = -np.inf
+    # Set mean to NaN.
+    health_pill[10] = np.nan
+    # Set variance to NaN.
+    health_pill[11] = np.nan
+
   # DType encoded as a number.
   # TODO(cais): Convert numpy dtype to corresponding tensorflow dtype enum.
   health_pill[12] = -1.0
