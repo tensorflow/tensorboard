@@ -325,11 +325,20 @@ If you need access to the full dataset, you can read the event files that
 TensorBoard consumes by using the [`summary_iterator`](https://github.com/tensorflow/tensorflow/blob/e7f333b5f8b3c53b21d149d8d14c0cebbde431aa/tensorflow/python/summary/summary_iterator.py#L313)
 method.
 
+### Can I customize which lines appear in a plot?
 
-### Can I overlap multiple plots?
+Using the [custom scalars plugin](plugins/custom_scalar), you can create 
+scalar plots with lines for custom run-tag pairs.
 
-Right now, you can overlap plots only if they are from different runs, and both
-have the same tag name.
+However, within the original scalars dashboard, each scalar plot contains
+lines for a single tag: Each line is asssociated with a run.
+
+### Can I visualize margins above and below lines?
+
+Margin plots (that visualize lower and upper bounds) may be created with the 
+[custom scalars plugin](plugins/custom_scalar).
+
+The original scalars plugin does not support visualizing margins.
 
 ### Can I create scatterplots (or other custom plots)?
 
