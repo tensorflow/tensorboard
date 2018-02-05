@@ -323,9 +323,19 @@ limitations under the License.
       .buttons-container {
         padding: 20px 0;
       }
-      .tensor-data {
-        overflow: auto;
+      #tensor-data {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
         padding: 20px 0;
+      }
+      #tensorDataSummary {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
       }
       #top-right-quadrant {
         height: 66%;
@@ -1330,6 +1340,7 @@ limitations under the License.
         this.$$('#center-content').style.width = contentWidth + 'px';
         const height = topRightQuadrantHeight - this._resizerWidth;
         this.$$('#top-right-quadrant').style.height = height + 'px';
+        this.$$('#tensor-data').style.top = topRightQuadrantHeight + 'px';
       },
       _leftPaneWidthObserver: tf_storage.getNumberObserver(
           '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
