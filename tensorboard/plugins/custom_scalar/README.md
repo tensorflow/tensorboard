@@ -82,7 +82,7 @@ The example layout contains both multi-line charts and margin plots.
 
 The logic within the demo produces this custom scalar dashboard.
 
-![Dashboard for demo code](docs/sample_code_dashboard.png)
+![Dashboard for demo code](docs/demo_code_dashboard.png)
 
 Note that the layout mirrors the `layout_pb2.Layout` proto that we had passed to
 the `summary_lib.custom_scalar_pb` method. Specifically, we have 2 categories:
