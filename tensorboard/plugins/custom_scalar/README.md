@@ -6,7 +6,7 @@ The *custom* scalar dashboard lets users
 
 * Create line charts with custom combinations of runs and tags by assigning
 each chart a list of regular expressions for tags.
-* Create margin plots (for visualizing confidence intervals).
+* Create margin charts (for visualizing confidence intervals).
 * Lay out the dashboard in a customized way.
 
 To use this dashboard, users first collect scalar data and then lay out the UI.
@@ -76,7 +76,7 @@ to change the layout over time.
 See [custom_scalar_demo.py](custom_scalar_demo.py) for an example of collecting
 scalar data and then laying out the dashboard in a customized way.
 
-The example layout contains both multi-line charts and margin plots.
+The example layout contains both multi-line charts and margin charts.
 
 ## Example of the Custom Scalar Dashboard UI
 
@@ -93,15 +93,8 @@ obtained by the regular expression `r'loss.*'`. Because the 2 tags are for the
 same run, the 2 lines differ in markers (One uses squares, while the other uses
 diamonds.) to be distinct from each other. Color still encodes the run.
 
-The baz chart is a margin plot. Zoom in (by dragging a rectangle) or hover over
-points to view margin values. Lines within the margin plot may leave the
-visualized margins because the primary lines are smoothened across time (but the
-margins are not smoothened because smoothing margins might not make statistical
-sense).
-
-![Points lie outside of bounds](docs/line_leaves_bounds.png)
-
-To instead keep lines within bounds, set smoothing to 0 within the menu.
+The baz chart is a margin chart. Zoom in (by dragging a rectangle) or hover over
+points to view margin values. Smoothing does not affect margin charts.
 
 If we expand the "trig functions" category, we find that lines for sine and
 cosine are within one chart, and the line for tangent resides in a separate one
