@@ -38,7 +38,7 @@ Initially, a dialog may indicate that the dashboard is waiting on a session run 
 
 The model must establish a 2-way gRPC connection with TensorBoard (via the debugger port specified earlier).
 
-To do that, construct a `TensorBoardDebugWrapperSession`. Subsequently, that wrapper session will issue [gRPC](https://grpc.io/docs/guides/) messages to TensorBoard that contain data for debugging.
+To do that, construct a [`TensorBoardDebugWrapperSession`](https://www.tensorflow.org/api_docs/python/tfdbg/TensorBoardDebugWrapperSession). Subsequently, that wrapper session will issue [gRPC](https://grpc.io/docs/guides/) messages to TensorBoard that contain data for debugging.
 
 The constructor accepts these parameters.
 
@@ -56,9 +56,9 @@ sess.run(my_fetches)
 
 ## Other Ways to Instrument Models
 
-Sometimes, the TensorFlow session may not be directly accessible. 
+Sometimes, the TensorFlow session may not be directly accessible. For projects that use tflearn's `Estimator`s, `Experiment`s, and `MonitoredSession`s, users can instrument code with the (`TensorBoardDebugHook`)[https://www.tensorflow.org/api_docs/python/tfdbg/TensorBoardDebugHook].
 
-To debug models built atop the Keras or TF-Slim APIs, refer to [documentation on the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger).
+To debug models built atop the Keras or TF-Slim API, refer to [documentation on the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger).
 
 # Selecting Nodes
 
@@ -153,9 +153,15 @@ While execution occurs, visualizations within the tensor value cards update, let
 
 ### Slicing Tensors
 
-Within each card displaying a tensor value, the user can slice the tensor (via  [numpy-style slicing](https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html)).
+Within each card displaying a tensor value, the user can slice the tensor (via  [numpy-style slicing](https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html)):
+
+![Input boxes for slicing tensors](images/slicing_input_boxes.png)
 
 For example, suppose a tensor has a shape of (500, 100), applying a slicing of [::5, :2] will slicing the tensor every 5 indices along the first dimension and take only the first two indices along the second dimension.
+
+#### Slicing based on Time (Tensor Value History)
+
+For each tensor, the time axis (history of the tensor's execution) is treated as an 1D array. Numpy-style slicing can be applied to time. For example, the default slicing of `-1` selects for the most recent value. However, if the user changes that slicing parameter to `:`, the full history of the tensor will be shown (and the rank of the tensor being visualized is increased by 1).
 
 # Limitations
 
