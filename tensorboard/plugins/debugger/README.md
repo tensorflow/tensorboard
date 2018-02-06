@@ -22,8 +22,7 @@ This command demonstrates how to set the debugger port to 6064.
 tensorboard \
     --logdir ~/project_foo/model_bar_logdir \
     --port 6006 \
-    --debugger_port 6064 \
-;
+    --debugger_port 6064
 ```
 
 ## Navigating to TensorBoard
@@ -58,11 +57,13 @@ sess.run(my_fetches)
 
 Sometimes, the TensorFlow session may not be directly accessible. For projects that use tflearn's `Estimator`s, `Experiment`s, and `MonitoredSession`s, users can instrument code with the (`TensorBoardDebugHook`)[https://www.tensorflow.org/api_docs/python/tfdbg/TensorBoardDebugHook].
 
-To debug models built atop the Keras or TF-Slim API, refer to [documentation on the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger).
+To debug models built atop other high-level APIs such as Keras and TF-Slim,
+refer to [documentation on the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger).
 
 # Selecting Nodes
 
-After nodes in the graph are selected, the debugger dashboard will pause runs at those nodes, enabling users to examine node outputs.
+After nodes in the graph are selected, the debugger dashboard will pause runs at those nodes,
+enabling users to examine node outputs.
 
 ## The Node List
 
@@ -72,7 +73,9 @@ Nodes can be selected via the the node list on the top left:
 
 Toggling a checkbox next to an entire scope selects or deselects all nodes under the scope. The checkbox for a scope is orange if some but not all of the nodes within it are selected.
 
-The nodes shown in the list may be filtered by regex based on node name or op type. Afterwards, nodes may be more efficiently selected by the user.
+The nodes shown in the list may be filtered by
+[regular expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
+based on node name or op type. Afterwards, nodes may be more efficiently selected by the user.
 
 ![Select nodes by regex](images/regex_node_list.png)
 
@@ -157,14 +160,16 @@ Within each card displaying a tensor value, the user can slice the tensor (via  
 
 ![Input boxes for slicing tensors](images/slicing_input_boxes.png)
 
-For example, suppose a tensor has a shape of (500, 100), applying a slicing of [::5, :2] will slicing the tensor every 5 indices along the first dimension and take only the first two indices along the second dimension.
+For example, suppose a tensor has a shape of (500, 100), applying a slicing of `[::5, :2]` will slice the tensor every 5 indices along the first dimension and take only the first two indices along the second dimension.
 
 #### Slicing based on Time (Tensor Value History)
 
-For each tensor, the time axis (history of the tensor's execution) is treated as an 1D array. Numpy-style slicing can be applied to time. For example, the default slicing of `-1` selects for the most recent value. However, if the user changes that slicing parameter to `:`, the full history of the tensor will be shown (and the rank of the tensor being visualized is increased by 1).
+For each tensor, the time axis (history of the tensor's execution) is treated as an 1D array. Numpy-style slicing can be applied to time. For example, the default slicing of `-1` selects the most recent value. However, if the user changes that slicing parameter to `:`, the full history of the tensor will be shown (and the rank of the tensor being visualized is increased by 1).
 
 # Limitations
 
-Hitting Ctrl+C (issuing a SIGINT signal) might fail to terminate execution for a model that is instrumented with `TensorBoardDebugWrapperSession` or its corresponding hook. In those cases, the user must manually kill the processes.
-
-The debugger dashboard does not yet support multiple users debugging at once.
+* Hitting Ctrl+C (issuing a SIGINT signal) might fail to terminate execution for a model that is instrumented with
+  `TensorBoardDebugWrapperSession` or its corresponding hook. The same limitation may be present in the tensorboard
+  process as well. In those cases, the user must manually
+  [kill](https://www.linux.com/learn/intro-to-linux/2017/5/how-kill-process-command-line) the processes.
+* The debugger dashboard does not yet support multiple users debugging at once.
