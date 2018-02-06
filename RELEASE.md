@@ -1,3 +1,8 @@
+# Release 1.6.0
+
+The 1.6 minor series tracks TensorFlow 1.6. Release notes upcoming.
+
+
 # Release 1.5.0
 
 The 1.5 minor series tracks TensorFlow 1.5.
