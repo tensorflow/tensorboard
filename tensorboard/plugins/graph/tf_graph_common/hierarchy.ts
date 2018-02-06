@@ -31,7 +31,7 @@ export interface Edges {
  */
 export interface LibraryFunctionData {
   // The metanode representing this function in the library scene group.
-  node: Metanode; 
+  node: Metanode;
 
   // A list of nodes that represent calls to this library function.
   usages: Node[];
@@ -885,11 +885,16 @@ function detectSeries(
   _.each(clusters, function(members, clusterId: string) {
     if (members.length <= 1) { return; } // isolated clusters can't make series
 
-    /** @type {Object}  A dictionary mapping seriesName to seriesInfoArray,
-     * which is an array that contains objects with name, id, prefix, suffix,
-     * and parent properties.
+    /**
+     * @type {Object}  A dictionary mapping a series name to a SeriesNode.
      */
-    let candidatesDict: {[seriesName: string]: SeriesNode[]} = {};
+    let forwardDict: {[seriesName: string]: SeriesNode} = {};
+    /**
+     * @type {Object}  A dictionary mapping member name to an array of series
+     * names this member could potentially be grouped under and the
+     * corresponding ids.
+     */
+    let reverseDict: {[seriesName: string]: any[]} = {};
 
     // Group all nodes that have the same name, with the exception of a
     // number at the end of the name after an underscore, which is allowed to
@@ -899,23 +904,71 @@ function detectSeries(
       let namepath = name.split('/');
       let leaf = namepath[namepath.length - 1];
       let parent = namepath.slice(0, namepath.length - 1).join('/');
-      let matches = leaf.match(/^(\D*)_(\d+)$/);
 
+      const numRegex = /(\d+)/g;
+      let matches = [];
+      let matchResult;
       let prefix;
       let id;
-      let suffix = '';
-      if (matches) {         // if found '<number>' in the name, assign id.
-        prefix = matches[1]; // the front non-numeric characters
-        id = matches[2]; // the digits
-      } else {  // for node without '_<number>', make them zero-th items.
-        prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
-        id = 0;
-        suffix = isGroup ? '*' : '';
+      let suffix;
+      let seriesName;
+      let matched = 0;
+      // Scan over the entire leaf name and match any possible numbers,
+      // and put the results into corresponding dictionaries.
+      while (matchResult = numRegex.exec(leaf)) {
+          ++matched;
+          prefix = leaf.slice(0, matchResult.index);
+          id = matchResult[0];
+          suffix = leaf.slice(matchResult.index + matchResult[0].length);
+          seriesName = getSeriesNodeName(prefix, suffix, parent);
+          forwardDict[seriesName] = forwardDict[seriesName];
+          if (!forwardDict[seriesName]) {
+            forwardDict[seriesName] = createSeriesNode(
+              prefix, suffix, parent, +id, name);
+          }
+          forwardDict[seriesName].ids.push(id);
+          reverseDict[name] = reverseDict[name] || [];
+          reverseDict[name].push([seriesName, id]);
       }
-      let seriesName = getSeriesNodeName(prefix, suffix, parent);
+      if (matched < 1) {
+          prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
+          id = 0;
+          suffix = isGroup ? '*' : '';
+          seriesName = getSeriesNodeName(prefix, suffix, parent);
+          forwardDict[seriesName] = forwardDict[seriesName];
+          if (!forwardDict[seriesName]) {
+            forwardDict[seriesName] = createSeriesNode(
+              prefix, suffix, parent, +id, name);
+          }
+          forwardDict[seriesName].ids.push(id);
+          reverseDict[name] = reverseDict[name] || [];
+          reverseDict[name].push([seriesName, id]);
+      }
+    });
+    /** @type {Object}  A dictionary mapping seriesName to seriesInfoArray,
+     * which is an array that contains objects with name, id, prefix, suffix,
+     * and parent properties.
+     */
+    var candidatesDict: {[seriesName: string]: SeriesNode[]} = {};
+    // For each of the member, put it into the maximum possible series,
+    // and create candidatesDict accordingly.
+    _.each(reverseDict, function (seriesNameIdArray, name) {
+      seriesNameIdArray.sort(function (a, b) {
+          return (forwardDict[b[0]].ids.length) - (forwardDict[a[0]].ids.length);
+      });
+      var seriesName = seriesNameIdArray[0][0];
+      var id = seriesNameIdArray[0][1];
       candidatesDict[seriesName] = candidatesDict[seriesName] || [];
-      let seriesNode = createSeriesNode(
-          prefix, suffix, parent, +id, name, graphOptions);
+      const namepath = name.split('/');
+      const leaf = namepath[namepath.length - 1];
+      const parent = namepath.slice(0, namepath.length - 1).join('/');
+      var seriesNode = createSeriesNode(
+          forwardDict[seriesName].prefix,
+          forwardDict[seriesName].suffix,
+          parent,
+          +id,
+          name,
+          graphOptions);
       candidatesDict[seriesName].push(seriesNode);
     });
 
