@@ -2,7 +2,7 @@
 
 The debugger dashboard offers a graphical user interface for the [TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger). For instance, this dashboard enables users to
 
-* pause and resume execution at specified ops or numbers of steps.
+* pause and resume execution at specified nodes or numbers of steps.
 * visualize values of tensors over time.
 * associate tensors with specific lines in python code.
 
@@ -101,11 +101,11 @@ After selecting nodes, the user can continue execution for a certain number of s
 
 ![The continue button](images/continue_button.png)
 
-Clicking the button opens a dialog that lets the user specify how many session runs to execute. Execution will pause at breakpoints (selected ops).
+Clicking the button opens a dialog that lets the user specify how many session runs to execute. Execution will pause at breakpoints (selected nodes).
 
 ![The continue dialog](images/continue_dialog.png)
 
-Via this dialog, the user may specify breakpoints based on conditions (in addition to the breakpoints that are based on selected ops):
+Via this dialog, the user may specify breakpoints based on conditions (in addition to the breakpoints that are based on selected nodes):
 
 * When a tensor contains any bad ([NaN](https://en.wikipedia.org/wiki/NaN), or +/- Infinity) values.
 * When a tensor contains any +/- Infinity values.
@@ -123,33 +123,33 @@ Via this dialog, the user may specify breakpoints based on conditions (in additi
 
 These conditions bear much semblance to [filters of the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger#finding_nans_and_infs).
 
-When execution is paused, the next op can be stepped to via clicking **Step**. If a program runs multiple sessions, they will be listed within the Session Runs table under the node list.
+When execution is paused, the next node can be stepped to via clicking **Step**. If a program runs multiple sessions, they will be listed within the Session Runs table under the node list.
 
-![Step to the next op](images/step.png)
+![Step to the next node](images/step.png)
 
 # Examining the Values of Tensors
 
-When execution is paused, the values of output tensors for all selected ops are shown within the tensor values table (under the graph). The current op is shown in red.
+When execution is paused, the values of output tensors for all selected nodes are shown within the tensor values table (under the graph). The current node is shown in red.
 
 ![Tensor value overview](images/tensor_value_overview.png)
 
-Also presented for each op are the name, count (the number of times the op has been executed), data type, and shape.
+Also presented for each node are the name, count (the number of times the node has been executed), data type, and shape.
 
-Next to each op is a **health pill**, which visualizes the proportion of values within the tensor that fall under each of the six categories noted in the legend. A user might use health pills to for instance pinpoint ops that are culprits for producing undesired values (such as NaN).
+Next to each node is a **health pill**, which visualizes the proportion of values within the tensor that fall under each of the six categories noted in the legend. A user might use health pills to for instance pinpoint nodes that are culprits for producing undesired values (such as NaN).
 
 Mousing over a health pill reveals more information about values within the tensor such as mean and standard deviation.
 
 ## Tensor Values Visualized
 
-Note the column titled "Value". Clicking to view the value of each op adds a new card (for visualizing the tensor's value) to the Tensor Values pane.
+Note the column titled "Value". Clicking to view the value of each node adds a new card (for visualizing the tensor's value) to the Tensor Values pane.
 
 1D tensors (such as bias in this case) are visualized with a line chart. The X axis represents the index into the tensor, while the Y axis represents the value.
 
-Tensors with a rank of 4 are shown as images. In this example, the filter of a convolutional op is visualized. The overall contours of an MNIST digit (8) are visible.
+Tensors with a rank of 4 are shown as images. In this example, the filter of a convolutional node is visualized. The overall contours of an MNIST digit (8) are visible.
 
 ![Tensor value visualization](images/tensor_values.png)
 
-While execution occurs, visualizations within the tensor value cards update, letting the user view live output values of ops as animations.
+While execution occurs, visualizations within the tensor value cards update, letting the user view live output values of nodes as animations.
 
 ### Slicing Tensors
 
