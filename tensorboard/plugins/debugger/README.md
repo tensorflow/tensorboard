@@ -6,7 +6,7 @@ The debugger dashboard offers a graphical user interface for the [TensorFlow deb
 * visualize values of tensors over time.
 * associate tensors with specific lines in python code.
 
-This dashboard is in its *alpha release*. Some features are not yet fully functional.
+This dashboard is in its **alpha release**. Some features are not yet fully functional.
 
 ![The Debugger Dashboard](images/debugger_intro.png)
 
@@ -86,7 +86,7 @@ Runtime graphs for each device may be examined within the graph explorer (on the
 
 ![Exploring graphs](images/graph_explorer.png)
 
-The graph explorer offers another way to select a node: *A context menu appears when a node is right-clicked.*
+The graph explorer offers another way to select a node: **A context menu appears when a node is right-clicked.**
 
 The user can then chose to either
 
@@ -97,7 +97,7 @@ The user can then chose to either
 
 # Controlling Execution
 
-After selecting nodes, the user can continue execution for a certain number of session runs by clicking *Continue*:
+After selecting nodes, the user can continue execution for a certain number of session runs by clicking **Continue**:
 
 ![The continue button](images/continue_button.png)
 
@@ -123,7 +123,7 @@ Via this dialog, the user may specify breakpoints based on conditions (in additi
 
 These conditions bear much semblance to [filters of the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger#finding_nans_and_infs).
 
-When execution is paused, the next op can be stepped to via clicking *Step*. If a program runs multiple sessions, they will be listed within the Session Runs table under the node list.
+When execution is paused, the next op can be stepped to via clicking **Step**. If a program runs multiple sessions, they will be listed within the Session Runs table under the node list.
 
 ![Step to the next op](images/step.png)
 
@@ -135,7 +135,7 @@ When execution is paused, the values of output tensors for all selected ops are 
 
 Also presented for each op are the name, count (the number of times the op has been executed), data type, and shape.
 
-Next to each op is a *health pill*, which visualizes the proportion of values within the tensor that fall under each of the six categories noted in the legend. A user might use health pills to for instance pinpoint ops that are culprits for producing undesired values (such as NaN).
+Next to each op is a **health pill**, which visualizes the proportion of values within the tensor that fall under each of the six categories noted in the legend. A user might use health pills to for instance pinpoint ops that are culprits for producing undesired values (such as NaN).
 
 Mousing over a health pill reveals more information about values within the tensor such as mean and standard deviation.
 
