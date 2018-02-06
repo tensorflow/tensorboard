@@ -20,9 +20,11 @@ from __future__ import print_function
 
 import json
 import platform
+import signal
 import sys
 import threading
 
+from six.moves import xrange  # pylint:disable=redefined-builtin
 import tensorflow as tf
 from werkzeug import wrappers
 
@@ -69,6 +71,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
     """
     del context  # Unused.
     self._debugger_data_server = None
+    self._server_thread = None
     self._grpc_port = None
 
   def listen(self, grpc_port):
@@ -96,8 +99,32 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
         interactive_debugger_server_lib.InteractiveDebuggerDataServer(
             self._grpc_port))
 
-    threading.Thread(target=self._debugger_data_server.
-                     start_the_debugger_data_receiving_server).start()
+    self._server_thread = threading.Thread(
+        target=self._debugger_data_server.
+        start_the_debugger_data_receiving_server)
+    self._server_thread.start()
+
+    signal.signal(signal.SIGINT, self.signal_handler)
+
+  def signal_handler(self, unused_signal, unused_frame):
+    if self._debugger_data_server and self._server_thread:
+      print('Stopping InteractiveDebuggerPlugin...')
+      # Enqueue a number of messages to the incoming message queue to try to
+      # let the debugged tensorflow runtime proceed past the current Session.run
+      # in the C++ layer and return to the Python layer, so the SIGINT handler
+      # registered there may be triggered.
+      for _ in xrange(len(self._debugger_data_server.breakpoints) +  1):
+        self._debugger_data_server.put_incoming_message(True)
+      # while True:  # DEBUG
+      try:
+        self._debugger_data_server.stop_the_debugger_data_receiving_server()
+      except ValueError:
+        # In case the server has already stopped running.
+        pass
+      # break  # DEBUG
+      self._server_thread.join()
+      print('InteractiveDebuggerPlugin stopped.')
+    sys.exit(0)
 
   def get_plugin_apps(self):
     """Obtains a mapping between routes and handlers.
