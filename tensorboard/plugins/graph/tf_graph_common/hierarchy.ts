@@ -916,33 +916,33 @@ function detectSeries(
       // Scan over the entire leaf name and match any possible numbers,
       // and put the results into corresponding dictionaries.
       while (matchResult = numRegex.exec(leaf)) {
-          ++matched;
-          prefix = leaf.slice(0, matchResult.index);
-          id = matchResult[0];
-          suffix = leaf.slice(matchResult.index + matchResult[0].length);
-          seriesName = getSeriesNodeName(prefix, suffix, parent);
-          forwardDict[seriesName] = forwardDict[seriesName];
-          if (!forwardDict[seriesName]) {
-            forwardDict[seriesName] = createSeriesNode(
-              prefix, suffix, parent, +id, name);
-          }
-          forwardDict[seriesName].ids.push(id);
-          reverseDict[name] = reverseDict[name] || [];
-          reverseDict[name].push([seriesName, id]);
+        ++matched;
+        prefix = leaf.slice(0, matchResult.index);
+        id = matchResult[0];
+        suffix = leaf.slice(matchResult.index + matchResult[0].length);
+        seriesName = getSeriesNodeName(prefix, suffix, parent);
+        forwardDict[seriesName] = forwardDict[seriesName];
+        if (!forwardDict[seriesName]) {
+          forwardDict[seriesName] = createSeriesNode(
+            prefix, suffix, parent, +id, name);
+        }
+        forwardDict[seriesName].ids.push(id);
+        reverseDict[name] = reverseDict[name] || [];
+        reverseDict[name].push([seriesName, id]);
       }
       if (matched < 1) {
-          prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
-          id = 0;
-          suffix = isGroup ? '*' : '';
-          seriesName = getSeriesNodeName(prefix, suffix, parent);
-          forwardDict[seriesName] = forwardDict[seriesName];
-          if (!forwardDict[seriesName]) {
-            forwardDict[seriesName] = createSeriesNode(
-              prefix, suffix, parent, +id, name);
-          }
-          forwardDict[seriesName].ids.push(id);
-          reverseDict[name] = reverseDict[name] || [];
-          reverseDict[name].push([seriesName, id]);
+        prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
+        id = 0;
+        suffix = isGroup ? '*' : '';
+        seriesName = getSeriesNodeName(prefix, suffix, parent);
+        forwardDict[seriesName] = forwardDict[seriesName];
+        if (!forwardDict[seriesName]) {
+          forwardDict[seriesName] = createSeriesNode(
+            prefix, suffix, parent, +id, name);
+        }
+        forwardDict[seriesName].ids.push(id);
+        reverseDict[name] = reverseDict[name] || [];
+        reverseDict[name].push([seriesName, id]);
       }
     });
     /** @type {Object}  A dictionary mapping seriesName to seriesInfoArray,
