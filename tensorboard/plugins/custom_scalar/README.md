@@ -4,9 +4,10 @@
 
 The *custom* scalar dashboard lets users
 
-1. Create line charts with custom combinations of runs and tags by assigning
+* Create line charts with custom combinations of runs and tags by assigning
 each chart a list of regular expressions for tags.
-2. Lay out the dashboard in a customized way.
+* Create margin charts (for visualizing confidence intervals).
+* Lay out the dashboard in a customized way.
 
 To use this dashboard, users first collect scalar data and then lay out the UI.
 
@@ -59,8 +60,7 @@ op but rather a Summary proto that be passed to the SummaryWriter (See sample
 code.).
 
 The `Layout` proto encapsulates the organization of the dashboard. See
-[layout.proto](layout.proto) for documentation. See the code below for an
-example of how to use it.
+[layout.proto](layout.proto) for documentation.
 
 ### Specifying a Layout via a TensorFlow op instead
 
@@ -73,67 +73,16 @@ to change the layout over time.
 
 ### Example Code
 
-```python
-from tensorboard import summary as summary_lib
-from tensorboard.plugins.custom_scalar import layout_pb2
-import tensorflow as tf
+See [custom_scalar_demo.py](custom_scalar_demo.py) for an example of collecting
+scalar data and then laying out the dashboard in a customized way.
 
-step = tf.placeholder(tf.float32, shape=[])
+The example layout contains both multi-line charts and margin charts.
 
-with tf.name_scope('loss'):
-  # Specify 2 different loss values, each tagged differently.
-  summary_lib.scalar('foo', tf.pow(0.9, step))
-  summary_lib.scalar('bar', tf.pow(0.85, step + 2))
+## Example of the Custom Scalar Dashboard UI
 
-# Log metric baz as well as upper and lower bounds for making a margin chart.
-middle_baz_value = step + 4 * tf.random_uniform() - 2
-summary_lib.scalar('baz', middle_baz_value)
-summary_lib.scalar('baz_lower', middle_baz_value - 0.3 - tf.random_uniform())
-summary_lib.scalar('baz_upper', middle_baz_value + 0.3 + tf.random_uniform())
+The logic within the demo produces this custom scalar dashboard.
 
-with tf.name_scope('trigFunctions'):
-  summary_lib.scalar('cosine', tf.cos(step))
-  summary_lib.scalar('sine', tf.sin(step))
-  summary_lib.scalar('tangent', tf.tan(step))
-
-merged_summary = tf.summary.merge_all()
-
-with tf.Session() as sess, tf.summary.FileWriter('/tmp/logdir') as writer:
-  # We only need to specify the layout once (instead of per step).
-  summary_lib.custom_scalar_pb(layout_pb2.Layout(
-    category=[
-      layout_pb2.Category(
-        title='losses in 1 chart',
-        chart=[
-            layout_pb2.Chart(
-                title='losses',
-                tag=[r'loss.*']),
-        ]),
-      layout_pb2.Category(
-        title='trig functions',
-        chart=[
-            layout_pb2.Chart(
-                title='wave trig functions',
-                tag=[r'trigFunctions/cosine', r'trigFunctions/sine']),
-            # The range of tangent is different. Lets give it its own chart.
-            layout_pb2.Chart(
-                title='tan',
-                tag=[r'trigFunctions/tangent']),
-        ],
-        # This category we care less about. Lets make it initially closed.
-        closed=True),
-    ]))
-
-  for i in xrange(42):
-    summary = sess.run(merged_summary, feed_dict={step: i})
-    writer.add_summary(summary, global_step=i)
-```
-
-## The Dashboard UI
-
-The above logic produces this custom scalar dashboard.
-
-![Dashboard for demo code](docs/sample_code_dashboard.png)
+![Dashboard for demo code](docs/demo_code_dashboard.png)
 
 Note that the layout mirrors the `layout_pb2.Layout` proto that we had passed to
 the `summary_lib.custom_scalar_pb` method. Specifically, we have 2 categories:
@@ -143,6 +92,9 @@ Within the "losses" chart are 2 lines. They correspond to tags that had been
 obtained by the regular expression `r'loss.*'`. Because the 2 tags are for the
 same run, the 2 lines differ in markers (One uses squares, while the other uses
 diamonds.) to be distinct from each other. Color still encodes the run.
+
+The baz chart is a margin chart. Zoom in (by dragging a rectangle) or hover over
+points to view margin values. Smoothing does not affect margin charts.
 
 If we expand the "trig functions" category, we find that lines for sine and
 cosine are within one chart, and the line for tangent resides in a separate one
