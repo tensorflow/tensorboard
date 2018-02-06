@@ -26,25 +26,33 @@ limitations under the License.
     <span class="section-title">Tensor Value Overview</span>
     <div id="tensor-data-div" class="tensor-data-div">
       <table id="tensor-data-table" align="left" class="tensor-data-table">
-        <tr align="left">
-          <th>Tensor</th>
-          <th>Count</th>
-          <th>DType</th>
-          <th>Shape</th>
-          <th width="25%">Value</th>
-          <th width="25%">
-            Health Pill
-            <paper-toggle-button id="show-health-pills" checked="{{_healthPillsEnabled}}">
-            </paper-toggle-button>
-            <paper-card>
-              <div class="health-pill-legend" id="health-pill-legend"></div>
-            </paper-card>
-          </th>
-          <th width="5%"></th>
-        </tr>
+        <thead>
+          <tr align="left">
+            <th>Tensor</th>
+            <th>Count</th>
+            <th>DType</th>
+            <th>Shape</th>
+            <th width="25%">Value</th>
+            <th width="25%">
+              Health Pill
+              <paper-toggle-button id="show-health-pills" checked="{{_healthPillsEnabled}}">
+              </paper-toggle-button>
+              <paper-card>
+                <div class="health-pill-legend" id="health-pill-legend"></div>
+              </paper-card>
+            </th>
+            <th width="5%"></th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
       </table>
     </div>
     <style>
+        :host #tensor-data-div {
+          height: 100%;
+          overflow-y: auto;
+        }
         .section-title {
           font-size: 110%;
           font-weight: bold;
@@ -55,6 +63,7 @@ limitations under the License.
         :host .tensor-data-table {
           align-content: left;
           align-items: left;
+          display: block;
           text-align: left;
           vertical-align: middle;
           width: 100%;
@@ -63,7 +72,7 @@ limitations under the License.
           padding-right: 3px;
           box-shadow: 3px 3px #ddd;
         }
-        :host .tensor-data-table th {
+        :host #tensor-data-table th {
           vertical-align: top;
         }
         :host .active-tensor {
@@ -336,12 +345,14 @@ limitations under the License.
 
     _renderRow(watchKey) {
       let tensorDataRow;
+      let rowInserted = false;
       if (this._watchKey2Row[watchKey] != null) {
         tensorDataRow = this._watchKey2Row[watchKey];
         this._clearTensorDataRow(tensorDataRow);
+        rowInserted = false;
       } else {
         tensorDataRow = document.createElement('tr');
-        Polymer.dom(this.$$('#tensor-data-table')).appendChild(tensorDataRow);
+        rowInserted = true;
       }
 
       const deviceName = this._watchKey2Data[watchKey]['deviceName'];
@@ -433,7 +444,12 @@ limitations under the License.
       }
 
       this._watchKey2Row[watchKey] = tensorDataRow;
-      tensorDataRow.scrollIntoView({block: 'end', inline: 'nearest', behaviour: 'smooth'});
+      if (rowInserted) {
+        Polymer.dom(this.$$('#tensor-data-table tbody')).appendChild(
+            tensorDataRow);
+      }
+      tensorDataRow.scrollIntoView(
+          {block: 'end', inline: 'nearest', behaviour: 'smooth'});
     },
 
     // Render health pill for a tensor.
