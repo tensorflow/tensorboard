@@ -1,3 +1,34 @@
+# Release 1.6.0
+
+NOTICE: TensorBoard 1.6.0+ has moved to the `tensorboard` package name on PyPI:
+https://pypi.python.org/pypi/tensorboard. Only bugfix updates on 1.5.x will be
+applied to the old package name (`tensorflow-tensorboard`). To upgrade to
+TensorBoard 1.6.0+ we suggest you *first* `pip uninstall tensorflow-tensorboard`
+before doing `pip install tensorboard`. See "Known Issues" below if you run into
+problems using TensorBoard after upgrading.
+
+The 1.6 minor series tracks TensorFlow 1.6.
+
+## Highlights
+
+- (Beta) New Profile dashboard, which provides a suite of tools for inspecting
+  TPU performance.  See for details:
+  https://github.com/tensorflow/tensorboard/tree/1.6/tensorboard/plugins/profile
+- (Alpha) New Debugger dashboard, which provides a visual interface to `tfdbg`,
+  the TensorFlow debugger. See for details:
+  https://github.com/tensorflow/tensorboard/tree/1.6/tensorboard/plugins/debugger
+
+## Known issues
+
+- Package `tensorboard` is installed but command and/or module are missing or
+  have the wrong version - this may be due to conflicts with other packages that
+  provide `tensorboard` scripts or modules. Please uninstall *all* such packages
+  including `tensorboard`, `tensorflow-tensorboard` and `tb-nightly` and then
+  reinstall `tensorboard`.
+- Bazel 0.9.0+ required to build from source - this change was necessary in order
+  to add support for building at Bazel 0.10.0 and above. Please update Bazel.
+
+
 # Release 1.5.1
 
 NOTICE: TensorBoard 1.6.0+ will move to the `tensorboard` package name on PyPI,
