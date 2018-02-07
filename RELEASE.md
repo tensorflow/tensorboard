@@ -10,10 +10,10 @@ The 1.5 minor series tracks TensorFlow 1.5.
 ## Bug fixes
 
 - #554 - line charts no longer "shrink" after run changes on other tabs
-- #889 - fix xComponentsCreationMethod default in vz-line-chart
+- #889 - fixed xComponentsCreationMethod default in vz-line-chart
 - #898 - fixed offset of checkbox label in projector dashboard - thanks @marcj
 - #903 - disabled margin plot smoothing to avoid line going out of bounds
-- #916 - make `futures` dependency py2-only to avoid install failures
+- #916 - made `futures` dependency py2-only to avoid install failures
 - #924 - fixed graph dashboard bug causing blank PNG download and minimap
 - #926 - made projector plugin API available in pip package
 
