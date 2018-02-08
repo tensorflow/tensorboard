@@ -1,0 +1,187 @@
+/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+// Defines a proto3-based REST API that the HParams web-component of the plugin
+// would use to read data from a hyperparameter-tuning experiment.
+// The first part of this file defines the message types (resources) used
+// to pass information into and out of the API methods. These messages will be
+// transmited using their JSON encoding. The second part documents the actual
+// API and HTTP end-points.
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package tensorboard.plugins.hparams;
+
+// General note: in what follows we use the the field 'name' of a message to
+// stores its id. We avoid calling this field 'id' since it is a reserved word
+// in python and to be compliant with the API style guide detailed in
+// https://cloud.google.com/apis/design/.
+
+
+// Represents a single experiment.
+// An experiment consists of multiple "sessions". Typically, in each session
+// a model is trained for a given set of hyperparameter values. In each session
+// a training program may generate one or more series of real
+// numbers--each containing the evaluation of some metric at different
+// training steps.
+//
+// In some experiments, the user trains a model with the same set of
+// hyperparameters multiple times to get the distribution of metric
+// evaluations when the computation (such as the training algorithm, or metric
+// evaluation) is non-deterministic. To make the UI aware of this, sessions
+// are partitioned into groups: each group consists of all training sessions
+// which share the same values for the hyperparameters. In experiments with no
+// repeated executions, each group consists of exactly one session.
+message Experiment {
+  // A unique id.
+  string name = 1;
+
+  string description = 2;
+
+  // An id for the owning user or group.
+  string user = 3;
+
+  google.protobuf.Timestamp time_created = 4;
+
+  // Information about each hyperparameter used in the experiment.
+  repeated HParamInfo hparam_infos = 5;
+
+  // Information about each metric used in the experiment.
+  repeated MetricInfo metric_infos = 6;
+}
+
+message HParamInfo {
+  // An id for the hyperparameter (unique within an experiment).
+  string name = 1;
+
+  // A string used to display the hyperparameter in the UI. If empty the UI
+  // will display the 'name' field.
+  string display_name = 2;
+
+  string description = 3;
+
+  // The list of distinct values this hyperparameter had in any session within
+  // the experiment. Currently, the UI considers hyperparameter values as opaque
+  // strings.
+  repeated string vals = 4;
+}
+
+message MetricInfo {
+  // A name for the MetricInfo. Within an experiment there should be at most
+  // one MetricInfo having the given name.
+  string name = 1;
+
+  // A string used to display the hyperparameter in the UI. If empty the UI
+  // will display the 'name' field.
+  string display_name = 2;
+
+  string description = 3;
+
+  // The dataset type (validation, training) on which the metric is computed.
+  DatasetType dataset_type = 4;
+}
+
+message SessionGroup {
+  string name = 1;
+  repeated HParamVal hparam_vals = 2;
+}
+
+message HParamVal {
+  string name = 1;
+  string value = 2;
+}
+
+message Session {
+  // An id for the session. Unique within an experiment.
+  string name = 1;
+
+  google.protobuf.Timestamp time_started = 2;
+
+  // May be empty if unavailable or the session has not finished yet.
+  google.protobuf.Timestamp time_completed = 3;
+
+  // May be STATUS_UNKNOWN if unavailable.
+  Status status = 4;
+
+  // A filesystem path that will allow the user to reconstruct the model for
+  // this session. E.g., in Tensorflow this should be the directory where
+  // checkpoints are saved.
+  string model_path = 5;
+
+  // An optional link to a website monitoring the session.
+  string monitor_url = 6;
+}
+
+enum DatasetType {
+  DATASET_UNKNOWN = 0;
+  DATASET_TRAINING = 1;
+  DATASET_VALIDATION = 2;
+}
+
+enum Status {
+  STATUS_UNKNOWN = 0;
+  STATUS_SUCCESS = 1;
+  STATUS_FAILURE = 2;
+  STATUS_RUNNING = 3;
+}
+
+// We document the API below. Each end-point below is assumed to be called
+// vi an HTTP GET and arguments encoded in the URL . Additionally, each
+// end-point starts with 'v1' to support multiple versions.
+// Note that per Tensorboard's conventions the end-point would be
+// prefixed by "data/plugin/hparams" (e.g. the get_experiment end-point is
+// actually "data/plugin/hparams/v1/get_experiment").
+//
+// HTTP end-point:
+//   v1/get_experiment
+// Args:
+//   None.
+// Description:
+//   Returns an Experiment object defining metadata for the experiment.
+//
+// HTTP end-point
+//   v1/list_session_groups
+// Args:
+//   None.
+// Returns:
+//   An array of SessionGroup objects.
+//
+// HTTP end-point:
+//   v1/list_sessions
+// Args:
+//   session_group: The name of the session group to list.
+// Returns:
+//   An array of Session objects.
+//
+// HTTP end-point:
+//   v1/list_metric_evals
+// Args:
+//   session_group, session, metric: Names for the session_group, session and
+//   metric that identify the metric-data to return.
+// Returns:
+//   An array consisting of evaluations of the metric identified by 'metric'
+//   in the session identified by 'session' within the session group
+//   identified by 'session_group'. Each element in the array is itself
+//   a 3-element array of the form [wall_time, step, value], where:
+//   'wall_time' represents the time in which the evaluation took place,
+//   represented as seconds since the UNIX epoch, 'step' is the training step
+//   in which the evaluation took place, and value is the (scalar floating
+//   point) evaluation of the metric.
+//   Note: We use this format, rather than define a more structured response
+//   format to be compatible with the way the 'Scalars' plugin expects metric
+//   evaluation data.
+//
