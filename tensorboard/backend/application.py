@@ -118,6 +118,7 @@ def standard_tensorboard_wsgi(
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
+      db_uri=db_uri,
       logdir=logdir,
       multiplexer=multiplexer,
       assets_zip_provider=assets_zip_provider,
