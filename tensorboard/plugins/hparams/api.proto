@@ -27,7 +27,6 @@ limitations under the License.
 
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 
 package tensorboard.hparams;
@@ -57,7 +56,8 @@ message Experiment {
   // An id for the owning user or group.
   string user = 2;
 
-  google.protobuf.Timestamp time_created = 3;
+  // The time the experiment was created. In seconds since the UNIX epoch.
+  double time_created_secs = 3;
 
   // Information about each hyperparameter used in the experiment.
   repeated HParamInfo hparam_infos = 4;
@@ -102,8 +102,8 @@ enum DataType {
 
 // Represents the closed interval [min_val, max_val] of the real line.
 message Interval {
-  double min_val = 1;
-  double max_val = 2;
+  double min_value = 1;
+  double max_value = 2;
 }
 
 message MetricName {
@@ -191,16 +191,22 @@ message SessionGroup {
 message MetricValue {
   MetricName name = 1;
   double value = 2;
+  // The training step at which this value is computed.
+  int32 training_step = 3;
+  // The wall time in seconds since UNIX epoch at which this value is computed.
+  double wall_time_secs = 4;
 }
 
 message Session {
   // An id for the session. Unique within an experiment (not just the group).
   string name = 1;
 
-  google.protobuf.Timestamp time_started = 2;
+  // In seconds since the UNIX epoch.
+  double start_time_secs = 2;
 
-  // May be empty if unavailable or the session has not finished yet.
-  google.protobuf.Timestamp time_completed = 3;
+  // In seconds since the UNIX epoch.
+  // May be 0 if unavailable or the session has not finished yet.
+  double end_time_secs = 3;
 
   // May be STATUS_UNKNOWN if unavailable.
   Status status = 4;
@@ -225,7 +231,7 @@ message Session {
   google.protobuf.Timestamp training_step_wall_time = 8;
 
   // An optional link to a web page monitoring the session.
-  string monitor_url = 9;
+  string monitor_url = 7;
 }
 
 // Represents the status of a Session.

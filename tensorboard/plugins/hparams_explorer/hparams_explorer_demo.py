@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,89 +12,86 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Write sample summary data for the hparams plugin.
+"""Writes sample summary data for the HParams Explorer plugin.
 Each training-session here is a temperature simulation and records temperature
 related metric. See the function `run` below for more details.
 
-This demo is a slightly modified version of
-tensorboard/plugins/scalar/scalar_demo.py.
+This demo is a slightly modified version of tensorboard/plugins/scalar/scalar_demo.py.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import md5
 import os.path
-import hashlib
-import shutil
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-from google.protobuf import struct_pb2
-
-from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary
 from tensorboard.plugins.scalar import summary as scalar_summary
-from google.protobuf import struct_pb2
+from tensorboard.plugins.hparams_explorer import summary
+from tensorboard.plugins.hparams_explorer import metadata_pb2
+from google.protobuf import text_format
 
 # Directory into which to write tensorboard data.
-LOGDIR = '/tmp/hparams_demo'
+LOGDIR = '/tmp/hparams_explorer_demo'
+
+# Our experiment id.
+EXP_ID = 'sample_exp'
 
 STEPS = 1000
 
-TEMPERATURE_LIST = [270.0, 310.0, 350.0]
-HEAT_COEFFICIENT_LIST = [0.001, 0.005]
-
-def fingerprint(string):
-  m = hashlib.md5()
-  m.update(string)
+def fingerprint(str):
+  m = md5.new()
+  m.update(str)
   return m.hexdigest()
 
-def create_experiment_summary():
-  """Returns a summary proto buffer holding this experiment"""
-  # Convert TEMPERATURE_LIST to google.protobuf.ListValue
-  temperature_list = struct_pb2.ListValue()
-  temperature_list.extend(TEMPERATURE_LIST)
-  return summary.experiment_pb(
-      hparam_infos=[
-          api_pb2.HParamInfo(name="initial_temperature",
-                             display_name="initial temperature",
-                             type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list),
-          api_pb2.HParamInfo(name="ambient_temperature",
-                             display_name="ambient temperature",
-                             type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list),
-          api_pb2.HParamInfo(name="heat_coefficient",
-                             display_name="heat coefficient",
-                             type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list)
-      ],
-      metric_infos=[
-          api_pb2.MetricInfo(
-              name=api_pb2.MetricName(
-                  tag="temperature/current/scalar_summary"),
-              display_name="Current Temp."),
-          api_pb2.MetricInfo(
-              name=api_pb2.MetricName(
-                  tag="temperature/difference_to_ambient/scalar_summary"),
-              display_name="Difference To Ambient Temp."),
-          api_pb2.MetricInfo(
-              name=api_pb2.MetricName(
-                  tag="delta/scalar_summary"),
-              display_name="Delta T")
-      ]
-  )
+
+def write_experiment_metadata(logdir, exp_id):
+  """Writes the metadata associated with this sample experiment"""
+  exp_metadata=metadata_pb2.ExperimentMetadata()
+  exp_metadata.name="Demo Experiment"
+  exp_metadata.owner="Bart Simpson"
+  exp_metadata.description="Initial hyperparams search"
+  exp_metadata.config_type.param_defs["initial_temperature"] = (
+      metadata_pb2.FLOAT64)
+  exp_metadata.config_type.param_defs["ambient_temperature"] = (
+      metadata_pb2.FLOAT64)
+  exp_metadata.config_type.param_defs["heat_coefficient"] = (
+      metadata_pb2.FLOAT64)
+  writer = tf.summary.FileWriter(os.path.join(logdir, exp_id))
+  writer.add_summary(summary.experiment_metadata_summary_pb(exp_metadata))
+  writer.close()
+
+def write_session_metadata(session_dir, config, group_id):
+  """Writes the metadata associated with a session"""
+  session_metadata=metadata_pb2.SessionMetadata()
+  session_metadata.config.CopyFrom(config)
+  session_metadata.group_id = group_id
+  writer = tf.summary.FileWriter(session_dir)
+  writer.add_summary(summary.session_metadata_summary_pb(session_metadata))
+  writer.close()
+
+def get_hparam_from_config(config, hparam):
+  assert hparam in config.param_values, (
+      "Can't find hparam %s in config: %s" %
+      (hparam, text_format.MessageToString(config)))
+  param_value = config.param_values[hparam]
+  oneof_field_name = param_value.WhichOneof("value")
+  assert oneof_field_name is not None
+  return getattr(param_value, oneof_field_name)
 
 
-def create_hparam_info(name, display_name, domain_discrete):
-  result = api_pb2.HParamInfo(name=name, display_name=display_name)
-  result.domain_discrete.extend(domain_discrete)
-  return result
+def build_config(initial_temperature, ambient_temperature, heat_coefficient):
+  config = metadata_pb2.Config()
+  config.param_values["initial_temperature"].float64_val = initial_temperature
+  config.param_values["ambient_temperature"].float64_val = ambient_temperature
+  config.param_values["heat_coefficient"].float64_val = heat_coefficient
+  return config
 
 
-def run(logdir, session_id, hparams, group_name):
-  """Runs a temperature simulation.
+def run(logdir, exp_id, session_id, config, group_id):
+  """Run a temperature simulation.
 
   This will simulate an object at temperature `initial_temperature`
   sitting at rest in a large room at temperature `ambient_temperature`.
@@ -109,21 +106,20 @@ def run(logdir, session_id, hparams, group_name):
 
   Arguments:
     logdir: the top-level directory into which to write summary data
+    exp_id: the experiment id of the experiment this session belongs to.
     session_id: an id for the session.
-    hparams: A dictionary mapping an hyperparameter name to its value.
-    group_name: an id for the session group this session belongs to.
+    config: a tensorboard.hparams_explorer.Config object containing the
+      hyperparameters for this session.
+    group_id: an id for the session group this session belongs to.
   """
   tf.reset_default_graph()
   tf.set_random_seed(0)
 
-  initial_temperature = hparams['initial_temperature']
-  ambient_temperature = hparams['ambient_temperature']
-  heat_coefficient = hparams['heat_coefficient']
-  session_dir = os.path.join(logdir, session_id)
-  writer = tf.summary.FileWriter(session_dir)
-  writer.add_summary(summary.session_start_pb(hparams=hparams,
-                                              group_name=group_name))
-  writer.flush()
+  initial_temperature = get_hparam_from_config(config, "initial_temperature")
+  ambient_temperature = get_hparam_from_config(config, "ambient_temperature")
+  heat_coefficient = get_hparam_from_config(config, "heat_coefficient")
+  session_dir = os.path.join(logdir, exp_id, session_id)
+  write_session_metadata(session_dir, config, group_id)
   with tf.name_scope('temperature'):
     # Create a mutable variable to hold the object's temperature, and
     # create a scalar summary to track its value over time. The name of
@@ -142,9 +138,9 @@ def run(logdir, session_id, hparams, group_name):
     ambient_difference = temperature - ambient_temperature
     scalar_summary.op('difference_to_ambient', ambient_difference,
                       display_name='Difference to ambient temperature',
-                      description=('The difference between the ambient '
-                                   'temperature and the temperature of the '
-                                   'object under simulation, in Kelvins.'))
+                      description='The difference between the ambient '
+                           'temperature and the temperature of the '
+                           'object under simulation, in Kelvins.')
 
   # Newton suggested that the rate of change of the temperature of an
   # object is directly proportional to this `ambient_difference` above,
@@ -168,6 +164,8 @@ def run(logdir, session_id, hparams, group_name):
     update_step = temperature.assign_add(delta)
 
   sess = tf.Session()
+  task_dir = os.path.join(session_dir, "sample_task")
+  writer = tf.summary.FileWriter(task_dir)
   sess.run(tf.global_variables_initializer())
   for step in xrange(STEPS):
     # By asking TensorFlow to compute the update step, we force it to
@@ -176,7 +174,6 @@ def run(logdir, session_id, hparams, group_name):
     # summary data computed along the way.
     (s, _) = sess.run([summ, update_step])
     writer.add_summary(s, global_step=step)
-  writer.add_summary(summary.session_end_pb(api_pb2.STATUS_SUCCESS))
   writer.close()
 
 
@@ -185,32 +182,29 @@ def run_all(logdir, verbose=False):
 
   Arguments:
     logdir: the directory into which to store all the runs' data
-    verbose: if true, print out each run's name as it begins.
+    verbose: if true, print out each run's name as it begins
   """
-  writer = tf.summary.FileWriter(logdir)
-  writer.add_summary(create_experiment_summary())
-  writer.close()
+  write_experiment_metadata(logdir, EXP_ID)
   session_num = 0
-  for initial_temperature in TEMPERATURE_LIST:
-    for ambient_temperature in TEMPERATURE_LIST:
-      for heat_coefficient in HEAT_COEFFICIENT_LIST:
-        hparams = {'initial_temperature' : initial_temperature,
-                   'ambient_temperature' : ambient_temperature,
-                   'heat_coefficient' : heat_coefficient}
-        hparam_str = str(hparams)
-        group_name = fingerprint(hparam_str)
+  for initial_temperature in [270.0, 310.0, 350.0]:
+    for ambient_temperature in [270.0, 310.0, 350.0]:
+      for heat_coefficient in [0.001, 0.005]:
         for repeat_idx in xrange(2):
+          config = build_config(initial_temperature,
+                                ambient_temperature,
+                                heat_coefficient)
+          config_str = text_format.MessageToString(config)
+          group_id = fingerprint(config_str)
           session_id = str(session_num)
           if verbose:
-            print('--- Running training session')
-            print(hparam_str)
+            print('--- Running training session for config')
+            print(config_str)
             print('--- repeat #: %d' % (repeat_idx+1))
-          run(logdir, session_id, hparams, group_name)
+          run(logdir, EXP_ID, session_id, config, group_id)
           session_num += 1
 
 
 def main(unused_argv):
-  shutil.rmtree(LOGDIR, ignore_errors=True)
   print('Saving output to %s.' % LOGDIR)
   run_all(LOGDIR, verbose=True)
   print('Done. Output saved to %s.' % LOGDIR)
