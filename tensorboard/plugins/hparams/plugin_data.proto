@@ -48,7 +48,7 @@ message HParamsPluginData {
 
 message SessionStartInfo {
   // A map describing the hyperparameter values for the session.
-  // Maps each hyperparameter name to its tensor value.
+  // Maps each hyperparameter name to its value.
   // Currently only scalars are supported.
   map<string, google.protobuf.Value> hparams = 1;
 
@@ -62,8 +62,23 @@ message SessionStartInfo {
   // group name is taken to be the session id (so this session is the only
   // member of its group).
   string group_name = 4;
+
+  // The time the session started in seconds since epoch.
+  double start_time_secs = 5;
 }
 
 message SessionEndInfo {
   Status status = 1;
+
+  // The time the session ended in seconds since epoch.
+  double end_time_secs = 2;
+}
+
+// Within a given request, describes a page of session groups. Used in the
+// ListSessionGroups API call.
+message PageToken {
+  // The 0-based offset of the first session group in the page.
+  // The ending session group in the page can be computed by the associated
+  // request's page_size field.
+  int32 start = 1;
 }

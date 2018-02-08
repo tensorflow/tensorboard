@@ -24,6 +24,7 @@ doesn't support using POST for requests.
 Returns the Experiment object defining the metadata for the experiment.
   
 ## `/data/plugin/hparams/session_groups`
+Lists the session groups in the experiment.
 ### Args:
 >request: A ListSessionGroupsRequest object.
 

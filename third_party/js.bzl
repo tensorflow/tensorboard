@@ -211,6 +211,51 @@ def tensorboard_js_workspace():
       },
   )
 
+  web_library_external(
+      name = "com_vaadin",
+      licenses = ["notice"],  # 
+      strip_prefix = "vaadin-grid-2.0.3",
+      sha256 = "54eda473dc1a26be55c6d612b2613f14bbac1af7df93449e4ba61aa929c8340d",
+      urls = ["https://github.com/vaadin/vaadin-grid/archive/v2.0.3.tar.gz"],
+      path = "/vaadin-grid",
+      srcs = [
+          "vaadin-grid-active-item-behavior.html",
+          "vaadin-grid-array-data-provider-behavior.html",
+          "vaadin-grid-cell-click-behavior.html",
+          "vaadin-grid-column-group.html",
+          "vaadin-grid-column-reordering-behavior.html",
+          "vaadin-grid-column.html",
+          "vaadin-grid-data-provider-behavior.html",
+          "vaadin-grid-dynamic-columns-behavior.html",
+          "vaadin-grid-filter-behavior.html",
+          "vaadin-grid-filter.html",
+          "vaadin-grid-focusable-cell-container-behavior.html",
+          "vaadin-grid-keyboard-navigation-behavior.html",
+          "vaadin-grid-row-details-behavior.html",
+          "vaadin-grid-selection-behavior.html",
+          "vaadin-grid-selection-column.html",
+          "vaadin-grid-sizer.html",
+          "vaadin-grid-sort-behavior.html",
+          "vaadin-grid-sorter.html",
+          "vaadin-grid-table-cell.html",
+          "vaadin-grid-table-focus-trap.html",
+          "vaadin-grid-table-header-footer.html",
+          "vaadin-grid-table-outer-scroller.html",
+          "vaadin-grid-table-row.html",
+          "vaadin-grid-table-scroll-behavior.html",
+          "vaadin-grid-table.html",
+          "vaadin-grid-templatizer.html",
+          "vaadin-grid.html",
+          "iron-list-behavior.html",
+      ],
+      deps = ["@org_polymer",
+              "@org_polymer_iron_a11y_keys_behavior",
+              "@org_polymer_iron_a11y_announcer",
+              "@org_polymer_iron_resizable_behavior",
+              "@org_polymer_iron_scroll_target_behavior"],
+  )
+
+  
   filegroup_external(
       name = "io_github_cpettitt_dagre",
       # no @license header

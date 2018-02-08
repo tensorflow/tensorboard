@@ -27,7 +27,6 @@ limitations under the License.
 
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 
 package tensorboard.hparams;
@@ -57,7 +56,8 @@ message Experiment {
   // An id for the owning user or group.
   string user = 2;
 
-  google.protobuf.Timestamp time_created = 3;
+  // The time the experiment was created. In seconds since the UNIX epoch.
+  double time_created_secs = 3;
 
   // Information about each hyperparameter used in the experiment.
   repeated HParamInfo hparam_infos = 4;
@@ -100,11 +100,10 @@ enum DataType {
   DATA_TYPE_FLOAT64 = 2;
 }
 
-// Represents the closed interval [min_val, max_val] of the real line.
-// min_val, max_val should be numeric.
+// Represents the closed interval [min_value, max_value] of the real line.
 message Interval {
-  double min_val = 1;
-  double max_val = 2;
+  double min_value = 1;
+  double max_value = 2;
 }
 
 message MetricName {
@@ -180,28 +179,34 @@ message SessionGroup {
   // of ListSessionGroupsRequest.
   // Unfortunately, we can't store these as a map, since proto maps can't have
   // message keys.
-  repeated MetricValue metric_vals = 3;
+  repeated MetricValue metric_values = 3;
 
   // The sessions belonging to this group.
   repeated Session sessions = 4;
 
   // An optional link to a web page monitoring the session group.
-  string monitor_url = 9;
+  string monitor_url = 5;
 }
 
 message MetricValue {
   MetricName name = 1;
   double value = 2;
+  // The training step at which this value is computed.
+  int32 training_step = 3;
+  // The wall time in seconds since UNIX epoch at which this value is computed.
+  double wall_time_secs = 4;
 }
 
 message Session {
   // An id for the session. Unique within an experiment (not just the group).
   string name = 1;
 
-  google.protobuf.Timestamp time_started = 2;
+  // In seconds since the UNIX epoch.
+  double start_time_secs = 2;
 
-  // May be empty if unavailable or the session has not finished yet.
-  google.protobuf.Timestamp time_completed = 3;
+  // In seconds since the UNIX epoch.
+  // May be 0 if unavailable or the session has not finished yet.
+  double end_time_secs = 3;
 
   // May be STATUS_UNKNOWN if unavailable.
   Status status = 4;
@@ -217,15 +222,8 @@ message Session {
   // message keys.
   repeated MetricValue metric_values = 6;
 
-  // The current training step.
-  // This is the step for which the values of 'metrics' are computed.
-  int32 training_step = 7;
-
-  // The wall time at which 'training_step' completed.
-  google.protobuf.Timestamp training_step_wall_time = 8;
-
   // An optional link to a web page monitoring the session.
-  string monitor_url = 9;
+  string monitor_url = 7;
 }
 
 // Represents the status of a Session.
@@ -280,6 +278,8 @@ message ListSessionGroupsRequest {
 
   // Pagination support:
   // The number of session groups in each page to return.
+  // If this is negative or zero, returns all the sessions from the given
+  // page_token, or all the sessions if page_token is empty.
   int32 page_size = 4;
   // The token representing the page to return. Should be empty for the first
   // page and copied from the 'next_page_token' field of the response for
@@ -298,7 +298,7 @@ message ColParams {
   SortOrder order = 3;
 
   // Filtering. Defines a subset of the domain of the column.
-  ///Different representations for the subset are possible for different
+  // Different representations for the subset are possible for different
   // column data types (hyperparameter data types or DATA_TYPE_FLOAT64 for
   // metrics). See the comments below for more
   // details.
