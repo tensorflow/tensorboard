@@ -61,7 +61,7 @@ class CorePlugin(base_plugin.TBPlugin):
     apps = {
         '/___rPc_sWiTcH___': self._send_404_without_logging,
         '/audio': self._redirect_to_index,
-        '/data/data_location': self._serve_data_location,
+        '/data/environment': self._serve_environment,
         '/data/logdir': self._serve_logdir,
         '/data/runs': self._serve_runs,
         '/data/window_properties': self._serve_window_properties,
@@ -97,15 +97,19 @@ class CorePlugin(base_plugin.TBPlugin):
         request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
 
   @wrappers.Request.application
-  def _serve_data_location(self, request):
-    """Serve a JSON object containing a string denoting the location of data.
+  def _serve_environment(self, request):
+    """Serve a JSON object containing some base properties used by the frontend.
 
-    That location can either be a path to a directory or an address to a 
-    database (depending on which mode TensorBoard is running in).
+    * data_location is eitgher a path to a directory or an address to a 
+      database (depending on which mode TensorBoard is running in).
+    * window_title is the title of the TensorBoard web page.
     """
     return http_util.Respond(
         request,
-        {'data_location': self._logdir or self._db_uri},
+        {
+          'data_location': self._logdir or self._db_uri,
+          'window_title': self._window_title,
+        },
         'application/json')
 
   @wrappers.Request.application
@@ -113,14 +117,18 @@ class CorePlugin(base_plugin.TBPlugin):
     """Respond with a JSON object containing this TensorBoard's logdir.
     
     TODO(chihuahua): Remove this method once the frontend instead uses the
-    /data_location route (and no deps throughout Google use the /logdir route).
+    /environment route (and no deps throughout Google use the /logdir route).
     """
     return http_util.Respond(
         request, {'logdir': self._logdir}, 'application/json')
 
   @wrappers.Request.application
   def _serve_window_properties(self, request):
-    """Serve a JSON object containing this TensorBoard's window properties."""
+    """Serve a JSON object containing this TensorBoard's window properties.
+    
+    TODO(chihuahua): Remove this method once the frontend instead uses the
+    /environment route.
+    """
     return http_util.Respond(
         request, {'window_title': self._window_title}, 'application/json')
 

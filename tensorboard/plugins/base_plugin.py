@@ -126,8 +126,17 @@ class TBContext(object):
           logic should handle cases in which a plugin is absent from this
           mapping, lest a KeyError is raised.
       window_title: A string specifying the the window title.
+
+    Raises:
+      ValueError: If both logdir and db_uri are provided (or if neither are 
+          provided).
     """
-    assert not (db_uri and logdir)
+    if db_uri and logdir:
+      raise ValueError(
+          'Both db_uri (%r) and logdir (%r) are provided', db_uri, logdir)
+
+    if not db_uri and not logdir:
+      raise ValueError('Neither db_uri nor logdir are provided')
 
     self.assets_zip_provider = assets_zip_provider
     self.db_connection_provider = db_connection_provider

@@ -54,7 +54,8 @@ class CorePluginTest(tf.test.TestCase):
     context = base_plugin.TBContext(
         assets_zip_provider=get_test_assets_zip_provider(),
         logdir=self.logdir,
-        multiplexer=self.multiplexer)
+        multiplexer=self.multiplexer,
+        window_title='title foo')
     self.logdir_based_plugin = core_plugin.CorePlugin(context)
     app = application.TensorBoardWSGIApp(
         self.logdir,
@@ -77,7 +78,8 @@ class CorePluginTest(tf.test.TestCase):
         assets_zip_provider=get_test_assets_zip_provider(),
         db_module=db_module,
         db_connection_provider=db_connection_provider,
-        db_uri=self.db_uri)
+        db_uri=self.db_uri,
+        window_title='title foo')
     self.db_based_plugin = core_plugin.CorePlugin(context)
     app = application.TensorBoardWSGI([self.db_based_plugin])
     self.db_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
@@ -103,16 +105,26 @@ class CorePluginTest(tf.test.TestCase):
       self.assertEqual(200, response.status_code, msg=path)
       self.assertEqual('0', response.headers.get('Expires'), msg=path)
 
-  def testDataLocationForDbUri(self):
-    """Test that the data location route correctly returns the database URI."""
-    parsed_object = self._get_json(self.db_based_server, '/data/data_location')
-    self.assertEqual(parsed_object, {'data_location': self.db_uri})
+  def testEnvironmentForDbUri(self):
+    """Test that the environment route correctly returns the database URI."""
+    parsed_object = self._get_json(self.db_based_server, '/data/environment')
+    self.assertEqual(parsed_object['data_location'], self.db_uri)
 
-  def testDataLocationForLogdir(self):
-    """Test that the data location route correctly returns the logdir."""
+  def testEnvironmentForLogdir(self):
+    """Test that the environment route correctly returns the logdir."""
     parsed_object = self._get_json(
-        self.logdir_based_server, '/data/data_location')
-    self.assertEqual(parsed_object, {'data_location': self.logdir})
+        self.logdir_based_server, '/data/environment')
+    self.assertEqual(parsed_object['data_location'], self.logdir)
+
+  def testEnvironmentForWindowTitle(self):
+    """Test that the environment route correctly returns the window title."""
+    parsed_object_db = self._get_json(
+        self.db_based_server, '/data/environment')
+    parsed_object_logdir = self._get_json(
+        self.logdir_based_server, '/data/environment')
+    self.assertEqual(
+        parsed_object_db['window_title'], parsed_object_logdir['window_title'])
+    self.assertEqual(parsed_object_db['window_title'], 'foo title')
 
   def testLogdir(self):
     """Test the format of the data/logdir endpoint."""
