@@ -128,12 +128,12 @@ class TBContext(object):
       window_title: A string specifying the the window title.
 
     Raises:
-      ValueError: If both logdir and db_uri are provided (or if neither are 
+      ValueError: If both logdir and db_uri are provided (or if neither are
           provided).
     """
     if db_uri and logdir:
       raise ValueError(
-          'Both db_uri (%r) and logdir (%r) are provided', db_uri, logdir)
+          'Both db_uri (%r) and logdir (%r) are provided' % (db_uri, logdir))
 
     if not db_uri and not logdir:
       raise ValueError('Neither db_uri nor logdir are provided')

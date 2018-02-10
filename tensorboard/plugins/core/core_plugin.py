@@ -100,22 +100,22 @@ class CorePlugin(base_plugin.TBPlugin):
   def _serve_environment(self, request):
     """Serve a JSON object containing some base properties used by the frontend.
 
-    * data_location is eitgher a path to a directory or an address to a 
+    * data_location is eitgher a path to a directory or an address to a
       database (depending on which mode TensorBoard is running in).
     * window_title is the title of the TensorBoard web page.
     """
     return http_util.Respond(
         request,
         {
-          'data_location': self._logdir or self._db_uri,
-          'window_title': self._window_title,
+            'data_location': self._logdir or self._db_uri,
+            'window_title': self._window_title,
         },
         'application/json')
 
   @wrappers.Request.application
   def _serve_logdir(self, request):
     """Respond with a JSON object containing this TensorBoard's logdir.
-    
+
     TODO(chihuahua): Remove this method once the frontend instead uses the
     /environment route (and no deps throughout Google use the /logdir route).
     """
@@ -125,7 +125,7 @@ class CorePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def _serve_window_properties(self, request):
     """Serve a JSON object containing this TensorBoard's window properties.
-    
+
     TODO(chihuahua): Remove this method once the frontend instead uses the
     /environment route.
     """
