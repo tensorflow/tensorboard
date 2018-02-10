@@ -124,7 +124,7 @@ class CorePluginTest(tf.test.TestCase):
         self.logdir_based_server, '/data/environment')
     self.assertEqual(
         parsed_object_db['window_title'], parsed_object_logdir['window_title'])
-    self.assertEqual(parsed_object_db['window_title'], 'foo title')
+    self.assertEqual(parsed_object_db['window_title'], 'title foo')
 
   def testLogdir(self):
     """Test the format of the data/logdir endpoint."""
