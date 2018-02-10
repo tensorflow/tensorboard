@@ -99,23 +99,39 @@ limitations under the License.
     </template>
   </div>
 
-  <template is="dom-if" if="[[_tagsWithNoData]]">
-    <div id="error-content">
-      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
-      No data found for these tags:
-      <ul>
-        <template is="dom-repeat" items="[[_tagsWithNoData]]">
-          <li>[[item]]</li>
-        </template>
-      </ul>
-      <br>
-      Tags for the value, lower, and upper bounds of margin charts in the Layout
-      proto must match tags in the SCALARS dashboard.
+  <!-- here -->
+  <template is="dom-if" if="[[_enumeratedMissingTags.length]]">
+    <div class="collapsible-list-title">
+      <paper-icon-button
+          icon="[[_getToggleCollapsibleIcon(_missingTagsCollapsibleOpened)]]"
+          on-click="_toggleMissingTagsCollapsibleOpen"
+          class="toggle-collapsible-button">
+      </paper-icon-button>
+      <span class="collapsible-title-text">
+        <iron-icon icon="icons:error"></iron-icon> Missing Tags
+      </span>
     </div>
+    <iron-collapse opened="[[_missingTagsCollapsibleOpened]]">
+      <div class="error-content">
+        <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+        <template is="dom-repeat"
+                  items="[[_enumeratedMissingTags]]"
+                  as="missingEntry">
+          <div class="missing-tags-for-run-container">
+            Run "[[missingEntry.run]]" lacks data for tags
+            <ul>
+              <template is="dom-repeat" items="[[missingEntry.tags]]" as="tag">
+                <li>[[tag]]</li>
+              </template>
+            </ul>
+          </div>
+        </template>
+      </div>
+    </iron-collapse>
   </template>
 
   <template is="dom-if" if="[[_tagFilterInvalid]]">
-    <div id="error-content">
+    <div class="error-content">
       <iron-icon class="error-icon" icon="icons:error"></iron-icon>
       This regular expresion is invalid:<br>
       <span class="invalid-regex">[[_tagFilter]]</span>
@@ -123,7 +139,7 @@ limitations under the License.
   </template>
 
   <template is="dom-if" if="[[_stepsMismatch]]">
-    <div id="error-content">
+    <div class="error-content">
       <iron-icon class="error-icon" icon="icons:error"></iron-icon>
       The steps for value, lower, and upper tags do not match:
       <ul>
@@ -144,16 +160,16 @@ limitations under the License.
   </template>
 
   <div id="matches-container">
-    <div id="matches-list-title">
+    <div class="collapsible-list-title">
       <template is="dom-if" if="[[_dataSeriesStrings.length]]">
         <paper-icon-button
-          icon="[[_getToggleMatchesIcon(_matchesListOpened)]]"
+          icon="[[_getToggleCollapsibleIcon(_matchesListOpened)]]"
           on-click="_toggleMatchesOpen"
           class="toggle-matches-button">
         </paper-icon-button>
       </template>
 
-      <span class="matches-text">
+      <span class="collapsible-title-text">
         Matches ([[_dataSeriesStrings.length]])
       </span>
     </div>
@@ -179,7 +195,7 @@ limitations under the License.
   </div>
   <style include="tf-custom-scalar-card-style"></style>
   <style>
-    #error-content {
+    .error-content {
       background: #f00;
       border-radius: 5px;
       color: #fff;
@@ -197,7 +213,7 @@ limitations under the License.
       font-weight: bold;
     }
 
-    #error-content ul {
+    .error-content ul {
       margin: 1px 0 0 0;
       padding: 0 0 0 19px;
     }
@@ -206,8 +222,12 @@ limitations under the License.
       font-weight: bold;
     }
 
-    #matches-list-title {
+    .collapsible-list-title {
       margin: 10px 0 5px 0;
+    }
+
+    .collapsible-title-text {
+      vertical-align: middle;
     }
 
     #matches-list {
@@ -226,8 +246,8 @@ limitations under the License.
       width: 10px;
     }
 
-    .matches-text {
-      vertical-align: middle;
+    .missing-tags-for-run-container {
+      margin: 8px 0 0 0;
     }
   </style>
 </template>
@@ -381,7 +401,29 @@ limitations under the License.
             ];
           }
         },
-        _tagsWithNoData: String,
+        /**
+         * This object maps a run to a list of tags (of entries of scalar 
+         * values) that are missing for that run. A single run may be missing up
+         * to 3 scalar series (for value, lower, and upper).
+         */
+        _tagsToMissingRuns: {
+          type: Object,
+          value: {},
+        },
+        /**
+         * A list of objects encapsulating missing tags. Each object within this
+         * list has the following properties:
+         * run: A string denoting the relevant run.
+         * tags: A non-empty list of tags (strings) missing for that run.
+         */
+        _enumeratedMissingTags: {
+          type: Array,
+          computed: '_computeEnumeratedMissingTags(_tagsToMissingRuns)',
+        },
+        _missingTagsCollapsibleOpened: {
+          type: Boolean,
+          value: false,
+        },
         /**
          * This field is only set if data retrieved from the server exhibits a
          * step mismatch: if the lists of values, lower bounds, and upper bounds
@@ -518,9 +560,26 @@ limitations under the License.
             }
           });
 
+          const priorListOfTags = this._tagsToMissingRuns[run];
           if (tagsNotFound.length) {
-            // At least 1 tag could not be found. Show an error message.
-            this.set('_tagsWithNoData', tagsNotFound);
+            // At least 1 tag could not be found. Show a warning message.
+            if (!_.isEqual(priorListOfTags, tagsNotFound)) {
+              this._tagsToMissingRuns[run] = tagsNotFound;
+              // We trigger notifications in polymer by creating a new object.
+              // Polymer's property observers do not work for properties with
+              // names containing periods, and run names may have periods.
+              this.set(
+                  '_tagsToMissingRuns',
+                  Object.assign({}, this._tagsToMissingRuns));
+            }
+          } else {
+            if (priorListOfTags) {
+              // Tags that had previously been missing are now found.
+              delete this._tagsToMissingRuns[run];
+              this.set(
+                  '_tagsToMissingRuns',
+                  Object.assign({}, this._tagsToMissingRuns));
+            }
           }
 
           this.set('_nameToDataSeries', newMapping);
@@ -606,8 +665,8 @@ limitations under the License.
       _escapeRegexCharacters(stringValue) {
         return stringValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       },
-      _getToggleMatchesIcon(matchesListOpened) {
-        return matchesListOpened ? 'expand-less' : 'expand-more';
+      _getToggleCollapsibleIcon(listOpened) {
+        return listOpened ? 'expand-less' : 'expand-more';
       },
       _toggleMatchesOpen() {
         this.set('_matchesListOpened', !this._matchesListOpened);
@@ -619,6 +678,19 @@ limitations under the License.
       },
       _separateWithCommas(numbers) {
         return numbers.join(', ');
+      },
+      _computeEnumeratedMissingTags(tagsToMissingRuns) {
+        return _.map(tagsToMissingRuns, (tags, run) => {
+          return {
+            run: run,
+            tags: tags,
+          };
+        })
+      },
+      _toggleMissingTagsCollapsibleOpen() {
+        this.set(
+            '_missingTagsCollapsibleOpened',
+            !this._missingTagsCollapsibleOpened);
       },
   });
 </script>
