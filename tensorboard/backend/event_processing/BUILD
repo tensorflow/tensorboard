@@ -133,6 +133,7 @@ py_library(
         ":directory_watcher",
         ":event_accumulator",
         ":io_wrapper",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],

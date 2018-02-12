@@ -104,16 +104,17 @@ def standard_tensorboard_wsgi(
   if assets_zip_provider is None:
     from tensorboard import default
     assets_zip_provider = default.get_assets_zip_provider()
-  multiplexer = event_multiplexer.EventMultiplexer(
-      size_guidance=DEFAULT_SIZE_GUIDANCE,
-      tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
-      purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
   if db_connection_provider is not None:
     with contextlib.closing(db_connection_provider()) as db_conn:
       schema = db.Schema(db_conn)
       schema.create_tables()
       schema.create_indexes()
+  multiplexer = event_multiplexer.EventMultiplexer(
+      size_guidance=DEFAULT_SIZE_GUIDANCE,
+      tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
+      purge_orphaned_data=purge_orphaned_data,
+      db_connection_provider=db_connection_provider)
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
@@ -150,10 +151,14 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     ValueError: If something is wrong with the plugin configuration.
   """
   path_to_run = parse_event_files_spec(logdir)
-  if reload_interval:
-    start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
-  else:
-    reload_multiplexer(multiplexer, path_to_run)
+
+  if not multiplexer.IsInDatabaseMode():
+    # Reloading is not relevant in database mode.
+    if reload_interval:
+      start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
+    else:
+      reload_multiplexer(multiplexer, path_to_run)
+
   return TensorBoardWSGI(plugins, path_prefix)
 
 

@@ -300,6 +300,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
   @property
   def configs(self):
     """Returns a map of run paths to `ProjectorConfig` protos."""
+    return {}
+
     run_path_pairs = list(self.run_paths.items())
     self._append_plugin_asset_directories(run_path_pairs)
     # If there are no summary event files, the projector should still work,
