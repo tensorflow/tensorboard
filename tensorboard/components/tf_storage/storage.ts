@@ -226,7 +226,7 @@ function readComponent(): string {
 function writeComponent(component: string, useLocationReplace = false) {
   if (tf_globals.useHash()) {
       if (useLocationReplace) {
-          window.location.hash.replace(component);
+          window.location.replace(window.location.origin + window.location.pathname + '#' + component);
       } else {
           window.location.hash = component;
       }
