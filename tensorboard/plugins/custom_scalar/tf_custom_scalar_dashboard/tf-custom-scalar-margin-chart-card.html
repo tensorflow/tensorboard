@@ -100,7 +100,7 @@ limitations under the License.
   </div>
 
   <!-- here -->
-  <template is="dom-if" if="[[_enumeratedMissingTags.length]]">
+  <template is="dom-if" if="[[_missingTags.length]]">
     <div class="collapsible-list-title">
       <paper-icon-button
           icon="[[_getToggleCollapsibleIcon(_missingTagsCollapsibleOpened)]]"
@@ -115,7 +115,7 @@ limitations under the License.
       <div class="error-content">
         <iron-icon class="error-icon" icon="icons:error"></iron-icon>
         <template is="dom-repeat"
-                  items="[[_enumeratedMissingTags]]"
+                  items="[[_missingTags]]"
                   as="missingEntry">
           <div class="missing-tags-for-run-container">
             Run "[[missingEntry.run]]" lacks data for tags
@@ -402,23 +402,16 @@ limitations under the License.
           }
         },
         /**
-         * This object maps a run to a list of tags (of entries of scalar 
-         * values) that are missing for that run. A single run may be missing up
-         * to 3 scalar series (for value, lower, and upper).
-         */
-        _tagsToMissingRuns: {
-          type: Object,
-          value: {},
-        },
-        /**
          * A list of objects encapsulating missing tags. Each object within this
          * list has the following properties:
          * run: A string denoting the relevant run.
          * tags: A non-empty list of tags (strings) missing for that run.
+         * A run only has an entry in this list if some (but not all) of its 3
+         * tags (value, lower, upper) are missing.
          */
-        _enumeratedMissingTags: {
+        _missingTags: {
           type: Array,
-          computed: '_computeEnumeratedMissingTags(_tagsToMissingRuns)',
+          value: [],
         },
         _missingTagsCollapsibleOpened: {
           type: Boolean,
@@ -559,30 +552,28 @@ limitations under the License.
                   run, tagsObject.value, seriesName, dataPoints);
             }
           });
-
-          const priorListOfTags = this._tagsToMissingRuns[run];
-          if (tagsNotFound.length) {
-            // At least 1 tag could not be found. Show a warning message.
-            if (!_.isEqual(priorListOfTags, tagsNotFound)) {
-              this._tagsToMissingRuns[run] = tagsNotFound;
-              // We trigger notifications in polymer by creating a new object.
-              // Polymer's property observers do not work for properties with
-              // names containing periods, and run names may have periods.
-              this.set(
-                  '_tagsToMissingRuns',
-                  Object.assign({}, this._tagsToMissingRuns));
-            }
-          } else {
-            if (priorListOfTags) {
-              // Tags that had previously been missing are now found.
-              delete this._tagsToMissingRuns[run];
-              this.set(
-                  '_tagsToMissingRuns',
-                  Object.assign({}, this._tagsToMissingRuns));
-            }
-          }
-
           this.set('_nameToDataSeries', newMapping);
+
+          const entryIndex = _.findIndex(this._missingTags, (entry) => {
+            return entry.run === run;
+          });
+          if (tagsNotFound.length && tagsNotFound.length != 3) {
+            // Some but not all tags were found. Show a warning message.
+            const entry = {
+              run: run,
+              tags: tagsNotFound,
+            };
+            if (entryIndex >= 0) {
+              // Remove the previous entry. Insert the new one.
+              this.splice('_missingTags', entryIndex, 1, entry);
+            } else {
+              // Insert a new entry.
+              this.push('_missingTags', entry);
+            }
+          } else if (entryIndex >= 0) {
+            // Remove the previous entry if it exists.
+            this.splice('_missingTags', entryIndex, 1);
+          }
         });
       },
       _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
@@ -678,14 +669,6 @@ limitations under the License.
       },
       _separateWithCommas(numbers) {
         return numbers.join(', ');
-      },
-      _computeEnumeratedMissingTags(tagsToMissingRuns) {
-        return _.map(tagsToMissingRuns, (tags, run) => {
-          return {
-            run: run,
-            tags: tags,
-          };
-        })
       },
       _toggleMissingTagsCollapsibleOpen() {
         this.set(
