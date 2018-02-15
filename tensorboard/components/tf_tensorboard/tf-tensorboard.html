@@ -594,7 +594,7 @@ limitations under the License.
           if (selectedDashboard != null) {
             // Use location.replace for this call to avoid breaking back-button navigation.
             // Note that this will precede the update to tf_storage triggered by updating
-            // _selectedDashboard.
+            // _selectedDashboard and make it a no-op.
             tf_storage.setString(tf_storage.TAB, selectedDashboard, /*useLocalStorage=*/false,
                                  /*useLocationReplace=*/true);
             // Note: the following line will re-trigger this handler, but it
