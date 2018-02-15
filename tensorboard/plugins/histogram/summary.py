@@ -37,6 +37,7 @@ import numpy as np
 
 from tensorboard.plugins.histogram import metadata
 
+
 DEFAULT_BUCKET_COUNT = 30
 
 
