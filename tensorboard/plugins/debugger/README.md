@@ -168,19 +168,19 @@ For each tensor, the time axis (history of the tensor's execution) is treated as
 
 # Frequently Asked Questions (FAQ)
 
-## Q: How to exit the debugging?
+## Q: How to exit debugging?
 
 Answer: Follow these steps to interrupt your TensorFlow program being debugged
-and the TensorBoard process running the Debugger Plugin (*in that order*):
+and the TensorBoard process running the debugger plugin (*in that order*):
 
 1. Send `SIGINT` to the TensorFlow program being debugged, e.g., by using
    `Ctrl+C`.
-2. Send `SIGINT` to the TensorBoard process running the Debugger Plugin, e.g.,
+2. Send `SIGINT` to the TensorBoard process running the debugger plugin, e.g.,
    by using `Ctrl+C`.
 
-# Limitations and Unknown Issues
+# Limitations and Known Issues
 
-The Debugger Plugin has the following limitations and known issues. We plan to
+The debugger plugin has the following limitations and known issues. We plan to
 fix them in future releases.
 
-* The debugger dashboard does not yet support multiple users debugging at once.
+* The debugger plugin does not yet support multiple users debugging at once.

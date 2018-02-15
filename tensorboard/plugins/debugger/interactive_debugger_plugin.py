@@ -113,15 +113,13 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       # let the debugged tensorflow runtime proceed past the current Session.run
       # in the C++ layer and return to the Python layer, so the SIGINT handler
       # registered there may be triggered.
-      for _ in xrange(len(self._debugger_data_server.breakpoints) +  1):
+      for _ in xrange(len(self._debugger_data_server.breakpoints) + 1):
         self._debugger_data_server.put_incoming_message(True)
-      # while True:  # DEBUG
       try:
         self._debugger_data_server.stop_the_debugger_data_receiving_server()
       except ValueError:
         # In case the server has already stopped running.
         pass
-      # break  # DEBUG
       self._server_thread.join()
       print('InteractiveDebuggerPlugin stopped.')
     sys.exit(0)
