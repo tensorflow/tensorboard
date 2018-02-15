@@ -22,12 +22,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import csv
 
 import six
 from six import StringIO
 from werkzeug import wrappers
 
+import numpy as np
 import tensorflow as tf
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
@@ -53,6 +55,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._multiplexer = context.multiplexer
+    self._db_connection_provider = context.db_connection_provider
 
   def get_plugin_apps(self):
     return {
@@ -62,6 +65,14 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The scalars plugin is active iff any run has at least one scalar tag."""
+    if self._db_connection_provider:
+      # The plugin is active if one relevant tag can be found in the database.
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          'SELECT 1 FROM Tags WHERE Tags.plugin_name = ? LIMIT 1',
+          (metadata.PLUGIN_NAME,))
+      return bool(cursor)
+
     if not self._multiplexer:
       return False
 
@@ -69,6 +80,27 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def index_impl(self):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
+    if self._db_connection_provider:
+      # Read tags from the database.
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          ('SELECT '
+           'Tags.tag_name, '
+           'Tags.display_name, '
+           'Runs.run_name FROM Tags '
+           'LEFT JOIN Runs ON Tags.run_id=Runs.run_id '
+           'WHERE Tags.plugin_name = ?'), (metadata.PLUGIN_NAME,))
+      result = collections.defaultdict(dict)
+      for row in cursor:
+        tag_name, display_name, run_name = row
+        result[run_name][tag_name] = {
+            'displayName': display_name,
+            # TODO(chihuahua): Populate the description. Currently, the tags
+            # table does not link with the description table.
+            'description': '',
+        }
+      return result
+
     runs = self._multiplexer.Runs()
     result = {run: {} for run in runs}
 
@@ -85,11 +117,31 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def scalars_impl(self, tag, run, output_format):
     """Result of the form `(body, mime_type)`."""
-    tensor_events = self._multiplexer.Tensors(run, tag)
-    values = [[tensor_event.wall_time,
-               tensor_event.step,
-               tf.make_ndarray(tensor_event.tensor_proto).item()]
-              for tensor_event in tensor_events]
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          ('SELECT '
+           'Tensors.computed_time, '
+           'Tensors.data, '
+           'Tensors.step, '
+           'Tensors.dtype, '
+           'FROM Tensors '
+           'LEFT JOIN Tags ON Tensors.series=Tags.tag_id '
+           'LEFT JOIN Runs ON Tags.run_id=Runs.run_id '
+           'WHERE Tensors.step > -1 '
+           'AND Runs.run_name = ? '
+           'AND Tags.tag_name = ? '
+           'AND Tags.plugin_name = ? '),
+          (run, tag, metadata.PLUGIN_NAME))
+      values = [(wall_time, step, self._get_value(data, dtype_enum))
+                for (wall_time, data, step, dtype_enum) in cursor]
+    else:
+      tensor_events = self._multiplexer.Tensors(run, tag)
+      values = [(tensor_event.wall_time,
+                 tensor_event.step,
+                 tf.make_ndarray(tensor_event.tensor_proto).item())
+                for tensor_event in tensor_events]
+
     if output_format == OutputFormat.CSV:
       string_io = StringIO()
       writer = csv.writer(string_io)
@@ -98,6 +150,22 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       return (string_io.getvalue(), 'text/csv')
     else:
       return (values, 'application/json')
+
+  def _get_value(self, scalar_data_blob, dtype_enum):
+    """Obtains the value for a scalar event given the blob and dtype enum.
+
+    Args:
+      scalar_data_blob: The blob obtained from the database.
+      dtype_enum: The enum representing the dtype.
+
+    Returns:
+      The scalar value.
+    """
+    tensorflow_dtype = tf.DType(dtype_enum)
+    # Scalar tensors have no shape, so we index into them.
+    buf = np.frombuffer(
+        scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype)[0]
+    return np.asscalar(buf)
 
   @wrappers.Request.application
   def tags_route(self, request):
