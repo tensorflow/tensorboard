@@ -99,7 +99,6 @@ def _buckets(data, bucket_count=None):
 def op(name,
        data,
        edges=None,
-       bucket_heights=None,
        bucket_count=None,
        display_name=None,
        description=None,
