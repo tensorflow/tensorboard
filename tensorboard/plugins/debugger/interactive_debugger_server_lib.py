@@ -525,12 +525,6 @@ class InteractiveDebuggerDataServer(
     self.run_server()
 
   def stop_the_debugger_data_receiving_server(self):
-    """Starts the HTTP server for receiving health pills at `receive_port`.
-
-    After this method is called, health pills issued to host:receive_port
-    will be stored by this object. Calling this method also creates a file
-    within the log directory for storing health pill summary events.
-    """
     self.stop_server()
 
   def SendTracebacks(self, request, context):
