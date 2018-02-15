@@ -44,10 +44,12 @@ class SummaryTest(tf.test.TestCase):
   def compute_and_check_summary_pb(self,
                                    name='nemo',
                                    data=None,
+                                   edges=None,
                                    bucket_count=None,
                                    display_name=None,
                                    description=None,
                                    data_tensor=None,
+                                   edges_tensor=None,
                                    bucket_count_tensor=None,
                                    feed_dict=None):
     """Use both `op` and `pb` to get a summary, asserting equality.
@@ -59,12 +61,24 @@ class SummaryTest(tf.test.TestCase):
       data = self.gaussian
     if data_tensor is None:
       data_tensor = tf.constant(data)
+    if edges_tensor is None and edges is not None:
+      edges_tensor = tf.constant(edges)
     if bucket_count_tensor is None:
       bucket_count_tensor = bucket_count
-    op = summary.op(name, data_tensor, bucket_count=bucket_count_tensor,
-                    display_name=display_name, description=description)
-    pb = summary.pb(name, data, bucket_count=bucket_count,
-                    display_name=display_name, description=description)
+    op = summary.op(
+        name,
+        data_tensor,
+        edges_tensor,
+        bucket_count=bucket_count_tensor,
+        display_name=display_name,
+        description=description)
+    pb = summary.pb(
+        name,
+        data,
+        edges=edges,
+        bucket_count=bucket_count,
+        display_name=display_name,
+        description=description)
     pb_via_op = self.pb_via_op(op, feed_dict=feed_dict)
     self.assertProtoEquals(pb, pb_via_op)
     return pb
@@ -127,6 +141,10 @@ class SummaryTest(tf.test.TestCase):
     self.assertEqual(buckets[:, 2].sum(), self.gaussian.size)
     np.testing.assert_allclose(buckets[1:, 0], buckets[:-1, 1])
 
+  def test_edges_specified(self):
+    self.compute_and_check_summary_pb(
+        data=np.array([2, 4, 2, 0]), edges=np.array([0, 1, 2, 3, 4]))
+    
   def test_when_shape_not_statically_known(self):
     placeholder = tf.placeholder(tf.float64, shape=None)
     reshaped = self.gaussian.reshape((25, -1))
