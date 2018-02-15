@@ -166,7 +166,7 @@ For example, suppose a tensor has a shape of (500, 100), applying a slicing of `
 
 For each tensor, the time axis (history of the tensor's execution) is treated as an 1D array. Numpy-style slicing can be applied to time. For example, the default slicing of `-1` selects the most recent value. However, if the user changes that slicing parameter to `:`, the full history of the tensor will be shown (and the rank of the tensor being visualized is increased by 1).
 
-# Frequentl Asked Questions (FAQ)
+# Frequently Asked Questions (FAQ)
 
 ## Q: How to exit the debugging?
 
