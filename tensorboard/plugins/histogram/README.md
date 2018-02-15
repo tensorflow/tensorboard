@@ -96,6 +96,14 @@ subset of all the histograms, to save on memory. Reservoir sampling guarantees
 that every sample has an equal likelihood of being included, but because it is
 a randomized algorithm, the samples chosen don't occur at even steps.
 
+## Specifying Bin Heights
+
+If you have pre-computed the heights of `N` bins, you can use the `edges` parameter to specify the edges of the bins and the `data` parameter to pass their heights. For instance, if you wish to visualize a softmax vector of 5 classes: `[0.1, 0.3, 0.2, 0.0, 0.4]` you could simply pass the softmax vector as `data` and specify `edges` as `[0.5, 1.5, 2.5, 3.5, 4.5, 5.5]`:
+```
+tf.summary.histogram("softmax", data=[0.1, 0.3, 0.2, 0.0, 0.4], edges=[0.5, 1.5, 2.5, 3.5, 4.5, 5.5])
+```
+In general, if you pass a vector with `N+1` elements to `edges` you must pass a vector with `N` elements to `data` containing the heights of each bin.
+
 ## Overlay Mode
 
 There is a control on the left of the dashboard that allows you to toggle the
