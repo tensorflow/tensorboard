@@ -56,8 +56,9 @@ var tf_storage;
                 componentToDict(readComponent())[key];
             return value == undefined ? undefined : fromString(value);
         }
-        function set(key, value, useLocalStorage) {
+        function set(key, value, useLocalStorage, useLocationReplace) {
             if (useLocalStorage === void 0) { useLocalStorage = false; }
+            if (useLocationReplace === void 0) { useLocationReplace = false; }
             var stringValue = toString(value);
             if (useLocalStorage) {
                 window.localStorage.setItem(key, stringValue);
@@ -65,7 +66,7 @@ var tf_storage;
             else {
                 var items = componentToDict(readComponent());
                 items[key] = stringValue;
-                writeComponent(dictToComponent(items));
+                writeComponent(dictToComponent(items), useLocationReplace);
             }
         }
         function getInitializer(key, options) {
@@ -164,9 +165,15 @@ var tf_storage;
     /**
      * Write component to URI.
      */
-    function writeComponent(component) {
+    function writeComponent(component, useLocationReplace) {
+        if (useLocationReplace === void 0) { useLocationReplace = false; }
         if (tf_globals.useHash()) {
-            window.location.hash = component;
+            if (useLocationReplace) {
+                window.location.replace('#' + component);
+            }
+            else {
+                window.location.hash = component;
+            }
         }
         else {
             tf_globals.setFakeHash(component);
