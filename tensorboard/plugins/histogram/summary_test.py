@@ -144,7 +144,7 @@ class SummaryTest(tf.test.TestCase):
   def test_edges_specified(self):
     self.compute_and_check_summary_pb(
         data=np.array([2, 4, 2, 0]), edges=np.array([0, 1, 2, 3, 4]))
-    
+
   def test_when_shape_not_statically_known(self):
     placeholder = tf.placeholder(tf.float64, shape=None)
     reshaped = self.gaussian.reshape((25, -1))
