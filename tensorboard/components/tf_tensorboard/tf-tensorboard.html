@@ -592,7 +592,11 @@ limitations under the License.
         if (activeDashboards && selectedDashboard == null) {
           selectedDashboard = activeDashboards[0] || null;
           if (selectedDashboard != null) {
-            tf_storage.setString(tf_storage.TAB, selectedDashboard, /*useLocalStorage=*/false, /*useLocationReplace=*/true);
+            // Use location.replace for this call to avoid breaking back-button navigation.
+            // Note that this will precede the update to tf_storage triggered by updating
+            // _selectedDashboard.
+            tf_storage.setString(tf_storage.TAB, selectedDashboard, /*useLocalStorage=*/false,
+                                 /*useLocationReplace=*/true);
             // Note: the following line will re-trigger this handler, but it
             // will be a no-op since selectedDashboard is no longer null.
             this._selectedDashboard = selectedDashboard;
