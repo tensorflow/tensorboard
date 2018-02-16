@@ -68,9 +68,13 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     if self._db_connection_provider:
       # The plugin is active if one relevant tag can be found in the database.
       db = self._db_connection_provider()
-      cursor = db.execute(
-          'SELECT 1 FROM Tags WHERE Tags.plugin_name = ? LIMIT 1',
-          (metadata.PLUGIN_NAME,))
+      cursor = db.execute('''
+        SELECT
+          1
+        FROM Tags
+        WHERE Tags.plugin_name = ?
+        LIMIT 1
+      '''), (metadata.PLUGIN_NAME,))
       return bool(cursor)
 
     if not self._multiplexer:
@@ -83,13 +87,17 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     if self._db_connection_provider:
       # Read tags from the database.
       db = self._db_connection_provider()
-      cursor = db.execute(
-          ('SELECT '
-           'Tags.tag_name, '
-           'Tags.display_name, '
-           'Runs.run_name FROM Tags '
-           'LEFT JOIN Runs ON Tags.run_id=Runs.run_id '
-           'WHERE Tags.plugin_name = ?'), (metadata.PLUGIN_NAME,))
+      cursor = db.execute('''
+        SELECT
+          Tags.tag_name,
+          Tags.display_name,
+          Runs.run_name
+        FROM Tags
+        LEFT JOIN Runs
+          ON Tags.run_id = Runs.run_id
+        WHERE
+          Tags.plugin_name = ?
+      ''', (metadata.PLUGIN_NAME,))
       result = collections.defaultdict(dict)
       for row in cursor:
         tag_name, display_name, run_name = row
@@ -119,20 +127,24 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     """Result of the form `(body, mime_type)`."""
     if self._db_connection_provider:
       db = self._db_connection_provider()
-      cursor = db.execute(
-          ('SELECT '
-           'Tensors.computed_time, '
-           'Tensors.data, '
-           'Tensors.step, '
-           'Tensors.dtype, '
-           'FROM Tensors '
-           'LEFT JOIN Tags ON Tensors.series=Tags.tag_id '
-           'LEFT JOIN Runs ON Tags.run_id=Runs.run_id '
-           'WHERE Tensors.step > -1 '
-           'AND Runs.run_name = ? '
-           'AND Tags.tag_name = ? '
-           'AND Tags.plugin_name = ? '),
-          (run, tag, metadata.PLUGIN_NAME))
+      cursor = db.execute('''
+        SELECT
+          Tensors.computed_time,
+          Tensors.data,
+          Tensors.step,
+          Tensors.dtype,
+        FROM Tensors
+        LEFT JOIN Tags
+        ON Tensors.series=Tags.tag_id
+        LEFT JOIN Runs
+        ON Tags.run_id=Runs.run_id '
+        WHERE
+          Tensors.step > -1
+          AND Runs.run_name = ?
+          AND Tags.tag_name = ?
+          AND Tags.plugin_name = ?
+        ORDER BY Tensors.step
+      ''', (run, tag, metadata.PLUGIN_NAME))
       values = [(wall_time, step, self._get_value(data, dtype_enum))
                 for (wall_time, data, step, dtype_enum) in cursor]
     else:
@@ -152,8 +164,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       return (values, 'application/json')
 
   def _get_value(self, scalar_data_blob, dtype_enum):
-    """Obtains the value for a scalar event given the blob and dtype enum.
-
+    """Obtains value for scalar event given blob and dtype enum.
+    
     Args:
       scalar_data_blob: The blob obtained from the database.
       dtype_enum: The enum representing the dtype.
@@ -162,9 +174,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       The scalar value.
     """
     tensorflow_dtype = tf.DType(dtype_enum)
-    # Scalar tensors have no shape, so we index into them.
-    buf = np.frombuffer(
-        scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype)[0]
+    buf = np.frombuffer(scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype)
     return np.asscalar(buf)
 
   @wrappers.Request.application
