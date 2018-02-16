@@ -129,9 +129,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       db = self._db_connection_provider()
       cursor = db.execute('''
         SELECT
+          Tensors.step,
           Tensors.computed_time,
           Tensors.data,
-          Tensors.step,
           Tensors.dtype,
         FROM Tensors
         LEFT JOIN Tags
@@ -139,14 +139,15 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         LEFT JOIN Runs
         ON Tags.run_id=Runs.run_id '
         WHERE
-          Tensors.step > -1
-          AND Runs.run_name = ?
+          Runs.run_name = ?
           AND Tags.tag_name = ?
           AND Tags.plugin_name = ?
+          AND Tensors.shape = ''
+          AND Tensors.step > -1
         ORDER BY Tensors.step
       ''', (run, tag, metadata.PLUGIN_NAME))
       values = [(wall_time, step, self._get_value(data, dtype_enum))
-                for (wall_time, data, step, dtype_enum) in cursor]
+                for (step, wall_time, data, dtype_enum) in cursor]
     else:
       tensor_events = self._multiplexer.Tensors(run, tag)
       values = [(tensor_event.wall_time,
