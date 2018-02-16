@@ -100,11 +100,12 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
             self._grpc_port))
 
     self._server_thread = threading.Thread(
-        target=self._debugger_data_server.
-        start_the_debugger_data_receiving_server)
+        target=self._debugger_data_server.run_server)
     self._server_thread.start()
 
     signal.signal(signal.SIGINT, self.signal_handler)
+    # Note: this is required because of a wontfix issue in grpc/python 2.7:
+    #   https://github.com/grpc/grpc/issues/3820
 
   def signal_handler(self, unused_signal, unused_frame):
     if self._debugger_data_server and self._server_thread:
@@ -116,7 +117,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       for _ in xrange(len(self._debugger_data_server.breakpoints) + 1):
         self._debugger_data_server.put_incoming_message(True)
       try:
-        self._debugger_data_server.stop_the_debugger_data_receiving_server()
+        self._debugger_data_server.stop_server()
       except ValueError:
         # In case the server has already stopped running.
         pass
