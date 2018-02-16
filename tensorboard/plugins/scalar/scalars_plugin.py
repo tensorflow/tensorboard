@@ -166,7 +166,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def _get_value(self, scalar_data_blob, dtype_enum):
     """Obtains value for scalar event given blob and dtype enum.
-    
+
     Args:
       scalar_data_blob: The blob obtained from the database.
       dtype_enum: The enum representing the dtype.
