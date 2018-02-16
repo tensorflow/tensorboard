@@ -74,7 +74,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         FROM Tags
         WHERE Tags.plugin_name = ?
         LIMIT 1
-      '''), (metadata.PLUGIN_NAME,))
+      ''', (metadata.PLUGIN_NAME,))
       return bool(cursor)
 
     if not self._multiplexer:
