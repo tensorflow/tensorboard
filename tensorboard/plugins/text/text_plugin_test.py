@@ -358,14 +358,14 @@ class TextPluginTest(tf.test.TestCase):
   def testPluginIsActiveWhenNoRuns(self):
     """The plugin should be inactive when there are no runs."""
     multiplexer = event_multiplexer.EventMultiplexer()
-    context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
+    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
     self.assertIsActive(plugin, False)
 
   def testPluginIsActiveWhenTextRuns(self):
     """The plugin should be active when there are runs with text."""
     multiplexer = event_multiplexer.EventMultiplexer()
-    context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
+    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
@@ -373,10 +373,10 @@ class TextPluginTest(tf.test.TestCase):
 
   def testPluginIsActiveWhenRunsButNoText(self):
     """The plugin should be inactive when there are runs but none has text."""
-    multiplexer = event_multiplexer.EventMultiplexer()
-    context = base_plugin.TBContext(logdir=None, multiplexer=multiplexer)
-    plugin = text_plugin.TextPlugin(context)
     logdir = os.path.join(self.get_temp_dir(), 'runs_with_no_text')
+    multiplexer = event_multiplexer.EventMultiplexer()
+    context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+    plugin = text_plugin.TextPlugin(context)
     self.generate_testdata(include_text=False, logdir=logdir)
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()

@@ -86,6 +86,7 @@ class TBContext(object):
       assets_zip_provider=None,
       db_connection_provider=None,
       db_module=None,
+      db_uri=None,
       logdir=None,
       multiplexer=None,
       plugin_name_to_instance=None,
@@ -112,7 +113,10 @@ class TBContext(object):
       db_module: A PEP-249 DB Module, e.g. sqlite3. This is useful for accessing
           things like date time constructors. This value will be None if we are
           not in SQL mode and multiplexer should be used instead.
-      logdir: The string logging directory TensorBoard was started with.
+      db_uri: The string db URI TensorBoard was started with. If this is set,
+          the logdir should be None.
+      logdir: The string logging directory TensorBoard was started with. If this
+          is set, the db_uri should be None.
       multiplexer: An EventMultiplexer with underlying TB data. Plugins should
           copy this data over to the database when the db fields are set.
       plugin_name_to_instance: A mapping between plugin name to instance.
@@ -126,6 +130,7 @@ class TBContext(object):
     self.assets_zip_provider = assets_zip_provider
     self.db_connection_provider = db_connection_provider
     self.db_module = db_module
+    self.db_uri = db_uri
     self.logdir = logdir
     self.multiplexer = multiplexer
     self.plugin_name_to_instance = plugin_name_to_instance

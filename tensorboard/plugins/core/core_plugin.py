@@ -48,8 +48,10 @@ class CorePlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._logdir = context.logdir
+    self._db_uri = context.db_uri
     self._window_title = context.window_title
     self._multiplexer = context.multiplexer
+    self._db_connection_provider = context.db_connection_provider
     self._assets_zip_provider = context.assets_zip_provider
 
   def is_active(self):
@@ -59,6 +61,7 @@ class CorePlugin(base_plugin.TBPlugin):
     apps = {
         '/___rPc_sWiTcH___': self._send_404_without_logging,
         '/audio': self._redirect_to_index,
+        '/data/environment': self._serve_environment,
         '/data/logdir': self._serve_logdir,
         '/data/runs': self._serve_runs,
         '/data/window_properties': self._serve_window_properties,
@@ -94,14 +97,35 @@ class CorePlugin(base_plugin.TBPlugin):
         request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
 
   @wrappers.Request.application
+  def _serve_environment(self, request):
+    """Serve a JSON object containing some base properties used by the frontend.
+
+    * data_location is either a path to a directory or an address to a
+      database (depending on which mode TensorBoard is running in).
+    * window_title is the title of the TensorBoard web page.
+    """
+    return http_util.Respond(
+        request,
+        {
+            'data_location': self._logdir or self._db_uri,
+            'window_title': self._window_title,
+        },
+        'application/json')
+
+  @wrappers.Request.application
   def _serve_logdir(self, request):
     """Respond with a JSON object containing this TensorBoard's logdir."""
+    # TODO(chihuahua): Remove this method once the frontend instead uses the
+    # /data/environment route (and no deps throughout Google use the
+    # /data/logdir route).
     return http_util.Respond(
         request, {'logdir': self._logdir}, 'application/json')
 
   @wrappers.Request.application
   def _serve_window_properties(self, request):
     """Serve a JSON object containing this TensorBoard's window properties."""
+    # TODO(chihuahua): Remove this method once the frontend instead uses the
+    # /data/environment route.
     return http_util.Respond(
         request, {'window_title': self._window_title}, 'application/json')
 
@@ -118,6 +142,7 @@ class CorePlugin(base_plugin.TBPlugin):
       A werkzeug Response with the following content:
       {runName: {firstEventTimestamp: 123456.789}}
     """
+    # TODO(chihuahua): When running in database mode, query the Runs table.
     run_names = sorted(self._multiplexer.Runs())  # Why `sorted`? See below.
     def get_first_event_timestamp(run_name):
       try:
