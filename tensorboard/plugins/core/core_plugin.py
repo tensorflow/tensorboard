@@ -118,7 +118,6 @@ class CorePlugin(base_plugin.TBPlugin):
     # TODO(chihuahua): Remove this method once the frontend instead uses the
     # /data/environment route (and no deps throughout Google use the
     # /data/logdir route).
-    route).
     return http_util.Respond(
         request, {'logdir': self._logdir}, 'application/json')
 
