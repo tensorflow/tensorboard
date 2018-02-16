@@ -16,7 +16,7 @@ This dashboard is in its **alpha release**. Some features are not yet fully func
 
 To enable the debugger dashboard, pass the `debugger_port` flag to TensorBoard. TensorBoard will then both receive gRPC messages from and issue gRPC messages to model logic via this port.
 
-This command demonstrates how to set the debugger port to 6064. 
+This command demonstrates how to set the debugger port to 6064.
 
 ```
 tensorboard \
@@ -166,10 +166,21 @@ For example, suppose a tensor has a shape of (500, 100), applying a slicing of `
 
 For each tensor, the time axis (history of the tensor's execution) is treated as an 1D array. Numpy-style slicing can be applied to time. For example, the default slicing of `-1` selects the most recent value. However, if the user changes that slicing parameter to `:`, the full history of the tensor will be shown (and the rank of the tensor being visualized is increased by 1).
 
-# Limitations
+# Frequently Asked Questions (FAQ)
 
-* Hitting Ctrl+C (issuing a SIGINT signal) might fail to terminate execution for a model that is instrumented with
-  `TensorBoardDebugWrapperSession` or its corresponding hook. The same limitation may be present in the tensorboard
-  process as well. In those cases, the user must manually
-  [kill](https://www.linux.com/learn/intro-to-linux/2017/5/how-kill-process-command-line) the processes.
-* The debugger dashboard does not yet support multiple users debugging at once.
+## Q: How to exit debugging?
+
+Answer: Follow these steps to interrupt your TensorFlow program being debugged
+and the TensorBoard process running the debugger plugin (*in that order*):
+
+1. Send `SIGINT` to the TensorFlow program being debugged, e.g., by using
+   `Ctrl+C`.
+2. Send `SIGINT` to the TensorBoard process running the debugger plugin, e.g.,
+   by using `Ctrl+C`.
+
+# Limitations and Known Issues
+
+The debugger plugin has the following limitations and known issues. We plan to
+fix them in future releases.
+
+* The debugger plugin does not yet support multiple users debugging at once.
