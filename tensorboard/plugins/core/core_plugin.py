@@ -126,7 +126,7 @@ class CorePlugin(base_plugin.TBPlugin):
   def _serve_window_properties(self, request):
     """Serve a JSON object containing this TensorBoard's window properties."""
     # TODO(chihuahua): Remove this method once the frontend instead uses the
-    # /environment route.
+    # /data/environment route.
     return http_util.Respond(
         request, {'window_title': self._window_title}, 'application/json')
 
