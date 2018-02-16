@@ -79,15 +79,15 @@ def _ConstructDebuggerPluginWithGrpcPort(context):
     from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
     from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
     # pylint: enable=line-too-long,g-import-not-at-top
-  except ImportError as err:
-    (unused_type, unused_value, traceback) = sys.exc_info()
-    six.reraise(
-        ImportError,
-        ImportError(
-            err.message +
-            '\n\nTo use the debugger plugin, you need to have '
-            'gRPC installed:\n  pip install grpcio'),
-        traceback)
+  except ImportError as e:
+    e_type, e_value, e_traceback = sys.exc_info()
+    message = e.msg if hasattr(e, 'msg') else e.message  # Handle py2 vs py3
+    if 'grpc' in message:
+      e_value = ImportError(
+          message +
+          '\n\nTo use the debugger plugin, you need to have '
+          'gRPC installed:\n  pip install grpcio')
+    six.reraise(e_type, e_value, e_traceback)
 
   if FLAGS.debugger_port > 0:
     interactive_plugin = (
