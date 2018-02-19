@@ -265,21 +265,23 @@ class TextPlugin(base_plugin.TBPlugin):
         'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
 
   def index_impl(self):
-    # A previous system of collecting and serving text summaries involved
-    # storing the tags of text summaries within tensors.json files. See if we
-    # are currently using that system. We do not want to drop support for that
-    # use case.
     run_to_series = collections.defaultdict(list)
-    name = 'tensorboard_text'
-    run_to_assets = self._multiplexer.PluginAssets(name)
-    for run, assets in run_to_assets.items():
-      if 'tensors.json' in assets:
-        tensors_json = self._multiplexer.RetrievePluginAsset(
-            run, name, 'tensors.json')
-        tensors = json.loads(tensors_json)
-        run_to_series[run] = tensors
-      else:
-        run_to_series[run] = []
+
+    if not self._multiplexer.IsInDatabaseMode():
+      # A previous system of collecting and serving text summaries involved
+      # storing the tags of text summaries within tensors.json files. See if we
+      # are currently using that system. We do not want to drop support for that
+      # use case. Only applies if not in database mode.
+      name = 'tensorboard_text'
+      run_to_assets = self._multiplexer.PluginAssets(name)
+      for run, assets in run_to_assets.items():
+        if 'tensors.json' in assets:
+          tensors_json = self._multiplexer.RetrievePluginAsset(
+              run, name, 'tensors.json')
+          tensors = json.loads(tensors_json)
+          run_to_series[run] = tensors
+        else:
+          run_to_series[run] = []
 
     # TensorBoard is obtaining summaries related to the text plugin based on
     # SummaryMetadata stored within Value protos.
