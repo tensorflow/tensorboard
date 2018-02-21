@@ -134,12 +134,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           Tensors.step,
           Tensors.computed_time,
           Tensors.data,
-          Tensors.dtype,
+          Tensors.dtype
         FROM Tensors
         LEFT JOIN Tags
           ON Tensors.series = Tags.tag_id
         LEFT JOIN Runs
-          ON Tags.run_id = Runs.run_id '
+          ON Tags.run_id = Runs.run_id 
         WHERE
           Runs.run_name = ?
           AND Tags.tag_name = ?
