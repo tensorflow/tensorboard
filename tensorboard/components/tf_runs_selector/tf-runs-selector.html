@@ -64,12 +64,12 @@ Properties out:
       is="dom-if"
       if="[[dataLocation]]">
       <div id="data-location">
-        <span id="clipped-dataLocation" inner-h-t-m-l="[[_clippeddataLocation]]"></span><!--
+        <span id="clipped-dataLocation" inner-h-t-m-l="[[_clippedDataLocation]]"></span><!--
           We use HTML comments to remove spaces before the ellipsis.
         --><template
                      is="dom-if"
-                     if="[[_shouldShowExpanddataLocationButton(dataLocation, _dataLocationClipLength)]]"><!--
-          --><a href="" on-click="_opendataLocationDialog">…</a>
+                     if="[[_shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength)]]"><!--
+          --><a href="" on-click="_openDataLocationDialog">…</a>
         </template>
       </div>
     </template>
@@ -128,7 +128,7 @@ Properties out:
         notify: true,
       },
       // This is the potentially clipped portion of the dataLocation we show at the bottom of the sidebar.
-      _clippeddataLocation: {
+      _clippedDataLocation: {
         type: String,
         computed: '_getClippedDataLocation(dataLocation, _dataLocationClipLength)',
       },
@@ -175,11 +175,11 @@ Properties out:
         return this._breakString(dataLocation);
       }
     },
-    _opendataLocationDialog: function(event) {
+    _openDataLocationDialog: function(event) {
       event.preventDefault();
       this.$$('#data-location-dialog').open();
     },
-    _shouldShowExpanddataLocationButton(dataLocation, _dataLocationClipLength) {
+    _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
       return dataLocation && dataLocation.length > _dataLocationClipLength;
     },
   });
