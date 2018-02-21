@@ -138,7 +138,7 @@ summary_lib.pr_curve_raw_data_op(
 summary_lib.scalar(
     'f1_max',
     tf.reduce_max(
-        2.0 * data.precision * data.precision / tf.maximum(
+        2.0 * data.precision * data.recall / tf.maximum(
             data.precision + data.recall, 1e-7)))
 
 merged_summary = tf.summary.merge_all()
