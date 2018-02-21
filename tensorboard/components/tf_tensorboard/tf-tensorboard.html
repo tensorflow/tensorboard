@@ -151,8 +151,8 @@ limitations under the License.
             We’ll try to reload every [[autoReloadIntervalSecs]]&nbsp;seconds as well.
             </template>
             <p><i>Last reload: [[_lastReloadTime]]</i>
-            <template is="dom-if" if="[[_logdir]]">
-              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            <template is="dom-if" if="[[_dataLocation]]">
+              <p><i>Log directory: <span id="data_location">[[_dataLocation]]</span></i></p>
             </template>
           </div>
         </template>
@@ -173,8 +173,8 @@ limitations under the License.
             <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
             and consider filing an issue on GitHub.
             <p><i>Last reload: [[_lastReloadTime]]</i>
-            <template is="dom-if" if="[[_logdir]]">
-              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            <template is="dom-if" if="[[_dataLocation]]">
+              <p><i>Data location: <span id="data_location">[[_dataLocation]]</span></i></p>
             </template>
           </div>
         </template>
@@ -185,8 +185,8 @@ limitations under the License.
               <p>You can select a dashboard from the list above.
             </template>
             <p><i>Last reload: [[_lastReloadTime]]</i>
-            <template is="dom-if" if="[[_logdir]]">
-              <p><i>Log directory: <span id="logdir">[[_logdir]]</span></i></p>
+            <template is="dom-if" if="[[_dataLocation]]">
+              <p><i>Data location: <span id="data_location">[[_dataLocation]]</span></i></p>
             </template>
           </div>
         </template>
@@ -467,22 +467,18 @@ limitations under the License.
           type: Boolean,
           value: false,
         },
-
         _isReloadDisabled: {
           type: Boolean,
           value: false,
         },
-
         _lastReloadTime: {
           type: String,
           value: "not yet loaded",
         },
-
-        _logdir: {
+        _dataLocation: {
           type: String,
           value: null,
         },
-
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(),
@@ -687,15 +683,15 @@ limitations under the License.
 
         tf_backend.fetchRuns();
         this._fetchWindowProperties();
-        this._fetchLogdir();
+        this._fetchEnvironment();
         this._fetchActiveDashboards();
         this._lastReloadTime = new Date().toString();
       },
 
-      _fetchLogdir() {
-        const url = tf_backend.getRouter().logdir();
+      _fetchEnvironment() {
+        const url = tf_backend.getRouter().environment();
         return this._requestManager.request(url).then(result => {
-          this._logdir = result.logdir;
+          this._dataLocation = result.data_location;
         });
       },
 
@@ -766,7 +762,7 @@ limitations under the License.
         if (this._isReloadDisabled) {
           return;
         }
-        this._fetchLogdir();
+        this._fetchEnvironment();
         Promise.all([this._fetchActiveDashboards(), tf_backend.fetchRuns()]).then(() => {
           const dashboard = this._selectedDashboardComponent();
           if (dashboard) {

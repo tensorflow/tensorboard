@@ -38,10 +38,10 @@ var tf_backend;
             return dataDir + "/plugin/" + pluginName + route;
         }
         return {
-            logdir: function () { return dataDir + '/logdir'; },
             runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
             pluginsListing: function () { return dataDir + '/plugins_listing'; },
             windowProperties: function () { return dataDir + '/window_properties'; },
+            environment: function () { return dataDir + '/environment'; },
             isDemoMode: function () { return demoMode; },
             pluginRoute: pluginRoute,
         };
