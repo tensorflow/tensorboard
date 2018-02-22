@@ -22,7 +22,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import contextlib
 import json
 import os
 import re
@@ -109,11 +108,6 @@ def standard_tensorboard_wsgi(
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
-  if db_connection_provider is not None:
-    with contextlib.closing(db_connection_provider()) as db_conn:
-      schema = db.Schema(db_conn)
-      schema.create_tables()
-      schema.create_indexes()
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
