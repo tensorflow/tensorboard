@@ -157,8 +157,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
              ORDER BY RANDOM()
              LIMIT %(downsample_to)d)
         ''' % {
-          'query': query,
-          'downsample_to': downsample_to,
+            'query': query,
+            'downsample_to': downsample_to,
         }
       query = '''
         %s
@@ -177,7 +177,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                 for e in tensor_events]
       if downsample_to is not None and len(events) > downsample_to:
         indices = sorted(random.Random(0).sample(list(range(len(events))),
-                                                downsample_to))
+                                                 downsample_to))
         events = [events[i] for i in indices]
     return (events, 'application/json')
 
