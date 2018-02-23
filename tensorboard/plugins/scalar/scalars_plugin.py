@@ -93,7 +93,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           Tags.display_name,
           Runs.run_name
         FROM Tags
-        LEFT JOIN Runs
+        JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
           Tags.plugin_name = ?
@@ -136,9 +136,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           Tensors.data,
           Tensors.dtype
         FROM Tensors
-        LEFT JOIN Tags
+        JOIN Tags
           ON Tensors.series = Tags.tag_id
-        LEFT JOIN Runs
+        JOIN Runs
           ON Tags.run_id = Runs.run_id 
         WHERE
           Runs.run_name = ?
