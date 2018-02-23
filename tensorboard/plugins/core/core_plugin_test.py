@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import contextlib
 import json
 import os
 import shutil
@@ -28,7 +27,6 @@ import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
-from tensorboard import db
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -39,50 +37,14 @@ class CorePluginTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
 
   def setUp(self):
+    super(CorePluginTest, self).setUp()
     self.temp_dir = self.get_temp_dir()
     self.addCleanup(shutil.rmtree, self.temp_dir)
-
-    self.startLogdirBasedServer(self.temp_dir)
-    self.startDbBasedServer(self.temp_dir)
-
-  def startLogdirBasedServer(self, temp_dir):
-    self.logdir = temp_dir
-    self._generate_test_data(run_name='run1')
-    self.multiplexer = event_multiplexer.EventMultiplexer(
-        size_guidance=application.DEFAULT_SIZE_GUIDANCE,
-        purge_orphaned_data=True)
-    context = base_plugin.TBContext(
-        assets_zip_provider=get_test_assets_zip_provider(),
-        logdir=self.logdir,
-        multiplexer=self.multiplexer,
-        window_title='title foo')
-    self.logdir_based_plugin = core_plugin.CorePlugin(context)
-    app = application.TensorBoardWSGIApp(
-        self.logdir,
-        [self.logdir_based_plugin],
-        self.multiplexer,
-        0,
-        path_prefix='')
-    self.logdir_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-  def startDbBasedServer(self, temp_dir):
-    self.db_uri = 'sqlite:' + os.path.join(temp_dir, 'db.sqlite')
-    db_module, db_connection_provider = application.get_database_info(
-        self.db_uri)
-    if db_connection_provider is not None:
-      with contextlib.closing(db_connection_provider()) as db_conn:
-        schema = db.Schema(db_conn)
-        schema.create_tables()
-        schema.create_indexes()
-    context = base_plugin.TBContext(
-        assets_zip_provider=get_test_assets_zip_provider(),
-        db_module=db_module,
-        db_connection_provider=db_connection_provider,
-        db_uri=self.db_uri,
-        window_title='title foo')
-    self.db_based_plugin = core_plugin.CorePlugin(context)
-    app = application.TensorBoardWSGI([self.db_based_plugin])
-    self.db_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    self.db_path = os.path.join(self.temp_dir, 'db.db')
+    self.db_uri = 'sqlite:' + self.db_path
+    self._start_logdir_based_server(self.temp_dir)
+    self._start_db_based_server()
+    self._add_run('run1')
 
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
@@ -133,6 +95,8 @@ class CorePluginTest(tf.test.TestCase):
 
   def testRuns(self):
     """Test the format of the /data/runs endpoint."""
+    run_json = self._get_json(self.db_based_server, '/data/runs')
+    self.assertEqual(run_json, ['run1'])
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
 
@@ -166,27 +130,65 @@ class CorePluginTest(tf.test.TestCase):
                    'FirstEventTimestamp',
                    FirstEventTimestamp_stub)
 
-    def add_run(run_name):
-      self._generate_test_data(run_name)
-      self.multiplexer.AddRunsFromDirectory(self.logdir)
-      self.multiplexer.Reload()
-
     # Add one run: it should come last.
-    add_run('avocado')
+    self._add_run('avocado')
+    self.assertEqual(self._get_json(self.db_based_server, '/data/runs'),
+                     ['run1', 'avocado'])
     self.assertEqual(self._get_json(self.logdir_based_server, '/data/runs'),
                      ['run1', 'avocado'])
 
     # Add another run: it should come last, too.
-    add_run('zebra')
+    self._add_run('zebra')
+    self.assertEqual(self._get_json(self.db_based_server, '/data/runs'),
+                     ['run1', 'avocado', 'zebra'])
     self.assertEqual(self._get_json(self.logdir_based_server, '/data/runs'),
                      ['run1', 'avocado', 'zebra'])
 
     # And maybe there's a run for which we somehow have no timestamp.
-    add_run('mysterious')
+    self._add_run('mysterious')
+    self.assertEqual(self._get_json(self.db_based_server, '/data/runs'),
+                     ['run1', 'avocado', 'zebra', 'mysterious'])
     self.assertEqual(self._get_json(self.logdir_based_server, '/data/runs'),
                      ['run1', 'avocado', 'zebra', 'mysterious'])
 
     stubs.UnsetAll()
+
+  def _start_logdir_based_server(self, temp_dir):
+    self.logdir = temp_dir
+    self.multiplexer = event_multiplexer.EventMultiplexer(
+        size_guidance=application.DEFAULT_SIZE_GUIDANCE,
+        purge_orphaned_data=True)
+    context = base_plugin.TBContext(
+        assets_zip_provider=get_test_assets_zip_provider(),
+        logdir=self.logdir,
+        multiplexer=self.multiplexer,
+        window_title='title foo')
+    self.logdir_based_plugin = core_plugin.CorePlugin(context)
+    app = application.TensorBoardWSGIApp(
+        self.logdir,
+        [self.logdir_based_plugin],
+        self.multiplexer,
+        0,
+        path_prefix='')
+    self.logdir_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+  def _start_db_based_server(self):
+    db_module, db_connection_provider = application.get_database_info(
+        self.db_uri)
+    context = base_plugin.TBContext(
+        assets_zip_provider=get_test_assets_zip_provider(),
+        db_module=db_module,
+        db_connection_provider=db_connection_provider,
+        db_uri=self.db_uri,
+        window_title='title foo')
+    self.db_based_plugin = core_plugin.CorePlugin(context)
+    app = application.TensorBoardWSGI([self.db_based_plugin])
+    self.db_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+  def _add_run(self, run_name):
+    self._generate_test_data(run_name)
+    self.multiplexer.AddRunsFromDirectory(self.logdir)
+    self.multiplexer.Reload()
 
   def _get_json(self, server, path):
     response = server.get(path)
@@ -209,8 +211,6 @@ class CorePluginTest(tf.test.TestCase):
           events.
     """
     run_path = os.path.join(self.logdir, run_name)
-    os.makedirs(run_path)
-
     writer = tf.summary.FileWriter(run_path)
 
     # Add a simple graph event.
@@ -230,6 +230,17 @@ class CorePluginTest(tf.test.TestCase):
 
     writer.flush()
     writer.close()
+
+    # Write data for the run to the database.
+    # TODO(nickfelt): Figure out why reseting the graph is necessary.
+    tf.reset_default_graph()
+    with tf.Session():
+      with tf.contrib.summary.create_db_writer(
+          db_uri=self.db_path,
+          experiment_name='experiment',
+          run_name=run_name,
+          user_name='user').as_default():
+        tf.contrib.summary.initialize(graph_def)
 
 
 class CorePluginUsingMetagraphOnlyTest(CorePluginTest):

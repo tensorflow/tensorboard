@@ -142,26 +142,50 @@ class CorePlugin(base_plugin.TBPlugin):
       A werkzeug Response with the following content:
       {runName: {firstEventTimestamp: 123456.789}}
     """
-    # TODO(chihuahua): When running in database mode, query the Runs table.
-    run_names = sorted(self._multiplexer.Runs())  # Why `sorted`? See below.
-    def get_first_event_timestamp(run_name):
-      try:
-        return self._multiplexer.FirstEventTimestamp(run_name)
-      except ValueError:
-        tf.logging.warning('Unable to get first event timestamp for run %s',
-                           run_name)
-        # Put runs without a timestamp at the end. Their internal
-        # ordering would be nondeterministic, but Python's sorts are
-        # stable, so `sorted`ing the initial list above provides a
-        # deterministic ordering. Of course, we cannot guarantee that
-        # this will be append-only for new event-less runs.
-        return float('inf')
-    first_event_timestamps = {
-        run_name: get_first_event_timestamp(run_name)
-        for run_name in run_names
-    }
-    run_names.sort(key=first_event_timestamps.get)
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      cursor = db.execute('''
+        SELECT
+          run_name,
+          started_time IS NULL as started_time_nulls_last,
+          started_time
+        FROM Runs
+        ORDER BY started_time_nulls_last, started_time, run_name
+      ''')
+      run_names = [row[0] for row in cursor]
+    else:
+      run_mapping = self._multiplexer.Runs()
+      first_event_time_values = {
+          run_name: self._get_first_event_timestamp(run_name)
+          for run_name in run_mapping
+      }
+      run_names = run_mapping.keys()
+      # Why `sorted`? See below.
+      run_names.sort(key=first_event_time_values.get)
     return http_util.Respond(request, run_names, 'application/json')
+
+  def _get_first_event_timestamp(self, run_name):
+    """Gets the first event timestamp for a run. Or infinity if not found.
+
+    Assumes use of the multiplexer.
+
+    Args:
+      run_name: The name of the run.
+
+    Returns:
+      The first event timestamp of the run.
+    """
+    try:
+      return self._multiplexer.FirstEventTimestamp(run_name)
+    except ValueError:
+      # Put runs without a timestamp at the end. Their internal
+      # ordering would be nondeterministic, but Python's sorts are
+      # stable, so `sorted`ing the initial list above provides a
+      # deterministic ordering. Of course, we cannot guarantee that
+      # this will be append-only for new event-less runs.
+      tf.logging.warning('Unable to get first event timestamp for run %s',
+                         run_name)
+      return float('inf')
 
 
 def _gzip(bytestring):
