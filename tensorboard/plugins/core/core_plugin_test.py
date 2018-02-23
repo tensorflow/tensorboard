@@ -232,6 +232,7 @@ class CorePluginTest(tf.test.TestCase):
     writer.close()
 
     # Write data for the run to the database.
+    # TODO(nickfelt): Figure out why reseting the graph is necessary.
     tf.reset_default_graph()
     with tf.Session():
       with tf.contrib.summary.create_db_writer(

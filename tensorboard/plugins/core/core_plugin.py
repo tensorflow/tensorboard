@@ -147,9 +147,10 @@ class CorePlugin(base_plugin.TBPlugin):
       cursor = db.execute('''
         SELECT
           run_name,
-          IFNULL(started_time, 1e1000) AS started_time
+          started_time IS NULL as started_time_nulls_last,
+          started_time
         FROM Runs
-        ORDER BY started_time, run_name
+        ORDER BY started_time_nulls_last, started_time, run_name
       ''')
       run_names = [row[0] for row in cursor]
     else:
