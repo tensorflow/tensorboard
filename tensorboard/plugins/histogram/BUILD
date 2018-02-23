@@ -17,6 +17,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
