@@ -17,7 +17,6 @@ namespace tf_backend {
 export interface Router {
   runs: () => string;
   pluginsListing: () => string;
-  windowProperties: () => string;
   environment: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
@@ -47,7 +46,6 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   return {
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     pluginsListing: () => dataDir + '/plugins_listing',
-    windowProperties: () => dataDir + '/window_properties',
     environment: () => dataDir + '/environment',
     isDemoMode: () => demoMode,
     pluginRoute,
