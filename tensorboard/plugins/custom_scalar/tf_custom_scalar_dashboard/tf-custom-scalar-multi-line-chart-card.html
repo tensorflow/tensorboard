@@ -36,7 +36,7 @@ limitations under the License.
 -->
 <dom-module id="tf-custom-scalar-multi-line-chart-card">
 <template>
-  <h1>[[_titleDisplayString]]</h1>
+  <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
@@ -139,7 +139,6 @@ limitations under the License.
     }
 
     #matches-list {
-      font-size: 0.8em;
       max-height: 200px;
       overflow-y: auto;
     }
