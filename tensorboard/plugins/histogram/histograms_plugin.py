@@ -74,7 +74,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         WHERE Tags.plugin_name = ?
         LIMIT 1
       ''', (metadata.PLUGIN_NAME,))
-      return bool(cursor)
+      return bool(list(cursor))
 
     return bool(self._multiplexer) and any(self.index_impl().values())
 
