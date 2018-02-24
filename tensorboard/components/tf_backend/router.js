@@ -40,7 +40,6 @@ var tf_backend;
         return {
             runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
             pluginsListing: function () { return dataDir + '/plugins_listing'; },
-            windowProperties: function () { return dataDir + '/window_properties'; },
             environment: function () { return dataDir + '/environment'; },
             isDemoMode: function () { return demoMode; },
             pluginRoute: pluginRoute,
