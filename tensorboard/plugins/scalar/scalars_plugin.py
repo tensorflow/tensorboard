@@ -75,7 +75,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         WHERE Tags.plugin_name = ?
         LIMIT 1
       ''', (metadata.PLUGIN_NAME,))
-      return bool(cursor)
+      return bool(list(cursor))
 
     if not self._multiplexer:
       return False
@@ -139,7 +139,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Tags
           ON Tensors.series = Tags.tag_id
         JOIN Runs
-          ON Tags.run_id = Runs.run_id 
+          ON Tags.run_id = Runs.run_id
         WHERE
           Runs.run_name = ?
           AND Tags.tag_name = ?
