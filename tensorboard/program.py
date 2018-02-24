@@ -68,9 +68,10 @@ tf.flags.DEFINE_boolean(
     'Disabling purge_orphaned_data can be used to debug data '
     'disappearance.')
 
-tf.flags.DEFINE_integer('reload_interval', 5,
-                        'How often the backend should load '
-                        'more data.')
+tf.flags.DEFINE_integer(
+    'reload_interval', 5,
+    'How often the backend should load more data, in seconds. Set to 0 to load '
+    'just once at startup and a negative number to never reload at all.')
 
 tf.flags.DEFINE_string('db', "", """\
 [Experimental] Sets SQL database URI.

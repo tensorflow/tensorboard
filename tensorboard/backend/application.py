@@ -86,7 +86,7 @@ def standard_tensorboard_wsgi(
     logdir: The path to the directory containing events files.
     purge_orphaned_data: Whether to purge orphaned data.
     reload_interval: The interval at which the backend reloads more data in
-        seconds.
+        seconds.  Zero means load once at startup; negative means never load.
     plugins: A list of constructor functions for TBPlugin subclasses.
     path_prefix: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
@@ -108,6 +108,9 @@ def standard_tensorboard_wsgi(
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
+  # In DB mode, always disable loading event files.
+  if db_connection_provider:
+    reload_interval = -1
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
@@ -135,7 +138,8 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
       can be used to provide named directories
     plugins: A list of base_plugin.TBPlugin subclass instances.
     multiplexer: The EventMultiplexer with TensorBoard data to serve
-    reload_interval: How often (in seconds) to reload the Multiplexer
+    reload_interval: How often (in seconds) to reload the Multiplexer.
+      Zero means reload just once at startup; negative means never load.
     path_prefix: A prefix of the path when app isn't served from root.
 
   Returns:
@@ -145,9 +149,9 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     ValueError: If something is wrong with the plugin configuration.
   """
   path_to_run = parse_event_files_spec(logdir)
-  if reload_interval:
+  if reload_interval > 0:
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
-  else:
+  elif reload_interval == 0:
     reload_multiplexer(multiplexer, path_to_run)
   return TensorBoardWSGI(plugins, path_prefix)
 
