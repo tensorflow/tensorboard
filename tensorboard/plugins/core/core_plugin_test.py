@@ -22,6 +22,7 @@ import collections
 import json
 import os
 import shutil
+import sqlite3
 
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
@@ -41,10 +42,10 @@ class CorePluginTest(tf.test.TestCase):
     self.temp_dir = self.get_temp_dir()
     self.addCleanup(shutil.rmtree, self.temp_dir)
     self.db_path = os.path.join(self.temp_dir, 'db.db')
+    self.db = sqlite3.connect(self.db_path)
     self.db_uri = 'sqlite:' + self.db_path
     self._start_logdir_based_server(self.temp_dir)
     self._start_db_based_server()
-    self._add_run('run1')
 
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
@@ -95,6 +96,7 @@ class CorePluginTest(tf.test.TestCase):
 
   def testRuns(self):
     """Test the format of the /data/runs endpoint."""
+    self._add_run('run1')
     run_json = self._get_json(self.db_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
@@ -102,15 +104,13 @@ class CorePluginTest(tf.test.TestCase):
 
   def testRunsAppendOnly(self):
     """Test that new runs appear after old ones in /data/runs."""
-    # We use three runs: the 'run1' that we already created in our
-    # `setUp` method, plus runs with names lexicographically before and
-    # after it (so that just sorting by name doesn't have a chance of
-    # working).
     fake_wall_times = {
         'run1': 1234.0,
         'avocado': 2345.0,
         'zebra': 3456.0,
+        'ox': 4567.0,
         'mysterious': None,
+        'enigmatic': None,
     }
 
     stubs = tf.test.StubOutForTesting()
@@ -130,6 +130,9 @@ class CorePluginTest(tf.test.TestCase):
                    'FirstEventTimestamp',
                    FirstEventTimestamp_stub)
 
+    # Start with a single run.
+    self._add_run('run1')
+
     # Add one run: it should come last.
     self._add_run('avocado')
     self.assertEqual(self._get_json(self.db_based_server, '/data/runs'),
@@ -146,12 +149,35 @@ class CorePluginTest(tf.test.TestCase):
 
     # And maybe there's a run for which we somehow have no timestamp.
     self._add_run('mysterious')
+    with self.db:
+      self.db.execute('UPDATE Runs SET started_time=NULL WHERE run_name=?',
+                      ['mysterious'])
     self.assertEqual(self._get_json(self.db_based_server, '/data/runs'),
                      ['run1', 'avocado', 'zebra', 'mysterious'])
     self.assertEqual(self._get_json(self.logdir_based_server, '/data/runs'),
                      ['run1', 'avocado', 'zebra', 'mysterious'])
 
-    stubs.UnsetAll()
+    # Add another timestamped run: it should come before the timestamp-less one.
+    self._add_run('ox')
+    self.assertEqual(self._get_json(self.db_based_server, '/data/runs'),
+                     ['run1', 'avocado', 'zebra', 'ox', 'mysterious'])
+    self.assertEqual(self._get_json(self.logdir_based_server, '/data/runs'),
+                     ['run1', 'avocado', 'zebra', 'ox', 'mysterious'])
+
+    # Add another timestamp-less run, lexicographically before the other one:
+    # it should come after all timestamped runs but first among timestamp-less.
+    self._add_run('enigmatic')
+    with self.db:
+      self.db.execute('UPDATE Runs SET started_time=NULL WHERE run_name=?',
+                      ['enigmatic'])
+    self.assertEqual(
+        self._get_json(self.db_based_server, '/data/runs'),
+        ['run1', 'avocado', 'zebra', 'ox', 'enigmatic', 'mysterious'])
+    self.assertEqual(
+        self._get_json(self.logdir_based_server, '/data/runs'),
+        ['run1', 'avocado', 'zebra', 'ox', 'enigmatic', 'mysterious'])
+
+    stubs.CleanUp()
 
   def _start_logdir_based_server(self, temp_dir):
     self.logdir = temp_dir
