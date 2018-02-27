@@ -287,7 +287,7 @@ with itself, there are a few possible explanations.
 * You may have multiple execution of TensorFlow that all wrote to the same log
 directory. Please have each TensorFlow run write to its own logdir.
 
-* You may have a have a bug in your code where the global_step variable (passed
+* You may have a bug in your code where the global_step variable (passed
 to `FileWriter.add_summary`) is being maintained incorrectly.
 
 * It may be that your TensorFlow job crashed, and was restarted from an earlier
