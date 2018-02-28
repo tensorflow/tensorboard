@@ -113,7 +113,6 @@ limitations under the License.
     </div>
     <iron-collapse opened="[[_missingTagsCollapsibleOpened]]">
       <div class="error-content">
-        <iron-icon class="error-icon" icon="icons:error"></iron-icon>
         <template is="dom-repeat"
                   items="[[_missingTags]]"
                   as="missingEntry">
@@ -132,7 +131,6 @@ limitations under the License.
 
   <template is="dom-if" if="[[_tagFilterInvalid]]">
     <div class="error-content">
-      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
       This regular expresion is invalid:<br>
       <span class="invalid-regex">[[_tagFilter]]</span>
     </div>
@@ -140,7 +138,6 @@ limitations under the License.
 
   <template is="dom-if" if="[[_stepsMismatch]]">
     <div class="error-content">
-      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
       The steps for value, lower, and upper tags do not match:
       <ul>
         <li>
@@ -196,17 +193,11 @@ limitations under the License.
   <style include="tf-custom-scalar-card-style"></style>
   <style>
     .error-content {
-      background: #f00;
+      background: var(--tb-orange-strong);
       border-radius: 5px;
       color: #fff;
       margin: 10px 0 0 0;
       padding: 10px;
-    }
-
-    .error-icon {
-      display: block;
-      fill: #fff;
-      margin: 0 auto 5px auto;
     }
 
     .invalid-regex {
@@ -243,10 +234,6 @@ limitations under the License.
       font-family: arial, sans-serif;
       display: inline-block;
       width: 10px;
-    }
-
-    .missing-tags-for-run-container {
-      margin: 8px 0 0 0;
     }
   </style>
 </template>
