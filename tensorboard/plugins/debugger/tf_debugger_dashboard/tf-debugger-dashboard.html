@@ -449,6 +449,12 @@ limitations under the License.
           type: String,
           value: null,
         },
+        // Counts Session Runs in aggregation, regardless of fetch/feed/target.
+        _sessionRunTotalCounter: {
+          type: Number,
+          value: 0,
+        },
+        // Counts Session Runs by their fetch/feed/target combinations.
         _sessionRunCounters: {
           type: Object,
           value: {},
@@ -651,6 +657,7 @@ limitations under the License.
             } else {
               this._sessionRunCounters[runInfo] = 1;
             }
+            this._sessionRunTotalCounter++;
             this.$.initialDialog.closeDialog();
 
             // Do not refresh node list if we are in continue model and the
@@ -659,7 +666,7 @@ limitations under the License.
                 !this._continueToType || !_.isEqual(previousRunKey, runKey);
             if (toProcessNewSessionRun) {
               this._processGatedGrpcDebugOps(runKey, false);
-              this._showToast('A new Session.run() has begun.');
+              this._announceNewSessionRun();
             }
           } else if (responseType === 'tensor') {
             const deviceName = responseData['device_name'];
@@ -732,7 +739,7 @@ limitations under the License.
             // condition, it'll stop the continuation by setting _continueStop
             // to true.
           } else if (this._continueToType === 'op') {
-            this._processContinueToOp(responseData);
+            this._processContinueToOp(responseType === 'meta', responseData);
           } else if (this._continueToType != null && this._continueToType !== '') {
             console.error('Invalid _continueToType:', this._continueToType);
           }
@@ -750,7 +757,14 @@ limitations under the License.
         }
       },
 
-      _processContinueToOp(responseData) {
+      _processContinueToOp(isSessionRunBeginning, responseData) {
+        if (isSessionRunBeginning) {
+          // A new Session.run() has started, which implies that the requested
+          // tensor was not hit in the previous Session.run, after the
+          // continue-to-tensor action was initiated. Notify the user as such.
+          this._announceNewSessionRun();
+        }
+
         const deviceName = responseData['device_name'];
         const maybeBaseExpandedNodeName = responseData[
             'maybe_base_expanded_node_name'];
@@ -819,6 +833,10 @@ limitations under the License.
       _showToast(text) {  // TODO(cais): Move to Scrolling Message View.
         this.$.toast.setAttribute('text', text);
         this.$.toast.open();
+      },
+      _announceNewSessionRun() {
+        this._showToast(
+            'Session.run() #' + this._sessionRunTotalCounter + ' is starting.');
       },
 
       _displayGraph(runKey, deviceName) {
@@ -932,6 +950,15 @@ limitations under the License.
           graph.panToNode(nodeName);
         } else {
           // Selecting the node triggers a pan to it.
+          const nodeMap = graph.get('renderHierarchy').hierarchy.getNodeMap();
+          if (nodeMap[nodeName] == null) {
+            // In some cases, a node with other names using its name as
+            // name scope may not have base-expanded (i.e., normalized) name
+            // in the graph visualizer. In that case, we use the non-expanded
+            // node name.
+            nodeName =
+                tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName);
+          }
           graph.set('selectedNode', nodeName);
         }
         this.set('_highlightNodeName', deviceName + '/' + nodeName);
@@ -1122,6 +1149,7 @@ limitations under the License.
               tf_debugger_dashboard.removeNodeNameBaseExpansion(cleanNodeName));
         }
         this._setContinueTo('op', nodeNameWithDevice);
+        this.$.continueDialog.updateContinueButtonText(true);
         this._step();
       },
 
