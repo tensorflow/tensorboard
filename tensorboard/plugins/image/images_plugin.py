@@ -101,16 +101,13 @@ class ImagesPlugin(base_plugin.TBPlugin):
     tag = request.args.get('tag')
     run = request.args.get('run')
     sample = int(request.args.get('sample', 0))
-
-    images = self._multiplexer.Tensors(run, tag)
-    response = self._image_response_for_run(images, run, tag, sample)
+    response = self._image_response_for_run(run, tag, sample)
     return http_util.Respond(request, response, 'application/json')
 
-  def _image_response_for_run(self, tensor_events, run, tag, sample):
+  def _image_response_for_run(self, run, tag, sample):
     """Builds a JSON-serializable object with information about images.
 
     Args:
-      tensor_events: A list of image event_accumulator.TensorEvent objects.
       run: The name of the run.
       tag: The name of the tag the images all belong to.
       sample: The zero-indexed sample of the image for which to retrieve
@@ -124,6 +121,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
     """
     response = []
     index = 0
+    tensor_events = self._multiplexer.Tensors(run, tag)
     filtered_events = self._filter_by_sample(tensor_events, sample)
     for (index, tensor_event) in enumerate(filtered_events):
       (width, height) = tensor_event.tensor_proto.string_val[:2]
@@ -169,16 +167,32 @@ class ImagesPlugin(base_plugin.TBPlugin):
     })
     return query_string
 
+  def _get_individual_image(self, run, tag, index, sample):
+    """
+    Returns the actual image bytes for a given image.
+
+    Args:
+      run: The name of the run the image belongs to.
+      tag: The name of the tag the images belongs to.
+      index: The index of the image in the current reservoir.
+      sample: The zero-indexed sample of the image to retrieve (for example,
+        setting `sample` to `2` will fetch the third image sample at `step`).
+
+    Returns:
+      A bytestring of the raw image bytes.
+    """
+    events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
+    images = events[index].tensor_proto.string_val[2:]  # skip width, height
+    return images[sample]
+
   @wrappers.Request.application
   def _serve_individual_image(self, request):
     """Serves an individual image."""
-    tag = request.args.get('tag')
     run = request.args.get('run')
+    tag = request.args.get('tag')
     index = int(request.args.get('index'))
     sample = int(request.args.get('sample', 0))
-    events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
-    images = events[index].tensor_proto.string_val[2:]  # skip width, height
-    data = images[sample]
+    data = self._get_individual_image(run, tag, index, sample)
     image_type = imghdr.what(None, data)
     content_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
     return http_util.Respond(request, data, content_type)
