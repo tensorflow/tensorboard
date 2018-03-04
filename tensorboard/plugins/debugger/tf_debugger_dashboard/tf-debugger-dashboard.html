@@ -764,21 +764,19 @@ limitations under the License.
           // continue-to-tensor action was initiated. Notify the user as such.
           this._announceNewSessionRun();
         }
-
         const deviceName = responseData['device_name'];
-        const maybeBaseExpandedNodeName = responseData[
-            'maybe_base_expanded_node_name'];
-        const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
-        if (nodeNameWithDevice !== this._continueToTarget) {
-          this._step();
-        } else {
+        const maybeBaseExpandedNodeName = responseData['maybe_base_expanded_node_name'];
+        const notBaseExpandedNodeName =
+            maybeBaseExpandedNodeName == null ? null :
+            tf_debugger_dashboard.removeNodeNameBaseExpansion(maybeBaseExpandedNodeName);
+        if (deviceName + '/' + maybeBaseExpandedNodeName === this._continueToTarget ||
+            deviceName + '/' + notBaseExpandedNodeName === this._continueToTarget) {
           this._clearContinueTo();
           if (this._sourceCodeShown) {
-            this.set(
-                '_sourceFocusNodeName',
-                tf_debugger_dashboard.removeNodeNameBaseExpansion(
-                    maybeBaseExpandedNodeName));
+            this.set('_sourceFocusNodeName', notBaseExpandedNodeName);
           }
+        } else {
+          this._step();
         }
       },
 
@@ -951,7 +949,7 @@ limitations under the License.
         } else {
           // Selecting the node triggers a pan to it.
           const nodeMap = graph.get('renderHierarchy').hierarchy.getNodeMap();
-          if (nodeMap[nodeName] == null) {
+          if (!nodeMap[nodeName]) {
             // In some cases, a node with other names using its name as
             // name scope may not have base-expanded (i.e., normalized) name
             // in the graph visualizer. In that case, we use the non-expanded
