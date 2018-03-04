@@ -186,7 +186,7 @@ limitations under the License.
       // stopped, either because it reached the end, or because of forced
       // stopping.
       notifyContinuationStop() {
-        this._updateContinueButtonText(false);
+        this.updateContinueButtonText(false);
       },
 
       _openDialog() {
@@ -208,7 +208,7 @@ limitations under the License.
       // Update the text of the continue button.
       // Args:
       //   active: Whether continuation is currently ongoing.
-      _updateContinueButtonText(active) {
+      updateContinueButtonText(active) {
         this.set(
             '_continueButtonText',
             active ? this._continueButtonStopText : this._continueButtonContinueText);
@@ -217,7 +217,7 @@ limitations under the License.
       _sessionRunGoButtonCallback() {
         if (this.continueNum > 0) {
           this.sessionRunGo(this.continueNum);
-          this._updateContinueButtonText(true);
+          this.updateContinueButtonText(true);
           this._closeDialog();
         } else {
           this.set('continueNum', 1);
@@ -241,7 +241,7 @@ limitations under the License.
           return;
         }
         this.tensorConditionGo(tensorConditionKey, refValue);
-        this._updateContinueButtonText(true);
+        this.updateContinueButtonText(true);
         this._closeDialog();
       },
 
