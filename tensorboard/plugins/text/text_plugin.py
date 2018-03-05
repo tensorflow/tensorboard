@@ -234,6 +234,11 @@ class TextPlugin(base_plugin.TBPlugin):
       if any(self._index_cached.values()):
         return True
 
+    if any(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)):
+      # Text data is present in the multiplexer. No need to further check for
+      # data stored via the outdated plugin assets method.
+      return True
+
     # We haven't conclusively determined if the plugin should be active. Launch
     # a thread to compute index_impl() and return False to avoid blocking.
     self._maybe_launch_index_impl_thread()
@@ -265,11 +270,11 @@ class TextPlugin(base_plugin.TBPlugin):
         'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
 
   def index_impl(self):
+    run_to_series = self._fetch_run_to_series_from_multiplexer()
     # A previous system of collecting and serving text summaries involved
     # storing the tags of text summaries within tensors.json files. See if we
     # are currently using that system. We do not want to drop support for that
     # use case.
-    run_to_series = collections.defaultdict(list)
     name = 'tensorboard_text'
     run_to_assets = self._multiplexer.PluginAssets(name)
     for run, assets in run_to_assets.items():
@@ -277,10 +282,13 @@ class TextPlugin(base_plugin.TBPlugin):
         tensors_json = self._multiplexer.RetrievePluginAsset(
             run, name, 'tensors.json')
         tensors = json.loads(tensors_json)
-        run_to_series[run] = tensors
+        run_to_series[run] += tensors
       else:
-        run_to_series[run] = []
+        run_to_series[run] += []
+    return run_to_series
 
+  def _fetch_run_to_series_from_multiplexer(self):
+    run_to_series = collections.defaultdict(list)
     # TensorBoard is obtaining summaries related to the text plugin based on
     # SummaryMetadata stored within Value protos.
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
