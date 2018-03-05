@@ -67,7 +67,8 @@ limitations under the License.
               class="inline value-card-input"
               label="Slicing"
               id="slicing"
-              value="{{slicing}}">
+              value="{{slicing}}"
+              on-change="refresh">
             </paper-input>
           </div>
           <div>
@@ -75,17 +76,14 @@ limitations under the License.
               class="inline value-card-input"
               label="Time Indices"
               id="time-indices"
-              value="{{timeIndices}}">
+              value="{{timeIndices}}"
+              on-change="refresh">
             </paper-input>
             <paper-button raised
               id='time-indices-toggle-button'
               class='tensor-value-buttons'
               on-click='_timeIndicesToggleButtonCallback'
             >Full History</paper-button>
-            <paper-button raised
-              class="tensor-value-buttons"
-              on-click="refresh"
-            >Refresh</paper-button>
           </div>
         </td>
         <td class="tensor-value-view-td">
