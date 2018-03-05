@@ -29,5 +29,6 @@ tf_web_library(
         "@org_tensorflow_tensorboard//tensorboard/components/tf_imports:lodash",
         "@org_tensorflow_tensorboard//tensorboard/components/tf_imports:polymer",
         "@org_tensorflow_tensorboard//tensorboard/components/tf_runs_selector",
+        "@org_tensorflow_tensorboard//tensorboard/components/tf_tensorboard:registry",
     ],
 )

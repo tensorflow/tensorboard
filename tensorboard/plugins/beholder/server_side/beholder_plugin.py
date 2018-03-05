@@ -16,8 +16,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import io
-import sys
 import time
 
 import numpy as np
@@ -29,12 +27,10 @@ from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util as pau
 from tensorboard.plugins import base_plugin
 
-from tensorboard.plugins.beholder.im_util import get_image_relative_to_script, encode_png
-from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME, SECTION_HEIGHT, IMAGE_WIDTH
-from tensorboard.plugins.beholder.shared_config import SECTION_INFO_FILENAME, CONFIG_FILENAME,\
-  TAG_NAME, SUMMARY_FILENAME, DEFAULT_CONFIG
-from tensorboard.plugins.beholder.file_system_tools import read_tensor_summary, read_pickle,\
-  write_pickle
+from tensorboard.plugins.beholder.im_util import get_image_relative_to_script, encode_png  # pylint: disable=line-too-long
+from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME
+from tensorboard.plugins.beholder.shared_config import SECTION_INFO_FILENAME, CONFIG_FILENAME, TAG_NAME, SUMMARY_FILENAME, DEFAULT_CONFIG  # pylint: disable=line-too-long
+from tensorboard.plugins.beholder.file_system_tools import read_tensor_summary, read_pickle, write_pickle  # pylint: disable=line-too-long
 
 
 class BeholderPlugin(base_plugin.TBPlugin):

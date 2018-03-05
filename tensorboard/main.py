@@ -27,6 +27,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
+from tensorboard.plugins.beholder.server_side import beholder_plugin
 from tensorboard import default
 from tensorboard import program
 
@@ -41,7 +42,11 @@ def main(unused_argv=None):
 
   See `tensorboard.program.main` for further documentation.
   """
-  return program.main(default.get_plugins(),
+  external_plugins = [
+      beholder_plugin.BeholderPlugin,
+  ]
+
+  return program.main(default.get_plugins() + external_plugins,
                       default.get_assets_zip_provider())
 
 

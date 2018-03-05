@@ -23,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="beholder-video.html">
 <link rel="import" href="beholder-info.html">
 
@@ -429,5 +430,10 @@ visualizer.update(
       },
     });
     })();
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'beholder',
+      elementName: 'beholder-dashboard',
+    });
   </script>
 </dom-module>
