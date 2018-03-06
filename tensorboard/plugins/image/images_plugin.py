@@ -18,10 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import imghdr
 
 import six
 from six.moves import urllib
+import tensorflow as tf
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
@@ -51,6 +53,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._multiplexer = context.multiplexer
+    self._db_connection_provider = context.db_connection_provider
 
   def get_plugin_apps(self):
     return {
@@ -61,14 +64,57 @@ class ImagesPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The images plugin is active iff any run has at least one relevant tag."""
+    if self._db_connection_provider:
+      # The plugin is active if one relevant tag can be found in the database.
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          '''
+          SELECT 1
+          FROM Tags
+          WHERE Tags.plugin_name = ?
+          LIMIT 1
+          ''',
+          (metadata.PLUGIN_NAME,))
+      return bool(list(cursor))
     if not self._multiplexer:
       return False
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def _index_impl(self):
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          '''
+          SELECT
+            Runs.run_name,
+            Tags.tag_name,
+            Tags.display_name,
+            Descriptions.description,
+            /* Subtract 2 for leading width and height elements. */
+            MAX(CAST (Tensors.shape AS INT)) - 2 AS samples
+          FROM Tags
+          JOIN Runs USING (run_id)
+          JOIN Descriptions ON Tags.tag_id = Descriptions.id
+          JOIN Tensors ON Tags.tag_id = Tensors.series
+          WHERE Tags.plugin_name = :plugin
+            /* Shape should correspond to a rank-1 tensor. */
+            AND NOT INSTR(Tensors.shape, ',')
+          GROUP BY Tags.tag_id
+          HAVING samples >= 1
+          ''',
+          {'plugin': metadata.PLUGIN_NAME})
+      result = collections.defaultdict(dict)
+      for row in cursor:
+        run_name, tag_name, display_name, description, samples = row
+        result[run_name][tag_name] = {
+            'displayName': display_name,
+            'description': plugin_util.markdown_to_safe_html(description),
+            'samples': samples
+        }
+      return result
+
     runs = self._multiplexer.Runs()
     result = {run: {} for run in runs}
-
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for tag in tag_to_content:
@@ -80,7 +126,6 @@ class ImagesPlugin(base_plugin.TBPlugin):
                             'description': plugin_util.markdown_to_safe_html(
                                 summary_metadata.summary_description),
                             'samples': samples}
-
     return result
 
   @wrappers.Request.application
@@ -119,6 +164,42 @@ class ImagesPlugin(base_plugin.TBPlugin):
       A list of dictionaries containing the wall time, step, URL, width, and
       height for each image.
     """
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          '''
+          SELECT
+            computed_time,
+            step,
+            CAST (T0.data AS INT) AS width,
+            CAST (T1.data AS INT) AS height
+          FROM Tensors
+          JOIN TensorStrings AS T0
+            ON Tensors.rowid = T0.tensor_rowid
+          JOIN TensorStrings AS T1
+            ON Tensors.rowid = T1.tensor_rowid
+          WHERE
+            series = (
+              SELECT tag_id
+              FROM Runs
+              CROSS JOIN Tags USING (run_id)
+              WHERE Runs.run_name = :run AND Tags.tag_name = :tag)
+            AND step IS NOT NULL
+            AND dtype = :dtype
+            /* Should be n-vector, n >= 3: [width, height, samples...] */
+            AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
+            AND T0.idx = 0
+            AND T1.idx = 1
+          ORDER BY step
+          ''',
+          {'run': run, 'tag': tag, 'dtype': tf.string.as_datatype_enum})
+      return [{
+          'wall_time': computed_time,
+          'step': step,
+          'width': width,
+          'height': height,
+          'query': self._query_for_individual_image(run, tag, sample, index)
+      } for index, (computed_time, step, width, height) in enumerate(cursor)]
     response = []
     index = 0
     tensor_events = self._multiplexer.Tensors(run, tag)
@@ -181,6 +262,42 @@ class ImagesPlugin(base_plugin.TBPlugin):
     Returns:
       A bytestring of the raw image bytes.
     """
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          '''
+          SELECT data
+          FROM TensorStrings
+          WHERE
+            /* Skip first 2 elements which are width and height. */
+            idx = 2 + :sample
+            AND tensor_rowid = (
+              SELECT rowid
+              FROM Tensors
+              WHERE
+                series = (
+                   SELECT tag_id
+                   FROM Runs
+                   CROSS JOIN Tags USING (run_id)
+                   WHERE
+                     Runs.run_name = :run
+                     AND Tags.tag_name = :tag)
+                AND step IS NOT NULL
+                AND dtype = :dtype
+                /* Should be n-vector, n >= 3: [width, height, samples...] */
+                AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
+              ORDER BY step
+              LIMIT 1
+              OFFSET :index)
+          ''',
+          {'run': run,
+           'tag': tag,
+           'sample': sample,
+           'index': index,
+           'dtype': tf.string.as_datatype_enum})
+      (data,) = cursor.fetchone()
+      return six.binary_type(data)
+
     events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
     images = events[index].tensor_proto.string_val[2:]  # skip width, height
     return images[sample]
