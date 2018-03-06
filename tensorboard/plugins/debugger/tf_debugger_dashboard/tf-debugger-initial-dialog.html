@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<!-- <link rel="import" href="../iron-collapse/iron-collapse.html"> -->
 <link rel="import" href="../tf-imports/lodash.html">
 
 
@@ -28,24 +29,36 @@ limitations under the License.
     <paper-dialog id="dialog"
                   modal
                   opened="{{_open}}"
-                  width="320"
                   with-backdrop="[[_useNativeBackdrop]]">
-      <h2 id='dialog-title'>Waiting for first Session.run() to connect...</h2>
+      <h2 id='dialog-title'>Debugger is waiting for Session.run() connections...</h2>
       <div class='code-example'>
-        <!-- TODO(cais): Rename id. -->
-        <pre id="session-run-code-example">
-# To connect to the debugger from your tf.Session:
-from tensorflow.python import debug as tf_debug
-sess = tf.Session()
-sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
-sess.run(my_fetches)
-        </pre>
-        <pre id="hook-code-example">
-# To connect to the debugger using hooks, e.g., from tf.Estimator:
-from tensorflow.python import debug as tf_debug
-hook = tf_debug.TensorBoardDebugHook("[[_host]]:[[_port]]")
-my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
-        </pre>
+        <div class="code-example-section">
+          <a href="https://www.tensorflow.org/api_docs/python/tf/Session" target="_blank">tf.Session</a>s:
+          <pre class="code-snippet" style='color:#000020;background:#f6f8ff;'><span style='color:#200080; font-weight:bold; '>from</span> tensorflow<span style='color:#308080; '>.</span>python <span style='color:#200080; font-weight:bold; '>import</span> debug <span style='color:#200080; font-weight:bold; '>as</span> tf_debug
+
+sess <span style='color:#308080; '>=</span> tf<span style='color:#308080; '>.</span>Session<span style='color:#308080; '>(</span><span style='color:#308080; '>)</span>
+sess <span style='color:#308080; '>=</span> tf_debug<span style='color:#308080; '>.</span>TensorBoardDebugWrapperSession<span style='color:#308080; '>(</span>sess<span style='color:#308080; '>,</span> <span style='color:#1060b6; '>"[[_host]]:[[_port]]"</span><span style='color:#308080; '>)</span>
+sess<span style='color:#308080; '>.</span>run<span style='color:#308080; '>(</span>my_fetches<span style='color:#308080; '>)</span></pre>
+        </div>
+        <div  class="code-example-section">
+          <a href="https://www.tensorflow.org/programmers_guide/estimators" target="_blank">Estimator</a>s
+          and
+          <a href="https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession" target="_blank">MonitoredSession</a>s
+          <pre class="code-snippet" style='color:#000020;background:#f6f8ff;'><span style='color:#200080; font-weight:bold; '>from</span> tensorflow<span style='color:#308080; '>.</span>python <span style='color:#200080; font-weight:bold; '>import</span> debug <span style='color:#200080; font-weight:bold; '>as</span> tf_debug
+
+hook <span style='color:#308080; '>=</span> tf_debug<span style='color:#308080; '>.</span>TensorBoardDebugHook<span style='color:#308080; '>(</span><span style='color:#1060b6; '>"[[_host]]:[[_port]]"</span><span style='color:#308080; '>)</span>
+my_estimator<span style='color:#308080; '>.</span>fit<span style='color:#308080; '>(</span>x<span style='color:#308080; '>=</span>x_data<span style='color:#308080; '>,</span> y<span style='color:#308080; '>=</span>y_data<span style='color:#308080; '>,</span> steps<span style='color:#308080; '>=</span><span style='color:#008c00; '>1000</span><span style='color:#308080; '>,</span> monitors<span style='color:#308080; '>=</span><span style='color:#308080; '>[</span>hook<span style='color:#308080; '>]</span><span style='color:#308080; '>)</span></pre>
+        </div>
+        <div class="code-example-section">
+          <a href="https://www.tensorflow.org/api_docs/python/tf/keras/models" target="_blank">Keras Model</a>s:
+          <pre class="code-snippet" style='color:#000020;background:#f6f8ff;'><span style='color:#200080; font-weight:bold; '>import</span> tensorflow <span style='color:#200080; font-weight:bold; '>as</span> tf
+<span style='color:#200080; font-weight:bold; '>from</span> tensorflow<span style='color:#308080; '>.</span>python <span style='color:#200080; font-weight:bold; '>import</span> debug <span style='color:#200080; font-weight:bold; '>as</span> tf_debug
+<span style='color:#200080; font-weight:bold; '>from</span> keras <span style='color:#200080; font-weight:bold; '>import</span> backend <span style='color:#200080; font-weight:bold; '>as</span> K
+
+K<span style='color:#308080; '>.</span>set_session<span style='color:#308080; '>(</span>tf_debug<span style='color:#308080; '>.</span>TensorBoardDebugWrapperSession<span style='color:#308080; '>(</span>tf<span style='color:#308080; '>.</span>Session<span style='color:#308080; '>(</span><span style='color:#308080; '>)</span><span style='color:#308080; '>,</span> <span style='color:#1060b6; '>"[[_host]]:[[_port]]"</span><span style='color:#308080; '>)</span><span style='color:#308080; '>)</span>
+my_model<span style='color:#308080; '>.</span>fit<span style='color:#308080; '>(</span><span style='color:#308080; '>.</span><span style='color:#308080; '>.</span><span style='color:#308080; '>.</span><span style='color:#308080; '>)</span>
+</pre>
+        </div>
       </div>
     </paper-dialog>
   </template>
@@ -65,6 +78,10 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
       right: 0;
     }
 
+    paper-dialog {
+      width: 60%;
+    }
+
     #dashboard-backdrop {
       background: rgba(0, 0, 0, 0.6);
     }
@@ -72,6 +89,13 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
     .code-example {
       margin: 10px;
       font-family: monospace;
+    }
+    .code-example-section {
+      padding-bottom: 15px;
+    }
+    .code-snippet {
+      position: relative;
+      margin-left: 5%;
     }
   </style>
   <script>
@@ -93,7 +117,7 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
       _hidden: {
         type: Boolean,
         computed: '_computeHidden(_open)',
-        reflectToAttribute: true,  // for CSS 
+        reflectToAttribute: true,  // for CSS
       },
       // Suppress the native paper-dialog backdrop. We use a custom one. We make
       // the dialog reference this bound property instead of directly setting
