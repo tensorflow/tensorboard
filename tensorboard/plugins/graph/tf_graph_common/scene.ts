@@ -115,7 +115,7 @@ module tf.graph.scene {
     background_color: string;
     label: string;
   }
-  ;
+
   export let healthPillEntries: HealthPillEntry[] = [
     {
       background_color: '#CC2F2C',
@@ -684,6 +684,9 @@ export function addHealthPill(
   // For now, we only visualize the 6 values that summarize counts of tensor
   // elements of various categories: -Inf, negative, 0, positive, Inf, and NaN.
   const lastHealthPillElementsBreakdown = lastHealthPillData.slice(2, 8);
+  const nanCount = lastHealthPillElementsBreakdown[0];
+  const negInfCount = lastHealthPillElementsBreakdown[1];
+  const posInfCount = lastHealthPillElementsBreakdown[5];
   let totalCount = lastHealthPillData[1];
   const numericStats: HealthPillNumericStats = {
       min: lastHealthPillData[8],
@@ -807,6 +810,20 @@ export function addHealthPill(
       statsSvg.textContent = minString + ' ~ ' + maxString;
     } else {
       statsSvg.textContent = minString;
+    }
+    if (nanCount > 0 || negInfCount > 0 || posInfCount > 0) {
+      statsSvg.textContent += ' (';
+      const badValueStrings: string[] = [];
+      if (nanCount > 0) {
+        badValueStrings.push(`NaN×${nanCount}`);
+      }
+      if (negInfCount > 0) {
+        badValueStrings.push(`-∞×${negInfCount}`);
+      }
+      if (posInfCount > 0) {
+        badValueStrings.push(`+∞×${posInfCount}`);
+      }
+      statsSvg.textContent += badValueStrings.join('; ') + ')';
     }
   } else {
     statsSvg.textContent = '(No finite elements)';
