@@ -1,4 +1,4 @@
-Thank you in advance for reporting a TensorBoard bug, feature request, or documentation issue.  For more general support questions, please ask on Stack Overflow where a larger community can can help:
+Consider Stack Overflow for getting support using TensorBoard - they have a larger community with better searchability:
 
 https://stackoverflow.com/questions/tagged/tensorboard
 
