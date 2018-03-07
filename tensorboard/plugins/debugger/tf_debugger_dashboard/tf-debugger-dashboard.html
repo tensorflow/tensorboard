@@ -157,7 +157,8 @@ limitations under the License.
           <template is="dom-if" if="[[_isTopRightTensorValuesActive]]">
             <tf-tensor-value-multi-view
               id="tensorValueMultiView"
-              continue-to-callback="[[_createContinueToCallback()]]">
+              continue-to-callback="[[_createContinueToCallback()]]"
+              tensor-name-clicked="[[_createNodeClickedHandler()]]">
             </tf-tensor-value-multi-view>
           </template>
         </div>
@@ -1222,7 +1223,6 @@ limitations under the License.
       // dialog.
       _createSessionRunGo() {
         return (continueNum) => {
-          console.log('Session run go: continueNum=' + continueNum);  // DEBUG
           this._setContinueTo(
               'SessionRun', this._currentSessionRunInfo, continueNum);
           this._step();

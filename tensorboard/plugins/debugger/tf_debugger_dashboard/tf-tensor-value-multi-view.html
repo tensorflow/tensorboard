@@ -43,10 +43,11 @@ limitations under the License.
     Polymer({
       is: 'tf-tensor-value-multi-view',
       properties: {
-        continueToCallback: {
-          type: Object,
-          value: null,
-        },
+        continueToCallback: Object,
+
+        // Callback invoked when a tensor name is clicked in one of the tensor
+        // value views. Set externally.
+        tensorNameClicked: Object,
 
         _tensorViewCounter: {
           type: Number,
@@ -66,6 +67,9 @@ limitations under the License.
         viewCard.closeButtonCallback = this._createCloseButtonCallback(view.viewId);
         viewCard.continueToButtonCallback = () => {
           this.continueToCallback(view.deviceName, view.maybeBaseExpandedNodeName);
+        };
+        viewCard.tensorNameCallback = () => {
+          this.tensorNameClicked(view.deviceName, view.maybeBaseExpandedNodeName);
         };
         multiViewContainer.appendChild(viewCard);
         viewCard.refresh();
