@@ -81,7 +81,6 @@ var tf;
              */
             var MINIMAP_BOX_WIDTH = 320;
             var MINIMAP_BOX_HEIGHT = 150;
-            ;
             scene.healthPillEntries = [
                 {
                     background_color: '#CC2F2C',
@@ -603,6 +602,9 @@ var tf;
                 // For now, we only visualize the 6 values that summarize counts of tensor
                 // elements of various categories: -Inf, negative, 0, positive, Inf, and NaN.
                 var lastHealthPillElementsBreakdown = lastHealthPillData.slice(2, 8);
+                var nanCount = lastHealthPillElementsBreakdown[0];
+                var negInfCount = lastHealthPillElementsBreakdown[1];
+                var posInfCount = lastHealthPillElementsBreakdown[5];
                 var totalCount = lastHealthPillData[1];
                 var numericStats = {
                     min: lastHealthPillData[8],
@@ -706,6 +708,20 @@ var tf;
                     }
                     else {
                         statsSvg.textContent = minString;
+                    }
+                    if (nanCount > 0 || negInfCount > 0 || posInfCount > 0) {
+                        statsSvg.textContent += ' (';
+                        var badValueStrings = [];
+                        if (nanCount > 0) {
+                            badValueStrings.push("NaN\u00D7" + nanCount);
+                        }
+                        if (negInfCount > 0) {
+                            badValueStrings.push("-\u221E\u00D7" + negInfCount);
+                        }
+                        if (posInfCount > 0) {
+                            badValueStrings.push("+\u221E\u00D7" + posInfCount);
+                        }
+                        statsSvg.textContent += badValueStrings.join('; ') + ')';
                     }
                 }
                 else {
