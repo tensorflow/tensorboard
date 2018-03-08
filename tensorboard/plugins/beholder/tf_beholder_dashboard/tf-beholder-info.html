@@ -18,7 +18,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 
-<dom-module id="beholder-info">
+<dom-module id="tf-beholder-info">
   <template>
   
     <template id="repeater" is="dom-repeat" items="{{items}}">
@@ -52,7 +52,7 @@ limitations under the License.
     const INFO_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/section-info')
 
     Polymer({
-      is: "beholder-info",
+      is: "tf-beholder-info",
       properties: {
         _requestManager: {
           type: Object,

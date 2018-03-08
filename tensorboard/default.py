@@ -33,6 +33,7 @@ import os
 import tensorflow as tf
 
 from tensorboard.plugins.audio import audio_plugin
+from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.distribution import distributions_plugin
@@ -56,6 +57,7 @@ def get_plugins():
   :rtype: list[:class:`base_plugin.TBPlugin`]
   """
   plugins = [
+      beholder_plugin.BeholderPlugin,
       core_plugin.CorePlugin,
       scalars_plugin.ScalarsPlugin,
       custom_scalars_plugin.CustomScalarsPlugin,

@@ -5,13 +5,13 @@ load("@org_tensorflow_tensorboard//tensorboard/defs:web.bzl", "tf_web_library")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "dashboard",
+    name = "tf_beholder_dashboard",
     srcs = [
-        "beholder-dashboard.html",
-        "beholder-info.html",
-        "beholder-video.html",
+        "tf-beholder-dashboard.html",
+        "tf-beholder-info.html",
+        "tf-beholder-video.html",
     ],
-    path = "/beholder",
+    path = "/tf-beholder-dashboard",
     deps = [
         "@org_polymer_paper_button",
         "@org_polymer_paper_dialog",
@@ -29,5 +29,6 @@ tf_web_library(
         "@org_tensorflow_tensorboard//tensorboard/components/tf_imports:lodash",
         "@org_tensorflow_tensorboard//tensorboard/components/tf_imports:polymer",
         "@org_tensorflow_tensorboard//tensorboard/components/tf_runs_selector",
+        "@org_tensorflow_tensorboard//tensorboard/components/tf_tensorboard:registry",
     ],
 )
