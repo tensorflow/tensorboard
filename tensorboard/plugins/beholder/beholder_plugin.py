@@ -26,10 +26,9 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util as pau
 from tensorboard.plugins import base_plugin
-
+from tensorboard.plugins.beholder import file_system_tools
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder import shared_config
-from tensorboard.plugins.beholder.file_system_tools import read_tensor_summary, read_pickle, write_pickle  # pylint: disable=line-too-long
 
 
 class BeholderPlugin(base_plugin.TBPlugin):
@@ -48,7 +47,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
     if not tf.gfile.Exists(self.PLUGIN_LOGDIR):
       tf.gfile.MakeDirs(self.PLUGIN_LOGDIR)
-      write_pickle(
+      file_system_tools.write_pickle(
           shared_config.DEFAULT_CONFIG,
           '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.CONFIG_FILENAME))
 
@@ -84,7 +83,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
     path = '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.SUMMARY_FILENAME)
 
     try:
-      frame = read_tensor_summary(path).astype(np.uint8)
+      frame = file_system_tools.read_tensor_summary(path).astype(np.uint8)
       self.most_recent_frame = frame
       return frame
 
@@ -125,7 +124,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
     self.FPS = config['FPS']
 
-    write_pickle(
+    file_system_tools.write_pickle(
         config,
         '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.CONFIG_FILENAME))
     return http_util.Respond(request, {'config': config}, 'application/json')
@@ -135,7 +134,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
   def _serve_section_info(self, request):
     path = '{}/{}'.format(
         self.PLUGIN_LOGDIR, shared_config.SECTION_INFO_FILENAME)
-    info = read_pickle(path, default=self.most_recent_info)
+    info = file_system_tools.read_pickle(path, default=self.most_recent_info)
     self.most_recent_info = info
     return http_util.Respond(request, info, 'application/json')
 
