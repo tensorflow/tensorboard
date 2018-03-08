@@ -65,8 +65,10 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
 
   def is_active(self):
-    summary_filename = '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.SUMMARY_FILENAME)
-    info_filename = '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.SECTION_INFO_FILENAME)
+    summary_filename = '{}/{}'.format(
+        self.PLUGIN_LOGDIR, shared_config.SUMMARY_FILENAME)
+    info_filename = '{}/{}'.format(
+        self.PLUGIN_LOGDIR, shared_config.SECTION_INFO_FILENAME)
     return tf.gfile.Exists(summary_filename) and\
            tf.gfile.Exists(info_filename)
 
