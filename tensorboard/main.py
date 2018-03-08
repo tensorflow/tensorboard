@@ -27,7 +27,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorboard.plugins.beholder.server_side import beholder_plugin
+from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard import default
 from tensorboard import program
 

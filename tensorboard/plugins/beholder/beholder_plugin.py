@@ -27,29 +27,30 @@ from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util as pau
 from tensorboard.plugins import base_plugin
 
-from tensorboard.plugins.beholder.im_util import get_image_relative_to_script, encode_png  # pylint: disable=line-too-long
-from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME
-from tensorboard.plugins.beholder.shared_config import SECTION_INFO_FILENAME, CONFIG_FILENAME, TAG_NAME, SUMMARY_FILENAME, DEFAULT_CONFIG  # pylint: disable=line-too-long
+from tensorboard.plugins.beholder import im_util
+from tensorboard.plugins.beholder import shared_config
 from tensorboard.plugins.beholder.file_system_tools import read_tensor_summary, read_pickle, write_pickle  # pylint: disable=line-too-long
 
 
 class BeholderPlugin(base_plugin.TBPlugin):
 
-  plugin_name = PLUGIN_NAME
+  plugin_name = shared_config.PLUGIN_NAME
 
   def __init__(self, context):
     self._MULTIPLEXER = context.multiplexer
-    self.PLUGIN_LOGDIR = pau.PluginDirectory(context.logdir, PLUGIN_NAME)
+    self.PLUGIN_LOGDIR = pau.PluginDirectory(
+        context.logdir, shared_config.PLUGIN_NAME)
     self.FPS = 10
-    self.most_recent_frame = get_image_relative_to_script('no-data.png')
+    self.most_recent_frame = im_util.get_image_relative_to_script('no-data.png')
     self.most_recent_info = [{
         'name': 'Waiting for data...',
     }]
 
     if not tf.gfile.Exists(self.PLUGIN_LOGDIR):
       tf.gfile.MakeDirs(self.PLUGIN_LOGDIR)
-      write_pickle(DEFAULT_CONFIG, '{}/{}'.format(self.PLUGIN_LOGDIR,
-                                                  CONFIG_FILENAME))
+      write_pickle(
+          shared_config.DEFAULT_CONFIG,
+          '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.CONFIG_FILENAME))
 
 
   def get_plugin_apps(self):
@@ -64,8 +65,8 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
 
   def is_active(self):
-    summary_filename = '{}/{}'.format(self.PLUGIN_LOGDIR, SUMMARY_FILENAME)
-    info_filename = '{}/{}'.format(self.PLUGIN_LOGDIR, SECTION_INFO_FILENAME)
+    summary_filename = '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.SUMMARY_FILENAME)
+    info_filename = '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.SECTION_INFO_FILENAME)
     return tf.gfile.Exists(summary_filename) and\
            tf.gfile.Exists(info_filename)
 
@@ -78,7 +79,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
 
   def _fetch_current_frame(self):
-    path = '{}/{}'.format(self.PLUGIN_LOGDIR, SUMMARY_FILENAME)
+    path = '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.SUMMARY_FILENAME)
 
     try:
       frame = read_tensor_summary(path).astype(np.uint8)
@@ -93,7 +94,9 @@ class BeholderPlugin(base_plugin.TBPlugin):
   def _serve_tags(self, request):
     if self.is_active:
       runs_and_tags = {
-          'plugins/{}'.format(PLUGIN_NAME): {'tensors': [TAG_NAME]}
+          'plugins/{}'.format(shared_config.PLUGIN_NAME): {
+              'tensors': [shared_config.TAG_NAME]
+          }
       }
     else:
       runs_and_tags = {}
@@ -120,13 +123,16 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
     self.FPS = config['FPS']
 
-    write_pickle(config, '{}/{}'.format(self.PLUGIN_LOGDIR, CONFIG_FILENAME))
+    write_pickle(
+        config,
+        '{}/{}'.format(self.PLUGIN_LOGDIR, shared_config.CONFIG_FILENAME))
     return http_util.Respond(request, {'config': config}, 'application/json')
 
 
   @wrappers.Request.application
   def _serve_section_info(self, request):
-    path = '{}/{}'.format(self.PLUGIN_LOGDIR, SECTION_INFO_FILENAME)
+    path = '{}/{}'.format(
+        self.PLUGIN_LOGDIR, shared_config.SECTION_INFO_FILENAME)
     info = read_pickle(path, default=self.most_recent_info)
     self.most_recent_info = info
     return http_util.Respond(request, info, 'application/json')
@@ -144,7 +150,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
       start_time = time.time()
       array = self._fetch_current_frame()
-      image_bytes = encode_png(array)
+      image_bytes = im_util.encode_png(array)
 
       frame_text = b'--frame\r\n'
       content_type = b'Content-Type: image/png\r\n\r\n'
