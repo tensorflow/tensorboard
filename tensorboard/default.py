@@ -57,6 +57,7 @@ def get_plugins():
   :rtype: list[:class:`base_plugin.TBPlugin`]
   """
   plugins = [
+      beholder_plugin.BeholderPlugin,
       core_plugin.CorePlugin,
       scalars_plugin.ScalarsPlugin,
       custom_scalars_plugin.CustomScalarsPlugin,
