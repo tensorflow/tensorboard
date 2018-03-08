@@ -23,10 +23,11 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="beholder-video.html">
-<link rel="import" href="beholder-info.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="tf-beholder-video.html">
+<link rel="import" href="tf-beholder-info.html">
 
-<dom-module id="beholder-dashboard">
+<dom-module id="tf-beholder-dashboard">
   <template>
     <paper-dialog with-backdrop id="actual-image-size-dialog"></paper-dialog>
     <tf-dashboard-layout>
@@ -182,13 +183,13 @@ visualizer.update(
         </template>
 
         <template is="dom-if" if="[[_is_active]]">
-          <beholder-video id="video"></beholder-video>
+          <tf-beholder-video id="video"></tf-beholder-video>
 
           <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
-            <beholder-info
+            <tf-beholder-info
               id="info"
               fps="[[_FPS]]">
-            </beholder-info>
+            </tf-beholder-info>
           </template>
         </template>
 
@@ -287,7 +288,7 @@ visualizer.update(
     const PLUGIN_NAME = 'beholder'
 
     Polymer({
-      is: 'beholder-dashboard',
+      is: 'tf-beholder-dashboard',
 
       properties: {
 
@@ -429,5 +430,10 @@ visualizer.update(
       },
     });
     })();
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'beholder',
+      elementName: 'tf-beholder-dashboard',
+    });
   </script>
 </dom-module>
