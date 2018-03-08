@@ -33,6 +33,7 @@ import os
 import tensorflow as tf
 
 from tensorboard.plugins.audio import audio_plugin
+from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.distribution import distributions_plugin
