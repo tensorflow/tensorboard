@@ -99,6 +99,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
           WHERE Tags.plugin_name = :plugin
             /* Shape should correspond to a rank-1 tensor. */
             AND NOT INSTR(Tensors.shape, ',')
+            /* Required to use TensorSeriesStepIndex. */
+            AND Tensors.step IS NOT NULL
           GROUP BY Tags.tag_id
           HAVING samples >= 1
           ''',
