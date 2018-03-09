@@ -55,7 +55,7 @@ sess.run(my_fetches)
 
 ## Other Ways to Instrument Models
 
-Sometimes, the TensorFlow session may not be directly accessible. For projects that use tflearn's `Estimator`s, `Experiment`s, and `MonitoredSession`s, users can instrument code with the (`TensorBoardDebugHook`)[https://www.tensorflow.org/api_docs/python/tfdbg/TensorBoardDebugHook].
+Sometimes, the TensorFlow session may not be directly accessible. For projects that use tflearn's `Estimator`s, `Experiment`s, and `MonitoredSession`s, users can instrument code with the [`TensorBoardDebugHook`](https://www.tensorflow.org/api_docs/python/tfdbg/TensorBoardDebugHook).
 
 To debug models built atop other high-level APIs such as Keras and TF-Slim,
 refer to [documentation on the TensorFlow debugger](https://www.tensorflow.org/programmers_guide/debugger).
