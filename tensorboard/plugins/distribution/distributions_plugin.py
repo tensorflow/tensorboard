@@ -41,6 +41,10 @@ class DistributionsPlugin(base_plugin.TBPlugin):
 
   plugin_name = 'distributions'
 
+  # Use a round number + 1 since sampling includes both start and end steps,
+  # so N+1 samples corresponds to dividing the step sequence into N intervals.
+  SAMPLE_SIZE = 501
+
   def __init__(self, context):
     """Instantiates DistributionsPlugin via TensorBoard core.
 
@@ -67,7 +71,7 @@ class DistributionsPlugin(base_plugin.TBPlugin):
   def distributions_impl(self, tag, run):
     """Result of the form `(body, mime_type)`, or `ValueError`."""
     (histograms, mime_type) = self._histograms_plugin.histograms_impl(
-        tag, run, downsample_to=None)
+        tag, run, downsample_to=self.SAMPLE_SIZE)
     return ([self._compress(histogram) for histogram in histograms],
             mime_type)
 
