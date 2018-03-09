@@ -36,7 +36,9 @@ limitations under the License.
             <a href="https://www.tensorflow.org/api_docs/python/tf/Session" target="_blank">tf.Session</a>:
           </div>
           <pre class="code-snippet">
+import tensorflow as tf
 from tensorflow.python import debug as tf_debug
+
 sess = tf.Session()
 sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
 sess.run(my_fetches)
@@ -49,7 +51,9 @@ sess.run(my_fetches)
             <a href="https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession" target="_blank">MonitoredSession</a>:
           </div>
           <pre class="code-snippet">
+import tensorflow as tf
 from tensorflow.python import debug as tf_debug
+
 hook = tf_debug.TensorBoardDebugHook("[[_host]]:[[_port]]")
 my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
           </pre>
