@@ -64,6 +64,9 @@ setup(
         'tensorboard': [
             'webfiles.zip',
         ],
+        'tensorboard.plugins.beholder': [
+            'resources/*',
+        ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).
     python_requires='>= 2.7, != 3.0.*, != 3.1.*',
