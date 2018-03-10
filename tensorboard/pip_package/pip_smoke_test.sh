@@ -115,9 +115,9 @@ echo "Installing the just-built tensorboard pip package"
 echo
 
 if [[ "${PY_VERSION}" == 2 ]]; then
-  pip install "${PIP_TMP_DIR}"/tensorflow_tensorboard*-py2-*.whl
+  pip install "${PIP_TMP_DIR}"/tensorboard*-py2-*.whl
 elif [[ "${PY_VERSION}" == 3 ]]; then
-  pip install "${PIP_TMP_DIR}"/tensorflow_tensorboard*-py3-*.whl
+  pip install "${PIP_TMP_DIR}"/tensorboard*-py3-*.whl
 fi
 
 echo
