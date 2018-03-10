@@ -362,8 +362,8 @@ limitations under the License.
         _tooltipColumns: {
           type: Array,
           value: function() {
-            const valueFormatter = vz_line_chart.multiscaleFormatter(
-                vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+            const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+                vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
             const formatValueOrNaN =
                 (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
 
@@ -594,7 +594,7 @@ limitations under the License.
         this._runToNextAvailableSymbolIndex[run] |= 0;
 
         // Every data series within a run has a unique symbol.
-        const lineChartSymbol = vz_line_chart.SYMBOLS_LIST[
+        const lineChartSymbol = vz_chart_helpers.SYMBOLS_LIST[
             this._runToNextAvailableSymbolIndex[run]];
 
         // Create a series with this name.
@@ -602,7 +602,7 @@ limitations under the License.
             run, tag, seriesName, dataPoints, lineChartSymbol);
 
         // Loop back to the beginning if we are out of symbols.
-        const numSymbols = vz_line_chart.SYMBOLS_LIST.length;
+        const numSymbols = vz_chart_helpers.SYMBOLS_LIST.length;
         this._runToNextAvailableSymbolIndex[run] =
             (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
         return series;

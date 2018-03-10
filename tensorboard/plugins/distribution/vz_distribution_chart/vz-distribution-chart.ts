@@ -50,15 +50,15 @@ export class DistributionChart {
     if (this.outer) {
       this.outer.destroy();
     }
-    let xComponents = vz_line_chart.getXComponents(xType);
+    let xComponents = vz_chart_helpers.getXComponents(xType);
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;
     this.xAxis.margin(0).tickLabelPadding(3);
     this.yScale = new Plottable.Scales.Linear();
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = vz_line_chart.multiscaleFormatter(
-        vz_line_chart.Y_AXIS_FORMATTER_PRECISION);
+    let yFormatter = vz_chart_helpers.multiscaleFormatter(
+        vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
 

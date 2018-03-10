@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace vz_line_chart {
+namespace vz_chart_helpers {
 
 export interface Datum {
   wall_time: Date;
@@ -265,10 +265,6 @@ export function relativeX(): XComponents {
   };
 }
 
-// a very literal definition of NaN: true for NaN for a non-number type
-// or null, etc. False for Infinity or -Infinity
-export let isNaN = (x) => +x !== x;
-
 export function getXComponents(xType: string): XComponents {
   switch (xType) {
     case XType.STEP:
@@ -282,4 +278,4 @@ export function getXComponents(xType: string): XComponents {
   }
 }
 
-}  // namespace vz_line_chart
+}  // namespace vz_chart_helpers
