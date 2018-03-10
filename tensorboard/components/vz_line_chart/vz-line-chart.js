@@ -38,7 +38,7 @@ var vz_line_chart;
             /**
              * A function that takes a data series string and returns a
              * Plottable.SymbolFactory to use for rendering that series. This property
-             * implements the SymbolFn interface.
+             * implements the vz_chart_helpers.SymbolFn interface.
              */
             symbolFunction: Object,
             /**
@@ -79,7 +79,7 @@ var vz_line_chart;
             /**
              * This is a helper field for automatically generating commonly used
              * functions for xComponentsCreationMethod. Valid values are what can
-             * be processed by vz_line_chart.getXComponents() and include
+             * be processed by vz_chart_helpers.getXComponents() and include
              * "step", "wall_time", and "relative".
              */
             xType: { type: String, value: '' },
@@ -93,7 +93,7 @@ var vz_line_chart;
              * outer function to compute the value. We actually want the value of this
              * property to be the inner function.
              *
-             * @type {function(): XComponents}
+             * @type {function(): vz_chart_helpers.XComponents}
              */
             xComponentsCreationMethod: {
                 type: Object,
@@ -130,8 +130,8 @@ var vz_line_chart;
             tooltipColumns: {
                 type: Array,
                 value: function () {
-                    var valueFormatter = vz_line_chart.multiscaleFormatter(vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
-                    var formatValueOrNaN = function (x) { return vz_line_chart.isNaN(x) ? 'NaN' : valueFormatter(x); };
+                    var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+                    var formatValueOrNaN = function (x) { return isNaN(x) ? 'NaN' : valueFormatter(x); };
                     return [
                         {
                             title: 'Name',
@@ -148,15 +148,15 @@ var vz_line_chart;
                         },
                         {
                             title: 'Step',
-                            evaluate: function (d) { return vz_line_chart.stepFormatter(d.datum.step); },
+                            evaluate: function (d) { return vz_chart_helpers.stepFormatter(d.datum.step); },
                         },
                         {
                             title: 'Time',
-                            evaluate: function (d) { return vz_line_chart.timeFormatter(d.datum.wall_time); },
+                            evaluate: function (d) { return vz_chart_helpers.timeFormatter(d.datum.wall_time); },
                         },
                         {
                             title: 'Relative',
-                            evaluate: function (d) { return vz_line_chart.relativeFormatter(vz_line_chart.relativeAccessor(d.datum, -1, d.dataset)); },
+                            evaluate: function (d) { return vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)); },
                         },
                     ];
                 }
@@ -263,8 +263,8 @@ var vz_line_chart;
          * its name must be in the setVisibleSeries() array.
          *
          * @param {string} name Name of the series.
-         * @param {Array<ScalarDatum>} data Data of the series. This is
-         * an array of objects with at least the following properties:
+         * @param {Array< vz_chart_helpers.ScalarDatum>} data Data of the series.
+         * This is an array of objects with at least the following properties:
          * - step: (Number) - index of the datum.
          * - wall_time: (Date) - Date object with the datum's time.
          * - scalar: (Number) - Value of the datum.
@@ -309,11 +309,11 @@ var vz_line_chart;
         _makeChart: function (xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached) {
             // Find the actual xComponentsCreationMethod.
             if (!xType && !xComponentsCreationMethod) {
-                xComponentsCreationMethod = vz_line_chart.stepX;
+                xComponentsCreationMethod = vz_chart_helpers.stepX;
             }
             else if (xType) {
                 xComponentsCreationMethod = function () {
-                    return vz_line_chart.getXComponents(xType);
+                    return vz_chart_helpers.getXComponents(xType);
                 };
             }
             if (this._makeChartAsyncCallbackId !== null) {
@@ -424,7 +424,7 @@ var vz_line_chart;
             }
             this.yScale = LineChart.getYScaleFromType(yScaleType);
             this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-            var yFormatter = vz_line_chart.multiscaleFormatter(vz_line_chart.Y_AXIS_FORMATTER_PRECISION);
+            var yFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
             this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
             this.yAxis.usesTextWidthApproximation(true);
             this.fillArea = fillArea;
@@ -476,7 +476,7 @@ var vz_line_chart;
                     return _this.colorScale.scale(dataset.metadata().name);
                 });
                 markersScatterPlot.attr('opacity', 1);
-                markersScatterPlot.size(vz_line_chart.TOOLTIP_CIRCLE_SIZE * 2);
+                markersScatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
                 markersScatterPlot.symbol(function (d, i, dataset) {
                     return _this.symbolFunction(dataset.metadata().name);
                 });
@@ -492,7 +492,7 @@ var vz_line_chart;
             scatterPlot.y(this.yValueAccessor, yScale);
             scatterPlot.attr('fill', function (d) { return _this.colorScale.scale(d.name); });
             scatterPlot.attr('opacity', 1);
-            scatterPlot.size(vz_line_chart.TOOLTIP_CIRCLE_SIZE * 2);
+            scatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
             scatterPlot.datasets([this.lastPointsDataset]);
             this.scatterPlot = scatterPlot;
             var nanDisplay = new Plottable.Plots.Scatter();
@@ -500,7 +500,7 @@ var vz_line_chart;
             nanDisplay.y(function (x) { return x.displayY; }, yScale);
             nanDisplay.attr('fill', function (d) { return _this.colorScale.scale(d.name); });
             nanDisplay.attr('opacity', 1);
-            nanDisplay.size(vz_line_chart.NAN_SYMBOL_SIZE * 2);
+            nanDisplay.size(vz_chart_helpers.NAN_SYMBOL_SIZE * 2);
             nanDisplay.datasets([this.nanDataset]);
             nanDisplay.symbol(Plottable.SymbolFactories.triangle);
             this.nanDisplay = nanDisplay;
@@ -540,12 +540,12 @@ var vz_line_chart;
                 .map(function (d) {
                 var datum = null;
                 // filter out NaNs to ensure last point is a clean one
-                var nonNanData = d.data().filter(function (x) { return !vz_line_chart.isNaN(accessor(x, -1, d)); });
+                var nonNanData = d.data().filter(function (x) { return !isNaN(accessor(x, -1, d)); });
                 if (nonNanData.length > 0) {
                     var idx = nonNanData.length - 1;
                     datum = nonNanData[idx];
                     datum.name = d.metadata().name;
-                    datum.relative = vz_line_chart.relativeAccessor(datum, -1, d);
+                    datum.relative = vz_chart_helpers.relativeAccessor(datum, -1, d);
                 }
                 return datum;
             })
@@ -562,7 +562,7 @@ var vz_line_chart;
                 var data = d.data();
                 var i = 0;
                 while (i < data.length && displayY == null) {
-                    if (!vz_line_chart.isNaN(accessor(data[i], -1, d))) {
+                    if (!isNaN(accessor(data[i], -1, d))) {
                         displayY = accessor(data[i], -1, d);
                     }
                     i++;
@@ -572,13 +572,13 @@ var vz_line_chart;
                 }
                 var nanData = [];
                 for (i = 0; i < data.length; i++) {
-                    if (!vz_line_chart.isNaN(accessor(data[i], -1, d))) {
+                    if (!isNaN(accessor(data[i], -1, d))) {
                         displayY = accessor(data[i], -1, d);
                     }
                     else {
                         data[i].name = d.metadata().name;
                         data[i].displayY = displayY;
-                        data[i].relative = vz_line_chart.relativeAccessor(data[i], -1, d);
+                        data[i].relative = vz_chart_helpers.relativeAccessor(data[i], -1, d);
                         nanData.push(data[i]);
                     }
                 }
@@ -620,7 +620,7 @@ var vz_line_chart;
                 };
                 var vals = _.flattenDeep(this.datasets.map(datasetToValues))
                     .filter(isFinite);
-                yDomain = vz_line_chart.computeDomain(vals, this._ignoreYOutliers);
+                yDomain = vz_chart_helpers.computeDomain(vals, this._ignoreYOutliers);
             }
             this.yScale.domain(yDomain);
         };
@@ -639,8 +639,8 @@ var vz_line_chart;
             var _this = this;
             var pi = new Plottable.Interactions.Pointer();
             pi.attachTo(plot);
-            // PointsComponent is a Plottable Component that will hold the little
-            // circles we draw over the closest data points
+            // vz_chart_helpers.PointsComponent is a Plottable Component that will
+            // hold the little circles we draw over the closest data points
             var pointsComponent = new Plottable.Component();
             var group = new Plottable.Components.Group([plot, pointsComponent]);
             var hideTooltips = function () {
@@ -676,13 +676,13 @@ var vz_line_chart;
                 var intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
                 // We draw tooltips for points that are NaN, or are currently visible
                 var ptsForTooltips = pts.filter(function (p) { return intersectsBBox(p.x, p.y, bbox) ||
-                    vz_line_chart.isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
+                    isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
                 // Only draw little indicator circles for the non-NaN points
-                var ptsToCircle = ptsForTooltips.filter(function (p) { return !vz_line_chart.isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
+                var ptsToCircle = ptsForTooltips.filter(function (p) { return !isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
                 var ptsSelection = pointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
                 if (pts.length !== 0) {
                     ptsSelection.enter().append('circle').classed('point', true);
-                    ptsSelection.attr('r', vz_line_chart.TOOLTIP_CIRCLE_SIZE)
+                    ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
                         .attr('cx', function (p) { return p.x; })
                         .attr('cy', function (p) { return p.y; })
                         .style('stroke', 'none')
@@ -701,7 +701,7 @@ var vz_line_chart;
             var _this = this;
             // Formatters for value, step, and wall_time
             this.scatterPlot.attr('opacity', 0);
-            var valueFormatter = vz_line_chart.multiscaleFormatter(vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+            var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
             var dist = function (p) {
                 return Math.pow(p.x - target.x, 2) + Math.pow(p.y - target.y, 2);
             };
@@ -742,7 +742,7 @@ var vz_line_chart;
                 var lastX = _this.xScale.scale(_this.xAccessor(lastPoint, 0, d.dataset));
                 var s = _this.smoothingEnabled ?
                     d.datum.smoothed : _this.yValueAccessor(d.datum, 0, d.dataset);
-                return target.x < firstX || target.x > lastX || vz_line_chart.isNaN(s);
+                return target.x < firstX || target.x > lastX || isNaN(s);
             });
             rows.classed('closest', function (p) { return dist(p) === closestDist; });
             // It is a bit hacky that we are manually applying the width to the swatch
@@ -774,7 +774,7 @@ var vz_line_chart;
             }
             else {
                 left = Math.min(0, left);
-                top = parentRect.height + vz_line_chart.TOOLTIP_Y_PIXEL_OFFSET;
+                top = parentRect.height + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
             }
             this.tooltip.style('transform', 'translate(' + left + 'px,' + top + 'px)');
             this.tooltip.style('opacity', 1);

@@ -12,12 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var vz_line_chart;
-(function (vz_line_chart) {
+var vz_chart_helpers;
+(function (vz_chart_helpers) {
     /**
      * A list of symbols that line charts can cycle through per data series.
      */
-    vz_line_chart.SYMBOLS_LIST = [
+    vz_chart_helpers.SYMBOLS_LIST = [
         {
             character: '\u25FC',
             method: Plottable.SymbolFactories.square,
@@ -51,13 +51,13 @@ var vz_line_chart;
          * or calculating from "wall_time" if it isn't.
          */
         XType["WALL_TIME"] = "wall_time";
-    })(XType = vz_line_chart.XType || (vz_line_chart.XType = {}));
-    vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION = 4;
-    vz_line_chart.STEP_FORMATTER_PRECISION = 4;
-    vz_line_chart.Y_AXIS_FORMATTER_PRECISION = 3;
-    vz_line_chart.TOOLTIP_Y_PIXEL_OFFSET = 20;
-    vz_line_chart.TOOLTIP_CIRCLE_SIZE = 4;
-    vz_line_chart.NAN_SYMBOL_SIZE = 6;
+    })(XType = vz_chart_helpers.XType || (vz_chart_helpers.XType = {}));
+    vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION = 4;
+    vz_chart_helpers.STEP_FORMATTER_PRECISION = 4;
+    vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION = 3;
+    vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET = 20;
+    vz_chart_helpers.TOOLTIP_CIRCLE_SIZE = 4;
+    vz_chart_helpers.NAN_SYMBOL_SIZE = 6;
     /* Create a formatter function that will switch between exponential and
      * regular display depending on the scale of the number being formatted,
      * and show `digits` significant digits.
@@ -82,7 +82,7 @@ var vz_line_chart;
             return f(v);
         };
     }
-    vz_line_chart.multiscaleFormatter = multiscaleFormatter;
+    vz_chart_helpers.multiscaleFormatter = multiscaleFormatter;
     /* Compute an appropriate domain given an array of all the values that are
      * going to be displayed. If ignoreOutliers is true, it will ignore the
      * lowest 10% and highest 10% of the data when computing a domain.
@@ -132,25 +132,25 @@ var vz_line_chart;
         domain = d3.scaleLinear().domain(domain).nice().domain();
         return domain;
     }
-    vz_line_chart.computeDomain = computeDomain;
+    vz_chart_helpers.computeDomain = computeDomain;
     function accessorize(key) {
         // tslint:disable-next-line:no-any be quiet tsc
         return function (d, index, dataset) { return d[key]; };
     }
-    vz_line_chart.accessorize = accessorize;
-    vz_line_chart.stepFormatter = Plottable.Formatters.siSuffix(vz_line_chart.STEP_FORMATTER_PRECISION);
+    vz_chart_helpers.accessorize = accessorize;
+    vz_chart_helpers.stepFormatter = Plottable.Formatters.siSuffix(vz_chart_helpers.STEP_FORMATTER_PRECISION);
     function stepX() {
         var scale = new Plottable.Scales.Linear();
         var axis = new Plottable.Axes.Numeric(scale, 'bottom');
-        axis.formatter(vz_line_chart.stepFormatter);
+        axis.formatter(vz_chart_helpers.stepFormatter);
         return {
             scale: scale,
             axis: axis,
             accessor: function (d) { return d.step; },
         };
     }
-    vz_line_chart.stepX = stepX;
-    vz_line_chart.timeFormatter = Plottable.Formatters.time('%a %b %e, %H:%M:%S');
+    vz_chart_helpers.stepX = stepX;
+    vz_chart_helpers.timeFormatter = Plottable.Formatters.time('%a %b %e, %H:%M:%S');
     function wallX() {
         var scale = new Plottable.Scales.Time();
         return {
@@ -159,8 +159,8 @@ var vz_line_chart;
             accessor: function (d) { return d.wall_time; },
         };
     }
-    vz_line_chart.wallX = wallX;
-    vz_line_chart.relativeAccessor = 
+    vz_chart_helpers.wallX = wallX;
+    vz_chart_helpers.relativeAccessor = 
     // tslint:disable-next-line:no-any be quiet tsc
     function (d, index, dataset) {
         // We may be rendering the final-point datum for scatterplot.
@@ -175,7 +175,7 @@ var vz_line_chart;
         var first = data.length > 0 ? +data[0].wall_time : 0;
         return (+d.wall_time - first) / (60 * 60 * 1000); // ms to hours
     };
-    vz_line_chart.relativeFormatter = function (n) {
+    vz_chart_helpers.relativeFormatter = function (n) {
         // we will always show 2 units of precision, e.g days and hours, or
         // minutes and seconds, but not hours and minutes and seconds
         var ret = '';
@@ -204,13 +204,10 @@ var vz_line_chart;
         return {
             scale: scale,
             axis: new Plottable.Axes.Numeric(scale, 'bottom'),
-            accessor: vz_line_chart.relativeAccessor,
+            accessor: vz_chart_helpers.relativeAccessor,
         };
     }
-    vz_line_chart.relativeX = relativeX;
-    // a very literal definition of NaN: true for NaN for a non-number type
-    // or null, etc. False for Infinity or -Infinity
-    vz_line_chart.isNaN = function (x) { return +x !== x; };
+    vz_chart_helpers.relativeX = relativeX;
     function getXComponents(xType) {
         switch (xType) {
             case XType.STEP:
@@ -223,5 +220,5 @@ var vz_line_chart;
                 throw new Error('invalid xType: ' + xType);
         }
     }
-    vz_line_chart.getXComponents = getXComponents;
-})(vz_line_chart || (vz_line_chart = {})); // namespace vz_line_chart
+    vz_chart_helpers.getXComponents = getXComponents;
+})(vz_chart_helpers || (vz_chart_helpers = {})); // namespace vz_chart_helpers

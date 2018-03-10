@@ -9,7 +9,6 @@ tf_web_library(
     name = "vz_line_chart",
     srcs = [
         "dragZoomInteraction.js",
-        "vz-chart-helpers.js",
         "vz-line-chart.html",
         "vz-line-chart.js",
     ],
@@ -20,6 +19,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_chart_helpers",
     ],
 )
 
