@@ -30,15 +30,15 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-        ":constants",
+        ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
 py_library(
-    name = "constants",
-    srcs = ["constants.py"],
+    name = "metadata",
+    srcs = ["metadata.py"],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
@@ -49,7 +49,7 @@ tb_proto_library(
     name = "protos_all",
     srcs = [
         "api.proto",
-        "summary_proto.proto",
+        "plugin_data.proto",
     ],
     visibility = ["//visibility:public"],
 )

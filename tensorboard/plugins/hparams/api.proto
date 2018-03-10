@@ -15,98 +15,187 @@ limitations under the License.
 
 // Defines a proto3-based REST API that the HParams web-component of the plugin
 // would use to read data from a hyperparameter-tuning experiment.
-// The first part of this file defines the message types (resources) used
+// This file defines the message types (resources) used
 // to pass information into and out of the API methods. These messages will be
-// transmited using their JSON encoding. The second part documents the actual
-// API and HTTP end-points.
+// transmitted using proto3 native JSON encoding. See http_api.md for a
+// description of the actual HTTP API.
+
+// General note: in what follows we use the the field 'name' of a message to
+// stores its id. We avoid calling this field 'id' since it is a reserved word
+// in Python, as well as to be more compliant with the API style guide
+// detailed in https://cloud.google.com/apis/design/.
 
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
-package tensorboard.plugins.hparams;
-
-// General note: in what follows we use the the field 'name' of a message to
-// stores its id. We avoid calling this field 'id' since it is a reserved word
-// in python and to be compliant with the API style guide detailed in
-// https://cloud.google.com/apis/design/.
-
+package tensorboard.hparams;
 
 // Represents a single experiment.
 // An experiment consists of multiple "sessions". Typically, in each session
 // a model is trained for a given set of hyperparameter values. In each session
-// a training program may generate one or more series of real
-// numbers--each containing the evaluation of some metric at different
-// training steps.
+// a training program may generate one or more series of real numbers--each
+// containing the evaluation of some metric on the model at different training
+// steps.
 //
+// Note that Sessions can consist of multiple Tensorboard "runs", since in
+// a distributed Tensorflow deployment, training can be accomplished using
+// several cooporating processes, each one emitting Summary data to a different
+// log directory or run. For example, in a single session one process could
+// periodically compute the loss on the validation set, and another could
+// compute the loss on the training set.
+message Experiment {
+  // Currently, Tensorboard supports displaying data for a single experiment,
+  // so no name is required here. If we move to a multi-experiment setup we
+  // need to add a name and determine its scope: either globally unique,
+  // or per-user.
+
+  // A description. May contain markdown.
+  string description = 1;
+
+  // An id for the owning user or group.
+  string user = 2;
+
+  google.protobuf.Timestamp time_created = 3;
+
+  // Information about each hyperparameter used in the experiment.
+  repeated HParamInfo hparam_infos = 4;
+
+  // Information about each metric used in the experiment.
+  repeated MetricInfo metric_infos = 5;
+}
+
+message HParamInfo {
+  // An id for the hyperparameter.
+  string name = 1;
+
+  // A string used to display the hyperparameter in the UI. If empty, the UI
+  // will display the 'name' field.
+  string display_name = 2;
+
+  // A description. May contain markdown.
+  string description = 3;
+
+  // The data type of this hyperparameter.
+  DataType type = 4;
+
+  // Specifies the set of values this hyperparameter can hold. The UI assumes
+  // every instance of this hyperparameter will hold a value from this set. It
+  // is used by the UI to allow filtering  so that only session groups (see
+  // below) whose associated hyperparameter value "passes" the filter are
+  // displayed. If this is not populated, the domain is assumed to be the
+  // entire domain of the type of the hyperparameter.
+  oneof domain {
+    // A discrete set of the values this hyperparameter can hold.
+    google.protobuf.ListValue discrete_set = 5;
+    // Numeric data type only. The (real) interval from which values of this
+    // hyperparameter are taken.
+    Interval interval = 6;
+  }
+}
+enum DataType {
+  DATA_TYPE_STRING = 0;
+  DATA_TYPE_BOOL = 1;
+  DATA_TYPE_FLOAT64 = 2;
+}
+
+// Represents the closed interval [min_val, max_val] of the real line.
+// min_val, max_val should be numeric.
+message Interval {
+  double min_val = 1;
+  double max_val = 2;
+}
+
+message MetricName {
+  // An identifier for a metric. A metric is a real-valued function of the
+  // model. The UI can plot metrics for a session evaluated on the model at
+  // different training steps.
+  //
+  // We identify a metric by a (group, tag) pair of strings. The UI treats
+  // both of these as opaque strings. The only requirement is that the pair
+  // uniquely identifies a metric in the experiment.
+  //
+  // We use a pair so the UI could allow the user to group metrics for a
+  // single session by either group or tag to be displayed in the same chart.
+  // For instance, one can set the metric group to correspond to the dataset
+  // on which the model was evaluated, and the UI can then display different
+  // metrics describing the same underlying computation and using different
+  // datasets, on the same chart.
+  //
+  // When exporting summaries from Tensorflow, in a typical setup, a
+  // training session exports evaluations of metrics at different training steps
+  // as Scalar-plugin summaries--each having a run of the form
+  // "<session_base_log_dir><suffix>", and some associated tag. The same metric
+  // for different sessions would use the same suffix and tag, but would have
+  // a different session_base_log_dir. For example, a session computing two
+  // metrics: model loss on the validation set and model loss on the training
+  // set, can export these as scalar summaries with the tag "loss" and
+  // runs session_base_log_dir/validation and session_base_log_dir/training,
+  // respectively. In this setup, the 'group field can be populated with
+  // the "suffix" associated with the metric, and the 'tag' field can be
+  // populated with the tag: "loss".
+  string group = 1;
+  string tag = 2;
+}
+
+message MetricInfo {
+  MetricName name = 1;
+
+  // A string used to display the metric in the UI. If empty, the UI
+  // will display the 'name' field.
+  string display_name = 3;
+
+  // A description. May contain markdown.
+  string description = 4;
+
+  // The dataset type (validation, training) on which the metric is computed.
+  DatasetType dataset_type = 5;
+}
+
+enum DatasetType {
+  DATASET_UNKNOWN = 0;
+  DATASET_TRAINING = 1;
+  DATASET_VALIDATION = 2;
+}
+
 // In some experiments, the user trains a model with the same set of
 // hyperparameters multiple times to get the distribution of metric
-// evaluations when the computation (such as the training algorithm, or metric
+// evaluations, when the computation (such as the training algorithm, or metric
 // evaluation) is non-deterministic. To make the UI aware of this, sessions
 // are partitioned into groups: each group consists of all training sessions
 // which share the same values for the hyperparameters. In experiments with no
 // repeated executions, each group consists of exactly one session.
-message Experiment {
-  // A unique id.
-  string name = 1;
-
-  string description = 2;
-
-  // An id for the owning user or group.
-  string user = 3;
-
-  google.protobuf.Timestamp time_created = 4;
-
-  // Information about each hyperparameter used in the experiment.
-  repeated HParamInfo hparam_infos = 5;
-
-  // Information about each metric used in the experiment.
-  repeated MetricInfo metric_infos = 6;
-}
-
-message HParamInfo {
-  // An id for the hyperparameter (unique within an experiment).
-  string name = 1;
-
-  // A string used to display the hyperparameter in the UI. If empty the UI
-  // will display the 'name' field.
-  string display_name = 2;
-
-  string description = 3;
-
-  // The list of distinct values this hyperparameter had in any session within
-  // the experiment. Currently, the UI considers hyperparameter values as opaque
-  // strings.
-  repeated string vals = 4;
-}
-
-message MetricInfo {
-  // A name for the MetricInfo. Within an experiment there should be at most
-  // one MetricInfo having the given name.
-  string name = 1;
-
-  // A string used to display the hyperparameter in the UI. If empty the UI
-  // will display the 'name' field.
-  string display_name = 2;
-
-  string description = 3;
-
-  // The dataset type (validation, training) on which the metric is computed.
-  DatasetType dataset_type = 4;
-}
-
 message SessionGroup {
   string name = 1;
-  repeated HParamVal hparam_vals = 2;
+
+  // Stores the hyperparameters for sessions within this group as a mapping
+  // from the hyperparameter name to its value.
+  map<string /* hparam name */, google.protobuf.Value> hparams = 2;
+
+  // A list of pairs (metric, value)--one for each metric in the experiment.
+  // The value denotes the evaluation of the corresponding metric evaluated on
+  // the model at the current training step aggregated across the sessions in
+  // this group. The exact method of aggregation is specified in the comments
+  // of ListSessionGroupsRequest.
+  // Unfortunately, we can't store these as a map, since proto maps can't have
+  // message keys.
+  repeated MetricValue metric_vals = 3;
+
+  // The sessions belonging to this group.
+  repeated Session sessions = 4;
+
+  // An optional link to a web page monitoring the session group.
+  string monitor_url = 9;
 }
 
-message HParamVal {
-  string name = 1;
-  string value = 2;
+message MetricValue {
+  MetricName name = 1;
+  double value = 2;
 }
 
 message Session {
-  // An id for the session. Unique within an experiment.
+  // An id for the session. Unique within an experiment (not just the group).
   string name = 1;
 
   google.protobuf.Timestamp time_started = 2;
@@ -117,21 +206,29 @@ message Session {
   // May be STATUS_UNKNOWN if unavailable.
   Status status = 4;
 
-  // A filesystem path that will allow the user to reconstruct the model for
-  // this session. E.g., in Tensorflow this should be the directory where
-  // checkpoints are saved.
-  string model_path = 5;
+  // A URI for a resource that will allow the user to reconstruct the model for
+  // this session. E.g., in Tensorflow this could point to a directory where the
+  // checkpoints are stored. Currently, this is treated opaquely by the UI
+  // and only displayed to the user as it is passed here.
+  string model_uri = 5;
 
-  // An optional link to a website monitoring the session.
-  string monitor_url = 6;
+  // Stores each metric evaluation on the model at the current training step.
+  // Unfortunately, we can't store these as a map, since proto maps can't have
+  // message keys.
+  repeated MetricValue metric_values = 6;
+
+  // The current training step.
+  // This is the step for which the values of 'metrics' are computed.
+  int32 training_step = 7;
+
+  // The wall time at which 'training_step' completed.
+  google.protobuf.Timestamp training_step_wall_time = 8;
+
+  // An optional link to a web page monitoring the session.
+  string monitor_url = 9;
 }
 
-enum DatasetType {
-  DATASET_UNKNOWN = 0;
-  DATASET_TRAINING = 1;
-  DATASET_VALIDATION = 2;
-}
-
+// Represents the status of a Session.
 enum Status {
   STATUS_UNKNOWN = 0;
   STATUS_SUCCESS = 1;
@@ -139,49 +236,111 @@ enum Status {
   STATUS_RUNNING = 3;
 }
 
-// We document the API below. Each end-point below is assumed to be called
-// vi an HTTP GET and arguments encoded in the URL . Additionally, each
-// end-point starts with 'v1' to support multiple versions.
-// Note that per Tensorboard's conventions the end-point would be
-// prefixed by "data/plugin/hparams" (e.g. the get_experiment end-point is
-// actually "data/plugin/hparams/v1/get_experiment").
-//
-// HTTP end-point:
-//   v1/get_experiment
-// Args:
-//   None.
-// Description:
-//   Returns an Experiment object defining metadata for the experiment.
-//
-// HTTP end-point
-//   v1/list_session_groups
-// Args:
-//   None.
-// Returns:
-//   An array of SessionGroup objects.
-//
-// HTTP end-point:
-//   v1/list_sessions
-// Args:
-//   session_group: The name of the session group to list.
-// Returns:
-//   An array of Session objects.
-//
-// HTTP end-point:
-//   v1/list_metric_evals
-// Args:
-//   session_group, session, metric: Names for the session_group, session and
-//   metric that identify the metric-data to return.
-// Returns:
-//   An array consisting of evaluations of the metric identified by 'metric'
-//   in the session identified by 'session' within the session group
-//   identified by 'session_group'. Each element in the array is itself
-//   a 3-element array of the form [wall_time, step, value], where:
-//   'wall_time' represents the time in which the evaluation took place,
-//   represented as seconds since the UNIX epoch, 'step' is the training step
-//   in which the evaluation took place, and value is the (scalar floating
-//   point) evaluation of the metric.
-//   Note: We use this format, rather than define a more structured response
-//   format to be compatible with the way the 'Scalars' plugin expects metric
-//   evaluation data.
-//
+// Parameters for a ListSessionGroups API call.
+// See ListSessionGroups in http_api.md.
+// Since this proto is passed as a URL query parameter, care should be taken
+// when adding new fields to avoid exceeding the URL lenght limit.
+message ListSessionGroupsRequest {
+  // A list of ColParams messages--one for each "column" of a session group. A
+  // session group column contains either a metric evaluated at the current
+  // reported computation step or a hyperparameter value. The ColParams messages
+  // configure filtering and sorting of the resulting collection of
+  // session groups as follows:
+  //
+  // Filtering: each ColParams.filter field (see below) defines a subset of
+  // the domain of the associated column. Only session groups with each of
+  // their columns belonging to the corresponding subset will be returned.
+  // If no ColParams message is given for a column or if the filter field is
+  // unset, the column is regarded as unfiltered (i.e. the subset is taken as
+  // the entire column domain).
+  //
+  // Sorting: defined by the subset of ColParams messages whose 'order' field
+  // is not ORDER_UNSPECIFIED. In each of these the order field specifies the
+  // order (ascending or descending) of the values in the associated column
+  // of the session group. The order of the ColParams messages themselves
+  // determines the "significance" of the associated column as a sorting key:
+  // with the first being the primary sorting key, the second being
+  // the secondary sorting key, etc.
+  repeated ColParams col_params = 1;
+
+  // Fields controlling how to aggregate metrics across sessions within a
+  // session group.
+  // If metric_aggregation_type is AGGREGATION_AVG, each metric value of the
+  // session group is the average of the values of the metric across the
+  // sessions (at the same computation step).
+  // Otherwise, each metric value of the session group is the value of that
+  // metric for a "representative" session in the group. A representative
+  // session is a session having a "representative" value for the metric
+  // specified by the 'primary_metric' field below. The representative value
+  // for a metric is its minimum, maximum or median value across the sessions
+  // in the group, for metric_aggregation_type being AGGREGATION_MIN,
+  // AGGREGATION_MAX, or AGGREGATION_MEDIAN, respectively.
+  AggregationType aggregation_type = 2;
+  MetricName primary_metric = 3;
+
+  // Pagination support:
+  // The number of session groups in each page to return.
+  int32 page_size = 4;
+  // The token representing the page to return. Should be empty for the first
+  // page and copied from the 'next_page_token' field of the response for
+  // later pages.
+  string page_token = 5;
+}
+
+// Defines parmeters for a ListSessionGroupsRequest for a specific column.
+message ColParams {
+  oneof name {
+    MetricName metric = 1;
+    string hparam = 2;
+  }
+
+  // Sorting.
+  SortOrder order = 3;
+
+  // Filtering. Defines a subset of the domain of the column.
+  ///Different representations for the subset are possible for different
+  // column data types (hyperparameter data types or DATA_TYPE_FLOAT64 for
+  // metrics). See the comments below for more
+  // details.
+  oneof filter {
+    // Only valid for string-valued hyperparameter columns. The subset is
+    // the set of all strings matching the regular expression stored
+    // in 'regexp'.
+    string regexp = 4;
+
+    // Only valid for numeric-valued columns. The subset is the given interval.
+    Interval interval = 5;
+
+    // Valid for all data types. The subset is defined explicitly.
+    google.protobuf.ListValue discrete_set = 6;
+  }
+}
+
+enum SortOrder {
+  ORDER_UNSPECIFIED = 0;
+  ORDER_ASC = 1;
+  ORDER_DESC = 2;
+}
+
+enum AggregationType {
+  AGGREGATION_AVG = 0;
+  AGGREGATION_MEDIAN = 1;
+  AGGREGATION_MIN = 2;
+  AGGREGATION_MAX = 3;
+}
+
+// See ListSessionGroups in http_api.md.
+message ListSessionGroupsResponse {
+  repeated SessionGroup session_groups = 1;
+  string next_page_token = 2;
+
+  // Denotes the total number of session groups the query returned.
+  // Optional. If set, the UI may choose to display it.
+  int32 total_size = 3;
+}
+
+// See ListMetricEvalsRequest in http_api.md.
+message ListMetricEvalsRequest {
+  string session_name = 1;
+  MetricName metric_name = 2;
+}

@@ -18,7 +18,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
+
+from tensorboard.plugins.hparams import plugin_data_pb2
+
 EXPERIMENT_TAG = '_hparams_/experiment'
-SESSION_START_SUMMARY_TAG = '_hparams_/session_start_summary'
-SESSION_END_SUMMARY_TAG = '_hparams_/session_end_summary'
+SESSION_START_INFO_TAG = '_hparams_/session_start_info'
+SESSION_END_INFO_TAG = '_hparams_/session_end_info'
 PLUGIN_NAME = 'hparams'
+PLUGIN_DATA_VERSION = 0
+
+def create_summary_metadata(data_oneof_field, protobuffer):
+  """Creates a summary holding an HParamsPluginData message containing
+  'protobuffer'.
+
+  Arguments:
+    data_oneof_field. String. The oneof field name in HParamsPluginData to
+    populate with 'protobuffer'.
+  """
+  content=plugin_data_pb2.HParamsPluginData(version=PLUGIN_DATA_VERSION)
+  getattr(content, data_oneof_field).CopyFrom(protobuffer)
+  return tf.SummaryMetadata(
+      plugin_data=tf.SummaryMetadata.PluginData(
+          plugin_name=PLUGIN_NAME,
+          content=content.SerializeToString()))
