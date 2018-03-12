@@ -96,21 +96,19 @@ Polymer({
     },
     _attached: Boolean,
     _chart: Object,
-
-    /**
-     * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
-     * table element because Polymer does not support that. This seems like
-     * a bug in Polymer. Hence, we manually generate the HTML for creating a row
-     * of table headers.
-     */
-    _tooltipTableHeaderHtml: {
-      type: String,
-      computed: '_computeTooltipTableHeaderHtml(tooltipColumns)',
-    },
   },
   observers: [
     '_makeChart(data, colorScale, tooltipColumns, _attached)',
+    '_createTooltipHeaders(tooltipColumns)',
   ],
+  _createTooltipHeaders(tooltipColumns) {
+    d3.select("#tooltip-table-header-row")
+        .selectAll('th')
+        .data(tooltipColumns)
+        .enter()
+        .append('th')
+        .text(d => d.title);
+  },
   /**
    * Re-renders the chart. Useful if e.g. the container size changed.
    */
@@ -268,7 +266,7 @@ class BarChart {
     const rows = this.tooltip.select('tbody')
                    .html('')
                    .selectAll('tr')
-                   .data(formattedPoints)
+                   .data(formattedPoin ts)
                    .enter()
                    .append('tr');
 
