@@ -100,8 +100,6 @@ export interface TooltipColumnState {
 
 export interface TooltipColumn {
   title: string;
-  // This function computes the value for the string. None of the arguments
-  // passed to it are ever falsy.
   evaluate: ((p: Point, status?: TooltipColumnState) => string);
 }
 
