@@ -9,10 +9,7 @@ exports_files(["LICENSE"])
 
 py_library(
     name = "beholder_plugin",
-    srcs = [
-        "beholder_plugin.py",
-        "shared_config.py",
-    ],
+    srcs = ["beholder_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":beholder",
