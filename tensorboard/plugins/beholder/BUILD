@@ -23,6 +23,15 @@ py_library(
     ],
 )
 
+py_binary(
+    name = "beholder_demo",
+    srcs = ["beholder_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":beholder",
+    ],
+)
+
 py_library(
     name = "file_system_tools",
     srcs = ["file_system_tools.py"],
