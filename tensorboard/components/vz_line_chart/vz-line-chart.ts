@@ -162,9 +162,12 @@ Polymer({
           },
           {
             title: 'Smoothed',
-            evaluate: (d, statusObject) => formatValueOrNaN(
-                statusObject.smoothingEnabled ? d.datum.smoothed :
-                                                d.datum.scalar),
+            evaluate: (d, statusObject) => {
+              const smoothingEnabled =
+                  statusObject && statusObject.smoothingEnabled;
+              return formatValueOrNaN(
+                  smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
+            },
           },
           {
             title: 'Value',
