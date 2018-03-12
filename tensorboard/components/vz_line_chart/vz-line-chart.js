@@ -139,8 +139,10 @@ var vz_line_chart;
                         },
                         {
                             title: 'Smoothed',
-                            evaluate: function (d, statusObject) { return formatValueOrNaN(statusObject.smoothingEnabled ? d.datum.smoothed :
-                                d.datum.scalar); },
+                            evaluate: function (d, statusObject) {
+                                var smoothingEnabled = statusObject && statusObject.smoothingEnabled;
+                                return formatValueOrNaN(smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
+                            },
                         },
                         {
                             title: 'Value',
