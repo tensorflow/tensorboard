@@ -16,6 +16,8 @@ py_library(
         ":file_system_tools",
         ":im_util",
         ":shared_config",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
@@ -29,6 +31,8 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         ":beholder",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -37,6 +41,9 @@ py_library(
     srcs = ["file_system_tools.py"],
     data = ["resources"],
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_library(
@@ -44,7 +51,11 @@ py_library(
     srcs = ["im_util.py"],
     data = ["resources"],
     srcs_version = "PY2AND3",
-    deps = [":file_system_tools"],
+    deps = [
+        ":file_system_tools",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_library(
@@ -61,6 +72,8 @@ py_library(
         ":file_system_tools",
         ":im_util",
         ":shared_config",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -84,6 +97,8 @@ py_library(
         ":shared_config",
         ":video_writing",
         ":visualizer",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:plugin_asset_util",
     ],
 )
