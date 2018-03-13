@@ -99,16 +99,7 @@ Polymer({
   },
   observers: [
     '_makeChart(data, colorScale, tooltipColumns, _attached)',
-    '_createTooltipHeaders(tooltipColumns)',
   ],
-  _createTooltipHeaders(tooltipColumns) {
-    d3.select("#tooltip-table-header-row")
-        .selectAll('th')
-        .data(tooltipColumns)
-        .enter()
-        .append('th')
-        .text(d => d.title);
-  },
   /**
    * Re-renders the chart. Useful if e.g. the container size changed.
    */
@@ -144,15 +135,6 @@ Polymer({
     var div = d3.select(this.$.chartdiv);
     chart.renderTo(div);
     this._chart = chart;
-  },
-  _computeTooltipTableHeaderHtml: function(tooltipColumns) {
-    // The first column contains the circle with the color of the run.
-    var titles = [''].concat(_.map(tooltipColumns, 'title'));
-    return titles
-        .map(function(title) {
-          return '<th>' + title + '</th>';
-        })
-        .join('');
   },
 });
 
@@ -220,6 +202,17 @@ class BarChart {
   }
 
   private setupTooltips(tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
+    // Set up tooltip column headers.
+    const tooltipHeaderRow = this.tooltip.select('thead tr');
+    tooltipHeaderRow
+        .selectAll('th')
+        .data(tooltipColumns)
+        .enter()
+        .append('th')
+        .text(d => d.title);
+    // Prepend empty header cell for the data series colored circle icon.
+    tooltipHeaderRow.insert('th', ':first-child');
+
     const plot = this.plot;
     const pointer = new Plottable.Interactions.Pointer();
     pointer.attachTo(plot);
@@ -240,6 +233,7 @@ class BarChart {
       target: Plottable.Plots.IPlotEntity,
       tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
     const hoveredClass = target.datum.x;
+    const hoveredSeries = target.dataset.metadata();
 
     // The data is formatted in the way described on the  main element.
     // e.g. {'series0': [{ x: 'a', y: 1 }, { x: 'c', y: 3 },
@@ -248,29 +242,30 @@ class BarChart {
     // Filter down the data so each value contains 0 or 1 elements in the array,
     // which correspond to the value of the closest clustered bar (e.g. 'c').
     // This generates {series0: Array(1), series1: Array(0)}.
-    let points = _.mapValues(
+    let bars = _.mapValues(
         this.data,
         allValuesForSeries =>
             _.filter(allValuesForSeries, elt => elt.x == hoveredClass));
 
     // Remove the keys that map to an empty array, and unpack the array.
     // This generates {series0: { x: 'c', y: 3 }}
-    points = _.pick(points, val => val.length > 0);
-    const singlePoints = _.mapValues(points, val => val[0]);
+    bars = _.pick(bars, val => val.length > 0);
+    const singleBars = _.mapValues(bars, val => val[0]);
 
     // Rearrange the object for convenience.
     // This yields: [{key: 'series0', value: { x: 'c', y: 3 }}, ]
-    const formattedPoints = d3.entries(singlePoints);
+    const barEntries = d3.entries(singleBars);
 
-    // Bind the points data structure to the tooltip.
+    // Bind the bars data structure to the tooltip.
     const rows = this.tooltip.select('tbody')
                    .html('')
                    .selectAll('tr')
-                   .data(formattedPoints)
+                   .data(barEntries)
                    .enter()
                    .append('tr');
 
     rows.style('white-space', 'nowrap');
+    rows.classed('closest', d => d.key == hoveredSeries)
     const colorScale = this.colorScale;
     rows.append('td')
         .append('div')
@@ -278,9 +273,11 @@ class BarChart {
         .style('background-color', d => colorScale.scale(d.key));
     _.each(tooltipColumns, (column) => {
       rows.append('td').text((d) => {
-        // TypeScript cannot detect the type of data bound to the elements.
-        const point = d as any as vz_chart_helpers.Point;
-        return column.evaluate(point);
+        // Convince TypeScript to let us pass off a key-value entry of value
+        // type Bar as a Point since that's what TooltipColumn.evaluate wants.
+	// TODO(nickfelt): reconcile the incompatible typing here
+        const barEntryAsPoint = d as any as vz_chart_helpers.Point;
+        return column.evaluate(barEntryAsPoint);
       });
     });
 
