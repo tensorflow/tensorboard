@@ -17,6 +17,8 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import os
+import subprocess
 import sys
 import time
 
@@ -121,10 +123,18 @@ class FFmpegVideoOutput(VideoOutput):
 
   @classmethod
   def available(cls):
-    return False
+    # Silently check if ffmpeg is available.
+    try:
+      with open(os.devnull, 'wb') as devnull:
+        subprocess.check_call(
+            ['ffmpeg', '-version'], stdout=devnull, stderr=devnull)
+      return True
+    except (OSError, subprocess.CalledProcessError):
+      return False
 
   def __init__(self, directory, frame_shape):
     self.filename = directory + '/video-{}.mp4'.format(time.time())
+    raise OSError('foo')
 
   def emit_frame(self, np_array):
     pass
