@@ -34,9 +34,13 @@ from tensorboard.plugins.beholder.visualizer import Visualizer
 class Beholder(object):
 
   def __init__(self, logdir):
-    self.video_writer = None
-
     self.PLUGIN_LOGDIR = logdir + '/plugins/' + PLUGIN_NAME
+
+    self.video_writer = video_writing.VideoWriter(
+        self.PLUGIN_LOGDIR,
+        outputs=[
+            video_writing.FFmpegVideoOutput,
+            video_writing.PNGVideoOutput])
 
     self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
     self.summary_op = tf.summary.tensor_summary(TAG_NAME,
@@ -124,29 +128,14 @@ class Beholder(object):
 
 
   def _update_recording(self, frame, config):
-    '''Adds a frame to the video using ffmpeg if possible. If not, writes
-    individual frames as png files in a directory.
-    '''
+    '''Adds a frame to the current video output.'''
     # pylint: disable=redefined-variable-type
     is_recording = config['is_recording']
-    filename = self.PLUGIN_LOGDIR + '/video-{}.mp4'.format(time.time())
 
     if is_recording:
-      if self.video_writer is None or frame.shape != self.video_writer.size:
-        try:
-          self.video_writer = video_writing.FFMPEG_VideoWriter(filename,
-                                                               frame.shape,
-                                                               15)
-        except OSError:
-          message = ('Either ffmpeg is not installed, or something else went '
-                     'wrong. Saving individual frames to disk instead.')
-          print(message)
-          self.video_writer = video_writing.PNGWriter(self.PLUGIN_LOGDIR,
-                                                      frame.shape)
       self.video_writer.write_frame(frame)
-    elif not is_recording and self.video_writer is not None:
-      self.video_writer.close()
-      self.video_writer = None
+    elif self.video_writer is not None:
+      self.video_writer.finish()
 
 
   # TODO: blanket try and except for production? I don't someone's script to die
