@@ -171,7 +171,8 @@ limitations under the License.
       }
 
       if (activeRow) {
-        activeRow.parentNode.parentNode.parentNode.scrollTop = activeRow.offsetTop;
+        Polymer.dom(this.$$('#session-runs-table')).parentNode.parentNode.scrollTop =
+            activeRow.offsetTop;
       }
     },
 
