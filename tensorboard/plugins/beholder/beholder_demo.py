@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A simple MNIST classifier which displays summaries in TensorBoard.
+"""Simple MNIST classifier to demonstrate features of Beholder.
 
-This is an unimpressive MNIST model, but it is a good example of using
-tf.name_scope to make a graph legible in the TensorBoard graph explorer, and of
-naming summary tags so that they are grouped meaningfully in TensorBoard.
-
-It demonstrates the functionality of every TensorBoard dashboard.
+Based on tensorflow/examples/tutorials/mnist/mnist_with_summaries.py.
 """
 
 from __future__ import absolute_import

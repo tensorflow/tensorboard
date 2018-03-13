@@ -1,5 +1,5 @@
 # Description:
-# TensorBoard plugin for tensors and tensor variance for an entire graph.
+# TensorBoard plugin for viewing model data as a live video during training.
 
 package(default_visibility = ["//visibility:public"])
 
