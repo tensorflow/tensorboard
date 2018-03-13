@@ -266,7 +266,7 @@ class BarChart {
     const rows = this.tooltip.select('tbody')
                    .html('')
                    .selectAll('tr')
-                   .data(formattedPoin ts)
+                   .data(formattedPoints)
                    .enter()
                    .append('tr');
 
