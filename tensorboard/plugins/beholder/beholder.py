@@ -36,6 +36,7 @@ class Beholder(object):
   def __init__(self, logdir):
     self.PLUGIN_LOGDIR = logdir + '/plugins/' + PLUGIN_NAME
 
+    self.is_recording = False
     self.video_writer = video_writing.VideoWriter(
         self.PLUGIN_LOGDIR,
         outputs=[
@@ -130,12 +131,18 @@ class Beholder(object):
   def _update_recording(self, frame, config):
     '''Adds a frame to the current video output.'''
     # pylint: disable=redefined-variable-type
-    is_recording = config['is_recording']
+    should_record = config['is_recording']
 
-    if is_recording:
+    if should_record:
+      if not self.is_recording:
+        self.is_recording = True
+        print('Starting recording using {}'.format(
+            self.video_writer.default_output().name()))
       self.video_writer.write_frame(frame)
-    elif self.video_writer is not None:
+    elif self.is_recording:
+      self.is_recording = False
       self.video_writer.finish()
+      print('Finished recording')
 
 
   # TODO: blanket try and except for production? I don't someone's script to die
