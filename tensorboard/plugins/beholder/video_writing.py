@@ -47,13 +47,12 @@ class VideoWriter(object):
 
   def _select_output(self):
     for i, output in enumerate(self.outputs):
-      output_type = output.__name__
       if i > 0:
-        sys.stderr.write('Falling back to video output %s\n' % output_type)
+        sys.stderr.write('Falling back to video output %s\n' % output.name())
       try:
         return output(self.directory, self.frame_shape)
       except Exception:
-        sys.stderr.write('Video output type %s not available\n' % output_type)
+        sys.stderr.write('Video output type %s not available\n' % output.name())
         if i == len(self.outputs) - 1:
           raise
 
@@ -81,6 +80,10 @@ class VideoOutput(object):
   @classmethod
   def available(cls):
     raise NotImplementedError()
+
+  @classmethod
+  def name(cls):
+    return cls.__name__
 
   @abc.abstractmethod
   def emit_frame(self, np_array):
