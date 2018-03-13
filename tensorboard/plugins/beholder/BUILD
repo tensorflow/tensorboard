@@ -8,6 +8,23 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
+    name = "beholder",
+    srcs = ["beholder.py"],
+    data = ["resources"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":file_system_tools",
+        ":im_util",
+        ":shared_config",
+        ":video_writing",
+        ":visualizer",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:plugin_asset_util",
+    ],
+)
+
+py_library(
     name = "beholder_plugin",
     srcs = ["beholder_plugin.py"],
     srcs_version = "PY2AND3",
@@ -37,6 +54,12 @@ py_binary(
 )
 
 py_library(
+    name = "shared_config",
+    srcs = ["shared_config.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_library(
     name = "file_system_tools",
     srcs = ["file_system_tools.py"],
     data = ["resources"],
@@ -59,12 +82,6 @@ py_library(
 )
 
 py_library(
-    name = "shared_config",
-    srcs = ["shared_config.py"],
-    srcs_version = "PY2AND3",
-)
-
-py_library(
     name = "visualizer",
     srcs = ["visualizer.py"],
     srcs_version = "PY2AND3",
@@ -83,22 +100,5 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":im_util",
-    ],
-)
-
-py_library(
-    name = "beholder",
-    srcs = ["beholder.py"],
-    data = ["resources"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":file_system_tools",
-        ":im_util",
-        ":shared_config",
-        ":video_writing",
-        ":visualizer",
-        "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend/event_processing:plugin_asset_util",
     ],
 )
