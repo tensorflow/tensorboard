@@ -133,6 +133,11 @@ class PNGVideoOutput(VideoOutput):
 class FFmpegVideoOutput(VideoOutput):
   """Video output implemented by streaming to FFmpeg with .mp4 output."""
 
+  FRAME_RATE = 15
+
+  # PNG is well-suited to our image files that are just blocks of color.
+  OUTPUT_CODEC = 'png'
+
   @classmethod
   def available(cls):
     # Silently check if ffmpeg is available.
@@ -146,10 +151,53 @@ class FFmpegVideoOutput(VideoOutput):
 
   def __init__(self, directory, frame_shape):
     self.filename = directory + '/video-{}.mp4'.format(time.time())
-    raise OSError('foo')
+    if len(frame_shape) != 3:
+      raise ValueError('Expected rank-3 array for frame, got %s' % str(frame_shape))
+    sys.stderr.write('Starting video with frame shape: %s\n' % str(frame_shape))
+    if frame_shape[2] == 1:
+      pix_fmt = 'gray'
+    elif frame_shape[2] == 3:
+      pix_fmt = 'rgb24'
+    else:
+      raise ValueError('Unsupported channel count %d' % frame_shape[2])
+
+    command = [
+        'ffmpeg',
+        '-y',  # overwite output
+        # input options
+        '-f', 'rawvideo',  # input format
+        '-vcodec', 'rawvideo',  # input codec
+        # shape[1] is width, shape[0] is height
+        '-s', '%dx%d' % (frame_shape[1], frame_shape[0]),
+        '-pix_fmt', pix_fmt,
+        '-r', '%d' % self.FRAME_RATE,
+        '-i', '-',  # use stdin
+        '-an',  # no audio
+        # output options
+        '-vcodec', 'libx264',#self.OUTPUT_CODEC,  # output format
+        '-pix_fmt', 'yuv420p',#rgb24',
+        self.filename
+    ]
+    PIPE = subprocess.PIPE
+    self.ffmpeg = subprocess.Popen(
+        command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+  def _handle_error(self):
+    _, stderr = self.ffmpeg.communicate()
+    bar = '=' * 40
+    sys.stderr.write(
+        'ERROR writing to FFmpeg:\n%s\n%s\n%s\n' % (bar, stderr, bar))
 
   def emit_frame(self, np_array):
-    pass
+    try:
+      self.ffmpeg.stdin.write(np_array.tobytes())
+      self.ffmpeg.stdin.flush()
+    except IOError:
+      self._handle_error()
+      raise IOError('failure invoking FFmpeg')
 
   def close(self):
-    pass
+    if self.ffmpeg.poll() is None:
+      # Close stdin and consume and discard stderr/stdout.
+      self.ffmpeg.communicate()
+    self.ffmpeg = None
