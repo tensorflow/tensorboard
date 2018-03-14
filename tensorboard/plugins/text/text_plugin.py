@@ -235,7 +235,7 @@ class TextPlugin(base_plugin.TBPlugin):
       if any(self._index_cached.values()):
         return True
 
-    if bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)):
+    if self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME):
       # Text data is present in the multiplexer. No need to further check for
       # data stored via the outdated plugin assets method.
       return True
@@ -299,13 +299,12 @@ class TextPlugin(base_plugin.TBPlugin):
   def _fetch_run_to_series_from_multiplexer(self):
     # TensorBoard is obtaining summaries related to the text plugin based on
     # SummaryMetadata stored within Value protos.
-    mapping = six.iteritems(
-        self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME))
+    mapping = self._multiplexer.PluginRunToTagToContent(
+        metadata.PLUGIN_NAME)
     return {
         run: list(tag_to_content.keys())
         for (run, tag_to_content)
-        in mapping
+        in six.iteritems(mapping)
     }
 
   def tags_impl(self):
