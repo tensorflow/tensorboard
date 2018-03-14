@@ -24,7 +24,6 @@ from __future__ import print_function
 import argparse
 import sys
 
-import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -96,28 +95,31 @@ def train():
       return activations
 
   #conv1
-  kernel = tf.Variable(tf.truncated_normal([5, 5, 1, 10], dtype=tf.float32,
-                                                     stddev=1e-1), name='conv-weights')
+  kernel = tf.Variable(tf.truncated_normal([5, 5, 1, 10],
+                                           dtype=tf.float32,
+                                           stddev=1e-1),
+                       name='conv-weights')
   conv = tf.nn.conv2d(image_shaped_input, kernel, [1, 1, 1, 1], padding='VALID')
-  biases = tf.Variable(tf.constant(0.0, shape=[kernel.get_shape().as_list()[-1]], dtype=tf.float32),
-                       trainable=True, name='biases')
+  biases_init = tf.constant(
+      0.0, shape=[kernel.get_shape().as_list()[-1]], dtype=tf.float32)
+  biases = tf.Variable(biases_init, trainable=True, name='biases')
   out = tf.nn.bias_add(conv, biases)
   conv1 = tf.nn.relu(out, name='relu')
 
   #conv2
-  kernel2 = tf.Variable(tf.truncated_normal([3, 3, 10, 20], dtype=tf.float32,
-                                                     stddev=1e-1), name='conv-weights2')
+  kernel2_init = tf.truncated_normal(
+      [3, 3, 10, 20], dtype=tf.float32, stddev=1e-1)
+  kernel2 = tf.Variable(kernel2_init, name='conv-weights2')
   conv2 = tf.nn.conv2d(conv1, kernel2, [1, 1, 1, 1], padding='VALID')
-  biases2 = tf.Variable(tf.constant(0.0, shape=[kernel2.get_shape().as_list()[-1]], dtype=tf.float32),
-                       trainable=True, name='biases')
+  biases2_init = tf.constant(
+      0.0, shape=[kernel2.get_shape().as_list()[-1]], dtype=tf.float32)
+  biases2 = tf.Variable(biases2_init, trainable=True, name='biases')
   out2 = tf.nn.bias_add(conv2, biases2)
   conv2 = tf.nn.relu(out2, name='relu')
 
   flattened = tf.contrib.layers.flatten(conv2)
-
-
-  # hidden1 = nn_layer(x, x.get_shape().as_list()[1], 10, 'layer1')
-  hidden1 = nn_layer(flattened, flattened.get_shape().as_list()[1], 10, 'layer1')
+  hidden1 = nn_layer(
+      flattened, flattened.get_shape().as_list()[1], 10, 'layer1')
 
   with tf.name_scope('dropout'):
     keep_prob = tf.placeholder(tf.float32)
@@ -161,33 +163,26 @@ def train():
     return {x: xs, y_: ys, keep_prob: k}
 
   for i in range(FLAGS.max_steps):
-    # if i % 10 == 0:  # Record summaries and test-set accuracy
-        summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
-        test_writer.add_summary(summary, i)
-        print('Accuracy at step %s: %s' % (i, acc))
-    # else:  # Record train set summaries, and train
-    #   if i % 100 == 99:  # Record execution stats
-    #     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-    #     run_metadata = tf.RunMetadata()
-    #     summary, _ = sess.run([merged, train_step],
-    #                           feed_dict=feed_dict(True),
-    #                           options=run_options,
-    #                           run_metadata=run_metadata)
-    #     train_writer.add_run_metadata(run_metadata, 'step%03d' % i)
-    #     train_writer.add_summary(summary, i)
-    #     print('Adding run metadata for', i)
-    #   else:  # Record a summary
-        print('i', i)
-        feed_dictionary = feed_dict(True)
-        summary, gradient_arrays, activations, _ = sess.run([merged, gradients, [image_shaped_input, conv1, conv2, hidden1, y], train_step], feed_dict=feed_dictionary)
-        first_of_batch = sess.run(x, feed_dict=feed_dictionary)[0].reshape(28, 28)
-
-        visualizer.update(
-          session=sess,
-          arrays=activations + [first_of_batch] + gradient_arrays,
-          frame=first_of_batch,
-        )
-        train_writer.add_summary(summary, i)
+    summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
+    test_writer.add_summary(summary, i)
+    print('Accuracy at step %s: %s' % (i, acc))
+    print('i', i)
+    feed_dictionary = feed_dict(True)
+    summary, gradient_arrays, activations, _ = sess.run(
+        [
+            merged,
+            gradients,
+            [image_shaped_input, conv1, conv2, hidden1, y],
+            train_step
+        ],
+        feed_dict=feed_dictionary)
+    first_of_batch = sess.run(x, feed_dict=feed_dictionary)[0].reshape(28, 28)
+    visualizer.update(
+        session=sess,
+        arrays=activations + [first_of_batch] + gradient_arrays,
+        frame=first_of_batch,
+    )
+    train_writer.add_summary(summary, i)
 
   train_writer.close()
   test_writer.close()
