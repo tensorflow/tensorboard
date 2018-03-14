@@ -275,7 +275,7 @@ class BarChart {
       rows.append('td').text((d) => {
         // Convince TypeScript to let us pass off a key-value entry of value
         // type Bar as a Point since that's what TooltipColumn.evaluate wants.
-	// TODO(nickfelt): reconcile the incompatible typing here
+        // TODO(nickfelt): reconcile the incompatible typing here
         const barEntryAsPoint = d as any as vz_chart_helpers.Point;
         return column.evaluate(barEntryAsPoint);
       });
