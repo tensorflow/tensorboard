@@ -20,7 +20,6 @@ py_library(
         ":visualizer",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend/event_processing:plugin_asset_util",
     ],
 )
 
@@ -48,7 +47,6 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         ":beholder",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
