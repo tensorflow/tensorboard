@@ -41,30 +41,42 @@ class VideoWriter(object):
     self.outputs = [out for out in outputs if out.available()]
     if not self.outputs:
       raise Exception('No available video outputs')
+    self.output_index = 0
     self.output = None
     self.frame_shape = None
 
-  def default_output(self):
-    return self.outputs[0]
-
-  def _select_output(self):
-    for i, output in enumerate(self.outputs):
-      if i > 0:
-        sys.stderr.write('Falling back to video output %s\n' % output.name())
-      try:
-        return output(self.directory, self.frame_shape)
-      except Exception:
-        sys.stderr.write('Video output type %s not available\n' % output.name())
-        if i == len(self.outputs) - 1:
-          raise
+  def current_output(self):
+    return self.outputs[self.output_index]
 
   def write_frame(self, np_array):
+    # Reset whenever we encounter a new frame shape.
     if self.frame_shape != np_array.shape:
       if self.output:
         self.output.close()
+      self.output = None
       self.frame_shape = np_array.shape
-      self.output = self._select_output()
-    self.output.emit_frame(np_array)
+    # Write the frame, advancing across output types as necessary.
+    original_output_index = self.output_index
+    while True:
+      try:
+        if self.output:
+          self.output.emit_frame(np_array)
+          return
+        new_output = self.outputs[self.output_index]
+        if self.output_index > original_output_index:
+          sys.stderr.write(
+              'Falling back to video output %s\n' % new_output.name())
+        self.output = new_output(self.directory, self.frame_shape)
+      except (IOError, OSError) as e:
+        sys.stderr.write(
+            'Video output type %s not available: %s\n' % (
+                self.current_output().name(), str(e)))
+        if self.output:
+          self.output.close()
+        self.output = None
+        if self.output_index == len(self.outputs) - 1:
+          raise  # We ran out of available fallbacks.
+        self.output_index += 1
 
   def finish(self):
     if self.output:

@@ -137,7 +137,7 @@ class Beholder(object):
       if not self.is_recording:
         self.is_recording = True
         print('Starting recording using {}'.format(
-            self.video_writer.default_output().name()))
+            self.video_writer.current_output().name()))
       self.video_writer.write_frame(frame)
     elif self.is_recording:
       self.is_recording = False
