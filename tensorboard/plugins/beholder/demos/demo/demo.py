@@ -122,9 +122,6 @@ def train():
   conv2 = tf.nn.relu(out2, name='relu')
 
   flattened = tf.contrib.layers.flatten(conv2)
-
-
-  # hidden1 = nn_layer(x, x.get_shape().as_list()[1], 10, 'layer1')
   hidden1 = nn_layer(
       flattened, flattened.get_shape().as_list()[1], 10, 'layer1')
 
@@ -170,22 +167,9 @@ def train():
     return {x: xs, y_: ys, keep_prob: k}
 
   for i in range(FLAGS.max_steps):
-    # if i % 10 == 0:  # Record summaries and test-set accuracy
     summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
     test_writer.add_summary(summary, i)
     print('Accuracy at step %s: %s' % (i, acc))
-    # else:  # Record train set summaries, and train
-    #   if i % 100 == 99:  # Record execution stats
-    #     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-    #     run_metadata = tf.RunMetadata()
-    #     summary, _ = sess.run([merged, train_step],
-    #                           feed_dict=feed_dict(True),
-    #                           options=run_options,
-    #                           run_metadata=run_metadata)
-    #     train_writer.add_run_metadata(run_metadata, 'step%03d' % i)
-    #     train_writer.add_summary(summary, i)
-    #     print('Adding run metadata for', i)
-    #   else:  # Record a summary
     print('i', i)
     feed_dictionary = feed_dict(True)
     summary, gradient_arrays, activations, _ = sess.run(
@@ -197,7 +181,6 @@ def train():
         ],
         feed_dict=feed_dictionary)
     first_of_batch = sess.run(x, feed_dict=feed_dictionary)[0].reshape(28, 28)
-
     visualizer.update(
         session=sess,
         arrays=activations + [first_of_batch] + gradient_arrays,
