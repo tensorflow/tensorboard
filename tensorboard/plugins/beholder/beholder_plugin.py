@@ -32,6 +32,9 @@ from tensorboard.plugins.beholder import shared_config
 
 
 class BeholderPlugin(base_plugin.TBPlugin):
+  """
+  TensorBoard plugin for viewing model data as a live video during training.
+  """
 
   plugin_name = shared_config.PLUGIN_NAME
 
