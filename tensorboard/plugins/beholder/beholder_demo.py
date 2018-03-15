@@ -153,8 +153,8 @@ def train():
   visualizer = Beholder(logdir=LOG_DIRECTORY)
 
 
-  def feed_dict(train):
-    if train or FLAGS.fake_data:
+  def feed_dict(is_train):
+    if is_train or FLAGS.fake_data:
       xs, ys = mnist.train.next_batch(100, fake_data=FLAGS.fake_data)
       k = FLAGS.dropout
     else:
