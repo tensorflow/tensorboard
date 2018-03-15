@@ -398,8 +398,8 @@ class TextPluginTest(tf.test.TestCase):
     # Initially, the thread for checking for plugin assets data has not run.
     # Hence, the mapping should only have data from the multiplexer.
     self.assertEqual({
-        'fry': [u'message', u'vector'],
-        'leela': [u'message', u'vector']
+        'fry': ['message', 'vector'],
+        'leela': ['message', 'vector']
     }, self.plugin.tags_impl())
     thread = self.plugin._index_impl_thread
     mock.assert_called_once_with(thread)
@@ -407,8 +407,8 @@ class TextPluginTest(tf.test.TestCase):
     # The thread hasn't run yet, so no change in response, and we should not
     # have tried to launch a second thread.
     self.assertEqual({
-        'fry': [u'message', u'vector'],
-        'leela': [u'message', u'vector']
+        'fry': ['message', 'vector'],
+        'leela': ['message', 'vector']
     }, self.plugin.tags_impl())
     mock.assert_called_once_with(thread)
 
