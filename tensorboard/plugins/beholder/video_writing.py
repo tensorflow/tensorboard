@@ -19,7 +19,6 @@ from __future__ import print_function
 import abc
 import os
 import subprocess
-import sys
 import time
 
 import numpy as np
@@ -40,7 +39,7 @@ class VideoWriter(object):
     # Filter to the available outputs
     self.outputs = [out for out in outputs if out.available()]
     if not self.outputs:
-      raise Exception('No available video outputs')
+      raise IOError('No available video outputs')
     self.output_index = 0
     self.output = None
     self.frame_shape = None
@@ -55,6 +54,7 @@ class VideoWriter(object):
         self.output.close()
       self.output = None
       self.frame_shape = np_array.shape
+      tf.logging.info('Starting video with frame shape: %s', self.frame_shape)
     # Write the frame, advancing across output types as necessary.
     original_output_index = self.output_index
     for self.output_index in range(original_output_index, len(self.outputs)):
@@ -62,15 +62,15 @@ class VideoWriter(object):
         if not self.output:
           new_output = self.outputs[self.output_index]
           if self.output_index > original_output_index:
-            sys.stderr.write(
-                'Falling back to video output %s\n' % new_output.name())
+            tf.logging.warn(
+                'Falling back to video output %s', new_output.name())
           self.output = new_output(self.directory, self.frame_shape)
         self.output.emit_frame(np_array)
         return
       except (IOError, OSError) as e:
-        sys.stderr.write(
-            'Video output type %s not available: %s\n' % (
-                self.current_output().name(), str(e)))
+        tf.logging.warn(
+            'Video output type %s not available: %s',
+            self.current_output().name(), str(e))
         if self.output:
           self.output.close()
         self.output = None
@@ -147,8 +147,9 @@ class FFmpegVideoOutput(VideoOutput):
   def __init__(self, directory, frame_shape):
     self.filename = directory + '/video-{}.webm'.format(time.time())
     if len(frame_shape) != 3:
-      raise ValueError('Expected rank-3 array for frame, got %s' % str(frame_shape))
-    sys.stderr.write('Starting video with frame shape: %s\n' % str(frame_shape))
+      raise ValueError(
+          'Expected rank-3 array for frame, got %s' % str(frame_shape))
+    # Set input pixel format based on channel count.
     if frame_shape[2] == 1:
       pix_fmt = 'gray'
     elif frame_shape[2] == 3:
@@ -181,8 +182,8 @@ class FFmpegVideoOutput(VideoOutput):
   def _handle_error(self):
     _, stderr = self.ffmpeg.communicate()
     bar = '=' * 40
-    sys.stderr.write(
-        'ERROR writing to FFmpeg:\n%s\n%s\n%s\n' % (bar, stderr, bar))
+    tf.logging.error(
+        'Error writing to FFmpeg:\n%s\n%s\n%s', bar, stderr.rstrip('\n'), bar)
 
   def emit_frame(self, np_array):
     try:
@@ -190,7 +191,7 @@ class FFmpegVideoOutput(VideoOutput):
       self.ffmpeg.stdin.flush()
     except IOError:
       self._handle_error()
-      raise IOError('failure invoking FFmpeg')
+      raise IOError('Failure invoking FFmpeg')
 
   def close(self):
     if self.ffmpeg.poll() is None:

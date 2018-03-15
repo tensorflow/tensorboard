@@ -136,13 +136,14 @@ class Beholder(object):
     if should_record:
       if not self.is_recording:
         self.is_recording = True
-        print('Starting recording using {}'.format(
-            self.video_writer.current_output().name()))
+        tf.logging.info(
+            'Starting recording using %s',
+            self.video_writer.current_output().name())
       self.video_writer.write_frame(frame)
     elif self.is_recording:
       self.is_recording = False
       self.video_writer.finish()
-      print('Finished recording')
+      tf.logging.info('Finished recording')
 
 
   # TODO: blanket try and except for production? I don't someone's script to die
