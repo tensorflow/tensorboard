@@ -14,13 +14,10 @@ sh_binary(
         "README.rst",
         "setup.cfg",
         "setup.py",
-        # Main tensorboard binary and everything it uses
-        "//tensorboard",
-        # User-facing python library ('import tensorboard')
-        "//tensorboard:lib",
-        # Version module (read by setup.py)
-        "//tensorboard:version",
-        # User-facing projector API ('import tensorboard.plugins.projector')
-        "//tensorboard/plugins/projector",
+        "//tensorboard",  # Main tensorboard binary and everything it uses
+        "//tensorboard:lib",  # User-facing overall TensorBoard API
+        "//tensorboard:version",  # Version module (read by setup.py)
+        "//tensorboard/plugins/beholder",  # User-facing beholder API
+        "//tensorboard/plugins/projector",  # User-facing projector API
     ],
 )
