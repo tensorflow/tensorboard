@@ -658,7 +658,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     # of op names and their stack heights are included.
     op_linenos = collections.defaultdict(set)
     for lineno in response_data['lineno_to_op_name_and_stack_pos']:
-      self.assertGreater(lineno, 0)
+      self.assertGreater(int(lineno), 0)
       for op_name, stack_pos in response_data[
           'lineno_to_op_name_and_stack_pos'][lineno]:
         op_linenos[op_name].add(lineno)
@@ -860,7 +860,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
         'str1/(str1)', comm_data['data']['maybe_base_expanded_node_name'])
     session_run_thread.join()
     self.assertEqual(1, len(session_run_results))
-    self.assertEqual("abcdef", session_run_results[0])
+    self.assertEqual(b"abcdef", session_run_results[0])
 
     # Get the value of a tensor without mapping.
     tensor_response = self._serverGet(
