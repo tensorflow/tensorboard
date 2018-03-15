@@ -326,7 +326,7 @@ class TextPluginTest(tf.test.TestCase):
       </table>""")
     self.assertEqual(convert(d3), d3_expected)
 
-  def assertIsActive(self, plugin, expected_is_active):
+  def assertIsActive(self, plugin, expected_finally_is_active):
     """Helper to simulate threading for asserting on is_active()."""
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     mock = patcher.start()
@@ -346,7 +346,7 @@ class TextPluginTest(tf.test.TestCase):
     thread.run()
     self.assertIsNone(plugin._index_impl_thread)
 
-    if expected_is_active:
+    if expected_finally_is_active:
       self.assertTrue(plugin.is_active())
       # The call above shouldn't have launched a new thread.
       mock.assert_called_once_with(thread)
@@ -369,7 +369,15 @@ class TextPluginTest(tf.test.TestCase):
     plugin = text_plugin.TextPlugin(context)
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
-    self.assertIsActive(plugin, True)
+
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    mock = patcher.start()
+    self.addCleanup(patcher.stop)
+    self.assertTrue(plugin.is_active(), True)
+
+    # Data is available within the multiplexer. No thread should have started
+    # for checking plugin assets data.
+    self.assertFalse(mock.called)
 
   def testPluginIsActiveWhenRunsButNoText(self):
     """The plugin should be inactive when there are runs but none has text."""
@@ -387,14 +395,21 @@ class TextPluginTest(tf.test.TestCase):
     mock = patcher.start()
     self.addCleanup(patcher.stop)
 
-    # Initially we have not computed index_impl() so we'll get the placeholder.
-    self.assertEqual({}, self.plugin.tags_impl())
+    # Initially, the thread for checking for plugin assets data has not run.
+    # Hence, the mapping should only have data from the multiplexer.
+    self.assertEqual({
+        'fry': ['message', 'vector'],
+        'leela': ['message', 'vector']
+    }, self.plugin.tags_impl())
     thread = self.plugin._index_impl_thread
     mock.assert_called_once_with(thread)
 
     # The thread hasn't run yet, so no change in response, and we should not
     # have tried to launch a second thread.
-    self.assertEqual({}, self.plugin.tags_impl())
+    self.assertEqual({
+        'fry': ['message', 'vector'],
+        'leela': ['message', 'vector']
+    }, self.plugin.tags_impl())
     mock.assert_called_once_with(thread)
 
     # Run the thread; it should clean up after itself.

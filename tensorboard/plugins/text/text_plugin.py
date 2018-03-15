@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import json
 import textwrap
 import threading
@@ -29,6 +28,7 @@ import time
 import numpy as np
 # pylint: enable=g-bad-import-order
 
+import six
 import tensorflow as tf
 from werkzeug import wrappers
 
@@ -234,9 +234,15 @@ class TextPlugin(base_plugin.TBPlugin):
       if any(self._index_cached.values()):
         return True
 
+    if self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME):
+      # Text data is present in the multiplexer. No need to further check for
+      # data stored via the outdated plugin assets method.
+      return True
+
     # We haven't conclusively determined if the plugin should be active. Launch
     # a thread to compute index_impl() and return False to avoid blocking.
     self._maybe_launch_index_impl_thread()
+
     return False
 
   def _maybe_launch_index_impl_thread(self):
@@ -265,42 +271,52 @@ class TextPlugin(base_plugin.TBPlugin):
         'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
 
   def index_impl(self):
+    run_to_series = self._fetch_run_to_series_from_multiplexer()
+
     # A previous system of collecting and serving text summaries involved
     # storing the tags of text summaries within tensors.json files. See if we
     # are currently using that system. We do not want to drop support for that
     # use case.
-    run_to_series = collections.defaultdict(list)
     name = 'tensorboard_text'
     run_to_assets = self._multiplexer.PluginAssets(name)
     for run, assets in run_to_assets.items():
+      if run in run_to_series:
+        # When runs conflict, the summaries created via the new method override.
+        continue
+
       if 'tensors.json' in assets:
         tensors_json = self._multiplexer.RetrievePluginAsset(
             run, name, 'tensors.json')
         tensors = json.loads(tensors_json)
         run_to_series[run] = tensors
       else:
+        # The mapping should contain all runs among its keys.
         run_to_series[run] = []
 
+    return run_to_series
+
+  def _fetch_run_to_series_from_multiplexer(self):
     # TensorBoard is obtaining summaries related to the text plugin based on
     # SummaryMetadata stored within Value protos.
-    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-
-    # Augment the summaries created via the deprecated (plugin asset based)
-    # method with these summaries created with the new method. When they
-    # conflict, the summaries created via the new method overrides.
-    for (run, tags) in mapping.items():
-      run_to_series[run] += tags.keys()
-    return run_to_series
+    mapping = self._multiplexer.PluginRunToTagToContent(
+        metadata.PLUGIN_NAME)
+    return {
+        run: list(tag_to_content.keys())
+        for (run, tag_to_content)
+        in six.iteritems(mapping)
+    }
 
   def tags_impl(self):
     # Recompute the index on demand whenever tags are requested, but do it
     # in a separate thread to avoid blocking.
     self._maybe_launch_index_impl_thread()
 
-    # Use the cached index if present; if it's not, this route shouldn't have
-    # been reached anyway (since the plugin should be saying it's inactive)
-    # so just return an empty response.
-    return self._index_cached if self._index_cached else {}
+    # Use the cached index if present. If it's not, just return the result based
+    # on data from the multiplexer, requiring no disk read.
+    if self._index_cached:
+      return self._index_cached
+    else:
+      return self._fetch_run_to_series_from_multiplexer()
 
   @wrappers.Request.application
   def tags_route(self, request):
