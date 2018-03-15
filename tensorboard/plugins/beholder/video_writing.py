@@ -57,16 +57,16 @@ class VideoWriter(object):
       self.frame_shape = np_array.shape
     # Write the frame, advancing across output types as necessary.
     original_output_index = self.output_index
-    while True:
+    for self.output_index in range(original_output_index, len(self.outputs)):
       try:
-        if self.output:
-          self.output.emit_frame(np_array)
-          return
-        new_output = self.outputs[self.output_index]
-        if self.output_index > original_output_index:
-          sys.stderr.write(
-              'Falling back to video output %s\n' % new_output.name())
-        self.output = new_output(self.directory, self.frame_shape)
+        if not self.output:
+          new_output = self.outputs[self.output_index]
+          if self.output_index > original_output_index:
+            sys.stderr.write(
+                'Falling back to video output %s\n' % new_output.name())
+          self.output = new_output(self.directory, self.frame_shape)
+        self.output.emit_frame(np_array)
+        return
       except (IOError, OSError) as e:
         sys.stderr.write(
             'Video output type %s not available: %s\n' % (
@@ -74,15 +74,15 @@ class VideoWriter(object):
         if self.output:
           self.output.close()
         self.output = None
-        if self.output_index == len(self.outputs) - 1:
-          raise  # We ran out of available fallbacks.
-        self.output_index += 1
+    raise IOError('Exhausted available video outputs')
 
   def finish(self):
     if self.output:
       self.output.close()
     self.output = None
     self.frame_shape = None
+    # Reconsider failed outputs when video is manually restarted.
+    self.output_index = 0
 
 
 class VideoOutput(object):
