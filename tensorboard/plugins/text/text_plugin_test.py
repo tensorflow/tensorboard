@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import json
 import os
 import textwrap
@@ -374,7 +373,7 @@ class TextPluginTest(tf.test.TestCase):
     mock = patcher.start()
     self.addCleanup(patcher.stop)
     self.assertTrue(plugin.is_active(), True)
-    
+
     # Data is available within the multiplexer. No thread should have started
     # for checking plugin assets data.
     self.assertFalse(mock.called)
