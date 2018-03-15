@@ -410,6 +410,8 @@ class SourceManager(object):
 
   def get_paths(self):
     """Get the paths to all available source files."""
+    # print('source file keys: %s' % self._source_file_content.keys())  # DEBUG
+    # return self._source_file_content.keys()
     return list(self._source_file_content.keys())
 
   def get_content(self, file_path):
