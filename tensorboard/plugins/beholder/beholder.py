@@ -208,10 +208,10 @@ class BeholderHook(tf.train.SessionRunHook):
       logdir: Directory where Beholder is to write data.
     """
     self._logdir = logdir
-    self.visualizer = None
+    self.beholder = None
 
   def begin(self):
-    self.visualizer = Beholder(self._logdir)
+    self.beholder = Beholder(self._logdir)
 
   def after_run(self, run_context, unused_run_values):
-    self.visualizer.update(run_context.session)
+    self.beholder.update(run_context.session)

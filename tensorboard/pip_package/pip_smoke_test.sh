@@ -131,6 +131,7 @@ TEST_API_CALL="
 import tensorboard as tb
 tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.projector import visualize_embeddings
+from tensorboard.plugins.beholder import Beholder, BeholderHook
 "
 
 echo "  python>>> $TEST_API_CALL"
