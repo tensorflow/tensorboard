@@ -4,8 +4,7 @@ sudo: required
 language: python
 python:
   - "2.7"
-  # TODO(jart): Re-enable when TensorFlow builds are fixed.
-  # - "3.4"
+  - "3.6"
 
 os:
   - linux
