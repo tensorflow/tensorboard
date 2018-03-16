@@ -34,7 +34,7 @@ before_install:
         pip install -I tensorflow
         ;;
       NIGHTLY)
-        pip install --no-cache-dir -I https://tensorboard-builds.storage.googleapis.com/tf_nightly_cpu_slow_ubuntu14-123-cp27-cp27mu-linux_x86_64.whl
+        pip install -I tf-nightly
         ;;
       *)
         pip install -I tensorflow=="${TF}"
