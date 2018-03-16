@@ -9,7 +9,10 @@ exports_files(["LICENSE"])
 
 py_library(
     name = "beholder",
-    srcs = ["beholder.py"],
+    srcs = [
+        "__init__.py",
+        "beholder.py",
+    ],
     data = ["resources"],
     srcs_version = "PY2AND3",
     deps = [

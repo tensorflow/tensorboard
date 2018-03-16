@@ -25,9 +25,8 @@ import argparse
 import sys
 
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
-
-from tensorboard.plugins.beholder.beholder import Beholder
+import tensorflow.examples.tutorials.mnist as mnist
+import tensorboard.plugins.beholder as beholder
 
 FLAGS = None
 
@@ -35,9 +34,8 @@ LOG_DIRECTORY = '/tmp/beholder-demo'
 
 
 def train():
-  mnist = input_data.read_data_sets(FLAGS.data_dir,
-                                    one_hot=True,
-                                    fake_data=FLAGS.fake_data)
+  mnist_data = mnist.input_data.read_data_sets(
+      FLAGS.data_dir, one_hot=True, fake_data=FLAGS.fake_data)
 
   sess = tf.InteractiveSession()
 
@@ -136,7 +134,8 @@ def train():
 
   with tf.name_scope('train'):
     optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
-    gradients, train_step = Beholder.gradient_helper(optimizer, cross_entropy)
+    gradients, train_step = beholder.Beholder.gradient_helper(
+        optimizer, cross_entropy)
 
   with tf.name_scope('accuracy'):
     with tf.name_scope('correct_prediction'):
@@ -150,15 +149,15 @@ def train():
   test_writer = tf.summary.FileWriter(LOG_DIRECTORY + '/test')
   tf.global_variables_initializer().run()
 
-  visualizer = Beholder(logdir=LOG_DIRECTORY)
+  visualizer = beholder.Beholder(logdir=LOG_DIRECTORY)
 
 
   def feed_dict(is_train):
     if is_train or FLAGS.fake_data:
-      xs, ys = mnist.train.next_batch(100, fake_data=FLAGS.fake_data)
+      xs, ys = mnist_data.train.next_batch(100, fake_data=FLAGS.fake_data)
       k = FLAGS.dropout
     else:
-      xs, ys = mnist.test.images, mnist.test.labels
+      xs, ys = mnist_data.test.images, mnist_data.test.labels
       k = 1.0
     return {x: xs, y_: ys, keep_prob: k}
 
