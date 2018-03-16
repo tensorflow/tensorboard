@@ -412,9 +412,9 @@ class StreamingOpTest(tf.test.TestCase):
     predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
     labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
     _, update_op = summary.streaming_op(name='pr_curve',
-                                               predictions=predictions,
-                                               labels=labels,
-                                               num_thresholds=10)
+                                        predictions=predictions,
+                                        labels=labels,
+                                        num_thresholds=10)
     with self.test_session() as sess:
       sess.run(tf.local_variables_initializer())
       sess.run(update_op)
