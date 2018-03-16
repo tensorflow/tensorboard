@@ -21,6 +21,7 @@ from __future__ import print_function
 import base64
 
 import numpy as np
+import six
 import tensorflow as tf
 
 from tensorboard.plugins.beholder import im_util
@@ -117,14 +118,14 @@ class TensorHelperTest(tf.test.TestCase):
 
   def testImagePngMappingRaisesExceptionForEmptyArray(self):
     x = np.zeros([0, 0])
-    with self.assertRaisesRegexp(
-        ValueError, r"Cannot encode an empty array .* \(0, 0\)"):
+    with six.assertRaisesRegex(
+        self, ValueError, r"Cannot encode an empty array .* \(0, 0\)"):
       tensor_helper.array_view(x, mapping="image/png")
 
   def testImagePngMappingRaisesExceptionForNonRank2Array(self):
     x = np.ones([2, 2, 2])
-    with self.assertRaisesRegexp(
-        ValueError, r"Expected rank-2 array; received rank-3 array"):
+    with six.assertRaisesRegex(
+        self, ValueError, r"Expected rank-2 array; received rank-3 array"):
       tensor_helper.array_to_base64_png(x)
 
 
