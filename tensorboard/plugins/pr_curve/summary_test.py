@@ -403,6 +403,28 @@ class StreamingOpTest(tf.test.TestCase):
 
       self.assertProtoEquals(expected_proto, proto)
 
+  def test_only_1_summary_generated(self):
+    """Tests that the streaming op only generates 1 summary for PR curves.
+
+    This test was made in response to a bug in which calling the streaming op
+    actually introduced 2 tags.
+    """
+    predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
+    labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
+    _, update_op = summary.streaming_op(name='pr_curve',
+                                        predictions=predictions,
+                                        labels=labels,
+                                        num_thresholds=10)
+    with self.test_session() as sess:
+      sess.run(tf.local_variables_initializer())
+      sess.run(update_op)
+      summary_proto = tf.Summary()
+      summary_proto.ParseFromString(sess.run(tf.summary.merge_all()))
+
+    tags = [v.tag for v in summary_proto.value]
+    # Only 1 tag should have been introduced.
+    self.assertEqual(['pr_curve/pr_curves'], tags)
+
 
 if __name__ == "__main__":
   tf.test.main()
