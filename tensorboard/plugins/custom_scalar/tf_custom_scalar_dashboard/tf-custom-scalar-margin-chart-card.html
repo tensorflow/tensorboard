@@ -259,7 +259,7 @@ limitations under the License.
 
         /**
          * This property must take on values from the XType enum defined within
-         * the vz_line_chart component.
+         * the vz_chart_helpers component.
          */
         xType: String,
 
@@ -386,16 +386,17 @@ limitations under the License.
               },
               {
                 title: 'Step',
-                evaluate: (d) => vz_line_chart.stepFormatter(d.datum.step),
+                evaluate: (d) => vz_chart_helpers.stepFormatter(d.datum.step),
               },
               {
                 title: 'Time',
-                evaluate: (d) => vz_line_chart.timeFormatter(d.datum.wall_time),
+                evaluate: (d) => vz_chart_helpers.timeFormatter(
+                    d.datum.wall_time),
               },
               {
                 title: 'Relative',
-                evaluate: (d) => vz_line_chart.relativeFormatter(
-                    vz_line_chart.relativeAccessor(d.datum, -1, d.dataset)),
+                evaluate: (d) => vz_chart_helpers.relativeFormatter(
+                    vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
               },
             ];
           }
