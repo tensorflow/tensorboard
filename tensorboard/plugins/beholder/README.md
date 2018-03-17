@@ -59,9 +59,9 @@ and select the "Beholder" tab.
 ### Data Visualization
 
 Beholder's primary feature is visualizing arbitrary NumPy arrays of data in a
-single video stream. Within the stream, horizontal *sections* represent each
-array, each *section* consists of *blocks* of identically colored pixels, and
-each *block* represents a single value from the original array.
+single video stream. Within the stream, horizontal "sections" represent each
+array, each section consists of "blocks" of identically colored pixels, and
+each block represents a single value from the original array.
 
 The shape of the array determines how blocks are laid out and how values are
 mapped to those blocks. Note that in general, large arrays are truncated by
