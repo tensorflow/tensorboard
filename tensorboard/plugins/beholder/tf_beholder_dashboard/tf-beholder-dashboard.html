@@ -42,10 +42,10 @@ limitations under the License.
               <pre>tf.trainable_variables()</pre>
             </paper-radio-button>
             <paper-radio-button id="option-arrays" name="arrays">
-              <pre>b.update(arrays=[2D_ARRAYS])</pre>
+              <pre>b.update(arrays=[NP_ARRAYS])</pre>
             </paper-radio-button>
             <paper-radio-button id="option-frames" name="frames">
-              <pre>b.update(frame=2D_ARRAY)</pre>
+              <pre>b.update(frame=NP_ARRAY)</pre>
             </paper-radio-button>
           </paper-radio-group>
 
@@ -143,7 +143,7 @@ limitations under the License.
         </div>
 
         <div class="sidebar-section">
-          <p class="disclaimer"><i>Note: Beholder currently only works well on local file systems.</i></p>
+          <p class="disclaimer">Note: Beholder currently only works well on local file systems.</p>
         </div>
 
       </div>
@@ -153,32 +153,40 @@ limitations under the License.
           <div class="no-data-warning">
             <h3>No Beholder data was found.</h3>
 
-            <p>Probable causes:</p>
+            <p>Probable causes:
             <ul>
               <li>Your script isn't running.</li>
-              <li>You aren't calling the <pre>update</pre> function.</li>
+              <li>You aren't calling <code>beholder.update()</code>.</li>
             </ul>
 
-            <p>To use Beholder, import and instantiate the Beholder class:</p>
+            <p>To use Beholder, import and instantiate the <code>Beholder</code>
+            class, and call its <code>update</code> method with a
+            <code>Session</code> argument after every train step:</p>
 
             <pre>
-from beholder.beholder import Beholder
-visualizer = Beholder(logdir=LOG_DIRECTORY)</pre>
+from tensorboard.plugins.beholder import Beholder
+beholder = Beholder(LOG_DIRECTORY)
 
-            <p>And call the update function after every train step (both arguments are optional):</p>
-
-            <pre>
-visualizer.update(
+# inside train loop
+beholder.update(
   session=sess,
-  arrays=list_of_np_arrays,
-  frame=two_dimensional_np_array,
+  arrays=list_of_np_arrays,  # optional argument
+  frame=two_dimensional_np_array,  # optional argument
 )</pre>
+            <p>If using <code>tf.train.MonitoredSession</code>, you can use
+            <code>BeholderHook</code>:
+
+            <pre>
+from tensorboard.plugins.beholder import BeholderHook
+beholder_hook = BeholderHook(LOG_DIRECTORY)
+with MonitoredSession(..., hooks=[beholder_hook]) as sess:
+  sess.run(train_op)</pre>
 
             <p>If you think everything is set up properly, please see
-            <a href="https://github.com/chrisranderson/beholder/">the README</a>
-            for more information and consider <a href="https://github.com/chrisranderson/beholder/issues/new">filing an issue on GitHub</a>.</p>
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/beholder/README.md">the README</a>
+            for more information and consider filing an issue on GitHub.
 
-            <p class="disclaimer"><i>Note: Beholder currently only works well on local file systems.</i></p>
+            <p class="disclaimer">Note: Beholder currently only works well on local file systems.</p>
           </div>
         </template>
 
@@ -277,6 +285,7 @@ visualizer.update(
 
       p.disclaimer {
         color: #999;
+        font-style: italic;
       }
 
     </style>

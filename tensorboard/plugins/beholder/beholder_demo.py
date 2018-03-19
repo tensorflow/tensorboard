@@ -26,12 +26,11 @@ import sys
 
 import tensorflow as tf
 import tensorflow.examples.tutorials.mnist as mnist
-import tensorboard.plugins.beholder as beholder
+import tensorboard.plugins.beholder as beholder_lib
 
 FLAGS = None
 
 LOG_DIRECTORY = '/tmp/beholder-demo'
-
 
 def train():
   mnist_data = mnist.input_data.read_data_sets(
@@ -134,7 +133,7 @@ def train():
 
   with tf.name_scope('train'):
     optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
-    gradients, train_step = beholder.Beholder.gradient_helper(
+    gradients, train_step = beholder_lib.Beholder.gradient_helper(
         optimizer, cross_entropy)
 
   with tf.name_scope('accuracy'):
@@ -149,7 +148,7 @@ def train():
   test_writer = tf.summary.FileWriter(LOG_DIRECTORY + '/test')
   tf.global_variables_initializer().run()
 
-  visualizer = beholder.Beholder(logdir=LOG_DIRECTORY)
+  beholder = beholder_lib.Beholder(logdir=LOG_DIRECTORY)
 
 
   def feed_dict(is_train):
@@ -176,7 +175,7 @@ def train():
         ],
         feed_dict=feed_dictionary)
     first_of_batch = sess.run(x, feed_dict=feed_dictionary)[0].reshape(28, 28)
-    visualizer.update(
+    beholder.update(
         session=sess,
         arrays=activations + [first_of_batch] + gradient_arrays,
         frame=first_of_batch,
