@@ -190,22 +190,20 @@ class Beholder(object):
 
 
 class BeholderHook(tf.train.SessionRunHook):
-  """SessionRunHook implementation that run Beholder every step.
+  """SessionRunHook implementation that runs Beholder every step.
 
-  Convinient when using tf.train.MonitoredSession:
+  Convenient when using tf.train.MonitoredSession:
   ```python
-  beholder_hook = BeholderHook('MY_LOG_DIR')
-  with MonitoredSession(session_creator=ChiefSessionCreator(...),
-                        hooks=[beholder_hook]) as sess:
-    while not sess.should_stop():
-      sess.run(train_op)
+  beholder_hook = BeholderHook(LOG_DIRECTORY)
+  with MonitoredSession(..., hooks=[beholder_hook]) as sess:
+    sess.run(train_op)
   ```
   """
   def __init__(self, logdir):
     """Creates new Hook instance
 
     Args:
-      logdir: Directory where Beholder is to write data.
+      logdir: Directory where Beholder should write data.
     """
     self._logdir = logdir
     self.beholder = None
