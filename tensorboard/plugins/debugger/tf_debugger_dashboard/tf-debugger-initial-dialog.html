@@ -29,40 +29,44 @@ limitations under the License.
                   modal
                   opened="{{_open}}"
                   with-backdrop="[[_useNativeBackdrop]]">
-      <h2 id='dialog-title'>Debugger is waiting for Session.run() connections...</h2>
-      <div class='code-example'>
-        <div class="code-example-section">
-          <div class="code-example-section-title">
-            <a href="https://www.tensorflow.org/api_docs/python/tf/Session" target="_blank">tf.Session</a>:
-          </div>
-          <pre class="code-snippet">
+      <h2 id='dialog-title'>[[_title]]</h2>
+      <template is="dom-if" if="[[_hasCustomMessage]]">
+        <div class="custom-message">[[_customMessage]]</div>
+      </template>
+      <template is="dom-if" if="[[!_hasCustomMessage]]">
+        <div class="code-example">
+          <div class="code-example-section">
+            <div class="code-example-section-title">
+              <a href="https://www.tensorflow.org/api_docs/python/tf/Session" target="_blank">tf.Session</a>:
+            </div>
+            <pre class="code-snippet">
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 
 sess = tf.Session()
 sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
 sess.run(my_fetches)
-        </pre>
-        </div>
-        <div class="code-example-section">
-          <div class="code-example-section-title">
-            <a href="https://www.tensorflow.org/programmers_guide/estimators" target="_blank">Estimator</a>
-            |
-            <a href="https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession" target="_blank">MonitoredSession</a>:
+          </pre>
           </div>
-          <pre class="code-snippet">
+          <div class="code-example-section">
+            <div class="code-example-section-title">
+              <a href="https://www.tensorflow.org/programmers_guide/estimators" target="_blank">Estimator</a>
+              |
+              <a href="https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession" target="_blank">MonitoredSession</a>:
+            </div>
+            <pre class="code-snippet">
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 
 hook = tf_debug.TensorBoardDebugHook("[[_host]]:[[_port]]")
 my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
-          </pre>
-        </div>
-        <div class="code-example-section">
-          <div class="code-example-section-title">
-            <a href="https://keras.io/models/model/" target="_blank">Keras Model</a>:
+            </pre>
           </div>
-          <pre class="code-snippet">
+          <div class="code-example-section">
+            <div class="code-example-section-title">
+              <a href="https://keras.io/models/model/" target="_blank">Keras Model</a>:
+            </div>
+            <pre class="code-snippet">
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 import keras
@@ -71,9 +75,10 @@ keras.backend.set_session(
     tf_debug.LocalCLIDebugWrapperSession(tf.Session()), "[[_host]]:[[_port]]")
 # Define your keras model, called "model".
 model.fit(...)
-          </pre>
+            </pre>
+          </div>
         </div>
-      </div>
+      </template>
     </paper-dialog>
   </template>
   <style>
@@ -92,10 +97,6 @@ model.fit(...)
       right: 0;
     }
 
-    paper-dialog {
-      width: 60%;
-    }
-
     #dashboard-backdrop {
       background: rgba(0, 0, 0, 0.6);
     }
@@ -111,12 +112,16 @@ model.fit(...)
       font-weight: bold;
     }
     .code-snippet {
-      position: relative;
-      margin-left: 5%;
+      padding-left: 1em;
     }
 
     #dialog-title {
       padding-bottom: 15px;
+    }
+
+    .custom-message {
+      margin-top: 0;
+      margin-bottom: 15px;
     }
   </style>
   <script>
@@ -124,6 +129,18 @@ model.fit(...)
   Polymer({
     is: "tf-debugger-initial-dialog",
     properties: {
+      _title: {
+        type: String,
+        value: null,
+      },
+      _customMessage: {
+        type: String,
+        value: null,
+      },
+      _hasCustomMessage: {
+        type: Boolean,
+        computed: '_computeHasCustomMessage(_customMessage)',
+      },
       _host: {
         type: String,
         value: null,
@@ -151,6 +168,8 @@ model.fit(...)
       },
     },
     openDialog(host, port) {
+      this.set('_title', 'Debugger is waiting for Session.run() connections...');
+      this.set('_customMessage', null);
       this.$.dialog.open();
       if (host != null && port != null) {
         // TODO(cais): Use markdown; syntax highlight Python code.
@@ -161,18 +180,22 @@ model.fit(...)
     closeDialog() {
       this.$.dialog.close();
     },
-    renderDebuggerNotEnabledMessage() {
+    openDisabledDialog() {
+      this.set(
+          '_title',
+          'Debugger is not enabled in this TensorBoard instance');
+      this.set(
+          '_customMessage',
+          'To enable the debugger in TensorBoard, use the flag: '
+              + '--debugger_port <port_number>');
       this.$.dialog.open();
-      Polymer.dom(this.$$('#dialog-title')).textContent =
-          'ERROR: debugger is not enabled in this TensorBoard instance.';
-      let ex = 'To enable the debugger in tensorboard, use the flag: ' +
-               '--debugger_port <port_number>'
-      Polymer.dom(this.$$('#session-run-code-example')).textContent = ex;
-      Polymer.dom(this.$$('#hook-code-example')).textContent = '';
     },
     _computeHidden(open) {
       return !open;
     },
+    _computeHasCustomMessage(customMessage) {
+      return !_.isEmpty(customMessage);
+    }
   });
   </script>
 </dom-module>
