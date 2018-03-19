@@ -79,7 +79,8 @@ def standard_tensorboard_wsgi(
     db_uri="",
     assets_zip_provider=None,
     path_prefix="",
-    window_title=""):
+    window_title="",
+    flags=None):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
@@ -96,7 +97,7 @@ def standard_tensorboard_wsgi(
         the `tensorboard.default` module to use the default. This behavior
         might be removed in the future.
     window_title: A string specifying the the window title.
-
+    flags: A dict of the runtime flags provided to the application, or None.
   Returns:
     The new TensorBoard WSGI application.
   """
@@ -116,6 +117,7 @@ def standard_tensorboard_wsgi(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
       db_uri=db_uri,
+      flags=flags,
       logdir=logdir,
       multiplexer=multiplexer,
       assets_zip_provider=assets_zip_provider,
