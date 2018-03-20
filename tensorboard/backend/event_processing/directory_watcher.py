@@ -51,6 +51,10 @@ class SuffixHead(object):
     # The loader used to read from this events file.
     self.loader = loader_factory(path)
 
+    # The wall time (timestamp) of the last event read from this file. None if
+    # no event has been read yet from this file.
+    self.last_event_time = None
+
 
 class DirectoryWatcher(object):
   """A DirectoryWatcher wraps a loader to load from a sequence of paths.
@@ -204,15 +208,17 @@ class DirectoryWatcher(object):
           if last_event:
             at_least_1_event_read_for_current_paths = True
             at_least_1_event_read = True
+            head.last_event_time = last_event.wall_time
 
-            # Close this file if its last recorded event timestamp is old.
-            if (file_open and
-                last_event.wall_time + _MAX_INACTIVE_AGE < time.time()):
-              self._closed_paths.add(path)
-              del self.suffix_to_head[suffix]
+          # Close this file if its last recorded event timestamp is old.
+          if (file_open and
+              head.last_event_time + _MAX_INACTIVE_AGE < time.time()):
+            self._closed_paths.add(path)
+            del self.suffix_to_head[suffix]
 
-            # Start cycling through the paths again, but do not yet obtain a new
-            # file listing.
+          if last_event:
+            # We read to the end of a file. Start cycling through the paths
+            # again, but do not yet obtain a new file listing.
             break
 
         if not at_least_1_event_read_for_current_paths:
