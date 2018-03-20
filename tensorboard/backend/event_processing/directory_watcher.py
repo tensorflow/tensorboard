@@ -145,7 +145,7 @@ class DirectoryWatcher(object):
       # suffix.
       paths = [path
                for path in io_wrapper.ListDirectoryAbsolute(self._directory)
-               if self._path_filter(path)]
+               if self._path_filter(path) and path not in self._closed_paths]
       paths.sort()
 
       # Map from suffix to the index of the last events file with that suffix.
