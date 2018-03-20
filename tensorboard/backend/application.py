@@ -30,7 +30,7 @@ import threading
 import time
 
 import six
-from six.moves.urllib import parse as urlparse
+from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-order
 import tensorflow as tf
 from werkzeug import wrappers
 
