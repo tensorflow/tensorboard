@@ -242,6 +242,7 @@ class DirectoryWatcher(object):
     if suffix in self.suffix_to_head:
       # Close the previous events file being read for this suffix.
       self._closed_paths.add(path)
+      del self.suffix_to_head[suffix]
     
     # Create a new head. Loaders lack a Close method. We rely on python garbage
     # collecting its file handler.
