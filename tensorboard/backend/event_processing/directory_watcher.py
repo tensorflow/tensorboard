@@ -196,23 +196,17 @@ class DirectoryWatcher(object):
             last_event = event
             yield event
 
-          file_open = True
-          if suffix_to_last_file_index[suffix] > i:
-            # At least 1 events file (with the same suffix) comes after this
-            # events file. Close this events file: We read all of its events,
-            # and it will never be updated again.
-            file_open = False
-            self._closed_paths.add(path)
-            del self.suffix_to_head[suffix]
-
           if last_event:
             at_least_1_event_read_for_current_paths = True
             at_least_1_event_read = True
             head.last_event_time = last_event.wall_time
 
-          # Close this file if its last recorded event timestamp is old.
-          if (file_open and
-              head.last_event_time + _MAX_INACTIVE_AGE < time.time()):
+          # Close this file if either at least 1 events file (with the same
+          # suffix) comes after this events file or its last recorded event
+          # timestamp is old.
+          if (suffix_to_last_file_index[suffix] > i or (
+                head.last_event_time is not None and
+                head.last_event_time + _MAX_INACTIVE_AGE < time.time())):
             self._closed_paths.add(path)
             del self.suffix_to_head[suffix]
 
