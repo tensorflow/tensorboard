@@ -6,11 +6,11 @@ are encoded as query parameters in the URI.
 1. Per Tensorboard's conventions, each end-point has a "data/plugin/hparams" 
 prefix.
 
-1. Since a single Tensorboard UI window currently supports only one
+2. Since a single Tensorboard UI window currently supports only one
 experiment, the API below does not accept an experiment ID. This will need
 to be changed if we switch to support multiple experiments.
 
-1. This API description references protocol buffers defined in api.proto. 
+3. This API description references protocol buffers defined in api.proto. 
 When protocol buffers are passed in, they are passed as URL-encoded 
 JSON-encoded query parameters. When protocol buffers are returned, 
 they are JSON-encoded in the response.  

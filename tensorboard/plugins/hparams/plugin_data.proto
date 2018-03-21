@@ -33,7 +33,7 @@ import "google/protobuf/struct.proto";
 
 package tensorboard.hparams;
 
-// HParam summaries created by `tensorboard.plugins.scalar.summary`
+// HParam summaries created by `tensorboard.plugins.hparams.summary`
 // module will include `SummaryMetadata` whose `plugin_data` field has
 // as `content` a serialized HParamsPluginData message.
 message HParamsPluginData {
@@ -53,7 +53,7 @@ message SessionStartInfo {
   map<string, google.protobuf.Value> hparams = 1;
 
   // A URI for where checkpoints are saved.
-  string checkpoint_uri = 2;
+  string model_uri = 2;
 
   // An optional URL to a website monitoring the session.
   string monitor_url = 3;

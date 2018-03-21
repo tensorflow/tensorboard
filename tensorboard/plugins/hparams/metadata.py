@@ -28,16 +28,17 @@ SESSION_END_INFO_TAG = '_hparams_/session_end_info'
 PLUGIN_NAME = 'hparams'
 PLUGIN_DATA_VERSION = 0
 
-def create_summary_metadata(data_oneof_field, protobuffer):
-  """Creates a summary holding an HParamsPluginData message containing
-  'protobuffer'.
-
-  Arguments:
-    data_oneof_field. String. The oneof field name in HParamsPluginData to
-    populate with 'protobuffer'.
+def create_summary_metadata(hparams_plugin_data):
+  """Creates a tf.SummaryMetadata holding a copy of the given
+  HParamsPluginData message in its plugin_data.content field.
+  Sets the version field of hparams_plugin_data copy to PLUGIN_DATA_VERSION.
   """
-  content=plugin_data_pb2.HParamsPluginData(version=PLUGIN_DATA_VERSION)
-  getattr(content, data_oneof_field).CopyFrom(protobuffer)
+  if not isinstance(hparams_plugin_data, plugin_data_pb2.HParamsPluginData):
+    raise TypeError('Needed an instance of plugin_data_pb2.HParamsPluginData.'
+                    ' Got: %s' % type(hparams_plugin_data))
+  content = plugin_data_pb2.HParamsPluginData()
+  content.CopyFrom(hparams_plugin_data)
+  content.version = PLUGIN_DATA_VERSION
   return tf.SummaryMetadata(
       plugin_data=tf.SummaryMetadata.PluginData(
           plugin_name=PLUGIN_NAME,

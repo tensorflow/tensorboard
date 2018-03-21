@@ -26,7 +26,7 @@ Typical usage for exporting summaries in a hyperparameters-tuning experiment:
    given by (<suffix>, tag) where tag is the tag of the scalar summary.
    When calling experiment_pb in step 1, you'll need to pass all the metric
    names used in the experiemnt.
-3. When the session completes, call session_end_pb() and export the resulting
+4. When the session completes, call session_end_pb() and export the resulting
    summary into the same session run <session_name>.
 """
 
@@ -72,12 +72,11 @@ def experiment_pb(
       hparam_infos=hparam_infos,
       metric_infos=metric_infos)
   return _summary(metadata.EXPERIMENT_TAG,
-                  data_oneof_field="experiment",
-                  protobuffer=experiment)
+                  plugin_data_pb2.HParamsPluginData(experiment=experiment))
 
 
 def session_start_pb(hparams,
-                     checkpoint_uri="",
+                     model_uri="",
                      monitor_url="",
                      group_name=""):
   """Creates a summary that contains a training session metadata information.
@@ -88,8 +87,8 @@ def session_start_pb(hparams,
     hparams: A dictionary with string keys. Describes the hyperparameter values
              used in the session mappng each hyperparameter name to its value.
              Supported value types are  bool, int, float, or str.
-    checkpoint_uri: See the comment for the field with the same name of
-                    plugin_data_pb2.SessionStartInfo.
+    model_uri: See the comment for the field with the same name of
+               plugin_data_pb2.SessionStartInfo.
     monitor_url: See the comment for the field with the same name of
                  plugin_data_pb2.SessionStartInfo.
     group_name:  See the comment for the field with the same name of
@@ -97,22 +96,23 @@ def session_start_pb(hparams,
   Returns:
     Returns the summary protobuffer mentioned above.
   """
-  supported_types={float:None, str:None, int:None, bool:None}
   session_start_info = plugin_data_pb2.SessionStartInfo(
-      checkpoint_uri=checkpoint_uri,
+      model_uri=model_uri,
       monitor_url=monitor_url,
       group_name=group_name)
   for (hp_name, hp_val) in six.iteritems(hparams):
-    assert type(hp_val) in supported_types
-    if type(hp_val) is float or type(hp_val) is int:
+    if isinstance(hp_val, (float, int)):
       session_start_info.hparams[hp_name].number_value = hp_val
-    elif type(hp_val) is str:
+    elif isinstance(hp_val, str, unicode):
       session_start_info.hparams[hp_name].string_value = hp_val
-    else: # type(hp_val) is bool:
+    elif isinstance(hp_val, bool):
       session_start_info.hparams[hp_name].bool_value = hp_val
+    else:
+      raise TypeError('hparams[%s]=%s has type: %s which is not supported' %
+                      (hp_name, hp_val, type(hp_val)))
   return _summary(metadata.SESSION_START_INFO_TAG,
-                  data_oneof_field="session_start_info",
-                  protobuffer=session_start_info)
+                  plugin_data_pb2.HParamsPluginData(
+                      session_start_info=session_start_info))
 
 
 def session_end_pb(status):
@@ -127,21 +127,18 @@ def session_end_pb(status):
   Returns:
     Returns the summary protobuffer mentioned above.
   """
+  session_end_info = plugin_data_pb2.SessionEndInfo(status=status)
   return _summary(metadata.SESSION_END_INFO_TAG,
-                  data_oneof_field="session_end_info",
-                  protobuffer=plugin_data_pb2.SessionEndInfo(status=status))
+                  plugin_data_pb2.HParamsPluginData(
+                      session_end_info=session_end_info))
 
 
-def _summary(tag, data_oneof_field, protobuffer):
-  """Helper function for creating a summary holding an
-  HParamsPluginData message containing 'protobuffer'.
-
-  Arguments:
-    data_oneof_field. String. The oneof field name in HParamsPluginData to
-    populate with 'protobuffer'.
+def _summary(tag, hparams_plugin_data):
+  """Helper function for creating a summary holding the given HParamsPluginData
+  message.
   """
   summary = tf.Summary()
   summary.value.add(
       tag=tag,
-      metadata=metadata.create_summary_metadata(data_oneof_field, protobuffer))
+      metadata=metadata.create_summary_metadata(hparams_plugin_data))
   return summary

@@ -60,15 +60,15 @@ def create_experiment_summary():
           api_pb2.HParamInfo(name="initial_temperature",
                              display_name="initial temperature",
                              type=api_pb2.DATA_TYPE_FLOAT64,
-                             discrete_set=temperature_list),
+                             domain_discrete=temperature_list),
           api_pb2.HParamInfo(name="ambient_temperature",
                              display_name="ambient temperature",
                              type=api_pb2.DATA_TYPE_FLOAT64,
-                             discrete_set=temperature_list),
+                             domain_discrete=temperature_list),
           api_pb2.HParamInfo(name="heat_coefficient",
                              display_name="heat coefficient",
                              type=api_pb2.DATA_TYPE_FLOAT64,
-                             discrete_set=temperature_list)
+                             domain_discrete=temperature_list)
       ],
       metric_infos=[
           api_pb2.MetricInfo(
@@ -87,9 +87,9 @@ def create_experiment_summary():
   )
 
 
-def create_hparam_info(name, display_name, discrete_set):
+def create_hparam_info(name, display_name, domain_discrete):
   result = api_pb2.HParamInfo(name=name, display_name=display_name)
-  result.discrete_set.extend(discrete_set)
+  result.domain_discrete.extend(domain_discrete)
   return result
 
 

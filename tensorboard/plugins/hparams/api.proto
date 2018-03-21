@@ -82,16 +82,16 @@ message HParamInfo {
 
   // Specifies the set of values this hyperparameter can hold. The UI assumes
   // every instance of this hyperparameter will hold a value from this set. It
-  // is used by the UI to allow filtering  so that only session groups (see
+  // is used by the UI to allow filtering so that only session groups (see
   // below) whose associated hyperparameter value "passes" the filter are
   // displayed. If this is not populated, the domain is assumed to be the
   // entire domain of the type of the hyperparameter.
   oneof domain {
     // A discrete set of the values this hyperparameter can hold.
-    google.protobuf.ListValue discrete_set = 5;
+    google.protobuf.ListValue domain_discrete = 5;
     // Numeric data type only. The (real) interval from which values of this
     // hyperparameter are taken.
-    Interval interval = 6;
+    Interval domain_interval = 6;
   }
 }
 enum DataType {
@@ -101,7 +101,6 @@ enum DataType {
 }
 
 // Represents the closed interval [min_val, max_val] of the real line.
-// min_val, max_val should be numeric.
 message Interval {
   double min_val = 1;
   double max_val = 2;
@@ -180,13 +179,13 @@ message SessionGroup {
   // of ListSessionGroupsRequest.
   // Unfortunately, we can't store these as a map, since proto maps can't have
   // message keys.
-  repeated MetricValue metric_vals = 3;
+  repeated MetricValue metric_values = 3;
 
   // The sessions belonging to this group.
   repeated Session sessions = 4;
 
   // An optional link to a web page monitoring the session group.
-  string monitor_url = 9;
+  string monitor_url = 5;
 }
 
 message MetricValue {
@@ -237,9 +236,11 @@ enum Status {
 }
 
 // Parameters for a ListSessionGroups API call.
-// See ListSessionGroups in http_api.md.
+// Computes a list of the current session groups allowing for filtering and
+// sorting by metrics and hyperparameter values. Returns a "slice" of
+// that list specified by start_index and slice_size.
 // Since this proto is passed as a URL query parameter, care should be taken
-// when adding new fields to avoid exceeding the URL lenght limit.
+// when adding new fields to avoid exceeding the URL length limit.
 message ListSessionGroupsRequest {
   // A list of ColParams messages--one for each "column" of a session group. A
   // session group column contains either a metric evaluated at the current
@@ -278,13 +279,18 @@ message ListSessionGroupsRequest {
   AggregationType aggregation_type = 2;
   MetricName primary_metric = 3;
 
-  // Pagination support:
-  // The number of session groups in each page to return.
-  int32 page_size = 4;
-  // The token representing the page to return. Should be empty for the first
-  // page and copied from the 'next_page_token' field of the response for
-  // later pages.
-  string page_token = 5;
+  // The next two parameters determine the "slice" of the full list of
+  // session groups--sorted and filtered by the parameters above--to return.
+  // The 0-based index of the first session group to return.
+  int32 start_index = 4;
+
+  // The number of session groups to return starting at the session group
+  // indexed by 'start_index'. The actual number of session groups returned
+  // is min{slice_size, total_size - start_index}, where
+  // total_size is the number of session groups in the full list
+  // sorted and filtered by the parameters above (if start_index > total_size
+  // no session groups are returned).
+  int32 slice_size = 5;
 }
 
 // Defines parmeters for a ListSessionGroupsRequest for a specific column.
@@ -296,24 +302,27 @@ message ColParams {
 
   // Sorting.
   SortOrder order = 3;
+  bool missing_values_are_first = 4;
 
   // Filtering. Defines a subset of the domain of the column.
-  ///Different representations for the subset are possible for different
+  // Different representations for the subset are possible for different
   // column data types (hyperparameter data types or DATA_TYPE_FLOAT64 for
   // metrics). See the comments below for more
   // details.
   oneof filter {
     // Only valid for string-valued hyperparameter columns. The subset is
     // the set of all strings matching the regular expression stored
-    // in 'regexp'.
-    string regexp = 4;
+    // in 'regexp' as a partial match (use '^<regexp>$' to have a full
+    // match against regexp).
+    string filter_regexp = 5;
 
     // Only valid for numeric-valued columns. The subset is the given interval.
-    Interval interval = 5;
+    Interval filter_interval = 6;
 
     // Valid for all data types. The subset is defined explicitly.
-    google.protobuf.ListValue discrete_set = 6;
+    google.protobuf.ListValue filter_discrete = 7;
   }
+  bool exclude_missing_values = 8;
 }
 
 enum SortOrder {
@@ -332,9 +341,9 @@ enum AggregationType {
 // See ListSessionGroups in http_api.md.
 message ListSessionGroupsResponse {
   repeated SessionGroup session_groups = 1;
-  string next_page_token = 2;
 
-  // Denotes the total number of session groups the query returned.
+  // Denotes the total number of session groups in the full filtered list.
+  // (Recall that this response may only be a slice).
   // Optional. If set, the UI may choose to display it.
   int32 total_size = 3;
 }
