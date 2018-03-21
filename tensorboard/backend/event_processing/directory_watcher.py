@@ -18,69 +18,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import re
-import time
+import bisect
 
 import tensorflow as tf
 
 
 from tensorboard.backend.event_processing import io_wrapper
 
-# The watcher will close any event files with last event times this many seconds
-# before the current time. Closed event files will never be read from again.
-# This preserves too many file handlers from being open.
-_MAX_INACTIVE_AGE = 86400
-
-
-class SuffixHead(object):
-  def __init__(self, path, loader_factory):
-    """Stores resources for the head of a suffix.
-
-    This directory watcher maintains a file loader for the current events file
-    being read from for each suffix. The idea is that each suffix could be
-    written by a different Writer.
-
-    This construct stores information on the current events file being read for
-    some suffix.
-    
-    Args:
-      path: The path to the events file to create a suffix head for.
-    """
-    self.path = path
-
-    # The loader used to read from this events file.
-    self.loader = loader_factory(path)
-
-    # The wall time (timestamp) of the last event read from this file. None if
-    # no event has been read yet from this file.
-    self.last_event_time = None
-
 
 class DirectoryWatcher(object):
   """A DirectoryWatcher wraps a loader to load from a sequence of paths.
 
-  This watcher watches all the paths inside that directory for new events to
-  read. It supports multiple SummaryWriters writing to the same run so long as
-  the summary writers
+  A loader reads a path and produces some kind of values as an iterator. A
+  DirectoryWatcher takes a directory, a factory for loaders, and optionally a
+  path filter and watches all the paths inside that directory.
 
-  (1) differ in events file name suffix.
-  (2) write events that do not share the same tags across writers.
-
-  This directory watcher groups events files based on their suffixes. For each
-  suffix, the watcher reads from a current events file (the suffix head). The
-  watcher reads events files by order of timestamp (parsed from the file name)
-  and suffix.
-  
-  The watcher closes events files (and never reads from them again) if either
-  (1) The last recorded event for a file has a timestamp over _MAX_INACTIVE_AGE
-      seconds ago.
-  (2) There is an events file with the same suffix that comes later in the
-      ordering.
-
-  TODO(chihuahua): Make the watcher periodically scan closed events files
-  within the _MAX_INACTIVE_AGE time frame. Log a warning if they are updated. 
-
-  The watcher ambushed the Fellowship as they entered the darkness of Moria.
+  This class is only valid under the assumption that only one path will be
+  written to by the data source at a time and that once the source stops writing
+  to a path, it will start writing to a new path that's lexicographically
+  greater and never come back. It uses some heuristics to check whether this is
+  true based on tracking changes to the files' sizes, but the check can have
+  false negatives. However, it should have no false positives.
   """
 
   def __init__(self, directory, loader_factory, path_filter=lambda x: True):
@@ -105,15 +63,19 @@ class DirectoryWatcher(object):
     self._loader_factory = loader_factory
     self._loader = None
     self._path_filter = path_filter
-
-    # A mapping between the name of an events file and its SuffixHead.
-    self.suffix_to_head = {}
-
-    # A set of paths that are closed and will never be read from again.
-    self._closed_paths = set()
+    self._ooo_writes_detected = False
+    # The file size for each file at the time it was finalized.
+    self._finalized_sizes = {}
 
   def Load(self):
     """Loads new values.
+
+    The watcher will load from one path at a time; as soon as that path stops
+    yielding events, it will move on to the next path. We assume that old paths
+    are never modified after a newer path has been written. As a result, Load()
+    can be called multiple times in a row without losing events that have not
+    been yielded yet. In other words, we guarantee that every event will be
+    yielded exactly once.
 
     Yields:
       All values that have not been yielded yet.
@@ -133,133 +95,153 @@ class DirectoryWatcher(object):
   def _LoadInternal(self):
     """Internal implementation of Load().
 
+    The only difference between this and Load() is that the latter will throw
+    DirectoryDeletedError on I/O errors if it thinks that the directory has been
+    permanently deleted.
+
     Yields:
       All values that have not been yielded yet.
     """
+
+    # If the loader exists, check it for a value.
+    if not self._loader:
+      self._InitializeLoader()
+
     while True:
-      # Used to determine whether we should keep obtaining new directory 
-      # listings. We only do so if we picked up new events to read.
-      at_least_1_event_read = False
+      # Yield all the new events in the path we're currently loading from.
+      for event in self._loader.Load():
+        yield event
 
-      # Sort event file names by timestamp (at which it was written) and then
-      # suffix.
-      paths = [path
-               for path in io_wrapper.ListDirectoryAbsolute(self._directory)
-               if self._path_filter(path) and path not in self._closed_paths]
-      paths.sort()
+      next_path = self._GetNextPath()
+      if not next_path:
+        tf.logging.info('No path found after %s', self._path)
+        # Current path is empty and there are no new paths, so we're done.
+        return
 
-      # Map from suffix to the index of the last events file with that suffix.
-      # Used later to determine whether to close an events file - we close the
-      # file if a subsequent file with the same suffix exists.
-      suffix_to_last_file_index = {}
-      for (i, path) in enumerate(paths):
-        suffix = self._ParseSuffix(path)
-        if not suffix:
-          continue
-        suffix_to_last_file_index[suffix] = i
+      # There's a new path, so check to make sure there weren't any events
+      # written between when we finished reading the current path and when we
+      # checked for the new one. The sequence of events might look something
+      # like this:
+      #
+      # 1. Event #1 written to path #1.
+      # 2. We check for events and yield event #1 from path #1
+      # 3. We check for events and see that there are no more events in path #1.
+      # 4. Event #2 is written to path #1.
+      # 5. Event #3 is written to path #2.
+      # 6. We check for a new path and see that path #2 exists.
+      #
+      # Without this loop, we would miss event #2. We're also guaranteed by the
+      # loader contract that no more events will be written to path #1 after
+      # events start being written to path #2, so we don't have to worry about
+      # that.
+      for event in self._loader.Load():
+        yield event
 
-      while True:
-        # Whether any event has been read from any of the files within the
-        # current file listing.
-        at_least_1_event_read_for_current_paths = False
+      tf.logging.info('Directory watcher advancing from %s to %s', self._path,
+                      next_path)
 
-        for (i, path) in enumerate(paths):
-          if path in self._closed_paths:
-            # Never again read from closed files.
-            continue
+      # Advance to the next path and start over.
+      self._SetPath(next_path)
 
-          # Parse the suffix from the name of the events file.
-          suffix = self._ParseSuffix(path)
-          if not suffix:
-            tf.logging.info(
-                'File %r does not match events file naming pattern', path)
-            continue
+  # The number of paths before the current one to check for out of order writes.
+  _OOO_WRITE_CHECK_COUNT = 20
 
-          if suffix not in self.suffix_to_head:
-            # Read this file. This file has not been read from before.
-            head = self._CreateNewHead(suffix, path)
-          elif path < self.suffix_to_head[suffix].path:
-            tf.logging.error(
-                ('Events file %r is out of order since it is ordered behind '
-                 '%r. It will not be read.'),
-                path,
-                self.suffix_to_head[suffix].path)
-            continue
-          else:
-            # Keep reading from the head of the current suffix. It still has
-            # more events to read.
-            head = self.suffix_to_head[suffix]
+  def OutOfOrderWritesDetected(self):
+    """Returns whether any out-of-order writes have been detected.
 
-          # Yield all remaining events for this suffix.
-          last_event = None
-          for event in head.loader.Load():
-            last_event = event
-            yield event
+    Out-of-order writes are only checked as part of the Load() iterator. Once an
+    out-of-order write is detected, this function will always return true.
 
-          if last_event:
-            at_least_1_event_read_for_current_paths = True
-            at_least_1_event_read = True
-            head.last_event_time = last_event.wall_time
+    Note that out-of-order write detection is not performed on GCS paths, so
+    this function will always return false.
 
-          # Close this file if either at least 1 events file (with the same
-          # suffix) comes after this events file or its last recorded event
-          # timestamp is old.
-          if (suffix_to_last_file_index[suffix] > i or (
-                head.last_event_time is not None and
-                head.last_event_time + _MAX_INACTIVE_AGE < time.time())):
-            self._closed_paths.add(path)
-            del self.suffix_to_head[suffix]
+    Returns:
+      Whether any out-of-order write has ever been detected by this watcher.
 
-          if last_event:
-            # We read to the end of a file. Start cycling through the paths
-            # again, but do not yet obtain a new file listing.
-            break
+    """
+    return self._ooo_writes_detected
 
-        if not at_least_1_event_read_for_current_paths:
-          # No files were read. Obtain a new file listing and try reading from
-          # events again.
+  def _InitializeLoader(self):
+    path = self._GetNextPath()
+    if path:
+      self._SetPath(path)
+    else:
+      raise StopIteration
+
+  def _SetPath(self, path):
+    """Sets the current path to watch for new events.
+
+    This also records the size of the old path, if any. If the size can't be
+    found, an error is logged.
+
+    Args:
+      path: The full path of the file to watch.
+    """
+    old_path = self._path
+    if old_path and not io_wrapper.IsGCSPath(old_path):
+      try:
+        # We're done with the path, so store its size.
+        size = tf.gfile.Stat(old_path).length
+        tf.logging.debug('Setting latest size of %s to %d', old_path, size)
+        self._finalized_sizes[old_path] = size
+      except tf.errors.OpError as e:
+        tf.logging.error('Unable to get size of %s: %s', old_path, e)
+
+    self._path = path
+    self._loader = self._loader_factory(path)
+
+  def _GetNextPath(self):
+    """Gets the next path to load from.
+
+    This function also does the checking for out-of-order writes as it iterates
+    through the paths.
+
+    Returns:
+      The next path to load events from, or None if there are no more paths.
+    """
+    paths = sorted(path
+                   for path in io_wrapper.ListDirectoryAbsolute(self._directory)
+                   if self._path_filter(path))
+    if not paths:
+      return None
+
+    if self._path is None:
+      return paths[0]
+
+    # Don't bother checking if the paths are GCS (which we can't check) or if
+    # we've already detected an OOO write.
+    if not io_wrapper.IsGCSPath(paths[0]) and not self._ooo_writes_detected:
+      # Check the previous _OOO_WRITE_CHECK_COUNT paths for out of order writes.
+      current_path_index = bisect.bisect_left(paths, self._path)
+      ooo_check_start = max(0, current_path_index - self._OOO_WRITE_CHECK_COUNT)
+      for path in paths[ooo_check_start:current_path_index]:
+        if self._HasOOOWrite(path):
+          self._ooo_writes_detected = True
           break
 
-      if not at_least_1_event_read:
-        # No events files were read. We have tried updating the file listing.
-        # Stop checking. Await the next TensorBoard backend reload.
-        break
+    next_paths = list(path
+                      for path in paths
+                      if self._path is None or path > self._path)
+    if next_paths:
+      return min(next_paths)
+    else:
+      return None
 
-
-  def _CreateNewHead(self, suffix, path):
-    """Creates a new head for a suffix.
-
-    This method thus begins reading from a new events file for a given suffix.
-    Updates internal state.
-
-    Args:
-      suffix: The suffix string.
-      path: The path to the next events file to read for the suffix.
-
-    Returns:
-      The new SuffixHead.
-    """
-    if suffix in self.suffix_to_head:
-      # Close the previous events file being read for this suffix.
-      self._closed_paths.add(path)
-      del self.suffix_to_head[suffix]
-    
-    # Create a new head. Loaders lack a Close method. We rely on python garbage
-    # collecting its file handler.
-    self.suffix_to_head[suffix] = SuffixHead(path, self._loader_factory)
-    return self.suffix_to_head[suffix]
-
-  def _ParseSuffix(self, path):
-    """Parses the suffix.
-
-    Args:
-      path: The path to an events file.
-    
-    Returns:
-      A string that is the suffix. Or none if the pattern does not match.
-    """
-    match = re.search('events\.out\.tfevents\.\d+\.(.*)$', path)
-    return match.group(1) if match else None
+  def _HasOOOWrite(self, path):
+    """Returns whether the path has had an out-of-order write."""
+    # Check the sizes of each path before the current one.
+    size = tf.gfile.Stat(path).length
+    old_size = self._finalized_sizes.get(path, None)
+    if size != old_size:
+      if old_size is None:
+        tf.logging.error('File %s created after file %s even though it\'s '
+                         'lexicographically earlier', path, self._path)
+      else:
+        tf.logging.error('File %s updated even though the current file is %s',
+                         path, self._path)
+      return True
+    else:
+      return False
 
 
 class DirectoryDeletedError(Exception):
