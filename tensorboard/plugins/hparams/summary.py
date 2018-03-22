@@ -38,12 +38,12 @@ import datetime
 
 import six
 import tensorflow as tf
+from google.protobuf import timestamp_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import metadata
 
-from google.protobuf import timestamp_pb2
 
 def experiment_pb(
     hparam_infos,

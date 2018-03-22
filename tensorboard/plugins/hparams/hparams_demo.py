@@ -28,15 +28,13 @@ import os.path
 import md5
 import shutil
 
-import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from google.protobuf import struct_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import summary
-from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.scalar import summary as scalar_summary
-from google.protobuf import struct_pb2
 
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/hparams_demo'
