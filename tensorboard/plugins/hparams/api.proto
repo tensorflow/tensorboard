@@ -218,7 +218,8 @@ message Session {
 
   // The current training step.
   // This is the step for which the values of 'metrics' are computed.
-  int32 training_step = 7;
+  // Note that int64's are encoded in JSON as strings.
+  int64 training_step = 7;
 
   // The wall time at which 'training_step' completed.
   google.protobuf.Timestamp training_step_wall_time = 8;
