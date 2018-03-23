@@ -87,6 +87,7 @@ class TBContext(object):
       db_connection_provider=None,
       db_module=None,
       db_uri=None,
+      flags=None,
       logdir=None,
       multiplexer=None,
       plugin_name_to_instance=None,
@@ -115,6 +116,8 @@ class TBContext(object):
           not in SQL mode and multiplexer should be used instead.
       db_uri: The string db URI TensorBoard was started with. If this is set,
           the logdir should be None.
+      flags: A dict of the runtime flags provided to TensorBoard to their
+          values.
       logdir: The string logging directory TensorBoard was started with. If this
           is set, the db_uri should be None.
       multiplexer: An EventMultiplexer with underlying TB data. Plugins should
@@ -131,6 +134,7 @@ class TBContext(object):
     self.db_connection_provider = db_connection_provider
     self.db_module = db_module
     self.db_uri = db_uri
+    self.flags = flags
     self.logdir = logdir
     self.multiplexer = multiplexer
     self.plugin_name_to_instance = plugin_name_to_instance
