@@ -150,4 +150,9 @@ start a new recording.
 
 Beholder has the following limitations and known issues.
 
+* Beholder requires write access to the log directory (specifically, to the
+  `$LOGDIR/plugins/beholder` subdirectory) in order to pass config and
+  visualization parameters to the running code.  If the config file location
+  is not writable, the UI controls will be disabled.
+
 * Beholder currently only works well on local file systems.
