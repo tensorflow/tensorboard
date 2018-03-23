@@ -197,7 +197,8 @@ def create_tb_app(plugins, assets_zip_provider=None):
       reload_interval=FLAGS.reload_interval,
       plugins=plugins,
       path_prefix=FLAGS.path_prefix,
-      window_title=FLAGS.window_title)
+      window_title=FLAGS.window_title,
+      flags=FLAGS)
 
 
 def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
