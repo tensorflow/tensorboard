@@ -215,6 +215,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         <template is="dom-if" if="[[_is_active]]">
           <tf-beholder-video
             id="video"
+            show-stream="[[_shouldShowVideo]]"
             is-live="[[_isLive]]">
           </tf-beholder-video>
           <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
@@ -413,6 +414,12 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           computed: '_computeIsLive(_isSelected, _is_active, _FPS)',
         },
 
+        _shouldShowVideo: {
+          type: Boolean,
+          value: true,
+          computed: '_computeShouldShowVideo(_isSelected, _is_active)',
+        },
+
         _controls_disabled: {
           type: Boolean,
           value: false,
@@ -513,6 +520,10 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
 
       _computeIsLive(isSelected, isActive, fps) {
         return isSelected && isActive && fps > 0;
+      },
+
+      _computeShouldShowVideo(isSelected, isActive) {
+        return isSelected && isActive;
       },
     });
     })();
