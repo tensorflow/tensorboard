@@ -59,29 +59,36 @@ limitations under the License.
           value: () => new tf_backend.RequestManager(),
         },
 
+        isLive: {
+          type: Boolean,
+          value: false,
+          observer: '_isLiveChanged',
+        },
+
         items: {
           type: Array,
           value: [{name:'Loading...'}],
         },
       },
 
-      _reloaditems() {
-        window.setTimeout(function(){
-          this._requestManager.request(INFO_ROUTE).then(function(response){
-            this.splice('items', 0)
-
-            for (var item of response) {
-             this.push('items', item)
-            }
-          }.bind(this))
-
-          this._reloaditems()
-        }.bind(this), 1000/(this.fps === 0 ? 1 : this.fps))
+      _isLiveChanged() {
+        this._reloaditems();
       },
 
-      ready() {
-        this._reloaditems()
-      }
+      _reloaditems() {
+        if (!this.isLive) {
+          return;
+        }
+        this._requestManager.request(INFO_ROUTE).then(function(response){
+          this.splice('items', 0);
+          for (var item of response) {
+            this.push('items', item);
+          }
+        }.bind(this));
+        window.setTimeout(
+            this._reloaditems.bind(this),
+            1000/(this.fps === 0 ? 1 : this.fps));
+      },
     });
     })();
   </script>

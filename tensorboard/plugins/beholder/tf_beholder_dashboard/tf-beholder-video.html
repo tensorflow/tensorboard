@@ -40,8 +40,6 @@ limitations under the License.
     const FEED_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/beholder-frame')
     const PING_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/ping')
 
-    var connectionFailed = false
-
     Polymer({
       is: "tf-beholder-video",
       properties: {
@@ -50,26 +48,44 @@ limitations under the License.
           value: () => new tf_backend.RequestManager(),
         },
 
+        isLive: {
+          type: Boolean,
+          value: false,
+          observer: '_isLiveChanged',
+        },
+
+        _pingSucceeded: {
+          type: Boolean,
+          value: true,
+        },
+
         _imageURL: {
           type: String,
           value: FEED_ROUTE
         }
       },
 
-      ready() {
+      _isLiveChanged() {
+        this._ping();
+      },
+
+      _ping() {
+        if (!this.isLive) {
+          return;
+        }
         // Periodically check the connection, restart if needed.
-        window.setInterval(function(){
-          this._requestManager.request(PING_ROUTE).then(
-              function(response){
-                if (connectionFailed) {
-                  this.restartVideo()
-                }
-                connectionFailed = false
-              }.bind(this),
-              function(error){
-                connectionFailed = true
-              }.bind(this))
-        }.bind(this), 1000)
+        const timer = window.setTimeout(
+            () => { this._pingSucceeded = false; },
+            1500);
+        this._requestManager.request(PING_ROUTE).then(
+          function(response) {
+            window.clearTimeout(timer);
+            if (!this._pingSucceeded) {
+              this.restartVideo();
+            }
+            this._pingSucceeded = true;
+          }.bind(this));
+        window.setTimeout(this._ping.bind(this), 1000);
       },
 
       restartVideo() {
