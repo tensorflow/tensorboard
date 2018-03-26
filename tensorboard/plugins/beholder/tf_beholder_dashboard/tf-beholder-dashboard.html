@@ -393,6 +393,11 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           observer: '_configChanged'
         },
 
+        _isSelected: {
+          type: Boolean,
+          value: false,
+        },
+
         _is_active: {
           type: Boolean,
           value: false,
@@ -465,8 +470,27 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         this.$.record_button.classList.toggle('is-recording')
       },
 
-      ready() {
-        this.reload()
+      attached() {
+        this._setupSelectedObserver();
+        this.reload();
+      },
+
+      // TODO(nickfelt): more elegant to implement as a 'selected' property
+      // bound directly on the dashboard element by logic in tf-tensorboard.
+      _setupSelectedObserver() {
+        const handleSelectedMutation = mutationRecords => {
+          mutationRecords.forEach(record => {
+            this.set(
+                '_isSelected', record.target.hasAttribute('data-selected'));
+          });
+        };
+        const options = {};
+        options.attributes = true;
+        options.attributeFilter = ['data-selected'];
+        new MutationObserver(handleSelectedMutation.bind(this)).observe(
+            this.parentNode, options);
+        this.set(
+            '_isSelected', this.parentNode.hasAttribute('data-selected'));
       },
 
       reload() {
