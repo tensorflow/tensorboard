@@ -55,6 +55,8 @@ def create_experiment_summary():
   # Convert TEMPERATURE_LIST to google.protobuf.ListValue
   temperature_list = struct_pb2.ListValue()
   temperature_list.extend(TEMPERATURE_LIST)
+  heat_coefficient_list = struct_pb2.ListValue()
+  heat_coefficient_list.extend(HEAT_COEFFICIENT_LIST)
   return summary.experiment_pb(
       hparam_infos=[
           api_pb2.HParamInfo(name="initial_temperature",

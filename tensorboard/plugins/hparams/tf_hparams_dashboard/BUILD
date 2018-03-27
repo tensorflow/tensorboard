@@ -38,5 +38,6 @@ tf_web_library(
         "@org_polymer_paper_menu",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_styles",
+        "@org_polymer_paper_toggle_button",
     ],
 )

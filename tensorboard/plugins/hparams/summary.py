@@ -70,7 +70,7 @@ def experiment_pb(
   experiment = api_pb2.Experiment(
       description=description,
       user=user,
-      time_created_secs=time_created_secs),
+      time_created_secs=time_created_secs,
       hparam_infos=hparam_infos,
       metric_infos=metric_infos)
   return _summary(metadata.EXPERIMENT_TAG,
@@ -81,7 +81,7 @@ def session_start_pb(hparams,
                      model_uri="",
                      monitor_url="",
                      group_name="",
-                     start_time_secs=time.time())
+                     start_time_secs=time.time()):
   """Creates a summary that contains a training session metadata information.
   One such summary per training session should be created. Each should have
   a different run.
@@ -105,7 +105,7 @@ def session_start_pb(hparams,
       model_uri=model_uri,
       monitor_url=monitor_url,
       group_name=group_name,
-      start_time_secs=star
+      start_time_secs=start_time_secs)
   for (hp_name, hp_val) in six.iteritems(hparams):
     if isinstance(hp_val, (float, int)):
       session_start_info.hparams[hp_name].number_value = hp_val

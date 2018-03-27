@@ -98,6 +98,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     request_proto = urllib.unquote(request_proto)
     request_proto = json_format.Parse(request_proto,
                                       api_pb2.ListSessionGroupsRequest())
+    tf.logging.info("%s" % request_proto);
     return http_util.Respond(
         request,
         json_format.MessageToJson(
