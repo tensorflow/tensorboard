@@ -147,7 +147,7 @@ limitations under the License.
             value="{{_FPS}}"
             type="number"
             step="1"
-            min="0"
+            min="1"
             max="30"
             pin="true"
             disabled="[[_controls_disabled]]">
@@ -483,6 +483,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
     tf_tensorboard.registerDashboard({
       plugin: 'beholder',
       elementName: 'tf-beholder-dashboard',
+      shouldRemoveDom: true,
     });
   </script>
 </dom-module>
