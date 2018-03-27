@@ -1,3 +1,37 @@
+# Release 1.7.0
+
+The 1.7 minor series tracks TensorFlow 1.7.
+
+## Hightlights
+
+- (Beta) New Beholder plugin that shows a live video feed of tensor data during
+  model training, by @chrisranderson. Caveat: only currently recommended for use
+  where TensorBoard and TensorFlow share a local disk. See for details:
+  https://github.com/tensorflow/tensorboard/tree/1.7/tensorboard/plugins/beholder
+
+## Features
+
+- Debugger tensor value card improvements:
+  - Entering new slice/time indices will automatically refresh view (#1017)
+  - Clicking title will highlight node in other parts of the UI (#1023)
+- Debugger health pills now show number of NaN/Inf values if any (#1026)
+
+## Changes
+
+- Audio summary playback elements no longer loop by default (PR #1061), but
+  looping can be enabled for individual elements through a right-click option.
+
+## Bug fixes
+
+- #965 - pr_curve_streaming_op no longer results in duplicate plots (PR #1053)
+- #967 - custom scalar margin plots with missing tags now indicate the run
+- #970 - browser back button now works across home page (/) - thanks @brianwa84
+- #990 - apple-touch-icon.png requests no longer trigger 404s - thanks @lanpa
+- #1010 - content no longer intrudes into sidebar on narrow viewports
+- #1016 - CTRL+C now exits TensorBoard even with debugger enabled (PR #975)
+- #1021 - text plugin no longer always shows as inactive on first page load
+
+
 # Release 1.6.0
 
 NOTICE: TensorBoard 1.6.0+ has moved to the `tensorboard` package name on PyPI:
