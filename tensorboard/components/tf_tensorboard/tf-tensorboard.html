@@ -457,6 +457,7 @@ limitations under the License.
           value: tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false) || null,
           observer: '_selectedDashboardChanged'
         },
+        _dashboardToMaybeRemove: String,
 
         /*
          * Will be set to `true` once our DOM is ready: in particular,
@@ -627,6 +628,16 @@ limitations under the License.
                                       selectedDashboard) {
         if (!containersStamped || !activeDashboards || !selectedDashboard) {
           return;
+        }
+        const previous = this._dashboardToMaybeRemove;
+        this._dashboardToMaybeRemove = selectedDashboard;
+        if (previous && previous != selectedDashboard) {
+          if (tf_tensorboard.dashboardRegistry[previous].shouldRemoveDom) {
+            const div = this.$$(`.dashboard-container[data-dashboard=${previous}]`);
+            if (div.firstChild) {
+              div.firstChild.remove();
+            }
+          }
         }
         const container = this.$$(
             `.dashboard-container[data-dashboard=${selectedDashboard}]`);
