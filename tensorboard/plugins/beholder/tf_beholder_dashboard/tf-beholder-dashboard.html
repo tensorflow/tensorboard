@@ -213,7 +213,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         </template>
 
         <template is="dom-if" if="[[_is_active]]">
-          <tf-beholder-video id="video"></tf-beholder-video>
+          <tf-beholder-video id="video" fps="[[_FPS]]"></tf-beholder-video>
 
           <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
             <tf-beholder-info
