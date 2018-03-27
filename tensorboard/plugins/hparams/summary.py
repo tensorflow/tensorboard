@@ -103,7 +103,7 @@ def session_start_pb(hparams,
   for (hp_name, hp_val) in six.iteritems(hparams):
     if isinstance(hp_val, (float, int)):
       session_start_info.hparams[hp_name].number_value = hp_val
-    elif isinstance(hp_val, str, unicode):
+    elif isinstance(hp_val, six.string_types):
       session_start_info.hparams[hp_name].string_value = hp_val
     elif isinstance(hp_val, bool):
       session_start_info.hparams[hp_name].bool_value = hp_val

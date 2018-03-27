@@ -245,40 +245,32 @@ enum Status {
 message ListSessionGroupsRequest {
   // A list of ColParams messages--one for each "column" of a session group. A
   // session group column contains either a metric evaluated at the current
-  // reported computation step or a hyperparameter value. The ColParams messages
-  // configure filtering and sorting of the resulting collection of
-  // session groups as follows:
+  // reported computation step or a hyperparameter value. In additon to
+  // 'regular' values, a column may take on a special 'missing-value' which
+  // denotes that the hyperparameter or metric is not available
+  // for the session group (for example, if the metric is not used in the
+  // group).
   //
-  // Filtering: each ColParams.filter field (see below) defines a subset of
-  // the domain of the associated column. Only session groups with each of
-  // their columns belonging to the corresponding subset will be returned.
-  // If no ColParams message is given for a column or if the filter field is
-  // unset, the column is regarded as unfiltered (i.e. the subset is taken as
-  // the entire column domain).
-  //
-  // Sorting: defined by the subset of ColParams messages whose 'order' field
-  // is not ORDER_UNSPECIFIED. In each of these the order field specifies the
-  // order (ascending or descending) of the values in the associated column
-  // of the session group. The order of the ColParams messages themselves
-  // determines the "significance" of the associated column as a sorting key:
-  // with the first being the primary sorting key, the second being
-  // the secondary sorting key, etc.
+  // The ColParams messages in the repeated field below configure filtering and
+  // sorting of the resulting collection of session groups. See the comments of
+  // the fields in the ColParam message below for more details.
   repeated ColParams col_params = 1;
 
   // Fields controlling how to aggregate metrics across sessions within a
   // session group.
-  // If metric_aggregation_type is AGGREGATION_AVG, each metric value of the
+  // If aggregation_type is AGGREGATION_AVG, each metric value of the
   // session group is the average of the values of the metric across the
   // sessions (at the same computation step).
-  // Otherwise, each metric value of the session group is the value of that
-  // metric for a "representative" session in the group. A representative
-  // session is a session having a "representative" value for the metric
-  // specified by the 'primary_metric' field below. The representative value
-  // for a metric is its minimum, maximum or median value across the sessions
-  // in the group, for metric_aggregation_type being AGGREGATION_MIN,
-  // AGGREGATION_MAX, or AGGREGATION_MEDIAN, respectively.
+  // Otherwise, the session group metric values are taken directly from a
+  // "representative" session in the group, selected as a session for which
+  // primary_metric takes on its minimum, maximum, or median value, as
+  // specified by the choice of aggregation_type (for median, if the number of
+  // sessions in the group is even, a session with a lower "middle" value is
+  // chosen as the representative session).
   AggregationType aggregation_type = 2;
-  MetricName primary_metric = 3;
+
+  // See comment for 'aggregation_type' above.
+  MetricName aggregation_metric = 3;
 
   // The next two parameters determine the "slice" of the full list of
   // session groups--sorted and filtered by the parameters above--to return.
@@ -295,6 +287,7 @@ message ListSessionGroupsRequest {
 }
 
 // Defines parmeters for a ListSessionGroupsRequest for a specific column.
+// See the comment for "ListSessionGroupsRequest" above for more details.
 message ColParams {
   oneof name {
     MetricName metric = 1;
@@ -302,27 +295,48 @@ message ColParams {
   }
 
   // Sorting.
+  // The final order of session groups in the respnse is defined by the sub
+  // collection of ColParams messages (out of the
+  // ListSessionGroupsRequest.col_params repeated field) whose 'order' field
+  // (below) is not ORDER_UNSPECIFIED. In each of the messages in this
+  // sub-collection, the next two fields specify the ordering of the values
+  // and missing_values in the associated column of the session group. The
+  // order of the ColParams messages themselves within the sub-collection
+  // determines the "significance" of the associated column as a sorting key:
+  // with the first being the primary sorting key, the second being the
+  // secondary sorting key, etc.
   SortOrder order = 3;
-  bool missing_values_are_first = 4;
+  // This field is ignored if order is ORDER_UNSPECIFIED.
+  // Otherwise, if true, missing values are ordered before every other value in
+  // the column; if false they are ordered after every other value in the
+  // column.
+  bool missing_values_first = 4;
 
-  // Filtering. Defines a subset of the domain of the column.
-  // Different representations for the subset are possible for different
-  // column data types (hyperparameter data types or DATA_TYPE_FLOAT64 for
-  // metrics). See the comments below for more
-  // details.
+  // Filtering.
+  // The next two fields specify a subset of the domain of the values a column
+  // may take (we including the special 'missing-value' in the domain).
+  // Only session groups with each of their column values belonging to the
+  // associated subset are included in the response. Columns for which there
+  // is no ColParams message are unfiltered--the subset is taken to be the
+  // entire domain of the column.
+  //
+  // The filter oneof field specifies the subset without including the special
+  // 'missing-value', the following field specifies whether to include the
+  // missing value in the resulting subset.
   oneof filter {
     // Only valid for string-valued hyperparameter columns. The subset is
     // the set of all strings matching the regular expression stored
     // in 'regexp' as a partial match (use '^<regexp>$' to have a full
     // match against regexp).
-    string filter_regexp = 5;
+    string regexp = 5;
 
     // Only valid for numeric-valued columns. The subset is the given interval.
-    Interval filter_interval = 6;
+    Interval interval = 6;
 
     // Valid for all data types. The subset is defined explicitly.
-    google.protobuf.ListValue filter_discrete = 7;
+    google.protobuf.ListValue discrete = 7;
   }
+  // If true, the subset does not contain the missing value in this column.
   bool exclude_missing_values = 8;
 }
 

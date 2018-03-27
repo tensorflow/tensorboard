@@ -25,7 +25,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os.path
-import md5
+import hashlib
 import shutil
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -45,7 +45,7 @@ TEMPERATURE_LIST = [270.0, 310.0, 350.0]
 HEAT_COEFFICIENT_LIST = [0.001, 0.005]
 
 def fingerprint(string):
-  m = md5.new()
+  m = hashlib.md5()
   m.update(string)
   return m.hexdigest()
 
