@@ -44,6 +44,13 @@ limitations under the License.
     Polymer({
       is: "tf-beholder-video",
       properties: {
+        // Only used for determining ping frequency.
+        fps: {
+          type: Number,
+          value: 10,
+          observer: '_fpsChanged',
+        },
+
         pingSleep: {
           type: Number,
           value: 1000,
@@ -90,7 +97,7 @@ limitations under the License.
           const response = JSON.parse(this._xhr.responseText);
           this._onPing(response['status'] == 'alive', this.pingSleep);
           return;
-        } 
+        }
         this._onPing(false, this.pingSleep);
       },
 
@@ -115,6 +122,13 @@ limitations under the License.
         }
       },
 
+      _fpsChanged(newValue, oldValue) {
+        if (newValue == 0) {
+          this._clear();
+        } else if (oldValue == 0) {
+          this._ping();
+        }
+      },
     });
 
     })();
