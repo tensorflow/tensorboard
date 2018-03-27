@@ -69,7 +69,7 @@ def experiment_pb(
   experiment = api_pb2.Experiment(
       description=description,
       user=user,
-      time_created_secs=time_created_secs),
+      time_created_secs=time_created_secs,
       hparam_infos=hparam_infos,
       metric_infos=metric_infos)
   return _summary(metadata.EXPERIMENT_TAG,
@@ -81,7 +81,7 @@ def session_start_pb(hparams,
                      checkpoint_uri="",
                      monitor_url="",
                      group_name="",
-                     start_time_secs=time.time())
+                     start_time_secs=time.time()):
   """Creates a summary that contains a training session metadata information.
   One such summary per training session should be created. Each should have
   a different run.
@@ -106,7 +106,7 @@ def session_start_pb(hparams,
       checkpoint_uri=checkpoint_uri,
       monitor_url=monitor_url,
       group_name=group_name,
-      start_time_secs=star
+      start_time_secs=start_time_secs)
   for (hp_name, hp_val) in six.iteritems(hparams):
     assert type(hp_val) in supported_types
     if type(hp_val) is float or type(hp_val) is int:

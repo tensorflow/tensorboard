@@ -140,7 +140,7 @@ class Handler(object):
     for metric_info in metric_infos:
       metric_name = metric_info.name
       try:
-        metric_evals = metrics.list_metric_evals(
+        metric_eval = metrics.last_metric_eval(
             self._context.multiplexer(),
             session_name,
             metric_name)
@@ -148,11 +148,11 @@ class Handler(object):
         # It's ok if we don't find the metric in the session.
         # We skip it here for filtering and sorting purposes its value is _NULL
         continue
-      # metric_evals[i] is a 3-tuple of the form [wall_time, step, value]
+      # metric_eval is a 3-tuple of the form [wall_time, step, value]
       result.append(api_pb2.MetricValue(name=metric_name,
-                                        wall_time_secs=metric_evals[-1][0],
-                                        training_step=metric_evals[-1][1],
-                                        value=metric_evals[-1][2]))
+                                        wall_time_secs=metric_eval[0],
+                                        training_step=metric_eval[1],
+                                        value=metric_eval[2]))
     return result
 
   def _build_group_from_sessions(self, sessions, session_infos_by_name):

@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-input/paper-input.html">
@@ -38,56 +39,114 @@ limitations under the License.
 <link rel="import" href="../tf-utils/tf-utils.html">
 
 <!--
-  A frontend that displays a set of tf-scalar-charts, each of which
-  represents the time series for a particular tag. This dashboard
-  provides a categorizer, run selector, and abcissa selector, by which
-  the user can customize how data is organized and displayed.
+  The HParams frontend.
 -->
 <dom-module id="tf-hparams-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" style="height:100%;overflow:auto;">
         <div class="sidebar-section">
           <div class="line-item">
-            <h4>Hyperparameters</h4>
+            <h4 style="margin:0px 0px;">Hyperparameters</h4>
           </div>
-          <template is="dom-repeat" items="{{_experiment.hparamInfos}}"
-                    as="hparamInfo">
+          <template is="dom-repeat" items="[[_hparamFilters]]"
+                    as="hparamFilter">
             <div class="line-item">
-              <!-- TODO(erez): Add fallback to hparamInfo.name and 
-                   metricInfo.name if displayName is missing or empty -->
-              {{hparamInfo.displayName}}
-              <div class="line-item">
-                <!-- TODO(erez): Support the other domain types -->
-                <template is="dom-repeat" items="{{hparamInfo.discreteSet}}" 
-                          as="value">
-                  <paper-checkbox>{{value}}</paper-checkbox>
-                </template>
-              </div>
+              [[_hparamName(hparamFilter.info)]]
+            </div>
+            <!-- Precisely one of the templates below will be stamped. -->
+            <!-- 1. A list of checkboxes -->
+            <template is="dom-if"
+                      if="[[hparamFilter.domainDiscrete]]">
+              <template is="dom-repeat"
+                        items="[[hparamFilter.domainDiscrete]]">
+                <paper-checkbox checked="{{item.checked}}"
+                                style="display:block;"
+                                on-change="_refreshSessionGroups">
+                  [[item.value]]
+                </paper-checkbox>
+              </template>
+            </template>
+            <!-- 2. A numeric interval -->
+            <template is="dom-if"
+                      if="[[hparamFilter.interval]]">
+              <paper-input label="Min"
+                           value="{{hparamFilter.interval.minValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+              <paper-input label="Max"
+                           value="{{hparamFilter.interval.maxValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </template>
+            <!-- 3. A regexp -->
+            <template is="dom-if"
+                      if="[[hparamFilter.regexp]]">
+              <paper-input label="Regular expression"
+                           value={{hparamFilter.regexp}},
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </template>
+          </template>
+        </div>
+        <div class="sidebar-section">
+          <div class="line-item">
+            <h4>Metrics</h4>
+          </div>
+          <template is="dom-repeat" items="[[_metricFilters]]"
+                    as="metricFilter">
+            <div class="line-item">
+              [[_metricName(metricFilter.info)]]
+            </div>
+            <div class="inline-element">
+              <paper-input label="Min"
+                           value="{{metricFilter.interval.minValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </div>
+            <div class="inline-element">
+              <paper-input label="Max"
+                           value="{{metricFilter.interval.maxValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
             </div>
           </template>
         </div>
-        <div class="sidebar-section">
-        </div>
       </div>
+
       <div class="center">
-        <vaadin-grid items="">
-          <!-- Hyperparameter columns -->
-          <template is="dom-repeat" items="{{_experiment.hparamInfos}}"
-                    as="hparamInfo">
+        <vaadin-grid items="[[_listSessionGroupsResponse.sessionGroups]]"
+                     style="height:100%;">
+          <template is="dom-repeat" items="[[_hparamFilters]]"
+                    as="hparamFilter">
             <vaadin-grid-column>
-              <template class="header">{{hparamInfo.displayName}}</template>
-              <template>[[item]]</template>
+              <template class="header">
+                [[_hparamName(hparamFilter.info)]]
+              </template>
+              <template>
+                [[_sessionGroupHParam(item, hparamFilter.info.name)]]
+              </template>
             </vaadin-grid-column>
           </template>
-          <!-- Metric columns -->
-          <template is="dom-repeat" items="{{_experiment.metricInfos}}"
-                    as="metricInfo">
+          <template is="dom-repeat" items="[[_metricFilters]]"
+                    as="metricFilter">
             <vaadin-grid-column>
-              <template class="header">{{metricInfo.displayName}}</template>
+              <template class="header">
+                [[_metricName(metricFilter.info)]]
+              </template>
+              <template>
+                [[_sessionGroupMetric(item, metricFilter.info.name)]]
+              </template>
             </vaadin-grid-column>
           </template>
-        </vaadin-grid>
       </div>
     </tf-dashboard-layout>
     <style include="dashboard-style"></style>
@@ -108,9 +167,17 @@ limitations under the License.
       #x-type-selector paper-button {
         margin: 5px 3px;
       }
+      .sidebar-section:last-child {
+        display: block;
+      }
       .line-item {
         display: block;
-        padding-top: 5px;
+        padding-top: 20px;
+      }
+      .inline-element {
+        display: inline-block;
+        width: 40%;
+        margin-left: 10px;
       }
       .no-data-warning {
         max-width: 540px;
@@ -127,16 +194,32 @@ limitations under the License.
           type: Object,
           value: () => new tf_backend.RequestManager(50),
         },
-        _hparamInfos: Array
+        _experiment: {
+          type: Object,
+          value: () => new Object,
+        },
+        _hparamFilters: {
+          type: Array,
+          value: () => [],
+          notify: true,
+        },
+        _metricFilters: {
+          type: Array,
+          value: () => [],
+          notify: true,
+        },
+        _listSessionGroupsResponse: {
+          type: Object,
+          value: () => new Object,
+        }
       },
-
       ready() {
         this.reload();
       },
       reload() {
-        this._GetExperiment();
+        this._getExperiment();
       },
-      _GetExperiment() {
+      _getExperiment() {
         const url = tf_backend.getRouter().pluginRoute(
             'hparams', '/experiment');
         return this._requestManager.request(url).then(experiment => {
@@ -144,9 +227,190 @@ limitations under the License.
             // No need to update anything if there are no changes.
             return;
           }
-          this.set('_experiment', experiment)
+          this.set('_experiment', experiment);
+          this.set('_hparamFilters', this._createHParamFilters())
+          this.set('_metricFilters', this._createMetricFilters())
+          this._refreshSessionGroups();
+        })
+      },
+      _createHParamFilters() {
+        result = [];
+        for (var i = 0; i < this._experiment.hparamInfos.length; ++i) {
+          hparamFilter = {
+            info: this._experiment.hparamInfos[i],
+          };
+          if (hparamFilter.info.hasOwnProperty('discreteSet')) {
+            hparamFilter.domainDiscrete = []
+            hparamFilter.info.discreteSet.forEach(val => {
+              hparamFilter.domainDiscrete.push({
+                value: val,
+                checked: true,
+              });
+            });
+          } else if (hparamFilter.info.type === "DATA_TYPE_BOOL") {
+            hparamFilter.domainDiscrete = [
+              {
+                value: false,
+                checked: true,
+              },
+              {
+                value: true,
+                checked: true,
+              }
+            ];
+          } else if (hparamFilter.info.type === "DATA_TYPE_FLOAT64") {
+            hparamFilter.interval = {
+              minValue: "",  // Empty string means -infinity.
+              maxValue: "",  // Empty string means +infinity.
+            }
+          } else if (hparamFilter.info.type === "DATA_TYPE_STRING") {
+            hparamFilter.regexp = ""
+          } else {
+            console.warn("unknown hparamInfo.type: %s", hparamFilter.info.type)
+          }
+          result.push(hparamFilter);
+        }
+        return result;
+      },
+      _createMetricFilters() {
+        result = [];
+        this._experiment.metricInfos.forEach(info => {
+          metricFilter = {
+            info: info,
+            interval: {
+              minValue: "",  // Empty string means -infinity
+              maxValue: "",  // Empty string means +infinity
+            },
+          };
+          result.push(metricFilter);
+        });
+        return result;
+      },
+      _hparamName(hparamInfo) {
+        if (hparamInfo.displayName != "") {
+          return hparamInfo.displayName;
+        }
+        return hparamInfo.name;
+      },
+      _metricName(metricInfo) {
+        if (metricInfo.displayName != "") {
+          return metricInfo.displayName;
+        }
+        return metricInfo.name.group + "." + metricInfo.name.tag;
+      },
+      _listSessionGroups(params, callback) {
+        const request = encodeURIComponent(JSON.stringify(
+            this._getListSessionGroupsRequest()));
+        const url = tf_backend.getRouter().pluginRoute(
+            'hparams', '/session_groups?request=' + request);
+        return this._requestManager.request(url).then(response => {
+          callback(response.sessionGroups, response.totalSize)
+        })
+      },
+      _refreshSessionGroups() {
+        const request = encodeURIComponent(JSON.stringify(
+            this._getListSessionGroupsRequest()));
+        const url = tf_backend.getRouter().pluginRoute(
+            'hparams', '/session_groups?request=' + request);
+        return this._requestManager.request(url).then(response => {
+          this._canonicalizeResponse(response);
+          if (_.isEqual(response, this._listSessionGroupsResponse)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          this.set('_listSessionGroupsResponse', response);
         });
       },
+      _canonicalizeResponse(response) {
+        if (!response.hasOwnProperty('sessionGroups')) {
+          response.sessionGroups=[];
+        }
+      },
+      _getListSessionGroupsRequest() {
+        // The following line defines a helper function for converting the
+        // user-inputed interval to the one used in the request. Converts an
+        // interval object of the form
+        // {minValue: string , maxValue: string}, to
+        // {minValue: number, maxValue: number}. An empty string in minValue
+        // (maxValue) is interpreted as -infintiy (+infinity).
+        stringToNumericInterval = stringInterval => {
+          if (stringInterval.minValue === "") {
+            minValue = -Number.MAX_VALUE;
+          } else {
+            minValue = parseFloat(stringInterval.minValue, 10);
+            if (isNaN(minValue)) {
+              console.error("Can't parse %s as a number.",
+                            stringInterval.minValue);
+            }
+          }
+          if (stringInterval.maxValue === "") {
+            maxValue = Number.MAX_VALUE;
+          } else {
+            maxValue = parseFloat(stringInterval.maxValue, 10);
+            if (isNaN(maxValue)) {
+              console.error("Can't parse %s as a number.",
+                            stringInterval.maxValue)
+            }
+          }
+          return {minValue: minValue, maxValue: maxValue};
+        };
+        colParams = [];
+        this._hparamFilters.forEach(hparamFilter => {
+          colParam = {hparam: hparamFilter.info.name}
+          if (hparamFilter.domainDiscrete) {
+            colParam.discreteSet = [];
+            hparamFilter.domainDiscrete.forEach(filterVal => {
+              if (filterVal.checked) {
+                colParam.discreteSet.push(filterVal.value)
+              }
+            });
+          } else if (hparamFilter.interval) {
+            colParam.interval = stringToNumericInterval(hparamFilter.interval)
+          } else if (hparamFilter.regexp) {
+            colParam.regexp = hparamFilter.regexp
+          } else {
+            console.error(
+                "hparamFilter with no domainDiscrete, interval or regexp" +
+                  " properties set: %s", hparamFilter)
+            return;
+          }
+          colParams.push(colParam);
+        });
+        this._metricFilters.forEach(metricFilter => {
+          colParam = {
+            metric: metricFilter.info.name,
+            interval: stringToNumericInterval(metricFilter.interval)
+          }
+          colParams.push(colParam);
+        });
+        return { colParams: colParams };
+      },
+      _sessionGroupHParam(sessionGroup, hparam) {
+        if (sessionGroup == null) {
+          return null;
+        }
+        return this._prettyPrint(sessionGroup.hparams[hparam]);
+      },
+      _sessionGroupMetric(sessionGroup, metric) {
+        if (sessionGroup == null) {
+          return null;
+        }
+        for (i = 0; i < sessionGroup.metricValues.length; ++i) {
+          metricVal = sessionGroup.metricValues[i];
+          if (metricVal.name.group === metric.group &&
+              metricVal.name.tag == metric.tag) {
+            return this._prettyPrint(metricVal.value);
+          }
+        }
+        return undefined;
+      },
+      _prettyPrint(value) {
+        if (_.isNumber(value)) {
+          // TODO(erez):Make the precision user-configurable.
+          return value.toPrecision(5);
+        }
+        return value.toString();
+      }
     });
 
     tf_tensorboard.registerDashboard({
