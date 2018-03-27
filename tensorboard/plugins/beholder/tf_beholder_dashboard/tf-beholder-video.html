@@ -20,11 +20,9 @@ limitations under the License.
 
 <dom-module id="tf-beholder-video">
   <template>
-  
     <div id="container">
-      <img id="video" src='[[_imageURL]]'></img>
+      <img id="video" src="[[_imageURL]]">
     </div>
-    
     <style>
       img {
         image-rendering: pixelated;
@@ -37,10 +35,9 @@ limitations under the License.
     "use strict";
     (function() {
 
-    const FEED_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/beholder-frame')
-    const PING_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/ping')
-
-    var connectionFailed = false
+    const BLANK_DATA = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+    const FEED_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/beholder-frame');
+    const PING_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/ping');
 
     Polymer({
       is: "tf-beholder-video",
@@ -50,37 +47,72 @@ limitations under the License.
           value: () => new tf_backend.RequestManager(),
         },
 
+        showStream: {
+          type: Boolean,
+          value: true,
+          observer: '_showStreamChanged',
+        },
+
+        isLive: {
+          type: Boolean,
+          value: false,
+          observer: '_isLiveChanged',
+        },
+
+        _pingSucceeded: {
+          type: Boolean,
+          value: true,
+        },
+
         _imageURL: {
           type: String,
           value: FEED_ROUTE
+        },
+      },
+
+      _showStreamChanged(newValue, oldValue) {
+        if (oldValue && !newValue) {
+          // Interrupt video stream by setting src to blank data.
+          this.$.video.src = BLANK_DATA;
+        }
+        if (newValue && oldValue === false) {
+          this.restartVideo();
         }
       },
 
-      ready() {
+      _isLiveChanged() {
+        this._ping();
+      },
+
+      _ping() {
+        if (!this.isLive) {
+          return;
+        }
         // Periodically check the connection, restart if needed.
-        window.setInterval(function(){
-          this._requestManager.request(PING_ROUTE).then(
-              function(response){
-                if (connectionFailed) {
-                  this.restartVideo()
-                }
-                connectionFailed = false
-              }.bind(this),
-              function(error){
-                connectionFailed = true
-              }.bind(this))
-        }.bind(this), 1000)
+        const timer = window.setTimeout(
+            () => { this._pingSucceeded = false; },
+            1500);
+        this._requestManager.request(PING_ROUTE).then(
+          function(response) {
+            window.clearTimeout(timer);
+            if (!this._pingSucceeded) {
+              this.restartVideo();
+            }
+            this._pingSucceeded = true;
+          }.bind(this));
+        window.setTimeout(this._ping.bind(this), 1000);
       },
 
       restartVideo() {
-        var newImage = document.createElement('img')
-        newImage.src = FEED_ROUTE + '?t=' + new Date().getTime()
-        newImage.id = 'video'
-        newImage.className = 'style-scope beholder-video'
-        this.$.container.appendChild(newImage)
-
-        this.$.container.removeChild(this.$.video)
-        this.$.video = newImage
+        var newImage = document.createElement('img');
+        newImage.src = FEED_ROUTE + '?t=' + new Date().getTime();
+        newImage.id = 'video';
+        newImage.className = 'style-scope beholder-video';
+        this.$.container.appendChild(newImage);
+        let oldImage = this.$.container.removeChild(this.$.video);
+        this.$.video = newImage;
+        // Interrupt old video stream to ensure we don't have two at once.
+        oldImage.src = BLANK_DATA;
       },
 
     });

@@ -213,12 +213,16 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         </template>
 
         <template is="dom-if" if="[[_is_active]]">
-          <tf-beholder-video id="video"></tf-beholder-video>
-
+          <tf-beholder-video
+            id="video"
+            show-stream="[[_shouldShowVideo]]"
+            is-live="[[_isLive]]">
+          </tf-beholder-video>
           <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
             <tf-beholder-info
               id="info"
-              fps="[[_FPS]]">
+              fps="[[_FPS]]"
+              is-live="[[_isLive]]">
             </tf-beholder-info>
           </template>
         </template>
@@ -393,10 +397,27 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           observer: '_configChanged'
         },
 
+        _isSelected: {
+          type: Boolean,
+          value: false,
+        },
+
         _is_active: {
           type: Boolean,
           value: false,
           observer: '_configChanged',
+        },
+
+        _isLive: {
+          type: Boolean,
+          value: false,
+          computed: '_computeIsLive(_isSelected, _is_active, _FPS)',
+        },
+
+        _shouldShowVideo: {
+          type: Boolean,
+          value: true,
+          computed: '_computeShouldShowVideo(_isSelected, _is_active)',
         },
 
         _controls_disabled: {
@@ -465,8 +486,27 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         this.$.record_button.classList.toggle('is-recording')
       },
 
-      ready() {
-        this.reload()
+      attached() {
+        this._setupSelectedObserver();
+        this.reload();
+      },
+
+      // TODO(nickfelt): more elegant to implement as a 'selected' property
+      // bound directly on the dashboard element by logic in tf-tensorboard.
+      _setupSelectedObserver() {
+        const handleSelectedMutation = mutationRecords => {
+          mutationRecords.forEach(record => {
+            this.set(
+                '_isSelected', record.target.hasAttribute('data-selected'));
+          });
+        };
+        const options = {};
+        options.attributes = true;
+        options.attributeFilter = ['data-selected'];
+        new MutationObserver(handleSelectedMutation.bind(this)).observe(
+            this.parentNode, options);
+        this.set(
+            '_isSelected', this.parentNode.hasAttribute('data-selected'));
       },
 
       reload() {
@@ -476,6 +516,14 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           this.set('_is_active', response['is_active']);
           this.set('_controls_disabled', !response['is_config_writable']);
         })
+      },
+
+      _computeIsLive(isSelected, isActive, fps) {
+        return isSelected && isActive && fps > 0;
+      },
+
+      _computeShouldShowVideo(isSelected, isActive) {
+        return isSelected && isActive;
       },
     });
     })();
