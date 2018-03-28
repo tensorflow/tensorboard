@@ -173,10 +173,10 @@ class HistogramsPlugin(base_plugin.TBPlugin):
               MAX(step) AS max_step
             FROM Tensors
             /* Filter out NULL so we can use TensorSeriesStepIndex. */
-            WHERE series = :tag_id AND step IS NOT NULL
+            WHERE series = :tag_id AND dtype IS NOT NULL
           )
           /* Ensure we omit reserved rows, which have NULL step values. */
-          WHERE series = :tag_id AND step IS NOT NULL
+          WHERE series = :tag_id AND dtype IS NOT NULL
           /* Bucket rows into sample_size linearly spaced buckets, or do
              no sampling if sample_size is NULL. */
           GROUP BY

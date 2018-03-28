@@ -100,7 +100,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
             /* Shape should correspond to a rank-1 tensor. */
             AND NOT INSTR(Tensors.shape, ',')
             /* Required to use TensorSeriesStepIndex. */
-            AND Tensors.step IS NOT NULL
+            AND Tensors.dtype IS NOT NULL
           GROUP BY Tags.tag_id
           HAVING samples >= 1
           ''',
@@ -186,7 +186,6 @@ class ImagesPlugin(base_plugin.TBPlugin):
               FROM Runs
               CROSS JOIN Tags USING (run_id)
               WHERE Runs.run_name = :run AND Tags.tag_name = :tag)
-            AND step IS NOT NULL
             AND dtype = :dtype
             /* Should be n-vector, n >= 3: [width, height, samples...] */
             AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
@@ -284,7 +283,6 @@ class ImagesPlugin(base_plugin.TBPlugin):
                    WHERE
                      Runs.run_name = :run
                      AND Tags.tag_name = :tag)
-                AND step IS NOT NULL
                 AND dtype = :dtype
                 /* Should be n-vector, n >= 3: [width, height, samples...] */
                 AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
