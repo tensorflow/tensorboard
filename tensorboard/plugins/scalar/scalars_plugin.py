@@ -127,8 +127,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     """Result of the form `(body, mime_type)`."""
     if self._db_connection_provider:
       db = self._db_connection_provider()
-      # We select for steps greater than -1 because the writer inserts
-      # placeholder rows en masse. The check for step filters out those rows.
+      # We select for dtype not being null because the writer inserts
+      # placeholder rows en masse. The check for dtype filters out those rows.
       cursor = db.execute('''
         SELECT
           Tensors.step,
@@ -145,7 +145,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           AND Tags.tag_name = ?
           AND Tags.plugin_name = ?
           AND Tensors.shape = ''
-          AND Tensors.step > -1
+          AND Tensors.dtype IS NOT NULL
         ORDER BY Tensors.step
       ''', (run, tag, metadata.PLUGIN_NAME))
       values = [(wall_time, step, self._get_value(data, dtype_enum))

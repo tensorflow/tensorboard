@@ -87,8 +87,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       # Serve data from the database.
       db = self._db_connection_provider()
 
-      # We select for steps greater than -1 because the writer inserts
-      # placeholder rows en masse. The check for step filters out those rows.
+      # We select for dtype not being null because the writer inserts
+      # placeholder rows en masse. The check for dtype filters out those rows.
       cursor = db.execute('''
         SELECT
           Runs.run_name,
@@ -107,7 +107,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           Runs.run_name IN (%s)
           AND Tags.tag_name = ?
           AND Tags.plugin_name = ?
-          AND Tensors.step > -1
+          AND Tensors.dtype IS NOT NULL
         ORDER BY Tensors.step
       ''' % ','.join(['?'] * len(runs)), runs + [tag, metadata.PLUGIN_NAME])
       response_mapping = {}
