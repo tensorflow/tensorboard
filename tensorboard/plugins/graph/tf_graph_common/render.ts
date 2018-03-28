@@ -704,7 +704,20 @@ export class RenderGraphInfo {
     // metagraph.
     const originalMetaEdges = this.hierarchy.getPredecessors(
         opNodeToReplace.name);
-    const originalMetaEdge = originalMetaEdges.regular[inputIndex];
+    
+    // Find the metaedge that the input index corresponds to.
+    // A metaedge may correspond to several edges. For instance,
+    // an edge may enter a series node.
+    let originalMetaEdge: Metaedge;
+    let regularEdgeCount = 0;
+    for (let i = 0; i < originalMetaEdges.regular.length; i++) {
+      const metaEdge = originalMetaEdges.regular[i];
+      regularEdgeCount += metaEdge.numRegularEdges;
+      if (regularEdgeCount > inputIndex) {
+        originalMetaEdge = metaEdge;
+        break;
+      }
+    }
 
     // Also change any base edges that point into the original node to
     // point to the input arg within the function. These are used to
