@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 import six
 from werkzeug import wrappers
@@ -24,6 +25,7 @@ from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
+from tensorboard.plugins.pr_curve import plugin_data_pb2
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
@@ -37,6 +39,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance. A magic container that
         TensorBoard uses to make objects available to the plugin.
     """
+    self._db_connection_provider = context.db_connection_provider
     self._multiplexer = context.multiplexer
 
   @wrappers.Request.application
@@ -80,23 +83,74 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       The JSON object for the PR curves route response.
     """
-    response_mapping = {}
-    for run in runs:
-      try:
-        tensor_events = self._multiplexer.Tensors(run, tag)
-      except KeyError:
-        raise ValueError(
-            'No PR curves could be fetched for run %r and tag %r' % (run, tag))
+    if self._db_connection_provider:
+      # Serve data from the database.
+      db = self._db_connection_provider()
 
-      content = self._multiplexer.SummaryMetadata(run, tag).plugin_data.content
-      pr_curve_data = metadata.parse_plugin_metadata(content)
-      thresholds = [
-          float(v) / pr_curve_data.num_thresholds
-          for v in range(1, pr_curve_data.num_thresholds + 1)]
+      # We select for steps greater than -1 because the writer inserts
+      # placeholder rows en masse. The check for step filters out those rows.
+      cursor = db.execute('''
+        SELECT
+          Runs.run_name,
+          Tensors.step,
+          Tensors.computed_time,
+          Tensors.data,
+          Tensors.dtype,
+          Tensors.shape,
+          Tags.plugin_data
+        FROM Tensors
+        JOIN Tags
+          ON Tensors.series = Tags.tag_id
+        JOIN Runs
+          ON Tags.run_id = Runs.run_id
+        WHERE
+          Runs.run_name IN (%s)
+          AND Tags.tag_name = ?
+          AND Tags.plugin_name = ?
+          AND Tensors.step > -1
+        ORDER BY Tensors.step
+      ''' % ','.join(['?'] * len(runs)), runs + [tag, metadata.PLUGIN_NAME])
+      response_mapping = {}
+      for (run, step, wall_time, data, dtype, shape, plugin_data) in cursor:
+        if run not in response_mapping:
+          response_mapping[run] = []
+        buf = np.frombuffer(data, dtype=tf.DType(dtype).as_numpy_dtype)
+        data_array = buf.reshape([int(i) for i in shape.split(',')])
+        plugin_data_proto = plugin_data_pb2.PrCurvePluginData()
+        string_buffer = np.frombuffer(plugin_data, dtype=np.dtype('b'))
+        plugin_data_proto.ParseFromString(tf.compat.as_bytes(
+            string_buffer.tostring()))
+        thresholds = self._compute_thresholds(plugin_data_proto.num_thresholds)
+        entry = self._make_pr_entry(step, wall_time, data_array, thresholds)
+        response_mapping[run].append(entry)
+    else:
+      # Serve data from events files.
+      response_mapping = {}
+      for run in runs:
+        try:
+          tensor_events = self._multiplexer.Tensors(run, tag)
+        except KeyError:
+          raise ValueError(
+              'No PR curves could be found for run %r and tag %r' % (run, tag))
 
-      response_mapping[run] = [
-          self._process_tensor_event(e, thresholds) for e in tensor_events]
+        content = self._multiplexer.SummaryMetadata(
+            run, tag).plugin_data.content
+        pr_curve_data = metadata.parse_plugin_metadata(content)
+        thresholds = self._compute_thresholds(pr_curve_data.num_thresholds)
+        response_mapping[run] = [
+            self._process_tensor_event(e, thresholds) for e in tensor_events]
     return response_mapping
+
+  def _compute_thresholds(self, num_thresholds):
+    """Computes a list of specific thresholds from the number of thresholds.
+
+    Args:
+      num_thresholds: The number of thresholds.
+
+    Returns:
+      A list of specific thresholds (floats).
+    """
+    return [float(v) / num_thresholds for v in range(1, num_thresholds + 1)]
 
   @wrappers.Request.application
   def tags_route(self, request):
@@ -123,16 +177,42 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       The JSON object for the tags route response.
     """
-    runs = self._multiplexer.Runs()
-    result = {run: {} for run in runs}
+    if self._db_connection_provider:
+      # Read tags from the database.
+      db = self._db_connection_provider()
+      cursor = db.execute('''
+        SELECT
+          Tags.tag_name,
+          Tags.display_name,
+          Runs.run_name
+        FROM Tags
+        JOIN Runs
+          ON Tags.run_id = Runs.run_id
+        WHERE
+          Tags.plugin_name = ?
+      ''', (metadata.PLUGIN_NAME,))
+      result = {}
+      for (tag_name, display_name, run_name) in cursor:
+        if run_name not in result:
+          result[run_name] = {}
+        result[run_name][tag_name] = {
+            'displayName': display_name,
+            # TODO(chihuahua): Populate the description. Currently, the tags
+            # table does not link with the description table.
+            'description': '',
+        }
+    else:
+      # Read tags from events files.
+      runs = self._multiplexer.Runs()
+      result = {run: {} for run in runs}
 
-    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-    for (run, tag_to_content) in six.iteritems(mapping):
-      for (tag, _) in six.iteritems(tag_to_content):
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        result[run][tag] = {'displayName': summary_metadata.display_name,
-                            'description': plugin_util.markdown_to_safe_html(
-                                summary_metadata.summary_description)}
+      mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+      for (run, tag_to_content) in six.iteritems(mapping):
+        for (tag, _) in six.iteritems(tag_to_content):
+          summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+          result[run][tag] = {'displayName': summary_metadata.display_name,
+                              'description': plugin_util.markdown_to_safe_html(
+                                  summary_metadata.summary_description)}
 
     return result
 
@@ -141,7 +221,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     """Gets a dict mapping run to a list of time entries.
     Returns:
       A dict with string keys (all runs with PR curve data). The values of the
-      dict are lists of time entries (consisting of the 3 fields below) to be
+      dict are lists of time entries (consisting of the fields below) to be
       used in populating values within time sliders.
     """
     return http_util.Respond(
@@ -153,36 +233,69 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       The JSON object for the available time entries route response.
     """
-    all_runs = self._multiplexer.PluginRunToTagToContent(
-        metadata.PLUGIN_NAME)
-    response = {}
+    result = {}
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      # For each run, pick a tag.
+      cursor = db.execute(
+          '''
+          SELECT
+            TagPickingTable.run_name,
+            Tensors.step,
+            Tensors.computed_time
+          FROM (/* For each run, pick any tag. */
+            SELECT
+              Runs.run_id AS run_id,
+              Runs.run_name AS run_name,
+              Tags.tag_id AS tag_id
+            FROM Runs
+            JOIN Tags
+              ON Tags.run_id = Runs.run_id
+            WHERE
+              Tags.plugin_name = ?
+            GROUP BY Runs.run_id) AS TagPickingTable
+          JOIN Tensors
+            ON Tensors.series = TagPickingTable.tag_id
+          WHERE Tensors.step IS NOT NULL
+          ORDER BY Tensors.step
+          ''', (metadata.PLUGIN_NAME,))
+      for (run, step, wall_time) in cursor:
+        if run not in result:
+          result[run] = []
+        result[run].append(self._create_time_entry(step, wall_time))
+    else:
+      # Read data from disk.
+      all_runs = self._multiplexer.PluginRunToTagToContent(
+          metadata.PLUGIN_NAME)
+      for run, tag_to_content in all_runs.items():
+        if not tag_to_content:
+          # This run lacks data for this plugin.
+          continue
+        # Just use the list of tensor events for any of the tags to determine
+        # the steps to list for the run. The steps are often the same across
+        # tags for each run, albeit the user may elect to sample certain tags
+        # differently within the same run. If the latter occurs, TensorBoard
+        # will show the actual step of each tag atop the card for the tag.
+        tensor_events = self._multiplexer.Tensors(
+            run, min(six.iterkeys(tag_to_content)))
+        result[run] = [self._create_time_entry(e.step, e.wall_time)
+                       for e in tensor_events]
+    return result
 
-    # Compute the max step exhibited by any tag for each run. If a run lacks
-    # data, exclude it from the mapping.
-    for run, tag_to_content in all_runs.items():
-      if not tag_to_content:
-        # This run lacks data for this plugin.
-        continue
-
-      # Just use the list of tensor events for any of the tags to determine the
-      # steps to list for the run. The steps are often the same across tags for
-      # each run, albeit the user may elect to sample certain tags differently
-      # within the same run. If the latter occurs, TensorBoard will show the
-      # actual step of each tag atop the card for the tag.
-      tensor_events = self._multiplexer.Tensors(
-          run, min(six.iterkeys(tag_to_content)))
-      response[run] = [self._create_time_entry(e) for e in tensor_events]
-    return response
-
-  def _create_time_entry(self, tensor_event):
+  def _create_time_entry(self, step, wall_time):
     """Creates a time entry given a tensor event.
 
     Arguments:
-      tensor_event: The tensor event for the time entry.
+      step: The step for the time entry.
+      wall_time: The wall time for the time entry.
+
+    Returns:
+      A JSON-able time entry to be passed to the frontend in order to construct
+      the slider.
     """
     return {
-        'step': tensor_event.step,
-        'wall_time': tensor_event.wall_time,
+        'step': step,
+        'wall_time': wall_time,
     }
 
   def get_plugin_apps(self):
@@ -205,6 +318,19 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       Whether this plugin is active.
     """
+    if self._db_connection_provider:
+      # The plugin is active if one relevant tag can be found in the database.
+      db = self._db_connection_provider()
+      cursor = db.execute(
+          '''
+          SELECT 1
+          FROM Tags
+          WHERE Tags.plugin_name = ?
+          LIMIT 1
+          ''',
+          (metadata.PLUGIN_NAME,))
+      return bool(list(cursor))
+
     if not self._multiplexer:
       return False
 
@@ -224,8 +350,24 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       A JSON-able dictionary of PR curve data for 1 step.
     """
-    data_array = tf.make_ndarray(event.tensor_proto)
+    return self._make_pr_entry(
+        event.step,
+        event.wall_time,
+        tf.make_ndarray(event.tensor_proto),
+        thresholds)
 
+  def _make_pr_entry(self, step, wall_time, data_array, thresholds):
+    """Creates an entry for PR curve data. Each entry corresponds to 1 step.
+
+    Args:
+      step: The step.
+      wall_time: The wall time.
+      data_array: A numpy array of PR curve data stored in the summary format.
+      thresholds: An array of floating point thresholds.
+
+    Returns:
+      A PR curve entry.
+    """
     # Trim entries for which TP + FP = 0 (precision is undefined) at the tail of
     # the data.
     true_positives = [int(v) for v in data_array[metadata.TRUE_POSITIVES_INDEX]]
@@ -240,8 +382,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     end_index = end_index_inclusive + 1
 
     return {
-        'wall_time': event.wall_time,
-        'step': event.step,
+        'wall_time': wall_time,
+        'step': step,
         'precision': data_array[metadata.PRECISION_INDEX, :end_index].tolist(),
         'recall': data_array[metadata.RECALL_INDEX, :end_index].tolist(),
         'true_positives': true_positives[:end_index],
