@@ -710,14 +710,14 @@ export class RenderGraphInfo {
     // an edge may enter a series node.
     let originalMetaEdge: Metaedge;
     let regularEdgeCount = 0;
-    for (let i = 0; i < originalMetaEdges.regular.length; i++) {
-      const metaEdge = originalMetaEdges.regular[i];
+    _.each(originalMetaEdges.regular, metaEdge => {
       regularEdgeCount += metaEdge.numRegularEdges;
       if (regularEdgeCount > inputIndex) {
         originalMetaEdge = metaEdge;
-        break;
+        // Terminate the loop.
+        return false;
       }
-    }
+    });
 
     // Also change any base edges that point into the original node to
     // point to the input arg within the function. These are used to
