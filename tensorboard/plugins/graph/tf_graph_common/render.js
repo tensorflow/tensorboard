@@ -568,7 +568,19 @@ var tf;
                     // Update values in the corresponding edge in the high-level
                     // metagraph.
                     var originalMetaEdges = this.hierarchy.getPredecessors(opNodeToReplace.name);
-                    var originalMetaEdge = originalMetaEdges.regular[inputIndex];
+                    // Find the metaedge that the input index corresponds to.
+                    // A metaedge may correspond to several edges. For instance,
+                    // an edge may enter a series node.
+                    var originalMetaEdge;
+                    var regularEdgeCount = 0;
+                    _.each(originalMetaEdges.regular, function (metaEdge) {
+                        regularEdgeCount += metaEdge.numRegularEdges;
+                        if (regularEdgeCount > inputIndex) {
+                            originalMetaEdge = metaEdge;
+                            // Terminate the loop.
+                            return false;
+                        }
+                    });
                     // Also change any base edges that point into the original node to
                     // point to the input arg within the function. These are used to
                     // make bridge edges.
