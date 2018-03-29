@@ -91,7 +91,10 @@ def pad_to_shape(array, shape, constant=245):
 #
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-colormaps = np.load('{}/colormaps.npy'.format(resources_path()))
+colormaps_path = '{}/colormaps.npy'.format(resources_path())
+with tf.gfile.Open(colormaps_path, 'rb') as colormaps_file:
+  colormaps = np.load(colormaps_file)
+
 magma_data, inferno_data, plasma_data, viridis_data = colormaps
 
 
