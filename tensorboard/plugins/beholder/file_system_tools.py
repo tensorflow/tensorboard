@@ -65,6 +65,4 @@ def read_pickle(path, default=None):
 
 
 def resources_path():
-  script_directory = os.path.dirname(__file__)
-  filename = os.path.join(script_directory, 'resources')
-  return filename
+  return os.path.join(tf.resource_loader.get_data_files_path(), 'resources')
