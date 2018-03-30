@@ -30,6 +30,7 @@ class ColormapsTest(tf.test.TestCase):
                                                   (0.1, 0.2, 0.3)))
     self.assertEqual([[53, 107, 214], [25, 51, 76]], array.tolist())
     self.assertEqual(np.uint8, array.dtype)
+    self.assertFalse(array.flags.writeable)
 
 
 if __name__ == '__main__':
