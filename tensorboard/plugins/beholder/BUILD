@@ -55,6 +55,26 @@ py_binary(
 )
 
 py_library(
+    name = "colormaps",
+    srcs = ["colormaps.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+    ],
+)
+
+py_test(
+    name = "colormaps_test",
+    srcs = ["colormaps_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":colormaps",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
     name = "shared_config",
     srcs = ["shared_config.py"],
     srcs_version = "PY2AND3",
@@ -76,7 +96,7 @@ py_library(
     data = ["resources"],
     srcs_version = "PY2AND3",
     deps = [
-        ":file_system_tools",
+        ":colormaps",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
