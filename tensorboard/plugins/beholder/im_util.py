@@ -83,15 +83,12 @@ def apply_colormap(image, colormap='magma'):
   if colormap == 'grayscale':
     return image
 
-  data_map = {
+  return {
       'magma': colormaps.MAGMA_DATA,
       'inferno': colormaps.INFERNO_DATA,
       'plasma': colormaps.PLASMA_DATA,
       'viridis': colormaps.VIRIDIS_DATA,
-  }
-
-  colormap_data = data_map[colormap]
-  return (np.array(colormap_data)[image] * 255).astype(np.uint8)
+  }[colormap][image]
 
 # Taken from https://github.com/tensorflow/tensorboard/blob/
 #            /28f58888ebb22e2db0f4f1f60cd96138ef72b2ef/tensorboard/util.py

@@ -58,6 +58,18 @@ py_library(
     name = "colormaps",
     srcs = ["colormaps.py"],
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+    ],
+)
+
+py_test(
+    name = "colormaps_test",
+    srcs = ["colormaps_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":colormaps",
+    ],
 )
 
 py_library(
