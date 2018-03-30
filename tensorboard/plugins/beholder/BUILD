@@ -83,7 +83,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":colormaps",
-        ":file_system_tools",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
