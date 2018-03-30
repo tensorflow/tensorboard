@@ -62,9 +62,3 @@ def read_pickle(path, default=None):
       raise
 
   return result
-
-
-def resources_path():
-  script_directory = os.path.dirname(__file__)
-  filename = os.path.join(script_directory, 'resources')
-  return filename
