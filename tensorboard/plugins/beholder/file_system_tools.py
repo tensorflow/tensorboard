@@ -16,7 +16,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import pickle
 
 import tensorflow as tf
@@ -62,9 +61,3 @@ def read_pickle(path, default=None):
       raise
 
   return result
-
-
-def resources_path():
-  script_directory = os.path.dirname(__file__)
-  filename = os.path.join(script_directory, 'resources')
-  return filename
