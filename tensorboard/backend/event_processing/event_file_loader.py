@@ -49,8 +49,7 @@ class EventFileLoader(object):
     tf.logging.debug('Loading events from %s', self._file_path)
     while True:
       try:
-        with tf.errors.raise_exception_on_not_ok_status() as status:
-          self._reader.GetNext(status)
+        self._reader.GetNext()
       except (tf.errors.DataLossError, tf.errors.OutOfRangeError):
         # We ignore partial read exceptions, because a record may be truncated.
         # PyRecordReader holds the offset prior to the failed read, so retrying

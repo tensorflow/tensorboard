@@ -115,8 +115,7 @@ class RecordReader(object):
     if self._reader is None:
       self._reader = self._open()
     try:
-      with tf.errors.raise_exception_on_not_ok_status() as status:
-        self._reader.GetNext(status)
+      self._reader.GetNext()
     except tf.errors.OutOfRangeError:
       # We ignore partial read exceptions, because a record may be truncated.
       # PyRecordReader holds the offset prior to the failed read, so retrying
