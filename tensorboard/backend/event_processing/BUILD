@@ -24,6 +24,7 @@ py_test(
     deps = [
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -94,6 +95,7 @@ py_library(
     deps = [
         ":directory_watcher",
         ":event_file_loader",
+        ":io_wrapper",
         ":plugin_asset_util",
         ":reservoir",
         "//tensorboard:data_compat",
@@ -188,7 +190,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
-        ":event_multiplexer",
+        ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
