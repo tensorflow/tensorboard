@@ -5,6 +5,20 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
+# TODO(jart): Update @io_bazel_rules_closure//closure/library to export
+#             fine-grained build rules, so we won't schlep in that whole
+#             codebase when we're not running the Closure Compiler. Also
+#             note that TensorBoard build tooling auto-includes base.js.
+tf_web_library(
+    name = "closure",
+    srcs = [
+        "closure.html",
+        "@com_google_javascript_closure_library//:closure/goog/object/object.js",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+)
+
 tf_web_library(
     name = "webcomponentsjs",
     srcs = ["@org_definitelytyped//:webcomponents.js.d.ts"],
@@ -491,4 +505,3 @@ genrule(
     outs = ["d3-transition.d.ts"],
     cmd = "sed '/^declare module/d' $< | awk '/^}$$/ && !p {p++;next}1' >$@",
 )
-
