@@ -82,13 +82,9 @@ def pad_to_shape(array, shape, constant=245):
 def apply_colormap(image, colormap='magma'):
   if colormap == 'grayscale':
     return image
+  cm = getattr(colormaps, colormap)
+  return image if cm is None else cm[image]
 
-  return {
-      'magma': colormaps.MAGMA_DATA,
-      'inferno': colormaps.INFERNO_DATA,
-      'plasma': colormaps.PLASMA_DATA,
-      'viridis': colormaps.VIRIDIS_DATA,
-  }[colormap][image]
 
 # Taken from https://github.com/tensorflow/tensorboard/blob/
 #            /28f58888ebb22e2db0f4f1f60cd96138ef72b2ef/tensorboard/util.py
