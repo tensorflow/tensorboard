@@ -16,6 +16,17 @@ py_library(
     ],
 )
 
+py_test(
+    name = "io_wrapper_test",
+    size = "small",
+    srcs = ["io_wrapper_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":io_wrapper",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "directory_watcher",
     srcs = ["directory_watcher.py"],
