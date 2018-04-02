@@ -26,13 +26,14 @@ import grpc
 import tensorflow as tf
 from werkzeug import wrappers
 
+from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
+from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc
+
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
-from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
-from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
