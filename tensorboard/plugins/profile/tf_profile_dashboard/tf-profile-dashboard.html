@@ -235,7 +235,7 @@ profile run can have multiple tools that present the performance profile as diff
       if (currentSelected.toolIndex >= 0 && currentSelected.toolIndex < activeTools.length) {
         return activeTools[currentSelected.toolIndex];
       }
-      return null;
+      return '';
     },
     _getSelectedDataset: function(datasets, currentSelected) {
       if (currentSelected.datasetIndex >= datasets.length) return null;
@@ -243,19 +243,21 @@ profile run can have multiple tools that present the performance profile as diff
     },
     _maybeUpdateTool: function(datasets, currentSelected) {
       var currentTool = this._getSelectedTool(datasets, currentSelected);
-      if (currentTool == null) return;
-      if (currentTool == "trace_viewer") {
+      if (currentTool == '') return;
+      if (currentTool.startsWith('trace_viewer')) {
         var trace_data_url = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: 'trace_viewer', run: this._getSelectedDataset(datasets, currentSelected)});
+            {tag: currentTool, run: this._getSelectedDataset(datasets, currentSelected)});
         // Make the trace data url relative to the root.
         if (trace_data_url[0] != '/') {
           trace_data_url = '/' + trace_data_url;
         }
         // Pass the URL of trace data via GET parameter to the iframed trace
         // viewer app.
-        this._traceDataUrl = this.traceViewerBaseUrl + "?trace_data_url=" +
-                            encodeURIComponent(trace_data_url);
+        var is_streaming = currentTool.endsWith('@');
+        this._traceDataUrl = this.traceViewerBaseUrl + '?trace_data_url=' +
+	                            encodeURIComponent(trace_data_url) + '&is_streaming=' +
+			                                is_streaming;
         return;
       }
     },
@@ -294,7 +296,7 @@ profile run can have multiple tools that present the performance profile as diff
       return datasets[selectedDataset].activeTools.length > 0;
     },
     _isCurrentTool: function(datasets, currentSelected, expected) {
-      return this._getSelectedTool(datasets, currentSelected) == expected;
+      return this._getSelectedTool(datasets, currentSelected).startsWith(expected);
     },
   });
 
