@@ -22,6 +22,7 @@ from __future__ import print_function
 import json
 import os
 import tensorflow as tf
+from werkzeug import Request
 
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
@@ -76,8 +77,13 @@ class ProfilePluginTest(tf.test.TestCase):
     self.assertItemsEqual(runs['bar'], [])
     self.assertItemsEqual(runs['empty'], [])
 
+  def makeRequest(self, run, tag):
+    req = Request({});
+    req.args = {'run': run, 'tag': tag}
+    return req
+
   def testData(self):
-    trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer'))
+    trace = json.loads(self.plugin.data_impl(self.makeRequest('foo', 'trace_viewer')))
     self.assertEqual(trace,
                      dict(
                          displayTimeUnit='ns',
@@ -96,9 +102,9 @@ class ProfilePluginTest(tf.test.TestCase):
                          ]))
 
     # Invalid tool/run.
-    self.assertEqual(None, self.plugin.data_impl('foo', 'nonono'))
-    self.assertEqual(None, self.plugin.data_impl('bar', 'unsupported'))
-    self.assertEqual(None, self.plugin.data_impl('empty', 'trace_viewer'))
+    self.assertEqual(None, self.plugin.data_impl(self.makeRequest('foo', 'nonono')))
+    self.assertEqual(None, self.plugin.data_impl(self.makeRequest('bar', 'unsupported')))
+    self.assertEqual(None, self.plugin.data_impl(self.makeRequest('empty', 'trace_viewer')))
 
   def testActive(self):
     self.assertTrue(self.plugin.is_active())
