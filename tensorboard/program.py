@@ -68,9 +68,10 @@ tf.flags.DEFINE_boolean(
     'Disabling purge_orphaned_data can be used to debug data '
     'disappearance.')
 
-tf.flags.DEFINE_integer('reload_interval', 5,
-                        'How often the backend should load '
-                        'more data.')
+tf.flags.DEFINE_integer(
+    'reload_interval', 5,
+    'How often the backend should load more data, in seconds. Set to 0 to load '
+    'just once at startup and a negative number to never reload at all.')
 
 tf.flags.DEFINE_string('db', "", """\
 [Experimental] Sets SQL database URI.
@@ -80,7 +81,7 @@ following databases are supported:
 
 - sqlite: Use SQLite built in to Python. URI must specify the path of the
   database file, which will be created if it doesn't exist. For example:
-  --db sqlite3:~/.tensorboard.db
+  --db sqlite:~/.tensorboard.db
 
 Warning: This feature is a work in progress and only has limited support.
 """)
@@ -196,7 +197,8 @@ def create_tb_app(plugins, assets_zip_provider=None):
       reload_interval=FLAGS.reload_interval,
       plugins=plugins,
       path_prefix=FLAGS.path_prefix,
-      window_title=FLAGS.window_title)
+      window_title=FLAGS.window_title,
+      flags=FLAGS)
 
 
 def make_simple_server(tb_app, host=None, port=None, path_prefix=None):

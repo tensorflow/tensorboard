@@ -103,14 +103,14 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
     return value == undefined ? undefined : fromString(value);
   }
 
-  function set(key: string, value: T, useLocalStorage = false): void {
+  function set(key: string, value: T, useLocalStorage = false, useLocationReplace = false): void {
     const stringValue = toString(value);
     if (useLocalStorage) {
       window.localStorage.setItem(key, stringValue);
     } else {
       const items = componentToDict(readComponent());
       items[key] = stringValue;
-      writeComponent(dictToComponent(items));
+      writeComponent(dictToComponent(items), useLocationReplace);
     }
   }
 
@@ -223,9 +223,13 @@ function readComponent(): string {
 /**
  * Write component to URI.
  */
-function writeComponent(component: string) {
+function writeComponent(component: string, useLocationReplace = false) {
   if (tf_globals.useHash()) {
-    window.location.hash = component;
+      if (useLocationReplace) {
+          window.location.replace('#' + component);
+      } else {
+          window.location.hash = component;
+      }
   } else {
     tf_globals.setFakeHash(component);
   }

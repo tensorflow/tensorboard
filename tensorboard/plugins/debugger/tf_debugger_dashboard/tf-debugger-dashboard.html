@@ -36,7 +36,7 @@ limitations under the License.
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-debugger-continue-dialog.html">
 <link rel="import" href="tf-debugger-initial-dialog.html">
-<link rel="import" href="tf-debugger-vertical-resizer.html">
+<link rel="import" href="tf-debugger-resizer.html">
 <link rel="import" href="tf-op-selector.html">
 <link rel="import" href="tf-session-runs-view.html">
 <link rel="import" href="tf-source-code-view.html">
@@ -77,11 +77,11 @@ limitations under the License.
             continue-to-node="[[_createContinueToNodeHandler()]]"
           ></tf-source-code-view>
         </div>
-        <tf-debugger-vertical-resizer
-          current-width="{{_leftPaneWidth}}"
-          min-width="[[_minleftPaneWidth]]"
-          max-width="[[_maxleftPaneWidth]]">
-        </tf-debugger-vertical-resizer>
+        <tf-debugger-resizer
+          current-length="{{_leftPaneWidth}}"
+          min-length="[[_minleftPaneWidth]]"
+          max-length="[[_maxleftPaneWidth]]">
+        </tf-debugger-resizer>
         <div>
           <tf-session-runs-view
             id="sessionRunsView"
@@ -112,35 +112,33 @@ limitations under the License.
         </div>
       </div>
       <div class="center" id="center-content">
-        <div id="top-right-content-container">
-          <div id="top-right-top-contents">
-            <paper-tabs selected="0" selected="{{_topRightSelected}}">
-              <template is="dom-repeat" items="[[_topRightTabs]]">
-                <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
+        <div id="top-right-quadrant">
+          <paper-tabs selected="0" selected="{{_topRightSelected}}">
+            <template is="dom-repeat" items="[[_topRightTabs]]">
+              <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
+            </template>
+          </paper-tabs>
+          <span id="runtime-graph-device-name">
+          </span>
+          <paper-dropdown-menu
+            id="active-runtime-graph-device-name"
+            no-label-float="true"
+            label="Device name"
+            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+          >
+            <paper-menu class="dropdown-content" slot="dropdown-content">
+              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                <paper-item no-label-float=true>[[item]]</paper-item>
               </template>
-            </paper-tabs>
-            <span id="runtime-graph-device-name">
-            </span>
-            <paper-dropdown-menu
-              id="active-runtime-graph-device-name"
-              no-label-float="true"
-              label="Device name"
-              selected-item-label="{{_activeRuntimeGraphDeviceName}}"
-            >
-              <paper-menu class="dropdown-content" slot="dropdown-content">
-                <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
-                  <paper-item no-label-float=true>[[item]]</paper-item>
-                </template>
-              </paper-menu>
-            </paper-dropdown-menu>
-            <paper-spinner-lite
-              class="spinner"
-              id="top-right-spinner"
-              hidden="[[!_busy]]"
-              active="[[_busy]]">
-            </paper-spinner-lite>
-            <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
-          </div>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <paper-spinner-lite
+            class="spinner"
+            id="top-right-spinner"
+            hidden="[[!_busy]]"
+            active="[[_busy]]">
+          </paper-spinner-lite>
+          <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
               <tf-graph id="graph"
@@ -159,10 +157,18 @@ limitations under the License.
           <template is="dom-if" if="[[_isTopRightTensorValuesActive]]">
             <tf-tensor-value-multi-view
               id="tensorValueMultiView"
-              continue-to-callback="[[_createContinueToCallback()]]">
+              continue-to-callback="[[_createContinueToCallback()]]"
+              tensor-name-clicked="[[_createNodeClickedHandler()]]">
             </tf-tensor-value-multi-view>
           </template>
         </div>
+
+        <tf-debugger-resizer
+          is-horizontal="true"
+          current-length="{{_topRightQuadrantHeight}}"
+          min-length="[[_minTopRightQuadrantHeight]]"
+          max-length="[[_maxTopRightQuadrantHeight]]">
+        </tf-debugger-resizer>
 
         <div id="tensor-data" class="tensor-data">
           <tf-tensor-data-summary
@@ -211,9 +217,12 @@ limitations under the License.
         /** This matches the default z-index of paper-dialog backdrops. */
         z-index: 102;
       }
+      /** Resize the region for the graph as the user resizes the region. */
       #graph-container {
+        height: calc(100% - 120px);
+        /** Clip the minimap if the height of the graph container is small. */
+        overflow: hidden;
         position: relative;
-        height: 85%;
       }
       #graph {
         position: relative;
@@ -272,6 +281,10 @@ limitations under the License.
         position: absolute;
         right: 0;
       }
+      /** The resizer should have no space to the left of it. */
+      #center-content tf-debugger-resizer[is-horizontal] {
+        margin-left: -23px;
+      }
       .context-menu {
         position: absolute;
         display: none;
@@ -308,15 +321,31 @@ limitations under the License.
         padding-right: 3px;
         box-shadow: 3px 3px #ddd;
       }
+      #sessionRunsView {
+        position: relative;
+        width: 100%;
+        overflow: auto;
+        max-height: 25vh;
+      }
       .buttons-container {
         padding: 20px 0;
       }
-      .tensor-data {
-        height: 29%;
-        overflow: auto;
+      #tensor-data {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
         padding: 20px 0;
+        margin: 0 0 20px 0;
       }
-      #top-right-content-container {
+      #tensorDataSummary {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+      #top-right-quadrant {
         height: 66%;
         overflow: auto;
       }
@@ -355,8 +384,21 @@ limitations under the License.
   <script src="health-pills.js"></script>
   <script src="tensor-shape-helper.js"></script>
   <script>
+    const _COMPUTE_WINDOW_HEIGHT = () => (
+        window.innerHeight ||
+        document.documentElement.clientHeight ||
+        document.body.clientHeight);
+    const _COMPUTE_WINDOW_WIDTH = () => (
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth);
+    const _TENSORBOARD_HEADER_HEIGHT = 70
     const _DEFAULT_LEFT_PANE_WIDTH = 450;
     const _MAIN_CONTENT_LEFT_PADDING = 8;
+    const _MIN_TOP_RIGHT_QUADRANT_HEIGHT = 200;
+    // Default to about half the available height.
+    const _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT = (
+        _COMPUTE_WINDOW_HEIGHT() - _TENSORBOARD_HEADER_HEIGHT) / 2;
 
     Polymer({
       is: 'tf-debugger-dashboard',
@@ -414,6 +456,12 @@ limitations under the License.
           type: String,
           value: null,
         },
+        // Counts Session Runs in aggregation, regardless of fetch/feed/target.
+        _sessionRunTotalCounter: {
+          type: Number,
+          value: 0,
+        },
+        // Counts Session Runs by their fetch/feed/target combinations.
         _sessionRunCounters: {
           type: Object,
           value: {},
@@ -529,6 +577,25 @@ limitations under the License.
           readOnly: true,
         },
 
+        _topRightQuadrantHeight: {
+          type: Number,
+          value: tf_storage.getNumberInitializer(
+              '_topRightQuadrantHeight',
+              {defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT}),
+          observer: '_topRightQuadrantHeightObserver',
+        },
+
+        _minTopRightQuadrantHeight: {
+          type: Number,
+          value: _MIN_TOP_RIGHT_QUADRANT_HEIGHT,
+          readOnly: true,
+        },
+
+        _maxTopRightQuadrantHeight: {
+          type: Number,
+          computed: '_computeMaxTopRightQuadrantHeight(_windowHeight, _resizerWidth)',
+        },
+
         _resizerWidth: {
           type: Number,
           value: 30,
@@ -536,11 +603,12 @@ limitations under the License.
         },
 
         _windowWidth: Number,
+        _windowHeight: Number,
       },
 
       observers: [
         "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
-        "_sizeDashboardRegions(_leftPaneWidth, _windowWidth)",
+        "_sizeDashboardRegions(_leftPaneWidth, _topRightQuadrantHeight, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
       listeners: {
@@ -596,6 +664,7 @@ limitations under the License.
             } else {
               this._sessionRunCounters[runInfo] = 1;
             }
+            this._sessionRunTotalCounter++;
             this.$.initialDialog.closeDialog();
 
             // Do not refresh node list if we are in continue model and the
@@ -604,7 +673,7 @@ limitations under the License.
                 !this._continueToType || !_.isEqual(previousRunKey, runKey);
             if (toProcessNewSessionRun) {
               this._processGatedGrpcDebugOps(runKey, false);
-              this._showToast('A new Session.run() has begun.');
+              this._announceNewSessionRun();
             }
           } else if (responseType === 'tensor') {
             const deviceName = responseData['device_name'];
@@ -677,7 +746,7 @@ limitations under the License.
             // condition, it'll stop the continuation by setting _continueStop
             // to true.
           } else if (this._continueToType === 'op') {
-            this._processContinueToOp(responseData);
+            this._processContinueToOp(responseType === 'meta', responseData);
           } else if (this._continueToType != null && this._continueToType !== '') {
             console.error('Invalid _continueToType:', this._continueToType);
           }
@@ -695,21 +764,26 @@ limitations under the License.
         }
       },
 
-      _processContinueToOp(responseData) {
+      _processContinueToOp(isSessionRunBeginning, responseData) {
+        if (isSessionRunBeginning) {
+          // A new Session.run() has started, which implies that the requested
+          // tensor was not hit in the previous Session.run, after the
+          // continue-to-tensor action was initiated. Notify the user as such.
+          this._announceNewSessionRun();
+        }
         const deviceName = responseData['device_name'];
-        const maybeBaseExpandedNodeName = responseData[
-            'maybe_base_expanded_node_name'];
-        const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
-        if (nodeNameWithDevice !== this._continueToTarget) {
-          this._step();
-        } else {
+        const maybeBaseExpandedNodeName = responseData['maybe_base_expanded_node_name'];
+        const notBaseExpandedNodeName =
+            maybeBaseExpandedNodeName == null ? null :
+            tf_debugger_dashboard.removeNodeNameBaseExpansion(maybeBaseExpandedNodeName);
+        if (deviceName + '/' + maybeBaseExpandedNodeName === this._continueToTarget ||
+            deviceName + '/' + notBaseExpandedNodeName === this._continueToTarget) {
           this._clearContinueTo();
           if (this._sourceCodeShown) {
-            this.set(
-                '_sourceFocusNodeName',
-                tf_debugger_dashboard.removeNodeNameBaseExpansion(
-                    maybeBaseExpandedNodeName));
+            this.set('_sourceFocusNodeName', notBaseExpandedNodeName);
           }
+        } else {
+          this._step();
         }
       },
 
@@ -744,7 +818,7 @@ limitations under the License.
           // informing the user of that.
           this.$.initialDialog.openDialog(response.host, response.port);
         }).catch(error => {
-          this.$.initialDialog.renderDebuggerNotEnabledMessage();
+          this.$.initialDialog.openDisabledDialog();
         }).then(() => {
           // Initiate long-polling.
           this.long_poll();
@@ -764,6 +838,10 @@ limitations under the License.
       _showToast(text) {  // TODO(cais): Move to Scrolling Message View.
         this.$.toast.setAttribute('text', text);
         this.$.toast.open();
+      },
+      _announceNewSessionRun() {
+        this._showToast(
+            'Session.run() #' + this._sessionRunTotalCounter + ' is starting.');
       },
 
       _displayGraph(runKey, deviceName) {
@@ -877,6 +955,15 @@ limitations under the License.
           graph.panToNode(nodeName);
         } else {
           // Selecting the node triggers a pan to it.
+          const nodeMap = graph.get('renderHierarchy').hierarchy.getNodeMap();
+          if (!nodeMap[nodeName]) {
+            // In some cases, a node with other names using its name as
+            // name scope may not have base-expanded (i.e., normalized) name
+            // in the graph visualizer. In that case, we use the non-expanded
+            // node name.
+            nodeName =
+                tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName);
+          }
           graph.set('selectedNode', nodeName);
         }
         this.set('_highlightNodeName', deviceName + '/' + nodeName);
@@ -1067,6 +1154,7 @@ limitations under the License.
               tf_debugger_dashboard.removeNodeNameBaseExpansion(cleanNodeName));
         }
         this._setContinueTo('op', nodeNameWithDevice);
+        this.$.continueDialog.updateContinueButtonText(true);
         this._step();
       },
 
@@ -1141,7 +1229,6 @@ limitations under the License.
       // dialog.
       _createSessionRunGo() {
         return (continueNum) => {
-          console.log('Session run go: continueNum=' + continueNum);  // DEBUG
           this._setContinueTo(
               'SessionRun', this._currentSessionRunInfo, continueNum);
           this._step();
@@ -1257,13 +1344,13 @@ limitations under the License.
         }
       },
       _handleWindowResize() {
-        this.set(
-            '_windowWidth',
-            window.innerWidth ||
-                document.documentElement.clientWidth ||
-                document.body.clientWidth);
+        this.set('_windowWidth', _COMPUTE_WINDOW_WIDTH());
+        this.set('_windowHeight', _COMPUTE_WINDOW_HEIGHT());
 
-        this._sizeDashboardRegions(this._leftPaneWidth, this._windowWidth);
+        this._sizeDashboardRegions(
+            this._leftPaneWidth,
+            this._topRightQuadrantHeight,
+            this._windowWidth);
       },
       _computeMaxleftPaneWidth(windowWidth, maxMainContentWidth, resizerWidth) {
         // Do not let the main content exceed this width when the user
@@ -1272,16 +1359,27 @@ limitations under the License.
         // able to access the resizer.
         return windowWidth - maxMainContentWidth - resizerWidth;
       },
-      _sizeDashboardRegions(leftPaneWidth, windowWidth) {
+      _computeMaxTopRightQuadrantHeight(windowHeight, resizerWidth) {
+        // Likewise, do not let the explore container exceed this height.
+        return windowHeight - resizerWidth - _TENSORBOARD_HEADER_HEIGHT;
+      },
+      _sizeDashboardRegions(
+          leftPaneWidth, topRightQuadrantHeight, windowWidth) {
         this.$$('#left-pane').style.width = leftPaneWidth + 'px';
         const contentWidth = windowWidth -
             leftPaneWidth -
             this._resizerWidth -
             _MAIN_CONTENT_LEFT_PADDING;
         this.$$('#center-content').style.width = contentWidth + 'px';
+        const height = topRightQuadrantHeight - this._resizerWidth;
+        this.$$('#top-right-quadrant').style.height = height + 'px';
+        this.$$('#tensor-data').style.top = topRightQuadrantHeight + 'px';
       },
       _leftPaneWidthObserver: tf_storage.getNumberObserver(
           '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
+      _topRightQuadrantHeightObserver: tf_storage.getNumberObserver(
+          '_topRightQuadrantHeight',
+          {defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT}),
     });
 
     tf_tensorboard.registerDashboard({

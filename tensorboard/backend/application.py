@@ -22,7 +22,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import contextlib
 import json
 import os
 import re
@@ -31,7 +30,7 @@ import threading
 import time
 
 import six
-from six.moves.urllib import parse as urlparse
+from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-order
 import tensorflow as tf
 from werkzeug import wrappers
 
@@ -80,14 +79,15 @@ def standard_tensorboard_wsgi(
     db_uri="",
     assets_zip_provider=None,
     path_prefix="",
-    window_title=""):
+    window_title="",
+    flags=None):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
     logdir: The path to the directory containing events files.
     purge_orphaned_data: Whether to purge orphaned data.
     reload_interval: The interval at which the backend reloads more data in
-        seconds.
+        seconds.  Zero means load once at startup; negative means never load.
     plugins: A list of constructor functions for TBPlugin subclasses.
     path_prefix: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
@@ -97,7 +97,7 @@ def standard_tensorboard_wsgi(
         the `tensorboard.default` module to use the default. This behavior
         might be removed in the future.
     window_title: A string specifying the the window title.
-
+    flags: A dict of the runtime flags provided to the application, or None.
   Returns:
     The new TensorBoard WSGI application.
   """
@@ -109,15 +109,15 @@ def standard_tensorboard_wsgi(
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)
   db_module, db_connection_provider = get_database_info(db_uri)
-  if db_connection_provider is not None:
-    with contextlib.closing(db_connection_provider()) as db_conn:
-      schema = db.Schema(db_conn)
-      schema.create_tables()
-      schema.create_indexes()
+  # In DB mode, always disable loading event files.
+  if db_connection_provider:
+    reload_interval = -1
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
+      db_uri=db_uri,
+      flags=flags,
       logdir=logdir,
       multiplexer=multiplexer,
       assets_zip_provider=assets_zip_provider,
@@ -140,7 +140,8 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
       can be used to provide named directories
     plugins: A list of base_plugin.TBPlugin subclass instances.
     multiplexer: The EventMultiplexer with TensorBoard data to serve
-    reload_interval: How often (in seconds) to reload the Multiplexer
+    reload_interval: How often (in seconds) to reload the Multiplexer.
+      Zero means reload just once at startup; negative means never load.
     path_prefix: A prefix of the path when app isn't served from root.
 
   Returns:
@@ -150,9 +151,9 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     ValueError: If something is wrong with the plugin configuration.
   """
   path_to_run = parse_event_files_spec(logdir)
-  if reload_interval:
+  if reload_interval > 0:
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
-  else:
+  elif reload_interval == 0:
     reload_multiplexer(multiplexer, path_to_run)
   return TensorBoardWSGI(plugins, path_prefix)
 

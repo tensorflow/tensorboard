@@ -44,9 +44,9 @@ def run():
     middle_baz_value = step + 4 * tf.random_uniform([]) - 2
     summary_lib.scalar('baz', middle_baz_value)
     summary_lib.scalar('baz_lower',
-                       middle_baz_value - 0.3 - tf.random_uniform([]))
+                       middle_baz_value - 6.42 - tf.random_uniform([]))
     summary_lib.scalar('baz_upper',
-                       middle_baz_value + 0.3 + tf.random_uniform([]))
+                       middle_baz_value + 6.42 + tf.random_uniform([]))
 
   with tf.name_scope('trigFunctions'):
     summary_lib.scalar('cosine', tf.cos(step))

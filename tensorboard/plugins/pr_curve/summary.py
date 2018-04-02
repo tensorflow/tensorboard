@@ -328,8 +328,10 @@ def streaming_op(name,
           collections)
 
     pr_curve = compute_summary(tp, fp, tn, fn, metrics_collections)
-    update_op = compute_summary(update_tp, update_fp, update_tn, update_fn,
-                                updates_collections)
+    update_op = tf.group(update_tp, update_fp, update_tn, update_fn)
+    if updates_collections:
+      for collection in updates_collections:
+        tf.add_to_collection(collection, update_op)
 
     return pr_curve, update_op
 

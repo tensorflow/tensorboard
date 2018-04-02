@@ -15,10 +15,9 @@ limitations under the License.
 namespace tf_backend {
 
 export interface Router {
-  logdir: () => string;
   runs: () => string;
   pluginsListing: () => string;
-  windowProperties: () => string;
+  environment: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
 }
@@ -45,10 +44,9 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     return `${dataDir}/plugin/${pluginName}${route}`;
   }
   return {
-    logdir: () => dataDir + '/logdir',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
     pluginsListing: () => dataDir + '/plugins_listing',
-    windowProperties: () => dataDir + '/window_properties',
+    environment: () => dataDir + '/environment',
     isDemoMode: () => demoMode,
     pluginRoute,
   };

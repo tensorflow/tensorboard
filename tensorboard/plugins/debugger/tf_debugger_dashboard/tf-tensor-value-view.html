@@ -31,12 +31,10 @@ limitations under the License.
       <tr>
         <td colspan="2">
           <div>
-            <paper-input
-              class="inline"
+            <paper-item
               id="tensor-name"
-              value="[[tensorName]]"
-              readOnly="true">
-            </paper-input>
+              on-tap="tensorNameCallback">[[tensorName]]
+            </paper-item>
             <paper-icon-button
               icon="close"
               class="value-view-icon-button"
@@ -55,19 +53,13 @@ limitations under the License.
       <tr>
         <td>
           <div>
-            <paper-input
-              class="inline"
-              label="Debug Op"
-              id="debug-op"
-              value="[[debugOp]]"
-              readOnly="true"></paper-input>
-          </div>
-          <div>
+            <paper-item id="debug-op"></paper-item>
             <paper-input
               class="inline value-card-input"
               label="Slicing"
               id="slicing"
-              value="{{slicing}}">
+              value="{{slicing}}"
+              on-change="refresh">
             </paper-input>
           </div>
           <div>
@@ -75,17 +67,14 @@ limitations under the License.
               class="inline value-card-input"
               label="Time Indices"
               id="time-indices"
-              value="{{timeIndices}}">
+              value="{{timeIndices}}"
+              on-change="refresh">
             </paper-input>
             <paper-button raised
               id='time-indices-toggle-button'
               class='tensor-value-buttons'
               on-click='_timeIndicesToggleButtonCallback'
             >Full History</paper-button>
-            <paper-button raised
-              class="tensor-value-buttons"
-              on-click="refresh"
-            >Refresh</paper-button>
           </div>
         </td>
         <td class="tensor-value-view-td">
@@ -137,7 +126,14 @@ limitations under the License.
     }
     #tensor-name {
       display: inline-block;
-      width: 80%;
+      position: relative;
+      width: 50%;
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+    #debug-op {
+      font-size: 90%;
     }
     .value-image {
       image-rendering: pixelated;
@@ -151,6 +147,11 @@ limitations under the License.
       cursor: pointer;
       font-size: 90%;
       color: blue;
+    }
+    #slicing, #time-indices {
+      --paper-input-container-input: {
+        font-family: monospace;
+      };
     }
   </style>
   <script>
@@ -169,6 +170,7 @@ limitations under the License.
 
       continueToButtonCallback: Object,
       closeButtonCallback: Object,
+      tensorNameCallback: Object,
 
       _isTensorValueScalar: {
         type: Boolean,
@@ -213,6 +215,9 @@ limitations under the License.
       if (!this.tensorName) {
         return;
       }
+
+      this.$$('#debug-op').textContent = this._calculateDebugOpToDisplay();
+
       const tensorRank = this._rankFromSlicing(this.slicing.trim());
       const isSingleTimeStep = this._isTimeIndicesSingleStep(this.timeIndices);
       let tensorRankWithTime = tensorRank;
@@ -338,6 +343,11 @@ limitations under the License.
         s = s.slice(1, s.length - 1);
       }
       return !isNaN(Number(s));
+    },
+
+    _calculateDebugOpToDisplay() {
+      // Omit the default debug identity op name.
+      return this.debugOp === 'DebugIdentity' ? '' : this.debugOp;
     },
 
     _showToast(text) {  // TODO(cais): Move to Scrolling Message View.

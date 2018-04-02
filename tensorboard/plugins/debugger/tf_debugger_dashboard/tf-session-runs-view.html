@@ -59,7 +59,6 @@ limitations under the License.
         border-style: solid 1px black;
         table-layout: fixed;
         width: 100%;
-        max-width: 450px;
         word-break: break-all;
         padding-top: 3px;
         padding-left: 3px;
@@ -157,14 +156,23 @@ limitations under the License.
       this._clearTable();
       // TODO(cais): Support sorting.
       this._renderHeader();
+      let activeRow;
       for (const runKey in this._runKey2Count) {
         if (this._runKey2Count.hasOwnProperty(runKey)) {
           const sessionRun = JSON.parse(runKey);
           const count = this._runKey2Count[runKey];
           const isActive = this._activeRunKey === runKey;
           const numDevices = this._runKey2NumDevices[runKey];
-          this._renderRow(sessionRun, numDevices, count, isActive, this.soleActive);
+          const row = this._renderRow(sessionRun, numDevices, count, isActive, this.soleActive);
+          if (row) {
+            activeRow = row;
+          }
         }
+      }
+
+      if (activeRow) {
+        Polymer.dom(this.$$('#session-runs-table')).parentNode.parentNode.scrollTop =
+            activeRow.offsetTop;
       }
     },
 
@@ -197,6 +205,21 @@ limitations under the License.
       Polymer.dom(this.$$('#session-runs-table')).appendChild(headerRow);
     },
 
+    // Render a row in the session runs table for a session.run().
+    //
+    // Args:
+    //   sessionRun: An object containing information about the session.run(),
+    //     including the feeds, fetches and targets.
+    //   numDevices: Number of devices the session.run() utilizes.
+    //   count: Cumulative count for how many times the session.run() has been
+    //     executed so far.
+    //   isActive: Whether the session.run is currently active.
+    //   soleActive: Whether the session.run is currently the sole active
+    //     session.run.
+    //
+    // Returns:
+    //   If the session.run is currently active, the DOM element for the row.
+    //   Else, no value is returned.
     _renderRow(sessionRun, numDevices, count, isActive, soleActive) {
       const sessionRunRow = document.createElement('tr');
 
@@ -227,6 +250,10 @@ limitations under the License.
       }
 
       Polymer.dom(this.$$('#session-runs-table')).appendChild(sessionRunRow);
+
+      if (isActive) {
+        return sessionRunRow;
+      }
     },
 
     _renderGraphElements(graphElements) {

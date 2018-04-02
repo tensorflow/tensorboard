@@ -410,7 +410,7 @@ class SourceManager(object):
 
   def get_paths(self):
     """Get the paths to all available source files."""
-    return self._source_file_content.keys()
+    return list(self._source_file_content.keys())
 
   def get_content(self, file_path):
     """Get the content of a source file.
@@ -514,15 +514,6 @@ class InteractiveDebuggerDataServer(
         self._tensor_store)
     grpc_debug_server.EventListenerBaseServicer.__init__(
         self, receive_port, curried_handler_constructor)
-
-  def start_the_debugger_data_receiving_server(self):
-    """Starts the HTTP server for receiving health pills at `receive_port`.
-
-    After this method is called, health pills issued to host:receive_port
-    will be stored by this object. Calling this method also creates a file
-    within the log directory for storing health pill summary events.
-    """
-    self.run_server()
 
   def SendTracebacks(self, request, context):
     self._source_manager.add_graph_traceback(request.graph_version,

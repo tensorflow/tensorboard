@@ -116,8 +116,10 @@ class MigrateValueTest(tf.test.TestCase):
 
   def test_image(self):
     old_op = tf.summary.image('mona_lisa',
-                              tf.cast(tf.random_normal(shape=[1, 400, 200, 3]),
-                                      tf.uint8))
+                              tf.image.convert_image_dtype(
+                                  tf.random_normal(shape=[1, 400, 200, 3]),
+                                  tf.uint8,
+                                  saturate=True))
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('image'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -161,11 +163,12 @@ class MigrateValueTest(tf.test.TestCase):
     self._assert_noop(value)
 
   def test_new_style_image(self):
-    op = image_summary.op('mona_lisa',
-                          tf.cast(tf.random_normal(shape=[1, 400, 200, 3]),
-                                  tf.uint8),
-                          display_name='The Mona Lisa',
-                          description='A renowned portrait by da Vinci.')
+    op = image_summary.op(
+        'mona_lisa',
+        tf.image.convert_image_dtype(
+            tf.random_normal(shape=[1, 400, 200, 3]), tf.uint8, saturate=True),
+        display_name='The Mona Lisa',
+        description='A renowned portrait by da Vinci.')
     value = self._value_from_op(op)
     assert value.HasField('tensor'), value
     self._assert_noop(value)

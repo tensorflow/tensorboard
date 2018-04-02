@@ -103,6 +103,12 @@ def array_view(array, slicing=None, mapping=None):
     raise ValueError("Invalid mapping: %s" % mapping)
 
 
+IMAGE_COLOR_CHANNELS = 3
+POSITIVE_INFINITY_RGB = (0, 62, 212)  # +inf --> Blue.
+NEGATIVE_INFINITY_RGB = (255, 127, 0)  # -inf --> Orange.
+NAN_RGB = (221, 47, 45)  # nan -> Red.
+
+
 def array_to_base64_png(array):
   """Convert an array into base64-enoded PNG image.
 
@@ -113,20 +119,43 @@ def array_to_base64_png(array):
     A base64-encoded string the image. The image is grayscale if the array is
     2D. The image is RGB color if the image is 3D with lsat dimension equal to
     3.
+
+  Raises:
+    ValueError: If the input `array` is not rank-2, or if the rank-2 `array` is
+      empty.
   """
   # TODO(cais): Deal with 3D case.
   # TODO(cais): If there are None values in here, replace them with all NaNs.
   array = np.array(array, dtype=np.float32)
-  assert len(array.shape) == 2
+  if len(array.shape) != 2:
+    raise ValueError(
+        "Expected rank-2 array; received rank-%d array." % len(array.shape))
+  if not np.size(array):
+    raise ValueError(
+        "Cannot encode an empty array (size: %s) as image." % (array.shape,))
 
-  healthy_indices = np.where(np.logical_and(np.logical_not(np.isnan(array)),
-                                            np.logical_not(np.isinf(array))))
-  # TODO(cais): Deal with case in which there is no health elements, i.e., all
-  # elements are NaN of Inf.
-  minval = np.min(array[healthy_indices])
-  maxval = np.max(array[healthy_indices])
-  # TODO(cais): Deal with the case in which minval == maxval.
-  scaled = np.array((array - minval) / (maxval - minval) * 255, dtype=np.uint8)
-  rgb = np.repeat(np.expand_dims(scaled, -1), 3, axis=-1)
+  is_infinity = np.isinf(array)
+  is_positive = array > 0.0
+  is_positive_infinity = np.logical_and(is_infinity, is_positive)
+  is_negative_infinity = np.logical_and(is_infinity,
+                                        np.logical_not(is_positive))
+  is_nan = np.isnan(array)
+  finite_indices = np.where(np.logical_and(np.logical_not(is_infinity),
+                                           np.logical_not(is_nan)))
+  if np.size(finite_indices):
+    # Finite subset is not empty.
+    minval = np.min(array[finite_indices])
+    maxval = np.max(array[finite_indices])
+    scaled = np.array((array - minval) / (maxval - minval) * 255,
+                      dtype=np.uint8)
+    rgb = np.repeat(np.expand_dims(scaled, -1), IMAGE_COLOR_CHANNELS, axis=-1)
+  else:
+    rgb = np.zeros(array.shape + (IMAGE_COLOR_CHANNELS,), dtype=np.uint8)
+
+  # Color-code pixels that correspond to infinities and nans.
+  rgb[is_positive_infinity] = POSITIVE_INFINITY_RGB
+  rgb[is_negative_infinity] = NEGATIVE_INFINITY_RGB
+  rgb[is_nan] = NAN_RGB
+
   image_encoded = base64.b64encode(util.encode_png(rgb))
   return image_encoded

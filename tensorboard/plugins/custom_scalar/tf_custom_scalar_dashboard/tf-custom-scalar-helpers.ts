@@ -18,7 +18,7 @@ export interface CustomScalarResponse {
   regex_valid: boolean;
 
   // Maps tag name to a list of scalar data.
-  tag_to_events: {[key: string]: vz_line_chart.ScalarDatum[]};
+  tag_to_events: {[key: string]: vz_chart_helpers.ScalarDatum[]};
 }
 
 /**
@@ -58,14 +58,14 @@ export class DataSeries {
   private run: string;
   private tag: string;
   private name: string;
-  private scalarData: vz_line_chart.ScalarDatum[];
-  private symbol: vz_line_chart.LineChartSymbol;
+  private scalarData: vz_chart_helpers.ScalarDatum[];
+  private symbol: vz_chart_helpers.LineChartSymbol;
 
   constructor(run: string,
               tag: string,
               name: string,
-              scalarData: vz_line_chart.ScalarDatum[],
-              symbol: vz_line_chart.LineChartSymbol) {
+              scalarData: vz_chart_helpers.ScalarDatum[],
+              symbol: vz_chart_helpers.LineChartSymbol) {
     this.run = run;
     this.tag = tag;
     this.name = name;
@@ -77,11 +77,11 @@ export class DataSeries {
     return this.name;
   }
 
-  setData(scalarData: vz_line_chart.ScalarDatum[]) {
+  setData(scalarData: vz_chart_helpers.ScalarDatum[]) {
     this.scalarData = scalarData;
   }
 
-  getData(): vz_line_chart.ScalarDatum[] {
+  getData(): vz_chart_helpers.ScalarDatum[] {
     return this.scalarData;
   }
 
@@ -93,7 +93,7 @@ export class DataSeries {
     return this.tag;
   }
 
-  getSymbol(): vz_line_chart.LineChartSymbol {
+  getSymbol(): vz_chart_helpers.LineChartSymbol {
     return this.symbol;
   }
 }

@@ -1,135 +1,99 @@
 # The Profile Plugin Dashboard
 
-## JSON format for the Overview Page and the Input-pipeline Analyzer
+The TensorBoard Profile Dashboard includes a suite of TPU tools. These
+tools help you understand, debug and optimize TensorFlow programs to run on
+TPUs.
 
-The Overview Page and Input-pipeline analyzer are ported from Google internal
-tools where google-chart is used extensively. The original consumer for this
-JSON format is
-[google.visualization.DataTable](https://developers.google.com/chart/interactive/docs/reference#DataTable).
-We are in a process of moving from google-chart to Plottable and other
-visualization tools provided by Tensorboard.
+## Prerequisites
 
-### 1. JSON format for the Overview Page
+Before you can use the tools in Profile Dashboard, you must have access to
+Google Cloud TPUs. You also need to capture trace information while your model
+is running.
 
-JSON for the Overview Page includes four seperate DataTables described below.
-Each table may have some properties, or some tabular data, or both.
+## Overview Page
 
-#### 1.1 Performance Summary DataTable
+The Overview Page gives an overview of the performance of the workload
+running on the TPU. It has five sections as shown in the following figure:
 
-1.1.1 Properties:
+![Overview Page](docs/overview-page.png)
 
-*   matrix_unit_utilization_percent
-*   device_idle_time_percent
-*   host_idle_time_percent
+  * Performance Summary, which includes:
 
-1.1.2 Tabular data: rows are TensorFlow operations. Column ids are defined
-below.
+    - The step time averaged over all steps sampled
+    - The percentage of Host time that is idle
+    - The percentage of TPU time that is idle
+    - The percentage utilization of the TPU matrix units
 
-*   self_time_fraction: number
-*   cumulative_time_fraction: number
-*   category: string
-*   name: string
-*   flop_rate: number
+  * Step-time Graph, which plots a graph of step time (in milliseconds) over
+  all the steps sampled.
 
-#### 1.2 Device Step-time DataTable
+  * Top 10 TensorFlow operations on TPU, which shows the TensorFlow operations
+  executed on the TPU that consumes the majority of time.
 
-1.2.1 Properties:
+  * Run Environment, which includes:
 
-*   infeed_percent_average
-*   infeed_percent_maximum
-*   infeed_percent_minimum
-*   infeed_percent_standard_deviation
-*   steptime_ms_average
-*   steptime_ms_maximum
-*   steptime_ms_minimum
-*   steptime_ms_standard_deviation
-*   summary_color
-*   summary_text
+    - The number of hosts used
+    - The type of TPU used
+    - The number of TPU cores
+    - The training batch size
+    - Job information (both the build command and run command)
 
-1.2.2 Tabular data: rows are training steps. Column ids are defined below.
+  * Recommendation for Next Steps, which first reports if the workload is
+    input bounded. Then it suggests the next tools for reducing the bottleneck
+    (depending on whether it is the input time, the TPU time, or both).
 
-*   stepnum: string
-*   noninfeedTimeMs: number
-*   infeedTimeMs: number
-*   tooltip: string (NOT USED)
-*   infeedPercentAverage: number
-*   infeedPercentMin: number
-*   infeedPercentMax: number
+## Trace Viewer
 
-#### 1.3 Run-environment DataTable
+Trace Viewer contains a timeline that shows various operations in your
+TensorFlow model that the TPUs and host machine executed over time.
 
-1.3.1 Properties:
+![Trace Viewer](docs/trace-viewer.png)
 
-*   host_count
-*   tpu_type
-*   tpu_core_count
-*   batch_size
-*   change_list
-*   build_time
-*   build_target
+The Timeline pane contains the following elements:
 
-1.3.2 Tabular data: rows are hosts. Column ids are defined below.
+  1. A top bar, which contains various auxiliary controls.
+  1. A time axis, which shows time relative to the beginning of the trace.
+  1. Section and track labels. Each section contains multiple tracks and
+  has a triangle on the left that you can click to expand and collapse the
+  section. There is one section for each TPU node and an additional section
+  for threads running on the host machine's CPU, labeled "CPU Threads".
+  1. A tool selector, which contains various tools for interacting with the
+  Trace Viewer.
+  1. Events. These show the time during which an operation was
+  executed or the duration of meta-events, such as training steps.
+  1. A vertical tab bar. This does not have a useful purpose for TPUs. It exists
+  because Trace Viewer is a general purpose tool provided by Chrome that is used
+  for a variety of performance analysis tasks. 
 
-*   host_id: string
-*   command_line: string
-*   start_time: string
+## Op Profile
 
-#### 1.4 Recommendation DataTable
+Op Profile tool displays the performance statistics of
+[XLA](https://www.tensorflow.org/performance/xla) operations executed during
+the profiling period. Op Profile shows:
 
-1.4.1 Properties:
+  * How your application uses the TPU. The TPU FLOPS utilization reported is
+    defined as the measured number of floating point operations per second
+    (FLOPS) over the peak FLOPS supported by the TPU.
+  * The most time consuming operation.
+  * Details of each op, including shape, XLA expression and padding.
 
-*   bottleneck
-*   statement
+![Op Profile](docs/op-profile.png)
 
-1.4.2 Tabular data: rows are recommendations. Column ids are defined below.
+## Input Pipeline Analyzer
 
-*   tip_type: string
-*   link: string
+Input pipeline analyzer tries to answer two questions:
 
-### 2. JSON format for the Input-pipeline Analyzer
+  * Is your model input bound?
+  * If it is, why?
 
-JSON for the Input-pipeline Analyzer uses three separate DataTables:
+![Input Pipeline](docs/input-pipeline.png)
 
-*   the first DataTable contains statistics for device step time
-*   the second DataTable contains statistics for the host side
-*   the third DataTable contains recommendations to users
-
-Each DataTable is associated with some table properties and some tabular data.
-
-#### 2.1. Device Step-time DataTable
-
-The same as the one described in Section 1.2.
-
-#### 2.2 Host Side DataTable
-
-2.2.1 Properties:
-
-*   advanced_file_read_us: string (time in us spent on reading files in advance)
-*   demanded_file_read_us: string (time in us spent on reading files on demand)
-*   enqueue_us: string (time in us spent on enqueuing data to be transferred to
-    the TPU)
-*   preprocessing_us: string (time in us spent on data pre-processing)
-*   unclassified_nonenqueue_us: string (time in us spent on other components)
-
-2.2.2 Tabular data: rows are input-pipeline related tensorflow ops. column ids
-are defined below.
-
-*   opName: string
-*   count: number
-*   timeInMs: number
-*   timeInPercent: number
-*   selfTimeInMs: number
-*   selfTimeInPercent: number
-*   category: string
-
-#### 2.3 Recommendation DataTable
-
-2.3.1 Properties:
-
-*   overall: string (the overall recommendation to users)
-
-2.3.2 Tabular data: rows are recommendation details. column ids are defined
-below:
-
-*   link: string (recommendation for optimizing an individual input-processing
-    component)
+The analysis contains three sections:
+  * Summary, which tells you the overall input pipeline analysis: whether
+  your application is input bound and by how much.
+  * Device-side analysis, which shows you the detailed device-side analysis
+  results, including the device step time and how much is spent waiting for
+  the input data.
+  * Host-side analysis, which shows you the detailed analysis on the host side,
+  including a breakdown of input processing time on the host, and a tabular
+  view of details for each input operation.

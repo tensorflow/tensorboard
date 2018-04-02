@@ -225,8 +225,8 @@ limitations under the License.
           type: Array,
           readOnly: true,
           value: () => {
-            const valueFormatter = vz_line_chart.multiscaleFormatter(
-                vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+            const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+                vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
             const formatValueOrNaN =
                 (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
             return [

@@ -40,9 +40,9 @@ Properties out:
         out-color-scale="{{colorScale}}"
       ></tf-color-scale>
     </div>
-    <paper-dialog with-backdrop id="logdir-dialog">
-      <h2>logdir</h2>
-      <div inner-h-t-m-l="{{_breakString(logdir)}}"></div>
+    <paper-dialog with-backdrop id="data-location-dialog">
+      <h2>Data Location</h2>
+      <div inner-h-t-m-l="{{_breakString(dataLocation)}}"></div>
     </paper-dialog>
     <div id="top-text">
       <h3 id="tooltip-help" class="tooltip-container">Runs</h3>
@@ -62,14 +62,14 @@ Properties out:
     </paper-button>
     <template
       is="dom-if"
-      if="[[logdir]]">
-      <div id="logdir">
-        <span id="clipped-logdir" inner-h-t-m-l="[[_clippedLogdir]]"></span><!--
+      if="[[dataLocation]]">
+      <div id="data-location">
+        <span id="clipped-dataLocation" inner-h-t-m-l="[[_clippedDataLocation]]"></span><!--
           We use HTML comments to remove spaces before the ellipsis.
         --><template
                      is="dom-if"
-                     if="[[_shouldShowExpandLogdirButton(logdir, _logdirClipLength)]]"><!--
-          --><a href="" on-click="_openLogdirDialog">…</a>
+                     if="[[_shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength)]]"><!--
+          --><a href="" on-click="_openDataLocationDialog">…</a>
         </template>
       </div>
     </template>
@@ -108,7 +108,7 @@ Properties out:
       paper-button {
         margin-left: 0;
       }
-      #logdir {
+      #data-location {
         color: var(--tb-ui-dark-accent);
         font-size: 13px;
         margin: 5px 0 0 0;
@@ -123,16 +123,16 @@ Properties out:
       selectedRuns: {type: Array, notify: true},
       // runs: an array of strings, representing the run names that may be chosen
       runs: Array,
-      logdir: {
+      dataLocation: {
         type: String,
         notify: true,
       },
-      // This is the potentially clipped portion of the logdir we show at the bottom of the sidebar.
-      _clippedLogdir: {
+      // This is the potentially clipped portion of the dataLocation we show at the bottom of the sidebar.
+      _clippedDataLocation: {
         type: String,
-        computed: '_getClippedLogdir(logdir, _logdirClipLength)',
+        computed: '_getClippedDataLocation(dataLocation, _dataLocationClipLength)',
       },
-      _logdirClipLength: {
+      _dataLocationClipLength: {
         type: Number,
         value: 250,
         readOnly: true,
@@ -146,11 +146,12 @@ Properties out:
       updateRuns();
 
       var requestManager = new tf_backend.RequestManager();
-      requestManager.request(tf_backend.getRouter().logdir()).then(logdirObject => {
-        this.set('logdir', logdirObject.logdir);
+      requestManager.request(
+          tf_backend.getRouter().environment()).then(environmentObject => {
+        this.set('dataLocation', environmentObject.data_location);
       }).catch(e => {
-        // Fetching the logdir failed. Prevent the exception from logging to
-        // console. The console already logs a 404 network event.
+        // Fetching the dataLocation failed. Prevent the exception from
+        // logging to console. The console already logs a 404 network event.
       });
     },
     _toggleAll: function() {
@@ -160,26 +161,26 @@ Properties out:
     _breakString: function(originalString) {
       return originalString.replace(/([\/=\-_,])/g, "$1<wbr>");
     },
-    _getClippedLogdir: function(logdir, logdirClipLength) {
-      if (logdir === undefined) {
-        // The logdir has not been set yet.
+    _getClippedDataLocation: function(dataLocation, dataLocationClipLength) {
+      if (dataLocation === undefined) {
+        // The dataLocation has not been set yet.
         return undefined;
       }
 
-      if (logdir.length > logdirClipLength) {
-        // Clip the logdir to avoid blocking the runs selector. Let the user view a more full
-        // version of the logdir.
-        return this._breakString(logdir.substring(0, logdirClipLength));
+      if (dataLocation.length > dataLocationClipLength) {
+        // Clip the dataLocation to avoid blocking the runs selector. Let the
+        // user view a more full version of the dataLocation.
+        return this._breakString(dataLocation.substring(0, dataLocationClipLength));
       } else {
-        return this._breakString(logdir);
+        return this._breakString(dataLocation);
       }
     },
-    _openLogdirDialog: function(event) {
+    _openDataLocationDialog: function(event) {
       event.preventDefault();
-      this.$$('#logdir-dialog').open();
+      this.$$('#data-location-dialog').open();
     },
-    _shouldShowExpandLogdirButton(logdir, _logdirClipLength) {
-      return logdir && logdir.length > _logdirClipLength;
+    _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
+      return dataLocation && dataLocation.length > _dataLocationClipLength;
     },
   });
   </script>

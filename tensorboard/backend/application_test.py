@@ -357,7 +357,9 @@ class TensorBoardPluginsTest(tf.test.TestCase):
     ]
 
     # The application should have added routes for both plugins.
-    self.app = application.standard_tensorboard_wsgi('', True, 60, plugins)
+    self.logdir = self.get_temp_dir()
+    self.app = application.standard_tensorboard_wsgi(
+        self.logdir, True, 60, plugins)
 
   def _foo_handler(self):
     pass
