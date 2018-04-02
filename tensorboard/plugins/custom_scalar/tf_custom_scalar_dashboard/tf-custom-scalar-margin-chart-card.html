@@ -36,12 +36,10 @@ limitations under the License.
 -->
 <dom-module id="tf-custom-scalar-margin-chart-card">
 <template>
-  <h1>[[_titleDisplayString]]</h1>
+  <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       x-type="[[xType]]"
-      smoothing-enabled="[[smoothingEnabled]]"
-      smoothing-weight="[[smoothingWeight]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
       ignore-y-outliers="[[ignoreYOutliers]]"
       request-manager="[[requestManager]]"
@@ -101,23 +99,39 @@ limitations under the License.
     </template>
   </div>
 
-  <template is="dom-if" if="[[_tagsWithNoData]]">
-    <div id="error-content">
-      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
-      No data found for these tags:
-      <ul>
-        <template is="dom-repeat" items="[[_tagsWithNoData]]">
-          <li>[[item]]</li>
-        </template>
-      </ul>
-      <br>
-      Tags for the value, lower, and upper bounds of margin charts in the Layout
-      proto must match tags in the SCALARS dashboard.
+  <!-- here -->
+  <template is="dom-if" if="[[_missingTags.length]]">
+    <div class="collapsible-list-title">
+      <paper-icon-button
+          icon="[[_getToggleCollapsibleIcon(_missingTagsCollapsibleOpened)]]"
+          on-click="_toggleMissingTagsCollapsibleOpen"
+          class="toggle-collapsible-button">
+      </paper-icon-button>
+      <span class="collapsible-title-text">
+        <iron-icon icon="icons:error"></iron-icon> Missing Tags
+      </span>
     </div>
+    <iron-collapse opened="[[_missingTagsCollapsibleOpened]]">
+      <div class="error-content">
+        <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+        <template is="dom-repeat"
+                  items="[[_missingTags]]"
+                  as="missingEntry">
+          <div class="missing-tags-for-run-container">
+            Run "[[missingEntry.run]]" lacks data for tags
+            <ul>
+              <template is="dom-repeat" items="[[missingEntry.tags]]" as="tag">
+                <li>[[tag]]</li>
+              </template>
+            </ul>
+          </div>
+        </template>
+      </div>
+    </iron-collapse>
   </template>
 
   <template is="dom-if" if="[[_tagFilterInvalid]]">
-    <div id="error-content">
+    <div class="error-content">
       <iron-icon class="error-icon" icon="icons:error"></iron-icon>
       This regular expresion is invalid:<br>
       <span class="invalid-regex">[[_tagFilter]]</span>
@@ -125,7 +139,7 @@ limitations under the License.
   </template>
 
   <template is="dom-if" if="[[_stepsMismatch]]">
-    <div id="error-content">
+    <div class="error-content">
       <iron-icon class="error-icon" icon="icons:error"></iron-icon>
       The steps for value, lower, and upper tags do not match:
       <ul>
@@ -146,16 +160,16 @@ limitations under the License.
   </template>
 
   <div id="matches-container">
-    <div id="matches-list-title">
+    <div class="collapsible-list-title">
       <template is="dom-if" if="[[_dataSeriesStrings.length]]">
         <paper-icon-button
-          icon="[[_getToggleMatchesIcon(_matchesListOpened)]]"
+          icon="[[_getToggleCollapsibleIcon(_matchesListOpened)]]"
           on-click="_toggleMatchesOpen"
           class="toggle-matches-button">
         </paper-icon-button>
       </template>
 
-      <span class="matches-text">
+      <span class="collapsible-title-text">
         Matches ([[_dataSeriesStrings.length]])
       </span>
     </div>
@@ -181,7 +195,7 @@ limitations under the License.
   </div>
   <style include="tf-custom-scalar-card-style"></style>
   <style>
-    #error-content {
+    .error-content {
       background: #f00;
       border-radius: 5px;
       color: #fff;
@@ -199,7 +213,7 @@ limitations under the License.
       font-weight: bold;
     }
 
-    #error-content ul {
+    .error-content ul {
       margin: 1px 0 0 0;
       padding: 0 0 0 19px;
     }
@@ -208,12 +222,15 @@ limitations under the License.
       font-weight: bold;
     }
 
-    #matches-list-title {
+    .collapsible-list-title {
       margin: 10px 0 5px 0;
     }
 
+    .collapsible-title-text {
+      vertical-align: middle;
+    }
+
     #matches-list {
-      font-size: 0.8em;
       max-height: 200px;
       overflow-y: auto;
     }
@@ -228,8 +245,8 @@ limitations under the License.
       width: 10px;
     }
 
-    .matches-text {
-      vertical-align: middle;
+    .missing-tags-for-run-container {
+      margin: 8px 0 0 0;
     }
   </style>
 </template>
@@ -242,7 +259,7 @@ limitations under the License.
 
         /**
          * This property must take on values from the XType enum defined within
-         * the vz_line_chart component.
+         * the vz_chart_helpers component.
          */
         xType: String,
 
@@ -259,8 +276,6 @@ limitations under the License.
         ignoreYOutliers: Boolean,
         requestManager: Object,
         showDownloadLinks: Boolean,
-        smoothingEnabled: Boolean,
-        smoothingWeight: Number,
         tagMetadata: Object,
         tooltipSortingMethod: String,
 
@@ -347,8 +362,8 @@ limitations under the License.
         _tooltipColumns: {
           type: Array,
           value: function() {
-            const valueFormatter = vz_line_chart.multiscaleFormatter(
-                vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+            const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+                vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
             const formatValueOrNaN =
                 (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
 
@@ -356,12 +371,6 @@ limitations under the License.
               {
                 title: 'Name',
                 evaluate: (d) => d.dataset.metadata().name,
-              },
-              {
-                title: 'Smoothed',
-                evaluate: (d, statusObject) => formatValueOrNaN(
-                    statusObject.smoothingEnabled ? d.datum.smoothed :
-                                                    d.datum.scalar),
               },
               {
                 title: 'Value',
@@ -377,21 +386,37 @@ limitations under the License.
               },
               {
                 title: 'Step',
-                evaluate: (d) => vz_line_chart.stepFormatter(d.datum.step),
+                evaluate: (d) => vz_chart_helpers.stepFormatter(d.datum.step),
               },
               {
                 title: 'Time',
-                evaluate: (d) => vz_line_chart.timeFormatter(d.datum.wall_time),
+                evaluate: (d) => vz_chart_helpers.timeFormatter(
+                    d.datum.wall_time),
               },
               {
                 title: 'Relative',
-                evaluate: (d) => vz_line_chart.relativeFormatter(
-                    vz_line_chart.relativeAccessor(d.datum, -1, d.dataset)),
+                evaluate: (d) => vz_chart_helpers.relativeFormatter(
+                    vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
               },
             ];
           }
         },
-        _tagsWithNoData: String,
+        /**
+         * A list of objects encapsulating missing tags. Each object within this
+         * list has the following properties:
+         * run: A string denoting the relevant run.
+         * tags: A non-empty list of tags (strings) missing for that run.
+         * A run only has an entry in this list if some (but not all) of its 3
+         * tags (value, lower, upper) are missing.
+         */
+        _missingTags: {
+          type: Array,
+          value: [],
+        },
+        _missingTagsCollapsibleOpened: {
+          type: Boolean,
+          value: false,
+        },
         /**
          * This field is only set if data retrieved from the server exhibits a
          * step mismatch: if the lists of values, lower bounds, and upper bounds
@@ -527,13 +552,28 @@ limitations under the License.
                   run, tagsObject.value, seriesName, dataPoints);
             }
           });
-
-          if (tagsNotFound.length) {
-            // At least 1 tag could not be found. Show an error message.
-            this.set('_tagsWithNoData', tagsNotFound);
-          }
-
           this.set('_nameToDataSeries', newMapping);
+
+          const entryIndex = _.findIndex(this._missingTags, (entry) => {
+            return entry.run === run;
+          });
+          if (tagsNotFound.length && tagsNotFound.length != 3) {
+            // Some but not all tags were found. Show a warning message.
+            const entry = {
+              run: run,
+              tags: tagsNotFound,
+            };
+            if (entryIndex >= 0) {
+              // Remove the previous entry. Insert the new one.
+              this.splice('_missingTags', entryIndex, 1, entry);
+            } else {
+              // Insert a new entry.
+              this.push('_missingTags', entry);
+            }
+          } else if (entryIndex >= 0) {
+            // Remove the previous entry if it exists.
+            this.splice('_missingTags', entryIndex, 1);
+          }
         });
       },
       _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
@@ -555,7 +595,7 @@ limitations under the License.
         this._runToNextAvailableSymbolIndex[run] |= 0;
 
         // Every data series within a run has a unique symbol.
-        const lineChartSymbol = vz_line_chart.SYMBOLS_LIST[
+        const lineChartSymbol = vz_chart_helpers.SYMBOLS_LIST[
             this._runToNextAvailableSymbolIndex[run]];
 
         // Create a series with this name.
@@ -563,7 +603,7 @@ limitations under the License.
             run, tag, seriesName, dataPoints, lineChartSymbol);
 
         // Loop back to the beginning if we are out of symbols.
-        const numSymbols = vz_line_chart.SYMBOLS_LIST.length;
+        const numSymbols = vz_chart_helpers.SYMBOLS_LIST.length;
         this._runToNextAvailableSymbolIndex[run] =
             (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
         return series;
@@ -616,8 +656,8 @@ limitations under the License.
       _escapeRegexCharacters(stringValue) {
         return stringValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       },
-      _getToggleMatchesIcon(matchesListOpened) {
-        return matchesListOpened ? 'expand-less' : 'expand-more';
+      _getToggleCollapsibleIcon(listOpened) {
+        return listOpened ? 'expand-less' : 'expand-more';
       },
       _toggleMatchesOpen() {
         this.set('_matchesListOpened', !this._matchesListOpened);
@@ -629,6 +669,11 @@ limitations under the License.
       },
       _separateWithCommas(numbers) {
         return numbers.join(', ');
+      },
+      _toggleMissingTagsCollapsibleOpen() {
+        this.set(
+            '_missingTagsCollapsibleOpened',
+            !this._missingTagsCollapsibleOpened);
       },
   });
 </script>

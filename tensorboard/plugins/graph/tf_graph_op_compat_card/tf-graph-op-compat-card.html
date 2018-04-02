@@ -241,7 +241,9 @@ div.op-compat-value {
         var numIncompat = root.compatibilityHistogram.incompatible;
         if (numCompat == 0 && numIncompat == 0)
           return 0;
-        return numCompat / (numCompat + numIncompat);
+        var numTotal = numCompat + numIncompat;
+        // Round the ratio towards negative infinity.
+        return Math.floor( (100*numCompat) / numTotal) / 100;
       }
       return 0;
     },

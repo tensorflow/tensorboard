@@ -170,6 +170,7 @@ function addInteraction(selection, d: render.RenderNodeInfo,
       annotation.annotationType !== render.AnnotationType.CONSTANT) {
     selection.on(
         'contextmenu', contextmenu.getMenu(
+                           sceneElement,
                            node.getContextMenu(annotation.node, sceneElement)));
   }
 };

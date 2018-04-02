@@ -34,9 +34,14 @@ from tensorboard.plugins.beholder.visualizer import Visualizer
 class Beholder(object):
 
   def __init__(self, logdir):
-    self.video_writer = None
-
     self.PLUGIN_LOGDIR = logdir + '/plugins/' + PLUGIN_NAME
+
+    self.is_recording = False
+    self.video_writer = video_writing.VideoWriter(
+        self.PLUGIN_LOGDIR,
+        outputs=[
+            video_writing.FFmpegVideoOutput,
+            video_writing.PNGVideoOutput])
 
     self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
     self.summary_op = tf.summary.tensor_summary(TAG_NAME,
@@ -124,29 +129,21 @@ class Beholder(object):
 
 
   def _update_recording(self, frame, config):
-    '''Adds a frame to the video using ffmpeg if possible. If not, writes
-    individual frames as png files in a directory.
-    '''
+    '''Adds a frame to the current video output.'''
     # pylint: disable=redefined-variable-type
-    is_recording = config['is_recording']
-    filename = self.PLUGIN_LOGDIR + '/video-{}.mp4'.format(time.time())
+    should_record = config['is_recording']
 
-    if is_recording:
-      if self.video_writer is None or frame.shape != self.video_writer.size:
-        try:
-          self.video_writer = video_writing.FFMPEG_VideoWriter(filename,
-                                                               frame.shape,
-                                                               15)
-        except OSError:
-          message = ('Either ffmpeg is not installed, or something else went '
-                     'wrong. Saving individual frames to disk instead.')
-          print(message)
-          self.video_writer = video_writing.PNGWriter(self.PLUGIN_LOGDIR,
-                                                      frame.shape)
+    if should_record:
+      if not self.is_recording:
+        self.is_recording = True
+        tf.logging.info(
+            'Starting recording using %s',
+            self.video_writer.current_output().name())
       self.video_writer.write_frame(frame)
-    elif not is_recording and self.video_writer is not None:
-      self.video_writer.close()
-      self.video_writer = None
+    elif self.is_recording:
+      self.is_recording = False
+      self.video_writer.finish()
+      tf.logging.info('Finished recording')
 
 
   # TODO: blanket try and except for production? I don't someone's script to die
@@ -193,28 +190,26 @@ class Beholder(object):
 
 
 class BeholderHook(tf.train.SessionRunHook):
-  """SessionRunHook implementation that run Beholder every step.
+  """SessionRunHook implementation that runs Beholder every step.
 
-  Convinient when using tf.train.MonitoredSession:
+  Convenient when using tf.train.MonitoredSession:
   ```python
-  beholder_hook = BeholderHook('MY_LOG_DIR')
-  with MonitoredSession(session_creator=ChiefSessionCreator(...),
-                        hooks=[beholder_hook]) as sess:
-    while not sess.should_stop():
-      sess.run(train_op)
+  beholder_hook = BeholderHook(LOG_DIRECTORY)
+  with MonitoredSession(..., hooks=[beholder_hook]) as sess:
+    sess.run(train_op)
   ```
   """
   def __init__(self, logdir):
     """Creates new Hook instance
 
     Args:
-      logdir: Directory where Beholder is to write data.
+      logdir: Directory where Beholder should write data.
     """
     self._logdir = logdir
-    self.visualizer = None
+    self.beholder = None
 
   def begin(self):
-    self.visualizer = Beholder(self._logdir)
+    self.beholder = Beholder(self._logdir)
 
   def after_run(self, run_context, unused_run_values):
-    self.visualizer.update(run_context.session)
+    self.beholder.update(run_context.session)

@@ -52,7 +52,7 @@ Polymer({
     /**
      * A function that takes a data series string and returns a
      * Plottable.SymbolFactory to use for rendering that series. This property
-     * implements the SymbolFn interface.
+     * implements the vz_chart_helpers.SymbolFn interface.
      */
     symbolFunction: Object,
 
@@ -96,7 +96,7 @@ Polymer({
     /**
      * This is a helper field for automatically generating commonly used
      * functions for xComponentsCreationMethod. Valid values are what can
-     * be processed by vz_line_chart.getXComponents() and include
+     * be processed by vz_chart_helpers.getXComponents() and include
      * "step", "wall_time", and "relative".
      */
     xType: {type: String, value: ''},
@@ -111,7 +111,7 @@ Polymer({
      * outer function to compute the value. We actually want the value of this
      * property to be the inner function.
      *
-     * @type {function(): XComponents}
+     * @type {function(): vz_chart_helpers.XComponents}
      */
     xComponentsCreationMethod: {
       type: Object,
@@ -151,8 +151,8 @@ Polymer({
     tooltipColumns: {
       type: Array,
       value: function() {
-        const valueFormatter = multiscaleFormatter(
-            Y_TOOLTIP_FORMATTER_PRECISION);
+        const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+            vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
 
         return [
@@ -162,9 +162,12 @@ Polymer({
           },
           {
             title: 'Smoothed',
-            evaluate: (d, statusObject) => formatValueOrNaN(
-                statusObject.smoothingEnabled ? d.datum.smoothed :
-                                                d.datum.scalar),
+            evaluate: (d, statusObject) => {
+              const smoothingEnabled =
+                  statusObject && statusObject.smoothingEnabled;
+              return formatValueOrNaN(
+                  smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
+            },
           },
           {
             title: 'Value',
@@ -172,16 +175,18 @@ Polymer({
           },
           {
             title: 'Step',
-            evaluate: (d) => stepFormatter(d.datum.step),
+            evaluate: (d) => vz_chart_helpers.stepFormatter(
+                d.datum.step),
           },
           {
             title: 'Time',
-            evaluate: (d) => timeFormatter(d.datum.wall_time),
+            evaluate: (d) => vz_chart_helpers.timeFormatter(
+                d.datum.wall_time),
           },
           {
             title: 'Relative',
-            evaluate: (d) => relativeFormatter(
-                relativeAccessor(d.datum, -1, d.dataset)),
+            evaluate: (d) => vz_chart_helpers.relativeFormatter(
+                vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
           },
         ];
       }
@@ -299,8 +304,8 @@ Polymer({
    * its name must be in the setVisibleSeries() array.
    *
    * @param {string} name Name of the series.
-   * @param {Array<ScalarDatum>} data Data of the series. This is
-   * an array of objects with at least the following properties:
+   * @param {Array< vz_chart_helpers.ScalarDatum>} data Data of the series.
+   * This is an array of objects with at least the following properties:
    * - step: (Number) - index of the datum.
    * - wall_time: (Date) - Date object with the datum's time.
    * - scalar: (Number) - Value of the datum.
@@ -355,10 +360,10 @@ Polymer({
       _attached) {
     // Find the actual xComponentsCreationMethod.
     if (!xType && !xComponentsCreationMethod) {
-      xComponentsCreationMethod = () => vz_line_chart.stepX;
+      xComponentsCreationMethod = vz_chart_helpers.stepX;
     } else if (xType) {
       xComponentsCreationMethod = () =>
-          vz_line_chart.getXComponents(xType);
+          vz_chart_helpers.getXComponents(xType);
     }
 
     if (this._makeChartAsyncCallbackId !== null) {
@@ -455,7 +460,7 @@ class LineChart {
   private yAxis: Plottable.Axes.Numeric;
   private outer: Plottable.Components.Table;
   private colorScale: Plottable.Scales.Color;
-  private symbolFunction: SymbolFn;
+  private symbolFunction: vz_chart_helpers.SymbolFn;
   private tooltip: d3.Selection<any, any, any, any>;
   private dzl: DragZoomLayer;
 
@@ -487,16 +492,16 @@ class LineChart {
   private targetSVG: d3.Selection<any, any, any, any>;
 
   constructor(
-      xComponentsCreationMethod: () => XComponents,
+      xComponentsCreationMethod: () => vz_chart_helpers.XComponents,
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>,
-      tooltipColumns: TooltipColumn[],
+      tooltipColumns: vz_chart_helpers.TooltipColumn[],
       fillArea: FillArea,
       defaultXRange?: number[],
       defaultYRange?: number[],
-      symbolFunction?: SymbolFn,
+      symbolFunction?: vz_chart_helpers.SymbolFn,
       xAxisFormatter?: (number) => string) {
     this.seriesNames = [];
     this.name2datasets = {};
@@ -531,10 +536,10 @@ class LineChart {
   }
 
   private buildChart(
-      xComponentsCreationMethod: () => XComponents,
+      xComponentsCreationMethod: () => vz_chart_helpers.XComponents,
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
-      tooltipColumns: TooltipColumn[],
+      tooltipColumns: vz_chart_helpers.TooltipColumn[],
       fillArea: FillArea,
       xAxisFormatter: (number) => string) {
     if (this.outer) {
@@ -550,8 +555,8 @@ class LineChart {
     }
     this.yScale = LineChart.getYScaleFromType(yScaleType);
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = multiscaleFormatter(
-        Y_AXIS_FORMATTER_PRECISION);
+    let yFormatter = vz_chart_helpers.multiscaleFormatter(
+        vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
     this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
     this.fillArea = fillArea;
@@ -588,19 +593,19 @@ class LineChart {
       this.marginAreaPlot.y0(fillArea.lowerAccessor);
       this.marginAreaPlot.attr(
           'fill',
-          (d: Datum, i: number, dataset: Plottable.Dataset) =>
+          (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) =>
               this.colorScale.scale(dataset.metadata().name));
       this.marginAreaPlot.attr('fill-opacity', 0.3);
       this.marginAreaPlot.attr('stroke-width', 0);
     }
 
-    this.smoothedAccessor = (d: ScalarDatum) => d.smoothed;
+    this.smoothedAccessor = (d:  vz_chart_helpers.ScalarDatum) => d.smoothed;
     let linePlot = new Plottable.Plots.Line<number|Date>();
     linePlot.x(this.xAccessor, xScale);
     linePlot.y(this.yValueAccessor, yScale);
     linePlot.attr(
         'stroke',
-        (d: Datum, i: number, dataset: Plottable.Dataset) =>
+        (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) =>
             this.colorScale.scale(dataset.metadata().name));
     this.linePlot = linePlot;
     const group = this.setupTooltips(linePlot, tooltipColumns);
@@ -610,7 +615,7 @@ class LineChart {
     smoothLinePlot.y(this.smoothedAccessor, yScale);
     smoothLinePlot.attr(
         'stroke',
-        (d: Datum, i: number, dataset: Plottable.Dataset) =>
+        (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) =>
             this.colorScale.scale(dataset.metadata().name));
     this.smoothLinePlot = smoothLinePlot;
 
@@ -620,12 +625,12 @@ class LineChart {
       markersScatterPlot.y(this.yValueAccessor, yScale);
       markersScatterPlot.attr(
           'fill',
-          (d: Datum, i: number, dataset: Plottable.Dataset) =>
+          (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) =>
               this.colorScale.scale(dataset.metadata().name));
       markersScatterPlot.attr('opacity', 1);
-      markersScatterPlot.size(TOOLTIP_CIRCLE_SIZE * 2);
+      markersScatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
       markersScatterPlot.symbol(
-          (d: Datum, i: number, dataset: Plottable.Dataset) => {
+          (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) => {
             return this.symbolFunction(dataset.metadata().name);
           });
       // Use a special dataset because this scatter plot should use the accesor
@@ -641,7 +646,7 @@ class LineChart {
     scatterPlot.y(this.yValueAccessor, yScale);
     scatterPlot.attr('fill', (d: any) => this.colorScale.scale(d.name));
     scatterPlot.attr('opacity', 1);
-    scatterPlot.size(TOOLTIP_CIRCLE_SIZE * 2);
+    scatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
     scatterPlot.datasets([this.lastPointsDataset]);
     this.scatterPlot = scatterPlot;
 
@@ -650,7 +655,7 @@ class LineChart {
     nanDisplay.y((x) => x.displayY, yScale);
     nanDisplay.attr('fill', (d: any) => this.colorScale.scale(d.name));
     nanDisplay.attr('opacity', 1);
-    nanDisplay.size(NAN_SYMBOL_SIZE * 2);
+    nanDisplay.size(vz_chart_helpers.NAN_SYMBOL_SIZE * 2);
     nanDisplay.datasets([this.nanDataset]);
     nanDisplay.symbol(Plottable.SymbolFactories.triangle);
     this.nanDisplay = nanDisplay;
@@ -702,7 +707,7 @@ class LineChart {
                 let idx = nonNanData.length - 1;
                 datum = nonNanData[idx];
                 datum.name = d.metadata().name;
-                datum.relative = relativeAccessor(datum, -1, d);
+                datum.relative = vz_chart_helpers.relativeAccessor(datum, -1, d);
               }
               return datum;
             })
@@ -737,7 +742,7 @@ class LineChart {
         } else {
           data[i].name = d.metadata().name;
           data[i].displayY = displayY;
-          data[i].relative = relativeAccessor(data[i], -1, d);
+          data[i].relative = vz_chart_helpers.relativeAccessor(data[i], -1, d);
           nanData.push(data[i]);
         }
       }
@@ -780,7 +785,7 @@ class LineChart {
       };
       const vals = _.flattenDeep<number>(this.datasets.map(datasetToValues))
           .filter(isFinite);
-      yDomain = computeDomain(vals, this._ignoreYOutliers);
+      yDomain = vz_chart_helpers.computeDomain(vals, this._ignoreYOutliers);
     }
     this.yScale.domain(yDomain);
   }
@@ -802,12 +807,12 @@ class LineChart {
 
   private setupTooltips(
       plot: Plottable.XYPlot<number|Date, number>,
-      tooltipColumns: TooltipColumn[]):
+      tooltipColumns: vz_chart_helpers.TooltipColumn[]):
       Plottable.Components.Group {
     let pi = new Plottable.Interactions.Pointer();
     pi.attachTo(plot);
-    // PointsComponent is a Plottable Component that will hold the little
-    // circles we draw over the closest data points
+    // vz_chart_helpers.PointsComponent is a Plottable Component that will
+    // hold the little circles we draw over the closest data points
     let pointsComponent = new Plottable.Component();
     let group = new Plottable.Components.Group([plot, pointsComponent]);
 
@@ -833,7 +838,7 @@ class LineChart {
       if (!enabled) {
         return;
       }
-      let target: Point = {
+      let target: vz_chart_helpers.Point = {
         x: p.x,
         y: p.y,
         datum: null,
@@ -859,10 +864,10 @@ class LineChart {
       let ptsSelection: any =
           pointsComponent.content().selectAll('.point').data(
               ptsToCircle,
-              (p: Point) => p.dataset.metadata().name);
+              (p: vz_chart_helpers.Point) => p.dataset.metadata().name);
       if (pts.length !== 0) {
         ptsSelection.enter().append('circle').classed('point', true);
-        ptsSelection.attr('r', TOOLTIP_CIRCLE_SIZE)
+        ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
             .attr('cx', (p) => p.x)
             .attr('cy', (p) => p.y)
             .style('stroke', 'none')
@@ -882,15 +887,15 @@ class LineChart {
   }
 
   private drawTooltips(
-      points: Point[],
-      target: Point,
-      tooltipColumns: TooltipColumn[]) {
+      points: vz_chart_helpers.Point[],
+      target: vz_chart_helpers.Point,
+      tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
     // Formatters for value, step, and wall_time
     this.scatterPlot.attr('opacity', 0);
-    let valueFormatter = multiscaleFormatter(
-        Y_TOOLTIP_FORMATTER_PRECISION);
+    let valueFormatter = vz_chart_helpers.multiscaleFormatter(
+        vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
 
-    let dist = (p: Point) =>
+    let dist = (p: vz_chart_helpers.Point) =>
         Math.pow(p.x - target.x, 2) + Math.pow(p.y - target.y, 2);
     let closestDist = _.min(points.map(dist));
 
@@ -966,7 +971,7 @@ class LineChart {
       left = Math.min(parentRect.width, left);
     } else {  // 'bottom'
       left = Math.min(0, left);
-      top = parentRect.height + TOOLTIP_Y_PIXEL_OFFSET;
+      top = parentRect.height + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
     }
 
     this.tooltip.style('transform', 'translate(' + left + 'px,' + top + 'px)');
@@ -974,9 +979,9 @@ class LineChart {
   }
 
   private findClosestPoint(
-      target: Point,
-      dataset: Plottable.Dataset): Point {
-    let points: Point[] = dataset.data().map((d, i) => {
+      target: vz_chart_helpers.Point,
+      dataset: Plottable.Dataset): vz_chart_helpers.Point {
+    let points: vz_chart_helpers.Point[] = dataset.data().map((d, i) => {
       let x = this.xAccessor(d, i, dataset);
       let y = this.smoothingEnabled ? this.smoothedAccessor(d, i, dataset) :
                                       this.yValueAccessor(d, i, dataset);
@@ -988,7 +993,7 @@ class LineChart {
       };
     });
     let idx: number =
-        _.sortedIndex(points, target, (p: Point) => p.x);
+        _.sortedIndex(points, target, (p: vz_chart_helpers.Point) => p.x);
     if (idx === points.length) {
       return points[points.length - 1];
     } else if (idx === 0) {
@@ -1100,7 +1105,7 @@ class LineChart {
   /**
    * Set the data of a series on the chart.
    */
-  public setSeriesData(name: string, data: ScalarDatum[]) {
+  public setSeriesData(name: string, data:  vz_chart_helpers.ScalarDatum[]) {
     this.getDataset(name).data(data);
   }
 

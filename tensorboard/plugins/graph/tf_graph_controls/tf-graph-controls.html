@@ -200,6 +200,15 @@ svg.icon {
   stroke: var(--tb-graph-faded);
 }
 
+#unfilled-rect {
+  stroke: #a6a6a6;
+}
+
+.devices-checkbox input {
+  text-align: left;
+  vertical-align: middle
+}
+
 .button-text {
   text-transform: none;
   padding: 8px 18px 0 18px;
@@ -282,6 +291,10 @@ table.tf-graph-controls td.input-element-table-data {
             xlink:href="#legend-rect"/>
      </g>
      <g id="faded-rect">
+       <use xmlns:xlink="http://www.w3.org/1999/xlink"
+            xlink:href="#legend-rect"/>
+     </g>
+     <g id="unfilled-rect">
        <use xmlns:xlink="http://www.w3.org/1999/xlink"
             xlink:href="#legend-rect"/>
      </g>
@@ -412,24 +425,16 @@ table.tf-graph-controls td.input-element-table-data {
       <br style="clear: both">
       <div>Devices included in stats:</div>
       <div class="deviceList">
-        <table>
-        <template is="dom-repeat" items="[[_getDevices(devicesForStats)]]">
-          <tr>
-            <td>
-              <input type="checkbox" value$="[[item.device]]" checked$="[[item.used]]" on-click="_deviceCheckboxClicked"/>
-            </td>
-            <td>
-              <div>
-                <span>[[item.suffix]]</span>
-                <template is="dom-if" if="[[item.ignoredMsg]]">
-                  <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-                  <paper-tooltip position="right" animation-delay="0">[[item.ignoredMsg]]</paper-tooltip>
-                </template>
-              </div>
-            </td>
-          </tr>
+        <template is="dom-repeat" items="[[_currentDevices]]">
+          <div class="color-legend-row devices-checkbox">
+            <span><input type="checkbox" value$="[[item.device]]" checked$="[[item.used]]" on-click="_deviceCheckboxClicked"/></span>
+            <span>[[item.suffix]]</span>
+            <template is="dom-if" if="[[item.ignoredMsg]]">
+              <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+              <paper-tooltip position="right" animation-delay="0">[[item.ignoredMsg]]</paper-tooltip>
+            </template>
+          </div>
         </template>
-        </table>
       </div>
     </template>
     <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
@@ -450,22 +455,16 @@ table.tf-graph-controls td.input-element-table-data {
       </div>
     </template>
     <template is="dom-if" if="[[_equals(colorBy, 'device')]]">
-      <div class="color-text">
-        <div class="deviceList">
-          <table>
-          <template is="dom-repeat" items="[[colorByParams.device]]">
-            <tr>
-              <td style$="[[_getBackgroundColor(item.color)]]">
-                <div class="colorBox"></div>
-              </td>
-              <td>
-                <div>[[item.device]]</div>
-              </td>
-            </tr>
-          </template>
-          </table>
-        </div>
-        <br/>
+      <div>
+        <template is="dom-repeat" items="[[_currentDeviceParams]]">
+          <div class="color-legend-row">
+            <svg>
+              <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                   xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+            </svg>
+            <span class="color-legend-value">[[item.device]]</span>
+          </div>
+        </template>
         <div class="color-legend-row">
           <svg>
             <use xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -479,7 +478,7 @@ table.tf-graph-controls td.input-element-table-data {
       <div class="color-text">
         <div class="xlaClusterList">
           <table>
-          <template is="dom-repeat" items="[[colorByParams.xla_cluster]]">
+          <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
             <tr>
               <td style$="[[_getBackgroundColor(item.color)]]">
                 <div class="colorBox"></div>
@@ -730,14 +729,24 @@ table.tf-graph-controls td.input-element-table-data {
 <script>
 (function() { // Private scope.
 /**
- * Stats from device names that match these regexes will be excluded by default.
+ * Display only devices matching one of the following regex.
+ */
+var DEVICE_NAMES_INCLUDE = [
+  {
+    // Don't include GPU stream, memcpy, etc. devices
+    regex: /device:[^:]+:[0-9]+$/,
+  }
+];
+
+/**
+ * Stats from device names that match these regexes will be disabled by default.
  * The user can still turn on a device by selecting the checkbox in the device list.
  */
-var DEVICE_NAMES_EXCLUDE = [
-  {
-    regex: /gpu:[0-9]+$/,
-    msg: 'Excluded by default since this is a CPU thread setting up GPU kernels.'
-  }
+var DEVICE_STATS_DEFAULT_OFF = [
+//  {
+//    regex: //,
+//    msg: 'Excluded by default since...'
+//  }
 ];
 
 Polymer({
@@ -761,7 +770,11 @@ Polymer({
       notify: true,
       readonly: true
     },
-    colorByParams: Object,
+    colorByParams: {
+      type: Object,
+      notify: true,
+      readonly: true,
+    },
     datasets: {
       type: Array,
       observer: '_datasetsChanged'
@@ -788,6 +801,18 @@ Polymer({
       type: Number,
       notify: true,
       value: -1
+    },
+    _currentDevices: {
+      type: Array,
+      computed: '_getCurrentDevices(devicesForStats)'
+    },
+    _currentDeviceParams: {
+      type: Array,
+      computed: '_getCurrentDeviceParams(colorByParams)'
+    },
+    _currentXlaClusterParams: {
+      type: Array,
+      computed: '_getCurrentXlaClusterParams(colorByParams)'
     },
     _currentGradientParams: {
       type: Object,
@@ -833,26 +858,41 @@ Polymer({
     }
     var devicesForStats = {};
     var devices = _.each(stats.dev_stats, function(d) {
-      // Avoid device names that are ignored by default.
-      var exclude = _.some(DEVICE_NAMES_EXCLUDE, function(rule) {
+      // Only considered included devices.
+      var include = _.some(DEVICE_NAMES_INCLUDE, function(rule) {
         return rule.regex.test(d.device);
       });
-      if (!exclude) {
+      // Exclude device names that are ignored by default.
+      var exclude = _.some(DEVICE_STATS_DEFAULT_OFF, function(rule) {
+        return rule.regex.test(d.device);
+      });
+      if (include && !exclude) {
         devicesForStats[d.device] = true;
       }
     });
     this.set('devicesForStats', devicesForStats);
   },
-  _getDevices: function(devicesForStats) {
-    var devices = _.map(this.stats.dev_stats, function(d) {
+  _getCurrentDevices: function(devicesForStats) {
+    var all_devices = _.map(this.stats && this.stats.dev_stats, function(d) {
       return d.device;
+    });
+    var devices = _.filter(all_devices, function(d) {
+      return _.some(DEVICE_NAMES_INCLUDE, function(rule) {
+        return rule.regex.test(d);
+      });
     });
     // Devices names can be long so we remove the longest common prefix
     // before showing the devices in a list.
     var suffixes = tf.graph.util.removeCommonPrefix(devices);
+    if (suffixes.length == 1) {
+      var found = suffixes[0].match(/device:([^:]+:[0-9]+)$/);
+      if (found) {
+        suffixes[0] = found[1];
+      }
+    }
     return _.map(devices, function(device, i) {
       var ignoredMsg = null;
-      _.each(DEVICE_NAMES_EXCLUDE, function(rule) {
+      _.each(DEVICE_STATS_DEFAULT_OFF, function(rule) {
         if (rule.regex.test(device)) {
           ignoredMsg = rule.msg;
         }
@@ -891,6 +931,29 @@ Polymer({
   },
   _equals: function(a, b) {
     return a === b;
+  },
+  _getCurrentDeviceParams: function(colorByParams) {
+    var deviceParams = _.filter(colorByParams.device, function(param) {
+      return _.some(DEVICE_NAMES_INCLUDE, function(rule) {
+        return rule.regex.test(param.device);
+      });
+    });
+    // Remove common prefix and merge back corresponding color. If
+    // there is only one device then remove everything up to "/device:".
+    var suffixes = tf.graph.util.removeCommonPrefix(
+            _.map(deviceParams, function(d) { return d.device; }));
+    if (suffixes.length == 1) {
+      var found = suffixes[0].match(/device:([^:]+:[0-9]+)$/);
+      if (found) {
+        suffixes[0] = found[1];
+      }
+    }
+    return _.map(deviceParams, function(d, i) {
+      return { device : suffixes[i], color : d.color };
+    });
+  },
+  _getCurrentXlaClusterParams: function(colorByParams) {
+    return colorByParams.xla_cluster;
   },
   _getCurrentGradientParams: function(colorByParams, colorBy) {
     if (!this._isGradientColoring(this.stats, colorBy)) {

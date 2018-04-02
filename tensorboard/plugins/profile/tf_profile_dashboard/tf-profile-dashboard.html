@@ -23,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
+<link rel="import" href="../tf-overview-page/overview-page.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
@@ -40,7 +41,25 @@ profile run can have multiple tools that present the performance profile as diff
 <template is="dom-if" if="[[_dataNotFound]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No profile data was found.</h3>
-    <p>The dashboard is internal only; coming soon!</p>
+    <p>To collect a profile, you need to run your model on Google Cloud TPUs and
+    capture the trace information while your model is running. You may want to
+    check out the
+    <a href="https://github.com/tensorflow/tensorboard/blob/1.6/tensorboard/plugins/profile/README.md">README</a>
+    and perhaps the
+    <a
+     href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
+    >tutorial</a> on how to use the
+    <a href="https://pypi.python.org/pypi/cloud-tpu-profiler">cloud-tpu-profiler</a>.
+    </p>
+    <p>
+    If you’re new to TPUs, and want to find out how
+    to run models, check out the
+    <a href="https://cloud.google.com/tpu/docs/quickstart">Quickstart Using a TPU</a>.
+    </p>
+    <p>
+    If you think profiling is done properly, please see the page of
+    <a href="https://cloud.google.com/tpu/docs/troubleshooting">Google Cloud TPU Troubleshooting and FAQ</a>
+    and consider filing an issue on GitHub.</p>
   </div>
 </template>
 <template is="dom-if" if="[[!_dataNotFound]]">
@@ -89,6 +108,10 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'input_pipeline_analyzer')]]" restamp="true">
       <input-pipeline-analyzer run="[[_getSelectedDataset(_datasets, currentSelected)]]">
       </input-pipeline-analyzer>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'overview_page')]]">
+      <overview-page run="[[_getSelectedDataset(_datasets, currentSelected)]]">
+      </overview-page>
     </template>
   </div>
   </tf-dashboard-layout>

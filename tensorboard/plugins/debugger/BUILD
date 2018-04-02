@@ -42,6 +42,7 @@ py_library(
     srcs = ["tensor_helper.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":health_pill_calc",
         "//tensorboard:util",
         "//tensorboard:expect_numpy_installed"
     ],
@@ -57,6 +58,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/beholder:im_util",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -169,6 +171,29 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
+
+py_library(
+    name = "health_pill_calc",
+    srcs = ["health_pill_calc.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+    ],
+)
+
+py_test(
+    name = "health_pill_calc_test",
+    size = "small",
+    srcs = ["health_pill_calc_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":health_pill_calc",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 
 py_library(
     name = "debugger_server_lib",

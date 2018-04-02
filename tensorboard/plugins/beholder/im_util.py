@@ -22,7 +22,7 @@ import threading
 import numpy as np
 import tensorflow as tf
 
-from tensorboard.plugins.beholder.file_system_tools import resources_path
+from tensorboard.plugins.beholder import colormaps
 
 
 # pylint: disable=not-context-manager
@@ -78,36 +78,13 @@ def pad_to_shape(array, shape, constant=245):
 
   return np.pad(array, padding, mode='constant', constant_values=constant)
 
-# New matplotlib colormaps by Nathaniel J. Smith, Stefan van der Walt,
-# and (in the case of viridis) Eric Firing.
-#
-# This file and the colormaps in it are released under the CC0 license /
-# public domain dedication. We would appreciate credit if you use or
-# redistribute these colormaps, but do not impose any legal restrictions.
-#
-# To the extent possible under law, the persons who associated CC0 with
-# mpl-colormaps have waived all copyright and related or neighboring rights
-# to mpl-colormaps.
-#
-# You should have received a copy of the CC0 legalcode along with this
-# work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-colormaps = np.load('{}/colormaps.npy'.format(resources_path()))
-magma_data, inferno_data, plasma_data, viridis_data = colormaps
-
 
 def apply_colormap(image, colormap='magma'):
   if colormap == 'grayscale':
     return image
+  cm = getattr(colormaps, colormap)
+  return image if cm is None else cm[image]
 
-  data_map = {
-      'magma': magma_data,
-      'inferno': inferno_data,
-      'plasma': plasma_data,
-      'viridis': viridis_data,
-  }
-
-  colormap_data = data_map[colormap]
-  return (colormap_data[image]*255).astype(np.uint8)
 
 # Taken from https://github.com/tensorflow/tensorboard/blob/
 #            /28f58888ebb22e2db0f4f1f60cd96138ef72b2ef/tensorboard/util.py

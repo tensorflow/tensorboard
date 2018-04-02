@@ -21,6 +21,7 @@ from __future__ import print_function
 import base64
 
 import numpy as np
+import six
 import tensorflow as tf
 
 from tensorboard.plugins.beholder import im_util
@@ -70,6 +71,63 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertEqual((5, 8), shape)
     decoded_x = im_util.decode_png(base64.b64decode(data))
     self.assertEqual((5, 8, 3), decoded_x.shape)
+    self.assertEqual(np.uint8, decoded_x.dtype)
+    self.assertAllClose(np.zeros([5, 8, 3]), decoded_x)
+
+  def testImagePngMappingWorksForArrayWithOnlyOneElement(self):
+    x = np.array([[-42]], dtype=np.int16)
+    dtype, shape, data = tensor_helper.array_view(x, mapping="image/png")
+    self.assertEqual("int16", dtype)
+    self.assertEqual((1, 1), shape)
+    decoded_x = im_util.decode_png(base64.b64decode(data))
+    self.assertEqual((1, 1, 3), decoded_x.shape)
+    self.assertEqual(np.uint8, decoded_x.dtype)
+    self.assertAllClose(np.zeros([1, 1, 3]), decoded_x)
+
+  def testImagePngMappingWorksForArrayWithInfAndNaN(self):
+    x = np.array([[1.1, 2.2, np.inf], [-np.inf, 3.3, np.nan]], dtype=np.float32)
+    dtype, shape, data = tensor_helper.array_view(x, mapping="image/png")
+    self.assertEqual("float32", dtype)
+    self.assertEqual((2, 3), shape)
+    decoded_x = im_util.decode_png(base64.b64decode(data))
+    self.assertEqual((2, 3, 3), decoded_x.shape)
+    self.assertEqual(np.uint8, decoded_x.dtype)
+    self.assertAllClose([0, 0, 0], decoded_x[0, 0, :])  # 1.1.
+    self.assertAllClose([127, 127, 127], decoded_x[0, 1, :])  # 2.2.
+    self.assertAllClose(tensor_helper.POSITIVE_INFINITY_RGB,
+                        decoded_x[0, 2, :])  # +infinity.
+    self.assertAllClose(tensor_helper.NEGATIVE_INFINITY_RGB,
+                        decoded_x[1, 0, :])  # -infinity.
+    self.assertAllClose([255, 255, 255], decoded_x[1, 1, :])  # 3.3.
+    self.assertAllClose(tensor_helper.NAN_RGB, decoded_x[1, 2, :])  # nan.
+
+  def testImagePngMappingWorksForArrayWithOnlyInfAndNaN(self):
+    x = np.array([[np.nan, -np.inf], [np.inf, np.nan]], dtype=np.float32)
+    dtype, shape, data = tensor_helper.array_view(x, mapping="image/png")
+    self.assertEqual("float32", dtype)
+    self.assertEqual((2, 2), shape)
+    decoded_x = im_util.decode_png(base64.b64decode(data))
+    self.assertEqual((2, 2, 3), decoded_x.shape)
+    self.assertEqual(np.uint8, decoded_x.dtype)
+    self.assertAllClose(tensor_helper.NAN_RGB, decoded_x[0, 0, :])  # nan.
+    self.assertAllClose(tensor_helper.NEGATIVE_INFINITY_RGB,
+                        decoded_x[0, 1, :])  # -infinity.
+    self.assertAllClose(tensor_helper.POSITIVE_INFINITY_RGB,
+                        decoded_x[1, 0, :])  # +infinity.
+    self.assertAllClose(tensor_helper.NAN_RGB, decoded_x[1, 1, :])  # nan.
+
+  def testImagePngMappingRaisesExceptionForEmptyArray(self):
+    x = np.zeros([0, 0])
+    with six.assertRaisesRegex(
+        self, ValueError, r"Cannot encode an empty array .* \(0, 0\)"):
+      tensor_helper.array_view(x, mapping="image/png")
+
+  def testImagePngMappingRaisesExceptionForNonRank2Array(self):
+    x = np.ones([2, 2, 2])
+    with six.assertRaisesRegex(
+        self, ValueError, r"Expected rank-2 array; received rank-3 array"):
+      tensor_helper.array_to_base64_png(x)
+
 
 class ArrayToBase64PNGTest(tf.test.TestCase):
 

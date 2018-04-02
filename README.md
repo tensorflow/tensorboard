@@ -1,4 +1,4 @@
-# TensorBoard ![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)
+# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/)
 
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
@@ -287,7 +287,7 @@ with itself, there are a few possible explanations.
 * You may have multiple execution of TensorFlow that all wrote to the same log
 directory. Please have each TensorFlow run write to its own logdir.
 
-* You may have a have a bug in your code where the global_step variable (passed
+* You may have a bug in your code where the global_step variable (passed
 to `FileWriter.add_summary`) is being maintained incorrectly.
 
 * It may be that your TensorFlow job crashed, and was restarted from an earlier
@@ -325,11 +325,18 @@ If you need access to the full dataset, you can read the event files that
 TensorBoard consumes by using the [`summary_iterator`](https://github.com/tensorflow/tensorflow/blob/e7f333b5f8b3c53b21d149d8d14c0cebbde431aa/tensorflow/python/summary/summary_iterator.py#L313)
 method.
 
+### Can I customize which lines appear in a plot?
 
-### Can I overlap multiple plots?
+Using the [custom scalars plugin](tensorboard/plugins/custom_scalar), you can
+create scalar plots with lines for custom run-tag pairs. However, within the
+original scalars dashboard, each scalar plot corresponds to data for a specific
+tag and contains lines for each run that includes that tag.
 
-Right now, you can overlap plots only if they are from different runs, and both
-have the same tag name.
+### Can I visualize margins above and below lines?
+
+Margin plots (that visualize lower and upper bounds) may be created with the
+[custom scalars plugin](tensorboard/plugins/custom_scalar). The original
+scalars plugin does not support visualizing margins.
 
 ### Can I create scatterplots (or other custom plots)?
 

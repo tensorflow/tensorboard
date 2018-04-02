@@ -44,9 +44,14 @@ _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
     'trace_viewer': 'trace',
     'op_profile': 'op_profile.json',
-    'input_pipeline_analyzer': 'input_pipeline.json'
+    'input_pipeline_analyzer': 'input_pipeline.json',
+    'overview_page': 'overview_page.json',
 }
 
+# Tools that consume raw data.
+_RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
+                             'op_profile',
+                             'overview_page'])
 
 def process_raw_trace(raw_trace):
   """Processes raw trace data and returns the UI data."""
@@ -158,7 +163,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return None
     if tool == 'trace_viewer':
       return process_raw_trace(raw_data)
-    if tool == 'op_profile' or tool == 'input_pipeline_analyzer':
+    if tool in _RAW_DATA_TOOLS:
       return raw_data
     return None
 

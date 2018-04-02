@@ -1,5 +1,5 @@
 # Description:
-#  Tools for building the TensorFlow pip package.
+#  Tools for building the TensorBoard pip package.
 
 package(default_visibility = ["//visibility:private"])
 
@@ -14,8 +14,10 @@ sh_binary(
         "README.rst",
         "setup.cfg",
         "setup.py",
-        "//tensorboard",
-        "//tensorboard:lib",
-        "//tensorboard:version",
+        "//tensorboard",  # Main tensorboard binary and everything it uses
+        "//tensorboard:lib",  # User-facing overall TensorBoard API
+        "//tensorboard:version",  # Version module (read by setup.py)
+        "//tensorboard/plugins/beholder",  # User-facing beholder API
+        "//tensorboard/plugins/projector",  # User-facing projector API
     ],
 )

@@ -278,11 +278,11 @@ class PrCurvesPluginTest(tf.test.TestCase):
     for a certain run-tag combination.
     """
     with six.assertRaisesRegex(
-        self, ValueError, r'No PR curves could be fetched'):
+        self, ValueError, r'No PR curves could be found'):
       self.plugin.pr_curves_impl(['colors'], 'non_existent_tag')
 
     with six.assertRaisesRegex(
-        self, ValueError, r'No PR curves could be fetched'):
+        self, ValueError, r'No PR curves could be found'):
       self.plugin.pr_curves_impl(['non_existent_run'], 'blue/pr_curves')
 
   def testPluginIsNotActive(self):

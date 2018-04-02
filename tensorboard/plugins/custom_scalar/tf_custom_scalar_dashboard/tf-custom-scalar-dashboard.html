@@ -189,8 +189,6 @@ writer.add_summary(layout_summary)
                     runs="[[_selectedRuns]]"
                     title="[[chart.title]]"
                     x-type="[[_xType]]"
-                    smoothing-enabled="[[_smoothingEnabled]]"
-                    smoothing-weight="[[_smoothingWeight]]"
                     tooltip-sorting-method="[[tooltipSortingMethod]]"
                     ignore-y-outliers="[[ignoreYOutliers]]"
                     show-download-links="[[_showDownloadLinks]]"
@@ -207,6 +205,7 @@ writer.add_summary(layout_summary)
     <style include="dashboard-style"></style>
     <style>
       .center {
+        font-size: 14px;
         height: 100%;
         padding: 10px 20px;
         box-sizing: border-box;
@@ -260,15 +259,16 @@ writer.add_summary(layout_summary)
               {defaultValue: false, useLocalStorage: true}),
           observer: '_showDownloadLinksObserver',
         },
+        // Note that smoothing does not apply to margin charts.
+        _smoothingEnabled: {
+          type: Boolean,
+          computed: '_computeSmoothingEnabled(_smoothingWeight)',
+        },
         _smoothingWeight: {
           type: Number,
           notify: true,
           value: tf_storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
           observer: '_smoothingWeightObserver',
-        },
-        _smoothingEnabled: {
-          type: Boolean,
-          computed: '_computeSmoothingEnabled(_smoothingWeight)',
         },
         _ignoreYOutliers: {
           type: Boolean,

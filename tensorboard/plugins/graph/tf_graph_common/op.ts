@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 module tf.graph.op {
-
   /**
    * Whitelist of current Tensorflow ops valid on the TPU
    */
@@ -143,11 +142,14 @@ module tf.graph.op {
     'MatMul',
     'MatrixDiag',
     'MatrixDiagPart',
+    'MatrixTriangularSolve',
     'Max',
     'MaxPool',
     'MaxPool3D',
     'MaxPool3DGrad',
     'MaxPoolGrad',
+    'MaxPoolGradV2',
+    'MaxPoolV2',
     'Maximum',
     'Mean',
     'Min',
@@ -185,7 +187,7 @@ module tf.graph.op {
     'RealDiv',
     'Reciprocal',
     'ReciprocalGrad',
-    'RecvBarnaCoreActivations',
+    'RecvTPUEmbeddingActivations',
     'Relu',
     'Relu6',
     'Relu6Grad',
@@ -203,6 +205,7 @@ module tf.graph.op {
     'ResourceGather',
     'ResourceStridedSliceAssign',
     'Reverse',
+    'ReverseSequence',
     'ReverseV2',
     'RightShift',
     'Rint',
@@ -212,7 +215,7 @@ module tf.graph.op {
     'Select',
     'Selu',
     'SeluGrad',
-    'SendBarnaCoreGradients',
+    'SendTPUEmbeddingGradients',
     'Shape',
     'ShapeN',
     'Sigmoid',
@@ -280,12 +283,11 @@ module tf.graph.op {
     'XlaIf',
     'XlaWhile',
     'ZerosLike',
-    // Ops below are whitelisted, although these technically run on the CPU.
-    // Separating these to indicate that these are manually added, as opposed to
-    // those above that are gleaned from the op registry.
-    'Placeholder',
-    'VarHandleOp',
-    // Control flow ops, trivially valid.
+    
+    // Ops below are manually whitelisted and should not be evaluated for
+    // compatibility for various reasons.
+
+    // Control flow ops.
     'Enter',
     'Exit',
     'LoopCond',
@@ -301,23 +303,66 @@ module tf.graph.op {
     // Distributed TPU ops.
     'TPUReplicatedInput',
     'TPUReplicatedOutput',
-    'TPUReplicateMetadata'
+    'TPUReplicateMetadata',
+    // Checkpointing ops.
+    'MergeV2Checkpoints',
+    'RestoreV2',
+    'SaveV2',
+    // Miscellaneous CPU ops.
+    'Abort',
+    'Assert',
+    'Assign',
+    'Placeholder',
+    'PlaceholderV2',
+    'ShardedFilename',
+    'StringJoin',
+    'Variable',
+    'VariableV2',
+    'VarHandleOp',
+    // Summary ops.
+    'AudioSummary',
+    'AudioSummaryV2',
+    'DebugNumericSummary',
+    'HistogramSummary',
+    'ImageSummary',
+    'MergeSummary',
+    'ScalarSummary',
+    'StatsAggregatorSummary',
   ];
+
+  /**
+   * Returns true if the node's inferred device is not the TPU.
+   * Note that this is only a best-effort check.
+   */
+  export function isNotTpuOp(opDevice: string): boolean {
+    if (opDevice.toLowerCase().search('cpu:') != -1) {
+      return true;
+    }
+    if (opDevice.toLowerCase().search('gpu:') != -1) {
+      return true;
+    }
+    return (opDevice.toLowerCase().search('tpu') == -1);
+  }
 
   /**
    * Returns true if OpNode graph object represents a
    * Tensorflow operation that is valid for the TPU.
-   *
-   * @param opNode OpNode graph object
-   * @returns {boolean}
    */
-  export function opValid(opNode: OpNode) : boolean {
-    // If assigned a device, and it is not the TPU, assume op is valid.
-    if (opNode.device && opNode.device.toLowerCase().search("tpu") == -1) {
+  export function opValid(opNode: OpNode): boolean {
+    // Function library nodes are generally for internal use.
+    if (opNode.name.search(FUNCTION_LIBRARY_NODE_PREFIX) == 0) {
+      return true;
+    }
+    // Nodes that lack op types should be ignored.
+    if (!opNode.op) {
+      return true;
+    }
+    // If assigned a device that is not TPU-related assume op is valid.
+    if (opNode.device && isNotTpuOp(opNode.device)) {
       return true;
     }
     // If assigned to the TPU_SYSTEM device, assume op is valid.
-    if (opNode.device && opNode.device.search("TPU_SYSTEM") != -1) {
+    if (opNode.device && opNode.device.search('TPU_SYSTEM') != -1) {
       return true;
     }
     return WHITELIST.indexOf(opNode.op) != -1;
@@ -336,4 +381,4 @@ module tf.graph.op {
     });
   }
 
-} // close module tf.graph.op
+}  // close module tf.graph.op

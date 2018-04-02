@@ -30,31 +30,6 @@ def tensorboard_workspace():
   tensorboard_typings_workspace()
   tensorboard_js_workspace()
 
-  native.http_archive(
-      name = "protobuf",
-      urls = [
-          "http://mirror.bazel.build/github.com/google/protobuf/archive/v3.4.1.tar.gz",
-          "https://github.com/google/protobuf/archive/v3.4.1.tar.gz",
-      ],
-      sha256 = "8e0236242106e680b4f9f576cc44b8cd711e948b20a9fc07769b0a20ceab9cc4",
-      strip_prefix = "protobuf-3.4.1",
-      # TODO: remove patching when tensorflow stops linking same protos into
-      #       multiple shared libraries loaded in runtime by python.
-      #       This patch fixes a runtime crash when tensorflow is compiled
-      #       with clang -O2 on Linux (see https://github.com/tensorflow/tensorflow/issues/8394)
-      # patch_file = str(Label("//third_party/protobuf:add_noinlines.patch")),
-  )
-
-  # We need to import the protobuf library under the names com_google_protobuf
-  # and com_google_protobuf_cc to enable proto_library support in bazel.
-  # Unfortunately there is no way to alias http_archives at the moment.
-  native.http_archive(
-      name = "com_google_protobuf",
-      urls = ["https://mirror.bazel.build/github.com/google/protobuf/archive/0b059a3d8a8f8aa40dde7bea55edca4ec5dfea66.tar.gz"],
-      sha256 = "6d43b9d223ce09e5d4ce8b0060cb8a7513577a35a64c7e3dad10f0703bf3ad93",
-      strip_prefix = "protobuf-0b059a3d8a8f8aa40dde7bea55edca4ec5dfea66",
-  )
-
   # Protobuf's BUILD file depends on //external:six.
   native.bind(
       name = "six",

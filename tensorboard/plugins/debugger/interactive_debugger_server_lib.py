@@ -30,6 +30,7 @@ from six.moves import queue
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 from tensorflow.core.debug import debug_service_pb2
+from tensorflow.python.debug.lib import debug_data
 from tensorflow.python.debug.lib import grpc_debug_server
 
 from tensorboard.plugins.debugger import comm_channel as comm_channel_lib
@@ -59,6 +60,11 @@ def _comm_metadata(run_key, timestamp):
   }
 
 
+UNINITIALIZED_TAG = 'Uninitialized'
+UNSUPPORTED_TAG = 'Unsupported'
+NA_TAG = 'N/A'
+
+
 def _comm_tensor_data(device_name,
                       node_name,
                       maybe_base_expanded_node_name,
@@ -83,15 +89,23 @@ def _comm_tensor_data(device_name,
   output_slot = int(output_slot)
   tf.logging.info(
       'Recording tensor value: %s, %d, %s', node_name, output_slot, debug_op)
-  tensor_dtype = str(tensor_value.dtype)
-  tensor_shape = tensor_value.shape
-  # The /comm endpoint should respond with tensor values only if the tensor is
-  # small enough. Otherwise, the detailed values sould be queried through a
-  # dedicated tensor_data that supports slicing.
-  if tensor_helper.numel(tensor_shape) < 5:
-    _, _, tensor_values = tensor_helper.array_view(tensor_value)
+  tensor_values = None
+  if isinstance(tensor_value, debug_data.InconvertibleTensorProto):
+    if not tensor_value.initialized:
+      tensor_dtype = UNINITIALIZED_TAG
+      tensor_shape = UNINITIALIZED_TAG
+    else:
+      tensor_dtype = UNSUPPORTED_TAG
+      tensor_dtype = UNSUPPORTED_TAG
+    tensor_values = NA_TAG
   else:
-    tensor_values = None
+    tensor_dtype = str(tensor_value.dtype)
+    tensor_shape = tensor_value.shape
+    # The /comm endpoint should respond with tensor values only if the tensor is
+    # small enough. Otherwise, the detailed values sould be queried through a
+    # dedicated tensor_data that supports slicing.
+    if tensor_helper.numel(tensor_shape) < 5:
+      _, _, tensor_values = tensor_helper.array_view(tensor_value)
   return {
       'type': 'tensor',
       'timestamp': wall_time,
@@ -278,6 +292,8 @@ class InteractiveDebuggerDataStreamHandler(
     self._incoming_channel.get()
     tf.logging.info('on_core_metadata_event() client ack received (meta).')
 
+    # TODO(cais): If eager mode, this should return something to yield.
+
   def _add_graph_def(self, device_name, graph_def):
     self._run_states.add_graph(
         self._run_key, device_name,
@@ -325,7 +341,7 @@ class InteractiveDebuggerDataStreamHandler(
     # The node name property in the event proto is actually a watch key, which
     # is a concatenation of several pieces of data.
     watch_key = event.summary.value[0].node_name
-    tensor_value = tf.make_ndarray(event.summary.value[0].tensor)
+    tensor_value = debug_data.load_tensor_from_event(event)
     device_name = _extract_device_name_from_event(event)
     node_name, output_slot, debug_op = (
         event.summary.value[0].node_name.split(':'))
@@ -394,7 +410,7 @@ class SourceManager(object):
 
   def get_paths(self):
     """Get the paths to all available source files."""
-    return self._source_file_content.keys()
+    return list(self._source_file_content.keys())
 
   def get_content(self, file_path):
     """Get the content of a source file.
@@ -498,15 +514,6 @@ class InteractiveDebuggerDataServer(
         self._tensor_store)
     grpc_debug_server.EventListenerBaseServicer.__init__(
         self, receive_port, curried_handler_constructor)
-
-  def start_the_debugger_data_receiving_server(self):
-    """Starts the HTTP server for receiving health pills at `receive_port`.
-
-    After this method is called, health pills issued to host:receive_port
-    will be stored by this object. Calling this method also creates a file
-    within the log directory for storing health pill summary events.
-    """
-    self.run_server()
 
   def SendTracebacks(self, request, context):
     self._source_manager.add_graph_traceback(request.graph_version,

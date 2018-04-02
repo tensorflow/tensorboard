@@ -66,6 +66,7 @@ py_library(
     deps = [
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/beholder:beholder_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
         "//tensorboard/plugins/debugger:debugger_plugin_loader",
