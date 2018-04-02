@@ -23,9 +23,9 @@ from __future__ import print_function
 import logging
 import os
 import grpc
-import tensorflow as tf
 from werkzeug import wrappers
 
+import tensorflow as tf
 from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
 from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc
 
