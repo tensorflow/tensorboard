@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import logging
 import os
+import grpc
 import tensorflow as tf
 from werkzeug import wrappers
 
@@ -30,6 +31,8 @@ from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
+from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
+from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -77,6 +80,21 @@ class ProfilePlugin(base_plugin.TBPlugin):
     self.logdir = context.logdir
     self.plugin_logdir = plugin_asset_util.PluginDirectory(
         self.logdir, ProfilePlugin.plugin_name)
+
+    # We will enable streaming trace viewer on two conditions:
+    # 1. user export os variable MASTER_TPU=xxx.xxx.xxx.xxx as "master" TPU
+    #    ip address.
+    # 2. the logdir is on google cloud storage.
+    self.stub = None
+    if 'MASTER_TPU' in os.environ and self.logdir.startswith('gs://'):
+      master_tpu = os.environ['MASTER_TPU']
+      # Workaround the grpc's 4MB message limitation.
+      gigabyte = 1024 * 1024 * 1024
+      options = [('grpc.max_message_length', gigabyte),
+                 ('grpc.max_send_message_length', gigabyte),
+                 ('grpc.max_receive_message_length', gigabyte)]
+      channel = grpc.insecure_channel(master_tpu + ':8466', options)
+      self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(channel)
 
   @wrappers.Request.application
   def logdir_route(self, request):
@@ -131,6 +149,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
         continue
       run_to_tools[run] = []
       for tool in TOOLS:
+<<<<<<< HEAD
         tool_pattern = '*' + TOOLS[tool]
         path = os.path.join(run_dir, tool_pattern)
         try:
@@ -140,6 +159,20 @@ class ProfilePlugin(base_plugin.TBPlugin):
         except tf.errors.OpError as e:
           logging.warning("Cannot read asset directory: %s, OpError %s",
                           run_dir, e)
+=======
+        tool_filename = TOOLS[tool]
+        if tf.gfile.Exists(os.path.join(run_dir, tool_filename)):
+          run_to_tools[run].append(tool)
+      if self.stub is not None:
+        tracetable_files = tf.gfile.Glob(os.path.join(run_dir, '*.trace_table'))
+        if tracetable_files > 0:
+          # streaming trace viewer always override normal trace viewer.
+          # the trailing '@' is to inform tf-profile-dashboard.html and
+          # tf-trace-viewer.html that stream trace viewer should be used.
+          if 'trace_viewer' in run_to_tools[run]:
+            run_to_tools[run].remove('trace_viewer')
+          run_to_tools[run].append('trace_viewer@')
+>>>>>>> supporting streaming trace viewer in tensorboard.
     return run_to_tools
 
   @wrappers.Request.application
@@ -147,6 +180,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run_to_tools = self.index_impl()
     return http_util.Respond(request, run_to_tools, 'application/json')
 
+<<<<<<< HEAD
   def host_impl(self, run, tool):
     """Returns available hosts for the run and tool in the log directory.
 
@@ -203,23 +237,52 @@ class ProfilePlugin(base_plugin.TBPlugin):
       run: Name of the run.
       tool: Name of the tool.
       host: Name of the host.
+=======
+  def data_impl(self, request):
+    """Retrieves and processes the tool data for a run.
+
+    Args:
+      request: XMLHTTPRequest.
+>>>>>>> supporting streaming trace viewer in tensorboard.
 
     Returns:
       A string that can be served to the frontend tool or None if tool,
         run or host is invalid.
     """
-    # Path relative to the path of plugin directory.
+    run = request.args.get('run')
+    tool = request.args.get('tag')
+
+    if tool == 'trace_viewer@' and self.stub is not None:
+      grpc_request = tpu_profiler_analysis_pb2.ProfileSessionDataRequest()
+      grpc_request.repository_root = self.plugin_logdir
+      grpc_request.session_id = run[:-1]
+      grpc_request.tool_name = 'trace_viewer'
+
+      grpc_request.parameters['resolution'] = request.args.get('resolution')
+      if request.args.get('start_time_ms') is not None:
+        grpc_request.parameters['start_time_ms'] = request.args.get(
+            'start_time_ms')
+      if request.args.get('end_time_ms') is not None:
+        grpc_request.parameters['end_time_ms'] = request.args.get('end_time_ms')
+      grpc_response = self.stub.GetSessionToolData(grpc_request)
+      return grpc_response.output
+
     if tool not in TOOLS:
       return None
+<<<<<<< HEAD
     tool_name = str(host) + TOOLS[tool]
     rel_data_path = os.path.join(run, tool_name)
+=======
+    # Path relative to the path of plugin directory.
+    rel_data_path = os.path.join(run, TOOLS[tool])
+>>>>>>> supporting streaming trace viewer in tensorboard.
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      with tf.gfile.Open(asset_path, "rb") as f:
+      with tf.gfile.Open(asset_path, 'rb') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning("Asset path %s not found", asset_path)
+      logging.warning('Asset path %s not found', asset_path)
     except tf.errors.OpError as e:
       logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
 
@@ -234,6 +297,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def data_route(self, request):
     # params
+<<<<<<< HEAD
     #   run: The run name.
     #   tag: The tool name e.g. trace_viewer. The plugin returns different UI
     #     data for different tools of the same run.
@@ -242,6 +306,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
     tool = request.args.get('tag')
     host = request.args.get('host')
     data = self.data_impl(run, tool, host)
+=======
+    #   request: XMLHTTPRequest.
+    data = self.data_impl(request)
+>>>>>>> supporting streaming trace viewer in tensorboard.
     if data is None:
       return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
     return http_util.Respond(request, data, 'text/plain')
