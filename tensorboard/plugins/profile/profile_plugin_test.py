@@ -94,13 +94,18 @@ class ProfilePluginTest(tf.test.TestCase):
     trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer', 'host0'))
 =======
   def makeRequest(self, run, tag):
-    req = Request({});
+    req = Request({})
     req.args = {'run': run, 'tag': tag}
     return req
 
   def testData(self):
+<<<<<<< HEAD
     trace = json.loads(self.plugin.data_impl(self.makeRequest('foo', 'trace_viewer')))
 >>>>>>> fix test
+=======
+    trace = json.loads(self.plugin.data_impl(
+        self.makeRequest('foo', 'trace_viewer')))
+>>>>>>> fix format
     self.assertEqual(trace,
                      dict(
                          displayTimeUnit='ns',
@@ -120,6 +125,7 @@ class ProfilePluginTest(tf.test.TestCase):
 
     # Invalid tool/run.
 <<<<<<< HEAD
+<<<<<<< HEAD
     self.assertEqual(None, self.plugin.data_impl('foo', 'nonono', 'host0'))
     self.assertEqual(None, self.plugin.data_impl('foo', 'trace_viewer', ''))
     self.assertEqual(None, self.plugin.data_impl('bar', 'unsupported', 'host1'))
@@ -129,6 +135,14 @@ class ProfilePluginTest(tf.test.TestCase):
     self.assertEqual(None, self.plugin.data_impl(self.makeRequest('bar', 'unsupported')))
     self.assertEqual(None, self.plugin.data_impl(self.makeRequest('empty', 'trace_viewer')))
 >>>>>>> fix test
+=======
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('foo', 'nonono')))
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('bar', 'unsupported')))
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('empty', 'trace_viewer')))
+>>>>>>> fix format
 
   def testActive(self):
     self.assertTrue(self.plugin.is_active())
