@@ -17,9 +17,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import os
+import re
 
 import tensorflow as tf
+
+_ESCAPE_GLOB_CHARACTERS_REGEX = re.compile('([*?[])')
 
 
 # TODO(chihuahua): Rename this method to use camel-case for GCS (Gcs).
@@ -54,11 +58,31 @@ def ListDirectoryAbsolute(directory):
           for path in tf.gfile.ListDirectory(directory))
 
 
-def GlobAndListFiles(top):
+def _EscapeGlobCharacters(path):
+  """Escapes the glob characters in a path.
+
+  Python 3 has a glob.escape method, but python 2 lacks it, so we manually
+  implement this method.
+
+  Args:
+    path: The absolute path to escape.
+
+  Returns:
+    The escaped path string.
+  """
+  drive, path = os.path.splitdrive(path)
+  return '%s%s' % (drive, _ESCAPE_GLOB_CHARACTERS_REGEX.sub(r'[\1]', path))
+
+
+def ListRecursivelyViaGlobbing(top):
   """Recursively lists all files within the directory.
 
+  This method does not list subdirectories (in addition to regular files), and
+  the file paths are all absolute. If the directory does not exist, this yields
+  nothing.
+
   This method does so by glob-ing deeper and deeper directories, ie
-  /foo/*, foo/*/*, foo/*/*/* and so on until all files are listed. All file
+  foo/*, foo/*/*, foo/*/*/* and so on until all files are listed. All file
   paths are absolute, and this method lists subdirectories too.
 
   For certain file systems, Globbing via this method may prove
@@ -73,10 +97,11 @@ def GlobAndListFiles(top):
     top: A path to a directory.
 
   Yields:
-    The absolute path of each file.
+    A (dir_path, file_paths) tuple for each directory/subdirectory.
   """
-  current_glob_string = top
+  current_glob_string = os.path.join(_EscapeGlobCharacters(top), '*')
   level = 0
+
   while True:
     tf.logging.info('GlobAndListFiles: Starting to glob level %d', level)
     glob = tf.gfile.Glob(current_glob_string)
@@ -87,22 +112,33 @@ def GlobAndListFiles(top):
       # This subdirectory level lacks files. Terminate.
       return
 
-    for absolute_file_path in glob:
-      yield absolute_file_path
+    # Map subdirectory to a list of files.
+    pairs = collections.defaultdict(list)
+    for file_path in glob:
+      pairs[os.path.dirname(file_path)].append(file_path)
+    for dir_name, file_paths in pairs.items():
+      yield (dir_name, tuple(file_paths))
+
+    if len(pairs) == 1:
+      # If at any point the glob returns files that are all in a single
+      # directory, replace the current globbing path with that directory as the
+      # literal prefix. This should improve efficiency in cases where a single
+      # subdir is significantly deeper than the rest of the sudirs.
+      current_glob_string = os.path.join(pairs.keys()[0], '*')
 
     # Iterate to the next level of subdirectories.
     current_glob_string = os.path.join(current_glob_string, '*')
     level += 1
 
 
-def WalkAndListFilesPerDirectory(top):
+def ListRecursivelyViaWalking(top):
   """Walks a directory tree, yielding (dir_path, file_paths) tuples.
 
   For each of `top` and its subdirectories, yields a tuple containing the path
   to the directory and the path to each of the contained files.  Note that
-  unlike os.Walk()/tf.gfile.Walk(), this does not list subdirectories and the
-  file paths are all absolute. If the directory does not exist, this yields
-  nothing.
+  unlike os.Walk()/tf.gfile.Walk()/ListRecursivelyViaGlobbing, this does not
+  list subdirectories. The file paths are all absolute. If the directory does
+  not exist, this yields nothing.
 
   Walking may be incredibly slow on certain file systems.
 
@@ -119,6 +155,9 @@ def WalkAndListFilesPerDirectory(top):
 
 def GetLogdirSubdirectories(path):
   """Obtains all subdirectories with events files.
+
+  The order of the subdirectories returned is unspecified. The internal logic
+  that determines order varies by scenario.
 
   Args:
     path: The path to a directory under which to find subdirectories.
@@ -144,18 +183,16 @@ def GetLogdirSubdirectories(path):
     # Use a dict comprehension to unique-ify subdirectories.
     tf.logging.info(
         'GetLogdirSubdirectories: Starting to list directories via glob-ing.')
-    return tuple({
-        os.path.dirname(absolute_file_path): True
-        for absolute_file_path in GlobAndListFiles(path)
-        if IsTensorFlowEventsFile(absolute_file_path)
-    })
+    traversal_method = ListRecursivelyViaGlobbing
+  else:
+    # For other file systems, the glob-ing based method might be slower because
+    # each call to glob could involve performing a recursive walk.
+    tf.logging.info(
+        'GetLogdirSubdirectories: Starting to list directories via walking.')
+    traversal_method = ListRecursivelyViaWalking
 
-  # For other file systems, the glob-ing based method might be slower because
-  # each call to glob could involve performing a recursive walk.
-  tf.logging.info(
-      'GetLogdirSubdirectories: Starting to list directories via walking.')
   return (
       subdir
-      for (subdir, files) in WalkAndListFilesPerDirectory(path)
+      for (subdir, files) in traversal_method(path)
       if any(IsTensorFlowEventsFile(f) for f in files)
   )
