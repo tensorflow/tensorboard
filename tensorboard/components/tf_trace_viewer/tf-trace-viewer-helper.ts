@@ -17,59 +17,51 @@ limitations under the License.
  * @fileoverview Helper utilities for the trace viewer within TensorBoard's profile plugin.
  */
 
-var tf_component_traceViewer = new Object({
+namespace tf_component_traceviewer {
   /** Amount of zooming allowed before re-fetching. */
-  ZOOM_RATIO : 8,
+  export const ZOOM_RATIO = 8;
 
   /** Minimum safety buffer relative to viewport size. */
-  PRESERVE_RATIO : 2,
+  export const PRESERVE_RATIO = 2;
 
   /** Amount to fetch relative to viewport size. */
-  FETCH_RATIO : 3,
+  export const FETCH_RATIO = 3;
+
+  export interface Range {
+    min: number;
+    max: number;
+  }
 
   /**
    * Expand the input range by scale, keep the center invariant.
    */
-  expand: function(range, scale) {
+  export function expand(range: Range, scale: number) : Range {
     var width = range.max - range.min;
     var mid = range.min + width / 2;
     return {
       min: mid - scale * width / 2,
       max: mid + scale * width / 2,
     };
-  },
+  }
   /**
    * Check if range is within (totally included) in bounds.
    */
-  within: function(range, bounds) {
+  export function within(range: Range, bounds: Range): boolean {
     return bounds.min <= range.min && range.max <= bounds.max;
-  },
+  }
   /**
    * Return length of the range.
    */
-  length: function(range) {
+  export function length(range: Range): number {
     return range.max - range.min;
-  },
+  }
   /**
    * Return the intersection of two ranges.
    */
-  intersect: function(range, bounds) {
+  export function intersect(range: Range, bounds: Range): Range {
     return {
       min: Math.max(range.min, bounds.min),
       max: Math.min(range.max, bounds.max),
     };
-  },
-  /**
-   *  Compute the {min, max} range of a trackView.
-   *  TODO: Spec out an interface for the trackView.
-   */
-  trackViewRange: function(trackView) {
-    var xfm = trackView.viewport.currentDisplayTransform;
-    const pixelRatio = window.devicePixelRatio || 1;
-    const devicePixelWidth = pixelRatio * trackView.viewWidth_;
-    return {
-      min: xfm.xViewToWorld(0),
-      max: xfm.xViewToWorld(devicePixelWidth),
-    };
-  },
-});
+  }
+}  // namespace tf_component_traceviewer

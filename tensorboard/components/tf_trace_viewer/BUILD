@@ -29,8 +29,7 @@ tf_web_library(
 tf_web_library(
     name = "tf-trace-viewer-helper",
     srcs = [
-        "tf-trace-viewer-helper.html",
-        "tf-trace-viewer-helper.js",
+        "tf-trace-viewer-helper.ts",
     ],
     path = "/tf-trace-viewer",
 )

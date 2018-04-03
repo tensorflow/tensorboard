@@ -16,7 +16,6 @@ limitations under the License.
 -->
 
 <link rel="import" href="trace_viewer_full.html">
-<link rel="import" href="tf-trace-viewer-helper.html">
 
 <!--
 tf-trace-viewer is the frontend entry point for Trace Viewer on TensorBoard.
@@ -51,6 +50,7 @@ dashboard would integrate trace viewer app using iframe.
     transition-delay: 0.3s;
   }
 </style>
+<script src="tf-trace-viewer-helper.js"></script>
 <script>
   "use strict";
 
@@ -175,16 +175,16 @@ dashboard would integrate trace viewer app using iframe.
       //         [----preserve----]       - issue loads to keep this full of data
       //     [---------fetch----------]   - fetch this much data with each load
       // [-----------full bounds--------] - the whole profile
-      var viewport = tf_component_traceViewer.trackViewRange(this._traceViewer.trackView);
-      var PRESERVE_RATIO = tf_component_traceViewer.PRESERVE_RATIO;
-      var preserve = tf_component_traceViewer.intersect(
-          tf_component_traceViewer.expand(viewport, PRESERVE_RATIO), this._fullBounds);
-      var FETCH_RATIO = tf_component_traceViewer.FETCH_RATIO;
-      var fetch = tf_component_traceViewer.expand(viewport, FETCH_RATIO);
-      var zoomFactor = tf_component_traceViewer.length(this._loadedRange) /
-	               tf_component_traceViewer.length(fetch);
-      if (!tf_component_traceViewer.within(preserve, this._loadedRange) ||
-          zoomFactor > tf_component_traceViewer.ZOOM_RATIO) {
+      var viewport = this._trackViewRange(this._traceViewer.trackView);
+      var PRESERVE_RATIO = tf_component_traceviewer.PRESERVE_RATIO;
+      var preserve = tf_component_traceviewer.intersect(
+          tf_component_traceviewer.expand(viewport, PRESERVE_RATIO), this._fullBounds);
+      var FETCH_RATIO = tf_component_traceviewer.FETCH_RATIO;
+      var fetch = tf_component_traceviewer.expand(viewport, FETCH_RATIO);
+      var zoomFactor = tf_component_traceviewer.length(this._loadedRange) /
+	               tf_component_traceviewer.length(fetch);
+      if (!tf_component_traceviewer.within(preserve, this._loadedRange) ||
+          zoomFactor > tf_component_traceviewer.ZOOM_RATIO) {
         console.log("loading more data: ", {
           zoomFactor: zoomFactor,
           loadedRange: this._loadedRange,
@@ -221,7 +221,7 @@ dashboard would integrate trace viewer app using iframe.
       // Set up an XMLHTTPRequest to the JSON endpoint, populating range and
       // resolution if appropriate.
       var requestURL = this._buildBaseURL();
-      var ZOOM_RATIO = tf_component_traceViewer.ZOOM_RATIO;
+      var ZOOM_RATIO = tf_component_traceviewer.ZOOM_RATIO;
       requestURL.searchParams.set("resolution", this._resolution * ZOOM_RATIO);
       if (requestedRange != null) {
         requestURL.searchParams.set("start_time_ms", requestedRange.min);
@@ -293,8 +293,8 @@ dashboard would integrate trace viewer app using iframe.
     _updateView: function(requestedRange) {
       if (requestedRange == null) {
         this._fullBounds = {min: this._model.bounds.min, max: this._model.bounds.max};
-        this._loadedRange = tf_component_traceViewer.expand(
-	    this._fullBounds, tf_component_traceViewer.FETCH_RATIO);
+        this._loadedRange = tf_component_traceviewer.expand(
+	    this._fullBounds, tf_component_traceviewer.FETCH_RATIO);
       } else {
         this._loadedRange = requestedRange;
       }
@@ -317,6 +317,17 @@ dashboard would integrate trace viewer app using iframe.
         }
         this._traceViewer.viewTitle = "";
       }.bind(this));
+    },
+
+    // Access the {min, max} range of a trackView.
+    _trackViewRange: function(trackView) {
+      var xfm = trackView.viewport.currentDisplayTransform;
+      const pixelRatio = window.devicePixelRatio || 1;
+      const devicePixelWidth = pixelRatio * trackView.viewWidth_;
+      return {
+        min: xfm.xViewToWorld(0),
+        max: xfm.xViewToWorld(devicePixelWidth),
+      };
     },
 
     // Builds a base URL for fetching json data. The URL will be assembled with
