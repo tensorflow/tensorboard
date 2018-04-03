@@ -224,7 +224,7 @@ export class RenderGraphInfo {
     // Maps node name to whether the rendering hierarchy was already
     // constructed.
     this.hasSubhierarchy = {};
-    this.root = new RenderGroupNodeInfo(hierarchy.root);
+    this.root = new RenderGroupNodeInfo(hierarchy.root, hierarchy.graphOptions);
     this.index[hierarchy.root.name] = this.root;
     this.renderedOpNames.push(hierarchy.root.name);
     this.buildSubhierarchy(hierarchy.root.name);
@@ -315,7 +315,7 @@ export class RenderGraphInfo {
       return null;
     }
     let renderInfo = node.isGroupNode ?
-        new RenderGroupNodeInfo(<GroupNode>node) :
+        new RenderGroupNodeInfo(<GroupNode>node, this.hierarchy.graphOptions) :
         new RenderNodeInfo(node);
     this.index[nodeName] = renderInfo;
     this.renderedOpNames.push(nodeName);
@@ -1788,13 +1788,14 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
   /** Array of nodes to show in the function library scene group. */
   libraryFunctionsExtract: RenderNodeInfo[];
 
-  constructor(groupNode: GroupNode) {
+  constructor(groupNode: GroupNode, graphOptions: graphlib.GraphOptions) {
     super(groupNode);
     let metagraph = groupNode.metagraph;
     let gl = metagraph.graph();
+    graphOptions.compound = true;
     this.coreGraph =
         createGraph<RenderNodeInfo, RenderMetaedgeInfo>(
-            gl.name, GraphType.CORE, { compound: true });
+            gl.name, GraphType.CORE, graphOptions);
     this.inExtractBox = {width: 0, height: 0};
     this.outExtractBox = {width: 0, height: 0};
     this.libraryFunctionsBox = {width: 0, height: 0};

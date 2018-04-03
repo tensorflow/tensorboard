@@ -49,6 +49,7 @@ export interface Hierarchy {
   hasShapeInfo: boolean;
   /** The maximum size across all meta edges. Used for scaling thickness. */
   maxMetaEdgeSize: number;
+  graphOptions: graphlib.GraphOptions;
   getNodeMap(): {[nodeName: string]: GroupNode|OpNode};
   node(name: string): GroupNode|OpNode;
   setNode(name: string, node: GroupNode|OpNode): void;
@@ -72,9 +73,17 @@ class HierarchyImpl implements Hierarchy {
   hasShapeInfo = false;
   maxMetaEdgeSize = 1;
   orderings: { [nodeName: string]: { [childName: string]: number } };
+  graphOptions: graphlib.GraphOptions;
 
-  constructor() {
-    this.root = createMetanode(ROOT_NAME, {compound: true});
+  /**
+   * Constructs a hierarchy.
+   * @param graphOptions Options passed to dagre for creating the graph. Note
+   *   that the `compound` argument will be overriden to true.
+   */
+  constructor(graphOptions: graphlib.GraphOptions) {
+    this.graphOptions = graphOptions || {};
+    this.graphOptions.compound = true;
+    this.root = createMetanode(ROOT_NAME, this.graphOptions);
     this.libraryFunctions = {};
     this.templates = null;
     this.devices = null;
@@ -119,7 +128,7 @@ class HierarchyImpl implements Hierarchy {
     }
     let bridgegraph = groupNode.bridgegraph =
         createGraph<GroupNode|OpNode, Metaedge>(
-            'BRIDGEGRAPH', GraphType.BRIDGE);
+            'BRIDGEGRAPH', GraphType.BRIDGE, this.graphOptions);
     if (!node.parentNode || !('metagraph' in node.parentNode)) {
       return bridgegraph;
     }
@@ -399,6 +408,9 @@ export interface HierarchyParams {
   verifyTemplate: boolean;
   seriesNodeMinSize: number;
   seriesMap: { [name: string]: tf.graph.SeriesGroupingType };
+  // This string is supplied to dagre as the 'rankdir' property for laying out
+  // the graph. TB, BT, LR, or RL.
+  rankDirection: string;
 }
 
 /**
@@ -407,7 +419,7 @@ export interface HierarchyParams {
  */
 export function build(graph: tf.graph.SlimGraph, params: HierarchyParams,
     tracker: ProgressTracker): Promise<Hierarchy|void> {
-  let h = new HierarchyImpl();
+  let h = new HierarchyImpl({'rankdir': params.rankDirection});
   let seriesNames: { [name: string]: string } = {};
   return tf.graph.util
       .runAsyncTask(
@@ -611,7 +623,7 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
       let name = path[i];
       let child = <Metanode>h.node(name);
       if (!child) {
-        child = createMetanode(name);
+        child = createMetanode(name, h.graphOptions);
         child.parentNode = parent;
         h.setNode(name, child);
         parent.metagraph.setNode(name, child);
@@ -762,7 +774,7 @@ function groupSeries(metanode: Metanode, hierarchy: Hierarchy,
   });
 
   let clusters = clusterNodes(metagraph);
-  let seriesDict = detectSeries(clusters, metagraph);
+  let seriesDict = detectSeries(clusters, metagraph, hierarchy.graphOptions);
 
   // Add each series node to the graph and add its grouped children to its own
   // metagraph.
@@ -864,8 +876,10 @@ function clusterNodes(metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>):
  * @param metagraph
  * @return A dictionary from series name => seriesNode
  */
-function detectSeries(clusters: {[clusterId: string]: string[]},
-     metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>):
+function detectSeries(
+    clusters: {[clusterId: string]: string[]},
+    metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>,
+    graphOptions: graphlib.GraphOptions):
      {[seriesName: string]: SeriesNode} {
   let seriesDict: {[seriesName: string]: SeriesNode} = {};
   _.each(clusters, function(members, clusterId: string) {
@@ -900,7 +914,8 @@ function detectSeries(clusters: {[clusterId: string]: string[]},
       }
       let seriesName = getSeriesNodeName(prefix, suffix, parent);
       candidatesDict[seriesName] = candidatesDict[seriesName] || [];
-      let seriesNode = createSeriesNode(prefix, suffix, parent, +id, name);
+      let seriesNode = createSeriesNode(
+          prefix, suffix, parent, +id, name, graphOptions);
       candidatesDict[seriesName].push(seriesNode);
     });
 
@@ -924,10 +939,12 @@ function detectSeries(clusters: {[clusterId: string]: string[]},
           seriesNodes.push(nextNode);
           continue;
         }
-        addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph);
+        addSeriesToDict(
+            seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
         seriesNodes = [nextNode];
       }
-      addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph);
+      addSeriesToDict(
+          seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
     });
   });
   return seriesDict;
@@ -941,11 +958,13 @@ function detectSeries(clusters: {[clusterId: string]: string[]},
  * @param seriesDict the dictionary of series
  * @param clusterId ID of the template of the nodes of the series
  * @param metagraph
+ * @param graphOptions
  */
 function addSeriesToDict(seriesNodes: SeriesNode[],
     seriesDict: {[seriesName: string]: SeriesNode},
     clusterId: number,
-    metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>) {
+    metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>,
+    graphOptions: graphlib.GraphOptions) {
   if (seriesNodes.length > 1) {
     let curSeriesName = getSeriesNodeName(
       seriesNodes[0].prefix, seriesNodes[0].suffix,
@@ -953,7 +972,7 @@ function addSeriesToDict(seriesNodes: SeriesNode[],
       seriesNodes[seriesNodes.length - 1].clusterId);
     let curSeriesNode = createSeriesNode(seriesNodes[0].prefix,
       seriesNodes[0].suffix, seriesNodes[0].parent, clusterId,
-      curSeriesName);
+      curSeriesName, graphOptions);
     _.each(seriesNodes, function(node) {
       curSeriesNode.ids.push(node.clusterId);
       curSeriesNode.metagraph.setNode(node.name, metagraph.node(node.name));
