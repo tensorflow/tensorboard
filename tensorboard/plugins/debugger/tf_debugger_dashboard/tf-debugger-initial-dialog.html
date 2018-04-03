@@ -72,7 +72,7 @@ from tensorflow.python import debug as tf_debug
 import keras
 
 keras.backend.set_session(
-    tf_debug.TensorBoardDebugWrapperSession(tf.Session()), "[[_host]]:[[_port]]")
+    tf_debug.TensorBoardDebugWrapperSession(tf.Session(), "[[_host]]:[[_port]]"))
 # Define your keras model, called "model".
 model.fit(...)
             </pre>
