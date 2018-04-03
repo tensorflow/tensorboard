@@ -81,11 +81,11 @@ summary.FileWriter. A full explanation, with examples, is in [the
 tutorial](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 
 The supported summary ops include:
-* tf.summary.scalar
-* tf.summary.image
-* tf.summary.audio
-* tf.summary.text
-* tf.summary.histogram
+* [`tf.summary.scalar`](https://www.tensorflow.org/api_docs/python/tf/summary/scalar)
+* [`tf.summary.image`](https://www.tensorflow.org/api_docs/python/tf/summary/image)
+* [`tf.summary.audio`](https://www.tensorflow.org/api_docs/python/tf/summary/audio)
+* [`tf.summary.text`](https://www.tensorflow.org/api_docs/python/tf/summary/text)
+* [`tf.summary.histogram`](https://www.tensorflow.org/api_docs/python/tf/summary/histogram)
 
 ### Tags: Giving names to data
 
