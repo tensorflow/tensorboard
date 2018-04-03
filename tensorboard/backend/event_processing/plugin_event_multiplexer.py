@@ -71,7 +71,8 @@ class EventMultiplexer(object):
                run_path_map=None,
                size_guidance=None,
                tensor_size_guidance=None,
-               purge_orphaned_data=True):
+               purge_orphaned_data=True,
+               max_threads_for_reloading_runs=None):
     """Constructor for the `EventMultiplexer`.
 
     Args:
@@ -86,6 +87,10 @@ class EventMultiplexer(object):
         `event_accumulator.EventAccumulator` for details.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
+      max_threads_for_reloading_runs: The max number of threads that TensorBoard
+        can use aside from the main thread to reload runs. Not relevant for db
+        mode. Each thread reloads one run at a time. If not provided, reloads
+        runs serially (one after another) on the main thread.
     """
     tf.logging.info('Event Multiplexer initializing.')
     self._accumulators_mutex = threading.Lock()
@@ -96,6 +101,7 @@ class EventMultiplexer(object):
                            event_accumulator.DEFAULT_SIZE_GUIDANCE)
     self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
+    self._max_threads_for_reloading_runs = max_threads_for_reloading_runs
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
                       run_path_map)
@@ -190,17 +196,54 @@ class EventMultiplexer(object):
       items = list(self._accumulators.items())
 
     names_to_delete = set()
-    for name, accumulator in items:
-      try:
-        accumulator.Reload()
-      except (OSError, IOError) as e:
-        tf.logging.error("Unable to reload accumulator '%s': %s", name, e)
-      except directory_watcher.DirectoryDeletedError:
-        names_to_delete.add(name)
+
+    # Methods of built-in python containers are thread-safe so long as
+    # the GIL for the thread exists, but we might as well be careful.
+    names_to_delete_mutex = threading.Lock()
+    items_mutex = threading.Lock()
+
+    def Worker():
+      """Keeps reloading accumulators til none are left."""
+      while True:
+        with items_mutex:
+          try:
+            # Pop an accumulator to reload.
+            item = items.pop()
+          except IndexError:
+            # No more accumulators left to reload. Terminate.
+            break
+
+        name, accumulator = item
+        try:
+          accumulator.Reload()
+        except (OSError, IOError) as e:
+          tf.logging.error(
+              "Unable to reload accumulator %r: %s", name, e)
+        except directory_watcher.DirectoryDeletedError:
+          with names_to_delete_mutex:
+            names_to_delete.add(name)
+
+    if self._max_threads_for_reloading_runs > 1:
+      tf.logging.info(
+          'Starting %d threads to reload runs',
+          self._max_threads_for_reloading_runs)
+      num_threads = min(
+          self._max_threads_for_reloading_runs, len(items))
+      threads = [threading.Thread(target=Worker, name='worker %d' % i)
+                 for i in range(num_threads)]
+      for thread in threads:
+        thread.start()
+      for thread in threads:
+        thread.join()
+    else:
+      tf.logging.info(
+          'Reloading runs serially (one after another) on the main '
+          'thread.')
+      Worker()
 
     with self._accumulators_mutex:
       for name in names_to_delete:
-        tf.logging.warning("Deleting accumulator '%s'", name)
+        tf.logging.warning('Deleting accumulator %r', name)
         del self._accumulators[name]
     tf.logging.info('Finished with EventMultiplexer.Reload()')
     return self

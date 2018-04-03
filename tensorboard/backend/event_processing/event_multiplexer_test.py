@@ -323,30 +323,99 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertTrue(x.GetAccumulator('run1').reload_called)
     self.assertTrue(x.GetAccumulator('run2').reload_called)
 
+  def testAddReloadWithMultipleThreads(self):
+    x = event_multiplexer.EventMultiplexer(
+        max_threads_for_reloading_runs=2)
+    x.Reload()
+    x.AddRun('run1')
+    x.AddRun('run2')
+    x.AddRun('run3')
+    self.assertTrue(x.GetAccumulator('run1').reload_called)
+    self.assertTrue(x.GetAccumulator('run2').reload_called)
+    self.assertTrue(x.GetAccumulator('run3').reload_called)
+
+
 
 class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
 
   def testDeletingDirectoryRemovesRun(self):
     x = event_multiplexer.EventMultiplexer()
     tmpdir = self.get_temp_dir()
-    join = os.path.join
-    run1_dir = join(tmpdir, 'run1')
-    run2_dir = join(tmpdir, 'run2')
-    run3_dir = join(tmpdir, 'run3')
+    self.add3RunsToMultiplexer(tmpdir, x)
+    x.Reload()
+
+    # Delete the directory, then reload.
+    shutil.rmtree(os.path.join(tmpdir, 'run2'))
+    x.Reload()
+    self.assertNotIn('run2', x.Runs().keys())
+
+  def testReloadWithMoreRunsThanThreads(self):
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    start_mock = patcher.start()
+    self.addCleanup(patcher.stop)
+    patcher = tf.test.mock.patch('threading.Thread.join', autospec=True)
+    join_mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    x = event_multiplexer.EventMultiplexer(
+        max_threads_for_reloading_runs=2)
+    tmpdir = self.get_temp_dir()
+    self.add3RunsToMultiplexer(tmpdir, x)
+    x.Reload()
+
+    # 2 threads should have been started despite how there are 3 runs.
+    self.assertEqual(2, start_mock.call_count)
+    self.assertEqual(2, join_mock.call_count)
+
+  def testReloadWithMoreThreadsThanRuns(self):
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    start_mock = patcher.start()
+    self.addCleanup(patcher.stop)
+    patcher = tf.test.mock.patch('threading.Thread.join', autospec=True)
+    join_mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    x = event_multiplexer.EventMultiplexer(
+        max_threads_for_reloading_runs=42)
+    tmpdir = self.get_temp_dir()
+    self.add3RunsToMultiplexer(tmpdir, x)
+    x.Reload()
+
+    # 3 threads should have been started despite how the multiplexer
+    # could have started up to 42 threads.
+    self.assertEqual(3, start_mock.call_count)
+    self.assertEqual(3, join_mock.call_count)
+
+  def testReloadWith1Thread(self):
+    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    start_mock = patcher.start()
+    self.addCleanup(patcher.stop)
+    patcher = tf.test.mock.patch('threading.Thread.join', autospec=True)
+    join_mock = patcher.start()
+    self.addCleanup(patcher.stop)
+
+    x = event_multiplexer.EventMultiplexer(
+        max_threads_for_reloading_runs=1)
+    tmpdir = self.get_temp_dir()
+    self.add3RunsToMultiplexer(tmpdir, x)
+    x.Reload()
+
+    # The multiplexer should have started no new threads.
+    self.assertEqual(0, start_mock.call_count)
+    self.assertEqual(0, join_mock.call_count)
+
+  def add3RunsToMultiplexer(self, logdir, multiplexer):
+    """Creates and adds 3 runs to the multiplexer."""
+    run1_dir = os.path.join(logdir, 'run1')
+    run2_dir = os.path.join(logdir, 'run2')
+    run3_dir = os.path.join(logdir, 'run3')
 
     for dirname in [run1_dir, run2_dir, run3_dir]:
       _AddEvents(dirname)
 
-    x.AddRun(run1_dir, 'run1')
-    x.AddRun(run2_dir, 'run2')
-    x.AddRun(run3_dir, 'run3')
-
-    x.Reload()
-
-    # Delete the directory, then reload.
-    shutil.rmtree(run2_dir)
-    x.Reload()
-    self.assertNotIn('run2', x.Runs().keys())
+    multiplexer.AddRun(run1_dir, 'run1')
+    multiplexer.AddRun(run2_dir, 'run2')
+    multiplexer.AddRun(run3_dir, 'run3')
 
 
 if __name__ == '__main__':
