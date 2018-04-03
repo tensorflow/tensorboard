@@ -21,7 +21,6 @@ from __future__ import print_function
 import collections
 import abc
 import re
-import sets
 
 import six
 from google.protobuf import struct_pb2
@@ -382,7 +381,7 @@ class _SessionGroupIntervalFilter(_SessionGroupFilter):
 class _SessionGroupDiscreteSetFilter(_SessionGroupFilter):
   def __init__(self, discrete_set, extractor):
     super(_SessionGroupDiscreteSetFilter, self).__init__(extractor)
-    self._discrete_set = sets.Set(discrete_set)
+    self._discrete_set = set(discrete_set)
 
   def _value_passes(self, value):
     return value in self._discrete_set
