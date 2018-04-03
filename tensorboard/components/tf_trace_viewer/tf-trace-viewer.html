@@ -109,7 +109,6 @@ dashboard would integrate trace viewer app using iframe.
       var queryString = window.location.href.split("?")[1];
       if (queryString) {
         var parts = queryString.split('&')
-        console.log(queryString);
         for (var i=0; i<parts.length; i++) {
           var components = parts[i].split('=');
           if (components[0] == "trace_data_url") {
