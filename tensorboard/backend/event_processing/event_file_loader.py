@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import inspect
+
 import tensorflow as tf
 
 
@@ -49,7 +51,12 @@ class EventFileLoader(object):
     tf.logging.debug('Loading events from %s', self._file_path)
     while True:
       try:
-        self._reader.GetNext()
+        if len(inspect.getargspec(self._reader.GetNext).args) is 0:
+          self._reader.GetNext()
+        else:
+          # GetNext() expects a status argument on TF <= 1.7
+          with tf.errors.raise_exception_on_not_ok_status() as status:
+            self._reader.GetNext(status)
       except (tf.errors.DataLossError, tf.errors.OutOfRangeError):
         # We ignore partial read exceptions, because a record may be truncated.
         # PyRecordReader holds the offset prior to the failed read, so retrying

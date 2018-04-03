@@ -24,13 +24,14 @@ from __future__ import print_function
 import collections
 import contextlib
 import functools
+import inspect
 import locale
 import logging
 import os
 import re
 import sys
-import time
 import threading
+import time
 import types  # pylint: disable=unused-import
 
 import six
@@ -115,7 +116,12 @@ class RecordReader(object):
     if self._reader is None:
       self._reader = self._open()
     try:
-      self._reader.GetNext()
+      if len(inspect.getargspec(self._reader.GetNext).args) is 0:
+        self._reader.GetNext()
+      else:
+        # GetNext() expects a status argument on TF <= 1.7
+        with tf.errors.raise_exception_on_not_ok_status() as status:
+          self._reader.GetNext(status)
     except tf.errors.OutOfRangeError:
       # We ignore partial read exceptions, because a record may be truncated.
       # PyRecordReader holds the offset prior to the failed read, so retrying
