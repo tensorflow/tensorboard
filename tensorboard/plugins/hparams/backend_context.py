@@ -18,37 +18,38 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard.plugins.hparams import metadata
-from tensorboard.plugins.hparams import error
 
 class Context(object):
-  """Stores data shared across API handlers for the HParams plugin backend."""
-  def __init__(self, multiplexer):
+  """Extends the base_plugin.TBContext to stores additional data shared across
+  API handlers for the HParams plugin backend."""
+  def __init__(self, tb_context):
     """Instantiates a context.
     Args:
-      multiplexer: A plugin_event_multiplexer.EventMultiplexer instance
-        accessing the currently loaded runs and tags.
+      tb_context: base_plugin.TBContext. The "base" context we extend.
     """
+    self._tb_context = tb_context
     self._experiment = None
-    self._multiplexer = multiplexer
 
   def experiment(self):
-    # Note: We can't search for the experiment in the constructor,
-    # since this object may be initialized before Tensorboard reads
-    # the event data.
+    """Searches for the experiment tag and returns the associated experiment
+    protobuffer. If no tag is found (possibly, because the event data has not
+    been completely loaded yet), returns None.
+    """
     if self._experiment is None:
       self._experiment = self._find_experiment()
     return self._experiment
 
   def multiplexer(self):
-    return self._multiplexer
+    return self._tb_context.multiplexer
+
+  def tb_context(self):
+    return self._tb_context
 
   def _find_experiment(self):
-    mapping = self._multiplexer.PluginRunToTagToContent(
+    mapping = self.multiplexer().PluginRunToTagToContent(
         metadata.PLUGIN_NAME)
     for tag_to_content in mapping.values():
       if metadata.EXPERIMENT_TAG in tag_to_content:
         return metadata.parse_experiment_plugin_data(
             tag_to_content[metadata.EXPERIMENT_TAG])
-
-    raise error.HParamsError('Could not find a run containing tag: %s'
-                             % metadata.EXPERIMENT_TAG)
+    return None

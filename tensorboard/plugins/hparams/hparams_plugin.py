@@ -22,8 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import urllib
-
+import werkzeug
 from werkzeug import wrappers
 from google.protobuf import json_format
 
@@ -47,7 +46,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._context = backend_context.Context(context.multiplexer)
+    self._context = backend_context.Context(context)
 
   def get_plugin_apps(self):
     return {
@@ -66,22 +65,28 @@ class HParamsPlugin(base_plugin.TBPlugin):
   # ---- /experiment -----------------------------------------------------------
   @wrappers.Request.application
   def get_experiment_route(self, request):
-    return http_util.Respond(request,
-                             json_format.MessageToJson(
-                                 self._context.experiment()),
-                             'application/json')
+    try:
+      return http_util.Respond(request,
+                               json_format.MessageToJson(
+                                   self._context.experiment()),
+                               'application/json')
+    except error.HParamsError as e:
+      raise werkzeug.exceptions.BadRequest(description=str(e))
 
   # ---- /session_groups -------------------------------------------------------
   @wrappers.Request.application
   def list_session_groups_route(self, request):
-    request_proto = request.args.get('request')
-    if request_proto is None:
-      raise error.HParamsError('/session_groups must have a \'request\' arg.')
-    request_proto = urllib.unquote(request_proto)
-    request_proto = json_format.Parse(request_proto,
-                                      api_pb2.ListSessionGroupsRequest())
-    return http_util.Respond(
-        request,
-        json_format.MessageToJson(
-            list_session_groups.Handler(self._context, request_proto).run()),
-        'application/json')
+    try:
+      # args.get() returns the request unquoted.
+      request_proto = request.args.get('request')
+      if request_proto is None:
+        raise error.HParamsError('/session_groups must have a \'request\' arg.')
+      request_proto = json_format.Parse(request_proto,
+                                        api_pb2.ListSessionGroupsRequest())
+      return http_util.Respond(
+          request,
+          json_format.MessageToJson(
+              list_session_groups.Handler(self._context, request_proto).run()),
+          'application/json')
+    except error.HParamsError as e:
+      raise werkzeug.exceptions.BadRequest(description=str(e))

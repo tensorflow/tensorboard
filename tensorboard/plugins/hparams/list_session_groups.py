@@ -40,8 +40,9 @@ class Handler(object):
     """
     self._context = context
     self._request = request
-    self._extractors = self._create_extractors()
-    self._filters = self._create_filters()
+    self._extractors = Handler._create_extractors(request.col_params)
+    self._filters = Handler._create_filters(
+        request.col_params, self._extractors)
 
   def run(self):
     """Handles the request specified on construction.
@@ -55,26 +56,35 @@ class Handler(object):
     self._sort(session_groups)
     return self._create_response(session_groups)
 
-  def _create_extractors(self):
+  @staticmethod
+  def _create_extractors(col_params):
     """
+    Args:
+      col_params: List of ListSessionGroupsRequest.ColParam protobufs.
     Returns:
       A list of _SessionGroupPropExtractor instances. The ith element in the
       returned list extracts the column corresponding to the ith element of
       _request.col_params
     """
     result = []
-    for col_param in self._request.col_params:
+    for col_param in col_params:
       result.append(_SessionGroupPropExtractor.create(col_param))
     return result
 
-  def _create_filters(self):
+  @staticmethod
+  def _create_filters(col_params, extractors):
     """
+    Args:
+      col_params: List of ListSessionGroupsRequest.ColParam protobufs.
+      extractors: list of _SessionGroupPropExtractor instances. Each element
+        should extract the column described by the corresponding element
+        in col_params.
     Returns:
       A list of _SessionGroupFilter instances. Each corresponding to
       a single col_params.filter oneof field of _request
     """
     result = []
-    for col_param, extractor in zip(self._request.col_params, self._extractors):
+    for col_param, extractor in zip(col_params, extractors):
       a_filter = _SessionGroupFilter.create(col_param, extractor)
       if a_filter is not None:
         result.append(a_filter)
@@ -147,20 +157,20 @@ class Handler(object):
     for metric_info in metric_infos:
       metric_name = metric_info.name
       try:
-        metric_evals = metrics.list_metric_evals(
+        metric_eval = metrics.last_metric_eval(
             self._context.multiplexer(),
             session_name,
             metric_name)
       except KeyError:
         # It's ok if we don't find the metric in the session.
-        # We skip it here. For filtering and sorting purposes its value is _NULL
+        # We skip it here. For filtering and sorting purposes its value is None.
         continue
 
-      # metric_evals[i] is a 3-tuple of the form [wall_time, step, value]
+      # metric_eval is a 3-tuple of the form [wall_time, step, value]
       result.append(api_pb2.MetricValue(name=metric_name,
-                                        wall_time_secs=metric_evals[-1][0],
-                                        training_step=metric_evals[-1][1],
-                                        value=metric_evals[-1][2]))
+                                        wall_time_secs=metric_eval[0],
+                                        training_step=metric_eval[1],
+                                        value=metric_eval[2]))
     return result
 
   def _build_group_from_sessions(self, sessions, session_infos_by_name):
@@ -174,7 +184,7 @@ class Handler(object):
         sessions=sorted(sessions, key=lambda session: session.name),
         monitor_url=(
             session_infos_by_name[sessions[0].name].start_info.monitor_url
-        )
+        ),
     )
     # Copy hparams from the first session (all sessions should have the same
     # hyperparameter values) into result.
@@ -196,6 +206,21 @@ class Handler(object):
 
   def _sort(self, session_groups):
     """Sorts 'session_groups' in place according to _request.col_params"""
+    def _create_key_func(extractor, none_is_largest):
+      """Returns a key_func to be used in list.sort() that sorts session groups
+      by the value extracted by extractor. None extracted values will either
+      be considered largest or smallest as specified by the "none_is_largest"
+      boolean parameter. """
+      if none_is_largest:
+        def key_func_none_is_largest(session_group):
+          value = extractor.extract(session_group)
+          return (value is None, value)
+        return key_func_none_is_largest
+      def key_func_none_is_smallest(session_group):
+        value = extractor.extract(session_group)
+        return (value is not None, value)
+      return key_func_none_is_smallest
+
     # Sort by session_group name so we have a deterministic order.
     session_groups.sort(key=lambda session_group: session_group.name)
     # Sort by lexicographical order of the _request.col_params whose order
@@ -208,9 +233,16 @@ class Handler(object):
       if col_param.order == api_pb2.ORDER_UNSPECIFIED:
         continue
       if col_param.order == api_pb2.ORDER_ASC:
-        session_groups.sort(key=extractor.extract)
+        session_groups.sort(
+            key=_create_key_func(
+                extractor,
+                none_is_largest=not col_param.missing_values_first))
       elif col_param.order == api_pb2.ORDER_DESC:
-        session_groups.sort(key=extractor.extract, reverse=True)
+        session_groups.sort(
+            key=_create_key_func(
+                extractor,
+                none_is_largest=col_param.missing_values_first),
+            reverse=True)
       else:
         raise error.HParamsError('Unknown col_param.order given: %s' %
                                  col_param)
@@ -244,22 +276,6 @@ class _SessionGroupPropExtractor(object):
   def extract(self, session_group):
     raise NotImplementedError("Abstract method called.")
 
-class _Null(object):
-  """A singleton class representing a not-available hyperparameter or metric
-  value. Similar to None, but we define it here to make explicit its ordering
-  in relation to any other object.
-  The _Null instance compares larger than any other object that doesn't
-  override a comparison with _Null (so SessiongGroups with missing values should
-  appear last in the response if the list is sorted in ascending order).
-  """
-  # TODO(erez): Figure out a better way to handle missing values. Consider
-  # adding a user option for filtering these out of the response.
-  def __cmp__(self, other):
-    if self is other:
-      return 0
-    return 1
-
-_NULL = _Null()
 
 class _SessionGroupMetricExtractor(_SessionGroupPropExtractor):
   """Extracts a metric value from a session group."""
@@ -275,12 +291,7 @@ class _SessionGroupMetricExtractor(_SessionGroupPropExtractor):
       if (metric_value.name.tag == self._metric_name.tag and
           metric_value.name.group == self._metric_name.group):
         return metric_value.value
-    return _NULL
-
-  @staticmethod
-  def _create(col_param):
-    assert col_param.HasMetric()
-    return _SessionGroupMetricExtractor(col_param.metric)
+    return None
 
 
 class _SessionGroupHParamExtractor(_SessionGroupPropExtractor):
@@ -291,35 +302,46 @@ class _SessionGroupHParamExtractor(_SessionGroupPropExtractor):
   def extract(self, session_group):
     if self._hparam_name in session_group.hparams:
       return _value_to_python(session_group.hparams[self._hparam_name])
-    return _NULL
+    return None
 
 
 class _SessionGroupFilter(object):
   """An abstract class representing a filter of a SessionGroup instance based
   on an extracted value of the instance.
   For a given instance the 'passes' method (below) returns true if the instance
-  passes the filter or false otherwise."""
+  passes the filter or false otherwise.
+  The none_passes parameter in the constructor specifies
+  whether the None value is considered passing the filter or not.
+  """
   __metaclass__ = abc.ABCMeta
 
   @staticmethod
   def create(col_param, extractor):
+    none_passes = not col_param.exclude_missing_values
     if col_param.HasField("filter_regexp"):
-      return _SessionGroupRegexFilter(col_param.filter_regexp, extractor)
+      return _SessionGroupRegexFilter(
+          col_param.filter_regexp, extractor, none_passes)
     elif col_param.HasField("filter_interval"):
-      return _SessionGroupIntervalFilter(col_param.filter_interval, extractor)
+      return _SessionGroupIntervalFilter(
+          col_param.filter_interval, extractor, none_passes)
     elif col_param.HasField("filter_discrete"):
       return _SessionGroupDiscreteSetFilter(
-          _list_value_to_python_list(col_param.filter_discrete), extractor)
+          _list_value_to_python_list(col_param.filter_discrete),
+          extractor,
+          none_passes)
     else:
       return None
 
-  def __init__(self, extractor):
+  def __init__(self, extractor, none_passes):
     self._extractor = extractor
+    self._none_passes = none_passes
 
   def passes(self, session_group):
     value = self._extractor.extract(session_group)
+    if value is None:
+      return self._none_passes
     # Filter out SessionGroup instances with missing values.
-    return (value is not _NULL) and self._value_passes(value)
+    return self._value_passes(value)
 
   @abc.abstractmethod
   def _value_passes(self, value):
@@ -347,8 +369,8 @@ def _list_value_to_python_list(list_value):
 
 
 class _SessionGroupRegexFilter(_SessionGroupFilter):
-  def __init__(self, regex, extractor):
-    super(_SessionGroupRegexFilter, self).__init__(extractor)
+  def __init__(self, regex, extractor, none_passes):
+    super(_SessionGroupRegexFilter, self).__init__(extractor, none_passes)
     try:
       self._regex = re.compile(regex)
     except re.error as e:
@@ -364,8 +386,8 @@ class _SessionGroupRegexFilter(_SessionGroupFilter):
 
 
 class _SessionGroupIntervalFilter(_SessionGroupFilter):
-  def __init__(self, interval, extractor):
-    super(_SessionGroupIntervalFilter, self).__init__(extractor)
+  def __init__(self, interval, extractor, none_passes):
+    super(_SessionGroupIntervalFilter, self).__init__(extractor, none_passes)
     assert isinstance(interval, api_pb2.Interval)
     self._interval = interval
 
@@ -379,8 +401,8 @@ class _SessionGroupIntervalFilter(_SessionGroupFilter):
 
 
 class _SessionGroupDiscreteSetFilter(_SessionGroupFilter):
-  def __init__(self, discrete_set, extractor):
-    super(_SessionGroupDiscreteSetFilter, self).__init__(extractor)
+  def __init__(self, discrete_set, extractor, none_passes):
+    super(_SessionGroupDiscreteSetFilter, self).__init__(extractor, none_passes)
     self._discrete_set = set(discrete_set)
 
   def _value_passes(self, value):

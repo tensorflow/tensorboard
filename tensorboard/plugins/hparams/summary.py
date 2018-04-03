@@ -49,7 +49,7 @@ def experiment_pb(
     metric_infos,
     user="",
     description="",
-    time_created_secs=time.time()):
+    time_created_secs=None):
   """Creates a summary that defines a hyperparameter-tuning experiment.
   Arguments:
     hparam_infos: Array of api_pb2.HParamInfo messages. Describes the
@@ -60,11 +60,13 @@ def experiment_pb(
     user: String. An id for the user running the experiment
     description: String. A description for the experiment. May contain markdown.
     time_created_secs: float. The time the experiment is created in seconds
-    since the UNIX epoch.
+    since the UNIX epoch. Defaults to the current time.
 
   Returns:
     A summary protobuffer containing the experiment definition.
   """
+  if time_created_secs is None:
+    time_created_secs = time.time()
   experiment = api_pb2.Experiment(
       description=description,
       user=user,

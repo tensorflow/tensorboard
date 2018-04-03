@@ -50,7 +50,7 @@ def create_summary_metadata(hparams_plugin_data_pb):
 
 def parse_experiment_plugin_data(content):
   """Parses a given HParam's SummaryMetadata.plugin_data.content and
-  returns the 'experiment
+  returns the 'experiment'.
 
   Raises:
     HParamsError if the content doesn't have 'experiment' set or
@@ -61,7 +61,7 @@ def parse_experiment_plugin_data(content):
 
 def parse_session_start_info_plugin_data(content):
   """Parses a given HParam's SummaryMetadata.plugin_data.content and
-  returns the 'experiment
+  returns the 'session_start_info' field.
 
   Raises:
     HParamsError if the content doesn't have 'session_start_info' set or
@@ -72,10 +72,10 @@ def parse_session_start_info_plugin_data(content):
 
 def parse_session_end_info_plugin_data(content):
   """Parses a given HParam's SummaryMetadata.plugin_data.content and
-  returns the 'experiment
+  returns the 'session_end_info' field.
 
   Raises:
-    HParamsError if the content doesn't have ;session_end_info' set or
+    HParamsError if the content doesn't have 'session_end_info' set or
     this file is incompatible with the version of the the metadata stored.
   """
   return _parse_plugin_data_as(content, 'session_end_info')
