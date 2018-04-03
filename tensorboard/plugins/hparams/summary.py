@@ -38,7 +38,6 @@ import time
 
 import six
 import tensorflow as tf
-from google.protobuf import timestamp_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -69,7 +68,7 @@ def experiment_pb(
   experiment = api_pb2.Experiment(
       description=description,
       user=user,
-      time_created_secs=time_created_secs),
+      time_created_secs=time_created_secs,
       hparam_infos=hparam_infos,
       metric_infos=metric_infos)
   return _summary(metadata.EXPERIMENT_TAG,
@@ -80,7 +79,7 @@ def session_start_pb(hparams,
                      model_uri="",
                      monitor_url="",
                      group_name="",
-                     start_time_secs=time.time())
+                     start_time_secs=time.time()):
   """Creates a summary that contains a training session metadata information.
   One such summary per training session should be created. Each should have
   a different run.
@@ -104,7 +103,7 @@ def session_start_pb(hparams,
       model_uri=model_uri,
       monitor_url=monitor_url,
       group_name=group_name,
-      start_time_secs=star
+      start_time_secs=start_time_secs)
   for (hp_name, hp_val) in six.iteritems(hparams):
     if isinstance(hp_val, (float, int)):
       session_start_info.hparams[hp_name].number_value = hp_val
@@ -134,7 +133,8 @@ def session_end_pb(status, end_time_secs=time.time()):
   Returns:
     Returns the summary protobuffer mentioned above.
   """
-  session_end_info = plugin_data_pb2.SessionEndInfo(status=status)
+  session_end_info = plugin_data_pb2.SessionEndInfo(status=status,
+                                                    end_time_secs=end_time_secs)
   return _summary(metadata.SESSION_END_INFO_TAG,
                   plugin_data_pb2.HParamsPluginData(
                       session_end_info=session_end_info))

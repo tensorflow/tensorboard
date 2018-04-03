@@ -27,7 +27,8 @@ def list_metric_evals(multiplexer, session_name, metric_name):
   Args:
     multiplexer: The EventMultiplexer instance allowing access to
         the exported summary data.
-    session_name: String. The session name for which to get the metric evaluations.
+    session_name: String. The session name for which to get the metric
+        evaluations.
     metric_name: api_pb2.MetricName proto. The name of the metric to use.
 
   Returns:
@@ -40,13 +41,13 @@ def list_metric_evals(multiplexer, session_name, metric_name):
   Raises:
     KeyError if the given session does not have a metric.
   """
-  assert type(session_name) is str
-  assert type(metric_name) is api_pb2.MetricName
+  assert isinstance(session_name, str)
+  assert isinstance(metric_name, api_pb2.MetricName)
 
   run = session_name+metric_name.group
   tag = metric_name.tag
   try:
-    tensor_events=multiplexer.Tensors(run=run, tag=tag)
+    tensor_events = multiplexer.Tensors(run=run, tag=tag)
   except KeyError as e:
     raise KeyError(
         'Can\'t find metric %s for session: %s. Underlying error message: %s'

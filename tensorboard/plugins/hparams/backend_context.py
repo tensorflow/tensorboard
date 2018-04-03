@@ -17,12 +17,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import six
-
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import error
 
-class Context:
+class Context(object):
   """Stores data shared across API handlers for the HParams plugin backend."""
   def __init__(self, multiplexer):
     """Instantiates a context.
@@ -47,7 +45,7 @@ class Context:
   def _find_experiment(self):
     mapping = self._multiplexer.PluginRunToTagToContent(
         metadata.PLUGIN_NAME)
-    for (run, tag_to_content) in six.iteritems(mapping):
+    for tag_to_content in mapping.values():
       if metadata.EXPERIMENT_TAG in tag_to_content:
         return metadata.parse_experiment_plugin_data(
             tag_to_content[metadata.EXPERIMENT_TAG])

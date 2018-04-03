@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from google.protobuf import text_format
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer
@@ -27,7 +28,6 @@ from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
-from google.protobuf import text_format
 
 DATA_TYPE_EXPERIMENT = 'experiment'
 DATA_TYPE_SESSION_START_INFO = 'session_start_info'
@@ -36,6 +36,11 @@ DATA_TYPE_SESSION_END_INFO = 'session_end_info'
 TensorEvent = event_accumulator.TensorEvent
 
 class ListSessionGroupsTest(tf.test.TestCase):
+
+  def __init__(self, methodName='runTest'):
+    super(ListSessionGroupsTest, self).__init__(methodName)
+    # Make assertProtoEquals print all the diff.
+    self.maxDiff = None
 
   def setUp(self):
     self._mock_multiplexer = tf.test.mock.create_autospec(
@@ -87,7 +92,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   end_time_secs: 314164
                 ''')
         },
-       'session_2' : {
+        'session_2' : {
             metadata.SESSION_START_INFO_TAG :
             self._serialized_plugin_data(
                 DATA_TYPE_SESSION_START_INFO, '''
@@ -107,7 +112,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
                    end_time_secs: 314164
                 ''')
         },
-       'session_3' : {
+        'session_3' : {
             metadata.SESSION_START_INFO_TAG :
             self._serialized_plugin_data(
                 DATA_TYPE_SESSION_START_INFO, '''
@@ -127,7 +132,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   end_time_secs: 314164
                 ''')
         },
-       'session_4' : {
+        'session_4' : {
             metadata.SESSION_START_INFO_TAG :
             self._serialized_plugin_data(
                 DATA_TYPE_SESSION_START_INFO, '''
@@ -156,60 +161,74 @@ class ListSessionGroupsTest(tf.test.TestCase):
   # A mock version of EventMultiplexer.Tensors
   def _mock_tensors(self, run, tag):
     result_dict = {
-      'session_1': {
-        'current_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(10.0))
-        ],
-        'delta_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(20.0)),
-            TensorEvent(
-                wall_time=10, step=2, tensor_proto=tf.make_tensor_proto(15.0))
-        ],
-        'optional_metric' : [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(20.0)),
-            TensorEvent(
-                wall_time=2, step=20, tensor_proto=tf.make_tensor_proto(33.0))
-        ]
-      },
-      'session_2': {
-        'current_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(100.0)),
-        ],
-        'delta_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(200.0)),
-            TensorEvent(
-                wall_time=10, step=2, tensor_proto=tf.make_tensor_proto(150.0))
-        ]
-      },
-      'session_3': {
-        'current_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(1.0)),
-        ],
-        'delta_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(2.0)),
-            TensorEvent(
-                wall_time=10, step=2, tensor_proto=tf.make_tensor_proto(1.5))
-        ]
-      },
-      'session_4': {
-        'current_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(101.0)),
-        ],
-        'delta_temp': [
-            TensorEvent(
-                wall_time=1, step=1, tensor_proto=tf.make_tensor_proto(201.0)),
-            TensorEvent(
-                wall_time=10, step=2, tensor_proto=tf.make_tensor_proto(-151.0))
-        ]
-      },
+        'session_1': {
+            'current_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(10.0))
+            ],
+            'delta_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(20.0)),
+                TensorEvent(
+                    wall_time=10, step=2,
+                    tensor_proto=tf.make_tensor_proto(15.0))
+            ],
+            'optional_metric' : [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(20.0)),
+                TensorEvent(
+                    wall_time=2, step=20,
+                    tensor_proto=tf.make_tensor_proto(33.0))
+            ]
+        },
+        'session_2': {
+            'current_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(100.0)),
+            ],
+            'delta_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(200.0)),
+                TensorEvent(
+                    wall_time=10, step=2,
+                    tensor_proto=tf.make_tensor_proto(150.0))
+            ]
+        },
+        'session_3': {
+            'current_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(1.0)),
+            ],
+            'delta_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(2.0)),
+                TensorEvent(
+                    wall_time=10, step=2,
+                    tensor_proto=tf.make_tensor_proto(1.5))
+            ]
+        },
+        'session_4': {
+            'current_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(101.0)),
+            ],
+            'delta_temp': [
+                TensorEvent(
+                    wall_time=1, step=1,
+                    tensor_proto=tf.make_tensor_proto(201.0)),
+                TensorEvent(
+                    wall_time=10, step=2,
+                    tensor_proto=tf.make_tensor_proto(-151.0))
+            ]
+        },
     }
     return result_dict[run][tag]
 
@@ -1707,7 +1726,6 @@ class ListSessionGroupsTest(tf.test.TestCase):
         backend_context.Context(self._mock_multiplexer),
         request_proto)
     response = handler.run()
-    self.maxDiff = None
     # TODO(erez): Make this ignore different orders of repeated fields where
     # the order doesn't matter.
     self.assertProtoEquals(expected_response, response)

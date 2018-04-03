@@ -22,24 +22,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import csv
 import urllib
 
-import six
-from six import StringIO
 from werkzeug import wrappers
+from google.protobuf import json_format
 
-import tensorflow as tf
-from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
-from google.protobuf import json_format
 
 
 class HParamsPlugin(base_plugin.TBPlugin):
@@ -76,18 +70,6 @@ class HParamsPlugin(base_plugin.TBPlugin):
                              json_format.MessageToJson(
                                  self._context.experiment()),
                              'application/json')
-
-  def _get_experiment_impl(self):
-    """Searches for metadata.EXPERIMENT_TAG tag in the run-tags data."""
-    mapping = self._context.multiplexer().PluginRunToTagToContent(
-        metadata.PLUGIN_NAME)
-    for (run, tag_to_content) in six.iteritems(mapping):
-      if metadata.EXPERIMENT_TAG in tag_to_content:
-        return metadata.parse_plugin_data_as(
-            tag_to_content[metadata.EXPERIMENT_TAG], "experiment")
-
-    raise error.HParamsError('Could not find a run containing tag: %s'
-                             % metadata.EXPERIMENT_TAG)
 
   # ---- /session_groups -------------------------------------------------------
   @wrappers.Request.application

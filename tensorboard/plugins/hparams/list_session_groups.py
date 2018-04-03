@@ -24,12 +24,9 @@ import re
 import sets
 
 import six
-from google.protobuf import timestamp_pb2
 from google.protobuf import struct_pb2
-import tensorflow as tf
 
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import metrics
 from tensorboard.plugins.hparams import metadata
@@ -101,11 +98,11 @@ class Handler(object):
   def _build_session_infos_by_name(self):
     run_to_tag_to_content = self._context.multiplexer().PluginRunToTagToContent(
         metadata.PLUGIN_NAME)
-    result={}
+    result = {}
     for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
       if metadata.SESSION_START_INFO_TAG not in tag_to_content:
         continue
-      start_info=metadata.parse_session_start_info_plugin_data(
+      start_info = metadata.parse_session_start_info_plugin_data(
           tag_to_content[metadata.SESSION_START_INFO_TAG])
       # end_info will be None if the corresponding tag doesn't exist.
       end_info = None
@@ -131,7 +128,7 @@ class Handler(object):
     return result
 
   def _build_session(self, session_name, infos_tuple):
-    assert type(infos_tuple) is self._SessionInfoTuple
+    assert isinstance(infos_tuple, self._SessionInfoTuple)
     assert infos_tuple.start_info is not None
     result = api_pb2.Session(
         name=session_name,
@@ -146,7 +143,7 @@ class Handler(object):
 
   def _build_session_metric_values(self, session_name):
     # result is a list of api_pb2.MetricValue instances.
-    result=[]
+    result = []
     metric_infos = self._context.experiment().metric_infos
     for metric_info in metric_infos:
       metric_name = metric_info.name
@@ -155,10 +152,11 @@ class Handler(object):
             self._context.multiplexer(),
             session_name,
             metric_name)
-      except KeyError as e:
+      except KeyError:
         # It's ok if we don't find the metric in the session.
-        # We skip it here for filtering and sorting purposes its value is _NULL
+        # We skip it here. For filtering and sorting purposes its value is _NULL
         continue
+
       # metric_evals[i] is a 3-tuple of the form [wall_time, step, value]
       result.append(api_pb2.MetricValue(name=metric_name,
                                         wall_time_secs=metric_evals[-1][0],
@@ -167,14 +165,14 @@ class Handler(object):
     return result
 
   def _build_group_from_sessions(self, sessions, session_infos_by_name):
-    assert len(sessions) > 0
+    assert sessions  # Make sure sessions is non-empty
     # TODO(erez): Do proper metric aggregation. For now we just take
     # the metric values from the first session.
     result = api_pb2.SessionGroup(
         name=session_infos_by_name[sessions[0].name].start_info.group_name,
         metric_values=sessions[0].metric_values,
         # Sort sessions by name so the order is deterministic.
-        sessions=sorted(sessions, key=lambda session : session.name),
+        sessions=sorted(sessions, key=lambda session: session.name),
         monitor_url=(
             session_infos_by_name[sessions[0].name].start_info.monitor_url
         )
@@ -189,9 +187,7 @@ class Handler(object):
     return result
 
   def _filter(self, session_groups):
-    return filter(
-        lambda sg : self._passes_all_filters(sg),
-        session_groups)
+    return [sg for sg in session_groups if self._passes_all_filters(sg)]
 
   def _passes_all_filters(self, session_group):
     for f in self._filters:
@@ -202,7 +198,7 @@ class Handler(object):
   def _sort(self, session_groups):
     """Sorts 'session_groups' in place according to _request.col_params"""
     # Sort by session_group name so we have a deterministic order.
-    session_groups.sort(key=lambda session_group : session_group.name)
+    session_groups.sort(key=lambda session_group: session_group.name)
     # Sort by lexicographical order of the _request.col_params whose order
     # is not ORDER_UNSPECIFIED. The first such column is the primary sorting
     # key, the second is the secondary sorting key, etc. To achieve that we
@@ -212,11 +208,10 @@ class Handler(object):
                                              self._extractors)):
       if col_param.order == api_pb2.ORDER_UNSPECIFIED:
         continue
-      key_func = lambda sg : extractor.extract(sg)
       if col_param.order == api_pb2.ORDER_ASC:
-        session_groups.sort(key=key_func)
+        session_groups.sort(key=extractor.extract)
       elif col_param.order == api_pb2.ORDER_DESC:
-        session_groups.sort(key=key_func, reverse=True)
+        session_groups.sort(key=extractor.extract, reverse=True)
       else:
         raise error.HParamsError('Unknown col_param.order given: %s' %
                                  col_param)
@@ -334,19 +329,21 @@ class _SessionGroupFilter(object):
 
 def _value_to_python(value):
   """Converts a google.protobuf.Value to a native Python object."""
-  assert type(value) is struct_pb2.Value
-  field=value.WhichOneof("kind")
-  if field == 'number_value':
+  assert isinstance(value, struct_pb2.Value)
+  field = value.WhichOneof("kind")
+  if field == "number_value":
     return value.number_value
-  elif field == 'string_value':
+  elif field == "string_value":
     return value.string_value
-  elif field == 'bool_value':
+  elif field == "bool_value":
     return value.bool_value
+  else:
+    raise ValueError("Unknown struct_pb2.Value oneof field set: %s" % field)
 
 
 def _list_value_to_python_list(list_value):
   """Converts a google.protobuf.ListValue to a python list."""
-  assert type(list_value) is struct_pb2.ListValue
+  assert isinstance(list_value, struct_pb2.ListValue)
   return [_value_to_python(value) for value in list_value.values]
 
 
@@ -356,8 +353,8 @@ class _SessionGroupRegexFilter(_SessionGroupFilter):
     try:
       self._regex = re.compile(regex)
     except re.error as e:
-      raise error.HParamsError('Error parsing regexp: %s. Error: %s',
-                              regex, e)
+      raise error.HParamsError('Error parsing regexp: %s. Error: %s' %
+                               (regex, e))
 
   def _value_passes(self, value):
     if not isinstance(value, str) and not isinstance(value, unicode):
@@ -374,9 +371,7 @@ class _SessionGroupIntervalFilter(_SessionGroupFilter):
     self._interval = interval
 
   def _value_passes(self, value):
-    if (not isinstance(value, int) and
-        not isinstance(value, float) and
-        not isinstance(value, long)):
+    if not isinstance(value, (int, float, long)):
       raise error.HParamsError(
           'Cannot use an interval filter for a value of type: %s, Value: %s' %
           (type(value), value))
