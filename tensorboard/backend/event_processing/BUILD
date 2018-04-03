@@ -48,6 +48,17 @@ py_test(
     ],
 )
 
+# NOTE(chihuahua): This directory watcher is a work in progress.
+py_library(
+    name = "suffix_based_directory_watcher",
+    srcs = ["suffix_based_directory_watcher.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":io_wrapper",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "reservoir",
     srcs = ["reservoir.py"],
