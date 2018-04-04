@@ -22,18 +22,22 @@ from __future__ import print_function
 
 import logging
 import os
-import grpc
 from werkzeug import wrappers
 
 import tensorflow as tf
-from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
-from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc
 
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
+
+tf.flags.DEFINE_string(
+    'master_tpu_unsecure_channel', '',
+    'IP address of "master tpu", used for getting streaming trace data '
+    'through tpu profiler analysis grpc. The grpc channel is not secured.')
+
+FLAGS = tf.flags.FLAGS
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -81,21 +85,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     self.logdir = context.logdir
     self.plugin_logdir = plugin_asset_util.PluginDirectory(
         self.logdir, ProfilePlugin.plugin_name)
-
-    # We will enable streaming trace viewer on two conditions:
-    # 1. user export os variable MASTER_TPU=xxx.xxx.xxx.xxx as "master" TPU
-    #    ip address.
-    # 2. the logdir is on google cloud storage.
     self.stub = None
-    if 'MASTER_TPU' in os.environ and self.logdir.startswith('gs://'):
-      master_tpu = os.environ['MASTER_TPU']
-      # Workaround the grpc's 4MB message limitation.
-      gigabyte = 1024 * 1024 * 1024
-      options = [('grpc.max_message_length', gigabyte),
-                 ('grpc.max_send_message_length', gigabyte),
-                 ('grpc.max_receive_message_length', gigabyte)]
-      channel = grpc.insecure_channel(master_tpu + ':8466', options)
-      self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(channel)
 
   @wrappers.Request.application
   def logdir_route(self, request):
@@ -105,6 +95,24 @@ class ProfilePlugin(base_plugin.TBPlugin):
   def _run_dir(self, run):
     run_dir = os.path.join(self.plugin_logdir, run)
     return run_dir if tf.gfile.IsDirectory(run_dir) else None
+
+  def start_grpc_stub_if_necessary(self):
+    # We will enable streaming trace viewer on two conditions:
+    # 1. user specify the flags master_tpu_unsecure_channel to the ip address of
+    #    as "master" TPU. grpc will be used to fetch streaming trace data.
+    # 2. the logdir is on google cloud storage.
+    if FLAGS.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
+      if self.stub is None:
+        import grpc
+        from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc
+        # Workaround the grpc's 4MB message limitation.
+        gigabyte = 1024 * 1024 * 1024
+        options = [('grpc.max_message_length', gigabyte),
+                   ('grpc.max_send_message_length', gigabyte),
+                   ('grpc.max_receive_message_length', gigabyte)]
+        tpu_profiler_port = FLAGS.master_tpu_unsecure_channel + ':8466'
+        channel = grpc.insecure_channel(tpu_profiler_port, options)
+        self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(channel)
 
   def index_impl(self):
     """Returns available runs and available tool data in the log directory.
@@ -144,6 +152,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run_to_tools = {}
     if not tf.gfile.IsDirectory(self.plugin_logdir):
       return run_to_tools
+
+    self.start_grpc_stub_if_necessary()
     for run in tf.gfile.ListDirectory(self.plugin_logdir):
       run_dir = self._run_dir(run)
       if not run_dir:
@@ -253,7 +263,9 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run = request.args.get('run')
     tool = request.args.get('tag')
 
+    self.start_grpc_stub_if_necessary()
     if tool == 'trace_viewer@' and self.stub is not None:
+      from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
       grpc_request = tpu_profiler_analysis_pb2.ProfileSessionDataRequest()
       grpc_request.repository_root = self.plugin_logdir
       grpc_request.session_id = run[:-1]
