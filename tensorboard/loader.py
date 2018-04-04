@@ -116,7 +116,7 @@ class RecordReader(object):
     if self._reader is None:
       self._reader = self._open()
     try:
-      if len(inspect.getargspec(self._reader.GetNext).args) is 0: # pylint: disable=deprecated-method
+      if not inspect.getargspec(self._reader.GetNext).args[1:]: # pylint: disable=deprecated-method
         self._reader.GetNext()
       else:
         # GetNext() expects a status argument on TF <= 1.7

@@ -51,7 +51,7 @@ class EventFileLoader(object):
     tf.logging.debug('Loading events from %s', self._file_path)
     while True:
       try:
-        if len(inspect.getargspec(self._reader.GetNext).args) is 0: # pylint: disable=deprecated-method
+        if not inspect.getargspec(self._reader.GetNext).args[1:]: # pylint: disable=deprecated-method
           self._reader.GetNext()
         else:
           # GetNext() expects a status argument on TF <= 1.7
