@@ -103,7 +103,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if FLAGS.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
       if self.stub is None:
         import grpc
-        from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pyline: disable=line-too-long
+        from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pylint: disable=line-too-long
         # Workaround the grpc's 4MB message limitation.
         gigabyte = 1024 * 1024 * 1024
         options = [('grpc.max_message_length', gigabyte),
