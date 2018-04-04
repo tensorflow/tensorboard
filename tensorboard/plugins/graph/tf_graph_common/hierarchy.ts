@@ -409,7 +409,7 @@ export interface HierarchyParams {
   seriesNodeMinSize: number;
   seriesMap: { [name: string]: tf.graph.SeriesGroupingType };
   // This string is supplied to dagre as the 'rankdir' property for laying out
-  // the graph. TB, BT, LR, or RL.
+  // the graph. TB, BT, LR, or RL. The default is 'BT' (bottom to top).
   rankDirection: string;
 }
 
