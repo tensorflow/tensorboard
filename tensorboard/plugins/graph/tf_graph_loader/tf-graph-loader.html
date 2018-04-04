@@ -42,9 +42,16 @@ Polymer({
     },
     datasets: Array,
     selectedDataset: Number,
-    selectedFile: {
-      type: Object,
-      observer: '_selectedFileChanged'
+    selectedFile: Object,
+    /**
+     * This experimental (and optional) property determines the direction in
+     * which the graph is rendered. This value could be one of BT,TB,LR,RL. The
+     * default is BT (bottom to top).
+     * @type {string}
+     */
+    rankDirection: {
+      type: String,
+      value: '',
     },
     outGraphHierarchy: {
       type: Object,
@@ -69,8 +76,9 @@ Polymer({
     },
   },
   observers: [
-    '_selectedDatasetChanged(selectedDataset, datasets)',
-    '_readAndParseMetadata(selectedMetadataTag)'
+    '_selectedDatasetChanged(selectedDataset, datasets, rankDirection)',
+    '_selectedFileChanged(selectedFile, rankDirection)',
+    '_readAndParseMetadata(selectedMetadataTag, rankDirection)',
   ],
   _readAndParseMetadata: function(metadataIndex) {
     if (metadataIndex == -1 || this.datasets[this.selectedDataset] == null ||
@@ -95,7 +103,8 @@ Polymer({
    * @param {string?} path
    * @param {string=} pbTxtFile
    */
-  _parseAndConstructHierarchicalGraph: function(path, pbTxtFile) {
+  _parseAndConstructHierarchicalGraph: function(
+      path, pbTxtFile, rankDirection) {
     // Reset the progress bar to 0.
     this.set('progress', {
       value: 0,
@@ -112,6 +121,10 @@ Polymer({
       // Starts out empty which allows the renderer to decide which series
       // are initially rendered grouped and which aren't.
       seriesMap: {},
+      // An experimental feature that enables the graph explorer to generalize.
+      // The direction in which the graph renders. This string is passed to
+      // dagre as the 'rankdir' graph option.
+      rankDirection: rankDirection,
     };
     this._setOutHierarchyParams(hierarchyParams);
     var dataTracker = tf.graph.util.getSubtaskTracker(tracker, 30, 'Data');
@@ -170,10 +183,11 @@ Polymer({
       tracker.reportError("Graph visualization failed: " + e, e);
     });
   },
-  _selectedDatasetChanged: function(datasetIndex, datasets) {
-    this._parseAndConstructHierarchicalGraph(datasets[datasetIndex].path);
+  _selectedDatasetChanged: function(datasetIndex, datasets, rankDirection) {
+    this._parseAndConstructHierarchicalGraph(
+        datasets[datasetIndex].path, undefined, rankDirection);
   },
-  _selectedFileChanged: function(e) {
+  _selectedFileChanged: function(e, rankDirection) {
     if (!e) {
       return;
     }
@@ -186,7 +200,7 @@ Polymer({
     // selects the same file, we'll re-read it.
     e.target.value = '';
 
-    this._parseAndConstructHierarchicalGraph(null, file);
+    this._parseAndConstructHierarchicalGraph(null, file, rankDirection);
   }
 });
 </script>
