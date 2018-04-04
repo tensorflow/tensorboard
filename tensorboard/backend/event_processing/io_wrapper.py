@@ -125,7 +125,7 @@ def ListRecursivelyViaGlobbing(top):
       # directory, replace the current globbing path with that directory as the
       # literal prefix. This should improve efficiency in cases where a single
       # subdir is significantly deeper than the rest of the sudirs.
-      current_glob_string = os.path.join(pairs.keys()[0], '*')
+      current_glob_string = os.path.join(list(pairs.keys())[0], '*')
 
     # Iterate to the next level of subdirectories.
     current_glob_string = os.path.join(current_glob_string, '*')
