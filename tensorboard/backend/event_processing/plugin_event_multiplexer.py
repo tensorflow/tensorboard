@@ -88,9 +88,9 @@ class EventMultiplexer(object):
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
       max_threads_for_reloading_runs: The max number of threads that TensorBoard
-        can use aside from the main thread to reload runs. Not relevant for db
-        mode. Each thread reloads one run at a time. If not provided, reloads
-        runs serially (one after another) on the main thread.
+        can use aside from the main thread to reload runs. Each thread reloads
+        one run at a time. If not provided, reloads runs serially (one after
+        another) on the main thread.
     """
     tf.logging.info('Event Multiplexer initializing.')
     self._accumulators_mutex = threading.Lock()
@@ -101,7 +101,7 @@ class EventMultiplexer(object):
                            event_accumulator.DEFAULT_SIZE_GUIDANCE)
     self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
-    self._max_threads_for_reloading_runs = max_threads_for_reloading_runs
+    self._max_threads_for_reloading_runs = max_threads_for_reloading_runs or 1
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
                       run_path_map)
