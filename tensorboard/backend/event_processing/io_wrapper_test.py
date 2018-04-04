@@ -62,9 +62,9 @@ class IoWrapperTest(tf.test.TestCase):
         'foo',
         'bar',
         'quuz',
-        'events.out.tfevents.1473720381.meep.com',
+        'a.tfevents.1',
         'model.ckpt',
-        'ba*',
+        'waldo',
     )
     self.assertItemsEqual(
         (os.path.join(temp_dir, f) for f in expected_files),
@@ -77,32 +77,46 @@ class IoWrapperTest(tf.test.TestCase):
         ['', [
             'foo',
             'bar',
-            'events.out.tfevents.1473720381.meep.com',
+            'a.tfevents.1',
             'model.ckpt',
             'quuz',
-            'ba*',
+            'waldo',
         ]],
         ['bar', [
-            'events.out.tfevents.1473720382.bar.com',
+            'b.tfevents.1',
             'red_herring.txt',
             'baz',
             'quux',
         ]],
         ['bar/baz', [
-            'events.out.tfevents.1473720383.baz.com',
-            'events.out.tfevents.1473720384.baz.com',
+            'c.tfevents.1',
+            'd.tfevents.1',
         ]],
         ['bar/quux', [
             'some_flume_output.txt',
             'some_more_flume_output.txt',
         ]],
-        ['quuz', ['corge', 'grault']],
-        ['quuz/corge', [
-            'events.out.tfevents.1473720642.corge.com']
-        ],
-        ['quuz/grault', ['events.out.tfevents.1473720643.grault.com']],
-        ['ba*', ['baz']],
-        ['ba*/baz', ['events.out.tfevents.1473720644.asterisk.com']],
+        ['quuz', [
+            'e.tfevents.1',
+            'garply',
+        ]],
+        ['quuz/garply', [
+            'f.tfevents.1',
+            'corge',
+            'grault',
+        ]],
+        ['quuz/garply/corge', [
+            'g.tfevents.1'
+        ]],
+        ['quuz/garply/grault', [
+            'h.tfevents.1',
+        ]],
+        ['waldo', [
+            'fred',
+        ]],
+        ['waldo/fred', [
+            'i.tfevents.1',
+        ]],
     ]
     for pair in expected:
       # If this is not the top-level directory, prepend the high-level
@@ -112,34 +126,81 @@ class IoWrapperTest(tf.test.TestCase):
     self._CompareFilesPerSubdirectory(
         expected, io_wrapper.ListRecursivelyViaGlobbing(temp_dir))
 
+  def testListRecursivelyViaGlobbingForPathWithGlobCharacters(self):
+    temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
+    directory_names = (
+        'ba*',
+        'ba*/subdirectory',
+        'bar',
+    )
+    for directory_name in directory_names:
+      os.makedirs(os.path.join(temp_dir, directory_name))
+
+    file_names = (
+        'ba*/a.tfevents.1',
+        'ba*/subdirectory/b.tfevents.1',
+        'bar/c.tfevents.1',
+    )
+    for file_name in file_names:
+      open(os.path.join(temp_dir, file_name), 'w').close()
+
+    expected = [
+        ['', [
+            'a.tfevents.1',
+            'subdirectory',
+        ]],
+        ['subdirectory', [
+            'b.tfevents.1',
+        ]],
+        # The contents of the bar subdirectory should be excluded from
+        # this listing because the * character should have been escaped.
+    ]
+    top = os.path.join(temp_dir, 'ba*')
+    for pair in expected:
+      # If this is not the top-level directory, prepend the high-level
+      # directory.
+      pair[0] = os.path.join(top, pair[0]) if pair[0] else top
+      pair[1] = [os.path.join(pair[0], f) for f in pair[1]]
+    self._CompareFilesPerSubdirectory(
+        expected, io_wrapper.ListRecursivelyViaGlobbing(top))
+
   def testListRecursivelyViaWalking(self):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
     self._CreateDeepDirectoryStructure(temp_dir)
     expected = [
         ['', [
-            'events.out.tfevents.1473720381.meep.com',
+            'a.tfevents.1',
             'model.ckpt',
         ]],
         ['foo', []],
         ['bar', [
-            'events.out.tfevents.1473720382.bar.com',
+            'b.tfevents.1',
             'red_herring.txt',
         ]],
         ['bar/baz', [
-            'events.out.tfevents.1473720383.baz.com',
-            'events.out.tfevents.1473720384.baz.com',
+            'c.tfevents.1',
+            'd.tfevents.1',
         ]],
         ['bar/quux', [
             'some_flume_output.txt',
             'some_more_flume_output.txt',
         ]],
-        ['quuz', []],
-        ['quuz/corge', [
-            'events.out.tfevents.1473720642.corge.com']
-        ],
-        ['quuz/grault', ['events.out.tfevents.1473720643.grault.com']],
-        ['ba*', []],
-        ['ba*/baz', ['events.out.tfevents.1473720644.asterisk.com']],
+        ['quuz', [
+            'e.tfevents.1',
+        ]],
+        ['quuz/garply', [
+            'f.tfevents.1',
+        ]],
+        ['quuz/garply/corge', [
+            'g.tfevents.1',
+        ]],
+        ['quuz/garply/grault', [
+            'h.tfevents.1',
+        ]],
+        ['waldo', []],
+        ['waldo/fred', [
+            'i.tfevents.1',
+        ]],
     ]
     for pair in expected:
       # If this is not the top-level directory, prepend the high-level
@@ -148,6 +209,26 @@ class IoWrapperTest(tf.test.TestCase):
       pair[1] = [os.path.join(pair[0], f) for f in pair[1]]
     self._CompareFilesPerSubdirectory(
         expected, io_wrapper.ListRecursivelyViaWalking(temp_dir))
+
+  def testGetLogdirSubdirectories(self):
+    temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
+    self._CreateDeepDirectoryStructure(temp_dir)
+    # Only subdirectories that immediately contains at least 1 events
+    # file should be listed.
+    expected = [
+        '',
+        'bar',
+        'bar/baz',
+        'quuz',
+        'quuz/garply',
+        'quuz/garply/corge',
+        'quuz/garply/grault',
+        'waldo/fred',
+    ]
+    self.assertItemsEqual(
+        [(os.path.join(temp_dir, subdir) if subdir else temp_dir)
+         for subdir in expected],
+        io_wrapper.GetLogdirSubdirectories(temp_dir))
 
   def _CreateDeepDirectoryStructure(self, top_directory):
     """Creates a reasonable deep structure of subdirectories with files.
@@ -166,30 +247,36 @@ class IoWrapperTest(tf.test.TestCase):
         'bar/baz',
         # A non-empty subdirectory that lacks event files (should be ignored).
         'bar/quux',
-        # A directory that lacks events files, but contains 2 subdirectories
+        # This 3-level deep set of subdirectories tests logic that replaces the
+        # full glob string with an absolute path prefix if there is only 1
+        # subdirectory in the final mapping.
+        'quuz/garply',
+        'quuz/garply/corge',
+        'quuz/garply/grault',
+        # A directory that lacks events files, but contains a subdirectory
         # with events files (first level should be ignored, second level should
-        # be included). corge and grault are thus subling events files.
-        'quuz/corge',
-        'quuz/grault',
-        # A directory with a glob character in its name.
-        'ba*/baz',
+        # be included).
+        'waldo',
+        'waldo/fred',
     )
     for directory_name in directory_names:
       os.makedirs(os.path.join(top_directory, directory_name))
 
     # Add a few files to the directory.
     file_names = (
-        'events.out.tfevents.1473720381.meep.com',
+        'a.tfevents.1',
         'model.ckpt',
-        'bar/events.out.tfevents.1473720382.bar.com',
+        'bar/b.tfevents.1',
         'bar/red_herring.txt',
-        'bar/baz/events.out.tfevents.1473720383.baz.com',
-        'bar/baz/events.out.tfevents.1473720384.baz.com',
+        'bar/baz/c.tfevents.1',
+        'bar/baz/d.tfevents.1',
         'bar/quux/some_flume_output.txt',
         'bar/quux/some_more_flume_output.txt',
-        'quuz/corge/events.out.tfevents.1473720642.corge.com',
-        'quuz/grault/events.out.tfevents.1473720643.grault.com',
-        'ba*/baz/events.out.tfevents.1473720644.asterisk.com',
+        'quuz/e.tfevents.1',
+        'quuz/garply/f.tfevents.1',
+        'quuz/garply/corge/g.tfevents.1',
+        'quuz/garply/grault/h.tfevents.1',
+        'waldo/fred/i.tfevents.1',
     )
     for file_name in file_names:
       open(os.path.join(top_directory, file_name), 'w').close()

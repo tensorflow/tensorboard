@@ -21,6 +21,7 @@ import collections
 import os
 import re
 
+import six
 import tensorflow as tf
 
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile('([*?[])')
@@ -116,7 +117,7 @@ def ListRecursivelyViaGlobbing(top):
     pairs = collections.defaultdict(list)
     for file_path in glob:
       pairs[os.path.dirname(file_path)].append(file_path)
-    for dir_name, file_paths in pairs.items():
+    for dir_name, file_paths in six.iteritems(pairs):
       yield (dir_name, tuple(file_paths))
 
     if len(pairs) == 1:
@@ -180,7 +181,6 @@ def GetLogdirSubdirectories(path):
   if IsGCSPath(path) or IsCnsPath(path):
     # Glob-ing for files can be significantly faster than recursively
     # walking through directories for some file systems.
-    # Use a dict comprehension to unique-ify subdirectories.
     tf.logging.info(
         'GetLogdirSubdirectories: Starting to list directories via glob-ing.')
     traversal_method = ListRecursivelyViaGlobbing

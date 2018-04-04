@@ -194,9 +194,9 @@ class DirectoryWatcherTest(tf.test.TestCase):
     FakeFactory.has_been_called = False
 
     stub_names = [
-        'GlobAndListFiles',
         'ListDirectoryAbsolute',
-        'WalkAndListFilesPerDirectory'
+        'ListRecursivelyViaGlobbing',
+        'ListRecursivelyViaWalking',
     ]
     for stub_name in stub_names:
       self.stubs.Set(io_wrapper, stub_name,
