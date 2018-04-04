@@ -113,8 +113,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
                    ('grpc.max_receive_message_length', gigabyte)]
         tpu_profiler_port = FLAGS.master_tpu_unsecure_channel + ':8466'
         channel = grpc.insecure_channel(tpu_profiler_port, options)
-        self.stub = 
-            tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(channel)
+        self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(
+            channel)
 
   def index_impl(self):
     """Returns available runs and available tool data in the log directory.
