@@ -25,10 +25,17 @@ var tf;
              * Class for the Graph Hierarchy for TensorFlow graph.
              */
             var HierarchyImpl = /** @class */ (function () {
-                function HierarchyImpl() {
+                /**
+                 * Constructs a hierarchy.
+                 * @param graphOptions Options passed to dagre for creating the graph. Note
+                 *   that the `compound` argument will be overriden to true.
+                 */
+                function HierarchyImpl(graphOptions) {
                     this.hasShapeInfo = false;
                     this.maxMetaEdgeSize = 1;
-                    this.root = graph_1.createMetanode(graph_1.ROOT_NAME, { compound: true });
+                    this.graphOptions = graphOptions || {};
+                    this.graphOptions.compound = true;
+                    this.root = graph_1.createMetanode(graph_1.ROOT_NAME, this.graphOptions);
                     this.libraryFunctions = {};
                     this.templates = null;
                     this.devices = null;
@@ -69,7 +76,7 @@ var tf;
                         return groupNode.bridgegraph;
                     }
                     var bridgegraph = groupNode.bridgegraph =
-                        graph_1.createGraph('BRIDGEGRAPH', graph_1.GraphType.BRIDGE);
+                        graph_1.createGraph('BRIDGEGRAPH', graph_1.GraphType.BRIDGE, this.graphOptions);
                     if (!node.parentNode || !('metagraph' in node.parentNode)) {
                         return bridgegraph;
                     }
@@ -317,7 +324,7 @@ var tf;
              * @param params Parameters used when building a hierarchy.
              */
             function build(graph, params, tracker) {
-                var h = new HierarchyImpl();
+                var h = new HierarchyImpl({ 'rankdir': params.rankDirection });
                 var seriesNames = {};
                 return tf.graph.util
                     .runAsyncTask('Adding nodes', 20, function () {
@@ -503,7 +510,7 @@ var tf;
                         var name_1 = path[i];
                         var child = h.node(name_1);
                         if (!child) {
-                            child = graph_1.createMetanode(name_1);
+                            child = graph_1.createMetanode(name_1, h.graphOptions);
                             child.parentNode = parent;
                             h.setNode(name_1, child);
                             parent.metagraph.setNode(name_1, child);
@@ -634,7 +641,7 @@ var tf;
                     }
                 });
                 var clusters = clusterNodes(metagraph);
-                var seriesDict = detectSeries(clusters, metagraph);
+                var seriesDict = detectSeries(clusters, metagraph, hierarchy.graphOptions);
                 // Add each series node to the graph and add its grouped children to its own
                 // metagraph.
                 _.each(seriesDict, function (seriesNode, seriesName) {
@@ -731,7 +738,7 @@ var tf;
              * @param metagraph
              * @return A dictionary from series name => seriesNode
              */
-            function detectSeries(clusters, metagraph) {
+            function detectSeries(clusters, metagraph, graphOptions) {
                 var seriesDict = {};
                 _.each(clusters, function (members, clusterId) {
                     if (members.length <= 1) {
@@ -765,7 +772,7 @@ var tf;
                         }
                         var seriesName = graph_1.getSeriesNodeName(prefix, suffix, parent);
                         candidatesDict[seriesName] = candidatesDict[seriesName] || [];
-                        var seriesNode = graph_1.createSeriesNode(prefix, suffix, parent, +id, name);
+                        var seriesNode = graph_1.createSeriesNode(prefix, suffix, parent, +id, name, graphOptions);
                         candidatesDict[seriesName].push(seriesNode);
                     });
                     // In each group of nodes, group nodes in bunches that have monotonically
@@ -787,10 +794,10 @@ var tf;
                                 seriesNodes.push(nextNode);
                                 continue;
                             }
-                            addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph);
+                            addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
                             seriesNodes = [nextNode];
                         }
-                        addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph);
+                        addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
                     });
                 });
                 return seriesDict;
@@ -803,11 +810,12 @@ var tf;
              * @param seriesDict the dictionary of series
              * @param clusterId ID of the template of the nodes of the series
              * @param metagraph
+             * @param graphOptions
              */
-            function addSeriesToDict(seriesNodes, seriesDict, clusterId, metagraph) {
+            function addSeriesToDict(seriesNodes, seriesDict, clusterId, metagraph, graphOptions) {
                 if (seriesNodes.length > 1) {
                     var curSeriesName = graph_1.getSeriesNodeName(seriesNodes[0].prefix, seriesNodes[0].suffix, seriesNodes[0].parent, seriesNodes[0].clusterId, seriesNodes[seriesNodes.length - 1].clusterId);
-                    var curSeriesNode_1 = graph_1.createSeriesNode(seriesNodes[0].prefix, seriesNodes[0].suffix, seriesNodes[0].parent, clusterId, curSeriesName);
+                    var curSeriesNode_1 = graph_1.createSeriesNode(seriesNodes[0].prefix, seriesNodes[0].suffix, seriesNodes[0].parent, clusterId, curSeriesName, graphOptions);
                     _.each(seriesNodes, function (node) {
                         curSeriesNode_1.ids.push(node.clusterId);
                         curSeriesNode_1.metagraph.setNode(node.name, metagraph.node(node.name));

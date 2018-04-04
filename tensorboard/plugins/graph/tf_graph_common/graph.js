@@ -417,8 +417,8 @@ var tf;
             return MetaedgeImpl;
         }());
         graph_1.MetaedgeImpl = MetaedgeImpl;
-        function createSeriesNode(prefix, suffix, parent, clusterId, name) {
-            return new SeriesNodeImpl(prefix, suffix, parent, clusterId, name);
+        function createSeriesNode(prefix, suffix, parent, clusterId, name, graphOptions) {
+            return new SeriesNodeImpl(prefix, suffix, parent, clusterId, name, graphOptions);
         }
         graph_1.createSeriesNode = createSeriesNode;
         function getSeriesNodeName(prefix, suffix, parent, startId, endId) {
@@ -430,7 +430,7 @@ var tf;
         }
         graph_1.getSeriesNodeName = getSeriesNodeName;
         var SeriesNodeImpl = /** @class */ (function () {
-            function SeriesNodeImpl(prefix, suffix, parent, clusterId, name) {
+            function SeriesNodeImpl(prefix, suffix, parent, clusterId, name, graphOptions) {
                 this.name = name || getSeriesNodeName(prefix, suffix, parent);
                 this.type = NodeType.SERIES;
                 this.hasLoop = false;
@@ -441,7 +441,7 @@ var tf;
                 this.parent = parent;
                 this.isGroupNode = true;
                 this.cardinality = 0;
-                this.metagraph = createGraph(name, GraphType.SERIES);
+                this.metagraph = createGraph(name, GraphType.SERIES, graphOptions);
                 // bridgegraph must be constructed lazily-see hierarchy.getBridgegraph()
                 this.bridgegraph = null;
                 this.parentNode = null;
@@ -806,11 +806,11 @@ var tf;
          * Create a new graphlib.Graph() instance with default parameters
          */
         function createGraph(name, type, opt) {
-            if (opt === void 0) { opt = {}; }
-            var graph = new graphlib.Graph(opt);
+            var graphOptions = opt || {};
+            var graph = new graphlib.Graph(graphOptions);
             graph.setGraph({
                 name: name,
-                rankdir: 'BT',
+                rankdir: graphOptions.rankdir || 'BT',
                 type: type
             });
             return graph;

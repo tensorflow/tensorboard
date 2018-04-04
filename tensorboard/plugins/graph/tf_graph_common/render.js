@@ -180,7 +180,7 @@ var tf;
                     // Maps node name to whether the rendering hierarchy was already
                     // constructed.
                     this.hasSubhierarchy = {};
-                    this.root = new RenderGroupNodeInfo(hierarchy.root);
+                    this.root = new RenderGroupNodeInfo(hierarchy.root, hierarchy.graphOptions);
                     this.index[hierarchy.root.name] = this.root;
                     this.renderedOpNames.push(hierarchy.root.name);
                     this.buildSubhierarchy(hierarchy.root.name);
@@ -257,7 +257,7 @@ var tf;
                         return null;
                     }
                     var renderInfo = node.isGroupNode ?
-                        new RenderGroupNodeInfo(node) :
+                        new RenderGroupNodeInfo(node, this.hierarchy.graphOptions) :
                         new RenderNodeInfo(node);
                     this.index[nodeName] = renderInfo;
                     this.renderedOpNames.push(nodeName);
@@ -1304,12 +1304,13 @@ var tf;
             ;
             var RenderGroupNodeInfo = /** @class */ (function (_super) {
                 __extends(RenderGroupNodeInfo, _super);
-                function RenderGroupNodeInfo(groupNode) {
+                function RenderGroupNodeInfo(groupNode, graphOptions) {
                     var _this = _super.call(this, groupNode) || this;
                     var metagraph = groupNode.metagraph;
                     var gl = metagraph.graph();
+                    graphOptions.compound = true;
                     _this.coreGraph =
-                        graph_1.createGraph(gl.name, graph_1.GraphType.CORE, { compound: true });
+                        graph_1.createGraph(gl.name, graph_1.GraphType.CORE, graphOptions);
                     _this.inExtractBox = { width: 0, height: 0 };
                     _this.outExtractBox = { width: 0, height: 0 };
                     _this.libraryFunctionsBox = { width: 0, height: 0 };
