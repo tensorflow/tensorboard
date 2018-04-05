@@ -217,13 +217,11 @@ class EventMultiplexer(object):
             names_to_delete.add(name)
 
     if self._max_threads_for_reloading_runs > 1:
-      tf.logging.info(
-          'Starting %d threads to reload runs',
-          self._max_threads_for_reloading_runs)
       num_threads = min(
           self._max_threads_for_reloading_runs, len(items))
       threads = [threading.Thread(target=Worker, name='worker %d' % i)
                  for i in range(num_threads)]
+      tf.logging.info('Starting %d threads to reload runs', num_threads)
       for thread in threads:
         thread.start()
       for thread in threads:
