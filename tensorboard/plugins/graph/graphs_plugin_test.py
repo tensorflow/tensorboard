@@ -78,7 +78,7 @@ class GraphsPluginTest(tf.test.TestCase):
       self.generate_run(self._RUN_WITH_GRAPH, include_graph=True)
     if without_graph:
       self.generate_run(self._RUN_WITHOUT_GRAPH, include_graph=False)
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)

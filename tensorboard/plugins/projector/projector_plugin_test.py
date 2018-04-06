@@ -243,7 +243,7 @@ class ProjectorAppTest(tf.test.TestCase):
     self.assertEqual(2, mock.call_count)
 
   def _SetupWSGIApp(self):
-    multiplexer = event_multiplexer.EventMultiplexer(
+    multiplexer = event_multiplexer.EventMultiplexerPlugin(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
     context = base_plugin.TBContext(

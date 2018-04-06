@@ -52,7 +52,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     super(InteractiveDebuggerPluginTest, self).setUp()
 
     self._dummy_logdir = tempfile.mkdtemp()
-    self._dummy_multiplexer = event_multiplexer.EventMultiplexer({})
+    self._dummy_multiplexer = event_multiplexer.EventMultiplexerPlugin({})
     self._debugger_port = portpicker.pick_unused_port()
     self._debugger_url = 'grpc://localhost:%d' % self._debugger_port
     context = base_plugin.TBContext(logdir=self._dummy_logdir,

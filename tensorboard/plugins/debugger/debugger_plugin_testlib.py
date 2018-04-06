@@ -119,7 +119,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     writer.Close()
 
     # Start a server that will receive requests and respond with health pills.
-    self.multiplexer = event_multiplexer.EventMultiplexer({
+    self.multiplexer = event_multiplexer.EventMultiplexerPlugin({
         '.': self.log_dir,
         'run_foo': run_foo_directory,
     })

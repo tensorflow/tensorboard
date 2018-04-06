@@ -181,7 +181,7 @@ class CorePluginTest(tf.test.TestCase):
 
   def _start_logdir_based_server(self, temp_dir):
     self.logdir = temp_dir
-    self.multiplexer = event_multiplexer.EventMultiplexer(
+    self.multiplexer = event_multiplexer.EventMultiplexerPlugin(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
     context = base_plugin.TBContext(

@@ -87,7 +87,7 @@ class AudioPluginTest(tf.test.TestCase):
     writer.close()
 
     # Start a server with the plugin.
-    multiplexer = event_multiplexer.EventMultiplexer({
+    multiplexer = event_multiplexer.EventMultiplexerPlugin({
         "foo": foo_directory,
         "bar": bar_directory,
     })

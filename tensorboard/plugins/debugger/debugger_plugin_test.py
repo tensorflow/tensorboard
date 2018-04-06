@@ -45,7 +45,7 @@ class DebuggerPluginTest(debugger_plugin_testlib.DebuggerPluginTestBase):
     plugin = self.debugger_plugin_module.DebuggerPlugin(
         base_plugin.TBContext(
             logdir=self.log_dir,
-            multiplexer=event_multiplexer.EventMultiplexer({})))
+            multiplexer=event_multiplexer.EventMultiplexerPlugin({})))
     plugin.listen(self.debugger_data_server_grpc_port)
 
     # The multiplexer lacks sampled health pills.

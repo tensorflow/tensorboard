@@ -114,7 +114,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
     self.plugin = self.createPlugin(self.logdir)
 
   def createPlugin(self, logdir):
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
     plugin_name_to_instance = {}

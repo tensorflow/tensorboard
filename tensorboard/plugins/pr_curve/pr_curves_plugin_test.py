@@ -52,7 +52,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
         verbose=False)
 
     # Create a multiplexer for reading the data we just wrote.
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
 
@@ -288,7 +288,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
   def testPluginIsNotActive(self):
     """Tests that the plugin is inactive when no relevant data exists."""
     empty_logdir = os.path.join(self.get_temp_dir(), 'empty_logdir')
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(empty_logdir)
     multiplexer.Reload()
     context = base_plugin.TBContext(

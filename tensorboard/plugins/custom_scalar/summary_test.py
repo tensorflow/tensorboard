@@ -87,7 +87,7 @@ class LayoutTest(tf.test.TestCase):
       writer.add_summary(s.run(summary.op(layout_proto_to_write)))
 
     # Read the data from disk.
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
     tensor_events = multiplexer.Tensors('.', metadata.CONFIG_SUMMARY_TAG)

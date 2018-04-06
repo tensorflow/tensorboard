@@ -23,9 +23,10 @@ import shutil
 
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
-
+from tensorboard.backend.event_processing import plugin_event_accumulator as ea  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as em  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import event_accumulator
 
 def _AddEvents(path):
   if not tf.gfile.IsDirectory(path):
@@ -107,19 +108,19 @@ class EventMultiplexerTest(tf.test.TestCase):
 
   def testEmptyLoader(self):
     """Tests empty EventMultiplexer creation."""
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     self.assertEqual(x.Runs(), {})
 
   def testRunNamesRespected(self):
     """Tests two EventAccumulators inserted/accessed in EventMultiplexer."""
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
+    x = em.EventMultiplexerPlugin({'run1': 'path1', 'run2': 'path2'})
     self.assertItemsEqual(sorted(x.Runs().keys()), ['run1', 'run2'])
     self.assertEqual(x.GetAccumulator('run1')._path, 'path1')
     self.assertEqual(x.GetAccumulator('run2')._path, 'path2')
 
   def testReload(self):
     """EventAccumulators should Reload after EventMultiplexer call it."""
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
+    x = em.EventMultiplexerPlugin({'run1': 'path1', 'run2': 'path2'})
     self.assertFalse(x.GetAccumulator('run1').reload_called)
     self.assertFalse(x.GetAccumulator('run2').reload_called)
     x.Reload()
@@ -128,7 +129,7 @@ class EventMultiplexerTest(tf.test.TestCase):
 
   def testPluginRunToTagToContent(self):
     """Tests the method that produces the run to tag to content mapping."""
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
+    x = em.EventMultiplexerPlugin({'run1': 'path1', 'run2': 'path2'})
     self.assertDictEqual({
         'run1': {
             'path1_foo': 'foo_content',
@@ -142,15 +143,15 @@ class EventMultiplexerTest(tf.test.TestCase):
 
   def testExceptions(self):
     """KeyError should be raised when accessing non-existing keys."""
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
+    x = em.EventMultiplexerPlugin({'run1': 'path1', 'run2': 'path2'})
     with self.assertRaises(KeyError):
       x.Tensors('sv1', 'xxx')
 
   def testInitialization(self):
     """Tests EventMultiplexer is created properly with its params."""
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     self.assertEqual(x.Runs(), {})
-    x = event_multiplexer.EventMultiplexer({'run1': 'path1', 'run2': 'path2'})
+    x = em.EventMultiplexerPlugin({'run1': 'path1', 'run2': 'path2'})
     self.assertItemsEqual(x.Runs(), ['run1', 'run2'])
     self.assertEqual(x.GetAccumulator('run1')._path, 'path1')
     self.assertEqual(x.GetAccumulator('run2')._path, 'path2')
@@ -164,7 +165,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     - When the directory has empty subdirectory.
     - Contains proper EventAccumulators after adding events.
     """
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     tmpdir = self.get_temp_dir()
     join = os.path.join
     fakedir = join(tmpdir, 'fake_accumulator_directory')
@@ -203,7 +204,7 @@ class EventMultiplexerTest(tf.test.TestCase):
         x.GetAccumulator('path2/path2')._path, path2_2, 'loader2 path correct')
 
   def testAddRunsFromDirectoryThatContainsEvents(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     tmpdir = self.get_temp_dir()
     join = os.path.join
     realdir = join(tmpdir, 'event_containing_directory')
@@ -222,7 +223,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertItemsEqual(x.Runs(), ['.', 'subdir'])
 
   def testAddRunsFromDirectoryWithRunNames(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     tmpdir = self.get_temp_dir()
     join = os.path.join
     realdir = join(tmpdir, 'event_containing_directory')
@@ -241,7 +242,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertItemsEqual(x.Runs(), ['foo/.', 'foo/subdir'])
 
   def testAddRunsFromDirectoryWalksTree(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     tmpdir = self.get_temp_dir()
     join = os.path.join
     realdir = join(tmpdir, 'event_containing_directory')
@@ -261,7 +262,7 @@ class EventMultiplexerTest(tf.test.TestCase):
                                      'subdirectory/1/1'])
 
   def testAddRunsFromDirectoryThrowsException(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     tmpdir = self.get_temp_dir()
 
     filepath = _AddEvents(tmpdir)
@@ -269,7 +270,7 @@ class EventMultiplexerTest(tf.test.TestCase):
       x.AddRunsFromDirectory(filepath)
 
   def testAddRun(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     x.AddRun('run1_path', 'run1')
     run1 = x.GetAccumulator('run1')
     self.assertEqual(sorted(x.Runs().keys()), ['run1'])
@@ -288,7 +289,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertEqual(x.GetAccumulator('runName3')._path, 'runName3')
 
   def testAddRunMaintainsLoading(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     x.Reload()
     x.AddRun('run1')
     x.AddRun('run2')
@@ -299,7 +300,7 @@ class EventMultiplexerTest(tf.test.TestCase):
 class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
 
   def testDeletingDirectoryRemovesRun(self):
-    x = event_multiplexer.EventMultiplexer()
+    x = em.EventMultiplexerPlugin()
     tmpdir = self.get_temp_dir()
     join = os.path.join
     run1_dir = join(tmpdir, 'run1')

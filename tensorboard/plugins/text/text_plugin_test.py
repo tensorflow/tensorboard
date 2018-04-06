@@ -39,7 +39,7 @@ class TextPluginTest(tf.test.TestCase):
   def setUp(self):
     self.logdir = self.get_temp_dir()
     self.generate_testdata()
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
@@ -357,14 +357,14 @@ class TextPluginTest(tf.test.TestCase):
 
   def testPluginIsActiveWhenNoRuns(self):
     """The plugin should be inactive when there are no runs."""
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
     self.assertIsActive(plugin, False)
 
   def testPluginIsActiveWhenTextRuns(self):
     """The plugin should be active when there are runs with text."""
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
     multiplexer.AddRunsFromDirectory(self.logdir)
@@ -382,7 +382,7 @@ class TextPluginTest(tf.test.TestCase):
   def testPluginIsActiveWhenRunsButNoText(self):
     """The plugin should be inactive when there are runs but none has text."""
     logdir = os.path.join(self.get_temp_dir(), 'runs_with_no_text')
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
     self.generate_testdata(include_text=False, logdir=logdir)
@@ -427,7 +427,7 @@ class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):
   def setUp(self):
     self.logdir = self.get_temp_dir()
     self.generate_testdata()
-    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer = event_multiplexer.EventMultiplexerPlugin()
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
