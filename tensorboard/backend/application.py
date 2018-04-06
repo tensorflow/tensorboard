@@ -151,10 +151,10 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     ValueError: If something is wrong with the plugin configuration.
   """
   path_to_run = parse_event_files_spec(logdir)
-  if reload_interval > 0:
+  if reload_interval >= 0:
+    # We either reload the multiplexer once when TensorBoard starts up, or we
+    # continuously reload the multiplexer.
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
-  elif reload_interval == 0:
-    reload_multiplexer(multiplexer, path_to_run)
   return TensorBoardWSGI(plugins, path_prefix)
 
 
@@ -341,28 +341,38 @@ def reload_multiplexer(multiplexer, path_to_run):
 def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   """Starts a thread to automatically reload the given multiplexer.
 
-  The thread will reload the multiplexer by calling `ReloadMultiplexer` every
-  `load_interval` seconds, starting immediately.
+  If `load_interval` is positive, the thread will reload the multiplexer
+  by calling `ReloadMultiplexer` every `load_interval` seconds, starting
+  immediately. Otherwise, reloads the multiplexer once and never again.
 
   Args:
     multiplexer: The `EventMultiplexer` to add runs to and reload.
     path_to_run: A dict mapping from paths to run names, where `None` as the run
       name is interpreted as a run name equal to the path.
-    load_interval: How many seconds to wait after one load before starting the
-      next load.
+    load_interval: An integer greater than or equal to 0. If positive, how many
+      seconds to wait after one load before starting the next load. Otherwise,
+      reloads the multiplexer once and never again (no continuous reloading).
 
   Returns:
     A started `threading.Thread` that reloads the multiplexer.
+
+  Raises:
+    ValueError: If `load_interval` is negative.
   """
+  if load_interval < 0:
+    raise ValueError('load_interval is negative: %d' % load_interval)
 
   # We don't call multiplexer.Reload() here because that would make
   # AddRunsFromDirectory block until the runs have all loaded.
-  def _reload_forever():
+  def _reload():
     while True:
       reload_multiplexer(multiplexer, path_to_run)
+      if load_interval == 0:
+        # Only load the multiplexer once. Do not continuously reload.
+        break
       time.sleep(load_interval)
 
-  thread = threading.Thread(target=_reload_forever, name='Reloader')
+  thread = threading.Thread(target=_reload, name='Reloader')
   thread.daemon = True
   thread.start()
   return thread
