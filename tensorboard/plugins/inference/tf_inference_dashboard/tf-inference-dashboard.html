@@ -1,0 +1,500 @@
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-inference-panel/tf-inference-panel.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+
+<!--
+  A plugin that mutates numerical and categorical features and plots how the mutations change
+  inference results. See go/mutant-inference-plugin for more information.
+-->
+<dom-module id="tf-inference-dashboard">
+  <template>
+    <style>
+      .tf-category-pane {
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        padding: 10px 15px;
+        text-align: left;
+      }
+
+      .tf-category-pane-content {
+        padding: 15px;
+        border: 1px solid #dedede;
+        border-top: none;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        background: white;
+      }
+
+      paper-spinner-lite {
+        width: 14px;
+        height: 14px;
+        vertical-align: text-bottom;
+        --paper-spinner-color: var(--tb-orange-strong);
+      }
+
+      :host vz-line-chart {
+        height: 300px;
+        width: 400px;
+        display: inline-block;
+      }
+
+      :host vz-bar-chart {
+        height: 300px;
+        width: 400px;
+        display: inline-block;
+      }
+
+      #classification {
+        width: 40%;
+      }
+
+      .info-text {
+        font-size: 12px;
+        color: #777;
+        margin: 20px 0px;
+      }
+
+      .range-input-container {
+        position:absolute;
+        right: 4px;
+        top:4px;
+      }
+
+      .style-input {
+        width: 50px;
+        text-align: right;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+    </style>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div class="sidebar-section">
+
+          <tf-inference-panel inference-address="{{inferenceAddress}}"
+                              model-name="{{modelName}}"
+                              examples-path="{{examplesPath}}"
+                              model-type="{{modelType}}"></tf-inference-panel>
+
+          <paper-input always-float-label type="number" label="Example index"
+                       placeholder="[[exampleIndex]]" value="{{exampleIndex}}">
+          </paper-input>
+
+        </div>
+        <div class="sidebar-section">
+          <!-- TODO(cassandrax/jwexler): Plug in vz-example-viewer instead. -->
+          <pre>[[exampleContents]]</pre>
+        </div>
+      </div>
+
+      <div class="center" id="center">
+
+        <div class="info-text">
+          <p>
+            Mutant Inference shows how systematically varying the input feature changes the inference prediction.
+            See <a target="_blank" href="http://go/mutant-inference-plugin">go/mutant-inference-plugin</a>
+            for usage instructions.
+          </p>
+        </div>
+
+
+        <template is="dom-repeat" items="[[eligibleFeatures]]">
+
+          <div class="feature-container" on-tap="categoryPaneClicked" data-feature-name$="[[item.name]]">
+            <button class="tf-category-pane" style="position:relative">
+              [[item.name]]
+
+              <!-- Hide the range input for categorical features that will have "samples" field. -->
+              <div class="range-input-container" hidden$="[[item.samples]]">
+                <span class="info-text"
+                      title="The range of mutant value (default values are automatically inferred from training data).">
+                  Mutant value range:
+                </span>
+                <input type="number"
+                       class="style-input x-min"
+                       value="[[item.observedMin]]"
+                       title="The minimum mutant value (default value is automatically inferred from training data).">
+                <input type="number"
+                       class="style-input x-max"
+                       value="[[item.observedMax]]"
+                       title="The maximum mutant value (default value is automatically inferred from training data).">
+
+                <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields.">
+                  <span class="info-text">Optional feature indices: </span>
+                  <input type="text"
+                         class="style-input feature-index-pattern">
+                </span>
+              </div>
+            </button>
+            <div class="tf-category-pane-content" hidden>
+            </div>
+          </div>
+        </template>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+  </template>
+
+  <script>
+    "use strict";
+
+    const defaultExampleIndex = 0;
+
+    function deleteElement($elt){
+      if ($elt && $elt.parentElement){
+        $elt.parentElement.removeChild($elt);
+      }
+    }
+
+    Polymer({
+      is: "tf-inference-dashboard",
+      properties: {
+
+        // TensorBoard plugin standard.
+        // Note that order matters (_canceller must be initialized before example_contents.
+        requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new tf_backend.Canceller(),
+        },
+
+        // Fields for inference plugin.
+        examplesPath: {
+          type: String,
+
+          // Call refreshPlugin() when this property changes since full viz needs to be recomputed.
+          observer: 'refreshPlugin'
+        },
+        modelName: {
+          type: String,
+        },
+        inferenceAddress: {
+          type: String,
+        },
+        modelType: {
+          type: String,
+        },
+        exampleContents: {
+          // Pretty-printed contents of the first example in examplesPath.
+          type: String,
+        },
+        exampleIndex: {
+          type: Number,
+          value: tf_storage.getNumberInitializer('exampleIndex',
+                                                 {defaultValue: defaultExampleIndex}),
+          observer: 'exampleIndexChanged_'
+        },
+        eligibleFeatures: {
+          type: Array,
+          value: [] // [{name: 'a_numeric_feature', observedMin: -10, observedMax: 10},
+                    // {name: 'a_categorical_feature', samples: []}]
+        },
+
+        pendingFeatures: {
+          type: Array,
+          value: []
+        }
+      },
+
+      observers: [
+        'getExampleContentsAsync(examplesPath, exampleIndex)',
+      ],
+
+      // Required function.
+      reload: function(){
+      },
+
+      addChart: function(chartType, featureName, data){
+        var $chart;
+        if (chartType == 'numeric'){
+          $chart = this.makeLineChart(data);
+        } else if (chartType == 'categorical'){
+          $chart = this.makeBarChart(data);
+        } else {
+          console.error('Unknown chartType: ' + chartType);
+        }
+
+        // Delete spinner
+        var $container = this.featureContainerByName(featureName);
+        deleteElement($container.querySelector('paper-spinner-lite'));
+
+        // Append chart
+        var $categoryPane = $container.querySelector('.tf-category-pane-content');
+        Polymer.dom($categoryPane).appendChild($chart);
+
+        // Remove the feature from pending queue, so it can be called again.
+        var feature_ind = this.pendingFeatures.indexOf(featureName);
+        if (feature_ind > -1) {
+          this.pendingFeatures.splice(feature_ind, 1);
+        }
+      },
+
+      makeBarChart: function(data){
+        // categorical data:
+        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
+        //        {"step": ["Married-AF-spouse"], "scalar": 0.15340332686901093}]}
+
+        function convertPoint(point){
+          // point: {"step": ["Divorced"], "scalar": 0.1533520370721817}
+          return {
+            x: point.step,
+            y: point.scalar
+          };
+        };
+
+        // Convert the data into the format expected by vz-bar-chart.
+        var mapped = _.mapValues(data, function(pointsForSeries){
+          return _.map(pointsForSeries, point => convertPoint(point));
+        });
+
+        var $chart = document.createElement('vz-bar-chart');
+        $chart.data = mapped;
+
+        return $chart;
+      },
+
+      makeLineChart: function(data){
+        // numerical data:
+        // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
+        //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
+
+        var $chart = document.createElement('vz-line-chart');
+        var valueFormatter = vz_line_chart.multiscaleFormatter(
+          vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+        var formatValueOrNaN = function (x) {
+          return vz_line_chart.isNaN(x) ? 'NaN' : valueFormatter(x);
+        };
+        $chart.tooltipColumns = [
+          {
+              title: 'Name',
+              evaluate: function (d) { return d.dataset.metadata().name; },
+          },
+          {
+              title: 'Mutant Value',
+              evaluate: function (d) { return formatValueOrNaN(d.datum.step); },
+          },
+          {
+              title: 'Inference Result',
+              evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
+          },
+        ];
+
+        var series = _.keys(data);
+        $chart.setVisibleSeries(series);
+        series.forEach(label => $chart.setSeriesData(label, data[label]));
+        return $chart;
+      },
+
+      showToast: function(msg) {
+        var toast = document.createElement('paper-toast');
+        document.body.appendChild(toast);
+        toast.text = msg;
+        toast.show();
+
+        // Also, log to console.
+        console.error(msg);
+      },
+
+      makeAsyncRequest: function(url, thenDoFn){
+        var self = this;
+        const wrapperFn = this._canceller.cancellable(function(result){
+          if (result.cancelled) {
+            return;
+          }
+          if (result.value && result.value.error){
+            // show toast with the error
+            self.showToast(result.value.error);
+          } else {
+            thenDoFn(result);
+          }
+        });
+        this.requestManager.request(url).then(wrapperFn);
+      },
+
+      getInferenceVisualization: function(featureName, event){
+
+        // The range of x-values to interpolate over for numerical features.
+        var x_min = this.getUniqueByEvent(event, '.x-min').value;
+        var x_max = this.getUniqueByEvent(event, '.x-max').value;
+
+        // For a numerical feature with many repeated values, we allow users to restrict
+        // inference to a smaller range of indices by using a pattern
+        // (e.g. "0,2,4-6" runs inference for indices 0, 2, 4, 5, 6).
+        var featureIndexPattern = this.getUniqueByEvent(event, '.feature-index-pattern').value;
+
+        var urlParams = {
+          'feature_name': featureName,
+          'inference_address': this.inferenceAddress,
+          'model_name': this.modelName,
+          'examples_path': this.examplesPath,
+          'model_type': this.modelType,
+          'x_min': x_min,
+          'x_max': x_max,
+          'feature_index_pattern': featureIndexPattern,
+          'example_index': this.exampleIndex
+        };
+        var url = tf_backend.addParams('/data/plugin/inference/infer_mutants', urlParams);
+
+        const makeChartForFeature = function(result){
+          // Should describe the format of the result object.
+
+          var chartType = result.value.chartType;
+          var data = result.value.data;
+          data.forEach(subfeature => this.addChart(chartType, featureName, subfeature));
+
+        };
+        this.makeAsyncRequest(url, makeChartForFeature.bind(this));
+
+        var $container = this.featureContainerByName(
+          featureName).querySelector('.tf-category-pane-content');
+        var $spinner = document.createElement('paper-spinner-lite');
+        $spinner.setAttribute('active', true);
+        Polymer.dom($container).appendChild($spinner);
+      },
+
+      // Return the feature container associated with the feature name.
+      featureContainerByName: function(featureName){
+        return this.$$('[data-feature-name="' + featureName + '"]');
+      },
+
+      // Return the feature container associated with the specific event.
+      featureContainerByEvent: function(event){
+        var el = Polymer.dom(event).localTarget;
+        while (!el.classList.contains('feature-container')) {
+          el = el.parentNode;
+       }
+       return el;
+      },
+
+      // Returns bool for whether an ancestor has targetClass.
+      hasAncestorClass: function(event, targetClass){
+        var el = Polymer.dom(event).localTarget;
+        while (!el.classList.contains('feature-container')) {
+          if (el.classList.contains(targetClass)) {
+              return true;
+          }
+          el = el.parentNode;
+       }
+       return false;
+      },
+
+      // Get the selector within .feature-container for the event
+      getUniqueByEvent(event, selector){
+        return this.featureContainerByEvent(event).querySelector(selector);
+      },
+
+      shouldToggleCategoryPane: function(event){
+          return !this.hasAncestorClass(event, 'range-input-container');
+      },
+
+      categoryPaneClicked: function(event){
+        // Make sure the user meant to trigger a get-request.
+        if (!this.shouldToggleCategoryPane(event)){
+          return;
+        }
+
+        var $element = this.getUniqueByEvent(event, '.tf-category-pane-content');
+
+        if ($element.hasAttribute('hidden')){
+          $element.removeAttribute('hidden');
+
+          // Make sure the feature wasn't already requested.
+          var featureName = event.model.get('item').name;
+          if (this.pendingFeatures.indexOf(featureName) > -1) {
+            return;
+          }
+          this.pendingFeatures.push(featureName);
+
+          this.getInferenceVisualization(featureName, event);
+
+        } else {
+          $element.setAttribute('hidden', true);
+
+          // Delete all the line charts, because the user is requesting a refresh.
+          var $charts = this.featureContainerByEvent(event).querySelectorAll('vz-line-chart');
+          $charts.forEach(function($chart){
+            deleteElement($chart);
+          });
+        }
+      },
+
+      populateTabs: function(){
+        if (!this.examplesPath){
+          return;
+        }
+        var url = tf_backend.addParams('/data/plugin/inference/eligible_features',
+                               {'examples_path': this.examplesPath});
+        const setEligibleFields = result => {
+          this.set('eligibleFeatures', result.value);
+        };
+        this.makeAsyncRequest(url, setEligibleFields);
+      },
+
+      getExampleContentsAsync: function(examplesPath, exampleIndex){
+        if (!this.examplesPath){
+          return;
+        }
+        var url = tf_backend.addParams('/data/plugin/inference/example_from_path',
+                               {'examples_path': examplesPath,
+                                'example_index': exampleIndex});
+
+        const updateExampleContents = result => {
+          this.set('exampleContents', result.value.example_contents);
+        };
+        this.makeAsyncRequest(url, updateExampleContents);
+      },
+
+     ready: function(){
+      this.refreshPlugin();
+     },
+
+     // When something changes that the entire plugin should be refreshed.
+     // (e.g. examplesPath changes so everything on screen is out of date).
+     refreshPlugin: function(){
+       // Clear state
+       this.pendingFeatures = [];
+       // Populate left-hand-side example.
+       this.getExampleContentsAsync(this.examplesPath, this.exampleIndex);
+       // Get the eligible feature names
+       this.populateTabs();
+     },
+
+     exampleIndexChanged_: tf_storage.getNumberObserver('exampleIndex',
+                                                        {defaultValue: defaultExampleIndex}),
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'inference',
+      elementName: 'tf-inference-dashboard',
+      tabName: 'Mutant Inference',
+    });
+
+  </script>
+</dom-module>
