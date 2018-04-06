@@ -29,6 +29,9 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+from tensorboard.backend.event_processing import event_accumulator
+
 
 namedtuple = collections.namedtuple
 
@@ -57,7 +60,8 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
 _TENSOR_RESERVOIR_KEY = "."  # arbitrary
 
 
-class EventAccumulator(object):
+
+class EventAccumulatorPlugin(EventAccumulator):
   """An `EventAccumulator` takes an event generator, and accumulates the values.
 
   The `EventAccumulator` is intended to provide a convenient Python
@@ -148,7 +152,7 @@ class EventAccumulator(object):
 
     self._generator_mutex = threading.Lock()
     self.path = path
-    self._generator = _GeneratorFromPath(path)
+    self._generator = event_accumulator._GeneratorFromPath(path)
 
     self.purge_orphaned_data = purge_orphaned_data
 
@@ -156,111 +160,13 @@ class EventAccumulator(object):
     self.most_recent_wall_time = -1
     self.file_version = None
 
-  def Reload(self):
-    """Loads all events added since the last call to `Reload`.
-
-    If `Reload` was never called, loads all events in the file.
-
-    Returns:
-      The `EventAccumulator`.
-    """
-    with self._generator_mutex:
-      for event in self._generator.Load():
-        self._ProcessEvent(event)
-    return self
-
-  def PluginAssets(self, plugin_name):
-    """Return a list of all plugin assets for the given plugin.
-
-    Args:
-      plugin_name: The string name of a plugin to retrieve assets for.
-
-    Returns:
-      A list of string plugin asset names, or empty list if none are available.
-      If the plugin was not registered, an empty list is returned.
-    """
-    return plugin_asset_util.ListAssets(self.path, plugin_name)
-
-  def RetrievePluginAsset(self, plugin_name, asset_name):
-    """Return the contents of a given plugin asset.
-
-    Args:
-      plugin_name: The string name of a plugin.
-      asset_name: The string name of an asset.
-
-    Returns:
-      The string contents of the plugin asset.
-
-    Raises:
-      KeyError: If the asset is not available.
-    """
-    return plugin_asset_util.RetrieveAsset(self.path, plugin_name, asset_name)
-
-  def FirstEventTimestamp(self):
-    """Returns the timestamp in seconds of the first event.
-
-    If the first event has been loaded (either by this method or by `Reload`,
-    this returns immediately. Otherwise, it will load in the first event. Note
-    that this means that calling `Reload` will cause this to block until
-    `Reload` has finished.
-
-    Returns:
-      The timestamp in seconds of the first event that was loaded.
-
-    Raises:
-      ValueError: If no events have been loaded and there were no events found
-      on disk.
-    """
-    if self._first_event_timestamp is not None:
-      return self._first_event_timestamp
-    with self._generator_mutex:
-      try:
-        event = next(self._generator.Load())
-        self._ProcessEvent(event)
-        return self._first_event_timestamp
-
-      except StopIteration:
-        raise ValueError('No event timestamp could be found')
-
-  def PluginTagToContent(self, plugin_name):
-    """Returns a dict mapping tags to content specific to that plugin.
-
-    Args:
-      plugin_name: The name of the plugin for which to fetch plugin-specific
-        content.
-
-    Raises:
-      KeyError: if the plugin name is not found.
-
-    Returns:
-      A dict mapping tags to plugin-specific content (which are always strings).
-      Those strings are often serialized protos.
-    """
-    if plugin_name not in self._plugin_to_tag_to_content:
-      raise KeyError('Plugin %r could not be found.' % plugin_name)
-    return self._plugin_to_tag_to_content[plugin_name]
-
-  def SummaryMetadata(self, tag):
-    """Given a summary tag name, return the associated metadata object.
-
-    Args:
-      tag: The name of a tag, as a string.
-
-    Raises:
-      KeyError: If the tag is not found.
-
-    Returns:
-      A `SummaryMetadata` protobuf.
-    """
-    return self.summary_metadata[tag]
-
   def _ProcessEvent(self, event):
     """Called whenever an event is loaded."""
     if self._first_event_timestamp is None:
       self._first_event_timestamp = event.wall_time
 
     if event.HasField('file_version'):
-      new_file_version = _ParseFileVersion(event.file_version)
+      new_file_version = event_accumulator._ParseFileVersion(event.file_version)
       if self.file_version and self.file_version != new_file_version:
         ## This should not happen.
         tf.logging.warn(('Found new file_version for event.proto. This will '
@@ -358,58 +264,6 @@ class EventAccumulator(object):
         RUN_METADATA: list(self._tagged_metadata.keys())
     }
 
-  def Graph(self):
-    """Return the graph definition, if there is one.
-
-    If the graph is stored directly, return that.  If no graph is stored
-    directly but a metagraph is stored containing a graph, return that.
-
-    Raises:
-      ValueError: If there is no graph for this run.
-
-    Returns:
-      The `graph_def` proto.
-    """
-    graph = tf.GraphDef()
-    if self._graph is not None:
-      graph.ParseFromString(self._graph)
-      return graph
-    raise ValueError('There is no graph in this EventAccumulator')
-
-  def MetaGraph(self):
-    """Return the metagraph definition, if there is one.
-
-    Raises:
-      ValueError: If there is no metagraph for this run.
-
-    Returns:
-      The `meta_graph_def` proto.
-    """
-    if self._meta_graph is None:
-      raise ValueError('There is no metagraph in this EventAccumulator')
-    meta_graph = tf.MetaGraphDef()
-    meta_graph.ParseFromString(self._meta_graph)
-    return meta_graph
-
-  def RunMetadata(self, tag):
-    """Given a tag, return the associated session.run() metadata.
-
-    Args:
-      tag: A string tag associated with the event.
-
-    Raises:
-      ValueError: If the tag is not found.
-
-    Returns:
-      The metadata in form of `RunMetadata` proto.
-    """
-    if tag not in self._tagged_metadata:
-      raise ValueError('There is no run metadata with this tag name')
-
-    run_metadata = tf.RunMetadata()
-    run_metadata.ParseFromString(self._tagged_metadata[tag])
-    return run_metadata
-
   def Tensors(self, tag):
     """Given a summary tag, return all associated tensors.
 
@@ -452,26 +306,6 @@ class EventAccumulator(object):
     if event.HasField('summary'):
       self.most_recent_step = event.step
       self.most_recent_wall_time = event.wall_time
-
-  def _CheckForRestartAndMaybePurge(self, event):
-    """Check and discard expired events using SessionLog.START.
-
-    Check for a SessionLog.START event and purge all previously seen events
-    with larger steps, because they are out of date. Because of supervisor
-    threading, it is possible that this logic will cause the first few event
-    messages to be discarded since supervisor threading does not guarantee
-    that the START message is deterministically written first.
-
-    This method is preferred over _CheckForOutOfOrderStepAndMaybePurge which
-    can inadvertently discard events due to supervisor threading.
-
-    Args:
-      event: The event to use as reference. If the event is a START event, all
-        previously seen events with a greater event.step will be purged.
-    """
-    if event.HasField(
-        'session_log') and event.session_log.status == tf.SessionLog.START:
-      self._Purge(event, by_tags=False)
 
   def _CheckForOutOfOrderStepAndMaybePurge(self, event):
     """Check for out-of-order event.step and discard expired events for tags.
@@ -554,37 +388,3 @@ def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
           '(timestamp: {}).'
          ).format(num_expired, most_recent_step, most_recent_wall_time,
                   event_step, event_wall_time)
-
-
-def _GeneratorFromPath(path):
-  """Create an event generator for file or directory at given path string."""
-  if not path:
-    raise ValueError('path must be a valid string')
-  if io_wrapper.IsTensorFlowEventsFile(path):
-    return event_file_loader.EventFileLoader(path)
-  else:
-    return directory_watcher.DirectoryWatcher(
-        path,
-        event_file_loader.EventFileLoader,
-        io_wrapper.IsTensorFlowEventsFile)
-
-
-def _ParseFileVersion(file_version):
-  """Convert the string file_version in event.proto into a float.
-
-  Args:
-    file_version: String file_version from event.proto
-
-  Returns:
-    Version number as a float.
-  """
-  tokens = file_version.split('brain.Event:')
-  try:
-    return float(tokens[-1])
-  except ValueError:
-    ## This should never happen according to the definition of file_version
-    ## specified in event.proto.
-    tf.logging.warn(
-        ('Invalid event.proto file_version. Defaulting to use of '
-         'out-of-order event.step logic for purging expired events.'))
-    return -1
