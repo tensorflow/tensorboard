@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "tensorflow_serving/apis/classification.proto";
+import "tensorflow_serving/apis/regression.proto";
+
+package tensorboard.plugins.inference.utils;
+
+message InferenceResult {
+  oneof result {
+    tensorflow.serving.ClassificationResult classification = 1;
+    tensorflow.serving.RegressionResult regression = 2;
+  }
+}
