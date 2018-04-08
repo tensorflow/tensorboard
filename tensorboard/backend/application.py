@@ -104,7 +104,7 @@ def standard_tensorboard_wsgi(
   if assets_zip_provider is None:
     from tensorboard import default
     assets_zip_provider = default.get_assets_zip_provider()
-  multiplexer = event_multiplexer.EventMultiplexerPlugin(
+  multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data)

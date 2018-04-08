@@ -81,7 +81,7 @@ class ImagesPluginTest(tf.test.TestCase):
     writer.close()
 
     # Start a server with the plugin.
-    multiplexer = event_multiplexer.EventMultiplexerPlugin({
+    multiplexer = event_multiplexer.EventMultiplexer({
         "foo": foo_directory,
         "bar": bar_directory,
     })

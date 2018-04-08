@@ -51,8 +51,9 @@ def Cleanse(obj, encoding='utf-8'):
   Returns:
     Unicode JSON data structure.
   """
-
-  if isinstance(obj, float):
+  if isinstance(obj, int):
+    return obj
+  elif isinstance(obj, float):
     if obj == _INFINITY:
       return 'Infinity'
     elif obj == _NEGATIVE_INFINITY:

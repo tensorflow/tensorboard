@@ -172,7 +172,7 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
   def _test(self, name, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
     self.addCleanup(shutil.rmtree, temp_dir)
-    multiplexer = event_multiplexer.EventMultiplexerPlugin(
+    multiplexer = event_multiplexer.EventMultiplexer(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
     plugins = [
@@ -215,7 +215,7 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
   def _test(self, route, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
     self.addCleanup(shutil.rmtree, temp_dir)
-    multiplexer = event_multiplexer.EventMultiplexerPlugin(
+    multiplexer = event_multiplexer.EventMultiplexer(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
     plugins = [
@@ -433,7 +433,7 @@ class TensorBoardApplcationConstructionTest(tf.test.TestCase):
 
   def testExceptions(self):
     logdir = '/fake/foo'
-    multiplexer = event_multiplexer.EventMultiplexerPlugin()
+    multiplexer = event_multiplexer.EventMultiplexer()
 
     # Fails if there is an unnamed plugin
     with self.assertRaises(ValueError):

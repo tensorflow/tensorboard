@@ -131,7 +131,8 @@ class EventsWriterManager(object):
 
         file_path = os.path.join(self._events_directory,
                                  self.get_current_file_name())
-        if (not tf.gfile.Exists(file_path)) or (tf.gfile.Stat(file_path).length > self._single_file_size_cap_bytes):
+        if (not tf.gfile.Exists(file_path)) or \
+           (tf.gfile.Stat(file_path).length > self._single_file_size_cap_bytes):
           # The events file does not exist. Perhaps the user had manually
           # deleted it after training began. Create a new one.
           # or

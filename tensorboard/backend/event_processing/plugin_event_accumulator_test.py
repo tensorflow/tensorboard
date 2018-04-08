@@ -28,7 +28,6 @@ from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.backend.event_processing import plugin_event_accumulator as ea
-from tensorboard.backend.event_processing import event_accumulator
 
 
 class _EventGenerator(object):
@@ -117,30 +116,30 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def setUp(self):
     super(MockingEventAccumulatorTest, self).setUp()
     self.stubs = tf.test.StubOutForTesting()
-    self._real_constructor = ea.EventAccumulatorPlugin
-    self._real_generator = event_accumulator._GeneratorFromPath
+    self._real_constructor = ea.EventAccumulator
+    self._real_generator = ea._GeneratorFromPath
 
     def _FakeAccumulatorConstructor(generator, *args, **kwargs):
-      event_accumulator._GeneratorFromPath = lambda x: generator
+      ea._GeneratorFromPath = lambda x: generator
       return self._real_constructor(generator, *args, **kwargs)
 
-    ea.EventAccumulatorPlugin = _FakeAccumulatorConstructor
+    ea.EventAccumulator = _FakeAccumulatorConstructor
 
   def tearDown(self):
     self.stubs.CleanUp()
-    ea.EventAccumulatorPlugin = self._real_constructor
-    event_accumulator._GeneratorFromPath = self._real_generator
+    ea.EventAccumulator = self._real_constructor
+    ea._GeneratorFromPath = self._real_generator
 
   def testEmptyAccumulator(self):
     gen = _EventGenerator(self)
-    x = ea.EventAccumulatorPlugin(gen)
+    x = ea.EventAccumulator(gen)
     x.Reload()
     self.assertTagsEqual(x.Tags(), {})
 
   def testReload(self):
     """EventAccumulator contains suitable tags after calling Reload."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {})
     gen.AddScalarTensor('s1', wall_time=1, step=10, value=50)
@@ -153,7 +152,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testKeyError(self):
     """KeyError should be raised when accessing non-existing keys."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     acc.Reload()
     with self.assertRaises(KeyError):
       acc.Tensors('s1')
@@ -161,7 +160,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testNonValueEvents(self):
     """Non-value events in the generator don't cause early exits."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     gen.AddScalarTensor('s1', wall_time=1, step=10, value=20)
     gen.AddEvent(tf.Event(wall_time=2, step=20, file_version='nots2'))
     gen.AddScalarTensor('s3', wall_time=3, step=100, value=1)
@@ -185,7 +184,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.stubs.Set(tf.logging, 'warn', warnings.append)
 
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
 
     gen.AddEvent(tf.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
@@ -206,7 +205,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     """Tests that events are not discarded if purge_orphaned_data is false.
     """
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen, purge_orphaned_data=False)
+    acc = ea.EventAccumulator(gen, purge_orphaned_data=False)
 
     gen.AddEvent(tf.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
@@ -238,7 +237,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self.stubs.Set(tf.logging, 'warn', warnings.append)
 
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
 
     gen.AddEvent(tf.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
@@ -265,7 +264,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testOnlySummaryEventsTriggerDiscards(self):
     """Test that file version event does not trigger data purge."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
     ev1 = tf.Event(wall_time=2, step=0, file_version='brain.Event:1')
     graph_bytes = tf.GraphDef().SerializeToString()
@@ -283,7 +282,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     enum, which was introduced to event.proto for file_version >= brain.Event:2.
     """
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     gen.AddEvent(tf.Event(wall_time=0, step=1, file_version='brain.Event:2'))
 
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
@@ -303,7 +302,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testFirstEventTimestamp(self):
     """Test that FirstEventTimestamp() returns wall_time of the first event."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     gen.AddEvent(tf.Event(wall_time=10, step=20, file_version='brain.Event:2'))
     gen.AddScalarTensor('s1', wall_time=30, step=40, value=20)
     self.assertEqual(acc.FirstEventTimestamp(), 10)
@@ -311,7 +310,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testReloadPopulatesFirstEventTimestamp(self):
     """Test that Reload() means FirstEventTimestamp() won't load events."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     gen.AddEvent(tf.Event(wall_time=1, step=2, file_version='brain.Event:2'))
 
     acc.Reload()
@@ -325,7 +324,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testFirstEventTimestampLoadsEvent(self):
     """Test that FirstEventTimestamp() doesn't discard the loaded event."""
     gen = _EventGenerator(self)
-    acc = ea.EventAccumulatorPlugin(gen)
+    acc = ea.EventAccumulator(gen)
     gen.AddEvent(tf.Event(wall_time=1, step=2, file_version='brain.Event:2'))
 
     self.assertEqual(acc.FirstEventTimestamp(), 1)
@@ -347,7 +346,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         summ = sess.run(merged, feed_dict={step: float(i)})
         writer.add_summary(summ, global_step=i)
 
-    accumulator = ea.EventAccumulatorPlugin(event_sink)
+    accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
 
     tags = [
@@ -380,7 +379,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         summ = sess.run(merged)
         writer.add_summary(summ, global_step=i)
 
-    accumulator = ea.EventAccumulatorPlugin(event_sink)
+    accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
 
     tags = [
@@ -418,7 +417,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         summ = sess.run(merged)
         writer.add_summary(summ, global_step=i)
 
-    accumulator = ea.EventAccumulatorPlugin(event_sink)
+    accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
 
     tags = [
@@ -446,7 +445,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
       summ = sess.run(merged)
       writer.add_summary(summ, 0)
 
-    accumulator = ea.EventAccumulatorPlugin(event_sink)
+    accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
 
     self.assertTagsEqual(accumulator.Tags(), {
@@ -483,7 +482,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         writer.add_summary(sess.run(merged), global_step=step)
 
 
-    accumulator = ea.EventAccumulatorPlugin(
+    accumulator = ea.EventAccumulator(
         event_sink, tensor_size_guidance=tensor_size_guidance)
     accumulator.Reload()
 
@@ -566,7 +565,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     writer.flush()
 
     # Verify that we can load those events properly
-    acc = ea.EventAccumulatorPlugin(directory)
+    acc = ea.EventAccumulator(directory)
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
         ea.TENSORS: ['id', 'sq'],
@@ -626,7 +625,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     writer.flush()
 
     # Verify that we can load those events properly
-    acc = ea.EventAccumulatorPlugin(directory)
+    acc = ea.EventAccumulator(directory)
     acc.Reload()
     self.assertTagsEqual(acc.Tags(), {
         ea.GRAPH: True,
@@ -662,7 +661,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         summary_description='no',
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet'))
     self._writeMetadata(logdir, summary_metadata)
-    acc = ea.EventAccumulatorPlugin(logdir)
+    acc = ea.EventAccumulator(logdir)
     acc.Reload()
     self.assertProtoEquals(summary_metadata,
                            acc.SummaryMetadata('you_are_it'))
@@ -675,7 +674,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet',
                                                   content=b'120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
-    acc = ea.EventAccumulatorPlugin(logdir)
+    acc = ea.EventAccumulator(logdir)
     acc.Reload()
     summary_metadata_2 = tf.SummaryMetadata(
         display_name='tagee of the future',
@@ -699,7 +698,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         plugin_data=tf.SummaryMetadata.PluginData(plugin_name='outlet',
                                                   content=b'120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
-    acc = ea.EventAccumulatorPlugin(logdir)
+    acc = ea.EventAccumulator(logdir)
     acc.Reload()
     summary_metadata_2 = tf.SummaryMetadata(
         display_name='tagee of the future',

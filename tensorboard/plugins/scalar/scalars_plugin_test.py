@@ -59,7 +59,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     self.logdir = self.get_temp_dir()
     for run_name in run_names:
       self.generate_run(run_name)
-    multiplexer = event_multiplexer.EventMultiplexerPlugin(size_guidance={
+    multiplexer = event_multiplexer.EventMultiplexer(size_guidance={
         # don't truncate my test data, please
         event_accumulator.TENSORS: self._STEPS,
     })

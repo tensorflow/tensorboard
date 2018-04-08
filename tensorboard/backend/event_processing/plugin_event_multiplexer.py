@@ -28,10 +28,9 @@ from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import event_multiplexer
-from tensorboard.backend.event_processing.event_multiplexer import EventMultiplexer
 
 
-class EventMultiplexerPlugin(EventMultiplexer):
+class EventMultiplexer(event_multiplexer.EventMultiplexer):
   """An `EventMultiplexer` manages access to multiple `EventAccumulator`s.
 
   Each `EventAccumulator` is associated with a `run`, which is a self-contained
@@ -134,7 +133,7 @@ class EventMultiplexerPlugin(EventMultiplexer):
           tf.logging.warning('Conflict for name %s: old path %s, new path %s',
                              name, self._paths[name], path)
         tf.logging.info('Constructing EventAccumulator for %s', path)
-        accumulator = event_accumulator.EventAccumulatorPlugin(
+        accumulator = event_accumulator.EventAccumulator(
             path,
             size_guidance=self._size_guidance,
             tensor_size_guidance=self._tensor_size_guidance,
@@ -196,3 +195,18 @@ class EventMultiplexerPlugin(EventMultiplexer):
       # To avoid nested locks, we construct a copy of the run-accumulator map
       items = list(six.iteritems(self._accumulators))
     return {run_name: accumulator.Tags() for run_name, accumulator in items}
+
+  def GetAccumulator(self, run):
+    """Returns EventAccumulator for a given run.
+
+    Args:
+      run: String name of run.
+
+    Returns:
+      An EventAccumulator object.
+
+    Raises:
+      KeyError: If run does not exist.
+    """
+    with self._accumulators_mutex:
+      return self._accumulators[run]

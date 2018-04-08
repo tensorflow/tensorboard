@@ -29,7 +29,6 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
-from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 from tensorboard.backend.event_processing import event_accumulator
 
 
@@ -61,7 +60,7 @@ _TENSOR_RESERVOIR_KEY = "."  # arbitrary
 
 
 
-class EventAccumulatorPlugin(EventAccumulator):
+class EventAccumulator(event_accumulator.EventAccumulator):
   """An `EventAccumulator` takes an event generator, and accumulates the values.
 
   The `EventAccumulator` is intended to provide a convenient Python
