@@ -128,21 +128,11 @@ dashboard would integrate trace viewer app using iframe.
       this._loadTrace();
     },
 
-    // Something has changed, so consider reloading the data:
-    //   - if we have zoomed in enough to need more details.
-    //   - if we have scrolled too close to missing data regions
-    // We ensure there's only ever one request in flight.
     _loadTrace : function() {
       if (!this._isStreaming) {
         // Send HTTP request to get the trace data.
         var req = new XMLHttpRequest();
-        var is_binary = / [.] gz$ /.test(this.traceDataUrl) ||
-                        / [.] zip$ /.test(this.traceDataUrl);
-        req.overrideMimeType('text/plain; charset=x-user-defined');
         req.open('GET', this.traceDataUrl, true);
-        if (is_binary) {
-          req.responseType = 'arraybuffer';
-        }
 
 	req.onreadystatechange = event => {
           if (req.readyState !== 4) {
@@ -151,7 +141,7 @@ dashboard would integrate trace viewer app using iframe.
 	  window.setTimeout(() => {
             if (req.status === 200) {
               this._throbber.className = "inactive";
-              this.set("_traceData", is_binary ? req.response : req.responseText);
+              this.set("_traceData", req.responseText);
             } else {
               this._displayOverlay(req.status, "Failed to fetch data");
             }
@@ -227,19 +217,26 @@ dashboard would integrate trace viewer app using iframe.
         requestURL.searchParams.set("end_time_ms", requestedRange.max);
       }
 
-      return fetch(requestURL.toString()).then(
-        function(response) {
-          if (response.status !== 200) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', requestURL);
+        xhr.onload = function() {
+          var contentType = this.getResponseHeader('Content-Type');
+          if (this.status !== 200 |
+            !contentType.startsWith('application/json')) {
             var msg = requestURL + ' could not be loaded';
-            if (response.headers.get('Content-Type').startsWith('text/plain')) {
-              return response.text().then((text) => {
-                throw new Error(msg + ': ' + text);
-              });
+            if (contentType.startsWith('text/plain')) {
+              msg = msg + ': ' + xhr.statusText;
             }
-            throw new Error(msg);
+            reject(msg);
           }
-          return response.text();
-        });
+          resolve(xhr.response);
+        };
+        xhr.onerror = function () {
+          reject(requestURL + 'could not be loaded: ' + xhr.statusText);
+        };
+        xhr.send();
+      });
     },
     // Decodes the JSON trace events, removes all events that were loaded before
     // and serializes to JSON again.
