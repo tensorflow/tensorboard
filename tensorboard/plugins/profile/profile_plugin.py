@@ -232,7 +232,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     data = self.data_impl(request)
     if data is None:
       return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
-    return http_util.Respond(request, data, 'text/plain')
+    return http_util.Respond(request, data, 'application/json')
 
   def get_plugin_apps(self):
     return {
