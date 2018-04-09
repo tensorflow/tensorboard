@@ -210,8 +210,7 @@ class EventMultiplexer(object):
         try:
           accumulator.Reload()
         except (OSError, IOError) as e:
-          tf.logging.error(
-              "Unable to reload accumulator %r: %s", name, e)
+          tf.logging.error('Unable to reload accumulator %r: %s', name, e)
         except directory_watcher.DirectoryDeletedError:
           with names_to_delete_mutex:
             names_to_delete.add(name)
