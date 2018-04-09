@@ -206,7 +206,12 @@ class EventMultiplexer(object):
     def Worker():
       """Keeps reloading accumulators til none are left."""
       while True:
-        name, accumulator = items_queue.get()
+        try:
+          name, accumulator = items_queue.get(block=False)
+        except queue.Empty:
+          # No more runs to reload.
+          break
+
         try:
           accumulator.Reload()
         except (OSError, IOError) as e:
