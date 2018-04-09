@@ -10,7 +10,7 @@ tf_web_library(
     path = "/tf-input-pipeline",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/vz_line_chart",
+        "@org_polymer_paper_button",
     ],
 )
