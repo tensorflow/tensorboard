@@ -151,7 +151,7 @@ class EventAccumulator(event_accumulator.EventAccumulator):
 
     self._generator_mutex = threading.Lock()
     self.path = path
-    self._generator = event_accumulator._GeneratorFromPath(path)
+    self._generator = _GeneratorFromPath(path)
 
     self.purge_orphaned_data = purge_orphaned_data
 
@@ -165,7 +165,7 @@ class EventAccumulator(event_accumulator.EventAccumulator):
       self._first_event_timestamp = event.wall_time
 
     if event.HasField('file_version'):
-      new_file_version = event_accumulator._ParseFileVersion(event.file_version)
+      new_file_version = _ParseFileVersion(event.file_version)
       if self.file_version and self.file_version != new_file_version:
         ## This should not happen.
         tf.logging.warn(('Found new file_version for event.proto. This will '
@@ -387,6 +387,8 @@ def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
           '(timestamp: {}).'
          ).format(num_expired, most_recent_step, most_recent_wall_time,
                   event_step, event_wall_time)
+
+
 def _GeneratorFromPath(path):
   """Create an event generator for file or directory at given path string."""
   if not path:
@@ -398,3 +400,24 @@ def _GeneratorFromPath(path):
         path,
         event_file_loader.EventFileLoader,
         io_wrapper.IsTensorFlowEventsFile)
+
+
+def _ParseFileVersion(file_version):
+  """Convert the string file_version in event.proto into a float.
+
+  Args:
+    file_version: String file_version from event.proto
+
+  Returns:
+    Version number as a float.
+  """
+  tokens = file_version.split('brain.Event:')
+  try:
+    return float(tokens[-1])
+  except ValueError:
+    ## This should never happen according to the definition of file_version
+    ## specified in event.proto.
+    tf.logging.warn(
+        ('Invalid event.proto file_version. Defaulting to use of '
+         'out-of-order event.step logic for purging expired events.'))
+    return -1
