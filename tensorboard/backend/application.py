@@ -80,7 +80,7 @@ def standard_tensorboard_wsgi(
     assets_zip_provider=None,
     path_prefix="",
     window_title="",
-    max_threads_for_reloading_runs=None,
+    max_reload_threads=None,
     flags=None):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
@@ -98,9 +98,9 @@ def standard_tensorboard_wsgi(
         the `tensorboard.default` module to use the default. This behavior
         might be removed in the future.
     window_title: A string specifying the the window title.
-    max_threads_for_reloading_runs: The max number of threads that TensorBoard
-        can use aside from the main thread to reload runs. Not relevant for db
-        mode. Each thread reloads one run at a time.
+    max_reload_threads: The max number of threads that TensorBoard can use
+        aside from the main thread to reload runs. Not relevant for db mode.
+        Each thread reloads one run at a time.
     flags: A dict of the runtime flags provided to the application, or None.
   Returns:
     The new TensorBoard WSGI application.
@@ -112,7 +112,7 @@ def standard_tensorboard_wsgi(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
       purge_orphaned_data=purge_orphaned_data,
-      max_threads_for_reloading_runs=max_threads_for_reloading_runs)
+      max_reload_threads=max_reload_threads)
   db_module, db_connection_provider = get_database_info(db_uri)
   # In DB mode, always disable loading event files.
   if db_connection_provider:

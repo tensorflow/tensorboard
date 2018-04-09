@@ -124,10 +124,9 @@ tf.flags.DEFINE_string(
     'The title of the browser window.')
 
 tf.flags.DEFINE_integer(
-    'max_threads_for_reloading_runs', 2,
-    'The max number of threads that TensorBoard can use aside from the '
-    'main thread to reload runs. Not relevant for db mode. Each thread '
-    'reloads one run at a time.')
+    'max_reload_threads', 1,
+    'The max number of threads that TensorBoard can use to reload runs. Not '
+    'relevant for db mode. Each thread reloads one run at a time.')
 
 FLAGS = tf.flags.FLAGS
 
@@ -204,7 +203,7 @@ def create_tb_app(plugins, assets_zip_provider=None):
       plugins=plugins,
       path_prefix=FLAGS.path_prefix,
       window_title=FLAGS.window_title,
-      max_threads_for_reloading_runs=FLAGS.max_threads_for_reloading_runs,
+      max_reload_threads=FLAGS.max_reload_threads,
       flags=FLAGS)
 
 
