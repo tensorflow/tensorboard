@@ -99,8 +99,8 @@ def standard_tensorboard_wsgi(
         might be removed in the future.
     window_title: A string specifying the the window title.
     max_reload_threads: The max number of threads that TensorBoard can use
-        aside from the main thread to reload runs. Not relevant for db mode.
-        Each thread reloads one run at a time.
+        to reload runs. Not relevant for db mode. Each thread reloads one run
+        at a time.
     flags: A dict of the runtime flags provided to the application, or None.
   Returns:
     The new TensorBoard WSGI application.
