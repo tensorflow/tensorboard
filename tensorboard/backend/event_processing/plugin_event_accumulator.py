@@ -387,3 +387,14 @@ def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
           '(timestamp: {}).'
          ).format(num_expired, most_recent_step, most_recent_wall_time,
                   event_step, event_wall_time)
+def _GeneratorFromPath(path):
+  """Create an event generator for file or directory at given path string."""
+  if not path:
+    raise ValueError('path must be a valid string')
+  if io_wrapper.IsTensorFlowEventsFile(path):
+    return event_file_loader.EventFileLoader(path)
+  else:
+    return directory_watcher.DirectoryWatcher(
+        path,
+        event_file_loader.EventFileLoader,
+        io_wrapper.IsTensorFlowEventsFile)
