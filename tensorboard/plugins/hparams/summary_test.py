@@ -38,7 +38,7 @@ class SummaryTest(tf.test.TestCase):
                            dataset_type=api_pb2.DATASET_TRAINING),
     ]
     now = datetime.datetime.now()
-    self.assertEquals(
+    self.assertEqual(
         summary.experiment_pb(hparam_infos,
                               metric_infos,
                               time_created=now),
@@ -67,7 +67,7 @@ class SummaryTest(tf.test.TestCase):
     session_start_info.hparams["param1"].string_value = "string"
     session_start_info.hparams["param2"].number_value = 5.0
     session_start_info.hparams["param3"].bool_value = False
-    self.assertEquals(
+    self.assertEqual(
         summary.session_start_pb(
             hparams={"param1":"string",
                      "param2":5,
@@ -88,7 +88,7 @@ class SummaryTest(tf.test.TestCase):
             ]))
 
   def test_session_end_pb(self):
-    self.assertEquals(
+    self.assertEqual(
         summary.session_end_pb(api_pb2.STATUS_SUCCESS),
         tf.Summary(
             value=[
