@@ -9,7 +9,9 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 
+from tensorboard.plugins.inference.utils import common_utils
 from tensorboard.plugins.inference.utils import inference_utils
+from tensorboard.plugins.inference.utils import oss_utils
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -77,9 +79,9 @@ class InferencePlugin(base_plugin.TBPlugin):
     """
     examples_path = request.args.get('examples_path')
     try:
-      inference_utils.throw_if_file_access_not_allowed(examples_path,
-                                                       self._logdir,
-                                                       self._has_auth_group)
+      oss_utils.throw_if_file_access_not_allowed(examples_path,
+                                                 self._logdir,
+                                                 self._has_auth_group)
       features_dict = (
           inference_utils.get_numeric_features_to_observed_range(
               examples_path, NUM_EXAMPLES_TO_SCAN))
@@ -96,7 +98,7 @@ class InferencePlugin(base_plugin.TBPlugin):
         features_list.append(v)
 
       return http_util.Respond(request, features_list, 'application/json')
-    except inference_utils.InvalidUserInputError as e:
+    except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
                                'application/json')
 
@@ -113,16 +115,16 @@ class InferencePlugin(base_plugin.TBPlugin):
     """
     examples_path = request.args.get('examples_path')
     try:
-      inference_utils.throw_if_file_access_not_allowed(examples_path,
-                                                       self._logdir,
-                                                       self._has_auth_group)
-      [example] = inference_utils.example_protos_from_cns_path(
+      oss_utils.throw_if_file_access_not_allowed(examples_path,
+                                                 self._logdir,
+                                                 self._has_auth_group)
+      [example] = oss_utils.example_protos_from_path(
           examples_path,
           num_examples=1,
           start_index=int(request.args.get('example_index', '0')))
       return http_util.Respond(request, {'example_contents': str(example)},
                                'application/json')
-    except inference_utils.InvalidUserInputError as e:
+    except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
                                'application/json')
 
@@ -144,7 +146,7 @@ class InferencePlugin(base_plugin.TBPlugin):
 
       feature_name = request.args.get('feature_name')
       examples_path = request.args.get('examples_path')
-      [example] = inference_utils.example_protos_from_cns_path(
+      [example] = oss_utils.example_protos_from_path(
           examples_path,
           num_examples=1,
           start_index=int(request.args.get('example_index', '0')))
@@ -158,6 +160,6 @@ class InferencePlugin(base_plugin.TBPlugin):
       json_mapping = inference_utils.mutant_charts_for_feature(
           example, feature_name, serving_bundle, viz_params)
       return http_util.Respond(request, json_mapping, 'application/json')
-    except inference_utils.InvalidUserInputError as e:
+    except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
                                'application/json')
