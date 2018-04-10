@@ -725,13 +725,7 @@ limitations under the License.
             this._processContinueTo(responseType, responseData);
           }
 
-          // Long polling loop: initialize the next long polling.
-          this.long_poll();
-        }).catch(e => {
-          console.error('Error while long-polling. Will try again:', e);
-          if (this._continueToType != null) {
-            this._processContinueTo();
-          }
+          // Long polling loop: initialite the next long polling.
           this.long_poll();
         });
       },
@@ -961,8 +955,7 @@ limitations under the License.
           graph.panToNode(nodeName);
         } else {
           // Selecting the node triggers a pan to it.
-          const hierarchy = graph.get('renderHierarchy').hierarchy;
-          const nodeMap = hierarchy.getNodeMap();
+          const nodeMap = graph.get('renderHierarchy').hierarchy.getNodeMap();
           if (!nodeMap[nodeName]) {
             // In some cases, a node with other names using its name as
             // name scope may not have base-expanded (i.e., normalized) name
@@ -970,14 +963,6 @@ limitations under the License.
             // node name.
             nodeName =
                 tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName);
-          }
-          if (!hierarchy.node(nodeName)) {
-            // In some cases, certain nodes in the partition graph may not
-            // appear in the main TensorFlow graph shown to the user. In that
-            // case, setting the selected node causes the graph to err.
-            console.error('Selected node ', nodeName, ' cannot be found.');
-            graph.set('selectedNode', '');
-            return;
           }
           graph.set('selectedNode', nodeName);
         }
