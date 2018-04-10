@@ -44,7 +44,7 @@ class ProfilePluginTest(tf.test.TestCase):
         'empty': [],
     }
     self.run_to_hosts = {
-        'foo': ['host0','host1'],
+        'foo': ['host0', 'host1'],
         'bar': ['host1'],
         'baz': ['host2'],
         'empty': [],
@@ -109,9 +109,9 @@ class ProfilePluginTest(tf.test.TestCase):
 
     # Invalid tool/run.
     self.assertEqual(None, self.plugin.data_impl('foo', 'nonono', 'host0'))
-    self.assertEqual(None, self.plugin.data_impl('foo', 'trace_viewer', 'host2'))
+    self.assertEqual(None, self.plugin.data_impl('foo', 'trace_viewer', ''))
     self.assertEqual(None, self.plugin.data_impl('bar', 'unsupported', 'host1'))
-    self.assertEqual(None, self.plugin.data_impl('empty', 'trace_viewer', 'host3'))
+    self.assertEqual(None, self.plugin.data_impl('empty', 'trace_viewer', ''))
 
   def testActive(self):
     self.assertTrue(self.plugin.is_active())

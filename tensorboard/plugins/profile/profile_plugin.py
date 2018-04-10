@@ -134,12 +134,12 @@ class ProfilePlugin(base_plugin.TBPlugin):
         tool_pattern = '*' + TOOLS[tool]
         path = os.path.join(run_dir, tool_pattern)
         try:
-          files = tf.gfile.Glob(path);
+          files = tf.gfile.Glob(path)
           if len(files) >= 1:
             run_to_tools[run].append(tool)
-        except tf.errors.OpError:
-            logging.warning("Cannot read asset directory: %s, OpError %s",
-                            run_dir, e)
+        except tf.errors.OpError as e:
+          logging.warning("Cannot read asset directory: %s, OpError %s",
+                          run_dir, e)
     return run_to_tools
 
   @wrappers.Request.application
@@ -177,15 +177,15 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return hosts
     run_dir = self._run_dir(run)
     if not run_dir:
-       logging.warning("Cannot find asset directory: %s", run_dir)
-       return;
+      logging.warning("Cannot find asset directory: %s", run_dir)
+      return hosts
     tool_pattern = '*' + TOOLS[tool]
     try:
-      files = tf.gfile.Glob(os.path.join(run_dir,tool_pattern))
-      hosts = [os.path.basename(f).replace(TOOLS[tool],'') for f in files]
-    except tf.errors.OpError:
+      files = tf.gfile.Glob(os.path.join(run_dir, tool_pattern))
+      hosts = [os.path.basename(f).replace(TOOLS[tool], '') for f in files]
+    except tf.errors.OpError as e:
       logging.warning("Cannot read asset directory: %s, OpError %s",
-                        run_dir, e)
+                      run_dir, e)
     return hosts
 
 
