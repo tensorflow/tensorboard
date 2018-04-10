@@ -94,10 +94,15 @@ class AudioPluginTest(tf.test.TestCase):
     context = base_plugin.TBContext(
         logdir=self.log_dir, multiplexer=multiplexer)
     self.plugin = audio_plugin.AudioPlugin(context)
+    # Setting a reload interval of -1 disables reloading. We disable reloading
+    # because we seek to block tests from running til after one reload finishes.
+    # This setUp method thus manually reloads the multiplexer. TensorBoard would
+    # otherwise reload in a non-blocking thread.
     wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin], multiplexer, reload_interval=0,
+        self.log_dir, [self.plugin], multiplexer, reload_interval=-1,
         path_prefix='')
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+    multiplexer.Reload()
 
   def tearDown(self):
     shutil.rmtree(self.log_dir, ignore_errors=True)
