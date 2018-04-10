@@ -21,6 +21,7 @@ import os
 import os.path
 import shutil
 
+from six.moves import queue
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
