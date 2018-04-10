@@ -324,7 +324,8 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
     self.addCleanup(patcher.stop)
-    patcher = tf.test.mock.patch('queue.Queue.join', autospec=True)
+    patcher = tf.test.mock.patch(
+        'six.moves.queue.Queue.join', autospec=True)
     join_mock = patcher.start()
     self.addCleanup(patcher.stop)
 
@@ -341,7 +342,8 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
     self.addCleanup(patcher.stop)
-    patcher = tf.test.mock.patch('queue.Queue.join', autospec=True)
+    patcher = tf.test.mock.patch(
+        'six.moves.queue.Queue.join', autospec=True)
     join_mock = patcher.start()
     self.addCleanup(patcher.stop)
 
@@ -359,7 +361,8 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
     self.addCleanup(patcher.stop)
-    patcher = tf.test.mock.patch('queue.Queue.join', autospec=True)
+    patcher = tf.test.mock.patch(
+        'six.moves.queue.Queue.join', autospec=True)
     join_mock = patcher.start()
     self.addCleanup(patcher.stop)
 
