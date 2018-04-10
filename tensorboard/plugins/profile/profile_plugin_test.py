@@ -43,11 +43,11 @@ class ProfilePluginTest(tf.test.TestCase):
         'baz': ['trace_viewer'],
         'empty': [],
     }
-    self.run_to_host = {
-        'foo': 'host0',
-        'bar': 'host1',
-        'baz': 'host2',
-        'empty': "",
+    self.run_to_hosts = {
+        'foo': ['host0','host1'],
+        'bar': ['host1'],
+        'baz': ['host2'],
+        'empty': [],
     }
     for run in self.run_to_tools:
       run_dir = os.path.join(plugin_logdir, run)
@@ -55,17 +55,17 @@ class ProfilePluginTest(tf.test.TestCase):
       for tool in self.run_to_tools[run]:
         if tool not in profile_plugin.TOOLS:
           continue
-        host = self.run_to_host[run]
-        file_name = host + profile_plugin.TOOLS[tool]
-        tool_file = os.path.join(run_dir, file_name)
-        if tool == 'trace_viewer':
-          trace = trace_events_pb2.Trace()
-          trace.devices[0].name = run
-          data = trace.SerializeToString()
-        else:
-          data = tool
-        with open(tool_file, 'wb') as f:
-          f.write(data)
+        for host in self.run_to_hosts[run]:
+          file_name = host + profile_plugin.TOOLS[tool]
+          tool_file = os.path.join(run_dir, file_name)
+          if tool == 'trace_viewer':
+            trace = trace_events_pb2.Trace()
+            trace.devices[0].name = run
+            data = trace.SerializeToString()
+          else:
+            data = tool
+          with open(tool_file, 'wb') as f:
+            f.write(data)
     with open(os.path.join(plugin_logdir, 'noise'), 'w') as f:
       f.write('Not a dir, not a run.')
 
@@ -84,8 +84,12 @@ class ProfilePluginTest(tf.test.TestCase):
     self.assertItemsEqual(runs['bar'], [])
     self.assertItemsEqual(runs['empty'], [])
 
+  def testHosts(self):
+    hosts = self.plugin.host_impl('foo', 'trace_viewer')
+    self.assertItemsEqual(['host0', 'host1'], sorted(hosts))
+
   def testData(self):
-    trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer', self.run_to_host['foo']))
+    trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer', 'host0'))
     self.assertEqual(trace,
                      dict(
                          displayTimeUnit='ns',
@@ -105,7 +109,7 @@ class ProfilePluginTest(tf.test.TestCase):
 
     # Invalid tool/run.
     self.assertEqual(None, self.plugin.data_impl('foo', 'nonono', 'host0'))
-    self.assertEqual(None, self.plugin.data_impl('foo', 'trace_viewer', 'host1'))
+    self.assertEqual(None, self.plugin.data_impl('foo', 'trace_viewer', 'host2'))
     self.assertEqual(None, self.plugin.data_impl('bar', 'unsupported', 'host1'))
     self.assertEqual(None, self.plugin.data_impl('empty', 'trace_viewer', 'host3'))
 
