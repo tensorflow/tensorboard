@@ -237,7 +237,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     #   run: The run name.
     #   tag: The tool name e.g. trace_viewer. The plugin returns different UI
     #     data for different tools of the same run.
-    #   host: The host name. 
+    #   host: The host name.
     run = request.args.get('run')
     tool = request.args.get('tag')
     host = request.args.get('host')
