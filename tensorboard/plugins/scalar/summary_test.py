@@ -26,6 +26,7 @@ import tensorflow as tf
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
 
+
 class SummaryTest(tf.test.TestCase):
 
   def pb_via_op(self, summary_op, feed_dict=None):
