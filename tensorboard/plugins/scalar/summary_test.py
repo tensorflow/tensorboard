@@ -22,7 +22,6 @@ from __future__ import print_function
 import numpy as np
 import six
 import tensorflow as tf
-from google.protobuf import struct_pb2
 
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
