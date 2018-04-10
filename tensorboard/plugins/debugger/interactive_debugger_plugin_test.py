@@ -42,6 +42,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import interactive_debugger_plugin
+from tensorboard.plugins.debugger import interactive_debugger_server_lib
 
 _SERVER_URL_PREFIX = '/data/plugin/debugger/'
 
@@ -79,6 +80,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
       except ValueError:
         pass
     shutil.rmtree(self._dummy_logdir, ignore_errors=True)
+    tf.test.mock.patch.stopall()
     super(InteractiveDebuggerPluginTest, self).tearDown()
 
   def _serverGet(self, path, params=None, expected_status_code=200):
@@ -401,6 +403,23 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
 
     session_run_thread.join()
     self.assertAllClose([[230.0] * 10], session_run_results)
+
+  def testCommGracefullyHandlesCorruptChannelOutput(self):
+    mock_debugger_data_server = tf.test.mock.Mock(
+        interactive_debugger_server_lib.InteractiveDebuggerDataServer)
+    mock_debugger_data_server_class = tf.test.mock.Mock(
+        interactive_debugger_server_lib.InteractiveDebuggerDataServer,
+        return_value=mock_debugger_data_server)
+
+    tf.test.mock.patch.object(
+        interactive_debugger_server_lib,
+        'InteractiveDebuggerDataServer',
+        mock_debugger_data_server_class).start()
+
+    comm_response = self._serverGet('comm', {'pos': 1})
+    self.assertEqual(500, comm_response.status_code)
+    data = self._deserializeResponse(comm_response)
+    self.assertRegexpMatches(data['error'], r'^Error decoding data: ')
 
   def testMultipleSessionRunsTensorValueFullHistory(self):
     session_run_thread, session_run_results = (
