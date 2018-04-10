@@ -12,6 +12,8 @@ py_library(
     srcs = ["inference_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard/plugins/inference/utils:common_utils",
+        "//tensorboard/plugins/inference/utils:oss_utils",
         "//tensorboard/plugins/inference/utils:inference_utils",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",

@@ -1,0 +1,118 @@
+"""Shared utils among inference plugins that are OSS-specific."""
+
+from grpc.beta import implementations
+from urlparse import urlparse
+import tensorflow as tf
+
+from tensorboard.plugins.inference.utils import common_utils
+
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import prediction_service_pb2
+from tensorflow_serving.apis import regression_pb2
+
+
+def filepath_to_filepath_list(file_path):
+  """Returns a list of files given by a filepath.
+
+  Args:
+    file_path: A path, possibly representing a single file, or containing a
+        wildcard or sharded path.
+
+  Returns:
+    A list of files represented by the provided path.
+  """
+  file_path = file_path.strip()
+  return [file_path]
+
+
+def throw_if_file_access_not_allowed(file_path, logdir, has_auth_group):
+  """Throws an error if a file cannot be loaded for inference.
+
+  Args:
+    file_path: A file path.
+    logdir: The path to the logdir of the TensorBoard context.
+    has_auth_group: True if TensorBoard was started with an authorized group,
+        in which case we allow access to all visible files.
+
+  Raises:
+    InvalidUserInputError: If the file is not in the logdir and is not globally
+        readable.
+  """
+  return
+
+
+def example_protos_from_path(cns_path,
+                             num_examples=10,
+                             start_index=0,
+                             parse_examples=True):
+  """Returns a number of tf.Examples from the CNS path.
+
+  Args:
+    cns_path: A string CNS path.
+    num_examples: The maximum number of examples to return from the path.
+    start_index: The index of the first example to return.
+    parse_examples: If true then parses the serialized proto from the path into
+        proto objects. Defaults to True.
+
+  Returns:
+    A list of `tf.Example` protos or serialized proto strings at the CNS path.
+
+  Raises:
+    InvalidUserInputError: If examples cannot be procured from cns_path.
+  """
+
+  def append_examples_from_iterable(iterable, examples):
+    for i, value in enumerate(iterable):
+      if i >= start_index:
+        examples.append(
+            tf.Example.FromString(value) if parse_examples else value)
+        if len(examples) >= num_examples:
+          return
+
+  filenames = filepath_to_filepath_list(cns_path)
+  examples = []
+  try:
+    # Try RecordIO format after trying all other input formats, because
+    # RecordIO opens non-RecordIO formats as "0 records".
+    for filename in filenames:
+      record_iterator = tf.python_io.tf_record_iterator(path=filename)
+      append_examples_from_iterable(record_iterator, examples)
+      if len(examples) >= num_examples:
+        break
+  except IOError as e:
+    raise common_utils.InvalidUserInputError(e)
+
+  if examples:
+    return examples
+  else:
+    raise common_utils.InvalidUserInputError(
+        'No tf.Examples found at ' + cns_path +
+        '. Valid formats are SSTable and RecordIO.')
+
+def call_servo(examples, serving_bundle):
+  """Send an RPC request to the Servomatic prediction service.
+
+  Args:
+    examples: A list of tf.Examples that matches the model spec.
+    serving_bundle: A `ServingBundle` object that contains the information to
+      make the serving request.
+
+  Returns:
+    A ClassificationResponse or RegressionResponse proto.
+  """
+  parsed_url = urlparse(serving_bundle.inference_address)
+  channel = implementations.insecure_channel(parsed_url.hostname,
+                                             parsed_url.port)
+  stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
+
+  if serving_bundle.model_type == 'classification':
+    request = classification_pb2.ClassificationRequest()
+  else:
+    request = regression_pb2.RegressionRequest()
+  request.model_spec.name = serving_bundle.model_name
+  request.input.example_list.examples.extend(examples)
+
+  if serving_bundle.model_type == 'classification':
+    return stub.Classify(request, 30.0)  # 30 secs timeout
+  else:
+    return stub.Regress(request, 30.0)  # 30 secs timeout

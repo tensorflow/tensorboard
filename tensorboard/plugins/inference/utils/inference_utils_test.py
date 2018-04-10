@@ -9,10 +9,11 @@ import mock
 import numpy as np
 import tensorflow as tf
 
+from tensorboard.plugins.inference.utils import common_utils
 from tensorboard.plugins.inference.utils import inference_utils
 from tensorboard.plugins.inference.utils import test_utils
-from tensorflow.serving.apis import classification_pb2
-from tensorflow.serving.apis import regression_pb2
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import regression_pb2
 
 
 class InferenceUtilsTest(tf.test.TestCase):
@@ -116,7 +117,7 @@ class InferenceUtilsTest(tf.test.TestCase):
 
   def test_example_proto_from_cns_path_if_does_not_exist(self):
     cns_path = os.path.join(tf.test.get_temp_dir(), 'does_not_exist')
-    with self.assertRaises(inference_utils.InvalidUserInputError):
+    with self.assertRaises(common_utils.InvalidUserInputError):
       inference_utils.example_protos_from_cns_path(cns_path)
 
   def test_get_numeric_features(self):
@@ -274,11 +275,11 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(3, len(charts['data']))
 
     # These should error out because they don't have 4 fields.
-    with self.assertRaises(inference_utils.InvalidUserInputError):
+    with self.assertRaises(common_utils.InvalidUserInputError):
       charts = inference_utils.mutant_charts_for_feature(
           example, 'repeated_int', serving_bundle, viz_params)
 
-    with self.assertRaises(inference_utils.InvalidUserInputError):
+    with self.assertRaises(common_utils.InvalidUserInputError):
       charts = inference_utils.mutant_charts_for_feature(
           example, 'single_int', serving_bundle, viz_params)
 

@@ -8,10 +8,11 @@ from six.moves import zip  # pylint: disable=redefined-builtin
 
 import tensorflow as tf
 
+from tensorboard.plugins.inference.utils import common_utils
 from tensorboard.plugins.inference.utils import inference_pb2
-from tensorflow.serving.apis import classification_pb2
-from tensorflow.serving.apis import prediction_service_pb2
-from tensorflow.serving.apis import regression_pb2
+from tensorboard.plugins.inference.utils import oss_utils
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import regression_pb2
 
 
 class VizParams(object):
@@ -45,7 +46,7 @@ class VizParams(object):
       try:
         return int(x)
       except (ValueError, TypeError) as e:
-        raise InvalidUserInputError(e)
+        raise common_utils.InvalidUserInputError(e)
 
     def convert_pattern_to_indices(pattern):
       """Converts a printer-page-style pattern and returns a list of indices.
@@ -69,7 +70,7 @@ class VizParams(object):
           else:
             indices.append(int(piece.strip()))
         except ValueError as e:
-          raise InvalidUserInputError(e)
+          raise common_utils.InvalidUserInputError(e)
       return sorted(indices)
 
     self.x_min = to_float_or_none(x_min)
@@ -177,24 +178,6 @@ class ServingBundle(object):
     self.model_type = model_type
 
 
-class InvalidUserInputError(Exception):
-  """An exception to throw if user input is detected to be invalid.
-
-  Attributes:
-    original_exception: The triggering `Exception` object to be wrapped, or
-      a string.
-  """
-
-  def __init__(self, original_exception):
-    """Inits InvalidUserInputError."""
-    self.original_exception = original_exception
-    Exception.__init__(self)
-
-  @property
-  def message(self):
-    return 'InvalidUserInputError: ' + str(self.original_exception)
-
-
 def proto_value_for_feature(example, feature_name):
   """Get the value of a feature from tf.Example regardless of feature type."""
   feature = example.features.feature[feature_name]
@@ -220,124 +203,6 @@ def parse_original_feature_from_example(example, feature_name):
   original_value = proto_value_for_feature(example, feature_name)
 
   return OriginalFeatureList(feature_name, original_value, feature_type)
-
-
-def filepath_to_filepath_list(file_path):
-  """Returns a list of files given by a filepath.
-
-  Args:
-    file_path: A path, possibly representing a single file, or containing a
-        wildcard or sharded path.
-
-  Returns:
-    A list of files represented by the provided path.
-  """
-  file_path = file_path.strip()
-  return [file_path]
-  #if '@' in file_path:
-  #  return gfile.GenerateShardedFilenames(file_path)
-  #elif '*' in file_path:
-  #  return gfile.Glob(file_path)
-  #else:
-  #  return [file_path]
-
-
-def throw_if_file_access_not_allowed(file_path, logdir, has_auth_group):
-  """Throws an error if a file cannot be loaded for inference.
-
-  Args:
-    file_path: A file path.
-    logdir: The path to the logdir of the TensorBoard context.
-    has_auth_group: True if TensorBoard was started with an authorized group,
-        in which case we allow access to all visible files.
-
-  Raises:
-    InvalidUserInputError: If the file is not in the logdir and is not globally
-        readable.
-  """
-  return
-  #file_paths = filepath_to_filepath_list(file_path)
-  #if not file_paths:
-  #  raise InvalidUserInputError(file_path + ' contains no files')
-  #if has_auth_group:
-  #  return
-
-  #for path in file_paths:
-  #  # Check if the file is inside the logdir.
-  #  if not path.startswith(logdir):
-  #    try:
-  #      filestat = gfile.Stat(path, stat_proto=False)
-  #      # Check for world-readable mode flag on the file to open.
-  #      if not filestat.mode & stat.S_IROTH:
-  #        raise InvalidUserInputError(
-  #            path + ' is not inside the TensorBoard logdir or have global '
-  #            + 'read permissions.')
-  #    except (gfile.GOSError, gfile.FileError) as e:
-  #      raise InvalidUserInputError(e)
-
-
-def example_protos_from_cns_path(cns_path,
-                                 num_examples=10,
-                                 start_index=0,
-                                 parse_examples=True):
-  """Returns a number of tf.Examples from the CNS path.
-
-  Args:
-    cns_path: A string CNS path.
-    num_examples: The maximum number of examples to return from the path.
-    start_index: The index of the first example to return.
-    parse_examples: If true then parses the serialized proto from the path into
-        proto objects. Defaults to True.
-
-  Returns:
-    A list of `tf.Example` protos or serialized proto strings at the CNS path.
-
-  Raises:
-    InvalidUserInputError: If examples cannot be procured from cns_path.
-  """
-
-  def append_examples_from_iterable(iterable, examples):
-    for i, value in enumerate(iterable):
-      if i >= start_index:
-        examples.append(
-            tf.Example.FromString(value) if parse_examples else value)
-        if len(examples) >= num_examples:
-          return
-
-  filenames = filepath_to_filepath_list(cns_path)
-  examples = []
-  try:
-    # Try RecordIO format after trying all other input formats, because
-    # RecordIO opens non-RecordIO formats as "0 records".
-    for filename in filenames:
-      record_iterator = tf.python_io.tf_record_iterator(path=filename)
-      append_examples_from_iterable(record_iterator, examples)
-      if len(examples) >= num_examples:
-        break
-  except IOError as e:
-    raise InvalidUserInputError(e)
-
-  #try:
-  #  # Try SSTable format first.
-  #  table = sstable.MergedSSTable(filenames)
-  #  append_examples_from_iterable(table.values(), examples)
-  #except sstable.SSTableOpenError as e:
-  #  try:
-  #    # Try RecordIO format after trying all other input formats, because
-  #    # RecordIO opens non-RecordIO formats as "0 records".
-  #    for filename in filenames:
-  #      with recordio.RecordReader(filename) as reader:
-  #        append_examples_from_iterable(reader, examples)
-  #        if len(examples) >= num_examples:
-  #          break
-  #  except IOError as e:
-  #    raise InvalidUserInputError(e)
-
-  if examples:
-    return examples
-  else:
-    raise InvalidUserInputError('No tf.Examples found at ' + cns_path +
-                                '. Valid formats are SSTable and RecordIO.')
 
 
 def wrap_inference_results(inference_result_proto):
@@ -402,7 +267,7 @@ def get_numeric_features_to_observed_range(examples_path, num_examples):
     A dict mapping feature_name -> {'observedMin': 'observedMax': } dicts,
     with a key for each numerical feature.
   """
-  examples = example_protos_from_cns_path(examples_path, num_examples)
+  examples = oss_utils.example_protos_from_path(examples_path, num_examples)
   observed_features = collections.defaultdict(list)  # name -> [value, ]
   for example in examples:
     for feature_name in get_numeric_feature_names(example):
@@ -440,7 +305,7 @@ def get_categorical_features_to_sampling(examples_path, num_examples, top_k):
     for further expansion, and mirrors the structure used by
     `get_numeric_features_to_observed_range`.
   """
-  examples = example_protos_from_cns_path(examples_path, num_examples)
+  examples = oss_utils.example_protos_from_path(examples_path, num_examples)
   observed_features = collections.defaultdict(list)  # name -> [value, ]
   for example in examples:
     for feature_name in get_categorical_feature_names(example):
@@ -560,7 +425,8 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
     mutant_features, mutant_examples = make_mutant_tuples(
         example_proto, original_feature, index_to_mutate, viz_params)
 
-    inference_result_proto = call_servo(mutant_examples, serving_bundle)
+    inference_result_proto = oss_utils.call_servo(
+      mutant_examples, serving_bundle)
     return make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto)
 
@@ -583,42 +449,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
           ]
       }
     except IndexError as e:
-      raise InvalidUserInputError(e)
-
-
-def call_servo(examples, serving_bundle):
-  """Send an RPC request to the Servomatic prediction service.
-
-  Args:
-    examples: A list of tf.Examples that matches the model spec.
-    serving_bundle: A `ServingBundle` object that contains the information to
-      make the serving request.
-
-  Returns:
-    A ClassificationResponse or RegressionResponse proto.
-  """
-  return None
-  # if serving_bundle.model_type == 'classification':
-  #   request = classification_pb2.ClassificationRequest()
-  # if serving_bundle.model_type == 'regression':
-  #   request = regression_pb2.RegressionRequest()
-  # request.model_spec.name = serving_bundle.model_name
-  # request.input.example_list.examples.extend(examples)
-
-  # smart_service = pywrapsmart_service.ParseSmartServiceOrNameListOrDie(
-  #     serving_bundle.inference_address)
-  # stub = pywrapsmart_stub.NewSmartStub(prediction_service_pb2.PredictionService,
-  #                                      smart_service)
-
-  # rpc = pywraprpc.RPC()
-  # try:
-  #   if serving_bundle.model_type == 'classification':
-  #     response = stub.Classify(request, rpc=rpc)
-  #   if serving_bundle.model_type == 'regression':
-  #     response = stub.Regress(request, rpc=rpc)
-  #   return response
-  # except pywraprpc.RPCException as e:
-  #   raise InvalidUserInputError(e)
+      raise common_utils.InvalidUserInputError(e)
 
 
 def make_json_formatted_for_single_chart(mutant_features,
