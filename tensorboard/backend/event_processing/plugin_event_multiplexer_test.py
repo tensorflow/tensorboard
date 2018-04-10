@@ -296,8 +296,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertTrue(x.GetAccumulator('run2').reload_called)
 
   def testAddReloadWithMultipleThreads(self):
-    x = event_multiplexer.EventMultiplexer(
-        max_threads_for_reloading_runs=2)
+    x = event_multiplexer.EventMultiplexer(max_reload_threads=2)
     x.Reload()
     x.AddRun('run1')
     x.AddRun('run2')
@@ -324,30 +323,28 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
     self.addCleanup(patcher.stop)
-    patcher = tf.test.mock.patch('threading.Thread.join', autospec=True)
+    patcher = tf.test.mock.patch('queue.Queue.join', autospec=True)
     join_mock = patcher.start()
     self.addCleanup(patcher.stop)
 
-    x = event_multiplexer.EventMultiplexer(
-        max_threads_for_reloading_runs=2)
+    x = event_multiplexer.EventMultiplexer(max_reload_threads=2)
     tmpdir = self.get_temp_dir()
     self.add3RunsToMultiplexer(tmpdir, x)
     x.Reload()
 
     # 2 threads should have been started despite how there are 3 runs.
     self.assertEqual(2, start_mock.call_count)
-    self.assertEqual(2, join_mock.call_count)
+    self.assertEqual(1, join_mock.call_count)
 
   def testReloadWithMoreThreadsThanRuns(self):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
     self.addCleanup(patcher.stop)
-    patcher = tf.test.mock.patch('threading.Thread.join', autospec=True)
+    patcher = tf.test.mock.patch('queue.Queue.join', autospec=True)
     join_mock = patcher.start()
     self.addCleanup(patcher.stop)
 
-    x = event_multiplexer.EventMultiplexer(
-        max_threads_for_reloading_runs=42)
+    x = event_multiplexer.EventMultiplexer(max_reload_threads=42)
     tmpdir = self.get_temp_dir()
     self.add3RunsToMultiplexer(tmpdir, x)
     x.Reload()
@@ -355,18 +352,17 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     # 3 threads should have been started despite how the multiplexer
     # could have started up to 42 threads.
     self.assertEqual(3, start_mock.call_count)
-    self.assertEqual(3, join_mock.call_count)
+    self.assertEqual(1, join_mock.call_count)
 
   def testReloadWith1Thread(self):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
     self.addCleanup(patcher.stop)
-    patcher = tf.test.mock.patch('threading.Thread.join', autospec=True)
+    patcher = tf.test.mock.patch('queue.Queue.join', autospec=True)
     join_mock = patcher.start()
     self.addCleanup(patcher.stop)
 
-    x = event_multiplexer.EventMultiplexer(
-        max_threads_for_reloading_runs=1)
+    x = event_multiplexer.EventMultiplexer(max_reload_threads=1)
     tmpdir = self.get_temp_dir()
     self.add3RunsToMultiplexer(tmpdir, x)
     x.Reload()
