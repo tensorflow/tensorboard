@@ -46,7 +46,7 @@ TOOLS = {
     'trace_viewer': 'trace',
     'op_profile': 'op_profile.json',
     'input_pipeline_analyzer': 'input_pipeline.json',
-    'overview_page': 'overview_page.json'
+    'overview_page': 'overview_page.json',
 }
 
 # Tools that consume raw data.
@@ -172,9 +172,9 @@ class ProfilePlugin(base_plugin.TBPlugin):
       A list of host names e.g.
         {"host1", "host2", "host3"} for the example.
     """
-    tool_to_hosts = {}
+    hosts = {}
     if not tf.gfile.IsDirectory(self.plugin_logdir):
-      return tool_to_hosts
+      return hosts
     run_dir = self._run_dir(run)
     if not run_dir:
        logging.warning("Cannot find asset directory: %s", run_dir)
@@ -182,19 +182,19 @@ class ProfilePlugin(base_plugin.TBPlugin):
     tool_pattern = '*' + TOOLS[tool]
     try:
       files = tf.gfile.Glob(os.path.join(run_dir,tool_pattern))
-      tool_to_hosts = [os.path.basename(f).replace(TOOLS[tool],'') for f in files]
+      hosts = [os.path.basename(f).replace(TOOLS[tool],'') for f in files]
     except tf.errors.OpError:
       logging.warning("Cannot read asset directory: %s, OpError %s",
                         run_dir, e)
-    return tool_to_hosts
+    return hosts
 
 
   @wrappers.Request.application
   def hosts_route(self, request):
     run = request.args.get('run')
     tool = request.args.get('tag')
-    tool_to_hosts = self.host_impl(run, tool)
-    return http_util.Respond(request, tool_to_hosts, 'application/json')
+    hosts = self.host_impl(run, tool)
+    return http_util.Respond(request, hosts, 'application/json')
 
   def data_impl(self, run, tool, host):
     """Retrieves and processes the tool data for a run and a host.
