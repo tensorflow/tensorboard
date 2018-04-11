@@ -187,10 +187,22 @@ def _tf_web_library(ctx):
   web_srcs.append(dummy)
 
   # define development web server that only applies to this transitive closure
+  if ctx.attr.srcs:
+    devserver_manifests = manifests
+    export_deps = []
+  else:
+    # If a rule exists purely to export other build rules, then it's
+    # appropriate for the exported sources to be included in the
+    # development web server.
+    devserver_manifests = depset(order="postorder")
+    export_deps = unfurl(ctx.attr.exports, provider="webfiles")
+    for dep in export_deps:
+      devserver_manifests += dep.webfiles.manifests
+    devserver_manifests = manifests + devserver_manifests
   params = struct(
       label=str(ctx.label),
       bind="[::]:6006",
-      manifest=[long_path(ctx, man) for man in manifests],
+      manifest=[long_path(ctx, man) for man in devserver_manifests],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = _new_file(ctx, "-params.pbtxt")
@@ -235,6 +247,7 @@ def _tf_web_library(ctx):
               dummy],
           transitive_files=(collect_runfiles([ctx.attr._WebfilesServer]) |
                             collect_runfiles(deps) |
+                            collect_runfiles(export_deps) |
                             collect_runfiles(ctx.attr.data) |
                             aspect_runfiles)))
 
@@ -284,7 +297,7 @@ def _make_manifest(ctx, src_list):
 
 def _run_webfiles_validator(ctx, srcs, deps, manifest):
   dummy = _new_file(ctx, "-webfiles.ignoreme")
-  manifests = depset(order="topological")
+  manifests = depset(order="postorder")
   for dep in deps:
     manifests += dep.webfiles.manifests
   if srcs:
@@ -376,7 +389,7 @@ def _get_strip(ctx):
 
 web_aspect = aspect(
     implementation=_web_aspect_impl,
-    attr_aspects=["deps", "sticky_deps", "module_deps"],
+    attr_aspects=["deps", "sticky_deps", "module_deps", "exports"],
     attrs={"_ClosureWorkerAspect": _CLOSURE_WORKER})
 
 tf_web_library = rule(
@@ -418,4 +431,3 @@ tf_web_library = rule(
         "_closure_library_deps": CLOSURE_LIBRARY_DEPS_ATTR,
     }.items()),
     outputs=CLUTZ_OUTPUTS)
-
