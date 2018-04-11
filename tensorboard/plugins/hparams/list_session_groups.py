@@ -379,7 +379,7 @@ class _SessionGroupRegexFilter(_SessionGroupFilter):
                                (regex, e))
 
   def _value_passes(self, value):
-    if not isinstance(value, str) and not isinstance(value, unicode):
+    if not isinstance(value, six.string_types):
       raise error.HParamsError(
           'Cannot use a regexp filter for a value of type %s. Value: %s' %
           (type(value), value))
