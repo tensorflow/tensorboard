@@ -208,15 +208,6 @@ You may obtain a copy of the License at
   Polymer({
     is: 'input-pipeline-analyzer',
     properties: {
-      _requestManager: {
-        type: Object,
-        readOnly: true,
-        value: () => new tf_backend.RequestManager(),
-      },
-      run: {
-        type: String,
-        observer: '_reloadToolData',
-      },
       _data: {
         type: Object,
         observer: '_updateView',
@@ -249,25 +240,13 @@ You may obtain a copy of the License at
     onClick: function(e) {
       this.set('_show_host_side_table', !this._show_host_side_table);
     },
-    _reloadToolData: function(run) {
-      if (!run) return;
-      this._requestManager.request(tf_backend.addParams(
-        tf_backend.getRouter().pluginRoute('profile', '/data'),
-        {tag: 'input_pipeline_analyzer', run})
-      ).catch(error => {
-        console.error(error);
-      }).then((data) => {
-        if (data) {
-          this.set('_data', data);
-        }
-      });
-    },
     _getToggleButtonText: function(show_host_side_table) {
       return (show_host_side_table ? 'Hide' : 'Show') + ' Input Op Statistics';
     },
 
     /* Update view according to new data */
     _updateView: function() {
+      if (this._data == null) return;
       var deviceJson = this._data[0];
       var hostJson = this._data[1];
       var recommendationJson = this._data[2];
