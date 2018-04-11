@@ -228,8 +228,8 @@ class Handler(object):
     # key, the second is the secondary sorting key, etc. To achieve that we
     # need to iterate on these columns in reverse order (thus the primary key
     # is the key used in the last sort).
-    for col_param, extractor in reversed(zip(self._request.col_params,
-                                             self._extractors)):
+    for col_param, extractor in reversed(list(zip(self._request.col_params,
+                                                  self._extractors))):
       if col_param.order == api_pb2.ORDER_UNSPECIFIED:
         continue
       if col_param.order == api_pb2.ORDER_ASC:
@@ -392,7 +392,8 @@ class _SessionGroupIntervalFilter(_SessionGroupFilter):
     self._interval = interval
 
   def _value_passes(self, value):
-    if not isinstance(value, (int, float, long)):
+    if (not isinstance(value, six.integer_types) and
+        not isinstance(value, float)):
       raise error.HParamsError(
           'Cannot use an interval filter for a value of type: %s, Value: %s' %
           (type(value), value))
