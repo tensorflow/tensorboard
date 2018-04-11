@@ -579,6 +579,23 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
+      name = "org_polymer_iron_validator_behavior",
+      srcs = ["iron-validator-behavior.html"],
+      licenses = ["notice"],  # BSD-3-Clause
+      path = "/iron-validator-behavior",
+      sha256 = "0956488f849c0528d66d5ce28bbfb66e163a7990df2cc5f157a5bf34dcb7dfd2",
+      strip_prefix = "iron-validator-behavior-1.0.2",
+      urls = [
+          "http://mirror.bazel.build/github.com/PolymerElements/iron-validator-behavior/archive/v1.0.2.tar.gz",
+          "https://github.com/PolymerElements/iron-validator-behavior/archive/v1.0.2.tar.gz",
+      ],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_meta",
+      ],
+   )
+
+  web_library_external(
       name = "org_polymer_marked",
       licenses = ["notice"],  # MIT
       sha256 = "4f7c6e0cd96569b3bb762584d20acc3a2602a3442165208535b3f1eff3c1dc41",
