@@ -634,9 +634,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
         backend_context.Context(self._mock_tb_context),
         request_proto)
     response = handler.run()
-    self.assertEquals(expected_session_group_names,
-                      [sg.name for sg in response.session_groups])
-    self.assertEquals(expected_total_size, response.total_size)
+    self.assertEqual(expected_session_group_names,
+                     [sg.name for sg in response.session_groups])
+    self.assertEqual(expected_total_size, response.total_size)
 
   def _serialized_plugin_data(self, data_oneof_field, text_protobuffer):
     oneof_type_dict = {

@@ -175,13 +175,14 @@ class Handler(object):
 
   def _build_group_from_sessions(self, sessions, session_infos_by_name):
     assert sessions  # Make sure sessions is non-empty
+    # Sort sessions by name so the order is deterministic.
+    sessions = sorted(sessions, key=lambda session: session.name)
     # TODO(erez): Do proper metric aggregation. For now we just take
     # the metric values from the first session.
     result = api_pb2.SessionGroup(
         name=session_infos_by_name[sessions[0].name].start_info.group_name,
         metric_values=sessions[0].metric_values,
-        # Sort sessions by name so the order is deterministic.
-        sessions=sorted(sessions, key=lambda session: session.name),
+        sessions=sessions,
         monitor_url=(
             session_infos_by_name[sessions[0].name].start_info.monitor_url
         ),
