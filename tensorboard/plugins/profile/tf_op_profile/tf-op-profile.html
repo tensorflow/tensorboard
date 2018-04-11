@@ -34,7 +34,7 @@ You may obtain a copy of the License at
 tf-op-details {
   position: fixed;
   /* don't set top, so it ends up next to tf-op-table */
-  padding-top: 6.5em;
+  margin-top: 10em;
   left: 16px;
   width: 330px;
 }
@@ -56,7 +56,7 @@ tf-op-details {
         <p>Modifying your model's architecture, data dimensions, and improving
         the efficiency of CPU operations may help reach the TPU's FLOPS potential.
       </p></div>
-      <tf-op-details hidden="[[!_active]]" node="[[_active]]"></tf-op-details>
+      <tf-op-details hidden="[[!_active]]" node=[[_active]]></tf-op-details>
       <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
     </div>
   </template>
@@ -65,15 +65,6 @@ tf-op-details {
 Polymer({
   is: 'tf-op-profile',
   properties: {
-    _requestManager: {
-      type: Object,
-      readOnly: true,
-      value: () => new tf_backend.RequestManager(),
-    },
-    run: {
-      type: String,
-      observer: '_load'
-    },
     _data: {
       type: Object,
       notify: true,
@@ -88,15 +79,6 @@ Polymer({
       value: null,
       notify: true,
     },
-  },
-  _load: function(run) {
-    if (!run) return;
-    this._requestManager.request(tf_backend.addParams(
-        tf_backend.getRouter().pluginRoute('profile', '/data'), {tag: 'op_profile', run})
-    ).catch(error => {}
-    ).then((data) => {
-      this._data = data;
-    });
   },
   _getRoot: function(data, breakdown) { return data[breakdown]; },
   _utilizationPercent: function(node) { return tf_op_profile.percent(tf_op_profile.utilization(node)); },
