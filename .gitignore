@@ -2,3 +2,5 @@
 /.idea
 *.pyc
 *.egg-info/
+.vscode/
+tensorboard/tf
