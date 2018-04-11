@@ -172,7 +172,7 @@ class EventMultiplexer(object):
       The `EventMultiplexer`.
     """
     tf.logging.info('Starting AddRunsFromDirectory: %s', path)
-    for subdir in GetLogdirSubdirectories(path):
+    for subdir in io_wrapper.GetLogdirSubdirectories(path):
       tf.logging.info('Adding run from directory %s', subdir)
       rpath = os.path.relpath(subdir, path)
       subname = os.path.join(name, rpath) if name else rpath
@@ -432,17 +432,3 @@ class EventMultiplexer(object):
     """
     with self._accumulators_mutex:
       return self._accumulators[run]
-
-
-def GetLogdirSubdirectories(path):
-  """Returns subdirectories with event files on path."""
-  if tf.gfile.Exists(path) and not tf.gfile.IsDirectory(path):
-    raise ValueError('GetLogdirSubdirectories: path exists and is not a '
-                     'directory, %s' % path)
-
-  # ListRecursively just yields nothing if the path doesn't exist.
-  return (
-      subdir
-      for (subdir, files) in io_wrapper.ListRecursively(path)
-      if list(filter(event_accumulator.IsTensorFlowEventsFile, files))
-  )

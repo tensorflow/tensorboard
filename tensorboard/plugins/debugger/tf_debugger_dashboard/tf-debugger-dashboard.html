@@ -818,7 +818,7 @@ limitations under the License.
           // informing the user of that.
           this.$.initialDialog.openDialog(response.host, response.port);
         }).catch(error => {
-          this.$.initialDialog.renderDebuggerNotEnabledMessage();
+          this.$.initialDialog.openDisabledDialog();
         }).then(() => {
           // Initiate long-polling.
           this.long_poll();

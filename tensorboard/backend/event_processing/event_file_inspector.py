@@ -120,7 +120,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_file_loader
-from tensorboard.backend.event_processing import event_multiplexer
+from tensorboard.backend.event_processing import io_wrapper
 
 FLAGS = tf.flags.FLAGS
 
@@ -323,12 +323,12 @@ def generators_from_logdir(logdir):
   Returns:
     List of event generators for each subdirectory with event files.
   """
-  subdirs = event_multiplexer.GetLogdirSubdirectories(logdir)
+  subdirs = io_wrapper.GetLogdirSubdirectories(logdir)
   generators = [
       itertools.chain(*[
           generator_from_event_file(os.path.join(subdir, f))
           for f in tf.gfile.ListDirectory(subdir)
-          if event_accumulator.IsTensorFlowEventsFile(os.path.join(subdir, f))
+          if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
       ]) for subdir in subdirs
   ]
   return generators
@@ -356,13 +356,13 @@ def get_inspection_units(logdir='', event_file='', tag=''):
     A list of InspectionUnit objects.
   """
   if logdir:
-    subdirs = event_multiplexer.GetLogdirSubdirectories(logdir)
+    subdirs = io_wrapper.GetLogdirSubdirectories(logdir)
     inspection_units = []
     for subdir in subdirs:
       generator = itertools.chain(*[
           generator_from_event_file(os.path.join(subdir, f))
           for f in tf.gfile.ListDirectory(subdir)
-          if event_accumulator.IsTensorFlowEventsFile(os.path.join(subdir, f))
+          if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
       ])
       inspection_units.append(InspectionUnit(
           name=subdir,
@@ -371,7 +371,7 @@ def get_inspection_units(logdir='', event_file='', tag=''):
     if inspection_units:
       print('Found event files in:\n{}\n'.format('\n'.join(
           [u.name for u in inspection_units])))
-    elif event_accumulator.IsTensorFlowEventsFile(logdir):
+    elif io_wrapper.IsTensorFlowEventsFile(logdir):
       print(
           'It seems that {} may be an event file instead of a logdir. If this '
           'is the case, use --event_file instead of --logdir to pass '

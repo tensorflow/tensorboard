@@ -58,6 +58,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/beholder:im_util",
+        "@org_pythonhosted_six",
     ],
 )
 

@@ -224,7 +224,7 @@ export class RenderGraphInfo {
     // Maps node name to whether the rendering hierarchy was already
     // constructed.
     this.hasSubhierarchy = {};
-    this.root = new RenderGroupNodeInfo(hierarchy.root);
+    this.root = new RenderGroupNodeInfo(hierarchy.root, hierarchy.graphOptions);
     this.index[hierarchy.root.name] = this.root;
     this.renderedOpNames.push(hierarchy.root.name);
     this.buildSubhierarchy(hierarchy.root.name);
@@ -315,7 +315,7 @@ export class RenderGraphInfo {
       return null;
     }
     let renderInfo = node.isGroupNode ?
-        new RenderGroupNodeInfo(<GroupNode>node) :
+        new RenderGroupNodeInfo(<GroupNode>node, this.hierarchy.graphOptions) :
         new RenderNodeInfo(node);
     this.index[nodeName] = renderInfo;
     this.renderedOpNames.push(nodeName);
@@ -704,7 +704,20 @@ export class RenderGraphInfo {
     // metagraph.
     const originalMetaEdges = this.hierarchy.getPredecessors(
         opNodeToReplace.name);
-    const originalMetaEdge = originalMetaEdges.regular[inputIndex];
+    
+    // Find the metaedge that the input index corresponds to.
+    // A metaedge may correspond to several edges. For instance,
+    // an edge may enter a series node.
+    let originalMetaEdge: Metaedge;
+    let regularEdgeCount = 0;
+    _.each(originalMetaEdges.regular, metaEdge => {
+      regularEdgeCount += metaEdge.numRegularEdges;
+      if (regularEdgeCount > inputIndex) {
+        originalMetaEdge = metaEdge;
+        // Terminate the loop.
+        return false;
+      }
+    });
 
     // Also change any base edges that point into the original node to
     // point to the input arg within the function. These are used to
@@ -1775,13 +1788,14 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
   /** Array of nodes to show in the function library scene group. */
   libraryFunctionsExtract: RenderNodeInfo[];
 
-  constructor(groupNode: GroupNode) {
+  constructor(groupNode: GroupNode, graphOptions: graphlib.GraphOptions) {
     super(groupNode);
     let metagraph = groupNode.metagraph;
     let gl = metagraph.graph();
+    graphOptions.compound = true;
     this.coreGraph =
         createGraph<RenderNodeInfo, RenderMetaedgeInfo>(
-            gl.name, GraphType.CORE, { compound: true });
+            gl.name, GraphType.CORE, graphOptions);
     this.inExtractBox = {width: 0, height: 0};
     this.outExtractBox = {width: 0, height: 0};
     this.libraryFunctionsBox = {width: 0, height: 0};

@@ -22,7 +22,7 @@ limitations under the License.
   <template>
   
     <div id="container">
-      <img id="video" src='[[_imageURL]]'></img>
+      <img id="video" src="[[_imageURL]]">
     </div>
     
     <style>
@@ -37,52 +37,98 @@ limitations under the License.
     "use strict";
     (function() {
 
-    const FEED_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/beholder-frame')
-    const PING_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/ping')
-
-    var connectionFailed = false
+    const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+    const FEED_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/beholder-frame');
+    const PING_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/ping');
 
     Polymer({
       is: "tf-beholder-video",
       properties: {
-        _requestManager: {
-          type: Object,
-          value: () => new tf_backend.RequestManager(),
+        // Only used for determining ping frequency.
+        fps: {
+          type: Number,
+          value: 10,
+          observer: '_fpsChanged',
+        },
+
+        pingSleep: {
+          type: Number,
+          value: 1000,
+        },
+
+        xhrTimeout: {
+          type: Number,
+          value: 2500,
         },
 
         _imageURL: {
           type: String,
-          value: FEED_ROUTE
+          value: BLANK,
+        },
+
+        _xhr: Object,
+        _timer: Object,
+        _isDead: Boolean,
+      },
+
+      attached() {
+        this.set('_imageURL', FEED_ROUTE);
+        this._ping();
+      },
+
+      detached() {
+        this._clear();
+        this.set('_imageURL', BLANK);
+      },
+
+      _ping() {
+        this._clear();
+        this._xhr = new XMLHttpRequest();
+        this._xhr.open('GET', PING_ROUTE, true);
+        this._xhr.timeout = this.xhrTimeout;
+        this._xhr.onload = this._onPingLoad.bind(this);
+        this._xhr.onerror = this._onPing.bind(this, false, this.pingSleep);
+        this._xhr.ontimeout = this._onPing.bind(this, false, 1);
+        this._xhr.send(null);
+      },
+
+      _onPingLoad() {
+        if (this._xhr.status == 200) {
+          const response = JSON.parse(this._xhr.responseText);
+          this._onPing(response['status'] == 'alive', this.pingSleep);
+          return;
+        }
+        this._onPing(false, this.pingSleep);
+      },
+
+      _onPing(isAlive, retryMs) {
+        if (isAlive && this._isDead) {
+          this.set('_imageURL', FEED_ROUTE + '?t=' + new Date().getTime());
+        }
+        this._isDead = !isAlive;
+        this._timer = window.setTimeout(this._ping.bind(this), retryMs);
+      },
+
+      _clear() {
+        if (this._timer) {
+          window.clearTimeout(this._timer);
+          this._timer = null;
+        }
+        if (this._xhr) {
+          if (this._xhr.readyState < 4 /* DONE */) {
+            this._xhr.abort();
+          }
+          this._xhr = null;
         }
       },
 
-      ready() {
-        // Periodically check the connection, restart if needed.
-        window.setInterval(function(){
-          this._requestManager.request(PING_ROUTE).then(
-              function(response){
-                if (connectionFailed) {
-                  this.restartVideo()
-                }
-                connectionFailed = false
-              }.bind(this),
-              function(error){
-                connectionFailed = true
-              }.bind(this))
-        }.bind(this), 1000)
+      _fpsChanged(newValue, oldValue) {
+        if (newValue == 0) {
+          this._clear();
+        } else if (oldValue == 0) {
+          this._ping();
+        }
       },
-
-      restartVideo() {
-        var newImage = document.createElement('img')
-        newImage.src = FEED_ROUTE + '?t=' + new Date().getTime()
-        newImage.id = 'video'
-        newImage.className = 'style-scope beholder-video'
-        this.$.container.appendChild(newImage)
-
-        this.$.container.removeChild(this.$.video)
-        this.$.video = newImage
-      },
-
     });
 
     })();
