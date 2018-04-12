@@ -22,14 +22,22 @@ from __future__ import print_function
 
 import logging
 import os
-import tensorflow as tf
 from werkzeug import wrappers
+
+import tensorflow as tf
 
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
+
+tf.flags.DEFINE_string(
+    'master_tpu_unsecure_channel', '',
+    'IP address of "master tpu", used for getting streaming trace data '
+    'through tpu profiler analysis grpc. The grpc channel is not secured.')
+
+FLAGS = tf.flags.FLAGS
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -44,6 +52,7 @@ HOSTS_ROUTE = '/hosts'
 _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
     'trace_viewer': 'trace',
+    'trace_viewer@': 'tracetable',  #streaming traceviewer
     'op_profile': 'op_profile.json',
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
@@ -77,6 +86,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     self.logdir = context.logdir
     self.plugin_logdir = plugin_asset_util.PluginDirectory(
         self.logdir, ProfilePlugin.plugin_name)
+    self.stub = None
 
   @wrappers.Request.application
   def logdir_route(self, request):
@@ -86,6 +96,25 @@ class ProfilePlugin(base_plugin.TBPlugin):
   def _run_dir(self, run):
     run_dir = os.path.join(self.plugin_logdir, run)
     return run_dir if tf.gfile.IsDirectory(run_dir) else None
+
+  def start_grpc_stub_if_necessary(self):
+    # We will enable streaming trace viewer on two conditions:
+    # 1. user specify the flags master_tpu_unsecure_channel to the ip address of
+    #    as "master" TPU. grpc will be used to fetch streaming trace data.
+    # 2. the logdir is on google cloud storage.
+    if FLAGS.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
+      if self.stub is None:
+        import grpc
+        from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pylint: disable=line-too-long
+        # Workaround the grpc's 4MB message limitation.
+        gigabyte = 1024 * 1024 * 1024
+        options = [('grpc.max_message_length', gigabyte),
+                   ('grpc.max_send_message_length', gigabyte),
+                   ('grpc.max_receive_message_length', gigabyte)]
+        tpu_profiler_port = FLAGS.master_tpu_unsecure_channel + ':8466'
+        channel = grpc.insecure_channel(tpu_profiler_port, options)
+        self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(
+            channel)
 
   def index_impl(self):
     """Returns available runs and available tool data in the log directory.
@@ -125,6 +154,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run_to_tools = {}
     if not tf.gfile.IsDirectory(self.plugin_logdir):
       return run_to_tools
+
+    self.start_grpc_stub_if_necessary()
     for run in tf.gfile.ListDirectory(self.plugin_logdir):
       run_dir = self._run_dir(run)
       if not run_dir:
@@ -140,6 +171,13 @@ class ProfilePlugin(base_plugin.TBPlugin):
         except tf.errors.OpError as e:
           logging.warning("Cannot read asset directory: %s, OpError %s",
                           run_dir, e)
+      if 'trace_viewer@' in run_to_tools[run]:
+        # streaming trace viewer always override normal trace viewer.
+        # the trailing '@' is to inform tf-profile-dashboard.html and
+        # tf-trace-viewer.html that stream trace viewer should be used.
+        removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
+        if removed_tool in run_to_tools[run]:
+          run_to_tools[run].remove(removed_tool)
     return run_to_tools
 
   @wrappers.Request.application
@@ -196,19 +234,40 @@ class ProfilePlugin(base_plugin.TBPlugin):
     hosts = self.host_impl(run, tool)
     return http_util.Respond(request, hosts, 'application/json')
 
-  def data_impl(self, run, tool, host):
+  def data_impl(self, request):
     """Retrieves and processes the tool data for a run and a host.
 
     Args:
-      run: Name of the run.
-      tool: Name of the tool.
-      host: Name of the host.
+      request: XMLHttpRequest
 
     Returns:
       A string that can be served to the frontend tool or None if tool,
         run or host is invalid.
     """
-    # Path relative to the path of plugin directory.
+    run = request.args.get('run')
+    tool = request.args.get('tag')
+    host = request.args.get('host')
+
+    if tool not in TOOLS:
+      return None
+
+    self.start_grpc_stub_if_necessary()
+    if tool == 'trace_viewer@' and self.stub is not None:
+      from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
+      grpc_request = tpu_profiler_analysis_pb2.ProfileSessionDataRequest()
+      grpc_request.repository_root = self.plugin_logdir
+      grpc_request.session_id = run[:-1]
+      grpc_request.tool_name = 'trace_viewer'
+
+      grpc_request.parameters['resolution'] = request.args.get('resolution')
+      if request.args.get('start_time_ms') is not None:
+        grpc_request.parameters['start_time_ms'] = request.args.get(
+            'start_time_ms')
+      if request.args.get('end_time_ms') is not None:
+        grpc_request.parameters['end_time_ms'] = request.args.get('end_time_ms')
+      grpc_response = self.stub.GetSessionToolData(grpc_request)
+      return grpc_response.output
+
     if tool not in TOOLS:
       return None
     tool_name = str(host) + TOOLS[tool]
@@ -216,10 +275,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      with tf.gfile.Open(asset_path, "rb") as f:
+      with tf.gfile.Open(asset_path, 'rb') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning("Asset path %s not found", asset_path)
+      logging.warning('Asset path %s not found', asset_path)
     except tf.errors.OpError as e:
       logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
 
@@ -234,17 +293,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def data_route(self, request):
     # params
-    #   run: The run name.
-    #   tag: The tool name e.g. trace_viewer. The plugin returns different UI
-    #     data for different tools of the same run.
-    #   host: The host name.
-    run = request.args.get('run')
-    tool = request.args.get('tag')
-    host = request.args.get('host')
-    data = self.data_impl(run, tool, host)
+    #   request: XMLHTTPRequest.
+    data = self.data_impl(request)
     if data is None:
       return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
-    return http_util.Respond(request, data, 'text/plain')
+    return http_util.Respond(request, data, 'application/json')
 
   def get_plugin_apps(self):
     return {
