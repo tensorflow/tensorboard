@@ -70,7 +70,7 @@ def create_experiment_summary():
           api_pb2.HParamInfo(name="heat_coefficient",
                              display_name="heat coefficient",
                              type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list)
+                             domain_discrete=heat_coefficient_list)
       ],
       metric_infos=[
           api_pb2.MetricInfo(

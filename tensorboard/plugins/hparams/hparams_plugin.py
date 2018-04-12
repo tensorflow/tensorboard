@@ -22,24 +22,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import csv
-import urllib
-
-import six
-from six import StringIO
+import werkzeug
 from werkzeug import wrappers
+from google.protobuf import json_format
 
-import tensorflow as tf
-from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
-from google.protobuf import json_format
 
 
 class HParamsPlugin(base_plugin.TBPlugin):
@@ -53,7 +46,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._context = backend_context.Context(context.multiplexer)
+    self._context = backend_context.Context(context)
 
   def get_plugin_apps(self):
     return {
@@ -72,35 +65,28 @@ class HParamsPlugin(base_plugin.TBPlugin):
   # ---- /experiment -----------------------------------------------------------
   @wrappers.Request.application
   def get_experiment_route(self, request):
-    return http_util.Respond(request,
-                             json_format.MessageToJson(
-                                 self._get_experiment_impl()),
-                             'application/json')
-
-  def _get_experiment_impl(self):
-    """Searches for metadata.EXPERIMENT_TAG tag in the run-tags data."""
-    mapping = self._context.multiplexer().PluginRunToTagToContent(
-        metadata.PLUGIN_NAME)
-    for (run, tag_to_content) in six.iteritems(mapping):
-      if metadata.EXPERIMENT_TAG in tag_to_content:
-        return metadata.parse_plugin_data_as(
-            tag_to_content[metadata.EXPERIMENT_TAG], "experiment")
-
-    raise error.HParamsError('Could not find a run containing tag: %s'
-                             % metadata.EXPERIMENT_TAG)
+    try:
+      return http_util.Respond(request,
+                               json_format.MessageToJson(
+                                   self._context.experiment()),
+                               'application/json')
+    except error.HParamsError as e:
+      raise werkzeug.exceptions.BadRequest(description=str(e))
 
   # ---- /session_groups -------------------------------------------------------
   @wrappers.Request.application
   def list_session_groups_route(self, request):
-    request_proto = request.args.get('request')
-    if request_proto is None:
-      raise error.HParamsError('/session_groups must have a \'request\' arg.')
-    request_proto = urllib.unquote(request_proto)
-    request_proto = json_format.Parse(request_proto,
-                                      api_pb2.ListSessionGroupsRequest())
-    tf.logging.info("%s" % request_proto);
-    return http_util.Respond(
-        request,
-        json_format.MessageToJson(
-            list_session_groups.Handler(self._context, request_proto).run()),
-        'application/json')
+    try:
+      # args.get() returns the request unquoted.
+      request_proto = request.args.get('request')
+      if request_proto is None:
+        raise error.HParamsError('/session_groups must have a \'request\' arg.')
+      request_proto = json_format.Parse(request_proto,
+                                        api_pb2.ListSessionGroupsRequest())
+      return http_util.Respond(
+          request,
+          json_format.MessageToJson(
+              list_session_groups.Handler(self._context, request_proto).run()),
+          'application/json')
+    except error.HParamsError as e:
+      raise werkzeug.exceptions.BadRequest(description=str(e))

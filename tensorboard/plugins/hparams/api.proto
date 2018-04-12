@@ -190,9 +190,12 @@ message SessionGroup {
 
 message MetricValue {
   MetricName name = 1;
+
   double value = 2;
+
   // The training step at which this value is computed.
   int64 training_step = 3;
+
   // The wall time in seconds since UNIX epoch at which this value is computed.
   double wall_time_secs = 4;
 }
@@ -303,6 +306,9 @@ message ColParams {
   // determines the "significance" of the associated column as a sorting key:
   // with the first being the primary sorting key, the second being the
   // secondary sorting key, etc.
+  // Note: The 'session group name' is added as a least significant sorting
+  // key to the keys defined by the user, so the order in the response is always
+  // deterministic.
   SortOrder order = 3;
   // This field is ignored if order is ORDER_UNSPECIFIED.
   // Otherwise, if true, missing values are ordered before every other value in
@@ -326,13 +332,13 @@ message ColParams {
     // the set of all strings matching the regular expression stored
     // in 'regexp' as a partial match (use '^<regexp>$' to have a full
     // match against regexp).
-    string regexp = 5;
+    string filter_regexp = 5;
 
     // Only valid for numeric-valued columns. The subset is the given interval.
-    Interval interval = 6;
+    Interval filter_interval = 6;
 
     // Valid for all data types. The subset is defined explicitly.
-    google.protobuf.ListValue discrete = 7;
+    google.protobuf.ListValue filter_discrete = 7;
   }
   // If true, the subset does not contain the missing value in this column.
   bool exclude_missing_values = 8;

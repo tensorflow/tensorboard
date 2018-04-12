@@ -38,7 +38,6 @@ import time
 
 import six
 import tensorflow as tf
-from google.protobuf import timestamp_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -51,7 +50,7 @@ def experiment_pb(
     metric_infos,
     user="",
     description="",
-    time_created_secs=time.time()):
+    time_created_secs=None):
   """Creates a summary that defines a hyperparameter-tuning experiment.
   Arguments:
     hparam_infos: Array of api_pb2.HParamInfo messages. Describes the
@@ -62,11 +61,13 @@ def experiment_pb(
     user: String. An id for the user running the experiment
     description: String. A description for the experiment. May contain markdown.
     time_created_secs: float. The time the experiment is created in seconds
-    since the UNIX epoch.
+         since the UNIX epoch. Defaults to the current time.
 
   Returns:
     A summary protobuffer containing the experiment definition.
   """
+  if time_created_secs is None:
+    time_created_secs = time.time()
   experiment = api_pb2.Experiment(
       description=description,
       user=user,
@@ -135,7 +136,8 @@ def session_end_pb(status, end_time_secs=time.time()):
   Returns:
     Returns the summary protobuffer mentioned above.
   """
-  session_end_info = plugin_data_pb2.SessionEndInfo(status=status)
+  session_end_info = plugin_data_pb2.SessionEndInfo(status=status,
+                                                    end_time_secs=end_time_secs)
   return _summary(metadata.SESSION_END_INFO_TAG,
                   plugin_data_pb2.HParamsPluginData(
                       session_end_info=session_end_info))

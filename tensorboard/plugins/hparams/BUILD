@@ -9,7 +9,6 @@ load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 
-## HparamsExplorer Plugin ##
 py_library(
     name = "hparams_plugin",
     srcs = [
@@ -36,6 +35,7 @@ py_library(
 
 py_test(
     name = "list_session_groups_test",
+    size = "small",
     srcs = [
         "list_session_groups_test.py",
     ],
