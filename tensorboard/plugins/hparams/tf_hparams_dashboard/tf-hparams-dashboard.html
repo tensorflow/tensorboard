@@ -123,59 +123,58 @@ limitations under the License.
         </div>
       </div>
       <div class="center">
-        <div style="height:50%;">
-          <vaadin-grid items="[[_listSessionGroupsResponse.sessionGroups]]"
-                       selected-items="{{_selectedSessionGroups}}"
-                       id="sessionGroupsTable">
-            <vaadin-grid-column>
-              <template>
-                <paper-checkbox checked="{{selected}}"></paper-checkbox>
-              </template>
-            </vaadin-grid-column>
-            <vaadin-grid-column>
-              <template class="header">
-                Session Group
-              </template>
-              <template>
-                [[_sessionGroupName(item)]]
-              </template>
-            </vaadin-grid-column>
-            <template is="dom-repeat" items="[[_hparamFilters]]"
-                      as="hparamFilter">
-              <vaadin-grid-column>
-                <template class="header">
-                  [[_hparamName(hparamFilter.info)]]
-                </template>
-                <template>
-                  [[_sessionGroupHParam(item, hparamFilter.info.name)]]
-                </template>
-              </vaadin-grid-column>
+        <vaadin-grid items="[[_listSessionGroupsResponse.sessionGroups]]"
+                     class="session-group-table">
+          <vaadin-grid-column>
+            <template>
+              <paper-checkbox checked="{{expanded}}">
+                Show Metrics
+              </paper-checkbox>
             </template>
+          </vaadin-grid-column>
+          <template class="row-details">
             <template is="dom-repeat" items="[[_metricFilters]]"
                       as="metricFilter">
-              <vaadin-grid-column>
-                <template class="header">
-                  [[_metricName(metricFilter.info)]]
-                </template>
-                <template>
-                  [[_sessionGroupMetric(item, metricFilter.info.name)]]
-                </template>
-              </vaadin-grid-column>
+              <tf-scalar-card
+                 runs="[[_computeRunsForSessionGroupMetric(item, metricFilter)]]"
+                 tag="[[metricFilter.info.name.tag]]"
+                 request-manager="[[_requestManager]]"
+                 x-type="[[_xType]]"
+                 active>
+              </tf-scalar-card>
             </template>
-          </vaadin-grid>
-        </div>
-        <div style="height:50%;overflow:auto;">
+          </template>
+          <vaadin-grid-column>
+            <template class="header">
+              Session Group
+            </template>
+            <template>
+              [[_sessionGroupName(item)]]
+            </template>
+          </vaadin-grid-column>
+          <template is="dom-repeat" items="[[_hparamFilters]]"
+                    as="hparamFilter">
+            <vaadin-grid-column>
+              <template class="header">
+                [[_hparamName(hparamFilter.info)]]
+              </template>
+              <template>
+                [[_sessionGroupHParam(item, hparamFilter.info.name)]]
+              </template>
+            </vaadin-grid-column>
+          </template>
           <template is="dom-repeat" items="[[_metricFilters]]"
                     as="metricFilter">
-            <tf-scalar-card
-               runs="[[_computeRunsForMetric(_selectedSessionGroups.*, metricFilter.*)]]"
-               tag="[[metricFilter.info.name.tag]]"
-               request-manager="[[_requestManager]]"
-               x-type="[[_xType]]"
-               active>
-            </tf-scalar-card>
+            <vaadin-grid-column>
+              <template class="header">
+                [[_metricName(metricFilter.info)]]
+              </template>
+              <template>
+                [[_sessionGroupMetric(item, metricFilter.info.name)]]
+              </template>
+            </vaadin-grid-column>
           </template>
-        </div>
+        </vaadin-grid>
       </div>
     </tf-dashboard-layout>
     <style include="dashboard-style"></style>
@@ -211,6 +210,9 @@ limitations under the License.
       .no-data-warning {
         max-width: 540px;
         margin: 80px auto 0 auto;
+      }
+      .session-group-table {
+        height:100%;
       }
     </style>
   </template>
@@ -448,16 +450,14 @@ limitations under the License.
         }
         return sessionGroup.name;
       },
-      _computeRunsForMetric(selectedSessionGroupsCR, metricFilterCR) {
+      _computeRunsForSessionGroupMetric(sessionGroup, metricFilter) {
         result=[];
-        metricGroup = metricFilterCR.value.info.name.group
+        metricGroup = metricFilter.info.name.group;
         if (metricGroup === undefined) {
-          metricGroup = ""
+          metricGroup = "";
         }
-        this._selectedSessionGroups.forEach(sessionGroup => {
-          sessionGroup.sessions.forEach(session => {
-            result.push(session.name + metricGroup);
-          });
+        sessionGroup.sessions.forEach(session => {
+          result.push(session.name + metricGroup);
         });
         return result;
       },
@@ -476,4 +476,3 @@ limitations under the License.
     });
   </script>
 </dom-module>
-
