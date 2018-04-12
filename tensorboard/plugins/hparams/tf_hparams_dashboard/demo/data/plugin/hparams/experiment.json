@@ -1,0 +1,14 @@
+{
+  "hparamInfos": [
+    {
+      "name": "hparamInfo1",
+      "display_name": "HParam Info #1",
+      "description": "The *first* hyperparameter info.",
+      "type": "DATA_TYPE_STRING",
+      "interval": {
+        "min_value": 3.0,
+        "max_value": 10.0
+      }
+    },
+  ]
+}

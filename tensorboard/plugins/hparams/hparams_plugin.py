@@ -57,7 +57,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-        '/experiment': self.get_experiment_route,
+        '/experiment.json': self.get_experiment_route,
         '/session_groups': self.list_session_groups_route,
     }
 
