@@ -120,25 +120,21 @@ TensorFlow run.
                 items="[[category.items]]"
                 pages="{{category._pages}}"
               >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-image-loader
-                          run="[[item.run]]"
-                          tag="[[item.tag]]"
-                          sample="[[item.sample]]"
-                          of-samples="[[item.ofSamples]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                          request-manager="[[_requestManager]]"
-                          actual-size="[[_actualSize]]"
-                          brightness-adjustment="[[_brightnessAdjustment]]"
-                          contrast-percentage="[[_contrastPercentage]]"
-                        ></tf-image-loader>
-                      </template>
-                    </div>
+                <div class="layout horizontal wrap">
+                  <template is="dom-repeat" items="[[_getItemsOfActivePage(category._pages)]]">
+                    <tf-image-loader
+                      run="[[item.run]]"
+                      tag="[[item.tag]]"
+                      sample="[[item.sample]]"
+                      of-samples="[[item.ofSamples]]"
+                      tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                      request-manager="[[_requestManager]]"
+                      actual-size="[[_actualSize]]"
+                      brightness-adjustment="[[_brightnessAdjustment]]"
+                      contrast-percentage="[[_contrastPercentage]]"
+                    ></tf-image-loader>
                   </template>
-                </template>
+                </div>
               </tf-paginated-view>
             </tf-category-pane>
           </template>
@@ -232,7 +228,6 @@ TensorFlow run.
           computed:
             '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
         },
-
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(),
@@ -307,6 +302,19 @@ TensorFlow run.
       },
       _tagMetadata(runToTagInfo, run, tag) {
         return runToTagInfo[run][tag];
+      },
+      _getItemsOfActivePage(pages) {
+        if (!pages) {
+          // The pages have not been generated yet.
+          return [];
+        }
+        // Within generated pages, there is a max of only 1 active page.
+        const activePage = _.find(pages, page => page.active);
+        if (!activePage) {
+          // No page is active. Perhaps the category is hidden.
+          return [];
+        }
+        return activePage.items;
       },
     });
 
