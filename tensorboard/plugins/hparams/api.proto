@@ -100,7 +100,7 @@ enum DataType {
   DATA_TYPE_FLOAT64 = 2;
 }
 
-// Represents the closed interval [min_val, max_val] of the real line.
+// Represents the closed interval [min_value, max_value] of the real line.
 message Interval {
   double min_value = 1;
   double max_value = 2;
@@ -192,7 +192,7 @@ message MetricValue {
   MetricName name = 1;
   double value = 2;
   // The training step at which this value is computed.
-  int32 training_step = 3;
+  int64 training_step = 3;
   // The wall time in seconds since UNIX epoch at which this value is computed.
   double wall_time_secs = 4;
 }
@@ -221,14 +221,6 @@ message Session {
   // Unfortunately, we can't store these as a map, since proto maps can't have
   // message keys.
   repeated MetricValue metric_values = 6;
-
-  // The current training step.
-  // This is the step for which the values of 'metrics' are computed.
-  // Note that int64's are encoded in JSON as strings.
-  int64 training_step = 7;
-
-  // The wall time at which 'training_step' completed.
-  google.protobuf.Timestamp training_step_wall_time = 8;
 
   // An optional link to a web page monitoring the session.
   string monitor_url = 7;

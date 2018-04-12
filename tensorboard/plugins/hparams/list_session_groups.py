@@ -125,7 +125,7 @@ class Handler(object):
     result = api_pb2.Session(
         name=session_name,
         start_time_secs=infos_tuple.start_info.start_time_secs,
-        model_uri=infos_tuple.start_info.checkpoint_uri,
+        model_uri=infos_tuple.start_info.model_uri,
         metric_values=self._build_session_metric_values(session_name),
         monitor_url=infos_tuple.start_info.monitor_url)
     if infos_tuple.end_info is not None:
