@@ -286,40 +286,31 @@ profile run can have multiple tools that present the performance profile as diff
       }
       return [];
     },
-<<<<<<< HEAD
     _maybeUpdateData: function(hostName) {
       if (hostName == null) return;
       var datasetName = this._selectedDatasetName;
       var toolName = this._selectedToolName;
       if (datasetName == null || toolName == null) return;
       this.toolInScope = "undefined";
-      if (toolName == "trace_viewer") {
+      if (toolName.startsWith("trace_viewer")) {
         var trace_data_url = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: 'trace_viewer',
+            {tag: toolName,
              run: datasetName,
              host: hostName});
-=======
-    _maybeUpdateTool: function(datasets, currentSelected) {
-      var currentTool = this._getSelectedTool(datasets, currentSelected);
-      if (currentTool == '') return;
-      if (currentTool.startsWith('trace_viewer')) {
-        var trace_data_url = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: currentTool, run: this._getSelectedDataset(datasets, currentSelected)});
->>>>>>> supporting streaming trace viewer in tensorboard.
         // Make the trace data url relative to the root.
         if (trace_data_url[0] != '/') {
           trace_data_url = '/' + trace_data_url;
         }
         // Pass the URL of trace data via GET parameter to the iframed trace
         // viewer app.
-<<<<<<< HEAD
-        this._traceDataUrl = this.traceViewerBaseUrl + "?trace_data_url=" +
-                            encodeURIComponent(trace_data_url);
+        var is_streaming = toolName.endsWith('@');
+        this._traceDataUrl = this.traceViewerBaseUrl + '?trace_data_url=' +
+            encodeURIComponent(trace_data_url) +
+            '&is_streaming=' + is_streaming;
         this._toolInScope = "trace_viewer";
         return;
-      }else{
+      } else {
         this._requestManager.request(tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('profile', '/data'),
           {tag: toolName, host: hostName, run: datasetName})
@@ -336,12 +327,6 @@ profile run can have multiple tools that present the performance profile as diff
                this._toolInScope = "overview_page";
            }
         });
-=======
-        var is_streaming = currentTool.endsWith('@');
-        this._traceDataUrl = this.traceViewerBaseUrl + '?trace_data_url=' +
-	                            encodeURIComponent(trace_data_url) + '&is_streaming=' +
-			                                is_streaming;
->>>>>>> supporting streaming trace viewer in tensorboard.
         return;
       }
     },
@@ -390,7 +375,6 @@ profile run can have multiple tools that present the performance profile as diff
       }
       return false;
     },
-<<<<<<< HEAD
     _getHostDisplayName: function(host) {
       // For old traces without a host prefix in file name, return default for
       // backward compatibility.
@@ -398,10 +382,6 @@ profile run can have multiple tools that present the performance profile as diff
       if (host == "") return "default";
       // Otherwise, remove the seperator, e.g. "host1_" => "host1".
       return host.slice(0, -1);
-=======
-    _isCurrentTool: function(datasets, currentSelected, expected) {
-      return this._getSelectedTool(datasets, currentSelected).startsWith(expected);
->>>>>>> supporting streaming trace viewer in tensorboard.
     },
   });
 

@@ -52,6 +52,7 @@ HOSTS_ROUTE = '/hosts'
 _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
     'trace_viewer': 'trace',
+    'trace_viewer@': 'tracetable',  #streaming traceviewer
     'op_profile': 'op_profile.json',
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
@@ -161,7 +162,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
         continue
       run_to_tools[run] = []
       for tool in TOOLS:
-<<<<<<< HEAD
         tool_pattern = '*' + TOOLS[tool]
         path = os.path.join(run_dir, tool_pattern)
         try:
@@ -171,20 +171,13 @@ class ProfilePlugin(base_plugin.TBPlugin):
         except tf.errors.OpError as e:
           logging.warning("Cannot read asset directory: %s, OpError %s",
                           run_dir, e)
-=======
-        tool_filename = TOOLS[tool]
-        if tf.gfile.Exists(os.path.join(run_dir, tool_filename)):
-          run_to_tools[run].append(tool)
-      if self.stub is not None:
-        tracetable_files = tf.gfile.Glob(os.path.join(run_dir, '*.trace_table'))
-        if tracetable_files > 0:
-          # streaming trace viewer always override normal trace viewer.
-          # the trailing '@' is to inform tf-profile-dashboard.html and
-          # tf-trace-viewer.html that stream trace viewer should be used.
-          if 'trace_viewer' in run_to_tools[run]:
-            run_to_tools[run].remove('trace_viewer')
-          run_to_tools[run].append('trace_viewer@')
->>>>>>> supporting streaming trace viewer in tensorboard.
+      if 'trace_viewer@' in run_to_tools[run]:
+        # streaming trace viewer always override normal trace viewer.
+        # the trailing '@' is to inform tf-profile-dashboard.html and
+        # tf-trace-viewer.html that stream trace viewer should be used.
+        removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
+        if removed_tool in run_to_tools[run]:
+          run_to_tools[run].remove(removed_tool)
     return run_to_tools
 
   @wrappers.Request.application
@@ -192,7 +185,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run_to_tools = self.index_impl()
     return http_util.Respond(request, run_to_tools, 'application/json')
 
-<<<<<<< HEAD
   def host_impl(self, run, tool):
     """Returns available hosts for the run and tool in the log directory.
 
@@ -242,20 +234,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
     hosts = self.host_impl(run, tool)
     return http_util.Respond(request, hosts, 'application/json')
 
-  def data_impl(self, run, tool, host):
+  def data_impl(self, request):
     """Retrieves and processes the tool data for a run and a host.
 
     Args:
-      run: Name of the run.
-      tool: Name of the tool.
-      host: Name of the host.
-=======
-  def data_impl(self, request):
-    """Retrieves and processes the tool data for a run.
-
-    Args:
-      request: XMLHTTPRequest.
->>>>>>> supporting streaming trace viewer in tensorboard.
+      request: XMLHttpRequest
 
     Returns:
       A string that can be served to the frontend tool or None if tool,
@@ -263,6 +246,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
     """
     run = request.args.get('run')
     tool = request.args.get('tag')
+    host = request.args.get('host')
+
+    if tool not in TOOLS:
+      return None
 
     self.start_grpc_stub_if_necessary()
     if tool == 'trace_viewer@' and self.stub is not None:
@@ -283,13 +270,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
 
     if tool not in TOOLS:
       return None
-<<<<<<< HEAD
     tool_name = str(host) + TOOLS[tool]
     rel_data_path = os.path.join(run, tool_name)
-=======
-    # Path relative to the path of plugin directory.
-    rel_data_path = os.path.join(run, TOOLS[tool])
->>>>>>> supporting streaming trace viewer in tensorboard.
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
@@ -311,19 +293,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def data_route(self, request):
     # params
-<<<<<<< HEAD
-    #   run: The run name.
-    #   tag: The tool name e.g. trace_viewer. The plugin returns different UI
-    #     data for different tools of the same run.
-    #   host: The host name.
-    run = request.args.get('run')
-    tool = request.args.get('tag')
-    host = request.args.get('host')
-    data = self.data_impl(run, tool, host)
-=======
     #   request: XMLHTTPRequest.
     data = self.data_impl(request)
->>>>>>> supporting streaming trace viewer in tensorboard.
     if data is None:
       return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
     return http_util.Respond(request, data, 'application/json')
