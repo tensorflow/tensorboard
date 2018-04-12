@@ -11,6 +11,9 @@ tf_web_library(
         "@org_chromium_catapult_vulcanized_trace_viewer//:trace_viewer_full.html",
     ],
     path = "/tf-trace-viewer",
+    deps = [
+        ":tf-trace-viewer-helper",
+    ],
 )
 
 tf_web_library(
@@ -23,3 +26,10 @@ tf_web_library(
     ],
 )
 
+tf_web_library(
+    name = "tf-trace-viewer-helper",
+    srcs = [
+        "tf-trace-viewer-helper.ts",
+    ],
+    path = "/tf-trace-viewer",
+)
