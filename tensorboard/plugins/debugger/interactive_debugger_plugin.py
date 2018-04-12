@@ -168,7 +168,16 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
     # self._debugger_data_server). This is how the HTTP long polling ends.
     pos = int(request.args.get("pos"))
     comm_data = self._debugger_data_server.get_outgoing_message(pos)
-    return http_util.Respond(request, comm_data, 'application/json')
+    try:
+      return http_util.Respond(request, comm_data, 'application/json')
+    except UnicodeDecodeError as e:
+      # One reason that a decode may occur is that the data received
+      # through the channel is corrupted. That issue should be fixed
+      # within other logic, but the plugin should nonetheless gracefully
+      # handle that case.
+      response = {'error': 'Error decoding data: %r' % e}
+      return http_util.Respond(
+          request, response, 'application/json', code=500)
 
   @wrappers.Request.application
   def _serve_debugger_graph(self, request):
