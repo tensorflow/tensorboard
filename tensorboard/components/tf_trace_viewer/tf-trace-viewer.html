@@ -222,8 +222,8 @@ dashboard would integrate trace viewer app using iframe.
         xhr.open('GET', requestURL);
         xhr.onload = function() {
           var contentType = this.getResponseHeader('Content-Type');
-          if (this.status !== 200 |
-            !contentType.startsWith('application/json')) {
+          if (this.status !== 200 ||
+              !contentType.startsWith('application/json')) {
             var msg = requestURL + ' could not be loaded';
             if (contentType.startsWith('text/plain')) {
               msg = msg + ': ' + xhr.statusText;

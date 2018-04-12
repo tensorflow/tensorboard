@@ -46,11 +46,13 @@ PLUGIN_NAME = 'profile'
 LOGDIR_ROUTE = '/logdir'
 DATA_ROUTE = '/data'
 TOOLS_ROUTE = '/tools'
+HOSTS_ROUTE = '/hosts'
 
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'
 TOOLS = {
     'trace_viewer': 'trace',
+    'trace_viewer@': 'tracetable',  #streaming traceviewer
     'op_profile': 'op_profile.json',
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
@@ -120,13 +122,19 @@ class ProfilePlugin(base_plugin.TBPlugin):
     In the plugin log directory, each directory contains profile data for a
     single run (identified by the directory name), and files in the run
     directory contains data for different tools. The file that contains profile
-    for a specific tool "x" will have a fixed name TOOLS["x"].
+    for a specific tool "x" will have a suffix name TOOLS["x"].
     Example:
       log/
         run1/
-          trace
+          plugins/
+            profile/
+              host1.trace
+              host2.trace
         run2/
-          trace
+          plugins/
+            profile/
+              host1.trace
+              host2.trace
 
     Returns:
       A map from runs to tool names e.g.
@@ -138,11 +146,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
     #       run1/
     #         plugins/
     #           profile/
-    #             trace
+    #             host1.trace
     #       run2/
     #         plugins/
     #           profile/
-    #             trace
+    #             host2.trace
     run_to_tools = {}
     if not tf.gfile.IsDirectory(self.plugin_logdir):
       return run_to_tools
@@ -154,18 +162,22 @@ class ProfilePlugin(base_plugin.TBPlugin):
         continue
       run_to_tools[run] = []
       for tool in TOOLS:
-        tool_filename = TOOLS[tool]
-        if tf.gfile.Exists(os.path.join(run_dir, tool_filename)):
-          run_to_tools[run].append(tool)
-      if self.stub is not None:
-        tracetable_files = tf.gfile.Glob(os.path.join(run_dir, '*.trace_table'))
-        if tracetable_files > 0:
-          # streaming trace viewer always override normal trace viewer.
-          # the trailing '@' is to inform tf-profile-dashboard.html and
-          # tf-trace-viewer.html that stream trace viewer should be used.
-          if 'trace_viewer' in run_to_tools[run]:
-            run_to_tools[run].remove('trace_viewer')
-          run_to_tools[run].append('trace_viewer@')
+        tool_pattern = '*' + TOOLS[tool]
+        path = os.path.join(run_dir, tool_pattern)
+        try:
+          files = tf.gfile.Glob(path)
+          if len(files) >= 1:
+            run_to_tools[run].append(tool)
+        except tf.errors.OpError as e:
+          logging.warning("Cannot read asset directory: %s, OpError %s",
+                          run_dir, e)
+      if 'trace_viewer@' in run_to_tools[run]:
+        # streaming trace viewer always override normal trace viewer.
+        # the trailing '@' is to inform tf-profile-dashboard.html and
+        # tf-trace-viewer.html that stream trace viewer should be used.
+        removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
+        if removed_tool in run_to_tools[run]:
+          run_to_tools[run].remove(removed_tool)
     return run_to_tools
 
   @wrappers.Request.application
@@ -173,18 +185,71 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run_to_tools = self.index_impl()
     return http_util.Respond(request, run_to_tools, 'application/json')
 
-  def data_impl(self, request):
-    """Retrieves and processes the tool data for a run.
+  def host_impl(self, run, tool):
+    """Returns available hosts for the run and tool in the log directory.
 
-    Args:
-      request: XMLHTTPRequest.
+    In the plugin log directory, each directory contains profile data for a
+    single run (identified by the directory name), and files in the run
+    directory contains data for different tools and hosts. The file that
+    contains profile for a specific tool "x" will have a prefix name TOOLS["x"].
+
+    Example:
+      log/
+        run1/
+          plugins/
+            profile/
+              host1.trace
+              host2.trace
+        run2/
+          plugins/
+            profile/
+              host1.trace
+              host2.trace
 
     Returns:
-      A string that can be served to the frontend tool or None if tool or
-        run is invalid.
+      A list of host names e.g.
+        {"host1", "host2", "host3"} for the example.
+    """
+    hosts = {}
+    if not tf.gfile.IsDirectory(self.plugin_logdir):
+      return hosts
+    run_dir = self._run_dir(run)
+    if not run_dir:
+      logging.warning("Cannot find asset directory: %s", run_dir)
+      return hosts
+    tool_pattern = '*' + TOOLS[tool]
+    try:
+      files = tf.gfile.Glob(os.path.join(run_dir, tool_pattern))
+      hosts = [os.path.basename(f).replace(TOOLS[tool], '') for f in files]
+    except tf.errors.OpError as e:
+      logging.warning("Cannot read asset directory: %s, OpError %s",
+                      run_dir, e)
+    return hosts
+
+
+  @wrappers.Request.application
+  def hosts_route(self, request):
+    run = request.args.get('run')
+    tool = request.args.get('tag')
+    hosts = self.host_impl(run, tool)
+    return http_util.Respond(request, hosts, 'application/json')
+
+  def data_impl(self, request):
+    """Retrieves and processes the tool data for a run and a host.
+
+    Args:
+      request: XMLHttpRequest
+
+    Returns:
+      A string that can be served to the frontend tool or None if tool,
+        run or host is invalid.
     """
     run = request.args.get('run')
     tool = request.args.get('tag')
+    host = request.args.get('host')
+
+    if tool not in TOOLS:
+      return None
 
     self.start_grpc_stub_if_necessary()
     if tool == 'trace_viewer@' and self.stub is not None:
@@ -205,8 +270,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
 
     if tool not in TOOLS:
       return None
-    # Path relative to the path of plugin directory.
-    rel_data_path = os.path.join(run, TOOLS[tool])
+    tool_name = str(host) + TOOLS[tool]
+    rel_data_path = os.path.join(run, tool_name)
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
@@ -238,6 +303,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     return {
         LOGDIR_ROUTE: self.logdir_route,
         TOOLS_ROUTE: self.tools_route,
+        HOSTS_ROUTE: self.hosts_route,
         DATA_ROUTE: self.data_route,
     }
 
