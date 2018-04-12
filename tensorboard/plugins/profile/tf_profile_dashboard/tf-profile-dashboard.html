@@ -276,7 +276,7 @@ profile run can have multiple tools that present the performance profile as diff
       if (datasets && selectedDatasetIndex >= 0 && selectedDatasetIndex < datasets.length) {
         return datasets[selectedDatasetIndex].name;
       }
-      return null;
+      return '';
     },
      _getActiveToolsList: function(selectedDatasetIndex, datasets) {
       if (selectedDatasetIndex == null) return;
@@ -292,10 +292,10 @@ profile run can have multiple tools that present the performance profile as diff
       var toolName = this._selectedToolName;
       if (datasetName == null || toolName == null) return;
       this.toolInScope = "undefined";
-      if (toolName == "trace_viewer") {
+      if (toolName.startsWith("trace_viewer")) {
         var trace_data_url = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: 'trace_viewer',
+            {tag: toolName,
              run: datasetName,
              host: hostName});
         // Make the trace data url relative to the root.
@@ -304,11 +304,13 @@ profile run can have multiple tools that present the performance profile as diff
         }
         // Pass the URL of trace data via GET parameter to the iframed trace
         // viewer app.
-        this._traceDataUrl = this.traceViewerBaseUrl + "?trace_data_url=" +
-                            encodeURIComponent(trace_data_url);
+        var is_streaming = toolName.endsWith('@');
+        this._traceDataUrl = this.traceViewerBaseUrl + '?trace_data_url=' +
+            encodeURIComponent(trace_data_url) +
+            '&is_streaming=' + is_streaming;
         this._toolInScope = "trace_viewer";
         return;
-      }else{
+      } else {
         this._requestManager.request(tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('profile', '/data'),
           {tag: toolName, host: hostName, run: datasetName})
