@@ -247,10 +247,10 @@ limitations under the License.
           type: Array,
           notify: true,
         },
-        /** @type {vz_line_chart.XType} */
+        /** @type {vz_chart_helpers.XType} */
         _xType: {
           type: String,
-          value: vz_line_chart.XType.STEP,
+          value: vz_chart_helpers.XType.STEP,
         },
       },
       ready() {
@@ -279,9 +279,9 @@ limitations under the License.
           hparamFilter = {
             info: this._experiment.hparamInfos[i],
           };
-          if (hparamFilter.info.hasOwnProperty('discreteSet')) {
+          if (hparamFilter.info.hasOwnProperty('domainDiscrete')) {
             hparamFilter.domainDiscrete = []
-            hparamFilter.info.discreteSet.forEach(val => {
+            hparamFilter.info.domainDiscrete.forEach(val => {
               hparamFilter.domainDiscrete.push({
                 value: val,
                 checked: true,
@@ -398,16 +398,16 @@ limitations under the License.
         this._hparamFilters.forEach(hparamFilter => {
           colParam = {hparam: hparamFilter.info.name}
           if (hparamFilter.domainDiscrete) {
-            colParam.discreteSet = [];
+            colParam.filterDiscrete = [];
             hparamFilter.domainDiscrete.forEach(filterVal => {
               if (filterVal.checked) {
-                colParam.discreteSet.push(filterVal.value)
+                colParam.filterDiscrete.push(filterVal.value)
               }
             });
           } else if (hparamFilter.interval) {
-            colParam.interval = stringToNumericInterval(hparamFilter.interval)
+            colParam.filterInterval = stringToNumericInterval(hparamFilter.interval)
           } else if (hparamFilter.regexp) {
-            colParam.regexp = hparamFilter.regexp
+            colParam.filterRegexp = hparamFilter.regexp
           } else {
             console.error(
                 "hparamFilter with no domainDiscrete, interval or regexp" +
@@ -419,11 +419,16 @@ limitations under the License.
         this._metricFilters.forEach(metricFilter => {
           colParam = {
             metric: metricFilter.info.name,
-            interval: stringToNumericInterval(metricFilter.interval)
+            filterInterval: stringToNumericInterval(metricFilter.interval)
           }
           colParams.push(colParam);
         });
-        return { colParams: colParams };
+        return {
+          colParams: colParams,
+          // TODO(erez): Make this user-configurable.
+          startIndex: 0,
+          sliceSize: 1000
+        };
       },
       _sessionGroupHParam(sessionGroup, hparam) {
         if (sessionGroup == null) {
