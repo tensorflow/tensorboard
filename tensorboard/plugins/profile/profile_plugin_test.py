@@ -22,6 +22,7 @@ from __future__ import print_function
 import json
 import os
 import tensorflow as tf
+from werkzeug import Request
 
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
@@ -84,12 +85,18 @@ class ProfilePluginTest(tf.test.TestCase):
     self.assertItemsEqual(runs['bar'], [])
     self.assertItemsEqual(runs['empty'], [])
 
+  def makeRequest(self, run, tag, host):
+    req = Request({})
+    req.args = {'run': run, 'tag': tag, 'host': host,}
+    return req
+
   def testHosts(self):
     hosts = self.plugin.host_impl('foo', 'trace_viewer')
     self.assertItemsEqual(['host0', 'host1'], sorted(hosts))
 
   def testData(self):
-    trace = json.loads(self.plugin.data_impl('foo', 'trace_viewer', 'host0'))
+    trace = json.loads(self.plugin.data_impl(
+        self.makeRequest('foo', 'trace_viewer', 'host0')))
     self.assertEqual(trace,
                      dict(
                          displayTimeUnit='ns',
@@ -108,10 +115,14 @@ class ProfilePluginTest(tf.test.TestCase):
                          ]))
 
     # Invalid tool/run.
-    self.assertEqual(None, self.plugin.data_impl('foo', 'nonono', 'host0'))
-    self.assertEqual(None, self.plugin.data_impl('foo', 'trace_viewer', ''))
-    self.assertEqual(None, self.plugin.data_impl('bar', 'unsupported', 'host1'))
-    self.assertEqual(None, self.plugin.data_impl('empty', 'trace_viewer', ''))
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('foo', 'nonono', 'host0')))
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('foo', 'trace_viewer', '')))
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('bar', 'unsupported', 'host1')))
+    self.assertEqual(None, self.plugin.data_impl(
+        self.makeRequest('empty', 'trace_viewer', '')))
 
   def testActive(self):
     self.assertTrue(self.plugin.is_active())
