@@ -73,6 +73,7 @@ by default. The user can select a different run from a dropdown menu.
         selected-dataset="{{_selectedDataset}}"
         selected-file="{{_selectedFile}}"
         selected-metadata-tag="{{_selectedMetadataTag}}"
+        selected-node="{{_selectedNode}}"
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
@@ -153,7 +154,10 @@ Polymer({
     allStepsModeEnabled: Boolean,
     specificHealthPillStep: {type: Number, value: 0},
     healthPillsToggledOn: {type: Boolean, value: true, observer: '_healthPillsToggledOnChanged'},
-    _selectedNode: Object,
+    selectedNode: {
+      type: String,
+      notify: true,
+    },
     _isAttached: Boolean,
     // Whether this dashboard is initialized. This dashboard should only be initialized once.
     _initialized: Boolean,
@@ -332,11 +336,11 @@ Polymer({
   _determineSelectedDataset(datasets, run) {
     // By default, load the first dataset.
     if (!run) {
-      // By default, load the first dataset. 
+      // By default, load the first dataset.
       this.set('_selectedDataset', 0);
       return;
     }
-    
+
     // If the URL specifies a dataset, load it.
     const dataset = datasets.findIndex(d => d.name === run);
     if (dataset === -1) {

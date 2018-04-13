@@ -13,14 +13,28 @@ tf_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_common",
+        "//tensorboard/plugins/graph/tf_graph_node_search",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_icon_button",
+        "@org_polymer_paper_input",
         "@org_polymer_paper_item",
         "@org_polymer_paper_menu",
         "@org_polymer_paper_radio_group",
         "@org_polymer_paper_toggle_button",
         "@org_polymer_paper_tooltip",
+    ],
+)
+
+tf_web_library(
+    name = "tf_graph_node_search",
+    srcs = ["tf-graph-node-search.html"],
+    path = "/tf-graph-node-search",
+    deps = [
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/graph/tf_graph_common",
+        "@org_polymer_paper_input",
     ],
 )
 
