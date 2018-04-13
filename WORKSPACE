@@ -78,3 +78,8 @@ load("//third_party:workspace.bzl", "tensorboard_workspace")
 
 # Please add all new dependencies in workspace.bzl.
 tensorboard_workspace()
+
+local_repository(
+    name = "org_paircode_facets",
+    path = "/usr/local/google/home/jwexler/pair-code/facets",
+)

@@ -1,0 +1,745 @@
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-inference-panel/tf-inference-panel.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
+<link rel="import" href="../tf-inference-viewer/tf-inference-viewer.html">
+<link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
+
+<!--
+  A frontend that displays a set of editable examples and enables inference of those examples,
+  visualizing the results.
+-->
+<dom-module id="tf-interactive-inference-dashboard">
+  <template>
+    <style id="linter-paper-button-style">
+      /**
+       * This style preserves the styling previous to
+       * https://github.com/PolymerElements/paper-button/pull/115
+       * This change can break the layout of paper-button content.
+       * Remove this style to apply the change, more details at b/70528356.
+       */
+      paper-button {
+        display: inline-block;
+        text-align: center;
+        font-family: inherit;
+      }
+    </style>
+    <style>
+      #classification {
+        width: 40%;
+      }
+
+      .example-and-inference-holder {
+        display: flex;
+        position: relative;
+      }
+
+      .example-holder {
+        width: 75%;
+      }
+
+      .inference-holder {
+        position: absolute;
+        left: 75%;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        overflow: auto;
+      }
+
+      tf-inference-viewer {
+        margin: 10px;
+      }
+
+      .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
+        width: 40%;
+      }
+
+      #spinner {
+        position: absolute;
+        top: 95px;
+        left: 250px;
+        width: 14px;
+        height: 14px;
+        --paper-spinner-color: var(--tb-orange-strong);
+      }
+
+      facets-dive {
+        height: 800px;
+      }
+
+      .noexamples {
+        position: absolute;
+        top: 75px;
+        left: 280px;
+      }
+
+      .center {
+        position: relative;
+      }
+
+      .info-text {
+        font-size: 12px;
+        color: #777;
+        margin: 20px 0px;
+      }
+
+      .button {
+        font-size: 13px;
+        margin: 10px 0 0 0;
+        background-color: #757575;
+        color: white;
+      }
+
+      .button[disabled] {
+        background-color: #ccc;
+      }
+
+      .input-and-tooltip {
+        display: flex;
+      }
+
+      .label-vocab-path-input {
+        flex-grow: 1;
+      }
+
+      .help-icon {
+        width: 15px;
+        padding: 0px;
+        color: #757575;
+      }
+
+      .tooltip {
+        width: 300px;
+      }
+
+      .threshold-dropdown {
+        display: block;
+      }
+
+      .slider-label {
+        --paper-input-container-underline: {
+          display: none;
+        };
+      }
+
+      .slider {
+        margin-top: -30px;
+        width: 100%;
+        --paper-slider-input: {
+          width: 80px;
+        }
+      }
+
+      /* Hide the Facets Dive info card and keep the background consistent with TensorBoard. */
+      ::content #dive #infoCard {
+        background: #f5f5f5;
+      }
+      ::content #dive #infoCard > div {
+        display: none;
+      }
+    </style>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div class="sidebar-section">
+
+          <tf-inference-panel inference-address="{{inferenceAddress}}"
+                              model-name="{{modelName}}"
+                              examples-path="{{examplesPath}}"
+                              model-type="{{modelType}}"></tf-inference-panel>
+
+          <paper-input always-float-label type="number" label="Max examples"
+                       placeholder="[[maxExamples]]" value="{{maxExamples}}">
+          </paper-input>
+          <paper-button on-click="getExamples_" class="button"
+                        disabled="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
+            Get Examples
+          </paper-button>
+          <div class="input-and-tooltip">
+            <paper-input always-float-label label="Label vocab path (optional)"
+                         placeholder="[[labelVocabPath]]"
+                         value="{{labelVocabPath}}"
+                         class="label-vocab-path-input"
+                         disabled="[[shouldDisableVocabInput_(modelType)]]">
+            </paper-input>
+            <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+            <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
+              An optional text file for use with the results of a classification model.
+              Classification models return predicted classes as indices. If a vocab file is
+              provided, each predicted class index will be mapped to a label from this file for use
+              in the display. Each line in the file corresponds to a label, with the first line
+              corresponding to class index 0.
+            </paper-tooltip>
+          </div>
+
+          <paper-button on-click="inferClicked_" class="button"
+                        disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+            Run inference
+          </paper-button>
+          <template is="dom-if" if="[[shouldShowThresholder_(modelType)]]">
+            <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
+              <div>
+                <paper-input value="Threshold for positive label" readonly=true class="slider-label"
+                             no-label-float=true>
+                </paper-input>
+                <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                              immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
+                </paper-slider>
+              </div>
+            </template>
+            <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
+              <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
+                <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
+                  <template is="dom-repeat" items="[[getThresholdFeatures_(stats)]]">
+                    <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+              <template is="dom-repeat" items="[[featureValueThresholds]]">
+                <div>
+                  <paper-input value="[[getPrintableValue_(item.value)]]" readonly=true
+                               class="slider-label" no-label-float=true>
+                  </paper-input>
+                  <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                immediate-value="{{item.threshold}}" value="[[item.threshold]]"
+                                on-value-changed="refreshInferences_">
+                  </paper-slider>
+                </div>
+              </template>
+            </template>
+          </template>
+        </div>
+        <div class="sidebar-section"></div>
+      </div>
+
+      <div class="center">
+        <div class="info-text">
+          <p>
+            Load tf.Example protos and visualize them with
+            <a href="http://go/facets-dive" target="_blank">Facets Dive</a>.
+            Select examples then edit them below with
+            <a href="http://go/example-viewer" target="_blank">Example Viewer</a>.
+          </p>
+          <p>
+            Perform inference on the examples through
+            <a href="http://go/servo" target="_blank">Servo</a>
+            and see the inference results.
+            After inference is run, Facets Dive will color each example by its inference result.
+          </p>
+          <p>
+            Detailed documentation about this dashboard can be found
+            <a href="http://google3/learning/brain/tensorboard/plugins/interactive_inference/" target="_blank">here</a>.
+          </p>
+        </div>
+        <facets-dive id="dive" data="[[visdata]]"
+                     on-selected-indices-changed="selectedIndicesChanged_"
+                     on-stats-changed="statsChanged_">
+        </facets-dive>
+        <div id="noexamples" class="noexamples info-text">
+          Examples and their inference results will be displayed here.
+        </div>
+        <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+        <template is="dom-if" if="![[shouldShowSelectedExamples_(selectedExamplesAndInferences)]]">
+          <div class="info-text">Examples selected above will be shown here and are editable.</div>
+        </template>
+        <template is="dom-if" if="[[shouldShowSelectedExamples_(selectedExamplesAndInferences)]]">
+          <div class="example-and-inference-holder">
+            <div class="example-holder"><h2>Selected Examples</h2></div>
+            <div class="inference-holder"><h2>Inference Results</h2></div>
+          </div>
+          <template is="dom-repeat" items="[[selectedExamplesAndInferences]]">
+            <div class="example-and-inference-holder">
+              <vz-example-viewer class="example-holder" json="{{item.example}}"
+                                 on-example-change="exampleChange_" id$="[[getViewerId_(index)]]">
+              </vz-example-viewer>
+              <tf-inference-viewer class="inference-holder" inference="[[item.inference]]"
+                                   id$="[[getInferenceHolderId_(index)]]">
+              </tf-inference-viewer>
+            </div>
+          </template>
+        </template>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+  </template>
+
+  <script>
+    "use strict";
+
+    const defaultMaxExamples = '1000';
+    const defaultLabelVocabPath = '';
+    const maxStringLengthToDecode = 100000;
+    const inferenceLabelStr = 'inference label';
+    const inferenceValueStr = 'inference value';
+
+    Polymer({
+      is: "tf-interactive-inference-dashboard",
+      properties: {
+
+        // TensorBoard plugin standard.
+        requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new tf_backend.Canceller(),
+        },
+
+        // Fields for interactive inference plugin.
+        examplesPath: {
+          type: String,
+        },
+        modelName: {
+          type: String,
+        },
+        inferenceAddress: {
+          type: String,
+        },
+        modelType: {
+          type: String,
+        },
+        maxExamples: {
+          type: Number,
+          value: tf_storage.getStringInitializer('maxExamples',
+                                                 {defaultValue: String(defaultMaxExamples)}),
+          observer: 'maxExamplesChanged_',
+        },
+        labelVocabPath: {
+          type: String,
+          value: tf_storage.getStringInitializer('labelVocabPath',
+                                                 {defaultValue: defaultLabelVocabPath}),
+          observer: 'labelVocabPathChanged_',
+        },
+        inferences: {
+          type: Object,
+          observer: 'newInferences_',
+          value: {}
+        },
+        examplesAndInferences : {
+          type: Array,
+          value: [],
+          observer: 'computeSelectedExamplesAndInferences',
+        },
+        selectedExamplesAndInferences : {
+          type: Array,
+          value: [],
+        },
+        visdata: {
+          type: Array,
+          value: []
+        },
+        selected: {
+          type: Array,
+          value: [],
+          observer: 'computeSelectedExamplesAndInferences',
+        },
+        labelVocab: {
+          type: Array,
+          value: []
+        },
+        updatedExample: {
+          type: Boolean,
+          value: false,
+        },
+        imageFeatureName: {
+          type: String,
+          value: 'image/encoded',
+          readonly: true,
+        },
+        // The dataset stats from Facets Dive to be used for the classification threshold logic.
+        stats: Object,
+        // Feature to set different classification thredholds for the values of
+        selectedThresholdFeature: {
+          type: String,
+          value: '',
+          observer: 'thresholdFeatureSelected_',
+        },
+        // Array of feature values and their set classification thresholds, for Polymer display
+        // purposes.
+        featureValueThresholds: Array,
+        // A map of feature name to the featureValueThresholds items, for quick lookup.
+        featureValueThresholdsMap: Object,
+        // The default inference label when the classification threshold isn't met.
+        defaultInferenceLabel: {
+          type: Number,
+          value: 0,
+          observer: 'refreshInferences_',
+        },
+        // The classification threshold when it isn't being set on a per-feature-value basis.
+        overallThreshold: {
+          type: Number,
+          value: 0.5,
+          observer: 'refreshInferences_',
+        },
+      },
+
+      // Required function.
+      reload: function(){
+      },
+
+      selectedIndicesChanged_: function(event) {
+        this.selected = event.detail.value;
+      },
+
+      statsChanged_: function(event) {
+        this.stats = event.detail.value;
+      },
+
+      shouldShowThresholder_: function(modelType) {
+        return modelType == 'classification';
+      },
+
+      shouldShowFeatureDropdown_: function(modelType, stats) {
+         return this.shouldShowThresholder_(modelType) && stats && Object.keys(stats).length > 0;
+      },
+
+      getThresholdFeatures_: function(stats) {
+        // Do not also threshold settings by the results of the inference as they aren't real data
+        // features.
+        const features = Object.keys(stats).filter(function(feature) {
+          return feature !== inferenceValueStr && feature !== inferenceLabelStr;
+        });
+        // Add a blank feature to be used for clearing the selected feature.
+        features.push('');
+        return features;
+      },
+
+      thresholdFeatureSelected_: function(feature) {
+        const thresholds = [];
+        const thresholdsMap = {};
+        if (feature.length !== 0) {
+          // For the selected feature, set up a dict of each feature value in the dataset to
+          // the threshold, defaulting to 0.5. Add this to a list (for display purposes) and create
+          // a map of feature value to entry in that list.
+          for(var key in this.stats[feature].valueHash) {
+            if(this.stats[feature].valueHash.hasOwnProperty(key)) {
+              const featureValue = this.stats[feature].valueHash[key].value;
+              const thresh = {value: featureValue, threshold: 0.5};
+              thresholds.push(thresh);
+              thresholdsMap[featureValue] = thresh;
+            }
+          }
+          // Add an entry for if the example has no feature value for this selected feature.
+          const missingValueThresh = {value: undefined, threshold: 0.5};
+          thresholds.push(missingValueThresh);
+          thresholdsMap[undefined] = missingValueThresh;
+        }
+
+        this.featureValueThresholds = thresholds;
+        this.featureValueThresholdsMap = thresholdsMap;
+        this.refreshInferences_();
+      },
+
+      getPrintableValue_: function(value) {
+        if (!value && value !== 0) {
+          return '<feature value missing>';
+        }
+        return value;
+      },
+
+      getFeatureName_: function(feature) {
+        // If feature name is blank then this represents selecting no feature.
+        if (feature.length === 0) {
+          return '<none>';
+        }
+        return feature;
+      },
+
+      shouldShowOverallTresholder_: function(feature) {
+        return feature.length === 0;
+      },
+
+      maxExamplesChanged_: tf_storage.getStringObserver(
+          'maxExamples', {defaultValue: defaultMaxExamples}),
+
+      labelVocabPathChanged_: tf_storage.getStringObserver(
+          'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
+
+      computeSelectedExamplesAndInferences: function() {
+        if (!this.selected || !this.examplesAndInferences) {
+          this.selectedExamplesAndInferences = this.examplesAndInferences;
+          return;
+        }
+        // Set the exampleIndex so that the mutant inference plugin shows the example selected
+        // by the user.
+        if (this.selected.length > 0) {
+          tf_storage.setNumber('exampleIndex', this.selected[0]);
+        }
+        const self = this;
+        this.selectedExamplesAndInferences = this.examplesAndInferences.filter(function(item, index) {
+          return self.selected.includes(index);
+        });
+      },
+
+      shouldShowSelectedExamples_: function(selectedExamples) {
+        return selectedExamples.length > 0
+      },
+
+      shouldDisableGetExamplesButton_: function(examplesPath) {
+        return examplesPath.length == 0;
+      },
+
+      shouldDisableInferButton_: function(examples, modelName, inferenceAddress, updatedExample) {
+        return examples.length == 0 || modelName.length == 0 || inferenceAddress.length == 0 ||
+          !updatedExample;
+      },
+
+      shouldDisableVocabInput_: function(modelType) {
+        return modelType == 'regression';
+      },
+
+      newInferences_: function() {
+        this.updateInferences_(true);
+      },
+
+      refreshInferences_: function() {
+        this.updateInferences_(false);
+      },
+
+      updateInferences_: function(adjustColor) {
+        if (!this.examplesAndInferences || !this.inferences.indices ||
+            this.inferences.indices.length == 0) {
+          return;
+        }
+        const inferenceMap = {}
+        const isClassification = !!this.inferences.results.classification;
+        for (let i = 0; i < this.inferences.indices.length; i++) {
+          inferenceMap[this.inferences.indices[i]] = isClassification ?
+              this.inferences.results.classification.classifications[i].classes.sort(function(a, b) {
+                return b.score - a.score;
+              }) :
+              this.inferences.results.regression.regressions[i];
+        }
+        this.set('examplesAndInferences', this.examplesAndInferences.map(
+          function(item, index) {
+            return {example: item.example, inference: inferenceMap[index] || item.inference};
+          }));
+        const self = this;
+        let hasInferenceLabels = false;
+        this.visdata.forEach(function(item, index) {
+          if (isClassification) {
+            self.setItemInferenceValue(item, index, self.selectedThresholdFeature);
+          } else {
+            item[inferenceValueStr] = self.examplesAndInferences[index].inference.value;
+          }
+
+
+          if (isClassification && self.labelVocab.length > 0) {
+            for (let labelIndex = 0;
+                 labelIndex < self.examplesAndInferences[index].inference.length; labelIndex++) {
+              self.examplesAndInferences[index].inference[labelIndex].vocabLabel =
+                self.labelVocab[self.examplesAndInferences[index].inference[labelIndex].label];
+            }
+            item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
+            hasInferenceLabels = true;
+          }
+        });
+        this.refreshDive_();
+        if (adjustColor) {
+          this.$.dive.colorBy = hasInferenceLabels ? inferenceLabelStr : inferenceValueStr;
+        }
+        this.updatedExample = false;
+      },
+
+      setItemInferenceValue: function(item, index, feature) {
+        let threshold = this.overallThreshold;
+        // If a feature has been selected (string will be non-empty in this case), then get the
+        // appropriate threshold for this item's value for that feature. Otherwise the overall
+        // threshold will be used.
+        if (feature.length !== 0) {
+          const featureValue = item[feature];
+          threshold = this.featureValueThresholdsMap[featureValue].threshold;
+        }
+
+        // Find the first inference label in the score-sorted list that is non-zero.
+        let indexForNonZeroLabel = 0;
+        for (let i = 0; i < this.examplesAndInferences[index].inference.length; i++) {
+          if (+this.examplesAndInferences[index].inference[i].label !== 0) {
+            indexForNonZeroLabel = i;
+            break;
+          }
+        }
+
+        if (this.examplesAndInferences[index].inference[indexForNonZeroLabel].score >= threshold) {
+          item[inferenceValueStr] =
+            this.examplesAndInferences[index].inference[indexForNonZeroLabel].label;
+        } else {
+          item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+        }
+      },
+
+      inferClicked_: function() {
+        var url = this.makeUrl_('/data/plugin/interactiveinference/infer',
+                                {'inference_address': this.inferenceAddress,
+                                 'model_name': this.modelName,
+                                 'model_type': this.modelType,
+                                 'label_vocab_path': this.labelVocabPath});
+        const inferContents = result => {
+          this.$.spinner.hidden = true;
+          this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
+          this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
+        };
+        this.makeAsyncRequest_(url, inferContents);
+        this.$.spinner.hidden = false;
+      },
+
+      exampleChange_: function(event) {
+        var id = +event.target.id.substring(event.target.id.indexOf("_") + 1)
+        var index = this.selected.length == 0 ? id : this.selected[id];
+        this.updateExample_(JSON.stringify(event.target.json), index);
+        const inferenceViewerIdStr = '#' + this.getInferenceHolderId_(id);
+        const inferenceViewer = this.$$(inferenceViewerIdStr);
+        inferenceViewer.inference = null;
+        this.visdata[index] = this.exampleToDataPoint_(event.target.json);
+        this.refreshDive_();
+        this.updatedExample = true;
+      },
+
+      refreshDive_: function() {
+        const temp = this.visdata;
+        this.visdata = [];
+        this.visdata = temp;
+        const tempSelected = this.$.dive.selectedData;
+        this.$.dive.selectedData = [];
+        this.$.dive.selectedData = tempSelected;
+      },
+
+      updateExample_: function(exampleJson, index){
+        var url = this.makeUrl_('/data/plugin/interactiveinference/update_example',
+                                {'example': exampleJson,
+                                 'index': index});
+
+        this.makeAsyncRequest_(url, null);
+      },
+
+      getViewerId_: function(index) {
+        return 'viewer_' + index;
+      },
+
+      getInferenceHolderId_: function(index) {
+        return 'inference_' + index;
+      },
+
+      makeUrl_: function(prefix, paramsDict){
+        return prefix + '?' + Object.keys(paramsDict).map(
+          k => k + '=' + encodeURIComponent(paramsDict[k])).join('&');
+      },
+
+      showToast_: function(msg) {
+        var toast = document.createElement('paper-toast');
+        document.body.appendChild(toast);
+        toast.text = msg;
+        toast.show();
+
+        // Also, log to console.
+        console.error(msg);
+      },
+
+      makeAsyncRequest_: function(url, thenDoFn){
+        var self = this;
+        const wrapperFn = this._canceller.cancellable(function(result){
+          if (result.cancelled) {
+            return;
+          }
+          if (result.value && result.value.error){
+            // show toast with the error
+            self.showToast_(result.value.error);
+            self.$.spinner.hidden = true;
+          } else if (thenDoFn) {
+            thenDoFn(result);
+          }
+        });
+        this.requestManager.request(url).then(wrapperFn);
+      },
+
+      exampleToDataPoint_: function(example) {
+        const d = {};
+        const features = Object.keys(example.features.feature)
+        for (const index in features) {
+          const fname = features[+index];
+          // Ignore encoded image feature when creating data for Facets Dive.
+          if (fname == this.imageFeatureName) {
+            continue;
+          }
+          let v = null;
+          if (example.features.feature[fname].int64List) {
+            v = example.features.feature[fname].int64List.value;
+          } else if (example.features.feature[fname].floatList) {
+            v = example.features.feature[fname].floatList.value;
+          } else if (example.features.feature[fname].bytesList &&
+                     example.features.feature[fname].bytesList.value) {
+            v = example.features.feature[fname].bytesList.value.map(val => {
+              // Strings above a max length are most likely binary encoded data and not strings
+              // and therefore shouldn't be decoded for display in Facets Dive.
+              if (val.length > maxStringLengthToDecode) {
+                return 'ERROR: string not decoded due to length';
+              }
+              try {
+                return atob(val);
+              } catch (err) {
+                console.error('Error decoding string: ' + err);
+                return 'ERROR: error decoding string';
+              }
+            });
+          }
+          if (v) {
+            if (v.length == 1) {
+              v = v[0];
+              if (!isNaN(v)) {
+                v = Number(v);
+              }
+            }
+            d[fname] = v;
+          }
+        }
+        return d;
+      },
+      getExamples_: function(){
+        var url = this.makeUrl_('/data/plugin/interactiveinference/examples_from_path',
+                                {'examples_path': this.examplesPath,
+                                 'max_examples': this.maxExamples});
+
+        const updateExampleContents = result => {
+          this.$.noexamples.style.display = 'none';
+          this.$.spinner.hidden = true;
+          this.examplesAndInferences = result.value.examples.map(function(ex) {
+            return {example: JSON.parse(ex)};});
+          this.updatedExample = true;
+          const self = this;
+          this.visdata = this.examplesAndInferences.map(function(ex) {
+            return self.exampleToDataPoint_(ex.example);
+          });
+          this.$.dive.atlasUrl = '';
+          if (result.value.sprite) {
+            this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
+          }
+        };
+        this.makeAsyncRequest_(url, updateExampleContents);
+        this.$.spinner.hidden = false;
+      },
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'interactiveinference',
+      elementName: 'tf-interactive-inference-dashboard',
+      tabName: 'Interactive Inference',
+    });
+
+  </script>
+</dom-module>
+

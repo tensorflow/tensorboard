@@ -1,0 +1,47 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- Displays the results of an inference. -->
+<dom-module id="tf-inference-viewer">
+  <template>
+    <style>
+      .label {
+        font-weight: bold;
+        display: flex;
+      }
+      .vocab-label {
+        padding-left: 3px;
+      }
+    </style>
+    <template is="dom-if" if="[[inference.value]]">
+      <div class="value">[[inference.value]]</div>
+    </template>
+    <template is="dom-if" if="![[inference.value]]">
+      <template is="dom-repeat" items="[[inference]]">
+        <div class="label-and-score">
+          <div class="label">
+            <div>[[item.label]]</div>
+            <template is="dom-if" if="[[item.vocabLabel]]">
+              <div class="vocab-label">(<span>[[item.vocabLabel]]</span>)</div>
+            </template>
+          </div>
+          <div class="score">[[item.score]]</div>
+        </div>
+      </template>
+    </template>
+  </template>
+
+  <script>
+    "use strict";
+
+    Polymer({
+      is: "tf-inference-viewer",
+      properties: {
+        inference: {
+          type: Object,
+        }
+      },
+    });
+
+  </script>
+</dom-module>
+

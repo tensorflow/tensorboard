@@ -1,0 +1,101 @@
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+
+<!--
+  Shared left hand side panel for inference related plugins.
+-->
+<dom-module id="tf-inference-panel">
+  <template>
+    <style id="linter-paper-button-style">
+      /**
+       * This style preserves the styling previous to
+       * https://github.com/PolymerElements/paper-button/pull/115
+       * This change can break the layout of paper-button content.
+       * Remove this style to apply the change, more details at b/70528356.
+       */
+      paper-button {
+        display: inline-block;
+        text-align: center;
+        font-family: inherit;
+      }
+    </style>
+    <style>
+     #classification {
+        width: 40%;
+      }
+    </style>
+
+    <paper-input always-float-label label="Inference address (blade address or host:port)"
+                 placeholder="[[inferenceAddress]]" value="{{inferenceAddress}}">
+    </paper-input>
+    <paper-input always-float-label label="Model name" placeholder="[[modelName]]"
+                 value="{{modelName}}">
+    </paper-input>
+    <tf-option-selector selected-id="{{modelType}}">
+      <paper-button class="model-type-button" id="classification">Classification</paper-button>
+      <paper-button class="model-type-button" id="regression">Regression</paper-button>
+    </tf-option-selector>
+    <paper-input always-float-label label="Examples path"
+                 value="{{examplesPath}}">
+    </paper-input>
+  </template>
+
+  <script>
+    "use strict";
+
+    const defaultExamplesPath = '';
+    const defaultModelName = '';
+    const defaultInferenceAddress = 'ml-serving-temp.prediction';
+    const defaultModelType = 'classification';
+
+    Polymer({
+      is: "tf-inference-panel",
+      properties: {
+        // Fields for interactive inference plugin.
+        examplesPath: {
+          type: String,
+          value: tf_storage.getStringInitializer('examplesPath',
+                                                 {defaultValue: defaultExamplesPath}),
+          observer: 'examplesPathChanged_',
+          notify: true,
+        },
+        modelName: {
+          type: String,
+          value: tf_storage.getStringInitializer('modelName',
+                                                 {defaultValue: defaultModelName}),
+          observer: 'modelNameChanged_',
+          notify: true,
+        },
+        inferenceAddress: {
+          type: String,
+          value: tf_storage.getStringInitializer('inferenceAddress',
+                                                 {defaultValue: defaultInferenceAddress}),
+          observer: 'inferenceAddressChanged_',
+          notify: true,
+        },
+        modelType: {
+          type: String,
+          value: tf_storage.getStringInitializer('modelType',
+                                                 {defaultValue: defaultModelType}),
+          observer: 'modelTypeChanged_',
+          notify: true,
+        },
+      },
+
+      examplesPathChanged_: tf_storage.getStringObserver('examplesPath',
+                                                         {defaultValue: defaultExamplesPath}),
+
+      modelNameChanged_: tf_storage.getStringObserver('modelName',
+                                                      {defaultValue: defaultModelName}),
+
+      inferenceAddressChanged_: tf_storage.getStringObserver('inferenceAddress',
+                                                             {defaultValue: defaultInferenceAddress}),
+
+      modelTypeChanged_: tf_storage.getStringObserver('modelType',
+                                                      {defaultValue: defaultModelType}),
+    });
+
+  </script>
+</dom-module>
