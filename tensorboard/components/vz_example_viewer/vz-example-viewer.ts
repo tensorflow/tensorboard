@@ -1,16 +1,28 @@
-// TODO(jwexler): Do we need these deps?
-//goog.require('goog.crypt.base64');
-//goog.require('jspb.Map');
+/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
-import BytesList from 'goog:proto.tensorflow.BytesList'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import Example from 'goog:proto.tensorflow.Example'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import Feature from 'goog:proto.tensorflow.Feature'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import FeatureList from 'goog:proto.tensorflow.FeatureList'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import FeatureLists from 'goog:proto.tensorflow.FeatureLists'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import Features from 'goog:proto.tensorflow.Features'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import FloatList from 'goog:proto.tensorflow.FloatList'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import Int64List from 'goog:proto.tensorflow.Int64List'; // from //third_party/tensorflow/core:protos_all_jspb_proto
-import SequenceExample from 'goog:proto.tensorflow.SequenceExample'; // from //third_party/tensorflow/core:protos_all_jspb_proto
+Licensed under the Apache License, Version 2.0 (the 'License');
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an 'AS IS' BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+//goog.require('proto.tensorflow.BytesList');
+import BytesList from 'goog:proto.tensorflow.BytesList';
+import Example from 'goog:proto.tensorflow.Example';
+import Feature from 'goog:proto.tensorflow.Feature';
+import FeatureList from 'goog:proto.tensorflow.FeatureList';
+import FeatureLists from 'goog:proto.tensorflow.FeatureLists';
+import Features from 'goog:proto.tensorflow.Features';
+import FloatList from 'goog:proto.tensorflow.FloatList';
+import Int64List from 'goog:proto.tensorflow.Int64List';
+import SequenceExample from 'goog:proto.tensorflow.SequenceExample';
 
 namespace vz_example_viewer {
 
@@ -151,7 +163,6 @@ Polymer({
   /* Helper method to encode a string into a typed array. */
   stringToUint8Array: function(str: string) {
     return new (window as any).TextEncoder().encode(str);
-    //return new Uint8Array(goog.crypt.stringToUtf8ByteArray(str));
   },
 
   deserializeExample: function(
