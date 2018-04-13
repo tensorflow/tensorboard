@@ -1,7 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+<<<<<<< HEAD
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+=======
+>>>>>>> 4581690903ab0c6e7c5258e69e0b519cf8e3978b
 
 licenses(["notice"])  # Apache 2.0
 
@@ -49,3 +52,4 @@ tensorboard_html_binary(
     output_path = "/vz-example-viewer/demo.html",
     deps = [":demo"],
 )
+
