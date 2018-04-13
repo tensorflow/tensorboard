@@ -212,13 +212,17 @@ def tensorboard_js_workspace():
   )
 
   web_library_external(
-      name = "com_vaadin",
-      licenses = ["notice"],  # 
+      name = "com_vaadin_grid",
+      licenses = ["notice"],  # Apache 2.0
       strip_prefix = "vaadin-grid-2.0.3",
       sha256 = "54eda473dc1a26be55c6d612b2613f14bbac1af7df93449e4ba61aa929c8340d",
-      urls = ["https://github.com/vaadin/vaadin-grid/archive/v2.0.3.tar.gz"],
+      urls = [
+          "https://mirror.bazel.build/github.com/vaadin/vaadin-grid/archive/v2.0.3.tar.gz",
+          "https://github.com/vaadin/vaadin-grid/archive/v2.0.3.tar.gz",
+      ],
       path = "/vaadin-grid",
       srcs = [
+          "iron-list-behavior.html",
           "vaadin-grid-active-item-behavior.html",
           "vaadin-grid-array-data-provider-behavior.html",
           "vaadin-grid-cell-click-behavior.html",
@@ -246,16 +250,16 @@ def tensorboard_js_workspace():
           "vaadin-grid-table.html",
           "vaadin-grid-templatizer.html",
           "vaadin-grid.html",
-          "iron-list-behavior.html",
       ],
-      deps = ["@org_polymer",
-              "@org_polymer_iron_a11y_keys_behavior",
-              "@org_polymer_iron_a11y_announcer",
-              "@org_polymer_iron_resizable_behavior",
-              "@org_polymer_iron_scroll_target_behavior"],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_a11y_announcer",
+          "@org_polymer_iron_a11y_keys_behavior",
+          "@org_polymer_iron_resizable_behavior",
+          "@org_polymer_iron_scroll_target_behavior",
+      ],
   )
 
-  
   filegroup_external(
       name = "io_github_cpettitt_dagre",
       # no @license header

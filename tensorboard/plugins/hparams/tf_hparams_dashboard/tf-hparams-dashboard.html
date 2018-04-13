@@ -16,7 +16,6 @@ limitations under the License.
 -->
 
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-input/paper-input.html">
@@ -31,13 +30,13 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-imports/vaadin-grid-html.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
 <link rel="import" href="tf-scalar-card.html">
+<link rel="import" href="../vaadin-grid/vaadin-grid.html">
 
 <!--
   The HParams frontend.
@@ -405,7 +404,8 @@ limitations under the License.
               }
             });
           } else if (hparamFilter.interval) {
-            colParam.filterInterval = stringToNumericInterval(hparamFilter.interval)
+            colParam.filterInterval = stringToNumericInterval(
+                hparamFilter.interval)
           } else if (hparamFilter.regexp) {
             colParam.filterRegexp = hparamFilter.regexp
           } else {
