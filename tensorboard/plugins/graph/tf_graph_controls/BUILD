@@ -26,18 +26,6 @@ tf_web_library(
     ],
 )
 
-tf_web_library(
-    name = "tf_graph_node_search",
-    srcs = ["tf-graph-node-search.html"],
-    path = "/tf-graph-node-search",
-    deps = [
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
-        "@org_polymer_paper_input",
-    ],
-)
-
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_graph_controls"],
