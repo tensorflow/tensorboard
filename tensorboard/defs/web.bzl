@@ -238,8 +238,7 @@ def _tf_web_library(ctx):
           ts_typings_paths=ts_typings_paths,
           ts_typings_execroots=ts_typings_execroots),
       closure_js_library=collect_js(
-          unfurl(ctx.attr.deps, provider="closure_js_library"),
-          ctx.file._closure_library_base, ctx.file._closure_library_deps),
+          ctx, unfurl(ctx.attr.deps, provider="closure_js_library")),
       runfiles=ctx.runfiles(
           files=ctx.files.srcs + ctx.files.data + ts_outputs + [
               manifest,

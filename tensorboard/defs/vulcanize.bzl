@@ -27,7 +27,8 @@ def _tensorboard_html_binary(ctx):
     files += dep.data_runfiles.files
   webpaths += [ctx.attr.output_path]
   closure_js_library=collect_js(
-      unfurl(ctx.attr.deps, provider="closure_js_library"))
+      unfurl(ctx.attr.deps, provider="closure_js_library"),
+      ctx.file._closure_library_base, ctx.file._closure_library_deps)
 
   # vulcanize
   jslibs = depset(ctx.files._jslibs) + closure_js_library.srcs

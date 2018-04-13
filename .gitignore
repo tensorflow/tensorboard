@@ -3,6 +3,4 @@
 .DS_Store
 *.pyc
 *.egg-info/
-.vscode/
-tensorboard/tf
 
