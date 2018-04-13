@@ -411,6 +411,10 @@ export interface HierarchyParams {
   // This string is supplied to dagre as the 'rankdir' property for laying out
   // the graph. TB, BT, LR, or RL. The default is 'BT' (bottom to top).
   rankDirection: string;
+  // Whether to detect numeric patterns for series nodes using entire names of
+  // nodes. If false, only uses numeric suffixes to find patterns to collapse
+  // into series nodes.
+  useGeneralizedSeriesPatterns: boolean;
 }
 
 /**
@@ -449,7 +453,7 @@ export function build(graph: tf.graph.SlimGraph, params: HierarchyParams,
           if (params.seriesNodeMinSize > 0) {
             groupSeries(
                 h.root, h, seriesNames, params.seriesNodeMinSize,
-                params.seriesMap);
+                params.seriesMap, params.useGeneralizedSeriesPatterns);
           }
         }, tracker);
       })
@@ -759,22 +763,37 @@ function addEdges(h: Hierarchy, graph: SlimGraph,
  *     into a series.
  * @param map Map of series names to their series grouping type, if one has
  *     been set.
+ * @param useGeneralizedSeriesPatterns Whether to use find patterns for series
+ *     nodes using any parts of names of nodes. If false, only uses patterns
+ *     discovered within numeric suffixes of nodes names.
  * @return A dictionary from node name to series node name that contains the
  *     node.
  */
 function groupSeries(metanode: Metanode, hierarchy: Hierarchy,
     seriesNames: { [name: string]: string }, threshold: number,
-    map: { [name: string]: tf.graph.SeriesGroupingType }) {
+    map: { [name: string]: tf.graph.SeriesGroupingType },
+    useGeneralizedSeriesPatterns: boolean) {
   let metagraph = metanode.metagraph;
   _.each(metagraph.nodes(), n => {
     let child = metagraph.node(n);
     if (child.type === tf.graph.NodeType.META) {
-      groupSeries(<Metanode>child, hierarchy, seriesNames, threshold, map);
+      groupSeries(
+          <Metanode>child,
+          hierarchy,
+          seriesNames,
+          threshold,
+          map,
+          useGeneralizedSeriesPatterns);
     }
   });
 
   let clusters = clusterNodes(metagraph);
-  let seriesDict = detectSeries(clusters, metagraph, hierarchy.graphOptions);
+
+  const detectSeriesMethod = useGeneralizedSeriesPatterns?
+      detectSeriesAnywhereInNodeName :
+      detectSeriesUsingNumericSuffixes;
+  let seriesDict = detectSeriesMethod(
+      clusters, metagraph, hierarchy.graphOptions);
 
   // Add each series node to the graph and add its grouped children to its own
   // metagraph.
@@ -869,14 +888,96 @@ function clusterNodes(metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>):
 
 /**
  * For each cluster of op-nodes based op type, try to detect groupings.
- * Infer series name using by trying to find pattern '<number>' in the node
- * name.
+ * Infer series name using by trying to find pattern '<number>' towards the end
+ * of node names.
  *
  * @param clusters Dictionary output from clusterNodes().
  * @param metagraph
  * @return A dictionary from series name => seriesNode
  */
-function detectSeries(
+function detectSeriesUsingNumericSuffixes(
+    clusters: {[clusterId: string]: string[]},
+    metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>,
+    graphOptions: graphlib.GraphOptions):
+     {[seriesName: string]: SeriesNode} {
+  let seriesDict: {[seriesName: string]: SeriesNode} = {};
+  _.each(clusters, function(members, clusterId: string) {
+    if (members.length <= 1) { return; } // isolated clusters can't make series
+    /** @type {Object}  A dictionary mapping seriesName to seriesInfoArray,
+     * which is an array that contains objects with name, id, prefix, suffix,
+     * and parent properties.
+     */
+    let candidatesDict: {[seriesName: string]: SeriesNode[]} = {};
+
+    // Group all nodes that have the same name, with the exception of a
+    // number at the end of the name after an underscore, which is allowed to
+    // vary.
+    _.each(members, function(name: string) {
+      let isGroup = name.charAt(name.length - 1) === '*';
+      let namepath = name.split('/');
+      let leaf = namepath[namepath.length - 1];
+      let parent = namepath.slice(0, namepath.length - 1).join('/');
+      let matches = leaf.match(/^(\D*)_(\d+)$/);
+
+      let prefix;
+      let id;
+      let suffix = '';
+      if (matches) {         // if found '<number>' in the name, assign id.
+        prefix = matches[1]; // the front non-numeric characters
+        id = matches[2]; // the digits
+      } else {  // for node without '_<number>', make them zero-th items.
+        prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
+        id = 0;
+        suffix = isGroup ? '*' : '';
+      }
+      let seriesName = getSeriesNodeName(prefix, suffix, parent);
+      candidatesDict[seriesName] = candidatesDict[seriesName] || [];
+      let seriesNode = createSeriesNode(
+          prefix, suffix, parent, +id, name, graphOptions);
+      candidatesDict[seriesName].push(seriesNode);
+    });
+
+    // In each group of nodes, group nodes in bunches that have monotonically
+    // increasing numbers in their names.  Each of these bunches is a series.
+    _.each(candidatesDict, function(seriesInfoArray: SeriesNode[], seriesName) {
+      if (seriesInfoArray.length < 2) {
+        return;
+      }
+      seriesInfoArray.sort(function(a, b) {
+        return (+a.clusterId) - (+b.clusterId);
+      });
+
+      // Loop through the nodes sorted by its detected series number, grouping
+      // all nodes with monotonically-increasing series numbers.
+      let seriesNodes = [seriesInfoArray[0]];
+      for (let index = 1; index < seriesInfoArray.length; index++) {
+        let nextNode = seriesInfoArray[index];
+        if (nextNode.clusterId === seriesNodes[seriesNodes.length - 1].clusterId
+            + 1) {
+          seriesNodes.push(nextNode);
+          continue;
+        }
+        addSeriesToDict(
+            seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
+        seriesNodes = [nextNode];
+      }
+      addSeriesToDict(
+          seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
+    });
+  });
+  return seriesDict;
+}
+
+/**
+ * For each cluster of op-nodes based op type, try to detect groupings.
+ * Infer series name using by trying to find a pattern of numbers
+ * anywhere within node names.
+ *
+ * @param clusters Dictionary output from clusterNodes().
+ * @param metagraph
+ * @return A dictionary from series name => seriesNode
+ */
+function detectSeriesAnywhereInNodeName(
     clusters: {[clusterId: string]: string[]},
     metagraph: graphlib.Graph<GroupNode|OpNode, Metaedge>,
     graphOptions: graphlib.GraphOptions):
@@ -924,7 +1025,7 @@ function detectSeries(
         forwardDict[seriesName] = forwardDict[seriesName];
         if (!forwardDict[seriesName]) {
           forwardDict[seriesName] = createSeriesNode(
-            prefix, suffix, parent, +id, name);
+            prefix, suffix, parent, +id, name, graphOptions);
         }
         forwardDict[seriesName].ids.push(id);
         reverseDict[name] = reverseDict[name] || [];
@@ -938,7 +1039,7 @@ function detectSeries(
         forwardDict[seriesName] = forwardDict[seriesName];
         if (!forwardDict[seriesName]) {
           forwardDict[seriesName] = createSeriesNode(
-            prefix, suffix, parent, +id, name);
+            prefix, suffix, parent, +id, name, graphOptions);
         }
         forwardDict[seriesName].ids.push(id);
         reverseDict[name] = reverseDict[name] || [];
