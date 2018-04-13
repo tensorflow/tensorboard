@@ -15,52 +15,45 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vz-line-chart demo</title>
+<link rel="import" href="vz-example-viewer.html">
+<link rel="import" href="../iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../paper-styles/typography.html">
+<style type="text/css">
+  body {
+    font-family: "Roboto";
+  }
 
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>vz-line-chart demo</title>
-    <link rel="import" href="vz-example-viewer.html">
-    <link rel="import" href="../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../paper-styles/typography.html">
-    <style type="text/css">
-      body {
-        font-family: "Roboto";
-      }
-
-      vz-example-viewer {
-        height: 800px;
-      }
-    </style>
-  </head>
-  <body>
-    <h3>Simple example viewer</h3>
-    <demo-snippet>
-      <template>
-        <vz-example-viewer id="simple"></vz-example-viewer>
-        <div id="changed"></div>
-        <div id="jsonchanged"></div>
-        <script>
-          var elem = document.querySelector('#simple');
-          const encodedStr = btoa('hello');
-          const json = {
-            'features': {
-              'feature': {
-                'bytes': {'bytesList': {'value': [encodedStr]}},
-                'ints': {'int64List': {'value': ['10', '20']}},
-                'float': {'floatList': {'value': ['3.14']}}
-              }
-            }
-          };
-          elem.json = json;
-          elem.saliency = {'ints': [.5, .2], 'bytes': 0, 'float': [-.4]};
-          elem.addEventListener('example-change', event => {
-            document.querySelector('#changed').innerHTML = event.detail.example.toString();
-            document.querySelector('#jsonchanged').innerHTML = JSON.stringify(elem.json);
-          });
-        </script>
-      </template>
-    </demo-snippet>
-  </body>
-</html>
+  vz-example-viewer {
+    height: 800px;
+  }
+</style>
+<h3>Simple example viewer</h3>
+<demo-snippet>
+  <template>
+    <vz-example-viewer id="simple"></vz-example-viewer>
+    <div id="changed"></div>
+    <div id="jsonchanged"></div>
+    <script>
+      var elem = document.querySelector('#simple');
+      const encodedStr = btoa('hello');
+      const json = {
+        'features': {
+          'feature': {
+            'bytes': {'bytesList': {'value': [encodedStr]}},
+            'ints': {'int64List': {'value': ['10', '20']}},
+            'float': {'floatList': {'value': ['3.14']}}
+          }
+        }
+      };
+      elem.json = json;
+      elem.saliency = {'ints': [.5, .2], 'bytes': 0, 'float': [-.4]};
+      elem.addEventListener('example-change', event => {
+        document.querySelector('#changed').innerHTML = event.detail.example.toString();
+        document.querySelector('#jsonchanged').innerHTML = JSON.stringify(elem.json);
+      });
+    </script>
+  </template>
+</demo-snippet>
