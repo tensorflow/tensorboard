@@ -1,5 +1,6 @@
+// TODO(jwexler): Do we need these deps?
 //goog.require('goog.crypt.base64');
-goog.require('jspb.Map');
+//goog.require('jspb.Map');
 
 import BytesList from 'goog:proto.tensorflow.BytesList'; // from //third_party/tensorflow/core:protos_all_jspb_proto
 import Example from 'goog:proto.tensorflow.Example'; // from //third_party/tensorflow/core:protos_all_jspb_proto
@@ -12,178 +13,6 @@ import Int64List from 'goog:proto.tensorflow.Int64List'; // from //third_party/t
 import SequenceExample from 'goog:proto.tensorflow.SequenceExample'; // from //third_party/tensorflow/core:protos_all_jspb_proto
 
 namespace vz_example_viewer {
-
-/** Begin copy from utils.ts */
-/** JSON interface for vz-annotated-image visualization. */
-export declare interface ImageRenderedAnnotation {
-  annotationGroup: AnnotationGroup[];
-  image: ImageAsset;
-}
-
-export declare interface AnnotationGroup {
-  annotation: Annotation[];
-  source: string;
-}
-
-export declare interface Annotation {
-  annotationScope?: AnnotationScope;
-  displayName: string;
-}
-
-export declare interface AnnotationScope {
-  label: string;
-  point: Point[];
-}
-
-export declare interface Point {
-  x: number;
-  y: number;
-}
-
-export declare interface ImageAsset {
-  imageDataBase64: string;
-  imageHeight: number;
-  imageWidth: number;
-}
-
-/** Returns true if the example contains the 'image/encoded' feature. */
-export function containsEncodedImageFeature(example: Example) {
-  if (!example.getFeatures() || !example.getFeatures()!.getFeatureMap()) {
-    return false;
-  }
-  const features = example.getFeatures()!.getFeatureMap();
-  return !!features.get('image/encoded');
-}
-
-/** Returns true if the example encodes an annotated image. */
-export function isAnnotatedImage(example: Example) {
-  if (!containsEncodedImageFeature(example)) {
-    return false;
-  }
-  // If the example has the 'image/object/class/text' feature, we consider it
-  // an annotated image.
-  return !!example.getFeatures()!.getFeatureMap().get(
-      'image/object/class/text');
-}
-
-/**
- * Converts the example to an annotated image object, useable as input by the
- * vz-annotated-image visualization.
- */
-export function exampleToAnnotatedImage(example: Example):
-    ImageRenderedAnnotation|null {
-  if (!containsEncodedImageFeature(example)) {
-    return null;
-  }
-
-  // Helper functions, similar to helpers in learning/eval/canon/util/
-  // conversion/tensorflow/convert_from_standard_tf_example.cc
-  function getFeatureValues(feature: Feature): Array<string|number> {
-    if (!feature) {
-      return [];
-    }
-    // Since the tensorflow.Feature contains a oneof, check for existence of
-    // bytesList, floatList, and int64List (in that order).
-    // For multiple element value arrays, return the array as-is.
-    if (feature.hasBytesList()) {
-      return feature.getBytesList()!.getValueList();
-    }
-    if (feature.hasInt64List()) {
-      return feature.getInt64List()!.getValueList();
-    }
-    if (feature.hasFloatList()) {
-      return feature.getFloatList()!.getValueList();
-    }
-    return [];
-  }
-
-  function getSingleNumericValue(feature: Feature): number {
-    return Number(getFeatureValues(feature)[0] as string);
-  }
-
-  function getSingleStringValue(feature: Feature): string {
-    return getFeatureValues(feature)[0] as string;
-  }
-
-  const feats = example.getFeatures()!.getFeatureMap();
-  const width = getSingleNumericValue(feats.get('image/width')!);
-  const height = getSingleNumericValue(feats.get('image/height')!);
-
-  const annotations: Annotation[] = [];
-  const annotationGroup: AnnotationGroup[] =
-      [{source: 'GROUNDTRUTH', annotation: annotations}];
-  const imageAsset: ImageAsset = {
-    imageWidth: width,
-    imageHeight: height,
-    imageDataBase64: 'data:image/jpeg;base64,' +
-        btoa(decodeURIComponent(encodeURIComponent(valueToImageString(
-            getSingleStringValue(feats.get('image/encoded')!))))),
-  };
-  const vizData: ImageRenderedAnnotation = {image: imageAsset, annotationGroup};
-
-  const captions = getFeatureValues(feats.get('image/captions')!);
-  for (const caption of captions) {
-    annotations.push({displayName: valueToReadableString(caption as string)});
-  }
-
-  const classes = getFeatureValues(feats.get('image/object/class/text')!);
-  for (let i = 0; i < classes.length; i++) {
-    const displayName = valueToReadableString(classes[i] as string);
-    const bBox = {
-      xMin: getFeatureValues(feats.get('image/object/bbox/xmin')!)[i] as number,
-      xMax: getFeatureValues(feats.get('image/object/bbox/xmax')!)[i] as number,
-      yMin: getFeatureValues(feats.get('image/object/bbox/ymin')!)[i] as number,
-      yMax: getFeatureValues(feats.get('image/object/bbox/ymax')!)[i] as number,
-    };
-    annotations.push({
-      displayName,
-      annotationScope: {
-        label: displayName,
-        point: [
-          {x: bBox.xMin * width, y: bBox.yMin * height},
-          {x: bBox.xMax * width, y: bBox.yMin * height},
-          {x: bBox.xMax * width, y: bBox.yMax * height},
-          {x: bBox.xMin * width, y: bBox.yMax * height}
-        ]
-      }
-    });
-  }
-  return vizData;
-}
-
-/**
- * Decodes a list of bytes into a readable string, treating the bytes as
- * unicode char codes.
- */
-export function decodeBytesListToString(bytes: Uint8Array) {
-  // Decode strings in 16K chunks to avoid stack error with use of
-  // fromCharCode.apply.
-  const decodeChunkBytes = 16 * 1024;
-  let res = '';
-  let i = 0;
-  // Decode in chunks to avoid stack error with use of fromCharCode.apply.
-  for (i = 0; i < bytes.length / decodeChunkBytes; i++) {
-    res += String.fromCharCode.apply(
-        null, bytes.slice(i * decodeChunkBytes, (i + 1) * decodeChunkBytes));
-  }
-  res += String.fromCharCode.apply(null, bytes.slice(i * decodeChunkBytes));
-  return res;
-}
-
-/** Converts a string feature value from an Example into an image string. */
-function valueToImageString(value: string) {
-  // tslint:disable-next-line:no-any Need to create Uint8Array from feature val.
-  return decodeBytesListToString(new Uint8Array(value as any));
-}
-
-/** Converts a string feature value from an Example into a readable string. */
-function valueToReadableString(value: string) {
-  // tslint:disable-next-line:no-any Need to create Uint8Array from feature val.
-  //return goog.crypt.utf8ByteArrayToString(new Uint8Array(value as any));
-  return new (window as any).TextDecoder().decode(value as any);
-}
-
-/** End copy from utils.ts */
 
 // SaliencyMap is a map of feature names to saliency values for their feature
 // values. The saliency can be a single number for all values in a feature value
@@ -299,8 +128,8 @@ Polymer({
     imageScalePercentage: {type: Number, value: 100},
     features: {type: Object, computed: 'getFeatures(example)'},
     featuresList: {type: Object, computed: 'getFeaturesList(features)'},
-    seqFeatures: {type: Object, computed: 'getFeatures(example)'},
-    seqFeaturesList: {type: Object, computed: 'getFeaturesList(features)'},
+    seqFeatures: {type: Object, computed: 'getSeqFeatures(example)'},
+    seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(features)'},
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
   },
@@ -335,43 +164,6 @@ Polymer({
     }
     const bytes = this.decodedStringToCharCodes(atob(serializedProto));
     this.example = deserializer(bytes);
-  },
-
-  setAnnotatedImage: function() {
-    if (this.ignoreChange) {
-      return;
-    }
-    let annotated = null;
-    if (this.example instanceof Example) {
-      // Convert the example to an annotated image, for viewing by the
-      // annotated image viewer, if applicable.
-      this.openedAnnotatedImage = isAnnotatedImage(this.example);
-      annotated = exampleToAnnotatedImage(this.example);
-    } else {
-      this.openedAnnotatedImage = false;
-    }
-    this.openedRawExampleViewer = !this.openedAnnotatedImage;
-    this.annotatedImage = annotated;
-  },
-
-  // tslint:disable-next-line:no-unused-variable called as computed property
-  toggleAnnotatedImage: function() {
-    this.openedAnnotatedImage = !this.openedAnnotatedImage;
-  },
-
-  // tslint:disable-next-line:no-unused-variable called as computed property
-  toggleRawExampleViewer: function() {
-    this.openedRawExampleViewer = !this.openedRawExampleViewer;
-  },
-
-  // tslint:disable-next-line:no-unused-variable called as computed property
-  getToggleIcon: function(expanded: boolean) {
-    return expanded ? 'expand-more' : 'expand-less';
-  },
-
-  // tslint:disable-next-line:no-unused-variable called as computed property
-  getRawExampleToggleControlClass: function(annotatedImage: {}) {
-    return !!annotatedImage ? 'expand-button-holder' : 'hide-controls';
   },
 
   /** A computed map of all standard features in an example. */
@@ -467,11 +259,11 @@ Polymer({
 
     return d3.scaleLinear<string>()
         .domain([this.minSal, 0, this.maxSal])
-        .interpolate(this.COLOR_INTERPOLATOR)
+        .interpolate(COLOR_INTERPOLATOR)
         .clamp(true)
         .range([
-          this.negSaliencyColor, this.neutralSaliencyColor,
-          this.posSaliencyColor
+          negSaliencyColor, neutralSaliencyColor,
+          posSaliencyColor
         ]);
   },
 
@@ -583,8 +375,8 @@ Polymer({
         checkSaliencies(saliency[feat]);
       }
     }
-    min = Math.min(0, min) * this.clipSaliencyRatio;
-    max = Math.max(0, max) * this.clipSaliencyRatio;
+    min = Math.min(0, min) * clipSaliencyRatio;
+    max = Math.max(0, max) * clipSaliencyRatio;
     return [min, max];
   },
 
@@ -662,11 +454,11 @@ Polymer({
    * be an issue in practice with tf.Examples.
    */
   decodeBytesListString: function(bytes: Uint8Array, singleByteChars?: boolean) {
-    if (bytes.length > this.MAX_BYTES_LIST_LENGTH) {
-      return this.MAX_STRING_INDICATION;
+    if (bytes.length > MAX_BYTES_LIST_LENGTH) {
+      return MAX_STRING_INDICATION;
     }
-    return singleByteChars ? decodeBytesListToString(bytes) :
-                             (window as any).TextDecoder().decode(bytes);
+    return singleByteChars ? this.decodeBytesListToString(bytes) :
+                             new (window as any).TextDecoder().decode(bytes);
   },
 
   isBytesFeature: function(feature: string) {
@@ -827,7 +619,6 @@ Polymer({
   /**
    * When a feature value changes from a paper-input, updates the example proto
    * appropriately.
-   * @export
    */
   onValueChanged: function(event: Event) {
     const inputControl = event.target as HTMLInputElement;
@@ -864,12 +655,15 @@ Polymer({
 
   /**
    * When a feature is deleted, updates the example proto appropriately.
-   * @export
    */
   deleteFeature: function(event: Event) {
     const data = this.getDataFromEvent(event);
-    this.features.del(data.feature);
-    this.seqFeatures.del(data.feature);
+    if (this.features.del) {
+      this.features.del(data.feature);
+    }
+    if (this.seqFeatures.del) {
+      this.seqFeatures.del(data.feature);
+    }
     this.deleteJsonFeature(data.feature);
     this.exampleChanged();
     this.refreshExampleViewer();
@@ -1030,13 +824,10 @@ Polymer({
     // the visualization temporarily.
     clearTimeout(this.changeCallbackTimer);
     this.changeCallbackTimer = setTimeout(
-        this.changeCallback.bind(this), this.CHANGE_CALLBACK_TIMER_DELAY_MS);
+        this.changeCallback.bind(this), CHANGE_CALLBACK_TIMER_DELAY_MS);
   },
 
   changeCallback: function() {
-    // Re-set the annotated image object due to changes in underlying example.
-    this.setAnnotatedImage();
-
     // To update the serialized example, we need to ensure we ignore parsing
     // of the updated serialized example back to an example object as they
     // already match and this would cause a lot of unnecessary processing,
@@ -1112,11 +903,11 @@ Polymer({
     // and maximum saliency for this example.
     const scale: string[] = [];
     if (this.minSal < 0) {
-      scale.push(this.negSaliencyColor);
+      scale.push(negSaliencyColor);
     }
-    scale.push(this.neutralSaliencyColor);
+    scale.push(neutralSaliencyColor);
     if (this.maxSal > 0) {
-      scale.push(this.posSaliencyColor);
+      scale.push(posSaliencyColor);
     }
     // Creates an array of [pct, colour] pairs as stop
     // values for legend
@@ -1427,7 +1218,7 @@ Polymer({
           this.addImageTransform(feat, transform);
           transformFn(d3.event.transform);
         };
-        const d3zoom = d3.zoom().scaleExtent(this.ZOOM_EXTENT).on('zoom', zoom);
+        const d3zoom = d3.zoom().scaleExtent(ZOOM_EXTENT).on('zoom', zoom);
         d3.select(canvas).call(d3zoom).on(
             'dblclick.zoom',
             () => d3.select(canvas).call(d3zoom.transform, d3.zoomIdentity));
@@ -1549,7 +1340,7 @@ Polymer({
   /** Returns the color to display for a given saliency value. */
   getColorForSaliency: function(salVal: number) {
     if (!this.showSaliencyForValue(salVal)) {
-      return this.neutralSaliencyColor;
+      return neutralSaliencyColor;
     } else {
       return this.colors(salVal);
     }
@@ -1596,10 +1387,10 @@ Polymer({
                          salVal / this.minSal) :
           0;
       const blendRatio =
-          this.IMG_SALIENCY_MAX_COLOR_RATIO * ratioToSaliencyExtreme;
+          IMG_SALIENCY_MAX_COLOR_RATIO * ratioToSaliencyExtreme;
 
       const {r, g, b} =
-          d3.rgb(salVal > 0 ? this.posSaliencyColor : this.negSaliencyColor);
+          d3.rgb(salVal > 0 ? posSaliencyColor : negSaliencyColor);
       d[i] = d[i] * (1 - blendRatio) + r * blendRatio;
       d[i + 1] = d[i + 1] * (1 - blendRatio) + g * blendRatio;
       d[i + 2] = d[i + 2] * (1 - blendRatio) + b * blendRatio;
@@ -1617,8 +1408,8 @@ Polymer({
             this.imageInfo[feat].imageData!);
 
     // Adjust the contrast and add saliency mask if neccessary.
-    if (this.windowWidth !== this.DEFAULT_WINDOW_WIDTH ||
-        this.windowCenter !== this.DEFAULT_WINDOW_CENTER) {
+    if (this.windowWidth !== DEFAULT_WINDOW_WIDTH ||
+        this.windowCenter !== DEFAULT_WINDOW_CENTER) {
       this.contrastImage(id.data, this.windowWidth, this.windowCenter);
     }
     if (this.saliency && this.showSaliency && this.saliency[feat]) {
@@ -1681,6 +1472,25 @@ Polymer({
 
   getAddFeatureButtonClass: function(readonly: boolean) {
     return readonly ? 'hide-controls' : 'add-feature-button';
+  },
+
+  /**
+   * Decodes a list of bytes into a readable string, treating the bytes as
+   * unicode char codes.
+   */
+  decodeBytesListToString: function(bytes: Uint8Array) {
+    // Decode strings in 16K chunks to avoid stack error with use of
+    // fromCharCode.apply.
+    const decodeChunkBytes = 16 * 1024;
+    let res = '';
+    let i = 0;
+    // Decode in chunks to avoid stack error with use of fromCharCode.apply.
+    for (i = 0; i < bytes.length / decodeChunkBytes; i++) {
+      res += String.fromCharCode.apply(
+          null, bytes.slice(i * decodeChunkBytes, (i + 1) * decodeChunkBytes));
+    }
+    res += String.fromCharCode.apply(null, bytes.slice(i * decodeChunkBytes));
+    return res;
   },
 });
 

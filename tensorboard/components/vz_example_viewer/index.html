@@ -39,6 +39,8 @@ limitations under the License.
     <demo-snippet>
       <template>
         <vz-example-viewer id="simple"></vz-example-viewer>
+        <div id="changed"></div>
+        <div id="jsonchanged"></div>
         <script>
           var elem = document.querySelector('#simple');
           const encodedStr = btoa('hello');
@@ -53,6 +55,10 @@ limitations under the License.
           };
           elem.json = json;
           elem.saliency = {'ints': [.5, .2], 'bytes': 0, 'float': [-.4]};
+          elem.addEventListener('example-change', event => {
+            document.querySelector('#changed').innerHTML = event.detail.example.toString();
+            document.querySelector('#jsonchanged').innerHTML = JSON.stringify(elem.json);
+          });
         </script>
       </template>
     </demo-snippet>
