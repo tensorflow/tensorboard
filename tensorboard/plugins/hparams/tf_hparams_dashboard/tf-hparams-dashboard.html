@@ -260,7 +260,7 @@ limitations under the License.
       },
       _getExperiment() {
         const url = tf_backend.getRouter().pluginRoute(
-            'hparams', '/experiment');
+            'hparams', '/experiment.json');
         return this._requestManager.request(url).then(experiment => {
           if (_.isEqual(experiment, this._experiment)) {
             // No need to update anything if there are no changes.

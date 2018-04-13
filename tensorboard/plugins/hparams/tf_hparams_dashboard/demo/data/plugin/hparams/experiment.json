@@ -1,14 +1,54 @@
 {
-  "hparamInfos": [
+  "metricInfos": [
     {
-      "name": "hparamInfo1",
-      "display_name": "HParam Info #1",
-      "description": "The *first* hyperparameter info.",
-      "type": "DATA_TYPE_STRING",
-      "interval": {
-        "min_value": 3.0,
-        "max_value": 10.0
+      "displayName": "Current Temp.",
+      "name": {
+        "tag": "temperature/current/scalar_summary"
       }
     },
-  ]
+    {
+      "displayName": "Difference To Ambient Temp.",
+      "name": {
+        "tag": "temperature/difference_to_ambient/scalar_summary"
+      }
+    },
+    {
+      "displayName": "Delta T",
+      "name": {
+        "tag": "delta/scalar_summary"
+      }
+    }
+  ],
+  "hparamInfos": [
+    {
+      "type": "DATA_TYPE_FLOAT64",
+      "domainDiscrete": [
+        270.0,
+        310.0,
+        350.0
+      ],
+      "displayName": "initial temperature",
+      "name": "initial_temperature"
+    },
+    {
+      "type": "DATA_TYPE_FLOAT64",
+      "domainDiscrete": [
+        270.0,
+        310.0,
+        350.0
+      ],
+      "displayName": "ambient temperature",
+      "name": "ambient_temperature"
+    },
+    {
+      "type": "DATA_TYPE_FLOAT64",
+      "domainDiscrete": [
+        0.001,
+        0.005
+      ],
+      "displayName": "heat coefficient",
+      "name": "heat_coefficient"
+    }
+  ],
+  "timeCreatedSecs": 1523570941.271061
 }
