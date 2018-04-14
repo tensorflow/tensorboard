@@ -27,9 +27,10 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.backend.event_processing import event_multiplexer
 
 
-class EventMultiplexer(object):
+class EventMultiplexer(event_multiplexer.EventMultiplexer):
   """An `EventMultiplexer` manages access to multiple `EventAccumulator`s.
 
   Each `EventAccumulator` is associated with a `run`, which is a self-contained
@@ -180,225 +181,6 @@ class EventMultiplexer(object):
     tf.logging.info('Done with AddRunsFromDirectory: %s', path)
     return self
 
-  def Reload(self):
-    """Call `Reload` on every `EventAccumulator`."""
-    tf.logging.info('Beginning EventMultiplexer.Reload()')
-    self._reload_called = True
-    # Build a list so we're safe even if the list of accumulators is modified
-    # even while we're reloading.
-    with self._accumulators_mutex:
-      items = list(self._accumulators.items())
-
-    names_to_delete = set()
-    for name, accumulator in items:
-      try:
-        accumulator.Reload()
-      except (OSError, IOError) as e:
-        tf.logging.error("Unable to reload accumulator '%s': %s", name, e)
-      except directory_watcher.DirectoryDeletedError:
-        names_to_delete.add(name)
-
-    with self._accumulators_mutex:
-      for name in names_to_delete:
-        tf.logging.warning("Deleting accumulator '%s'", name)
-        del self._accumulators[name]
-    tf.logging.info('Finished with EventMultiplexer.Reload()')
-    return self
-
-  def PluginAssets(self, plugin_name):
-    """Get index of runs and assets for a given plugin.
-
-    Args:
-      plugin_name: Name of the plugin we are checking for.
-
-    Returns:
-      A dictionary that maps from run_name to a list of plugin
-        assets for that run.
-    """
-    with self._accumulators_mutex:
-      # To avoid nested locks, we construct a copy of the run-accumulator map
-      items = list(six.iteritems(self._accumulators))
-
-    return {run: accum.PluginAssets(plugin_name) for run, accum in items}
-
-  def RetrievePluginAsset(self, run, plugin_name, asset_name):
-    """Return the contents for a specific plugin asset from a run.
-
-    Args:
-      run: The string name of the run.
-      plugin_name: The string name of a plugin.
-      asset_name: The string name of an asset.
-
-    Returns:
-      The string contents of the plugin asset.
-
-    Raises:
-      KeyError: If the asset is not available.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.RetrievePluginAsset(plugin_name, asset_name)
-
-  def FirstEventTimestamp(self, run):
-    """Return the timestamp of the first event of the given run.
-
-    This may perform I/O if no events have been loaded yet for the run.
-
-    Args:
-      run: A string name of the run for which the timestamp is retrieved.
-
-    Returns:
-      The wall_time of the first event of the run, which will typically be
-      seconds since the epoch.
-
-    Raises:
-      KeyError: If the run is not found.
-      ValueError: If the run has no events loaded and there are no events on
-        disk to load.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.FirstEventTimestamp()
-
-  def Scalars(self, run, tag):
-    """Retrieve the scalar events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.ScalarEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Scalars(tag)
-
-  def Graph(self, run):
-    """Retrieve the graph associated with the provided run.
-
-    Args:
-      run: A string name of a run to load the graph for.
-
-    Raises:
-      KeyError: If the run is not found.
-      ValueError: If the run does not have an associated graph.
-
-    Returns:
-      The `GraphDef` protobuf data structure.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Graph()
-
-  def MetaGraph(self, run):
-    """Retrieve the metagraph associated with the provided run.
-
-    Args:
-      run: A string name of a run to load the graph for.
-
-    Raises:
-      KeyError: If the run is not found.
-      ValueError: If the run does not have an associated graph.
-
-    Returns:
-      The `MetaGraphDef` protobuf data structure.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.MetaGraph()
-
-  def RunMetadata(self, run, tag):
-    """Get the session.run() metadata associated with a TensorFlow run and tag.
-
-    Args:
-      run: A string name of a TensorFlow run.
-      tag: A string name of the tag associated with a particular session.run().
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for the
-        given run.
-
-    Returns:
-      The metadata in the form of `RunMetadata` protobuf data structure.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.RunMetadata(tag)
-
-  def Audio(self, run, tag):
-    """Retrieve the audio events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.AudioEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Audio(tag)
-
-  def Tensors(self, run, tag):
-    """Retrieve the tensor events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.TensorEvent`s.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Tensors(tag)
-
-  def PluginRunToTagToContent(self, plugin_name):
-    """Returns a 2-layer dictionary of the form {run: {tag: content}}.
-
-    The `content` referred above is the content field of the PluginData proto
-    for the specified plugin within a Summary.Value proto.
-
-    Args:
-      plugin_name: The name of the plugin for which to fetch content.
-
-    Returns:
-      A dictionary of the form {run: {tag: content}}.
-    """
-    mapping = {}
-    for run in self.Runs():
-      try:
-        tag_to_content = self.GetAccumulator(run).PluginTagToContent(
-            plugin_name)
-      except KeyError:
-        # This run lacks content for the plugin. Try the next run.
-        continue
-      mapping[run] = tag_to_content
-    return mapping
-
-  def SummaryMetadata(self, run, tag):
-    """Return the summary metadata for the given tag on the given run.
-
-    Args:
-      run: A string name of the run for which summary metadata is to be
-        retrieved.
-      tag: A string name of the tag whose summary metadata is to be
-        retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      A `tf.SummaryMetadata` protobuf.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.SummaryMetadata(tag)
 
   def Runs(self):
     """Return all the run names in the `EventMultiplexer`.
@@ -413,10 +195,6 @@ class EventMultiplexer(object):
       # To avoid nested locks, we construct a copy of the run-accumulator map
       items = list(six.iteritems(self._accumulators))
     return {run_name: accumulator.Tags() for run_name, accumulator in items}
-
-  def RunPaths(self):
-    """Returns a dict mapping run names to event file paths."""
-    return self._paths
 
   def GetAccumulator(self, run):
     """Returns EventAccumulator for a given run.
