@@ -194,7 +194,7 @@ class EventMultiplexer(object):
     # even while we're reloading.
     with self._accumulators_mutex:
       items = list(self._accumulators.items())
-    items_queue = queue.Queue(maxsize=len(items))
+    items_queue = queue.Queue()
     for item in items:
       items_queue.put(item)
 

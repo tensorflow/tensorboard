@@ -305,20 +305,6 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertTrue(x.GetAccumulator('run2').reload_called)
     self.assertTrue(x.GetAccumulator('run3').reload_called)
 
-
-class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
-
-  def testDeletingDirectoryRemovesRun(self):
-    x = event_multiplexer.EventMultiplexer()
-    tmpdir = self.get_temp_dir()
-    self.add3RunsToMultiplexer(tmpdir, x)
-    x.Reload()
-
-    # Delete the directory, then reload.
-    shutil.rmtree(os.path.join(tmpdir, 'run2'))
-    x.Reload()
-    self.assertNotIn('run2', x.Runs().keys())
-
   def testReloadWithMoreRunsThanThreads(self):
     patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
     start_mock = patcher.start()
@@ -329,8 +315,9 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     self.addCleanup(patcher.stop)
 
     x = event_multiplexer.EventMultiplexer(max_reload_threads=2)
-    tmpdir = self.get_temp_dir()
-    self.add3RunsToMultiplexer(tmpdir, x)
+    x.AddRun('run1')
+    x.AddRun('run2')
+    x.AddRun('run3')
     x.Reload()
 
     # 2 threads should have been started despite how there are 3 runs.
@@ -347,8 +334,9 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     self.addCleanup(patcher.stop)
 
     x = event_multiplexer.EventMultiplexer(max_reload_threads=42)
-    tmpdir = self.get_temp_dir()
-    self.add3RunsToMultiplexer(tmpdir, x)
+    x.AddRun('run1')
+    x.AddRun('run2')
+    x.AddRun('run3')
     x.Reload()
 
     # 3 threads should have been started despite how the multiplexer
@@ -366,13 +354,28 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     self.addCleanup(patcher.stop)
 
     x = event_multiplexer.EventMultiplexer(max_reload_threads=1)
-    tmpdir = self.get_temp_dir()
-    self.add3RunsToMultiplexer(tmpdir, x)
+    x.AddRun('run1')
+    x.AddRun('run2')
+    x.AddRun('run3')
     x.Reload()
 
     # The multiplexer should have started no new threads.
     self.assertEqual(0, start_mock.call_count)
     self.assertEqual(0, join_mock.call_count)
+
+
+class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
+
+  def testDeletingDirectoryRemovesRun(self):
+    x = event_multiplexer.EventMultiplexer()
+    tmpdir = self.get_temp_dir()
+    self.add3RunsToMultiplexer(tmpdir, x)
+    x.Reload()
+
+    # Delete the directory, then reload.
+    shutil.rmtree(os.path.join(tmpdir, 'run2'))
+    x.Reload()
+    self.assertNotIn('run2', x.Runs().keys())
 
   def add3RunsToMultiplexer(self, logdir, multiplexer):
     """Creates and adds 3 runs to the multiplexer."""
