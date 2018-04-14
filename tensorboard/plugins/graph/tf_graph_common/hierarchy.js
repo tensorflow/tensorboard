@@ -346,7 +346,7 @@ var tf;
                     .then(function () {
                     return tf.graph.util.runAsyncTask('Detect series', 20, function () {
                         if (params.seriesNodeMinSize > 0) {
-                            groupSeries(h.root, h, seriesNames, params.seriesNodeMinSize, params.seriesMap);
+                            groupSeries(h.root, h, seriesNames, params.seriesNodeMinSize, params.seriesMap, params.useGeneralizedSeriesPatterns);
                         }
                     }, tracker);
                 })
@@ -629,19 +629,25 @@ var tf;
              *     into a series.
              * @param map Map of series names to their series grouping type, if one has
              *     been set.
+             * @param useGeneralizedSeriesPatterns Whether to use find patterns for series
+             *     nodes using any parts of names of nodes. If false, only uses patterns
+             *     discovered within numeric suffixes of nodes names.
              * @return A dictionary from node name to series node name that contains the
              *     node.
              */
-            function groupSeries(metanode, hierarchy, seriesNames, threshold, map) {
+            function groupSeries(metanode, hierarchy, seriesNames, threshold, map, useGeneralizedSeriesPatterns) {
                 var metagraph = metanode.metagraph;
                 _.each(metagraph.nodes(), function (n) {
                     var child = metagraph.node(n);
                     if (child.type === tf.graph.NodeType.META) {
-                        groupSeries(child, hierarchy, seriesNames, threshold, map);
+                        groupSeries(child, hierarchy, seriesNames, threshold, map, useGeneralizedSeriesPatterns);
                     }
                 });
                 var clusters = clusterNodes(metagraph);
-                var seriesDict = detectSeries(clusters, metagraph, hierarchy.graphOptions);
+                var detectSeriesMethod = useGeneralizedSeriesPatterns ?
+                    detectSeriesAnywhereInNodeName :
+                    detectSeriesUsingNumericSuffixes;
+                var seriesDict = detectSeriesMethod(clusters, metagraph, hierarchy.graphOptions);
                 // Add each series node to the graph and add its grouped children to its own
                 // metagraph.
                 _.each(seriesDict, function (seriesNode, seriesName) {
@@ -731,14 +737,14 @@ var tf;
             }
             /**
              * For each cluster of op-nodes based op type, try to detect groupings.
-             * Infer series name using by trying to find pattern '<number>' in the node
-             * name.
+             * Infer series name using by trying to find pattern '<number>' towards the end
+             * of node names.
              *
              * @param clusters Dictionary output from clusterNodes().
              * @param metagraph
              * @return A dictionary from series name => seriesNode
              */
-            function detectSeries(clusters, metagraph, graphOptions) {
+            function detectSeriesUsingNumericSuffixes(clusters, metagraph, graphOptions) {
                 var seriesDict = {};
                 _.each(clusters, function (members, clusterId) {
                     if (members.length <= 1) {
@@ -773,6 +779,124 @@ var tf;
                         var seriesName = graph_1.getSeriesNodeName(prefix, suffix, parent);
                         candidatesDict[seriesName] = candidatesDict[seriesName] || [];
                         var seriesNode = graph_1.createSeriesNode(prefix, suffix, parent, +id, name, graphOptions);
+                        candidatesDict[seriesName].push(seriesNode);
+                    });
+                    // In each group of nodes, group nodes in bunches that have monotonically
+                    // increasing numbers in their names.  Each of these bunches is a series.
+                    _.each(candidatesDict, function (seriesInfoArray, seriesName) {
+                        if (seriesInfoArray.length < 2) {
+                            return;
+                        }
+                        seriesInfoArray.sort(function (a, b) {
+                            return (+a.clusterId) - (+b.clusterId);
+                        });
+                        // Loop through the nodes sorted by its detected series number, grouping
+                        // all nodes with monotonically-increasing series numbers.
+                        var seriesNodes = [seriesInfoArray[0]];
+                        for (var index = 1; index < seriesInfoArray.length; index++) {
+                            var nextNode = seriesInfoArray[index];
+                            if (nextNode.clusterId === seriesNodes[seriesNodes.length - 1].clusterId
+                                + 1) {
+                                seriesNodes.push(nextNode);
+                                continue;
+                            }
+                            addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
+                            seriesNodes = [nextNode];
+                        }
+                        addSeriesToDict(seriesNodes, seriesDict, +clusterId, metagraph, graphOptions);
+                    });
+                });
+                return seriesDict;
+            }
+            /**
+             * For each cluster of op-nodes based op type, try to detect groupings.
+             * Infer series name using by trying to find a pattern of numbers
+             * anywhere within node names.
+             *
+             * @param clusters Dictionary output from clusterNodes().
+             * @param metagraph
+             * @return A dictionary from series name => seriesNode
+             */
+            function detectSeriesAnywhereInNodeName(clusters, metagraph, graphOptions) {
+                var seriesDict = {};
+                _.each(clusters, function (members, clusterId) {
+                    if (members.length <= 1) {
+                        return;
+                    } // isolated clusters can't make series
+                    /**
+                     * @type {Object}  A dictionary mapping a series name to a SeriesNode.
+                     */
+                    var forwardDict = {};
+                    /**
+                     * @type {Object}  A dictionary mapping member name to an array of series
+                     * names this member could potentially be grouped under and the
+                     * corresponding ids.
+                     */
+                    var reverseDict = {};
+                    // Group all nodes that have the same name, with the exception of a
+                    // number at the end of the name after an underscore, which is allowed to
+                    // vary.
+                    _.each(members, function (name) {
+                        var isGroup = name.charAt(name.length - 1) === '*';
+                        var namepath = name.split('/');
+                        var leaf = namepath[namepath.length - 1];
+                        var parent = namepath.slice(0, namepath.length - 1).join('/');
+                        var numRegex = /(\d+)/g;
+                        var matches = [];
+                        var matchResult;
+                        var prefix;
+                        var id;
+                        var suffix;
+                        var seriesName;
+                        var matched = 0;
+                        // Scan over the entire leaf name and match any possible numbers,
+                        // and put the results into corresponding dictionaries.
+                        while (matchResult = numRegex.exec(leaf)) {
+                            ++matched;
+                            prefix = leaf.slice(0, matchResult.index);
+                            id = matchResult[0];
+                            suffix = leaf.slice(matchResult.index + matchResult[0].length);
+                            seriesName = graph_1.getSeriesNodeName(prefix, suffix, parent);
+                            forwardDict[seriesName] = forwardDict[seriesName];
+                            if (!forwardDict[seriesName]) {
+                                forwardDict[seriesName] = graph_1.createSeriesNode(prefix, suffix, parent, +id, name, graphOptions);
+                            }
+                            forwardDict[seriesName].ids.push(id);
+                            reverseDict[name] = reverseDict[name] || [];
+                            reverseDict[name].push([seriesName, id]);
+                        }
+                        if (matched < 1) {
+                            prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
+                            id = 0;
+                            suffix = isGroup ? '*' : '';
+                            seriesName = graph_1.getSeriesNodeName(prefix, suffix, parent);
+                            forwardDict[seriesName] = forwardDict[seriesName];
+                            if (!forwardDict[seriesName]) {
+                                forwardDict[seriesName] = graph_1.createSeriesNode(prefix, suffix, parent, +id, name, graphOptions);
+                            }
+                            forwardDict[seriesName].ids.push(id);
+                            reverseDict[name] = reverseDict[name] || [];
+                            reverseDict[name].push([seriesName, id]);
+                        }
+                    });
+                    /** @type {Object}  A dictionary mapping seriesName to seriesInfoArray,
+                     * which is an array that contains objects with name, id, prefix, suffix,
+                     * and parent properties.
+                     */
+                    var candidatesDict = {};
+                    // For each of the member, put it into the maximum possible series,
+                    // and create candidatesDict accordingly.
+                    _.each(reverseDict, function (seriesNameIdArray, name) {
+                        seriesNameIdArray.sort(function (a, b) {
+                            return (forwardDict[b[0]].ids.length) - (forwardDict[a[0]].ids.length);
+                        });
+                        var seriesName = seriesNameIdArray[0][0];
+                        var id = seriesNameIdArray[0][1];
+                        candidatesDict[seriesName] = candidatesDict[seriesName] || [];
+                        var namepath = name.split('/');
+                        var leaf = namepath[namepath.length - 1];
+                        var parent = namepath.slice(0, namepath.length - 1).join('/');
+                        var seriesNode = graph_1.createSeriesNode(forwardDict[seriesName].prefix, forwardDict[seriesName].suffix, parent, +id, name, graphOptions);
                         candidatesDict[seriesName].push(seriesNode);
                     });
                     // In each group of nodes, group nodes in bunches that have monotonically
