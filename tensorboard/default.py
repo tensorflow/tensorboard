@@ -36,17 +36,17 @@ from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
+from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
-from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.hparams import hparams_plugin
 from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
-
 
 def get_plugins():
   """Returns list of TensorBoard's first-party TBPlugin classes.
@@ -56,6 +56,7 @@ def get_plugins():
 
   :rtype: list[:class:`base_plugin.TBPlugin`]
   """
+
   plugins = [
       beholder_plugin.BeholderPlugin,
       core_plugin.CorePlugin,
@@ -66,11 +67,13 @@ def get_plugins():
       graphs_plugin.GraphsPlugin,
       distributions_plugin.DistributionsPlugin,
       histograms_plugin.HistogramsPlugin,
+      hparams_plugin.HParamsPlugin,
       pr_curves_plugin.PrCurvesPlugin,
       projector_plugin.ProjectorPlugin,
       text_plugin.TextPlugin,
       profile_plugin.ProfilePlugin,
   ]
+
   # The debugger plugin is only activated if its flag is set.
   debugger = debugger_plugin_loader.get_debugger_plugin()
   if debugger is not None:
@@ -87,6 +90,7 @@ def get_assets_zip_provider():
     could not be found. The value the callback returns must be closed. The
     paths inside the zip file are considered absolute paths on the web server.
   """
+
   path = os.path.join(tf.resource_loader.get_data_files_path(), 'webfiles.zip')
   if not os.path.exists(path):
     tf.logging.warning('webfiles.zip static assets not found: %s', path)

@@ -1,0 +1,483 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../tf-utils/tf-utils.html">
+<link rel="import" href="tf-scalar-card.html">
+<link rel="import" href="../vaadin-grid/vaadin-grid.html">
+
+<!--
+  The HParams frontend.
+-->
+<dom-module id="tf-hparams-dashboard">
+  <template>
+    <tf-dashboard-layout>
+      <div class="sidebar" style="height:100%;overflow:auto;">
+        <div class="sidebar-section">
+          <div class="line-item">
+            <h4 style="margin:0px 0px;">Hyperparameters</h4>
+          </div>
+          <template is="dom-repeat" items="[[_hparamFilters]]"
+                    as="hparamFilter">
+            <div class="line-item">
+              [[_hparamName(hparamFilter.info)]]
+            </div>
+            <!-- Precisely one of the templates below will be stamped. -->
+            <!-- 1. A list of checkboxes -->
+            <template is="dom-if"
+                      if="[[hparamFilter.domainDiscrete]]">
+              <template is="dom-repeat"
+                        items="[[hparamFilter.domainDiscrete]]">
+                <paper-checkbox checked="{{item.checked}}"
+                                style="display:block;"
+                                on-change="_refreshSessionGroups">
+                  [[item.value]]
+                </paper-checkbox>
+              </template>
+            </template>
+            <!-- 2. A numeric interval -->
+            <template is="dom-if"
+                      if="[[hparamFilter.interval]]">
+              <paper-input label="Min"
+                           value="{{hparamFilter.interval.minValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+              <paper-input label="Max"
+                           value="{{hparamFilter.interval.maxValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </template>
+            <!-- 3. A regexp -->
+            <template is="dom-if"
+                      if="[[hparamFilter.regexp]]">
+              <paper-input label="Regular expression"
+                           value={{hparamFilter.regexp}},
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </template>
+          </template>
+        </div>
+        <div class="sidebar-section">
+          <div class="line-item">
+            <h4>Metrics</h4>
+          </div>
+          <template is="dom-repeat" items="[[_metricFilters]]"
+                    as="metricFilter">
+            <div class="line-item">
+              [[_metricName(metricFilter.info)]]
+            </div>
+            <div class="inline-element">
+              <paper-input label="Min"
+                           value="{{metricFilter.interval.minValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </div>
+            <div class="inline-element">
+              <paper-input label="Max"
+                           value="{{metricFilter.interval.maxValue}}"
+                           auto-validate
+                           allowed-pattern="[0-9.\-]",
+                           on-value-changed="_refreshSessionGroups">
+              </paper-input>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="center">
+        <vaadin-grid items="[[_listSessionGroupsResponse.sessionGroups]]"
+                     class="session-group-table">
+          <vaadin-grid-column>
+            <template>
+              <paper-checkbox checked="{{expanded}}">
+                Show Metrics
+              </paper-checkbox>
+            </template>
+          </vaadin-grid-column>
+          <template class="row-details">
+            <template is="dom-repeat" items="[[_metricFilters]]"
+                      as="metricFilter">
+              <tf-scalar-card
+                 runs="[[_computeRunsForSessionGroupMetric(item, metricFilter)]]"
+                 tag="[[metricFilter.info.name.tag]]"
+                 request-manager="[[_requestManager]]"
+                 x-type="[[_xType]]"
+                 active>
+              </tf-scalar-card>
+            </template>
+          </template>
+          <vaadin-grid-column>
+            <template class="header">
+              Session Group
+            </template>
+            <template>
+              [[_sessionGroupName(item)]]
+            </template>
+          </vaadin-grid-column>
+          <template is="dom-repeat" items="[[_hparamFilters]]"
+                    as="hparamFilter">
+            <vaadin-grid-column>
+              <template class="header">
+                [[_hparamName(hparamFilter.info)]]
+              </template>
+              <template>
+                [[_sessionGroupHParam(item, hparamFilter.info.name)]]
+              </template>
+            </vaadin-grid-column>
+          </template>
+          <template is="dom-repeat" items="[[_metricFilters]]"
+                    as="metricFilter">
+            <vaadin-grid-column>
+              <template class="header">
+                [[_metricName(metricFilter.info)]]
+              </template>
+              <template>
+                [[_sessionGroupMetric(item, metricFilter.info.name)]]
+              </template>
+            </vaadin-grid-column>
+          </template>
+        </vaadin-grid>
+      </div>
+    </tf-dashboard-layout>
+    <style include="dashboard-style"></style>
+    <style>
+      #tooltip-sorting {
+        display: flex;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      #tooltip-sorting-label {
+        margin-top: 13px;
+      }
+      #tooltip-sorting paper-dropdown-menu {
+        margin-left: 10px;
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        width: 105px;
+      }
+      #x-type-selector paper-button {
+        margin: 5px 3px;
+      }
+      .sidebar-section:last-child {
+        display: block;
+      }
+      .line-item {
+        display: block;
+        padding-top: 20px;
+      }
+      .inline-element {
+        display: inline-block;
+        width: 40%;
+        margin-left: 10px;
+      }
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+      .session-group-table {
+        height:100%;
+      }
+    </style>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'tf-hparams-dashboard',
+      properties: {
+        _requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(50),
+        },
+        _experiment: {
+          type: Object,
+          value: () => new Object,
+        },
+        _hparamFilters: {
+          type: Array,
+          value: () => [],
+          notify: true,
+        },
+        _metricFilters: {
+          type: Array,
+          value: () => [],
+          notify: true,
+        },
+        _listSessionGroupsResponse: {
+          type: Object,
+          value: () => new Object,
+        },
+        _selectedSessionGroups: {
+          type: Array,
+          notify: true,
+        },
+        /** @type {vz_chart_helpers.XType} */
+        _xType: {
+          type: String,
+          value: vz_chart_helpers.XType.STEP,
+        },
+      },
+      ready() {
+        this.reload();
+      },
+      reload() {
+        this._getExperiment();
+      },
+      _getExperiment() {
+        const url = tf_backend.getRouter().pluginRoute(
+            'hparams', '/experiment.json');
+        return this._requestManager.request(url).then(experiment => {
+          if (_.isEqual(experiment, this._experiment)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          this.set('_experiment', experiment);
+          this.set('_hparamFilters', this._createHParamFilters())
+          this.set('_metricFilters', this._createMetricFilters())
+          this._refreshSessionGroups();
+        })
+      },
+      _createHParamFilters() {
+        result = [];
+        for (var i = 0; i < this._experiment.hparamInfos.length; ++i) {
+          hparamFilter = {
+            info: this._experiment.hparamInfos[i],
+          };
+          if (hparamFilter.info.hasOwnProperty('domainDiscrete')) {
+            hparamFilter.domainDiscrete = []
+            hparamFilter.info.domainDiscrete.forEach(val => {
+              hparamFilter.domainDiscrete.push({
+                value: val,
+                checked: true,
+              });
+            });
+          } else if (hparamFilter.info.type === "DATA_TYPE_BOOL") {
+            hparamFilter.domainDiscrete = [
+              {
+                value: false,
+                checked: true,
+              },
+              {
+                value: true,
+                checked: true,
+              }
+            ];
+          } else if (hparamFilter.info.type === "DATA_TYPE_FLOAT64") {
+            hparamFilter.interval = {
+              minValue: "",  // Empty string means -infinity.
+              maxValue: "",  // Empty string means +infinity.
+            }
+          } else if (hparamFilter.info.type === "DATA_TYPE_STRING") {
+            hparamFilter.regexp = ""
+          } else {
+            console.warn("unknown hparamInfo.type: %s", hparamFilter.info.type)
+          }
+          result.push(hparamFilter);
+        }
+        return result;
+      },
+      _createMetricFilters() {
+        result = [];
+        this._experiment.metricInfos.forEach(info => {
+          metricFilter = {
+            info: info,
+            interval: {
+              minValue: "",  // Empty string means -infinity
+              maxValue: "",  // Empty string means +infinity
+            },
+          };
+          result.push(metricFilter);
+        });
+        return result;
+      },
+      _hparamName(hparamInfo) {
+        if (hparamInfo.displayName != "") {
+          return hparamInfo.displayName;
+        }
+        return hparamInfo.name;
+      },
+      _metricName(metricInfo) {
+        if (metricInfo.displayName != "") {
+          return metricInfo.displayName;
+        }
+        return metricInfo.name.group + "." + metricInfo.name.tag;
+      },
+      _listSessionGroups(params, callback) {
+        const request = encodeURIComponent(JSON.stringify(
+            this._getListSessionGroupsRequest()));
+        const url = tf_backend.getRouter().pluginRoute(
+            'hparams', '/session_groups?request=' + request);
+        return this._requestManager.request(url).then(response => {
+          callback(response.sessionGroups, response.totalSize)
+        })
+      },
+      _refreshSessionGroups() {
+        const request = encodeURIComponent(JSON.stringify(
+            this._getListSessionGroupsRequest()));
+        const url = tf_backend.getRouter().pluginRoute(
+            'hparams', '/session_groups?request=' + request);
+        return this._requestManager.request(url).then(response => {
+          this._canonicalizeResponse(response);
+          if (_.isEqual(response, this._listSessionGroupsResponse)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          this.set('_listSessionGroupsResponse', response);
+        });
+      },
+      _canonicalizeResponse(response) {
+        if (!response.hasOwnProperty('sessionGroups')) {
+          response.sessionGroups=[];
+        }
+      },
+      _getListSessionGroupsRequest() {
+        // The following line defines a helper function for converting the
+        // user-inputed interval to the one used in the request. Converts an
+        // interval object of the form
+        // {minValue: string , maxValue: string}, to
+        // {minValue: number, maxValue: number}. An empty string in minValue
+        // (maxValue) is interpreted as -infintiy (+infinity).
+        stringToNumericInterval = stringInterval => {
+          if (stringInterval.minValue === "") {
+            minValue = -Number.MAX_VALUE;
+          } else {
+            minValue = parseFloat(stringInterval.minValue, 10);
+            if (isNaN(minValue)) {
+              console.error("Can't parse %s as a number.",
+                            stringInterval.minValue);
+            }
+          }
+          if (stringInterval.maxValue === "") {
+            maxValue = Number.MAX_VALUE;
+          } else {
+            maxValue = parseFloat(stringInterval.maxValue, 10);
+            if (isNaN(maxValue)) {
+              console.error("Can't parse %s as a number.",
+                            stringInterval.maxValue)
+            }
+          }
+          return {minValue: minValue, maxValue: maxValue};
+        };
+        colParams = [];
+        this._hparamFilters.forEach(hparamFilter => {
+          colParam = {hparam: hparamFilter.info.name}
+          if (hparamFilter.domainDiscrete) {
+            colParam.filterDiscrete = [];
+            hparamFilter.domainDiscrete.forEach(filterVal => {
+              if (filterVal.checked) {
+                colParam.filterDiscrete.push(filterVal.value)
+              }
+            });
+          } else if (hparamFilter.interval) {
+            colParam.filterInterval = stringToNumericInterval(
+                hparamFilter.interval)
+          } else if (hparamFilter.regexp) {
+            colParam.filterRegexp = hparamFilter.regexp
+          } else {
+            console.error(
+                "hparamFilter with no domainDiscrete, interval or regexp" +
+                  " properties set: %s", hparamFilter)
+            return;
+          }
+          colParams.push(colParam);
+        });
+        this._metricFilters.forEach(metricFilter => {
+          colParam = {
+            metric: metricFilter.info.name,
+            filterInterval: stringToNumericInterval(metricFilter.interval)
+          }
+          colParams.push(colParam);
+        });
+        return {
+          colParams: colParams,
+          // TODO(erez): Make this user-configurable.
+          startIndex: 0,
+          sliceSize: 1000
+        };
+      },
+      _sessionGroupHParam(sessionGroup, hparam) {
+        if (sessionGroup == null) {
+          return null;
+        }
+        return this._prettyPrint(sessionGroup.hparams[hparam]);
+      },
+      _sessionGroupMetric(sessionGroup, metric) {
+        if (sessionGroup == null) {
+          return null;
+        }
+        for (i = 0; i < sessionGroup.metricValues.length; ++i) {
+          metricVal = sessionGroup.metricValues[i];
+          if (metricVal.name.group === metric.group &&
+              metricVal.name.tag == metric.tag) {
+            return this._prettyPrint(metricVal.value);
+          }
+        }
+        return undefined;
+      },
+      _sessionGroupName(sessionGroup) {
+        if (sessionGroup == null) {
+          return null;
+        }
+        return sessionGroup.name;
+      },
+      _computeRunsForSessionGroupMetric(sessionGroup, metricFilter) {
+        result=[];
+        metricGroup = metricFilter.info.name.group;
+        if (metricGroup === undefined) {
+          metricGroup = "";
+        }
+        sessionGroup.sessions.forEach(session => {
+          result.push(session.name + metricGroup);
+        });
+        return result;
+      },
+      _prettyPrint(value) {
+        if (_.isNumber(value)) {
+          // TODO(erez):Make the precision user-configurable.
+          return value.toPrecision(5);
+        }
+        return value.toString();
+      }
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'hparams',
+      elementName: 'tf-hparams-dashboard',
+    });
+  </script>
+</dom-module>

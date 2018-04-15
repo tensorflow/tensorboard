@@ -60,6 +60,19 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "vaadin-grid-html",
+    srcs = [
+        "vaadin-grid-html.html",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polymer",
+        "@com_vaadin",
+    ],
+)
+
+tf_web_library(
     name = "numericjs",
     srcs = [
         "numericjs.html",

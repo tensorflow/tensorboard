@@ -1,5 +1,5 @@
 # Description:
-# TensorBoard plugin for hparams
+# TensorBoard plugin for hparams_explorer
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -9,21 +9,15 @@ load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 
+## HparamsExplorer Plugin ##
 py_library(
-    name = "hparams_plugin",
-    srcs = [
-        "backend_context.py",
-        "hparams_plugin.py",
-        "list_session_groups.py",
-        "metrics.py",
-    ],
+    name = "hparams_explorer_plugin",
+    srcs = ["hparams_explorer_plugin.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":error",
-        ":metadata",
-        ":protos_all_py_pb2",
-        ":summary",
+        ":plugin_metadata",
+        ":metadata_utils",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -33,23 +27,35 @@ py_library(
     ],
 )
 
-py_test(
-    name = "list_session_groups_test",
-    size = "small",
-    srcs = [
-        "list_session_groups_test.py",
-    ],
+py_library(
+    name = "metadata_utils",
+    srcs = ["metadata_utils.py"],
+    srcs_version = "PY2AND3",
     deps = [
-        ":hparams_plugin",
+        ":protos_all_py_pb2"
+    ])
+
+py_test(
+    name = "hparams_explorer_plugin_test",
+    size = "small",
+    srcs = ["hparams_explorer_plugin_test.py"],
+    main = "hparams_explorer_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":hparams_explorer_plugin",
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
-        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
 py_binary(
-    name = "hparams_demo",
-    srcs = ["hparams_demo.py"],
+    name = "hparams_explorer_demo",
+    srcs = ["hparams_explorer_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":protos_all_py_pb2",
@@ -68,27 +74,35 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-        ":metadata",
+        ":plugin_metadata",
+        ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
+    ],
+)
+
+py_library(
+    name = "plugin_metadata",
+    srcs = ["plugin_metadata.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
-py_library(
-    name = "metadata",
-    srcs = ["metadata.py"],
+py_test(
+    name = "summary_test",
+    size = "small",
+    srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":error",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
-)
-
-py_library(
-    name = "error",
-    srcs = ["error.py"],
-    srcs_version = "PY2AND3",
-    deps = [
+        ":metadata",
+        ":summary",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -96,7 +110,7 @@ py_library(
 tb_proto_library(
     name = "protos_all",
     srcs = [
-        "api.proto",
+        "metadata.proto",
         "plugin_data.proto",
     ],
     visibility = ["//visibility:public"],

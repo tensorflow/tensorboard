@@ -209,7 +209,7 @@ class TensorBoardWSGI(object):
         raise ValueError('Plugin %s has invalid name %r' % (plugin,
                                                             plugin.plugin_name))
       if plugin.plugin_name in plugin_names_encountered:
-        raise ValueError('Duplicate plugins for name %s' % plugin.plugin_name)
+        raise ValueError('Duplicate plugins for name %s in plugin %s' % (plugin.plugin_name, plugin))
       plugin_names_encountered.add(plugin.plugin_name)
 
       try:
