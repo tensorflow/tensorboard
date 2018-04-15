@@ -73,10 +73,10 @@ def start_runs(
   def clip(value, minValue, maxValue):
     """Clips an op to the range [minValue, maxValue].
 
-    For now, we intentionally avoid using tf.clip_by_value for now because it
-    apparently exhibits slightly different behavior based on system
+    For now, we intentionally avoid using tf.clip_by_value because it 
+    apparently exhibits slightly different behavior based on system 
     characteristics. See tensorflow/tensorflow#18527. Tests rely on this demo,
-    so behavior must be deterministic.
+    so behavior must be consistent.
 
     Args:
       value: The value to clip.
