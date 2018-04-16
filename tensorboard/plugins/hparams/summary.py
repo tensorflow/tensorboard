@@ -60,7 +60,7 @@ def experiment_pb(
     user: String. An id for the user running the experiment
     description: String. A description for the experiment. May contain markdown.
     time_created_secs: float. The time the experiment is created in seconds
-    since the UNIX epoch. Defaults to the current time.
+    since the UNIX epoch. If None uses the current time.
 
   Returns:
     A summary protobuffer containing the experiment definition.
@@ -81,7 +81,7 @@ def session_start_pb(hparams,
                      model_uri="",
                      monitor_url="",
                      group_name="",
-                     start_time_secs=time.time()):
+                     start_time_secs=None):
   """Creates a summary that contains a training session metadata information.
   One such summary per training session should be created. Each should have
   a different run.
@@ -97,10 +97,13 @@ def session_start_pb(hparams,
     group_name:  See the comment for the field with the same name of
                  plugin_data_pb2.SessionStartInfo.
     start_time_secs: float. The time to use as the session start time.
-                     Represented as seconds since the UNIX epoch.
+                     Represented as seconds since the UNIX epoch. If None uses
+                     the current time.
   Returns:
     Returns the summary protobuffer mentioned above.
   """
+  if start_time_secs is None:
+    start_time_secs = time.time()
   session_start_info = plugin_data_pb2.SessionStartInfo(
       model_uri=model_uri,
       monitor_url=monitor_url,

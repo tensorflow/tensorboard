@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
 """Classes and functions for handling the ListSessionGroups API call."""
+
+# TODO(erez):Make the session group building simpler by building the session
+# group directly on the first pass, rather than building a list of sessions and
+# then grouping. This eliminates the need for _SessionInfoTuple.
+# TODO(erez): Remove the filters and extractors class hierarchies and just
+# use closures for these. This will elminate a lot of boilerplate code.
 
 from __future__ import absolute_import
 from __future__ import division
@@ -311,36 +318,36 @@ class _SessionGroupFilter(object):
   on an extracted value of the instance.
   For a given instance the 'passes' method (below) returns true if the instance
   passes the filter or false otherwise.
-  The none_passes parameter in the constructor specifies
+  The include_missing_values parameter in the constructor specifies
   whether the None value is considered passing the filter or not.
   """
   __metaclass__ = abc.ABCMeta
 
   @staticmethod
   def create(col_param, extractor):
-    none_passes = not col_param.exclude_missing_values
+    include_missing_values = not col_param.exclude_missing_values
     if col_param.HasField("filter_regexp"):
       return _SessionGroupRegexFilter(
-          col_param.filter_regexp, extractor, none_passes)
+          col_param.filter_regexp, extractor, include_missing_values)
     elif col_param.HasField("filter_interval"):
       return _SessionGroupIntervalFilter(
-          col_param.filter_interval, extractor, none_passes)
+          col_param.filter_interval, extractor, include_missing_values)
     elif col_param.HasField("filter_discrete"):
       return _SessionGroupDiscreteSetFilter(
           _list_value_to_python_list(col_param.filter_discrete),
           extractor,
-          none_passes)
+          include_missing_values)
     else:
       return None
 
-  def __init__(self, extractor, none_passes):
+  def __init__(self, extractor, include_missing_values):
     self._extractor = extractor
-    self._none_passes = none_passes
+    self._include_missing_values = include_missing_values
 
   def passes(self, session_group):
     value = self._extractor.extract(session_group)
     if value is None:
-      return self._none_passes
+      return self._include_missing_values
     # Filter out SessionGroup instances with missing values.
     return self._value_passes(value)
 
@@ -370,8 +377,9 @@ def _list_value_to_python_list(list_value):
 
 
 class _SessionGroupRegexFilter(_SessionGroupFilter):
-  def __init__(self, regex, extractor, none_passes):
-    super(_SessionGroupRegexFilter, self).__init__(extractor, none_passes)
+  def __init__(self, regex, extractor, include_missing_values):
+    super(_SessionGroupRegexFilter, self).__init__(extractor,
+                                                   include_missing_values)
     try:
       self._regex = re.compile(regex)
     except re.error as e:
@@ -387,8 +395,9 @@ class _SessionGroupRegexFilter(_SessionGroupFilter):
 
 
 class _SessionGroupIntervalFilter(_SessionGroupFilter):
-  def __init__(self, interval, extractor, none_passes):
-    super(_SessionGroupIntervalFilter, self).__init__(extractor, none_passes)
+  def __init__(self, interval, extractor, include_missing_values):
+    super(_SessionGroupIntervalFilter, self).__init__(extractor,
+                                                      include_missing_values)
     assert isinstance(interval, api_pb2.Interval)
     self._interval = interval
 
@@ -403,8 +412,9 @@ class _SessionGroupIntervalFilter(_SessionGroupFilter):
 
 
 class _SessionGroupDiscreteSetFilter(_SessionGroupFilter):
-  def __init__(self, discrete_set, extractor, none_passes):
-    super(_SessionGroupDiscreteSetFilter, self).__init__(extractor, none_passes)
+  def __init__(self, discrete_set, extractor, include_missing_values):
+    (super(_SessionGroupDiscreteSetFilter, self)
+     .__init__(extractor, include_missing_values))
     self._discrete_set = set(discrete_set)
 
   def _value_passes(self, value):

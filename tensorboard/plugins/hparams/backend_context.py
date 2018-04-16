@@ -20,7 +20,7 @@ from __future__ import print_function
 from tensorboard.plugins.hparams import metadata
 
 class Context(object):
-  """Extends the base_plugin.TBContext to stores additional data shared across
+  """Wraps the base_plugin.TBContext to stores additional data shared across
   API handlers for the HParams plugin backend."""
   def __init__(self, tb_context):
     """Instantiates a context.
