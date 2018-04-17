@@ -62,23 +62,9 @@ http_archive(
     ],
 )
 
-load("@tf_serving//tensorflow_serving:repo.bzl", "tensorflow_http_archive")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
 
-tensorflow_http_archive(
-    name = "org_tensorflow",
-    sha256 = "21d6ac553adcfc9d089925f6d6793fee6a67264a0ce717bc998636662df4ca7e",
-    git_commit = "bc69c4ceed6544c109be5693eb40ddcf3a4eb95d",
-)
-
-# Please add all new TensorFlow Serving dependencies in workspace.bzl.
-load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
-
-tf_serving_workspace()
-
-
-#load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
-
-#closure_repositories()
+closure_repositories()
 
 http_archive(
     name = "org_tensorflow",
@@ -89,6 +75,11 @@ http_archive(
         "https://github.com/tensorflow/tensorflow/archive/3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8.tar.gz",
     ],
 )
+
+# Please add all new TensorFlow Serving dependencies in workspace.bzl.
+load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
+
+tf_serving_workspace()
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
 
