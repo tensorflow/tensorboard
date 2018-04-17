@@ -20,9 +20,9 @@ import tensorflow as tf
 
 from tensorboard.plugins.inference.utils import common_utils
 
-from tensorflow_serving.apis import classification_pb2
-from tensorflow_serving.apis import prediction_service_pb2
-from tensorflow_serving.apis import regression_pb2
+#from tensorflow_serving.apis import classification_pb2
+#from tensorflow_serving.apis import prediction_service_pb2
+#from tensorflow_serving.apis import regression_pb2
 
 
 def filepath_to_filepath_list(file_path):
@@ -59,7 +59,7 @@ def example_protos_from_path(cns_path,
                              num_examples=10,
                              start_index=0,
                              parse_examples=True):
-  """Returns a number of tf.Examples from the CNS path.
+  """Returns a number of tf.train.Examples from the CNS path.
 
   Args:
     cns_path: A string CNS path.
@@ -69,7 +69,7 @@ def example_protos_from_path(cns_path,
         proto objects. Defaults to True.
 
   Returns:
-    A list of `tf.Example` protos or serialized proto strings at the CNS path.
+    A list of `tf.train.Example` protos or serialized proto strings at the CNS path.
 
   Raises:
     InvalidUserInputError: If examples cannot be procured from cns_path.
@@ -79,41 +79,40 @@ def example_protos_from_path(cns_path,
     for i, value in enumerate(iterable):
       if i >= start_index:
         examples.append(
-            tf.Example.FromString(value) if parse_examples else value)
+            tf.train.Example.FromString(value) if parse_examples else value)
         if len(examples) >= num_examples:
           return
 
   filenames = filepath_to_filepath_list(cns_path)
   examples = []
   try:
-    # Try RecordIO format after trying all other input formats, because
-    # RecordIO opens non-RecordIO formats as "0 records".
     for filename in filenames:
       record_iterator = tf.python_io.tf_record_iterator(path=filename)
       append_examples_from_iterable(record_iterator, examples)
       if len(examples) >= num_examples:
         break
-  except IOError as e:
+  except (IOError, tf.errors.NotFoundError) as e:
     raise common_utils.InvalidUserInputError(e)
 
   if examples:
     return examples
   else:
     raise common_utils.InvalidUserInputError(
-        'No tf.Examples found at ' + cns_path +
+        'No tf.train.Examples found at ' + cns_path +
         '. Valid formats are SSTable and RecordIO.')
 
 def call_servo(examples, serving_bundle):
   """Send an RPC request to the Servomatic prediction service.
 
   Args:
-    examples: A list of tf.Examples that matches the model spec.
+    examples: A list of tf.train.Examples that matches the model spec.
     serving_bundle: A `ServingBundle` object that contains the information to
       make the serving request.
 
   Returns:
     A ClassificationResponse or RegressionResponse proto.
   """
+  return  None
   parsed_url = urlparse(serving_bundle.inference_address)
   channel = implementations.insecure_channel(parsed_url.hostname,
                                              parsed_url.port)
@@ -129,4 +128,4 @@ def call_servo(examples, serving_bundle):
   if serving_bundle.model_type == 'classification':
     return stub.Classify(request, 30.0)  # 30 secs timeout
   else:
-    return stub.Regress(request, 30.0)  # 30 secs timeout
+    return stub.Regress(request, 30.0)  # 30 secs timeoutparsed_url = urlparse(serving_bundle.inference_address)

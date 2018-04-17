@@ -16,9 +16,9 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":common_utils",
-        "@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
-        "@tf_serving//tensorflow_serving/apis:prediction_service_proto_py_pb2",
-        "@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
+        #"@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
+        #"@tf_serving//tensorflow_serving/apis:prediction_service_proto_py_pb2",
+        #"@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
     ],
 )
 py_library(
@@ -30,8 +30,8 @@ py_library(
         ":oss_utils",
         ":inference_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
-        "@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
-        "@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
+        #"@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
+        #"@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
     ],
 )
 
@@ -51,8 +51,8 @@ py_proto_library(
     srcs_version = "PY2AND3",
     deps = [
       "@protobuf_archive//:protobuf_python",
-      "@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
-      "@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
+      #"@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
+      #"@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
       ],
     protoc = "@protobuf_archive//:protoc",
     default_runtime = "@protobuf_archive//:protobuf_python",

@@ -54,6 +54,7 @@ class InferencePlugin(base_plugin.TBPlugin):
     """
     self._logdir = context.logdir
     self._has_auth_group = (context.flags and
+                            'authorized_groups' in context.flags and
                             context.flags.authorized_groups is not '')
 
   def get_plugin_apps(self):
@@ -118,14 +119,14 @@ class InferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _example_from_path_handler(self, request):
-    """Returns a pretty-printed string of the tf.Example.
+    """Returns a pretty-printed string of the tf.train.Example.
 
     Args:
       request: A request that should contain 'examples_path' and 'example_index'
         (a 0-indexed number to indicate an example within examples_path).
 
     Returns:
-      A pretty formatted string of the first tf.Example in the path.
+      A pretty formatted string of the first tf.train.Example in the path.
     """
     examples_path = request.args.get('examples_path')
     try:

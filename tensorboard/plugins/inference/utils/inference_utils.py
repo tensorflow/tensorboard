@@ -25,8 +25,8 @@ import tensorflow as tf
 from tensorboard.plugins.inference.utils import common_utils
 from tensorboard.plugins.inference.utils import inference_pb2
 from tensorboard.plugins.inference.utils import oss_utils
-from tensorflow_serving.apis import classification_pb2
-from tensorflow_serving.apis import regression_pb2
+#from tensorflow_serving.apis import classification_pb2
+#from tensorflow_serving.apis import regression_pb2
 
 
 class VizParams(object):
@@ -108,7 +108,7 @@ class OriginalFeatureList(object):
 
   Attributes:
     feature_name: String name of the feature.
-    original_value: The value of the feature in the original tf.Example.
+    original_value: The value of the feature in the original tf.train.Example.
     feature_type: One of ['int64_list', 'float_list'].
 
   Raises:
@@ -193,7 +193,7 @@ class ServingBundle(object):
 
 
 def proto_value_for_feature(example, feature_name):
-  """Get the value of a feature from tf.Example regardless of feature type."""
+  """Get the value of a feature from tf.train.Example regardless of feature type."""
   feature = example.features.feature[feature_name]
   feature_type = feature.WhichOneof('kind')
   if feature_type is None:
@@ -206,7 +206,7 @@ def parse_original_feature_from_example(example, feature_name):
   """Returns an `OriginalFeatureList` for the specified feature_name.
 
   Args:
-    example: A tf.Example.
+    example: A tf.train.Example.
     feature_name: A string feature name.
 
   Returns:
@@ -241,7 +241,7 @@ def get_numeric_feature_names(example):
   """Returns a list of feature names for float and int64 type features.
 
   Args:
-    example: A tf.Example.
+    example: A tf.train.Example.
 
   Returns:
     A list of string feature names.
@@ -258,7 +258,7 @@ def get_categorical_feature_names(example):
   """Returns a list of feature names for byte type features.
 
   Args:
-    example: A tf.Example.
+    example: A tf.train.Example.
 
   Returns:
     A list of categorical feature names (e.g. ['education', 'marital_status'] )
@@ -378,17 +378,17 @@ def make_mutant_features(original_feature, index_to_mutate, viz_params):
 
 def make_mutant_tuples(example_proto, original_feature, index_to_mutate,
                        viz_params):
-  """Return a list of `MutantFeatureValue`s and a list of mutant `tf.Examples`.
+  """Return a list of `MutantFeatureValue`s and a list of mutant `tf.train.Examples`.
 
   Args:
-    example_proto: The tf.Example to mutate.
+    example_proto: The tf.train.Example to mutate.
     original_feature: A `OriginalFeatureList` that encapsulates the feature to
       mutate.
     index_to_mutate: The index of the int64_list or float_list to mutate.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
   Returns:
-    A list of `MutantFeatureValue`s and a list of mutant `tf.Examples`.
+    A list of `MutantFeatureValue`s and a list of mutant `tf.train.Examples`.
   """
   mutant_features = make_mutant_features(original_feature, index_to_mutate,
                                          viz_params)
@@ -416,7 +416,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
   """Returns JSON formatted for rendering all charts for a feature.
 
   Args:
-    example_proto: The tf.Example proto to mutate.
+    example_proto: The tf.train.Example proto to mutate.
     feature_name: The string feature name to mutate.
     serving_bundle: A `ServingBundle` object that contains the information to
       make the serving request.
@@ -475,7 +475,7 @@ def make_json_formatted_for_single_chart(mutant_features,
       X-axis.
     inference_result_proto: A ClassificationResponse or RegressionResponse
       returned by Servo, representing the Y-axis.
-      It contains one 'classification' or 'regression' for every tf.Example that
+      It contains one 'classification' or 'regression' for every tf.train.Example that
       was sent for inference. The length of that field should be the same length
       of mutant_features.
 

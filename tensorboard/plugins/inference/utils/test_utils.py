@@ -23,7 +23,7 @@ import tensorflow as tf
 
 def make_fake_example(single_int_val=0):
   """Make a fake example with numeric and string features."""
-  example = tf.Example()
+  example = tf.train.Example()
   example.features.feature['repeated_float'].float_list.value.extend(
       [1.0, 2.0, 3.0, 4.0])
   example.features.feature['repeated_int'].int64_list.value.extend([10, 20])
