@@ -20,9 +20,9 @@ import tensorflow as tf
 
 from tensorboard.plugins.inference.utils import common_utils
 
-#from tensorflow_serving.apis import classification_pb2
-#from tensorflow_serving.apis import prediction_service_pb2
-#from tensorflow_serving.apis import regression_pb2
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import prediction_service_pb2
+from tensorflow_serving.apis import regression_pb2
 
 
 def filepath_to_filepath_list(file_path):

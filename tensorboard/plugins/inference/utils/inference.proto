@@ -20,9 +20,8 @@ syntax = "proto3";
 package tensorboard.plugins.inference.utils;
 
 message InferenceResult {
-  uint64 test = 1;
   //oneof result {
-    //tensorflow.serving.ClassificationResult classification = 1;
-    //tensorflow.serving.RegressionResult regression = 2;
+  //  tensorflow.serving.ClassificationResult classification = 1;
+  //  tensorflow.serving.RegressionResult regression = 2;
   //}
 }
