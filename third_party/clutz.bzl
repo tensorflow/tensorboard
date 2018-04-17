@@ -43,7 +43,7 @@ def extract_dts_from_closure_libraries(ctx):
       The generated Clutz typings file, or None if there were no JS deps.
   """
   deps = unfurl(ctx.attr.deps, provider="closure_js_library")
-  js = collect_js(ctx, deps)
+  js = collect_js(deps, ctx.file._closure_library_base, ctx.file._closure_library_deps)
   if not js.srcs:
     return None
   js_typings = ctx.new_file(ctx.bin_dir, "%s-js-typings.d.ts" % ctx.label.name)

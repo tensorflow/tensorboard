@@ -15,7 +15,7 @@ branches:
     - /^\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
-  - BAZEL=0.9.0 TF=NIGHTLY
+  - BAZEL=0.12.0 TF=NIGHTLY
 
 cache:
   directories:
