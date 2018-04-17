@@ -25,9 +25,10 @@ import tensorflow as tf
 
 from tensorboard.plugins.inference.utils import common_utils
 from tensorboard.plugins.inference.utils import inference_utils
+from tensorboard.plugins.inference.utils import oss_utils
 from tensorboard.plugins.inference.utils import test_utils
-from tensorflow_serving.apis import classification_pb2
-from tensorflow_serving.apis import regression_pb2
+#from tensorflow_serving.apis import classification_pb2
+#from tensorflow_serving.apis import regression_pb2
 
 
 class InferenceUtilsTest(tf.test.TestCase):
@@ -71,16 +72,16 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual('int64_list', original_feature.feature_type)
     self.assertEqual(1, original_feature.length)
 
-  def test_example_protos_from_cns_path_get_all_in_file(self):
+  def test_example_protos_from_path_get_all_in_file(self):
     cns_path = os.path.join(tf.test.get_temp_dir(),
                             'dummy_example')
     example = test_utils.make_fake_example()
     test_utils.write_out_examples([example], cns_path)
-    dummy_examples = inference_utils.example_protos_from_cns_path(cns_path)
+    dummy_examples = oss_utils.example_protos_from_path(cns_path)
     self.assertEqual(1, len(dummy_examples))
     self.assertEqual(example, dummy_examples[0])
 
-  def test_example_protos_from_cns_path_get_two(self):
+  def test_example_protos_from_path_get_two(self):
     cns_path = os.path.join(tf.test.get_temp_dir(),
                             'dummy_example')
     example_one = test_utils.make_fake_example(1)
@@ -88,12 +89,12 @@ class InferenceUtilsTest(tf.test.TestCase):
     example_three = test_utils.make_fake_example(3)
     test_utils.write_out_examples([example_one, example_two, example_three],
                                   cns_path)
-    dummy_examples = inference_utils.example_protos_from_cns_path(cns_path, 2)
+    dummy_examples = oss_utils.example_protos_from_path(cns_path, 2)
     self.assertEqual(2, len(dummy_examples))
     self.assertEqual(example_one, dummy_examples[0])
     self.assertEqual(example_two, dummy_examples[1])
 
-  def test_example_protos_from_cns_path_use_wildcard(self):
+  def test_example_protos_from_path_use_wildcard(self):
     cns_path = os.path.join(tf.test.get_temp_dir(),
                             'wildcard_example1')
     example1 = test_utils.make_fake_example(1)
@@ -105,13 +106,13 @@ class InferenceUtilsTest(tf.test.TestCase):
 
     wildcard_path = os.path.join(tf.test.get_temp_dir(),
                                   'wildcard_example*')
-    dummy_examples = inference_utils.example_protos_from_cns_path(
+    dummy_examples = oss_utils.example_protos_from_path(
         wildcard_path)
     self.assertEqual(2, len(dummy_examples))
     self.assertEqual(example1, dummy_examples[0])
     self.assertEqual(example2, dummy_examples[1])
 
-  def test_example_protos_from_cns_path_sharded(self):
+  def test_example_protos_from_path_sharded(self):
     cns_path = os.path.join(tf.test.get_temp_dir(),
                             'dummy_example-00000-of-00002')
     example1 = test_utils.make_fake_example(1)
@@ -123,16 +124,16 @@ class InferenceUtilsTest(tf.test.TestCase):
 
     wildcard_path = os.path.join(tf.test.get_temp_dir(),
                                   'dummy_example@2')
-    dummy_examples = inference_utils.example_protos_from_cns_path(
+    dummy_examples = oss_utils.example_protos_from_path(
         wildcard_path)
     self.assertEqual(2, len(dummy_examples))
     self.assertEqual(example1, dummy_examples[0])
     self.assertEqual(example2, dummy_examples[1])
 
-  def test_example_proto_from_cns_path_if_does_not_exist(self):
+  def test_example_proto_from_path_if_does_not_exist(self):
     cns_path = os.path.join(tf.test.get_temp_dir(), 'does_not_exist')
     with self.assertRaises(common_utils.InvalidUserInputError):
-      inference_utils.example_protos_from_cns_path(cns_path)
+      oss_utils.example_protos_from_path(cns_path)
 
   def test_get_numeric_features(self):
     example = test_utils.make_fake_example(single_int_val=2)
@@ -169,21 +170,21 @@ class InferenceUtilsTest(tf.test.TestCase):
     }, data)
 
   def test_get_categorical_features_to_sampling(self):
-    cat_woof_example = tf.Example()
+    cat_woof_example = tf.train.Example()
     cat_woof_example.features.feature['non_numeric'].bytes_list.value.extend(
         ['cat', 'woof'])
 
-    cow_example = tf.Example()
+    cow_example = tf.train.Example()
     cow_example.features.feature['non_numeric'].bytes_list.value.extend(['cow'])
 
-    pony_example = tf.Example()
+    pony_example = tf.train.Example()
     pony_example.features.feature['non_numeric'].bytes_list.value.extend(
         ['pony'])
 
     examples = [cat_woof_example] * 4 + [cow_example] * 5 + [pony_example] * 10
     with tf.python_io.TFRecordWriter(self.examples_path) as writer:
       for example in examples:
-        writer.WriteRecord(example.SerializeToString())
+        writer.write(example.SerializeToString())
 
     # If we stop sampling at the first 3 examples, the only example should be
     # cat_woof example.
@@ -231,7 +232,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(2, len(wrapped.regression.regressions))
 
   @mock.patch.object(inference_utils, 'make_json_formatted_for_single_chart')
-  @mock.patch.object(inference_utils, 'call_servo')
+  @mock.patch.object(oss_utils, 'call_servo')
   def test_mutant_charts_for_feature(self, mock_call_servo,
                                      mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
@@ -266,7 +267,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(1, len(charts['data']))
 
   @mock.patch.object(inference_utils, 'make_json_formatted_for_single_chart')
-  @mock.patch.object(inference_utils, 'call_servo')
+  @mock.patch.object(oss_utils, 'call_servo')
   def test_mutant_charts_for_feature_with_feature_index_pattern(
       self, mock_call_servo, mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()

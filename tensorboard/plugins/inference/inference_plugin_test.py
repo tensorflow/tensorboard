@@ -24,6 +24,8 @@ import mock
 import numpy as np
 from six.moves import urllib_parse
 
+import tensorflow as tf
+
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 

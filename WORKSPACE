@@ -52,14 +52,18 @@ http_archive(
       strip_prefix = "protobuf-396336eb961b75f03b25824fe86cf6490fb75e3a",
   )
 
-http_archive(
+#http_archive(
+#    name = "tf_serving",
+#    sha256 = "96ff818d450877ff635efa2ac9c91e91639c352b4d948b73d7a6f4febd375e08",
+#    strip_prefix = "serving-3571248707f47b5b9016195c6c06e7fa26f629b0",
+#    urls = [
+#        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/3571248707f47b5b9016195c6c06e7fa26f629b0.tar.gz",
+#        "https://github.com/tensorflow/serving/archive/3571248707f47b5b9016195c6c06e7fa26f629b0.tar.gz",
+#    ],
+#)
+local_repository(
     name = "tf_serving",
-    sha256 = "96ff818d450877ff635efa2ac9c91e91639c352b4d948b73d7a6f4febd375e08",
-    strip_prefix = "serving-3571248707f47b5b9016195c6c06e7fa26f629b0",
-    urls = [
-        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/3571248707f47b5b9016195c6c06e7fa26f629b0.tar.gz",
-        "https://github.com/tensorflow/serving/archive/3571248707f47b5b9016195c6c06e7fa26f629b0.tar.gz",
-    ],
+    path = "/usr/local/google/home/jwexler/jameswex/serving",
 )
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
@@ -75,6 +79,8 @@ http_archive(
         "https://github.com/tensorflow/tensorflow/archive/3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8.tar.gz",
     ],
 )
+
+load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
 
 # Please add all new TensorFlow Serving dependencies in workspace.bzl.
 load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
