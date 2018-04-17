@@ -2,11 +2,11 @@ workspace(name = "org_tensorflow_tensorboard")
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "6691c58a2cd30a86776dd9bb34898b041e37136f2dc7e24cadaeaf599c95c657",
-    strip_prefix = "rules_closure-08039ba8ca59f64248bb3b6ae016460fe9c9914f",
+    sha256 = "a38539c5b5c358548e75b44141b4ab637bba7c4dc02b46b1f62a96d6433f56ae",
+    strip_prefix = "rules_closure-dbb96841cc0a5fb2664c37822803b06dab20c7d1",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/08039ba8ca59f64248bb3b6ae016460fe9c9914f.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/08039ba8ca59f64248bb3b6ae016460fe9c9914f.tar.gz",  # 2018-01-16
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/dbb96841cc0a5fb2664c37822803b06dab20c7d1.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/dbb96841cc0a5fb2664c37822803b06dab20c7d1.tar.gz",  # 2018-04-13
     ],
 )
 
@@ -64,23 +64,24 @@ http_archive(
     ],
 )
 
-load("@tf_serving//tensorflow_serving:repo.bzl", "tensorflow_http_archive")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
 
-tensorflow_http_archive(
+closure_repositories()
+
+http_archive(
     name = "org_tensorflow",
-    sha256 = "21d6ac553adcfc9d089925f6d6793fee6a67264a0ce717bc998636662df4ca7e",
-    git_commit = "bc69c4ceed6544c109be5693eb40ddcf3a4eb95d",
+    sha256 = "8028d51b4a911adeb9b8afa0ba6bcb99fa00a4949881cdad3ee67a8f33c8979a",
+    strip_prefix = "tensorflow-3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8",
+    urls = [
+        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8.tar.gz",  # 2018-04-16
+        "https://github.com/tensorflow/tensorflow/archive/3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8.tar.gz",
+    ],
 )
 
 # Please add all new TensorFlow Serving dependencies in workspace.bzl.
 load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
 
 tf_serving_workspace()
-
-
-#load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
-
-#closure_repositories()
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 
