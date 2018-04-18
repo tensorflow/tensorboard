@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
 @license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,28 +16,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<html>
-  <head>
-    <link rel="import" href="../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="tf-interactive-inference-dashboard.html">
-    <title>Interactive Inference Demo</title>
-    <style>
-      #container{
-        width: 1000px;
-        height: 800px;
-        border: 2px solid grey;
-      }
-      html,body {
-        height: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <demo-snippet>
-      <template>
-          <tf-interactive-inference-dashboard id="demo">
-          </tf-interactive-inference-dashboard>
-      </template>
-    </demo-snippet>
-  </body>
-</html>
+<link rel="import" href="../iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="tf-interactive-inference-dashboard.html">
+<title>Interactive Inference Demo</title>
+<style>
+  #container{
+    width: 1000px;
+    height: 800px;
+    border: 2px solid grey;
+  }
+  html,body {
+    height: 100%;
+  }
+</style>
+<demo-snippet>
+  <template>
+      <tf-interactive-inference-dashboard id="demo">
+      </tf-interactive-inference-dashboard>
+  </template>
+</demo-snippet>

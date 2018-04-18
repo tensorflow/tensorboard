@@ -42,6 +42,7 @@ from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.inference import inference_plugin
+from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
@@ -72,6 +73,7 @@ def get_plugins():
       text_plugin.TextPlugin,
       profile_plugin.ProfilePlugin,
       inference_plugin.InferencePlugin,
+      interactive_inference_plugin.InteractiveInferencePlugin,
   ]
   # The debugger plugin is only activated if its flag is set.
   debugger = debugger_plugin_loader.get_debugger_plugin()
