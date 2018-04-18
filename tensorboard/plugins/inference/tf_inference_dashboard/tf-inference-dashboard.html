@@ -305,9 +305,9 @@ limitations under the License.
 
         var $chart = document.createElement('vz-line-chart');
         var valueFormatter = vz_chart_helpers.multiscaleFormatter(
-          vz_line_chart.Y_TOOLTIP_FORMATTER_PRECISION);
+          vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         var formatValueOrNaN = function (x) {
-          return vz_line_chart.isNaN(x) ? 'NaN' : valueFormatter(x);
+          return Number.isNaN(x) ? 'NaN' : valueFormatter(x);
         };
         $chart.tooltipColumns = [
           {
