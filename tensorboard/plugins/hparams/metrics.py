@@ -43,7 +43,7 @@ def last_metric_eval(multiplexer, session_name, metric_name):
   """
   assert isinstance(session_name, str)
   assert isinstance(metric_name, api_pb2.MetricName)
-  run = session_name+metric_name.group
+  run = session_name + metric_name.group
   tag = metric_name.tag
   try:
     tensor_events = multiplexer.Tensors(run=run, tag=tag)

@@ -39,9 +39,11 @@ class Context(object):
       self._experiment = self._find_experiment()
     return self._experiment
 
+  @property
   def multiplexer(self):
     return self._tb_context.multiplexer
 
+  @property
   def tb_context(self):
     return self._tb_context
 

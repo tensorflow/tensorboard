@@ -124,7 +124,7 @@ def session_start_pb(hparams,
                       session_start_info=session_start_info))
 
 
-def session_end_pb(status, end_time_secs=time.time()):
+def session_end_pb(status, end_time_secs=None):
   """Creates a summary that contains status information for a completed
   training session. Should be exported after the training session is completed.
   One such summary per training session should be created. Each should have
@@ -133,11 +133,14 @@ def session_end_pb(status, end_time_secs=time.time()):
     status: A tensorboard.hparams.Status enumeration value denoting the
         status of the session.
     end_time_secs: float. The time to use as the session end time. Represented
-        as seconds since the unix epoch.
+        as seconds since the unix epoch. If None uses the current time.
 
   Returns:
     Returns the summary protobuffer mentioned above.
   """
+  if end_time_secs is None:
+    end_time_secs = time.time()
+
   session_end_info = plugin_data_pb2.SessionEndInfo(status=status,
                                                     end_time_secs=end_time_secs)
   return _summary(metadata.SESSION_END_INFO_TAG,
