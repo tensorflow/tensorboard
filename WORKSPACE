@@ -87,8 +87,6 @@ load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
 
 tf_serving_workspace()
 
-load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
-
 tf_workspace()
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
