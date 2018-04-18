@@ -57,9 +57,9 @@ class HParamsPlugin(base_plugin.TBPlugin):
   def is_active(self):
     """The hparams explorer plugin is active iff there is a tag with
     the hparams explorer plugin name as its plugin name."""
-    if not self._context.multiplexer():
+    if not self._context.multiplexer:
       return False
-    return bool(self._context.multiplexer().PluginRunToTagToContent(
+    return bool(self._context.multiplexer.PluginRunToTagToContent(
         metadata.PLUGIN_NAME))
 
   # ---- /experiment -----------------------------------------------------------

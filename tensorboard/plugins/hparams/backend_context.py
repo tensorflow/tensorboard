@@ -48,7 +48,7 @@ class Context(object):
     return self._tb_context
 
   def _find_experiment(self):
-    mapping = self.multiplexer().PluginRunToTagToContent(
+    mapping = self.multiplexer.PluginRunToTagToContent(
         metadata.PLUGIN_NAME)
     for tag_to_content in mapping.values():
       if metadata.EXPERIMENT_TAG in tag_to_content:

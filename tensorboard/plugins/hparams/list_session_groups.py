@@ -112,7 +112,7 @@ class Handler(object):
     ]
 
   def _build_session_infos_by_name(self):
-    run_to_tag_to_content = self._context.multiplexer().PluginRunToTagToContent(
+    run_to_tag_to_content = self._context.multiplexer.PluginRunToTagToContent(
         metadata.PLUGIN_NAME)
     result = {}
     for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
@@ -165,7 +165,7 @@ class Handler(object):
       metric_name = metric_info.name
       try:
         metric_eval = metrics.last_metric_eval(
-            self._context.multiplexer(),
+            self._context.multiplexer,
             session_name,
             metric_name)
       except KeyError:
