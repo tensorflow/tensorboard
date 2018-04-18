@@ -12,7 +12,6 @@ tf_web_library(
         "vz-example-viewer.ts",
     ],
     path = "/vz-example-viewer",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
@@ -49,3 +48,4 @@ tensorboard_html_binary(
     output_path = "/vz-example-viewer/demo.html",
     deps = [":demo"],
 )
+

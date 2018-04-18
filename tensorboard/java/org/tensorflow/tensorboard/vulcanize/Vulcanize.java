@@ -44,6 +44,7 @@ import com.google.javascript.jscomp.PropertyRenamingPolicy;
 import com.google.javascript.jscomp.Result;
 import com.google.javascript.jscomp.SourceFile;
 import com.google.javascript.jscomp.WarningsGuard;
+import com.google.javascript.jscomp.deps.ModuleLoader;
 import com.google.protobuf.TextFormat;
 import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
@@ -414,6 +415,7 @@ public final class Vulcanize {
 
     CompilerOptions options = new CompilerOptions();
     compilationLevel.setOptionsForCompilationLevel(options);
+    options.setModuleResolutionMode(ModuleLoader.ResolutionMode.NODE);
 
     // Nice options.
     options.setColorizeErrorOutput(true);
