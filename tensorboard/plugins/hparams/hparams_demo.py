@@ -52,7 +52,8 @@ def fingerprint(string):
 def create_experiment_summary():
   """Returns a summary proto buffer holding this experiment"""
   # Convert TEMPERATURE_LIST to google.protobuf.ListValue
-  temperature_list = struct_pb2.ListValue().extend(TEMPERATURE_LIST)
+  temperature_list = struct_pb2.ListValue()
+  temperature_list.extend(TEMPERATURE_LIST)
   return summary.experiment_pb(
       hparam_infos=[
           api_pb2.HParamInfo(name="initial_temperature",
@@ -71,11 +72,11 @@ def create_experiment_summary():
       metric_infos=[
           api_pb2.MetricInfo(
               name=api_pb2.MetricName(
-                  tag="temparature/current/scalar_summary"),
+                  tag="temperature/current/scalar_summary"),
               display_name="Current Temp."),
           api_pb2.MetricInfo(
               name=api_pb2.MetricName(
-                  tag="temparature/difference_to_ambient/scalar_summary"),
+                  tag="temperature/difference_to_ambient/scalar_summary"),
               display_name="Difference To Ambient Temp."),
           api_pb2.MetricInfo(
               name=api_pb2.MetricName(
