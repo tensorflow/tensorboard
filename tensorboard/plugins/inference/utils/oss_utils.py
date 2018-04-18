@@ -14,6 +14,7 @@
 # ==============================================================================
 """Shared utils among inference plugins that are OSS-specific."""
 
+from glob import glob
 from grpc.beta import implementations
 from urlparse import urlparse
 import tensorflow as tf
@@ -36,7 +37,10 @@ def filepath_to_filepath_list(file_path):
     A list of files represented by the provided path.
   """
   file_path = file_path.strip()
-  return [file_path]
+  if '*' in file_path:
+    return glob(file_path)
+  else:
+    return [file_path]
 
 
 def throw_if_file_access_not_allowed(file_path, logdir, has_auth_group):
@@ -112,8 +116,7 @@ def call_servo(examples, serving_bundle):
   Returns:
     A ClassificationResponse or RegressionResponse proto.
   """
-  return  None
-  parsed_url = urlparse(serving_bundle.inference_address)
+  parsed_url = urlparse('http://' + serving_bundle.inference_address)
   channel = implementations.insecure_channel(parsed_url.hostname,
                                              parsed_url.port)
   stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
