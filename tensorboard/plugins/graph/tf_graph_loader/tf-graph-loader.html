@@ -44,14 +44,15 @@ Polymer({
     selectedDataset: Number,
     selectedFile: Object,
     /**
-     * This experimental (and optional) property determines the direction in
-     * which the graph is rendered. This value could be one of BT,TB,LR,RL. The
-     * default is BT (bottom to top).
-     * @type {string}
+     * If this optional object is provided, graph logic will override
+     * the HierarchyParams it uses to build the graph with properties within
+     * this object. For possible properties that this object can have, please
+     * see documentation on the HierarchyParams TypeScript interface.
+     * @type {Object}
      */
-    rankDirection: {
-      type: String,
-      value: '',
+    overridingHierarchyParams: {
+      type: Object,
+      value: () => ({})
     },
     outGraphHierarchy: {
       type: Object,
@@ -76,9 +77,9 @@ Polymer({
     },
   },
   observers: [
-    '_selectedDatasetChanged(selectedDataset, datasets, rankDirection)',
-    '_selectedFileChanged(selectedFile, rankDirection)',
-    '_readAndParseMetadata(selectedMetadataTag, rankDirection)',
+    '_selectedDatasetChanged(selectedDataset, datasets, overridingHierarchyParams)',
+    '_selectedFileChanged(selectedFile, overridingHierarchyParams)',
+    '_readAndParseMetadata(selectedMetadataTag, overridingHierarchyParams)',
   ],
   _readAndParseMetadata: function(metadataIndex) {
     if (metadataIndex == -1 || this.datasets[this.selectedDataset] == null ||
@@ -104,7 +105,7 @@ Polymer({
    * @param {string=} pbTxtFile
    */
   _parseAndConstructHierarchicalGraph: function(
-      path, pbTxtFile, rankDirection) {
+      path, pbTxtFile, overridingHierarchyParams) {
     // Reset the progress bar to 0.
     this.set('progress', {
       value: 0,
@@ -121,11 +122,10 @@ Polymer({
       // Starts out empty which allows the renderer to decide which series
       // are initially rendered grouped and which aren't.
       seriesMap: {},
-      // An experimental feature that enables the graph explorer to generalize.
-      // The direction in which the graph renders. This string is passed to
-      // dagre as the 'rankdir' graph option.
-      rankDirection: rankDirection,
     };
+    _.forOwn(overridingHierarchyParams, (value, key) => {
+      hierarchyParams[key] = value;
+    });
     this._setOutHierarchyParams(hierarchyParams);
     var dataTracker = tf.graph.util.getSubtaskTracker(tracker, 30, 'Data');
     tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
@@ -183,11 +183,12 @@ Polymer({
       tracker.reportError("Graph visualization failed: " + e, e);
     });
   },
-  _selectedDatasetChanged: function(datasetIndex, datasets, rankDirection) {
+  _selectedDatasetChanged: function(
+      datasetIndex, datasets, overridingHierarchyParams) {
     this._parseAndConstructHierarchicalGraph(
-        datasets[datasetIndex].path, undefined, rankDirection);
+        datasets[datasetIndex].path, undefined, overridingHierarchyParams);
   },
-  _selectedFileChanged: function(e, rankDirection) {
+  _selectedFileChanged: function(e, overridingHierarchyParams) {
     if (!e) {
       return;
     }
@@ -200,7 +201,8 @@ Polymer({
     // selects the same file, we'll re-read it.
     e.target.value = '';
 
-    this._parseAndConstructHierarchicalGraph(null, file, rankDirection);
+    this._parseAndConstructHierarchicalGraph(
+        null, file, overridingHierarchyParams);
   }
 });
 </script>
