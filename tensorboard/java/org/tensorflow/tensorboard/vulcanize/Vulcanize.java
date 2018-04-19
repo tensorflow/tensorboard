@@ -511,6 +511,10 @@ public final class Vulcanize {
                 return CheckLevel.OFF;
               }
             }
+            if (error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR") ||
+                error.getType().key.equals("JSC_UNDEFINED_VARIABLE")) {
+              return CheckLevel.OFF; // TODO(@jameswex): HACK for inference plugin testing.
+            }
             return null;
           }
         });
