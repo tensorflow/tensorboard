@@ -43,16 +43,6 @@ http_archive(
 )
 
 http_archive(
-      name = "protobuf_archive",
-      urls = [
-          "https://mirror.bazel.build/github.com/google/protobuf/archive/396336eb961b75f03b25824fe86cf6490fb75e3a.tar.gz",
-          "https://github.com/google/protobuf/archive/396336eb961b75f03b25824fe86cf6490fb75e3a.tar.gz",
-      ],
-      sha256 = "846d907acf472ae233ec0882ef3a2d24edbbe834b80c305e867ac65a1f2c59e3",
-      strip_prefix = "protobuf-396336eb961b75f03b25824fe86cf6490fb75e3a",
-  )
-
-http_archive(
     name = "org_tensorflow",
     sha256 = "8028d51b4a911adeb9b8afa0ba6bcb99fa00a4949881cdad3ee67a8f33c8979a",
     strip_prefix = "tensorflow-3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8",
@@ -69,6 +59,16 @@ http_archive(
     urls = [
         "http://mirror.bazel.build/github.com/tensorflow/serving/archive/c99e6082db5bb8ac20d7653a36fdca7396a3ea73.tar.gz",
         "https://github.com/tensorflow/serving/archive/c99e6082db5bb8ac20d7653a36fdca7396a3ea73.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "org_paircode_facets",
+    sha256 = "f880f3aca0e24ec0745ec430392da4fe267adc4f199ff4c8e4f3fbcedd82b991",
+    strip_prefix = "facets-7d6af3ffd0a21a66253a6bfa404fb95000f3e48b",
+    urls = [
+        "http://mirror.bazel.build/github.com/pair-code/facets/archive/7d6af3ffd0a21a66253a6bfa404fb95000f3e48b.tar.gz",
+        "https://github.com/pair-code/facets/archive/7d6af3ffd0a21a66253a6bfa404fb95000f3e48b.tar.gz",
     ],
 )
 
@@ -103,8 +103,3 @@ load("//third_party:workspace.bzl", "tensorboard_workspace")
 
 # Please add all new dependencies in workspace.bzl.
 tensorboard_workspace()
-
-local_repository(
-    name = "org_paircode_facets",
-    path = "/usr/local/google/home/jwexler/pair-code/facets",
-)
