@@ -29,6 +29,7 @@ tf_web_library(
         "@org_polymer_paper_styles",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:closure",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_tensorboard:registry",
