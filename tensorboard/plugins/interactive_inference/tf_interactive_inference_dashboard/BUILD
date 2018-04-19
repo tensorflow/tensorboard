@@ -15,7 +15,7 @@ tf_web_library(
         ":tf_inference_viewer",
         "//tensorboard/components/vz_example_viewer",
         "//tensorboard/plugins/inference/tf_inference_panel",
-        "@org_paircode_facets//facets_dive/components/facets_dive",
+        "@ai_google_pair_facets//facets_dive/components/facets_dive",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icon",
         "@org_polymer_paper_button",
