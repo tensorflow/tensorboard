@@ -24,6 +24,7 @@ import numpy as np
 import tensorflow as tf
 
 from google.protobuf import json_format
+from grpc.framework.interfaces.face.face import AbortionError
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -202,6 +203,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
                                'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
+                               'application/json')
+    except AbortionError as e:
+      return http_util.Respond(request, {'error': e.details},
                                'application/json')
 
   def create_sprite_image(self, examples):
