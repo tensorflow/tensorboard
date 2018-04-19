@@ -152,6 +152,10 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # MIT
       sha256_urls = {
+          "5eb9be209f84c4588f573b9abd8e13c04ce187ad6f40e8b12993d00b1428de54": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/mrdoob/three.js/r77/LICENSE",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r77/LICENSE",
+          ],
           "881cc79c84c34a1f61f8c8af0ee3f237d83a2eda3868720fdcb47bcacf8da44a": [
               "https://mirror.bazel.build/raw.githubusercontent.com/mrdoob/three.js/r77/build/three.js",
               "https://raw.githubusercontent.com/mrdoob/three.js/r77/build/three.js",
@@ -177,6 +181,7 @@ def tensorboard_js_workspace():
       strip_prefix = "lodash-3.10.1",
       path = "/lodash",
       srcs = ["lodash.js"],
+      extra_build_file_content = "exports_files([\"LICENSE\"])",
   )
 
   filegroup_external(
