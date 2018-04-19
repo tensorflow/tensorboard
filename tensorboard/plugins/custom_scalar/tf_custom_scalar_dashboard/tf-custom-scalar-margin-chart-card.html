@@ -599,7 +599,7 @@ limitations under the License.
             this._runToNextAvailableSymbolIndex[run]];
 
         // Create a series with this name.
-        series = new tf_custom_scalar_dashboard.DataSeries(
+        const series = new tf_custom_scalar_dashboard.DataSeries(
             run, tag, seriesName, dataPoints, lineChartSymbol);
 
         // Loop back to the beginning if we are out of symbols.
