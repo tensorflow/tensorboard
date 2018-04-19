@@ -62,18 +62,14 @@ http_archive(
     ],
 )
 
-#http_archive(
-#    name = "tf_serving",
-#    sha256 = "96ff818d450877ff635efa2ac9c91e91639c352b4d948b73d7a6f4febd375e08",
-#    strip_prefix = "serving-3571248707f47b5b9016195c6c06e7fa26f629b0",
-#    urls = [
-#        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/3571248707f47b5b9016195c6c06e7fa26f629b0.tar.gz",
-#        "https://github.com/tensorflow/serving/archive/3571248707f47b5b9016195c6c06e7fa26f629b0.tar.gz",
-#    ],
-#)
-local_repository(
+http_archive(
     name = "tf_serving",
-    path = "/usr/local/google/home/jwexler/jameswex/serving",
+    sha256 = "c232e3ac72e42acd85b734c89fb0eed1fe8bfc9641b3953b2294c25fdf9976df",
+    strip_prefix = "serving-c99e6082db5bb8ac20d7653a36fdca7396a3ea73",
+    urls = [
+        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/c99e6082db5bb8ac20d7653a36fdca7396a3ea73.tar.gz",
+        "https://github.com/tensorflow/serving/archive/c99e6082db5bb8ac20d7653a36fdca7396a3ea73.tar.gz",
+    ],
 )
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
