@@ -10,6 +10,7 @@ tf_web_library(
         "health-pills.js",
         "selection-tree-node.js",
         "tensor-shape-helper.js",
+        "health-pills.html",
         "tf-debugger-continue-dialog.html",
         "tf-debugger-dashboard.html",
         "tf-debugger-initial-dialog.html",

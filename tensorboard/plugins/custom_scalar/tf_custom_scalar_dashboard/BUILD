@@ -9,6 +9,7 @@ tf_web_library(
     srcs = [
         "tf-custom-scalar-card-style.html",
         "tf-custom-scalar-dashboard.html",
+        "tf-custom-scalar-helpers.html",
         "tf-custom-scalar-helpers.js",
         "tf-custom-scalar-margin-chart-card.html",
         "tf-custom-scalar-multi-line-chart-card.html",

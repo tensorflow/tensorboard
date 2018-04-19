@@ -29,6 +29,7 @@ limitations under the License.
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="tf-custom-scalar-card-style.html">
+<link rel="import" href="tf-custom-scalar-helpers.html">
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
@@ -250,7 +251,6 @@ limitations under the License.
     }
   </style>
 </template>
-<script src='tf-custom-scalar-helpers.js'></script>
 <script>
   Polymer({
       is: 'tf-custom-scalar-margin-chart-card',
@@ -599,7 +599,7 @@ limitations under the License.
             this._runToNextAvailableSymbolIndex[run]];
 
         // Create a series with this name.
-        series = new tf_custom_scalar_dashboard.DataSeries(
+        const series = new tf_custom_scalar_dashboard.DataSeries(
             run, tag, seriesName, dataPoints, lineChartSymbol);
 
         // Loop back to the beginning if we are out of symbols.
