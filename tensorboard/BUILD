@@ -29,6 +29,19 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "compiled_tensorboard",
+    srcs = ["main.py"],
+    main = "main.py",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":compiled_default",
+        ":program",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 # The public TensorBoard python library, bundled with the pip package and
 # available via 'import tensorboard as tb' once installed.
 py_library(
@@ -84,6 +97,31 @@ py_library(
     ],
 )
 
+py_library(
+    name = "compiled_default",
+    srcs = ["default.py"],
+    data = ["compiled_webfiles.zip"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/beholder:beholder_plugin",
+        "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
+        "//tensorboard/plugins/debugger:debugger_plugin_loader",
+        "//tensorboard/plugins/distribution:distributions_plugin",
+        "//tensorboard/plugins/graph:graphs_plugin",
+        "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/image:images_plugin",
+        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
+        "//tensorboard/plugins/profile:profile_plugin",
+        "//tensorboard/plugins/projector:projector_plugin",
+        "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/plugins/text:text_plugin",
+    ],
+)
+
 py_binary(
     name = "version",
     srcs = ["version.py"],
@@ -96,11 +134,26 @@ tensorboard_zip_file(
     deps = [":assets"],
 )
 
+tensorboard_zip_file(
+    name = "compiled_webfiles",
+    deps = [":compiled_assets"],
+)
+
 tf_web_library(
     name = "assets",
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
+    ],
+    path = "/",
+    deps = ["@com_google_fonts_roboto"],
+)
+
+tf_web_library(
+    name = "compiled_assets",
+    srcs = [
+        "//tensorboard/components:compiled_index.html",
+        "//tensorboard/components:compiled_trace_viewer_index.html",
     ],
     path = "/",
     deps = ["@com_google_fonts_roboto"],

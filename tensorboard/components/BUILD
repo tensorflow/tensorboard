@@ -27,6 +27,14 @@ tensorboard_html_binary(
     deps = [":tensorboard"],
 )
 
+tensorboard_html_binary(
+    name = "compiled_index",
+    compile = True,
+    input_path = "/tensorboard.html",
+    output_path = "/compiled_index.html",
+    deps = [":tensorboard"],
+)
+
 tf_web_library(
     name = "trace_viewer",
     srcs = ["trace_viewer.html"],
@@ -41,5 +49,13 @@ tensorboard_html_binary(
     name = "trace_viewer_index",
     input_path = "/trace_viewer.html",
     output_path = "/trace_viewer_index.html",
+    deps = [":trace_viewer"],
+)
+
+tensorboard_html_binary(
+    name = "compiled_trace_viewer_index",
+    compile = True,
+    input_path = "/trace_viewer.html",
+    output_path = "/compiled_trace_viewer_index.html",
     deps = [":trace_viewer"],
 )
