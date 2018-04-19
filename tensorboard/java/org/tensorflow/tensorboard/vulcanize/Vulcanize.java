@@ -494,9 +494,9 @@ public final class Vulcanize {
             if (IGNORE_PATHS_PATTERN.matcher(error.sourceName).matches()) {
               return CheckLevel.OFF;
             }
-            if (error.sourceName.startsWith("/tf-graph")
+            if ((error.sourceName.startsWith("/tf-") || error.sourceName.startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              return CheckLevel.OFF; // TODO(@jart): Remove when tf-graph is ES6 modules.
+              return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
             }
             if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
@@ -510,10 +510,6 @@ public final class Vulcanize {
               if (codes.contains(group)) {
                 return CheckLevel.OFF;
               }
-            }
-            if (error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR") ||
-                error.getType().key.equals("JSC_UNDEFINED_VARIABLE")) {
-              return CheckLevel.OFF; // TODO(@jameswex): HACK for inference plugin testing.
             }
             return null;
           }
