@@ -128,6 +128,16 @@ tf.flags.DEFINE_integer(
     'The max number of threads that TensorBoard can use to reload runs. Not '
     'relevant for db mode. Each thread reloads one run at a time.')
 
+tf.flags.DEFINE_string(
+    'samples_per_plugin', '', 'An optional comma separated list of '
+    'plugin_name=num_samples pairs to explicitly specify how many samples to '
+    'keep per tag for that plugin. For unspecified plugins, TensorBoard '
+    'randomly downsamples logged summaries to reasonable values to prevent '
+    'out-of-memory errors for long running jobs. This flag allows fine control '
+    'over that downsampling. Note that 0 means keep all samples of that type. '
+    'For instance, "scalars=500,images=0" keeps 500 scalars and all images. '
+    'Most users should not need to set this flag.')
+
 FLAGS = tf.flags.FLAGS
 
 

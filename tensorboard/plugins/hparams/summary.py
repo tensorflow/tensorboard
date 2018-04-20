@@ -34,11 +34,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import datetime
+import time
 
 import six
 import tensorflow as tf
-from google.protobuf import timestamp_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -50,7 +49,7 @@ def experiment_pb(
     metric_infos,
     user="",
     description="",
-    time_created=datetime.datetime.now()):
+    time_created_secs=None):
   """Creates a summary that defines a hyperparameter-tuning experiment.
   Arguments:
     hparam_infos: Array of api_pb2.HParamInfo messages. Describes the
@@ -60,15 +59,18 @@ def experiment_pb(
         for how to populate this.
     user: String. An id for the user running the experiment
     description: String. A description for the experiment. May contain markdown.
-    time_created: datetime. The time the experiment is created.
+    time_created_secs: float. The time the experiment is created in seconds
+    since the UNIX epoch. If None uses the current time.
 
   Returns:
     A summary protobuffer containing the experiment definition.
   """
+  if time_created_secs is None:
+    time_created_secs = time.time()
   experiment = api_pb2.Experiment(
       description=description,
       user=user,
-      time_created=timestamp_pb2.Timestamp().FromDatetime(time_created),
+      time_created_secs=time_created_secs,
       hparam_infos=hparam_infos,
       metric_infos=metric_infos)
   return _summary(metadata.EXPERIMENT_TAG,
@@ -78,7 +80,8 @@ def experiment_pb(
 def session_start_pb(hparams,
                      model_uri="",
                      monitor_url="",
-                     group_name=""):
+                     group_name="",
+                     start_time_secs=None):
   """Creates a summary that contains a training session metadata information.
   One such summary per training session should be created. Each should have
   a different run.
@@ -93,13 +96,19 @@ def session_start_pb(hparams,
                  plugin_data_pb2.SessionStartInfo.
     group_name:  See the comment for the field with the same name of
                  plugin_data_pb2.SessionStartInfo.
+    start_time_secs: float. The time to use as the session start time.
+                     Represented as seconds since the UNIX epoch. If None uses
+                     the current time.
   Returns:
     Returns the summary protobuffer mentioned above.
   """
+  if start_time_secs is None:
+    start_time_secs = time.time()
   session_start_info = plugin_data_pb2.SessionStartInfo(
       model_uri=model_uri,
       monitor_url=monitor_url,
-      group_name=group_name)
+      group_name=group_name,
+      start_time_secs=start_time_secs)
   for (hp_name, hp_val) in six.iteritems(hparams):
     if isinstance(hp_val, (float, int)):
       session_start_info.hparams[hp_name].number_value = hp_val
@@ -115,19 +124,25 @@ def session_start_pb(hparams,
                       session_start_info=session_start_info))
 
 
-def session_end_pb(status):
+def session_end_pb(status, end_time_secs=None):
   """Creates a summary that contains status information for a completed
   training session. Should be exported after the training session is completed.
   One such summary per training session should be created. Each should have
   a different run.
   Arguments:
     status: A tensorboard.hparams.Status enumeration value denoting the
-            status of the session.
+        status of the session.
+    end_time_secs: float. The time to use as the session end time. Represented
+        as seconds since the unix epoch. If None uses the current time.
 
   Returns:
     Returns the summary protobuffer mentioned above.
   """
-  session_end_info = plugin_data_pb2.SessionEndInfo(status=status)
+  if end_time_secs is None:
+    end_time_secs = time.time()
+
+  session_end_info = plugin_data_pb2.SessionEndInfo(status=status,
+                                                    end_time_secs=end_time_secs)
   return _summary(metadata.SESSION_END_INFO_TAG,
                   plugin_data_pb2.HParamsPluginData(
                       session_end_info=session_end_info))
