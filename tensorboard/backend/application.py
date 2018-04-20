@@ -71,6 +71,20 @@ PLUGINS_LISTING_ROUTE = '/plugins_listing'
 _VALID_PLUGIN_RE = re.compile(r'^[A-Za-z0-9_.-]+$')
 
 
+def tensor_size_guidance_from_flags(flags):
+  """Apply user per-summary size guidance overrides."""
+
+  tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
+  if not flags or not flags.samples_per_plugin:
+    return tensor_size_guidance
+
+  for token in flags.samples_per_plugin.split(','):
+    k, v = token.strip().split('=')
+    tensor_size_guidance[k] = int(v)
+
+  return tensor_size_guidance
+
+
 def standard_tensorboard_wsgi(
     logdir,
     purge_orphaned_data,
@@ -90,13 +104,13 @@ def standard_tensorboard_wsgi(
     reload_interval: The interval at which the backend reloads more data in
         seconds.  Zero means load once at startup; negative means never load.
     plugins: A list of constructor functions for TBPlugin subclasses.
-    path_prefix: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
         data, or empty for memory-only mode.
     assets_zip_provider: See TBContext documentation for more information.
         If this value is not specified, this function will attempt to load
         the `tensorboard.default` module to use the default. This behavior
         might be removed in the future.
+    path_prefix: A prefix of the path when app isn't served from root.
     window_title: A string specifying the the window title.
     max_reload_threads: The max number of threads that TensorBoard can use
         to reload runs. Not relevant for db mode. Each thread reloads one run
@@ -110,7 +124,7 @@ def standard_tensorboard_wsgi(
     assets_zip_provider = default.get_assets_zip_provider()
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
-      tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
+      tensor_size_guidance=tensor_size_guidance_from_flags(flags),
       purge_orphaned_data=purge_orphaned_data,
       max_reload_threads=max_reload_threads)
   db_module, db_connection_provider = get_database_info(db_uri)
