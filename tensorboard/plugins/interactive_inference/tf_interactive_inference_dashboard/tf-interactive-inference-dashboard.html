@@ -64,6 +64,8 @@ limitations under the License.
       }
 
       .example-holder {
+        max-height: calc(100% - 20px);
+        width: 100%;
       }
 
       .inference-holder {
@@ -163,20 +165,35 @@ limitations under the License.
         width: 80%;
       }
 
-      .left-holder {
+      .side-holder {
+        height: 100%;
         width: 20%;
-        max-height: 100%;
-        overflow-y: scroll;
         display: flex;
         flex-direction: column;
       }
 
-      .left-content {
+      .side-content {
+        height: 80%;
         flex: 1 0 auto;
       }
 
-      .bottom-left {
+      .bottom-side {
         flex-shrink: 0;
+      }
+
+      .side-tabs {
+        display: flex;
+        height: calc(100% - 40px);
+      }
+
+      .datapoint-tab {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .config-tab {
+        width: 100%;
       }
 
       /* Hide the Facets Dive info card and keep the background consistent with TensorBoard. */
@@ -252,14 +269,14 @@ limitations under the License.
         </div>
         <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
       </div>
-      <div class="left-holder">
-        <div class="left-content">
-          <paper-tabs selected="{{leftTabSelected}}">
+      <div class="side-holder">
+        <div class="side-content">
+          <paper-tabs selected="{{sideTabSelected}}">
             <paper-tab>Datapoint</paper-tab>
             <paper-tab>Configuration</paper-tab>
           </paper-tabs>
-          <iron-pages selected="{{leftTabSelected}}">
-            <div>
+          <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
+            <div class="datapoint-tab">
               <template is="dom-if" if="[[shouldShowExample_(selectedExampleAndInference)]]">
                 <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
                                     on-example-change="exampleChange_" id$="[[getViewerId_()]]">
@@ -269,7 +286,7 @@ limitations under the License.
                 </tf-inference-viewer>
               </template>
             </div>
-            <div>
+            <div class="config-tab">
               <template is="dom-if" if="[[shouldShowThresholder_(modelType)]]">
                 <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
                   <div>
@@ -305,7 +322,7 @@ limitations under the License.
             </div>
           </iron-pages>
         </div>
-        <div class="bottom-left">
+        <div class="bottom-side">
           <paper-button on-click="inferClicked_" class="button"
                         disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
             Run inference
@@ -426,7 +443,7 @@ limitations under the License.
           value: 0.5,
           observer: 'refreshInferences_',
         },
-        leftTabSelected: {
+        sideTabSelected: {
           type: Number,
           value: 0,
         },
