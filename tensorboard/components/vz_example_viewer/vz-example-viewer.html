@@ -186,6 +186,7 @@ limitations under the License.
       }
 
       .imagecard {
+        width: 100%;
         padding: 8px;
         margin-bottom: 5px;
       }
@@ -210,7 +211,7 @@ limitations under the License.
             </paper-icon-button>
           </div>
           <template is="dom-if" if="[[isImage(feat.name)]]">
-            <paper-card class="imagecard">
+            <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
               <img class="image" src="[[getImageSrc(feat.name)]]"
                     id="[[getImageId(feat.name)]]"></img>
               <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
