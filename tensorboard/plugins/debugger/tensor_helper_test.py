@@ -109,7 +109,7 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertTrue(np.allclose(1.1, data))
 
   def testArrayViewSlicingStringTensorToNonScalarSubArray(self):
-    # Construt a numpy array that corresponds to a TensorFlow string tensor
+    # Construct a numpy array that corresponds to a TensorFlow string tensor
     # value.
     x = np.array([['foo', 'bar', 'qux'], ['baz', 'corge', 'grault']],
                  dtype=np.object)
@@ -119,7 +119,7 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertEqual([['foo', 'bar'], ['baz', 'corge']], data)
 
   def testArrayViewSlicingStringTensorToScalar(self):
-    # Construt a numpy array that corresponds to a TensorFlow string tensor
+    # Construct a numpy array that corresponds to a TensorFlow string tensor
     # value.
     x = np.array([['foo', 'bar', 'qux'], ['baz', 'corge', 'grault']],
                  dtype=np.object)
@@ -129,7 +129,7 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertEqual([['corge']], data)
 
   def testArrayViewOnScalarString(self):
-    # Construt a numpy array that corresponds to a TensorFlow string tensor
+    # Construct a numpy scalar that corresponds to a TensorFlow string tensor
     # value.
     x = np.array('foo', dtype=np.object)
     dtype, shape, data = tensor_helper.array_view(x)
