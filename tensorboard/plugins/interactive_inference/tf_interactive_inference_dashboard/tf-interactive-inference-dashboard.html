@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
@@ -22,6 +24,8 @@ limitations under the License.
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
@@ -59,22 +63,10 @@ limitations under the License.
         width: 40%;
       }
 
-      .example-and-inference-holder {
-        display: flex;
-        position: relative;
-      }
-
       .example-holder {
-        width: 75%;
       }
 
       .inference-holder {
-        position: absolute;
-        left: 75%;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        overflow: auto;
       }
 
       tf-inference-viewer {
@@ -92,10 +84,6 @@ limitations under the License.
         width: 14px;
         height: 14px;
         --paper-spinner-color: var(--tb-orange-strong);
-      }
-
-      facets-dive {
-        height: 800px;
       }
 
       .noexamples {
@@ -161,6 +149,36 @@ limitations under the License.
         }
       }
 
+      .inference-settings {
+        padding: 20px;
+        width: 75%;
+      }
+
+      .dashboard-layout {
+        display: flex;
+        height: 100%;
+      }
+
+      .center {
+        width: 80%;
+      }
+
+      .left-holder {
+        width: 20%;
+        max-height: 100%;
+        overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .left-content {
+        flex: 1 0 auto;
+      }
+
+      .bottom-left {
+        flex-shrink: 0;
+      }
+
       /* Hide the Facets Dive info card and keep the background consistent with TensorBoard. */
       ::content #dive #infoCard {
         background: #f5f5f5;
@@ -168,127 +186,134 @@ limitations under the License.
       ::content #dive #infoCard > div {
         display: none;
       }
+
+      ::content #dive #infoCard {
+        width: 0px;
+      }
     </style>
-    <tf-dashboard-layout>
-      <div class="sidebar">
-        <div class="sidebar-section">
-
-          <tf-inference-panel inference-address="{{inferenceAddress}}"
-                              model-name="{{modelName}}"
-                              examples-path="{{examplesPath}}"
-                              model-type="{{modelType}}"></tf-inference-panel>
-
-          <paper-input always-float-label type="number" label="Max examples"
-                       placeholder="[[maxExamples]]" value="{{maxExamples}}">
-          </paper-input>
-          <paper-button on-click="getExamples_" class="button"
-                        disabled="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
-            Get Examples
-          </paper-button>
-          <div class="input-and-tooltip">
-            <paper-input always-float-label label="Label vocab path (optional)"
-                         placeholder="[[labelVocabPath]]"
-                         value="{{labelVocabPath}}"
-                         class="label-vocab-path-input"
-                         disabled="[[shouldDisableVocabInput_(modelType)]]">
-            </paper-input>
-            <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-            <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
-              An optional text file for use with the results of a classification model.
-              Classification models return predicted classes as indices. If a vocab file is
-              provided, each predicted class index will be mapped to a label from this file for use
-              in the display. Each line in the file corresponds to a label, with the first line
-              corresponding to class index 0.
-            </paper-tooltip>
+    <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
+        <div class="info-text">
+            <p>
+              Load tf.Example protos and visualize them with
+              <a href="https://github.com/pair-code/facets" target="_blank">Facets Dive</a>.
+              Select examples then edit them below with the example viewer.
+            </p>
+            <p>
+              Perform inference on the examples through
+              <a href="https://github.com/tensorflow/serving" target="_blank">TensorFlow Serving</a>
+              and see the inference results.
+              After inference is run, Facets Dive will color each example by its inference result.
+            </p>
+            <p>
+              See <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">documentation</a>
+              for usage instructions.
+            </p>
           </div>
 
-          <paper-button on-click="inferClicked_" class="button"
-                        disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-            Run inference
-          </paper-button>
-          <template is="dom-if" if="[[shouldShowThresholder_(modelType)]]">
-            <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
-              <div>
-                <paper-input value="Threshold for positive label" readonly=true class="slider-label"
-                             no-label-float=true>
-                </paper-input>
-                <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                              immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
-                </paper-slider>
-              </div>
-            </template>
-            <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
-              <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
-                <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
-                  <template is="dom-repeat" items="[[getThresholdFeatures_(stats)]]">
-                    <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                  </template>
-                </paper-listbox>
-              </paper-dropdown-menu>
-              <template is="dom-repeat" items="[[featureValueThresholds]]">
-                <div>
-                  <paper-input value="[[getPrintableValue_(item.value)]]" readonly=true
-                               class="slider-label" no-label-float=true>
-                  </paper-input>
-                  <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                immediate-value="{{item.threshold}}" value="[[item.threshold]]"
-                                on-value-changed="refreshInferences_">
-                  </paper-slider>
-                </div>
-              </template>
-            </template>
-          </template>
-        </div>
-        <div class="sidebar-section"></div>
-      </div>
+        <tf-inference-panel inference-address="{{inferenceAddress}}"
+                          model-name="{{modelName}}"
+                          examples-path="{{examplesPath}}"
+                          model-type="{{modelType}}"></tf-inference-panel>
 
-      <div class="center">
-        <div class="info-text">
-          <p>
-            Load tf.Example protos and visualize them with
-            <a href="https://github.com/pair-code/facets" target="_blank">Facets Dive</a>.
-            Select examples then edit them below with the example viewer.
-          </p>
-          <p>
-            Perform inference on the examples through
-            <a href="https://github.com/tensorflow/serving" target="_blank">TensorFlow Serving</a>
-            and see the inference results.
-            After inference is run, Facets Dive will color each example by its inference result.
-          </p>
-          <p>
-            See <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">documentation</a>
-            for usage instructions.
-          </p>
+      <paper-input always-float-label type="number" label="Max examples"
+                   placeholder="[[maxExamples]]" value="{{maxExamples}}">
+      </paper-input>
+
+      <div class="input-and-tooltip">
+          <paper-input always-float-label label="Label vocab path (optional)"
+                       placeholder="[[labelVocabPath]]"
+                       value="{{labelVocabPath}}"
+                       class="label-vocab-path-input"
+                       disabled="[[shouldDisableVocabInput_(modelType)]]">
+          </paper-input>
+          <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+          <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
+            An optional text file for use with the results of a classification model.
+            Classification models return predicted classes as indices. If a vocab file is
+            provided, each predicted class index will be mapped to a label from this file for use
+            in the display. Each line in the file corresponds to a label, with the first line
+            corresponding to class index 0.
+          </paper-tooltip>
         </div>
+        <paper-button on-click="getExamplesAndCloseSettings_" class="button"
+                      disabled="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
+          OK
+        </paper-button>
+
+    </paper-dialog>
+    <div class="dashboard-layout">
+      <div class="center">
         <facets-dive id="dive" data="[[visdata]]"
-                     on-selected-indices-changed="selectedIndicesChanged_"
-                     on-stats-changed="statsChanged_">
+                    on-selected-indices-changed="selectedIndicesChanged_"
+                    on-stats-changed="statsChanged_">
         </facets-dive>
         <div id="noexamples" class="noexamples info-text">
           Examples and their inference results will be displayed here.
         </div>
         <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
-        <template is="dom-if" if="![[shouldShowSelectedExamples_(selectedExamplesAndInferences)]]">
-          <div class="info-text">Examples selected above will be shown here and are editable.</div>
-        </template>
-        <template is="dom-if" if="[[shouldShowSelectedExamples_(selectedExamplesAndInferences)]]">
-          <div class="example-and-inference-holder">
-            <div class="example-holder"><h2>Selected Examples</h2></div>
-            <div class="inference-holder"><h2>Inference Results</h2></div>
-          </div>
-          <template is="dom-repeat" items="[[selectedExamplesAndInferences]]">
-            <div class="example-and-inference-holder">
-              <vz-example-viewer class="example-holder" json="{{item.example}}"
-                                 on-example-change="exampleChange_" id$="[[getViewerId_(index)]]">
-              </vz-example-viewer>
-              <tf-inference-viewer class="inference-holder" inference="[[item.inference]]"
-                                   id$="[[getInferenceHolderId_(index)]]">
-              </tf-inference-viewer>
-            </div>
-          </template>
-        </template>
       </div>
-    </tf-dashboard-layout>
+      <div class="left-holder">
+        <div class="left-content">
+          <paper-tabs selected="{{leftTabSelected}}">
+            <paper-tab>Datapoint</paper-tab>
+            <paper-tab>Configuration</paper-tab>
+          </paper-tabs>
+          <iron-pages selected="{{leftTabSelected}}">
+            <div>
+              <template is="dom-if" if="[[shouldShowExample_(selectedExampleAndInference)]]">
+                <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
+                                    on-example-change="exampleChange_" id$="[[getViewerId_()]]">
+                </vz-example-viewer>
+                <tf-inference-viewer class="inference-holder" inference="[[selectedExampleAndInference.inference]]"
+                                      id$="[[getInferenceHolderId_()]]">
+                </tf-inference-viewer>
+              </template>
+            </div>
+            <div>
+              <template is="dom-if" if="[[shouldShowThresholder_(modelType)]]">
+                <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
+                  <div>
+                    <paper-input value="Threshold for positive label" readonly=true class="slider-label"
+                                  no-label-float=true>
+                    </paper-input>
+                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                  immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
+                    </paper-slider>
+                  </div>
+                </template>
+                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
+                  <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
+                    <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
+                      <template is="dom-repeat" items="[[getThresholdFeatures_(stats)]]">
+                        <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                      </template>
+                    </paper-listbox>
+                  </paper-dropdown-menu>
+                  <template is="dom-repeat" items="[[featureValueThresholds]]">
+                    <div>
+                      <paper-input value="[[getPrintableValue_(item.value)]]" readonly=true
+                                    class="slider-label" no-label-float=true>
+                      </paper-input>
+                      <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                    immediate-value="{{item.threshold}}" value="[[item.threshold]]"
+                                    on-value-changed="refreshInferences_">
+                      </paper-slider>
+                    </div>
+                  </template>
+                </template>
+              </template>
+            </div>
+          </iron-pages>
+        </div>
+        <div class="bottom-left">
+          <paper-button on-click="inferClicked_" class="button"
+                        disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+            Run inference
+          </paper-button>
+          <paper-icon-button icon="settings" on-click="settingsClicked_"></paper-icon-button>
+        </div>
+      </div>
+    </div>
 
     <style include="dashboard-style"></style>
   </template>
@@ -349,11 +374,10 @@ limitations under the License.
         examplesAndInferences : {
           type: Array,
           value: [],
-          observer: 'computeSelectedExamplesAndInferences',
+          observer: 'computeSelectedExampleAndInference',
         },
-        selectedExamplesAndInferences : {
-          type: Array,
-          value: [],
+        selectedExampleAndInference : {
+          type: Object,
         },
         visdata: {
           type: Array,
@@ -362,7 +386,7 @@ limitations under the License.
         selected: {
           type: Array,
           value: [],
-          observer: 'computeSelectedExamplesAndInferences',
+          observer: 'computeSelectedExampleAndInference',
         },
         labelVocab: {
           type: Array,
@@ -402,10 +426,18 @@ limitations under the License.
           value: 0.5,
           observer: 'refreshInferences_',
         },
+        leftTabSelected: {
+          type: Number,
+          value: 0,
+        },
       },
 
       // Required function.
       reload: function(){
+      },
+
+      settingsClicked_: function() {
+        this.$.inferencesettings.toggle();
       },
 
       selectedIndicesChanged_: function(event) {
@@ -422,6 +454,10 @@ limitations under the License.
 
       shouldShowFeatureDropdown_: function(modelType, stats) {
          return this.shouldShowThresholder_(modelType) && stats && Object.keys(stats).length > 0;
+      },
+
+      shouldShowExample_: function(selected) {
+        return selected != null;
       },
 
       getThresholdFeatures_: function(stats) {
@@ -486,9 +522,9 @@ limitations under the License.
       labelVocabPathChanged_: tf_storage.getStringObserver(
           'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
 
-      computeSelectedExamplesAndInferences: function() {
+      computeSelectedExampleAndInference: function() {
         if (!this.selected || !this.examplesAndInferences) {
-          this.selectedExamplesAndInferences = this.examplesAndInferences;
+          this.selectedExampleAndInference = null;
           return;
         }
         // Set the exampleIndex so that the mutant inference plugin shows the example selected
@@ -497,13 +533,10 @@ limitations under the License.
           tf_storage.setNumber('exampleIndex', this.selected[0]);
         }
         const self = this;
-        this.selectedExamplesAndInferences = this.examplesAndInferences.filter(function(item, index) {
+        const selectedItems = this.examplesAndInferences.filter(function(item, index) {
           return self.selected.includes(index);
         });
-      },
-
-      shouldShowSelectedExamples_: function(selectedExamples) {
-        return selectedExamples.length > 0
+        this.selectedExampleAndInference = selectedItems.length > 0 ? selectedItems[0] : null;
       },
 
       shouldDisableGetExamplesButton_: function(examplesPath) {
@@ -615,7 +648,7 @@ limitations under the License.
       },
 
       exampleChange_: function(event) {
-        var id = +event.target.id.substring(event.target.id.indexOf("_") + 1)
+        var id = 0;
         var index = this.selected.length == 0 ? id : this.selected[id];
         this.updateExample_(JSON.stringify(event.target.json), index);
         const inferenceViewerIdStr = '#' + this.getInferenceHolderId_(id);
@@ -643,12 +676,12 @@ limitations under the License.
         this.makeAsyncRequest_(url, null);
       },
 
-      getViewerId_: function(index) {
-        return 'viewer_' + index;
+      getViewerId_: function() {
+        return 'viewer_';
       },
 
-      getInferenceHolderId_: function(index) {
-        return 'inference_' + index;
+      getInferenceHolderId_: function() {
+        return 'inference_';
       },
 
       makeUrl_: function(prefix, paramsDict){
@@ -725,6 +758,12 @@ limitations under the License.
         }
         return d;
       },
+
+      getExamplesAndCloseSettings_: function() {
+        this.settingsClicked_();
+        this.getExamples_();
+      },
+
       getExamples_: function(){
         var url = this.makeUrl_('/data/plugin/interactiveinference/examples_from_path',
                                 {'examples_path': this.examplesPath,

@@ -501,6 +501,24 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
+      name = "org_polymer_iron_pages",
+      licenses = ["notice"],  # BSD-3-Clause
+      sha256 = "2db73155902d0f24e3ba19ef680ca620c22ebef204e9dacab470aa25677cbc7d",
+      urls = [
+          "https://mirror.bazel.build/github.com/PolymerElements/iron-pages/archive/v2.1.0.tar.gz",
+          "https://github.com/PolymerElements/iron-pages/archive/v2.1.0.tar.gz",
+      ],
+      strip_prefix = "iron-pages-2.1.0",
+      path = "/iron-pages",
+      srcs = ["iron-pages.html"],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_resizable_behavior",
+          "@org_polymer_iron_selector",
+      ],
+  )
+
+  web_library_external(
       name = "org_polymer_iron_range_behavior",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "79c2c1b7f03bf41d7b3a798cbd074419945576add48bfb7c2994f45ac3782fd7",
