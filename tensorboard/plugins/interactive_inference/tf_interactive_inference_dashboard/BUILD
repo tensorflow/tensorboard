@@ -44,9 +44,10 @@ tf_web_library(
     srcs = [
         "tf-inference-viewer.html",
     ],
-    path = "/tf-inference-viewer",
+    path = "/tf-interactive-inference-dashboard",
     deps = [
         "//tensorboard/components/tf_imports:polymer",
+        "@org_polymer_iron_icons",
     ],
 )
 

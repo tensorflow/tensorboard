@@ -36,8 +36,8 @@ limitations under the License.
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
-<link rel="import" href="../tf-inference-viewer/tf-inference-viewer.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
+<link rel="import" href="./tf-inference-viewer.html">
 
 <!--
   A frontend that displays a set of editable examples and enables inference of those examples,
@@ -69,10 +69,8 @@ limitations under the License.
       }
 
       .inference-holder {
-      }
-
-      tf-inference-viewer {
-        margin: 10px;
+        max-height: 35%;
+        overflow: auto;
       }
 
       .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
@@ -196,6 +194,10 @@ limitations under the License.
         width: 100%;
       }
 
+      .inference-header {
+        font-size: 20px;
+      }
+
       /* Hide the Facets Dive info card and keep the background consistent with TensorBoard. */
       ::content #dive #infoCard {
         background: #f5f5f5;
@@ -281,13 +283,14 @@ limitations under the License.
                 <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
                                     on-example-change="exampleChange_" id$="[[getViewerId_()]]">
                 </vz-example-viewer>
-                <tf-inference-viewer class="inference-holder" inference="[[selectedExampleAndInference.inference]]"
-                                      id$="[[getInferenceHolderId_()]]">
+                <div class="inference-header">Inference Results</div>
+                <tf-inference-viewer class="inference-holder" inferences="[[selectedExampleAndInference.inferences]]"
+                                      id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
                 </tf-inference-viewer>
               </template>
             </div>
             <div class="config-tab">
-              <template is="dom-if" if="[[shouldShowThresholder_(modelType)]]">
+              <template is="dom-if" if="[[isClassification_(modelType)]]">
                 <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
                   <div>
                     <paper-input value="Threshold for positive label" readonly=true class="slider-label"
@@ -465,12 +468,12 @@ limitations under the License.
         this.stats = event.detail.value;
       },
 
-      shouldShowThresholder_: function(modelType) {
+      isClassification_: function(modelType) {
         return modelType == 'classification';
       },
 
       shouldShowFeatureDropdown_: function(modelType, stats) {
-         return this.shouldShowThresholder_(modelType) && stats && Object.keys(stats).length > 0;
+         return this.isClassification_(modelType) && stats && Object.keys(stats).length > 0;
       },
 
       shouldShowExample_: function(selected) {
@@ -589,11 +592,17 @@ limitations under the License.
               this.inferences.results.classification.classifications[i].classes.sort(function(a, b) {
                 return b.score - a.score;
               }) :
-              this.inferences.results.regression.regressions[i];
+              [{label: '', score: this.inferences.results.regression.regressions[i].value}];
         }
         this.set('examplesAndInferences', this.examplesAndInferences.map(
           function(item, index) {
-            return {example: item.example, inference: inferenceMap[index] || item.inference};
+            let inferences = item.inferences ? item.inferences : [];
+            if (inferenceMap[index]) {
+              inferences = inferences.concat([inferenceMap[index]]);
+              console.log('examplesAndInferences array for datapoint')
+              console.log(inferences);
+            }
+            return {example: item.example, inferences: inferences};
           }));
         const self = this;
         let hasInferenceLabels = false;
@@ -601,15 +610,15 @@ limitations under the License.
           if (isClassification) {
             self.setItemInferenceValue(item, index, self.selectedThresholdFeature);
           } else {
-            item[inferenceValueStr] = self.examplesAndInferences[index].inference.value;
+            item[inferenceValueStr] = self.examplesAndInferences[index].inferences[0].value;
           }
 
 
           if (isClassification && self.labelVocab.length > 0) {
             for (let labelIndex = 0;
-                 labelIndex < self.examplesAndInferences[index].inference.length; labelIndex++) {
+                 labelIndex < self.examplesAndInferences[index].inferences[0].length; labelIndex++) {
               self.examplesAndInferences[index].inference[labelIndex].vocabLabel =
-                self.labelVocab[self.examplesAndInferences[index].inference[labelIndex].label];
+                self.labelVocab[self.examplesAndInferences[index].inferences[0][labelIndex].label];
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
             hasInferenceLabels = true;
@@ -634,16 +643,16 @@ limitations under the License.
 
         // Find the first inference label in the score-sorted list that is non-zero.
         let indexForNonZeroLabel = 0;
-        for (let i = 0; i < this.examplesAndInferences[index].inference.length; i++) {
-          if (+this.examplesAndInferences[index].inference[i].label !== 0) {
+        for (let i = 0; i < this.examplesAndInferences[index].inferences[0].length; i++) {
+          if (+this.examplesAndInferences[index].inferences[0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
 
-        if (this.examplesAndInferences[index].inference[indexForNonZeroLabel].score >= threshold) {
+        if (this.examplesAndInferences[index].inferences[0][indexForNonZeroLabel].score >= threshold) {
           item[inferenceValueStr] =
-            this.examplesAndInferences[index].inference[indexForNonZeroLabel].label;
+            this.examplesAndInferences[index].inferences[0][indexForNonZeroLabel].label;
         } else {
           item[inferenceValueStr] = this.defaultInferenceLabel.toString();
         }
