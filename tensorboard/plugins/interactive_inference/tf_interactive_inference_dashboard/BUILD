@@ -12,6 +12,7 @@ tf_web_library(
     ],
     path = "/tf-interactive-inference-dashboard",
     deps = [
+        ":tf_confusion_matrix",
         ":tf_inference_viewer",
         "//tensorboard/components/vz_example_viewer",
         "//tensorboard/components/vz_line_chart",
@@ -49,6 +50,17 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_icons",
+    ],
+)
+
+tf_web_library(
+    name = "tf_confusion_matrix",
+    srcs = [
+        "tf-confusion-matrix.html",
+    ],
+    path = "/tf-interactive-inference-dashboard",
+    deps = [
+        "//tensorboard/components/tf_imports:polymer",
     ],
 )
 

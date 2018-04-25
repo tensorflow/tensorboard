@@ -1,0 +1,78 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- Displays a simple confusion matrix. -->
+<dom-module id="tf-confusion-matrix">
+  <template>
+    <style>
+      table {
+        display: inline-block;
+      }
+      td {
+        text-align: right;
+      }
+      th, td {
+        padding: 3px;
+      }
+      .top-row {
+        border-bottom: 1px solid black;
+      }
+      .first-column {
+        border-right: 1px solid black;
+      }
+    </style>
+    <table>
+      <tr>
+        <th class="first-column top-row"></th>
+        <th class="top-row">Pred 1</th>
+        <th class="top-row">Pred 0</th>
+      </tr>
+      <tr>
+        <th class="first-column">True 1</th>
+        <td>[[getText(counts.tp, total)]]</td>
+        <td>[[getText(counts.fn, total)]]</td>
+      </tr>
+      <tr>
+        <th class="first-column">True 0</th>
+        <td>[[getText(counts.fp, total)]]</td>
+        <td>[[getText(counts.tn, total)]]</td>
+      </tr>
+    </table>
+  </template>
+
+  <script>
+    "use strict";
+
+    Polymer({
+      is: "tf-confusion-matrix",
+      properties: {
+        counts: {type: Object, observer: 'setTotal'},
+        total: Number,
+      },
+
+      setTotal: function(counts) {
+        this.total = counts.fp + counts.tp + counts.tn + counts.fn;
+      },
+
+      getText: function(count, total) {
+        return count + ' (' + d3.format(",.1%")(count / total) + ')';
+      }
+    });
+
+  </script>
+</dom-module>

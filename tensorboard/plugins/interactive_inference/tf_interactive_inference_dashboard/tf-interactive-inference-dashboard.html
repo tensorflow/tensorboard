@@ -38,6 +38,7 @@ limitations under the License.
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
+<link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
 
 <!--
@@ -206,6 +207,10 @@ limitations under the License.
         font-size: 20px;
       }
 
+      .conf-matrix {
+        margin-left: 20px;
+      }
+
       /* Hide the Facets Dive info card and keep the background consistent with TensorBoard. */
       ::content #dive #infoCard {
         background: #f5f5f5;
@@ -318,24 +323,12 @@ limitations under the License.
                     </paper-slider>
                   </div>
                   <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                    <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
-                    <table class="conf-matrix">
-                      <tr>
-                        <th></th>
-                        <th>Pred 1</th>
-                        <th>Pred 0</th>
-                      </tr>
-                      <tr>
-                        <th>True 1</th>
-                        <td>[[getTP(classificationStats_, overallThreshold)]]</td>
-                        <td>[[getFN(classificationStats_, overallThreshold)]]</td>
-                      </tr>
-                      <tr>
-                        <th>True 0</th>
-                        <td>[[getFP(classificationStats_, overallThreshold)]]</td>
-                        <td>[[getTN(classificationStats_, overallThreshold)]]</td>
-                      </tr>
-                    </table>
+                    <div>
+                      <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                    </div>
+                    <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
+                                         class="conf-matrix">
+                    </tf-confusion-matrix>
                   </template>
                 </template>
                 <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
@@ -355,24 +348,14 @@ limitations under the License.
                                     immediate-value="{{item.threshold}}" value="[[item.threshold]]"
                                     on-value-changed="refreshInferencesNoRegen_">
                       </paper-slider>
-                      <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
-                      <table class="conf-matrix">
-                        <tr>
-                          <th></th>
-                          <th>Pred 1</th>
-                          <th>Pred 0</th>
-                        </tr>
-                        <tr>
-                          <th>True 1</th>
-                          <td>[[getTP(classificationStats_, item.threshold, item.value)]]</td>
-                          <td>[[getFN(classificationStats_, item.threshold, item.value)]]</td>
-                        </tr>
-                        <tr>
-                          <th>True 0</th>
-                          <td>[[getFP(classificationStats_, item.threshold, item.value)]]</td>
-                          <td>[[getTN(classificationStats_, item.threshold, item.value)]]</td>
-                        </tr>
-                      </table>
+                      <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                        <div>
+                          <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
+                        </div>
+                        <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item.value)]]"
+                                            class="conf-matrix">
+                        </tf-confusion-matrix>
+                      </template>
                     </div>
                   </template>
                 </template>
@@ -537,15 +520,19 @@ limitations under the License.
       },
 
       shouldShowFeatureDropdown_: function(modelType, stats) {
-         return this.isClassification_(modelType) && stats && Object.keys(stats).length > 0;
+        return this.isClassification_(modelType) && stats && Object.keys(stats).length > 0;
       },
 
       shouldShowLabelDropdown_: function(modelType, stats) {
-         return modelType == 'classification' && stats && Object.keys(stats).length > 0;
+        return modelType == 'classification' && stats && Object.keys(stats).length > 0;
       },
 
       shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
-         return selectedLabelFeature != '' && selectedThresholdFeature == '' && inferences != null;
+        return selectedLabelFeature != '' && selectedThresholdFeature == '' && inferences != null;
+      },
+
+      shouldShowFeaturePrCharts_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
+        return selectedLabelFeature != '' && selectedThresholdFeature != '' && inferences != null;
       },
 
       shouldShowExample_: function(selected) {
@@ -578,10 +565,14 @@ limitations under the License.
               thresholdsMap[featureValue] = thresh;
             }
           }
-          // Add an entry for if the example has no feature value for this selected feature.
-          const missingValueThresh = {value: undefined, threshold: 0.5};
-          thresholds.push(missingValueThresh);
-          thresholdsMap[undefined] = missingValueThresh;
+          if (this.stats[feature].totalCount !=
+              this.examplesAndInferences.length) {
+            // Add an entry for if the example has no feature value for this
+            // selected feature.
+            const missingValueThresh = {value: undefined, threshold: 0.5};
+            thresholds.push(missingValueThresh);
+            thresholdsMap[undefined] = missingValueThresh;
+          }
         }
 
         this.featureValueThresholds = thresholds;
@@ -681,7 +672,7 @@ limitations under the License.
 
       plotPr: function(chart, thresholdStats, threshold,
                        regenClassificationStats) {
-        if (!thresholdStats) {
+        if (!thresholdStats || !chart) {
           return;
         }
 
@@ -752,17 +743,14 @@ limitations under the License.
         return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
       },
 
-      getTP: function(classificationStats, threshold, featureValue) {
-        return this.getConfMatrixValue(classificationStats, threshold, 'TP', featureValue);
-      },
-      getFP: function(classificationStats, threshold, featureValue) {
-        return this.getConfMatrixValue(classificationStats, threshold, 'FP', featureValue);
-      },
-      getTN: function(classificationStats, threshold, featureValue) {
-        return this.getConfMatrixValue(classificationStats, threshold, 'TN', featureValue);
-      },
-      getFN: function(classificationStats, threshold, featureValue) {
-        return this.getConfMatrixValue(classificationStats, threshold, 'FN', featureValue);
+
+      getConfusionCounts(classificationStats, threshold, featureValue) {
+        return {
+          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', featureValue),
+          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', featureValue),
+          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', featureValue),
+          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', featureValue),
+        }
       },
 
       getConfMatrixValue: function(classificationStats, threshold, stat, featureValue) {
@@ -845,12 +833,13 @@ limitations under the License.
       refreshInferencesNoRegen_: function() {
         this.refreshInferences_(true);
       },
+
       refreshInferences_: function(noRegen) {
         this.updateInferences_(false);
         requestAnimationFrame(() => this.updateClassificationStats_(!noRegen));
       },
 
-      updateInferences_: function(adjustColor) {
+      updateInferences_: function(newInferencesCalculated) {
         if (!this.examplesAndInferences || !this.inferences.indices ||
             this.inferences.indices.length == 0) {
           return;
@@ -867,7 +856,7 @@ limitations under the License.
         this.set('examplesAndInferences', this.examplesAndInferences.map(
           function(item, index) {
             let inferences = item.inferences ? item.inferences : [];
-            if (inferenceMap[index]) {
+            if (inferenceMap[index] && newInferencesCalculated) {
               inferences = inferences.concat([inferenceMap[index]]);
             }
             return {example: item.example, inferences: inferences};
@@ -893,7 +882,7 @@ limitations under the License.
           }
         });
         this.refreshDive_();
-        if (adjustColor) {
+        if (newInferencesCalculated) {
           this.$.dive.colorBy = hasInferenceLabels ? inferenceLabelStr : inferenceValueStr;
         }
         this.updatedExample = false;
