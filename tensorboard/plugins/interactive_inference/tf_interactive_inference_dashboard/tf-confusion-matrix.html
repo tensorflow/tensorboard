@@ -41,16 +41,25 @@ limitations under the License.
         <th class="first-column top-row"></th>
         <th class="top-row">Pred 1</th>
         <th class="top-row">Pred 0</th>
+        <th></th>
       </tr>
       <tr>
         <th class="first-column">True 1</th>
         <td>[[getText(counts.tp, total)]]</td>
         <td>[[getText(counts.fn, total)]]</td>
+        <td>[[getTotalText(counts.tp, counts.fn, total)]]</td>
       </tr>
       <tr>
         <th class="first-column">True 0</th>
         <td>[[getText(counts.fp, total)]]</td>
         <td>[[getText(counts.tn, total)]]</td>
+        <td>[[getTotalText(counts.fp, counts.tn, total)]]</td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>[[getTotalText(counts.tp, counts.fp, total)]]</td>
+        <td>[[getTotalText(counts.fn, counts.tn, total)]]</td>
+        <td></td>
       </tr>
     </table>
   </template>
@@ -71,7 +80,11 @@ limitations under the License.
 
       getText: function(count, total) {
         return count + ' (' + d3.format(",.1%")(count / total) + ')';
-      }
+      },
+
+      getTotalText: function(count1, count2, total) {
+        return this.getText(count1 + count2, total);
+      },
     });
 
   </script>
