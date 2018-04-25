@@ -301,6 +301,10 @@ limitations under the License.
                                       id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
                 </tf-inference-viewer>
               </template>
+              <template is="dom-if" if="[[!shouldShowExample_(selectedExampleAndInference)]]">
+                <div class="info-text">Select a datapoint to see its details and inference results here.</div>
+                <div class="info-text">Datapoints can be edited and rerun through the model.</div>
+              </template>
             </div>
             <div class="config-tab">
               <template is="dom-if" if="[[shouldShowLabelDropdown_(modelType, stats)]]">
@@ -365,7 +369,7 @@ limitations under the License.
         <div class="bottom-side">
           <paper-button on-click="inferClicked_" class="button"
                         disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-            Run inference
+            Re-run inference
           </paper-button>
           <paper-icon-button icon="settings" on-click="settingsClicked_"></paper-icon-button>
         </div>
@@ -1065,6 +1069,11 @@ limitations under the License.
           this.$.dive.atlasUrl = '';
           if (result.value.sprite) {
             this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
+          }
+          if (!this.shouldDisableInferButton_(
+              this.examplesAndInferences, this.modelName, this.inferenceAddress,
+              this.updatedExample)) {
+            this.inferClicked_();
           }
         };
         this.makeAsyncRequest_(url, updateExampleContents);
