@@ -14,6 +14,7 @@ tf_web_library(
     deps = [
         ":tf_inference_viewer",
         "//tensorboard/components/vz_example_viewer",
+        "//tensorboard/components/vz_line_chart",
         "//tensorboard/plugins/inference/tf_inference_panel",
         "@ai_google_pair_facets//facets_dive/components/facets_dive",
         "@org_polymer_iron_collapse",

@@ -36,6 +36,7 @@ limitations under the License.
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="./tf-inference-viewer.html">
 
@@ -149,6 +150,12 @@ limitations under the License.
         }
       }
 
+      .pr-line-chart {
+        height: 150px;
+        width: 250px;
+        display: inline-block;
+      }
+
       .inference-settings {
         padding: 20px;
         width: 75%;
@@ -192,6 +199,7 @@ limitations under the License.
 
       .config-tab {
         width: 100%;
+        overflow: auto;
       }
 
       .inference-header {
@@ -290,6 +298,15 @@ limitations under the License.
               </template>
             </div>
             <div class="config-tab">
+              <template is="dom-if" if="[[shouldShowLabelDropdown_(modelType, stats)]]">
+                <paper-dropdown-menu label="Set true label feature" class="threshold-dropdown">
+                  <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
+                    <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                      <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                    </template>
+                  </paper-listbox>
+                </paper-dropdown-menu>
+              </template>
               <template is="dom-if" if="[[isClassification_(modelType)]]">
                 <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
                   <div>
@@ -300,11 +317,31 @@ limitations under the License.
                                   immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
                     </paper-slider>
                   </div>
+                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                    <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                    <table class="conf-matrix">
+                      <tr>
+                        <th></th>
+                        <th>Pred 1</th>
+                        <th>Pred 0</th>
+                      </tr>
+                      <tr>
+                        <th>True 1</th>
+                        <td>[[getTP(classificationStats_, overallThreshold)]]</td>
+                        <td>[[getFN(classificationStats_, overallThreshold)]]</td>
+                      </tr>
+                      <tr>
+                        <th>True 0</th>
+                        <td>[[getFP(classificationStats_, overallThreshold)]]</td>
+                        <td>[[getTN(classificationStats_, overallThreshold)]]</td>
+                      </tr>
+                    </table>
+                  </template>
                 </template>
                 <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
                   <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
                     <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
-                      <template is="dom-repeat" items="[[getThresholdFeatures_(stats)]]">
+                      <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                         <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                       </template>
                     </paper-listbox>
@@ -316,12 +353,29 @@ limitations under the License.
                       </paper-input>
                       <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
                                     immediate-value="{{item.threshold}}" value="[[item.threshold]]"
-                                    on-value-changed="refreshInferences_">
+                                    on-value-changed="refreshInferencesNoRegen_">
                       </paper-slider>
+                      <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
+                      <table class="conf-matrix">
+                        <tr>
+                          <th></th>
+                          <th>Pred 1</th>
+                          <th>Pred 0</th>
+                        </tr>
+                        <tr>
+                          <th>True 1</th>
+                          <td>[[getTP(classificationStats_, item.threshold, item.value)]]</td>
+                          <td>[[getFN(classificationStats_, item.threshold, item.value)]]</td>
+                        </tr>
+                        <tr>
+                          <th>True 0</th>
+                          <td>[[getFP(classificationStats_, item.threshold, item.value)]]</td>
+                          <td>[[getTN(classificationStats_, item.threshold, item.value)]]</td>
+                        </tr>
+                      </table>
                     </div>
                   </template>
                 </template>
-              </template>
             </div>
           </iron-pages>
         </div>
@@ -429,6 +483,16 @@ limitations under the License.
           value: '',
           observer: 'thresholdFeatureSelected_',
         },
+        // Feature to set different classification thredholds for the values of
+        selectedLabelFeature: {
+          type: String,
+          value: '',
+          observer: 'labelFeatureSelected_',
+        },
+        classificationStats_: {
+          type: Object,
+          value: {},
+        },
         // Array of feature values and their set classification thresholds, for Polymer display
         // purposes.
         featureValueThresholds: Array,
@@ -444,7 +508,7 @@ limitations under the License.
         overallThreshold: {
           type: Number,
           value: 0.5,
-          observer: 'refreshInferences_',
+          observer: 'refreshInferencesNoRegen_',
         },
         sideTabSelected: {
           type: Number,
@@ -476,11 +540,19 @@ limitations under the License.
          return this.isClassification_(modelType) && stats && Object.keys(stats).length > 0;
       },
 
+      shouldShowLabelDropdown_: function(modelType, stats) {
+         return modelType == 'classification' && stats && Object.keys(stats).length > 0;
+      },
+
+      shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
+         return selectedLabelFeature != '' && selectedThresholdFeature == '' && inferences != null;
+      },
+
       shouldShowExample_: function(selected) {
         return selected != null;
       },
 
-      getThresholdFeatures_: function(stats) {
+      getFeatureList_: function(stats) {
         // Do not also threshold settings by the results of the inference as they aren't real data
         // features.
         const features = Object.keys(stats).filter(function(feature) {
@@ -515,6 +587,200 @@ limitations under the License.
         this.featureValueThresholds = thresholds;
         this.featureValueThresholdsMap = thresholdsMap;
         this.refreshInferences_();
+      },
+
+      labelFeatureSelected_: function(feature) {
+        requestAnimationFrame(() => this.updateClassificationStats_(true));
+      },
+
+      updateClassificationStats_: function(regenClassificationStats) {
+        if (!this.classificationStats_ || !this.visdata || this.selectedLabelFeature == '') {
+          return;
+        }
+        if (regenClassificationStats) {
+          let classificationStats = {};
+          classificationStats.thresholds = [];
+          for (let i = 0; i < 101; i++) {
+            classificationStats.thresholds.push(
+              {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+          }
+          classificationStats.faceted = {};
+          for (let i = 0; i < this.examplesAndInferences.length; i++) {
+            const item = this.visdata[i];
+            let facetedStats = null;
+            if (this.selectedThresholdFeature != '') {
+              facetedStats = classificationStats.faceted[
+                item[this.selectedThresholdFeature]];
+              if (!facetedStats) {
+                classificationStats.faceted[
+                  item[this.selectedThresholdFeature]] = []
+                for (let i = 0; i < 101; i++) {
+                  classificationStats.faceted[
+                    item[this.selectedThresholdFeature]].push(
+                      {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+                }
+                facetedStats = classificationStats.faceted[
+                  item[this.selectedThresholdFeature]];
+              }
+            }
+            const nonZeroClassification = this.getClassificationBestNonZero(i);
+            let thresh = 0;
+            for (; thresh <= 100; thresh++) {
+              if (thresh > nonZeroClassification.score * 100) {
+                break;
+              }
+              if (+item[this.selectedLabelFeature] ==
+                  +nonZeroClassification.label) {
+                classificationStats.thresholds[thresh]['TP'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['TP'] += 1;
+                }
+              } else {
+                classificationStats.thresholds[thresh]['FP'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['FP'] += 1;
+                }
+              }
+            }
+            for (; thresh <= 100; thresh++) {
+              if (+item[this.selectedLabelFeature] == 0) {
+                classificationStats.thresholds[thresh]['TN'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['TN'] += 1;
+                }
+              } else {
+                classificationStats.thresholds[thresh]['FN'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['FN'] += 1;
+                }
+              }
+            }
+          }
+          this.calcThresholdStats(classificationStats.thresholds);
+          for(let key in classificationStats.faceted) {
+            if (classificationStats.faceted.hasOwnProperty(key)) {
+              this.calcThresholdStats(classificationStats.faceted[key]);
+            }
+          }
+
+          this.classificationStats_ = classificationStats;
+        }
+        this.plotPr(
+          this.$$('#prchart'), this.classificationStats_.thresholds,
+          this.overallThreshold, regenClassificationStats);
+
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          this.plotPr(
+            this.$$('#' + this.getPrChartId(i)),
+            this.classificationStats_.faceted[
+              this.featureValueThresholds[i].value],
+            this.featureValueThresholds[i].threshold,
+            regenClassificationStats);
+        }
+      },
+
+      plotPr: function(chart, thresholdStats, threshold,
+                       regenClassificationStats) {
+        if (!thresholdStats) {
+          return;
+        }
+
+        let currentThresholdData = null;
+        let self = this;
+        const data = thresholdStats.map((thresh, i) => {
+          if (i - threshold * 100 < 0.5) {
+            currentThresholdData = {
+              'step': thresh['FPR'],
+              'scalar': thresh['TPR'],
+              'threshold': i / 100
+            };
+          }
+          return {
+            'step': thresh['FPR'],
+            'scalar': thresh['TPR'],
+            'threshold': i / 100
+          };
+        }).reverse();
+        if (regenClassificationStats) {
+          chart.setVisibleSeries(['ROC', 'Threshold set']);
+          chart.setSeriesData('ROC', data);
+          const valueFormatter = d3.format('.2f');
+          chart.xAxisFormatter = d3.format('.2f');
+          const percentageFormatter = d3.format(",.1%");
+          chart.tooltipColumns = [
+            {
+                title: 'Threshold',
+                evaluate: function (d) {
+                  return valueFormatter(d.datum.threshold);
+                },
+            },
+            {
+                title: 'TPR',
+                evaluate: function (d) {
+                  return percentageFormatter(d.datum.scalar);
+                },
+            },
+            {
+                title: 'FPR',
+                evaluate: function (d) {
+                  return percentageFormatter(d.datum.step);
+                },
+            },
+          ];
+        }
+        chart.setSeriesData('Threshold set', [currentThresholdData]);
+      },
+
+      calcThresholdStats: function(stats) {
+        for (let i = 0; i < stats.length; i++) {
+          stats[i]['TPR'] = stats[i]['TP'] / (stats[i]['TP'] + stats[i]['FN']);
+          stats[i]['FPR'] = stats[i]['FP'] / (stats[i]['FP'] + stats[i]['TN']);
+        }
+      },
+
+      getClassificationBestNonZero: function(index) {
+        // Find the first inference label in the score-sorted list that is non-zero.
+        let indexForNonZeroLabel = 0;
+        const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
+        for (let i = 0; i < this.examplesAndInferences[index].inferences[inferenceIndex].length; i++) {
+          if (+this.examplesAndInferences[index].inferences[inferenceIndex][i].label !== 0) {
+            indexForNonZeroLabel = i;
+            break;
+          }
+        }
+
+        return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
+      },
+
+      getTP: function(classificationStats, threshold, featureValue) {
+        return this.getConfMatrixValue(classificationStats, threshold, 'TP', featureValue);
+      },
+      getFP: function(classificationStats, threshold, featureValue) {
+        return this.getConfMatrixValue(classificationStats, threshold, 'FP', featureValue);
+      },
+      getTN: function(classificationStats, threshold, featureValue) {
+        return this.getConfMatrixValue(classificationStats, threshold, 'TN', featureValue);
+      },
+      getFN: function(classificationStats, threshold, featureValue) {
+        return this.getConfMatrixValue(classificationStats, threshold, 'FN', featureValue);
+      },
+
+      getConfMatrixValue: function(classificationStats, threshold, stat, featureValue) {
+        const index = Math.floor(threshold * 100)
+        if (!classificationStats.thresholds) {
+          return 0;
+        }
+        if (featureValue == null) {
+          return classificationStats.thresholds[index][stat];
+        }
+        if (classificationStats.faceted[featureValue] == null) {
+          return 0;
+        }
+        return classificationStats.faceted[featureValue][index][stat];
+      },
+
+      getPrChartId: function(index) {
+        return 'prchart' + index;
       },
 
       getPrintableValue_: function(value) {
@@ -576,8 +842,12 @@ limitations under the License.
         this.updateInferences_(true);
       },
 
-      refreshInferences_: function() {
+      refreshInferencesNoRegen_: function() {
+        this.refreshInferences_(true);
+      },
+      refreshInferences_: function(noRegen) {
         this.updateInferences_(false);
+        requestAnimationFrame(() => this.updateClassificationStats_(!noRegen));
       },
 
       updateInferences_: function(adjustColor) {
@@ -599,8 +869,6 @@ limitations under the License.
             let inferences = item.inferences ? item.inferences : [];
             if (inferenceMap[index]) {
               inferences = inferences.concat([inferenceMap[index]]);
-              console.log('examplesAndInferences array for datapoint')
-              console.log(inferences);
             }
             return {example: item.example, inferences: inferences};
           }));
