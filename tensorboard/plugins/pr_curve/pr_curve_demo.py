@@ -70,51 +70,33 @@ def start_runs(
   # Sample the distribution to generate colors. Lets generate different numbers
   # of each color. The first dimension is the count of examples.
 
-  def clip(value, minValue, maxValue):
-    """Clips an op to the range [minValue, maxValue].
-
-    For now, we intentionally avoid using tf.clip_by_value because it
-    apparently exhibits slightly different behavior based on system
-    characteristics. See tensorflow/tensorflow#18527. Tests rely on this demo,
-    so behavior must be consistent.
-
-    Args:
-      value: The value to clip.
-      minValue: The min value to clip by.
-      maxValue: The max value to clip by.
-
-    Returns:
-      A TensorFlow op that outputs the clipped value.
-    """
-    return tf.maximum(minValue, tf.minimum(maxValue, value))
-
   # Generate reds.
   number_of_reds = 100
-  true_reds = clip(
+  true_reds = tf.clip_by_value(
       tf.concat([
-          255. - tf.abs(channel_distribution.sample([number_of_reds, 1])),
+          255 - tf.abs(channel_distribution.sample([number_of_reds, 1])),
           tf.abs(channel_distribution.sample([number_of_reds, 2]))
       ], axis=1),
-      0., 255.)
+      0, 255)
 
   # Generate greens.
   number_of_greens = 200
-  true_greens = clip(
+  true_greens = tf.clip_by_value(
       tf.concat([
           tf.abs(channel_distribution.sample([number_of_greens, 1])),
-          255. - tf.abs(channel_distribution.sample([number_of_greens, 1])),
+          255 - tf.abs(channel_distribution.sample([number_of_greens, 1])),
           tf.abs(channel_distribution.sample([number_of_greens, 1]))
       ], axis=1),
-      0., 255.)
+      0, 255)
 
   # Generate blues.
   number_of_blues = 150
-  true_blues = clip(
+  true_blues = tf.clip_by_value(
       tf.concat([
           tf.abs(channel_distribution.sample([number_of_blues, 2])),
-          255. - tf.abs(channel_distribution.sample([number_of_blues, 1]))
+          255 - tf.abs(channel_distribution.sample([number_of_blues, 1]))
       ], axis=1),
-      0., 255.)
+      0, 255)
 
   # Assign each color a vector of 3 booleans based on its true label.
   labels = tf.concat([
