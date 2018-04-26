@@ -24,6 +24,15 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
+    /*==============================================================================
+    
+      Please do not use RequestManager for new code.
+    
+      We've generally found code that uses XMLHttpRequest without promises is
+      easier to understand and maintain. This API also makes it difficult to use
+      the HTTP protocol in an idiomatic RESTful manner.
+    
+    ==============================================================================*/
     /**
      * Manages many fetch requests. Launches up to nSimultaneousRequests
      * simultaneously, and maintains a LIFO queue of requests to process when
