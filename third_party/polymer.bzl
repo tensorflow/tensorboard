@@ -28,6 +28,7 @@ def tensorboard_polymer_workspace():
       ],
       path = "/polymer",
       srcs = [
+          "LICENSE.txt",
           "polymer.html",
           "polymer-micro.html",
           "polymer-mini.html",
