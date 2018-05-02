@@ -24,6 +24,12 @@ limitations under the License.
       .vocab-label {
         padding-left: 3px;
       }
+      .runs-holder {
+        display: flex;
+        flex-direction: column-reverse;
+        overflow-y: auto;
+        max-height: 200px;
+      }
       .row {
         display: flex;
       }
@@ -58,21 +64,25 @@ limitations under the License.
       <div class="delta"></div>
       <div class="score">Score</div>
     </div>
-    <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
-      <template is="dom-repeat" items="[[inference]]">
-        <div class="row">
-          <div class="run">[[getRun(runindex)]]</div>
-          <div class$="[[getLabelClass(modelType)]]">
-            <div>[[item.label]]</div>
-            <template is="dom-if" if="[[item.vocabLabel]]">
-              <div class="vocab-label">(<span>[[item.vocabLabel]]</span>)</div>
-            </template>
-          </div>
-          <div class="delta"><iron-icon icon="[[getIcon(runindex, index)]]" class$="[[getIconClass(runindex, index)]]"></iron-icon></div>
-          <div class="score">[[getPrintableScore(item.score)]]</div>
+    <div class="runs-holder">
+      <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
+        <div class="rows-for-run">
+          <template is="dom-repeat" items="[[inference]]">
+            <div class="row">
+              <div class="run">[[getRun(runindex)]]</div>
+              <div class$="[[getLabelClass(modelType)]]">
+                <div>[[item.label]]</div>
+                <template is="dom-if" if="[[item.vocabLabel]]">
+                  <div class="vocab-label">(<span>[[item.vocabLabel]]</span>)</div>
+                </template>
+              </div>
+              <div class="delta"><iron-icon icon="[[getIcon(runindex, index)]]" class$="[[getIconClass(runindex, index)]]"></iron-icon></div>
+              <div class="score">[[getPrintableScore(item.score)]]</div>
+            </div>
+          </template>
         </div>
       </template>
-    </template>
+    </div>
   </template>
 
   <script>

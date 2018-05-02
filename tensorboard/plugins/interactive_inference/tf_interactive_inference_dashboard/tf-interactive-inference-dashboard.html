@@ -72,7 +72,6 @@ limitations under the License.
 
       .inference-holder {
         max-height: 35%;
-        overflow: auto;
       }
 
       .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
@@ -277,7 +276,8 @@ limitations under the License.
       <div class="center">
         <facets-dive id="dive" data="[[visdata]]"
                     on-selected-indices-changed="selectedIndicesChanged_"
-                    on-stats-changed="statsChanged_">
+                    on-stats-changed="statsChanged_"
+                    hide-info-card="true">
         </facets-dive>
         <div id="noexamples" class="noexamples info-text">
           Examples and their inference results will be displayed here.
