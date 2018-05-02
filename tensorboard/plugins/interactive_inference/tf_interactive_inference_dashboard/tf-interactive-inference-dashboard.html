@@ -210,6 +210,10 @@ limitations under the License.
         margin-left: 20px;
       }
 
+      .datapoint-controls-holder {
+        display: flex;
+      }
+
       /* Hide the Facets Dive info card and keep the background consistent with TensorBoard. */
       ::content #dive #infoCard {
         background: #f5f5f5;
@@ -293,6 +297,15 @@ limitations under the License.
           <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
             <div class="datapoint-tab">
               <template is="dom-if" if="[[shouldShowExample_(selectedExampleAndInference)]]">
+                <div class="datapoint-controls-holder">
+                  <paper-icon-button class="datapoint-control-button" icon="content-copy"
+                      on-click="copyDatapoint_" alt="copy datapoint">
+                  </paper-icon-button>
+                  <paper-icon-button class="datapoint-control-button" icon="undo"
+                      on-click="resetDatapoint_" alt="undo changes"
+                      disabled="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                  </paper-icon-button>
+                </div>
                 <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
                                     on-example-change="exampleChange_" id$="[[getViewerId_()]]">
                 </vz-example-viewer>
@@ -863,7 +876,7 @@ limitations under the License.
             if (inferenceMap[index] && newInferencesCalculated) {
               inferences = inferences.concat([inferenceMap[index]]);
             }
-            return {example: item.example, inferences: inferences};
+            return {example: item.example, inferences: inferences, changed: item.changed, orig: item.orig};
           }));
         const self = this;
         let hasInferenceLabels = false;
@@ -937,6 +950,7 @@ limitations under the License.
       exampleChange_: function(event) {
         var id = 0;
         var index = this.selected.length == 0 ? id : this.selected[id];
+        this.set('selectedExampleAndInference.changed', true);
         this.updateExample_(JSON.stringify(event.target.json), index);
         const inferenceViewerIdStr = '#' + this.getInferenceHolderId_(id);
         const inferenceViewer = this.$$(inferenceViewerIdStr);
@@ -953,6 +967,7 @@ limitations under the License.
         const tempSelected = this.$.dive.selectedData;
         this.$.dive.selectedData = [];
         this.$.dive.selectedData = tempSelected;
+        this.updateSprite_();
       },
 
       updateExample_: function(exampleJson, index){
@@ -1060,16 +1075,16 @@ limitations under the License.
           this.$.noexamples.style.display = 'none';
           this.$.spinner.hidden = true;
           this.examplesAndInferences = result.value.examples.map(function(ex) {
-            return {example: JSON.parse(ex)};});
+            const example = JSON.parse(ex);
+            return {example: example, changed: false, orig: JSON.parse(ex)};});
           this.updatedExample = true;
           const self = this;
           this.visdata = this.examplesAndInferences.map(function(ex) {
             return self.exampleToDataPoint_(ex.example);
           });
           this.$.dive.atlasUrl = '';
-          if (result.value.sprite) {
-            this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
-          }
+          this.hasSprite = result.value.sprite;
+          this.updateSprite_();
           if (!this.shouldDisableInferButton_(
               this.examplesAndInferences, this.modelName, this.inferenceAddress,
               this.updatedExample)) {
@@ -1079,6 +1094,44 @@ limitations under the License.
         this.makeAsyncRequest_(url, updateExampleContents);
         this.$.spinner.hidden = false;
       },
+
+      updateSprite_: function() {
+        if (this.hasSprite) {
+          this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
+        }
+      },
+
+      copyDatapoint_: function() {
+        const exampleJsonString = JSON.stringify(this.selectedExampleAndInference.example);
+        const example = JSON.parse(exampleJsonString);
+        const exampleAndInference = {example: example, changed: false, orig: JSON.parse(exampleJsonString)};
+        this.examplesAndInferences.push(exampleAndInference);
+        this.selectedExampleAndInference = exampleAndInference;
+        this.visdata.push(this.exampleToDataPoint_(exampleAndInference.example));
+        const  url = this.makeUrl_('/data/plugin/interactiveinference/duplicate_example',
+                                   {'index': this.selected[0]});
+        this.selected[0] = this.visdata.length - 1;
+        this.updatedExample = true;
+        this.refreshDive_();
+        this.makeAsyncRequest_(url, null);
+      },
+
+      shouldDisableReset_: function(exampleChanged) {
+        return !exampleChanged;
+      },
+
+      resetDatapoint_: function() {
+        this.selectedExampleAndInference.changed = false;
+        const origExampleJsonString = JSON.stringify(
+          this.selectedExampleAndInference.orig);
+        this.set('selectedExampleAndInference.example',
+                 JSON.parse(origExampleJsonString));
+        this.updatedExample = true;
+        this.visdata[this.selected[0]] = this.exampleToDataPoint_(
+          this.selectedExampleAndInference.example);
+        this.updateExample_(origExampleJsonString, this.selected[0]);
+        this.refreshDive_();
+      }
     });
 
     tf_tensorboard.registerDashboard({

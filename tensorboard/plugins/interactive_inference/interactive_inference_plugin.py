@@ -80,6 +80,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         '/update_example': self._update_example,
         '/examples_from_path': self._examples_from_path_handler,
         '/sprite': self._serve_sprite,
+        '/duplicate_example': self._duplicate_example,
     }
 
   def is_active(self):
@@ -91,9 +92,18 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     # TODO(b/69305872): Maybe enable if config flags were specified?
     return False
 
+  def generate_sprite(self, example_strings):
+    # Generate a sprite image for the examples if the examples contain the
+    # standard encoded image feature.
+    self.sprite = (
+        self.create_sprite_image(example_strings)
+        if (len(self.examples) and
+            self.image_feature_name in self.examples[0].features.feature) else
+        None)
+
   @wrappers.Request.application
   def _examples_from_path_handler(self, request):
-    """Returns a pretty-printed string of the tf.train.Example.
+    """Returns JSON of the specified examples.
 
     Args:
       request: A request that should contain 'examples_path' and 'max_examples'.
@@ -110,13 +120,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       example_strings = oss_utils.example_protos_from_path(
           examples_path, examples_count, parse_examples=False)
       self.examples = [tf.train.Example.FromString(ex) for ex in example_strings]
-      # Generate a sprite image for the examples if the examples contain the
-      # standard encoded image feature.
-      self.sprite = (
-          self.create_sprite_image(example_strings)
-          if (len(self.examples) and
-              self.image_feature_name in self.examples[0].features.feature) else
-          None)
+      self.generate_sprite(example_strings)
       json_examples = [
           json_format.MessageToJson(example) for example in self.examples
       ]
@@ -135,13 +139,13 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _update_example(self, request):
-    """Returns a pretty-printed string of the tf.train.Example.
+    """Updates the specified tf.train.Example.
 
     Args:
-      request: A request that should contain 'examples_path'.
+      request: A request that should contain 'index' and 'example'.
 
     Returns:
-      A pretty formatted string of the first tf.train.Example in the path.
+      An empty response.
     """
     index = int(request.args.get('index'))
     example_json = request.args.get('example')
@@ -152,6 +156,28 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     json_format.Parse(example_json, new_example)
     self.examples[index] = new_example
     self.updated_example_indices.add(index)
+    self.generate_sprite([ex.SerializeToString() for ex in self.examples])
+    return http_util.Respond(request, {}, 'application/json')
+
+  @wrappers.Request.application
+  def _duplicate_example(self, request):
+    """Duplicates the specified tf.train.Example.
+
+    Args:
+      request: A request that should contain 'index'.
+
+    Returns:
+      An empty response.
+    """
+    index = int(request.args.get('index'))
+    if index >= len(self.examples):
+      return http_util.Respond(request, {'error': 'invalid index provided'},
+                               'application/json')
+    new_example = tf.train.Example()
+    new_example.CopyFrom(self.examples[index])
+    self.examples.append(new_example)
+    self.updated_example_indices.add(len(self.examples) - 1)
+    self.generate_sprite([ex.SerializeToString() for ex in self.examples])
     return http_util.Respond(request, {}, 'application/json')
 
   @wrappers.Request.application
