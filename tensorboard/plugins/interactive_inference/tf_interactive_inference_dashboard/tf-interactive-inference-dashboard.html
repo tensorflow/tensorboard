@@ -1097,6 +1097,7 @@ limitations under the License.
 
       updateSprite_: function() {
         if (this.hasSprite) {
+          this.$.dive.atlasUrl = null;
           this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
         }
       },
@@ -1108,12 +1109,14 @@ limitations under the License.
         this.examplesAndInferences.push(exampleAndInference);
         this.selectedExampleAndInference = exampleAndInference;
         this.visdata.push(this.exampleToDataPoint_(exampleAndInference.example));
-        const  url = this.makeUrl_('/data/plugin/interactiveinference/duplicate_example',
-                                   {'index': this.selected[0]});
+        const url = this.makeUrl_('/data/plugin/interactiveinference/duplicate_example',
+                                  {'index': this.selected[0]});
         this.selected[0] = this.visdata.length - 1;
         this.updatedExample = true;
-        this.refreshDive_();
-        this.makeAsyncRequest_(url, null);
+        const refreshDiveAfterDuplicate = result => {
+          this.refreshDive_();
+        };
+        this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
       },
 
       shouldDisableReset_: function(exampleChanged) {
