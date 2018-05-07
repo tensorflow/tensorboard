@@ -4,11 +4,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import datetime
-
 import tensorflow as tf
 from google.protobuf import struct_pb2
-from google.protobuf import timestamp_pb2
 
 from tensorboard.plugins.hparams import summary
 from tensorboard.plugins.hparams import api_pb2
