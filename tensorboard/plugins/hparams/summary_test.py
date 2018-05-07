@@ -28,8 +28,8 @@ class SummaryTest(tf.test.TestCase):
                            display_name="display_name2",
                            description="bar",
                            type=api_pb2.DATA_TYPE_FLOAT64,
-                           domain_interval=api_pb2.Interval(min_val=-100.0,
-                                                            max_val=100.0))
+                           domain_interval=api_pb2.Interval(min_value=-100.0,
+                                                            max_value=100.0))
     ]
     metric_infos = [
         api_pb2.MetricInfo(name=api_pb2.MetricName(tag="loss"),
@@ -37,11 +37,11 @@ class SummaryTest(tf.test.TestCase):
         api_pb2.MetricInfo(name=api_pb2.MetricName(group="train/", tag="acc"),
                            dataset_type=api_pb2.DATASET_TRAINING),
     ]
-    now = datetime.datetime.now()
+    time_created_secs = 314159.0
     self.assertEqual(
         summary.experiment_pb(hparam_infos,
                               metric_infos,
-                              time_created=now),
+                              time_created_secs=time_created_secs),
         tf.Summary(
             value=[
                 tf.Summary.Value(
@@ -53,17 +53,18 @@ class SummaryTest(tf.test.TestCase):
                                 plugin_data_pb2.HParamsPluginData(
                                     version=0,
                                     experiment=api_pb2.Experiment(
-                                        time_created=(timestamp_pb2.Timestamp()
-                                                      .FromDatetime(now)),
+                                        time_created_secs=time_created_secs,
                                         hparam_infos=hparam_infos,
                                         metric_infos=metric_infos))
                                 .SerializeToString()))))
             ]))
 
   def test_session_start_pb(self):
+    start_time_secs = 314160
     session_start_info = plugin_data_pb2.SessionStartInfo(
         model_uri="//model/uri",
-        group_name="session_group")
+        group_name="session_group",
+        start_time_secs=start_time_secs)
     session_start_info.hparams["param1"].string_value = "string"
     session_start_info.hparams["param2"].number_value = 5.0
     session_start_info.hparams["param3"].bool_value = False
@@ -73,7 +74,8 @@ class SummaryTest(tf.test.TestCase):
                      "param2":5,
                      "param3":False},
             model_uri="//model/uri",
-            group_name="session_group"),
+            group_name="session_group",
+            start_time_secs=start_time_secs),
         tf.Summary(
             value=[
                 tf.Summary.Value(
@@ -88,8 +90,9 @@ class SummaryTest(tf.test.TestCase):
             ]))
 
   def test_session_end_pb(self):
+    end_time_secs = 1234.0
     self.assertEqual(
-        summary.session_end_pb(api_pb2.STATUS_SUCCESS),
+        summary.session_end_pb(api_pb2.STATUS_SUCCESS, end_time_secs),
         tf.Summary(
             value=[
                 tf.Summary.Value(
@@ -101,7 +104,9 @@ class SummaryTest(tf.test.TestCase):
                                 version=0,
                                 session_end_info=(
                                     plugin_data_pb2.SessionEndInfo(
-                                        status=api_pb2.STATUS_SUCCESS))
+                                        status=api_pb2.STATUS_SUCCESS,
+                                        end_time_secs=end_time_secs,
+                                    ))
                             ).SerializeToString()))))
             ]))
 

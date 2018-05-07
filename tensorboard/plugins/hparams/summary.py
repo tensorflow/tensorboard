@@ -38,6 +38,7 @@ import time
 
 import six
 import tensorflow as tf
+from google.protobuf import struct_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -127,7 +128,7 @@ def _to_google_protobuf_value(value):
   return lv.values[0]
 
 
-def session_end_pb(status):
+def session_end_pb(status, end_time_secs=None):
   """Creates a summary that contains status information for a completed
   training session. Should be exported after the training session is completed.
   One such summary per training session should be created. Each should have
