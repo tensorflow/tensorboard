@@ -971,11 +971,10 @@ limitations under the License.
       },
 
       updateExample_: function(exampleJson, index){
-        var url = this.makeUrl_('/data/plugin/interactiveinference/update_example',
-                                {'example': exampleJson,
-                                 'index': index});
+        var url = this.makeUrl_('/data/plugin/interactiveinference/update_example');
 
-        this.makeAsyncRequest_(url, null);
+        this.makeAsyncRequest_(url, null, {'example': exampleJson,
+                                            'index': index});
       },
 
       getViewerId_: function() {
@@ -987,8 +986,12 @@ limitations under the License.
       },
 
       makeUrl_: function(prefix, paramsDict){
-        return prefix + '?' + Object.keys(paramsDict).map(
-          k => k + '=' + encodeURIComponent(paramsDict[k])).join('&');
+        const url = prefix;
+        if (paramsDict) {
+          prefix += '?' + Object.keys(paramsDict).map(
+            k => k + '=' + encodeURIComponent(paramsDict[k])).join('&');
+        }
+        return prefix;
       },
 
       showToast_: function(msg) {
@@ -1001,7 +1004,7 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeAsyncRequest_: function(url, thenDoFn){
+      makeAsyncRequest_: function(url, thenDoFn, postData){
         var self = this;
         const wrapperFn = this._canceller.cancellable(function(result){
           if (result.cancelled) {
@@ -1015,7 +1018,7 @@ limitations under the License.
             thenDoFn(result);
           }
         });
-        this.requestManager.request(url).then(wrapperFn);
+        this.requestManager.request(url, postData).then(wrapperFn);
       },
 
       exampleToDataPoint_: function(example) {

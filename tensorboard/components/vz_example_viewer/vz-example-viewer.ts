@@ -1159,6 +1159,13 @@ Polymer({
           values[0] = cc as any;
           feat.getBytesList()!.setValueList((values as string[]));
 
+          // If the example was provided as json, update the byteslist in the
+          // json with the base64 encoded string.
+          const jsonList = self.getJsonValueList(data.feature, data.seqNum);
+          if (jsonList) {
+            jsonList[0] = encodedImageData;
+          }
+
           // Load the image data into an image element to begin the process
           // of rendering that image to a canvas for display.
           const img = new Image();

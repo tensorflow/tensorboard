@@ -147,8 +147,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     Returns:
       An empty response.
     """
-    index = int(request.args.get('index'))
-    example_json = request.args.get('example')
+    index = int(request.form['index'])
+    example_json = request.form['example']
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
                                'application/json')
