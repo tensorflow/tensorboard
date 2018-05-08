@@ -38,6 +38,7 @@ import time
 
 import six
 import tensorflow as tf
+from google.protobuf import struct_pb2
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -60,7 +61,7 @@ def experiment_pb(
     user: String. An id for the user running the experiment
     description: String. A description for the experiment. May contain markdown.
     time_created_secs: float. The time the experiment is created in seconds
-    since the UNIX epoch. If None uses the current time.
+        since the UNIX epoch. If None uses the current time.
 
   Returns:
     A summary protobuffer containing the experiment definition.
@@ -110,18 +111,21 @@ def session_start_pb(hparams,
       group_name=group_name,
       start_time_secs=start_time_secs)
   for (hp_name, hp_val) in six.iteritems(hparams):
-    if isinstance(hp_val, (float, int)):
-      session_start_info.hparams[hp_name].number_value = hp_val
-    elif isinstance(hp_val, six.string_types):
-      session_start_info.hparams[hp_name].string_value = hp_val
-    elif isinstance(hp_val, bool):
-      session_start_info.hparams[hp_name].bool_value = hp_val
-    else:
-      raise TypeError('hparams[%s]=%s has type: %s which is not supported' %
-                      (hp_name, hp_val, type(hp_val)))
+    session_start_info.hparams[hp_name].CopyFrom(
+        _to_google_protobuf_value(hp_val))
   return _summary(metadata.SESSION_START_INFO_TAG,
                   plugin_data_pb2.HParamsPluginData(
                       session_start_info=session_start_info))
+
+
+def _to_google_protobuf_value(value):
+  """Converts 'value' to a google.protobuf.Value.
+  We use ListValue converstion logic to do this to avoid depending on Value's
+  internal structure.
+  """
+  lv = struct_pb2.ListValue()
+  lv.append(value)
+  return lv.values[0]
 
 
 def session_end_pb(status, end_time_secs=None):
