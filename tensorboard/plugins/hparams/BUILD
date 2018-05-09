@@ -74,6 +74,18 @@ py_library(
     ],
 )
 
+py_test(
+    name = "summary_test",
+    srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":protos_all_py_pb2",
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+        "@com_google_protobuf//:protobuf_python",
+    ],
+)
+
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],

@@ -60,8 +60,6 @@ script:
       --genrule_strategy=sandboxed \
       --local_resources=400,2,1.0 \
       --worker_max_instances=2 \
-      --strategy=Javac=worker \
-      --strategy=Closure=worker \
       --distinct_host_configuration=false
 
   - |

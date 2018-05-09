@@ -26,7 +26,7 @@ from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder.file_system_tools import read_pickle,\
   write_pickle, write_file
 from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME, TAG_NAME,\
-  SUMMARY_FILENAME, DEFAULT_CONFIG, CONFIG_FILENAME
+  SUMMARY_FILENAME, DEFAULT_CONFIG, CONFIG_FILENAME, SUMMARY_COLLECTION_KEY_NAME
 from tensorboard.plugins.beholder import video_writing
 from tensorboard.plugins.beholder.visualizer import Visualizer
 
@@ -45,7 +45,10 @@ class Beholder(object):
 
     self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
     self.summary_op = tf.summary.tensor_summary(TAG_NAME,
-                                                self.frame_placeholder)
+                                                self.frame_placeholder,
+                                                collections=[
+                                                    SUMMARY_COLLECTION_KEY_NAME
+                                                ])
 
     self.last_image_shape = []
     self.last_update_time = time.time()

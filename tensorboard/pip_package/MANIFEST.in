@@ -1,1 +1,3 @@
-recursive-include tensorboard *
+include LICENSE
+include README.rst
+graft tensorboard

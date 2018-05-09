@@ -24,7 +24,7 @@ load("//third_party:clutz.bzl",
 
 load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "CLOSURE_LIBRARY_BASE_ATTR",
-     "CLOSURE_LIBRARY_DEPS_ATTR",
+     "CLOSURE_WORKER_ATTR",
      "collect_js",
      "collect_runfiles",
      "convert_path_to_es6_module_name",
@@ -35,11 +35,6 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
 
 _ASPECT_SLURP_FILE_TYPE = FileType([
     ".html", ".js", ".css", ".gss", ".png", ".jpg", ".gif", ".ico", ".svg"])
-
-_CLOSURE_WORKER = attr.label(
-    default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure:ClosureWorker"),
-    executable=True,
-    cfg="host")
 
 def _tf_web_library(ctx):
   if not ctx.attr.srcs:
@@ -195,7 +190,7 @@ def _tf_web_library(ctx):
     # appropriate for the exported sources to be included in the
     # development web server.
     devserver_manifests = depset(order="postorder")
-    export_deps = unfurl(ctx.attr.exports, provider="webfiles")
+    export_deps = unfurl(ctx.attr.exports)
     for dep in export_deps:
       devserver_manifests += dep.webfiles.manifests
     devserver_manifests = manifests + devserver_manifests
@@ -239,13 +234,16 @@ def _tf_web_library(ctx):
           ts_typings_execroots=ts_typings_execroots),
       closure_js_library=collect_js(
           unfurl(ctx.attr.deps, provider="closure_js_library"),
-          ctx.file._closure_library_base, ctx.file._closure_library_deps),
+          ctx.files._closure_library_base),
       runfiles=ctx.runfiles(
-          files=ctx.files.srcs + ctx.files.data + ts_outputs + [
-              manifest,
-              params_file,
-              ctx.outputs.executable,
-              dummy],
+          files=(ctx.files.srcs +
+                 ctx.files.data +
+                 ts_outputs +
+                 ctx.files._closure_library_base + [
+                     manifest,
+                     params_file,
+                     ctx.outputs.executable,
+                     dummy]),
           transitive_files=(collect_runfiles([ctx.attr._WebfilesServer]) |
                             collect_runfiles(deps) |
                             collect_runfiles(export_deps) |
@@ -391,7 +389,7 @@ def _get_strip(ctx):
 web_aspect = aspect(
     implementation=_web_aspect_impl,
     attr_aspects=["deps", "sticky_deps", "module_deps", "exports"],
-    attrs={"_ClosureWorkerAspect": _CLOSURE_WORKER})
+    attrs={"_ClosureWorkerAspect": CLOSURE_WORKER_ATTR})
 
 tf_web_library = rule(
     implementation=_tf_web_library,
@@ -427,8 +425,7 @@ tf_web_library = rule(
             default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles/server:WebfilesServer"),
             executable=True,
             cfg="host"),
-        "_ClosureWorker": _CLOSURE_WORKER,
+        "_ClosureWorker": CLOSURE_WORKER_ATTR,
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
-        "_closure_library_deps": CLOSURE_LIBRARY_DEPS_ATTR,
     }.items()),
     outputs=CLUTZ_OUTPUTS)
