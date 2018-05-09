@@ -13,7 +13,6 @@ tf_web_library(
     ],
     path = "/vz-example-viewer",
     deps = [
-        "//tensorboard/components/tf_imports:closure",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_icons",
