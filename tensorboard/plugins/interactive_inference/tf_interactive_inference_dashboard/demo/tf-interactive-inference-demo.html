@@ -1,0 +1,124 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="tf-interactive-inference-dashboard.html">
+<script src="tf.min.js"></script>
+<dom-module id='tf-interactive-inference-demo'>
+  <template>
+    <style>
+      #dash {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+    <tf-interactive-inference-dashboard id="dash" local="true"
+        examples-path="./data/data/uci_test_examples.json"
+        model-name="uci_census" inference-address="localhost"
+        label-vocab="[[labelVocab]]">
+    </tf-interactive-inference-dashboard>
+  </template>
+  <script>
+    Polymer({
+      is: "tf-interactive-inference-demo",
+      properties: {
+        model: Object,
+        data: Array,
+        indicesToInfer: {type: Object, value: {}},
+        means: Object,
+        categories: Object,
+        labelVocab: {type: Array, value: ['<=50k', '>50k']},
+      },
+      ready: async function() {
+        this.$.dash.settingsClicked_();
+        this.means = {
+          'age': 38.64358543876172,
+          'education-num': 10.078088530363212,
+          'capital-gain': 1079.0676262233324,
+          'capital-loss': 87.50231358257237,
+          'hours-per-week': 40.422382375824085,
+        }
+        this.categories = {};
+        this.categories['workclass'] = ["Private", "Self-emp-not-inc", "Self-emp-inc", "Federal-gov", "Local-gov", "State-gov", "Without-pay", "Never-worked"];
+        this.categories['education'] = ["Bachelors", "Some-college", "11th", "HS-grad", "Prof-school", "Assoc-acdm", "Assoc-voc", "9th", "7th-8th", "12th", "Masters", "1st-4th", "10th", "Doctorate", "5th-6th", "Preschool"];
+        this.categories['marital-status'] = ["Married-civ-spouse", "Divorced", "Never-married", "Separated", "Widowed", "Married-spouse-absent", "Married-AF-spouse"];
+        this.categories['occupation'] = ["Tech-support", "Craft-repair", "Other-service", "Sales", "Exec-managerial", "Prof-specialty", "Handlers-cleaners", "Machine-op-inspct", "Adm-clerical", "Farming-fishing", "Transport-moving", "Priv-house-serv", "Protective-serv", "Armed-Forces"];
+        this.categories['relationship'] = ["Wife", "Own-child", "Husband", "Not-in-family", "Other-relative", "Unmarried"];
+        this.categories['race'] = ["White", "Asian-Pac-Islander", "Amer-Indian-Eskimo", "Other", "Black"];
+        this.categories['sex'] = ["Female", "Male"];
+        this.categories['native-country'] = ["United-States", "Cambodia", "England", "Puerto-Rico", "Canada", "Germany", "Outlying-US(Guam-USVI-etc)", "India", "Japan", "Greece", "South", "China", "Cuba", "Iran", "Honduras", "Philippines", "Italy", "Poland", "Jamaica", "Vietnam", "Mexico", "Portugal", "Ireland", "France", "Dominican-Republic", "Laos", "Ecuador", "Taiwan", "Haiti", "Columbia", "Hungary", "Guatemala", "Nicaragua", "Scotland", "Thailand", "Yugoslavia", "El-Salvador", "Trinadad&Tobago", "Peru", "Hong", "Holand-Netherlands"];
+
+        this.model = await tf.loadModel('data/uci/model.json');
+        const DATA_PATH = "data/uci/uci_test_examples.json";
+        const testData = d3.json(DATA_PATH, (error, data) => {
+          data = data.slice(0, 500);
+          this.data = data;
+          for (let i = 0; i < data.length; i++) {
+            this.indicesToInfer[i] = true;
+          }
+          console.log(this.indicesToInfer);
+          this.$.dash.updateExampleContents_(data.map(item => JSON.stringify(item)), false);
+          this.$.dash.addEventListener('update-example', e => {
+            this.data[e.detail.index] = JSON.parse(e.detail.example);
+            this.indicesToInfer[e.detail.index] = true;
+          });
+          this.$.dash.addEventListener('duplicate-example', e => {
+            this.data.push(JSON.parse(JSON.stringify(this.data[e.detail.index])));
+            this.indicesToInfer[this.data.length - 1] = true;
+          });
+          this.$.dash.addEventListener('infer-examples', async e => {
+            const inferences = {};
+            const indices = Object.keys(this.indicesToInfer).sort();
+            inferences.indices = indices;
+              inferences.results = {classification: {classifications: []}};
+            const tensors = [];
+            for (let i = 0; i < indices.length; i++) {
+              const idx = indices[i];
+              tensors.push(this.convertExToTensor(this.data[idx]));
+            }
+            const input = tf.concat(tensors).reshape([tensors.length, 104])
+            const res = this.model.predict(input, {batchSize: 128});
+            const predValues = await res.data();
+            const PRED_SIZE = 2;
+            for (let i = 0; i < indices.length; i++) {
+              inferences.results.classification.classifications[i] =
+                {classes: [{label: '0', score: predValues[i * PRED_SIZE + 1]}, {label: '1', score: predValues[i * PRED_SIZE]}]};
+            }
+            this.$.dash.inferences = inferences;
+            this.indicesToInfer = {};
+          });
+          requestAnimationFrame(() => {
+            this.$.dash.inferClicked_();
+          });
+        });
+      },
+      convertExToTensor: function(ex) {
+        const vals = []
+
+        vals.push(this.getValueListForFeature(ex, 'age'));
+        vals.push(this.getValueListForFeature(ex, 'workclass'));
+        vals.push(this.getValueListForFeature(ex, 'education'));
+        vals.push(this.getValueListForFeature(ex, 'education-num'));
+        vals.push(this.getValueListForFeature(ex, 'marital-status'));
+        vals.push(this.getValueListForFeature(ex, 'occupation'));
+        vals.push(this.getValueListForFeature(ex, 'relationship'));
+        vals.push(this.getValueListForFeature(ex, 'race'));
+        vals.push(this.getValueListForFeature(ex, 'sex'));
+        vals.push(this.getValueListForFeature(ex, 'capital-gain'));
+        vals.push(this.getValueListForFeature(ex, 'capital-loss'));
+        vals.push(this.getValueListForFeature(ex, 'hours-per-week'));
+        vals.push(this.getValueListForFeature(ex, 'native-country'));
+
+        const arr = vals.reduce((a, b) => a.concat(b), []);
+        return tf.tensor1d(arr);
+      },
+
+      getValueListForFeature(ex, feat) {
+        if (this.means[feat]) {
+          return [ex.features.feature[feat].floatList.value[0] * 1/(2 * this.means[feat])];
+        }
+        const onehot = Array(this.categories[feat].length).fill(0);
+        onehot[this.categories[feat].indexOf(atob(ex.features.feature[feat].bytesList.value[0]))] = 1;
+        return onehot;
+      }
+    });
+  </script>
+</dom-module>
+

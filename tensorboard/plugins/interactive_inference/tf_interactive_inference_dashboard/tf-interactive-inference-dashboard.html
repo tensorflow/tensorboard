@@ -31,15 +31,15 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-imports/closure.html">
-<link rel="import" href="../tf-inference-panel/tf-inference-panel.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../tf-inference-panel/tf-inference-panel.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
-<link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
+<link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
+<link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
+<link rel="import" href="../tf-imports/closure.html">
 
 <!--
   A frontend that displays a set of editable examples and enables inference of those examples,
@@ -514,6 +514,7 @@ limitations under the License.
           type: Number,
           value: 0,
         },
+        local: Boolean,
       },
 
       // Required function.
@@ -891,7 +892,7 @@ limitations under the License.
           if (isClassification && self.labelVocab.length > 0) {
             for (let labelIndex = 0;
                  labelIndex < self.examplesAndInferences[index].inferences[0].length; labelIndex++) {
-              self.examplesAndInferences[index].inference[labelIndex].vocabLabel =
+              self.examplesAndInferences[index].inferences[0][labelIndex].vocabLabel =
                 self.labelVocab[self.examplesAndInferences[index].inferences[0][labelIndex].label];
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
@@ -933,18 +934,22 @@ limitations under the License.
       },
 
       inferClicked_: function() {
-        var url = this.makeUrl_('/data/plugin/interactiveinference/infer',
-                                {'inference_address': this.inferenceAddress,
-                                 'model_name': this.modelName,
-                                 'model_type': this.modelType,
-                                 'label_vocab_path': this.labelVocabPath});
-        const inferContents = result => {
-          this.$.spinner.hidden = true;
-          this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
-          this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
-        };
-        this.makeAsyncRequest_(url, inferContents);
-        this.$.spinner.hidden = false;
+        const inferParams = {'inference_address': this.inferenceAddress,
+                             'model_name': this.modelName,
+                             'model_type': this.modelType,
+                             'label_vocab_path': this.labelVocabPath};
+        if (!this.local) {
+          this.$.spinner.hidden = false;
+          const url = this.makeUrl_('/data/plugin/interactiveinference/infer',
+              inferParams);
+          const inferContents = result => {
+            this.$.spinner.hidden = true;
+            this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
+            this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
+          };
+          this.makeAsyncRequest_(url, inferContents);
+        }
+        this.fire('infer-examples', inferParams);
       },
 
       exampleChange_: function(event) {
@@ -971,10 +976,13 @@ limitations under the License.
       },
 
       updateExample_: function(exampleJson, index){
-        var url = this.makeUrl_('/data/plugin/interactiveinference/update_example');
+        this.fire('update-example', {'example': exampleJson, 'index': index});
+        if (!this.local) {
+          var url = this.makeUrl_('/data/plugin/interactiveinference/update_example');
 
-        this.makeAsyncRequest_(url, null, {'example': exampleJson,
-                                            'index': index});
+          this.makeAsyncRequest_(url, null, {'example': exampleJson,
+                                              'index': index});
+        }
       },
 
       getViewerId_: function() {
@@ -1069,30 +1077,35 @@ limitations under the License.
         this.getExamples_();
       },
 
+      updateExampleContents_: function(examples, hasSprite) {
+        this.$.noexamples.style.display = 'none';
+        this.$.spinner.hidden = true;
+        this.examplesAndInferences = examples.map(function(ex) {
+          const example = JSON.parse(ex);
+          return {example: example, changed: false, orig: JSON.parse(ex)};});
+        this.updatedExample = true;
+        const self = this;
+        this.visdata = this.examplesAndInferences.map(function(ex) {
+          return self.exampleToDataPoint_(ex.example);
+        });
+        this.$.dive.atlasUrl = '';
+        this.hasSprite = hasSprite;
+        this.updateSprite_();
+        if (!this.shouldDisableInferButton_(
+            this.examplesAndInferences, this.modelName, this.inferenceAddress,
+            this.updatedExample)) {
+          this.inferClicked_();
+        }
+      },
+
       getExamples_: function(){
         var url = this.makeUrl_('/data/plugin/interactiveinference/examples_from_path',
                                 {'examples_path': this.examplesPath,
                                  'max_examples': this.maxExamples});
 
         const updateExampleContents = result => {
-          this.$.noexamples.style.display = 'none';
-          this.$.spinner.hidden = true;
-          this.examplesAndInferences = result.value.examples.map(function(ex) {
-            const example = JSON.parse(ex);
-            return {example: example, changed: false, orig: JSON.parse(ex)};});
-          this.updatedExample = true;
-          const self = this;
-          this.visdata = this.examplesAndInferences.map(function(ex) {
-            return self.exampleToDataPoint_(ex.example);
-          });
-          this.$.dive.atlasUrl = '';
-          this.hasSprite = result.value.sprite;
-          this.updateSprite_();
-          if (!this.shouldDisableInferButton_(
-              this.examplesAndInferences, this.modelName, this.inferenceAddress,
-              this.updatedExample)) {
-            this.inferClicked_();
-          }
+          this.updateExampleContents_(
+            result.value.examples, result.value.sprite);
         };
         this.makeAsyncRequest_(url, updateExampleContents);
         this.$.spinner.hidden = false;
@@ -1112,14 +1125,20 @@ limitations under the License.
         this.examplesAndInferences.push(exampleAndInference);
         this.selectedExampleAndInference = exampleAndInference;
         this.visdata.push(this.exampleToDataPoint_(exampleAndInference.example));
-        const url = this.makeUrl_('/data/plugin/interactiveinference/duplicate_example',
-                                  {'index': this.selected[0]});
+        const duplicatedIndex = this.selected[0];
         this.selected[0] = this.visdata.length - 1;
         this.updatedExample = true;
-        const refreshDiveAfterDuplicate = result => {
+        this.fire('duplicate-example', {'index': duplicatedIndex});
+        if (!this.local) {
+          const refreshDiveAfterDuplicate = result => {
+           this.refreshDive_();
+          };
+          const url = this.makeUrl_('/data/plugin/interactiveinference/duplicate_example',
+            {'index': duplicatedIndex});
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
+        } else {
           this.refreshDive_();
-        };
-        this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
+        }
       },
 
       shouldDisableReset_: function(exampleChanged) {

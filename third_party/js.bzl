@@ -421,3 +421,13 @@ def tensorboard_js_workspace():
       path = "/test-fixture",
       exclude = ["test/**"],
   )
+
+  filegroup_external(
+      name = "org_tensorflow_tfjs",
+      licenses = ["notice"],  # Apache 2.0
+      sha256_urls = {
+          "92ab29feaa70bed4b79917a0042448d75d192f2734f5464b72533d2b43b63830": [
+              "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.10.3/dist/tf.min.js",
+          ],
+      },
+  )

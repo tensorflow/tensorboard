@@ -63,25 +63,3 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
     ],
 )
-
-tf_web_library(
-    name = "demo",
-    testonly = True,
-    srcs = ["index.html"],
-    path = "/tf-interactive-inference-dashboard",
-    deps = [
-        ":tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_iron_demo_helpers",
-        "@org_polymer_paper_styles",
-    ],
-)
-
-tensorboard_html_binary(
-    name = "demoserver",
-    testonly = True,  # Keeps JavaScript somewhat readable
-    compile = True,  # Run Closure Compiler
-    input_path = "/tf-interactive-inference-dashboard/index.html",
-    output_path = "/tf-interactive-inference-dashboard/demo.html",
-    deps = [":demo"],
-)

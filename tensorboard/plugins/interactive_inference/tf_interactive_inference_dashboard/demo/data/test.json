@@ -1,0 +1,21 @@
+[{
+  "features": {
+    "feature": {
+       "Name": { "bytesList": { "value": ["VG9t"] } },
+       "Disease": { "bytesList": { "value": ["QXN0aG1h"] } },
+       "Severity": { "int64List": { "value": ["5"] } },
+       "Medication": { "bytesList": { "value": ["QmVuemVuZQ=="] } }
+    }
+  }
+},
+{
+  "features": {
+    "feature": {
+       "Name": { "bytesList": { "value": ["aGk="] } },
+       "Disease": { "bytesList": { "value": ["aGVsbG8="] } },
+       "Severity": { "int64List": { "value": ["10"] } },
+       "Medication": { "bytesList": { "value": ["dGVzdA=="] } }
+    }
+  }
+}
+]
