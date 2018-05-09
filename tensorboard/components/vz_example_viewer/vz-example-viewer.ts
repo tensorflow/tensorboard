@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-//goog.require('proto.tensorflow.BytesList');
 import BytesList from 'goog:proto.tensorflow.BytesList';
 import Example from 'goog:proto.tensorflow.Example';
 import Feature from 'goog:proto.tensorflow.Feature';
@@ -130,13 +129,13 @@ Polymer({
     ignoreChange: Boolean,
     minSal: {type: Number, value: 0},
     maxSal: {type: Number, value: 0},
-    showSaliency: {type: Boolean, value: true},
+    showSaliency: {type: Boolean, value: false},
     imageInfo: {type: Object, value: {}},
     windowWidth: {type: Number, value: DEFAULT_WINDOW_WIDTH},
     windowCenter: {type: Number, value: DEFAULT_WINDOW_CENTER},
     saliencyCutoff: {type: Number, value: 0},
     hasImage: {type: Boolean, value: true},
-    allowImageControls: {type: Boolean, value: true},
+    allowImageControls: {type: Boolean, value: false},
     imageScalePercentage: {type: Number, value: 100},
     features: {type: Object, computed: 'getFeatures(example)'},
     featuresList: {type: Object, computed: 'getFeaturesList(features)'},
@@ -1110,6 +1109,10 @@ Polymer({
     return this.sanitizeFeature(feat) + '_canvas';
   },
 
+  getImageCardId: function(feat: string) {
+    return this.sanitizeFeature(feat) + '_card';
+  },
+
   decodedStringToCharCodes: function(str: string): Uint8Array {
     const cc = new Uint8Array(str.length);
     for (let i = 0; i < str.length; ++i) {
@@ -1213,7 +1216,18 @@ Polymer({
         // Draw the image to the canvas and size the canvas.
         // Set d3.zoom on the canvas to enable zooming and scaling interactions.
         const context = canvas.getContext('2d')!;
-        const imageScaleFactor = this.imageScalePercentage / 100;
+        let imageScaleFactor = this.imageScalePercentage / 100;
+
+        // If not using image controls then scale the image to match the
+        // available width in the container, considering padding.
+        if (!this.allowImageControls) {
+          const card = this.$$('#' + this.getImageCardId(feat)) as HTMLElement;
+          let cardWidthForScaling = card.getBoundingClientRect().width;
+          if (cardWidthForScaling > 16) {
+            cardWidthForScaling -= 16;
+          }
+          imageScaleFactor = cardWidthForScaling / image.width;
+        }
         canvas.width = image.width * imageScaleFactor;
         canvas.height = image.height * imageScaleFactor;
         const transformFn = (transform: d3.ZoomTransform) => {
