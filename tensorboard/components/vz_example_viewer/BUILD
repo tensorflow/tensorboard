@@ -15,6 +15,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
+        "@ai_google_pair_facets//facets_overview/common",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
         "@org_polymer_paper_card",

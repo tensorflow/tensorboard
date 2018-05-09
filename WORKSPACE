@@ -56,6 +56,16 @@ http_archive(
     ],
 )
 
+http_archive(
+    name = "ai_google_pair_facets",
+    sha256 = "f880f3aca0e24ec0745ec430392da4fe267adc4f199ff4c8e4f3fbcedd82b991",
+    strip_prefix = "facets-7d6af3ffd0a21a66253a6bfa404fb95000f3e48b",
+    urls = [
+        "http://mirror.bazel.build/github.com/pair-code/facets/archive/7d6af3ffd0a21a66253a6bfa404fb95000f3e48b.tar.gz",
+        "https://github.com/pair-code/facets/archive/7d6af3ffd0a21a66253a6bfa404fb95000f3e48b.tar.gz",
+    ],
+)
+
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
 
 tf_workspace()
