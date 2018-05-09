@@ -82,7 +82,7 @@ py_library(
     ],
 )
 
-py_binary(
+py_library(
     name = "version",
     srcs = ["version.py"],
     srcs_version = "PY2AND3",
