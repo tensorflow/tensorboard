@@ -10,7 +10,7 @@
       }
     </style>
     <tf-interactive-inference-dashboard id="dash" local="true"
-        examples-path="./data/data/uci_test_examples.json"
+        examples-path="./data/uci/uci_test_examples.json"
         model-name="uci_census" inference-address="localhost"
         label-vocab="[[labelVocab]]">
     </tf-interactive-inference-dashboard>
@@ -53,7 +53,6 @@
           for (let i = 0; i < data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          console.log(this.indicesToInfer);
           this.$.dash.updateExampleContents_(data.map(item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);

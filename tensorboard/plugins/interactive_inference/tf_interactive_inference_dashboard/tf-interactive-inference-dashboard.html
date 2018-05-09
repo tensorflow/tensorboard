@@ -515,6 +515,7 @@ limitations under the License.
           value: 0,
         },
         local: Boolean,
+        localAtlasUrl: String,
       },
 
       // Required function.
@@ -1114,7 +1115,11 @@ limitations under the License.
       updateSprite_: function() {
         if (this.hasSprite) {
           this.$.dive.atlasUrl = null;
-          this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
+          if (!this.local) {
+            this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
+          } else {
+            this.$.dive.atlasUrl = this.localAtlasUrl;
+          }
         }
       },
 

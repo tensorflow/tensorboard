@@ -30,3 +30,29 @@ tensorboard_html_binary(
     output_path = "/tf-interactive-inference-dashboard/demo.html",
     deps = [":demo"],
 )
+
+tf_web_library(
+    name = "imagedemo",
+    testonly = True,
+    srcs = [
+        "image_index.html",
+        "tf-interactive-inference-image-demo.html",
+        "@org_tensorflow_tfjs//:tf.min.js",
+    ] + glob(["data/**"]),
+    path = "/tf-interactive-inference-dashboard",
+    deps = [
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
+        "//tensorboard/components/tf_imports:closure",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_imports:webcomponentsjs",
+    ],
+)
+
+tensorboard_html_binary(
+    name = "imagedemoserver",
+    testonly = True,  # Keeps JavaScript somewhat readable
+    compile = True,  # Run Closure Compiler
+    input_path = "/tf-interactive-inference-dashboard/image_index.html",
+    output_path = "/tf-interactive-inference-dashboard/image_demo.html",
+    deps = [":imagedemo"],
+)
