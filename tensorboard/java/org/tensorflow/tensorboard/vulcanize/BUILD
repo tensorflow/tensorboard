@@ -13,7 +13,7 @@ java_binary(
     visibility = ["//visibility:public"],
     deps = [
         "@com_google_guava",
-        "@com_google_protobuf_java//:protobuf_java",
+        "@com_google_protobuf//:protobuf_java",
         "@io_bazel_rules_closure//closure/compiler",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure:webpath",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles:build_info_java_proto",
@@ -28,7 +28,7 @@ java_binary(
     visibility = ["//visibility:public"],
     deps = [
         "@com_google_guava",
-        "@com_google_protobuf_java//:protobuf_java",
+        "@com_google_protobuf//:protobuf_java",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles:build_info_java_proto",
     ],
