@@ -33,9 +33,6 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "long_path",
      "unfurl")
 
-_ASPECT_SLURP_FILE_TYPE = FileType([
-    ".html", ".js", ".css", ".gss", ".png", ".jpg", ".gif", ".ico", ".svg"])
-
 def _tf_web_library(ctx):
   if not ctx.attr.srcs:
     if ctx.attr.deps:
@@ -61,7 +58,6 @@ def _tf_web_library(ctx):
   ts_typings_paths = depset(
       [long_path(ctx, f) for f in ctx.files._default_typings])
   ts_typings_execroots = depset()
-  aspect_runfiles = depset()
   for dep in deps:
     webpaths += dep.webfiles.webpaths
     if hasattr(dep.webfiles, "ts_typings"):
@@ -70,8 +66,6 @@ def _tf_web_library(ctx):
       ts_typings_paths += dep.webfiles.ts_typings_paths
     if hasattr(dep.webfiles, "ts_typings_execroots"):
       ts_typings_execroots += dep.webfiles.ts_typings_execroots
-    if hasattr(dep.webfiles, "aspect_runfiles"):
-      aspect_runfiles += dep.webfiles.aspect_runfiles
 
   # process what comes now
   manifest_srcs = []
@@ -247,43 +241,7 @@ def _tf_web_library(ctx):
           transitive_files=(collect_runfiles([ctx.attr._WebfilesServer]) |
                             collect_runfiles(deps) |
                             collect_runfiles(export_deps) |
-                            collect_runfiles(ctx.attr.data) |
-                            aspect_runfiles)))
-
-def _web_aspect_impl(target, ctx):
-  if hasattr(target, "webfiles"):
-    return struct()
-  srcs = []
-  deps = []
-  if hasattr(ctx.rule.files, "srcs"):
-    srcs.extend(_ASPECT_SLURP_FILE_TYPE.filter(ctx.rule.files.srcs))
-  for attr in ("deps", "sticky_deps", "module_deps"):
-    value = getattr(ctx.rule.attr, attr, None)
-    if value:
-      deps.extend(value)
-  deps = unfurl(deps, provider="webfiles")
-  webpaths = depset()
-  aspect_runfiles = depset(srcs)
-  for dep in deps:
-    webpaths += dep.webfiles.webpaths
-    if hasattr(dep.webfiles, "aspect_runfiles"):
-      aspect_runfiles += dep.webfiles.aspect_runfiles
-  manifest_srcs = []
-  new_webpaths = []
-  for src in srcs:
-    webpath = "/" + long_path(ctx, src)
-    _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs)
-  webpaths += new_webpaths
-  manifest = _make_manifest(ctx, manifest_srcs)
-  dummy, manifests = _run_webfiles_validator(ctx, srcs, deps, manifest)
-  aspect_runfiles += [dummy, manifest]
-  return struct(
-      webfiles=struct(
-          manifest=manifest,
-          manifests=manifests,
-          webpaths=webpaths,
-          dummy=dummy,
-          aspect_runfiles=aspect_runfiles))
+                            collect_runfiles(ctx.attr.data))))
 
 def _make_manifest(ctx, src_list):
   manifest = _new_file(ctx, "-webfiles.pbtxt")
@@ -386,11 +344,6 @@ def _get_strip(ctx):
       strip += "/"
   return strip
 
-web_aspect = aspect(
-    implementation=_web_aspect_impl,
-    attr_aspects=["deps", "sticky_deps", "module_deps", "exports"],
-    attrs={"_ClosureWorkerAspect": CLOSURE_WORKER_ATTR})
-
 tf_web_library = rule(
     implementation=_tf_web_library,
     executable=True,
@@ -399,7 +352,6 @@ tf_web_library = rule(
         "srcs": attr.label_list(allow_files=True),
         "deps": attr.label_list(
             aspects=[
-                web_aspect,
                 clutz_aspect,
                 legacy_js,
             ]),
