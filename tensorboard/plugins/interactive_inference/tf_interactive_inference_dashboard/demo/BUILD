@@ -16,7 +16,6 @@ tf_web_library(
     path = "/tf-interactive-inference-dashboard",
     deps = [
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:closure",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
@@ -42,7 +41,6 @@ tf_web_library(
     path = "/tf-interactive-inference-dashboard",
     deps = [
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:closure",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
     ],

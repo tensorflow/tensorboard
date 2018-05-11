@@ -18,6 +18,7 @@ tf_web_library(
         "//tensorboard/components/vz_line_chart",
         "//tensorboard/plugins/inference/tf_inference_panel",
         "@ai_google_pair_facets//facets_dive/components/facets_dive",
+        "@ai_google_pair_facets//facets_overview/components/facets_overview",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icon",
         "@org_polymer_iron_pages",
