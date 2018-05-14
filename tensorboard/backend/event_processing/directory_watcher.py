@@ -88,7 +88,9 @@ class DirectoryWatcher(object):
       for event in self._LoadInternal():
         yield event
     except tf.errors.OpError:
-      if not tf.gfile.Exists(self._directory):
+      # Directories don't actually exist on GCS.
+      if (not tf.gfile.Exists(self._directory) and
+          not io_wrapper.ListDirectoryAbsolute(self._directory)):
         raise DirectoryDeletedError(
             'Directory %s has been permanently deleted' % self._directory)
 
