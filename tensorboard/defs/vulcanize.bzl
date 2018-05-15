@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tensorboard/defs:defs.bzl", "legacy_js")
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "unfurl", "long_path")
 
 def _tensorboard_html_binary(ctx):
