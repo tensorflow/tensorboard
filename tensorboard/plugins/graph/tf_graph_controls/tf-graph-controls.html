@@ -377,41 +377,41 @@ tf-graph-node-search {
 
       <paper-radio-button name="device">Device</paper-radio-button>
 
-      <paper-radio-button id="xla-cluster-radio-button"
-                          name="xla_cluster"
-                          disabled="[[!_xlaClustersProvided(renderHierarchy)]]">
-        XLA Cluster
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="xla-cluster-radio-button" position="right">
-        Coloring by XLA cluster is only enabled if at least 1 op specifies an XLA cluster.
-      </paper-tooltip>
+      <!--<paper-radio-button id="xla-cluster-radio-button"-->
+                          <!--name="xla_cluster"-->
+                          <!--disabled="[[!_xlaClustersProvided(renderHierarchy)]]">-->
+        <!--XLA Cluster-->
+      <!--</paper-radio-button>-->
+      <!--<paper-tooltip animation-delay="0" for="xla-cluster-radio-button" position="right">-->
+        <!--Coloring by XLA cluster is only enabled if at least 1 op specifies an XLA cluster.-->
+      <!--</paper-tooltip>-->
 
-      <paper-radio-button id="compute-time-radio-button"
-                          name="compute_time"
-                          disabled="[[!stats]]">
-        Compute time
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="compute-time-radio-button" position="right">
-        Coloring by compute time is only enabled if the RunMetadata proto is passed to the
-        FileWriter when a specific session is run.
-      </paper-tooltip>
+      <!--<paper-radio-button id="compute-time-radio-button"-->
+                          <!--name="compute_time"-->
+                          <!--disabled="[[!stats]]">-->
+        <!--Compute time-->
+      <!--</paper-radio-button>-->
+      <!--<paper-tooltip animation-delay="0" for="compute-time-radio-button" position="right">-->
+        <!--Coloring by compute time is only enabled if the RunMetadata proto is passed to the-->
+        <!--FileWriter when a specific session is run.-->
+      <!--</paper-tooltip>-->
 
-      <paper-radio-button id="memory-radio-button"
-                          name="memory"
-                          disabled="[[!stats]]">
-        Memory
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="memory-radio-button" position="right">
-        Coloring by memory is only enabled if the RunMetadata proto is passed to the
-        FileWriter when a specific session is run.
-      </paper-tooltip>
+      <!--<paper-radio-button id="memory-radio-button"-->
+                          <!--name="memory"-->
+                          <!--disabled="[[!stats]]">-->
+        <!--Memory-->
+      <!--</paper-radio-button>-->
+      <!--<paper-tooltip animation-delay="0" for="memory-radio-button" position="right">-->
+        <!--Coloring by memory is only enabled if the RunMetadata proto is passed to the-->
+        <!--FileWriter when a specific session is run.-->
+      <!--</paper-tooltip>-->
 
-      <paper-radio-button id="tpu-compatibility-radio-button"
+      <paper-radio-button id="nnp-compatibility-radio-button"
                           name="op_compatibility">
-        TPU Compatibility
+        NNP Compatibility
       </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right">
-        Coloring by whether an operation is compatible for the TPU device.
+      <paper-tooltip animation-delay="0" for="nnp-compatibility-radio-button" position="right">
+        Coloring by whether an operation is compatible for the NNP device.
       </paper-tooltip>
 
     </paper-radio-group>

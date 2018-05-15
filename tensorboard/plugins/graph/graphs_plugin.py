@@ -25,6 +25,8 @@ from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 
+import json
+
 _PLUGIN_PREFIX_ROUTE = 'graphs'
 
 
@@ -40,6 +42,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._multiplexer = context.multiplexer
+    self.logdir = context.logdir
 
   def get_plugin_apps(self):
     return {
@@ -47,6 +50,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         '/runs': self.runs_route,
         '/run_metadata': self.run_metadata_route,
         '/run_metadata_tags': self.run_metadata_tags_route,
+        '/whitelist': self.whitelist_route,
     }
 
   def is_active(self):
@@ -145,3 +149,17 @@ class GraphsPlugin(base_plugin.TBPlugin):
     else:
       return http_util.Respond(request, '404 Not Found', 'text/plain',
                                code=404)
+
+  @wrappers.Request.application
+  def whitelist_route(self, request):
+    run = request.args.get('run')
+    whitelist = []
+    whitelist_path = '%s/%s/whitelist.json' % (self.logdir, run)
+    try:
+      file_content = json.load(open(whitelist_path))
+      if 'whitelist' in file_content:
+        whitelist = file_content['whitelist']
+    except IOError as e:
+      pass
+    return http_util.Respond(request, whitelist, 'application/json')
+
