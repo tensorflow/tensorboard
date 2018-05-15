@@ -384,15 +384,15 @@ module tf.graph.op {
     return WHITELIST.indexOf(opNode.op) != -1;
   }
 
-  export function checkOpsForCompatibility(graph: SlimGraph) {
+  export function checkOpsForCompatibility(graph: SlimGraph, whitelist: string[]) {
     _.each(graph.nodes, (node) => {
-      node.compatible = opValid(node);
+      node.compatible = whitelist.indexOf(node.name) !== -1;
       _.each(node.inEmbeddings, (node) => {
-        node.compatible = opValid(node);
+        node.compatible = whitelist.indexOf(node.name) !== -1;
       });
 
       _.each(node.outEmbeddings, (node) => {
-        node.compatible = opValid(node);
+        node.compatible = whitelist.indexOf(node.name) !== -1;
       });
     });
   }

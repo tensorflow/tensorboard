@@ -92,6 +92,7 @@ class GraphsPluginTest(tf.test.TestCase):
     self.assertIsInstance(routes['/runs'], collections.Callable)
     self.assertIsInstance(routes['/run_metadata'], collections.Callable)
     self.assertIsInstance(routes['/run_metadata_tags'], collections.Callable)
+    self.assertIsInstance(routes['/whitelist'], collections.Callable)
 
   def test_index(self):
     self.set_up_with_runs()
