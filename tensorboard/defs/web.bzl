@@ -14,13 +14,14 @@
 
 """Same as web_library but supports TypeScript."""
 
-load("//tensorboard/defs:defs.bzl", "legacy_js")
-
 load("//third_party:clutz.bzl",
      "CLUTZ_ATTRIBUTES",
      "CLUTZ_OUTPUTS",
      "clutz_aspect",
      "extract_dts_from_closure_libraries")
+
+load("@io_bazel_rules_closure//closure:defs.bzl",
+     "closure_js_aspect")
 
 load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "CLOSURE_LIBRARY_BASE_ATTR",
@@ -353,7 +354,7 @@ tf_web_library = rule(
         "deps": attr.label_list(
             aspects=[
                 clutz_aspect,
-                legacy_js,
+                closure_js_aspect,
             ]),
         "exports": attr.label_list(),
         "data": attr.label_list(cfg="data", allow_files=True),
