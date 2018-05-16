@@ -50,7 +50,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   # provided by this plugin. It must thus be URL-friendly. This field is also
   # used to uniquely identify this plugin throughout TensorBoard. See BasePlugin
   # for details.
-  plugin_name = 'interactiveinference'
+  plugin_name = 'whatif'
   examples = []
   updated_example_indices = set()
   sprite = None
@@ -156,8 +156,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     Returns:
       An empty response.
     """
-    index = int(request.form['index'])
+    print(str(request.form))
     example_json = request.form['example']
+    index = int(request.form['index'])
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
                                'application/json')

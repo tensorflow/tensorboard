@@ -1070,7 +1070,7 @@ limitations under the License.
                              'label_vocab_path': this.labelVocabPath};
         if (!this.local) {
           this.$.spinner.hidden = false;
-          const url = this.makeUrl_('/data/plugin/interactiveinference/infer',
+          const url = this.makeUrl_('/data/plugin/whatif/infer',
               inferParams);
           const inferContents = result => {
             this.$.spinner.hidden = true;
@@ -1111,7 +1111,7 @@ limitations under the License.
       updateExample_: function(exampleJson, index){
         this.fire('update-example', {'example': exampleJson, 'index': index});
         if (!this.local) {
-          var url = this.makeUrl_('/data/plugin/interactiveinference/update_example');
+          var url = this.makeUrl_('/data/plugin/whatif/update_example');
 
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
                                               'index': index});
@@ -1232,7 +1232,7 @@ limitations under the License.
       },
 
       getExamples_: function(){
-        var url = this.makeUrl_('/data/plugin/interactiveinference/examples_from_path',
+        var url = this.makeUrl_('/data/plugin/whatif/examples_from_path',
                                 {'examples_path': this.examplesPath,
                                  'max_examples': this.maxExamples});
 
@@ -1248,7 +1248,7 @@ limitations under the License.
         if (this.hasSprite) {
           this.$.dive.atlasUrl = null;
           if (!this.local) {
-            this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/interactiveinference/sprite', {});
+            this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/whatif/sprite', {});
           } else {
             this.$.dive.atlasUrl = this.localAtlasUrl;
           }
@@ -1278,7 +1278,7 @@ limitations under the License.
           const refreshDiveAfterDuplicate = result => {
            this.refreshDive_();
           };
-          const url = this.makeUrl_('/data/plugin/interactiveinference/duplicate_example',
+          const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
           this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
         } else {
@@ -1423,7 +1423,7 @@ limitations under the License.
 
         if (!this.local) {
           const url = tf_backend.addParams(
-            '/data/plugin/interactiveinference/infer_mutants', urlParams);
+            '/data/plugin/whatif/infer_mutants', urlParams);
           const chartMakerCallback = function(result){
             this.makeChartForFeature_(
               result.value.chartType, featureName, result.value.data);
@@ -1514,7 +1514,7 @@ limitations under the License.
         if (!this.local) {
           const url =
               tf_backend.addParams(
-                '/data/plugin/interactiveinference/eligible_features', {});
+                '/data/plugin/whatif/eligible_features', {});
           const setEligibleFields = result => {
             this.set('partialDepPlotEligibleFeatures', result.value);
           };
@@ -1526,7 +1526,7 @@ limitations under the License.
     });
 
     tf_tensorboard.registerDashboard({
-      plugin: 'interactiveinference',
+      plugin: 'whatif',
       elementName: 'tf-interactive-inference-dashboard',
       tabName: 'What-If Tool',
     });
