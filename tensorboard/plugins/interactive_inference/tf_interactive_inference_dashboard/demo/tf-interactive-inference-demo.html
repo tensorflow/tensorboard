@@ -83,6 +83,77 @@
             this.$.dash.inferences = inferences;
             this.indicesToInfer = {};
           });
+          this.$.dash.addEventListener('get-eligible-features', e => {
+            this.$.dash.partialDepPlotEligibleFeatures = [
+              {"observedMax": 59.0, "name": "age", "observedMin": 19.0},
+              {"observedMax": 14084.0, "name": "capital-gain", "observedMin": 0.0},
+              {"observedMax": 2042.0, "name": "capital-loss", "observedMin": 0.0},
+              {"name": "education", "samples": [['HS-grad'], ['Bachelors'], ['Some-college'], ['11th'], ['Masters'], ['9th'], ['Assoc-voc'], ['Assoc-acdm'], ['Doctorate'], ['7th-8th']]}, 
+              {"observedMax": 16.0, "name": "education-num", "observedMin": 4.0}, 
+              {"observedMax": 80.0, "name": "hours-per-week", "observedMin": 13.0}, 
+              {"name": "marital-status", "samples": [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated'], ['Married-AF-spouse'], ['Married-spouse-absent']]}, 
+              {"name": "native-country", "samples": [['United-States'], ['?'], ['Mexico'], ['India'], ['South'], ['Puerto-Rico'], ['Cuba'], ['Jamaica']]}, 
+              {"name": "occupation", "samples": [['Exec-managerial'], ['Prof-specialty'], ['Machine-op-inspct'], ['Adm-clerical'], ['Craft-repair'], ['Sales'], ['Other-service'], ['Tech-support'], ['Handlers-cleaners'], ['Transport-moving']]},
+              {"observedMax": 1.0, "name": "over_50k", "observedMin": 0.0},
+              {"name": "race", "samples": [['White'], ['Black'], ['Asian-Pac-Islander'], ['Amer-Indian-Eskimo']]},
+              {"name": "relationship", "samples": [['Husband'], ['Not-in-family'], ['Unmarried'], ['Own-child'], ['Wife']]},
+              {"name": "sex", "samples": [['Male'], ['Female']]},
+              {"name": "workclass", "samples": [['Private'], ['Self-emp-not-inc'], ['State-gov'], ['Federal-gov'], ['Local-gov'], ['?']]}];
+          });
+          this.$.dash.addEventListener('infer-mutants', async e => {
+            const examples = [];
+            const featureMapping = {
+              'age': 0,
+              'capital-gain': 1,
+              'capital-loss': 2,
+              'education': 3,
+              'education-num': 4,
+              'hours-per-week': 5,
+              'marital-status': 6,
+              'native-country': 7,
+              'occupation': 8,
+              'over_50k': 9,
+              'race': 10,
+              'relationship': 11,
+              'sex': 12,
+              'workclass': 13
+            };
+            const isNum = !this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples;
+            const numTrials = isNum ? 10 :
+              this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples.length;
+            for (let i = 0; i < numTrials; i++) {
+              const ex = JSON.parse(JSON.stringify(this.data[e.detail.example_index]));
+              if (isNum) {
+                ex.features.feature[e.detail.feature_name].floatList.value[0] =
+                  (+this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].observedMin) +
+                  i * (1 / (numTrials - 1) *(
+                    (+this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].observedMax) -
+                    (+this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].observedMin)));
+              } else {
+                ex.features.feature[e.detail.feature_name].bytesList.value[0] =
+                  btoa(this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples[i]);
+              }
+              examples.push(ex);
+            }
+            const tensors = [];
+            for (let i = 0; i < examples.length; i++) {
+              tensors.push(this.convertExToTensor(examples[i]));
+            }
+            const input = tf.concat(tensors).reshape([tensors.length, 104])
+            const res = this.model.predict(input, {batchSize: 128});
+            const predValues = await res.data();
+            const PRED_SIZE = 2;
+            const results = [];
+            for (let i = 0; i < examples.length; i++) {
+              const ex = examples[i];
+              const score = predValues[i * PRED_SIZE];
+              const step = isNum ? ex.features.feature[e.detail.feature_name].floatList.value[0]
+                    : [atob(ex.features.feature[e.detail.feature_name].bytesList.value[0])];
+              results.push({step: step, scalar: score});
+            }
+            this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
+                e.detail.feature_name, [{'1': results}]);
+          });
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
           });

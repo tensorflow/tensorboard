@@ -14,6 +14,7 @@
 # ==============================================================================
 """Shared utils among inference plugins."""
 
+import ast
 import collections
 import copy
 import stat
@@ -37,17 +38,16 @@ class VizParams(object):
       (as specified the user on the UI).
     x_max: The maximum value to use to generate mutants for the feature
       (as specified the user on the UI).
-    examples_path: A string CNS path.
-    num_examples_to_scan: Int number of examples to scan along `examples_path`
-      in order to generate statistics for mutants.
+    examples: A list of examples to scan in order to generate statistics for
+      mutants.
     num_mutants: Int number of mutants to generate per chart.
     feature_index_pattern: String that specifies a restricted set of indices
       of the feature to generate mutants for (useful for features that is a
       long repeated field. See `convert_pattern_to_indices` for more details.
   """
 
-  def __init__(self, x_min, x_max, examples_path, num_examples_to_scan,
-               num_mutants, feature_index_pattern):
+  def __init__(self, x_min, x_max, examples, num_mutants,
+      feature_index_pattern):
     """Inits VizParams may raise InvalidUserInputError for bad user inputs."""
 
     def to_float_or_none(x):
@@ -89,8 +89,7 @@ class VizParams(object):
 
     self.x_min = to_float_or_none(x_min)
     self.x_max = to_float_or_none(x_max)
-    self.examples_path = examples_path
-    self.num_examples_to_scan = to_int(num_examples_to_scan)
+    self.examples = examples
     self.num_mutants = to_int(num_mutants)
 
     # By default, there are no specific user-requested feature indices.
@@ -270,18 +269,16 @@ def get_categorical_feature_names(example):
   ])
 
 
-def get_numeric_features_to_observed_range(examples_path, num_examples):
+def get_numeric_features_to_observed_range(examples):
   """Returns numerical features and their observed ranges.
 
   Args:
-    examples_path: A string CNS path.
-    num_examples: Number of examples to read from examples_path.
+    examples: Examples to read to get ranges.
 
   Returns:
     A dict mapping feature_name -> {'observedMin': 'observedMax': } dicts,
     with a key for each numerical feature.
   """
-  examples = oss_utils.example_protos_from_path(examples_path, num_examples)
   observed_features = collections.defaultdict(list)  # name -> [value, ]
   for example in examples:
     for feature_name in get_numeric_feature_names(example):
@@ -298,15 +295,14 @@ def get_numeric_features_to_observed_range(examples_path, num_examples):
 
 
 #@memoize.Memoize()
-def get_categorical_features_to_sampling(examples_path, num_examples, top_k):
+def get_categorical_features_to_sampling(examples, top_k):
   """Returns categorical features and a sampling of their most-common values.
 
   The results of this slow function are used by the visualization repeatedly,
   so the results are cached.
 
   Args:
-    examples_path: A string CNS path.
-    num_examples: Number of examples to read from examples_path.
+    examples: Examples to read to get feature samples.
     top_k: Max number of samples to return per feature.
 
   Returns:
@@ -319,7 +315,6 @@ def get_categorical_features_to_sampling(examples_path, num_examples, top_k):
     for further expansion, and mirrors the structure used by
     `get_numeric_features_to_observed_range`.
   """
-  examples = oss_utils.example_protos_from_path(examples_path, num_examples)
   observed_features = collections.defaultdict(list)  # name -> [value, ]
   for example in examples:
     for feature_name in get_categorical_feature_names(example):
@@ -331,7 +326,7 @@ def get_categorical_features_to_sampling(examples_path, num_examples, top_k):
   result = {}
   for feature_name, feature_values in sorted(observed_features.iteritems()):
     samples = [
-        word
+        ast.literal_eval(word)
         for word, _ in collections.Counter(feature_values).most_common(top_k)
     ]
     result[feature_name] = {'samples': samples}
@@ -342,8 +337,7 @@ def make_mutant_features(original_feature, index_to_mutate, viz_params):
   """Return a list of `MutantFeatureValue`s that are variants of original."""
   lower = viz_params.x_min
   upper = viz_params.x_max
-  examples_path = viz_params.examples_path
-  num_examples_to_scan = viz_params.num_examples_to_scan
+  examples = viz_params.examples
   num_mutants = viz_params.num_mutants
 
   if original_feature.feature_type == 'float_list':
@@ -362,7 +356,7 @@ def make_mutant_features(original_feature, index_to_mutate, viz_params):
     ]
   elif original_feature.feature_type == 'bytes_list':
     feature_to_samples = get_categorical_features_to_sampling(
-        examples_path, num_examples_to_scan, num_mutants)
+        examples, num_mutants)
 
     # `mutant_values` looks like:
     # [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated']]

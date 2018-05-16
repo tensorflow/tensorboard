@@ -125,11 +125,9 @@ class InferenceUtilsTest(tf.test.TestCase):
 
   def test_get_numeric_features_to_observed_range(self):
     example = test_utils.make_fake_example(single_int_val=2)
-    examples_path = os.path.join(self.logdir, 'example.pb')
-    test_utils.write_out_examples([example], examples_path)
 
     data = inference_utils.get_numeric_features_to_observed_range(
-        examples_path, 1)
+        [example], 1)
 
     # Returns a sorted list by feature_name.
     self.assertDictEqual({
@@ -164,14 +162,11 @@ class InferenceUtilsTest(tf.test.TestCase):
         ['pony'])
 
     examples = [cat_woof_example] * 4 + [cow_example] * 5 + [pony_example] * 10
-    with tf.python_io.TFRecordWriter(self.examples_path) as writer:
-      for example in examples:
-        writer.write(example.SerializeToString())
 
     # If we stop sampling at the first 3 examples, the only example should be
     # cat_woof example.
     data = inference_utils.get_categorical_features_to_sampling(
-        self.examples_path, num_examples=3, top_k=1)
+        examples[0: 3], top_k=1)
     self.assertDictEqual({
         'non_numeric': {
             'samples': [str(['cat', 'woof'])]
@@ -180,7 +175,7 @@ class InferenceUtilsTest(tf.test.TestCase):
 
     # If we sample more examples, the top 3 examples should be cow and pony.
     data = inference_utils.get_categorical_features_to_sampling(
-        self.examples_path, num_examples=20, top_k=2)
+        examples[0: 20], top_k=2)
     self.assertDictEqual({
         'non_numeric': {
             'samples': [str(['pony']), str(['cow'])]

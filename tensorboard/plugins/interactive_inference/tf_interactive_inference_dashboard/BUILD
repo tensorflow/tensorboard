@@ -15,6 +15,7 @@ tf_web_library(
         ":tf_confusion_matrix",
         ":tf_inference_viewer",
         "//tensorboard/components/vz_example_viewer",
+        "//tensorboard/components/vz_bar_chart",
         "//tensorboard/components/vz_line_chart",
         "//tensorboard/plugins/inference/tf_inference_panel",
         "@ai_google_pair_facets//facets_dive/components/facets_dive",

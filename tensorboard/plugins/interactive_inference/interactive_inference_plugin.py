@@ -35,6 +35,13 @@ from tensorboard.plugins.inference.utils import inference_utils
 from tensorboard.plugins.inference.utils import oss_utils
 
 
+# Max number of examples to scan along the `examples_path` in order to return
+# statistics and sampling for features.
+NUM_EXAMPLES_TO_SCAN = 50
+
+# Max number of mutants to show per feature (i.e. num of points along x-axis).
+NUM_MUTANTS = 10
+
 class InteractiveInferencePlugin(base_plugin.TBPlugin):
   """Plugin for understanding/debugging model inference.
   """
@@ -81,6 +88,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         '/examples_from_path': self._examples_from_path_handler,
         '/sprite': self._serve_sprite,
         '/duplicate_example': self._duplicate_example,
+        '/infer_mutants': self._infer_mutants_handler,
+        '/eligible_features': self._eligible_features_from_example_handler,
     }
 
   def is_active(self):
@@ -301,3 +310,65 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       # Create the single sprite atlas image from these thumbnails.
       sprite = generate_image_from_thubnails(loop_out[2], thumbnail_dims)
       return sprite.eval()
+
+  @wrappers.Request.application
+  def _eligible_features_from_example_handler(self, request):
+    """Returns a list of JSON objects for each feature in the example.
+
+    Args:
+      request: A request for features.
+
+    Returns:
+      A list with a JSON object for each feature.
+      Numeric features are represented as {name: observedMin: observedMax:}.
+      Categorical features are repesented as {name: samples:[]}.
+    """
+    features_dict = (
+        inference_utils.get_numeric_features_to_observed_range(
+          self.examples[0: NUM_EXAMPLES_TO_SCAN]))
+
+    features_dict.update(
+        inference_utils.get_categorical_features_to_sampling(
+            self.examples[0: NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS))
+
+    # Massage the features_dict into a sorted list before returning because
+    # Polymer dom-repeat needs a list.
+    features_list = []
+    for k, v in sorted(features_dict.items()):
+      v['name'] = k
+      features_list.append(v)
+
+    return http_util.Respond(request, features_list, 'application/json')
+
+  @wrappers.Request.application
+  def _infer_mutants_handler(self, request):
+    """Returns JSON for the `vz-line-chart`s for a feature.
+
+    Args:
+      request: A request that should contain 'feature_name', 'example_index',
+         'inference_address', 'model_name', and 'model_type'.
+
+    Returns:
+      A list of JSON objects, one for each chart.
+    """
+    try:
+      if request.method != 'GET':
+        tf.logging.error('%s requests are forbidden.', request.method)
+        return wrappers.Response(status=405)
+
+      example_index = int(request.args.get('example_index', '0'))
+      feature_name = request.args.get('feature_name')
+      example = self.examples[example_index]
+      serving_bundle = inference_utils.ServingBundle(
+          request.args.get('inference_address'), request.args.get('model_name'),
+          request.args.get('model_type'))
+      viz_params = inference_utils.VizParams(
+          request.args.get('x_min'), request.args.get('x_max'),
+          self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
+          request.args.get('feature_index_pattern'))
+      json_mapping = inference_utils.mutant_charts_for_feature(
+          example, feature_name, serving_bundle, viz_params)
+      return http_util.Respond(request, json_mapping, 'application/json')
+    except common_utils.InvalidUserInputError as e:
+      return http_util.Respond(request, {'error': e.message},
+                               'application/json')

@@ -34,6 +34,7 @@ limitations under the License.
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-inference-panel/tf-inference-panel.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
@@ -161,6 +162,14 @@ limitations under the License.
         width: 75%;
       }
 
+      #partialplotsdialog {
+        overflow: auto;
+        display: flex;
+        padding: 20px;
+        width: 95%;
+        height: 95%
+      }
+
       .dashboard-layout {
         display: flex;
         height: 100%;
@@ -224,6 +233,63 @@ limitations under the License.
       .datapoint-controls-holder {
         display: flex;
       }
+
+      .tf-category-pane {
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        padding: 10px 15px;
+        text-align: left;
+      }
+
+      .tf-category-pane-content {
+        padding: 15px;
+        border: 1px solid #dedede;
+        border-top: none;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        background: white;
+      }
+
+      :host vz-line-chart {
+        height: 300px;
+        width: 400px;
+        display: inline-block;
+      }
+
+      :host vz-bar-chart {
+        height: 300px;
+        width: 400px;
+        display: inline-block;
+      }
+
+      .range-input-container {
+        position:absolute;
+        right: 4px;
+        top:4px;
+      }
+
+      .style-input {
+        width: 50px;
+        text-align: right;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+
+      .feature-container-holder {
+        width: 75%;
+        overflow: auto;
+      }
+
+      .partialplots-example {
+        width: 25%;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
         <div class="info-text">
@@ -275,6 +341,42 @@ limitations under the License.
         </paper-button>
 
     </paper-dialog>
+    <paper-dialog id="partialplotsdialog" with-backdrop>
+      <vz-example-viewer class="example-holder partialplots-example" json="{{selectedExampleAndInference.example}}" readonly="true">
+      </vz-example-viewer>
+      <div class="feature-container-holder">
+        <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
+          <div class="feature-container" on-tap="categoryPaneClicked" data-feature-name$="[[item.name]]">
+            <button class="tf-category-pane" style="position:relative">
+              [[item.name]]
+
+              <div class="range-input-container" hidden$="[[item.samples]]">
+                <span class="info-text"
+                      title="The range of mutant value (default values are automatically inferred from training data).">
+                  Mutant value range:
+                </span>
+                <input type="number"
+                        class="style-input x-min"
+                        value="[[item.observedMin]]"
+                        title="The minimum mutant value (default value is automatically inferred from training data).">
+                <input type="number"
+                        class="style-input x-max"
+                        value="[[item.observedMax]]"
+                        title="The maximum mutant value (default value is automatically inferred from training data).">
+
+                <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields.">
+                  <span class="info-text">Optional feature indices: </span>
+                  <input type="text"
+                          class="style-input feature-index-pattern">
+                </span>
+              </div>
+            </button>
+            <div class="tf-category-pane-content" hidden>
+            </div>
+          </div>
+        </template>
+      </div>
+    </paper-dialog>
     <div class="dashboard-layout">
       <div class="center">
         <facets-dive id="dive" data="[[visdata]]"
@@ -304,6 +406,9 @@ limitations under the License.
                   <paper-icon-button class="datapoint-control-button" icon="undo"
                       on-click="resetDatapoint_" alt="undo changes"
                       disabled="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                  </paper-icon-button>
+                  <paper-icon-button class="datapoint-control-button" icon="trending-up"
+                      on-click="showPartialDependencePlots_" alt="show partial dependence plots">
                   </paper-icon-button>
                 </div>
                 <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
@@ -403,6 +508,12 @@ limitations under the License.
     const maxStringLengthToDecode = 100000;
     const inferenceLabelStr = 'inference label';
     const inferenceValueStr = 'inference value';
+
+    function deleteElement($elt){
+      if ($elt && $elt.parentElement){
+        $elt.parentElement.removeChild($elt);
+      }
+    }
 
     Polymer({
       is: "tf-interactive-inference-dashboard",
@@ -519,6 +630,15 @@ limitations under the License.
         },
         local: Boolean,
         localAtlasUrl: String,
+        partialDepPlotEligibleFeatures: {
+          type: Array,
+          value: [] // [{name: 'a_numeric_feature', observedMin: -10, observedMax: 10},
+                    // {name: 'a_categorical_feature', samples: []}]
+        },
+        partialDepPlotPendingFeatures: {
+          type: Array,
+          value: []
+        }
       },
 
       // Required function.
@@ -529,8 +649,14 @@ limitations under the License.
         this.$.inferencesettings.toggle();
       },
 
+      showPartialDependencePlots_: function() {
+        this.$.partialplotsdialog.toggle();
+        requestAnimationFrame(() => this.populateTabs());
+      },
+
       selectedIndicesChanged_: function(event) {
         this.selected = event.detail.value;
+        this.selectedDataUpdated_();
       },
 
       statsChanged_: function(event) {
@@ -967,6 +1093,7 @@ limitations under the License.
         this.visdata[index] = this.exampleToDataPoint_(event.target.json);
         this.refreshDive_();
         this.updatedExample = true;
+        this.selectedDataUpdated_();
       },
 
       refreshDive_: function() {
@@ -1128,6 +1255,13 @@ limitations under the License.
         }
       },
 
+      selectedDataUpdated_: function() {
+        if (this.visdata && this.visdata.length > 0) {
+          this.partialDepPlotPendingFeatures = [];
+          this.populateTabs();
+        }
+      },
+
       copyDatapoint_: function() {
         const exampleJsonString = JSON.stringify(this.selectedExampleAndInference.example);
         const example = JSON.parse(exampleJsonString);
@@ -1137,6 +1271,7 @@ limitations under the License.
         this.visdata.push(this.exampleToDataPoint_(exampleAndInference.example));
         const duplicatedIndex = this.selected[0];
         this.selected[0] = this.visdata.length - 1;
+        this.selectedDataUpdated_();
         this.updatedExample = true;
         this.fire('duplicate-example', {'index': duplicatedIndex});
         if (!this.local) {
@@ -1166,13 +1301,234 @@ limitations under the License.
           this.selectedExampleAndInference.example);
         this.updateExample_(origExampleJsonString, this.selected[0]);
         this.refreshDive_();
-      }
+      },
+
+      addChart: function(chartType, featureName, data){
+        let $chart;
+        if (chartType == 'numeric'){
+          $chart = this.makeLineChart(data);
+        } else if (chartType == 'categorical'){
+          $chart = this.makeBarChart(data);
+        } else {
+          console.error('Unknown chartType: ' + chartType);
+        }
+
+        // Delete spinner
+        const $container = this.featureContainerByName(featureName);
+        deleteElement($container.querySelector('paper-spinner-lite'));
+
+        // Append chart
+        const $categoryPane = $container.querySelector('.tf-category-pane-content');
+        Polymer.dom($categoryPane).appendChild($chart);
+
+        // Remove the feature from pending queue, so it can be called again.
+        const feature_ind =
+          this.partialDepPlotPendingFeatures.indexOf(featureName);
+        if (feature_ind > -1) {
+          this.partialDepPlotPendingFeatures.splice(feature_ind, 1);
+        }
+      },
+
+      makeBarChart: function(data){
+        // categorical data:
+        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
+        //        {"step": ["Married-AF-spouse"], "scalar": 0.15340332686901093}]}
+
+        function convertPoint(point){
+          // point: {"step": ["Divorced"], "scalar": 0.1533520370721817}
+          return {
+            x: point.step,
+            y: point.scalar
+          };
+        };
+
+        // Convert the data into the format expected by vz-bar-chart.
+        const mapped = _.mapValues(data, function(pointsForSeries){
+          return _.map(pointsForSeries, point => convertPoint(point));
+        });
+
+        const $chart = document.createElement('vz-bar-chart');
+        $chart.data = mapped;
+
+        return $chart;
+      },
+
+      makeLineChart: function(data){
+        // numerical data:
+        // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
+        //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
+
+        const $chart = document.createElement('vz-line-chart');
+        const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+        const formatValueOrNaN = function (x) {
+          return Number.isNaN(x) ? 'NaN' : valueFormatter(x);
+        };
+        $chart.tooltipColumns = [
+          {
+              title: 'Name',
+              evaluate: function (d) { return d.dataset.metadata().name; },
+          },
+          {
+              title: 'Mutant Value',
+              evaluate: function (d) { return formatValueOrNaN(d.datum.step); },
+          },
+          {
+              title: 'Inference Result',
+              evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
+          },
+        ];
+
+        const series = _.keys(data);
+        $chart.setVisibleSeries(series);
+        series.forEach(label => $chart.setSeriesData(label, data[label]));
+        return $chart;
+      },
+
+      showToast: function(msg) {
+        const toast = document.createElement('paper-toast');
+        document.body.appendChild(toast);
+        toast.text = msg;
+        toast.show();
+
+        // Also, log to console.
+        console.error(msg);
+      },
+
+      makeChartForFeature_: function(chartType, featureName, data) {
+        data.forEach(subfeature => this.addChart(chartType, featureName, subfeature));
+      },
+
+      getInferenceVisualization: function(featureName, event){
+
+        // The range of x-values to interpolate over for numerical features.
+        const xMin = this.getUniqueByEvent(event, '.x-min').value;
+        const xMax = this.getUniqueByEvent(event, '.x-max').value;
+
+        // For a numerical feature with many repeated values, we allow users to restrict
+        // inference to a smaller range of indices by using a pattern
+        // (e.g. "0,2,4-6" runs inference for indices 0, 2, 4, 5, 6).
+        const featureIndexPattern = this.getUniqueByEvent(event, '.feature-index-pattern').value;
+
+        const urlParams = {
+          'feature_name': featureName,
+          'inference_address': this.inferenceAddress,
+          'model_name': this.modelName,
+          'model_type': this.modelType,
+          'x_min': xMin,
+          'x_max': xMax,
+          'feature_index_pattern': featureIndexPattern,
+          'example_index': this.selected[0]
+        };
+
+        if (!this.local) {
+          const url = tf_backend.addParams(
+            '/data/plugin/interactiveinference/infer_mutants', urlParams);
+          const chartMakerCallback = function(result){
+            this.makeChartForFeature_(
+              result.value.chartType, featureName, result.value.data);
+          };
+          this.makeAsyncRequest_(url, chartMakerCallback.bind(this));
+        } else {
+          this.fire('infer-mutants', urlParams);
+        }
+
+        const $container = this.featureContainerByName(
+          featureName).querySelector('.tf-category-pane-content');
+        const $spinner = document.createElement('paper-spinner-lite');
+        $spinner.setAttribute('active', true);
+        Polymer.dom($container).appendChild($spinner);
+      },
+
+      // Return the feature container associated with the feature name.
+      featureContainerByName: function(featureName){
+        return this.$$('[data-feature-name="' + featureName + '"]');
+      },
+
+      // Return the feature container associated with the specific event.
+      featureContainerByEvent: function(event){
+        let el = Polymer.dom(event).localTarget;
+        while (!el.classList.contains('feature-container')) {
+          el = el.parentNode;
+       }
+       return el;
+      },
+
+      // Returns bool for whether an ancestor has targetClass.
+      hasAncestorClass: function(event, targetClass){
+        let el = Polymer.dom(event).localTarget;
+        while (!el.classList.contains('feature-container')) {
+          if (el.classList.contains(targetClass)) {
+              return true;
+          }
+          el = el.parentNode;
+       }
+       return false;
+      },
+
+      // Get the selector within .feature-container for the event
+      getUniqueByEvent(event, selector){
+        return this.featureContainerByEvent(event).querySelector(selector);
+      },
+
+      shouldToggleCategoryPane: function(event){
+        return !this.hasAncestorClass(event, 'range-input-container');
+      },
+
+      categoryPaneClicked: function(event){
+        // Make sure the user meant to trigger a get-request.
+        if (!this.shouldToggleCategoryPane(event)){
+          return;
+        }
+
+        const $element = this.getUniqueByEvent(event, '.tf-category-pane-content');
+
+        if ($element.hasAttribute('hidden')){
+          $element.removeAttribute('hidden');
+
+          // Make sure the feature wasn't already requested.
+          const featureName = event.model.get('item').name;
+          if (this.partialDepPlotPendingFeatures.indexOf(featureName) > -1) {
+            return;
+          }
+          this.partialDepPlotPendingFeatures.push(featureName);
+
+          this.getInferenceVisualization(featureName, event);
+
+        } else {
+          $element.setAttribute('hidden', true);
+
+          // Delete all the charts, because the user is requesting a refresh.
+          let $charts = this.featureContainerByEvent(event).querySelectorAll('vz-line-chart');
+          $charts.forEach(function($chart){
+            deleteElement($chart);
+          });
+          $charts = this.featureContainerByEvent(event).querySelectorAll('vz-bar-chart');
+          $charts.forEach(function($chart){
+            deleteElement($chart);
+          });
+        }
+      },
+
+      populateTabs: function() {
+        if (!this.local) {
+          const url =
+              tf_backend.addParams(
+                '/data/plugin/interactiveinference/eligible_features', {});
+          const setEligibleFields = result => {
+            this.set('partialDepPlotEligibleFeatures', result.value);
+          };
+          this.makeAsyncRequest_(url, setEligibleFields);
+        } else {
+          this.fire('get-eligible-features');
+        }
+      },
     });
 
     tf_tensorboard.registerDashboard({
       plugin: 'interactiveinference',
       elementName: 'tf-interactive-inference-dashboard',
-      tabName: 'Interactive Inference',
+      tabName: 'What-If Tool',
     });
 
   </script>
