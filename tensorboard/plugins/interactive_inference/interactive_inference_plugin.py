@@ -195,8 +195,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """Returns JSON for the `vz-line-chart`s for a feature.
 
     Args:
-      request: A request that should contain 'feature_name', 'examples_path',
-        'inference_address', 'model_name', and 'label_vocab_path'.
+      request: A request that should contain 'inference_address', 'model_name',
+        'model_type, 'model_version', 'model_signature' and 'label_vocab_path'.
 
     Returns:
       A list of JSON objects, one for each chart.
@@ -219,7 +219,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
       serving_bundle = inference_utils.ServingBundle(
           request.args.get('inference_address'),
-          request.args.get('model_name'), request.args.get('model_type'))
+          request.args.get('model_name'), request.args.get('model_type'),
+          request.args.get('model_version'),
+          request.args.get('model_signature'))
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
 
@@ -347,7 +349,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
     Args:
       request: A request that should contain 'feature_name', 'example_index',
-         'inference_address', 'model_name', and 'model_type'.
+         'inference_address', 'model_name', 'model_type', 'model_version', and
+         'model_signature'.
 
     Returns:
       A list of JSON objects, one for each chart.
@@ -362,7 +365,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       example = self.examples[example_index]
       serving_bundle = inference_utils.ServingBundle(
           request.args.get('inference_address'), request.args.get('model_name'),
-          request.args.get('model_type'))
+          request.args.get('model_type'),
+          request.args.get('model_version'),
+          request.args.get('model_signature'))
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,

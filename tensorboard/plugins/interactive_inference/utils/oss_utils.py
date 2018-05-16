@@ -126,6 +126,10 @@ def call_servo(examples, serving_bundle):
   else:
     request = regression_pb2.RegressionRequest()
   request.model_spec.name = serving_bundle.model_name
+  if serving_bundle.model_version is not None:
+    request.model_spec.version.value = serving_bundle.model_version
+  if serving_bundle.signature is not None:
+    request.model_spec.signature_name = serving_bundle.signature
   request.input.example_list.examples.extend(examples)
 
   if serving_bundle.model_type == 'classification':

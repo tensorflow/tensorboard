@@ -72,9 +72,10 @@ tf_web_library(
     ],
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_storage",
         "@org_polymer_paper_button",
+        "@org_polymer_paper_radio_button",
+        "@org_polymer_paper_radio_group",
         "@org_polymer_paper_input",
     ],
 )

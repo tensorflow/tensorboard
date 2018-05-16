@@ -104,10 +104,20 @@ limitations under the License.
         margin: 20px 0px;
       }
 
+      .accept-button-holder {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+
+      .settings-button {
+        color: black;
+        margin-top: 10px;
+      }
+
       .button {
         font-size: 13px;
         margin: 10px 0 0 0;
-        background-color: #757575;
+        background-color: #f57c00;
         color: white;
       }
 
@@ -121,16 +131,6 @@ limitations under the License.
 
       .label-vocab-path-input {
         flex-grow: 1;
-      }
-
-      .help-icon {
-        width: 15px;
-        padding: 0px;
-        color: #757575;
-      }
-
-      .tooltip {
-        width: 300px;
       }
 
       .threshold-dropdown {
@@ -159,7 +159,7 @@ limitations under the License.
 
       .inference-settings {
         padding: 20px;
-        width: 75%;
+        width: 30%;
       }
 
       #partialplotsdialog {
@@ -193,6 +193,10 @@ limitations under the License.
 
       .bottom-side {
         flex-shrink: 0;
+        display: flex;
+        flex-direction: row-reverse;
+        padding: 0 8px 8px 0;
+        border-top: 1px solid gray;
       }
 
       .side-tabs {
@@ -292,53 +296,22 @@ limitations under the License.
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
-        <div class="info-text">
-            <p>
-              Load tf.Example protos and visualize them with
-              <a href="https://github.com/pair-code/facets" target="_blank">Facets Dive</a>.
-              Select examples then edit them below with the example viewer.
-            </p>
-            <p>
-              Perform inference on the examples through
-              <a href="https://github.com/tensorflow/serving" target="_blank">TensorFlow Serving</a>
-              and see the inference results.
-              After inference is run, Facets Dive will color each example by its inference result.
-            </p>
-            <p>
-              See <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">documentation</a>
-              for usage instructions.
-            </p>
-          </div>
-
-        <tf-inference-panel inference-address="{{inferenceAddress}}"
-                          model-name="{{modelName}}"
-                          examples-path="{{examplesPath}}"
-                          model-type="{{modelType}}"></tf-inference-panel>
-
-      <paper-input always-float-label type="number" label="Max examples"
-                   placeholder="[[maxExamples]]" value="{{maxExamples}}">
-      </paper-input>
-
-      <div class="input-and-tooltip">
-          <paper-input always-float-label label="Label vocab path (optional)"
-                       placeholder="[[labelVocabPath]]"
-                       value="{{labelVocabPath}}"
-                       class="label-vocab-path-input"
-                       disabled="[[shouldDisableVocabInput_(modelType)]]">
-          </paper-input>
-          <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-          <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
-            An optional text file for use with the results of a classification model.
-            Classification models return predicted classes as indices. If a vocab file is
-            provided, each predicted class index will be mapped to a label from this file for use
-            in the display. Each line in the file corresponds to a label, with the first line
-            corresponding to class index 0.
-          </paper-tooltip>
+        <tf-inference-panel
+            inference-address="{{inferenceAddress}}"
+            model-name="{{modelName}}"
+            examples-path="{{examplesPath}}"
+            model-type="{{modelType}}"
+            model-version="{{modelVersion}}"
+            model-signature="{{modelSignature}}"
+            max-examples="{{maxExamples}}"
+            label-vocab-path="{{labelVocabPath}}">
+        </tf-inference-panel>
+        <div class="accept-button-holder">
+          <paper-button on-click="getExamplesAndCloseSettings_" class="button"
+                        disabled="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
+            Accept
+          </paper-button>
         </div>
-        <paper-button on-click="getExamplesAndCloseSettings_" class="button"
-                      disabled="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
-          OK
-        </paper-button>
 
     </paper-dialog>
     <paper-dialog id="partialplotsdialog" with-backdrop>
@@ -492,7 +465,10 @@ limitations under the License.
                         disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
             Re-run inference
           </paper-button>
-          <paper-icon-button icon="settings" on-click="settingsClicked_"></paper-icon-button>
+          <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
+          <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+            <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
+          </a>
         </div>
       </div>
     </div>
@@ -503,8 +479,6 @@ limitations under the License.
   <script>
     "use strict";
 
-    const defaultMaxExamples = '1000';
-    const defaultLabelVocabPath = '';
     const maxStringLengthToDecode = 100000;
     const inferenceLabelStr = 'inference label';
     const inferenceValueStr = 'inference value';
@@ -542,17 +516,17 @@ limitations under the License.
         modelType: {
           type: String,
         },
+        modelSignature: {
+          type: String,
+        },
+        modelVersion: {
+          type: String,
+        },
         maxExamples: {
           type: Number,
-          value: tf_storage.getStringInitializer('maxExamples',
-                                                 {defaultValue: String(defaultMaxExamples)}),
-          observer: 'maxExamplesChanged_',
         },
         labelVocabPath: {
           type: String,
-          value: tf_storage.getStringInitializer('labelVocabPath',
-                                                 {defaultValue: defaultLabelVocabPath}),
-          observer: 'labelVocabPathChanged_',
         },
         inferences: {
           type: Object,
@@ -938,12 +912,6 @@ limitations under the License.
         return feature.length === 0;
       },
 
-      maxExamplesChanged_: tf_storage.getStringObserver(
-          'maxExamples', {defaultValue: defaultMaxExamples}),
-
-      labelVocabPathChanged_: tf_storage.getStringObserver(
-          'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
-
       computeSelectedExampleAndInference: function() {
         if (!this.selected || !this.examplesAndInferences) {
           this.selectedExampleAndInference = null;
@@ -968,10 +936,6 @@ limitations under the License.
       shouldDisableInferButton_: function(examples, modelName, inferenceAddress, updatedExample) {
         return examples.length == 0 || modelName.length == 0 || inferenceAddress.length == 0 ||
           !updatedExample;
-      },
-
-      shouldDisableVocabInput_: function(modelType) {
-        return modelType == 'regression';
       },
 
       newInferences_: function() {
@@ -1067,6 +1031,8 @@ limitations under the License.
         const inferParams = {'inference_address': this.inferenceAddress,
                              'model_name': this.modelName,
                              'model_type': this.modelType,
+                             'model_version': this.modelVersion,
+                             'model_signature': this.modelSignature,
                              'label_vocab_path': this.labelVocabPath};
         if (!this.local) {
           this.$.spinner.hidden = false;
@@ -1415,6 +1381,8 @@ limitations under the License.
           'inference_address': this.inferenceAddress,
           'model_name': this.modelName,
           'model_type': this.modelType,
+          'model_version': this.modelVersion,
+          'model_signature': this.modelSignature,
           'x_min': xMin,
           'x_max': xMax,
           'feature_index_pattern': featureIndexPattern,

@@ -167,12 +167,17 @@ class ServingBundle(object):
       requests to.
     model_name: The Servo model name.
     model_type: One of ['classification', 'regression'].
+    model_version: The version number of the model as a string. If set to an
+      empty string, the latest model will be used.
+    signature: The signature of the model to infer. If set to an empty string,
+      the default signuature will be used.
 
   Raises:
     ValueError: If ServingBundle fails init validation.
   """
 
-  def __init__(self, inference_address, model_name, model_type):
+  def __init__(self, inference_address, model_name, model_type, model_version,
+      signature):
     """Inits ServingBundle."""
     if not isinstance(inference_address, basestring):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -190,6 +195,9 @@ class ServingBundle(object):
       raise ValueError('Invalid model_type: {}'.format(model_type))
     self.model_type = model_type
 
+    self.model_version = int(model_version) if len(model_version) > 0 else None
+
+    self.signature = signature if len(signature) > 0 else None
 
 def proto_value_for_feature(example, feature_name):
   """Get the value of a feature from tf.train.Example regardless of feature type."""

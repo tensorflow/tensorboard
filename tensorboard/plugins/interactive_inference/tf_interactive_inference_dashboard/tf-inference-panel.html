@@ -18,7 +18,8 @@ limitations under the License.
 
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 
 <!--
@@ -40,24 +41,87 @@ limitations under the License.
       }
     </style>
     <style>
+      :host {
+        font-size: 14px;
+      }
       tf-option-selector .model-type-button {
         width: auto;
       }
-    </style>
+      .flex-holder {
+        display: flex;
+      }
+      .title {
+        font-size: 32px;
+        margin-bottom: 20px;
+      }
+      .help-icon {
+        width: 15px;
+        height: 15px;
+        padding: 0px;
+        color: #757575;
+      }
+      .tooltip {
+        width: 500px;
+      }
+      .input-in-row {
+        margin-right: 10px;
+      }
+      .model-type-label {
+        padding-top: 10px;
 
+      }
+      paper-input {
+        --paper-input-container-focus-color: #f57c00;
+      }
+      paper-radio-button {
+        --paper-radio-button-checked-color: #f57c00;
+        --paper-radio-button-checked-ink-color: #f57c00;
+      }
+    </style>
+    <div class="title">Set up your data and model</div>
     <paper-input always-float-label label="Inference address (blade address or host:port)"
                  placeholder="[[inferenceAddress]]" value="{{inferenceAddress}}">
     </paper-input>
-    <paper-input always-float-label label="Model name" placeholder="[[modelName]]"
-                 value="{{modelName}}">
-    </paper-input>
-    <tf-option-selector selected-id="{{modelType}}">
-      <paper-button class="model-type-button" id="classification">Classification</paper-button>
-      <paper-button class="model-type-button" id="regression">Regression</paper-button>
-    </tf-option-selector>
-    <paper-input always-float-label label="Examples path"
+    <div class="flex-holder">
+      <paper-input always-float-label label="Model name" placeholder="[[modelName]]"
+                  value="{{modelName}}" class="input-in-row">
+      </paper-input>
+      <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion]]"
+                  value="{{modelVersion}}" class="input-in-row">
+      </paper-input>
+      <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature]]"
+                  value="{{modelSignature}}" class="input-in-row">
+      </paper-input>
+    </div>
+    <div class="model-type-label">Model Type</div>
+    <paper-radio-group selected="{{modelType}}">
+      <paper-radio-button name="classification">Classification</paper-radio-button>
+      <paper-radio-button name="regression">Regression</paper-radio-button>
+    </paper-radio-group>
+    <paper-input always-float-label label="Path to examples"
                  value="{{examplesPath}}">
     </paper-input>
+    <paper-input always-float-label type="number"
+                 label="Maximum number of examples to load"
+                 placeholder="[[maxExamples]]" value="{{maxExamples}}">
+    </paper-input>
+
+    <paper-input always-float-label label="Path to label dictionary (optional)"
+                    placeholder="[[labelVocabPath]]"
+                    value="{{labelVocabPath}}"
+                    disabled="[[shouldDisableVocabInput_(modelType)]]">
+    </paper-input>
+    <div class="flex-holder">
+      <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+      <div>Maps predicted class indices to labels from text file</div>
+      <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
+        An optional text file for use with the results of a classification model.
+        Classification models return predicted classes as indices. If a vocab file is
+        provided, each predicted class index will be mapped to a label from this file for use
+        in the display. Each line in the file corresponds to a label, with the first line
+        corresponding to class index 0.
+      </paper-tooltip>
+    </div>
   </template>
 
   <script>
@@ -65,8 +129,12 @@ limitations under the License.
 
     const defaultExamplesPath = '';
     const defaultModelName = '';
+    const defaultModelVersion = '';
+    const defaultModelSignature = '';
     const defaultInferenceAddress = 'ml-serving-temp.prediction';
     const defaultModelType = 'classification';
+    const defaultMaxExamples = '1000';
+    const defaultLabelVocabPath = '';
 
     Polymer({
       is: "tf-inference-panel",
@@ -100,19 +168,63 @@ limitations under the License.
           observer: 'modelTypeChanged_',
           notify: true,
         },
+        modelVersion: {
+          type: String,
+          value: tf_storage.getStringInitializer('modelVersion',
+                                                 {defaultValue: defaultModelVersion}),
+          observer: 'modelVersionChanged_',
+          notify: true,
+        },
+        modelSignature: {
+          type: String,
+          value: tf_storage.getStringInitializer('modelSignature',
+                                                 {defaultValue: defaultModelSignature}),
+          observer: 'modelSignatureChanged_',
+          notify: true,
+        },
+        maxExamples: {
+          type: Number,
+          value: tf_storage.getStringInitializer('maxExamples',
+                                                 {defaultValue: String(defaultMaxExamples)}),
+          observer: 'maxExamplesChanged_',
+          notify: true,
+        },
+        labelVocabPath: {
+          type: String,
+          value: tf_storage.getStringInitializer('labelVocabPath',
+                                                 {defaultValue: defaultLabelVocabPath}),
+          observer: 'labelVocabPathChanged_',
+          notify: true,
+        },
       },
 
-      examplesPathChanged_: tf_storage.getStringObserver('examplesPath',
-                                                         {defaultValue: defaultExamplesPath}),
+      examplesPathChanged_: tf_storage.getStringObserver(
+        'examplesPath', {defaultValue: defaultExamplesPath}),
 
-      modelNameChanged_: tf_storage.getStringObserver('modelName',
-                                                      {defaultValue: defaultModelName}),
+      modelNameChanged_: tf_storage.getStringObserver(
+        'modelName', {defaultValue: defaultModelName}),
 
-      inferenceAddressChanged_: tf_storage.getStringObserver('inferenceAddress',
-                                                             {defaultValue: defaultInferenceAddress}),
+      inferenceAddressChanged_: tf_storage.getStringObserver(
+        'inferenceAddress',  {defaultValue: defaultInferenceAddress}),
 
-      modelTypeChanged_: tf_storage.getStringObserver('modelType',
-                                                      {defaultValue: defaultModelType}),
+      modelTypeChanged_: tf_storage.getStringObserver(
+        'modelType', {defaultValue: defaultModelType}),
+
+      modelVersionChanged_: tf_storage.getStringObserver(
+        'modelVersion', {defaultValue: defaultModelVersion}),
+
+      modelSignatureChanged_: tf_storage.getStringObserver(
+        'modelSignature', {defaultValue: defaultModelSignature}),
+
+      maxExamplesChanged_: tf_storage.getStringObserver(
+        'maxExamples', {defaultValue: defaultMaxExamples}),
+
+      labelVocabPathChanged_: tf_storage.getStringObserver(
+        'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
+
+      shouldDisableVocabInput_: function(modelType) {
+        return modelType == 'regression';
+      },
     });
 
   </script>
