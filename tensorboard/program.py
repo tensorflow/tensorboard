@@ -203,8 +203,8 @@ def create_tb_app(plugins, assets_zip_provider=None):
   """
   if not FLAGS.db and not FLAGS.logdir:
     raise ValueError('A logdir or db must be specified. '
-                     'For example `tensorboard --logdir mylogdir`'
-                     'or `tensorboard --db sqlite:~/.tensorboard.db`.'
+                     'For example `tensorboard --logdir mylogdir` '
+                     'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                      'Run `tensorboard --helpfull` for details and examples.')
   return application.standard_tensorboard_wsgi(
       assets_zip_provider=assets_zip_provider,
