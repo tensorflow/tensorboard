@@ -19,7 +19,7 @@ from grpc.beta import implementations
 from urlparse import urlparse
 import tensorflow as tf
 
-from tensorboard.plugins.inference.utils import common_utils
+from tensorboard.plugins.interactive_inference.utils import common_utils
 
 from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import prediction_service_pb2

@@ -17,7 +17,7 @@ syntax = "proto3";
 import "tensorflow_serving/apis/classification.proto";
 import "tensorflow_serving/apis/regression.proto";
 
-package tensorboard.plugins.inference.utils;
+package tensorboard.plugins.interactive_inference.utils;
 
 message InferenceResult {
   oneof result {

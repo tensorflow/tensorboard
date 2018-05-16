@@ -30,9 +30,9 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 
-from tensorboard.plugins.inference.utils import common_utils
-from tensorboard.plugins.inference.utils import inference_utils
-from tensorboard.plugins.inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import common_utils
+from tensorboard.plugins.interactive_inference.utils import inference_utils
+from tensorboard.plugins.interactive_inference.utils import oss_utils
 
 
 # Max number of examples to scan along the `examples_path` in order to return

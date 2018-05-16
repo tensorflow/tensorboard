@@ -13,11 +13,11 @@ tf_web_library(
     path = "/tf-interactive-inference-dashboard",
     deps = [
         ":tf_confusion_matrix",
+        ":tf_inference_panel",
         ":tf_inference_viewer",
         "//tensorboard/components/vz_example_viewer",
         "//tensorboard/components/vz_bar_chart",
         "//tensorboard/components/vz_line_chart",
-        "//tensorboard/plugins/inference/tf_inference_panel",
         "@ai_google_pair_facets//facets_dive/components/facets_dive",
         "@ai_google_pair_facets//facets_overview/components/facets_overview",
         "@org_polymer_iron_collapse",
@@ -62,5 +62,19 @@ tf_web_library(
     path = "/tf-interactive-inference-dashboard",
     deps = [
         "//tensorboard/components/tf_imports:polymer",
+    ],
+)
+
+tf_web_library(
+    name = "tf_inference_panel",
+    srcs = [
+        "tf-inference-panel.html",
+    ],
+    path = "/tf-interactive-inference-dashboard",
+    deps = [
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_storage",
+        "@org_polymer_paper_button",
+        "@org_polymer_paper_input",
     ],
 )

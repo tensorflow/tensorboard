@@ -25,7 +25,7 @@ py_library(
     deps = [
         ":common_utils",
         ":oss_utils",
-        ":interfence_py_library",
+        ":inference_py_library",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -54,7 +54,7 @@ py_proto_library(
 )
 
 py_library(
-    name = "interfence_py_library",
+    name = "inference_py_library",
     srcs = ["inference_pb2.py"],
     srcs_version = "PY2AND3",
 )

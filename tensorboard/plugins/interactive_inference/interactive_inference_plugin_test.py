@@ -35,9 +35,9 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 from tensorflow_serving.apis import regression_pb2
 
-from tensorboard.plugins.inference.utils import inference_utils
-from tensorboard.plugins.inference.utils import oss_utils
-from tensorboard.plugins.inference.utils import test_utils
+from tensorboard.plugins.interactive_inference.utils import inference_utils
+from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import test_utils
 from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 
 class InferencePluginTest(tf.test.TestCase):
