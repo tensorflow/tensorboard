@@ -12,12 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-suite('graph', () => {
-  let assert = chai.assert;
-
-  test('graphlib exists', () => { assert.isTrue(graphlib != null); });
-
-  // TODO: write tests.
-
+describe('graph', function () {
+    var assert = chai.assert;
+    it('graphlib exists', function () { assert.isTrue(graphlib != null); });
+    // TODO: write tests.
 });
