@@ -29,30 +29,38 @@ limitations under the License.
       th, td {
         padding: 3px;
       }
-      .top-row {
-        border-bottom: 1px solid black;
+      .pred-label {
+        text-align: left;
+        font-size: 10px;
       }
-      .first-column {
-        border-right: 1px solid black;
+      .actual-label {
+        text-align: right;
+        font-size: 10px;
+      }
+      .correct {
+        background: DarkSeaGreen;
+      }
+      .incorrect {
+        background: LightCoral;
       }
     </style>
     <table>
       <tr>
-        <th class="first-column top-row"></th>
-        <th class="top-row">Pred 1</th>
-        <th class="top-row">Pred 0</th>
+        <th></th>
+        <th class="pred-label">Predicted<br/>1</th>
+        <th class="pred-label">Predicted<br/>0</th>
         <th></th>
       </tr>
       <tr>
-        <th class="first-column">True 1</th>
-        <td>[[getText(counts.tp, total)]]</td>
-        <td>[[getText(counts.fn, total)]]</td>
+        <th class="actual-label">Actual<br/>1</th>
+        <td class="correct">[[getText(counts.tp, total)]]</td>
+        <td class="incorrect">[[getText(counts.fn, total)]]</td>
         <td>[[getTotalText(counts.tp, counts.fn, total)]]</td>
       </tr>
       <tr>
-        <th class="first-column">True 0</th>
-        <td>[[getText(counts.fp, total)]]</td>
-        <td>[[getText(counts.tn, total)]]</td>
+        <th class="actual-label">Actual<br/>0</th>
+        <td class="incorrect">[[getText(counts.fp, total)]]</td>
+        <td class="correct">[[getText(counts.tn, total)]]</td>
         <td>[[getTotalText(counts.fp, counts.tn, total)]]</td>
       </tr>
       <tr>

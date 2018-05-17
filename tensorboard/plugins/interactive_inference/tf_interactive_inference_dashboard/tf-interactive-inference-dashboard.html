@@ -135,6 +135,7 @@ limitations under the License.
 
       .threshold-dropdown {
         display: block;
+        width: 50%;
       }
 
       .slider-label {
@@ -145,7 +146,7 @@ limitations under the License.
 
       .slider {
         margin-top: -30px;
-        width: 100%;
+        width: 50%;
         --paper-slider-input: {
           width: 80px;
         }
@@ -376,8 +377,8 @@ limitations under the License.
         <div class="side-content">
           <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
             <paper-tab>Datapoint</paper-tab>
-            <paper-tab>Dataset Statistics</paper-tab>
-            <paper-tab>Model Configuration</paper-tab>
+            <paper-tab>Features</paper-tab>
+            <paper-tab>Model</paper-tab>
           </paper-tabs>
           <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
             <div class="datapoint-tab">
@@ -622,7 +623,7 @@ limitations under the License.
         },
         sideTabSelected: {
           type: Number,
-          value: 0,
+          value: 1,
         },
         local: Boolean,
         localAtlasUrl: String,
@@ -661,6 +662,9 @@ limitations under the License.
       selectedIndicesChanged_: function(event) {
         this.selected = event.detail.value;
         this.selectedDataUpdated_();
+        if (this.selected.length > 0) {
+          this.sideTabSelected = 0;
+        }
       },
 
       selectNextDatapoint_: function() {
