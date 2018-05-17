@@ -32,8 +32,11 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
+        "//tensorboard/plugins/graph/tf_graph_node_search:legacy",
         "//third_party/javascript/polymer/v1/paper-button:lib",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-icon-button:lib",
+        "//third_party/javascript/polymer/v1/paper-item:lib",
         "//third_party/javascript/polymer/v1/paper-menu:lib",
         "//third_party/javascript/polymer/v1/paper-radio-group:lib",
         "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
@@ -41,4 +44,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-
