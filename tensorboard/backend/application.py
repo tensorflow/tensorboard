@@ -71,6 +71,20 @@ PLUGINS_LISTING_ROUTE = '/plugins_listing'
 _VALID_PLUGIN_RE = re.compile(r'^[A-Za-z0-9_.-]+$')
 
 
+def tensor_size_guidance_from_flags(flags):
+  """Apply user per-summary size guidance overrides."""
+
+  tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
+  if not flags or not flags.samples_per_plugin:
+    return tensor_size_guidance
+
+  for token in flags.samples_per_plugin.split(','):
+    k, v = token.strip().split('=')
+    tensor_size_guidance[k] = int(v)
+
+  return tensor_size_guidance
+
+
 def standard_tensorboard_wsgi(
     logdir,
     purge_orphaned_data,
@@ -80,6 +94,7 @@ def standard_tensorboard_wsgi(
     assets_zip_provider=None,
     path_prefix="",
     window_title="",
+    max_reload_threads=None,
     flags=None):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
@@ -89,14 +104,17 @@ def standard_tensorboard_wsgi(
     reload_interval: The interval at which the backend reloads more data in
         seconds.  Zero means load once at startup; negative means never load.
     plugins: A list of constructor functions for TBPlugin subclasses.
-    path_prefix: A prefix of the path when app isn't served from root.
     db_uri: A String containing the URI of the SQL database for persisting
         data, or empty for memory-only mode.
     assets_zip_provider: See TBContext documentation for more information.
         If this value is not specified, this function will attempt to load
         the `tensorboard.default` module to use the default. This behavior
         might be removed in the future.
+    path_prefix: A prefix of the path when app isn't served from root.
     window_title: A string specifying the the window title.
+    max_reload_threads: The max number of threads that TensorBoard can use
+        to reload runs. Not relevant for db mode. Each thread reloads one run
+        at a time.
     flags: A dict of the runtime flags provided to the application, or None.
   Returns:
     The new TensorBoard WSGI application.
@@ -106,8 +124,9 @@ def standard_tensorboard_wsgi(
     assets_zip_provider = default.get_assets_zip_provider()
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
-      tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
-      purge_orphaned_data=purge_orphaned_data)
+      tensor_size_guidance=tensor_size_guidance_from_flags(flags),
+      purge_orphaned_data=purge_orphaned_data,
+      max_reload_threads=max_reload_threads)
   db_module, db_connection_provider = get_database_info(db_uri)
   # In DB mode, always disable loading event files.
   if db_connection_provider:
@@ -151,10 +170,10 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     ValueError: If something is wrong with the plugin configuration.
   """
   path_to_run = parse_event_files_spec(logdir)
-  if reload_interval > 0:
+  if reload_interval >= 0:
+    # We either reload the multiplexer once when TensorBoard starts up, or we
+    # continuously reload the multiplexer.
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
-  elif reload_interval == 0:
-    reload_multiplexer(multiplexer, path_to_run)
   return TensorBoardWSGI(plugins, path_prefix)
 
 
@@ -341,28 +360,38 @@ def reload_multiplexer(multiplexer, path_to_run):
 def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   """Starts a thread to automatically reload the given multiplexer.
 
-  The thread will reload the multiplexer by calling `ReloadMultiplexer` every
-  `load_interval` seconds, starting immediately.
+  If `load_interval` is positive, the thread will reload the multiplexer
+  by calling `ReloadMultiplexer` every `load_interval` seconds, starting
+  immediately. Otherwise, reloads the multiplexer once and never again.
 
   Args:
     multiplexer: The `EventMultiplexer` to add runs to and reload.
     path_to_run: A dict mapping from paths to run names, where `None` as the run
       name is interpreted as a run name equal to the path.
-    load_interval: How many seconds to wait after one load before starting the
-      next load.
+    load_interval: An integer greater than or equal to 0. If positive, how many
+      seconds to wait after one load before starting the next load. Otherwise,
+      reloads the multiplexer once and never again (no continuous reloading).
 
   Returns:
     A started `threading.Thread` that reloads the multiplexer.
+
+  Raises:
+    ValueError: If `load_interval` is negative.
   """
+  if load_interval < 0:
+    raise ValueError('load_interval is negative: %d' % load_interval)
 
   # We don't call multiplexer.Reload() here because that would make
   # AddRunsFromDirectory block until the runs have all loaded.
-  def _reload_forever():
+  def _reload():
     while True:
       reload_multiplexer(multiplexer, path_to_run)
+      if load_interval == 0:
+        # Only load the multiplexer once. Do not continuously reload.
+        break
       time.sleep(load_interval)
 
-  thread = threading.Thread(target=_reload_forever, name='Reloader')
+  thread = threading.Thread(target=_reload, name='Reloader')
   thread.daemon = True
   thread.start()
   return thread

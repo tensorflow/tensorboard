@@ -75,16 +75,16 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
           "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/LICENSE.txt",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/LICENSE.txt",
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
           ],
-          "f0e4b0878e34aefc2e2c688b9bde0633c46c3184afc45dde21eca4d94b363f20": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/tsc.js",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/tsc.js",
+          "142835127a60e881e0cc476678392179b5c77565e3a1b930a4ba032c0fa04de4": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/tsc.js",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/tsc.js",
           ],
-          "68a49bf51313783f533d2e0db400f5d16cba71233f5c01dfca55ce5f97015f0c": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/lib.es6.d.ts",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.5.3/lib/lib.es6.d.ts",
+          "aeaa3ed17f0fca1e8519e323dfbddee1fb8870f1fd4752a89a6578580b17a88c": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/lib.es6.d.ts",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/lib.es6.d.ts",
           ],
       },
       extra_build_file_content = "\n".join([
@@ -116,11 +116,11 @@ def tensorboard_js_workspace():
   native.new_http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
-      sha256 = "00c24702517628953dbb5aaf40e7e587d860bbb64ac71a2cdc1687dd691382f2",
-      strip_prefix = "clutz-1d731dc0e9bd3ca652e41240298a3693369d1289",
+      sha256 = "7a5c785dbcc3ae0daa1fcf4507de6a23bbecdb2bf80460651e4c2b88c1ad7582",
+      strip_prefix = "clutz-7f1a3ee9ad9f85a9056084dc039496bbd35e11f6",
       urls = [
-          "https://mirror.bazel.build/github.com/angular/clutz/archive/1d731dc0e9bd3ca652e41240298a3693369d1289.tar.gz",  # 2017-11-02
-          "https://github.com/angular/clutz/archive/1d731dc0e9bd3ca652e41240298a3693369d1289.tar.gz",
+          "https://mirror.bazel.build/github.com/angular/clutz/archive/7f1a3ee9ad9f85a9056084dc039496bbd35e11f6.tar.gz",  # 2017-11-02
+          "https://github.com/angular/clutz/archive/7f1a3ee9ad9f85a9056084dc039496bbd35e11f6.tar.gz",
       ],
   )
 
@@ -128,21 +128,21 @@ def tensorboard_js_workspace():
       name = "com_google_javascript_closure_compiler_externs",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls_extract = {
-          "1dfaafac60eb3826b2cda4a4bd293d139d6a631c0035c43b66cd444ebee11228": [
-              "https://mirror.bazel.build/github.com/google/closure-compiler/archive/v20171023.tar.gz",
-              "https://github.com/google/closure-compiler/archive/v20171023.tar.gz",
+          "55bdf8dc5d74534b63edbce5f510557a18a2b7aa578938ba300eb65f2da48092": [
+              "https://mirror.bazel.build/github.com/google/closure-compiler/archive/v20180402.tar.gz",
+              "https://github.com/google/closure-compiler/archive/v20180402.tar.gz",
           ],
       },
-      strip_prefix = {"v20171023.tar.gz": "closure-compiler-20171023/externs"},
+      strip_prefix = {"v20180402.tar.gz": "closure-compiler-20180402/externs"},
   )
 
   filegroup_external(
       name = "com_google_javascript_closure_compiler_externs_polymer",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
-          "23baad9a200a717a821c6df504c84d3a893d7ea9102b14876eb80097e3b94292": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/google/closure-compiler/0e8dc5597a295ee259e3fecd98d6535dc621232f/contrib/externs/polymer-1.0.js",  # 2017-05-27
-              "https://raw.githubusercontent.com/google/closure-compiler/0e8dc5597a295ee259e3fecd98d6535dc621232f/contrib/externs/polymer-1.0.js",
+          "737af73d7b02226e6e1516044a8eb8283376d44f64839979936ca163c00900f4": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
+              "https://raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
           ],
       },
   )
@@ -152,6 +152,10 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # MIT
       sha256_urls = {
+          "5eb9be209f84c4588f573b9abd8e13c04ce187ad6f40e8b12993d00b1428de54": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/mrdoob/three.js/r77/LICENSE",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r77/LICENSE",
+          ],
           "881cc79c84c34a1f61f8c8af0ee3f237d83a2eda3868720fdcb47bcacf8da44a": [
               "https://mirror.bazel.build/raw.githubusercontent.com/mrdoob/three.js/r77/build/three.js",
               "https://raw.githubusercontent.com/mrdoob/three.js/r77/build/three.js",
@@ -177,6 +181,7 @@ def tensorboard_js_workspace():
       strip_prefix = "lodash-3.10.1",
       path = "/lodash",
       srcs = ["lodash.js"],
+      extra_build_file_content = "exports_files([\"LICENSE\"])",
   )
 
   filegroup_external(

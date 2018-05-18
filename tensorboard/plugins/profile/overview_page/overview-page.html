@@ -162,15 +162,6 @@ You may obtain a copy of the License at
    Polymer({
      is: 'overview-page',
      properties: {
-       _requestManager: {
-         type: Object,
-         readOnly: true,
-         value: () => new tf_backend.RequestManager(),
-       },
-       run: {
-         type: String,
-         observer: '_reloadToolData',
-       },
        _data: {
          type: Object,
          observer: '_updateView',
@@ -206,17 +197,6 @@ You may obtain a copy of the License at
      _build_target: String,
      _statement: String,
 
-     _reloadToolData: function(run) {
-       this._requestManager.request(tf_backend.addParams(
-         tf_backend.getRouter().pluginRoute('profile', '/data'),
-         {tag: 'overview_page', run})
-       ).then((data) => {
-         if (data) {
-	   this.set('_data', data);
-         }
-       });
-     },
-
      /* Toggles _show_top_ops_table */
      onClickTopOps: function(e) {
        this.set('_show_top_ops_table', !this._show_top_ops_table);
@@ -229,6 +209,7 @@ You may obtain a copy of the License at
 
      /* Updates view according to new data */
      _updateView: function() {
+       if (this._data == null) return;
        var generalAnalysisJson = this._data[0];
        var inputAnalysisJson = this._data[1];
        var runEnvironmentJson = this._data[2];

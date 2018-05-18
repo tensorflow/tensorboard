@@ -1,8 +1,19 @@
+# Release 1.8.0
+
+The 1.8 minor series tracks TensorFlow 1.8.
+
+## Bug fixes
+
+- #1082 - fixes rendering for certain graphs with metaedges/function nodes
+- #1097 - correction to debugger plugin keras code snippet (PR #1100)
+- #1111 - event reader logic now supports TF 1.8 GetNext() API (PR #1086)
+
+
 # Release 1.7.0
 
 The 1.7 minor series tracks TensorFlow 1.7.
 
-## Hightlights
+## Highlights
 
 - (Beta) New Beholder plugin that shows a live video feed of tensor data during
   model training, by @chrisranderson. Caveat: only currently recommended for use

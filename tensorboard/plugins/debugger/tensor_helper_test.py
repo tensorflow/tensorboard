@@ -101,6 +101,42 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertAllClose([255, 255, 255], decoded_x[1, 1, :])  # 3.3.
     self.assertAllClose(tensor_helper.NAN_RGB, decoded_x[1, 2, :])  # nan.
 
+  def testArrayViewSlicingDownNumericTensorToOneElement(self):
+    x = np.array([[1.1, 2.2, np.inf], [-np.inf, 3.3, np.nan]], dtype=np.float32)
+    dtype, shape, data = tensor_helper.array_view(x, slicing='[0,0]')
+    self.assertEqual('float32', dtype)
+    self.assertEqual(tuple(), shape)
+    self.assertTrue(np.allclose(1.1, data))
+
+  def testArrayViewSlicingStringTensorToNonScalarSubArray(self):
+    # Construct a numpy array that corresponds to a TensorFlow string tensor
+    # value.
+    x = np.array([['foo', 'bar', 'qux'], ['baz', 'corge', 'grault']],
+                 dtype=np.object)
+    dtype, shape, data = tensor_helper.array_view(x, slicing='[:2, :2]')
+    self.assertEqual('string', dtype)
+    self.assertEqual((2, 2), shape)
+    self.assertEqual([['foo', 'bar'], ['baz', 'corge']], data)
+
+  def testArrayViewSlicingStringTensorToScalar(self):
+    # Construct a numpy array that corresponds to a TensorFlow string tensor
+    # value.
+    x = np.array([['foo', 'bar', 'qux'], ['baz', 'corge', 'grault']],
+                 dtype=np.object)
+    dtype, shape, data = tensor_helper.array_view(x, slicing='[1, 1]')
+    self.assertEqual('string', dtype)
+    self.assertEqual((1, 1), shape)
+    self.assertEqual([['corge']], data)
+
+  def testArrayViewOnScalarString(self):
+    # Construct a numpy scalar that corresponds to a TensorFlow string tensor
+    # value.
+    x = np.array('foo', dtype=np.object)
+    dtype, shape, data = tensor_helper.array_view(x)
+    self.assertEqual('string', dtype)
+    self.assertEqual(tuple(), shape)
+    self.assertEqual('foo', data)
+
   def testImagePngMappingWorksForArrayWithOnlyInfAndNaN(self):
     x = np.array([[np.nan, -np.inf], [np.inf, np.nan]], dtype=np.float32)
     dtype, shape, data = tensor_helper.array_view(x, mapping="image/png")

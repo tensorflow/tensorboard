@@ -82,25 +82,42 @@ def array_view(array, slicing=None, mapping=None):
   """
 
   dtype = str(array.dtype)
+  # String-type TensorFlow Tensors are represented as object-type arrays in
+  # numpy. We map the type name back to 'string' for clarity.
+  if dtype == 'object':
+    dtype = 'string'
   sliced_array = (array[command_parser._parse_slices(slicing)] if slicing
                   else array)
-  shape = sliced_array.shape
-  if mapping == "image/png":
-    if len(sliced_array.shape) == 2:
-      return dtype, shape, array_to_base64_png(sliced_array)
-    elif len(sliced_array.shape) == 3:
-      raise NotImplementedError(
-          "image/png mapping for 3D array has not been implemented")
-    else:
-      raise ValueError("Invalid rank for image/png mapping: %d" %
-                       len(sliced_array.shape))
-  elif mapping == 'health-pill':
-    health_pill = health_pill_calc.calc_health_pill(array)
-    return dtype, shape, health_pill
-  elif mapping is None or mapping == '' or  mapping.lower() == 'none':
-    return dtype, shape, sliced_array.tolist()
+
+  if np.isscalar(sliced_array) and str(dtype) == 'string':
+    # When a string Tensor (for which dtype is 'object') is sliced down to only
+    # one element, it becomes a string, instead of an numpy array.
+    # We preserve the dimensionality of original array in the returned shape
+    # and slice.
+    ndims = len(array.shape)
+    slice_shape = []
+    for _ in range(ndims):
+      sliced_array = [sliced_array]
+      slice_shape.append(1)
+    return dtype, tuple(slice_shape), sliced_array
   else:
-    raise ValueError("Invalid mapping: %s" % mapping)
+    shape = sliced_array.shape
+    if mapping == "image/png":
+      if len(sliced_array.shape) == 2:
+        return dtype, shape, array_to_base64_png(sliced_array)
+      elif len(sliced_array.shape) == 3:
+        raise NotImplementedError(
+            "image/png mapping for 3D array has not been implemented")
+      else:
+        raise ValueError("Invalid rank for image/png mapping: %d" %
+                         len(sliced_array.shape))
+    elif mapping == 'health-pill':
+      health_pill = health_pill_calc.calc_health_pill(array)
+      return dtype, shape, health_pill
+    elif mapping is None or mapping == '' or  mapping.lower() == 'none':
+      return dtype, shape, sliced_array.tolist()
+    else:
+      raise ValueError("Invalid mapping: %s" % mapping)
 
 
 IMAGE_COLOR_CHANNELS = 3

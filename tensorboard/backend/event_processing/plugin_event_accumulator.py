@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import os
 import threading
 
 import six
@@ -27,6 +26,7 @@ import tensorflow as tf
 from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
+from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
 
@@ -55,23 +55,6 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
 }
 
 _TENSOR_RESERVOIR_KEY = "."  # arbitrary
-
-
-def IsTensorFlowEventsFile(path):
-  """Check the path name to see if it is probably a TF Events file.
-
-  Args:
-    path: A file path to check if it is an event file.
-
-  Raises:
-    ValueError: If the path is an empty string.
-
-  Returns:
-    If path is formatted like a TensorFlowEventsFile.
-  """
-  if not path:
-    raise ValueError('Path must be a nonempty string')
-  return 'tfevents' in tf.compat.as_str_any(os.path.basename(path))
 
 
 class EventAccumulator(object):
@@ -577,11 +560,13 @@ def _GeneratorFromPath(path):
   """Create an event generator for file or directory at given path string."""
   if not path:
     raise ValueError('path must be a valid string')
-  if IsTensorFlowEventsFile(path):
+  if io_wrapper.IsTensorFlowEventsFile(path):
     return event_file_loader.EventFileLoader(path)
   else:
     return directory_watcher.DirectoryWatcher(
-        path, event_file_loader.EventFileLoader, IsTensorFlowEventsFile)
+        path,
+        event_file_loader.EventFileLoader,
+        io_wrapper.IsTensorFlowEventsFile)
 
 
 def _ParseFileVersion(file_version):

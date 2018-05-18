@@ -193,7 +193,12 @@ class DirectoryWatcherTest(tf.test.TestCase):
 
     FakeFactory.has_been_called = False
 
-    for stub_name in ['ListDirectoryAbsolute', 'ListRecursively']:
+    stub_names = [
+        'ListDirectoryAbsolute',
+        'ListRecursivelyViaGlobbing',
+        'ListRecursivelyViaWalking',
+    ]
+    for stub_name in stub_names:
       self.stubs.Set(io_wrapper, stub_name,
                      FakeFactory(getattr(io_wrapper, stub_name)))
     for stub_name in ['IsDirectory', 'Exists', 'Stat']:

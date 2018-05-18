@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
+<link rel="import" href="../tf-graph-node-search/tf-graph-node-search.html">
 
 <dom-module id="tf-graph-controls">
 <template>
@@ -280,6 +281,12 @@ table.tf-graph-controls td.input-element-table-data {
 .legend-clarifier paper-tooltip {
   width: 150px;
 }
+
+/** Otherwise, polymer UI controls appear atop node search. */
+tf-graph-node-search {
+  z-index: 1;
+  width: 100%;
+}
 </style>
 <svg width="0" height="0">
   <defs>
@@ -301,6 +308,11 @@ table.tf-graph-controls td.input-element-table-data {
   </defs>
 </svg>
 <div class="allcontrols">
+  <div class="control-holder">
+    <tf-graph-node-search
+      selected-node="{{selectedNode}}"
+      render-hierarchy="[[renderHierarchy]]"></tf-graph-node-search>
+  </div>
   <div class="control-holder">
     <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="fit" alt="Fit to screen">
     </paper-icon-button>
@@ -801,6 +813,10 @@ Polymer({
       type: Number,
       notify: true,
       value: -1
+    },
+    selectedNode: {
+      type: String,
+      notify: true
     },
     _currentDevices: {
       type: Array,

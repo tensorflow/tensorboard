@@ -27,7 +27,6 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
-<link rel="import" href="../tf-imports/closure.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view-store.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
@@ -302,8 +301,8 @@ limitations under the License.
         height: 100%;
       }
 
-      /* Hide unselected dashboards. We still display them within a container 
-         of height 0 since Plottable produces degenerate charts when charts are 
+      /* Hide unselected dashboards. We still display them within a container
+         of height 0 since Plottable produces degenerate charts when charts are
          reloaded while not displayed. */
       .dashboard-container:not([data-selected]) {
         max-height: 0;
@@ -311,7 +310,7 @@ limitations under the License.
         position: relative;
         /** We further make containers invisible. Some elements may anchor to
             the viewport instead of the container, in which case setting the max
-            height here to 0 will not hide them. */ 
+            height here to 0 will not hide them. */
         visibility: hidden;
       }
 
@@ -328,6 +327,8 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
+    goog.require('goog.object');
+
     if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
@@ -722,7 +723,7 @@ limitations under the License.
         });
         const onFailure = () => {
           if (this._activeDashboardsLoadState
-              === ActiveDashboardsLoadState.NOT_LOADED) {
+              === tf_tensorboard.ActiveDashboardsLoadState.NOT_LOADED) {
             this._activeDashboardsLoadState = tf_tensorboard.ActiveDashboardsLoadState.FAILED;
           } else {
             console.warn(
