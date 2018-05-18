@@ -44,6 +44,7 @@ import com.google.javascript.jscomp.PropertyRenamingPolicy;
 import com.google.javascript.jscomp.Result;
 import com.google.javascript.jscomp.SourceFile;
 import com.google.javascript.jscomp.WarningsGuard;
+import com.google.javascript.jscomp.deps.ModuleLoader;
 import com.google.protobuf.TextFormat;
 import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
@@ -414,6 +415,7 @@ public final class Vulcanize {
 
     CompilerOptions options = new CompilerOptions();
     compilationLevel.setOptionsForCompilationLevel(options);
+    options.setModuleResolutionMode(ModuleLoader.ResolutionMode.NODE);
 
     // Nice options.
     options.setColorizeErrorOutput(true);
@@ -492,9 +494,9 @@ public final class Vulcanize {
             if (IGNORE_PATHS_PATTERN.matcher(error.sourceName).matches()) {
               return CheckLevel.OFF;
             }
-            if (error.sourceName.startsWith("/tf-graph")
+            if ((error.sourceName.startsWith("/tf-") || error.sourceName.startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              return CheckLevel.OFF; // TODO(@jart): Remove when tf-graph is ES6 modules.
+              return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
             }
             if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {

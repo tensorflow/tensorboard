@@ -21,6 +21,7 @@ limitations under the License.
 
 declare module graphlib {
   interface GraphOptions {
+    compound?: boolean;
     name?: string;
     /**
      * Direction for rank nodes. Can be TB, BT, LR, or RL, where T = top,

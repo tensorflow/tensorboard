@@ -12,13 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+module tf.graph {
 
-suite('graph', () => {
+describe('graph', () => {
   let assert = chai.assert;
 
-  test('graphlib exists', () => { assert.isTrue(graphlib != null); });
+  it('graphlib exists', () => { assert.isTrue(graphlib != null); });
 
-  test('simple graph contruction', done => {
+  it('simple graph contruction', done => {
     let pbtxt = tf.graph.test.util.stringToArrayBuffer(`
       node {
         name: "Q"
@@ -60,18 +61,18 @@ suite('graph', () => {
         tf.graph.util.getTracker({set: () => { return; }, progress: 0});
     tf.graph.parser.parseGraphPbTxt(pbtxt).then(nodes => {
       tf.graph.build(nodes, buildParams, dummyTracker)
-          .then((slimGraph: tf.graph.SlimGraph) => {
+          .then((slimGraph: SlimGraph) => {
             assert.isTrue(slimGraph.nodes['X'] != null);
             assert.isTrue(slimGraph.nodes['W'] != null);
             assert.isTrue(slimGraph.nodes['Q'] != null);
 
             let firstInputOfX = slimGraph.nodes['X'].inputs[0];
             assert.equal(firstInputOfX.name, 'Q');
-            assert.equal(firstInputOfX.outputTensorIndex, '2');
+            assert.equal(firstInputOfX.outputTensorKey, '2');
 
             let secondInputOfX = slimGraph.nodes['X'].inputs[1];
             assert.equal(secondInputOfX.name, 'W');
-            assert.equal(secondInputOfX.outputTensorIndex, '0');
+            assert.equal(secondInputOfX.outputTensorKey, '0');
 
             tf.graph.parser.parseStatsPbTxt(statsPbtxt).then(stepStats => {
               tf.graph.joinStatsInfoWithGraph(slimGraph, stepStats);
@@ -82,7 +83,7 @@ suite('graph', () => {
     });
   });
 
-  test('health pill numbers round correctly', () => {
+  it('health pill numbers round correctly', () => {
     // Integers are rounded to the ones place.
     assert.equal(tf.graph.scene.humanizeHealthPillStat(42.0, true), '42');
 
@@ -101,3 +102,5 @@ suite('graph', () => {
 
   // TODO: write tests.
 });
+
+}  // module tf.graph

@@ -42,9 +42,17 @@ Polymer({
     },
     datasets: Array,
     selectedDataset: Number,
-    selectedFile: {
+    selectedFile: Object,
+    /**
+     * If this optional object is provided, graph logic will override
+     * the HierarchyParams it uses to build the graph with properties within
+     * this object. For possible properties that this object can have, please
+     * see documentation on the HierarchyParams TypeScript interface.
+     * @type {Object}
+     */
+    overridingHierarchyParams: {
       type: Object,
-      observer: '_selectedFileChanged'
+      value: () => ({})
     },
     outGraphHierarchy: {
       type: Object,
@@ -69,8 +77,9 @@ Polymer({
     },
   },
   observers: [
-    '_selectedDatasetChanged(selectedDataset, datasets)',
-    '_readAndParseMetadata(selectedMetadataTag)'
+    '_selectedDatasetChanged(selectedDataset, datasets, overridingHierarchyParams)',
+    '_selectedFileChanged(selectedFile, overridingHierarchyParams)',
+    '_readAndParseMetadata(selectedMetadataTag, overridingHierarchyParams)',
   ],
   _readAndParseMetadata: function(metadataIndex) {
     if (metadataIndex == -1 || this.datasets[this.selectedDataset] == null ||
@@ -95,7 +104,8 @@ Polymer({
    * @param {string?} path
    * @param {string=} pbTxtFile
    */
-  _parseAndConstructHierarchicalGraph: function(path, pbTxtFile) {
+  _parseAndConstructHierarchicalGraph: function(
+      path, pbTxtFile, overridingHierarchyParams) {
     // Reset the progress bar to 0.
     this.set('progress', {
       value: 0,
@@ -113,6 +123,9 @@ Polymer({
       // are initially rendered grouped and which aren't.
       seriesMap: {},
     };
+    _.forOwn(overridingHierarchyParams, (value, key) => {
+      hierarchyParams[key] = value;
+    });
     this._setOutHierarchyParams(hierarchyParams);
     var dataTracker = tf.graph.util.getSubtaskTracker(tracker, 30, 'Data');
     tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
@@ -170,10 +183,12 @@ Polymer({
       tracker.reportError("Graph visualization failed: " + e, e);
     });
   },
-  _selectedDatasetChanged: function(datasetIndex, datasets) {
-    this._parseAndConstructHierarchicalGraph(datasets[datasetIndex].path);
+  _selectedDatasetChanged: function(
+      datasetIndex, datasets, overridingHierarchyParams) {
+    this._parseAndConstructHierarchicalGraph(
+        datasets[datasetIndex].path, undefined, overridingHierarchyParams);
   },
-  _selectedFileChanged: function(e) {
+  _selectedFileChanged: function(e, overridingHierarchyParams) {
     if (!e) {
       return;
     }
@@ -186,7 +201,8 @@ Polymer({
     // selects the same file, we'll re-read it.
     e.target.value = '';
 
-    this._parseAndConstructHierarchicalGraph(null, file);
+    this._parseAndConstructHierarchicalGraph(
+        null, file, overridingHierarchyParams);
   }
 });
 </script>

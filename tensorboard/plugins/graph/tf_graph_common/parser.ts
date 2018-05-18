@@ -193,7 +193,7 @@ const METADATA_REPEATED_FIELDS: {[attrPath: string]: boolean} = {
  * Parses an ArrayBuffer of a proto txt file into a raw Graph object.
  */
 export function parseGraphPbTxt(input: ArrayBuffer):
-    Promise<tf.graph.proto.NodeDef[]> {
+    Promise<tf.graph.proto.GraphDef> {
   return parsePbtxtFile(input, GRAPH_REPEATED_FIELDS);
 }
 

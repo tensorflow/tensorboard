@@ -96,7 +96,7 @@ def _comm_tensor_data(device_name,
       tensor_shape = UNINITIALIZED_TAG
     else:
       tensor_dtype = UNSUPPORTED_TAG
-      tensor_dtype = UNSUPPORTED_TAG
+      tensor_shape = UNSUPPORTED_TAG
     tensor_values = NA_TAG
   else:
     tensor_dtype = str(tensor_value.dtype)

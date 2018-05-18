@@ -16,7 +16,7 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl", "long_path")
 
 def _tensorboard_zip_file(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
-  manifests = depset(order="topological")
+  manifests = depset(order="postorder")
   files = depset()
   webpaths = depset()
   for dep in deps:
