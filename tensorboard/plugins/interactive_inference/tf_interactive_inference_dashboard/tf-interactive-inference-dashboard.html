@@ -695,6 +695,7 @@ limitations under the License.
 
       settingsClicked_: function() {
         this.$.inferencesettings.toggle();
+        this.$.spinner.hidden = false;
       },
 
       onTabSelect_: function() {
@@ -1030,6 +1031,7 @@ limitations under the License.
       },
 
       newInferences_: function() {
+        this.$.spinner.hidden = true;
         this.updateInferences_(true);
       },
 
@@ -1125,8 +1127,8 @@ limitations under the License.
                              'model_version': this.modelVersion,
                              'model_signature': this.modelSignature,
                              'label_vocab_path': this.labelVocabPath};
+        this.$.spinner.hidden = false;
         if (!this.local) {
-          this.$.spinner.hidden = false;
           const url = this.makeUrl_('/data/plugin/whatif/infer',
               inferParams);
           const inferContents = result => {

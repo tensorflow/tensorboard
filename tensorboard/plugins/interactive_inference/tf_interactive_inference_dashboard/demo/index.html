@@ -21,14 +21,30 @@ limitations under the License.
 <style>
   html {
     height: 100%;
+    width: 100%;
+    font-family: Roboto, sans-serif;
   }
   body {
+    margin: 0;
+    width: 100%;
     height: 100%;
+  }
+  .toolbar {
+    width: 100%;
+    height: 64px;
+    background: #f57c00;
+  }
+  .toolbar-text {
+    padding: 16px 0 0 10px;
+    font-size: 20px;
+    color: white;
   }
   #demo {
-    height: 100%;
-    width: 100%;
+    height: calc(100% - 64px);
   }
 </style>
+<div class="toolbar">
+  <div class="toolbar-text">What-If Tool Demo - UCI Census Income Dataset</div>
+</div>
 <tf-interactive-inference-demo id="demo">
 </tf-interactive-inference-demo>
