@@ -62,6 +62,10 @@ limitations under the License.
       }
     </style>
     <style>
+    :host {
+      --paper-tab-ink: var(--tb-orange-strong);
+      }
+
       #classification {
         width: 40%;
       }
@@ -71,7 +75,11 @@ limitations under the License.
         width: 100%;
       }
 
-      .inference-holder {
+      .inference-section {
+        padding-left: 5px;
+      }
+
+      .inference-viewer {
         max-height: 35%;
       }
 
@@ -82,7 +90,7 @@ limitations under the License.
       #spinner {
         position: absolute;
         top: 95px;
-        left: 250px;
+        left: 10px;
         width: 14px;
         height: 14px;
         --paper-spinner-color: var(--tb-orange-strong);
@@ -91,7 +99,7 @@ limitations under the License.
       .noexamples {
         position: absolute;
         top: 75px;
-        left: 280px;
+        left: 30px;
       }
 
       .center {
@@ -117,7 +125,7 @@ limitations under the License.
       .button {
         font-size: 13px;
         margin: 10px 0 0 0;
-        background-color: #f57c00;
+        background-color: var(--tb-orange-strong);
         color: white;
       }
 
@@ -166,17 +174,19 @@ limitations under the License.
       .dashboard-layout {
         display: flex;
         height: 100%;
+        background-color: white;
       }
 
       .center {
-        width: 70%;
+        width: 60%;
       }
 
       .side-holder {
         height: 100%;
-        width: 30%;
+        width: 40%;
         display: flex;
         flex-direction: column;
+        border-left: 1px solid black;
       }
 
       .side-content {
@@ -194,7 +204,7 @@ limitations under the License.
 
       .side-tabs {
         display: flex;
-        height: calc(100% - 40px);
+        height: calc(100% - 60px);
       }
 
       .datapoint-tab {
@@ -204,6 +214,7 @@ limitations under the License.
       }
 
       .config-tab {
+        padding-left: 5px;
         width: 100%;
         overflow: auto;
       }
@@ -228,6 +239,9 @@ limitations under the License.
       }
 
       .datapoint-controls-holder {
+        padding-bottom: 5px;
+        margin-left: 1px;
+        border-bottom: 1px solid lightgrey;
         display: flex;
       }
 
@@ -309,6 +323,37 @@ limitations under the License.
       .close-partial-deps-button {
         margin-bottom: 10px;
       }
+
+      paper-tabs {
+        margin-left: 1px;
+        --paper-tabs-selection-bar-color: var(--tb-orange-strong);
+      }
+      
+      paper-tab:not(.iron-selected) {
+        color: #212121;
+        background: #f4f4f4;
+      }
+
+      paper-tab.iron-selected {
+        color: var(--tb-orange-strong);
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
+      }
+
+      .pad-left {
+        padding-left: 5px;
+      }
+
+      .roc-and-conf-matrix {
+        display: flex;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .roc-holder {
+        width: 250px;
+      }
+
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -349,7 +394,7 @@ limitations under the License.
                 <div class="range-input-container" hidden$="[[item.samples]]">
                   <span class="info-text"
                         title="The range of mutant value (default values are automatically inferred from training data).">
-                    Mutant value range:
+                    Value range to test:
                   </span>
                   <input type="number"
                           class="style-input x-min"
@@ -410,14 +455,16 @@ limitations under the License.
                 <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
                                     on-example-change="exampleChange_" id$="[[getViewerId_()]]">
                 </vz-example-viewer>
-                <div class="inference-header">Inference Results</div>
-                <tf-inference-viewer class="inference-holder" inferences="[[selectedExampleAndInference.inferences]]"
-                                      id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
-                </tf-inference-viewer>
+                <div class="inference-section">
+                  <div class="inference-header">Inference Results</div>
+                  <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                        id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
+                  </tf-inference-viewer>
+                </div>
               </template>
               <template is="dom-if" if="[[!shouldShowExample_(selectedExampleAndInference)]]">
-                <div class="info-text">Select a datapoint to see its details and inference results here.</div>
-                <div class="info-text">Datapoints can be edited and rerun through the model.</div>
+                <div class="info-text pad-left">Select a datapoint to see its details and inference results here.</div>
+                <div class="info-text pad-left">Datapoints can be edited and rerun through the model.</div>
               </template>
             </div>
             <div class="stats-tab">
@@ -444,12 +491,14 @@ limitations under the License.
                     </paper-slider>
                   </div>
                   <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                    <div>
-                      <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                    <div class="roc-and-conf-matrix">
+                      <div class="roc-holder">
+                        <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                      </div>
+                      <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
+                                           class="conf-matrix">
+                      </tf-confusion-matrix>
                     </div>
-                    <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
-                                         class="conf-matrix">
-                    </tf-confusion-matrix>
                   </template>
                 </template>
                 <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
@@ -470,12 +519,14 @@ limitations under the License.
                                     on-value-changed="refreshInferencesNoRegen_">
                       </paper-slider>
                       <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                        <div>
-                          <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
+                        <div class="roc-and-conf-matrix">
+                          <div class="roc-holder">
+                            <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
+                          </div>
+                          <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item.value)]]"
+                                              class="conf-matrix">
+                          </tf-confusion-matrix>
                         </div>
-                        <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item.value)]]"
-                                            class="conf-matrix">
-                        </tf-confusion-matrix>
                       </template>
                     </div>
                   </template>
@@ -962,11 +1013,6 @@ limitations under the License.
           this.selectedExampleAndInference = null;
           return;
         }
-        // Set the exampleIndex so that the mutant inference plugin shows the example selected
-        // by the user.
-        if (this.selected.length > 0) {
-          tf_storage.setNumber('exampleIndex', this.selected[0]);
-        }
         const self = this;
         const selectedItems = this.examplesAndInferences.filter(function(item, index) {
           return self.selected.includes(index);
@@ -1377,15 +1423,15 @@ limitations under the License.
         };
         $chart.tooltipColumns = [
           {
-              title: 'Name',
+              title: 'Inference value',
               evaluate: function (d) { return d.dataset.metadata().name; },
           },
           {
-              title: 'Mutant Value',
+              title: 'Feature value',
               evaluate: function (d) { return formatValueOrNaN(d.datum.step); },
           },
           {
-              title: 'Inference Result',
+              title: 'Score',
               evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
           },
         ];
