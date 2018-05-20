@@ -899,7 +899,6 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     return session_run_thread, session_run_results
 
   def testBinaryStringTensorIsHandledCorrectly(self):
-    print('------------------------------------------------')  # DEBUG
     session_run_thread, session_run_results = self._runBinaryStringNetwork()
     # Activate breakpoint for str1:0.
     self._serverGet(
@@ -936,8 +935,6 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
          'slicing': ''})
     tensor_data = self._deserializeResponse(tensor_response)
     self.assertEqual(None, tensor_data['error'])
-    print(tensor_data['tensor_data'])  # DEBUG
-    print(type(tensor_data['tensor_data']))  # DEBUG
     self.assertEqual(2, len(tensor_data['tensor_data'][0]))
     self.assertEqual(b'=01=01=01', tensor_data['tensor_data'][0][0])
     self.assertEqual(b'=02=02=02', tensor_data['tensor_data'][0][1])
