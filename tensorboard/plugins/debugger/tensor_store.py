@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.debug.lib import debug_data
 
@@ -153,7 +154,15 @@ class _WatchStore(object):
       if isinstance(self._data[time_index], _TensorValueDiscarded):
         output.append(None)
       else:
-        output.append(self._data[time_index])
+        data_item = self._data[time_index]
+        if (hasattr(data_item, 'dtype') and
+            tensor_helper.translate_dtype(data_item.dtype) == 'string'):
+          _, _, data_item = tensor_helper.array_view(data_item)
+          data_item = np.array(
+              tensor_helper.process_buffers_for_display(data_item),
+              dtype=np.object)
+        output.append(data_item)
+
     return output
 
   def dispose(self):
