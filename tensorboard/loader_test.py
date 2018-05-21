@@ -224,7 +224,10 @@ class ProgressTest(LoaderTestCase):
     try:
       locale.setlocale(locale.LC_ALL, 'en_US.utf8')
     except Exception:
-      raise self.skipTest('Environment does not support en_US.utf8 locale')
+      try:
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+      except Exception:
+        raise self.skipTest('Environment does not support en_US.utf8/en_US.UTF-8 locale')
     self.progress.set_progress(0, 1000000)
     self.clock.advance(1.0)
     self.progress.set_progress(1024, 1000000)
