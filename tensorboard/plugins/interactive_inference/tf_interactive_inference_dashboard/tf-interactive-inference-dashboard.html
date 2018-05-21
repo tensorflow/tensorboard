@@ -355,6 +355,13 @@ limitations under the License.
         width: 250px;
       }
 
+      .on-switch-button {
+        color: var(--tb-orange-strong);
+      }
+
+      .off-switch-button {
+        color: black;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -455,6 +462,14 @@ limitations under the License.
                     </paper-icon-button>
                   </div>
                   <div class="datapoint-right-controls-holder">
+                    <paper-icon-button class="datapoint-control-button" icon="list"
+                        class$="[[getStackedButtonClass(exampleDisplayMode)]]"
+                        on-click="setExampleStackedMode_" alt="show example values stacked">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="view-module"
+                        class$="[[getGridButtonClass(exampleDisplayMode)]]"
+                        on-click="setExampleGridMode_" alt="show example values in grid">
+                    </paper-icon-button>
                     <paper-icon-button class="datapoint-control-button" icon="chevron-right"
                         on-click="selectNextDatapoint_" alt="select next datapoint">
                     </paper-icon-button>
@@ -464,7 +479,8 @@ limitations under the License.
                   </div>
                 </div>
                 <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
-                                    on-example-change="exampleChange_" id$="[[getViewerId_()]]">
+                                    on-example-change="exampleChange_" id$="[[getViewerId_()]]"
+                                    display-mode="[[exampleDisplayMode]]">
                 </vz-example-viewer>
                 <div class="inference-section">
                   <div class="inference-header">Inference Results</div>
@@ -697,7 +713,11 @@ limitations under the License.
         partialDepPlotPendingFeatures: {
           type: Array,
           value: []
-        }
+        },
+        exampleDisplayMode: {
+          type: String,
+          value: 'grid'
+        },
       },
 
       // Required function.
@@ -739,6 +759,22 @@ limitations under the License.
         this.$.dive.selectedIndices = [(((this.selected[0] - 1) % this.visdata.length) +
             this.visdata.length) % this.visdata.length];
         this.$.dive.updateSelectedBoxes();
+      },
+
+      setExampleStackedMode_: function() {
+        this.exampleDisplayMode = 'stacked';
+      },
+
+      getStackedButtonClass: function(exampleDisplayMode) {
+        return exampleDisplayMode == 'stacked' ? 'on-switch-button' : 'off-switch-button';
+      },
+
+      getGridButtonClass: function(exampleDisplayMode) {
+        return exampleDisplayMode == 'grid' ? 'on-switch-button' : 'off-switch-button';
+      },
+
+      setExampleGridMode_: function() {
+        this.exampleDisplayMode = 'grid';
       },
 
       statsChanged_: function(event) {

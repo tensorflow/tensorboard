@@ -57,9 +57,6 @@ limitations under the License.
 
       .value {
         padding: 0 5px;
-        /* TODO(jwexler): Determine how to embed in smart engine iron-list of vz-example-viewers
-         * without needing this !important. */
-        width: 100px !important;
         --paper-input-container: {
           padding: 1px 0 0 0;
         };
@@ -119,7 +116,16 @@ limitations under the License.
         margin: 0 8px 8px 0;
       }
 
+      .value-pill-stacked {
+        width: 100%
+      }
+
+      .value-pill-grid {
+        width: 120px;
+      }
+
       .feature-name {
+        font-weight: 500;
         margin-bottom: 5px;
       }
 
@@ -242,7 +248,7 @@ limitations under the License.
         <template is="dom-if" if="[[!isImage(feat.name)]]">
           <div class="flex-controls">
             <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
-                <div class$="[[getInputPillClass(feat.name)]]">
+                <div class$="[[getInputPillClass(feat.name, displayMode)]]">
                   <paper-icon-button data-feature="[[feat.name]]" data-index="[[index]]"
                                       icon="remove-circle-outline"
                                       on-click="deleteValue"
@@ -317,7 +323,7 @@ limitations under the License.
                 <template is="dom-repeat"
                           items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
                           as="seqvalue">
-                  <div class$="[[getInputPillClass(seqfeat.name)]]">
+                  <div class$="[[getInputPillClass(seqfeat.name, displayMode)]]">
                     <paper-icon-button data-feature="[[seqfeat.name]]" data-index="[[index]]"
                                         data-seq-num="[[seqNumber]]" icon="remove-circle-outline"
                                         on-click="deleteValue"

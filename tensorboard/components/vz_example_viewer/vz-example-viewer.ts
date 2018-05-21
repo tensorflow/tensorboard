@@ -143,6 +143,7 @@ Polymer({
     seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(features)'},
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
+    displayMode: {type: String, value: 'grid'},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
@@ -857,8 +858,9 @@ Polymer({
     return this.sanitizeFeature(feat) + ' value';
   },
 
-  getInputPillClass: function(feat: string) {
-    return this.sanitizeFeature(feat) + ' value-pill';
+  getInputPillClass: function(feat: string, displayMode: string) {
+    return this.sanitizeFeature(feat) + ' value-pill' +
+        (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
   },
 
   /**
