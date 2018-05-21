@@ -76,7 +76,7 @@ limitations under the License.
       }
 
       .inference-section {
-        padding-left: 5px;
+        padding: 0 5px;
       }
 
       .inference-viewer {
@@ -232,6 +232,7 @@ limitations under the License.
 
       .inference-header {
         font-size: 20px;
+        background: lightblue;
       }
 
       .conf-matrix {
@@ -373,6 +374,13 @@ limitations under the License.
         </paper-button>
       </div>
     </paper-dialog>
+    <paper-dialog id="deletedialog" modal>
+      <p>Are you sure you want to delete the selected example?</p>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus on-click="deleteDatapoint_">Delete</paper-button>
+      </div>
+    </paper-dialog>
     <div class="dashboard-layout">
       <div class="center">
         <facets-dive id="dive" data="[[visdata]]"
@@ -436,6 +444,9 @@ limitations under the License.
                     <paper-icon-button class="datapoint-control-button" icon="undo"
                         on-click="resetDatapoint_" alt="undo changes"
                         disabled="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="delete"
+                        on-click="deleteDatapointDialog_" alt="delete datapoint">
                     </paper-icon-button>
 
                     <paper-button raised class="datapoint-control-button-text"
@@ -1077,10 +1088,15 @@ limitations under the License.
 
 
           if (isClassification && self.labelVocab.length > 0) {
-            for (let labelIndex = 0;
-                 labelIndex < self.examplesAndInferences[index].inferences[0].length; labelIndex++) {
-              self.examplesAndInferences[index].inferences[0][labelIndex].vocabLabel =
-                self.labelVocab[self.examplesAndInferences[index].inferences[0][labelIndex].label];
+            for (let inferenceIndex = 0;
+                 inferenceIndex < self.examplesAndInferences[index].inferences.length;
+                 inferenceIndex++) {
+              for (let labelIndex = 0;
+                   labelIndex < self.examplesAndInferences[index].inferences[inferenceIndex].length;
+                   labelIndex++) {
+                self.examplesAndInferences[index].inferences[inferenceIndex][labelIndex].vocabLabel =
+                  self.labelVocab[self.examplesAndInferences[index].inferences[inferenceIndex][labelIndex].label];
+              }
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
             hasInferenceLabels = true;
@@ -1340,6 +1356,30 @@ limitations under the License.
           const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
           this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
+        } else {
+          this.refreshDive_();
+        }
+      },
+
+      deleteDatapointDialog_: function() {
+        this.$.deletedialog.open();
+      },
+
+      deleteDatapoint_: function() {
+        const deletedIndex = this.selected[0];
+        this.examplesAndInferences.splice(deletedIndex, 1);
+        this.visdata.splice(deletedIndex, 1);
+        this.selected = [];
+        this.selectedDataUpdated_();
+        this.fire('delete-example', {'index': deletedIndex});
+        this.$.dive.selectedIndices = [];
+        if (!this.local) {
+          const refreshDiveAfterDelete = result => {
+           this.refreshDive_();
+          };
+          const url = this.makeUrl_('/data/plugin/whatif/delete_example',
+            {'index': deletedIndex});
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete);
         } else {
           this.refreshDive_();
         }

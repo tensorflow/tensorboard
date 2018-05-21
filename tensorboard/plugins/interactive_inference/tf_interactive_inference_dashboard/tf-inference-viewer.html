@@ -21,10 +21,11 @@ limitations under the License.
 <dom-module id="tf-inference-viewer">
   <template>
     <style>
-      .vocab-label {
-        padding-left: 3px;
+      :host {
+        display: block;
       }
       .runs-holder {
+        padding: 2px 0;
         display: flex;
         flex-direction: column-reverse;
         overflow-y: auto;
@@ -32,6 +33,24 @@ limitations under the License.
       }
       .row {
         display: flex;
+      }
+      .header {
+        color: grey;
+        font-weight: 500;
+        font-size: 12px;
+        padding: 5px 0;
+        background-color: white;
+      }
+      .non-header {
+        outline: 1px solid lightgrey;
+        margin: 0 2px;
+      }
+      .marker {
+        flex: 0.5;
+        margin-right: 5px;
+      }
+      .marker.mark {
+        background: blue;
       }
       .run {
         flex: 10;
@@ -46,10 +65,13 @@ limitations under the License.
       }
       .score {
         flex: 10;
-        text-align: center;
+      }
+      .arrow {
+        flex: 2;
       }
       .delta {
         flex: 2;
+        flex: 10;
       }
       .green {
         color: green;
@@ -58,26 +80,27 @@ limitations under the License.
         color: red;
       }
     </style>
-    <div class="row">
+    <div class="row header">
+      <div class="marker"></div>
       <div class="run">Run</div>
       <div class$="[[getLabelClass(modelType)]]">Label</div>
-      <div class="delta"></div>
       <div class="score">Score</div>
+      <div class="arrow"></div>
+      <div class="delta">Delta</div>
     </div>
     <div class="runs-holder">
       <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
         <div class="rows-for-run">
           <template is="dom-repeat" items="[[inference]]">
-            <div class="row">
+            <div class="row non-header">
+              <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
               <div class="run">[[getRun(runindex)]]</div>
               <div class$="[[getLabelClass(modelType)]]">
-                <div>[[item.label]]</div>
-                <template is="dom-if" if="[[item.vocabLabel]]">
-                  <div class="vocab-label">(<span>[[item.vocabLabel]]</span>)</div>
-                </template>
+                <div>[[getLabel(item)]]</div>
               </div>
-              <div class="delta"><iron-icon icon="[[getIcon(runindex, index)]]" class$="[[getIconClass(runindex, index)]]"></iron-icon></div>
               <div class="score">[[getPrintableScore(item.score)]]</div>
+              <div class="arrow"><iron-icon icon="[[getIcon(runindex, index)]]" class$="[[getIconClass(runindex, index)]]"></iron-icon></div>
+              <div class="delta">[[getPrintableDelta(runindex, index)]]</div>
             </div>
           </template>
         </div>
@@ -93,6 +116,10 @@ limitations under the License.
       properties: {
         inferences: Array,
         modelType: String,
+      },
+
+      getLabel: function(item) {
+        return item.vocabLabel || item.label;
       },
 
       getLabelClass: function(modelType) {
@@ -133,12 +160,32 @@ limitations under the License.
         return index + 1;
       },
 
+      getMarkerClass: function(index, inferences) {
+        return 'marker' + (index == (inferences.length - 1) ? ' mark' : '');
+      },
+
       getInference: function(inference, index) {
         return inference;
       },
 
       getPrintableScore: function(score) {
         return score.toFixed(3);
+      },
+
+      getPrintableDelta: function(runIndex, labelIndex) {
+        if (runIndex == 0) {
+          return '';
+        }
+        const inferenceIndex = runIndex;
+        const label = this.inferences[inferenceIndex][labelIndex].label;
+        const score = this.inferences[inferenceIndex][labelIndex].score;
+        const previousInference = this.inferences[inferenceIndex - 1];
+        for (let i = 0; i < previousInference.length; i++) {
+          if (previousInference[i].label == label) {
+            return (score - previousInference[i].score).toFixed(6);
+          }
+        }
+        return '';
       },
     });
 

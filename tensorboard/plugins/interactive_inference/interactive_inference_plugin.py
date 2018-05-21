@@ -88,6 +88,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         '/examples_from_path': self._examples_from_path_handler,
         '/sprite': self._serve_sprite,
         '/duplicate_example': self._duplicate_example,
+        '/delete_example': self._delete_example,
         '/infer_mutants': self._infer_mutants_handler,
         '/eligible_features': self._eligible_features_from_example_handler,
     }
@@ -98,7 +99,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     Returns:
       A boolean. Whether this plugin is active.
     """
-    # TODO(b/69305872): Maybe enable if config flags were specified?
+    # TODO(jameswex): Maybe enable if config flags were specified?
     return False
 
   def generate_sprite(self, example_strings):
@@ -187,6 +188,26 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     new_example.CopyFrom(self.examples[index])
     self.examples.append(new_example)
     self.updated_example_indices.add(len(self.examples) - 1)
+    self.generate_sprite([ex.SerializeToString() for ex in self.examples])
+    return http_util.Respond(request, {}, 'application/json')
+
+  @wrappers.Request.application
+  def _delete_example(self, request):
+    """Deletes the specified tf.train.Example.
+
+    Args:
+      request: A request that should contain 'index'.
+
+    Returns:
+      An empty response.
+    """
+    index = int(request.args.get('index'))
+    if index >= len(self.examples):
+      return http_util.Respond(request, {'error': 'invalid index provided'},
+                               'application/json')
+    del self.examples[index]
+    self.updated_example_indices = set([
+      i if i < index else i - 1 for i in self.updated_example_indices])
     self.generate_sprite([ex.SerializeToString() for ex in self.examples])
     return http_util.Respond(request, {}, 'application/json')
 
