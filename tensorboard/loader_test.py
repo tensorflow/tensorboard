@@ -221,13 +221,7 @@ class ProgressTest(LoaderTestCase):
     self.assertIn('[stalled]', self.logs[1])
 
   def testBigNumberInAmerica_showsCommas(self):
-    try:
-      locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-    except Exception:
-      try:
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-      except Exception:
-        raise self.skipTest('Environment does not support en_US.utf8/en_US.UTF-8 locale')
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     self.progress.set_progress(0, 1000000)
     self.clock.advance(1.0)
     self.progress.set_progress(1024, 1000000)
