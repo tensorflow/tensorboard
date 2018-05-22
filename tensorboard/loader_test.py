@@ -221,7 +221,7 @@ class ProgressTest(LoaderTestCase):
     self.assertIn('[stalled]', self.logs[1])
 
   def testBigNumberInAmerica_showsCommas(self):
-    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     self.progress.set_progress(0, 1000000)
     self.clock.advance(1.0)
     self.progress.set_progress(1024, 1000000)
