@@ -203,9 +203,17 @@ limitations under the License.
       .saliency-legend-label {
         margin-bottom: 5px;
       }
+
+      .filter-input {
+        max-width: 200px;
+      }
+
     </style>
     <div class="outer">
-      <template is="dom-repeat" items="[[featuresList]]" as="feat">
+      <template is="dom-if" if="[[showSearchBox]]">
+        <paper-input value="{{featureSearchValue}}" label="Filter features by name" class="filter-input"></paper-input>
+      </template>
+      <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
         <div class="flex-controls feature-name">
           <div>[[feat.name]]</div>
           <paper-icon-button data-feature="[[feat.name]]"
@@ -275,7 +283,7 @@ limitations under the License.
           <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
           </paper-slider>
         </div>
-        <template is="dom-repeat" items="[[seqFeaturesList]]" as="seqfeat">
+        <template is="dom-repeat" items="[[filteredSeqFeaturesList]]" as="seqfeat">
           <div class="seqfeat">
             <div class="flex-controls feature-name">
               <div>[[seqfeat.name]]</div>

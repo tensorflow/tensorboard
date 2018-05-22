@@ -512,7 +512,8 @@ limitations under the License.
                 <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
                   <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
                                       on-example-change="exampleChange_" id$="[[getViewerId_()]]"
-                                      display-mode="[[exampleDisplayMode]]">
+                                      display-mode="[[exampleDisplayMode]]"
+                                      feature-search-value="{{featureSearchValue}}">
                   </vz-example-viewer>
                   <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
                     <div class="inference-header">Inference Results</div>
@@ -528,7 +529,7 @@ limitations under the License.
               </template>
             </div>
             <div class="stats-tab">
-              <facets-overview id="overview"></facets-overview>
+              <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
             </div>
             <div class="config-tab">
               <template is="dom-if" if="[[shouldShowLabelDropdown_(modelType, stats)]]">
@@ -760,6 +761,7 @@ limitations under the License.
           type: Boolean,
           value: false,
         },
+        featureSearchValue: String,
       },
 
       // Required function.
