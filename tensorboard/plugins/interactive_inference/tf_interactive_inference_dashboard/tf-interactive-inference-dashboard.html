@@ -70,12 +70,31 @@ limitations under the License.
         width: 40%;
       }
 
+      .example-and-inference-holder {
+        height: calc(100% - 40px);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .example-and-inference-holder-expanded {
+        height: calc(100% - 40px);
+        display: flex;
+      }
+
       .example-holder {
-        max-height: calc(100% - 20px);
         width: 100%;
       }
 
+      .example-holder-expanded {
+        width: 60%;
+      }
+
       .inference-section {
+        padding: 0 5px;
+      }
+
+      .inference-section-expanded {
+        width: 40%;
         padding: 0 5px;
       }
 
@@ -120,6 +139,10 @@ limitations under the License.
       .settings-button {
         color: black;
         margin-top: 10px;
+      }
+
+      .rotated-button {
+        transform: rotate(90deg);
       }
 
       .button {
@@ -181,9 +204,21 @@ limitations under the License.
         width: 60%;
       }
 
+      .center-expanded {
+        width: 0%;
+      }
+
       .side-holder {
         height: 100%;
         width: 40%;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid black;
+      }
+
+      .side-holder-expanded {
+        height: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
         border-left: 1px solid black;
@@ -195,9 +230,7 @@ limitations under the License.
       }
 
       .bottom-side {
-        flex-shrink: 0;
         display: flex;
-        flex-direction: row-reverse;
         padding: 0 8px 8px 0;
         border-top: 1px solid gray;
       }
@@ -209,8 +242,6 @@ limitations under the License.
 
       .datapoint-tab {
         width: 100%;
-        display: flex;
-        flex-direction: column;
       }
 
       .config-tab {
@@ -389,7 +420,7 @@ limitations under the License.
       </div>
     </paper-dialog>
     <div class="dashboard-layout">
-      <div class="center">
+      <div class$="[[getCenterClass_(panelExpanded)]]" id="center">
         <facets-dive id="dive" data="[[visdata]]"
                     on-selected-indices-changed="selectedIndicesChanged_"
                     on-stats-changed="statsChanged_"
@@ -433,7 +464,7 @@ limitations under the License.
           </template>
         </div>
       </div>
-      <div class="side-holder">
+      <div class$="[[getSideHolderClass_(panelExpanded)]]" id="side">
         <div class="side-content">
           <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
             <paper-tab>Datapoint</paper-tab>
@@ -478,15 +509,17 @@ limitations under the License.
                     </paper-icon-button>
                   </div>
                 </div>
-                <vz-example-viewer class="example-holder" json="{{selectedExampleAndInference.example}}"
-                                    on-example-change="exampleChange_" id$="[[getViewerId_()]]"
-                                    display-mode="[[exampleDisplayMode]]">
-                </vz-example-viewer>
-                <div class="inference-section">
-                  <div class="inference-header">Inference Results</div>
-                  <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                        id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
-                  </tf-inference-viewer>
+                <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                  <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
+                                      on-example-change="exampleChange_" id$="[[getViewerId_()]]"
+                                      display-mode="[[exampleDisplayMode]]">
+                  </vz-example-viewer>
+                  <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                    <div class="inference-header">Inference Results</div>
+                    <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                          id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
+                    </tf-inference-viewer>
+                  </div>
                 </div>
               </template>
               <template is="dom-if" if="[[!shouldShowExample_(selectedExampleAndInference)]]">
@@ -562,14 +595,19 @@ limitations under the License.
           </iron-pages>
         </div>
         <div class="bottom-side">
-          <paper-button on-click="inferClicked_" class="button"
-                        disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-            Re-run inference
-          </paper-button>
-          <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
-          <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
-            <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
-          </a>
+          <div class="datapoint-left-controls-holder">
+            <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]" on-click="panelExpandToggleClicked_" class="settings-button rotated-button"></paper-icon-button>
+          </div>
+          <div class="datapoint-right-controls-holder">
+            <paper-button on-click="inferClicked_" class="button"
+                          disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+              Re-run inference
+            </paper-button>
+            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
+            <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+              <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -718,6 +756,10 @@ limitations under the License.
           type: String,
           value: 'grid'
         },
+        panelExpanded: {
+          type: Boolean,
+          value: false,
+        },
       },
 
       // Required function.
@@ -739,6 +781,7 @@ limitations under the License.
 
       showPartialDependencePlots_: function() {
         this.$.partialplotholder.style.display = 'block';
+        this.panelExpanded = false;
         requestAnimationFrame(() => this.populateTabs());
       },
 
@@ -779,6 +822,34 @@ limitations under the License.
 
       statsChanged_: function(event) {
         this.stats = event.detail.value;
+      },
+
+      getPanelExpandIcon_: function(panelExpanded) {
+        return panelExpanded ? 'unfold-less' : 'unfold-more'
+      },
+
+      panelExpandToggleClicked_: function() {
+        this.panelExpanded = !this.panelExpanded;
+      },
+
+      getExampleAndInferenceHolderClass_: function(panelExpanded) {
+        return panelExpanded ? 'example-and-inference-holder-expanded' : 'example-and-inference-holder';
+      },
+
+      getExampleHolderClass_: function(panelExpanded) {
+        return panelExpanded ? 'example-holder-expanded' : 'example-holder';
+      },
+
+      getInferenceSectionClass_: function(panelExpanded) {
+        return panelExpanded ? 'inference-section-expanded' : 'inference-section';
+      },
+
+      getCenterClass_: function(panelExpanded) {
+        return panelExpanded ? 'center-expanded' : 'center';
+      },
+
+      getSideHolderClass_: function(panelExpanded) {
+        return panelExpanded ? 'side-holder-expanded' : 'side-holder';
       },
 
       isClassification_: function(modelType) {
