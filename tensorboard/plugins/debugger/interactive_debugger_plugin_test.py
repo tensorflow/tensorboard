@@ -936,8 +936,10 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     tensor_data = self._deserializeResponse(tensor_response)
     self.assertEqual(None, tensor_data['error'])
     self.assertEqual(2, len(tensor_data['tensor_data'][0]))
-    self.assertEqual(b'=01=01=01', tensor_data['tensor_data'][0][0])
-    self.assertEqual(b'=02=02=02', tensor_data['tensor_data'][0][1])
+    self.assertEqual(
+        b'=01=01=01', tf.compat.as_bytes(tensor_data['tensor_data'][0][0]))
+    self.assertEqual(
+        b'=02=02=02', tf.compat.as_bytes(tensor_data['tensor_data'][0][1]))
 
     # Get the health pill of a string tensor.
     tensor_response = self._serverGet(
