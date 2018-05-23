@@ -65,7 +65,7 @@ def parse_time_indices(s):
 def translate_dtype(dtype):
   """Translate numpy dtype into a string.
 
-  The 'object' type is understood as a tenosrflow string and translated into
+  The 'object' type is understood as a TensorFlow string and translated into
   'string'.
 
   Args:
@@ -85,7 +85,7 @@ def process_buffers_for_display(s, limit=40):
 
   This function performs the following operation on each of the buffers in `s`.
     1. Truncate input buffer if the length of the buffer is greater than
-       `limit`.
+       `limit`, to prevent large strings from overloading the frontend.
     2. Apply `binascii.b2a_qp` on the truncated buffer to make the buffer
        printable and convertible to JSON.
     3. If truncation happened (in step 1), append a string at the end
@@ -105,7 +105,7 @@ def process_buffers_for_display(s, limit=40):
     length = len(s)
     if length > limit:
       return (binascii.b2a_qp(s[:limit]) +
-              b' (length-%s truncated at %s bytes)' % (length, limit))
+              b' (length-%d truncated at %d bytes)' % (length, limit))
     else:
       return binascii.b2a_qp(s)
 
