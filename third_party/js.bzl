@@ -431,7 +431,7 @@ def tensorboard_js_workspace():
       name = "org_tensorflow_tfjs",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
-          "92ab29feaa70bed4b79917a0042448d75d192f2734f5464b72533d2b43b63830": [
+          "4cf04314432903c2329a96a52c80d201f9d7c796a5d6dd1a741d332b95078ee0": [
               "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.10.3/dist/tf.min.js",
           ],
       },
