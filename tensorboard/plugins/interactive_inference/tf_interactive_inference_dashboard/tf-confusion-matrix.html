@@ -37,6 +37,10 @@ limitations under the License.
         text-align: right;
         font-size: 10px;
       }
+      .n-label {
+        font-size: 10px;
+        vertical-align: bottom;
+      }
       .correct {
         background: DarkSeaGreen;
       }
@@ -46,7 +50,7 @@ limitations under the License.
     </style>
     <table>
       <tr>
-        <th></th>
+        <td class="n-label">[[getNText(total)]]</td>
         <th class="pred-label">Predicted<br/>1</th>
         <th class="pred-label">Predicted<br/>0</th>
         <th></th>
@@ -92,6 +96,10 @@ limitations under the License.
 
       getTotalText: function(count1, count2, total) {
         return this.getText(count1 + count2, total);
+      },
+
+      getNText: function(total) {
+        return 'n=' + total;
       },
     });
 
