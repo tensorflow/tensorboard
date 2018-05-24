@@ -425,10 +425,8 @@ Polymer({
     }
     if (feat.getBytesList()) {
       if (!keepBytes) {
-        const vals = feat.getBytesList()!.getValueList().map(
-            chars => this.decodeBytesListString(
-                // tslint:disable-next-line:no-any cast due to tf.Example typing
-                new Uint8Array(chars as any), isImage));
+        const vals = feat.getBytesList()!.getValueList_asU8().map(
+            u8array => this.decodeBytesListString(u8array, isImage));
         return vals;
       }
       return feat.getBytesList()!.getValueList();
@@ -464,10 +462,8 @@ Polymer({
     }
     if (feat.getBytesList()) {
       if (!keepBytes) {
-        return feat.getBytesList()!.getValueList().map(
-            chars => this.decodeBytesListString(
-                // tslint:disable-next-line:no-any cast due to tf.Example typing
-                new Uint8Array(chars as any), isImage));
+        return feat.getBytesList()!.getValueList_asU8().map(
+            u8array => this.decodeBytesListString(u8array, isImage));
       }
       return feat.getBytesList()!.getValueList();
     } else if (feat.getInt64List()) {
@@ -1102,18 +1098,11 @@ Polymer({
       floats.setValueList(featentry.floatList.value);
       feat.setFloatList(floats);
     } else if (featentry.bytesList) {
-      // Json byteslist entries need to be converted into byte arrays of
-      // character codes from the base64 encoded string, in order to properly
-      // construct the proto Feature object from the json.
+      // Json byteslist entries are base64.  The JSPB generated Feature class
+      // will marshall this to U8 automatically.
       const bytes = new BytesList();
       if (featentry.bytesList.value) {
-        bytes.setValueList(featentry.bytesList.value.map((val: string) => {
-          const decodedStr = atob(val);
-          const cc = isImage ? this.decodedStringToCharCodes(decodedStr) :
-                               this.stringToUint8Array(decodedStr);
-          // tslint:disable-next-line:no-any cast due to tf.Example typing.
-          return cc as any;
-        }));
+        bytes.setValueList(featentry.bytesList.value);
       }
       feat.setBytesList(bytes);
     } else if (featentry.int64List) {

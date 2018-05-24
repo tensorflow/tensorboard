@@ -335,9 +335,11 @@ def get_categorical_features_to_sampling(examples, top_k):
   for feature_name, feature_values in sorted(observed_features.iteritems()):
     samples = [
         ast.literal_eval(word)
-        for word, _ in collections.Counter(feature_values).most_common(top_k)
+        for word, count in collections.Counter(feature_values).most_common(
+          top_k) if count > 1
     ]
-    result[feature_name] = {'samples': samples}
+    if samples:
+      result[feature_name] = {'samples': samples}
   return result
 
 

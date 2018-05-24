@@ -393,6 +393,14 @@ limitations under the License.
       .off-switch-button {
         color: black;
       }
+
+      .flex {
+        display: flex;
+      }
+
+      .threshold-cost-input {
+        width: 50%;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -540,6 +548,17 @@ limitations under the License.
                     </template>
                   </paper-listbox>
                 </paper-dropdown-menu>
+                <template is="dom-if" if="[[selectedLabelFeature]]">
+                  <div class="flex">
+                    <paper-input value="{{incorrectPredCostRatio}}"
+                        label="Ratio of false positive cost to false negative cost"
+                        type="number" class="threshold-cost-input">
+                    </paper-input>
+                    <paper-button raised on-click="optimizeThresholdClicked_">
+                        Optimize single threshold
+                    </paper-button>
+                  </div>
+                </template>
               </template>
               <template is="dom-if" if="[[isClassification_(modelType)]]">
                 <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
@@ -570,6 +589,22 @@ limitations under the License.
                       </template>
                     </paper-listbox>
                   </paper-dropdown-menu>
+                  <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                    <div class="flex">
+                      <paper-button raised on-click="optimizeFacetedThresholdsClicked_">
+                          Optimize thresholds indivdually
+                      </paper-button>
+                      <paper-button raised on-click="equalOppoClicked_">
+                          Optimize with equal opporitunity
+                      </paper-button>
+                      <paper-button raised on-click="equalAccClicked_">
+                          Optimize with equal accuracy
+                      </paper-button>
+                      <paper-button raised on-click="demoParityClicked_">
+                          Optimize with demographic parity
+                      </paper-button>
+                    </div>
+                  </template>
                   <template is="dom-repeat" items="[[featureValueThresholds]]">
                     <div>
                       <paper-input value="[[getPrintableValue_(item.value)]]" readonly=true
@@ -762,6 +797,10 @@ limitations under the License.
           value: false,
         },
         featureSearchValue: String,
+        incorrectPredCostRatio: {
+          type: Number,
+          value: 1
+        },
       },
 
       // Required function.
@@ -894,12 +933,12 @@ limitations under the License.
         const thresholdsMap = {};
         if (feature.length !== 0) {
           // For the selected feature, set up a dict of each feature value in the dataset to
-          // the threshold, defaulting to 0.5. Add this to a list (for display purposes) and create
+          // the threshold. Add this to a list (for display purposes) and create
           // a map of feature value to entry in that list.
           for(var key in this.stats[feature].valueHash) {
             if(this.stats[feature].valueHash.hasOwnProperty(key)) {
               const featureValue = this.stats[feature].valueHash[key].value;
-              const thresh = {value: featureValue, threshold: 0.5};
+              const thresh = {value: featureValue, threshold: this.overallThreshold};
               thresholds.push(thresh);
               thresholdsMap[featureValue] = thresh;
             }
@@ -908,7 +947,7 @@ limitations under the License.
               this.examplesAndInferences.length) {
             // Add an entry for if the example has no feature value for this
             // selected feature.
-            const missingValueThresh = {value: undefined, threshold: 0.5};
+            const missingValueThresh = {value: undefined, threshold: this.overallThreshold};
             thresholds.push(missingValueThresh);
             thresholdsMap[undefined] = missingValueThresh;
           }
@@ -1066,6 +1105,126 @@ limitations under the License.
           stats[i]['TPR'] = stats[i]['TP'] / (stats[i]['TP'] + stats[i]['FN']);
           stats[i]['FPR'] = stats[i]['FP'] / (stats[i]['FP'] + stats[i]['TN']);
         }
+      },
+
+      findOptimalThreshold_: function(thresholds) {
+        let minCost = Number.POSITIVE_INFINITY;
+        let bestThreshold = 0;
+        for (let i = 0; i < thresholds.length; i++) {
+          const cost = this.getCost(thresholds[i]);
+          if (cost <= minCost) {
+            minCost = cost;
+            bestThreshold = i;
+          }
+        }
+        return bestThreshold / 100;
+      },
+
+      forceUpdateFeatureValueThresholds_: function() {
+        const thresholds = this.featureValueThresholds;
+        this.featureValueThresholds = [];
+        this.featureValueThresholds = thresholds;
+      },
+
+      optimizeThresholdClicked_: function() {
+        const thresholdToSet =
+          this.findOptimalThreshold_(this.classificationStats_.thresholds);
+        this.overallThreshold = thresholdToSet;
+        if (this.featureValueThresholds) {
+          for (let i = 0; i < this.featureValueThresholds.length; i++) {
+            const thresholdPath = 'featureValueThresholds.' + i + '.threshold';
+            this.set(thresholdPath, thresholdToSet);
+          }
+        }
+        this.forceUpdateFeatureValueThresholds_();
+      },
+
+      optimizeFacetedThresholdsClicked_: function() {
+        const values = Object.keys(this.classificationStats_.faceted);
+        for (let i = 0; i < values.length; i++) {
+          const featureValue = values[i];
+          const thresholdToSet = this.findOptimalThreshold_(
+            this.classificationStats_.faceted[featureValue]);
+          this.set('featureValueThresholds.' + i + '.threshold', thresholdToSet);
+        }
+        this.forceUpdateFeatureValueThresholds_();
+      },
+
+      equalOppoClicked_: function() {
+        const measure = 
+          stats => stats['TP'] /
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']); 
+        this.getBestThresholdsByFairnessMeasure_(measure);
+      },
+
+      equalAccClicked_: function() {
+        const measure = 
+          stats => (stats['TP'] + stats['TN']) /
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']); 
+        this.getBestThresholdsByFairnessMeasure_(measure);
+      },
+
+      demoParityClicked_: function() {
+        const measure = 
+          stats => (stats['TP'] + stats['FP']) /
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
+        this.getBestThresholdsByFairnessMeasure_(measure);
+      },
+
+      getBestThresholdsByFairnessMeasure_: function(fairnessCalculator) {
+        // For all thresholds for first facet:
+        //   For all other facets:
+        //     Find threshold with closest fairness measure of first facet at
+        //     current threshold
+        //   Calculate cost for these threshold settings settings across the
+        //   facets, and save if the lowest.
+        let minCost = Number.POSITIVE_INFINITY;
+        let bestThresholds = null;
+        const values = Object.keys(this.classificationStats_.faceted);
+        const firstFacet = this.classificationStats_.faceted[values[0]];
+        for (let i = 0; i < firstFacet.length; i++) {
+          const firstFacetMeasure = fairnessCalculator(firstFacet[i]);
+          const facetThresholds = [i];
+          let cost = this.getCost(firstFacet[i]);
+          for (let facetIdx = 1; facetIdx < values.length; facetIdx++) {
+            const currentFacet = this.classificationStats_.faceted[values[facetIdx]];
+            const currentFacetThreshold = this.thresholdClosestToMeasure(
+              currentFacet, firstFacetMeasure, fairnessCalculator);
+            facetThresholds.push(currentFacetThreshold);
+            cost += this.getCost(currentFacet[currentFacetThreshold])
+          }
+          if (cost <= minCost) {
+            minCost = cost;
+            bestThresholds = facetThresholds;
+          }
+        }
+
+        // Set all thresholds to the setting with the lowest cost from the above
+        // search.
+        for (let i = 0; i < values.length; i++) {
+          this.set('featureValueThresholds.' + i + '.threshold',
+            bestThresholds[i] / 100);
+        }
+        this.forceUpdateFeatureValueThresholds_();
+      },
+
+      getCost: function(entries) {
+        return entries['FP'] * this.incorrectPredCostRatio + entries['FN'];
+      },
+
+      thresholdClosestToMeasure: function(
+          currentFacet, firstFacetMeasure, fairnessCalculator) {
+        let minDistance = Number.POSITIVE_INFINITY;
+        let thresholdToReturn = 0;
+        for (let i = 0; i < currentFacet.length; i++) {
+          const measure = fairnessCalculator(currentFacet[i]);
+          const curDistance = Math.abs(measure - firstFacetMeasure);
+          if (curDistance <= minDistance) {
+            thresholdToReturn = i;
+            minDistance = curDistance;
+          }
+        }
+        return thresholdToReturn;
       },
 
       getClassificationBestNonZero: function(index) {
