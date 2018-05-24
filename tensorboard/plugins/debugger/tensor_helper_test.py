@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
+import binascii
 
 import numpy as np
 import six
@@ -26,6 +27,56 @@ import tensorflow as tf
 
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.debugger import tensor_helper
+
+
+class TranslateDTypeTest(tf.test.TestCase):
+
+  def testTranslateNumericDTypes(self):
+    x = np.zeros([2, 2], dtype=np.float32)
+    self.assertEqual('float32', tensor_helper.translate_dtype(x.dtype))
+    x = np.zeros([2], dtype=np.int16)
+    self.assertEqual('int16', tensor_helper.translate_dtype(x.dtype))
+    x = np.zeros([], dtype=np.uint8)
+    self.assertEqual('uint8', tensor_helper.translate_dtype(x.dtype))
+
+  def testTranslateBooleanDType(self):
+    x = np.zeros([2, 2], dtype=np.bool)
+    self.assertEqual('bool', tensor_helper.translate_dtype(x.dtype))
+
+  def testTranslateStringDType(self):
+    x = np.array(['abc'], dtype=np.object)
+    self.assertEqual('string', tensor_helper.translate_dtype(x.dtype))
+
+
+class ProcessBuffersForDisplayTest(tf.test.TestCase):
+
+  def testBinaryScalarBelowLimit(self):
+    x = b'\x01\x02\x03'
+    self.assertEqual(binascii.b2a_qp(x),
+                     tensor_helper.process_buffers_for_display(x, 10))
+
+  def testAsciiScalarBelowLimit(self):
+    x = b'foo_bar'
+    self.assertEqual(b'foo_bar',
+                     tensor_helper.process_buffers_for_display(x, 10))
+
+  def testBinaryScalarAboveLimit(self):
+    x = b'\x01\x02\x03'
+    self.assertEqual(
+        binascii.b2a_qp(x[:2]) + b' (length-3 truncated at 2 bytes)',
+        tensor_helper.process_buffers_for_display(x, 2))
+
+  def testAsciiScalarAboveLimit(self):
+    x = b'foo_bar'
+    self.assertEqual(b'foo_ (length-7 truncated at 4 bytes)',
+                     tensor_helper.process_buffers_for_display(x, 4))
+
+  def testNestedArrayMixed(self):
+    x = [[b'\x01\x02\x03', b'foo_bar'], [b'\x01', b'f']]
+    self.assertEqual(
+        [[b'=01=02 (length-3 truncated at 2 bytes)',
+          b'fo (length-7 truncated at 2 bytes)'],
+         [b'=01', b'f']], tensor_helper.process_buffers_for_display(x, 2))
 
 
 class TensorHelperTest(tf.test.TestCase):
