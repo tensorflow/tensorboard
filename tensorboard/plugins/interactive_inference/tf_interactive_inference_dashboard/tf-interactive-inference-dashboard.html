@@ -411,7 +411,9 @@ limitations under the License.
           model-version="{{modelVersion}}"
           model-signature="{{modelSignature}}"
           max-examples="{{maxExamples}}"
-          label-vocab-path="{{labelVocabPath}}">
+          label-vocab-path="{{labelVocabPath}}"
+          multi-class="{{multiClass}}"
+          max-classes-to-display="{{maxInferenceEntriesPerRun}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
         <paper-button on-click="getExamplesAndCloseSettings_" class="button"
@@ -526,7 +528,7 @@ limitations under the License.
                   <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
                     <div class="inference-header">Inference Results</div>
                     <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                          id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]">
+                                          id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                     </tf-inference-viewer>
                   </div>
                 </div>
@@ -801,6 +803,8 @@ limitations under the License.
           type: Number,
           value: 1
         },
+        multiClass: Boolean,
+        maxInferenceEntriesPerRun: Number,
       },
 
       // Required function.

@@ -68,7 +68,10 @@ limitations under the License.
       }
       .model-type-label {
         padding-top: 10px;
-
+      }
+      .multi-class-checkbox {
+        margin-top: 30px;
+        margin-left: 10px; 
       }
       paper-input {
         --paper-input-container-focus-color: #f57c00;
@@ -109,7 +112,7 @@ limitations under the License.
     <paper-input always-float-label label="Path to label dictionary (optional)"
                     placeholder="[[labelVocabPath]]"
                     value="{{labelVocabPath}}"
-                    disabled="[[shouldDisableVocabInput_(modelType)]]">
+                    disabled="[[shouldDisableClassificationControls_(modelType)]]">
     </paper-input>
     <div class="flex-holder">
       <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
@@ -121,6 +124,17 @@ limitations under the License.
         in the display. Each line in the file corresponds to a label, with the first line
         corresponding to class index 0.
       </paper-tooltip>
+    </div>
+    <div class="flex-holder">
+      <paper-input always-float-label type="number" label="Max classes to display"
+                  placeholder="[[maxClassesToDisplay]]" value="{{maxClassesToDisplay}}"
+                  class="input-in-row" disabled="[[shouldDisableClassificationControls_(modelType)]]">
+      </paper-input>
+      <paper-checkbox disabled="[[shouldDisableClassificationControls_(modelType)]]"
+                      checked="{{multiClass}}"
+                      class="multi-class-checkbox">
+        Multi-class classification model
+      </paper-checkbox>
     </div>
   </template>
 
@@ -196,6 +210,16 @@ limitations under the License.
           observer: 'labelVocabPathChanged_',
           notify: true,
         },
+        multiClass: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+        maxClassesToDisplay: {
+          type: Number,
+          value: 5,
+          notify: true,
+        },
       },
 
       examplesPathChanged_: tf_storage.getStringObserver(
@@ -222,7 +246,7 @@ limitations under the License.
       labelVocabPathChanged_: tf_storage.getStringObserver(
         'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
 
-      shouldDisableVocabInput_: function(modelType) {
+      shouldDisableClassificationControls_: function(modelType) {
         return modelType == 'regression';
       },
     });

@@ -91,7 +91,7 @@ limitations under the License.
     <div class="runs-holder">
       <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
         <div class="rows-for-run">
-          <template is="dom-repeat" items="[[inference]]">
+          <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
             <div class="row non-header">
               <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
               <div class="run">[[getRun(runindex)]]</div>
@@ -116,6 +116,10 @@ limitations under the License.
       properties: {
         inferences: Array,
         modelType: String,
+        maxEntriesPerRun: {
+          type: Number,
+          value: 5,
+        },
       },
 
       getLabel: function(item) {
@@ -186,6 +190,10 @@ limitations under the License.
           }
         }
         return '';
+      },
+
+      getInferenceList: function(inferenceList, maxEntries) {
+        return inferenceList.slice(0, maxEntries);
       },
     });
 
