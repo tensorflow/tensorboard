@@ -550,6 +550,15 @@ limitations under the License.
                     </template>
                   </paper-listbox>
                 </paper-dropdown-menu>
+                <template is="dom-if" if="[[shouldShowClassDropdown_(classesList)]]">
+                  <paper-dropdown-menu label="Set classification label to analyze" class="threshold-dropdown">
+                    <paper-listbox class="dropdown-content" selected="{{selectedClass}}" attr-for-selected="name">
+                      <template is="dom-repeat" items="[[classesList]]">
+                        <paper-item name="[[item]]">[[item]]</paper-item>
+                      </template>
+                    </paper-listbox>
+                  </paper-dropdown-menu>
+                </template>
                 <template is="dom-if" if="[[selectedLabelFeature]]">
                   <div class="flex">
                     <paper-input value="{{incorrectPredCostRatio}}"
@@ -805,6 +814,19 @@ limitations under the License.
         },
         multiClass: Boolean,
         maxInferenceEntriesPerRun: Number,
+        classesSet: {
+          type: Object,
+          value: {},
+        },
+        classesList: {
+          type: Array,
+          value: [],
+        },
+        selectedClass: {
+          type: String,
+          value: "1",
+          observer: 'selectedClassSelected_',
+        },
       },
 
       // Required function.
@@ -909,6 +931,10 @@ limitations under the License.
         return modelType == 'classification' && stats && Object.keys(stats).length > 0;
       },
 
+      shouldShowClassDropdown_: function(classesList) {
+        return classesList.length > 1;
+      },
+
       shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
         return selectedLabelFeature != '' && selectedThresholdFeature == '' && inferences != null;
       },
@@ -967,6 +993,10 @@ limitations under the License.
         requestAnimationFrame(() => this.updateClassificationStats_(true));
       },
 
+      selectedClassSelected_: function(selectedClass) {
+        this.updateClassificationStats_(true);
+      },
+
       updateClassificationStats_: function(regenClassificationStats) {
         if (!this.classificationStats_ || !this.visdata || this.selectedLabelFeature == '') {
           return;
@@ -997,7 +1027,7 @@ limitations under the License.
                   item[this.selectedThresholdFeature]];
               }
             }
-            const nonZeroClassification = this.getClassificationBestNonZero(i);
+            const nonZeroClassification = this.getClassificationForClass(this.selectedClass, i);
             let thresh = 0;
             for (; thresh <= 100; thresh++) {
               if (thresh > nonZeroClassification.score * 100) {
@@ -1232,18 +1262,20 @@ limitations under the License.
         return thresholdToReturn;
       },
 
-      getClassificationBestNonZero: function(index) {
-        // Find the first inference label in the score-sorted list that is non-zero.
-        let indexForNonZeroLabel = 0;
+      getClassificationForClass: function(selectedClass, index) {
+        let indexForSelectedClass = -1;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0; i < this.examplesAndInferences[index].inferences[inferenceIndex].length; i++) {
-          if (+this.examplesAndInferences[index].inferences[inferenceIndex][i].label !== 0) {
-            indexForNonZeroLabel = i;
+          if (+this.examplesAndInferences[index].inferences[inferenceIndex][i].label == selectedClass) {
+            indexForSelectedClass = i;
             break;
           }
         }
-
-        return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
+        if (indexForSelectedClass >= 0) {
+          return this.examplesAndInferences[index].inferences[inferenceIndex][indexForSelectedClass];
+        } else {
+          return {label: selectedClass, score: 0};
+        }
       },
 
 
@@ -1336,11 +1368,21 @@ limitations under the License.
         const inferenceMap = {}
         const isClassification = !!this.inferences.results.classification;
         for (let i = 0; i < this.inferences.indices.length; i++) {
-          inferenceMap[this.inferences.indices[i]] = isClassification ?
-              this.inferences.results.classification.classifications[i].classes.sort(function(a, b) {
-                return b.score - a.score;
-              }) :
-              [{label: '', score: this.inferences.results.regression.regressions[i].value}];
+          if (isClassification) {
+            const classes = this.inferences.results.classification.classifications[i].classes;
+            inferenceMap[this.inferences.indices[i]] = classes.sort(function(a, b) {
+              return b.score - a.score;
+            });
+            for (let classIdx = 0; classIdx < classes.length; classIdx++) {
+              if (classes[classIdx].label != '0') {
+                this.classesSet[classes[classIdx].label] = true;
+              }
+            }
+          } else {
+            inferenceMap[this.inferences.indices[i]] =
+                [{label: '', score: this.inferences.results.regression.regressions[i].value}];
+          }
+          this.classesList = Object.keys(this.classesSet);
         }
         this.set('examplesAndInferences', this.examplesAndInferences.map(
           function(item, index) {
