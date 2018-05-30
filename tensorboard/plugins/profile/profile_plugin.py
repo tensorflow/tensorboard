@@ -258,6 +258,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
       grpc_request.repository_root = self.plugin_logdir
       grpc_request.session_id = run[:-1]
       grpc_request.tool_name = 'trace_viewer'
+      grpc_request.host_name = host
 
       grpc_request.parameters['resolution'] = request.args.get('resolution')
       if request.args.get('start_time_ms') is not None:
