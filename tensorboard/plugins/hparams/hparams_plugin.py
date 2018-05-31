@@ -66,6 +66,9 @@ class HParamsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def get_experiment_route(self, request):
     try:
+      if not self.is_active():
+        raise error.HParamsError("HParams plugin is not active.")
+
       return http_util.Respond(request,
                                json_format.MessageToJson(
                                    self._context.experiment()),
@@ -77,6 +80,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def list_session_groups_route(self, request):
     try:
+      if not self.is_active():
+        raise error.HParamsError("HParams plugin is not active.")
       # args.get() returns the request unquoted.
       request_proto = request.args.get('request')
       if request_proto is None:
