@@ -51,18 +51,18 @@ limitations under the License.
     <table>
       <tr>
         <td class="n-label">[[getNText(total)]]</td>
-        <th class="pred-label">Predicted<br/>1</th>
-        <th class="pred-label">Predicted<br/>0</th>
+        <th class="pred-label">Predicted<br/>Yes</th>
+        <th class="pred-label">Predicted<br/>No</th>
         <th></th>
       </tr>
       <tr>
-        <th class="actual-label">Actual<br/>1</th>
+        <th class="actual-label">Actual<br/>Yes</th>
         <td class="correct">[[getText(counts.tp, total)]]</td>
         <td class="incorrect">[[getText(counts.fn, total)]]</td>
         <td>[[getTotalText(counts.tp, counts.fn, total)]]</td>
       </tr>
       <tr>
-        <th class="actual-label">Actual<br/>0</th>
+        <th class="actual-label">Actual<br/>No</th>
         <td class="incorrect">[[getText(counts.fp, total)]]</td>
         <td class="correct">[[getText(counts.tn, total)]]</td>
         <td>[[getTotalText(counts.fp, counts.tn, total)]]</td>

@@ -35,10 +35,10 @@
         const DATA_PATH = "data/iris/iris.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           this.data = data;
-          for (let i = 0; i < data.length; i++) {
+          for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(data.map(item => JSON.stringify(item)), false);
+          this.$.dash.updateExampleContents_(this.data.map(item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
             this.indicesToInfer[e.detail.index] = true;

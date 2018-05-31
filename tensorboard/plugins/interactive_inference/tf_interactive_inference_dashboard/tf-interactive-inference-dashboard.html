@@ -75,7 +75,7 @@ limitations under the License.
         display: flex;
         flex-direction: column;
       }
-      
+
       .example-and-inference-holder-expanded {
         height: calc(100% - 40px);
         display: flex;
@@ -360,7 +360,7 @@ limitations under the License.
         margin-left: 1px;
         --paper-tabs-selection-bar-color: var(--tb-orange-strong);
       }
-      
+
       paper-tab:not(.iron-selected) {
         color: #212121;
         background: #f4f4f4;
@@ -668,6 +668,7 @@ limitations under the License.
     const maxStringLengthToDecode = 100000;
     const inferenceLabelStr = 'inference label';
     const inferenceValueStr = 'inference value';
+    const inferenceCorrectStr = 'inference correct';
 
     function deleteElement($elt){
       if ($elt && $elt.parentElement){
@@ -932,7 +933,7 @@ limitations under the License.
       },
 
       shouldShowClassDropdown_: function(classesList) {
-        return classesList.length > 1;
+        return classesList.length > 2;
       },
 
       shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
@@ -1081,6 +1082,7 @@ limitations under the License.
             this.featureValueThresholds[i].threshold,
             regenClassificationStats);
         }
+        this.updateCorrectness_();
       },
 
       plotPr: function(chart, thresholdStats, threshold,
@@ -1186,21 +1188,21 @@ limitations under the License.
       },
 
       equalOppoClicked_: function() {
-        const measure = 
+        const measure =
           stats => stats['TP'] /
-            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']); 
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
         this.getBestThresholdsByFairnessMeasure_(measure);
       },
 
       equalAccClicked_: function() {
-        const measure = 
+        const measure =
           stats => (stats['TP'] + stats['TN']) /
-            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']); 
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
         this.getBestThresholdsByFairnessMeasure_(measure);
       },
 
       demoParityClicked_: function() {
-        const measure = 
+        const measure =
           stats => (stats['TP'] + stats['FP']) /
             (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
         this.getBestThresholdsByFairnessMeasure_(measure);
@@ -1374,9 +1376,7 @@ limitations under the License.
               return b.score - a.score;
             });
             for (let classIdx = 0; classIdx < classes.length; classIdx++) {
-              if (classes[classIdx].label != '0') {
-                this.classesSet[classes[classIdx].label] = true;
-              }
+              this.classesSet[classes[classIdx].label] = true;
             }
           } else {
             inferenceMap[this.inferences.indices[i]] =
@@ -1398,7 +1398,9 @@ limitations under the License.
           if (isClassification) {
             self.setItemInferenceValue(item, index, self.selectedThresholdFeature);
           } else {
-            item[inferenceValueStr] = self.examplesAndInferences[index].inferences[0].value;
+            item[inferenceValueStr] =
+              self.examplesAndInferences[index].inferences[
+                self.examplesAndInferences[index].inferences.length - 1].value;
           }
 
 
@@ -1417,6 +1419,7 @@ limitations under the License.
             hasInferenceLabels = true;
           }
         });
+        this.updateCorrectness_();
         this.refreshDive_();
         if (newInferencesCalculated) {
           this.$.dive.colorBy = hasInferenceLabels ? inferenceLabelStr : inferenceValueStr;
@@ -1425,6 +1428,14 @@ limitations under the License.
       },
 
       setItemInferenceValue: function(item, index, feature) {
+        const inferenceIdx =
+          this.examplesAndInferences[index].inferences.length - 1;
+        if (this.multiClass) {
+          item[inferenceValueStr] =
+            this.examplesAndInferences[index].inferences[inferenceIdx][0].label;
+          return;
+        }
+
         let threshold = this.overallThreshold;
         // If a feature has been selected (string will be non-empty in this case), then get the
         // appropriate threshold for this item's value for that feature. Otherwise the overall
@@ -1436,18 +1447,28 @@ limitations under the License.
 
         // Find the first inference label in the score-sorted list that is non-zero.
         let indexForNonZeroLabel = 0;
-        for (let i = 0; i < this.examplesAndInferences[index].inferences[0].length; i++) {
-          if (+this.examplesAndInferences[index].inferences[0][i].label !== 0) {
+        for (let i = 0; i < this.examplesAndInferences[index].inferences[inferenceIdx].length; i++) {
+          if (+this.examplesAndInferences[index].inferences[inferenceIdx][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
 
-        if (this.examplesAndInferences[index].inferences[0][indexForNonZeroLabel].score >= threshold) {
+        if (this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].score >= threshold) {
           item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[0][indexForNonZeroLabel].label;
+            this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].label;
         } else {
           item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+        }
+      },
+
+      updateCorrectness_: function() {
+        if (!this.selectedLabelFeature || !this.examplesAndInferences) {
+          return;
+        }
+        for (let i = 0; i < this.examplesAndInferences.length; i++) {
+          const item = this.visdata[i];
+          item[inferenceCorrectStr] = item[this.selectedLabelFeature] == item[inferenceValueStr] ? "correct" : "incorrect";
         }
       },
 
@@ -1491,7 +1512,7 @@ limitations under the License.
         this.visdata = [];
         this.visdata = temp;
         this.$.overview.protoInput =
-            this.$.overview.getStatsProto([{name: '', data: temp}]); 
+            this.$.overview.getStatsProto([{name: '', data: temp}]);
         const tempSelected = this.$.dive.selectedData;
         this.$.dive.selectedData = [];
         this.$.dive.selectedData = tempSelected;
@@ -1778,18 +1799,28 @@ limitations under the License.
         const formatValueOrNaN = function (x) {
           return Number.isNaN(x) ? 'NaN' : valueFormatter(x);
         };
+        $chart.defaultYRange = [0, 1];
         $chart.tooltipColumns = [
           {
               title: 'Inference value',
-              evaluate: function (d) { return d.dataset.metadata().name; },
+              evaluate: d => {
+                let label = d.dataset.metadata().name;
+                if (!isNaN(label) && this.labelVocab) {
+                  const index = +label;
+                  if (index < this.labelVocab.length && index >= 0) {
+                    label += ' - ' + this.labelVocab[index];
+                  }
+                }
+                return label;
+              }
           },
           {
               title: 'Feature value',
-              evaluate: function (d) { return formatValueOrNaN(d.datum.step); },
+              evaluate: d => formatValueOrNaN(d.datum.step),
           },
           {
               title: 'Score',
-              evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
+              evaluate: d => formatValueOrNaN(d.datum.scalar),
           },
         ];
 
