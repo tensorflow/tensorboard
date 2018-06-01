@@ -550,16 +550,7 @@ limitations under the License.
                     </template>
                   </paper-listbox>
                 </paper-dropdown-menu>
-                <template is="dom-if" if="[[shouldShowClassDropdown_(classesList)]]">
-                  <paper-dropdown-menu label="Set classification label to analyze" class="threshold-dropdown">
-                    <paper-listbox class="dropdown-content" selected="{{selectedClass}}" attr-for-selected="name">
-                      <template is="dom-repeat" items="[[classesList]]">
-                        <paper-item name="[[item]]">[[item]]</paper-item>
-                      </template>
-                    </paper-listbox>
-                  </paper-dropdown-menu>
-                </template>
-                <template is="dom-if" if="[[selectedLabelFeature]]">
+                <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, multiClass)]]">
                   <div class="flex">
                     <paper-input value="{{incorrectPredCostRatio}}"
                         label="Ratio of false positive cost to false negative cost"
@@ -571,7 +562,7 @@ limitations under the License.
                   </div>
                 </template>
               </template>
-              <template is="dom-if" if="[[isClassification_(modelType)]]">
+              <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
                 <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
                   <div>
                     <paper-input value="Threshold for positive label" readonly=true class="slider-label"
@@ -592,7 +583,7 @@ limitations under the License.
                     </div>
                   </template>
                 </template>
-                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
+                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, multiClass, stats)]]">
                   <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
                     <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
                       <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
@@ -813,21 +804,11 @@ limitations under the License.
           type: Number,
           value: 1
         },
-        multiClass: Boolean,
+        multiClass: {
+          type: Boolean,
+          value: false,
+        },
         maxInferenceEntriesPerRun: Number,
-        classesSet: {
-          type: Object,
-          value: {},
-        },
-        classesList: {
-          type: Array,
-          value: [],
-        },
-        selectedClass: {
-          type: String,
-          value: "1",
-          observer: 'selectedClassSelected_',
-        },
       },
 
       // Required function.
@@ -920,20 +901,16 @@ limitations under the License.
         return panelExpanded ? 'side-holder-expanded' : 'side-holder';
       },
 
-      isClassification_: function(modelType) {
-        return modelType == 'classification';
+      isBinaryClassification_: function(modelType, multiClass) {
+        return modelType == 'classification' && !multiClass;
       },
 
-      shouldShowFeatureDropdown_: function(modelType, stats) {
-        return this.isClassification_(modelType) && stats && Object.keys(stats).length > 0;
+      shouldShowFeatureDropdown_: function(modelType, multiClass, stats) {
+        return this.isBinaryClassification_(modelType, multiClass) && stats && Object.keys(stats).length > 0;
       },
 
       shouldShowLabelDropdown_: function(modelType, stats) {
         return modelType == 'classification' && stats && Object.keys(stats).length > 0;
-      },
-
-      shouldShowClassDropdown_: function(classesList) {
-        return classesList.length > 2;
       },
 
       shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
@@ -944,6 +921,10 @@ limitations under the License.
         return selectedLabelFeature != '' && selectedThresholdFeature != '' && inferences != null;
       },
 
+      shouldShowCostRatio_: function(selectedLabelFeature, multiClass) {
+        return selectedLabelFeature != '' && !multiClass;
+      },
+
       shouldShowExample_: function(selected) {
         return selected != null;
       },
@@ -952,7 +933,7 @@ limitations under the License.
         // Do not also threshold settings by the results of the inference as they aren't real data
         // features.
         const features = Object.keys(stats).filter(function(feature) {
-          return feature !== inferenceValueStr && feature !== inferenceLabelStr;
+          return feature !== inferenceValueStr && feature !== inferenceLabelStr && feature !== inferenceCorrectStr;
         });
         // Add a blank feature to be used for clearing the selected feature.
         features.push('');
@@ -991,11 +972,10 @@ limitations under the License.
 
       labelFeatureSelected_: function(feature) {
         this.sideTabSelected = 2;
-        requestAnimationFrame(() => this.updateClassificationStats_(true));
-      },
-
-      selectedClassSelected_: function(selectedClass) {
-        this.updateClassificationStats_(true);
+        requestAnimationFrame(() => {
+          this.updateClassificationStats_(true);
+          this.refreshDive_();
+        });
       },
 
       updateClassificationStats_: function(regenClassificationStats) {
@@ -1028,7 +1008,7 @@ limitations under the License.
                   item[this.selectedThresholdFeature]];
               }
             }
-            const nonZeroClassification = this.getClassificationForClass(this.selectedClass, i);
+            const nonZeroClassification = this.getClassificationBestNonZero(i);
             let thresh = 0;
             for (; thresh <= 100; thresh++) {
               if (thresh > nonZeroClassification.score * 100) {
@@ -1264,22 +1244,18 @@ limitations under the License.
         return thresholdToReturn;
       },
 
-      getClassificationForClass: function(selectedClass, index) {
-        let indexForSelectedClass = -1;
+      getClassificationBestNonZero: function(index) {
+        // Find the first inference label in the score-sorted list that is non-zero.
+        let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0; i < this.examplesAndInferences[index].inferences[inferenceIndex].length; i++) {
-          if (+this.examplesAndInferences[index].inferences[inferenceIndex][i].label == selectedClass) {
-            indexForSelectedClass = i;
+          if (+this.examplesAndInferences[index].inferences[inferenceIndex][i].label !== 0) {
+            indexForNonZeroLabel = i;
             break;
           }
         }
-        if (indexForSelectedClass >= 0) {
-          return this.examplesAndInferences[index].inferences[inferenceIndex][indexForSelectedClass];
-        } else {
-          return {label: selectedClass, score: 0};
-        }
+        return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
       },
-
 
       getConfusionCounts(classificationStats, threshold, featureValue) {
         return {
@@ -1321,6 +1297,14 @@ limitations under the License.
           return '<none>';
         }
         return feature;
+      },
+
+      getClassName_: function(cls) {
+        // If class name is blank then this represents selecting no class.
+        if (cls.length === 0) {
+          return '<none>';
+        }
+        return cls;
       },
 
       shouldShowOverallTresholder_: function(feature) {
@@ -1375,14 +1359,10 @@ limitations under the License.
             inferenceMap[this.inferences.indices[i]] = classes.sort(function(a, b) {
               return b.score - a.score;
             });
-            for (let classIdx = 0; classIdx < classes.length; classIdx++) {
-              this.classesSet[classes[classIdx].label] = true;
-            }
           } else {
             inferenceMap[this.inferences.indices[i]] =
                 [{label: '', score: this.inferences.results.regression.regressions[i].value}];
           }
-          this.classesList = Object.keys(this.classesSet);
         }
         this.set('examplesAndInferences', this.examplesAndInferences.map(
           function(item, index) {
