@@ -28,6 +28,7 @@ def tensorboard_polymer_workspace():
       ],
       path = "/polymer",
       srcs = [
+          "LICENSE.txt",
           "polymer.html",
           "polymer-micro.html",
           "polymer-mini.html",
@@ -577,6 +578,23 @@ def tensorboard_polymer_workspace():
           "@org_polymer_iron_meta",
       ],
   )
+
+  web_library_external(
+      name = "org_polymer_iron_validator_behavior",
+      srcs = ["iron-validator-behavior.html"],
+      licenses = ["notice"],  # BSD-3-Clause
+      path = "/iron-validator-behavior",
+      sha256 = "0956488f849c0528d66d5ce28bbfb66e163a7990df2cc5f157a5bf34dcb7dfd2",
+      strip_prefix = "iron-validator-behavior-1.0.2",
+      urls = [
+          "http://mirror.bazel.build/github.com/PolymerElements/iron-validator-behavior/archive/v1.0.2.tar.gz",
+          "https://github.com/PolymerElements/iron-validator-behavior/archive/v1.0.2.tar.gz",
+      ],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_meta",
+      ],
+   )
 
   web_library_external(
       name = "org_polymer_marked",

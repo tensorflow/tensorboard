@@ -34,6 +34,7 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="health-pills.html">
 <link rel="import" href="tf-debugger-continue-dialog.html">
 <link rel="import" href="tf-debugger-initial-dialog.html">
 <link rel="import" href="tf-debugger-resizer.html">
@@ -381,7 +382,6 @@ limitations under the License.
       }
     </style>
   </template>
-  <script src="health-pills.js"></script>
   <script src="tensor-shape-helper.js"></script>
   <script>
     const _COMPUTE_WINDOW_HEIGHT = () => (
@@ -956,15 +956,24 @@ limitations under the License.
         } else {
           // Selecting the node triggers a pan to it.
           const nodeMap = graph.get('renderHierarchy').hierarchy.getNodeMap();
-          if (!nodeMap[nodeName]) {
-            // In some cases, a node with other names using its name as
-            // name scope may not have base-expanded (i.e., normalized) name
-            // in the graph visualizer. In that case, we use the non-expanded
-            // node name.
+          if (nodeMap[nodeName] == null) {
+            // Some nodes may not be present in the graph scene, due to either
+            // of the two reasons:
+            //   1. A node with other names using its name as name scope may
+            //      not have a base-expanded (i.e., normalized) name in the
+            //      graph visualizer.
+            //   2. The node may fall into a type of nodes automatically
+            //      omitted by the graph visualizer, e.g., certain nodes
+            //      related to TensorBoard summaries.
+            // To deal with case 1, we use the non-expanded node name.
+            // To deal with case 2, we check whether `nodeMap[nodeName]` equal
+            // `null` again before setting `selectedNode` below.
             nodeName =
                 tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName);
           }
-          graph.set('selectedNode', nodeName);
+          if (nodeMap[nodeName] != null) {
+            graph.set('selectedNode', nodeName);
+          }
         }
         this.set('_highlightNodeName', deviceName + '/' + nodeName);
       },

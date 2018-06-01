@@ -132,6 +132,7 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "@org_pythonhosted_six",
     ],
 )
 

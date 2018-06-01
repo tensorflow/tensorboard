@@ -39,16 +39,6 @@ You may obtain a copy of the License at
       #summary-host {
         font-weight: bold; 
       }
-      .summary-conclusion {
-        font-weight: bold;
-        font-style: italic;
-        color: var(--summary-color, black);
-      }
-      .host-conclusion {
-        font-weight: bold;
-        font-style: italic;
-        color: green;
-      }
       .highlighted-text {
         text-decoration: underline;
         font-weight: bold;
@@ -90,23 +80,29 @@ You may obtain a copy of the License at
         color: #ff33cc;
         text-decoration: underline;
       }
+      #summary_conclusion{
+        font-weight:bolder;
+        font-style:italic;
+        color: var(--summary-color, green);
+      }
+      #summary_nextstep{
+        font-weight:bolder;
+        font-style:italic;
+        color:green;
+      }
+      #recommendation_title{
+        font-weight:bolder;
+        font-style:normal;
+        color:black;
+      }
     </style>
     <div>
       <div id="section_summary">
         <div id="title_summary">
           <p class="section-header"> Section 1: Summary of input-pipeline analysis</p>
         </div>
-        <p id="summary">
-          <span>The overall performance is </span>
-          <span class="summary-conclusion">[[_summary_text]]</span>
-          <span>input-bounded because on average (over all steps) the device has spent </span>
-          <span><span class="summary-conclusion">[[_infeed_percent_average]]%</span> of time </span>
-          <span>(standard deviation = [[_infeed_percent_stddev]]) waiting for input data </span>
-          <span>[see Section 2 below for details].</span>
-        </p>
-        <p id="summary-host">
-          Recommendation for next step: <span class="host-conclusion">[[_host_conclusion]]</span>
-        </p>
+        <p><span id="summary_conclusion">[[_summary_conclusion]]</span></p>
+        <p><span id="recommendation_title">Recommendation for next step: </span><span id="summary_nextstep">[[_summary_nextstep]]</span></p>
       </div>
       <div id="section_device_side_analysis">
         <div id="title_device_side_analysis">
@@ -227,7 +223,8 @@ You may obtain a copy of the License at
         computed: '_getToggleButtonText(_show_host_side_table)'
       },
     },
-    _summary_text: String,
+    _summary_conclusion: String,
+    _summary_nextstep: String, 
     _infeed_percent_average: String,
     _infeed_percent_stddev: String,
     _infeed_percent_minimum: String,
@@ -236,7 +233,6 @@ You may obtain a copy of the License at
     _steptime_ms_stddev: String,
     _steptime_ms_minimum: String,
     _steptime_ms_maximum: String,
-    _host_conclusion: String,
     onClick: function(e) {
       this.set('_show_host_side_table', !this._show_host_side_table);
     },
@@ -248,9 +244,11 @@ You may obtain a copy of the License at
     _updateView: function() {
       if (this._data == null) return;
       var deviceJson = this._data[0];
-      var hostJson = this._data[1];
-      var recommendationJson = this._data[2];
-      this.set('_summary_text', deviceJson.p['summary_text']);
+      var hostJson = this._data[2];
+      var recommendationJson = this._data[3];
+      var conclusion = deviceJson.p['summary_conclusion'];
+      this.set('_summary_conclusion', conclusion);
+      this.set('_summary_nextstep', deviceJson.p['summary_nextstep']);
       this.set('_infeed_percent_average', deviceJson.p['infeed_percent_average']);
       this.set('_infeed_percent_stddev', deviceJson.p['infeed_percent_standard_deviation']);
       this.set('_infeed_percent_minimum', deviceJson.p['infeed_percent_minimum']);
@@ -259,8 +257,11 @@ You may obtain a copy of the License at
       this.set('_steptime_ms_stddev', deviceJson.p['steptime_ms_standard_deviation']);
       this.set('_steptime_ms_minimum', deviceJson.p['steptime_ms_minimum']);
       this.set('_steptime_ms_maximum', deviceJson.p['steptime_ms_maximum']);
-      this.set('_host_conclusion', recommendationJson.p['overall']);
-      this.customStyle['--summary-color'] =  deviceJson.p['summary_color'];
+      if (conclusion.includes('HIGHLY')) {
+        this.customStyle['--summary-color'] =  'red';
+      } else if (conclusion.includes('MODERATE')) {
+        this.customStyle['--summary-color'] =  'orange';
+      }
       this.updateStyles();
       this._showDeviceStepChart(deviceJson);
       this._showDeviceInfeedChart(deviceJson);
