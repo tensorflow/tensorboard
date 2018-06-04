@@ -4,6 +4,10 @@
 <dom-module id='tf-interactive-inference-image-demo'>
   <template>
     <style>
+      :host {
+        width: 100%;
+        display: block;
+      }
       #dash {
         height: 100%;
         width: 100%;
@@ -14,8 +18,8 @@
     </style>
     <canvas id="spritecanvas"></canvas>
     <tf-interactive-inference-dashboard id="dash" local="true"
-        examples-path="./data/images/image_test_examples.json"
-        model-name="uci_census" inference-address="localhost"
+        examples-path="./data/images/smile_examples.json"
+        model-name="smile_detector" inference-address="localhost"
         label-vocab="[[labelVocab]]">
     </tf-interactive-inference-dashboard>
   </template>
@@ -28,22 +32,22 @@
         indicesToInfer: {type: Object, value: {}},
         means: Object,
         categories: Object,
-        labelVocab: {type: Array, value: null},
+        labelVocab: {type: Array, value: ["Not smiling", "Smiling"]},
         numLoadedImages: Number,
         images: Array,
       },
       ready: async function() {
         this.$.dash.settingsClicked_();
-       
-        this.model = await tf.loadModel('data/uci/model.json');
-        const DATA_PATH = "data/images/image_test_examples.json";
+
+        this.model = await tf.loadModel('data/images/model.json');
+        const DATA_PATH = "data/images/smile_examples.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           this.data = data;
           this.updateSprite();
-          for (let i = 0; i < data.length; i++) {
+          for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(data.map(item => JSON.stringify(item)), true);
+          this.$.dash.updateExampleContents_(this.data.map(item => JSON.stringify(item)), true);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
             this.indicesToInfer[e.detail.index] = true;
@@ -54,6 +58,21 @@
             this.indicesToInfer[this.data.length - 1] = true;
             this.updateSprite();
           });
+          this.$.dash.addEventListener('delete-example', e => {
+            this.data.splice(e.detail.index, 1);
+            const newIndicesToInfer = {};
+            const oldIndicesToInfer = Object.keys(this.indicesToInfer);
+            for (let i = 0; i < oldIndicesToInfer.length; i++) {
+              const idx = oldIndicesToInfer[i];
+              if (idx < e.detail.index) {
+                newIndicesToInfer[idx] = true;
+              } else {
+                newIndicesToInfer[idx - 1] = true;
+              }
+            }
+            this.indicesToInfer = newIndicesToInfer;
+            this.updateSprite();
+          });
           this.$.dash.addEventListener('infer-examples', async e => {
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
@@ -62,41 +81,61 @@
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
               const idx = indices[i];
-              tensors.push(this.convertExToTensor(this.data[idx]));
+              const t = await this.convertExToTensor(this.data[idx]);
+              tensors.push(t);
             }
-            const input = tf.concat(tensors).reshape([tensors.length, 104])
+            const d = tf.div;
+            let input = tf.concat(tensors).reshape([tensors.length, 78, 64, 3]);
+            input = d(input, tf.scalar(255));
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
               inferences.results.classification.classifications[i] =
-                {classes: [{label: '0', score: predValues[i * PRED_SIZE + 1]}, {label: '1', score: predValues[i * PRED_SIZE]}]};
+                {classes: [{label: '0', score: predValues[i * PRED_SIZE]}, {label: '1', score: predValues[i * PRED_SIZE + 1]}]};
             }
             this.$.dash.inferences = inferences;
             this.indicesToInfer = {};
           });
+          this.$.dash.addEventListener('get-eligible-features', e => {
+            this.$.dash.partialDepPlotEligibleFeatures = [];
+          });
           requestAnimationFrame(() => {
-            //this.$.dash.inferClicked_();
+            this.$.dash.inferClicked_();
+            this.$.dash.selectedLabelFeature = "Smiling";
           });
         });
       },
-      convertExToTensor: function(ex) {
-        const vals = []
+      convertExToTensor: async function(ex) {
+        const load = ex => new Promise(resolve => {
+          const encodedImg = ex.features.feature['image/encoded'].bytesList.value[0];
+          const src = 'data:image/png;base64,' + encodedImg;
+          const img = new Image();
+          img.src = src;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+            let tensor = tf.fromPixels(canvas).toFloat();
+            if (tensor.shape[0] != 78 || tensor.shape[1] != 64) {
+              tensor = tf.image.resizeBilinear(tensor, [78, 64]);
+            }
+            resolve(tensor);
+          };
+        });
 
-        const arr = vals.reduce((a, b) => a.concat(b), []);
-        return tf.tensor1d(arr);
+        const t = await load(ex);
+        return t;
       },
+
       updateSprite: function() {
         this.images = [];
         this.numLoadedImages = 0;
         for (let i = 0; i < this.data.length; i++) {
           const ex = this.data[i];
           const encodedImg = ex.features.feature['image/encoded'].bytesList.value[0];
-          let format = 'jpeg';
-          if (ex.features.feature['image/format']) {
-            format = atob(ex.features.feature['image/format'].bytesList.value[0]).toLowerCase();
-          }
-          const src = 'data:image/' + format + ';base64,' + encodedImg;
+          const src = 'data:image/png;base64,' + encodedImg;
           const img = new Image();
           this.images.push(img);
           img.src = src;
@@ -107,7 +146,7 @@
       },
       imageLoaded: function() {
         const canvas = this.$.spritecanvas;
-        const THUMBNAIL_SIZE = 64;
+        const THUMBNAIL_SIZE = 32;
         this.numLoadedImages++;
         if (this.numLoadedImages != this.images.length) {
           return;

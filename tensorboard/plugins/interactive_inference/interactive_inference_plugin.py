@@ -59,7 +59,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   image_feature_name = 'image/encoded'
 
   # The width and height of the thumbnail for any images for Facets Dive.
-  sprite_thumbnail_dim_px = 64
+  sprite_thumbnail_dim_px = 32
 
   # The vocab of inference class indices to label names for the model.
   label_vocab = []
