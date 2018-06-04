@@ -56,12 +56,14 @@ TOOLS = {
     'op_profile': 'op_profile.json',
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
+    'memory_viewer': 'memory_viewer.json',
 }
 
 # Tools that consume raw data.
 _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
-                             'overview_page'])
+                             'overview_page',
+                             'memory_viewer',])
 
 def process_raw_trace(raw_trace):
   """Processes raw trace data and returns the UI data."""

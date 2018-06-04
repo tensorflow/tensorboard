@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
 <link rel="import" href="../tf-overview-page/overview-page.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
+<link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -121,6 +122,9 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'overview_page')]]" restamp="true">
       <overview-page _data="[[_overviewPageData]]"></overview-page>
     </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
+      <memory-viewer-dashboard _data="[[_memoryViewerData]]"></memory-viewer-dashboard>
+    </template>
   </div>
   </tf-dashboard-layout>
 </template>
@@ -201,6 +205,9 @@ profile run can have multiple tools that present the performance profile as diff
         type: Object,
       },
       _overviewPageData: {
+        type: Object,
+      },
+      _memoryViewerData: {
         type: Object,
       },
       _selectedDatasetName: {
@@ -325,6 +332,9 @@ profile run can have multiple tools that present the performance profile as diff
            } else if (toolName == "overview_page") {
                this._overviewPageData = data;
                this._toolInScope = "overview_page";
+           } else if (toolName == "memory_viewer") {
+               this._memoryViewerData = data;
+               this._toolInScope = "memory_viewer";
            }
         });
         return;
