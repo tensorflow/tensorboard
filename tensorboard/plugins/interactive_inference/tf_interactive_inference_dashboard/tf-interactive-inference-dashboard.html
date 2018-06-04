@@ -543,7 +543,7 @@ limitations under the License.
               <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
             </div>
             <div class="config-tab">
-              <template is="dom-if" if="[[shouldShowLabelDropdown_(modelType, stats)]]">
+              <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                 <paper-dropdown-menu label="Set true label feature" class="threshold-dropdown">
                   <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                     <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
@@ -551,7 +551,7 @@ limitations under the License.
                     </template>
                   </paper-listbox>
                 </paper-dropdown-menu>
-                <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, multiClass)]]">
+                <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
                   <div class="flex">
                     <paper-input value="{{incorrectPredCostRatio}}"
                         label="Ratio of false positive cost to false negative cost"
@@ -661,6 +661,7 @@ limitations under the License.
     const inferenceLabelStr = 'inference label';
     const inferenceValueStr = 'inference value';
     const inferenceCorrectStr = 'inference correct';
+    const inferenceDeltaStr = 'inference delta';
 
     function deleteElement($elt){
       if ($elt && $elt.parentElement){
@@ -910,8 +911,8 @@ limitations under the License.
         return this.isBinaryClassification_(modelType, multiClass) && stats && Object.keys(stats).length > 0;
       },
 
-      shouldShowLabelDropdown_: function(modelType, stats) {
-        return modelType == 'classification' && stats && Object.keys(stats).length > 0;
+      shouldShowLabelDropdown_: function(stats) {
+        return stats && Object.keys(stats).length > 0;
       },
 
       shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
@@ -922,8 +923,8 @@ limitations under the License.
         return selectedLabelFeature != '' && selectedThresholdFeature != '' && inferences != null;
       },
 
-      shouldShowCostRatio_: function(selectedLabelFeature, multiClass) {
-        return selectedLabelFeature != '' && !multiClass;
+      shouldShowCostRatio_: function(selectedLabelFeature, modelType, multiClass) {
+        return selectedLabelFeature != '' && this.isBinaryClassification_(modelType, multiClass);
       },
 
       shouldShowExample_: function(selected) {
@@ -934,7 +935,7 @@ limitations under the License.
         // Do not also threshold settings by the results of the inference as they aren't real data
         // features.
         const features = Object.keys(stats).filter(function(feature) {
-          return feature !== inferenceValueStr && feature !== inferenceLabelStr && feature !== inferenceCorrectStr;
+          return feature !== inferenceValueStr && feature !== inferenceLabelStr && feature !== inferenceCorrectStr && feature !== inferenceDeltaStr;
         });
         // Add a blank feature to be used for clearing the selected feature.
         features.push('');
@@ -1381,7 +1382,7 @@ limitations under the License.
           } else {
             item[inferenceValueStr] =
               self.examplesAndInferences[index].inferences[
-                self.examplesAndInferences[index].inferences.length - 1].value;
+                self.examplesAndInferences[index].inferences.length - 1][0].score;
           }
 
 
@@ -1449,7 +1450,11 @@ limitations under the License.
         }
         for (let i = 0; i < this.examplesAndInferences.length; i++) {
           const item = this.visdata[i];
-          item[inferenceCorrectStr] = item[this.selectedLabelFeature] == item[inferenceValueStr] ? "correct" : "incorrect";
+          if (this.modelType == 'classification') {
+            item[inferenceCorrectStr] = item[this.selectedLabelFeature] == item[inferenceValueStr] ? "correct" : "incorrect";
+          } else {
+            item[inferenceDeltaStr] = item[this.selectedLabelFeature] - item[inferenceValueStr];
+          }
         }
       },
 
@@ -1780,7 +1785,9 @@ limitations under the License.
         const formatValueOrNaN = function (x) {
           return Number.isNaN(x) ? 'NaN' : valueFormatter(x);
         };
-        $chart.defaultYRange = [0, 1];
+        if (this.modelType == 'classification') {
+          $chart.defaultYRange = [0, 1];
+        }
         $chart.tooltipColumns = [
           {
               title: 'Inference value',

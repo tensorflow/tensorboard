@@ -84,13 +84,13 @@
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-              inferences.results = {classification: {classifications: []}};
+            inferences.results = {regression: {regressions: []}};
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
               const idx = indices[i];
               tensors.push(this.convertExToTensor(this.data[idx]));
             }
-            const input = tf.concat(tensors).reshape([tensors.length, 104])
+            const input = tf.concat(tensors).reshape([tensors.length, 105])
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             const PRED_SIZE = 2;
@@ -112,11 +112,9 @@
               {"name": "marital-status", "samples": [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated'], ['Married-AF-spouse'], ['Married-spouse-absent']]},
               {"name": "native-country", "samples": [['United-States'], ['?'], ['Mexico'], ['India'], ['South'], ['Puerto-Rico'], ['Cuba'], ['Jamaica']]},
               {"name": "occupation", "samples": [['Exec-managerial'], ['Prof-specialty'], ['Machine-op-inspct'], ['Adm-clerical'], ['Craft-repair'], ['Sales'], ['Other-service'], ['Tech-support'], ['Handlers-cleaners'], ['Transport-moving']]},
-              {"observedMax": 1.0, "name": "over_50k", "observedMin": 0.0},
               {"name": "race", "samples": [['White'], ['Black'], ['Asian-Pac-Islander'], ['Amer-Indian-Eskimo']]},
               {"name": "relationship", "samples": [['Husband'], ['Not-in-family'], ['Unmarried'], ['Own-child'], ['Wife']]},
               {"name": "sex", "samples": [['Male'], ['Female']]},
-              {"name": "over_50k", "samples": [['1'], ['0']]},
               {"name": "workclass", "samples": [['Private'], ['Self-emp-not-inc'], ['State-gov'], ['Federal-gov'], ['Local-gov'], ['?']]}];
           });
           this.$.dash.addEventListener('infer-mutants', async e => {
@@ -131,11 +129,10 @@
               'marital-status': 6,
               'native-country': 7,
               'occupation': 8,
-              'over_50k': 9,
-              'race': 10,
-              'relationship': 11,
-              'sex': 12,
-              'workclass': 13
+              'race': 9,
+              'relationship': 10,
+              'sex': 11,
+              'workclass': 12
             };
             const xMin = +e.detail.x_min;
             const xMax = +e.detail.x_max;
@@ -157,7 +154,7 @@
             for (let i = 0; i < examples.length; i++) {
               tensors.push(this.convertExToTensor(examples[i]));
             }
-            const input = tf.concat(tensors).reshape([tensors.length, 104])
+            const input = tf.concat(tensors).reshape([tensors.length, 105])
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             const results = [];
@@ -174,6 +171,7 @@
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
             this.$.dash.selectedLabelFeature = "age";
+            this.$.dash.sideTabSelected = 1;
           });
         });
       },
@@ -203,7 +201,11 @@
           return [ex.features.feature[feat].floatList.value[0] * 1/(2 * this.means[feat])];
         }
         const onehot = Array(this.categories[feat].length).fill(0);
-        onehot[this.categories[feat].indexOf(atob(ex.features.feature[feat].bytesList.value[0]))] = 1;
+        if (feat == 'over_50k') {
+          onehot[this.categories[feat].indexOf(+(ex.features.feature[feat].floatList.value[0]))] = 1;
+        } else {
+          onehot[this.categories[feat].indexOf(atob(ex.features.feature[feat].bytesList.value[0]))] = 1;
+        }
         return onehot;
       }
     });
