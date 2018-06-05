@@ -663,9 +663,9 @@ limitations under the License.
     const inferenceCorrectStr = 'inference correct';
     const inferenceDeltaStr = 'inference delta';
 
-    function deleteElement($elt){
-      if ($elt && $elt.parentElement){
-        $elt.parentElement.removeChild($elt);
+    function deleteElement(elt){
+      if (elt && elt.parentElement){
+        elt.parentElement.removeChild(elt);
       }
     }
 
@@ -1725,22 +1725,22 @@ limitations under the License.
       },
 
       addChart: function(chartType, featureName, data){
-        let $chart;
+        let chart;
         if (chartType == 'numeric'){
-          $chart = this.makeLineChart(data);
+          chart = this.makeLineChart(data);
         } else if (chartType == 'categorical'){
-          $chart = this.makeBarChart(data);
+          chart = this.makeBarChart(data);
         } else {
           console.error('Unknown chartType: ' + chartType);
         }
 
         // Delete spinner
-        const $container = this.featureContainerByName(featureName);
-        deleteElement($container.querySelector('paper-spinner-lite'));
+        const container = this.featureContainerByName(featureName);
+        deleteElement(container.querySelector('paper-spinner-lite'));
 
         // Append chart
-        const $categoryPane = $container.querySelector('.tf-category-pane-content');
-        Polymer.dom($categoryPane).appendChild($chart);
+        const categoryPane = container.querySelector('.tf-category-pane-content');
+        Polymer.dom(categoryPane).appendChild(chart);
 
         // Remove the feature from pending queue, so it can be called again.
         const feature_ind =
@@ -1768,10 +1768,10 @@ limitations under the License.
           return _.map(pointsForSeries, point => convertPoint(point));
         });
 
-        const $chart = document.createElement('vz-bar-chart');
-        $chart.data = mapped;
+        const chart = document.createElement('vz-bar-chart');
+        chart.data = mapped;
 
-        return $chart;
+        return chart;
       },
 
       makeLineChart: function(data){
@@ -1779,16 +1779,16 @@ limitations under the License.
         // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
         //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
 
-        const $chart = document.createElement('vz-line-chart');
+        const chart = document.createElement('vz-line-chart');
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
           vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const formatValueOrNaN = function (x) {
           return Number.isNaN(x) ? 'NaN' : valueFormatter(x);
         };
         if (this.modelType == 'classification') {
-          $chart.defaultYRange = [0, 1];
+          chart.defaultYRange = [0, 1];
         }
-        $chart.tooltipColumns = [
+        chart.tooltipColumns = [
           {
               title: 'Inference value',
               evaluate: d => {
@@ -1813,9 +1813,9 @@ limitations under the License.
         ];
 
         const series = _.keys(data);
-        $chart.setVisibleSeries(series);
-        series.forEach(label => $chart.setSeriesData(label, data[label]));
-        return $chart;
+        chart.setVisibleSeries(series);
+        series.forEach(label => chart.setSeriesData(label, data[label]));
+        return chart;
       },
 
       showToast: function(msg) {
@@ -1868,11 +1868,11 @@ limitations under the License.
           this.fire('infer-mutants', urlParams);
         }
 
-        const $container = this.featureContainerByName(
+        const container = this.featureContainerByName(
           featureName).querySelector('.tf-category-pane-content');
-        const $spinner = document.createElement('paper-spinner-lite');
-        $spinner.setAttribute('active', true);
-        Polymer.dom($container).appendChild($spinner);
+        const spinner = document.createElement('paper-spinner-lite');
+        spinner.setAttribute('active', true);
+        Polymer.dom(container).appendChild(spinner);
       },
 
       // Return the feature container associated with the feature name.
@@ -1916,10 +1916,10 @@ limitations under the License.
           return;
         }
 
-        const $element = this.getUniqueByEvent(event, '.tf-category-pane-content');
+        const element = this.getUniqueByEvent(event, '.tf-category-pane-content');
 
-        if ($element.hasAttribute('hidden')){
-          $element.removeAttribute('hidden');
+        if (element.hasAttribute('hidden')){
+          element.removeAttribute('hidden');
 
           // Make sure the feature wasn't already requested.
           const featureName = event.model.get('item').name;
@@ -1931,21 +1931,31 @@ limitations under the License.
           this.getInferenceVisualization(featureName, event);
 
         } else {
-          $element.setAttribute('hidden', true);
-
-          // Delete all the charts, because the user is requesting a refresh.
-          let $charts = this.featureContainerByEvent(event).querySelectorAll('vz-line-chart');
-          $charts.forEach(function($chart){
-            deleteElement($chart);
-          });
-          $charts = this.featureContainerByEvent(event).querySelectorAll('vz-bar-chart');
-          $charts.forEach(function($chart){
-            deleteElement($chart);
-          });
+          this.hidePdElement_(element);
         }
       },
 
+      hidePdElement_: function(element) {
+        element.setAttribute('hidden', true);
+
+        // Delete all the charts.
+        let charts = element.querySelectorAll('vz-line-chart');
+        charts.forEach(function(chart){
+          deleteElement(chart);
+        });
+        charts = element.querySelectorAll('vz-bar-chart');
+        charts.forEach(function(chart){
+          deleteElement(chart);
+        });
+      },
+
       populateTabs: function() {
+        // First hide all existing PD plots before refreshing.
+        const elements = document.querySelectorAll('.tf-category-pane-content');
+        for (let i = 0; i < elements.length; i++) {
+          this.hidePdElement_(elements[i]);
+        }
+
         if (!this.local) {
           const url =
               tf_backend.addParams(
