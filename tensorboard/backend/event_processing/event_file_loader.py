@@ -57,7 +57,8 @@ class EventFileLoader(object):
           # GetNext() expects a status argument on TF <= 1.7
           with tf.errors.raise_exception_on_not_ok_status() as status:
             self._reader.GetNext(status)
-      except (tf.errors.DataLossError, tf.errors.OutOfRangeError):
+      except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
+        tf.logging.debug('Cannot read more events: %s', e)
         # We ignore partial read exceptions, because a record may be truncated.
         # PyRecordReader holds the offset prior to the failed read, so retrying
         # will succeed.
