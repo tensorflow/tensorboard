@@ -429,11 +429,11 @@ Polymer({
             u8array => this.decodeBytesListString(u8array, isImage));
         return vals;
       }
-      return feat.getBytesList()!.getValueList();
+      return feat.getBytesList()!.getValueList().slice();
     } else if (feat.getInt64List()) {
-      return feat.getInt64List()!.getValueList();
+      return feat.getInt64List()!.getValueList().slice();
     } else if (feat.getFloatList()) {
-      return feat.getFloatList()!.getValueList();
+      return feat.getFloatList()!.getValueList().slice();
     }
     return [];
   },
@@ -675,6 +675,10 @@ Polymer({
         }
       } else {
         values[data.valueIndex] = +inputControl.value;
+        const jsonList = this.getJsonValueList(data.feature, data.seqNum);
+        if (jsonList) {
+          jsonList[data.valueIndex] = +inputControl.value;
+        }
       }
       this.setFeatureValues(feat, values);
       this.exampleChanged();
@@ -807,18 +811,10 @@ Polymer({
 
     if (feat) {
       if (this.isBytesFeature(data.feature)) {
-        // If the example was provided as json, update the byteslist in the
-        // json. For non-bytes features we don't need this separate json update
-        // as the proto value list is the same as the json value list for that
-        // case (shallow copy). The byteslist case is different as the json
-        // base64 encoded string is converted to a list of bytes, one per
-        // character.
-        const jsonList = this.getJsonValueList(data.feature, data.seqNum);
-        if (jsonList) {
-          jsonList.push(0);
-        }
+        values.push('');
+      } else {
+        values.push(0);
       }
-      values.push(0);
       this.setFeatureValues(feat, values);
       this.exampleChanged();
       this.refreshExampleViewer();
