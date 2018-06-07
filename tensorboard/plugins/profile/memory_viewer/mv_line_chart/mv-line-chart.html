@@ -1,0 +1,38 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--
+  mv-line-chart is a line chart for the memory viewer tool.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../tf-imports/plottable.html">
+
+<dom-module id='mv-line-chart'>
+  <template>
+    <div class="mv-line-chart">
+      <h2>Working Space Size (MiB) vs Program Order (HLO Sequence)</h2>
+      <div id="chartdiv" style="width:1200px;height:384px"></div>
+      <div id='maxheap-details'>
+        <em>Hover over a bar for buffer details to appear on the left.</em>
+      </div>
+      <h3>By Program Order</h3>
+      <div id="maxheapchart" style="width:1200px;height:200px"></div>
+      <h3>By Size</h3>
+      <div id="maxheapsizechart" style="width:1200px;height:200px"></div>
+    </div>
+  </template>
+  <script src="mv-line-chart.js"></script>
+</dom-module>

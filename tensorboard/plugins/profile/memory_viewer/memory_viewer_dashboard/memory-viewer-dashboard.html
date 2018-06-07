@@ -19,6 +19,8 @@ You may obtain a copy of the License at
 -->
 
 <link rel="import" href="memory-usage.html">
+<link rel="import" href="mv-line-chart.html">
+<link rel="import" href="buffer-details.html">
 
 <dom-module id="memory-viewer-dashboard">
   <template>
@@ -33,26 +35,27 @@ mv-line-chart {
 }
 buffer-details {
   position: fixed;
-  margin-top: 6.5em;
+  margin-top: 7.5em;
   left: 16px;
   width: 330px;
 }
     </style>
     <div class="memory-viewer-dashboard" style="overflow:auto">
-      <h4> Module name: <span>[[moduleName_]]</span>
-      </h4>
-      <h4> Peak memory allocation is
+      <h3> Module name: <span>[[moduleName_]]</span>
+      </h3>
+      <h3> Peak memory allocation is
         <span>{{peakHeapSizeMiB_}}</span> MiB <span style="font-size:20px"
           hidden={{!unpaddedPeakHeapSizeMiB_}}>(
           {{unpaddedPeakHeapSizeMiB_}} MiB without padding)</span>
-      </h4>
+      </h3>
       <div id="description">
         <p>Modifying your model's architecture, batch size and data dimentions
            may help reduce the memory footprint.
         </p>
       </div>
-   </div>
+      <buffer-details hidden="[[!active_]]" node="[[active_]]"></buffer-details>
+      <mv-line-chart data="{{usage}}" active={{active_}}></mv-line-chart>
+    </div>
   </template>
   <script src="memory-viewer-dashboard.js"></script>
 </dom-module>
-

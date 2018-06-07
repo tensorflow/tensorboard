@@ -23,6 +23,9 @@ export class MemoryUsage {
   private nameToHlo_: {[key: string]: HloInstruction} = {};
   private unSeenLogicalBuffers_: Set<number>;
   private seenBufferAllocations_: Set<number>;
+  private nColor_: number = 0;
+  private rest_: number = 0;
+
   peakHeapSizeBytes: number = 0;
   unpaddedPeakHeapSizeBytes: number = 0;
   peakLogicalBuffers: number[] = [];
@@ -41,8 +44,6 @@ export class MemoryUsage {
    * display.
    */
   smallBufferSize: number;
-  nColor_: number = 0;
-  rest_: number = 0;
 
   /**
    * @param json Json message that contains the hloModule,
@@ -131,10 +132,10 @@ export class MemoryUsage {
       'unpaddedSizeMiB': unpaddedSize,
       'tfOpName': inst.tfOpName,
       'opcode': inst.opcode,
-      'data': [[memory_viewer.bytesToMiB(buffer.size), 0]],
+      'sizeMiB': memory_viewer.bytesToMiB(buffer.size),
       'color': color,
       'shape': shape ? shape.humanStringWithLayout() : '',
-      'groupName': groupName
+      'groupName': groupName,
     };
     return dict;
   }
@@ -178,7 +179,7 @@ export class MemoryUsage {
       const small = 'small (<' + this.smallBufferSize / 1024 + ' KiB)';
       this.maxHeap.push({
         'instructionName': small,
-        'data': [[memory_viewer.bytesToMiB(this.rest_), 0]],
+        'sizeMiB': memory_viewer.bytesToMiB(this.rest_),
         'color': 0,
         'groupName': small
       });
@@ -186,7 +187,7 @@ export class MemoryUsage {
     let indexedMaxHeap = this.maxHeap.map(function(e, i) {
       return {ind: i, val: e};
     });
-    indexedMaxHeap.sort((a, b) => b.val.data[0][0] - a.val.data[0][0]);
+    indexedMaxHeap.sort((a, b) => b.val.sizeMiB - a.val.sizeMiB);
     this.maxHeapBySize = indexedMaxHeap.map(function(e) {
       return e.val;
     });
