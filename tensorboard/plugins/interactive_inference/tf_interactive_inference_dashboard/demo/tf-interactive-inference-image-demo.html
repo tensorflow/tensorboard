@@ -14,6 +14,7 @@
       }
       #spritecanvas {
         position: absolute;
+        left: -600px;
       }
     </style>
     <canvas id="spritecanvas"></canvas>
@@ -39,7 +40,7 @@
       ready: async function() {
         this.$.dash.settingsClicked_();
 
-        this.model = await tf.loadModel('data/images/model.json');
+        this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/images/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/images/smile_examples.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           this.data = data;

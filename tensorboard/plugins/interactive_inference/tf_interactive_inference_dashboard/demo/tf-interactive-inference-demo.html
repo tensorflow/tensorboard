@@ -49,7 +49,7 @@
         this.categories['sex'] = ["Female", "Male"];
         this.categories['native-country'] = ["United-States", "Cambodia", "England", "Puerto-Rico", "Canada", "Germany", "Outlying-US(Guam-USVI-etc)", "India", "Japan", "Greece", "South", "China", "Cuba", "Iran", "Honduras", "Philippines", "Italy", "Poland", "Jamaica", "Vietnam", "Mexico", "Portugal", "Ireland", "France", "Dominican-Republic", "Laos", "Ecuador", "Taiwan", "Haiti", "Columbia", "Hungary", "Guatemala", "Nicaragua", "Scotland", "Thailand", "Yugoslavia", "El-Salvador", "Trinadad&Tobago", "Peru", "Hong", "Holand-Netherlands"];
 
-        this.model = await tf.loadModel('data/uci/model.json');
+        this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/uci/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/uci/uci_test_examples.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           data = data.slice(0, 500);
@@ -106,11 +106,11 @@
               {"observedMax": 59.0, "name": "age", "observedMin": 19.0},
               {"observedMax": 14084.0, "name": "capital-gain", "observedMin": 0.0},
               {"observedMax": 2042.0, "name": "capital-loss", "observedMin": 0.0},
-              {"name": "education", "samples": [['HS-grad'], ['Bachelors'], ['Some-college'], ['11th'], ['Masters'], ['9th'], ['Assoc-voc'], ['Assoc-acdm'], ['Doctorate'], ['7th-8th']]}, 
-              {"observedMax": 16.0, "name": "education-num", "observedMin": 4.0}, 
-              {"observedMax": 80.0, "name": "hours-per-week", "observedMin": 13.0}, 
-              {"name": "marital-status", "samples": [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated'], ['Married-AF-spouse'], ['Married-spouse-absent']]}, 
-              {"name": "native-country", "samples": [['United-States'], ['?'], ['Mexico'], ['India'], ['South'], ['Puerto-Rico'], ['Cuba'], ['Jamaica']]}, 
+              {"name": "education", "samples": [['HS-grad'], ['Bachelors'], ['Some-college'], ['11th'], ['Masters'], ['9th'], ['Assoc-voc'], ['Assoc-acdm'], ['Doctorate'], ['7th-8th']]},
+              {"observedMax": 16.0, "name": "education-num", "observedMin": 4.0},
+              {"observedMax": 80.0, "name": "hours-per-week", "observedMin": 13.0},
+              {"name": "marital-status", "samples": [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated'], ['Married-AF-spouse'], ['Married-spouse-absent']]},
+              {"name": "native-country", "samples": [['United-States'], ['?'], ['Mexico'], ['India'], ['South'], ['Puerto-Rico'], ['Cuba'], ['Jamaica']]},
               {"name": "occupation", "samples": [['Exec-managerial'], ['Prof-specialty'], ['Machine-op-inspct'], ['Adm-clerical'], ['Craft-repair'], ['Sales'], ['Other-service'], ['Tech-support'], ['Handlers-cleaners'], ['Transport-moving']]},
               {"observedMax": 1.0, "name": "over_50k", "observedMin": 0.0},
               {"name": "race", "samples": [['White'], ['Black'], ['Asian-Pac-Islander'], ['Amer-Indian-Eskimo']]},

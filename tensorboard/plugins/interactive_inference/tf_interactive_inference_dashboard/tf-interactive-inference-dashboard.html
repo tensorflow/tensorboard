@@ -1337,10 +1337,12 @@ limitations under the License.
       newInferences_: function() {
         this.$.spinner.hidden = true;
         this.updateInferences_(true);
+        requestAnimationFrame(() => this.updateClassificationStats_(true));
       },
 
       refreshInferencesNoRegen_: function() {
         this.refreshInferences_(true);
+        requestAnimationFrame(() => this.updateClassificationStats_(true));
       },
 
       refreshInferences_: function(noRegen) {
@@ -1727,9 +1729,9 @@ limitations under the License.
       addChart: function(chartType, featureName, data){
         let chart;
         if (chartType == 'numeric'){
-          chart = this.makeLineChart(data);
+          chart = this.makeLineChart(featureName, data);
         } else if (chartType == 'categorical'){
-          chart = this.makeBarChart(data);
+          chart = this.makeBarChart(featureName, data);
         } else {
           console.error('Unknown chartType: ' + chartType);
         }
@@ -1750,7 +1752,7 @@ limitations under the License.
         }
       },
 
-      makeBarChart: function(data){
+      makeBarChart: function(featureName, data){
         // categorical data:
         // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
         //        {"step": ["Married-AF-spouse"], "scalar": 0.15340332686901093}]}
@@ -1763,6 +1765,22 @@ limitations under the License.
           };
         };
 
+        const origValEntry = this.createPdEntryForCurrentValue(featureName, data);
+        if (origValEntry) {
+          let indexOfOrigValInData = -1;
+          const origData = data[_.keys(data)[0]];
+          for (let i = 0; i < origData.length; i++) {
+            if (origData[i].step[0] == origValEntry.step) {
+              indexOfOrigValInData = i;
+              break;
+            }
+          }
+          if (indexOfOrigValInData != -1) {
+            origData.splice(indexOfOrigValInData, 1);
+          }
+          data[''] = [origValEntry];
+        }
+
         // Convert the data into the format expected by vz-bar-chart.
         const mapped = _.mapValues(data, function(pointsForSeries){
           return _.map(pointsForSeries, point => convertPoint(point));
@@ -1774,7 +1792,7 @@ limitations under the License.
         return chart;
       },
 
-      makeLineChart: function(data){
+      makeLineChart: function(featureName, data){
         // numerical data:
         // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
         //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
@@ -1793,7 +1811,7 @@ limitations under the License.
               title: 'Inference value',
               evaluate: d => {
                 let label = d.dataset.metadata().name;
-                if (!isNaN(label) && this.labelVocab) {
+                if (!isNaN(label) && label.length > 0 && this.labelVocab) {
                   const index = +label;
                   if (index < this.labelVocab.length && index >= 0) {
                     label += ' - ' + this.labelVocab[index];
@@ -1812,10 +1830,31 @@ limitations under the License.
           },
         ];
 
+        const origValEntry = this.createPdEntryForCurrentValue(featureName, data);
+        if (origValEntry) {
+          data[''] = [origValEntry];
+        }
         const series = _.keys(data);
         chart.setVisibleSeries(series);
         series.forEach(label => chart.setSeriesData(label, data[label]));
         return chart;
+      },
+
+      createPdEntryForCurrentValue: function(featureName, data) {
+        const classToChart = _.keys(data)[0];
+        const origValue = this.visdata[this.selected[0]][featureName];
+        const inferences = this.selectedExampleAndInference.inferences[this.selectedExampleAndInference.inferences.length - 1];
+        let origInferenceScore = -1;
+        for (let i = 0; i < inferences.length; i++) {
+          if (inferences[i].label == classToChart.toString()) {
+            origInferenceScore = inferences[i].score;
+            break;
+          }
+        }
+        if (origInferenceScore == -1) {
+          return null;
+        }
+        return {step: origValue, scalar: origInferenceScore};
       },
 
       showToast: function(msg) {

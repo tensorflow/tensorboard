@@ -49,7 +49,7 @@
         this.categories['native-country'] = ["United-States", "Cambodia", "England", "Puerto-Rico", "Canada", "Germany", "Outlying-US(Guam-USVI-etc)", "India", "Japan", "Greece", "South", "China", "Cuba", "Iran", "Honduras", "Philippines", "Italy", "Poland", "Jamaica", "Vietnam", "Mexico", "Portugal", "Ireland", "France", "Dominican-Republic", "Laos", "Ecuador", "Taiwan", "Haiti", "Columbia", "Hungary", "Guatemala", "Nicaragua", "Scotland", "Thailand", "Yugoslavia", "El-Salvador", "Trinadad&Tobago", "Peru", "Hong", "Holand-Netherlands"];
         this.categories['over_50k'] = ["1", "0"];
 
-        this.model = await tf.loadModel('data/age_uci/model.json');
+        this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/age_uci/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/age_uci/uci_test_examples.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           data = data.slice(0, 500);
