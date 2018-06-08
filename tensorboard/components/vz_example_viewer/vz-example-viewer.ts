@@ -112,7 +112,7 @@ const ZOOM_EXTENT: [number, number] = [1, 20];
 
 const DEFAULT_WINDOW_WIDTH = 256;
 const DEFAULT_WINDOW_CENTER = 128;
-const DEFAULT_MIN_FEATURES_FOR_SEARCH = 20;
+const DEFAULT_MIN_FEATURES_FOR_SEARCH = 1;
 
 Polymer({
   is: 'vz-example-viewer',
