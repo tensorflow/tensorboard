@@ -18,21 +18,21 @@ You may obtain a copy of the License at
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../tf-imports/plottable.html">
 
 <dom-module id='mv-line-chart'>
   <template>
     <div class="mv-line-chart">
       <h2>Working Space Size (MiB) vs Program Order (HLO Sequence)</h2>
-      <div id="lc-placeholder" style="width:1200px;height:384px"></div>
+      <div id="chartdiv" style="width:1200px;height:384px"></div>
       <div id='maxheap-details'>
         <em>Hover over a bar for buffer details to appear on the left.</em>
       </div>
       <h3>By Program Order</h3>
-      <div id="maxheap-placeholder" style="width:1200px;height:200px"></div>
+      <div id="maxheapchart" style="width:1200px;height:200px"></div>
       <h3>By Size</h3>
-      <div id="maxheap-size-placeholder" style="width:1200px;height:200px"></div>
+      <div id="maxheapsizechart" style="width:1200px;height:200px"></div>
     </div>
   </template>
   <script src="mv-line-chart.js"></script>
 </dom-module>
-

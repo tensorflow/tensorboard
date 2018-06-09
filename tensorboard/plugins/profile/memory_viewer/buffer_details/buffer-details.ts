@@ -63,7 +63,7 @@ Polymer({
       type:Number,
       notify:true,
     },
-  }, 
+  },
   /**
    * Updates the details card.
    */
@@ -72,14 +72,17 @@ Polymer({
       return;
     }
     this.size = node.data[0][0].toFixed(1);
-    this.unpaddedSize = node.unpaddedSizeMiB.toFixed(1);
-    this.padding = (node.data[0][0] - node.unpaddedSizeMiB).toFixed(1);
-    this.utilization = node.unpaddedSizeMiB / node.data[0][0];
-    this.expansion = (1 / this.utilization).toFixed(1);
-    let color = memory_viewer.flameColor(this.utilization, 0.7);
+    let color = 'rgb(192,192,192)';
+    if (node.unpaddedSizeMiB) {
+      this.unpaddedSize = node.unpaddedSizeMiB.toFixed(1);
+      this.padding = (node.data[0][0] - node.unpaddedSizeMiB).toFixed(1);
+      this.utilization = node.unpaddedSizeMiB / node.data[0][0];
+      this.expansion = (1 / this.utilization).toFixed(1);
+      color = memory_viewer.flameColor(this.utilization, 0.7);
+    }
     this.$.card.updateStyles({'--paper-card-header':'background-color:' + color});
     this.$.subheader.style.backgroundColor = color;
-  }, 
+  },
   /**
    * Returns the sub header of the buffer details card.
    */

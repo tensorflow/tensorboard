@@ -18,7 +18,7 @@ Polymer({
     data:{
       type:Object,
       notify:true,
-      observer:'dataChanged_'
+      observer:'_dataChanged'
     },
     active:{
       type:Object,
@@ -39,9 +39,17 @@ Polymer({
     maxHeapBySize:{
       type:Array,
       notify:true,
-    }
-  }, 
-  makeChartDataset_() {
+    },
+    spanPlot: {
+      type:Object,
+      notify:true,
+    },
+    colorScale: {
+      type:Object,
+      notify:true,
+    },
+  },
+  _makeChartDataset() {
     if (!this.data) { return;}
     let bufferSizes = [];
     let unpaddedBufferSizes = [];
@@ -56,83 +64,180 @@ Polymer({
     }
     this.bufferSizes = bufferSizes;
     this.unpaddedBufferSizes = unpaddedBufferSizes;
-    this.maxHeap = this.data.maxHeap;
-    this.maxHeapBySize = this.data.maxHeapBySize;
-  }, 
+    let maxHeap = this.data.maxHeap;
+    this.data.maxHeap.reduce(function(sum, item, i) {
+        maxHeap[i]['offset'] = sum;
+        return sum + item.data[0][0];
+      }, 0);
+    this.maxHeap = maxHeap;
+    let maxHeapBySize = this.data.maxHeapBySize;
+    this.data.maxHeapBySize.reduce(function(sum, item, i) {
+        maxHeapBySize[i]['offsetBySize'] = sum;
+        return sum + item.data[0][0];
+      }, 0);
+    this.maxHeapBySize = maxHeapBySize;
+  },
   /**
    * Draw heap memory allocation line chart in program order.
    */
-  drawProgramOrder_(linePoints?: number[][], color?: number) {
+  _drawProgramOrder() {
     if (!this.data) { return;}
-    let chartData = [];
-    chartData = [{'data':this.bufferSizes,
-                  'label':'Size'
-                 }, 
-                 {'data':this.unpaddedBufferSizes,
-                  'label':'Unpadded Size'
-                 },
-                ];
-    if (linePoints) {
-      chartData.push({
-                      'data':[linePoints[0]],
-                      'color':color,
-                      'bars': {
-                               show:true,
-                               fill:true,
-                               barWidth:linePoints[1][0] - linePoints[0][0],
-                              }
-                     });
-    }
-    const options = {
-                     series:{points:{show:false}},
-                     grid:{
-                           markings:[{xaxis:{from:this.data.peakHeapSizePosition, to:this.data.peakHeapSizePosition + 10}}]}};
-    //this.$.plot(this.$('#lc-placeholder'), chartData, options);
-  }, 
+    let xScale = new Plottable.Scales.Linear();
+    let yScale = new Plottable.Scales.Linear();
+    let xAxis = new Plottable.Axes.Numeric(xScale, "bottom");
+    let yAxis = new Plottable.Axes.Numeric(yScale, "left");
+
+    let bufferSizesLine = new Plottable.Plots.Line();
+    bufferSizesLine.addDataset(new Plottable.Dataset(this.bufferSizes));
+    bufferSizesLine.x(function(d) {return d[0]; }, xScale)
+                   .y(function(d) {return d[1]; }, yScale)
+                   .attr("stroke", "#888888");
+
+    let unpaddedBufferSizesLine = new Plottable.Plots.Line();
+    unpaddedBufferSizesLine.addDataset(
+        new Plottable.Dataset(this.unpaddedBufferSizes));
+    unpaddedBufferSizesLine.x(function(d) {return d[0]; }, xScale)
+                           .y(function(d) {return d[1]; }, yScale)
+                           .attr("stroke", "#DE4406");
+
+    let bandPlot = new Plottable.Plots.Rectangle();
+    bandPlot.addDataset(
+        new Plottable.Dataset(
+          [this.bufferSizes[this.data.peakHeapSizePosition]]));
+    bandPlot.x(function(d) { return d[0]; }, xScale)
+            .y(function(d) { return 0; }, yScale)
+            .x2(function(d) { return d[0] + 10; })
+            .y2(function(d) { return d[1]; })
+            .attr("fill", "#DE4406")
+            .attr("opacity", 0.3);
+
+    let colorScale = this.colorScale;
+    let spanPlot = new Plottable.Plots.Rectangle();
+    let logicalBufferSpans = this.data.logicalBufferSpans;
+    let spans = this.maxHeap.map((item) => {
+        const span = logicalBufferSpans[item.logicalBufferId];
+        if (!span) return null;
+        return {'id': item.logicalBufferId,
+            'span': span,
+            'size': item.data[0][0],
+            'color': item.color};
+            });
+    spans = spans.filter(d => d !==null);
+    spanPlot.addDataset(new Plottable.Dataset(spans));
+    spanPlot.x(function(d) { return d.span[0]; }, xScale)
+              .y(function(d) { return 0;}, yScale)
+              .x2(function(d) { return d.span[1]; })
+              .y2(function(d) { return d.size; })
+              .attr('fill', function(d) { return (d.color % 10).toString(); },
+                                          colorScale)
+              .attr('fill-opacity', 0);
+
+    this.spanPlot = spanPlot;
+
+    let cs = new Plottable.Scales.Color();
+    cs.range(["#888888", "#DE4406"]);
+    cs.domain(["Sizes", "Unpadded Sizes"]);
+    let legend = new Plottable.Components.Legend(cs);
+    legend.maxEntriesPerRow(2);
+
+    let gridlines = new Plottable.Components.Gridlines(xScale, yScale);
+
+    let plots = new Plottable.Components.Group(
+        [bandPlot, bufferSizesLine, unpaddedBufferSizesLine,
+         gridlines, spanPlot]);
+
+    let table = new Plottable.Components.Table([[null, legend],
+                                               [yAxis, plots],
+                                               [null, xAxis]]);
+
+    table.renderTo(d3.select(this.$.chartdiv));
+  },
   /**
-   * Draw heap memory allocation line chart in program order.
+   * Draw maxHeap stack boxes and add the interactions.
    */
-  renderDetails_(item) {
-    const itemMiB = item.data[0][0];
-    const span = this.data.logicalBufferSpans[item.logicalBufferId];
-    if (span) {
-      let linePoints = [[span[0], itemMiB], [span[1], itemMiB]];
-      this.drawProgramOrder_(linePoints, item.color);
-    }
+  _drawMaxHeap() {
+    let yScale = new Plottable.Scales.Linear();
+    let xScale = new Plottable.Scales.Linear();
+
+    let xAxis = new Plottable.Axes.Numeric(xScale, "top");
+    let yAxis = new Plottable.Axes.Numeric(yScale, "left");
+
+    let cs = this.colorScale;
+
+    let maxHeapChart = new Plottable.Plots.Rectangle();
+
+    maxHeapChart.addDataset(new Plottable.Dataset(this.maxHeap))
+                .x(function(d) { return d.offset; }, xScale)
+                .y(function(d) { return 0; }, yScale)
+                .x2(function(d) { return d.offset + d.data[0][0]; })
+                .y2(function(d) { return 12; })
+                .attr('fill', function(d) {
+                                return (d.color % 10).toString(); }, cs)
+                .attr('opacity', '0.6')
+                .renderTo(d3.select(this.$.maxheapchart));
+
+    let maxHeapSizeChart = new Plottable.Plots.Rectangle();
+    maxHeapSizeChart.addDataset(new Plottable.Dataset(this.maxHeapBySize))
+                .x(function(d) { return d.offsetBySize; }, xScale)
+                .y(function(d) { return 0; }, yScale)
+                .x2(function(d) { return d.offsetBySize + d.data[0][0]; })
+                .y2(function(d) { return 12; })
+                .attr('fill', function(d) {
+                                return (d.color % 10).toString(); }, cs)
+                .attr('opacity', '0.6')
+                .renderTo(d3.select(this.$.maxheapsizechart));
+
+    const maxHeapToBySizeIndex = this.data.maxHeapToBySize;
+    const bySizeToMaxHeapIndex = this.data.bySizeToMaxHeap;
+    let parent = this;
+
+    new Plottable.Interactions.Pointer()
+    .attachTo(maxHeapChart)
+    .onPointerMove(function(p) {
+        let entity = maxHeapChart.entityNearest(p);
+        maxHeapChart.selections().attr('opacity', '0.6');
+        entity.selection.attr('opacity', '1');
+        const maxHeapIndex = entity.index;
+        const maxHeapBySizeIndex = maxHeapToBySizeIndex[maxHeapIndex];
+        maxHeapSizeChart.selections().attr('opacity', '0.6');
+        maxHeapSizeChart.entities()[maxHeapBySizeIndex]
+                        .selection.attr('opacity', '1');
+        parent._renderDetails(entity.datum);
+    });
+
+    new Plottable.Interactions.Pointer()
+    .attachTo(maxHeapSizeChart)
+    .onPointerMove(function(p) {
+        let entity = maxHeapSizeChart.entityNearest(p);
+        maxHeapSizeChart.selections().attr('opacity', '0.6');
+        entity.selection.attr('opacity', '1.0');
+        const maxHeapBySizeIndex = entity.index;
+        const maxHeapIndex = bySizeToMaxHeapIndex[maxHeapBySizeIndex];
+        maxHeapChart.selections().attr('opacity', '0.6');
+        maxHeapChart.entities()[maxHeapIndex].selection.attr('opacity', '1.0');
+        parent._renderDetails(entity.datum);
+    });
+  },
+  /**
+   * Render the buffer details card and annotate the span on the line charts.
+   */
+  _renderDetails(item) {
+    this.spanPlot.selections().attr('fill-opacity', '0');
+    this.spanPlot.entities().forEach(function(entity) {
+        entity.selection.attr(
+            'fill-opacity', entity.datum.id === item.logicalBufferId ? 0.5 : 0);
+    });
     this.active = item;
-  }, 
+  },
   /**
    * Redraw the chart when data changes.
    */
-  dataChanged_:function() {
+  _dataChanged:function() {
     if (!this.data) { return;}
-    this.makeChartDataset_();
-    this.drawProgramOrder_();
-    /*let maxHeapPlaceholder = this.$.plot(this.$('#maxheap-placeholder'), this.maxHeap, {series:{stack:true, lines:{show:false}, bars:{show:true, barWidth:0.6, horizontal:true}}, grid:{hoverable:true}, legend:{show:false}, yaxis:{ticks:[], max:0.6}});
-    let maxHeapSizePlaceholder = this.$.plot(this.$('#maxheap-size-placeholder'), this.maxHeapBySize, {series:{stack:true, lines:{show:false}, bars:{show:true, barWidth:0.6, horizontal:true}}, grid:{hoverable:true}, legend:{show:false}, yaxis:{ticks:[], max:0.6}});
-    let parent = this;
-    const maxHeapToBySizeIndex = this.data.maxHeapToBySize;
-    const bySizeToMaxHeapIndex = this.data.bySizeToMaxHeap;
-    this.$('#maxheap-placeholder').bind('plothover', 
-      function(event, pos, item) {
-      if (!item) { return;}
-      const maxHeapIndex = item.seriesIndex;
-      const maxHeapBySizeIndex = maxHeapToBySizeIndex[maxHeapIndex];
-      maxHeapSizePlaceholder.unhighlight();
-      maxHeapSizePlaceholder.highlight(maxHeapBySizeIndex, 0);
-      const heapItem = parent.maxHeap[maxHeapIndex];
-      parent.renderDetails_(heapItem);
-    });
-    this.$('#maxheap-size-placeholder').bind('plothover', 
-      function(event, pos, item) {
-      if (!item) { return;}
-      const maxHeapBySizeIndex = item.seriesIndex;
-      const maxHeapIndex = bySizeToMaxHeapIndex[maxHeapBySizeIndex];
-      maxHeapPlaceholder.unhighlight();
-      maxHeapPlaceholder.highlight(maxHeapIndex, 0);
-      const heapItem = parent.maxHeapBySize[maxHeapBySizeIndex];
-      parent.renderDetails_(heapItem);
-    });*/
+    this.colorScale = new Plottable.Scales.Color("Category10");
+    this._makeChartDataset();
+    this._drawProgramOrder();
+    this._drawMaxHeap();
   }
 });
 

@@ -58,7 +58,7 @@ tf-mv-bar {
   <template>
     <paper-card id="card" heading="[[node.instructionName]]" hidden="[[!node]]"
       elevation="2">
-      <div id="subheader">[[subheader_(node)]]</div>
+      <div id="subheader">[[_subheader(node)]]</div>
       <div class="card-content">
         <div hidden="[[!size]]">
           <h4>Size: <span>[[size]]</span><b> MiB</b></h4>
@@ -89,4 +89,3 @@ tf-mv-bar {
   </template>
   <script src="buffer-details.js"></script>
 </dom-module>
-
