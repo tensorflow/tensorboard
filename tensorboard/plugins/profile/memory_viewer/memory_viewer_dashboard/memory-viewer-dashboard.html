@@ -19,6 +19,8 @@ You may obtain a copy of the License at
 -->
 
 <link rel="import" href="memory-usage.html">
+<link rel="import" href="mv-line-chart.html">
+<link rel="import" href="buffer-details.html">
 
 <dom-module id="memory-viewer-dashboard">
   <template>
@@ -51,7 +53,9 @@ buffer-details {
            may help reduce the memory footprint.
         </p>
       </div>
-   </div>
+      <buffer-details hidden="[[!active_]]" node="[[active_]]"></buffer-details>
+      <mv-line-chart data="{{usage}}" active={{active_}}></mv-line-chart>
+    </div>
   </template>
   <script src="memory-viewer-dashboard.js"></script>
 </dom-module>

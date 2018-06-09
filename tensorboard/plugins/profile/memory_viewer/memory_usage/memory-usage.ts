@@ -23,6 +23,9 @@ export class MemoryUsage {
   private nameToHlo_: {[key: string]: HloInstruction} = {};
   private unSeenLogicalBuffers_: Set<number>;
   private seenBufferAllocations_: Set<number>;
+  private nColor_: number = 0;
+  private rest_: number = 0;
+
   peakHeapSizeBytes: number = 0;
   unpaddedPeakHeapSizeBytes: number = 0;
   peakLogicalBuffers: number[] = [];
@@ -41,8 +44,6 @@ export class MemoryUsage {
    * display.
    */
   smallBufferSize: number;
-  nColor_: number = 0;
-  rest_: number = 0;
 
   /**
    * @param json Json message that contains the hloModule,
