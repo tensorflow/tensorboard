@@ -23,6 +23,7 @@ Polymer({
     active:{
       type:Object,
       notify:true,
+      observer:'_renderSpans'
     },
     bufferSizes:{
       type:Array,
@@ -47,6 +48,16 @@ Polymer({
     colorScale: {
       type:Object,
       notify:true,
+    },
+    _selectedEntityInSrcChart: {
+      type:Object,
+      notify:true,
+      observer: '_selectedEntityChanged',
+    },
+    _selectedEntityInDstChart: {
+      type:Object,
+      notify:true,
+      observer: '_selectedEntityChanged',
     },
   },
   _makeChartDataset() {
@@ -202,26 +213,36 @@ Polymer({
    * Also highlight the item in the other chart. Renders the buffer details.
    */
   _onHoverInteraction(point, srcChart, dstChart, map) {
-    let entity = srcChart.entityNearest(point);
-    srcChart.selections().attr('opacity', '0.6');
-    entity.selection.attr('opacity', '1.0');
-    const dstIndex = map[entity.index];
-    // Unhighlight all the items in the dstChart.
-    dstChart.selections().attr('opacity', '0.6');
-    // Highlight the selected item in the dstChart.
-    dstChart.entities()[dstIndex].selection.attr('opacity', '1.0');
-    this._renderDetails(entity.datum);
+    let entities = srcChart.entitiesAt(point);
+    if (entities.length === 0) {
+        this._selectedEntityInSrcChart = null;
+        this._selectedEntityInDstChart = null;
+        this.active = null;
+        return;
+    }
+    let entity = entities[0];
+    this.active = entity.datum;
+    this._selectedEntityInSrcChart = entity;
+    this._selectedEntityInDstChart = dstChart.entities()[map[entity.index]];
   },
   /**
-   * Render the buffer details card and annotate the span on the line charts.
+   * Highlights the newly selected entity and unhighlights the old one.
    */
-  _renderDetails(item) {
+  _selectedEntityChanged(newValue, oldValue){
+    if(oldValue) { oldValue.selection.attr('opacity', '0.6'); }
+    if(newValue) { newValue.selection.attr('opacity', '1.0'); }
+  },
+  /**
+   * Render the buffer life span on the line charts for the selected buffer.
+   */
+  _renderSpans(item) {
+    if (!this.spanPlot) { return; }
     this.spanPlot.selections().attr('fill-opacity', '0');
+    if (!item) { return; }
     this.spanPlot.entities().forEach(function(entity) {
         entity.selection.attr(
             'fill-opacity', entity.datum.id === item.logicalBufferId ? 1.0 : 0);
     });
-    this.active = item;
   },
   /**
    * Redraw the chart when data changes.
