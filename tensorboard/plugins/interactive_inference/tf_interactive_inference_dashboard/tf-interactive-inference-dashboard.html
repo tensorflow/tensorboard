@@ -1289,9 +1289,17 @@ limitations under the License.
 
         // Set all thresholds to the setting with the lowest cost from the above
         // search.
-        for (let i = 0; i < values.length; i++) {
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          let thresholdIndex = 0;
+          for (let vIdx = 0; vIdx < values.length; vIdx++) {
+            const valueString = this.getPrintableValue_(this.featureValueThresholds[i]);
+            if (valueString == values[vIdx]) {
+              thresholdIndex = vIdx;
+              break;
+            }
+          }
           this.set('featureValueThresholds.' + i + '.threshold',
-            bestThresholds[i] / 100);
+            bestThresholds[thresholdIndex] / 100);
         }
         this.forceUpdateFeatureValueThresholds_();
       },
