@@ -72,14 +72,16 @@ limitations under the License.
       }
 
       .example-and-inference-holder {
-        height: calc(100% - 40px);
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
+        flex-shrink: 1;
       }
 
       .example-and-inference-holder-expanded {
-        height: calc(100% - 40px);
         display: flex;
+        flex-grow: 1;
+        flex-shrink: 1;
       }
 
       .example-holder {
@@ -91,12 +93,14 @@ limitations under the License.
       }
 
       .inference-section {
+        flex-shrink: 0;
         padding: 0 5px;
       }
 
       .inference-section-expanded {
-        width: 40%;
+        flex-shrink: 0;
         padding: 0 5px;
+        width: 40%;
       }
 
       .inference-viewer {
@@ -243,6 +247,8 @@ limitations under the License.
       }
 
       .datapoint-tab {
+        display: flex;
+        flex-direction: column;
         width: 100%;
       }
 
@@ -275,6 +281,8 @@ limitations under the License.
       .datapoint-controls-holder {
         border-bottom: 1px solid lightgrey;
         display: flex;
+        flex-grow: 0;
+        flex-shrink: 0;
         justify-content: space-between;
         margin-left: 1px;
         padding: 2px 6px;
