@@ -47,6 +47,14 @@ var tf_op_profile;
         return node.metrics.flops / node.metrics.time;
     }
     tf_op_profile.utilization = utilization;
+    function memoryUtilization(node) {
+        // NaN indicates undefined memory utilization (the profile was collected from
+        // older versions of profiler).
+        if (!node || !node.metrics || !node.metrics.memoryBandwidth)
+            return 0 / 0;
+        return node.metrics.memoryBandwidth;
+    }
+    tf_op_profile.memoryUtilization = memoryUtilization;
     function percent(fraction) {
         if (isNaN(fraction))
             return "-";
