@@ -205,13 +205,22 @@ limitations under the License.
       }
 
       .filter-input {
-        max-width: 200px;
+        background: #f2f3f5;
+        max-width: 60%;
+        --paper-input-container: { padding: 4px 6px 2px 4px; };
+        --paper-input-container-underline: { display: none; height: 0; };
+        --paper-input-container-underline-focus: { display: none; };
+      }
+      .filter-input iron-icon {
+        color: #9ba0a6;
       }
 
     </style>
     <div class="outer">
       <template is="dom-if" if="[[showSearchBox]]">
-        <paper-input value="{{featureSearchValue}}" label="Filter features by name" class="filter-input"></paper-input>
+        <paper-input value="{{featureSearchValue}}" label="Search" class="filter-input" no-label-float>
+          <iron-icon icon="icons:search" prefix></iron-icon>
+        </paper-input>
       </template>
       <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
         <div class="flex-controls feature-name">

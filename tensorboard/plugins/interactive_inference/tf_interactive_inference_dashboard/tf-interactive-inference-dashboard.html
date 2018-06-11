@@ -62,8 +62,8 @@ limitations under the License.
       }
     </style>
     <style>
-    :host {
-      --paper-tab-ink: var(--tb-orange-strong);
+      :host {
+        --paper-tab-ink: var(--tb-orange-dark);
       }
 
       #classification {
@@ -271,10 +271,11 @@ limitations under the License.
       }
 
       .datapoint-controls-holder {
-        padding-bottom: 5px;
-        margin-left: 1px;
-        border-bottom: 1px solid lightgrey;
         display: flex;
+        border-bottom: 1px solid lightgrey;
+        margin-left: 1px;
+        padding-bottom: 5px;
+        position: relative;
       }
 
       .datapoint-left-controls-holder {
@@ -347,9 +348,17 @@ limitations under the License.
         display: none;
       }
 
-      .datapoint-control-button-text {
-        padding: 10px 5px 0;
-        font-size: 12px;
+      .datapoint-control-pd-plot {
+        background-color: white;
+        border: 1px solid lightgray;
+        color: var(--tb-orange-dark);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 12px;
+        position: absolute;
+        right: 0;
+        text-transform: uppercase;
+        top: 50px;
       }
 
       .close-partial-deps-button {
@@ -358,7 +367,8 @@ limitations under the License.
 
       paper-tabs {
         margin-left: 1px;
-        --paper-tabs-selection-bar-color: var(--tb-orange-strong);
+        --paper-tabs-selection-bar-color: var(--tb-orange-dark);
+        text-transform: uppercase;
       }
 
       paper-tab:not(.iron-selected) {
@@ -367,7 +377,7 @@ limitations under the License.
       }
 
       paper-tab.iron-selected {
-        color: var(--tb-orange-strong);
+        color: var(--tb-orange-dark);
         border-left: 1px solid lightgrey;
         border-right: 1px solid lightgrey;
       }
@@ -498,9 +508,9 @@ limitations under the License.
                         on-click="deleteDatapointDialog_" alt="delete datapoint">
                     </paper-icon-button>
 
-                    <paper-button raised class="datapoint-control-button-text"
+                    <paper-button class="datapoint-control-pd-plot"
                         on-click="showPartialDependencePlots_" alt="show partial dependence plots">
-                        Partial dependence plots
+                        PD Plot 
                     </paper-icon-button>
                   </div>
                   <div class="datapoint-right-controls-holder">
