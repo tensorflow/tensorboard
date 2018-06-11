@@ -1329,11 +1329,17 @@ limitations under the License.
       },
 
       getConfusionCounts(classificationStats, threshold, item) {
+        let val = null;
+        let val2 = null;
+        if (item != null) {
+          val = item.value;
+          val2 = item.value2;
+        }
         return {
-          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', item.value, item.value2),
-          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', item.value, item.value2),
-          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', item.value, item.value2),
-          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', item.value, item.value2),
+          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', val, val2),
+          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', val, val2),
+          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', val, val2),
+          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', val, val2),
         }
       },
 
@@ -1533,7 +1539,7 @@ limitations under the License.
       },
 
       createCombinedValueString_: function(val1, val2) {
-        let str = val1 || '';
+        let str = val1 == null ? '' : val1;
         if (val2 == null || val2 == '') {
           return str;
         }

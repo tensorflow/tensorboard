@@ -103,7 +103,7 @@
           });
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
-            this.$.dash.selectedLabelFeature = "Smiling";
+            setTimeout(()=> this.$.dash.selectedLabelFeature = "Smiling", 10000);
           });
         });
       },
