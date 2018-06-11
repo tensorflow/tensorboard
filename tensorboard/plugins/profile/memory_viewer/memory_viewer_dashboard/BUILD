@@ -15,6 +15,8 @@ tf_web_library(
         "//tensorboard/plugins/profile/memory_viewer/memory_usage",
         "//tensorboard/plugins/profile/memory_viewer/utils",
         "//tensorboard/plugins/profile/memory_viewer/xla",
+        "//tensorboard/plugins/profile/memory_viewer/mv_line_chart",
+        "//tensorboard/plugins/profile/memory_viewer/buffer_details",
         "//tensorboard/components/tf_imports:polymer",
     ],
 )

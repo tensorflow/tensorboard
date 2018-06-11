@@ -25,6 +25,8 @@ var memory_viewer;
             this.idToBuffer_ = {};
             this.idToBufferAllocation_ = {};
             this.nameToHlo_ = {};
+            this.nColor_ = 0;
+            this.rest_ = 0;
             this.peakHeapSizeBytes = 0;
             this.unpaddedPeakHeapSizeBytes = 0;
             this.peakLogicalBuffers = [];
@@ -37,8 +39,6 @@ var memory_viewer;
             this.bySizeToMaxHeap = [];
             this.maxHeapToBySize = [];
             this.logicalBufferSpans = {};
-            this.nColor_ = 0;
-            this.rest_ = 0;
             this.unSeenLogicalBuffers_ = new Set();
             this.seenBufferAllocations_ = new Set();
             this.smallBufferSize = 16 * 1024;
@@ -117,10 +117,10 @@ var memory_viewer;
                 'unpaddedSizeMiB': unpaddedSize,
                 'tfOpName': inst.tfOpName,
                 'opcode': inst.opcode,
-                'data': [[memory_viewer.bytesToMiB(buffer.size), 0]],
+                'sizeMiB': memory_viewer.bytesToMiB(buffer.size),
                 'color': color,
                 'shape': shape ? shape.humanStringWithLayout() : '',
-                'groupName': groupName
+                'groupName': groupName,
             };
             return dict;
         };
@@ -162,7 +162,7 @@ var memory_viewer;
                 var small = 'small (<' + this.smallBufferSize / 1024 + ' KiB)';
                 this.maxHeap.push({
                     'instructionName': small,
-                    'data': [[memory_viewer.bytesToMiB(this.rest_), 0]],
+                    'sizeMiB': memory_viewer.bytesToMiB(this.rest_),
                     'color': 0,
                     'groupName': small
                 });
@@ -170,7 +170,7 @@ var memory_viewer;
             var indexedMaxHeap = this.maxHeap.map(function (e, i) {
                 return { ind: i, val: e };
             });
-            indexedMaxHeap.sort(function (a, b) { return b.val.data[0][0] - a.val.data[0][0]; });
+            indexedMaxHeap.sort(function (a, b) { return b.val.sizeMiB - a.val.sizeMiB; });
             this.maxHeapBySize = indexedMaxHeap.map(function (e) {
                 return e.val;
             });
