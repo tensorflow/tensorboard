@@ -97,14 +97,14 @@ Polymer({
     bufferSizesLine.addDataset(new Plottable.Dataset(this.bufferSizes));
     bufferSizesLine.x(function(d) {return d[0]; }, xScale)
                    .y(function(d) {return d[1]; }, yScale)
-                   .attr("stroke", "#888888");
+                   .attr("stroke", "red");
 
     let unpaddedBufferSizesLine = new Plottable.Plots.Line();
     unpaddedBufferSizesLine.addDataset(
         new Plottable.Dataset(this.unpaddedBufferSizes));
     unpaddedBufferSizesLine.x(function(d) {return d[0]; }, xScale)
                            .y(function(d) {return d[1]; }, yScale)
-                           .attr("stroke", "#DE4406");
+                           .attr("stroke", "grey");
 
     // Draw a band of width 10 to indicate the peak heap size location.
     let bandPlot = new Plottable.Plots.Rectangle();
@@ -115,7 +115,7 @@ Polymer({
             .y(function(d) { return 0; }, yScale)
             .x2(function(d) { return d[0] + 10; })
             .y2(function(d) { return d[1]; })
-            .attr("fill", "#DE4406")
+            .attr("fill", "red")
             .attr("opacity", 0.3);
 
     // Draw a span to indicate the life range of this buffer allocation.
@@ -142,7 +142,7 @@ Polymer({
     this.spanPlot = spanPlot;
 
     let cs = new Plottable.Scales.Color();
-    cs.range(["#888888", "#DE4406"]);
+    cs.range(["red", "grey"]);
     cs.domain(["Sizes", "Unpadded Sizes"]);
     let legend = new Plottable.Components.Legend(cs);
     legend.maxEntriesPerRow(2);
