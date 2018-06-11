@@ -167,6 +167,7 @@ limitations under the License.
       .threshold-dropdown {
         display: block;
         width: 50%;
+        padding-right: 16px;
       }
 
       .slider-label {
@@ -510,7 +511,7 @@ limitations under the License.
 
                     <paper-button class="datapoint-control-pd-plot"
                         on-click="showPartialDependencePlots_" alt="show partial dependence plots">
-                        PD Plot 
+                        PD Plot
                     </paper-icon-button>
                   </div>
                   <div class="datapoint-right-controls-holder">
@@ -595,13 +596,24 @@ limitations under the License.
                   </template>
                 </template>
                 <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, multiClass, stats)]]">
-                  <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
-                    <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
-                      <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                        <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                      </template>
-                    </paper-listbox>
-                  </paper-dropdown-menu>
+                  <div class="flex">
+                    <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
+                      <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
+                        <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                          <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                    <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedThresholdFeature)]]">
+                      <paper-dropdown-menu label="Add second feature to facet tresholds by" class="threshold-dropdown">
+                        <paper-listbox class="dropdown-content" selected="{{selectedSecondThresholdFeature}}" attr-for-selected="name">
+                          <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                            <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                          </template>
+                        </paper-listbox>
+                      </paper-dropdown-menu>
+                    </template>
+                  </div>
                   <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                     <div class="flex">
                       <paper-button raised on-click="optimizeFacetedThresholdsClicked_">
@@ -620,7 +632,7 @@ limitations under the License.
                   </template>
                   <template is="dom-repeat" items="[[featureValueThresholds]]">
                     <div>
-                      <paper-input value="[[getPrintableValue_(item.value)]]" readonly=true
+                      <paper-input value="[[getPrintableValue_(item)]]" readonly=true
                                     class="slider-label" no-label-float=true>
                       </paper-input>
                       <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
@@ -632,7 +644,7 @@ limitations under the License.
                           <div class="roc-holder">
                             <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
                           </div>
-                          <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item.value)]]"
+                          <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item)]]"
                                               class="conf-matrix">
                           </tf-confusion-matrix>
                         </div>
@@ -755,13 +767,18 @@ limitations under the License.
         },
         // The dataset stats from Facets Dive to be used for the classification threshold logic.
         stats: Object,
-        // Feature to set different classification thredholds for the values of
+        // Features to set different classification thredholds for the values of
         selectedThresholdFeature: {
           type: String,
           value: '',
           observer: 'thresholdFeatureSelected_',
         },
-        // Feature to set different classification thredholds for the values of
+        selectedSecondThresholdFeature: {
+          type: String,
+          value: '',
+          observer: 'thresholdFeatureSelected_',
+        },
+        // Feature for true label.
         selectedLabelFeature: {
           type: String,
           value: '',
@@ -921,6 +938,10 @@ limitations under the License.
         return this.isBinaryClassification_(modelType, multiClass) && stats && Object.keys(stats).length > 0;
       },
 
+      shouldShowSecondFeatureDropdown_: function(selectedThresholdFeature) {
+        return selectedThresholdFeature != '';
+      },
+
       shouldShowLabelDropdown_: function(stats) {
         return stats && Object.keys(stats).length > 0;
       },
@@ -952,28 +973,43 @@ limitations under the License.
         return features;
       },
 
-      thresholdFeatureSelected_: function(feature) {
+      thresholdFeatureSelected_: function() {
+        const feature1 = this.selectedThresholdFeature;
+        if (feature1 == '') {
+          this.selectedSecondThresholdFeature = '';
+        }
+        const feature2 = this.selectedSecondThresholdFeature;
         const thresholds = [];
         const thresholdsMap = {};
-        if (feature.length !== 0) {
+        if (feature1.length !== 0) {
+          let feature1Values = this.stats[feature1].valueHash;
+          if (this.stats[feature1].totalCount != this.examplesAndInferences.length) {
+            feature1Values  = Object.assign({}, feature1Values, {undefined: ''});
+          }
+          let feature2Values = {undefined: ''};
+          if (feature2.length != 0) {
+            feature2Values = this.stats[feature2].valueHash;
+            if (this.stats[feature2].totalCount != this.examplesAndInferences.length) {
+              feature2Values  = Object.assign({}, feature2Values, {undefined: ''});
+            }
+          }
+
           // For the selected feature, set up a dict of each feature value in the dataset to
           // the threshold. Add this to a list (for display purposes) and create
           // a map of feature value to entry in that list.
-          for(var key in this.stats[feature].valueHash) {
-            if(this.stats[feature].valueHash.hasOwnProperty(key)) {
-              const featureValue = this.stats[feature].valueHash[key].value;
-              const thresh = {value: featureValue, threshold: this.overallThreshold};
-              thresholds.push(thresh);
-              thresholdsMap[featureValue] = thresh;
+          for(var key1 in this.stats[feature1].valueHash) {
+            if(this.stats[feature1].valueHash.hasOwnProperty(key1)) {
+              for(var key2 in feature2Values) {
+                if(feature2Values.hasOwnProperty(key2)) {
+                  const feature1Value = key1 == 'undefined' ? undefined : this.stats[feature1].valueHash[key1].value;
+                  const feature2Value = key2 == 'undefined' ? undefined : this.stats[feature2].valueHash[key2].value;
+                  const thresh = {value: feature1Value, value2: feature2Value, threshold: this.overallThreshold};
+                  thresholds.push(thresh);
+                  const mapKey = this.createCombinedValueString_(feature1Value, feature2Value);
+                  thresholdsMap[mapKey] = thresh;
+                }
+              }
             }
-          }
-          if (this.stats[feature].totalCount !=
-              this.examplesAndInferences.length) {
-            // Add an entry for if the example has no feature value for this
-            // selected feature.
-            const missingValueThresh = {value: undefined, threshold: this.overallThreshold};
-            thresholds.push(missingValueThresh);
-            thresholdsMap[undefined] = missingValueThresh;
           }
         }
 
@@ -1006,18 +1042,17 @@ limitations under the License.
             const item = this.visdata[i];
             let facetedStats = null;
             if (this.selectedThresholdFeature != '') {
-              facetedStats = classificationStats.faceted[
-                item[this.selectedThresholdFeature]];
+              const facetKey = this.createCombinedValueString_(
+                item[this.selectedThresholdFeature],
+                item[this.selectedSecondThresholdFeature]);
+              facetedStats = classificationStats.faceted[facetKey];
               if (!facetedStats) {
-                classificationStats.faceted[
-                  item[this.selectedThresholdFeature]] = []
+                classificationStats.faceted[facetKey] = []
                 for (let i = 0; i < 101; i++) {
-                  classificationStats.faceted[
-                    item[this.selectedThresholdFeature]].push(
+                  classificationStats.faceted[facetKey].push(
                       {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
                 }
-                facetedStats = classificationStats.faceted[
-                  item[this.selectedThresholdFeature]];
+                facetedStats = classificationStats.faceted[facetKey];
               }
             }
             const nonZeroClassification = this.getClassificationBestNonZero(i);
@@ -1067,10 +1102,12 @@ limitations under the License.
           this.overallThreshold, regenClassificationStats);
 
         for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          const key = this.createCombinedValueString_(
+            this.featureValueThresholds[i].value,
+            this.featureValueThresholds[i].value2);
           this.plotPr(
             this.$$('#' + this.getPrChartId(i)),
-            this.classificationStats_.faceted[
-              this.featureValueThresholds[i].value],
+            this.classificationStats_.faceted[key],
             this.featureValueThresholds[i].threshold,
             regenClassificationStats);
         }
@@ -1269,38 +1306,52 @@ limitations under the License.
         return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
       },
 
-      getConfusionCounts(classificationStats, threshold, featureValue) {
+      getConfusionCounts(classificationStats, threshold, item) {
         return {
-          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', featureValue),
-          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', featureValue),
-          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', featureValue),
-          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', featureValue),
+          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', item.value, item.value2),
+          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', item.value, item.value2),
+          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', item.value, item.value2),
+          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', item.value, item.value2),
         }
       },
 
-      getConfMatrixValue: function(classificationStats, threshold, stat, featureValue) {
+      getConfMatrixValue: function(classificationStats, threshold, stat, featureValue1, featureValue2) {
         const index = Math.floor(threshold * 100)
         if (!classificationStats.thresholds) {
           return 0;
         }
-        if (featureValue == null) {
+        if (featureValue1 == null) {
           return classificationStats.thresholds[index][stat];
         }
-        if (classificationStats.faceted[featureValue] == null) {
+        const key = this.createCombinedValueString_(featureValue1, featureValue2);
+        if (classificationStats.faceted[key] == null) {
           return 0;
         }
-        return classificationStats.faceted[featureValue][index][stat];
+        return classificationStats.faceted[key][index][stat];
       },
 
       getPrChartId: function(index) {
         return 'prchart' + index;
       },
 
-      getPrintableValue_: function(value) {
-        if (!value && value !== 0) {
-          return '<feature value missing>';
+      getPrintableValue_: function(item) {
+        let str = '';
+        if (!item.value && item.value !== 0) {
+          str = '<feature value missing>';
+        } else {
+          str = item.value;
         }
-        return value;
+        if (this.selectedSecondThresholdFeature == '') {
+          return str;
+        }
+        str += '/';
+        if (!item.value2 && item.value2 !== 0) {
+          str += '<feature value missing>';
+        } else {
+          str += item.value2;
+        }
+        return str;
+
       },
 
       getFeatureName_: function(feature) {
@@ -1390,7 +1441,7 @@ limitations under the License.
         let hasInferenceLabels = false;
         this.visdata.forEach(function(item, index) {
           if (isClassification) {
-            self.setItemInferenceValue(item, index, self.selectedThresholdFeature);
+            self.setItemInferenceValue(item, index, self.selectedThresholdFeature, self.selectedSecondThresholdFeature);
           } else {
             item[inferenceValueStr] =
               self.examplesAndInferences[index].inferences[
@@ -1421,7 +1472,7 @@ limitations under the License.
         this.updatedExample = false;
       },
 
-      setItemInferenceValue: function(item, index, feature) {
+      setItemInferenceValue: function(item, index, feature1, feature2) {
         const inferenceIdx =
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
@@ -1434,9 +1485,12 @@ limitations under the License.
         // If a feature has been selected (string will be non-empty in this case), then get the
         // appropriate threshold for this item's value for that feature. Otherwise the overall
         // threshold will be used.
-        if (feature.length !== 0) {
-          const featureValue = item[feature];
-          threshold = this.featureValueThresholdsMap[featureValue].threshold;
+        if (feature1.length !== 0) {
+          let key = item[feature1];
+          if (feature2.length !== 0) {
+            key = this.createCombinedValueString_(item[feature1], item[feature2]);
+          }
+          threshold = this.featureValueThresholdsMap[key].threshold;
         }
 
         // Find the first inference label in the score-sorted list that is non-zero.
@@ -1454,6 +1508,15 @@ limitations under the License.
         } else {
           item[inferenceValueStr] = this.defaultInferenceLabel.toString();
         }
+      },
+
+      createCombinedValueString_: function(val1, val2) {
+        let str = val1 || '';
+        if (val2 == null || val2 == '') {
+          return str;
+        }
+        str += '/' + val2;
+        return str;
       },
 
       updateCorrectness_: function() {
