@@ -21,7 +21,7 @@ tf_web_library(
         "@ai_google_pair_facets//facets_dive/components/facets_dive",
         "@ai_google_pair_facets//facets_overview/components/facets_overview",
         "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icon",
+        "@org_polymer_iron_icons",
         "@org_polymer_iron_pages",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dialog",
