@@ -44,6 +44,13 @@ export function utilization(node: any) {
   return node.metrics.flops / node.metrics.time;
 }
 
+export function memoryUtilization(node: any) {
+  // NaN indicates undefined memory utilization (the profile was collected from
+  // older versions of profiler).
+  if (!node || !node.metrics || !node.metrics.memoryBandwidth) return 0/0;
+  return node.metrics.memoryBandwidth;
+}
+
 export function percent(fraction: number) {
   if (isNaN(fraction)) return "-";
   return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
