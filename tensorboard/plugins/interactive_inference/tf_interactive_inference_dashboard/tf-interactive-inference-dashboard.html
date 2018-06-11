@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
@@ -272,11 +273,11 @@ limitations under the License.
       }
 
       .datapoint-controls-holder {
-        display: flex;
         border-bottom: 1px solid lightgrey;
+        display: flex;
+        justify-content: space-between;
         margin-left: 1px;
-        padding-bottom: 5px;
-        position: relative;
+        padding: 2px 6px;
       }
 
       .datapoint-left-controls-holder {
@@ -349,6 +350,18 @@ limitations under the License.
         display: none;
       }
 
+      .datapoint-control-filter-input {
+        background: #f2f3f5;
+        border-radius: 2px;
+        max-width: 60%;
+        --paper-input-container: { padding: 4px 6px 2px 4px; };
+        --paper-input-container-underline: { display: none; height: 0; };
+        --paper-input-container-underline-focus: { display: none; };
+      }
+      .datapoint-control-filter-input iron-icon {
+        color: #9ba0a6;
+      }
+
       .datapoint-control-pd-plot {
         background-color: white;
         border: 1px solid lightgray;
@@ -356,10 +369,7 @@ limitations under the License.
         font-size: 14px;
         font-weight: 500;
         padding: 8px 12px;
-        position: absolute;
-        right: 0;
         text-transform: uppercase;
-        top: 50px;
       }
 
       .close-partial-deps-button {
@@ -508,11 +518,6 @@ limitations under the License.
                     <paper-icon-button class="datapoint-control-button" icon="delete"
                         on-click="deleteDatapointDialog_" alt="delete datapoint">
                     </paper-icon-button>
-
-                    <paper-button class="datapoint-control-pd-plot"
-                        on-click="showPartialDependencePlots_" alt="show partial dependence plots">
-                        PD Plot
-                    </paper-icon-button>
                   </div>
                   <div class="datapoint-right-controls-holder">
                     <paper-icon-button class="datapoint-control-button" icon="list"
@@ -530,6 +535,15 @@ limitations under the License.
                         on-click="selectPrevDatapoint_" alt="select previous datapoint">
                     </paper-icon-button>
                   </div>
+                </div>
+                <div class="datapoint-controls-holder">
+                  <paper-input value="{{featureSearchValue}}" label="Search" class="datapoint-control-filter-input" no-label-float>
+                    <iron-icon icon="icons:search" prefix></iron-icon>
+                  </paper-input>
+                  <paper-button class="datapoint-control-pd-plot"
+                      on-click="showPartialDependencePlots_" alt="show partial dependence plots">
+                      PD Plot
+                  </paper-icon-button>
                 </div>
                 <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
                   <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"

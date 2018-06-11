@@ -112,7 +112,6 @@ const ZOOM_EXTENT: [number, number] = [1, 20];
 
 const DEFAULT_WINDOW_WIDTH = 256;
 const DEFAULT_WINDOW_CENTER = 128;
-const DEFAULT_MIN_FEATURES_FOR_SEARCH = 1;
 
 Polymer({
   is: 'vz-example-viewer',
@@ -145,11 +144,9 @@ Polymer({
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
     displayMode: {type: String, value: 'grid'},
-    minNumFeaturesForSearchBox: {type: Number, value: DEFAULT_MIN_FEATURES_FOR_SEARCH},
-    showSearchBox: {type: Boolean, computed: 'getShowSearchBox(minNumFeaturesForSearchBox, featuresList, seqFeaturesList)'},
     featureSearchValue: {type: String, value: '', notify: true},
-    filteredFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue, showSearchBox)'},
-    filteredSeqFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue, showSearchBox)'},
+    filteredFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue)'},
+    filteredSeqFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue)'},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
@@ -253,18 +250,12 @@ Polymer({
   },
 
   getFilteredFeaturesList: function(featureList: NameAndFeature[],
-      searchValue: string, showSearchBox: boolean) {
-    if (searchValue == '' || !showSearchBox) {
+      searchValue: string) {
+    if (searchValue == '') {
       return featureList;
     }
     const re = new RegExp(searchValue, 'i');
     return featureList.filter(feature => re.test(feature.name));
-  },
-
-  getShowSearchBox: function(minNumFeaturesForSearchBox: number,
-      featuresList: string[], seqFeaturesList: string[]) {
-    return minNumFeaturesForSearchBox <=
-        (featuresList.length + seqFeaturesList.length);
   },
 
   /**
