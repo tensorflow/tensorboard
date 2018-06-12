@@ -110,7 +110,7 @@ program, and how the memory usage trends over the program's lifetime.
 lifetime. The band drawn from top to buttom of the plot indicates the point
 in the program with peak memory utilization.
 
-  * Each point on the plot represents a "program point" in XLA's Hige Level
+  * Each point on the plot represents a "program point" in XLA's High Level
 Optimizer (HLO) program, as it has been scheduled by the compiler.
 
 ### Below Displays
