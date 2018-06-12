@@ -62,6 +62,9 @@ def dump_data(logdir):
         f.write(proto.SerializeToString())
     shutil.copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
                     os.path.join(run_dir, 'op_profile.json'))
+    shutil.copyfile(
+        'tensorboard/plugins/profile/profile_demo.memory_viewer.json',
+        os.path.join(run_dir, 'memory_viewer.json'))
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
