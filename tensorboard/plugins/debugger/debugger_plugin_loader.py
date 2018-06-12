@@ -18,62 +18,85 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import logging
 import sys
 
 import six
-import tensorflow as tf
 
-tf.flags.DEFINE_integer(
-    'debugger_data_server_grpc_port', -1,
-    'The port at which the non-interactive debugger data server '
-    'should receive debugging data via gRPC from one '
-    'or more debugger-enabled TensorFlow runtimes. No debugger plugin or '
-    'debugger data server will be started if this flag is not provided. This '
-    'flag differs from the `--debugger_port` flag in that it starts a '
-    'non-interactive mode. It is for use with the "health pills" feature '
-    'of the Graph Dashboard. This flag is mutually exclusive with '
-    '`--debugger_port`.')
-tf.flags.DEFINE_integer(
-    'debugger_port', -1,
-    'The port at which the interactive debugger data server (to be started by '
-    'the debugger plugin) should receive debugging data via gRPC from one or '
-    'more debugger-enabled TensorFlow runtimes. No debugger plugin or debugger '
-    'data server will be started if this flag is not provided. This flag '
-    'differs from the `--debugger_data_server_grpc_port` flag in that it '
-    'starts an interactive mode that allows user to pause at selected nodes '
-    'inside a TensorFlow Graph or between Session.runs. It is for use with the '
-    'interactive Debugger Dashboard. This flag is mutually exclusive with '
-    '`--debugger_data_server_grpc_port`.')
-
-FLAGS = tf.flags.FLAGS
+from tensorboard.plugins import base_plugin
 
 
-def get_debugger_plugin():
-  """Returns the debugger plugin, if possible.
+class DebuggerPluginLoader(base_plugin.TBLoader):
+  """DebuggerPlugin factory factory.
 
-  This function can be passed along to the functions in
-  `tensorboard.program`.
-
-  Returns:
-    The TBPlugin constructor for the debugger plugin, or None if
-    the necessary flag was not set.
-
-  Raises:
-    ValueError: If both the `debugger_data_server_grpc_port` and `debugger_port`
-      flags are specified as >= 0.
+  This class determines which debugger plugin to load, based on custom
+  flags. It also checks for the `grpcio` PyPi dependency.
   """
-  # Check that not both grpc port flags are specified.
-  if FLAGS.debugger_data_server_grpc_port > 0 and FLAGS.debugger_port > 0:
-    raise ValueError(
-        '--debugger_data_server_grpc_port and --debugger_port are mutually '
-        'exclusive. Do not use both of them at the same time.')
 
-  if FLAGS.debugger_data_server_grpc_port > 0 or FLAGS.debugger_port > 0:
-    return _ConstructDebuggerPluginWithGrpcPort
-  return None
+  def define_flags(self, parser):
+    """Adds DebuggerPlugin CLI flags to parser."""
+    group = parser.add_argument_group('debugger plugin')
+    group.add_argument(
+        '--debugger_data_server_grpc_port',
+        metavar='PORT',
+        type=int,
+        default=-1,
+        help='''\
+The port at which the non-interactive debugger data server should
+receive debugging data via gRPC from one or more debugger-enabled
+TensorFlow runtimes. No debugger plugin or debugger data server will be
+started if this flag is not provided. This flag differs from the
+`--debugger_port` flag in that it starts a non-interactive mode. It is
+for use with the "health pills" feature of the Graph Dashboard. This
+flag is mutually exclusive with `--debugger_port`.\
+''')
+    group.add_argument(
+        '--debugger_port',
+        metavar='PORT',
+        type=int,
+        default=-1,
+        help='''\
+The port at which the interactive debugger data server (to be started by
+the debugger plugin) should receive debugging data via gRPC from one or
+more debugger-enabled TensorFlow runtimes. No debugger plugin or
+debugger data server will be started if this flag is not provided. This
+flag differs from the `--debugger_data_server_grpc_port` flag in that it
+starts an interactive mode that allows user to pause at selected nodes
+inside a TensorFlow Graph or between Session.runs. It is for use with
+the interactive Debugger Dashboard. This flag is mutually exclusive with
+`--debugger_data_server_grpc_port`.\
+''')
+
+  def fix_flags(self, flags):
+    """Fixes Debugger related flags.
+
+    Raises:
+      ValueError: If both the `debugger_data_server_grpc_port` and
+        `debugger_port` flags are specified as >= 0.
+    """
+    if flags.debugger_data_server_grpc_port > 0 and flags.debugger_port > 0:
+      raise ValueError(
+          '--debugger_data_server_grpc_port and --debugger_port are mutually '
+          'exclusive. Do not use both of them at the same time.')
+
+  def load(self, context):
+    """Returns the debugger plugin, if possible.
+
+    Args:
+      context: The TBContext flags including `add_arguments`.
+
+    Returns:
+      A DebuggerPlugin instance or None if it couldn't be loaded.
+    """
+    # Check that not both grpc port flags are specified.
+    if (context.flags.debugger_data_server_grpc_port > 0 or
+        context.flags.debugger_port > 0):
+      return _ConstructDebuggerPluginWithGrpcPort(context)
+    return None
 
 
 def _ConstructDebuggerPluginWithGrpcPort(context):
+  flags = context.flags
   try:
     # pylint: disable=line-too-long,g-import-not-at-top
     from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
@@ -89,17 +112,17 @@ def _ConstructDebuggerPluginWithGrpcPort(context):
           'gRPC installed:\n  pip install grpcio')
     six.reraise(e_type, e_value, e_traceback)
 
-  if FLAGS.debugger_port > 0:
+  if flags.debugger_port > 0:
     interactive_plugin = (
         interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
-    tf.logging.info('Starting Interactive Debugger Plugin at gRPC port %d',
-                    FLAGS.debugger_data_server_grpc_port)
-    interactive_plugin.listen(FLAGS.debugger_port)
+    logging.info('Starting Interactive Debugger Plugin at gRPC port %d',
+                 flags.debugger_data_server_grpc_port)
+    interactive_plugin.listen(flags.debugger_port)
     return interactive_plugin
-  elif FLAGS.debugger_data_server_grpc_port > 0:
+  elif flags.debugger_data_server_grpc_port > 0:
     noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
-    tf.logging.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
-                    FLAGS.debugger_data_server_grpc_port)
-    noninteractive_plugin.listen(FLAGS.debugger_data_server_grpc_port)
+    logging.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
+                 flags.debugger_data_server_grpc_port)
+    noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
     return noninteractive_plugin
-  return None
+  raise AssertionError()

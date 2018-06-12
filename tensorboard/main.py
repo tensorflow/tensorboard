@@ -32,45 +32,45 @@ from __future__ import print_function
 # This must be set before the first import of tensorflow.
 import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
-
-import tensorflow as tf
-
 # pylint: enable=g-import-not-at-top
 
+import argparse
+import functools
+import logging
+import sys
+
 from tensorboard import default
-from tensorboard import program
+
+logger = logging.getLogger(__name__)
 
 
 def run_main():
   """Initializes flags and calls main()."""
-  tf.app.run(main)
-
-
-def main(unused_argv=None):
-  """Standard TensorBoard program CLI.
-
-  See `tensorboard.program.main` for further documentation.
-  """
-  return program.main(default.get_plugins(),
-                      default.get_assets_zip_provider())
-
-
-def create_tb_app(*args, **kwargs):
-  tf.logging.warning('DEPRECATED API: create_tb_app() should now be accessed '
-                     'via the `tensorboard.program` module')
-  return program.create_tb_app(*args, **kwargs)
-
-
-def make_simple_server(*args, **kwargs):
-  tf.logging.warning('DEPRECATED API: make_simple_server() should now be '
-                     'accessed via the `tensorboard.program` module')
-  return program.make_simple_server(*args, **kwargs)
-
-
-def run_simple_server(*args, **kwargs):
-  tf.logging.warning('DEPRECATED API: run_simple_server() should now be '
-                     'accessed via the `tensorboard.program` module')
-  return program.run_simple_server(*args, **kwargs)
+  try:
+    from absl import app
+  except ImportError:
+    app = None
+  program.setup_environment()
+  assets = default.get_assets_zip_provider()
+  loaders = default.PLUGIN_LOADERS
+  parser = argparse.ArgumentParser(
+      prog='tensorboard',
+      description=('TensorBoard is a suite of web applications for '
+                   'inspecting and understanding your TensorFlow runs '
+                   'and graphs. https://github.com/tensorflow/tensorboard'))
+  for loader in loaders:
+    loader.define_flags(parser)
+  if app is None:
+    flags, unparsed = parser.parse_args()
+  else:
+    flags, unparsed = parser.parse_known_args()
+  for loader in loaders:
+    loader.fix_flags(flags)
+  main = functools.partial(program.main, loaders, assets, flags)
+  if app is None:
+    sys.exit(main(unparsed))
+  else:
+    app.run(main, sys.argv[:1] + unparsed)
 
 
 if __name__ == '__main__':
