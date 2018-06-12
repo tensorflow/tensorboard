@@ -108,10 +108,11 @@ var memory_viewer;
                 .attr("stroke", "grey");
             // Draw a band of width 10 to indicate the peak heap size location.
             var bandPlot = new Plottable.Plots.Rectangle();
+            var bandWidth = this.bufferSizes.length / 40.0;
             bandPlot.addDataset(new Plottable.Dataset([this.bufferSizes[this.data.peakHeapSizePosition]]));
-            bandPlot.x(function (d) { return d[0]; }, xScale)
+            bandPlot.x(function (d) { return d[0] - bandWidth / 2.0; }, xScale)
                 .y(function (d) { return 0; }, yScale)
-                .x2(function (d) { return d[0] + 10; })
+                .x2(function (d) { return d[0] + bandWidth / 2.0; })
                 .y2(function (d) { return d[1]; })
                 .attr("fill", "red")
                 .attr("opacity", 0.3);
