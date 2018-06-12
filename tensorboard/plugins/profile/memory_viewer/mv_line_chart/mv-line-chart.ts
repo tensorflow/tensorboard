@@ -157,7 +157,9 @@ Polymer({
                                                [yAxis, plots],
                                                [null, xAxis]]);
 
-    table.renderTo(d3.select(this.$.chartdiv));
+    let chartSelection = d3.select(this.$.chartdiv);
+    chartSelection.selectAll('.component').remove();
+    table.renderTo(chartSelection);
   },
   /**
    * Draw maxHeap stack boxes and add the interactions.
@@ -170,6 +172,9 @@ Polymer({
     let yAxis = new Plottable.Axes.Numeric(yScale, "left");
 
     let cs = this.colorScale;
+
+    d3.select(this.$.maxheapchart).selectAll('.component').remove();
+    d3.select(this.$.maxheapsizechart).selectAll('.component').remove();
 
     let maxHeapChart = new Plottable.Plots.Rectangle();
     maxHeapChart.addDataset(new Plottable.Dataset(this.maxHeap))
@@ -245,15 +250,25 @@ Polymer({
     });
   },
   /**
-   * Redraw the chart when data changes.
+   * Redraw the chart.
    */
-  _dataChanged:function() {
-    if (!this.data) { return;}
+  _redraw: function() {
+    if (!this.data) return;
     this.colorScale = new Plottable.Scales.Color("Category10");
     this._makeChartDataset();
     this._drawProgramOrder();
     this._drawMaxHeap();
-  }
+  },
+  /**
+   * Redraw the chart when data changes.
+   */
+  _dataChanged(newData) {
+    if (!newData) {return;}
+    this._redraw();
+  },
+  attached: function() {
+    this._redraw();
+  },
 });
 
 } // namespace memory_viewer
