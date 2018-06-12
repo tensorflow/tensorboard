@@ -239,11 +239,12 @@ export class MemoryUsage {
           if (shape) {
             unpaddedHeapSizeBytes += shape.unpaddedHeapSizeBytes();
           }
-          this.logicalBufferSpans[eventId] = [heapSizes.length - 1, -1];
+          this.logicalBufferSpans[eventId] = [heapSizes.length, -1];
           if (heapSizeBytes > peakHeapSizeBytes) {
             peakHeapSizeBytes = heapSizeBytes;
             unpaddedPeakHeapSizeBytes = unpaddedHeapSizeBytes;
-            peakHeapSizePosition = heapSizes.length - 1;
+            // The next element to be pushed to heapSizes is the maxium.
+            peakHeapSizePosition = heapSizes.length;
             peakLogicalBuffers = logicalBuffers.slice();
           }
           break;
@@ -255,7 +256,7 @@ export class MemoryUsage {
           if (shape) {
             unpaddedHeapSizeBytes -= shape.unpaddedHeapSizeBytes();
           }
-          this.logicalBufferSpans[eventId][1] = heapSizes.length - 1;
+          this.logicalBufferSpans[eventId][1] = heapSizes.length;
           if (heapSizeBytes < 0) {
             console.error('heap_size_bytes < 0');
           }
@@ -271,6 +272,8 @@ export class MemoryUsage {
           break;
       }
     }
+
+    heapSizes.push(memory_viewer.bytesToMiB(heapSizeBytes));
     const indefiniteMemoryUsageBytes =
         this.findIndefiniteMemoryUsage_(this.unSeenLogicalBuffers_);
     this.peakHeapSizeBytes = peakHeapSizeBytes + indefiniteMemoryUsageBytes;

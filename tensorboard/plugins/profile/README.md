@@ -97,3 +97,36 @@ The analysis contains three sections:
   * Host-side analysis, which shows you the detailed analysis on the host side,
   including a breakdown of input processing time on the host, and a tabular
   view of details for each input operation.
+
+## Memory Viewer
+
+Memory viewer tool allows you to visualize the peak memory usage for your
+program, and how the memory usage trends over the program's lifetime.
+
+![Memory_Viewer](docs/memory-viewer.png)
+
+### Top-Most Display
+  * The top-most display shows how many memory usage trends over the program's
+lifetime. The band drawn from top to buttom of the plot indicates the point
+in the program with peak memory utilization.
+
+  * Each point on the plot represents a "program point" in XLA's Hige Level
+Optimizer (HLO) program, as it has been scheduled by the compiler.
+
+### Below Displays
+  * Below the top-most display are two displays that show the break-down of memory
+usage at the peak usage program point (given by the band in the top-most plot).
+
+  * The "By Program Order" display shows you the buffers in the order in which they
+came to life during program execution. So if you're interested in which buffers
+lived the longest, you would look at the left hand side of this display.
+
+  * The "By Size" display shows you the buffers in the order of size, descending,
+so you can see which buffers have the largest impact at the peak memory usage
+point.
+
+### Buffer Details Card and Lifetime Span
+  * As you hover over the broken-down buffers in these displays, you can see the
+HLO, size and other details that the buffer are associated with, as well as a
+relative magnitude of the buffer size vs the peak on the plot, along with the
+buffer's lifetime.

@@ -26,7 +26,9 @@ export class HloInstruction {
     this.name = inst.name ? inst.name : '';
     this.opcode = inst.opcode ? inst.opcode : '';
     this.shape = inst.shape ? new Shape(inst.shape) : null;
-    this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
+    if (inst.metadata) {
+      this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
+    }
   }
 }
 
