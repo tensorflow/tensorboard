@@ -148,7 +148,9 @@ var memory_viewer;
             var table = new Plottable.Components.Table([[null, legend],
                 [yAxis, plots],
                 [null, xAxis]]);
-            table.renderTo(d3.select(this.$.chartdiv));
+            var chartSelection = d3.select(this.$.chartdiv);
+            chartSelection.selectAll('.component').remove();
+            table.renderTo(chartSelection);
         },
         /**
          * Draw maxHeap stack boxes and add the interactions.
@@ -159,6 +161,8 @@ var memory_viewer;
             var xAxis = new Plottable.Axes.Numeric(xScale, "top");
             var yAxis = new Plottable.Axes.Numeric(yScale, "left");
             var cs = this.colorScale;
+            d3.select(this.$.maxheapchart).selectAll('.component').remove();
+            d3.select(this.$.maxheapsizechart).selectAll('.component').remove();
             var maxHeapChart = new Plottable.Plots.Rectangle();
             maxHeapChart.addDataset(new Plottable.Dataset(this.maxHeap))
                 .x(function (d) { return d.offset; }, xScale)
@@ -237,16 +241,27 @@ var memory_viewer;
             });
         },
         /**
-         * Redraw the chart when data changes.
+         * Redraw the chart.
          */
-        _dataChanged: function () {
-            if (!this.data) {
+        _redraw: function () {
+            if (!this.data)
                 return;
-            }
             this.colorScale = new Plottable.Scales.Color("Category10");
             this._makeChartDataset();
             this._drawProgramOrder();
             this._drawMaxHeap();
-        }
+        },
+        /**
+         * Redraw the chart when data changes.
+         */
+        _dataChanged: function (newData) {
+            if (!newData) {
+                return;
+            }
+            this._redraw();
+        },
+        attached: function () {
+            this._redraw();
+        },
     });
 })(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
