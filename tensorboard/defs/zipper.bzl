@@ -42,7 +42,7 @@ def _tensorboard_zip_file(ctx):
 tensorboard_zip_file = rule(
     implementation=_tensorboard_zip_file,
     attrs={
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(allow_files=True),
         "deps": attr.label_list(providers=["webfiles"], mandatory=True),
         "_Zipper": attr.label(
             default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Zipper"),

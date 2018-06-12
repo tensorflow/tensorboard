@@ -107,7 +107,7 @@ tensorboard_html_binary = rule(
         "input_path": attr.string(mandatory=True),
         "output_path": attr.string(mandatory=True),
         "compile": attr.bool(),
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(allow_files=True),
         "deps": attr.label_list(aspects=[closure_js_aspect], mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
         "path_regexs_for_noinline": attr.label(allow_single_file=True),
