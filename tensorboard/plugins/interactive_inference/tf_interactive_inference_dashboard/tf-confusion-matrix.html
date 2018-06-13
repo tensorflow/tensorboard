@@ -29,6 +29,10 @@ limitations under the License.
       th, td {
         padding: 3px;
       }
+      .flex {
+        display: flex;
+        flex-direction: row-reverse;
+      }
       .pred-label {
         text-align: left;
         font-size: 10px;
@@ -47,6 +51,11 @@ limitations under the License.
       .incorrect {
         background: LightCoral;
       }
+      .percentage {
+        padding-right: 5px;
+        color: gray;
+        width: 60px;
+      }
     </style>
     <table>
       <tr>
@@ -57,20 +66,60 @@ limitations under the License.
       </tr>
       <tr>
         <th class="actual-label">Actual<br/>Yes</th>
-        <td class="correct">[[getText(counts.tp, total)]]</td>
-        <td class="incorrect">[[getText(counts.fn, total)]]</td>
-        <td>[[getTotalText(counts.tp, counts.fn, total)]]</td>
+        <td class="correct">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tp)]]</div>
+            <div>[[counts.tp]]</div>
+          </div>
+        </td>
+        <td class="incorrect">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fn)]]</div>
+            <div>[[counts.fn]]</div>
+          </div>
+        </td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tp, counts.fn)]]</div>
+            <div>[[getTotal(counts.tp, counts.fn)]]</div>
+          </div>
+        </td>
       </tr>
       <tr>
         <th class="actual-label">Actual<br/>No</th>
-        <td class="incorrect">[[getText(counts.fp, total)]]</td>
-        <td class="correct">[[getText(counts.tn, total)]]</td>
-        <td>[[getTotalText(counts.fp, counts.tn, total)]]</td>
+        <td class="incorrect">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fp)]]</div>
+            <div>[[counts.fp]]</div>
+          </div>
+        </td>
+        <td class="correct">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tn)]]</div>
+            <div>[[counts.tn]]</div>
+          </div>
+        </td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fp, counts.tn)]]</div>
+            <div>[[getTotal(counts.fp, counts.tn)]]</div>
+          </div>
+        </td>
       </tr>
       <tr>
         <th></th>
-        <td>[[getTotalText(counts.tp, counts.fp, total)]]</td>
-        <td>[[getTotalText(counts.fn, counts.tn, total)]]</td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tp, counts.fp)]]</div>
+            <div>[[getTotal(counts.tp, counts.fp)]]</div>
+          </div>
+        </td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fn, counts.tn)]]</div>
+            <div>[[getTotal(counts.fn, counts.tn)]]</div>
+          </div>
+        </td>
         <td></td>
       </tr>
     </table>
@@ -90,12 +139,13 @@ limitations under the License.
         this.total = counts.fp + counts.tp + counts.tn + counts.fn;
       },
 
-      getText: function(count, total) {
-        return count + ' (' + d3.format(",.1%")(count / total) + ')';
+      getTotal: function(count1, count2) {
+        return count1 + count2;
       },
 
-      getTotalText: function(count1, count2, total) {
-        return this.getText(count1 + count2, total);
+      getPercentage: function(total, count1, count2) {
+        const count = count2 ? count1 + count2 : count1;
+        return '(' + d3.format(",.1%")(count / total) + ')';
       },
 
       getNText: function(total) {
