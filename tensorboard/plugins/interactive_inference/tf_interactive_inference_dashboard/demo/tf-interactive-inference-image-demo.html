@@ -42,6 +42,7 @@
 
         this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/images/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/images/smile_examples.json";
+        const RESULTS_PATH = "data/images/smile_examples_inference.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           this.data = data;
           this.updateSprite();
@@ -78,25 +79,36 @@
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-              inferences.results = {classification: {classifications: []}};
+            inferences.results = {classification: {classifications: []}};
             const tensors = [];
-            for (let i = 0; i < indices.length; i++) {
-              const idx = indices[i];
-              const t = await this.convertExToTensor(this.data[idx]);
-              tensors.push(t);
+            const BATCH_SIZE = 256;
+            if (indices.length == 250) {
+              const testData = d3.json(RESULTS_PATH, (error, inferences) => {
+                setTimeout(() => {
+                  this.$.dash.inferences = inferences;
+                  this.indicesToInfer = {};
+                  this.$.dash.selectedLabelFeature = "Smiling"
+                }, 1000);
+              });
+            } else {
+              for (let i = 0; i < indices.length; i++) {
+                const idx = indices[i];
+                const t = await this.convertExToTensor(this.data[idx]);
+                tensors.push(t);
+              }
+              const d = tf.div;
+              let input = tf.concat(tensors).reshape([tensors.length, 78, 64, 3]);
+              input = d(input, tf.scalar(255));
+              const res = this.model.predict(input, {batchSize: 128});
+              const predValues = await res.data();
+              const PRED_SIZE = 2;
+              for (let i = 0; i < indices.length; i++) {
+                inferences.results.classification.classifications[i] =
+                  {classes: [{label: '0', score: predValues[i * PRED_SIZE]}, {label: '1', score: predValues[i * PRED_SIZE + 1]}]};
+              }
+              this.$.dash.inferences = inferences;
+              this.indicesToInfer = {};
             }
-            const d = tf.div;
-            let input = tf.concat(tensors).reshape([tensors.length, 78, 64, 3]);
-            input = d(input, tf.scalar(255));
-            const res = this.model.predict(input, {batchSize: 128});
-            const predValues = await res.data();
-            const PRED_SIZE = 2;
-            for (let i = 0; i < indices.length; i++) {
-              inferences.results.classification.classifications[i] =
-                {classes: [{label: '0', score: predValues[i * PRED_SIZE]}, {label: '1', score: predValues[i * PRED_SIZE + 1]}]};
-            }
-            this.$.dash.inferences = inferences;
-            this.indicesToInfer = {};
           });
           this.$.dash.addEventListener('get-eligible-features', e => {
             this.$.dash.partialDepPlotEligibleFeatures = [
@@ -163,7 +175,6 @@
           });
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
-            setTimeout(()=> this.$.dash.selectedLabelFeature = "Smiling", 10000);
           });
         });
       },
