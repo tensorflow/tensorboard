@@ -44,7 +44,7 @@ You may obtain a copy of the License at
      .steptime-average {
        font-weight: bold;
        font-style: italic;
-       color: red;
+       color: var(--summary-color, green);
      }
      .table-style {
        table-layout: auto;
@@ -71,7 +71,7 @@ You may obtain a copy of the License at
        text-transform: capitalize;
      }
      div.bottleneck-statement {
-       color: red;
+       color: var(--summary-color, green);
        font-weight: bolder;
        font-style: italic;
      }
@@ -219,6 +219,7 @@ You may obtain a copy of the License at
        var runEnvironmentJson = this._data[2];
        var recommendationJson = this._data[3];
 
+       var statement = recommendationJson.p['statement'];
        this.set('_host_idle_time_percent', generalAnalysisJson.p['host_idle_time_percent']);
        this.set('_device_idle_time_percent', generalAnalysisJson.p['device_idle_time_percent']);
        this.set('_mxu_utilization_percent', generalAnalysisJson.p['mxu_utilization_percent']);
@@ -234,6 +235,13 @@ You may obtain a copy of the License at
        this.set('_build_target', runEnvironmentJson.p['build_target']);
        this.set('_statement', recommendationJson.p['statement']);
        this.set('_show_error_message', this._error_message!='');
+
+       if (statement.includes('HIGHLY')) {
+         this.customStyle['--summary-color'] = 'red';
+       } else if (statement.includes('MODERATE')) {
+         this.customStype['--summary-color'] = 'orange';
+       } 
+
        this.updateStyles();
 
        this._showDeviceStepChart(inputAnalysisJson);
