@@ -24,19 +24,33 @@ else
 fi
 
 smoke() {
+  TF_PACKAGE=tf-nightly
+  if [ -n "$TF_VERSION" ]; then
+    TF_PACKAGE="tensorflow==${TF_VERSION}"
+  fi
   virtualenv -qp python$1 venv$1
   cd venv$1
   . bin/activate
   pip install -qU pip
-  pip install -qU tf-nightly
+  pip install -qU "$TF_PACKAGE"
   pip install -qU ../dist/*py$1*.whl >/dev/null
-  mkdir logs
+  # Test TensorBoard application
+  [[ -x ./bin/tensorboard ]]  # Ensure pip package included binary
   mkfifo pipe
-  tensorboard --port=0 --logdir=logs 2>pipe &
+  tensorboard --port=0 --logdir=smokedir 2>pipe &
   perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
   curl -fs http://localhost:$(cat port) >index.html
   grep '<tf-tensorboard' index.html
+  curl -fs http://localhost:$(cat port)/data/logdir >logdir.json
+  grep 'smokedir' logdir.json
   kill $!
+  # Test TensorBoard APIs
+  python -c "
+import tensorboard as tb
+tb.summary.scalar_pb('test', 42)
+from tensorboard.plugins.projector import visualize_embeddings
+from tensorboard.plugins.beholder import Beholder, BeholderHook
+"
   deactivate
   cd ..
   rm -rf venv$1
