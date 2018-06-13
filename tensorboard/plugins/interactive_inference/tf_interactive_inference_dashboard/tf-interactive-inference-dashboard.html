@@ -545,7 +545,7 @@ limitations under the License.
                   </div>
                 </div>
                 <div class="datapoint-controls-holder">
-                  <paper-input value="{{featureSearchValue}}" label="Search" class="datapoint-control-filter-input" no-label-float>
+                  <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
                     <iron-icon icon="icons:search" prefix></iron-icon>
                   </paper-input>
                   <paper-button class="datapoint-control-pd-plot"
@@ -627,7 +627,7 @@ limitations under the License.
                       </paper-listbox>
                     </paper-dropdown-menu>
                     <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedThresholdFeature)]]">
-                      <paper-dropdown-menu label="Add second feature to facet tresholds by" class="threshold-dropdown">
+                      <paper-dropdown-menu label="Add second feature to facet thresholds by" class="threshold-dropdown">
                         <paper-listbox class="dropdown-content" selected="{{selectedSecondThresholdFeature}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                             <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
