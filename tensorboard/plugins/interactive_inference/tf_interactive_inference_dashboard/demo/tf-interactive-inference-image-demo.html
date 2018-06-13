@@ -99,7 +99,67 @@
             this.indicesToInfer = {};
           });
           this.$.dash.addEventListener('get-eligible-features', e => {
-            this.$.dash.partialDepPlotEligibleFeatures = [];
+            this.$.dash.partialDepPlotEligibleFeatures = [
+              {"name": '5_o_Clock_Shadow', "samples":  [["No 5 o'clock shadow"], ["5 o'clock shadow"]]},
+              {"name": 'Arched_Eyebrows', "samples":   [['No arched eyebrows'], ['Arched eyebrows']]},
+              {"name": 'Bags_Under_Eyes', "samples":   [['No bags under eyes'], ['Bags under eyes']]},
+              {"name": 'Bald', "samples":   [['Not bald'], ['Bald']]},
+              {"name": 'Bangs', "samples":   [['No bangs'], ['Bangs']]},
+              {"name": 'Black_Hair', "samples":   [['Not black hair'], ['Black hair']]},
+              {"name": 'Blond_Hair', "samples":   [['Not blond hair'], ['Blond hair']]},
+              {"name": 'Blurry', "samples":   [['Not blurry'], ['Blurry']]},
+              {"name": 'Brown_Hair', "samples":   [['Not brown hair'], ['Brown hair']]},
+              {"name": 'Bushy_Eyebrows', "samples":   [['Not bushy eyebrows'], ['Bushy eyebrows']]},
+              {"name": 'Eyeglasses', "samples":   [['No eyeglasses'], ['Eyeglasses']]},
+              {"name": 'Goatee', "samples":   [['No goatee'], ['Goatee']]},
+              {"name": 'Gray_Hair', "samples":   [['No gray hair'], ['Gray hair']]},
+              {"name": 'High_Cheekbones', "samples":   [['Not high cheekbones'], ['High cheekbones']]},
+              {"name": 'Male', "samples":   [['Not male'], ['Male']]},
+              {"name": 'Mouth_Slightly_Open', "samples":   [['Mouth not slightly open'], ['Mouth slightly open']]},
+              {"name": 'Mustache', "samples":   [['No mustache'], ['Mustache']]},
+              {"name": 'Narrow_Eyes', "samples":   [['Not narrow eyes'], ['Narrow eyes']]},
+              {"name": 'No_Beard', "samples":   [['Beard'], ['No beard']]},
+              {"name": 'Oval_Face', "samples":   [['Not oval face'], ['Oval face']]},
+              {"name": 'Pale_Skin', "samples":   [['Not pale skin'], [ 'Pale skin']]},
+              {"name": 'Sideburns', "samples":   [['No sideburns'], ['Sideburns']]},
+              {"name": 'Straight_Hair', "samples":   [['Not straight hair'], ['Straight hair']]},
+              {"name": 'Wavy_Hair', "samples":   [['Not wavy hair'], ['Wavy hair']]},
+              {"name": 'Wearing_Earrings', "samples":   [['Not wearing earrings'], ['Wearing earrings']]},
+              {"name": 'Wearing_Hat', "samples":   [['Not wearing hat'], ['Wearing hat']]},
+              {"name": 'Wearing_Lipstick', "samples":   [['Not wearing lipstick'], ['Wearing lipstick']]},
+              {"name": 'Wearing_Necklace', "samples":   [['Not wearing necklace'], ['Wearing necklace']]},
+              {"name": 'Wearing_Necktie', "samples":   [['Not wearing necktie'], ['Wearing necktie']]},
+              {"name": 'Young', "samples":   [['Not young'], ['Young']]}
+              ];
+          });
+          this.$.dash.addEventListener('infer-mutants', async e => {
+            let pdFeatureInfo = this.$.dash.partialDepPlotEligibleFeatures[0];
+            for (let i = 0; i < this.$.dash.partialDepPlotEligibleFeatures.length; i++) {
+              if (this.$.dash.partialDepPlotEligibleFeatures[i].name == e.detail.feature_name) {
+                pdFeatureInfo = this.$.dash.partialDepPlotEligibleFeatures[i];
+                break;
+              }
+            }
+            const numTrials = pdFeatureInfo.samples.length;
+            const tensors = [];
+            for (let i = 0; i < numTrials; i++) {
+              const ex = JSON.parse(JSON.stringify(this.data[e.detail.example_index]));
+              const t = await this.convertExToTensor(ex);
+              tensors.push(t);
+            }
+            const d = tf.div;
+            let input = tf.concat(tensors).reshape([tensors.length, 78, 64, 3]);
+            input = d(input, tf.scalar(255));
+            const res = this.model.predict(input, {batchSize: 128});
+            const predValues = await res.data();
+            const PRED_SIZE = 2;
+            const results = [];
+            for (let i = 0; i < numTrials; i++) {
+              const score = predValues[i * PRED_SIZE + 1];
+              const step = pdFeatureInfo.samples[i];
+              results.push({step: step, scalar: score});
+            }
+            this.$.dash.makeChartForFeature_('categorical', e.detail.feature_name, [{'1': results}]);
           });
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
