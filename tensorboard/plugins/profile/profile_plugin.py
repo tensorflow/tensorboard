@@ -180,11 +180,18 @@ class ProfilePlugin(base_plugin.TBPlugin):
         removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
         if removed_tool in run_to_tools[run]:
           run_to_tools[run].remove(removed_tool)
+      run_to_tools[run].sort()
+      op = 'overview_page'
+      if op in run_to_tools[run]:
+        # keep overview page at the top of the list
+        run_to_tools[run].remove(op)
+        run_to_tools[run].insert(0, op)
     return run_to_tools
 
   @wrappers.Request.application
   def tools_route(self, request):
     run_to_tools = self.index_impl()
+
     return http_util.Respond(request, run_to_tools, 'application/json')
 
   def host_impl(self, run, tool):
@@ -260,7 +267,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
       grpc_request.repository_root = self.plugin_logdir
       grpc_request.session_id = run[:-1]
       grpc_request.tool_name = 'trace_viewer'
-      grpc_request.host_name = host
+      # Remove the trailing dot if present
+      grpc_request.host_name = host.rstrip('.')
 
       grpc_request.parameters['resolution'] = request.args.get('resolution')
       if request.args.get('start_time_ms') is not None:
