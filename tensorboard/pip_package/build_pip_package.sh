@@ -35,7 +35,7 @@ smoke() {
   pip install -qU "$TF_PACKAGE"
   pip install -qU ../dist/*py$1*.whl >/dev/null
   # Test TensorBoard application
-  [[ -x ./bin/tensorboard ]]  # Ensure pip package included binary
+  [ -x ./bin/tensorboard ]  # Ensure pip package included binary
   mkfifo pipe
   tensorboard --port=0 --logdir=smokedir 2>pipe &
   perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
