@@ -321,8 +321,8 @@ limitations under the License.
       }
 
       :host vz-line-chart {
-        height: 300px;
-        width: 400px;
+        height: 120px;
+        width: 200px;
         display: inline-block;
       }
 
@@ -477,21 +477,25 @@ limitations under the License.
               <button class="tf-category-pane" style="position:relative">
                 [[item.name]]
 
-                <div class="range-input-container" hidden$="[[item.samples]]">
+                <div class="range-input-container">
                   <span class="info-text"
-                        title="The range of mutant value (default values are automatically inferred from training data).">
+                        title="The range of mutant value (default values are automatically inferred from training data)."
+                        hidden$="[[item.samples]]">
                     Value range to test:
                   </span>
                   <input type="number"
                           class="style-input x-min"
                           value="[[item.observedMin]]"
-                          title="The minimum mutant value (default value is automatically inferred from training data).">
+                          title="The minimum mutant value (default value is automatically inferred from training data)."
+                          hidden$="[[item.samples]]">
                   <input type="number"
                           class="style-input x-max"
                           value="[[item.observedMax]]"
-                          title="The maximum mutant value (default value is automatically inferred from training data).">
+                          title="The maximum mutant value (default value is automatically inferred from training data)."
+                          hidden$="[[item.samples]]">
 
-                  <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields.">
+                  <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields."
+                        hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
                     <span class="info-text">Optional feature indices: </span>
                     <input type="text"
                             class="style-input feature-index-pattern">
@@ -1877,9 +1881,10 @@ limitations under the License.
         const origValEntry = this.createPdEntryForCurrentValue(featureName, data);
         if (origValEntry) {
           let indexOfOrigValInData = -1;
-          const origData = data[_.keys(data)[0]];
+          const origKey = _.keys(data)[0];
+          const origData = data[origKey];
           for (let i = 0; i < origData.length; i++) {
-            if (origData[i].step[0] == origValEntry.step) {
+            if (origData[i].step == origValEntry.step) {
               indexOfOrigValInData = i;
               break;
             }
@@ -1887,7 +1892,7 @@ limitations under the License.
           if (indexOfOrigValInData != -1) {
             origData.splice(indexOfOrigValInData, 1);
           }
-          data[''] = [origValEntry];
+          data[origKey + ' - original value'] = [origValEntry];
         }
 
         // Convert the data into the format expected by vz-bar-chart.
@@ -1941,7 +1946,8 @@ limitations under the License.
 
         const origValEntry = this.createPdEntryForCurrentValue(featureName, data);
         if (origValEntry) {
-          data[''] = [origValEntry];
+          const origKey = _.keys(data)[0];
+          data[origKey + ' - original value'] = [origValEntry];
         }
         const series = _.keys(data);
         chart.setVisibleSeries(series);
@@ -1950,12 +1956,26 @@ limitations under the License.
       },
 
       createPdEntryForCurrentValue: function(featureName, data) {
-        const classToChart = _.keys(data)[0];
-        const origValue = this.visdata[this.selected[0]][featureName];
+        // Extract the class and feature value index from the key of the PD
+        // chart data .
+        const key = _.keys(data)[0];
+        const indexOfIndexStr = key.indexOf('index');
+        let classToChart = +key;
+        let indexForValue = 0;
+        if (indexOfIndexStr > -1) {
+          classToChart = +(key.substring(0, key.indexOf(' ')))
+          indexForValue = +(key.substring(indexOfIndexStr + 6, key.indexOf(')')));
+        }
+
+        let origValue = this.visdata[this.selected[0]][featureName];
+        if (Array.isArray(origValue)) {
+          origValue = origValue[indexForValue];
+        }
+
         const inferences = this.selectedExampleAndInference.inferences[this.selectedExampleAndInference.inferences.length - 1];
         let origInferenceScore = -1;
         for (let i = 0; i < inferences.length; i++) {
-          if (inferences[i].label == classToChart.toString()) {
+          if (inferences[i].label == classToChart.toString() || inferences[i].label == "") {
             origInferenceScore = inferences[i].score;
             break;
           }
@@ -2021,6 +2041,14 @@ limitations under the License.
         const spinner = document.createElement('paper-spinner-lite');
         spinner.setAttribute('active', true);
         Polymer.dom(container).appendChild(spinner);
+      },
+
+      shouldHideFeatureIndiciesSelector: function(featureName, selected) {
+        if (!selected || selected.length == 0 || !this.visdata || this.visdata.length <= selected[0]) {
+          return true;
+        }
+        const item = this.visdata[selected[0]];
+        return !Array.isArray(item[featureName]);
       },
 
       // Return the feature container associated with the feature name.

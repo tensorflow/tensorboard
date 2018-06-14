@@ -103,36 +103,34 @@
           });
           this.$.dash.addEventListener('get-eligible-features', e => {
             this.$.dash.partialDepPlotEligibleFeatures = [
-              {"observedMax": 59.0, "name": "age", "observedMin": 19.0},
               {"observedMax": 14084.0, "name": "capital-gain", "observedMin": 0.0},
               {"observedMax": 2042.0, "name": "capital-loss", "observedMin": 0.0},
-              {"name": "education", "samples": [['HS-grad'], ['Bachelors'], ['Some-college'], ['11th'], ['Masters'], ['9th'], ['Assoc-voc'], ['Assoc-acdm'], ['Doctorate'], ['7th-8th']]},
+              {"name": "education", "samples": ['HS-grad', 'Bachelors', 'Some-college', '11th', 'Masters', '9th', 'Assoc-voc', 'Assoc-acdm', 'Doctorate', '7th-8th']},
               {"observedMax": 16.0, "name": "education-num", "observedMin": 4.0},
               {"observedMax": 80.0, "name": "hours-per-week", "observedMin": 13.0},
-              {"name": "marital-status", "samples": [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated'], ['Married-AF-spouse'], ['Married-spouse-absent']]},
-              {"name": "native-country", "samples": [['United-States'], ['?'], ['Mexico'], ['India'], ['South'], ['Puerto-Rico'], ['Cuba'], ['Jamaica']]},
-              {"name": "occupation", "samples": [['Exec-managerial'], ['Prof-specialty'], ['Machine-op-inspct'], ['Adm-clerical'], ['Craft-repair'], ['Sales'], ['Other-service'], ['Tech-support'], ['Handlers-cleaners'], ['Transport-moving']]},
-              {"name": "race", "samples": [['White'], ['Black'], ['Asian-Pac-Islander'], ['Amer-Indian-Eskimo']]},
-              {"name": "relationship", "samples": [['Husband'], ['Not-in-family'], ['Unmarried'], ['Own-child'], ['Wife']]},
-              {"name": "sex", "samples": [['Male'], ['Female']]},
-              {"name": "workclass", "samples": [['Private'], ['Self-emp-not-inc'], ['State-gov'], ['Federal-gov'], ['Local-gov'], ['?']]}];
+              {"name": "marital-status", "samples": ['Married-civ-spouse', 'Never-married', 'Divorced', 'Separated', 'Married-AF-spouse', 'Married-spouse-absent']},
+              {"name": "native-country", "samples": ['United-States', '?', 'Mexico', 'India', 'South', 'Puerto-Rico', 'Cuba', 'Jamaica']},
+              {"name": "occupation", "samples": ['Exec-managerial', 'Prof-specialty', 'Machine-op-inspct', 'Adm-clerical', 'Craft-repair', 'Sales', 'Other-service', 'Tech-support', 'Handlers-cleaners', 'Transport-moving']},
+              {"name": "race", "samples": ['White', 'Black', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo']},
+              {"name": "relationship", "samples": ['Husband', 'Not-in-family', 'Unmarried', 'Own-child', 'Wife']},
+              {"name": "sex", "samples": ['Male', 'Female']},
+              {"name": "workclass", "samples": ['Private', 'Self-emp-not-inc', 'State-gov', 'Federal-gov', 'Local-gov', '?']}];
           });
           this.$.dash.addEventListener('infer-mutants', async e => {
             const examples = [];
             const featureMapping = {
-              'age': 0,
-              'capital-gain': 1,
-              'capital-loss': 2,
-              'education': 3,
-              'education-num': 4,
-              'hours-per-week': 5,
-              'marital-status': 6,
-              'native-country': 7,
-              'occupation': 8,
-              'race': 9,
-              'relationship': 10,
-              'sex': 11,
-              'workclass': 12
+              'capital-gain': 0,
+              'capital-loss': 1,
+              'education': 2,
+              'education-num': 3,
+              'hours-per-week': 4,
+              'marital-status': 5,
+              'native-country': 6,
+              'occupation': 7,
+              'race': 8,
+              'relationship': 9,
+              'sex': 10,
+              'workclass': 11
             };
             const xMin = +e.detail.x_min;
             const xMax = +e.detail.x_max;
@@ -166,7 +164,7 @@
               results.push({step: step, scalar: adjustedScore});
             }
             this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
-                e.detail.feature_name, [{'1': results}]);
+                e.detail.feature_name, [{'value': results}]);
           });
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();

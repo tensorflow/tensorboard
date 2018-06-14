@@ -106,17 +106,17 @@
               {"observedMax": 59.0, "name": "age", "observedMin": 19.0},
               {"observedMax": 14084.0, "name": "capital-gain", "observedMin": 0.0},
               {"observedMax": 2042.0, "name": "capital-loss", "observedMin": 0.0},
-              {"name": "education", "samples": [['HS-grad'], ['Bachelors'], ['Some-college'], ['11th'], ['Masters'], ['9th'], ['Assoc-voc'], ['Assoc-acdm'], ['Doctorate'], ['7th-8th']]},
+              {"name": "education", "samples": ['HS-grad', 'Bachelors', 'Some-college', '11th', 'Masters', '9th', 'Assoc-voc', 'Assoc-acdm', 'Doctorate', '7th-8th']},
               {"observedMax": 16.0, "name": "education-num", "observedMin": 4.0},
               {"observedMax": 80.0, "name": "hours-per-week", "observedMin": 13.0},
-              {"name": "marital-status", "samples": [['Married-civ-spouse'], ['Never-married'], ['Divorced'], ['Separated'], ['Married-AF-spouse'], ['Married-spouse-absent']]},
-              {"name": "native-country", "samples": [['United-States'], ['?'], ['Mexico'], ['India'], ['South'], ['Puerto-Rico'], ['Cuba'], ['Jamaica']]},
-              {"name": "occupation", "samples": [['Exec-managerial'], ['Prof-specialty'], ['Machine-op-inspct'], ['Adm-clerical'], ['Craft-repair'], ['Sales'], ['Other-service'], ['Tech-support'], ['Handlers-cleaners'], ['Transport-moving']]},
+              {"name": "marital-status", "samples": ['Married-civ-spouse', 'Never-married', 'Divorced', 'Separated', 'Married-AF-spouse', 'Married-spouse-absent']},
+              {"name": "native-country", "samples": ['United-States', '?', 'Mexico', 'India', 'South', 'Puerto-Rico', 'Cuba', 'Jamaica']},
+              {"name": "occupation", "samples": ['Exec-managerial', 'Prof-specialty', 'Machine-op-inspct', 'Adm-clerical', 'Craft-repair', 'Sales', 'Other-service', 'Tech-support', 'Handlers-cleaners', 'Transport-moving']},
               {"observedMax": 1.0, "name": "over_50k", "observedMin": 0.0},
-              {"name": "race", "samples": [['White'], ['Black'], ['Asian-Pac-Islander'], ['Amer-Indian-Eskimo']]},
-              {"name": "relationship", "samples": [['Husband'], ['Not-in-family'], ['Unmarried'], ['Own-child'], ['Wife']]},
-              {"name": "sex", "samples": [['Male'], ['Female']]},
-              {"name": "workclass", "samples": [['Private'], ['Self-emp-not-inc'], ['State-gov'], ['Federal-gov'], ['Local-gov'], ['?']]}];
+              {"name": "race", "samples": ['White', 'Black', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo']},
+              {"name": "relationship", "samples": ['Husband', 'Not-in-family', 'Unmarried', 'Own-child', 'Wife']},
+              {"name": "sex", "samples": ['Male', 'Female']},
+              {"name": "workclass", "samples": ['Private', 'Self-emp-not-inc', 'State-gov', 'Federal-gov', 'Local-gov', '?']}];
           });
           this.$.dash.addEventListener('infer-mutants', async e => {
             const examples = [];

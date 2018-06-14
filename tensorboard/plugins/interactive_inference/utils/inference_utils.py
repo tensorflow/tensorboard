@@ -328,13 +328,12 @@ def get_categorical_features_to_sampling(examples, top_k):
     for feature_name in get_categorical_feature_names(example):
       original_feature = parse_original_feature_from_example(
           example, feature_name)
-      observed_features[feature_name].append(
-          str(original_feature.original_value))
+      observed_features[feature_name].extend(original_feature.original_value)
 
   result = {}
   for feature_name, feature_values in sorted(observed_features.iteritems()):
     samples = [
-        ast.literal_eval(word)
+        word
         for word, count in collections.Counter(feature_values).most_common(
           top_k) if count > 1
     ]
@@ -446,32 +445,31 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
     inference_result_proto = oss_utils.call_servo(
       mutant_examples, serving_bundle)
     return make_json_formatted_for_single_chart(mutant_features,
-                                                inference_result_proto)
+                                                inference_result_proto,
+                                                index_to_mutate)
 
   original_feature = parse_original_feature_from_example(
       example_proto, feature_name)
 
-  if original_feature.feature_type == 'bytes_list':
-    return {'chartType': 'categorical', 'data': [chart_for_index(None)]}
-  else:
-    # For numerical features, we should create a mutant for each index.
-    indices_to_mutate = viz_params.feature_indices or xrange(
-        original_feature.length)
-    try:
-      return {
-          'chartType':
-              'numeric',
-          'data': [
-              chart_for_index(index_to_mutate)
-              for index_to_mutate in indices_to_mutate
-          ]
-      }
-    except IndexError as e:
-      raise common_utils.InvalidUserInputError(e)
+  indices_to_mutate = viz_params.feature_indices or xrange(
+      original_feature.length)
+  chart_type = ('categorical' if original_feature.feature_type == 'bytes_list'
+      else 'numeric')
+  try:
+    return {
+        'chartType': chart_type,
+        'data': [
+            chart_for_index(index_to_mutate)
+            for index_to_mutate in indices_to_mutate
+        ]
+    }
+  except IndexError as e:
+    raise common_utils.InvalidUserInputError(e)
 
 
 def make_json_formatted_for_single_chart(mutant_features,
-                                         inference_result_proto):
+                                         inference_result_proto,
+                                         index_to_mutate):
   """Returns JSON formatted for a single mutant chart.
 
   Args:
@@ -482,6 +480,7 @@ def make_json_formatted_for_single_chart(mutant_features,
       It contains one 'classification' or 'regression' for every tf.train.Example that
       was sent for inference. The length of that field should be the same length
       of mutant_features.
+    index_to_mutant: The index of the feature being mutated for this chart.
 
   Returns:
     A JSON-able dict for rendering a single mutant chart, parseable by
@@ -507,7 +506,10 @@ def make_json_formatted_for_single_chart(mutant_features,
         if len(
             classification.classes) == 2 and classification_class.label == '0':
           continue
-        series[classification_class.label].append({
+        key = classification_class.label
+        if (index_to_mutate != 0):
+          key += ' (index %d)' % index_to_mutate
+        series[key].append({
             x_label: mutant_feature.mutant_value,
             y_label: classification_class.score,
         })
@@ -527,7 +529,10 @@ def make_json_formatted_for_single_chart(mutant_features,
           x_label: mutant_feature.mutant_value,
           y_label: regression.value
       })
-    return {'value': points}
+    key = 'value'
+    if (index_to_mutate != 0):
+      key += ' (index %d)' % index_to_mutate
+    return {key: points}
 
   else:
     raise NotImplementedError('Only classification and regression implemented.')
