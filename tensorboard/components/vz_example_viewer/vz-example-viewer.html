@@ -55,16 +55,6 @@ limitations under the License.
         width:100%;
       }
 
-      .value {
-        padding: 0 5px;
-        --paper-input-container: {
-          padding: 1px 0 0 0;
-        };
-        --paper-input-container-underline: {
-          display: none;
-        };
-      }
-
       .slider-holder {
         display: flex;
       }
@@ -112,8 +102,30 @@ limitations under the License.
       .value-pill {
         display: flex;
         border-radius: 18px;
-        background: lightgrey;
+        background: #f1f3f4;
         margin: 0 8px 8px 0;
+        text-overflow: ellipsis;
+        padding: 0 8px 4px;
+        border: 1px solid #f1f3f4;
+      }
+
+      .value-pill:hover {
+        box-shadow:  0px 2px 2px 0px rgba(0,0,0,0.12), 0px 1px 3px 0px rgba(0,0,0,0.20);
+        background: #e8eaed;
+        border: 1px solid #e8eaed;;
+      }
+
+      .value-pill:focus {
+        background : #e8eaed;
+        border: 2px solid rgba(224,145,31,0.8);
+        box-shadow: 0px 0px 2px 0px rgba(241,101,40,0.4);
+        outline: none;
+      }
+
+      input[type=number]::-webkit-inner-spin-button,
+      input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
       }
 
       .value-pill-stacked {
@@ -214,11 +226,11 @@ limitations under the License.
       <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
         <div class="flex-controls feature-name">
           <div>[[feat.name]]</div>
-          <paper-icon-button data-feature="[[feat.name]]"
+          <!--paper-icon-button data-feature="[[feat.name]]"
                               icon="remove-circle-outline"
                               on-click="deleteFeature"
                               class$="[[getDeleteFeatureButtonClass(readonly)]]">
-          </paper-icon-button>
+          </paper-icon-button-->
         </div>
         <template is="dom-if" if="[[isImage(feat.name)]]">
           <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
@@ -254,24 +266,18 @@ limitations under the License.
         <template is="dom-if" if="[[!isImage(feat.name)]]">
           <div class="flex-controls">
             <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
-                <div class$="[[getInputPillClass(feat.name, displayMode)]]">
-                  <paper-icon-button data-feature="[[feat.name]]" data-index="[[index]]"
-                                      icon="remove-circle-outline"
-                                      on-click="deleteValue"
-                                      class$="[[getDeleteValueButtonClass(readonly)]]">
-                  </paper-icon-button>
-                  <paper-input class$="[[getInputClass(feat.name)]]" value="[[value]]"
-                                prevent-invalid-input allowed-pattern="[[getInputPattern(feat.name)]]"
-                                no-label-float readonly="[[readonly]]"
-                                data-feature="[[feat.name]]"
-                                data-index="[[index]]"
-                                on-input="onValueChanged">
-                  </paper-input>
-                </div>
-              </template>
-            <paper-icon-button data-feature="[[feat.name]]" icon="add-circle-outline" on-click="addValue"
+              <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                    readonly="[[readonly]]"
+                    on-input="onValueChanged"
+                    data-feature="[[feat.name]]"
+                    data-index="[[index]]"
+                    type="[[getInputType(feat.name)]]"
+                    value="[[value]]">
+              </input>
+            </template>
+            <!--paper-icon-button data-feature="[[feat.name]]" icon="add-circle-outline" on-click="addValue"
                                 class$="[[getAddValueButtonClass(readonly)]]">
-            </paper-icon-button>
+            </paper-icon-button-->
           </div>
         </template>
       </template>
@@ -285,11 +291,11 @@ limitations under the License.
           <div class="seqfeat">
             <div class="flex-controls feature-name">
               <div>[[seqfeat.name]]</div>
-              <paper-icon-button data-feature="[[seqfeat.name]]"
+              <!--paper-icon-button data-feature="[[seqfeat.name]]"
                                   icon="remove-circle-outline"
                                   on-click="deleteFeature"
                                   class$="[[getDeleteFeatureButtonClass(readonly)]]">
-              </paper-icon-button>
+              </paper-icon-button-->
             </div>
             <template is="dom-if" if="[[isImage(seqfeat.name)]]">
               <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
@@ -329,37 +335,29 @@ limitations under the License.
                 <template is="dom-repeat"
                           items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
                           as="seqvalue">
-                  <div class$="[[getInputPillClass(seqfeat.name, displayMode)]]">
-                    <paper-icon-button data-feature="[[seqfeat.name]]" data-index="[[index]]"
-                                        data-seq-num="[[seqNumber]]" icon="remove-circle-outline"
-                                        on-click="deleteValue"
-                                        class$="[[getDeleteValueButtonClass(readonly)]]">
-                    </paper-icon-button>
-                    <paper-input class$="[[getInputClass(seqfeat.name)]]"
-                                  value="[[seqvalue]]"
-                                  prevent-invalid-input
-                                  allowed-pattern="[[getInputPattern(seqfeat.name)]]"
-                                  no-label-float readonly="[[readonly]]"
-                                  on-input="onValueChanged"
-                                  data-feature="[[seqfeat.name]]"
-                                  data-index="[[index]]"
-                                  data-seq-num="[[seqNumber]]">
-                    </paper-input>
-                  </div>
+                  <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                      readonly="[[readonly]]"
+                      on-input="onValueChanged"
+                      data-feature="[[seqfeat.name]]"
+                      data-index="[[index]]"
+                      data-seq-num="[[seqNumber]]"
+                      type="[[getInputType(seqfeat.name)]]"
+                      value="[[seqvalue]]">
+                  </input>
                 </template>
-                <paper-icon-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]"
+                <!--paper-icon-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]"
                                     icon="add-circle-outline" on-click="addValue"
-                                    class$="[[getAddValueButtonClass(readonly)]]">
+                                    class$="[[getAddValueButtonClass(readonly)]]"-->
             </paper-icon-button>
               </div>
             </template>
           </div>
         </template>
       </template>
-      <paper-button raised on-click="openAddFeatureDialog"
+      <!--paper-button raised on-click="openAddFeatureDialog"
                     class$="[[getAddFeatureButtonClass(readonly)]]">
         Add Feature
-      </paper-button>
+      </paper-button-->
       <paper-card class$="[[getSaliencyControlsHolderClass(saliency)]]">
         <div class="saliency-legend-label">Saliency legend</div>
         <div class="flex-controls">

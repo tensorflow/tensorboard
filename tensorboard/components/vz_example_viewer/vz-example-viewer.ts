@@ -497,27 +497,24 @@ Polymer({
   },
 
   /**
-   * Gets the allowed input pattern for a feature value, according to its
+   * Gets the allowed input type for a feature value, according to its
    * feature type.
    */
-  getInputPattern: function(feature: string) {
+  getInputType: function(feature: string) {
     const feat = this.features.get(feature);
     if (feat) {
-      if (feat.getInt64List()) {
-        return '[-\\d]';
-      } else if (feat.getFloatList()) {
-        return '[-.\\d]';
+      if (feat.getInt64List() || feat.getFloatList()) {
+        return 'number'
       }
     }
     const seqfeat = this.seqFeatures.get(feature);
     if (seqfeat) {
-      if (seqfeat.getFeatureList()[0].getInt64List()) {
-        return '[-\\d]';
-      } else if (seqfeat.getFeatureList()[0].getFloatList()) {
-        return '[-.\\d]';
+      if (seqfeat.getFeatureList()[0].getInt64List() ||
+          seqfeat.getFeatureList()[0].getFloatList()) {
+        return 'number';
       }
     }
-    return '.';
+    return 'text';
   },
 
   /**
@@ -856,10 +853,6 @@ Polymer({
           this.decodeBytesListString(this.example.serializeBinary(), true));
     }
     this.ignoreChange = false;
-  },
-
-  getInputClass: function(feat: string) {
-    return this.sanitizeFeature(feat) + ' value';
   },
 
   getInputPillClass: function(feat: string, displayMode: string) {
