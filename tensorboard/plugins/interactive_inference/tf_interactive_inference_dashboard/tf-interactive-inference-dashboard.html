@@ -1023,10 +1023,10 @@ limitations under the License.
           // For the selected feature, set up a dict of each feature value in the dataset to
           // the threshold. Add this to a list (for display purposes) and create
           // a map of feature value to entry in that list.
-          for(var key1 in this.stats[feature1].valueHash) {
-            if(this.stats[feature1].valueHash.hasOwnProperty(key1)) {
-              for(var key2 in feature2Values) {
-                if(feature2Values.hasOwnProperty(key2)) {
+          for (var key1 in feature1Values) {
+            if (feature1Values.hasOwnProperty(key1)) {
+              for (var key2 in feature2Values) {
+                if (feature2Values.hasOwnProperty(key2)) {
                   const feature1Value = key1 == 'undefined' ? undefined : this.stats[feature1].valueHash[key1].value;
                   const feature2Value = key2 == 'undefined' ? undefined : this.stats[feature2].valueHash[key2].value;
                   const thresh = {value: feature1Value, value2: feature2Value, threshold: this.overallThreshold};
@@ -1526,10 +1526,7 @@ limitations under the License.
         // appropriate threshold for this item's value for that feature. Otherwise the overall
         // threshold will be used.
         if (feature1.length !== 0) {
-          let key = item[feature1];
-          if (feature2.length !== 0) {
-            key = this.createCombinedValueString_(item[feature1], item[feature2]);
-          }
+          let key = this.createCombinedValueString_(item[feature1], item[feature2]);
           threshold = this.featureValueThresholdsMap[key].threshold;
         }
 
