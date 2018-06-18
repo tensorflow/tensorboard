@@ -1020,10 +1020,9 @@ Polymer({
     if (typeof this.json === 'string') {
       json = JSON.parse(this.json);
     }
+    const ex = new Example();
     if (json.features) {
-      const ex = new Example();
       ex.setFeatures(this.parseFeatures(json.features));
-      this.example = ex;
     } else {
       const ex = new SequenceExample();
       if (json.context) {
@@ -1032,8 +1031,8 @@ Polymer({
       if (json.featureLists) {
         ex.setFeatureLists(this.parseFeatureLists(json.featureLists));
       }
-      this.example = ex;
     }
+    this.example = ex;
   },
 
   // tslint:disable-next-line:no-any Parsing arbitary json.

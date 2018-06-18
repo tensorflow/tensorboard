@@ -473,8 +473,8 @@ limitations under the License.
         <div class="feature-container-holder" id="partialplotholder">
           <paper-button raised on-click="hidePartialDependencePlots_" class="close-partial-deps-button">Close partial dependence plots</paper-button>
           <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
-            <div class="feature-container" on-tap="categoryPaneClicked" data-feature-name$="[[item.name]]">
-              <button class="tf-category-pane" style="position:relative">
+            <div class="feature-container" data-feature-name$="[[item.name]]">
+              <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
                 [[item.name]]
 
                 <div class="range-input-container">
@@ -646,7 +646,7 @@ limitations under the License.
                           Optimize thresholds indivdually
                       </paper-button>
                       <paper-button raised on-click="equalOppoClicked_">
-                          Optimize with equal opporitunity
+                          Optimize with equal opportunity
                       </paper-button>
                       <paper-button raised on-click="equalAccClicked_">
                           Optimize with equal accuracy
@@ -1681,7 +1681,8 @@ limitations under the License.
 
       exampleToDataPoint_: function(example) {
         const d = {};
-        const features = Object.keys(example.features.feature)
+        const features = 'features' in example ?
+            Object.keys(example.features.feature) : [];
         for (const index in features) {
           const fname = features[+index];
           // Ignore encoded image feature when creating data for Facets Dive.
@@ -1835,8 +1836,13 @@ limitations under the License.
         this.selectedExampleAndInference.changed = false;
         const origExampleJsonString = JSON.stringify(
           this.selectedExampleAndInference.orig);
-        this.set('selectedExampleAndInference.example',
-                 JSON.parse(origExampleJsonString));
+
+        // Force reset of example in example viewer component.
+        this.set('selectedExampleAndInference.example', {});
+        requestAnimationFrame(
+          () => this.set('selectedExampleAndInference.example',
+                         JSON.parse(origExampleJsonString)));
+
         this.updatedExample = true;
         this.visdata[this.selected[0]] = this.exampleToDataPoint_(
           this.selectedExampleAndInference.example);
