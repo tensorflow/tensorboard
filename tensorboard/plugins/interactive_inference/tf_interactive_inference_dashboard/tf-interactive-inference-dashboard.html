@@ -1194,8 +1194,16 @@ limitations under the License.
 
       calcThresholdStats: function(stats) {
         for (let i = 0; i < stats.length; i++) {
-          stats[i]['TPR'] = stats[i]['TP'] / (stats[i]['TP'] + stats[i]['FN']);
-          stats[i]['FPR'] = stats[i]['FP'] / (stats[i]['FP'] + stats[i]['TN']);
+          if (stats[i]['TP'] + stats[i]['FN'] > 0) {
+            stats[i]['TPR'] = stats[i]['TP'] / (stats[i]['TP'] + stats[i]['FN']);
+          } else {
+            stats[i]['TPR'] = 0;
+          }
+          if (stats[i]['FP'] + stats[i]['TN'] > 0) {
+            stats[i]['FPR'] = stats[i]['FP'] / (stats[i]['FP'] + stats[i]['TN']);
+          } else {
+            stats[i]['FPR'] = 0;
+          }
         }
       },
 
