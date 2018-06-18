@@ -136,6 +136,12 @@ limitations under the License.
         margin: 20px 0px;
       }
 
+      .pd-info-text {
+        font-size: 12px;
+        color: #777;
+        padding-top: 22px;
+      }
+
       .accept-button-holder {
         display: flex;
         flex-direction: row-reverse;
@@ -380,8 +386,18 @@ limitations under the License.
         text-transform: uppercase;
       }
 
+      .generic-button {
+        background-color: white;
+        border: 1px solid lightgray;
+        color: var(--tb-orange-dark);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 12px;
+        text-transform: none;
+      }
+
       .close-partial-deps-button {
-        margin-bottom: 10px;
+        margin: 10px;
       }
 
       paper-tabs {
@@ -471,7 +487,10 @@ limitations under the License.
         </div>
         <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
         <div class="feature-container-holder" id="partialplotholder">
-          <paper-button raised on-click="hidePartialDependencePlots_" class="close-partial-deps-button">Close partial dependence plots</paper-button>
+          <div class="flex">
+            <paper-button on-click="hidePartialDependencePlots_" class="generic-button close-partial-deps-button">Close partial dependence plots</paper-button>
+            <div class="pd-info-text">Click a feature name below to see how inference results would change if that feature was adjusted.</div>
+          </div>
           <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
             <div class="feature-container" data-feature-name$="[[item.name]]">
               <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
@@ -554,7 +573,7 @@ limitations under the License.
                   </paper-input>
                   <paper-button class="datapoint-control-pd-plot"
                       on-click="showPartialDependencePlots_" alt="show partial dependence plots">
-                      PD Plot
+                      See partial dependence plots
                   </paper-icon-button>
                 </div>
                 <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
