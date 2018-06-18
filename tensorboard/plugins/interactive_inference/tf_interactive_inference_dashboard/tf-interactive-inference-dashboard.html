@@ -204,6 +204,7 @@ limitations under the License.
       .inference-settings {
         padding: 20px;
         width: 30%;
+        overflow-y: auto;
       }
 
       .dashboard-layout {
@@ -506,18 +507,21 @@ limitations under the License.
                           class="style-input x-min"
                           value="[[item.observedMin]]"
                           title="The minimum mutant value (default value is automatically inferred from training data)."
-                          hidden$="[[item.samples]]">
+                          hidden$="[[item.samples]]"
+                          on-input="pdInputChanged">
                   <input type="number"
                           class="style-input x-max"
                           value="[[item.observedMax]]"
                           title="The maximum mutant value (default value is automatically inferred from training data)."
-                          hidden$="[[item.samples]]">
+                          hidden$="[[item.samples]]"
+                          on-input="pdInputChanged">
 
                   <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields."
                         hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
                     <span class="info-text">Optional feature indices: </span>
                     <input type="text"
-                            class="style-input feature-index-pattern">
+                            class="style-input feature-index-pattern"
+                            on-input="pdInputChanged">
                   </span>
                 </div>
               </button>
@@ -1673,6 +1677,7 @@ limitations under the License.
 
       showToast_: function(msg) {
         var toast = document.createElement('paper-toast');
+        toast.duration = 10000;
         document.body.appendChild(toast);
         toast.text = msg;
         toast.show();
@@ -2153,6 +2158,13 @@ limitations under the License.
         charts.forEach(function(chart){
           deleteElement(chart);
         });
+      },
+
+      pdInputChanged: function(event) {
+        const element = this.getUniqueByEvent(event, '.tf-category-pane-content');
+        if (!element.hasAttribute('hidden')) {
+          this.hidePdElement_(element);
+        }
       },
 
       populateTabs: function() {

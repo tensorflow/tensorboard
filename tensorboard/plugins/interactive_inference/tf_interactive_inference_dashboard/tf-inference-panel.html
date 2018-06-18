@@ -42,6 +42,7 @@ limitations under the License.
     </style>
     <style>
       :host {
+        display: block;
         font-size: 14px;
       }
       tf-option-selector .model-type-button {
@@ -71,7 +72,7 @@ limitations under the License.
       }
       .multi-class-checkbox {
         margin-top: 30px;
-        margin-left: 10px; 
+        margin-left: 10px;
       }
       paper-input {
         --paper-input-container-focus-color: #f57c00;
@@ -117,7 +118,7 @@ limitations under the License.
     <div class="flex-holder">
       <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
       <div>Maps predicted class indices to labels from text file</div>
-      <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
+      <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
         An optional text file for use with the results of a classification model.
         Classification models return predicted classes as indices. If a vocab file is
         provided, each predicted class index will be mapped to a label from this file for use
