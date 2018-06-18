@@ -1,0 +1,243 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="tf-interactive-inference-dashboard.html">
+<script src="tf.min.js"></script>
+<dom-module id='tf-interactive-inference-image-demo'>
+  <template>
+    <style>
+      :host {
+        width: 100%;
+        display: block;
+      }
+      #dash {
+        height: 100%;
+        width: 100%;
+      }
+      #spritecanvas {
+        position: absolute;
+        left: -600px;
+      }
+    </style>
+    <canvas id="spritecanvas"></canvas>
+    <tf-interactive-inference-dashboard id="dash" local="true"
+        examples-path="./data/images/smile_examples.json"
+        model-name="smile_detector" inference-address="localhost"
+        label-vocab="[[labelVocab]]">
+    </tf-interactive-inference-dashboard>
+  </template>
+  <script>
+    Polymer({
+      is: "tf-interactive-inference-image-demo",
+      properties: {
+        model: Object,
+        data: Array,
+        indicesToInfer: {type: Object, value: {}},
+        means: Object,
+        categories: Object,
+        labelVocab: {type: Array, value: ["Not smiling", "Smiling"]},
+        numLoadedImages: Number,
+        images: Array,
+      },
+      ready: async function() {
+        this.$.dash.settingsClicked_();
+
+        this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/images/model.json', {credentials: 'include'}));
+        const DATA_PATH = "data/images/smile_examples.json";
+        const RESULTS_PATH = "data/images/smile_examples_inference.json";
+        const testData = d3.json(DATA_PATH, (error, data) => {
+          this.data = data;
+          this.updateSprite();
+          for (let i = 0; i < this.data.length; i++) {
+            this.indicesToInfer[i] = true;
+          }
+          this.$.dash.updateExampleContents_(this.data.map(item => JSON.stringify(item)), true);
+          this.$.dash.addEventListener('update-example', e => {
+            this.data[e.detail.index] = JSON.parse(e.detail.example);
+            this.indicesToInfer[e.detail.index] = true;
+            this.updateSprite();
+          });
+          this.$.dash.addEventListener('duplicate-example', e => {
+            this.data.push(JSON.parse(JSON.stringify(this.data[e.detail.index])));
+            this.indicesToInfer[this.data.length - 1] = true;
+            this.updateSprite();
+          });
+          this.$.dash.addEventListener('delete-example', e => {
+            this.data.splice(e.detail.index, 1);
+            const newIndicesToInfer = {};
+            const oldIndicesToInfer = Object.keys(this.indicesToInfer);
+            for (let i = 0; i < oldIndicesToInfer.length; i++) {
+              const idx = oldIndicesToInfer[i];
+              if (idx < e.detail.index) {
+                newIndicesToInfer[idx] = true;
+              } else {
+                newIndicesToInfer[idx - 1] = true;
+              }
+            }
+            this.indicesToInfer = newIndicesToInfer;
+            this.updateSprite();
+          });
+          this.$.dash.addEventListener('infer-examples', async e => {
+            const inferences = {};
+            const indices = Object.keys(this.indicesToInfer).sort();
+            inferences.indices = indices;
+            inferences.results = {classification: {classifications: []}};
+            const tensors = [];
+            const BATCH_SIZE = 256;
+            if (indices.length == 250) {
+              const testData = d3.json(RESULTS_PATH, (error, inferences) => {
+                setTimeout(() => {
+                  this.$.dash.inferences = inferences;
+                  this.indicesToInfer = {};
+                  this.$.dash.selectedLabelFeature = "Smiling"
+                }, 1000);
+              });
+            } else {
+              for (let i = 0; i < indices.length; i++) {
+                const idx = indices[i];
+                const t = await this.convertExToTensor(this.data[idx]);
+                tensors.push(t);
+              }
+              const d = tf.div;
+              let input = tf.concat(tensors).reshape([tensors.length, 78, 64, 3]);
+              input = d(input, tf.scalar(255));
+              const res = this.model.predict(input, {batchSize: 128});
+              const predValues = await res.data();
+              const PRED_SIZE = 2;
+              for (let i = 0; i < indices.length; i++) {
+                inferences.results.classification.classifications[i] =
+                  {classes: [{label: '0', score: predValues[i * PRED_SIZE]}, {label: '1', score: predValues[i * PRED_SIZE + 1]}]};
+              }
+              this.$.dash.inferences = inferences;
+              this.indicesToInfer = {};
+            }
+          });
+          this.$.dash.addEventListener('get-eligible-features', e => {
+            this.$.dash.partialDepPlotEligibleFeatures = [
+              {"name": '5_o_Clock_Shadow', "samples":  ["No 5 o'clock shadow", "5 o'clock shadow"]},
+              {"name": 'Arched_Eyebrows', "samples":   ['No arched eyebrows', 'Arched eyebrows']},
+              {"name": 'Bags_Under_Eyes', "samples":   ['No bags under eyes', 'Bags under eyes']},
+              {"name": 'Bald', "samples":   ['Not bald', 'Bald']},
+              {"name": 'Bangs', "samples":   ['No bangs', 'Bangs']},
+              {"name": 'Black_Hair', "samples":   ['Not black hair', 'Black hair']},
+              {"name": 'Blond_Hair', "samples":   ['Not blond hair', 'Blond hair']},
+              {"name": 'Blurry', "samples":   ['Not blurry', 'Blurry']},
+              {"name": 'Brown_Hair', "samples":   ['Not brown hair', 'Brown hair']},
+              {"name": 'Bushy_Eyebrows', "samples":   ['Not bushy eyebrows', 'Bushy eyebrows']},
+              {"name": 'Eyeglasses', "samples":   ['No eyeglasses', 'Eyeglasses']},
+              {"name": 'Goatee', "samples":   ['No goatee', 'Goatee']},
+              {"name": 'Gray_Hair', "samples":   ['No gray hair', 'Gray hair']},
+              {"name": 'High_Cheekbones', "samples":   ['Not high cheekbones', 'High cheekbones']},
+              {"name": 'Male', "samples":   ['Not male', 'Male']},
+              {"name": 'Mouth_Slightly_Open', "samples":   ['Mouth not slightly open', 'Mouth slightly open']},
+              {"name": 'Mustache', "samples":   ['No mustache', 'Mustache']},
+              {"name": 'Narrow_Eyes', "samples":   ['Not narrow eyes', 'Narrow eyes']},
+              {"name": 'No_Beard', "samples":   ['Beard', 'No beard']},
+              {"name": 'Oval_Face', "samples":   ['Not oval face', 'Oval face']},
+              {"name": 'Pale_Skin', "samples":   ['Not pale skin', [ 'Pale skin']]},
+              {"name": 'Sideburns', "samples":   ['No sideburns', 'Sideburns']},
+              {"name": 'Straight_Hair', "samples":   ['Not straight hair', 'Straight hair']},
+              {"name": 'Wavy_Hair', "samples":   ['Not wavy hair', 'Wavy hair']},
+              {"name": 'Wearing_Earrings', "samples":   ['Not wearing earrings', 'Wearing earrings']},
+              {"name": 'Wearing_Hat', "samples":   ['Not wearing hat', 'Wearing hat']},
+              {"name": 'Wearing_Lipstick', "samples":   ['Not wearing lipstick', 'Wearing lipstick']},
+              {"name": 'Wearing_Necklace', "samples":   ['Not wearing necklace', 'Wearing necklace']},
+              {"name": 'Wearing_Necktie', "samples":   ['Not wearing necktie', 'Wearing necktie']},
+              {"name": 'Young', "samples":   ['Not young', 'Young']}
+              ];
+          });
+          this.$.dash.addEventListener('infer-mutants', async e => {
+            let pdFeatureInfo = this.$.dash.partialDepPlotEligibleFeatures[0];
+            for (let i = 0; i < this.$.dash.partialDepPlotEligibleFeatures.length; i++) {
+              if (this.$.dash.partialDepPlotEligibleFeatures[i].name == e.detail.feature_name) {
+                pdFeatureInfo = this.$.dash.partialDepPlotEligibleFeatures[i];
+                break;
+              }
+            }
+            const numTrials = pdFeatureInfo.samples.length;
+            const tensors = [];
+            for (let i = 0; i < numTrials; i++) {
+              const ex = JSON.parse(JSON.stringify(this.data[e.detail.example_index]));
+              const t = await this.convertExToTensor(ex);
+              tensors.push(t);
+            }
+            const d = tf.div;
+            let input = tf.concat(tensors).reshape([tensors.length, 78, 64, 3]);
+            input = d(input, tf.scalar(255));
+            const res = this.model.predict(input, {batchSize: 128});
+            const predValues = await res.data();
+            const PRED_SIZE = 2;
+            const results = [];
+            for (let i = 0; i < numTrials; i++) {
+              const score = predValues[i * PRED_SIZE + 1];
+              const step = pdFeatureInfo.samples[i];
+              results.push({step: step, scalar: score});
+            }
+            this.$.dash.makeChartForFeature_('categorical', e.detail.feature_name, [{'1': results}]);
+          });
+          requestAnimationFrame(() => {
+            this.$.dash.inferClicked_();
+          });
+        });
+      },
+      convertExToTensor: async function(ex) {
+        const load = ex => new Promise(resolve => {
+          const encodedImg = ex.features.feature['image/encoded'].bytesList.value[0];
+          const src = 'data:image/png;base64,' + encodedImg;
+          const img = new Image();
+          img.src = src;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+            let tensor = tf.fromPixels(canvas).toFloat();
+            if (tensor.shape[0] != 78 || tensor.shape[1] != 64) {
+              tensor = tf.image.resizeBilinear(tensor, [78, 64]);
+            }
+            resolve(tensor);
+          };
+        });
+
+        const t = await load(ex);
+        return t;
+      },
+
+      updateSprite: function() {
+        this.images = [];
+        this.numLoadedImages = 0;
+        for (let i = 0; i < this.data.length; i++) {
+          const ex = this.data[i];
+          const encodedImg = ex.features.feature['image/encoded'].bytesList.value[0];
+          const src = 'data:image/png;base64,' + encodedImg;
+          const img = new Image();
+          this.images.push(img);
+          img.src = src;
+          img.onload = () => {
+            this.imageLoaded();
+          };
+        }
+      },
+      imageLoaded: function() {
+        const canvas = this.$.spritecanvas;
+        const THUMBNAIL_SIZE = 32;
+        this.numLoadedImages++;
+        if (this.numLoadedImages != this.images.length) {
+          return;
+        }
+        const thumbnailsPerSide = Math.ceil(Math.sqrt(this.images.length));
+        console.log(thumbnailsPerSide);
+        canvas.width = thumbnailsPerSide * THUMBNAIL_SIZE;
+        canvas.height = thumbnailsPerSide * THUMBNAIL_SIZE;
+
+        const ctx = canvas.getContext("2d");
+        for (let i = 0; i < this.images.length; i++) {
+          const startX = (i % thumbnailsPerSide) * THUMBNAIL_SIZE;
+          const startY = Math.floor(i / thumbnailsPerSide) * THUMBNAIL_SIZE;
+          ctx.drawImage(this.images[i], startX, startY, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+        }
+        this.$.dash.localAtlasUrl = canvas.toDataURL();
+        this.$.dash.updateSprite_();
+      },
+    });
+  </script>
+</dom-module>
+

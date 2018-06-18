@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-//goog.require('proto.tensorflow.BytesList');
 import BytesList from 'goog:proto.tensorflow.BytesList';
 import Example from 'goog:proto.tensorflow.Example';
 import Feature from 'goog:proto.tensorflow.Feature';
@@ -130,13 +129,13 @@ Polymer({
     ignoreChange: Boolean,
     minSal: {type: Number, value: 0},
     maxSal: {type: Number, value: 0},
-    showSaliency: {type: Boolean, value: true},
+    showSaliency: {type: Boolean, value: false},
     imageInfo: {type: Object, value: {}},
     windowWidth: {type: Number, value: DEFAULT_WINDOW_WIDTH},
     windowCenter: {type: Number, value: DEFAULT_WINDOW_CENTER},
     saliencyCutoff: {type: Number, value: 0},
     hasImage: {type: Boolean, value: true},
-    allowImageControls: {type: Boolean, value: true},
+    allowImageControls: {type: Boolean, value: false},
     imageScalePercentage: {type: Number, value: 100},
     features: {type: Object, computed: 'getFeatures(example)'},
     featuresList: {type: Object, computed: 'getFeaturesList(features)'},
@@ -144,6 +143,10 @@ Polymer({
     seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(features)'},
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
+    displayMode: {type: String, value: 'grid'},
+    featureSearchValue: {type: String, value: '', notify: true},
+    filteredFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue)'},
+    filteredSeqFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue)'},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
@@ -244,6 +247,15 @@ Polymer({
       }
     }
     return features;
+  },
+
+  getFilteredFeaturesList: function(featureList: NameAndFeature[],
+      searchValue: string) {
+    if (searchValue == '') {
+      return featureList;
+    }
+    const re = new RegExp(searchValue, 'i');
+    return featureList.filter(feature => re.test(feature.name));
   },
 
   /**
@@ -404,17 +416,15 @@ Polymer({
     }
     if (feat.getBytesList()) {
       if (!keepBytes) {
-        const vals = feat.getBytesList()!.getValueList().map(
-            chars => this.decodeBytesListString(
-                // tslint:disable-next-line:no-any cast due to tf.Example typing
-                new Uint8Array(chars as any), isImage));
+        const vals = feat.getBytesList()!.getValueList_asU8().map(
+            u8array => this.decodeBytesListString(u8array, isImage));
         return vals;
       }
-      return feat.getBytesList()!.getValueList();
+      return feat.getBytesList()!.getValueList().slice();
     } else if (feat.getInt64List()) {
-      return feat.getInt64List()!.getValueList();
+      return feat.getInt64List()!.getValueList().slice();
     } else if (feat.getFloatList()) {
-      return feat.getFloatList()!.getValueList();
+      return feat.getFloatList()!.getValueList().slice();
     }
     return [];
   },
@@ -443,10 +453,8 @@ Polymer({
     }
     if (feat.getBytesList()) {
       if (!keepBytes) {
-        return feat.getBytesList()!.getValueList().map(
-            chars => this.decodeBytesListString(
-                // tslint:disable-next-line:no-any cast due to tf.Example typing
-                new Uint8Array(chars as any), isImage));
+        return feat.getBytesList()!.getValueList_asU8().map(
+            u8array => this.decodeBytesListString(u8array, isImage));
       }
       return feat.getBytesList()!.getValueList();
     } else if (feat.getInt64List()) {
@@ -489,27 +497,24 @@ Polymer({
   },
 
   /**
-   * Gets the allowed input pattern for a feature value, according to its
+   * Gets the allowed input type for a feature value, according to its
    * feature type.
    */
-  getInputPattern: function(feature: string) {
+  getInputType: function(feature: string) {
     const feat = this.features.get(feature);
     if (feat) {
-      if (feat.getInt64List()) {
-        return '[-\\d]';
-      } else if (feat.getFloatList()) {
-        return '[-.\\d]';
+      if (feat.getInt64List() || feat.getFloatList()) {
+        return 'number'
       }
     }
     const seqfeat = this.seqFeatures.get(feature);
     if (seqfeat) {
-      if (seqfeat.getFeatureList()[0].getInt64List()) {
-        return '[-\\d]';
-      } else if (seqfeat.getFeatureList()[0].getFloatList()) {
-        return '[-.\\d]';
+      if (seqfeat.getFeatureList()[0].getInt64List() ||
+          seqfeat.getFeatureList()[0].getFloatList()) {
+        return 'number';
       }
     }
-    return '.';
+    return 'text';
   },
 
   /**
@@ -658,6 +663,10 @@ Polymer({
         }
       } else {
         values[data.valueIndex] = +inputControl.value;
+        const jsonList = this.getJsonValueList(data.feature, data.seqNum);
+        if (jsonList) {
+          jsonList[data.valueIndex] = +inputControl.value;
+        }
       }
       this.setFeatureValues(feat, values);
       this.exampleChanged();
@@ -790,18 +799,10 @@ Polymer({
 
     if (feat) {
       if (this.isBytesFeature(data.feature)) {
-        // If the example was provided as json, update the byteslist in the
-        // json. For non-bytes features we don't need this separate json update
-        // as the proto value list is the same as the json value list for that
-        // case (shallow copy). The byteslist case is different as the json
-        // base64 encoded string is converted to a list of bytes, one per
-        // character.
-        const jsonList = this.getJsonValueList(data.feature, data.seqNum);
-        if (jsonList) {
-          jsonList.push(0);
-        }
+        values.push('');
+      } else {
+        values.push(0);
       }
-      values.push(0);
       this.setFeatureValues(feat, values);
       this.exampleChanged();
       this.refreshExampleViewer();
@@ -854,12 +855,9 @@ Polymer({
     this.ignoreChange = false;
   },
 
-  getInputClass: function(feat: string) {
-    return this.sanitizeFeature(feat) + ' value';
-  },
-
-  getInputPillClass: function(feat: string) {
-    return this.sanitizeFeature(feat) + ' value-pill';
+  getInputPillClass: function(feat: string, displayMode: string) {
+    return this.sanitizeFeature(feat) + ' value-pill' +
+        (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
   },
 
   /**
@@ -1022,10 +1020,9 @@ Polymer({
     if (typeof this.json === 'string') {
       json = JSON.parse(this.json);
     }
+    const ex = new Example();
     if (json.features) {
-      const ex = new Example();
       ex.setFeatures(this.parseFeatures(json.features));
-      this.example = ex;
     } else {
       const ex = new SequenceExample();
       if (json.context) {
@@ -1034,8 +1031,8 @@ Polymer({
       if (json.featureLists) {
         ex.setFeatureLists(this.parseFeatureLists(json.featureLists));
       }
-      this.example = ex;
     }
+    this.example = ex;
   },
 
   // tslint:disable-next-line:no-any Parsing arbitary json.
@@ -1080,18 +1077,11 @@ Polymer({
       floats.setValueList(featentry.floatList.value);
       feat.setFloatList(floats);
     } else if (featentry.bytesList) {
-      // Json byteslist entries need to be converted into byte arrays of
-      // character codes from the base64 encoded string, in order to properly
-      // construct the proto Feature object from the json.
+      // Json byteslist entries are base64.  The JSPB generated Feature class
+      // will marshall this to U8 automatically.
       const bytes = new BytesList();
       if (featentry.bytesList.value) {
-        bytes.setValueList(featentry.bytesList.value.map((val: string) => {
-          const decodedStr = atob(val);
-          const cc = isImage ? this.decodedStringToCharCodes(decodedStr) :
-                               this.stringToUint8Array(decodedStr);
-          // tslint:disable-next-line:no-any cast due to tf.Example typing.
-          return cc as any;
-        }));
+        bytes.setValueList(featentry.bytesList.value);
       }
       feat.setBytesList(bytes);
     } else if (featentry.int64List) {
@@ -1108,6 +1098,10 @@ Polymer({
 
   getCanvasId: function(feat: string) {
     return this.sanitizeFeature(feat) + '_canvas';
+  },
+
+  getImageCardId: function(feat: string) {
+    return this.sanitizeFeature(feat) + '_card';
   },
 
   decodedStringToCharCodes: function(str: string): Uint8Array {
@@ -1155,6 +1149,13 @@ Polymer({
           // tslint:disable-next-line:no-any cast due to tf.Example typing.
           values[0] = cc as any;
           feat.getBytesList()!.setValueList((values as string[]));
+
+          // If the example was provided as json, update the byteslist in the
+          // json with the base64 encoded string.
+          const jsonList = self.getJsonValueList(data.feature, data.seqNum);
+          if (jsonList) {
+            jsonList[0] = encodedImageData;
+          }
 
           // Load the image data into an image element to begin the process
           // of rendering that image to a canvas for display.
@@ -1213,7 +1214,18 @@ Polymer({
         // Draw the image to the canvas and size the canvas.
         // Set d3.zoom on the canvas to enable zooming and scaling interactions.
         const context = canvas.getContext('2d')!;
-        const imageScaleFactor = this.imageScalePercentage / 100;
+        let imageScaleFactor = this.imageScalePercentage / 100;
+
+        // If not using image controls then scale the image to match the
+        // available width in the container, considering padding.
+        if (!this.allowImageControls) {
+          const card = this.$$('#' + this.getImageCardId(feat)) as HTMLElement;
+          let cardWidthForScaling = card.getBoundingClientRect().width;
+          if (cardWidthForScaling > 16) {
+            cardWidthForScaling -= 16;
+          }
+          imageScaleFactor = cardWidthForScaling / image.width;
+        }
         canvas.width = image.width * imageScaleFactor;
         canvas.height = image.height * imageScaleFactor;
         const transformFn = (transform: d3.ZoomTransform) => {

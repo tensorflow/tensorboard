@@ -1,0 +1,2168 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="./tf-inference-panel.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="./tf-confusion-matrix.html">
+<link rel="import" href="./tf-inference-viewer.html">
+<link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
+<link rel="import" href="../facets-overview/components/facets-overview/facets-overview.html">
+<link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
+
+<!--
+  A frontend that displays a set of editable examples and enables inference of those examples,
+  visualizing the results.
+-->
+<dom-module id="tf-interactive-inference-dashboard">
+  <template>
+    <style id="linter-paper-button-style">
+      /**
+       * This style preserves the styling previous to
+       * https://github.com/PolymerElements/paper-button/pull/115
+       * This change can break the layout of paper-button content.
+       * Remove this style to apply the change, more details at b/70528356.
+       */
+      paper-button {
+        display: inline-block;
+        text-align: center;
+        font-family: inherit;
+      }
+    </style>
+    <style>
+      :host {
+        --paper-tab-ink: var(--tb-orange-dark);
+      }
+
+      #classification {
+        width: 40%;
+      }
+
+      .example-and-inference-holder {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        flex-shrink: 1;
+      }
+
+      .example-and-inference-holder-expanded {
+        display: flex;
+        flex-grow: 1;
+        flex-shrink: 1;
+      }
+
+      .example-holder {
+        width: 100%;
+      }
+
+      .example-holder-expanded {
+        width: 60%;
+      }
+
+      .inference-section {
+        flex-shrink: 0;
+        padding: 0 5px;
+      }
+
+      .inference-section-expanded {
+        flex-shrink: 0;
+        padding: 0 5px;
+        width: 40%;
+      }
+
+      .inference-viewer {
+        max-height: 35%;
+      }
+
+      .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
+        width: 40%;
+      }
+
+      #spinner {
+        position: absolute;
+        top: 95px;
+        left: 10px;
+        width: 14px;
+        height: 14px;
+        --paper-spinner-color: var(--tb-orange-strong);
+      }
+
+      .noexamples {
+        position: absolute;
+        top: 75px;
+        left: 30px;
+      }
+
+      .center {
+        position: relative;
+      }
+
+      .info-text {
+        font-size: 12px;
+        color: #777;
+        margin: 20px 0px;
+      }
+
+      .accept-button-holder {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+
+      .settings-button {
+        color: black;
+        margin-top: 10px;
+      }
+
+      .rotated-button {
+        transform: rotate(90deg);
+      }
+
+      .button {
+        font-size: 13px;
+        margin: 10px 0 0 0;
+        background-color: var(--tb-orange-strong);
+        color: white;
+      }
+
+      .button[disabled] {
+        background-color: #ccc;
+      }
+
+      .input-and-tooltip {
+        display: flex;
+      }
+
+      .label-vocab-path-input {
+        flex-grow: 1;
+      }
+
+      .threshold-dropdown {
+        display: block;
+        width: 50%;
+        padding-right: 16px;
+      }
+
+      .slider-label {
+        --paper-input-container-underline: {
+          display: none;
+        };
+      }
+
+      .slider {
+        margin-top: -30px;
+        width: 50%;
+        --paper-slider-input: {
+          width: 80px;
+        }
+      }
+
+      .pr-line-chart {
+        height: 150px;
+        width: 250px;
+        display: inline-block;
+      }
+
+      .inference-settings {
+        padding: 20px;
+        width: 30%;
+      }
+
+      .dashboard-layout {
+        display: flex;
+        height: 100%;
+        background-color: white;
+      }
+
+      .center {
+        width: 60%;
+      }
+
+      .center-expanded {
+        width: 0%;
+      }
+
+      .side-holder {
+        height: 100%;
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid black;
+      }
+
+      .side-holder-expanded {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid black;
+      }
+
+      .side-content {
+        height: 80%;
+        flex: 1 0 auto;
+      }
+
+      .bottom-side {
+        display: flex;
+        padding: 0 8px 8px 0;
+        border-top: 1px solid gray;
+      }
+
+      .side-tabs {
+        display: flex;
+        height: calc(100% - 60px);
+      }
+
+      .datapoint-tab {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .config-tab {
+        padding-left: 5px;
+        width: 100%;
+        overflow: auto;
+      }
+
+      .stats-tab {
+        width: 100%;
+        display: flex;
+        overflow: auto;
+      }
+
+      #overview {
+        max-height: 100%;
+        height: 100%;
+      }
+
+      .inference-header {
+        font-size: 20px;
+        background: lightblue;
+      }
+
+      .conf-matrix {
+        margin-left: 20px;
+      }
+
+      .datapoint-controls-holder {
+        border-bottom: 1px solid lightgrey;
+        display: flex;
+        flex-grow: 0;
+        flex-shrink: 0;
+        justify-content: space-between;
+        margin-left: 1px;
+        padding: 2px 6px;
+      }
+
+      .datapoint-left-controls-holder {
+        display: flex;
+        width: 50%;
+      }
+
+      .datapoint-right-controls-holder {
+        display: flex;
+        flex-direction: row-reverse;
+        width: 50%;
+      }
+
+      .tf-category-pane {
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        padding: 10px 15px;
+        text-align: left;
+      }
+
+      .tf-category-pane-content {
+        padding: 15px;
+        border: 1px solid #dedede;
+        border-top: none;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        background: white;
+      }
+
+      :host vz-line-chart {
+        height: 120px;
+        width: 200px;
+        display: inline-block;
+      }
+
+      :host vz-bar-chart {
+        height: 300px;
+        width: 400px;
+        display: inline-block;
+      }
+
+      .range-input-container {
+        position:absolute;
+        right: 4px;
+        top:4px;
+      }
+
+      .style-input {
+        width: 50px;
+        text-align: right;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+
+      .feature-container-holder {
+        position:absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background: white;
+        display: none;
+      }
+
+      .datapoint-control-filter-input {
+        background: #f2f3f5;
+        border-radius: 2px;
+        max-width: 60%;
+        --paper-input-container: { padding: 4px 6px 2px 4px; };
+        --paper-input-container-underline: { display: none; height: 0; };
+        --paper-input-container-underline-focus: { display: none; };
+      }
+      .datapoint-control-filter-input iron-icon {
+        color: #9ba0a6;
+      }
+
+      .datapoint-control-pd-plot {
+        background-color: white;
+        border: 1px solid lightgray;
+        color: var(--tb-orange-dark);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 12px;
+        text-transform: uppercase;
+      }
+
+      .close-partial-deps-button {
+        margin-bottom: 10px;
+      }
+
+      paper-tabs {
+        margin-left: 1px;
+        --paper-tabs-selection-bar-color: var(--tb-orange-dark);
+        text-transform: uppercase;
+      }
+
+      paper-tab:not(.iron-selected) {
+        color: #212121;
+        background: #f4f4f4;
+      }
+
+      paper-tab.iron-selected {
+        color: var(--tb-orange-dark);
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
+      }
+
+      .pad-left {
+        padding-left: 5px;
+      }
+
+      .roc-and-conf-matrix {
+        display: flex;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .roc-holder {
+        width: 250px;
+      }
+
+      .on-switch-button {
+        color: var(--tb-orange-strong);
+      }
+
+      .off-switch-button {
+        color: black;
+      }
+
+      .flex {
+        display: flex;
+      }
+
+      .threshold-cost-input {
+        width: 50%;
+      }
+    </style>
+    <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
+      <tf-inference-panel
+          inference-address="{{inferenceAddress}}"
+          model-name="{{modelName}}"
+          examples-path="{{examplesPath}}"
+          model-type="{{modelType}}"
+          model-version="{{modelVersion}}"
+          model-signature="{{modelSignature}}"
+          max-examples="{{maxExamples}}"
+          label-vocab-path="{{labelVocabPath}}"
+          multi-class="{{multiClass}}"
+          max-classes-to-display="{{maxInferenceEntriesPerRun}}">
+      </tf-inference-panel>
+      <div class="accept-button-holder">
+        <paper-button on-click="getExamplesAndCloseSettings_" class="button"
+                      disabled="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
+          Accept
+        </paper-button>
+      </div>
+    </paper-dialog>
+    <paper-dialog id="deletedialog" modal>
+      <p>Are you sure you want to delete the selected example?</p>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus on-click="deleteDatapoint_">Delete</paper-button>
+      </div>
+    </paper-dialog>
+    <div class="dashboard-layout">
+      <div class$="[[getCenterClass_(panelExpanded)]]" id="center">
+        <facets-dive id="dive" data="[[visdata]]"
+                    on-selected-indices-changed="selectedIndicesChanged_"
+                    on-stats-changed="statsChanged_"
+                    hide-info-card="true"
+                    sprite-image-width="32" sprite-image-height="32">
+        </facets-dive>
+        <div id="noexamples" class="noexamples info-text">
+          Examples and their inference results will be displayed here.
+        </div>
+        <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+        <div class="feature-container-holder" id="partialplotholder">
+          <paper-button raised on-click="hidePartialDependencePlots_" class="close-partial-deps-button">Close partial dependence plots</paper-button>
+          <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
+            <div class="feature-container" data-feature-name$="[[item.name]]">
+              <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
+                [[item.name]]
+
+                <div class="range-input-container">
+                  <span class="info-text"
+                        title="The range of mutant value (default values are automatically inferred from training data)."
+                        hidden$="[[item.samples]]">
+                    Value range to test:
+                  </span>
+                  <input type="number"
+                          class="style-input x-min"
+                          value="[[item.observedMin]]"
+                          title="The minimum mutant value (default value is automatically inferred from training data)."
+                          hidden$="[[item.samples]]">
+                  <input type="number"
+                          class="style-input x-max"
+                          value="[[item.observedMax]]"
+                          title="The maximum mutant value (default value is automatically inferred from training data)."
+                          hidden$="[[item.samples]]">
+
+                  <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields."
+                        hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
+                    <span class="info-text">Optional feature indices: </span>
+                    <input type="text"
+                            class="style-input feature-index-pattern">
+                  </span>
+                </div>
+              </button>
+              <div class="tf-category-pane-content" hidden>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class$="[[getSideHolderClass_(panelExpanded)]]" id="side">
+        <div class="side-content">
+          <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
+            <paper-tab>Datapoint</paper-tab>
+            <paper-tab>Features</paper-tab>
+            <paper-tab>Model</paper-tab>
+          </paper-tabs>
+          <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
+            <div class="datapoint-tab">
+              <template is="dom-if" if="[[shouldShowExample_(selectedExampleAndInference)]]">
+                <div class="datapoint-controls-holder">
+                  <div class="datapoint-left-controls-holder">
+                    <paper-icon-button class="datapoint-control-button" icon="content-copy"
+                        on-click="copyDatapoint_" alt="copy datapoint">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="undo"
+                        on-click="resetDatapoint_" alt="undo changes"
+                        disabled="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="delete"
+                        on-click="deleteDatapointDialog_" alt="delete datapoint">
+                    </paper-icon-button>
+                  </div>
+                  <div class="datapoint-right-controls-holder">
+                    <paper-icon-button class="datapoint-control-button" icon="list"
+                        class$="[[getStackedButtonClass(exampleDisplayMode)]]"
+                        on-click="setExampleStackedMode_" alt="show example values stacked">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="view-module"
+                        class$="[[getGridButtonClass(exampleDisplayMode)]]"
+                        on-click="setExampleGridMode_" alt="show example values in grid">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="chevron-right"
+                        on-click="selectNextDatapoint_" alt="select next datapoint">
+                    </paper-icon-button>
+                    <paper-icon-button class="datapoint-control-button" icon="chevron-left"
+                        on-click="selectPrevDatapoint_" alt="select previous datapoint">
+                    </paper-icon-button>
+                  </div>
+                </div>
+                <div class="datapoint-controls-holder">
+                  <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
+                    <iron-icon icon="icons:search" prefix></iron-icon>
+                  </paper-input>
+                  <paper-button class="datapoint-control-pd-plot"
+                      on-click="showPartialDependencePlots_" alt="show partial dependence plots">
+                      PD Plot
+                  </paper-icon-button>
+                </div>
+                <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                  <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
+                                      on-example-change="exampleChange_" id$="[[getViewerId_()]]"
+                                      display-mode="[[exampleDisplayMode]]"
+                                      feature-search-value="{{featureSearchValue}}">
+                  </vz-example-viewer>
+                  <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                    <div class="inference-header">Inference Results</div>
+                    <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                          id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                    </tf-inference-viewer>
+                  </div>
+                </div>
+              </template>
+              <template is="dom-if" if="[[!shouldShowExample_(selectedExampleAndInference)]]">
+                <div class="info-text pad-left">Select a datapoint to see its details and inference results here.</div>
+                <div class="info-text pad-left">Datapoints can be edited and rerun through the model.</div>
+              </template>
+            </div>
+            <div class="stats-tab">
+              <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
+            </div>
+            <div class="config-tab">
+              <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
+                <paper-dropdown-menu label="Set true label feature" class="threshold-dropdown">
+                  <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
+                    <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                      <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                    </template>
+                  </paper-listbox>
+                </paper-dropdown-menu>
+                <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
+                  <div class="flex">
+                    <paper-input value="{{incorrectPredCostRatio}}"
+                        label="Ratio of false positive cost to false negative cost"
+                        type="number" class="threshold-cost-input">
+                    </paper-input>
+                    <paper-button raised on-click="optimizeThresholdClicked_">
+                        Optimize single threshold
+                    </paper-button>
+                  </div>
+                </template>
+              </template>
+              <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
+                <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
+                  <div>
+                    <paper-input value="Threshold for positive label" readonly=true class="slider-label"
+                                  no-label-float=true>
+                    </paper-input>
+                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                  immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
+                    </paper-slider>
+                  </div>
+                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                    <div class="roc-and-conf-matrix">
+                      <div class="roc-holder">
+                        <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                      </div>
+                      <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
+                                           class="conf-matrix">
+                      </tf-confusion-matrix>
+                    </div>
+                  </template>
+                </template>
+                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, multiClass, stats)]]">
+                  <div class="flex">
+                    <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
+                      <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
+                        <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                          <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                    <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedThresholdFeature)]]">
+                      <paper-dropdown-menu label="Add second feature to facet thresholds by" class="threshold-dropdown">
+                        <paper-listbox class="dropdown-content" selected="{{selectedSecondThresholdFeature}}" attr-for-selected="name">
+                          <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                            <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                          </template>
+                        </paper-listbox>
+                      </paper-dropdown-menu>
+                    </template>
+                  </div>
+                  <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                    <div class="flex">
+                      <paper-button raised on-click="optimizeFacetedThresholdsClicked_">
+                          Optimize thresholds indivdually
+                      </paper-button>
+                      <paper-button raised on-click="equalOppoClicked_">
+                          Optimize with equal opportunity
+                      </paper-button>
+                      <paper-button raised on-click="equalAccClicked_">
+                          Optimize with equal accuracy
+                      </paper-button>
+                      <paper-button raised on-click="demoParityClicked_">
+                          Optimize with demographic parity
+                      </paper-button>
+                    </div>
+                  </template>
+                  <template is="dom-repeat" items="[[featureValueThresholds]]">
+                    <div>
+                      <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                                    class="slider-label" no-label-float=true>
+                      </paper-input>
+                      <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                    immediate-value="{{item.threshold}}" value="[[item.threshold]]"
+                                    on-value-changed="refreshInferencesNoRegen_">
+                      </paper-slider>
+                      <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                        <div class="roc-and-conf-matrix">
+                          <div class="roc-holder">
+                            <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
+                          </div>
+                          <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item)]]"
+                                              class="conf-matrix">
+                          </tf-confusion-matrix>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                </template>
+            </div>
+          </iron-pages>
+        </div>
+        <div class="bottom-side">
+          <div class="datapoint-left-controls-holder">
+            <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]" on-click="panelExpandToggleClicked_" class="settings-button rotated-button"></paper-icon-button>
+          </div>
+          <div class="datapoint-right-controls-holder">
+            <paper-button on-click="inferClicked_" class="button"
+                          disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+              Re-run inference
+            </paper-button>
+            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
+            <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+              <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style include="dashboard-style"></style>
+  </template>
+
+  <script>
+    "use strict";
+
+    const maxStringLengthToDecode = 100000;
+    const inferenceLabelStr = 'inference label';
+    const inferenceValueStr = 'inference value';
+    const inferenceCorrectStr = 'inference correct';
+    const inferenceDeltaStr = 'inference error';
+
+    function deleteElement(elt){
+      if (elt && elt.parentElement){
+        elt.parentElement.removeChild(elt);
+      }
+    }
+
+    Polymer({
+      is: "tf-interactive-inference-dashboard",
+      properties: {
+
+        // TensorBoard plugin standard.
+        requestManager: {
+          type: Object,
+          value: () => new tf_backend.RequestManager(),
+        },
+        _canceller: {
+          type: Object,
+          value: () => new tf_backend.Canceller(),
+        },
+
+        // Fields for interactive inference plugin.
+        examplesPath: {
+          type: String,
+        },
+        modelName: {
+          type: String,
+        },
+        inferenceAddress: {
+          type: String,
+        },
+        modelType: {
+          type: String,
+        },
+        modelSignature: {
+          type: String,
+        },
+        modelVersion: {
+          type: String,
+        },
+        maxExamples: {
+          type: Number,
+        },
+        labelVocabPath: {
+          type: String,
+        },
+        inferences: {
+          type: Object,
+          observer: 'newInferences_',
+          value: {}
+        },
+        examplesAndInferences : {
+          type: Array,
+          value: [],
+          observer: 'computeSelectedExampleAndInference',
+        },
+        selectedExampleAndInference : {
+          type: Object,
+        },
+        visdata: {
+          type: Array,
+          value: []
+        },
+        selected: {
+          type: Array,
+          value: [],
+          observer: 'computeSelectedExampleAndInference',
+        },
+        labelVocab: {
+          type: Array,
+          value: []
+        },
+        updatedExample: {
+          type: Boolean,
+          value: false,
+        },
+        imageFeatureName: {
+          type: String,
+          value: 'image/encoded',
+          readonly: true,
+        },
+        // The dataset stats from Facets Dive to be used for the classification threshold logic.
+        stats: Object,
+        // Features to set different classification thredholds for the values of
+        selectedThresholdFeature: {
+          type: String,
+          value: '',
+          observer: 'thresholdFeatureSelected_',
+        },
+        selectedSecondThresholdFeature: {
+          type: String,
+          value: '',
+          observer: 'thresholdFeatureSelected_',
+        },
+        // Feature for true label.
+        selectedLabelFeature: {
+          type: String,
+          value: '',
+          observer: 'labelFeatureSelected_',
+        },
+        classificationStats_: {
+          type: Object,
+          value: {},
+        },
+        // Array of feature values and their set classification thresholds, for Polymer display
+        // purposes.
+        featureValueThresholds: Array,
+        // A map of feature name to the featureValueThresholds items, for quick lookup.
+        featureValueThresholdsMap: Object,
+        // The default inference label when the classification threshold isn't met.
+        defaultInferenceLabel: {
+          type: Number,
+          value: 0,
+          observer: 'refreshInferences_',
+        },
+        // The classification threshold when it isn't being set on a per-feature-value basis.
+        overallThreshold: {
+          type: Number,
+          value: 0.5,
+          observer: 'refreshInferencesNoRegen_',
+        },
+        sideTabSelected: {
+          type: Number,
+          value: 1,
+        },
+        local: Boolean,
+        localAtlasUrl: String,
+        partialDepPlotEligibleFeatures: {
+          type: Array,
+          value: [] // [{name: 'a_numeric_feature', observedMin: -10, observedMax: 10},
+                    // {name: 'a_categorical_feature', samples: []}]
+        },
+        partialDepPlotPendingFeatures: {
+          type: Array,
+          value: []
+        },
+        exampleDisplayMode: {
+          type: String,
+          value: 'grid'
+        },
+        panelExpanded: {
+          type: Boolean,
+          value: false,
+        },
+        featureSearchValue: String,
+        incorrectPredCostRatio: {
+          type: Number,
+          value: 1
+        },
+        multiClass: {
+          type: Boolean,
+          value: false,
+        },
+        maxInferenceEntriesPerRun: Number,
+      },
+
+      // Required function.
+      reload: function(){
+      },
+
+      settingsClicked_: function() {
+        this.$.inferencesettings.toggle();
+        this.$.spinner.hidden = false;
+      },
+
+      onTabSelect_: function() {
+        this.hidePartialDependencePlots_();
+      },
+
+      hidePartialDependencePlots_: function() {
+        this.$.partialplotholder.style.display = 'none';
+      },
+
+      showPartialDependencePlots_: function() {
+        this.$.partialplotholder.style.display = 'block';
+        this.panelExpanded = false;
+        requestAnimationFrame(() => this.populateTabs());
+      },
+
+      selectedIndicesChanged_: function(event) {
+        this.selected = event.detail.value;
+        this.selectedDataUpdated_();
+        if (this.selected.length > 0) {
+          this.sideTabSelected = 0;
+        }
+      },
+
+      selectNextDatapoint_: function() {
+        this.$.dive.selectedIndices = [(this.selected[0] + 1) % this.visdata.length];
+        this.$.dive.updateSelectedBoxes();
+      },
+
+      selectPrevDatapoint_: function() {
+        this.$.dive.selectedIndices = [(((this.selected[0] - 1) % this.visdata.length) +
+            this.visdata.length) % this.visdata.length];
+        this.$.dive.updateSelectedBoxes();
+      },
+
+      setExampleStackedMode_: function() {
+        this.exampleDisplayMode = 'stacked';
+      },
+
+      getStackedButtonClass: function(exampleDisplayMode) {
+        return exampleDisplayMode == 'stacked' ? 'on-switch-button' : 'off-switch-button';
+      },
+
+      getGridButtonClass: function(exampleDisplayMode) {
+        return exampleDisplayMode == 'grid' ? 'on-switch-button' : 'off-switch-button';
+      },
+
+      setExampleGridMode_: function() {
+        this.exampleDisplayMode = 'grid';
+      },
+
+      statsChanged_: function(event) {
+        this.stats = event.detail.value;
+      },
+
+      getPanelExpandIcon_: function(panelExpanded) {
+        return panelExpanded ? 'unfold-less' : 'unfold-more'
+      },
+
+      panelExpandToggleClicked_: function() {
+        this.panelExpanded = !this.panelExpanded;
+      },
+
+      getExampleAndInferenceHolderClass_: function(panelExpanded) {
+        return panelExpanded ? 'example-and-inference-holder-expanded' : 'example-and-inference-holder';
+      },
+
+      getExampleHolderClass_: function(panelExpanded) {
+        return panelExpanded ? 'example-holder-expanded' : 'example-holder';
+      },
+
+      getInferenceSectionClass_: function(panelExpanded) {
+        return panelExpanded ? 'inference-section-expanded' : 'inference-section';
+      },
+
+      getCenterClass_: function(panelExpanded) {
+        return panelExpanded ? 'center-expanded' : 'center';
+      },
+
+      getSideHolderClass_: function(panelExpanded) {
+        return panelExpanded ? 'side-holder-expanded' : 'side-holder';
+      },
+
+      isBinaryClassification_: function(modelType, multiClass) {
+        return modelType == 'classification' && !multiClass;
+      },
+
+      shouldShowFeatureDropdown_: function(modelType, multiClass, stats) {
+        return this.isBinaryClassification_(modelType, multiClass) && stats && Object.keys(stats).length > 0;
+      },
+
+      shouldShowSecondFeatureDropdown_: function(selectedThresholdFeature) {
+        return selectedThresholdFeature != '';
+      },
+
+      shouldShowLabelDropdown_: function(stats) {
+        return stats && Object.keys(stats).length > 0;
+      },
+
+      shouldShowOverallPrChart_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
+        return selectedLabelFeature != '' && selectedThresholdFeature == '' && inferences != null;
+      },
+
+      shouldShowFeaturePrCharts_: function(selectedLabelFeature, selectedThresholdFeature, inferences) {
+        return selectedLabelFeature != '' && selectedThresholdFeature != '' && inferences != null;
+      },
+
+      shouldShowCostRatio_: function(selectedLabelFeature, modelType, multiClass) {
+        return selectedLabelFeature != '' && this.isBinaryClassification_(modelType, multiClass);
+      },
+
+      shouldShowExample_: function(selected) {
+        return selected != null;
+      },
+
+      getFeatureList_: function(stats) {
+        // Do not also threshold settings by the results of the inference as they aren't real data
+        // features.
+        const features = Object.keys(stats).filter(function(feature) {
+          return feature !== inferenceValueStr && feature !== inferenceLabelStr && feature !== inferenceCorrectStr && feature !== inferenceDeltaStr;
+        });
+        // Add a blank feature to be used for clearing the selected feature.
+        features.push('');
+        return features;
+      },
+
+      thresholdFeatureSelected_: function() {
+        const feature1 = this.selectedThresholdFeature;
+        if (feature1 == '') {
+          this.selectedSecondThresholdFeature = '';
+        }
+        const feature2 = this.selectedSecondThresholdFeature;
+        const thresholds = [];
+        const thresholdsMap = {};
+        if (feature1.length !== 0) {
+          let feature1Values = this.stats[feature1].valueHash;
+          if (this.stats[feature1].totalCount != this.examplesAndInferences.length) {
+            feature1Values  = Object.assign({}, feature1Values, {undefined: ''});
+          }
+          let feature2Values = {undefined: ''};
+          if (feature2.length != 0) {
+            feature2Values = this.stats[feature2].valueHash;
+            if (this.stats[feature2].totalCount != this.examplesAndInferences.length) {
+              feature2Values  = Object.assign({}, feature2Values, {undefined: ''});
+            }
+          }
+
+          // For the selected feature, set up a dict of each feature value in the dataset to
+          // the threshold. Add this to a list (for display purposes) and create
+          // a map of feature value to entry in that list.
+          for (var key1 in feature1Values) {
+            if (feature1Values.hasOwnProperty(key1)) {
+              for (var key2 in feature2Values) {
+                if (feature2Values.hasOwnProperty(key2)) {
+                  const feature1Value = key1 == 'undefined' ? undefined : this.stats[feature1].valueHash[key1].value;
+                  const feature2Value = key2 == 'undefined' ? undefined : this.stats[feature2].valueHash[key2].value;
+                  const thresh = {value: feature1Value, value2: feature2Value, threshold: this.overallThreshold};
+                  thresholds.push(thresh);
+                  const mapKey = this.createCombinedValueString_(feature1Value, feature2Value);
+                  thresholdsMap[mapKey] = thresh;
+                }
+              }
+            }
+          }
+        }
+
+        this.featureValueThresholds = thresholds;
+        this.featureValueThresholdsMap = thresholdsMap;
+        this.refreshInferences_();
+      },
+
+      labelFeatureSelected_: function(feature) {
+        this.sideTabSelected = 2;
+        requestAnimationFrame(() => {
+          this.updateClassificationStats_(true);
+          this.refreshDive_();
+        });
+      },
+
+      updateClassificationStats_: function(regenClassificationStats) {
+        if (!this.classificationStats_ || !this.visdata || this.selectedLabelFeature == '') {
+          return;
+        }
+        if (regenClassificationStats) {
+          let classificationStats = {};
+          classificationStats.thresholds = [];
+          for (let i = 0; i < 101; i++) {
+            classificationStats.thresholds.push(
+              {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+          }
+          classificationStats.faceted = {};
+          for (let i = 0; i < this.examplesAndInferences.length; i++) {
+            const item = this.visdata[i];
+            let facetedStats = null;
+            if (this.selectedThresholdFeature != '') {
+              const facetKey = this.createCombinedValueString_(
+                item[this.selectedThresholdFeature],
+                item[this.selectedSecondThresholdFeature]);
+              facetedStats = classificationStats.faceted[facetKey];
+              if (!facetedStats) {
+                classificationStats.faceted[facetKey] = []
+                for (let i = 0; i < 101; i++) {
+                  classificationStats.faceted[facetKey].push(
+                      {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+                }
+                facetedStats = classificationStats.faceted[facetKey];
+              }
+            }
+            const nonZeroClassification = this.getClassificationBestNonZero(i);
+            let thresh = 0;
+            for (; thresh <= 100; thresh++) {
+              if (thresh > nonZeroClassification.score * 100) {
+                break;
+              }
+              if (+item[this.selectedLabelFeature] ==
+                  +nonZeroClassification.label) {
+                classificationStats.thresholds[thresh]['TP'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['TP'] += 1;
+                }
+              } else {
+                classificationStats.thresholds[thresh]['FP'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['FP'] += 1;
+                }
+              }
+            }
+            for (; thresh <= 100; thresh++) {
+              if (+item[this.selectedLabelFeature] == 0) {
+                classificationStats.thresholds[thresh]['TN'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['TN'] += 1;
+                }
+              } else {
+                classificationStats.thresholds[thresh]['FN'] += 1;
+                if (facetedStats) {
+                  facetedStats[thresh]['FN'] += 1;
+                }
+              }
+            }
+          }
+          this.calcThresholdStats(classificationStats.thresholds);
+          for(let key in classificationStats.faceted) {
+            if (classificationStats.faceted.hasOwnProperty(key)) {
+              this.calcThresholdStats(classificationStats.faceted[key]);
+            }
+          }
+
+          this.classificationStats_ = classificationStats;
+        }
+        this.plotPr(
+          this.$$('#prchart'), this.classificationStats_.thresholds,
+          this.overallThreshold, regenClassificationStats);
+
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          const key = this.createCombinedValueString_(
+            this.featureValueThresholds[i].value,
+            this.featureValueThresholds[i].value2);
+          this.plotPr(
+            this.$$('#' + this.getPrChartId(i)),
+            this.classificationStats_.faceted[key],
+            this.featureValueThresholds[i].threshold,
+            regenClassificationStats);
+        }
+        this.updateCorrectness_();
+      },
+
+      plotPr: function(chart, thresholdStats, threshold,
+                       regenClassificationStats) {
+        if (!thresholdStats || !chart) {
+          return;
+        }
+
+        let currentThresholdData = null;
+        let self = this;
+        const data = thresholdStats.map((thresh, i) => {
+          if (i - threshold * 100 < 0.5) {
+            currentThresholdData = {
+              'step': thresh['FPR'],
+              'scalar': thresh['TPR'],
+              'threshold': i / 100
+            };
+          }
+          return {
+            'step': thresh['FPR'],
+            'scalar': thresh['TPR'],
+            'threshold': i / 100
+          };
+        }).reverse();
+        if (regenClassificationStats) {
+          chart.setVisibleSeries(['ROC', 'Threshold set']);
+          chart.setSeriesData('ROC', data);
+          const valueFormatter = d3.format('.2f');
+          chart.xAxisFormatter = d3.format('.2f');
+          const percentageFormatter = d3.format(",.1%");
+          chart.tooltipColumns = [
+            {
+                title: 'Threshold',
+                evaluate: function (d) {
+                  return valueFormatter(d.datum.threshold);
+                },
+            },
+            {
+                title: 'TPR',
+                evaluate: function (d) {
+                  return percentageFormatter(d.datum.scalar);
+                },
+            },
+            {
+                title: 'FPR',
+                evaluate: function (d) {
+                  return percentageFormatter(d.datum.step);
+                },
+            },
+          ];
+        }
+        chart.setSeriesData('Threshold set', [currentThresholdData]);
+      },
+
+      calcThresholdStats: function(stats) {
+        for (let i = 0; i < stats.length; i++) {
+          if (stats[i]['TP'] + stats[i]['FN'] > 0) {
+            stats[i]['TPR'] = stats[i]['TP'] / (stats[i]['TP'] + stats[i]['FN']);
+          } else {
+            stats[i]['TPR'] = 0;
+          }
+          if (stats[i]['FP'] + stats[i]['TN'] > 0) {
+            stats[i]['FPR'] = stats[i]['FP'] / (stats[i]['FP'] + stats[i]['TN']);
+          } else {
+            stats[i]['FPR'] = 0;
+          }
+        }
+      },
+
+      findOptimalThreshold_: function(thresholds) {
+        let minCost = Number.POSITIVE_INFINITY;
+        let bestThreshold = 0;
+        for (let i = 0; i < thresholds.length; i++) {
+          const cost = this.getCost(thresholds[i]);
+          if (cost <= minCost) {
+            minCost = cost;
+            bestThreshold = i;
+          }
+        }
+        return bestThreshold / 100;
+      },
+
+      forceUpdateFeatureValueThresholds_: function() {
+        const thresholds = this.featureValueThresholds;
+        this.featureValueThresholds = [];
+        this.featureValueThresholds = thresholds;
+      },
+
+      optimizeThresholdClicked_: function() {
+        const thresholdToSet =
+          this.findOptimalThreshold_(this.classificationStats_.thresholds);
+        this.overallThreshold = thresholdToSet;
+        if (this.featureValueThresholds) {
+          for (let i = 0; i < this.featureValueThresholds.length; i++) {
+            const thresholdPath = 'featureValueThresholds.' + i + '.threshold';
+            this.set(thresholdPath, thresholdToSet);
+          }
+        }
+        this.forceUpdateFeatureValueThresholds_();
+      },
+
+      optimizeFacetedThresholdsClicked_: function() {
+        const values = Object.keys(this.classificationStats_.faceted);
+        for (let i = 0; i < values.length; i++) {
+          const featureValue = values[i];
+          const thresholdToSet = this.findOptimalThreshold_(
+            this.classificationStats_.faceted[featureValue]);
+          this.set('featureValueThresholds.' + i + '.threshold', thresholdToSet);
+        }
+        this.forceUpdateFeatureValueThresholds_();
+      },
+
+      equalOppoClicked_: function() {
+        const measure =
+          stats => stats['TP'] /
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
+        this.getBestThresholdsByFairnessMeasure_(measure);
+      },
+
+      equalAccClicked_: function() {
+        const measure =
+          stats => (stats['TP'] + stats['TN']) /
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
+        this.getBestThresholdsByFairnessMeasure_(measure);
+      },
+
+      demoParityClicked_: function() {
+        const measure =
+          stats => (stats['TP'] + stats['FP']) /
+            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
+        this.getBestThresholdsByFairnessMeasure_(measure);
+      },
+
+      getBestThresholdsByFairnessMeasure_: function(fairnessCalculator) {
+        // For all thresholds for first facet:
+        //   For all other facets:
+        //     Find threshold with closest fairness measure of first facet at
+        //     current threshold
+        //   Calculate cost for these threshold settings settings across the
+        //   facets, and save if the lowest.
+        let minCost = Number.POSITIVE_INFINITY;
+        let bestThresholds = null;
+        const values = Object.keys(this.classificationStats_.faceted);
+        const firstFacet = this.classificationStats_.faceted[values[0]];
+        for (let i = 0; i < firstFacet.length; i++) {
+          const firstFacetMeasure = fairnessCalculator(firstFacet[i]);
+          const facetThresholds = [i];
+          let cost = this.getCost(firstFacet[i]);
+          for (let facetIdx = 1; facetIdx < values.length; facetIdx++) {
+            const currentFacet = this.classificationStats_.faceted[values[facetIdx]];
+            const currentFacetThreshold = this.thresholdClosestToMeasure(
+              currentFacet, firstFacetMeasure, fairnessCalculator);
+            facetThresholds.push(currentFacetThreshold);
+            cost += this.getCost(currentFacet[currentFacetThreshold])
+          }
+          if (cost <= minCost) {
+            minCost = cost;
+            bestThresholds = facetThresholds;
+          }
+        }
+
+        // Set all thresholds to the setting with the lowest cost from the above
+        // search.
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          let thresholdIndex = 0;
+          for (let vIdx = 0; vIdx < values.length; vIdx++) {
+            const valueString = this.getPrintableValue_(this.featureValueThresholds[i]);
+            if (valueString == values[vIdx]) {
+              thresholdIndex = vIdx;
+              break;
+            }
+          }
+          this.set('featureValueThresholds.' + i + '.threshold',
+            bestThresholds[thresholdIndex] / 100);
+        }
+        this.forceUpdateFeatureValueThresholds_();
+      },
+
+      getCost: function(entries) {
+        return entries['FP'] * this.incorrectPredCostRatio + entries['FN'];
+      },
+
+      thresholdClosestToMeasure: function(
+          currentFacet, firstFacetMeasure, fairnessCalculator) {
+        let minDistance = Number.POSITIVE_INFINITY;
+        let thresholdToReturn = 0;
+        for (let i = 0; i < currentFacet.length; i++) {
+          const measure = fairnessCalculator(currentFacet[i]);
+          const curDistance = Math.abs(measure - firstFacetMeasure);
+          if (curDistance <= minDistance) {
+            thresholdToReturn = i;
+            minDistance = curDistance;
+          }
+        }
+        return thresholdToReturn;
+      },
+
+      getClassificationBestNonZero: function(index) {
+        // Find the first inference label in the score-sorted list that is non-zero.
+        let indexForNonZeroLabel = 0;
+        const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
+        for (let i = 0; i < this.examplesAndInferences[index].inferences[inferenceIndex].length; i++) {
+          if (+this.examplesAndInferences[index].inferences[inferenceIndex][i].label !== 0) {
+            indexForNonZeroLabel = i;
+            break;
+          }
+        }
+        return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
+      },
+
+      getConfusionCounts(classificationStats, threshold, item) {
+        let val = null;
+        let val2 = null;
+        if (item != null) {
+          val = item.value;
+          val2 = item.value2;
+        }
+        return {
+          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', val, val2),
+          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', val, val2),
+          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', val, val2),
+          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', val, val2),
+        }
+      },
+
+      getConfMatrixValue: function(classificationStats, threshold, stat, featureValue1, featureValue2) {
+        const index = Math.floor(threshold * 100)
+        if (!classificationStats.thresholds) {
+          return 0;
+        }
+        if (featureValue1 == null) {
+          return classificationStats.thresholds[index][stat];
+        }
+        const key = this.createCombinedValueString_(featureValue1, featureValue2);
+        if (classificationStats.faceted[key] == null) {
+          return 0;
+        }
+        return classificationStats.faceted[key][index][stat];
+      },
+
+      getPrChartId: function(index) {
+        return 'prchart' + index;
+      },
+
+      getPrintableValue_: function(item) {
+        let str = '';
+        if (!item.value && item.value !== 0) {
+          str = '<feature value missing>';
+        } else {
+          str = item.value;
+        }
+        if (this.selectedSecondThresholdFeature == '') {
+          return str;
+        }
+        str += '/';
+        if (!item.value2 && item.value2 !== 0) {
+          str += '<feature value missing>';
+        } else {
+          str += item.value2;
+        }
+        return str;
+
+      },
+
+      getFeatureName_: function(feature) {
+        // If feature name is blank then this represents selecting no feature.
+        if (feature.length === 0) {
+          return '<none>';
+        }
+        return feature;
+      },
+
+      getClassName_: function(cls) {
+        // If class name is blank then this represents selecting no class.
+        if (cls.length === 0) {
+          return '<none>';
+        }
+        return cls;
+      },
+
+      shouldShowOverallTresholder_: function(feature) {
+        return feature.length === 0;
+      },
+
+      computeSelectedExampleAndInference: function() {
+        if (!this.selected || !this.examplesAndInferences) {
+          this.selectedExampleAndInference = null;
+          return;
+        }
+        const self = this;
+        const selectedItems = this.examplesAndInferences.filter(function(item, index) {
+          return self.selected.includes(index);
+        });
+        this.selectedExampleAndInference = selectedItems.length > 0 ? selectedItems[0] : null;
+      },
+
+      shouldDisableGetExamplesButton_: function(examplesPath) {
+        return examplesPath.length == 0;
+      },
+
+      shouldDisableInferButton_: function(examples, modelName, inferenceAddress, updatedExample) {
+        return examples.length == 0 || modelName.length == 0 || inferenceAddress.length == 0 ||
+          !updatedExample;
+      },
+
+      newInferences_: function() {
+        this.$.spinner.hidden = true;
+        this.updateInferences_(true);
+        requestAnimationFrame(() => this.updateClassificationStats_(true));
+      },
+
+      refreshInferencesNoRegen_: function() {
+        this.refreshInferences_(true);
+        requestAnimationFrame(() => this.updateClassificationStats_(true));
+      },
+
+      refreshInferences_: function(noRegen) {
+        this.updateInferences_(false);
+        requestAnimationFrame(() => this.updateClassificationStats_(!noRegen));
+      },
+
+      updateInferences_: function(newInferencesCalculated) {
+        if (!this.examplesAndInferences || !this.inferences.indices ||
+            this.inferences.indices.length == 0) {
+          return;
+        }
+        const inferenceMap = {}
+        const isClassification = !!this.inferences.results.classification;
+        for (let i = 0; i < this.inferences.indices.length; i++) {
+          if (isClassification) {
+            const classes = this.inferences.results.classification.classifications[i].classes;
+            inferenceMap[this.inferences.indices[i]] = classes.sort(function(a, b) {
+              return b.score - a.score;
+            });
+          } else {
+            inferenceMap[this.inferences.indices[i]] =
+                [{label: '', score: this.inferences.results.regression.regressions[i].value}];
+          }
+        }
+        this.set('examplesAndInferences', this.examplesAndInferences.map(
+          function(item, index) {
+            let inferences = item.inferences ? item.inferences : [];
+            if (inferenceMap[index] && newInferencesCalculated) {
+              inferences = inferences.concat([inferenceMap[index]]);
+            }
+            return {example: item.example, inferences: inferences, changed: item.changed, orig: item.orig};
+          }));
+        const self = this;
+        let hasInferenceLabels = false;
+        this.visdata.forEach(function(item, index) {
+          if (isClassification) {
+            self.setItemInferenceValue(item, index, self.selectedThresholdFeature, self.selectedSecondThresholdFeature);
+          } else {
+            item[inferenceValueStr] =
+              self.examplesAndInferences[index].inferences[
+                self.examplesAndInferences[index].inferences.length - 1][0].score;
+          }
+
+
+          if (isClassification && self.labelVocab.length > 0) {
+            for (let inferenceIndex = 0;
+                 inferenceIndex < self.examplesAndInferences[index].inferences.length;
+                 inferenceIndex++) {
+              for (let labelIndex = 0;
+                   labelIndex < self.examplesAndInferences[index].inferences[inferenceIndex].length;
+                   labelIndex++) {
+                self.examplesAndInferences[index].inferences[inferenceIndex][labelIndex].vocabLabel =
+                  self.labelVocab[self.examplesAndInferences[index].inferences[inferenceIndex][labelIndex].label];
+              }
+            }
+            item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
+            hasInferenceLabels = true;
+          }
+        });
+        this.updateCorrectness_();
+        this.refreshDive_();
+        if (newInferencesCalculated) {
+          this.$.dive.colorBy = hasInferenceLabels ? inferenceLabelStr : inferenceValueStr;
+        }
+        this.updatedExample = false;
+      },
+
+      setItemInferenceValue: function(item, index, feature1, feature2) {
+        const inferenceIdx =
+          this.examplesAndInferences[index].inferences.length - 1;
+        if (this.multiClass) {
+          item[inferenceValueStr] =
+            this.examplesAndInferences[index].inferences[inferenceIdx][0].label;
+          return;
+        }
+
+        let threshold = this.overallThreshold;
+        // If a feature has been selected (string will be non-empty in this case), then get the
+        // appropriate threshold for this item's value for that feature. Otherwise the overall
+        // threshold will be used.
+        if (feature1.length !== 0) {
+          let key = this.createCombinedValueString_(item[feature1], item[feature2]);
+          threshold = this.featureValueThresholdsMap[key].threshold;
+        }
+
+        // Find the first inference label in the score-sorted list that is non-zero.
+        let indexForNonZeroLabel = 0;
+        for (let i = 0; i < this.examplesAndInferences[index].inferences[inferenceIdx].length; i++) {
+          if (+this.examplesAndInferences[index].inferences[inferenceIdx][i].label !== 0) {
+            indexForNonZeroLabel = i;
+            break;
+          }
+        }
+
+        if (this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].score >= threshold) {
+          item[inferenceValueStr] =
+            this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].label;
+        } else {
+          item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+        }
+      },
+
+      createCombinedValueString_: function(val1, val2) {
+        let str = val1 == null ? '' : val1;
+        if (val2 == null || val2 == '') {
+          return str;
+        }
+        str += '/' + val2;
+        return str;
+      },
+
+      updateCorrectness_: function() {
+        if (!this.selectedLabelFeature || !this.examplesAndInferences) {
+          return;
+        }
+        for (let i = 0; i < this.examplesAndInferences.length; i++) {
+          const item = this.visdata[i];
+          if (this.modelType == 'classification') {
+            item[inferenceCorrectStr] = item[this.selectedLabelFeature] == item[inferenceValueStr] ? "correct" : "incorrect";
+          } else {
+            item[inferenceDeltaStr] = item[this.selectedLabelFeature] - item[inferenceValueStr];
+          }
+        }
+      },
+
+      inferClicked_: function() {
+        const inferParams = {'inference_address': this.inferenceAddress,
+                             'model_name': this.modelName,
+                             'model_type': this.modelType,
+                             'model_version': this.modelVersion,
+                             'model_signature': this.modelSignature,
+                             'label_vocab_path': this.labelVocabPath};
+        this.$.spinner.hidden = false;
+        if (!this.local) {
+          const url = this.makeUrl_('/data/plugin/whatif/infer',
+              inferParams);
+          const inferContents = result => {
+            this.$.spinner.hidden = true;
+            this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
+            this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
+          };
+          this.makeAsyncRequest_(url, inferContents);
+        }
+        this.fire('infer-examples', inferParams);
+      },
+
+      exampleChange_: function(event) {
+        var id = 0;
+        var index = this.selected.length == 0 ? id : this.selected[id];
+        this.set('selectedExampleAndInference.changed', true);
+        this.updateExample_(JSON.stringify(event.target.json), index);
+        const inferenceViewerIdStr = '#' + this.getInferenceHolderId_(id);
+        const inferenceViewer = this.$$(inferenceViewerIdStr);
+        inferenceViewer.inference = null;
+        this.visdata[index] = this.exampleToDataPoint_(event.target.json);
+        this.refreshDive_();
+        this.updatedExample = true;
+        this.selectedDataUpdated_();
+      },
+
+      refreshDive_: function() {
+        const temp = this.visdata;
+        this.visdata = [];
+        this.visdata = temp;
+        this.$.overview.protoInput =
+            this.$.overview.getStatsProto([{name: '', data: temp}]);
+        const tempSelected = this.$.dive.selectedData;
+        this.$.dive.selectedData = [];
+        this.$.dive.selectedData = tempSelected;
+        this.updateSprite_();
+      },
+
+      updateExample_: function(exampleJson, index){
+        this.fire('update-example', {'example': exampleJson, 'index': index});
+        if (!this.local) {
+          var url = this.makeUrl_('/data/plugin/whatif/update_example');
+
+          this.makeAsyncRequest_(url, null, {'example': exampleJson,
+                                              'index': index});
+        }
+      },
+
+      getViewerId_: function() {
+        return 'viewer_';
+      },
+
+      getInferenceHolderId_: function() {
+        return 'inference_';
+      },
+
+      makeUrl_: function(prefix, paramsDict){
+        const url = prefix;
+        if (paramsDict) {
+          prefix += '?' + Object.keys(paramsDict).map(
+            k => k + '=' + encodeURIComponent(paramsDict[k])).join('&');
+        }
+        return prefix;
+      },
+
+      showToast_: function(msg) {
+        var toast = document.createElement('paper-toast');
+        document.body.appendChild(toast);
+        toast.text = msg;
+        toast.show();
+
+        // Also, log to console.
+        console.error(msg);
+      },
+
+      makeAsyncRequest_: function(url, thenDoFn, postData){
+        var self = this;
+        const wrapperFn = this._canceller.cancellable(function(result){
+          if (result.cancelled) {
+            return;
+          }
+          if (result.value && result.value.error){
+            // show toast with the error
+            self.showToast_(result.value.error);
+            self.$.spinner.hidden = true;
+          } else if (thenDoFn) {
+            thenDoFn(result);
+          }
+        });
+        this.requestManager.request(url, postData).then(wrapperFn);
+      },
+
+      exampleToDataPoint_: function(example) {
+        const d = {};
+        const features = 'features' in example ?
+            Object.keys(example.features.feature) : [];
+        for (const index in features) {
+          const fname = features[+index];
+          // Ignore encoded image feature when creating data for Facets Dive.
+          if (fname == this.imageFeatureName) {
+            continue;
+          }
+          let v = null;
+          if (example.features.feature[fname].int64List) {
+            v = example.features.feature[fname].int64List.value;
+          } else if (example.features.feature[fname].floatList) {
+            v = example.features.feature[fname].floatList.value;
+          } else if (example.features.feature[fname].bytesList &&
+                     example.features.feature[fname].bytesList.value) {
+            v = example.features.feature[fname].bytesList.value.map(val => {
+              // Strings above a max length are most likely binary encoded data and not strings
+              // and therefore shouldn't be decoded for display in Facets Dive.
+              if (val.length > maxStringLengthToDecode) {
+                return 'ERROR: string not decoded due to length';
+              }
+              try {
+                return atob(val);
+              } catch (err) {
+                console.error('Error decoding string: ' + err);
+                return 'ERROR: error decoding string';
+              }
+            });
+          }
+          if (v) {
+            if (v.length == 1) {
+              v = v[0];
+              if (!isNaN(v)) {
+                v = Number(v);
+              }
+            }
+            d[fname] = v;
+          }
+        }
+        return d;
+      },
+
+      getExamplesAndCloseSettings_: function() {
+        this.settingsClicked_();
+        this.getExamples_();
+      },
+
+      updateExampleContents_: function(examples, hasSprite) {
+        this.$.noexamples.style.display = 'none';
+        this.$.spinner.hidden = true;
+        this.examplesAndInferences = examples.map(function(ex) {
+          const example = JSON.parse(ex);
+          return {example: example, changed: false, orig: JSON.parse(ex)};});
+        this.updatedExample = true;
+        const self = this;
+        this.visdata = this.examplesAndInferences.map(function(ex) {
+          return self.exampleToDataPoint_(ex.example);
+        });
+        this.$.dive.atlasUrl = '';
+        this.hasSprite = hasSprite;
+        this.updateSprite_();
+        if (!this.shouldDisableInferButton_(
+            this.examplesAndInferences, this.modelName, this.inferenceAddress,
+            this.updatedExample)) {
+          this.inferClicked_();
+        }
+      },
+
+      getExamples_: function(){
+        var url = this.makeUrl_('/data/plugin/whatif/examples_from_path',
+                                {'examples_path': this.examplesPath,
+                                 'max_examples': this.maxExamples});
+
+        const updateExampleContents = result => {
+          this.updateExampleContents_(
+            result.value.examples, result.value.sprite);
+        };
+        this.makeAsyncRequest_(url, updateExampleContents);
+        this.$.spinner.hidden = false;
+      },
+
+      updateSprite_: function() {
+        if (this.hasSprite) {
+          this.$.dive.atlasUrl = null;
+          if (!this.local) {
+            this.$.dive.atlasUrl = this.makeUrl_('/data/plugin/whatif/sprite', {});
+          } else {
+            this.$.dive.atlasUrl = this.localAtlasUrl;
+          }
+        }
+      },
+
+      selectedDataUpdated_: function() {
+        if (this.visdata && this.visdata.length > 0) {
+          this.partialDepPlotPendingFeatures = [];
+          this.populateTabs();
+        }
+      },
+
+      copyDatapoint_: function() {
+        const exampleJsonString = JSON.stringify(this.selectedExampleAndInference.example);
+        const example = JSON.parse(exampleJsonString);
+        const exampleAndInference = {example: example, changed: false, orig: JSON.parse(exampleJsonString)};
+        this.examplesAndInferences.push(exampleAndInference);
+        this.selectedExampleAndInference = exampleAndInference;
+        this.visdata.push(this.exampleToDataPoint_(exampleAndInference.example));
+        const duplicatedIndex = this.selected[0];
+        this.selected[0] = this.visdata.length - 1;
+        this.selectedDataUpdated_();
+        this.updatedExample = true;
+        this.fire('duplicate-example', {'index': duplicatedIndex});
+        if (!this.local) {
+          const refreshDiveAfterDuplicate = result => {
+           this.refreshDive_();
+          };
+          const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
+            {'index': duplicatedIndex});
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
+        } else {
+          this.refreshDive_();
+        }
+      },
+
+      deleteDatapointDialog_: function() {
+        this.$.deletedialog.open();
+      },
+
+      deleteDatapoint_: function() {
+        const deletedIndex = this.selected[0];
+        this.examplesAndInferences.splice(deletedIndex, 1);
+        this.visdata.splice(deletedIndex, 1);
+        this.selected = [];
+        this.selectedDataUpdated_();
+        this.fire('delete-example', {'index': deletedIndex});
+        this.$.dive.selectedIndices = [];
+        if (!this.local) {
+          const refreshDiveAfterDelete = result => {
+           this.refreshDive_();
+          };
+          const url = this.makeUrl_('/data/plugin/whatif/delete_example',
+            {'index': deletedIndex});
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete);
+        } else {
+          this.refreshDive_();
+        }
+      },
+
+      shouldDisableReset_: function(exampleChanged) {
+        return !exampleChanged;
+      },
+
+      resetDatapoint_: function() {
+        this.selectedExampleAndInference.changed = false;
+        const origExampleJsonString = JSON.stringify(
+          this.selectedExampleAndInference.orig);
+
+        // Force reset of example in example viewer component.
+        this.set('selectedExampleAndInference.example', {});
+        requestAnimationFrame(
+          () => this.set('selectedExampleAndInference.example',
+                         JSON.parse(origExampleJsonString)));
+
+        this.updatedExample = true;
+        this.visdata[this.selected[0]] = this.exampleToDataPoint_(
+          this.selectedExampleAndInference.example);
+        this.updateExample_(origExampleJsonString, this.selected[0]);
+        this.refreshDive_();
+      },
+
+      addChart: function(chartType, featureName, data){
+        let chart;
+        if (chartType == 'numeric'){
+          chart = this.makeLineChart(featureName, data);
+        } else if (chartType == 'categorical'){
+          chart = this.makeBarChart(featureName, data);
+        } else {
+          console.error('Unknown chartType: ' + chartType);
+        }
+
+        // Delete spinner
+        const container = this.featureContainerByName(featureName);
+        deleteElement(container.querySelector('paper-spinner-lite'));
+
+        // Append chart
+        const categoryPane = container.querySelector('.tf-category-pane-content');
+        Polymer.dom(categoryPane).appendChild(chart);
+
+        // Remove the feature from pending queue, so it can be called again.
+        const feature_ind =
+          this.partialDepPlotPendingFeatures.indexOf(featureName);
+        if (feature_ind > -1) {
+          this.partialDepPlotPendingFeatures.splice(feature_ind, 1);
+        }
+      },
+
+      makeBarChart: function(featureName, data){
+        // categorical data:
+        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
+        //        {"step": ["Married-AF-spouse"], "scalar": 0.15340332686901093}]}
+
+        function convertPoint(point){
+          // point: {"step": ["Divorced"], "scalar": 0.1533520370721817}
+          return {
+            x: point.step,
+            y: point.scalar
+          };
+        };
+
+        const origValEntry = this.createPdEntryForCurrentValue(featureName, data);
+        if (origValEntry) {
+          let indexOfOrigValInData = -1;
+          const origKey = _.keys(data)[0];
+          const origData = data[origKey];
+          for (let i = 0; i < origData.length; i++) {
+            if (origData[i].step == origValEntry.step) {
+              indexOfOrigValInData = i;
+              break;
+            }
+          }
+          if (indexOfOrigValInData != -1) {
+            origData.splice(indexOfOrigValInData, 1);
+          }
+          data[origKey + ' - original value'] = [origValEntry];
+        }
+
+        // Convert the data into the format expected by vz-bar-chart.
+        const mapped = _.mapValues(data, function(pointsForSeries){
+          return _.map(pointsForSeries, point => convertPoint(point));
+        });
+
+        const chart = document.createElement('vz-bar-chart');
+        chart.data = mapped;
+
+        return chart;
+      },
+
+      makeLineChart: function(featureName, data){
+        // numerical data:
+        // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
+        //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
+
+        const chart = document.createElement('vz-line-chart');
+        const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+        const formatValueOrNaN = function (x) {
+          return Number.isNaN(x) ? 'NaN' : valueFormatter(x);
+        };
+        if (this.modelType == 'classification') {
+          chart.defaultYRange = [0, 1];
+        }
+        chart.tooltipColumns = [
+          {
+              title: 'Inference value',
+              evaluate: d => {
+                let label = d.dataset.metadata().name;
+                if (!isNaN(label) && label.length > 0 && this.labelVocab) {
+                  const index = +label;
+                  if (index < this.labelVocab.length && index >= 0) {
+                    label += ' - ' + this.labelVocab[index];
+                  }
+                }
+                return label;
+              }
+          },
+          {
+              title: 'Feature value',
+              evaluate: d => formatValueOrNaN(d.datum.step),
+          },
+          {
+              title: 'Score',
+              evaluate: d => formatValueOrNaN(d.datum.scalar),
+          },
+        ];
+
+        const origValEntry = this.createPdEntryForCurrentValue(featureName, data);
+        if (origValEntry) {
+          const origKey = _.keys(data)[0];
+          data[origKey + ' - original value'] = [origValEntry];
+        }
+        const series = _.keys(data);
+        chart.setVisibleSeries(series);
+        series.forEach(label => chart.setSeriesData(label, data[label]));
+        return chart;
+      },
+
+      createPdEntryForCurrentValue: function(featureName, data) {
+        // Extract the class and feature value index from the key of the PD
+        // chart data .
+        const key = _.keys(data)[0];
+        const indexOfIndexStr = key.indexOf('index');
+        let classToChart = +key;
+        let indexForValue = 0;
+        if (indexOfIndexStr > -1) {
+          classToChart = +(key.substring(0, key.indexOf(' ')))
+          indexForValue = +(key.substring(indexOfIndexStr + 6, key.indexOf(')')));
+        }
+
+        let origValue = this.visdata[this.selected[0]][featureName];
+        if (Array.isArray(origValue)) {
+          origValue = origValue[indexForValue];
+        }
+
+        const inferences = this.selectedExampleAndInference.inferences[this.selectedExampleAndInference.inferences.length - 1];
+        let origInferenceScore = -1;
+        for (let i = 0; i < inferences.length; i++) {
+          if (inferences[i].label == classToChart.toString() || inferences[i].label == "") {
+            origInferenceScore = inferences[i].score;
+            break;
+          }
+        }
+        if (origInferenceScore == -1) {
+          return null;
+        }
+        return {step: origValue, scalar: origInferenceScore};
+      },
+
+      showToast: function(msg) {
+        const toast = document.createElement('paper-toast');
+        document.body.appendChild(toast);
+        toast.text = msg;
+        toast.show();
+
+        // Also, log to console.
+        console.error(msg);
+      },
+
+      makeChartForFeature_: function(chartType, featureName, data) {
+        data.forEach(subfeature => this.addChart(chartType, featureName, subfeature));
+      },
+
+      getInferenceVisualization: function(featureName, event){
+
+        // The range of x-values to interpolate over for numerical features.
+        const xMin = this.getUniqueByEvent(event, '.x-min').value;
+        const xMax = this.getUniqueByEvent(event, '.x-max').value;
+
+        // For a numerical feature with many repeated values, we allow users to restrict
+        // inference to a smaller range of indices by using a pattern
+        // (e.g. "0,2,4-6" runs inference for indices 0, 2, 4, 5, 6).
+        const featureIndexPattern = this.getUniqueByEvent(event, '.feature-index-pattern').value;
+
+        const urlParams = {
+          'feature_name': featureName,
+          'inference_address': this.inferenceAddress,
+          'model_name': this.modelName,
+          'model_type': this.modelType,
+          'model_version': this.modelVersion,
+          'model_signature': this.modelSignature,
+          'x_min': xMin,
+          'x_max': xMax,
+          'feature_index_pattern': featureIndexPattern,
+          'example_index': this.selected[0]
+        };
+
+        if (!this.local) {
+          const url = tf_backend.addParams(
+            '/data/plugin/whatif/infer_mutants', urlParams);
+          const chartMakerCallback = function(result){
+            this.makeChartForFeature_(
+              result.value.chartType, featureName, result.value.data);
+          };
+          this.makeAsyncRequest_(url, chartMakerCallback.bind(this));
+        } else {
+          this.fire('infer-mutants', urlParams);
+        }
+
+        const container = this.featureContainerByName(
+          featureName).querySelector('.tf-category-pane-content');
+        const spinner = document.createElement('paper-spinner-lite');
+        spinner.setAttribute('active', true);
+        Polymer.dom(container).appendChild(spinner);
+      },
+
+      shouldHideFeatureIndiciesSelector: function(featureName, selected) {
+        if (!selected || selected.length == 0 || !this.visdata || this.visdata.length <= selected[0]) {
+          return true;
+        }
+        const item = this.visdata[selected[0]];
+        return !Array.isArray(item[featureName]);
+      },
+
+      // Return the feature container associated with the feature name.
+      featureContainerByName: function(featureName){
+        return this.$$('[data-feature-name="' + featureName + '"]');
+      },
+
+      // Return the feature container associated with the specific event.
+      featureContainerByEvent: function(event){
+        let el = Polymer.dom(event).localTarget;
+        while (!el.classList.contains('feature-container')) {
+          el = el.parentNode;
+       }
+       return el;
+      },
+
+      // Returns bool for whether an ancestor has targetClass.
+      hasAncestorClass: function(event, targetClass){
+        let el = Polymer.dom(event).localTarget;
+        while (!el.classList.contains('feature-container')) {
+          if (el.classList.contains(targetClass)) {
+              return true;
+          }
+          el = el.parentNode;
+       }
+       return false;
+      },
+
+      // Get the selector within .feature-container for the event
+      getUniqueByEvent(event, selector){
+        return this.featureContainerByEvent(event).querySelector(selector);
+      },
+
+      shouldToggleCategoryPane: function(event){
+        return !this.hasAncestorClass(event, 'range-input-container');
+      },
+
+      categoryPaneClicked: function(event){
+        // Make sure the user meant to trigger a get-request.
+        if (!this.shouldToggleCategoryPane(event)){
+          return;
+        }
+
+        const element = this.getUniqueByEvent(event, '.tf-category-pane-content');
+
+        if (element.hasAttribute('hidden')){
+          element.removeAttribute('hidden');
+
+          // Make sure the feature wasn't already requested.
+          const featureName = event.model.get('item').name;
+          if (this.partialDepPlotPendingFeatures.indexOf(featureName) > -1) {
+            return;
+          }
+          this.partialDepPlotPendingFeatures.push(featureName);
+
+          this.getInferenceVisualization(featureName, event);
+
+        } else {
+          this.hidePdElement_(element);
+        }
+      },
+
+      hidePdElement_: function(element) {
+        element.setAttribute('hidden', true);
+
+        // Delete all the charts.
+        let charts = element.querySelectorAll('vz-line-chart');
+        charts.forEach(function(chart){
+          deleteElement(chart);
+        });
+        charts = element.querySelectorAll('vz-bar-chart');
+        charts.forEach(function(chart){
+          deleteElement(chart);
+        });
+      },
+
+      populateTabs: function() {
+        // First hide all existing PD plots before refreshing.
+        const elements = document.querySelectorAll('.tf-category-pane-content');
+        for (let i = 0; i < elements.length; i++) {
+          this.hidePdElement_(elements[i]);
+        }
+
+        if (!this.local) {
+          const url =
+              tf_backend.addParams(
+                '/data/plugin/whatif/eligible_features', {});
+          const setEligibleFields = result => {
+            this.set('partialDepPlotEligibleFeatures', result.value);
+          };
+          this.makeAsyncRequest_(url, setEligibleFields);
+        } else {
+          this.fire('get-eligible-features');
+        }
+      },
+    });
+
+    tf_tensorboard.registerDashboard({
+      plugin: 'whatif',
+      elementName: 'tf-interactive-inference-dashboard',
+      tabName: 'What-If Tool',
+    });
+
+  </script>
+</dom-module>
+

@@ -44,8 +44,7 @@ limitations under the License.
     </style>
     <style>
       :host {
-        width: 100%;
-        font-family: 'Roboto';
+        display: flex;
       }
 
       .seq-feat {
@@ -54,19 +53,6 @@ limitations under the License.
 
       .value-list {
         width:100%;
-      }
-
-      .value {
-        padding: 0 5px;
-        /* TODO(jwexler): Determine how to embed in smart engine iron-list of vz-example-viewers
-         * without needing this !important. */
-        width: 100px !important;
-        --paper-input-container: {
-          padding: 1px 0 0 0;
-        };
-        --paper-input-container-underline: {
-          display: none;
-        };
       }
 
       .slider-holder {
@@ -96,8 +82,8 @@ limitations under the License.
       }
 
       .outer {
-        border: 1px solid rgba(61,140,207,.3);
-        margin: 5px;
+        width: 100%;
+        overflow: auto;
         padding: 5px;
       }
 
@@ -116,11 +102,42 @@ limitations under the License.
       .value-pill {
         display: flex;
         border-radius: 18px;
-        background: lightgrey;
+        background: #f1f3f4;
         margin: 0 8px 8px 0;
+        text-overflow: ellipsis;
+        padding: 0 8px 4px;
+        border: 1px solid #f1f3f4;
+      }
+
+      .value-pill:hover {
+        box-shadow:  0px 2px 2px 0px rgba(0,0,0,0.12), 0px 1px 3px 0px rgba(0,0,0,0.20);
+        background: #e8eaed;
+        border: 1px solid #e8eaed;;
+      }
+
+      .value-pill:focus {
+        background : #e8eaed;
+        border: 2px solid rgba(224,145,31,0.8);
+        box-shadow: 0px 0px 2px 0px rgba(241,101,40,0.4);
+        outline: none;
+      }
+
+      input[type=number]::-webkit-inner-spin-button,
+      input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .value-pill-stacked {
+        width: 100%
+      }
+
+      .value-pill-grid {
+        width: 120px;
       }
 
       .feature-name {
+        font-weight: 500;
         margin-bottom: 5px;
       }
 
@@ -186,6 +203,7 @@ limitations under the License.
       }
 
       .imagecard {
+        width: 100%;
         padding: 8px;
         margin-bottom: 5px;
       }
@@ -197,174 +215,164 @@ limitations under the License.
       .saliency-legend-label {
         margin-bottom: 5px;
       }
+
     </style>
     <div class="outer">
-      <div>
-        <template is="dom-repeat" items="[[featuresList]]" as="feat">
-          <div class="flex-controls feature-name">
-            <div>[[feat.name]]</div>
-            <paper-icon-button data-feature="[[feat.name]]"
-                                icon="remove-circle-outline"
-                                on-click="deleteFeature"
-                                class$="[[getDeleteFeatureButtonClass(readonly)]]">
-            </paper-icon-button>
-          </div>
-          <template is="dom-if" if="[[isImage(feat.name)]]">
-            <paper-card class="imagecard">
-              <img class="image" src="[[getImageSrc(feat.name)]]"
-                    id="[[getImageId(feat.name)]]"></img>
-              <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
-              <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
-                <div>Image windowing (contrast)</div>
-                <div class="slider-holder indent">
-                  <div class="slider-label windowing-label">Window center:</div>
-                  <paper-slider class="slider" editable=true  max="255"
-                                immediate-value="{{windowCenter}}" value="[[windowCenter]]">
-                  </paper-slider>
-                </div>
-                <div class="slider-holder indent">
-                  <div class="slider-label windowing-label">Window width:</div>
-                  <paper-slider class="slider" editable=true  max="512" min="1"
-                                immediate-value="{{windowWidth}}" value="[[windowWidth]]">
-                  </paper-slider>
-                </div>
-                <div class="flex-controls">
-                  <div class="scale-label">Image scale percentage:</div>
-                  <paper-input no-label-float type="number" min="10" max="500"
-                                value="{{imageScalePercentage}}">
-                  </paper-input>
-                  <paper-button raised on-click="updateImages" class="image-scale-button">
-                    set
-                  </paper-button>
-                </div>
-              </template>
-            </paper-card>
-          </template>
-          <template is="dom-if" if="[[!isImage(feat.name)]]">
-            <div class="flex-controls">
-              <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
-                  <div class$="[[getInputPillClass(feat.name)]]">
-                    <paper-icon-button data-feature="[[feat.name]]" data-index="[[index]]"
-                                        icon="remove-circle-outline"
-                                        on-click="deleteValue"
-                                        class$="[[getDeleteValueButtonClass(readonly)]]">
-                    </paper-icon-button>
-                    <paper-input class$="[[getInputClass(feat.name)]]" value="[[value]]"
-                                  prevent-invalid-input allowed-pattern="[[getInputPattern(feat.name)]]"
-                                  no-label-float readonly="[[readonly]]"
-                                  data-feature="[[feat.name]]"
-                                  data-index="[[index]]"
-                                  on-input="onValueChanged">
-                    </paper-input>
-                  </div>
-                </template>
-              <paper-icon-button data-feature="[[feat.name]]" icon="add-circle-outline" on-click="addValue"
-                                  class$="[[getAddValueButtonClass(readonly)]]">
-              </paper-icon-button>
-            </div>
-          </template>
-        </template>
-        <template is="dom-if" if="[[isSeqExample(maxSeqNumber)]]">
-          <div class="slider-holder">
-            <div class="slider-label">Sequence Number:</div>
-            <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
-            </paper-slider>
-          </div>
-          <template is="dom-repeat" items="[[seqFeaturesList]]" as="seqfeat">
-            <div class="seqfeat">
-              <div class="flex-controls feature-name">
-                <div>[[seqfeat.name]]</div>
-                <paper-icon-button data-feature="[[seqfeat.name]]"
-                                    icon="remove-circle-outline"
-                                    on-click="deleteFeature"
-                                    class$="[[getDeleteFeatureButtonClass(readonly)]]">
-                </paper-icon-button>
+      <template is="dom-if" if="[[showSearchBox]]">
+        <paper-input value="{{featureSearchValue}}" label="Search" class="filter-input" no-label-float>
+          <iron-icon icon="icons:search" prefix></iron-icon>
+        </paper-input>
+      </template>
+      <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
+        <div class="flex-controls feature-name">
+          <div>[[feat.name]]</div>
+          <!--paper-icon-button data-feature="[[feat.name]]"
+                              icon="remove-circle-outline"
+                              on-click="deleteFeature"
+                              class$="[[getDeleteFeatureButtonClass(readonly)]]">
+          </paper-icon-button-->
+        </div>
+        <template is="dom-if" if="[[isImage(feat.name)]]">
+          <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
+            <img class="image" src="[[getImageSrc(feat.name)]]"
+                  id="[[getImageId(feat.name)]]"></img>
+            <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
+            <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+              <div>Image windowing (contrast)</div>
+              <div class="slider-holder indent">
+                <div class="slider-label windowing-label">Window center:</div>
+                <paper-slider class="slider" editable=true  max="255"
+                              immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                </paper-slider>
               </div>
-              <template is="dom-if" if="[[isImage(seqfeat.name)]]">
-                <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
-                      id="[[getImageId(seqfeat.name)]]"></img>
-                <canvas id="[[getCanvasId(seqfeat.name)]]"
-                        data-feature="[[seqfeat.name]]"
-                        data-seq-num="[[seqNumber]]"></canvas>
-                <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
-                  <div class="image-controls">
-                    <div>Image windowing (contrast)</div>
-                    <div class="slider-holder indent">
-                      <div class="slider-label windowing-label">Window center:</div>
-                      <paper-slider class="slider" editable=true  max="255"
-                                    immediate-value="{{windowCenter}}" value="[[windowCenter]]">
-                      </paper-slider>
-                    </div>
-                    <div class="slider-holder indent">
-                      <div class="slider-label windowing-label">Window width:</div>
-                      <paper-slider class="slider" editable=true  max="512" min="1"
-                                    immediate-value="{{windowWidth}}" value="[[windowWidth]]">
-                      </paper-slider>
-                    </div>
-                    <div class="flex-controls">
-                      <div class="scale-label">Image scale percentage:</div>
-                      <paper-input no-label-float type="number" min="10" max="500"
-                                    value="{{imageScalePercentage}}">
-                      </paper-input>
-                      <paper-button raised on-click="updateImages" class="image-scale-button">
-                        set
-                      </paper-button>
-                    </div>
+              <div class="slider-holder indent">
+                <div class="slider-label windowing-label">Window width:</div>
+                <paper-slider class="slider" editable=true  max="512" min="1"
+                              immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                </paper-slider>
+              </div>
+              <div class="flex-controls">
+                <div class="scale-label">Image scale percentage:</div>
+                <paper-input no-label-float type="number" min="10" max="500"
+                              value="{{imageScalePercentage}}">
+                </paper-input>
+                <paper-button raised on-click="updateImages" class="image-scale-button">
+                  set
+                </paper-button>
+              </div>
+            </template>
+          </paper-card>
+        </template>
+        <template is="dom-if" if="[[!isImage(feat.name)]]">
+          <div class="flex-controls">
+            <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
+              <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                    readonly="[[readonly]]"
+                    on-input="onValueChanged"
+                    data-feature="[[feat.name]]"
+                    data-index="[[index]]"
+                    type="[[getInputType(feat.name)]]"
+                    value="[[value]]">
+              </input>
+            </template>
+            <!--paper-icon-button data-feature="[[feat.name]]" icon="add-circle-outline" on-click="addValue"
+                                class$="[[getAddValueButtonClass(readonly)]]">
+            </paper-icon-button-->
+          </div>
+        </template>
+      </template>
+      <template is="dom-if" if="[[isSeqExample(maxSeqNumber)]]">
+        <div class="slider-holder">
+          <div class="slider-label">Sequence Number:</div>
+          <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
+          </paper-slider>
+        </div>
+        <template is="dom-repeat" items="[[filteredSeqFeaturesList]]" as="seqfeat">
+          <div class="seqfeat">
+            <div class="flex-controls feature-name">
+              <div>[[seqfeat.name]]</div>
+              <!--paper-icon-button data-feature="[[seqfeat.name]]"
+                                  icon="remove-circle-outline"
+                                  on-click="deleteFeature"
+                                  class$="[[getDeleteFeatureButtonClass(readonly)]]">
+              </paper-icon-button-->
+            </div>
+            <template is="dom-if" if="[[isImage(seqfeat.name)]]">
+              <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                    id="[[getImageId(seqfeat.name)]]"></img>
+              <canvas id="[[getCanvasId(seqfeat.name)]]"
+                      data-feature="[[seqfeat.name]]"
+                      data-seq-num="[[seqNumber]]"></canvas>
+              <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+                <div class="image-controls">
+                  <div>Image windowing (contrast)</div>
+                  <div class="slider-holder indent">
+                    <div class="slider-label windowing-label">Window center:</div>
+                    <paper-slider class="slider" editable=true  max="255"
+                                  immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                    </paper-slider>
                   </div>
-                </template>
-              </template>
-              <template is="dom-if" if="[[!isImage(seqfeat.name)]]">
-                <div class="flex-controls">
-                  <template is="dom-repeat"
-                            items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
-                            as="seqvalue">
-                    <div class$="[[getInputPillClass(seqfeat.name)]]">
-                      <paper-icon-button data-feature="[[seqfeat.name]]" data-index="[[index]]"
-                                          data-seq-num="[[seqNumber]]" icon="remove-circle-outline"
-                                          on-click="deleteValue"
-                                          class$="[[getDeleteValueButtonClass(readonly)]]">
-                      </paper-icon-button>
-                      <paper-input class$="[[getInputClass(seqfeat.name)]]"
-                                    value="[[seqvalue]]"
-                                    prevent-invalid-input
-                                    allowed-pattern="[[getInputPattern(seqfeat.name)]]"
-                                    no-label-float readonly="[[readonly]]"
-                                    on-input="onValueChanged"
-                                    data-feature="[[seqfeat.name]]"
-                                    data-index="[[index]]"
-                                    data-seq-num="[[seqNumber]]">
-                      </paper-input>
-                    </div>
-                  </template>
-                  <paper-icon-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]"
-                                      icon="add-circle-outline" on-click="addValue"
-                                      class$="[[getAddValueButtonClass(readonly)]]">
-              </paper-icon-button>
+                  <div class="slider-holder indent">
+                    <div class="slider-label windowing-label">Window width:</div>
+                    <paper-slider class="slider" editable=true  max="512" min="1"
+                                  immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                    </paper-slider>
+                  </div>
+                  <div class="flex-controls">
+                    <div class="scale-label">Image scale percentage:</div>
+                    <paper-input no-label-float type="number" min="10" max="500"
+                                  value="{{imageScalePercentage}}">
+                    </paper-input>
+                    <paper-button raised on-click="updateImages" class="image-scale-button">
+                      set
+                    </paper-button>
+                  </div>
                 </div>
               </template>
-            </div>
-          </template>
+            </template>
+            <template is="dom-if" if="[[!isImage(seqfeat.name)]]">
+              <div class="flex-controls">
+                <template is="dom-repeat"
+                          items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                          as="seqvalue">
+                  <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                      readonly="[[readonly]]"
+                      on-input="onValueChanged"
+                      data-feature="[[seqfeat.name]]"
+                      data-index="[[index]]"
+                      data-seq-num="[[seqNumber]]"
+                      type="[[getInputType(seqfeat.name)]]"
+                      value="[[seqvalue]]">
+                  </input>
+                </template>
+                <!--paper-icon-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]"
+                                    icon="add-circle-outline" on-click="addValue"
+                                    class$="[[getAddValueButtonClass(readonly)]]"-->
+            </paper-icon-button>
+              </div>
+            </template>
+          </div>
         </template>
-        <paper-button raised on-click="openAddFeatureDialog"
-                      class$="[[getAddFeatureButtonClass(readonly)]]">
-          Add Feature
-        </paper-button>
-        <paper-card class$="[[getSaliencyControlsHolderClass(saliency)]]">
-          <div class="saliency-legend-label">Saliency legend</div>
-          <div class="flex-controls">
-            <svg id="saliencyLegend"></svg>
-            <paper-checkbox id="salCheckbox" checked on-change="showSalCheckboxChange">
-              Show saliency
-            </paper-checkbox>
-          </div>
-          <div class="flex-controls">
-            <div class="slider-label">Saliency cutoff %</div>
-            <paper-slider class="slider" editable=true immediate-value="{{saliencyCutoff}}"
-                          value="[[saliencyCutoff]]">
-            </paper-slider>
-          </div>
-        </paper-card>
-      </div>
+      </template>
+      <!--paper-button raised on-click="openAddFeatureDialog"
+                    class$="[[getAddFeatureButtonClass(readonly)]]">
+        Add Feature
+      </paper-button-->
+      <paper-card class$="[[getSaliencyControlsHolderClass(saliency)]]">
+        <div class="saliency-legend-label">Saliency legend</div>
+        <div class="flex-controls">
+          <svg id="saliencyLegend"></svg>
+          <paper-checkbox id="salCheckbox" checked on-change="showSalCheckboxChange">
+            Show saliency
+          </paper-checkbox>
+        </div>
+        <div class="flex-controls">
+          <div class="slider-label">Saliency cutoff %</div>
+          <paper-slider class="slider" editable=true immediate-value="{{saliencyCutoff}}"
+                        value="[[saliencyCutoff]]">
+          </paper-slider>
+        </div>
+      </paper-card>
     </div>
     <paper-dialog id="addFeatureDialog">
       <h2>Add Feature</h2>

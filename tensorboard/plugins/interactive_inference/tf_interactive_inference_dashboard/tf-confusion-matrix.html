@@ -1,0 +1,157 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- Displays a simple confusion matrix. -->
+<dom-module id="tf-confusion-matrix">
+  <template>
+    <style>
+      table {
+        display: inline-block;
+      }
+      td {
+        text-align: right;
+      }
+      th, td {
+        padding: 3px;
+      }
+      .flex {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+      .pred-label {
+        text-align: left;
+        font-size: 10px;
+      }
+      .actual-label {
+        text-align: right;
+        font-size: 10px;
+      }
+      .n-label {
+        font-size: 10px;
+        vertical-align: bottom;
+      }
+      .correct {
+        background: DarkSeaGreen;
+      }
+      .incorrect {
+        background: LightCoral;
+      }
+      .percentage {
+        padding-right: 5px;
+        color: gray;
+        width: 60px;
+      }
+    </style>
+    <table>
+      <tr>
+        <td class="n-label">[[getNText(total)]]</td>
+        <th class="pred-label">Predicted<br/>Yes</th>
+        <th class="pred-label">Predicted<br/>No</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th class="actual-label">Actual<br/>Yes</th>
+        <td class="correct">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tp)]]</div>
+            <div>[[counts.tp]]</div>
+          </div>
+        </td>
+        <td class="incorrect">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fn)]]</div>
+            <div>[[counts.fn]]</div>
+          </div>
+        </td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tp, counts.fn)]]</div>
+            <div>[[getTotal(counts.tp, counts.fn)]]</div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th class="actual-label">Actual<br/>No</th>
+        <td class="incorrect">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fp)]]</div>
+            <div>[[counts.fp]]</div>
+          </div>
+        </td>
+        <td class="correct">
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tn)]]</div>
+            <div>[[counts.tn]]</div>
+          </div>
+        </td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fp, counts.tn)]]</div>
+            <div>[[getTotal(counts.fp, counts.tn)]]</div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.tp, counts.fp)]]</div>
+            <div>[[getTotal(counts.tp, counts.fp)]]</div>
+          </div>
+        </td>
+        <td>
+          <div class="flex">
+            <div class="percentage">[[getPercentage(total, counts.fn, counts.tn)]]</div>
+            <div>[[getTotal(counts.fn, counts.tn)]]</div>
+          </div>
+        </td>
+        <td></td>
+      </tr>
+    </table>
+  </template>
+
+  <script>
+    "use strict";
+
+    Polymer({
+      is: "tf-confusion-matrix",
+      properties: {
+        counts: {type: Object, observer: 'setTotal'},
+        total: Number,
+      },
+
+      setTotal: function(counts) {
+        this.total = counts.fp + counts.tp + counts.tn + counts.fn;
+      },
+
+      getTotal: function(count1, count2) {
+        return count1 + count2;
+      },
+
+      getPercentage: function(total, count1, count2) {
+        const count = count2 ? count1 + count2 : count1;
+        return '(' + d3.format(",.1%")(count / total) + ')';
+      },
+
+      getNText: function(total) {
+        return 'n=' + total;
+      },
+    });
+
+  </script>
+</dom-module>
