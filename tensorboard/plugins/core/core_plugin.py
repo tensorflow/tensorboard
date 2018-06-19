@@ -333,7 +333,6 @@ flag.\
     return CorePlugin(context)
 
 
-
 def _gzip(bytestring):
   out = six.BytesIO()
   # Set mtime to zero for deterministic results across TensorBoard launches.

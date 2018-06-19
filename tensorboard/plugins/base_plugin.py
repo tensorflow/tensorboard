@@ -176,7 +176,7 @@ class TBLoader(object):
     pass
 
   def fix_flags(self, flags):
-    """Allows flag values to be corrected after parsing.
+    """Allows flag values to be corrected or validated after parsing.
 
     Args:
       flags: The parsed argparse.Namespace object.

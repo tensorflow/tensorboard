@@ -74,6 +74,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
       ValueError: If both the `debugger_data_server_grpc_port` and
         `debugger_port` flags are specified as >= 0.
     """
+    # Check that not both grpc port flags are specified.
     if flags.debugger_data_server_grpc_port > 0 and flags.debugger_port > 0:
       raise ValueError(
           '--debugger_data_server_grpc_port and --debugger_port are mutually '
@@ -88,41 +89,35 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
     Returns:
       A DebuggerPlugin instance or None if it couldn't be loaded.
     """
-    # Check that not both grpc port flags are specified.
-    if (context.flags.debugger_data_server_grpc_port > 0 or
-        context.flags.debugger_port > 0):
-      return _ConstructDebuggerPluginWithGrpcPort(context)
-    return None
-
-
-def _ConstructDebuggerPluginWithGrpcPort(context):
-  flags = context.flags
-  try:
-    # pylint: disable=line-too-long,g-import-not-at-top
-    from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
-    from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
-    # pylint: enable=line-too-long,g-import-not-at-top
-  except ImportError as e:
-    e_type, e_value, e_traceback = sys.exc_info()
-    message = e.msg if hasattr(e, 'msg') else e.message  # Handle py2 vs py3
-    if 'grpc' in message:
-      e_value = ImportError(
-          message +
-          '\n\nTo use the debugger plugin, you need to have '
-          'gRPC installed:\n  pip install grpcio')
-    six.reraise(e_type, e_value, e_traceback)
-
-  if flags.debugger_port > 0:
-    interactive_plugin = (
-        interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
-    logging.info('Starting Interactive Debugger Plugin at gRPC port %d',
-                 flags.debugger_data_server_grpc_port)
-    interactive_plugin.listen(flags.debugger_port)
-    return interactive_plugin
-  elif flags.debugger_data_server_grpc_port > 0:
-    noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
-    logging.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
-                 flags.debugger_data_server_grpc_port)
-    noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
-    return noninteractive_plugin
-  raise AssertionError()
+    if not (context.flags.debugger_data_server_grpc_port > 0 or
+            context.flags.debugger_port > 0):
+      return None
+    flags = context.flags
+    try:
+      # pylint: disable=line-too-long,g-import-not-at-top
+      from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
+      from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
+      # pylint: enable=line-too-long,g-import-not-at-top
+    except ImportError as e:
+      e_type, e_value, e_traceback = sys.exc_info()
+      message = e.msg if hasattr(e, 'msg') else e.message  # Handle py2 vs py3
+      if 'grpc' in message:
+        e_value = ImportError(
+            message +
+            '\n\nTo use the debugger plugin, you need to have '
+            'gRPC installed:\n  pip install grpcio')
+      six.reraise(e_type, e_value, e_traceback)
+    if flags.debugger_port > 0:
+      interactive_plugin = (
+          interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
+      logging.info('Starting Interactive Debugger Plugin at gRPC port %d',
+                   flags.debugger_data_server_grpc_port)
+      interactive_plugin.listen(flags.debugger_port)
+      return interactive_plugin
+    elif flags.debugger_data_server_grpc_port > 0:
+      noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
+      logging.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
+                   flags.debugger_data_server_grpc_port)
+      noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
+      return noninteractive_plugin
+    raise AssertionError()

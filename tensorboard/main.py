@@ -35,11 +35,11 @@ os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
 import argparse
-import functools
 import logging
 import sys
 
 from tensorboard import default
+from tensorboard import program
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +66,11 @@ def run_main():
     flags, unparsed = parser.parse_known_args()
   for loader in loaders:
     loader.fix_flags(flags)
-  main = functools.partial(program.main, loaders, assets, flags)
+  server = program.TensorBoard(loaders, assets, flags)
   if app is None:
-    sys.exit(main(unparsed))
+    sys.exit(server.main(unparsed))
   else:
-    app.run(main, sys.argv[:1] + unparsed)
+    app.run(server.main, sys.argv[:1] + unparsed)
 
 
 if __name__ == '__main__':

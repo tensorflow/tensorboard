@@ -63,125 +63,144 @@ def setup_environment():
   serving.WSGIRequestHandler.protocol_version = 'HTTP/1.1'
 
 
-def main(plugin_loaders=None,
-         assets_zip_provider=None,
-         flags=None,
-         unused_argv=None,
-         wsgi_middleware=None,
-         **kwargs):
-  """Blocking main function for TensorBoard.
+class TensorBoard(object):
+  """Class for launching TensorBoard web server."""
 
-  This function is called by `tensorboard.main.run_main` which is the
-  standard entrypoint for the tensorboard command line program.
+  def __init__(self,
+               plugin_loaders=None,
+               assets_zip_provider=None,
+               flags=None,
+               wsgi_middleware=None):
+    """Creates new instance.
 
-  Args:
-    plugin_loaders: A list of TBLoader plugin loader instances. If not
-      specified, defaults to first-party plugins.
-    assets_zip_provider: Delegates to TBContext or uses default if None.
-    flags: The argparse.Namespace object of CLI flags. This value
-      defaults to doing a fresh parse. If kwargs is empty, sys.argv will
-      be taken into consideration. Otherwise, kwargs must be nonempty
-      for only Python-specified data structures to be used.
-    unused_argv: The unparsed arguments.
-    wsgi_middleware: Optional function for installing middleware around
-      the standard TensorBoard WSGI handler.
-    kwargs: May be specified if flags is None to set CLI flags without
-      using sys.argv.
+    Args:
+      plugin_loaders: A list of TBLoader plugin loader instances. If not
+        specified, defaults to first-party plugins.
+      assets_zip_provider: Delegates to TBContext or uses default if
+        None.
+      flags: The argparse.Namespace object of CLI flags. If this is not
+        passed, then main() will perform a fresh parse of sys.argv, or
+        its kwargs may be set.
+      wsgi_middleware: Optional function for installing middleware
+        around the standard TensorBoard WSGI handler.
 
-  Returns:
-    Process exit code, i.e. 0 if successful or non-zero on failure. In
-    practice, an exception will most likely be raised instead of
-    returning non-zero.
+    :type plugin_loaders: list[base_plugin.TBLoader]
+    :type assets_zip_provider: () -> file
+    """
+    if plugin_loaders is None:
+      from tensorboard import default
+      plugin_loaders = default.PLUGIN_LOADERS
+    if assets_zip_provider is None:
+      from tensorboard import default
+      assets_zip_provider = default.get_assets_zip_provider()
+    self.plugin_loaders = plugin_loaders
+    self.assets_zip_provider = assets_zip_provider
+    self._flags = flags
+    self._wsgi_middleware = wsgi_middleware
 
-  Raises:
-    ValueError: If flag values are invalid.
+  def main(self, unparsed_argv=None, **kwargs):
+    """Blocking main function for TensorBoard.
 
-  :type plugin_loaders: list[base_plugin.TBLoader]
-  :type assets_zip_provider: () -> file
-  :rtype: int
-  """
-  # Make it easy to run TensorBoard inside other programs, e.g. Colab.
-  if plugin_loaders is None:
-    from tensorboard import default
-    plugin_loaders = default.PLUGIN_LOADERS
-  if flags is None:
-    flags = _make_flags(plugin_loaders, **kwargs)
-  if flags.inspect:
-    logger.info('Not bringing up TensorBoard, but inspecting event files.')
-    event_file = os.path.expanduser(flags.event_file)
-    efi.inspect(flags.logdir, event_file, flags.tag)
+    This function is called by `tensorboard.main.run_main` which is the
+    standard entrypoint for the tensorboard command line program.
+
+    Args:
+      unparsed_argv: Ignore (required by Abseil).
+      kwargs: May be used to specify set CLI flags, without using
+        sys.argv. This is only allowed if flags wasn't passed to the
+        constructor.
+
+    Returns:
+      Process exit code, i.e. 0 if successful or non-zero on failure. In
+      practice, an exception will most likely be raised instead of
+      returning non-zero.
+
+    Raises:
+      ValueError: If flag values are invalid.
+
+    :type plugin_loaders: list[base_plugin.TBLoader]
+    :type assets_zip_provider: () -> file
+    :rtype: int
+    """
+    flags = self._get_flags(**kwargs)
+    if flags.inspect:
+      logger.info('Not bringing up TensorBoard, but inspecting event files.')
+      event_file = os.path.expanduser(flags.event_file)
+      efi.inspect(flags.logdir, event_file, flags.tag)
+      return 0
+    try:
+      server, url = self._get_server(flags)
+    except socket.error:
+      return -1
+    sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
+                     (version.VERSION, url))
+    sys.stderr.flush()
+    server.serve_forever()
     return 0
-  if assets_zip_provider is None:
-    from tensorboard import default
-    assets_zip_provider = default.get_assets_zip_provider()
-  tb_app = application.standard_tensorboard_wsgi(flags, plugin_loaders,
-                                                 assets_zip_provider)
-  if wsgi_middleware is not None:
-    tb_app = wsgi_middleware(tb_app)
-  try:
-    server, url = make_simple_server(
-        tb_app, flags.host, flags.port, flags.path_prefix)
-  except socket.error:
-    return -1
-  sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
-                   (version.VERSION, url))
-  sys.stderr.flush()
-  server.serve_forever()
-  return 0
+
+  def launch(self, **kwargs):
+    """Python API for launching TensorBoard.
+
+    Args:
+      kwargs: Command-line flags (e.g. logdir) as Python data structures.
+
+    Returns:
+      The URL of the TensorBoard web server, serving forever in a
+      separate thread.
+
+    Raises:
+      ValueError: If flag values are invalid.
+      socket.error: If a server could not be constructed with the host
+        and port specified. Also logs an error message.
+
+    :type plugin_loaders: list[base_plugin.TBLoader]
+    :type assets_zip_provider: () -> file
+    :rtype: str
+    """
+    # Make it easy to run TensorBoard inside other programs, e.g. Colab.
+    server, url = self._get_server(self._get_flags(**kwargs))
+    thread = threading.Thread(target=server.serve_forever, name='TensorBoard')
+    thread.daemon = True
+    thread.start()
+    return url
+
+  def _get_flags(self, **kwargs):
+    if self._flags is not None:
+      if kwargs:
+        raise ValueError('Flags already passed to constructor')
+      return self._flags
+    args = () if kwargs else sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    for loader in self.plugin_loaders:
+      loader.define_flags(parser)
+    flags, unparsed = parser.parse_args(args)
+    for k, v in kwargs.items():
+      if hasattr(flags, k):
+        raise ValueError('Unknown TensorBoard flag: %s' % k)
+      setattr(flags, k, v)
+    for loader in self.plugin_loaders:
+      loader.fix_flags(flags)
+    return flags
+
+  def _get_server(self, flags):
+    app = application.standard_tensorboard_wsgi(flags, self.plugin_loaders,
+                                                self.assets_zip_provider)
+    if self._wsgi_middleware is not None:
+      app = self._wsgi_middleware(app)
+    return make_simple_server(app, flags.host, flags.port, flags.path_prefix)
 
 
-def launch(plugin_loaders=None, assets_zip_provider=None, **kwargs):
-  """Python API for launching TensorBoard.
-
-  Args:
-    plugin_loaders: A list of TBLoader plugin loader instances. If not
-      specified, defaults to first-party plugins.
-    assets_zip_provider: Delegates to TBContext or uses default if None.
-    kwargs: Command-line flags (e.g. logdir) as Python data structures.
-
-  Returns:
-    The URL of the TensorBoard web server, serving forever in a
-    separate thread.
-
-  Raises:
-    ValueError: If flag values are invalid.
-    socket.error: If a server could not be constructed with the host
-      and port specified. Also logs an error message.
-
-  :type plugin_loaders: list[base_plugin.TBLoader]
-  :type assets_zip_provider: () -> file
-  :rtype: str
-  """
-  # Make it easy to run TensorBoard inside other programs, e.g. Colab.
-  if plugin_loaders is None:
-    from tensorboard import default
-    plugin_loaders = default.PLUGIN_LOADERS
-  flags = _make_flags(plugin_loaders, **kwargs)
-  if assets_zip_provider is None:
-    from tensorboard import default
-    assets_zip_provider = default.get_assets_zip_provider()
-  tb_app = application.standard_tensorboard_wsgi(flags, plugin_loaders,
-                                                 assets_zip_provider)
-  server, url = make_simple_server(
-      tb_app, flags.host, flags.port, flags.path_prefix)
-  thread = threading.Thread(target=server.serve_forever, name='TensorBoard')
-  thread.daemon = True
-  thread.start()
-  return url
-
-
-def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
+def make_simple_server(tb_app, host='', port=0, path_prefix=''):
   """Create an HTTP server for TensorBoard.
 
   Args:
     tb_app: The TensorBoard WSGI application to create a server for.
     host: Indicates the interfaces to bind to ('::' or '0.0.0.0' for all
         interfaces, '::1' or '127.0.0.1' for localhost). A blank value ('')
-        indicates protocol-agnostic all interfaces. If not specified, will
-        default to the flag value.
+        indicates protocol-agnostic all interfaces.
     port: The port to bind to (0 indicates an unused port selected by the
-        operating system). If not specified, will default to the flag value.
-    path_prefix: Optional relative prefix to the path, e.g. "/service/tf"
+        operating system).
+    path_prefix: Optional relative prefix to the path, e.g. "/service/tf".
 
   Returns:
     A tuple of (server, url):
@@ -230,21 +249,6 @@ def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
   tensorboard_url = 'http://%s:%d%s' % (final_host, final_port,
                                         path_prefix)
   return server, tensorboard_url
-
-
-def _make_flags(plugin_loaders, **kwargs):
-  args = () if kwargs else sys.argv[1:]
-  parser = argparse.ArgumentParser()
-  for loader in plugin_loaders:
-    loader.define_flags(parser)
-  flags, _ = parser.parse_args(args)
-  for loader in plugin_loaders:
-    loader.fix_flags(flags)
-  for k, v in kwargs.items():
-    if hasattr(flags, k):
-      raise ValueError('Unknown TensorBoard flag: %s' % k)
-    setattr(flags, k, v)
-  return flags
 
 
 # Kludge to override a SocketServer.py method so we can get rid of noisy
