@@ -152,10 +152,6 @@ limitations under the License.
         margin-top: 10px;
       }
 
-      .rotated-button {
-        transform: rotate(90deg);
-      }
-
       .button {
         font-size: 13px;
         margin: 10px 0 0 0;
@@ -242,10 +238,10 @@ limitations under the License.
         flex: 1 0 auto;
       }
 
-      .bottom-side {
+      .top-side {
         display: flex;
-        padding: 0 8px 8px 0;
-        border-top: 1px solid gray;
+        padding: 0 8px 10px 0;
+        border-bottom: 1px solid gray;
       }
 
       .side-tabs {
@@ -397,6 +393,10 @@ limitations under the License.
         text-transform: none;
       }
 
+      .optimize-threshold-button {
+        margin: 10px;
+      }
+
       .close-partial-deps-button {
         margin: 10px;
       }
@@ -444,8 +444,25 @@ limitations under the License.
         display: flex;
       }
 
+       .flex-wrap {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .optimize-text {
+        margin-top: 5px;
+      }
+
+      .button-bottom-margin {
+        margin-bottom: 5px;
+      }
+
       .threshold-cost-input {
         width: 50%;
+      }
+
+      .bold {
+        font-weight: 500;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
@@ -532,11 +549,26 @@ limitations under the License.
         </div>
       </div>
       <div class$="[[getSideHolderClass_(panelExpanded)]]" id="side">
+        <div class="top-side">
+            <div class="datapoint-left-controls-holder">
+              <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]" on-click="panelExpandToggleClicked_" class="settings-button"></paper-icon-button>
+            </div>
+            <div class="datapoint-right-controls-holder">
+              <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+                <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
+              </a>
+              <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
+              <paper-button on-click="inferClicked_" class="button"
+                            disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+                Run inference
+              </paper-button>
+            </div>
+          </div>
         <div class="side-content">
           <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
             <paper-tab>Datapoint</paper-tab>
             <paper-tab>Features</paper-tab>
-            <paper-tab>Model</paper-tab>
+            <paper-tab>[[getModelTabName(modelType, multiClass)]]</paper-tab>
           </paper-tabs>
           <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
             <div class="datapoint-tab">
@@ -604,7 +636,7 @@ limitations under the License.
             </div>
             <div class="config-tab">
               <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
-                <paper-dropdown-menu label="Set true label feature" class="threshold-dropdown">
+                <paper-dropdown-menu label="Set true label feature in order to investigate model perfomance" class="threshold-dropdown">
                   <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                     <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                       <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
@@ -617,36 +649,18 @@ limitations under the License.
                         label="Ratio of false positive cost to false negative cost"
                         type="number" class="threshold-cost-input">
                     </paper-input>
-                    <paper-button raised on-click="optimizeThresholdClicked_">
-                        Optimize single threshold
-                    </paper-button>
+                    <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                      <paper-button class="generic-button optimize-threshold-button" on-click="optimizeThresholdClicked_">
+                          Optimize threshold
+                      </paper-button>
+                    </template>
                   </div>
                 </template>
               </template>
               <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
-                <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
-                  <div>
-                    <paper-input value="Threshold for positive label" readonly=true class="slider-label"
-                                  no-label-float=true>
-                    </paper-input>
-                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                  immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
-                    </paper-slider>
-                  </div>
-                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                    <div class="roc-and-conf-matrix">
-                      <div class="roc-holder">
-                        <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
-                      </div>
-                      <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
-                                           class="conf-matrix">
-                      </tf-confusion-matrix>
-                    </div>
-                  </template>
-                </template>
                 <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, multiClass, stats)]]">
                   <div class="flex">
-                    <paper-dropdown-menu label="Set positive label thresholds by feature values" class="threshold-dropdown">
+                    <paper-dropdown-menu label="Investigate fairness across all values of a feature" class="threshold-dropdown">
                       <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
                         <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                           <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
@@ -654,7 +668,7 @@ limitations under the License.
                       </paper-listbox>
                     </paper-dropdown-menu>
                     <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedThresholdFeature)]]">
-                      <paper-dropdown-menu label="Add second feature to facet thresholds by" class="threshold-dropdown">
+                      <paper-dropdown-menu label="Add second feature to slice data by" class="threshold-dropdown">
                         <paper-listbox class="dropdown-content" selected="{{selectedSecondThresholdFeature}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                             <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
@@ -664,19 +678,34 @@ limitations under the License.
                     </template>
                   </div>
                   <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                    <div class="flex">
-                      <paper-button raised on-click="optimizeFacetedThresholdsClicked_">
-                          Optimize thresholds indivdually
+                    <div class="optimize-text">Optimize each threshold with any of the following constraints:</div>
+                    <div class="flex-wrap">
+                      <paper-button class="generic-button button-bottom-margin" on-click="optimizeFacetedThresholdsClicked_">
+                          Indivdual thresholds
                       </paper-button>
-                      <paper-button raised on-click="equalOppoClicked_">
-                          Optimize with equal opportunity
+                      <paper-button class="generic-button button-bottom-margin" on-click="equalOppoClicked_">
+                          Equal opportunity
                       </paper-button>
-                      <paper-button raised on-click="equalAccClicked_">
-                          Optimize with equal accuracy
+                      <paper-button class="generic-button button-bottom-margin" on-click="equalAccClicked_">
+                          Equal accuracy
                       </paper-button>
-                      <paper-button raised on-click="demoParityClicked_">
-                          Optimize with demographic parity
+                      <paper-button class="generic-button button-bottom-margin" on-click="demoParityClicked_">
+                          Demographic parity
                       </paper-button>
+                      <paper-button class="generic-button button-bottom-margin" on-click="optimizeThresholdClicked_">
+                          Single threshold
+                      </paper-button>
+                      <div>
+                        <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+                        <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
+                          <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all groups individually</div>
+                          <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of datapoints from each group are predicted yes</div>
+                          <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each group are correctly predicted either as yes or no</div>
+                          <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of all datapoints from each group that are predicted yes are correctly predicted</div>
+                          <div><span class="bold">Single threshold</span> - Optimize a single threshold across all datapoints</div>
+                        </paper-tooltip>
+                      </div>
+
                     </div>
                   </template>
                   <template is="dom-repeat" items="[[featureValueThresholds]]">
@@ -701,23 +730,28 @@ limitations under the License.
                     </div>
                   </template>
                 </template>
+                <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedThresholdFeature)]]">
+                  <div>
+                    <paper-input value="Threshold for positive label" readonly=true class="slider-label"
+                                  no-label-float=true>
+                    </paper-input>
+                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                  immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
+                    </paper-slider>
+                  </div>
+                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                    <div class="roc-and-conf-matrix">
+                      <div class="roc-holder">
+                        <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                      </div>
+                      <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
+                                           class="conf-matrix">
+                      </tf-confusion-matrix>
+                    </div>
+                  </template>
+                </template>
             </div>
           </iron-pages>
-        </div>
-        <div class="bottom-side">
-          <div class="datapoint-left-controls-holder">
-            <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]" on-click="panelExpandToggleClicked_" class="settings-button rotated-button"></paper-icon-button>
-          </div>
-          <div class="datapoint-right-controls-holder">
-            <paper-button on-click="inferClicked_" class="button"
-                          disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-              Re-run inference
-            </paper-button>
-            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
-            <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
-              <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -952,7 +986,7 @@ limitations under the License.
       },
 
       getPanelExpandIcon_: function(panelExpanded) {
-        return panelExpanded ? 'unfold-less' : 'unfold-more'
+        return panelExpanded ? 'fullscreen-exit' : 'fullscreen'
       },
 
       panelExpandToggleClicked_: function() {
@@ -1874,6 +1908,14 @@ limitations under the License.
         this.refreshDive_();
       },
 
+      getModelTabName: function(modelType, multiClass) {
+        let name = 'Performance';
+        if (modelType == 'classification' && !multiClass) {
+          name += '/Fairness';
+        }
+        return name;
+      },
+
       addChart: function(chartType, featureName, data){
         let chart;
         if (chartType == 'numeric'){
@@ -1947,6 +1989,8 @@ limitations under the License.
         //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
 
         const chart = document.createElement('vz-line-chart');
+        chart.colorScale = new Plottable.Scales.Color().range(
+          [d3.schemeCategory10[1], d3.schemeCategory10[0]]);
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
           vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const formatValueOrNaN = function (x) {
@@ -1963,7 +2007,7 @@ limitations under the License.
                 if (!isNaN(label) && label.length > 0 && this.labelVocab) {
                   const index = +label;
                   if (index < this.labelVocab.length && index >= 0) {
-                    label += ' - ' + this.labelVocab[index];
+                    label += ' (' + this.labelVocab[index] + ')';
                   }
                 }
                 return label;
