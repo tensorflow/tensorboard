@@ -34,7 +34,6 @@ import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
-import argparse
 import logging
 import sys
 
@@ -46,31 +45,21 @@ logger = logging.getLogger(__name__)
 
 def run_main():
   """Initializes flags and calls main()."""
+  program.setup_environment()
+  server = program.TensorBoard(default.PLUGIN_LOADERS,
+                               default.get_assets_zip_provider())
+  server.configure(sys.argv[1:])
   try:
     from absl import app
+    app.run(server.main, sys.argv[:1] + server.unparsed_argv)
+    raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:
-    app = None
-  program.setup_environment()
-  assets = default.get_assets_zip_provider()
-  loaders = default.PLUGIN_LOADERS
-  parser = argparse.ArgumentParser(
-      prog='tensorboard',
-      description=('TensorBoard is a suite of web applications for '
-                   'inspecting and understanding your TensorFlow runs '
-                   'and graphs. https://github.com/tensorflow/tensorboard'))
-  for loader in loaders:
-    loader.define_flags(parser)
-  if app is None:
-    flags, unparsed = parser.parse_args()
-  else:
-    flags, unparsed = parser.parse_known_args()
-  for loader in loaders:
-    loader.fix_flags(flags)
-  server = program.TensorBoard(loaders, assets, flags)
-  if app is None:
-    sys.exit(server.main(unparsed))
-  else:
-    app.run(server.main, sys.argv[:1] + unparsed)
+    pass
+  if server.unparsed_argv:
+    sys.stderr.write('Unknown flags: %s\nPass --help for help.\n' %
+                     (server.unparsed_argv,))
+    sys.exit(1)
+  sys.exit(server.main())
 
 
 if __name__ == '__main__':
