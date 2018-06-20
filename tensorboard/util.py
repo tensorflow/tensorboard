@@ -57,6 +57,8 @@ def setup_logging(streams=(sys.stderr,)):
     handler.setFormatter(formatter)
   tensorflow_logger = logging.getLogger('tensorflow')
   tensorflow_logger.handlers = handlers
+  tensorboard_logger = logging.getLogger('tensorboard')
+  tensorboard_logger.handlers = handlers
   werkzeug_logger = logging.getLogger('werkzeug')
   werkzeug_logger.setLevel(logging.WARNING)
   werkzeug_logger.handlers = handlers

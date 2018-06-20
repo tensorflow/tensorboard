@@ -30,6 +30,15 @@ from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.profile import trace_events_pb2
 
 
+class FakeFlags(object):
+  def __init__(
+      self,
+      logdir,
+      master_tpu_unsecure_channel=''):
+    self.logdir = logdir
+    self.master_tpu_unsecure_channel = master_tpu_unsecure_channel
+
+
 class ProfilePluginTest(tf.test.TestCase):
 
   def setUp(self):
@@ -74,7 +83,10 @@ class ProfilePluginTest(tf.test.TestCase):
     # construct a meaningful one right now. In fact, the profiler plugin does
     # not use this context object in general. Its constructor has to accept it
     # though, and it may use the context in the future.
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=None)
+    context = base_plugin.TBContext(
+        logdir=self.logdir,
+        multiplexer=None,
+        flags=FakeFlags(self.logdir))
     self.plugin = profile_plugin.ProfilePlugin(context)
     self.apps = self.plugin.get_plugin_apps()
 

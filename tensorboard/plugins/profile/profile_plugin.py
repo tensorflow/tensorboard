@@ -32,13 +32,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
 
-tf.flags.DEFINE_string(
-    'master_tpu_unsecure_channel', '',
-    'IP address of "master tpu", used for getting streaming trace data '
-    'through tpu profiler analysis grpc. The grpc channel is not secured.')
-
-FLAGS = tf.flags.FLAGS
-
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
 
@@ -72,6 +65,25 @@ def process_raw_trace(raw_trace):
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
 
+class ProfilePluginLoader(base_plugin.TBLoader):
+  """Loader for Profile Plugin."""
+
+  def define_flags(self, parser):
+    group = parser.add_argument_group('profile plugin')
+    group.add_argument(
+        '--master_tpu_unsecure_channel',
+        metavar='ADDR',
+        type=str,
+        default='',
+        help='''\
+IP address of "master tpu", used for getting streaming trace data
+through tpu profiler analysis grpc. The grpc channel is not secured.\
+''')
+
+  def load(self, context):
+    return ProfilePlugin(context)
+
+
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
 
@@ -89,6 +101,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     self.plugin_logdir = plugin_asset_util.PluginDirectory(
         self.logdir, ProfilePlugin.plugin_name)
     self.stub = None
+    self.master_tpu_unsecure_channel = context.flags.master_tpu_unsecure_channel
 
   @wrappers.Request.application
   def logdir_route(self, request):
@@ -104,7 +117,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     # 1. user specify the flags master_tpu_unsecure_channel to the ip address of
     #    as "master" TPU. grpc will be used to fetch streaming trace data.
     # 2. the logdir is on google cloud storage.
-    if FLAGS.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
+    if self.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
       if self.stub is None:
         import grpc
         from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pylint: disable=line-too-long
@@ -113,7 +126,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
         options = [('grpc.max_message_length', gigabyte),
                    ('grpc.max_send_message_length', gigabyte),
                    ('grpc.max_receive_message_length', gigabyte)]
-        tpu_profiler_port = FLAGS.master_tpu_unsecure_channel + ':8466'
+        tpu_profiler_port = self.master_tpu_unsecure_channel + ':8466'
         channel = grpc.insecure_channel(tpu_profiler_port, options)
         self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(
             channel)
