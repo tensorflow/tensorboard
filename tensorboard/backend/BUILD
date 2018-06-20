@@ -84,6 +84,7 @@ py_test(
     deps = [
         ":application",
         "//tensorboard",
+        "//tensorboard:default",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
