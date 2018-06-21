@@ -1648,7 +1648,7 @@ limitations under the License.
         if (!inferenceStats.thresholds) {
           return 0;
         }
-        if (featureValue1 == null) {
+        if (featureValue1 === null) {
           return inferenceStats.thresholds[index][stat];
         }
         const key = this.createCombinedValueString_(featureValue1, featureValue2);
