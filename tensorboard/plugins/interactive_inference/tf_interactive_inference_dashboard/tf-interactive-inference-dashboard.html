@@ -658,7 +658,7 @@ limitations under the License.
                 </template>
               </template>
               <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
-                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, multiClass, stats)]]">
+                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
                   <div class="flex">
                     <paper-dropdown-menu label="Investigate fairness across all values of a feature" class="threshold-dropdown">
                       <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
@@ -750,6 +750,46 @@ limitations under the License.
                     </div>
                   </template>
                 </template>
+              </template>
+              <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]">
+                <template is="dom-if" if="[[shouldShowFeatureDropdown_(modelType, stats)]]">
+                  <div class="flex">
+                    <paper-dropdown-menu label="Investigate performance across all values of a feature" class="threshold-dropdown">
+                      <paper-listbox class="dropdown-content" selected="{{selectedThresholdFeature}}" attr-for-selected="name">
+                        <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                          <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                    <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedThresholdFeature)]]">
+                      <paper-dropdown-menu label="Add second feature to slice data by" class="threshold-dropdown">
+                        <paper-listbox class="dropdown-content" selected="{{selectedSecondThresholdFeature}}" attr-for-selected="name">
+                          <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                            <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                          </template>
+                        </paper-listbox>
+                      </paper-dropdown-menu>
+                    </template>
+                  </div>
+                </template>
+                <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                  <tf-confusion-matrix counts="[[getMultiClassConfMatrix(classificationStats_)]]"
+                                        class="conf-matrix">
+                  </tf-confusion-matrix>
+                </template>
+                <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
+                  <template is="dom-repeat" items="[[featureValueThresholds]]">
+                    <div>
+                      <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                                    class="slider-label" no-label-float=true>
+                      </paper-input>
+                      <tf-confusion-matrix counts="[[getMultiClassConfMatrix(classificationStats_, item)]]"
+                                            class="conf-matrix">
+                      </tf-confusion-matrix>
+                    </div>
+                  </template>
+                </template>
+              </template>
             </div>
           </iron-pages>
         </div>
@@ -956,13 +996,11 @@ limitations under the License.
 
       selectNextDatapoint_: function() {
         this.$.dive.selectedIndices = [(this.selected[0] + 1) % this.visdata.length];
-        this.$.dive.updateSelectedBoxes();
       },
 
       selectPrevDatapoint_: function() {
         this.$.dive.selectedIndices = [(((this.selected[0] - 1) % this.visdata.length) +
             this.visdata.length) % this.visdata.length];
-        this.$.dive.updateSelectedBoxes();
       },
 
       setExampleStackedMode_: function() {
@@ -1017,8 +1055,12 @@ limitations under the License.
         return modelType == 'classification' && !multiClass;
       },
 
-      shouldShowFeatureDropdown_: function(modelType, multiClass, stats) {
-        return this.isBinaryClassification_(modelType, multiClass) && stats && Object.keys(stats).length > 0;
+      isMultiClass_: function(modelType, multiClass) {
+        return modelType == 'classification' && multiClass;
+      },
+
+      shouldShowFeatureDropdown_: function(modelType, stats) {
+        return modelType == 'classification' && stats && Object.keys(stats).length > 0;
       },
 
       shouldShowSecondFeatureDropdown_: function(selectedThresholdFeature) {
@@ -1115,67 +1157,112 @@ limitations under the License.
         }
         if (regenClassificationStats) {
           let classificationStats = {};
-          classificationStats.thresholds = [];
-          for (let i = 0; i < 101; i++) {
-            classificationStats.thresholds.push(
-              {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
-          }
-          classificationStats.faceted = {};
-          for (let i = 0; i < this.examplesAndInferences.length; i++) {
-            const item = this.visdata[i];
-            let facetedStats = null;
-            if (this.selectedThresholdFeature != '') {
-              const facetKey = this.createCombinedValueString_(
-                item[this.selectedThresholdFeature],
-                item[this.selectedSecondThresholdFeature]);
-              facetedStats = classificationStats.faceted[facetKey];
-              if (!facetedStats) {
-                classificationStats.faceted[facetKey] = []
-                for (let i = 0; i < 101; i++) {
-                  classificationStats.faceted[facetKey].push(
-                      {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
-                }
+          if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+            classificationStats.thresholds = [];
+            for (let i = 0; i < 101; i++) {
+              classificationStats.thresholds.push(
+                {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+            }
+            classificationStats.faceted = {};
+            for (let i = 0; i < this.examplesAndInferences.length; i++) {
+              const item = this.visdata[i];
+              let facetedStats = null;
+              if (this.selectedThresholdFeature != '') {
+                const facetKey = this.createCombinedValueString_(
+                  item[this.selectedThresholdFeature],
+                  item[this.selectedSecondThresholdFeature]);
                 facetedStats = classificationStats.faceted[facetKey];
+                if (!facetedStats) {
+                  classificationStats.faceted[facetKey] = []
+                  for (let i = 0; i < 101; i++) {
+                    classificationStats.faceted[facetKey].push(
+                        {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+                  }
+                  facetedStats = classificationStats.faceted[facetKey];
+                }
+              }
+              const nonZeroClassification = this.getClassificationBestNonZero(i);
+              let thresh = 0;
+              for (; thresh <= 100; thresh++) {
+                if (thresh > nonZeroClassification.score * 100) {
+                  break;
+                }
+                if (+item[this.selectedLabelFeature] ==
+                    +nonZeroClassification.label) {
+                  classificationStats.thresholds[thresh]['TP'] += 1;
+                  if (facetedStats) {
+                    facetedStats[thresh]['TP'] += 1;
+                  }
+                } else {
+                  classificationStats.thresholds[thresh]['FP'] += 1;
+                  if (facetedStats) {
+                    facetedStats[thresh]['FP'] += 1;
+                  }
+                }
+              }
+              for (; thresh <= 100; thresh++) {
+                if (+item[this.selectedLabelFeature] == 0) {
+                  classificationStats.thresholds[thresh]['TN'] += 1;
+                  if (facetedStats) {
+                    facetedStats[thresh]['TN'] += 1;
+                  }
+                } else {
+                  classificationStats.thresholds[thresh]['FN'] += 1;
+                  if (facetedStats) {
+                    facetedStats[thresh]['FN'] += 1;
+                  }
+                }
               }
             }
-            const nonZeroClassification = this.getClassificationBestNonZero(i);
-            let thresh = 0;
-            for (; thresh <= 100; thresh++) {
-              if (thresh > nonZeroClassification.score * 100) {
-                break;
+            this.calcThresholdStats(classificationStats.thresholds);
+            for(let key in classificationStats.faceted) {
+              if (classificationStats.faceted.hasOwnProperty(key)) {
+                this.calcThresholdStats(classificationStats.faceted[key]);
               }
-              if (+item[this.selectedLabelFeature] ==
-                  +nonZeroClassification.label) {
-                classificationStats.thresholds[thresh]['TP'] += 1;
-                if (facetedStats) {
-                  facetedStats[thresh]['TP'] += 1;
+            }
+          } else if (this.isMultiClass_(this.modelType, this.multiClass)) {
+            classificationStats.results = {};
+            classificationStats.faceted = {};
+            for (let i = 0; i < this.examplesAndInferences.length; i++) {
+              const item = this.visdata[i];
+              let facetedStats = null;
+              if (this.selectedThresholdFeature != '') {
+                const facetKey = this.createCombinedValueString_(
+                  item[this.selectedThresholdFeature],
+                  item[this.selectedSecondThresholdFeature]);
+                facetedStats = classificationStats.faceted[facetKey];
+                if (!facetedStats) {
+                  classificationStats.faceted[facetKey] = {};
+                  facetedStats = classificationStats.faceted[facetKey];
                 }
+              }
+              let statsActual = classificationStats.results[item[this.selectedLabelFeature]];
+              if (!statsActual) {
+                classificationStats.results[item[this.selectedLabelFeature]] = {};
+                statsActual = classificationStats.results[item[this.selectedLabelFeature]];
+              }
+              let count = statsActual[item[inferenceValueStr]];
+              if (count == null) {
+                statsActual[item[inferenceValueStr]] = 1;
               } else {
-                classificationStats.thresholds[thresh]['FP'] += 1;
-                if (facetedStats) {
-                  facetedStats[thresh]['FP'] += 1;
+                statsActual[item[inferenceValueStr]] += 1;
+              }
+              if (facetedStats) {
+                let statsActual = facetedStats[item[this.selectedLabelFeature]];
+                if (!statsActual) {
+                  facetedStats[item[this.selectedLabelFeature]] = {};
+                  statsActual = facetedStats[item[this.selectedLabelFeature]];
+                }
+                let count = statsActual[item[inferenceValueStr]];
+                if (count == null) {
+                  statsActual[item[inferenceValueStr]] = 1;
+                } else {
+                  statsActual[item[inferenceValueStr]] += 1;
                 }
               }
             }
-            for (; thresh <= 100; thresh++) {
-              if (+item[this.selectedLabelFeature] == 0) {
-                classificationStats.thresholds[thresh]['TN'] += 1;
-                if (facetedStats) {
-                  facetedStats[thresh]['TN'] += 1;
-                }
-              } else {
-                classificationStats.thresholds[thresh]['FN'] += 1;
-                if (facetedStats) {
-                  facetedStats[thresh]['FN'] += 1;
-                }
-              }
-            }
-          }
-          this.calcThresholdStats(classificationStats.thresholds);
-          for(let key in classificationStats.faceted) {
-            if (classificationStats.faceted.hasOwnProperty(key)) {
-              this.calcThresholdStats(classificationStats.faceted[key]);
-            }
+          } else {
+
           }
 
           this.classificationStats_ = classificationStats;
@@ -1413,11 +1500,15 @@ limitations under the License.
           val2 = item.value2;
         }
         return {
-          'tp': this.getConfMatrixValue(classificationStats, threshold, 'TP', val, val2),
-          'fp': this.getConfMatrixValue(classificationStats, threshold, 'FP', val, val2),
-          'tn': this.getConfMatrixValue(classificationStats, threshold, 'TN', val, val2),
-          'fn': this.getConfMatrixValue(classificationStats, threshold, 'FN', val, val2),
-        }
+          0: {
+            0: this.getConfMatrixValue(classificationStats, threshold, 'TN', val, val2),
+            1: this.getConfMatrixValue(classificationStats, threshold, 'FP', val, val2)
+          },
+          1: {
+            0: this.getConfMatrixValue(classificationStats, threshold, 'FN', val, val2),
+            1: this.getConfMatrixValue(classificationStats, threshold, 'TP', val, val2)
+          }
+        };
       },
 
       getConfMatrixValue: function(classificationStats, threshold, stat, featureValue1, featureValue2) {
@@ -1433,6 +1524,15 @@ limitations under the License.
           return 0;
         }
         return classificationStats.faceted[key][index][stat];
+      },
+
+      getMultiClassConfMatrix: function(classificationStats, facetItem) {
+        if (facetItem == null) {
+          return classificationStats.results;
+        } else {
+          const key = this.getPrintableValue_(facetItem);
+          return classificationStats.faceted[key];
+        }
       },
 
       getPrChartId: function(index) {

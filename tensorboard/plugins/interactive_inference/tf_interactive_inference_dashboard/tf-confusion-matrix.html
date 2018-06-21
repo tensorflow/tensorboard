@@ -28,6 +28,7 @@ limitations under the License.
       }
       th, td {
         padding: 3px;
+        font-weight: normal;
       }
       .flex {
         display: flex;
@@ -51,78 +52,16 @@ limitations under the License.
       .incorrect {
         background: LightCoral;
       }
+      .blank {
+        background: lightgray;
+      }
       .percentage {
         padding-right: 5px;
         color: gray;
         width: 60px;
       }
     </style>
-    <table>
-      <tr>
-        <td class="n-label">[[getNText(total)]]</td>
-        <th class="pred-label">Predicted<br/>Yes</th>
-        <th class="pred-label">Predicted<br/>No</th>
-        <th></th>
-      </tr>
-      <tr>
-        <th class="actual-label">Actual<br/>Yes</th>
-        <td class="correct">
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.tp)]]</div>
-            <div>[[counts.tp]]</div>
-          </div>
-        </td>
-        <td class="incorrect">
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.fn)]]</div>
-            <div>[[counts.fn]]</div>
-          </div>
-        </td>
-        <td>
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.tp, counts.fn)]]</div>
-            <div>[[getTotal(counts.tp, counts.fn)]]</div>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <th class="actual-label">Actual<br/>No</th>
-        <td class="incorrect">
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.fp)]]</div>
-            <div>[[counts.fp]]</div>
-          </div>
-        </td>
-        <td class="correct">
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.tn)]]</div>
-            <div>[[counts.tn]]</div>
-          </div>
-        </td>
-        <td>
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.fp, counts.tn)]]</div>
-            <div>[[getTotal(counts.fp, counts.tn)]]</div>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <th></th>
-        <td>
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.tp, counts.fp)]]</div>
-            <div>[[getTotal(counts.tp, counts.fp)]]</div>
-          </div>
-        </td>
-        <td>
-          <div class="flex">
-            <div class="percentage">[[getPercentage(total, counts.fn, counts.tn)]]</div>
-            <div>[[getTotal(counts.fn, counts.tn)]]</div>
-          </div>
-        </td>
-        <td></td>
-      </tr>
-    </table>
+    <div id="holder"></div>
   </template>
 
   <script>
@@ -131,21 +70,145 @@ limitations under the License.
     Polymer({
       is: "tf-confusion-matrix",
       properties: {
-        counts: {type: Object, observer: 'setTotal'},
-        total: Number,
+        counts: {type: Object, observer: 'drawMatrix'},
       },
 
-      setTotal: function(counts) {
-        this.total = counts.fp + counts.tp + counts.tn + counts.fn;
+      ready: function() {
+        this.scopeSubtree(this.$.holder, true);
       },
 
-      getTotal: function(count1, count2) {
-        return count1 + count2;
+      drawMatrix: function(counts) {
+        this.$.holder.innerHTML = '';
+        if (!counts) {
+          return;
+        }
+
+        let allLabels = {};
+        const outerLabelList = Object.keys(counts);
+        for (let i = 0; i < outerLabelList.length; i++) {
+          allLabels[outerLabelList[i]] = true;
+          const innerLabelList = Object.keys(counts[outerLabelList[i]]);
+          for (let j = 0; j < innerLabelList.length; j++) {
+            allLabels[innerLabelList[j]] = true;
+          }
+        }
+        const labelsList = Object.keys(allLabels).sort();
+        const columnTotals = new Array(labelsList.length);
+
+        const countMatrix = [];
+        for (let i = 0; i < labelsList.length; i++) {
+          columnTotals[i] = 0;
+          countMatrix.push(new Array(labelsList.length).fill(0));
+        }
+        for (let i = 0; i < labelsList.length; i++) {
+          for (let j = 0; j < labelsList.length; j++) {
+            const actualLabel = labelsList[i];
+            const predLabel = labelsList[j];
+            if (actualLabel in counts && predLabel in counts[actualLabel]) {
+              const actualLabelIdx = labelsList.indexOf(actualLabel);
+              const predLabelIdx = labelsList.indexOf(predLabel);
+              countMatrix[actualLabelIdx][predLabelIdx] = counts[actualLabel][predLabel];
+            }
+          }
+        }
+
+        const paddedCounts = [];
+        let total = 0;
+        for (let i = 0; i < countMatrix.length; i++) {
+          const rowTotal = countMatrix[i].reduce((a, b) => a + b, 0);
+          paddedCounts.push([0].concat(countMatrix[i]).concat([rowTotal]));
+          for (let j = 0; j  < countMatrix.length; j++) {
+            columnTotals[j] += countMatrix[i][j];
+            total += countMatrix[i][j];
+          }
+        }
+        const indices = this.getInidices(countMatrix.length + 2);
+        const table = d3.select(this.$.holder).append('table');
+        const thead = table.append('thead');
+        const tbody = table.append('tbody');
+        const tfoot = table.append('tfoot');
+
+        thead.append('tr')
+          .selectAll('th')
+          .data(indices).enter()
+          .append('th')
+            .text(column => {
+              if (column == 0) {
+                return this.getNText(total);
+              } else if (column <= countMatrix.length) {
+                return 'Predicted ' + labelsList[column - 1];
+              } else {
+                return '';
+              }
+            })
+            .attr('class', column => {
+              if (column == 0) {
+                return 'n-label';
+              } else {
+                return 'pred-label';
+              }
+            });
+
+        const rows = tbody.selectAll('tr')
+          .data(paddedCounts)
+          .enter()
+          .append('tr');
+        const cells = rows.selectAll('td')
+          .data((row, j) => {
+            return row.map((entry, i) => {
+              if (i == 0) {
+                return {value: 'Actual ' + labelsList[j]};
+              } else {
+                return {value: entry, row: j};
+              }
+            });
+          })
+          .enter()
+          .append('td').attr('class', (d, i) => {
+            if (i == 0) {
+              return 'actual-label';
+            } else if (d.value == 0 && i <= countMatrix.length) {
+              return 'blank';
+            } else if (i - 1 == d.row) {
+              return 'correct';
+            } else if (i <= countMatrix.length) {
+              return 'incorrect';
+            } else {
+              return '';
+            }
+          });
+        const cellDivs = cells.append('div').classed('flex', true);
+        cellDivs.append('div').classed('percentage', (d, i) => !!i)
+            .text(d => 'row' in d ? '(' + d3.format(",.1%")(d.value / total) + ')' : '');
+        cellDivs.append('div').text(d => d.value);
+
+        const footCells = tfoot.append('tr')
+          .selectAll('td')
+          .data(indices).enter()
+          .append('td');
+        const footCellDivs = footCells.append('div').classed('flex', true);
+        footCellDivs.append('div').classed('percentage', (d, i) => !!i).text(column => {
+          if (column == 0) {
+            return '';
+          } else if (column <= countMatrix.length) {
+            return '(' + d3.format(",.1%")(columnTotals[column - 1] / total) + ')';
+          } else {
+            return '';
+          }
+        });
+        footCellDivs.append('div').text(column => {
+          if (column == 0) {
+            return '';
+          } else if (column <= countMatrix.length) {
+            return columnTotals[column - 1];
+          } else {
+            return '';
+          }
+        });
       },
 
-      getPercentage: function(total, count1, count2) {
-        const count = count2 ? count1 + count2 : count1;
-        return '(' + d3.format(",.1%")(count / total) + ')';
+      getInidices: function(tableDim) {
+        return Array.apply(null, {length: tableDim}).map(Number.call, Number);
       },
 
       getNText: function(total) {

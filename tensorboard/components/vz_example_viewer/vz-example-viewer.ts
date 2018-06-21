@@ -251,11 +251,21 @@ Polymer({
 
   getFilteredFeaturesList: function(featureList: NameAndFeature[],
       searchValue: string) {
-    if (searchValue == '') {
-      return featureList;
+    let filtered = featureList;
+    if (searchValue != '') {
+      const re = new RegExp(searchValue, 'i');
+      filtered = featureList.filter(feature => re.test(feature.name));
     }
-    const re = new RegExp(searchValue, 'i');
-    return featureList.filter(feature => re.test(feature.name));
+    const sorted = filtered.sort((a, b) => {
+      if (this.isImage(a.name) && !this.isImage(b.name)) {
+        return -1;
+      } else if (this.isImage(b.name) && !this.isImage(a.name)) {
+        return 1;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
+    return sorted;
   },
 
   /**
@@ -992,8 +1002,11 @@ Polymer({
   getImageSrcForData: function(feat: string, imageData: string) {
     // Get the format of the encoded image, according to the feature name
     // specified by go/tf-example. Defaults to jpeg as specified in the doc.
-    const featureMiddle =
-        IMG_FEATURE_REGEX.exec(feat)![1] || '';
+    const regExResult = IMG_FEATURE_REGEX.exec(feat);
+    if (regExResult == null) {
+      return null;
+    }
+    const featureMiddle = regExResult[1] || '';
     const formatVals =
         this.getFeatureValues('image' + featureMiddle + '/format', false);
     let format = 'jpeg';
@@ -1194,7 +1207,7 @@ Polymer({
       reader.readAsDataURL(files[0]);
     }
 
-    if (!self.readonly) {
+    if (!self.readonly && canvas) {
       canvas.addEventListener('dragover', handleDragOver, false);
       canvas.addEventListener('drop', handleFileSelect, false);
     }
@@ -1219,12 +1232,14 @@ Polymer({
         // If not using image controls then scale the image to match the
         // available width in the container, considering padding.
         if (!this.allowImageControls) {
-          const card = this.$$('#' + this.getImageCardId(feat)) as HTMLElement;
-          let cardWidthForScaling = card.getBoundingClientRect().width;
+          const holder = this.$$('#' + this.getImageCardId(feat)).parentElement as HTMLElement;
+          let cardWidthForScaling = holder.getBoundingClientRect().width / 2;
           if (cardWidthForScaling > 16) {
             cardWidthForScaling -= 16;
           }
-          imageScaleFactor = cardWidthForScaling / image.width;
+          if (cardWidthForScaling < image.width) {
+            imageScaleFactor = cardWidthForScaling / image.width;
+          }
         }
         canvas.width = image.width * imageScaleFactor;
         canvas.height = image.height * imageScaleFactor;
