@@ -653,7 +653,7 @@ limitations under the License.
             </div>
             <div class="config-tab">
               <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
-                <paper-dropdown-menu label="Set true label feature in order to investigate model performance" class="threshold-dropdown">
+                <paper-dropdown-menu label="Select the true label feature in order to investigate model performance" class="threshold-dropdown">
                   <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                     <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                       <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
@@ -739,7 +739,7 @@ limitations under the License.
                           <div class="roc-holder">
                             <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
                           </div>
-                          <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, item.threshold, item)]]"
+                          <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, item.threshold, item)]]"
                                               class="conf-matrix">
                           </tf-confusion-matrix>
                         </div>
@@ -761,7 +761,7 @@ limitations under the License.
                       <div class="roc-holder">
                         <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
                       </div>
-                      <tf-confusion-matrix counts="[[getConfusionCounts(classificationStats_, overallThreshold)]]"
+                      <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, overallThreshold)]]"
                                            class="conf-matrix">
                       </tf-confusion-matrix>
                     </div>
@@ -790,7 +790,7 @@ limitations under the License.
                   </div>
                 </template>
                 <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                  <tf-confusion-matrix counts="[[getMultiClassConfMatrix(classificationStats_)]]"
+                  <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_)]]"
                                         class="conf-matrix">
                   </tf-confusion-matrix>
                 </template>
@@ -800,7 +800,7 @@ limitations under the License.
                       <paper-input value="[[getPrintableValue_(item)]]" readonly=true
                                     class="facet-label" no-label-float=true>
                       </paper-input>
-                      <tf-confusion-matrix counts="[[getMultiClassConfMatrix(classificationStats_, item)]]"
+                      <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, item)]]"
                                             class="conf-matrix">
                       </tf-confusion-matrix>
                     </div>
@@ -831,15 +831,15 @@ limitations under the License.
                 <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                   <div class="flex">
                     <div class="regression-stat-label">Count:</div>
-                    <div>[[getRegressionCount(classificationStats_)]]</div>
+                    <div>[[getRegressionCount(inferenceStats_)]]</div>
                   </div>
                   <div class="flex">
                     <div class="regression-stat-label">Inference error mean:</div>
-                    <div>[[getRegressionMean(classificationStats_)]]</div>
+                    <div>[[getRegressionMean(inferenceStats_)]]</div>
                   </div>
                   <div class="flex">
                     <div class="regression-stat-label">Inference error stddev:</div>
-                    <div>[[getRegressionStdDev(classificationStats_)]]</div>
+                    <div>[[getRegressionStdDev(inferenceStats_)]]</div>
                   </div>
                 </template>
                 <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
@@ -850,15 +850,15 @@ limitations under the License.
                       </paper-input>
                       <div class="flex indent">
                         <div class="regression-stat-label">Count:</div>
-                        <div>[[getRegressionCount(classificationStats_, item)]]</div>
+                        <div>[[getRegressionCount(inferenceStats_, item)]]</div>
                       </div>
                       <div class="flex indent">
                         <div class="regression-stat-label">Inference error mean:</div>
-                        <div>[[getRegressionMean(classificationStats_, item)]]</div>
+                        <div>[[getRegressionMean(inferenceStats_, item)]]</div>
                       </div>
                       <div class="flex indent">
                         <div class="regression-stat-label">Inference error stddev:</div>
-                        <div>[[getRegressionStdDev(classificationStats_, item)]]</div>
+                        <div>[[getRegressionStdDev(inferenceStats_, item)]]</div>
                       </div>
                     </div>
                   </template>
@@ -881,6 +881,7 @@ limitations under the License.
     const inferenceValueStr = 'inference value';
     const inferenceCorrectStr = 'inference correct';
     const inferenceDeltaStr = 'inference error';
+    const inferenceScoreStr = 'inference score';
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -981,7 +982,7 @@ limitations under the License.
           value: '',
           observer: 'labelFeatureSelected_',
         },
-        classificationStats_: {
+        inferenceStats_: {
           type: Object,
           value: {},
         },
@@ -1169,8 +1170,10 @@ limitations under the License.
         // Do not also threshold settings by the results of the inference as they aren't real data
         // features.
         const features = Object.keys(stats).filter(function(feature) {
-          return feature !== inferenceValueStr && feature !== inferenceLabelStr && feature !== inferenceCorrectStr && feature !== inferenceDeltaStr;
-        });
+          return feature !== inferenceValueStr && feature !== inferenceLabelStr
+            && feature !== inferenceCorrectStr && feature !== inferenceDeltaStr
+            && feature !== inferenceScoreStr;
+        }).sort();
         // Add a blank feature to be used for clearing the selected feature.
         features.push('');
         return features;
@@ -1224,24 +1227,24 @@ limitations under the License.
       labelFeatureSelected_: function(feature) {
         this.sideTabSelected = 2;
         requestAnimationFrame(() => {
-          this.updateClassificationStats_(true);
+          this.updateInferenceStats_(true);
           this.refreshDive_();
         });
       },
 
-      updateClassificationStats_: function(regenClassificationStats) {
-        if (!this.classificationStats_ || !this.visdata || this.selectedLabelFeature == '') {
+      updateInferenceStats_: function(regenInferenceStats) {
+        if (!this.inferenceStats_ || !this.visdata || this.selectedLabelFeature == '') {
           return;
         }
-        if (regenClassificationStats) {
-          let classificationStats = {};
+        if (regenInferenceStats) {
+          let inferenceStats = {};
           if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
-            classificationStats.thresholds = [];
+            inferenceStats.thresholds = [];
             for (let i = 0; i < 101; i++) {
-              classificationStats.thresholds.push(
+              inferenceStats.thresholds.push(
                 {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
             }
-            classificationStats.faceted = {};
+            inferenceStats.faceted = {};
             for (let i = 0; i < this.examplesAndInferences.length; i++) {
               const item = this.visdata[i];
               let facetedStats = null;
@@ -1249,14 +1252,14 @@ limitations under the License.
                 const facetKey = this.createCombinedValueString_(
                   item[this.selectedThresholdFeature],
                   item[this.selectedSecondThresholdFeature]);
-                facetedStats = classificationStats.faceted[facetKey];
+                facetedStats = inferenceStats.faceted[facetKey];
                 if (!facetedStats) {
-                  classificationStats.faceted[facetKey] = []
+                  inferenceStats.faceted[facetKey] = []
                   for (let i = 0; i < 101; i++) {
-                    classificationStats.faceted[facetKey].push(
+                    inferenceStats.faceted[facetKey].push(
                         {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
                   }
-                  facetedStats = classificationStats.faceted[facetKey];
+                  facetedStats = inferenceStats.faceted[facetKey];
                 }
               }
               const nonZeroClassification = this.getClassificationBestNonZero(i);
@@ -1267,12 +1270,12 @@ limitations under the License.
                 }
                 if (+item[this.selectedLabelFeature] ==
                     +nonZeroClassification.label) {
-                  classificationStats.thresholds[thresh]['TP'] += 1;
+                  inferenceStats.thresholds[thresh]['TP'] += 1;
                   if (facetedStats) {
                     facetedStats[thresh]['TP'] += 1;
                   }
                 } else {
-                  classificationStats.thresholds[thresh]['FP'] += 1;
+                  inferenceStats.thresholds[thresh]['FP'] += 1;
                   if (facetedStats) {
                     facetedStats[thresh]['FP'] += 1;
                   }
@@ -1280,27 +1283,27 @@ limitations under the License.
               }
               for (; thresh <= 100; thresh++) {
                 if (+item[this.selectedLabelFeature] == 0) {
-                  classificationStats.thresholds[thresh]['TN'] += 1;
+                  inferenceStats.thresholds[thresh]['TN'] += 1;
                   if (facetedStats) {
                     facetedStats[thresh]['TN'] += 1;
                   }
                 } else {
-                  classificationStats.thresholds[thresh]['FN'] += 1;
+                  inferenceStats.thresholds[thresh]['FN'] += 1;
                   if (facetedStats) {
                     facetedStats[thresh]['FN'] += 1;
                   }
                 }
               }
             }
-            this.calcThresholdStats(classificationStats.thresholds);
-            for(let key in classificationStats.faceted) {
-              if (classificationStats.faceted.hasOwnProperty(key)) {
-                this.calcThresholdStats(classificationStats.faceted[key]);
+            this.calcThresholdStats(inferenceStats.thresholds);
+            for(let key in inferenceStats.faceted) {
+              if (inferenceStats.faceted.hasOwnProperty(key)) {
+                this.calcThresholdStats(inferenceStats.faceted[key]);
               }
             }
           } else if (this.isMultiClass_(this.modelType, this.multiClass)) {
-            classificationStats.results = {};
-            classificationStats.faceted = {};
+            inferenceStats.results = {};
+            inferenceStats.faceted = {};
             for (let i = 0; i < this.examplesAndInferences.length; i++) {
               const item = this.visdata[i];
               let facetedStats = null;
@@ -1308,16 +1311,16 @@ limitations under the License.
                 const facetKey = this.createCombinedValueString_(
                   item[this.selectedThresholdFeature],
                   item[this.selectedSecondThresholdFeature]);
-                facetedStats = classificationStats.faceted[facetKey];
+                facetedStats = inferenceStats.faceted[facetKey];
                 if (!facetedStats) {
-                  classificationStats.faceted[facetKey] = {};
-                  facetedStats = classificationStats.faceted[facetKey];
+                  inferenceStats.faceted[facetKey] = {};
+                  facetedStats = inferenceStats.faceted[facetKey];
                 }
               }
-              let statsActual = classificationStats.results[item[this.selectedLabelFeature]];
+              let statsActual = inferenceStats.results[item[this.selectedLabelFeature]];
               if (!statsActual) {
-                classificationStats.results[item[this.selectedLabelFeature]] = {};
-                statsActual = classificationStats.results[item[this.selectedLabelFeature]];
+                inferenceStats.results[item[this.selectedLabelFeature]] = {};
+                statsActual = inferenceStats.results[item[this.selectedLabelFeature]];
               }
               let count = statsActual[item[inferenceValueStr]];
               if (count == null) {
@@ -1340,8 +1343,8 @@ limitations under the License.
               }
             }
           } else {
-            classificationStats.results = {errors: []};
-            classificationStats.faceted = {};
+            inferenceStats.results = {errors: []};
+            inferenceStats.faceted = {};
             for (let i = 0; i < this.examplesAndInferences.length; i++) {
               const item = this.visdata[i];
               let facetedStats = null;
@@ -1349,31 +1352,30 @@ limitations under the License.
                 const facetKey = this.createCombinedValueString_(
                   item[this.selectedThresholdFeature],
                   item[this.selectedSecondThresholdFeature]);
-                facetedStats = classificationStats.faceted[facetKey];
+                facetedStats = inferenceStats.faceted[facetKey];
                 if (!facetedStats) {
-                  classificationStats.faceted[facetKey] = {errors: []};
-                  facetedStats = classificationStats.faceted[facetKey];
+                  inferenceStats.faceted[facetKey] = {errors: []};
+                  facetedStats = inferenceStats.faceted[facetKey];
                 }
               }
               const inferenceError = item[this.selectedLabelFeature] - item[inferenceValueStr];
-              classificationStats.results.errors.push(inferenceError);
+              inferenceStats.results.errors.push(inferenceError);
               if (facetedStats) {
                 facetedStats.errors.push(inferenceError);
               }
             }
 
-            this.fillInRegressionStats(classificationStats.results);
-            for (let key in classificationStats.faceted) {
-              this.fillInRegressionStats(classificationStats.faceted[key]);
+            this.fillInRegressionStats(inferenceStats.results);
+            for (let key in inferenceStats.faceted) {
+              this.fillInRegressionStats(inferenceStats.faceted[key]);
             }
-            console.log(classificationStats);
           }
 
-          this.classificationStats_ = classificationStats;
+          this.inferenceStats_ = inferenceStats;
         }
         this.plotPr(
-          this.$$('#prchart'), this.classificationStats_.thresholds,
-          this.overallThreshold, regenClassificationStats);
+          this.$$('#prchart'), this.inferenceStats_.thresholds,
+          this.overallThreshold, regenInferenceStats);
 
         for (let i = 0; i < this.featureValueThresholds.length; i++) {
           const key = this.createCombinedValueString_(
@@ -1381,9 +1383,9 @@ limitations under the License.
             this.featureValueThresholds[i].value2);
           this.plotPr(
             this.$$('#' + this.getPrChartId(i)),
-            this.classificationStats_.faceted[key],
+            this.inferenceStats_.faceted[key],
             this.featureValueThresholds[i].threshold,
-            regenClassificationStats);
+            regenInferenceStats);
         }
         this.updateCorrectness_();
       },
@@ -1415,7 +1417,7 @@ limitations under the License.
       },
 
       plotPr: function(chart, thresholdStats, threshold,
-                       regenClassificationStats) {
+                       regenInferenceStats) {
         if (!thresholdStats || !chart) {
           return;
         }
@@ -1436,7 +1438,7 @@ limitations under the License.
             'threshold': i / 100
           };
         }).reverse();
-        if (regenClassificationStats) {
+        if (regenInferenceStats) {
           chart.setVisibleSeries(['ROC', 'Threshold set']);
           chart.setSeriesData('ROC', data);
           const valueFormatter = d3.format('.2f');
@@ -1502,7 +1504,7 @@ limitations under the License.
 
       optimizeThresholdClicked_: function() {
         const thresholdToSet =
-          this.findOptimalThreshold_(this.classificationStats_.thresholds);
+          this.findOptimalThreshold_(this.inferenceStats_.thresholds);
         this.overallThreshold = thresholdToSet;
         if (this.featureValueThresholds) {
           for (let i = 0; i < this.featureValueThresholds.length; i++) {
@@ -1514,11 +1516,11 @@ limitations under the License.
       },
 
       optimizeFacetedThresholdsClicked_: function() {
-        const values = Object.keys(this.classificationStats_.faceted);
+        const values = Object.keys(this.inferenceStats_.faceted);
         for (let i = 0; i < values.length; i++) {
           const featureValue = values[i];
           const thresholdToSet = this.findOptimalThreshold_(
-            this.classificationStats_.faceted[featureValue]);
+            this.inferenceStats_.faceted[featureValue]);
           this.set('featureValueThresholds.' + i + '.threshold', thresholdToSet);
         }
         this.forceUpdateFeatureValueThresholds_();
@@ -1554,14 +1556,14 @@ limitations under the License.
         //   facets, and save if the lowest.
         let minCost = Number.POSITIVE_INFINITY;
         let bestThresholds = null;
-        const values = Object.keys(this.classificationStats_.faceted);
-        const firstFacet = this.classificationStats_.faceted[values[0]];
+        const values = Object.keys(this.inferenceStats_.faceted);
+        const firstFacet = this.inferenceStats_.faceted[values[0]];
         for (let i = 0; i < firstFacet.length; i++) {
           const firstFacetMeasure = fairnessCalculator(firstFacet[i]);
           const facetThresholds = [i];
           let cost = this.getCost(firstFacet[i]);
           for (let facetIdx = 1; facetIdx < values.length; facetIdx++) {
-            const currentFacet = this.classificationStats_.faceted[values[facetIdx]];
+            const currentFacet = this.inferenceStats_.faceted[values[facetIdx]];
             const currentFacetThreshold = this.thresholdClosestToMeasure(
               currentFacet, firstFacetMeasure, fairnessCalculator);
             facetThresholds.push(currentFacetThreshold);
@@ -1622,7 +1624,7 @@ limitations under the License.
         return this.examplesAndInferences[index].inferences[inferenceIndex][indexForNonZeroLabel];
       },
 
-      getConfusionCounts(classificationStats, threshold, item) {
+      getConfusionCounts(inferenceStats, threshold, item) {
         let val = null;
         let val2 = null;
         if (item != null) {
@@ -1631,37 +1633,37 @@ limitations under the License.
         }
         return {
           0: {
-            0: this.getConfMatrixValue(classificationStats, threshold, 'TN', val, val2),
-            1: this.getConfMatrixValue(classificationStats, threshold, 'FP', val, val2)
+            0: this.getConfMatrixValue(inferenceStats, threshold, 'TN', val, val2),
+            1: this.getConfMatrixValue(inferenceStats, threshold, 'FP', val, val2)
           },
           1: {
-            0: this.getConfMatrixValue(classificationStats, threshold, 'FN', val, val2),
-            1: this.getConfMatrixValue(classificationStats, threshold, 'TP', val, val2)
+            0: this.getConfMatrixValue(inferenceStats, threshold, 'FN', val, val2),
+            1: this.getConfMatrixValue(inferenceStats, threshold, 'TP', val, val2)
           }
         };
       },
 
-      getConfMatrixValue: function(classificationStats, threshold, stat, featureValue1, featureValue2) {
+      getConfMatrixValue: function(inferenceStats, threshold, stat, featureValue1, featureValue2) {
         const index = Math.floor(threshold * 100)
-        if (!classificationStats.thresholds) {
+        if (!inferenceStats.thresholds) {
           return 0;
         }
         if (featureValue1 == null) {
-          return classificationStats.thresholds[index][stat];
+          return inferenceStats.thresholds[index][stat];
         }
         const key = this.createCombinedValueString_(featureValue1, featureValue2);
-        if (classificationStats.faceted[key] == null) {
+        if (inferenceStats.faceted[key] == null) {
           return 0;
         }
-        return classificationStats.faceted[key][index][stat];
+        return inferenceStats.faceted[key][index][stat];
       },
 
-      getMultiClassConfMatrix: function(classificationStats, facetItem) {
+      getMultiClassConfMatrix: function(inferenceStats, facetItem) {
         if (facetItem == null) {
-          return classificationStats.results;
+          return inferenceStats.results;
         } else {
           const key = this.getPrintableValue_(facetItem);
-          return classificationStats.faceted[key];
+          return inferenceStats.faceted[key];
         }
       },
 
@@ -1765,17 +1767,17 @@ limitations under the License.
       newInferences_: function() {
         this.$.spinner.hidden = true;
         this.updateInferences_(true);
-        requestAnimationFrame(() => this.updateClassificationStats_(true));
+        requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
 
       refreshInferencesNoRegen_: function() {
         this.refreshInferences_(true);
-        requestAnimationFrame(() => this.updateClassificationStats_(true));
+        requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
 
       refreshInferences_: function(noRegen) {
         this.updateInferences_(false);
-        requestAnimationFrame(() => this.updateClassificationStats_(!noRegen));
+        requestAnimationFrame(() => this.updateInferenceStats_(!noRegen));
       },
 
       updateInferences_: function(newInferencesCalculated) {
@@ -1866,6 +1868,8 @@ limitations under the License.
           }
         }
 
+        item[inferenceScoreStr] =
+          this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].score;
         if (this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].score >= threshold) {
           item[inferenceValueStr] =
             this.examplesAndInferences[index].inferences[inferenceIdx][indexForNonZeroLabel].label;
