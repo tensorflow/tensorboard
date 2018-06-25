@@ -875,7 +875,11 @@ Polymer({
    * in css classes/ids.
    */
   sanitizeFeature: function(feat: string) {
-    return feat.replace(/\//g, '_');
+   let sanitized = feat;
+    if (!feat.match(/^[A-Za-z].*$/)) {
+      sanitized = '_' + feat;
+    }
+    return sanitized.replace(/\//g, '_');
   },
 
   isSeqExample: function(maxSeqNumber: number) {
@@ -1115,6 +1119,18 @@ Polymer({
 
   getImageCardId: function(feat: string) {
     return this.sanitizeFeature(feat) + '_card';
+  },
+
+  getFeatureDialogId: function(feat: string) {
+    return this.sanitizeFeature(feat) + '_dialog';
+  },
+
+  featureMoreClicked: function(event: Event) {
+    const button = event.srcElement.parentElement;
+    const feature = (button as any).dataFeature;
+    const dialog = this.$$('#' + this.sanitizeFeature(feature) + '_dialog');
+    dialog.positionTarget = button;
+    dialog.open();
   },
 
   decodedStringToCharCodes: function(str: string): Uint8Array {
