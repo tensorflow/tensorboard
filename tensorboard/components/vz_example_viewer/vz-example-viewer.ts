@@ -147,6 +147,10 @@ Polymer({
     featureSearchValue: {type: String, value: '', notify: true},
     filteredFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue)'},
     filteredSeqFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue)'},
+    focusedFeatureName: String,
+    focusedFeatureValueIndex: Number,
+    focusedSeqNumber: Number,
+    showDeleteValueButton: {type: Boolean, value: false},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
@@ -681,6 +685,23 @@ Polymer({
       this.setFeatureValues(feat, values);
       this.exampleChanged();
     }
+  },
+
+  onInputFocus: function(event: Event) {
+    const inputControl = event.target as HTMLInputElement;
+    const data = this.getDataFromEvent(event);
+    this.focusedFeatureName = data.feature;
+    this.focusedFeatureValueIndex = data.valueIndex;
+    this.focusedSeqNumber = data.seqNum;
+    this.$.deletevalue.style.top = (inputControl.getBoundingClientRect().top - this.getBoundingClientRect().top- 25) + 'px';
+    this.$.deletevalue.style.right = (this.getBoundingClientRect().right - inputControl.getBoundingClientRect().right + 30) + 'px';
+    this.showDeleteValueButton = true;
+
+  },
+
+
+  onInputBlur: function(event: Event) {
+    this.showDeleteValueButton = false;
   },
 
   /**
@@ -1512,8 +1533,8 @@ Polymer({
     return featureName.length > 0;
   },
 
-  getDeleteValueButtonClass: function(readonly: boolean) {
-    return readonly ? 'hide-controls' : 'delete-value-button';
+  getDeleteValueButtonClass: function(readonly: boolean, showDeleteValueButton: boolean) {
+    return readonly || !showDeleteValueButton ? 'delete-value-button delete-value-button-hidden' : 'delete-value-button';
   },
 
   getDeleteFeatureButtonClass: function(readonly: boolean) {

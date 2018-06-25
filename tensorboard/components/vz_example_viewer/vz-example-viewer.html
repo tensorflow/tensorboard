@@ -45,6 +45,7 @@ limitations under the License.
     <style>
       :host {
         display: flex;
+        position: relative;
       }
 
       .seq-feat {
@@ -184,6 +185,7 @@ limitations under the License.
       }
 
       .delete-value-button {
+        position: absolute;
         background: #DA7421;
         color: white;
         border-radius: 10px;
@@ -191,6 +193,15 @@ limitations under the License.
         max-height: 20px;
         padding: 0;
         margin-top: 2px;
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 200ms;
+      }
+
+      .delete-value-button.delete-value-button-hidden {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 200ms, visibility 200ms;
       }
 
       .delete-feature-button {
@@ -299,6 +310,8 @@ limitations under the License.
               <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
                     readonly="[[readonly]]"
                     on-input="onValueChanged"
+                    on-focus="onInputFocus"
+                    on-blur="onInputBlur"
                     data-feature="[[feat.name]]"
                     data-index="[[index]]"
                     type="[[getInputType(feat.name)]]"
@@ -321,7 +334,7 @@ limitations under the License.
               <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
               <paper-dialog>
                 <paper-button data-feature="[[seqfeat.name]]"
-                                  on-click="deleteFeature">
+                              on-click="deleteFeature">
                   Delete feature
                 </paper-button>
                 <paper-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]"
@@ -371,6 +384,8 @@ limitations under the License.
                   <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
                       readonly="[[readonly]]"
                       on-input="onValueChanged"
+                      on-focus="onInputFocus"
+                      on-blur="onInputBlur"
                       data-feature="[[seqfeat.name]]"
                       data-index="[[index]]"
                       data-seq-num="[[seqNumber]]"
@@ -403,6 +418,10 @@ limitations under the License.
         </div>
       </paper-card>
     </div>
+    <paper-icon-button id="deletevalue" icon="delete" class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"
+        data-feature="[[focusedFeatureName]]" data-index="[[focusedFeatureValueIndex]]"
+        data-seq-num="[[focusedSeqNumber]]" on-click="deleteValue">
+    </paper-icon-button>
     <paper-dialog id="addFeatureDialog">
       <h2>Add Feature</h2>
       <paper-input label="Feature name" value="{{newFeatureName}}"></paper-input>
