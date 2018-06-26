@@ -96,7 +96,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
     name: A unique name for the generated summary, including any desired
       name scopes.
     images: An `np.array` representing pixel data with shape
-      `[k, w, h, c]`, where `k` is the number of images, `w` and `h` are
+      `[k, h, w, c]`, where `k` is the number of images, `w` and `h` are
       the width and height of the images, and `c` is the number of
       channels, which should be 1, 3, or 4.
     max_outputs: Optional `int`. At most this many images will be
@@ -117,7 +117,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
 
   limited_images = images[:max_outputs]
   encoded_images = [util.encode_png(image) for image in limited_images]
-  (width, height) = (images.shape[1], images.shape[2])
+  (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
   tensor = tf.make_tensor_proto(content, dtype=tf.string)
 
