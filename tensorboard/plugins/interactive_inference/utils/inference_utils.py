@@ -448,13 +448,20 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
                                                 inference_result_proto,
                                                 index_to_mutate)
 
-  original_feature = parse_original_feature_from_example(
-      example_proto, feature_name)
+  try:
+    original_feature = parse_original_feature_from_example(
+        example_proto, feature_name)
+  except ValueError as e:
+    return {
+        'chartType': 'categorical',
+        'data': []
+    }
 
   indices_to_mutate = viz_params.feature_indices or xrange(
       original_feature.length)
   chart_type = ('categorical' if original_feature.feature_type == 'bytes_list'
       else 'numeric')
+
   try:
     return {
         'chartType': chart_type,

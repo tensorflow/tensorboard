@@ -157,7 +157,6 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     Returns:
       An empty response.
     """
-    print(str(request.form))
     example_json = request.form['example']
     index = int(request.form['index'])
     if index >= len(self.examples):

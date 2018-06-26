@@ -2192,9 +2192,7 @@ limitations under the License.
           console.error('Unknown chartType: ' + chartType);
         }
 
-        // Delete spinner
         const container = this.featureContainerByName(featureName);
-        deleteElement(container.querySelector('paper-spinner-lite'));
 
         // Append chart
         const categoryPane = container.querySelector('.tf-category-pane-content');
@@ -2342,6 +2340,10 @@ limitations under the License.
       },
 
       makeChartForFeature_: function(chartType, featureName, data) {
+        // Delete spinner
+        const container = this.featureContainerByName(featureName);
+        deleteElement(container.querySelector('paper-spinner-lite'));
+
         data.forEach(subfeature => this.addChart(chartType, featureName, subfeature));
       },
 
