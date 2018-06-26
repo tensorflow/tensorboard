@@ -224,9 +224,17 @@ limitations under the License.
         margin-bottom: 10px;
       }
 
+      .upload-image-button {
+        margin: 0 0 0 5px;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        color: white;
+      }
+
       .imagecard {
-        padding: 8px;
         margin-bottom: 5px;
+        margin-left: 5px;
       }
 
       .image-scale-button {
@@ -245,6 +253,15 @@ limitations under the License.
       .feature-dialog-button {
         text-transform: none;
         text-align: left;
+      }
+
+      .image-bottom-bar {
+        width: 100%;
+        background: gray;
+      }
+
+      .image-upload-input {
+        display: none;
       }
     </style>
     <div class="outer">
@@ -302,6 +319,15 @@ limitations under the License.
                 </paper-button>
               </div>
             </template>
+            <div class="image-bottom-bar">
+              <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
+                  icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]">
+              </paper-icon-button>
+              <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
+                  data-feature="[[feat.name]]"
+                  data-index="[[index]]">
+              </paper-input>
+            </div>
           </paper-card>
         </template>
         <template is="dom-if" if="[[!isImage(feat.name)]]">
@@ -375,6 +401,16 @@ limitations under the License.
                   </div>
                 </div>
               </template>
+              <div class="image-bottom-bar">
+                <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
+                    icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]">
+                </paper-icon-button>
+                <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
+                    data-feature="[[seqfeat.name]]"
+                    data-index="[[index]]"
+                    data-seq-num="[[seqNumber]]">
+                </paper-input>
+              </div>
             </template>
             <template is="dom-if" if="[[!isImage(seqfeat.name)]]">
               <div class="flex-controls value-pills-holder">

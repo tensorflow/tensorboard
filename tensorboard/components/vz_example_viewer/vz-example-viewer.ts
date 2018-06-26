@@ -1162,6 +1162,100 @@ Polymer({
     return cc;
   },
 
+
+  handleImageUpload: function(event: Event) {
+    this.handleFileSelect(event, this)
+  },
+
+  // Handle upload image paper button click by delegating to appropriate
+  // paper-input file chooser.
+  uploadImageClicked: function(event: Event) {
+    const data = this.getDataFromEvent(event);
+    const inputs = Polymer.dom(this.root).querySelectorAll('paper-input');
+    let inputElem = null;
+    for (let i = 0; i < inputs.length; i++) {
+      if ((inputs[i] as any).dataFeature == data.feature) {
+        inputElem = inputs[i];
+        break;
+      }
+    }
+    if (inputElem) {
+      inputElem.querySelector('input').click();
+    }
+  },
+
+  // Handle file select for image replacement.
+  handleFileSelect: function(event: Event, self: any) {
+    event.stopPropagation();
+    event.preventDefault();
+    const reader = new FileReader();
+    const eventAny = event as any;
+    const files = eventAny.dataTransfer ? eventAny.dataTransfer.files : eventAny.target.files;
+    if (files.length === 0) {
+      return;
+    }
+    reader.addEventListener('load', () => {
+      // Get the image data from the loaded image and convert to a char
+      // code array for use in the features value list.
+      const index = +reader.result.indexOf(BASE_64_IMAGE_ENCODING_PREFIX) +
+          BASE_64_IMAGE_ENCODING_PREFIX.length;
+      const encodedImageData = reader.result.substring(index);
+      const cc = self.decodedStringToCharCodes(atob(encodedImageData));
+
+      const data = self.getDataFromEvent(event);
+      const feat = self.getFeatureFromData(data);
+      const values = self.getValueListFromData(data);
+      if (feat) {
+        // Replace the old image data in the feature value list with the new
+        // image data.
+        // tslint:disable-next-line:no-any cast due to tf.Example typing.
+        values[0] = cc as any;
+        feat.getBytesList()!.setValueList((values as string[]));
+
+        // If the example was provided as json, update the byteslist in the
+        // json with the base64 encoded string.
+        const jsonList = self.getJsonValueList(data.feature, data.seqNum);
+        if (jsonList) {
+          jsonList[0] = encodedImageData;
+        }
+
+        // Load the image data into an image element to begin the process
+        // of rendering that image to a canvas for display.
+        const img = new Image();
+        self.addImageElement(data.feature, img);
+        img.addEventListener('load', () => {
+          // Runs the apppriate onload processing for the new image.
+          self.getOnLoadForImage(data.feature, img);
+
+          // If the example contains appropriately-named features describing
+          // the image width and height then update those feature values for
+          // the new image width and height.
+          const featureMiddle =
+              IMG_FEATURE_REGEX.exec(data.feature)![1] || '';
+          const widthFeature = 'image' + featureMiddle + '/width';
+          const heightFeature = 'image' + featureMiddle + '/height';
+          const widths = self.getFeatureValues(widthFeature, false);
+          const heights = self.getFeatureValues(heightFeature, false);
+          if (widths.length > 0) {
+            widths[0] = +img.width;
+            self.features.get(widthFeature)!.getInt64List()!.setValueList(
+                (widths as number[]));
+          }
+          if (heights.length > 0) {
+            heights[0] = +img.height;
+            self.features.get(heightFeature)!.getInt64List()!.setValueList(
+                (heights as number[]));
+          }
+          self.exampleChanged();
+        });
+        img.src = reader.result;
+      }
+    }, false);
+
+    // Read the image file as a data URL.
+    reader.readAsDataURL(files[0]);
+  },
+
   // Add drag-and-drop image replacement behavior to the canvas.
   addDragDropBehaviorToCanvas: function(canvas: HTMLElement) {
     const self = this;
@@ -1173,78 +1267,11 @@ Polymer({
       event.dataTransfer.dropEffect = 'copy';
     }
 
-    // Handle drop event (file select) for drag-and-drop image replacement.
     function handleFileSelect(event: DragEvent) {
-      event.stopPropagation();
-      event.preventDefault();
-      const reader = new FileReader();
-      const files = event.dataTransfer.files;
-      if (files.length === 0) {
-        return;
-      }
-      reader.addEventListener('load', () => {
-        // Get the image data from the loaded image and convert to a char
-        // code array for use in the features value list.
-        const index = +reader.result.indexOf(BASE_64_IMAGE_ENCODING_PREFIX) +
-            BASE_64_IMAGE_ENCODING_PREFIX.length;
-        const encodedImageData = reader.result.substring(index);
-        const cc = self.decodedStringToCharCodes(atob(encodedImageData));
-
-        const data = self.getDataFromEvent(event);
-        const feat = self.getFeatureFromData(data);
-        const values = self.getValueListFromData(data);
-        if (feat) {
-          // Replace the old image data in the feature value list with the new
-          // image data.
-          // tslint:disable-next-line:no-any cast due to tf.Example typing.
-          values[0] = cc as any;
-          feat.getBytesList()!.setValueList((values as string[]));
-
-          // If the example was provided as json, update the byteslist in the
-          // json with the base64 encoded string.
-          const jsonList = self.getJsonValueList(data.feature, data.seqNum);
-          if (jsonList) {
-            jsonList[0] = encodedImageData;
-          }
-
-          // Load the image data into an image element to begin the process
-          // of rendering that image to a canvas for display.
-          const img = new Image();
-          self.addImageElement(data.feature, img);
-          img.addEventListener('load', () => {
-            // Runs the apppriate onload processing for the new image.
-            self.getOnLoadForImage(data.feature, img);
-
-            // If the example contains appropriately-named features describing
-            // the image width and height then update those feature values for
-            // the new image width and height.
-            const featureMiddle =
-                IMG_FEATURE_REGEX.exec(data.feature)![1] || '';
-            const widthFeature = 'image' + featureMiddle + '/width';
-            const heightFeature = 'image' + featureMiddle + '/height';
-            const widths = self.getFeatureValues(widthFeature, false);
-            const heights = self.getFeatureValues(heightFeature, false);
-            if (widths.length > 0) {
-              widths[0] = +img.width;
-              self.features.get(widthFeature)!.getInt64List()!.setValueList(
-                  (widths as number[]));
-            }
-            if (heights.length > 0) {
-              heights[0] = +img.height;
-              self.features.get(heightFeature)!.getInt64List()!.setValueList(
-                  (heights as number[]));
-            }
-            self.exampleChanged();
-          });
-          img.src = reader.result;
-        }
-      }, false);
-
-      // Read the image file as a data URL.
-      reader.readAsDataURL(files[0]);
+      self.handleFileSelect(event, self)
     }
 
-    if (!self.readonly && canvas) {
+    if (!this.readonly && canvas) {
       canvas.addEventListener('dragover', handleDragOver, false);
       canvas.addEventListener('drop', handleFileSelect, false);
     }
@@ -1547,6 +1574,10 @@ Polymer({
 
   getAddFeatureButtonClass: function(readonly: boolean) {
     return readonly ? 'hide-controls' : 'add-feature-button';
+  },
+
+  getUploadImageClass: function(readonly: boolean) {
+    return readonly ? 'hide-controls' : 'upload-image-button';
   },
 
   /**
