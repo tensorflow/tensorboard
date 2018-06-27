@@ -376,6 +376,10 @@ def _list_value_to_python_list(list_value):
   return [_value_to_python(value) for value in list_value.values]
 
 
+# WARNING: This class uses python PCRE-compatible regex which have exponential-
+# time inputs, which is a security vulnerability (an attacker can make the
+# server use a large amount of CPU).
+# TODO(erez): Replace the regexp routines with a polynomial implementation.
 class _SessionGroupRegexFilter(_SessionGroupFilter):
   def __init__(self, regex, extractor, include_missing_values):
     super(_SessionGroupRegexFilter, self).__init__(extractor,

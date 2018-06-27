@@ -122,8 +122,6 @@ from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 
-FLAGS = tf.flags.FLAGS
-
 
 # Map of field names within summary.proto to the user-facing names that this
 # script outputs.

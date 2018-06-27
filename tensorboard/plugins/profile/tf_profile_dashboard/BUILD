@@ -18,6 +18,7 @@ tf_web_library(
         "//tensorboard/plugins/profile/input_pipeline_analyzer",
         "//tensorboard/plugins/profile/overview_page",
         "//tensorboard/plugins/profile/tf_op_profile",
+        "//tensorboard/plugins/profile/memory_viewer/memory_viewer_dashboard",
         "@org_polymer",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_item",
