@@ -327,8 +327,6 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    goog.require('goog.object');
-
     if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
@@ -402,7 +400,7 @@ limitations under the License.
         _dashboardData: {
           type: Array,
           readOnly: true,
-          value: goog.object.getValues(tf_tensorboard.dashboardRegistry),
+          value: _.values(tf_tensorboard.dashboardRegistry),
         },
 
         /**
