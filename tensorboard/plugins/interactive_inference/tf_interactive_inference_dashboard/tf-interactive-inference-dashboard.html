@@ -834,12 +834,16 @@ limitations under the License.
                     <div>[[getRegressionCount(inferenceStats_)]]</div>
                   </div>
                   <div class="flex">
-                    <div class="regression-stat-label">Inference error mean:</div>
+                    <div class="regression-stat-label">Mean error:</div>
                     <div>[[getRegressionMean(inferenceStats_)]]</div>
                   </div>
                   <div class="flex">
-                    <div class="regression-stat-label">Inference error stddev:</div>
-                    <div>[[getRegressionStdDev(inferenceStats_)]]</div>
+                    <div class="regression-stat-label">Mean absolute error:</div>
+                    <div>[[getRegressionL1(inferenceStats_)]]</div>
+                  </div>
+                  <div class="flex">
+                    <div class="regression-stat-label">Mean squared error:</div>
+                    <div>[[getRegressionL2(inferenceStats_)]]</div>
                   </div>
                 </template>
                 <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
@@ -853,12 +857,16 @@ limitations under the License.
                         <div>[[getRegressionCount(inferenceStats_, item)]]</div>
                       </div>
                       <div class="flex indent">
-                        <div class="regression-stat-label">Inference error mean:</div>
+                        <div class="regression-stat-label">Mean error:</div>
                         <div>[[getRegressionMean(inferenceStats_, item)]]</div>
                       </div>
                       <div class="flex indent">
-                        <div class="regression-stat-label">Inference error stddev:</div>
-                        <div>[[getRegressionStdDev(inferenceStats_, item)]]</div>
+                        <div class="regression-stat-label">Mean absolute error:</div>
+                        <div>[[getRegressionL1(inferenceStats_, item)]]</div>
+                      </div>
+                      <div class="flex indent">
+                        <div class="regression-stat-label">Mean squared error:</div>
+                        <div>[[getRegressionL2(inferenceStats_, item)]]</div>
                       </div>
                     </div>
                   </template>
@@ -880,7 +888,9 @@ limitations under the License.
     const inferenceLabelStr = 'inference label';
     const inferenceValueStr = 'inference value';
     const inferenceCorrectStr = 'inference correct';
-    const inferenceDeltaStr = 'inference error';
+    const inferenceErrorStr = 'inference error';
+    const inferenceAbsErrorStr = 'inference absolute error';
+    const inferenceSquaredErrorStr = 'inference squared error';
     const inferenceScoreStr = 'inference score';
 
     function deleteElement(elt){
@@ -1171,8 +1181,9 @@ limitations under the License.
         // features.
         const features = Object.keys(stats).filter(function(feature) {
           return feature !== inferenceValueStr && feature !== inferenceLabelStr
-            && feature !== inferenceCorrectStr && feature !== inferenceDeltaStr
-            && feature !== inferenceScoreStr;
+            && feature !== inferenceCorrectStr && feature !== inferenceErrorStr
+            && feature !== inferenceScoreStr && feature !== inferenceAbsErrorStr
+            && feature !== inferenceSquaredErrorStr;
         }).sort();
         // Add a blank feature to be used for clearing the selected feature.
         features.push('');
@@ -1358,7 +1369,7 @@ limitations under the License.
                   facetedStats = inferenceStats.faceted[facetKey];
                 }
               }
-              const inferenceError = item[this.selectedLabelFeature] - item[inferenceValueStr];
+              const inferenceError = item[inferenceValueStr] - item[this.selectedLabelFeature];
               inferenceStats.results.errors.push(inferenceError);
               if (facetedStats) {
                 facetedStats.errors.push(inferenceError);
@@ -1399,21 +1410,12 @@ limitations under the License.
           return sum / data.length;
         }
 
-        const sum = regressionStats.errors.reduce((sum, value) => {
-          return sum + value;
-        }, 0);
+        const l1Errors = regressionStats.errors.map(err => Math.abs(err));
+        const l2Errors = regressionStats.errors.map(err => err * err);
 
         regressionStats.mean = mean(regressionStats.errors);
-
-        const squareDiffs = regressionStats.errors.map(value => {
-          const diff = value - regressionStats.mean;
-          const sqrDiff = diff * diff;
-          return sqrDiff;
-        });
-
-        const avgSquareDiff = mean(squareDiffs);
-
-        regressionStats.stdDev = Math.sqrt(avgSquareDiff);
+        regressionStats.l1 = mean(l1Errors);
+        regressionStats.l2 = mean(l2Errors);
       },
 
       plotPr: function(chart, thresholdStats, threshold,
@@ -1686,8 +1688,12 @@ limitations under the License.
         return this.getRegressionStat(regressionStats, facetItem, stat => stat.mean, d3.format('.3f'));
       },
 
-      getRegressionStdDev: function(regressionStats, facetItem) {
-        return this.getRegressionStat(regressionStats, facetItem, stat => stat.stdDev, d3.format('.3f'));
+      getRegressionL1: function(regressionStats, facetItem) {
+        return this.getRegressionStat(regressionStats, facetItem, stat => stat.l1, d3.format('.3f'));
+      },
+
+      getRegressionL2: function(regressionStats, facetItem) {
+        return this.getRegressionStat(regressionStats, facetItem, stat => stat.l2, d3.format('.3f'));
       },
 
       getRegressionCount: function(regressionStats, facetItem) {
@@ -1896,7 +1902,9 @@ limitations under the License.
           if (this.modelType == 'classification') {
             item[inferenceCorrectStr] = item[this.selectedLabelFeature] == item[inferenceValueStr] ? "correct" : "incorrect";
           } else {
-            item[inferenceDeltaStr] = item[this.selectedLabelFeature] - item[inferenceValueStr];
+            item[inferenceErrorStr] = item[inferenceValueStr] - item[this.selectedLabelFeature];
+            item[inferenceAbsErrorStr] = Math.abs(item[inferenceErrorStr]);
+            item[inferenceSquaredErrorStr] = item[inferenceErrorStr] * item[inferenceErrorStr];
           }
         }
       },

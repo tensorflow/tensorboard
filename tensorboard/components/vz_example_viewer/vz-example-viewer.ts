@@ -892,15 +892,15 @@ Polymer({
   },
 
   /**
-   * Replaces slashes in feature names with underscores so they can be used
-   * in css classes/ids.
+   * Replaces non-standard chars in feature names with underscores so they can
+   * be used in css classes/ids.
    */
   sanitizeFeature: function(feat: string) {
    let sanitized = feat;
     if (!feat.match(/^[A-Za-z].*$/)) {
       sanitized = '_' + feat;
     }
-    return sanitized.replace(/\//g, '_');
+    return sanitized.replace(/[\/\.\#]/g, '_');
   },
 
   isSeqExample: function(maxSeqNumber: number) {

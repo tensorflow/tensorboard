@@ -135,4 +135,4 @@ def call_servo(examples, serving_bundle):
   if serving_bundle.model_type == 'classification':
     return stub.Classify(request, 30.0)  # 30 secs timeout
   else:
-    return stub.Regress(request, 30.0)  # 30 secs timeoutparsed_url = urlparse(serving_bundle.inference_address)
+    return stub.Regress(request, 30.0)  # 30 secs timeout
