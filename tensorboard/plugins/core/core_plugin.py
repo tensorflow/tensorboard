@@ -269,6 +269,15 @@ present and --logdir is not specified.\
 ''')
 
     parser.add_argument(
+        '--pid_file',
+        metavar='PATH',
+        type=str,
+        default='',
+        help='''\
+Creates a PID file containing the process ID of tensorboard itself.
+''')
+
+    parser.add_argument(
         '--path_prefix',
         metavar='PATH',
         type=str,

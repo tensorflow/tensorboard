@@ -81,7 +81,7 @@ class TensorBoard(object):
     """Creates new instance.
 
     The configure() method should be called after creating a new
-    instance of this classe.
+    instance of this class.
 
     Args:
       plugin_loaders: A list of TBLoader plugin loader instances. If not
@@ -172,6 +172,9 @@ class TensorBoard(object):
       server, url = self._get_server()
     except socket.error:
       return -1
+    if self.flags.pid_file:
+      with open(self.flags.pid_file, 'w') as f:
+        f.write(str(os.getpid()))
     sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
                      (version.VERSION, url))
     sys.stderr.flush()
