@@ -599,12 +599,12 @@ def tensorboard_polymer_workspace():
   web_library_external(
       name = "org_polymer_marked",
       licenses = ["notice"],  # MIT
-      sha256 = "4f7c6e0cd96569b3bb762584d20acc3a2602a3442165208535b3f1eff3c1dc41",
+      sha256 = "dd5a84bdf5a52558a09c2fe948e9be9c4f535901845240f3a60f97f092674aa0",
       urls = [
-          "https://mirror.bazel.build/github.com/chjj/marked/archive/v0.3.19.tar.gz",
-          "https://github.com/chjj/marked/archive/v0.3.19.tar.gz",
+          "https://mirror.bazel.build/github.com/chjj/marked/archive/v0.3.2.tar.gz",
+          "https://github.com/chjj/marked/archive/v0.3.2.tar.gz",
       ],
-      strip_prefix = "marked-0.3.19",
+      strip_prefix = "marked-0.3.2",
       path = "/marked",
       srcs = ["lib/marked.js"],
   )
