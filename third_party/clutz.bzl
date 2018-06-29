@@ -24,8 +24,11 @@ CLUTZ_ATTRIBUTES = {
         default=Label("@io_angular_clutz//:clutz"),
         executable=True,
         cfg="host"),
-    "_clutz_externs": attr.label(
-        default=Label("@com_google_javascript_closure_compiler_externs"),
+    "_clutz_externs": attr.label_list(
+        default=[
+            Label("//third_party:jspbfix"),
+            Label("@com_google_javascript_closure_compiler_externs"),
+        ],
         allow_files=True),
 }
 
