@@ -7,7 +7,6 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "google_chart",
     srcs = [
-        "charts-loader.html",
         "google-chart.html",
         "google-chart-loader.html",
         "google-chart-styles.html",

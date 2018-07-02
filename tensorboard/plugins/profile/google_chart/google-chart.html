@@ -286,6 +286,7 @@ on the `html` tag of your document.
         readOnly: true,
         value: false
       },
+
     },
 
     observers: [
@@ -469,7 +470,15 @@ on the `html` tag of your document.
         .then(function(dataView) {
           this._dataView = dataView;
         }.bind(this));
-    }
+    },
+
+    attached: function() {
+      var url = "https://www.gstatic.com/charts/loader.js";
+      var script = document.createElement('script');
+      script.src = url;
+      document.head.appendChild(script);
+    },
+
   });
 })();
 </script>
