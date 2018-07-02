@@ -97,8 +97,9 @@ You may obtain a copy of the License at
        text-decoration: underline;
      }
     </style>
-    <div class="errorMessage" hidden$="[[!_show_error_message]]"> <span>[[_error_message]]</span></div>
-    <div class="while_page_content" hidden$="[[_show_error_message]]">
+    <template is="dom-if" if="[[_show_error_message]]" restamp=true>
+      <div class="errorMessage"><span>[[_error_message]]</span></div></template>
+    <template is="dom-if" if="[[!_show_error_message]]" restamp=true>
       <div class="container flex-horizontal">
         <paper-card heading="Performance Summary">
           <div class="card-content">
@@ -151,15 +152,15 @@ You may obtain a copy of the License at
           </div>
         </paper-card>
         <paper-card heading="Recommendation for Next Steps">
-        <div class="card-content">
-          <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
+          <div class="card-content">
+            <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
             <div id="host_side_tips"></div>
             <div id="device_side_tips"></div>
             <div id="documentation_tips"></div>
           </div>
         </paper-card>
       </div>
-    </div>
+   </template>
   </template>
 
   <script>
@@ -181,29 +182,35 @@ You may obtain a copy of the License at
        },
        _show_error_message: {
          type: Boolean,
+         computed: '_shouldShowErrorMessage(_data)',
+         notify: true,
+         observer: '_onErrorChanged',
+       },
+       _active: {
+         type: Boolean,
          value: false,
          notify: true,
        },
+       _host_idle_time_percent: { type: String, },
+       _device_idle_time_percent: { type: String, },
+       _mxu_utilization_percent: { type: String, },
+       _steptime_ms_average: { type: String, },
+       _steptime_ms_stddev: { type: String, },
+       _top_ops_heading: { type: String, },
+       _error_message: { type: String, },
+       _host_count: { type: String, },
+       _tpu_type: { type: String, },
+       _tpu_core_count: { type: String, },
+       _batch_size: { type: String, },
+       _change_list: { type: String, },
+       _build_time: { type: String, },
+       _build_target: { type: String, },
+       _statement: { type: String, },
      },
-     _host_idle_time_percent: String,
-     _device_idle_time_percent: String,
-     _mxu_utilization_percent: String,
-     _steptime_ms_average: String,
-     _steptime_ms_stddev: String,
-     _top_ops_heading: String,
-     _error_message: String,
-     _host_count: String,
-     _tpu_type: String,
-     _tpu_core_count: String,
-     _batch_size: String,
-     _change_list: String,
-     _build_time: String,
-     _build_target: String,
-     _statement: String,
 
      /* Toggles _show_top_ops_table */
      onClickTopOps: function(e) {
-       this.set('_show_top_ops_table', !this._show_top_ops_table);
+       this._show_top_ops_table =  !this._show_top_ops_table;
      },
 
      /* Gets the current text of the "show-top-ops" button */
@@ -211,36 +218,45 @@ You may obtain a copy of the License at
        return (show_top_ops_table ? 'Hide' : 'Show') + ' table';
      },
 
+     _shouldShowErrorMessage: function(data) {
+       if (!data) return true;
+       return data[2].p['error_message'] != '';
+     },
+
      /* Updates view according to new data */
      _updateView: function() {
-       if (this._data == null) return;
+       if (!this._data || !this._active) return;
        var generalAnalysisJson = this._data[0];
        var inputAnalysisJson = this._data[1];
        var runEnvironmentJson = this._data[2];
        var recommendationJson = this._data[3];
 
        var statement = recommendationJson.p['statement'];
-       this.set('_host_idle_time_percent', generalAnalysisJson.p['host_idle_time_percent']);
-       this.set('_device_idle_time_percent', generalAnalysisJson.p['device_idle_time_percent']);
-       this.set('_mxu_utilization_percent', generalAnalysisJson.p['mxu_utilization_percent']);
-       this.set('_steptime_ms_average', inputAnalysisJson.p['steptime_ms_average']);
-       this.set('_steptime_ms_stddev', inputAnalysisJson.p['steptime_ms_standard_deviation']);
-       this.set('_error_message', runEnvironmentJson.p['error_message']);
-       this.set('_host_count', runEnvironmentJson.p['host_count']);
-       this.set('_tpu_type', runEnvironmentJson.p['tpu_type']);
-       this.set('_tpu_core_count', runEnvironmentJson.p['tpu_core_count']);
-       this.set('_batch_size', runEnvironmentJson.p['batch_size']);
-       this.set('_change_list', runEnvironmentJson.p['change_list']);
-       this.set('_build_time', runEnvironmentJson.p['build_time']);
-       this.set('_build_target', runEnvironmentJson.p['build_target']);
-       this.set('_statement', recommendationJson.p['statement']);
-       this.set('_show_error_message', this._error_message!='');
+       this._host_idle_time_percent =
+           generalAnalysisJson.p['host_idle_time_percent'];
+       this._device_idle_time_percent =
+           generalAnalysisJson.p['device_idle_time_percent'];
+       this._mxu_utilization_percent =
+           generalAnalysisJson.p['mxu_utilization_percent'];
+       this._steptime_ms_average =
+           inputAnalysisJson.p['steptime_ms_average'];
+       this._steptime_ms_stddev =
+           inputAnalysisJson.p['steptime_ms_standard_deviation'];
+       this._error_message = runEnvironmentJson.p['error_message'];
+       this._host_count = runEnvironmentJson.p['host_count'];
+       this._tpu_type = runEnvironmentJson.p['tpu_type'];
+       this._tpu_core_count = runEnvironmentJson.p['tpu_core_count'];
+       this._batch_size = runEnvironmentJson.p['batch_size'];
+       this._change_list = runEnvironmentJson.p['change_list'];
+       this._build_time = runEnvironmentJson.p['build_time'];
+       this._build_target = runEnvironmentJson.p['build_target'];
+       this._statement = recommendationJson.p['statement'];
 
        if (statement.includes('HIGHLY')) {
          this.customStyle['--summary-color'] = 'red';
        } else if (statement.includes('MODERATE')) {
          this.customStype['--summary-color'] = 'orange';
-       } 
+       }
 
        this.updateStyles();
 
@@ -251,6 +267,11 @@ You may obtain a copy of the License at
 
      /* Plots a graph of step time (in ms) against step number */
      _showDeviceStepChart : function(deviceJson) {
+       var chart = this.$$('#device_step_chart');
+       if (!deviceJson || !deviceJson.rows ||
+               !deviceJson.rows.length || !this._active) {
+         return;
+       }
        var computeTimeSeries = [];
        var stepTimeSeries = [];
        var maxStepTime = 0;
@@ -258,18 +279,18 @@ You may obtain a copy of the License at
        deviceJson.rows.forEach(function(row, index) {
          step = step > 0 ? ++step : Number(row.c[0].v);
          computeTimeSeries.push({"scalar": row.c[1].v,
-				 "step": step,
-				 "tpu_step": Number(row.c[0].v),
-				 "low_watermark": 0})
+                                 "step": step,
+                                 "tpu_step": Number(row.c[0].v),
+                                 "low_watermark": 0})
          stepTimeSeries.push({"scalar": row.c[1].v + row.c[2].v,
                               "step": step,
                               "low_watermark": row.c[1].v})
          maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
        })
-       var chart = this.$.device_step_chart;
        if (chart) {
-         chart.setVisibleSeries(['compute-time', 'step-time = input-time + compute-time']);
-	 chart.setSeriesData('compute-time', computeTimeSeries);
+         chart.setVisibleSeries(['compute-time',
+             'step-time = input-time + compute-time']);
+         chart.setSeriesData('compute-time', computeTimeSeries);
          chart.setSeriesData('step-time = input-time + compute-time', stepTimeSeries);
          chart.defaultYRange = [0, maxStepTime * 1.1]
          chart.smoothingEnabled = false;
@@ -287,40 +308,49 @@ You may obtain a copy of the License at
 
      /* Draws a table of TensorFlow Op statistics */
      _showTopOpsTable: function(opsTableJson) {
+       if (!opsTableJson || !opsTableJson.rows ||
+               !opsTableJson.rows.length || !this._active) {
+         return;
+       }
        var numRows = 0;
-       var opsTableBody = this.$.top_ops_table_content;
+       var opsTableBody = this.$$('#top_ops_table_content');
+       if (!opsTableBody) { return; }
        opsTableBody.innerHTML = '';
        opsTableJson.rows.forEach(function(rowJson, index) {
-	 var row = document.createElement('tr');
-	 Polymer.dom(opsTableBody).appendChild(row);
-	 var cellTexts = [];
-	 cellTexts.push((rowJson.c[0].v*100).toFixed(2)+'%');
-	 cellTexts.push((rowJson.c[1].v*100).toFixed(2)+'%');
-	 cellTexts.push(rowJson.c[2].v);
-	 cellTexts.push(rowJson.c[3].v);
-	 cellTexts.push((rowJson.c[4].v).toFixed(2));
-	 cellTexts.forEach(function(cellText, index) {
+         var row = document.createElement('tr');
+         Polymer.dom(opsTableBody).appendChild(row);
+         var cellTexts = [];
+         cellTexts.push((rowJson.c[0].v*100).toFixed(2)+'%');
+         cellTexts.push((rowJson.c[1].v*100).toFixed(2)+'%');
+         cellTexts.push(rowJson.c[2].v);
+         cellTexts.push(rowJson.c[3].v);
+         cellTexts.push((rowJson.c[4].v).toFixed(2));
+         cellTexts.forEach(function(cellText, index) {
            var td = document.createElement('td');
            Polymer.dom(row).appendChild(td);
            Polymer.dom(td).appendChild(document.createTextNode(cellText));
          });
-	 numRows += 1;
+         numRows += 1;
        })
-       this.set('_top_ops_heading', 'Top ' + numRows + ' TensorFlow operations executed on TPU');
-       this.set('_show_top_ops_table', false);
+       this._top_ops_heading = 'Top ' + numRows +
+                              ' TensorFlow operations executed on TPU';
+       this._show_top_ops_table = false;
      },
 
      /* Generates the HTML for a recommendation link */
-     _generateRecommendationHtml: function(tipsTableJson, cssClassName, wantedTipType, titleString) {
+     _generateRecommendationHtml: function(tipsTableJson,
+                                           cssClassName,
+                                           wantedTipType,
+                                           titleString) {
        var content = '<p>&nbsp;</p>';
        content += '<div class="' + cssClassName + '">';
        content += '<b>' + titleString + ':</b>';
        tipsTableJson.rows.forEach(function(rowJson, index) {
          var tipType = rowJson.c[0].v;
-	 if (tipType == wantedTipType) {
-	   var link = rowJson.c[1].v;
-	   content += '<li>' + link + '</li>';
-	 }
+         if (tipType == wantedTipType) {
+           var link = rowJson.c[1].v;
+           content += '<li>' + link + '</li>';
+         }
        });
        content += '</div>';
        return content;
@@ -328,22 +358,55 @@ You may obtain a copy of the License at
 
      /* Shows the recommendation section */
      _showRecommendation: function(recommendationJson) {
+       if(!recommendationJson || !this._active) return;
        var bottleneck =  recommendationJson.p['bottleneck'];
-       var hostTipsBody = this.$.host_side_tips;
-       var deviceTipsBody = this.$.device_side_tips;
+       var hostTipsBody = this.$$('#host_side_tips');
+       var deviceTipsBody = this.$$('#device_side_tips');
+       if (!hostTipsBody || !deviceTipsBody) { return; };
 
        if (bottleneck == 'device') {
          hostTipsBody.innerHTML = '';
-         deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
+         deviceTipsBody.innerHTML =
+             this._generateRecommendationHtml(
+                 recommendationJson, 'bottleneckTips', 'device',
+                     'Next tools to use for reducing the TPU time');
        } else if (bottleneck == 'host') {
-         hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
+         hostTipsBody.innerHTML = this._generateRecommendationHtml(
+             recommendationJson, 'bottleneckTips', 'host',
+                 'Next tools to use for reducing the input time');
          deviceTipsBody.innerHTML = '';
        } else {
-         hostTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'host', 'Next tools to use for reducing the input time');
-         deviceTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'bottleneckTips', 'device', 'Next tools to use for reducing the TPU time');
+         hostTipsBody.innerHTML = this._generateRecommendationHtml(
+             recommendationJson, 'bottleneckTips', 'host',
+                 'Next tools to use for reducing the input time');
+         deviceTipsBody.innerHTML = this._generateRecommendationHtml(
+             recommendationJson, 'bottleneckTips', 'device',
+                 'Next tools to use for reducing the TPU time');
        }
-       var documentationTipsBody = this.$.documentation_tips;
-       documentationTipsBody.innerHTML = this._generateRecommendationHtml(recommendationJson, 'documentationTips', 'doc', 'Other useful resources');
+       var documentationTipsBody = this.$$('#documentation_tips');
+       if (documentationTipsBody) {
+         documentationTipsBody.innerHTML = this._generateRecommendationHtml(
+             recommendationJson, 'documentationTips', 'doc',
+                 'Other useful resources');
+       }
+     },
+
+     _onErrorChanged: function() {
+       this._updateView();
+     },
+
+     ready: function() {
+       this._active = true;
+       this._updateView();
+     },
+
+     attached: function() {
+       this._active = true;
+       this._updateView();
+     },
+
+     detached: function() {
+       this._active = false;
      },
    });
   </script>
