@@ -737,7 +737,10 @@ limitations under the License.
                       <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                         <div class="roc-and-conf-matrix">
                           <div class="roc-holder">
-                            <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"></vz-line-chart>
+                            <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                            </vz-line-chart>
                           </div>
                           <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, item.threshold, item)]]"
                                               class="conf-matrix">
@@ -759,7 +762,10 @@ limitations under the License.
                   <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                     <div class="roc-and-conf-matrix">
                       <div class="roc-holder">
-                        <vz-line-chart id="prchart" class="pr-line-chart"></vz-line-chart>
+                        <vz-line-chart id="prchart" class="pr-line-chart"
+                            x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                            y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                        </vz-line-chart>
                       </div>
                       <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, overallThreshold)]]"
                                            class="conf-matrix">
@@ -1046,6 +1052,10 @@ limitations under the License.
           value: false,
         },
         maxInferenceEntriesPerRun: Number,
+        axisPrecision: {
+          type: Number,
+          value: 2,
+        },
       },
 
       // Required function.
@@ -2214,6 +2224,10 @@ limitations under the License.
         }
       },
 
+      getSimpleAxisFormatter: function(precision) {
+        return Plottable.Formatters.general(precision);
+      },
+
       makeBarChart: function(featureName, data){
         // categorical data:
         // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
@@ -2303,6 +2317,8 @@ limitations under the License.
         const series = _.keys(data);
         chart.setVisibleSeries(series);
         series.forEach(label => chart.setSeriesData(label, data[label]));
+        chart.xAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
+        chart.yAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
         return chart;
       },
 
