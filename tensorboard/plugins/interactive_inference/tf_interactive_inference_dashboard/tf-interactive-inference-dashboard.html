@@ -76,12 +76,14 @@ limitations under the License.
         flex-direction: column;
         flex-grow: 1;
         flex-shrink: 1;
+        margin-left: 6px;
       }
 
       .example-and-inference-holder-expanded {
         display: flex;
         flex-grow: 1;
         flex-shrink: 1;
+        margin-left: 6px;
       }
 
       .example-holder {
@@ -140,6 +142,11 @@ limitations under the License.
         font-size: 12px;
         color: #777;
         padding-top: 22px;
+      }
+
+      .datapoint-info-text {
+        color: #777;
+        margin: 20px 10px;
       }
 
       .accept-button-holder {
@@ -265,7 +272,7 @@ limitations under the License.
       }
 
       .config-tab {
-        padding-left: 5px;
+        padding-left: 10px;
         width: 100%;
         overflow: auto;
       }
@@ -288,6 +295,14 @@ limitations under the License.
 
       .conf-matrix {
         margin-left: 20px;
+      }
+
+      .datapoint-controls-holder.datapoint-control-buttons-holder {
+        padding-left: 2px;
+      }
+
+      .datapoint-controls-holder.datapoint-control-search-holder {
+        padding-left: 10px;
       }
 
       .datapoint-controls-holder {
@@ -427,10 +442,6 @@ limitations under the License.
         border-right: 1px solid lightgrey;
       }
 
-      .pad-left {
-        padding-left: 5px;
-      }
-
       .roc-and-conf-matrix {
         display: flex;
         width: 100%;
@@ -459,11 +470,7 @@ limitations under the License.
       }
 
       .optimize-text {
-        margin-top: 5px;
-      }
-
-      .button-bottom-margin {
-        margin-bottom: 5px;
+        margin: 5px 0;
       }
 
       .threshold-cost-input {
@@ -478,8 +485,25 @@ limitations under the License.
         margin-left: 10px;
       }
 
-      .regression-stat-label {
-        margin-right: 5px;
+      .feature-breakdown {
+        margin-left: 12px;
+      }
+
+      .optimize-selection-button {
+        margin-left: 0px;
+        margin-bottom: 5px;
+      }
+
+      .reg-table-category {
+        text-align: left;
+      }
+
+      .reg-table-value {
+        text-align: right;
+      }
+
+      .subfeature-table {
+        margin-left: 10px;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
@@ -590,7 +614,7 @@ limitations under the License.
           <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
             <div class="datapoint-tab">
               <template is="dom-if" if="[[shouldShowExample_(selectedExampleAndInference)]]">
-                <div class="datapoint-controls-holder">
+                <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                   <div class="datapoint-left-controls-holder">
                     <paper-icon-button class="datapoint-control-button" icon="content-copy"
                         on-click="copyDatapoint_" alt="copy datapoint">
@@ -620,7 +644,7 @@ limitations under the License.
                     </paper-icon-button>
                   </div>
                 </div>
-                <div class="datapoint-controls-holder">
+                <div class="datapoint-controls-holder datapoint-control-search-holder">
                   <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
                     <iron-icon icon="icons:search" prefix></iron-icon>
                   </paper-input>
@@ -644,8 +668,8 @@ limitations under the License.
                 </div>
               </template>
               <template is="dom-if" if="[[!shouldShowExample_(selectedExampleAndInference)]]">
-                <div class="info-text pad-left">Select a datapoint to see its details and inference results here.</div>
-                <div class="info-text pad-left">Datapoints can be edited and rerun through the model.</div>
+                <div class="datapoint-info-text">Select a datapoint to see its details and inference results here.</div>
+                <div class="datapoint-info-text">Datapoints can be edited and rerun through the model.</div>
               </template>
             </div>
             <div class="stats-tab">
@@ -697,19 +721,19 @@ limitations under the License.
                   <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                     <div class="optimize-text">Optimize each threshold with any of the following constraints:</div>
                     <div class="flex-wrap">
-                      <paper-button class="generic-button button-bottom-margin" on-click="optimizeFacetedThresholdsClicked_">
+                      <paper-button class="generic-button optimize-selection-button" on-click="optimizeFacetedThresholdsClicked_">
                           Indivdual thresholds
                       </paper-button>
-                      <paper-button class="generic-button button-bottom-margin" on-click="equalOppoClicked_">
+                      <paper-button class="generic-button optimize-selection-button" on-click="equalOppoClicked_">
                           Equal opportunity
                       </paper-button>
-                      <paper-button class="generic-button button-bottom-margin" on-click="equalAccClicked_">
+                      <paper-button class="generic-button optimize-selection-button" on-click="equalAccClicked_">
                           Equal accuracy
                       </paper-button>
-                      <paper-button class="generic-button button-bottom-margin" on-click="demoParityClicked_">
+                      <paper-button class="generic-button optimize-selection-button" on-click="demoParityClicked_">
                           Demographic parity
                       </paper-button>
-                      <paper-button class="generic-button button-bottom-margin" on-click="optimizeThresholdClicked_">
+                      <paper-button class="generic-button optimize-selection-button" on-click="optimizeThresholdClicked_">
                           Single threshold
                       </paper-button>
                       <div>
@@ -726,7 +750,7 @@ limitations under the License.
                     </div>
                   </template>
                   <template is="dom-repeat" items="[[featureValueThresholds]]">
-                    <div>
+                    <div class="feature-breakdown">
                       <paper-input value="[[getPrintableValue_(item)]]" readonly=true
                                     class="slider-label" no-label-float=true>
                       </paper-input>
@@ -802,7 +826,7 @@ limitations under the License.
                 </template>
                 <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                   <template is="dom-repeat" items="[[featureValueThresholds]]">
-                    <div>
+                    <div class="feature-breakdown">
                       <paper-input value="[[getPrintableValue_(item)]]" readonly=true
                                     class="facet-label" no-label-float=true>
                       </paper-input>
@@ -835,45 +859,49 @@ limitations under the License.
                   </div>
                 </template>
                 <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
-                  <div class="flex">
-                    <div class="regression-stat-label">Count:</div>
-                    <div>[[getRegressionCount(inferenceStats_)]]</div>
-                  </div>
-                  <div class="flex">
-                    <div class="regression-stat-label">Mean error:</div>
-                    <div>[[getRegressionMean(inferenceStats_)]]</div>
-                  </div>
-                  <div class="flex">
-                    <div class="regression-stat-label">Mean absolute error:</div>
-                    <div>[[getRegressionL1(inferenceStats_)]]</div>
-                  </div>
-                  <div class="flex">
-                    <div class="regression-stat-label">Mean squared error:</div>
-                    <div>[[getRegressionL2(inferenceStats_)]]</div>
-                  </div>
+                  <table>
+                    <tr>
+                      <th class="reg-table-category">Count</th>
+                      <td class="reg-table-value">[[getRegressionCount(inferenceStats_)]]</td>
+                    </tr>
+                    <tr>
+                      <th class="reg-table-category">Mean error</th>
+                      <td class="reg-table-value">[[getRegressionMean(inferenceStats_)]]</td>
+                    </tr>
+                    <tr>
+                      <th class="reg-table-category">Mean absolute error</th>
+                      <td class="reg-table-value">[[getRegressionL1(inferenceStats_)]]</td>
+                    </tr>
+                    <tr>
+                      <th class="reg-table-category">Mean squared error</th>
+                      <td class="reg-table-value">[[getRegressionL2(inferenceStats_)]]</td>
+                    </tr>
+                  </table>
                 </template>
                 <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedThresholdFeature, inferences)]]">
                   <template is="dom-repeat" items="[[featureValueThresholds]]">
-                    <div>
+                    <div class="feature-breakdown">
                       <paper-input value="[[getPrintableValue_(item)]]" readonly=true
                                     class="facet-label" no-label-float=true>
                       </paper-input>
-                      <div class="flex indent">
-                        <div class="regression-stat-label">Count:</div>
-                        <div>[[getRegressionCount(inferenceStats_, item)]]</div>
-                      </div>
-                      <div class="flex indent">
-                        <div class="regression-stat-label">Mean error:</div>
-                        <div>[[getRegressionMean(inferenceStats_, item)]]</div>
-                      </div>
-                      <div class="flex indent">
-                        <div class="regression-stat-label">Mean absolute error:</div>
-                        <div>[[getRegressionL1(inferenceStats_, item)]]</div>
-                      </div>
-                      <div class="flex indent">
-                        <div class="regression-stat-label">Mean squared error:</div>
-                        <div>[[getRegressionL2(inferenceStats_, item)]]</div>
-                      </div>
+                      <table class="subfeature-table">
+                        <tr>
+                          <th class="reg-table-category">Count</th>
+                          <td class="reg-table-value">[[getRegressionCount(inferenceStats_, item)]]</td>
+                        </tr>
+                        <tr>
+                          <th class="reg-table-category">Mean error</th>
+                          <td class="reg-table-value">[[getRegressionMean(inferenceStats_, item)]]</td>
+                        </tr>
+                        <tr>
+                          <th class="reg-table-category">Mean absolute error</th>
+                          <td class="reg-table-value">[[getRegressionL1(inferenceStats_, item)]]</td>
+                        </tr>
+                        <tr>
+                          <th class="reg-table-category">Mean squared error</th>
+                          <td class="reg-table-value">[[getRegressionL2(inferenceStats_, item)]]</td>
+                        </tr>
+                      </table>
                     </div>
                   </template>
                 </template>
