@@ -84,7 +84,7 @@ limitations under the License.
       <div class="marker"></div>
       <div class="run">Run</div>
       <div class$="[[getLabelClass(modelType)]]">Label</div>
-      <div class="score">Score</div>
+      <div class="score">[[getScoreLabel(modelType)]]</div>
       <div class="arrow"></div>
       <div class="delta">Delta</div>
     </div>
@@ -132,6 +132,10 @@ limitations under the License.
 
       getLabelClass: function(modelType) {
         return modelType == 'classification' ? 'label' : 'no-label';
+      },
+
+      getScoreLabel: function(modelType) {
+        return modelType == 'classification' ? 'Score' : 'Value';
       },
 
       getIconClass: function(runIndex, labelIndex) {
