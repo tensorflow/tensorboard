@@ -740,9 +740,9 @@ limitations under the License.
                         <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
                         <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
                           <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all groups individually</div>
-                          <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of datapoints from each group are predicted yes</div>
-                          <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each group are correctly predicted either as yes or no</div>
-                          <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of all datapoints from each group that are predicted yes are correctly predicted</div>
+                          <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each group</div>
+                          <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each group are correctly predicted either as yes (1) or no (0)</div>
+                          <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each group are predicted yes (1)</div>
                           <div><span class="bold">Single threshold</span> - Optimize a single threshold across all datapoints</div>
                         </paper-tooltip>
                       </div>
@@ -1568,8 +1568,7 @@ limitations under the License.
 
       equalOppoClicked_: function() {
         const measure =
-          stats => stats['TP'] /
-            (stats['TP'] + stats['FP'] + stats['TN'] + stats['FN']);
+          stats => stats['TP'] / (stats['TP'] + stats['FN']);
         this.getBestThresholdsByFairnessMeasure_(measure);
       },
 
