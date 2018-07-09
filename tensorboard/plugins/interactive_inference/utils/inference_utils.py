@@ -14,14 +14,10 @@
 # ==============================================================================
 """Shared utils among inference plugins."""
 
-import ast
 import collections
 import copy
-import stat
 import numpy as np
 from six.moves import zip  # pylint: disable=redefined-builtin
-
-import tensorflow as tf
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_pb2
@@ -47,7 +43,7 @@ class VizParams(object):
   """
 
   def __init__(self, x_min, x_max, examples, num_mutants,
-      feature_index_pattern):
+               feature_index_pattern):
     """Inits VizParams may raise InvalidUserInputError for bad user inputs."""
 
     def to_float_or_none(x):
@@ -177,7 +173,7 @@ class ServingBundle(object):
   """
 
   def __init__(self, inference_address, model_name, model_type, model_version,
-      signature):
+               signature):
     """Inits ServingBundle."""
     if not isinstance(inference_address, basestring):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -195,12 +191,13 @@ class ServingBundle(object):
       raise ValueError('Invalid model_type: {}'.format(model_type))
     self.model_type = model_type
 
-    self.model_version = int(model_version) if len(model_version) > 0 else None
+    self.model_version = int(model_version) if model_version else None
 
-    self.signature = signature if len(signature) > 0 else None
+    self.signature = signature if signature else None
+
 
 def proto_value_for_feature(example, feature_name):
-  """Get the value of a feature from tf.train.Example regardless of feature type."""
+  """Get the value of a feature from Example regardless of feature type."""
   feature = example.features.feature[feature_name]
   feature_type = feature.WhichOneof('kind')
   if feature_type is None:
@@ -302,7 +299,6 @@ def get_numeric_features_to_observed_range(examples):
   }
 
 
-#@memoize.Memoize()
 def get_categorical_features_to_sampling(examples, top_k):
   """Returns categorical features and a sampling of their most-common values.
 
@@ -335,7 +331,7 @@ def get_categorical_features_to_sampling(examples, top_k):
     samples = [
         word
         for word, count in collections.Counter(feature_values).most_common(
-          top_k) if count > 1
+            top_k) if count > 1
     ]
     if samples:
       result[feature_name] = {'samples': samples}
@@ -381,7 +377,7 @@ def make_mutant_features(original_feature, index_to_mutate, viz_params):
 
 def make_mutant_tuples(example_proto, original_feature, index_to_mutate,
                        viz_params):
-  """Return a list of `MutantFeatureValue`s and a list of mutant `tf.train.Examples`.
+  """Return a list of `MutantFeatureValue`s and a list of mutant Examples.
 
   Args:
     example_proto: The tf.train.Example to mutate.
@@ -443,7 +439,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
         example_proto, original_feature, index_to_mutate, viz_params)
 
     inference_result_proto = oss_utils.call_servo(
-      mutant_examples, serving_bundle)
+        mutant_examples, serving_bundle)
     return make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto,
                                                 index_to_mutate)
@@ -460,7 +456,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
   indices_to_mutate = viz_params.feature_indices or xrange(
       original_feature.length)
   chart_type = ('categorical' if original_feature.feature_type == 'bytes_list'
-      else 'numeric')
+                else 'numeric')
 
   try:
     return {
@@ -484,10 +480,10 @@ def make_json_formatted_for_single_chart(mutant_features,
       X-axis.
     inference_result_proto: A ClassificationResponse or RegressionResponse
       returned by Servo, representing the Y-axis.
-      It contains one 'classification' or 'regression' for every tf.train.Example that
+      It contains one 'classification' or 'regression' for everyExample that
       was sent for inference. The length of that field should be the same length
       of mutant_features.
-    index_to_mutant: The index of the feature being mutated for this chart.
+    index_to_mutate: The index of the feature being mutated for this chart.
 
   Returns:
     A JSON-able dict for rendering a single mutant chart, parseable by
@@ -514,7 +510,7 @@ def make_json_formatted_for_single_chart(mutant_features,
             classification.classes) == 2 and classification_class.label == '0':
           continue
         key = classification_class.label
-        if (index_to_mutate != 0):
+        if index_to_mutate:
           key += ' (index %d)' % index_to_mutate
         series[key].append({
             x_label: mutant_feature.mutant_value,

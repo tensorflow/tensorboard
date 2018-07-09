@@ -40,6 +40,7 @@ from tensorboard.plugins.interactive_inference.utils import oss_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
 from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 
+
 class InferencePluginTest(tf.test.TestCase):
 
   def setUp(self):
@@ -99,7 +100,7 @@ class InferencePluginTest(tf.test.TestCase):
     data = {'example': json_format.MessageToJson(example),
             'index': '0'}
     response = self.server.post('/data/plugin/whatif/update_example',
-        data = data)
+                                data)
     self.assertEqual(200, response.status_code)
     self.assertEqual(example, self.plugin.examples[0])
     self.assertTrue(0 in self.plugin.updated_example_indices)
@@ -110,7 +111,7 @@ class InferencePluginTest(tf.test.TestCase):
     data = {'example': json_format.MessageToJson(example),
             'index': '1'}
     response = self.server.post('/data/plugin/whatif/update_example',
-        data = data)
+                                data)
     error = json.loads(response.get_data())['error']
     self.assertTrue(error)
 

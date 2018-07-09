@@ -17,7 +17,7 @@ limitations under the License.
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../polymer/polymer.html">
 
-<!-- Displays the results of inferences. -->
+<!-- Displays the results of inferences in the what-if tool side panel. -->
 <dom-module id="tf-inference-viewer">
   <template>
     <style>
@@ -94,12 +94,16 @@ limitations under the License.
           <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
             <div class="row non-header">
               <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
-              <div class="run">[[getRun(runindex)]]</div>
+              <div class="run">[[getRunNumber(runindex)]]</div>
               <div class$="[[getLabelClass(modelType)]]">
                 <div>[[getLabel(item)]]</div>
               </div>
               <div class="score">[[getPrintableScore(item.score)]]</div>
-              <div class="arrow"><iron-icon icon="[[getIcon(runindex, index)]]" class$="[[getIconClass(runindex, index)]]"></iron-icon></div>
+              <div class="arrow">
+                <iron-icon icon="[[getIcon(runindex, index)]]"
+                           class$="[[getIconClass(runindex, index)]]">
+                </iron-icon>
+              </div>
               <div class="delta">[[getPrintableDelta(runindex, index)]]</div>
             </div>
           </template>
@@ -143,10 +147,16 @@ limitations under the License.
       },
 
       getIcon: function(runIndex, labelIndex) {
-        return this.getIconDecision(runIndex, labelIndex, 'icons:arrow-upward', 'icons:arrow-downward')
+        return this.getIconDecision(
+          runIndex, labelIndex, 'icons:arrow-upward', 'icons:arrow-downward')
       },
 
+      /**
+       * Returns upVal or downVal depending on if value from latest inference
+       * is higher or lower than from previous inference.
+       */
       getIconDecision: function(runIndex, labelIndex, upVal, downVal) {
+        // No up or down on first run.
         if (runIndex == 0) {
           return '';
         }
@@ -168,7 +178,7 @@ limitations under the License.
         return upVal;
       },
 
-      getRun: function(index) {
+      getRunNumber: function(index) {
         return index + 1;
       },
 

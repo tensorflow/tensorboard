@@ -74,6 +74,8 @@ limitations under the License.
       },
 
       ready: function() {
+        // Allows d3-created elements in this Polymer element to be styled by
+        // the css rules above.
         this.scopeSubtree(this.$.holder, true);
       },
 
@@ -83,6 +85,7 @@ limitations under the License.
           return;
         }
 
+        // Get all labels from the counts dict.
         let allLabels = {};
         const outerLabelList = Object.keys(counts);
         for (let i = 0; i < outerLabelList.length; i++) {
@@ -95,6 +98,7 @@ limitations under the License.
         const labelsList = Object.keys(allLabels).sort();
         const columnTotals = new Array(labelsList.length);
 
+        // Create the confusion matrix from the counts dict.
         const countMatrix = [];
         for (let i = 0; i < labelsList.length; i++) {
           columnTotals[i] = 0;
@@ -107,11 +111,15 @@ limitations under the License.
             if (actualLabel in counts && predLabel in counts[actualLabel]) {
               const actualLabelIdx = labelsList.indexOf(actualLabel);
               const predLabelIdx = labelsList.indexOf(predLabel);
-              countMatrix[actualLabelIdx][predLabelIdx] = counts[actualLabel][predLabel];
+              countMatrix[actualLabelIdx][predLabelIdx] =
+                counts[actualLabel][predLabel];
             }
           }
         }
 
+        // Pad the counts out to have objects of the correct size for the
+        // displayed matrix which contains a header row, header column, and
+        // footer rows and columns for the total counts.
         const paddedCounts = [];
         let total = 0;
         for (let i = 0; i < countMatrix.length; i++) {
@@ -123,11 +131,14 @@ limitations under the License.
           }
         }
         const indices = this.getInidices(countMatrix.length + 2);
+
+        // Create the table object.
         const table = d3.select(this.$.holder).append('table');
         const thead = table.append('thead');
         const tbody = table.append('tbody');
         const tfoot = table.append('tfoot');
 
+        // Set the header data.
         thead.append('tr')
           .selectAll('th')
           .data(indices).enter()
@@ -149,6 +160,7 @@ limitations under the License.
               }
             });
 
+        // Set the confusion matrix rows.
         const rows = tbody.selectAll('tr')
           .data(paddedCounts)
           .enter()
@@ -179,23 +191,27 @@ limitations under the License.
           });
         const cellDivs = cells.append('div').classed('flex', true);
         cellDivs.append('div').classed('percentage', (d, i) => !!i)
-            .text(d => 'row' in d ? '(' + d3.format(",.1%")(d.value / total) + ')' : '');
+            .text(d =>
+              'row' in d ? '(' + d3.format(",.1%")(d.value / total) + ')' : '');
         cellDivs.append('div').text(d => d.value);
 
+        // Set the footer row.
         const footCells = tfoot.append('tr')
           .selectAll('td')
           .data(indices).enter()
           .append('td');
         const footCellDivs = footCells.append('div').classed('flex', true);
-        footCellDivs.append('div').classed('percentage', (d, i) => !!i).text(column => {
-          if (column == 0) {
-            return '';
-          } else if (column <= countMatrix.length) {
-            return '(' + d3.format(",.1%")(columnTotals[column - 1] / total) + ')';
-          } else {
-            return '';
-          }
-        });
+        footCellDivs.append('div').classed('percentage', (d, i) => !!i).text(
+          column => {
+            if (column == 0) {
+              return '';
+            } else if (column <= countMatrix.length) {
+              return '(' + d3.format(",.1%")(columnTotals[column - 1] / total) +
+                ')';
+            } else {
+              return '';
+            }
+          });
         footCellDivs.append('div').text(column => {
           if (column == 0) {
             return '';
@@ -207,6 +223,9 @@ limitations under the License.
         });
       },
 
+      /**
+       * Returns an list of indices from 0 to tableDim.
+       */
       getInidices: function(tableDim) {
         return Array.apply(null, {length: tableDim}).map(Number.call, Number);
       },

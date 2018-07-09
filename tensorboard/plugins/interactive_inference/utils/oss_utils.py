@@ -73,7 +73,7 @@ def example_protos_from_path(cns_path,
         proto objects. Defaults to True.
 
   Returns:
-    A list of `tf.train.Example` protos or serialized proto strings at the CNS path.
+    A list of Example protos or serialized proto strings at the CNS path.
 
   Raises:
     InvalidUserInputError: If examples cannot be procured from cns_path.

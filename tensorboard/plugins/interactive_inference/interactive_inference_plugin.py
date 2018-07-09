@@ -42,6 +42,7 @@ NUM_EXAMPLES_TO_SCAN = 50
 # Max number of mutants to show per feature (i.e. num of points along x-axis).
 NUM_MUTANTS = 10
 
+
 class InteractiveInferencePlugin(base_plugin.TBPlugin):
   """Plugin for understanding/debugging model inference.
   """
@@ -125,11 +126,12 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     examples_path = request.args.get('examples_path')
     try:
       oss_utils.throw_if_file_access_not_allowed(examples_path,
-                                                self._logdir,
-                                                self._has_auth_group)
+                                                 self._logdir,
+                                                 self._has_auth_group)
       example_strings = oss_utils.example_protos_from_path(
           examples_path, examples_count, parse_examples=False)
-      self.examples = [tf.train.Example.FromString(ex) for ex in example_strings]
+      self.examples = [
+        tf.train.Example.FromString(ex) for ex in example_strings]
       self.generate_sprite(example_strings)
       json_examples = [
           json_format.MessageToJson(example) for example in self.examples
@@ -206,7 +208,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
                                'application/json')
     del self.examples[index]
     self.updated_example_indices = set([
-      i if i < index else i - 1 for i in self.updated_example_indices])
+        i if i < index else i - 1 for i in self.updated_example_indices])
     self.generate_sprite([ex.SerializeToString() for ex in self.examples])
     return http_util.Respond(request, {}, 'application/json')
 
@@ -348,7 +350,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """
     features_dict = (
         inference_utils.get_numeric_features_to_observed_range(
-          self.examples[0: NUM_EXAMPLES_TO_SCAN]))
+            self.examples[0: NUM_EXAMPLES_TO_SCAN]))
 
     features_dict.update(
         inference_utils.get_categorical_features_to_sampling(

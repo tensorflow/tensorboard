@@ -39,17 +39,39 @@
           'hours-per-week': 40.422382375824085,
         }
         this.categories = {};
-        this.categories['workclass'] = ["Private", "Self-emp-not-inc", "Self-emp-inc", "Federal-gov", "Local-gov", "State-gov", "Without-pay", "Never-worked"];
-        this.categories['education'] = ["Bachelors", "Some-college", "11th", "HS-grad", "Prof-school", "Assoc-acdm", "Assoc-voc", "9th", "7th-8th", "12th", "Masters", "1st-4th", "10th", "Doctorate", "5th-6th", "Preschool"];
-        this.categories['marital-status'] = ["Married-civ-spouse", "Divorced", "Never-married", "Separated", "Widowed", "Married-spouse-absent", "Married-AF-spouse"];
-        this.categories['occupation'] = ["Tech-support", "Craft-repair", "Other-service", "Sales", "Exec-managerial", "Prof-specialty", "Handlers-cleaners", "Machine-op-inspct", "Adm-clerical", "Farming-fishing", "Transport-moving", "Priv-house-serv", "Protective-serv", "Armed-Forces"];
-        this.categories['relationship'] = ["Wife", "Own-child", "Husband", "Not-in-family", "Other-relative", "Unmarried"];
-        this.categories['race'] = ["White", "Asian-Pac-Islander", "Amer-Indian-Eskimo", "Other", "Black"];
+        this.categories['workclass'] = ["Private", "Self-emp-not-inc",
+          "Self-emp-inc", "Federal-gov", "Local-gov", "State-gov",
+          "Without-pay", "Never-worked"];
+        this.categories['education'] = ["Bachelors", "Some-college", "11th",
+          "HS-grad", "Prof-school", "Assoc-acdm", "Assoc-voc", "9th", "7th-8th",
+          "12th", "Masters", "1st-4th", "10th", "Doctorate", "5th-6th",
+          "Preschool"];
+        this.categories['marital-status'] = ["Married-civ-spouse", "Divorced",
+          "Never-married", "Separated", "Widowed", "Married-spouse-absent",
+          "Married-AF-spouse"];
+        this.categories['occupation'] = ["Tech-support", "Craft-repair",
+          "Other-service", "Sales", "Exec-managerial", "Prof-specialty",
+          "Handlers-cleaners", "Machine-op-inspct", "Adm-clerical",
+          "Farming-fishing", "Transport-moving", "Priv-house-serv",
+          "Protective-serv", "Armed-Forces"];
+        this.categories['relationship'] = ["Wife", "Own-child", "Husband",
+          "Not-in-family", "Other-relative", "Unmarried"];
+        this.categories['race'] = ["White", "Asian-Pac-Islander",
+          "Amer-Indian-Eskimo", "Other", "Black"];
         this.categories['sex'] = ["Female", "Male"];
-        this.categories['native-country'] = ["United-States", "Cambodia", "England", "Puerto-Rico", "Canada", "Germany", "Outlying-US(Guam-USVI-etc)", "India", "Japan", "Greece", "South", "China", "Cuba", "Iran", "Honduras", "Philippines", "Italy", "Poland", "Jamaica", "Vietnam", "Mexico", "Portugal", "Ireland", "France", "Dominican-Republic", "Laos", "Ecuador", "Taiwan", "Haiti", "Columbia", "Hungary", "Guatemala", "Nicaragua", "Scotland", "Thailand", "Yugoslavia", "El-Salvador", "Trinadad&Tobago", "Peru", "Hong", "Holand-Netherlands"];
+        this.categories['native-country'] = ["United-States", "Cambodia",
+          "England", "Puerto-Rico", "Canada", "Germany",
+          "Outlying-US(Guam-USVI-etc)", "India", "Japan", "Greece", "South",
+          "China", "Cuba", "Iran", "Honduras", "Philippines", "Italy", "Poland",
+          "Jamaica", "Vietnam", "Mexico", "Portugal", "Ireland", "France",
+          "Dominican-Republic", "Laos", "Ecuador", "Taiwan", "Haiti",
+          "Columbia", "Hungary", "Guatemala", "Nicaragua", "Scotland",
+          "Thailand", "Yugoslavia", "El-Salvador", "Trinadad&Tobago", "Peru",
+          "Hong", "Holand-Netherlands"];
         this.categories['over_50k'] = ["1", "0"];
 
-        this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/age_uci/model.json', {credentials: 'include'}));
+        this.model = await tf.loadModel(tf.io.browserHTTPRequest(
+          'data/age_uci/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/age_uci/uci_test_examples.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           data = data.slice(0, 500);
@@ -57,13 +79,15 @@
           for (let i = 0; i < data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(data.map(item => JSON.stringify(item)), false);
+          this.$.dash.updateExampleContents_(data.map(
+            item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
             this.indicesToInfer[e.detail.index] = true;
           });
           this.$.dash.addEventListener('duplicate-example', e => {
-            this.data.push(JSON.parse(JSON.stringify(this.data[e.detail.index])));
+            this.data.push(
+              JSON.parse(JSON.stringify(this.data[e.detail.index])));
             this.indicesToInfer[this.data.length - 1] = true;
           });
           this.$.dash.addEventListener('delete-example', e => {
@@ -96,25 +120,48 @@
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
               const adjustedScore = 2 * this.means['age'] * predValues[i];
-              inferences.results.regression.regressions[i] = {value: adjustedScore};
+              inferences.results.regression.regressions[i] =
+              {value: adjustedScore};
             }
             this.$.dash.inferences = inferences;
             this.indicesToInfer = {};
           });
           this.$.dash.addEventListener('get-eligible-features', e => {
             this.$.dash.partialDepPlotEligibleFeatures = [
-              {"observedMax": 14084.0, "name": "capital-gain", "observedMin": 0.0},
-              {"observedMax": 2042.0, "name": "capital-loss", "observedMin": 0.0},
-              {"name": "education", "samples": ['HS-grad', 'Bachelors', 'Some-college', '11th', 'Masters', '9th', 'Assoc-voc', 'Assoc-acdm', 'Doctorate', '7th-8th']},
-              {"observedMax": 16.0, "name": "education-num", "observedMin": 4.0},
-              {"observedMax": 80.0, "name": "hours-per-week", "observedMin": 13.0},
-              {"name": "marital-status", "samples": ['Married-civ-spouse', 'Never-married', 'Divorced', 'Separated', 'Married-AF-spouse', 'Married-spouse-absent']},
-              {"name": "native-country", "samples": ['United-States', '?', 'Mexico', 'India', 'South', 'Puerto-Rico', 'Cuba', 'Jamaica']},
-              {"name": "occupation", "samples": ['Exec-managerial', 'Prof-specialty', 'Machine-op-inspct', 'Adm-clerical', 'Craft-repair', 'Sales', 'Other-service', 'Tech-support', 'Handlers-cleaners', 'Transport-moving']},
-              {"name": "race", "samples": ['White', 'Black', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo']},
-              {"name": "relationship", "samples": ['Husband', 'Not-in-family', 'Unmarried', 'Own-child', 'Wife']},
+              {"observedMax": 14084.0, "name": "capital-gain",
+               "observedMin": 0.0},
+              {"observedMax": 2042.0, "name": "capital-loss",
+               "observedMin": 0.0},
+              {"name": "education",
+               "samples": ['HS-grad', 'Bachelors', 'Some-college', '11th',
+                           'Masters', '9th', 'Assoc-voc', 'Assoc-acdm',
+                           'Doctorate', '7th-8th']},
+              {"observedMax": 16.0, "name": "education-num",
+               "observedMin": 4.0},
+              {"observedMax": 80.0, "name": "hours-per-week",
+               "observedMin": 13.0},
+              {"name": "marital-status",
+               "samples": ['Married-civ-spouse', 'Never-married', 'Divorced',
+                           'Separated', 'Married-AF-spouse',
+                           'Married-spouse-absent']},
+              {"name": "native-country",
+               "samples": ['United-States', '?', 'Mexico', 'India', 'South',
+                           'Puerto-Rico', 'Cuba', 'Jamaica']},
+              {"name": "occupation",
+               "samples": ['Exec-managerial', 'Prof-specialty',
+                           'Machine-op-inspct', 'Adm-clerical', 'Craft-repair',
+                           'Sales', 'Other-service', 'Tech-support',
+                           'Handlers-cleaners', 'Transport-moving']},
+              {"name": "race",
+               "samples": ['White', 'Black', 'Asian-Pac-Islander',
+                           'Amer-Indian-Eskimo']},
+              {"name": "relationship",
+               "samples": ['Husband', 'Not-in-family', 'Unmarried', 'Own-child',
+                           'Wife']},
               {"name": "sex", "samples": ['Male', 'Female']},
-              {"name": "workclass", "samples": ['Private', 'Self-emp-not-inc', 'State-gov', 'Federal-gov', 'Local-gov', '?']}];
+              {"name": "workclass",
+               "samples": ['Private', 'Self-emp-not-inc', 'State-gov',
+                           'Federal-gov', 'Local-gov', '?']}];
           });
           this.$.dash.addEventListener('infer-mutants', async e => {
             const examples = [];
@@ -134,17 +181,21 @@
             };
             const xMin = +e.detail.x_min;
             const xMax = +e.detail.x_max;
-            const isNum = !this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples;
+            const isNum = !this.$.dash.partialDepPlotEligibleFeatures[
+              featureMapping[e.detail.feature_name]].samples;
             const numTrials = isNum ? 10 :
-              this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples.length;
+              this.$.dash.partialDepPlotEligibleFeatures[featureMapping[
+                e.detail.feature_name]].samples.length;
             for (let i = 0; i < numTrials; i++) {
-              const ex = JSON.parse(JSON.stringify(this.data[e.detail.example_index]));
+              const ex =
+              JSON.parse(JSON.stringify(this.data[e.detail.example_index]));
               if (isNum) {
                 ex.features.feature[e.detail.feature_name].floatList.value[0] =
                   xMin + i * (1 / (numTrials - 1) *(xMax - xMin));
               } else {
                 ex.features.feature[e.detail.feature_name].bytesList.value[0] =
-                  btoa(this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples[i]);
+                  btoa(this.$.dash.partialDepPlotEligibleFeatures[
+                    featureMapping[e.detail.feature_name]].samples[i]);
               }
               examples.push(ex);
             }
@@ -158,8 +209,10 @@
             const results = [];
             for (let i = 0; i < examples.length; i++) {
               const ex = examples[i];
-              const step = isNum ? ex.features.feature[e.detail.feature_name].floatList.value[0]
-                    : [atob(ex.features.feature[e.detail.feature_name].bytesList.value[0])];
+              const step = isNum
+                ? ex.features.feature[e.detail.feature_name].floatList.value[0]
+                : [atob(ex.features.feature[
+                    e.detail.feature_name].bytesList.value[0])];
               const adjustedScore = 2 * this.means['age'] * predValues[i];
               results.push({step: step, scalar: adjustedScore});
             }
@@ -196,17 +249,19 @@
 
       getValueListForFeature(ex, feat) {
         if (this.means[feat]) {
-          return [ex.features.feature[feat].floatList.value[0] * 1/(2 * this.means[feat])];
+          return [ex.features.feature[feat].floatList.value[0] * 1 /
+            (2 * this.means[feat])];
         }
         const onehot = Array(this.categories[feat].length).fill(0);
         if (feat == 'over_50k') {
-          onehot[this.categories[feat].indexOf(+(ex.features.feature[feat].floatList.value[0]))] = 1;
+          onehot[this.categories[feat].indexOf(
+            +(ex.features.feature[feat].floatList.value[0]))] = 1;
         } else {
-          onehot[this.categories[feat].indexOf(atob(ex.features.feature[feat].bytesList.value[0]))] = 1;
+          onehot[this.categories[feat].indexOf(
+            atob(ex.features.feature[feat].bytesList.value[0]))] = 1;
         }
         return onehot;
       }
     });
   </script>
 </dom-module>
-

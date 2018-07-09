@@ -26,25 +26,30 @@
         model: Object,
         data: Array,
         indicesToInfer: {type: Object, value: {}},
-        labelVocab: {type: Array, value: ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']},
+        labelVocab: {type: Array,
+                     value: ['Iris-setosa', 'Iris-versicolor',
+                             'Iris-virginica']},
       },
       ready: async function() {
         this.$.dash.multiClass = true;
         this.$.dash.settingsClicked_();
-        this.model = await tf.loadModel(tf.io.browserHTTPRequest('data/iris/model.json', {credentials: 'include'}));
+        this.model = await tf.loadModel(tf.io.browserHTTPRequest(
+          'data/iris/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/iris/iris.json";
         const testData = d3.json(DATA_PATH, (error, data) => {
           this.data = data;
           for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(this.data.map(item => JSON.stringify(item)), false);
+          this.$.dash.updateExampleContents_(
+            this.data.map(item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
             this.indicesToInfer[e.detail.index] = true;
           });
           this.$.dash.addEventListener('duplicate-example', e => {
-            this.data.push(JSON.parse(JSON.stringify(this.data[e.detail.index])));
+            this.data.push(
+              JSON.parse(JSON.stringify(this.data[e.detail.index])));
             this.indicesToInfer[this.data.length - 1] = true;
           });
           this.$.dash.addEventListener('delete-example', e => {
@@ -77,7 +82,8 @@
             const PRED_SIZE = 3;
             for (let i = 0; i < indices.length; i++) {
               inferences.results.classification.classifications[i] =
-                {classes: [{label: '0', score: predValues[i * PRED_SIZE]}, {label: '1', score: predValues[i * PRED_SIZE + 1]},
+                {classes: [{label: '0', score: predValues[i * PRED_SIZE]},
+                          {label: '1', score: predValues[i * PRED_SIZE + 1]},
                            {label: '2', score: predValues[i * PRED_SIZE + 2]}]};
             }
             this.$.dash.inferences = inferences;
@@ -100,17 +106,21 @@
             };
             const xMin = +e.detail.x_min;
             const xMax = +e.detail.x_max;
-            const isNum = !this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples;
+            const isNum = !this.$.dash.partialDepPlotEligibleFeatures[
+              featureMapping[e.detail.feature_name]].samples;
             const numTrials = isNum ? 10 :
-              this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples.length;
+              this.$.dash.partialDepPlotEligibleFeatures[
+                featureMapping[e.detail.feature_name]].samples.length;
             for (let i = 0; i < numTrials; i++) {
-              const ex = JSON.parse(JSON.stringify(this.data[e.detail.example_index]));
+              const ex = JSON.parse(JSON.stringify(
+                this.data[e.detail.example_index]));
               if (isNum) {
                 ex.features.feature[e.detail.feature_name].floatList.value[0] =
                   xMin + i * (1 / (numTrials - 1) *(xMax - xMin));
               } else {
                 ex.features.feature[e.detail.feature_name].bytesList.value[0] =
-                  btoa(this.$.dash.partialDepPlotEligibleFeatures[featureMapping[e.detail.feature_name]].samples[i]);
+                  btoa(this.$.dash.partialDepPlotEligibleFeatures[
+                    featureMapping[e.detail.feature_name]].samples[i]);
               }
               examples.push(ex);
             }
@@ -125,14 +135,18 @@
             const results = [[], [], []];
             for (let i = 0; i < examples.length; i++) {
               const ex = examples[i];
-              const scores = [predValues[i * PRED_SIZE], predValues[i * PRED_SIZE + 1], predValues[i * PRED_SIZE + 2]];
-              const step = ex.features.feature[e.detail.feature_name].floatList.value[0];
+              const scores = [predValues[i * PRED_SIZE],
+                              predValues[i * PRED_SIZE + 1],
+                              predValues[i * PRED_SIZE + 2]];
+              const step = ex.features.feature[
+                e.detail.feature_name].floatList.value[0];
               results[0].push({step: step, scalar: scores[0]});
               results[1].push({step: step, scalar: scores[1]});
               results[2].push({step: step, scalar: scores[2]});
             }
             this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
-                e.detail.feature_name, [{'0': results[0]}, {'1': results[1]}, {'2': results[2]}]);
+                e.detail.feature_name, [{'0': results[0]}, {'1': results[1]},
+                                        {'2': results[2]}]);
           })
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
@@ -159,4 +173,3 @@
     });
   </script>
 </dom-module>
-

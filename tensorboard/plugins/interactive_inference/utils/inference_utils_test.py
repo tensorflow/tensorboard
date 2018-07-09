@@ -105,7 +105,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     test_utils.write_out_examples([example2], cns_path)
 
     wildcard_path = os.path.join(tf.test.get_temp_dir(),
-                                  'wildcard_example*')
+                                'wildcard_example*')
     dummy_examples = oss_utils.example_protos_from_path(
         wildcard_path)
     self.assertEqual(2, len(dummy_examples))

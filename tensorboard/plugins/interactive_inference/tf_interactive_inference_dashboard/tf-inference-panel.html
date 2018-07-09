@@ -23,7 +23,7 @@ limitations under the License.
 <link rel="import" href="../tf-storage/tf-storage.html">
 
 <!--
-  Shared left hand side panel for inference related plugins.
+  Setup dialog for what-if tool.
 -->
 <dom-module id="tf-inference-panel">
   <template>
@@ -157,57 +157,57 @@ limitations under the License.
         // Fields for interactive inference plugin.
         examplesPath: {
           type: String,
-          value: tf_storage.getStringInitializer('examplesPath',
-                                                 {defaultValue: defaultExamplesPath}),
+          value: tf_storage.getStringInitializer(
+            'examplesPath', {defaultValue: defaultExamplesPath}),
           observer: 'examplesPathChanged_',
           notify: true,
         },
         modelName: {
           type: String,
-          value: tf_storage.getStringInitializer('modelName',
-                                                 {defaultValue: defaultModelName}),
+          value: tf_storage.getStringInitializer(
+            'modelName', {defaultValue: defaultModelName}),
           observer: 'modelNameChanged_',
           notify: true,
         },
         inferenceAddress: {
           type: String,
-          value: tf_storage.getStringInitializer('inferenceAddress',
-                                                 {defaultValue: defaultInferenceAddress}),
+          value: tf_storage.getStringInitializer(
+            'inferenceAddress', {defaultValue: defaultInferenceAddress}),
           observer: 'inferenceAddressChanged_',
           notify: true,
         },
         modelType: {
           type: String,
-          value: tf_storage.getStringInitializer('modelType',
-                                                 {defaultValue: defaultModelType}),
+          value: tf_storage.getStringInitializer(
+            'modelType', {defaultValue: defaultModelType}),
           observer: 'modelTypeChanged_',
           notify: true,
         },
         modelVersion: {
           type: String,
-          value: tf_storage.getStringInitializer('modelVersion',
-                                                 {defaultValue: defaultModelVersion}),
+          value: tf_storage.getStringInitializer(
+            'modelVersion', {defaultValue: defaultModelVersion}),
           observer: 'modelVersionChanged_',
           notify: true,
         },
         modelSignature: {
           type: String,
-          value: tf_storage.getStringInitializer('modelSignature',
-                                                 {defaultValue: defaultModelSignature}),
+          value: tf_storage.getStringInitializer(
+            'modelSignature', {defaultValue: defaultModelSignature}),
           observer: 'modelSignatureChanged_',
           notify: true,
         },
         maxExamples: {
           type: Number,
-          value: tf_storage.getStringInitializer('maxExamples',
-                                                 {defaultValue: String(defaultMaxExamples)}),
+          value: tf_storage.getStringInitializer(
+            'maxExamples', {defaultValue: String(defaultMaxExamples)}),
           observer: 'maxExamplesChanged_',
           notify: true,
         },
         labelVocabPath: {
           type: String,
-          value: tf_storage.getStringInitializer('labelVocabPath',
-                                                 {defaultValue: defaultLabelVocabPath}),
+          value: tf_storage.getStringInitializer(
+            'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
           observer: 'labelVocabPathChanged_',
           notify: true,
         },
