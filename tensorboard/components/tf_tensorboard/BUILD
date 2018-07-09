@@ -24,7 +24,6 @@ tf_web_library(
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_storage",
         "@com_google_fonts_roboto",
-        "@io_bazel_rules_closure//closure/library/object",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
         "@org_polymer_paper_checkbox",

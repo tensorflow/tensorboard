@@ -327,8 +327,6 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    goog.require('goog.object');
-
     if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
@@ -402,7 +400,7 @@ limitations under the License.
         _dashboardData: {
           type: Array,
           readOnly: true,
-          value: goog.object.getValues(tf_tensorboard.dashboardRegistry),
+          value: _.values(tf_tensorboard.dashboardRegistry),
         },
 
         /**
@@ -648,7 +646,8 @@ limitations under the License.
           return;
         }
         const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
-        if (container.childNodes.length === 0) {
+        // Use .children, not .childNodes, to avoid counting comment nodes.
+        if (container.children.length === 0) {
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
