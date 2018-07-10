@@ -321,7 +321,7 @@ limitations under the License.
             </template>
             <div class="image-bottom-bar">
               <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
-                  icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]">
+                  icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]" title="Upload image">
               </paper-icon-button>
               <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
                   data-feature="[[feat.name]]"
@@ -403,7 +403,7 @@ limitations under the License.
               </template>
               <div class="image-bottom-bar">
                 <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
-                    icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]">
+                    icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]" title="Upload image">
                 </paper-icon-button>
                 <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
                     data-feature="[[seqfeat.name]]"
@@ -429,15 +429,14 @@ limitations under the License.
                       value="[[seqvalue]]">
                   </input>
                 </template>
-            </paper-icon-button>
               </div>
             </template>
           </div>
         </template>
       </template>
-      <paper-icon-button on-click="openAddFeatureDialog" icon="add"
+      <paper-icon-button on-click="openAddFeatureDialog" icon="add" title="Add feature"
                     class$="[[getAddValueButtonClass(readonly)]]">
-      </paper-button-->
+      </paper-icon button>
       <paper-card class$="[[getSaliencyControlsHolderClass(saliency)]]">
         <div class="saliency-legend-label">Saliency legend</div>
         <div class="flex-controls">
@@ -456,7 +455,7 @@ limitations under the License.
     </div>
     <paper-icon-button id="deletevalue" icon="delete" class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"
         data-feature="[[focusedFeatureName]]" data-index="[[focusedFeatureValueIndex]]"
-        data-seq-num="[[focusedSeqNumber]]" on-click="deleteValue">
+        data-seq-num="[[focusedSeqNumber]]" on-click="deleteValue" title="Delete value">
     </paper-icon-button>
     <paper-dialog id="addFeatureDialog">
       <h2>Add Feature</h2>

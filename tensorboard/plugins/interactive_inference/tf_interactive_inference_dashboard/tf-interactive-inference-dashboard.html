@@ -592,13 +592,16 @@ limitations under the License.
       <div class$="[[getSideHolderClass_(panelExpanded)]]" id="side">
         <div class="top-side">
             <div class="datapoint-left-controls-holder">
-              <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]" on-click="panelExpandToggleClicked_" class="settings-button"></paper-icon-button>
+              <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]"
+                                 on-click="panelExpandToggleClicked_" class="settings-button"
+                                 title="[[getPanelExpandTooltip_(panelExpanded)]]">
+              </paper-icon-button>
             </div>
             <div class="datapoint-right-controls-holder">
               <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
-                <paper-icon-button icon="help-outline" class="settings-button"></paper-icon-button>
+                <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
               </a>
-              <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button"></paper-icon-button>
+              <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings"></paper-icon-button>
               <paper-button on-click="inferClicked_" class="button"
                             disabled="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
                 Run inference
@@ -617,30 +620,30 @@ limitations under the License.
                 <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                   <div class="datapoint-left-controls-holder">
                     <paper-icon-button class="datapoint-control-button" icon="content-copy"
-                        on-click="copyDatapoint_" alt="copy datapoint">
+                        on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
                     </paper-icon-button>
-                    <paper-icon-button class="datapoint-control-button" icon="undo"
-                        on-click="resetDatapoint_" alt="undo changes"
+                    <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
+                        on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
                         disabled="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
                     </paper-icon-button>
-                    <paper-icon-button class="datapoint-control-button" icon="delete"
-                        on-click="deleteDatapointDialog_" alt="delete datapoint">
+                    <paper-icon-button class="datapoint-control-button" icon="delete-forever"
+                        on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
                     </paper-icon-button>
                   </div>
                   <div class="datapoint-right-controls-holder">
-                    <paper-icon-button class="datapoint-control-button" icon="list"
+                    <paper-icon-button class="datapoint-control-button" icon="view-headline"
                         class$="[[getStackedButtonClass(exampleDisplayMode)]]"
-                        on-click="setExampleStackedMode_" alt="show example values stacked">
+                        on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
                     </paper-icon-button>
                     <paper-icon-button class="datapoint-control-button" icon="view-module"
                         class$="[[getGridButtonClass(exampleDisplayMode)]]"
-                        on-click="setExampleGridMode_" alt="show example values in grid">
+                        on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
                     </paper-icon-button>
                     <paper-icon-button class="datapoint-control-button" icon="chevron-right"
-                        on-click="selectNextDatapoint_" alt="select next datapoint">
+                        on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
                     </paper-icon-button>
                     <paper-icon-button class="datapoint-control-button" icon="chevron-left"
-                        on-click="selectPrevDatapoint_" alt="select previous datapoint">
+                        on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
                     </paper-icon-button>
                   </div>
                 </div>
@@ -651,7 +654,7 @@ limitations under the License.
                   <paper-button class="datapoint-control-pd-plot"
                       on-click="showPartialDependencePlots_" alt="show partial dependence plots">
                       See partial dependence plots
-                  </paper-icon-button>
+                  </paper-button>
                 </div>
                 <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
                   <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
@@ -1184,6 +1187,10 @@ limitations under the License.
 
       getPanelExpandIcon_: function(panelExpanded) {
         return panelExpanded ? 'fullscreen-exit' : 'fullscreen'
+      },
+
+      getPanelExpandTooltip_: function(panelExpanded) {
+        return panelExpanded ? 'Collapse side-panel' : 'Expand side-panel'
       },
 
       panelExpandToggleClicked_: function() {
