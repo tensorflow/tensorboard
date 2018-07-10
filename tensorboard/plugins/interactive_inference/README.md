@@ -1,9 +1,9 @@
 # What-If Tool
 
-![What-If Tool Screenshot](/img/wit-smile-intro.png)
+![What-If Tool Screenshot](/tensorboard/plugins/interactive_inference/img/wit-smile-intro.png "What-If Tool Screenshot")
 
-The What-If Tool provides an easy-to-use interface for expanding understanding
-of a black-box ML model.
+The What-If Tool (WIT) provides an easy-to-use interface for expanding
+understanding of a black-box ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
 Additionally, examples can be edited manually or programatically and re-run
@@ -31,7 +31,7 @@ Fine, here are some demos:
   * Dataset: [UCI Iris](https://archive.ics.uci.edu/ml/datasets/iris)
   * Task: Predict which of three classes of iris flowers that a flower falls
     into based on 4 measurements of the flower
- * [Regression model for UCI Census dataset age prediction](https://???)
+* [Regression model for UCI Census dataset age prediction](https://???)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict the age of a person based on their census information
 
@@ -84,7 +84,7 @@ it can be shared with others for them to view the same data in the What-If Tool.
   * Aggregate statistics for all loaded examples can be viewed in the side panel
     using [Facets Overview](https://pair-code.github.io/facets/).
 
-![Faceted examples and their aggregate statistics](/img/wit-census-overview.png)
+![Faceted examples and their aggregate statistics](/tensorboard/plugins/interactive_inference/img/wit-census-overview.png "Faceted examples and their aggregate statistics")
 
 * Visualize the results of the inference
   * By default, examples in the main panel are colored by their inference
@@ -111,9 +111,9 @@ it can be shared with others for them to view the same data in the What-If Tool.
   * Revert edits to an edited example.
 
 
-![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/img/wit-census-edit-rerun.png)
+![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/tensorboard/plugins/interactive_inference/img/wit-census-edit-rerun.png "The side panel showing new inference results after the “capital-gain” feature value has been edited")
 
-![Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change](/img/wit-census-pd.png)
+![Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change](/tensorboard/plugins/interactive_inference/img/wit-census-pd.png "Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change")
 
 * If using a binary classification model and your examples include a feature
   that describes the true label, you can do the following:
@@ -130,7 +130,7 @@ it can be shared with others for them to view the same data in the What-If Tool.
     such as the cost of a false positive vs a false negative and satisfying
     fairness measures such as equality of opportunity or demographic parity.
 
-![ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal accuracy" fairness criteria button.](/img/wit-census-roc.png)
+![ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal accuracy" fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal accuracy" fairness criteria button")
 
 * If using a multi-class classification model and your examples include a
   feature that describes the true label, you can do the following:
@@ -185,7 +185,7 @@ image contains a smile will it report back that it detected a smile.
 Any other threshold you set will lead to a higher percentage of incorrectly
 classified examples on our sample.
 
-![Smile examples faceted](/img/wit-smile-fullscreen.png)
+![Smile examples faceted](/tensorboard/plugins/interactive_inference/img/wit-smile-fullscreen.png "Smile examples faceted")
 
 In the above screenshot, we have set up the left-side of the screen to show two
 separate groups of images, images of young people and images of older people.
@@ -204,14 +204,14 @@ older people.
 The model is incorrect on over 23% of older samples, compared to just 11% of
 younger samples.
 
-![Single threshold](/img/wit-smile-single-threshold.png)
+![Single threshold](/tensorboard/plugins/interactive_inference/img/wit-smile-single-threshold.png "Single threshold")
 
 If we click the button to optimize the thresholds individually for each group,
 we see that the best it can do on older samples is to get over 18% incorrect,
 versus 11% for younger samples. The model has a significantly higher rate of
 false positives for the older samples.
 
-![Individual thresholds](/img/wit-smile-individual-thresholds.png)
+![Individual thresholds](/tensorboard/plugins/interactive_inference/img/wit-smile-individual-thresholds.png "Individual thresholds")
 
 Fairness of a classifier between different subgroups (such as young people
 versus older people) can be thought of in multiple ways.
@@ -232,7 +232,7 @@ So, while technically this fairness measure has been achieved, the classifier
 will incorrectly claim smiles on older images much more frequently than younger
 images.
 
-![Demographic parity](/img/wit-smile-demographic-parity.png)
+![Demographic parity](/tensorboard/plugins/interactive_inference/img/wit-smile-demographic-parity.png "Demographic parity")
 
 Another fairness measure is called equal accuracy, which refers to when a
 classifier predicts correctly (either a true negative case or a true positive
@@ -244,7 +244,7 @@ Satisfying this fairness measure causes our classifier to be unnecessarily
 bad on young images, with over 16% of images being falsely classified as
 smiling.
 
-![Equal accuracy](/img/wit-smile-equal-acc.png)
+![Equal accuracy](/tensorboard/plugins/interactive_inference/img/wit-smile-equal-acc.png "Equal accuracy")
 
 Lastly, the tool exposes another fairness measure, called equal opportunity.
 In this context, opportunity is defined as the percentage of examples that were
@@ -259,7 +259,7 @@ where the percentages of true positives and false negatives are similar between
 groups, but the older images have a much higher false positive rate than the
 younger images (11.9% vs 2.6%).
 
-![Equal opporitunity](/img/wit-smile-equal-oppo.png)
+![Equal opporitunity](/tensorboard/plugins/interactive_inference/img/wit-smile-equal-oppo.png "Equal opporitunity")
 
 Through this investigation, we’ve shown that the classifier is clearly less
 accurate on older images.
