@@ -39,18 +39,16 @@ limitations under the License.
         font-weight: 500;
         font-size: 12px;
         padding: 5px 0;
-        background-color: white;
       }
       .non-header {
-        outline: 1px solid lightgrey;
-        margin: 0 2px;
+        border-top: 1px solid lightgrey;
       }
       .marker {
         flex: 0.5;
         margin-right: 5px;
       }
       .marker.mark {
-        background: blue;
+        background: #007B83;
       }
       .run {
         flex: 10;
@@ -143,12 +141,12 @@ limitations under the License.
       },
 
       getIconClass: function(runIndex, labelIndex) {
-        return this.getIconDecision(runIndex, labelIndex, 'green', 'red')
+        return this.getIconDecision(runIndex, labelIndex, 'green', 'red');
       },
 
       getIcon: function(runIndex, labelIndex) {
         return this.getIconDecision(
-          runIndex, labelIndex, 'icons:arrow-upward', 'icons:arrow-downward')
+          runIndex, labelIndex, 'icons:arrow-upward', 'icons:arrow-downward');
       },
 
       /**
