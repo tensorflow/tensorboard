@@ -1,23 +1,55 @@
-# TensorBoard Interactive Inference Dashboard
+# What-If Tool
 
-The Interactive Inference Dashboard provides an easy-to-use interface for
-expanding understanding of a black-box ML model.
+![What-If Tool Screenshot](/img/wit-smile-intro.png)
+
+The What-If Tool provides an easy-to-use interface for expanding understanding
+of a black-box ML model.
 With the plugin, you can perform inference on a large set of examples and
-immediately visualize the results.
-Additionally, examples can be edited directly in the plugin and sent for
-inference, in order to see the result of the changes on the model output.
+immediately visualize the results in a variety of ways.
+Additionally, examples can be edited manually or programatically and re-run
+through the model in order to see the results of the changes.
+It contains tooling for investigating model performance and fairness over
+subsets of a dataset.
 
-## Required Input
+The purpose of the tool is that give people a simple, intuitive, and powerful
+way to play with a trained ML model on a set of data through a visual interface
+with absolutely no code required.
 
-To use the plugin, only the following information needs to be provided:
+## I don’t want to read this document. Can I just play with a demo?
 
-* The model server host and port, served using [TensorFlow Serving](https://github.com/tensorflow/serving).
+Fine, here are some demos:
+* [Binary classifier for UCI Census dataset salary prediction](https://???)
+  * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
+  * Task: Predict whether a person earns more or less than $50k based on their
+    census information
+* [Binary classifier for smile detection in images](https://???)
+  * Dataset: [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
+  * Task: Predict whether the person in an image is smiling
+  * See below section “What can I learn about fairness?” below for a deep-dive
+    into this demo.
+* [Multiclass classifier for Iris dataset](https://???)
+  * Dataset: [UCI Iris](https://archive.ics.uci.edu/ml/datasets/iris)
+  * Task: Predict which of three classes of iris flowers that a flower falls
+    into based on 4 measurements of the flower
+ * [Regression model for UCI Census dataset age prediction](https://???)
+  * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
+  * Task: Predict the age of a person based on their census information
+
+
+## What do I need to use it?
+
+To use the tool, only the following information needs to be provided:
+
+* The model server host and port, served using
+  [TensorFlow Serving](https://github.com/tensorflow/serving). The model must
+  use the TensorFlow Serving Classification or Regression APIs.
 * A TFRecord file of tf.Examples to perform inference on and the
   number of examples to load from the file.
     * Can handle up to tens of thousands of examples. The exact amount depends
-      on the size of each example (how large the feature values are).
-* An indication if the model is a classification or regression model.
-    * Currently those are the two model types supported.
+      on the size of each example (how many features there are and how large the
+      feature values are).
+* An indication if the model is a regression, binary classification or
+  multi-class classification model.
 * An optional vocab file for the labels for a classification model. This file
   maps the preidcted class indices returned from the model prediction into class
   labels. The text file contains one label per line, corresponding to the class
@@ -26,92 +58,220 @@ To use the plugin, only the following information needs to be provided:
       labels for a classification model. If not, it will show the predicted
       class indices.
 
-The information can be provided through the controls on the left-hand side of
-the dashboard, or directly through the URL. Additionally, changing the input
-through the controls automatically updates the URL so that it can be shared with
-others for them to view the same data in the inference plugin.
+The information can be provided in the settings dialog screen, which pops up
+automatically upon opening this tool and is accessible through the settings
+icon button in the top-right of the tool.
+The information can also be provided directly through URL parameters.
+Changing the settings through the controls automatically updates the URL so that
+it can be shared with others for them to view the same data in the What-If Tool.
 
-## Workflow
+## What can it do?
+* Visualize a dataset of TensorFlow Example protos.
+  * The main panel shows the dataset using [Facets Dive](https://pair-code.github.io/facets),
+    where the examples can be organized/sliced/positioned/colored by any of the
+    dataset’s features.
+    * The examples can also be organized by the results of their inferences.
+      * For classification models, this includes inferred label, confidence of
+        inferred label, and inference correctness.
+      * For regression models, this includes inferred score and amount of error
+        (including absolute or squared error) in the inference.
+  * A selected example can be viewed in detail in the side panel, showing all
+    feature values for all features of that example.
+  * For examples that contain an encoded image in a bytes feature named
+    "image/encoded", Facets Dive will create a thumbnail of the image to display
+    the point, and the full-size image is visible in the side panel for a
+    selected example.
+  * Aggregate statistics for all loaded examples can be viewed in the side panel
+    using [Facets Overview](https://pair-code.github.io/facets/).
 
-Here is an example workflow of using this dashboard:
+![Faceted examples and their aggregate statistics](/img/wit-census-overview.png)
 
-1.  Set a path to the examples and number of desired examples and click the “get
-    examples” button.
-2.  The examples are visualized in [Facets Dive](https://github.com/pair-code/facets).
-    *   For non-image examples, each example is represented by a single point in
-        the visualization. Facets Dive will automatically select a feature
-        column to color the examples by and another feature column to use as the
-        display name for each example. The key for these selections can be seen
-        in the bottom-left of the visualization.
-    *   If the examples contain encoded images (as per the go/tf-example spec),
-        then each example is represented by a thumbnail of the image.
-    *   Through the left-side menus, the examples can be positioned/faceted by
-        the values in any feature column. The feature columns for the labels and
-        colors can also be changed.
-3.  Set a path to the model being served and select if the model is
-    classification or regression using the toggle buttons. Click the “run
-    inference” button.
-4.  Once inference is completed, the examples in Facets Dive will now be colored
-    by their inference result. Additionally, the inference result is now also
-    available as another way to position or facets each example through the
-    Facets Dive left-side controls.
-5.  Click on any example in Facets Dive (or select multiple examples through
-    control-click). Those examples will be visualized below Facets Dive using
-    the vz-example-viewer component. Besides each selected example will be a
-    display of the inference result.
-    *   For examples that contain encoded images, the image will be displayed in
-        the example viewer.
-6.  Change any feature value in the example viewer for any number of examples.
-    *   Notice that the inference value for that example has now disappeared, as
-        the example has changed since inference. The example is now colored grey
-        (meaning it has no inference value) in Facets Dive.
-    *   You can edit numeric and string feature values in the text boxes.
-    *   You can add and delete features and feature values using the appropriate
-        buttons.
-    *   You can replace encoded images by dragging and dropping a new image file
-        into the existing image.
-7.  Click the “run inference” button again. Inference will re-run for the
-    changed examples.
+* Visualize the results of the inference
+  * By default, examples in the main panel are colored by their inference
+    results.
+  * The examples in the main panel can be organized into confusion matrices and
+    other custom layouts to show the inference results faceted by a number of
+    different features, or faceted/positioned by inference result, allowing the
+    creation of small multiples of 1D and 2D histograms and scatter plots.
+  * For a selected example, detailed inference results (e.x. predicted classes
+    and their confidence scores) are shown in the side panel.
 
-## Classification Thresholds
 
-If you are analyzing a classification model, there will be additional controls
-in the side panel for controlling classification thresholds.
+* Edit a selected example in the browser and re-run inference and visualize the
+  difference in the inference results.
+  * See auto-generated partial dependence plots, which are plots that for every
+    feature show the change in inference results as that feature has its value
+    changed to different valid values for that feature.
+  * Edit/add/remove any feature or feature value in the side panel and re-run
+    inference on the edited datapoint. A history of the inference values of that
+    point as it is edited and re-inferred is shown.
+  * For examples that contain encoded images, upload your own image and re-run
+    inference.
+  * Clone an existing example for editing/comparison.
+  * Revert edits to an edited example.
 
-When performing classification, you can set the positive label threshold, which
-is between 0 and 1, so that only classifcations above the set threshold are
-considered valid. If the top classification's score for a given example doesn't
-meet that threshold, then it will be instead visualized as being of the default
-class, which is class 0.
 
-Imagine the case of a binary classifier (therefore the classification labels are
-0 and 1). If you set the threshold to 0.8, then only classifications that return
-label 1 with a score of 0.8 or higher will be visualized as belonging to label
-1. Without overriding the default threshold, any label 1 classifacation with a
-score above 0.5 will be visualized as belonging to label 1.
+![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/img/wit-census-edit-rerun.png)
 
-Additionally, you can select a single feature in the data and set different
-threholds for the different possible values of that feature. One example usage
-would be setting different classification thresholds for different values of
-some sensitive feature to explore fairness constraints such as "Equality of
-Odds".
+![Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change](/img/wit-census-pd.png)
 
-## Possible Uses
+* If using a binary classification model and your examples include a feature
+  that describes the true label, you can do the following:
+  * See the ROC curve and numeric confusion matrices in the side panel,
+    including the point on the curve where your model lives, given the current
+    positive classification threshold value.
+  * See separate ROC curves and numeric confusion matrices split out for subsets
+    of the dataset, sliced of any feature or features of your dataset (i.e. by
+    gender).
+  * Manually adjust the positive classification threshold (or thresholds, if
+    slicing the dataset by a feature) and see the difference in inference
+    results, ROC curve position and confusion matrices immediately.
+  * Set the positive classification thresholds with one click based on concepts
+    such as the cost of a false positive vs a false negative and satisfying
+    fairness measures such as equality of opportunity or demographic parity.
 
-This dashboard instead offers an interactive approach to model understanding
-through inference results.
-Here are just some possible uses of the plugin:
+![ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal accuracy" fairness criteria button.](/img/wit-census-roc.png)
 
-*   Creating a confusion matrix of actual vs. predicted labels.
-*   Debugging a model that is giving an unexpected return for a specific example
-    or set of examples, by changing feature values and observing the change in
-    prediction.
-*   Interactively exploring performance across a set of features by faceting and
-    positioning examples.
-*   Quickly exploring an image-based model across a set of given images by
-    dragging new images into a selected example in the Example Viewer and
-    rerunning inference.
-*   Investigating model fairness across feature columns, looking at performance
-    while individually setting classification thresholds per feature value.
-*   Sanity-checking models.
-*   Manually investigating counterfactual examples.
+* If using a multi-class classification model and your examples include a
+  feature that describes the true label, you can do the following:
+  * See a confusion matrix in the side panel for all classifications and all
+    classes.
+  * See separate confusion matrices split out for subsets of the dataset, sliced
+    on any feature or features of your dataset.
+* If using a regression model and your examples include a feature that describes
+  the true label, you can do the following:
+  * See the mean error, mean absolute error and mean squared error across the
+    dataset.
+  * See separate calculations of those mean error calculations split out for
+    subsets of the dataset, sliced of any feature or features of your dataset.
+
+## Who is it for?
+We imagine WIT to be useful for a wide variety of users.
+* ML researchers and model developers - Investigate your datasets and models and
+  explore inference results. Poke at the data and model to gain insights, for
+  tasks such as debugging strange results and looking into ML fairness.
+* Non-technical stakeholders - Gain an understanding of the performance of a
+  model on a dataset. Try it out with your own data.
+* Lay users - Learn about machine learning by interactively playing with
+  datasets and models.
+
+## What can I learn about fairness?
+This section will walkthrough use of the smile detection demo through the lens
+of fairness.
+As a reminder, this demo uses a model that, given an image of a person, detects
+if the person in that image is smiling or not (binary classification).
+
+On the Performance/Fairness tab, we have set the “true label” feature to be
+“Smiling”, so that the tool can evaluate model smile detection performance on
+the 250 test images versus the true labels of those images (whether they were
+human-labeled as smiling or not smiling).
+
+In this example, we have set the ratio of false positive cost to false negative
+cost to be 1 (the default), meaning that we consider a false positive just as
+costly as a false negative.
+We could change that ratio if we wanted to optimize our classifier in a
+different way (e.x. If the smile detector was used to ensure that some action
+only occurred after seeing a smile, we would probably want a higher cost for
+false positives than false negatives, to avoid incorrectly performing that
+action.
+Then we clicked the “optimize threshold” button to find the decision threshold
+of the classifier over these 250 examples that is the least costly (makes the
+fewest mistakes).
+
+The threshold was determined to be .67, leading to 14% of our examples as being
+incorrectly classified.
+This threshold means that only when the model is at least 67% confident that the
+image contains a smile will it report back that it detected a smile.
+Any other threshold you set will lead to a higher percentage of incorrectly
+classified examples on our sample.
+
+![Smile examples faceted](/img/wit-smile-fullscreen.png)
+
+In the above screenshot, we have set up the left-side of the screen to show two
+separate groups of images, images of young people and images of older people.
+Each group is laid out with the X axis representing how confident the model
+thinks the image contains a smile (left side being not confident at all).
+Additionally, each image is colored by if the classifier was correct (red
+meaning incorrect, blue meaning correct).
+This helps us see where the model is making mistakes, specifically in regards to
+young people vs. older people.
+
+Let’s dive deeper into performance on young vs older images. We select the
+“Young” feature to investigate fairness by, through the dropdown menu on the
+right side. We immediately see that with the threshold set to .67 for both
+groups that the model significantly outperforms on young people compared to
+older people.
+The model is incorrect on over 23% of older samples, compared to just 11% of
+younger samples.
+
+![Single threshold](/img/wit-smile-single-threshold.png)
+
+If we click the button to optimize the thresholds individually for each group,
+we see that the best it can do on older samples is to get over 18% incorrect,
+versus 11% for younger samples. The model has a significantly higher rate of
+false positives for the older samples.
+
+![Individual thresholds](/img/wit-smile-individual-thresholds.png)
+
+Fairness of a classifier between different subgroups (such as young people
+versus older people) can be thought of in multiple ways.
+There are many measures of fairness and it can be shown mathematically that it
+is impossible to optimize a classifier for all of these different measures.
+One such measure of fairness is called “demographic parity” and it refers to
+when a classifier predicts the positive class (in this case, smiling) the same
+percentage of the time for both classes (young images and older images).
+
+If we click the “Demographic parity” button, the thresholds for the two groups
+are set independently in a way that tries to minimize the cost of the mistakes
+while maintaining demographic parity.
+You can see the parity in the two circled numbers in the below screenshot.
+But notice that in order to achieve this parity, you end up with a classifier
+that has false positives on older images at over 3 times the rate of younger
+images (10.2% vs 3.1%).
+So, while technically this fairness measure has been achieved, the classifier
+will incorrectly claim smiles on older images much more frequently than younger
+images.
+
+![Demographic parity](/img/wit-smile-demographic-parity.png)
+
+Another fairness measure is called equal accuracy, which refers to when a
+classifier predicts correctly (either a true negative case or a true positive
+case) the same percentage of the time for both classes.
+Clicking the “Equal Accuracy” button sets the thresholds in such a way that both
+classifiers have an accuracy of about 18.8%, which is well below the best
+possible performance of the classifier on young images.
+Satisfying this fairness measure causes our classifier to be unnecessarily
+bad on young images, with over 16% of images being falsely classified as
+smiling.
+
+![Equal accuracy](/img/wit-smile-equal-acc.png)
+
+Lastly, the tool exposes another fairness measure, called equal opportunity.
+In this context, opportunity is defined as the percentage of examples that were
+predicted positive that were correctly predicted as positive (e.x. If 10 images
+in some group were predicted as smiling, but only 7 of those images were
+actually smiling, then the opportunity measure there is 7/10 = 0.7).
+Equal opportunity refers to when a classifier has the same opportunity measure
+for different groups.
+
+When clicking the “Equal opportunity” button, the thresholds are set in a way
+where the percentages of true positives and false negatives are similar between
+groups, but the older images have a much higher false positive rate than the
+younger images (11.9% vs 2.6%).
+
+![Equal opporitunity](/img/wit-smile-equal-oppo.png)
+
+Through this investigation, we’ve shown that the classifier is clearly less
+accurate on older images.
+We’ve also shown what sacrifices need to be made by our classifier if we wish
+to set different thresholds on younger and older images in different ways to
+satisfy different measures of fairness.
+
+This investigation doesn’t uncover a root cause for the fundamental unfairness
+of our classifier but does show that there is such as issue.
+This investigation could lead one to dig back into the training of this model,
+where they would discover that the data used to actually train this model only
+consisted of young images. No older images were included in the training data,
+leading to this unfairness.
+If the model is retrained including older images from this CelebA dataset, the
+massive age-related performance gap does go away.
