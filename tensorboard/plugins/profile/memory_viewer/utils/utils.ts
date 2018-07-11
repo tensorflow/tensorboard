@@ -51,6 +51,8 @@ export function byteSizeOfPrimitiveType(type: string): number {
       return 8;
     case 'C64':
       return 8;
+    case 'TOKEN':
+      return 0;
     default:
       console.error('Unhandled primitive type ' + type);
       return 0;
