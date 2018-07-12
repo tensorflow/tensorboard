@@ -156,9 +156,9 @@ Properties out:
     },
     ready: function() {
       var updateRuns = function() {
-        this.set("runs", tf_backend.getRuns());
+        this.set("runs", tf_backend.runsStore.getRuns());
       }.bind(this);
-      tf_backend.addListener(updateRuns);
+      tf_backend.runsStore.addListener(updateRuns);
       updateRuns();
 
       var requestManager = new tf_backend.RequestManager();
