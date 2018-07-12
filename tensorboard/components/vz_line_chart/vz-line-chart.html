@@ -66,12 +66,12 @@ such as different X scales (linear and temporal), tooltips and smoothing.
       td {
         padding-left: 5px;
         padding-right: 5px;
-        font-size: 13px;
+        font-size: .92em;
         opacity: 1;
       }
       #tooltip {
         pointer-events: none;
-        position: absolute;
+        position: fixed;
         opacity: 0;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
         font-size: 14px;
@@ -117,6 +117,11 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         stroke-width: 1.5px;
       }
 
+      @media (max-width: 1280px) {
+        #tooltip {
+          font-size: 12px;
+        }
+      }
     </style>
   </template>
   <script src="dragZoomInteraction.js"></script>

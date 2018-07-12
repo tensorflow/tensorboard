@@ -975,7 +975,7 @@ class LineChart {
     }
 
     this.tooltip.style('transform', 'translate(' + left + 'px,' + top + 'px)');
-    this.tooltip.style('opacity', 1);
+    this.tooltip.style('opacity', rows.size() > 0 ? 1 : 0);
   }
 
   private findClosestPoint(
