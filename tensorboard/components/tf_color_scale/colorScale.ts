@@ -68,9 +68,9 @@ export const runsColorScale: ((runName: string) => string) =
     _runsColorScale.scale.bind(_runsColorScale);
 
 function updateRunsColorScale(): void {
-  _runsColorScale.domain(tf_backend.getRuns());
+  _runsColorScale.domain(tf_backend.runsStore.getRuns());
 }
-tf_backend.addListener(updateRunsColorScale);
+tf_backend.runsStore.addListener(updateRunsColorScale);
 updateRunsColorScale();
 
 }  // tf_color_scale

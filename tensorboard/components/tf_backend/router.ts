@@ -15,13 +15,13 @@ limitations under the License.
 namespace tf_backend {
 
 export interface Router {
-  runs: () => string;
-  pluginsListing: () => string;
   environment: () => string;
+  experiments: () => string;
   isDemoMode: () => boolean;
   pluginRoute: (pluginName: string, route: string) => string;
-}
-;
+  pluginsListing: () => string;
+  runs: () => string;
+};
 
 /**
  * Create a router for communicating with the TensorBoard backend. You
@@ -44,11 +44,12 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     return `${dataDir}/plugin/${pluginName}${route}`;
   }
   return {
-    runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
-    pluginsListing: () => dataDir + '/plugins_listing',
     environment: () => dataDir + '/environment',
+    experiments: () => dataDir + '/experiments',
     isDemoMode: () => demoMode,
     pluginRoute,
+    pluginsListing: () => dataDir + '/plugins_listing',
+    runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
   };
 };
 

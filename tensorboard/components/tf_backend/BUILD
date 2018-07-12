@@ -9,7 +9,9 @@ tf_web_library(
     name = "tf_backend",
     srcs = [
         "backend.ts",
+        "baseStore.ts",
         "canceller.ts",
+        "experimentsStore.ts",
         "requestManager.ts",
         "router.ts",
         "runsStore.ts",
@@ -37,4 +39,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

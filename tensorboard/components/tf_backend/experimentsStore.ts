@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,29 +14,31 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
-export class RunsStore extends BaseStore {
-  private _runs: string[] = [];
+export type Experiment = {name: string};
+
+export class ExperimentsStore extends BaseStore {
+  private _experiments: Experiment[] = [];
 
   refresh() {
-    const url = getRouter().runs();
-    return this.requestManager.request(url).then(newRuns => {
-      if (!_.isEqual(this._runs, newRuns)) {
-        this._runs = newRuns;
+    const url = getRouter().experiments();
+    return this.requestManager.request(url).then(newExperiments => {
+      if (!_.isEqual(this._experiments, newExperiments)) {
+        this._experiments = newExperiments;
         this.emitChange();
       }
     });
   }
 
   /**
-   * Get the current list of runs. If no data is available, this will be
+   * Get the current list of experiments. If no data is available, this will be
    * an empty array (i.e., there is no distinction between "no runs" and
    * "no runs yet").
    */
-  getRuns(): string[] {
-    return this._runs.slice();
+  getRuns(): Experiment[] {
+    return this._experiments.slice();
   }
 }
 
-export const runsStore = new RunsStore();
+export const experimentsStore = new ExperimentsStore();
 
 }  // namespace tf_backend
