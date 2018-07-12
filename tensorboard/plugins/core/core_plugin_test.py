@@ -102,6 +102,16 @@ class CorePluginTest(tf.test.TestCase):
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
 
+  def testExperiments(self):
+    """Test the format of the /data/experiments endpoint."""
+    self._add_run('run1', experiment_name = 'exp1')
+    self._add_run('run2', experiment_name = 'exp1')
+    self._add_run('run3', experiment_name = 'exp2')
+    run_json = self._get_json(self.db_based_server, '/data/experiments')
+    self.assertEqual(run_json, [{'name': 'exp1'}, {'name': 'exp2'}])
+    run_json = self._get_json(self.logdir_based_server, '/data/experiments')
+    self.assertEqual(run_json, [])
+
   def testRunsAppendOnly(self):
     """Test that new runs appear after old ones in /data/runs."""
     fake_wall_times = {
@@ -211,8 +221,8 @@ class CorePluginTest(tf.test.TestCase):
     app = application.TensorBoardWSGI([self.db_based_plugin])
     self.db_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
-  def _add_run(self, run_name):
-    self._generate_test_data(run_name)
+  def _add_run(self, run_name, experiment_name='experiment'):
+    self._generate_test_data(run_name, experiment_name)
     self.multiplexer.AddRunsFromDirectory(self.logdir)
     self.multiplexer.Reload()
 
@@ -226,7 +236,7 @@ class CorePluginTest(tf.test.TestCase):
                           'application/json')
     return json.loads(response.get_data().decode('utf-8'))
 
-  def _generate_test_data(self, run_name):
+  def _generate_test_data(self, run_name, experiment_name):
     """Generates the test data directory.
 
     The test data has a single run of the given name, containing:
@@ -263,7 +273,7 @@ class CorePluginTest(tf.test.TestCase):
     with tf.Session():
       with tf.contrib.summary.create_db_writer(
           db_uri=self.db_path,
-          experiment_name='experiment',
+          experiment_name=experiment_name,
           run_name=run_name,
           user_name='user').as_default():
         tf.contrib.summary.initialize(graph_def)
