@@ -37,20 +37,25 @@ var memory_viewer;
          */
         Shape.prototype.unpaddedHeapSizeBytes = function () {
             var INT64_BYTES = 8;
+            if (this.elementType === 'TOKEN') {
+                return 0;
+            }
             // We make a simplifying assumption here that the minimum size of a tuple
             // member is int64.
             if (this.elementType === 'TUPLE') {
                 return INT64_BYTES * this.tupleShapes.length;
             }
             var byteSize = 0;
-            if (this.layout.format == 'DENSE') {
+            // We assume the layout format is 'DENSE' by default.
+            if (!this.layout || this.layout.format == 'DENSE') {
                 var allocatedElementCount = this.dimensions.reduce(function (count, item) { return count * item; }, 1);
                 byteSize += allocatedElementCount *
                     memory_viewer.byteSizeOfPrimitiveType(this.elementType);
             }
-            if (this.layout.format == 'SPARSE') {
+            else if (this.layout.format == 'SPARSE') {
                 var maxElements = parseInt(this.layout.maxSparseElements, 10);
-                byteSize = maxElements * memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+                byteSize = maxElements *
+                    memory_viewer.byteSizeOfPrimitiveType(this.elementType);
                 // Add byte size of sparse indices, assume each indice is int64 type.
                 byteSize += maxElements * this.dimensions.length * INT64_BYTES;
             }
@@ -72,16 +77,15 @@ var memory_viewer;
                 text += ')';
                 return text;
             }
-            else {
-                var result = this.elementType.toLowerCase() + '[';
-                result += this.dimensions.join() + ']';
-                if (!(this.elementType === 'OPAQUE') && this.dimensions.length > 0) {
-                    if (this.layout) {
-                        result += this.humanLayoutString(this.layout);
-                    }
+            var result = this.elementType.toLowerCase() + '[';
+            result += this.dimensions.join() + ']';
+            if (!(this.elementType === 'OPAQUE') && !(this.elementType === 'TOKEN') &&
+                this.dimensions.length > 0) {
+                if (this.layout) {
+                    result += this.humanLayoutString(this.layout);
                 }
-                return result;
             }
+            return result;
         };
         /**
          * Returns a human-readable string that represents the given layout.

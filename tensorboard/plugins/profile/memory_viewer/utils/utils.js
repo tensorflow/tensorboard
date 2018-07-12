@@ -51,6 +51,8 @@ var memory_viewer;
                 return 8;
             case 'C64':
                 return 8;
+            case 'TOKEN':
+                return 0;
             default:
                 console.error('Unhandled primitive type ' + type);
                 return 0;
