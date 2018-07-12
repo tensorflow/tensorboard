@@ -19,7 +19,7 @@ You may obtain a copy of the License at
 <!--
   tf-mv-bar shows a small % utilization bar, colored using flameColor.
 -->
-<dom-module id="tf-nv-bar">
+<dom-module id="tf-mv-bar">
   <style>
 :host {
   display: inline-block;
@@ -74,7 +74,7 @@ tf-mv-bar {
           <tf-mv-bar value="[[utilization]]"></tf-mv-bar>
         </div>
         <div hidden="[[!node.shape]]">
-          <b>Shape: </b>
+          <b>Shape (and minor-to-major order): </b>
           <code class="expression">[[node.shape]]</code>
         </div>
         <div hidden="[[!node.tfOpName]]">

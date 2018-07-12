@@ -46,21 +46,25 @@ export class Shape {
   unpaddedHeapSizeBytes(): number {
     const INT64_BYTES = 8;
 
+    if (this.elementType === 'TOKEN') {
+      return 0;
+    }
     // We make a simplifying assumption here that the minimum size of a tuple
     // member is int64.
     if (this.elementType === 'TUPLE') {
       return INT64_BYTES * this.tupleShapes.length;
     }
     let byteSize = 0;
-    if (this.layout.format == 'DENSE') {
+    // We assume the layout format is 'DENSE' by default.
+    if (!this.layout || this.layout.format == 'DENSE') {
       const allocatedElementCount =
           this.dimensions.reduce((count, item) => count * item, 1);
       byteSize += allocatedElementCount *
           memory_viewer.byteSizeOfPrimitiveType(this.elementType);
-    }
-    if (this.layout.format == 'SPARSE') {
+    }else if (this.layout.format == 'SPARSE') {
       const maxElements = parseInt(this.layout.maxSparseElements, 10);
-      byteSize = maxElements * memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+      byteSize = maxElements *
+          memory_viewer.byteSizeOfPrimitiveType(this.elementType);
 
       // Add byte size of sparse indices, assume each indice is int64 type.
       byteSize += maxElements * this.dimensions.length * INT64_BYTES;
@@ -82,16 +86,16 @@ export class Shape {
       }
       text += ')';
       return text;
-    } else {
-      let result = this.elementType.toLowerCase() + '[';
-      result += this.dimensions.join() + ']';
-      if (!(this.elementType === 'OPAQUE') && this.dimensions.length > 0) {
-        if (this.layout) {
-          result += this.humanLayoutString(this.layout);
-        }
-      }
-      return result;
     }
+    let result = this.elementType.toLowerCase() + '[';
+    result += this.dimensions.join() + ']';
+    if (!(this.elementType === 'OPAQUE') && !(this.elementType === 'TOKEN') &&
+        this.dimensions.length > 0) {
+      if (this.layout) {
+        result += this.humanLayoutString(this.layout);
+      }
+    }
+    return result;
   }
 
   /**
