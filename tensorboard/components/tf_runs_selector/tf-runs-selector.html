@@ -50,7 +50,9 @@ Properties out:
     <tf-multi-checkbox
       id="multiCheckbox"
       names="[[runs]]"
+      selection-state="{{runSelectionState}}"
       out-selected="{{selectedRuns}}"
+      regex="{{regexInput}}"
       color-scale="[[colorScale]]"
     ></tf-multi-checkbox>
     <paper-button
@@ -120,7 +122,21 @@ Properties out:
   Polymer({
     is: "tf-runs-selector",
     properties: {
-      selectedRuns: {type: Array, notify: true},
+      runSelectionState: {
+        type: Object,
+        observer: '_storeRunSelectionState',
+        value: () => tf_storage.getObject('runSelectionState') || {},
+      },
+      regexInput: {
+        type: String,
+        value:
+            tf_storage.getStringInitializer('regexInput', {defaultValue: ''}),
+        observer: '_regexObserver',
+      },
+      selectedRuns: {
+        type: Array,
+        notify: true,
+      },
       // runs: an array of strings, representing the run names that may be chosen
       runs: Array,
       dataLocation: {
@@ -182,6 +198,10 @@ Properties out:
     _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
       return dataLocation && dataLocation.length > _dataLocationClipLength;
     },
+    _storeRunSelectionState:
+        tf_storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
+    _regexObserver:
+        tf_storage.getStringObserver('regexInput', {defaultValue: ''}),
   });
   </script>
 </dom-module>
