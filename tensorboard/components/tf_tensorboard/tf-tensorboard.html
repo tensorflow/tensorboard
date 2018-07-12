@@ -693,7 +693,8 @@ limitations under the License.
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
 
-        tf_backend.fetchRuns();
+        tf_backend.runsStore.refresh();
+        tf_backend.experimentsStore.refresh();
         this._fetchEnvironment();
         this._fetchActiveDashboards();
         this._lastReloadTime = new Date().toString();
@@ -768,7 +769,11 @@ limitations under the License.
           return;
         }
         this._fetchEnvironment();
-        Promise.all([this._fetchActiveDashboards(), tf_backend.fetchRuns()]).then(() => {
+        Promise.all([
+          this._fetchActiveDashboards(),
+          tf_backend.runsStore.refresh(),
+          tf_backend.experimentsStore.refresh(),
+        ]).then(() => {
           const dashboard = this._selectedDashboardComponent();
           if (dashboard) {
             dashboard.reload();

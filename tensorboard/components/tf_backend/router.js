@@ -38,11 +38,12 @@ var tf_backend;
             return dataDir + "/plugin/" + pluginName + route;
         }
         return {
-            runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
-            pluginsListing: function () { return dataDir + '/plugins_listing'; },
             environment: function () { return dataDir + '/environment'; },
+            experiments: function () { return dataDir + '/experiments'; },
             isDemoMode: function () { return demoMode; },
             pluginRoute: pluginRoute,
+            pluginsListing: function () { return dataDir + '/plugins_listing'; },
+            runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
         };
     }
     tf_backend.createRouter = createRouter;

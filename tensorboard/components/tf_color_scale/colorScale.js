@@ -66,8 +66,8 @@ var tf_color_scale;
     var _runsColorScale = new ColorScale();
     tf_color_scale.runsColorScale = _runsColorScale.scale.bind(_runsColorScale);
     function updateRunsColorScale() {
-        _runsColorScale.domain(tf_backend.getRuns());
+        _runsColorScale.domain(tf_backend.runsStore.getRuns());
     }
-    tf_backend.addListener(updateRunsColorScale);
+    tf_backend.runsStore.addListener(updateRunsColorScale);
     updateRunsColorScale();
 })(tf_color_scale || (tf_color_scale = {})); // tf_color_scale
