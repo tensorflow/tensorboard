@@ -65,6 +65,7 @@ class CorePlugin(base_plugin.TBPlugin):
         '/data/environment': self._serve_environment,
         '/data/logdir': self._serve_logdir,
         '/data/runs': self._serve_runs,
+        '/data/experiments': self._serve_experiments,
         '/data/window_properties': self._serve_window_properties,
         '/events': self._redirect_to_index,
         '/favicon.ico': self._send_404_without_logging,
@@ -163,6 +164,27 @@ class CorePlugin(base_plugin.TBPlugin):
       run_names.sort(key=get_first_event_timestamp)
     return http_util.Respond(request, run_names, 'application/json')
 
+  @wrappers.Request.application
+  def _serve_experiments(self, request):
+    """Serve a JSON array of experiments, ordered by experiment started time.
+    Sort order is by started time (aka first event time) with empty times sorted
+    last, and then ties are broken by sorting on the experiment name.
+    """
+    if self._db_connection_provider:
+      db = self._db_connection_provider()
+      cursor = db.execute('''
+        SELECT
+          experiment_name,
+          started_time IS NULL as started_time_nulls_last,
+          started_time
+        FROM Experiments
+        ORDER BY started_time_nulls_last, started_time, experiment_name
+      ''')
+      experiments = [{'name': row[0]} for row in cursor]
+    else:
+      # experiment is only useful when using db.
+      experiments = []
+    return http_util.Respond(request, experiments, 'application/json')
 
 class CorePluginLoader(base_plugin.TBLoader):
   """CorePlugin factory."""
