@@ -46,11 +46,11 @@ export class Shape {
   unpaddedHeapSizeBytes(): number {
     const INT64_BYTES = 8;
 
-    // We make a simplifying assumption here that the minimum size of a tuple
-    // member is int64.
     if (this.elementType === 'TOKEN') {
       return 0;
     }
+    // We make a simplifying assumption here that the minimum size of a tuple
+    // member is int64.
     if (this.elementType === 'TUPLE') {
       return INT64_BYTES * this.tupleShapes.length;
     }
@@ -63,7 +63,8 @@ export class Shape {
           memory_viewer.byteSizeOfPrimitiveType(this.elementType);
     }else if (this.layout.format == 'SPARSE') {
       const maxElements = parseInt(this.layout.maxSparseElements, 10);
-      byteSize = maxElements * memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+      byteSize = maxElements *
+          memory_viewer.byteSizeOfPrimitiveType(this.elementType);
 
       // Add byte size of sparse indices, assume each indice is int64 type.
       byteSize += maxElements * this.dimensions.length * INT64_BYTES;
