@@ -50,13 +50,15 @@ TOOLS = {
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
     'memory_viewer': 'memory_viewer.json',
+    'google_chart_demo': 'google_chart_demo.json',
 }
 
 # Tools that consume raw data.
 _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
                              'overview_page',
-                             'memory_viewer',])
+                             'memory_viewer',
+                             'google_chart_demo',])
 
 def process_raw_trace(raw_trace):
   """Processes raw trace data and returns the UI data."""
