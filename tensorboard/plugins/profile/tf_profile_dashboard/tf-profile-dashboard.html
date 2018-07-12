@@ -27,6 +27,7 @@ limitations under the License.
 <link rel="import" href="../tf-overview-page/overview-page.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
 <link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
+<link rel="import" href="../google-chart/google-chart-demo.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -125,6 +126,9 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
       <memory-viewer-dashboard _data="[[_memoryViewerData]]"></memory-viewer-dashboard>
     </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp=true">
+      <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
+    </template>
   </div>
   </tf-dashboard-layout>
 </template>
@@ -208,6 +212,9 @@ profile run can have multiple tools that present the performance profile as diff
         type: Object,
       },
       _memoryViewerData: {
+        type: Object,
+      },
+      _googleChartDemoData: {
         type: Object,
       },
       _selectedDatasetName: {
@@ -335,6 +342,9 @@ profile run can have multiple tools that present the performance profile as diff
            } else if (toolName == "memory_viewer") {
                this._memoryViewerData = data;
                this._toolInScope = "memory_viewer";
+           } else if (toolName == "google_chart_demo") {
+               this._googleChartDemoData = data;
+               this._toolInScope = "google_chart_demo";
            }
         });
         return;
