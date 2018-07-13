@@ -298,6 +298,8 @@ var vz_line_chart;
             this._attached = true;
         },
         detached: function () {
+            if (this._chart)
+                this._chart.destroy();
             this._attached = false;
         },
         ready: function () {
@@ -330,8 +332,6 @@ var vz_line_chart;
                     !this.tooltipColumns) {
                     return;
                 }
-                if (this._chart)
-                    this._chart.destroy();
                 var tooltip = d3.select(this.$.tooltip);
                 // We directly reference properties of `this` because this call is
                 // asynchronous, and values may have changed in between the call being
@@ -339,6 +339,8 @@ var vz_line_chart;
                 var chart = new LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
+                if (this._chart)
+                    this._chart.destroy();
                 this._chart = chart;
             }, 350);
         },
@@ -410,12 +412,11 @@ var vz_line_chart;
             this.onDatasetChanged = this._onDatasetChanged.bind(this);
             this._defaultXRange = defaultXRange;
             this._defaultYRange = defaultYRange;
-            this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns, fillArea, xAxisFormatter);
+            this.tooltipColumns = tooltipColumns;
+            this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter);
         }
-        LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, tooltipColumns, fillArea, xAxisFormatter) {
-            if (this.outer) {
-                this.outer.destroy();
-            }
+        LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter) {
+            this.destroy();
             var xComponents = xComponentsCreationMethod();
             this.xAccessor = xComponents.accessor;
             this.xScale = xComponents.scale;
@@ -431,17 +432,22 @@ var vz_line_chart;
             this.yAxis.usesTextWidthApproximation(true);
             this.fillArea = fillArea;
             this.dzl = new vz_line_chart.DragZoomLayer(this.xScale, this.yScale, this.resetYDomain.bind(this));
-            var center = this.buildPlot(this.xScale, this.yScale, tooltipColumns, fillArea);
+            this.tooltipInteraction = this.createTooltipInteraction(this.dzl);
+            this.tooltipPointsComponent = new Plottable.Component();
+            var plot = this.buildPlot(this.xScale, this.yScale, fillArea);
             this.gridlines =
                 new Plottable.Components.Gridlines(this.xScale, this.yScale);
             var xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
             xZeroLine.scale(this.yScale).value(0);
             var yZeroLine = new Plottable.Components.GuideLineLayer('vertical');
             yZeroLine.scale(this.xScale).value(0);
-            this.center = new Plottable.Components.Group([this.gridlines, xZeroLine, yZeroLine, center, this.dzl]);
+            this.center = new Plottable.Components.Group([
+                this.gridlines, xZeroLine, yZeroLine, plot,
+                this.dzl, this.tooltipPointsComponent
+            ]);
             this.outer = new Plottable.Components.Table([[this.yAxis, this.center], [null, this.xAxis]]);
         };
-        LineChart.prototype.buildPlot = function (xScale, yScale, tooltipColumns, fillArea) {
+        LineChart.prototype.buildPlot = function (xScale, yScale, fillArea) {
             var _this = this;
             if (fillArea) {
                 this.marginAreaPlot = new Plottable.Plots.Area();
@@ -462,7 +468,7 @@ var vz_line_chart;
                 return _this.colorScale.scale(dataset.metadata().name);
             });
             this.linePlot = linePlot;
-            var group = this.setupTooltips(linePlot, tooltipColumns);
+            this.setupTooltips(linePlot);
             var smoothLinePlot = new Plottable.Plots.Line();
             smoothLinePlot.x(this.xAccessor, xScale);
             smoothLinePlot.y(this.smoothedAccessor, yScale);
@@ -506,7 +512,7 @@ var vz_line_chart;
             nanDisplay.datasets([this.nanDataset]);
             nanDisplay.symbol(Plottable.SymbolFactories.triangle);
             this.nanDisplay = nanDisplay;
-            var groups = [nanDisplay, scatterPlot, smoothLinePlot, group];
+            var groups = [nanDisplay, scatterPlot, smoothLinePlot, linePlot];
             if (this.marginAreaPlot) {
                 groups.push(this.marginAreaPlot);
             }
@@ -637,33 +643,19 @@ var vz_line_chart;
         LineChart.prototype.getYAxisAccessor = function () {
             return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
         };
-        LineChart.prototype.setupTooltips = function (plot, tooltipColumns) {
+        LineChart.prototype.createTooltipInteraction = function (dzl) {
             var _this = this;
             var pi = new Plottable.Interactions.Pointer();
-            pi.attachTo(plot);
-            // vz_chart_helpers.PointsComponent is a Plottable Component that will
-            // hold the little circles we draw over the closest data points
-            var pointsComponent = new Plottable.Component();
-            var group = new Plottable.Components.Group([plot, pointsComponent]);
-            var hideTooltips = function () {
-                _this.tooltip.style('opacity', 0);
-                _this.scatterPlot.attr('opacity', 1);
-                pointsComponent.content().selectAll('.point').remove();
-            };
-            var enabled = true;
-            var disableTooltips = function () {
-                enabled = false;
-                hideTooltips();
-            };
-            var enableTooltips = function () {
-                enabled = true;
-            };
-            this.dzl.interactionStart(disableTooltips);
-            this.dzl.interactionEnd(enableTooltips);
+            // Disable interaction while drag zooming.
+            dzl.interactionStart(function () {
+                pi.enabled(false);
+                _this.hideTooltips();
+            });
+            dzl.interactionEnd(function () { return pi.enabled(true); });
             pi.onPointerMove(function (p) {
-                if (!enabled) {
+                // Line plot must be initialized to draw.
+                if (!_this.linePlot)
                     return;
-                }
                 var target = {
                     x: p.x,
                     y: p.y,
@@ -672,16 +664,16 @@ var vz_line_chart;
                 };
                 var bbox = _this.gridlines.content().node().getBBox();
                 // pts is the closets point to the tooltip for each dataset
-                var pts = plot.datasets()
+                var pts = _this.linePlot.datasets()
                     .map(function (dataset) { return _this.findClosestPoint(target, dataset); })
-                    .filter(function (x) { return x != null; });
+                    .filter(Boolean);
                 var intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
                 // We draw tooltips for points that are NaN, or are currently visible
                 var ptsForTooltips = pts.filter(function (p) { return intersectsBBox(p.x, p.y, bbox) ||
                     isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
                 // Only draw little indicator circles for the non-NaN points
                 var ptsToCircle = ptsForTooltips.filter(function (p) { return !isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
-                var ptsSelection = pointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
+                var ptsSelection = _this.tooltipPointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
                 if (pts.length !== 0) {
                     ptsSelection.enter().append('circle').classed('point', true);
                     ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
@@ -690,14 +682,30 @@ var vz_line_chart;
                         .style('stroke', 'none')
                         .attr('fill', function (p) { return _this.colorScale.scale(p.dataset.metadata().name); });
                     ptsSelection.exit().remove();
-                    _this.drawTooltips(ptsForTooltips, target, tooltipColumns);
+                    _this.drawTooltips(ptsForTooltips, target, _this.tooltipColumns);
                 }
                 else {
-                    hideTooltips();
+                    _this.hideTooltips();
                 }
             });
-            pi.onPointerExit(hideTooltips);
-            return group;
+            pi.onPointerExit(function () { return _this.hideTooltips(); });
+            return pi;
+        };
+        LineChart.prototype.hideTooltips = function () {
+            this.tooltip.style('opacity', 0);
+            this.scatterPlot.attr('opacity', 1);
+            this.tooltipPointsComponent.content().selectAll('.point').remove();
+        };
+        LineChart.prototype.setupTooltips = function (plot) {
+            var _this = this;
+            plot.onDetach(function () {
+                _this.tooltipInteraction.detachFrom(plot);
+                _this.tooltipInteraction.enabled(false);
+            });
+            plot.onAnchor(function () {
+                _this.tooltipInteraction.attachTo(plot);
+                _this.tooltipInteraction.enabled(true);
+            });
         };
         LineChart.prototype.drawTooltips = function (points, target, tooltipColumns) {
             var _this = this;
@@ -959,7 +967,9 @@ var vz_line_chart;
             this.outer.redraw();
         };
         LineChart.prototype.destroy = function () {
-            this.outer.destroy();
+            // Destroying outer destroys all subcomponents recursively.
+            if (this.outer)
+                this.outer.destroy();
         };
         return LineChart;
     }());

@@ -45,11 +45,18 @@ var vz_line_chart;
             _this.xScale(xScale);
             _this.yScale(yScale);
             _this._dragInteraction = new Plottable.Interactions.Drag();
-            _this._dragInteraction.attachTo(_this);
             _this._doubleClickInteraction = new Plottable.Interactions.Click();
-            _this._doubleClickInteraction.attachTo(_this);
             _this.setupCallbacks();
             _this.unzoomMethod = unzoomMethod;
+            // Activate interaction only when the component is mounted onto DOM.
+            _this.onDetach(function () {
+                _this._doubleClickInteraction.detachFrom(_this);
+                _this._dragInteraction.detachFrom(_this);
+            });
+            _this.onAnchor(function () {
+                _this._doubleClickInteraction.attachTo(_this);
+                _this._dragInteraction.attachTo(_this);
+            });
             return _this;
         }
         /**
