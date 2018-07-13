@@ -20,9 +20,11 @@ tf_web_library(
         "//tensorboard/plugins/profile/memory_viewer/memory_viewer_dashboard",
         "//tensorboard/plugins/profile/overview_page",
         "//tensorboard/plugins/profile/tf_op_profile",
+        "//tensorboard/plugins/profile/tf_profile_common",
         "@org_polymer",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_item",
         "@org_polymer_paper_menu",
+        "@org_polymer_paper_progress",
     ],
 )
