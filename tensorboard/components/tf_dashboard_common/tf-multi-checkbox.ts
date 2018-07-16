@@ -79,7 +79,7 @@ Polymer({
     'dom-change': 'synchronizeColors',
   },
   observers: [
-    '_setIsolatorIcon(selectedNames, names)',
+    '_setIsolatorIcon(selectionState, names)',
   ],
   _makeRegex: function(regexString) {
     try {
@@ -107,12 +107,12 @@ Polymer({
     return regex ? this.names.filter(n => regex.test(n)) : this.names;
   },
   computeOutSelected: function(__, ___) {
-    var selectedNames = this.selectionState;
+    var selectionState = this.selectionState;
     var num = this.maxNamesToEnableByDefault;
     var allEnabled = this.namesMatchingRegex.length <= num;
     return this.namesMatchingRegex
         .filter(n => {
-          return selectedNames[n] == null ? allEnabled : selectedNames[n];
+          return selectionState[n] == null ? allEnabled : selectionState[n];
         });
   },
   synchronizeColors: function(e) {
@@ -142,18 +142,18 @@ Polymer({
     // If user clicks on the label for one name, enable it and disable all other
     // names.
     var name = (Polymer.dom(e) as any).localTarget.name;
-    var selectedNames = {};
+    var selectionState = {};
     this.names.forEach(function(n) {
-      selectedNames[n] = n == name;
+      selectionState[n] = n == name;
     });
-    this.selectionState = selectedNames;
+    this.selectionState = selectionState;
   },
   _checkboxChange: function(e) {
     var target = (Polymer.dom(e) as any).localTarget;
-    const newSelectedNames = _.clone(this.selectionState);
-    newSelectedNames[target.name] = target.checked;
+    const newSelectionState = _.clone(this.selectionState);
+    newSelectionState[target.name] = target.checked;
     // n.b. notifyPath won't work because names may have periods.
-    this.selectionState = newSelectedNames;
+    this.selectionState = newSelectionState;
   },
   _isChecked: function(item, outSelectedChange) {
     return this.outSelected.indexOf(item) != -1;
@@ -162,7 +162,7 @@ Polymer({
     var anyToggledOn = this.namesMatchingRegex
         .some((n) => this.selectionState[n]);
 
-    var selectedNamesIsDefault =
+    var selectionStateIsDefault =
         Object.keys(this.selectionState).length == 0;
 
     var defaultOff =
@@ -170,7 +170,7 @@ Polymer({
     // We have names toggled either if some were explicitly toggled on, or if
     // we are in the default state, and there are few enough that we default
     // to toggling on.
-    anyToggledOn = anyToggledOn || selectedNamesIsDefault && !defaultOff;
+    anyToggledOn = anyToggledOn || selectionStateIsDefault && !defaultOff;
 
     // If any are toggled on, we turn everything off. Or, if none are toggled
     // on, we turn everything on.
