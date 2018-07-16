@@ -83,7 +83,7 @@ var tf_dashboard_common;
             'dom-change': 'synchronizeColors',
         },
         observers: [
-            '_setIsolatorIcon(selectedNames, names)',
+            '_setIsolatorIcon(selectionState, names)',
         ],
         _makeRegex: function (regexString) {
             try {
@@ -111,12 +111,12 @@ var tf_dashboard_common;
             return regex ? this.names.filter(function (n) { return regex.test(n); }) : this.names;
         },
         computeOutSelected: function (__, ___) {
-            var selectedNames = this.selectionState;
+            var selectionState = this.selectionState;
             var num = this.maxNamesToEnableByDefault;
             var allEnabled = this.namesMatchingRegex.length <= num;
             return this.namesMatchingRegex
                 .filter(function (n) {
-                return selectedNames[n] == null ? allEnabled : selectedNames[n];
+                return selectionState[n] == null ? allEnabled : selectionState[n];
             });
         },
         synchronizeColors: function (e) {
@@ -146,18 +146,18 @@ var tf_dashboard_common;
             // If user clicks on the label for one name, enable it and disable all other
             // names.
             var name = Polymer.dom(e).localTarget.name;
-            var selectedNames = {};
+            var selectionState = {};
             this.names.forEach(function (n) {
-                selectedNames[n] = n == name;
+                selectionState[n] = n == name;
             });
-            this.selectionState = selectedNames;
+            this.selectionState = selectionState;
         },
         _checkboxChange: function (e) {
             var target = Polymer.dom(e).localTarget;
-            var newSelectedNames = _.clone(this.selectionState);
-            newSelectedNames[target.name] = target.checked;
+            var newSelectionState = _.clone(this.selectionState);
+            newSelectionState[target.name] = target.checked;
             // n.b. notifyPath won't work because names may have periods.
-            this.selectionState = newSelectedNames;
+            this.selectionState = newSelectionState;
         },
         _isChecked: function (item, outSelectedChange) {
             return this.outSelected.indexOf(item) != -1;
@@ -166,12 +166,12 @@ var tf_dashboard_common;
             var _this = this;
             var anyToggledOn = this.namesMatchingRegex
                 .some(function (n) { return _this.selectionState[n]; });
-            var selectedNamesIsDefault = Object.keys(this.selectionState).length == 0;
+            var selectionStateIsDefault = Object.keys(this.selectionState).length == 0;
             var defaultOff = this.namesMatchingRegex.length > this.maxRunsToEnableByDefault;
             // We have names toggled either if some were explicitly toggled on, or if
             // we are in the default state, and there are few enough that we default
             // to toggling on.
-            anyToggledOn = anyToggledOn || selectedNamesIsDefault && !defaultOff;
+            anyToggledOn = anyToggledOn || selectionStateIsDefault && !defaultOff;
             // If any are toggled on, we turn everything off. Or, if none are toggled
             // on, we turn everything on.
             var newRunsDisabled = {};
