@@ -75,7 +75,7 @@ class ImagesPluginTest(tf.test.TestCase):
     writer.add_graph(sess.graph)
     for step in xrange(2):
       writer.add_summary(sess.run(merged_summary_op, feed_dict={
-          placeholder: (numpy.random.rand(1, 6, 8, 3) * 255).astype(
+          placeholder: (numpy.random.rand(1, 8, 6, 3) * 255).astype(
               numpy.uint8)
       }), global_step=step)
     writer.close()

@@ -41,7 +41,7 @@ class SummaryTest(tf.test.TestCase):
     self.images_with_alpha = self._generate_images(channels=4)
 
   def _generate_images(self, channels):
-    size = [self.image_count, self.image_width, self.image_height, channels]
+    size = [self.image_count, self.image_height, self.image_width, channels]
     return np.random.uniform(low=0, high=255, size=size).astype(np.uint8)
 
   def pb_via_op(self, summary_op, feed_dict=None):
@@ -77,7 +77,7 @@ class SummaryTest(tf.test.TestCase):
     metadata.parse_plugin_metadata(content)
 
   def test_correctly_handles_no_images(self):
-    shape = (0, self.image_width, self.image_height, 3)
+    shape = (0, self.image_height, self.image_width, 3)
     images = np.array([]).reshape(shape)
     pb = self.compute_and_check_summary_pb('mona_lisa', images, max_outputs=3)
     self.assertEqual(1, len(pb.value))
@@ -138,7 +138,7 @@ class SummaryTest(tf.test.TestCase):
       decoder = tf.image.decode_png(placeholder)
       for image in images:
         decoded = sess.run(decoder, feed_dict={placeholder: image})
-        self.assertEqual((self.image_width, self.image_height, channel_count),
+        self.assertEqual((self.image_height, self.image_width, channel_count),
                          decoded.shape)
 
   def test_dimensions(self):
