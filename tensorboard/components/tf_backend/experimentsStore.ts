@@ -31,10 +31,10 @@ export class ExperimentsStore extends BaseStore {
 
   /**
    * Get the current list of experiments. If no data is available, this will be
-   * an empty array (i.e., there is no distinction between "no runs" and
-   * "no runs yet").
+   * an empty array (i.e., there is no distinction between "no experiment" and
+   * "no experiment yet").
    */
-  getRuns(): Experiment[] {
+  getExperiments(): Experiment[] {
     return this._experiments.slice();
   }
 }

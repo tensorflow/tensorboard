@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_color_scale {
 
-let assert = chai.assert;
+const {assert} = chai;
 
 describe('ColorScale', function() {
   let ccs: ColorScale;
@@ -24,24 +24,24 @@ describe('ColorScale', function() {
   });
 
   it('Returns consistent colors', function() {
-    ccs.domain(['train', 'eval', 'test']);
-    let trainColor = ccs.scale('train');
-    let trainColor2 = ccs.scale('train');
+    ccs.setDomain(['train', 'eval', 'test']);
+    let trainColor = ccs.getColor('train');
+    let trainColor2 = ccs.getColor('train');
     assert.equal(trainColor, trainColor2);
   });
 
   it('Returns consistent colors after new domain', function() {
-    ccs.domain(['train', 'eval']);
-    let trainColor = ccs.scale('train');
-    ccs.domain(['train', 'eval', 'test']);
-    let trainColor2 = ccs.scale('train');
+    ccs.setDomain(['train', 'eval']);
+    let trainColor = ccs.getColor('train');
+    ccs.setDomain(['train', 'eval', 'test']);
+    let trainColor2 = ccs.getColor('train');
     assert.equal(trainColor, trainColor2);
   });
 
   it('Throws an error if string is not in the domain', function() {
-    ccs.domain(['red', 'yellow', 'green']);
-    assert.throws(function() {
-      ccs.scale('not in domain');
+    ccs.setDomain(['red', 'yellow', 'green']);
+    assert.throws(() => {
+      ccs.getColor('not in domain');
     }, 'String was not in the domain.');
   });
 });

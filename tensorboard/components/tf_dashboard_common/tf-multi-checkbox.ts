@@ -21,6 +21,12 @@ Polymer({
       type: Array,
       value: () => [],
     },  // All the values of checkbox
+    coloring: {
+      type: Object,
+      value: {
+        getColor: () => '',
+      },
+    },
     regex: {
       type: String,
       notify: true,
@@ -120,7 +126,7 @@ Polymer({
 
     const checkboxes = this.querySelectorAll('paper-checkbox');
     checkboxes.forEach(p => {
-      const color = tf_color_scale.runsColorScale(p.name);
+      const color = this.coloring.getColor(p.name);
       p.customStyle['--paper-checkbox-checked-color'] = color;
       p.customStyle['--paper-checkbox-checked-ink-color'] = color;
       p.customStyle['--paper-checkbox-unchecked-color'] = color;
@@ -128,7 +134,7 @@ Polymer({
     });
     const buttons = this.querySelectorAll('.isolator');
     buttons.forEach(p => {
-      const color = tf_color_scale.runsColorScale(p.name);
+      const color = this.coloring.getColor(p.name);
       p.style['color'] = color;
     });
     // The updateStyles call fails silently if the browser doesn't have focus,

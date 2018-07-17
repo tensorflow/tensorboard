@@ -37,7 +37,7 @@ export class ColorScale {
    * @param {Array<string>} strings - An array of possible strings to use as the
    *     domain for your scale.
    */
-  public domain(strings: string[]): this {
+  public setDomain(strings: string[]): this {
     this.identifiers = d3.map();
     strings.forEach((s, i) => {
       this.identifiers.set(s, this.palette[i % this.palette.length]);
@@ -51,7 +51,7 @@ export class ColorScale {
    * @return {string} The color corresponding to that input string.
    * @throws Will error if input string is not in the scale's domain.
    */
-  public scale(s: string): string {
+  public getColor(s: string): string {
     if (!this.identifiers.has(s)) {
       throw new Error(`String ${s} was not in the domain.`);
     }
@@ -60,17 +60,27 @@ export class ColorScale {
 }
 
 /**
- * A color scale whose domain is the set of runs currently available.
- * Automatically updated as this data changes.
+ * A color scale of a domain from a store.  Automatically updated when the store
+ * emits a change.
  */
-const _runsColorScale = new ColorScale();
-export const runsColorScale: ((runName: string) => string) =
-    _runsColorScale.scale.bind(_runsColorScale);
-
-function updateRunsColorScale(): void {
-  _runsColorScale.domain(tf_backend.runsStore.getRuns());
+function createAutoUpdateColorScale(
+    store: tf_backend.BaseStore,
+    getDomain: () => string[]): (runName: string) => string {
+  const colorScale = new ColorScale();
+  function updateRunsColorScale(): void {
+    colorScale.setDomain(getDomain());
+  }
+  store.addListener(updateRunsColorScale);
+  updateRunsColorScale();
+  return (domain) => colorScale.getColor(domain);
 }
-tf_backend.runsStore.addListener(updateRunsColorScale);
-updateRunsColorScale();
+
+export const runsColorScale = createAutoUpdateColorScale(
+    tf_backend.runsStore, () => tf_backend.runsStore.getRuns());
+
+export const experimentsColorScale = createAutoUpdateColorScale(
+    tf_backend.experimentsStore, () => {
+      return tf_backend.experimentsStore.getExperiments().map(({name}) => name);
+    });
 
 }  // tf_color_scale
