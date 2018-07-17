@@ -16,10 +16,18 @@ namespace tf_backend {
 
 export type Listener = () => void;
 
+// A unique reference to a listener for an easier dereferencing.
+export class ListenKey {
+  public readonly listener: Listener;
+  constructor(listener: Listener) {
+    this.listener = listener;
+  }
+}
+
 export abstract class BaseStore {
   protected requestManager: RequestManager =
       new RequestManager(1 /* simultaneous request */);
-  private _listeners: Set<Listener> = new Set<Listener>();
+  private _listeners: Set<ListenKey> = new Set<ListenKey>();
 
   /**
    * Asynchronously load or reload the runs data. Listeners will be
@@ -34,21 +42,23 @@ export abstract class BaseStore {
    * Register a listener (nullary function) to be called when new runs are
    * available.
    */
-  addListener(listener: Listener): void {
-    this._listeners.add(listener);
+  addListener(listener: Listener): ListenKey {
+    const key = new ListenKey(listener);
+    this._listeners.add(key);
+    return key;
   }
 
   /**
    * Remove a listener registered with `addListener`.
    */
-  removeListener(listener: Listener): void {
-    this._listeners.delete(listener);
+  removeListenerByKey(listenKey: ListenKey): void {
+    this._listeners.delete(listenKey);
   }
 
   protected emitChange(): void {
-    this._listeners.forEach(listener => {
+    this._listeners.forEach(listenKey => {
       try {
-        listener();
+        listenKey.listener();
       } catch (e) {
         // ignore exceptions on the listener side.
       }
