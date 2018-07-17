@@ -43,10 +43,10 @@ var tf_backend;
         };
         /**
          * Get the current list of experiments. If no data is available, this will be
-         * an empty array (i.e., there is no distinction between "no runs" and
-         * "no runs yet").
+         * an empty array (i.e., there is no distinction between "no experiment" and
+         * "no experiment yet").
          */
-        ExperimentsStore.prototype.getRuns = function () {
+        ExperimentsStore.prototype.getExperiments = function () {
             return this._experiments.slice();
         };
         return ExperimentsStore;

@@ -34,12 +34,6 @@ Properties out:
 -->
 <dom-module id="tf-runs-selector">
   <template>
-    <div id="plumbing">
-      <tf-color-scale
-        runs="[[runs]]"
-        out-color-scale="{{colorScale}}"
-      ></tf-color-scale>
-    </div>
     <paper-dialog with-backdrop id="data-location-dialog">
       <h2>Data Location</h2>
       <div inner-h-t-m-l="{{_breakString(dataLocation)}}"></div>
@@ -53,7 +47,7 @@ Properties out:
       selection-state="{{runSelectionState}}"
       out-selected="{{selectedRuns}}"
       regex="{{regexInput}}"
-      color-scale="[[colorScale]]"
+      coloring="[[coloring]]"
     ></tf-multi-checkbox>
     <paper-button
       class="x-button"
@@ -152,6 +146,12 @@ Properties out:
         type: Number,
         value: 250,
         readOnly: true,
+      },
+      coloring: {
+        type: Object,
+        value: {
+          getColor: tf_color_scale.runsColorScale,
+        },
       },
     },
     ready: function() {

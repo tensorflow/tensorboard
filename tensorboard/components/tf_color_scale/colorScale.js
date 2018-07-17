@@ -36,7 +36,7 @@ var tf_color_scale;
          * @param {Array<string>} strings - An array of possible strings to use as the
          *     domain for your scale.
          */
-        ColorScale.prototype.domain = function (strings) {
+        ColorScale.prototype.setDomain = function (strings) {
             var _this = this;
             this.identifiers = d3.map();
             strings.forEach(function (s, i) {
@@ -50,7 +50,7 @@ var tf_color_scale;
          * @return {string} The color corresponding to that input string.
          * @throws Will error if input string is not in the scale's domain.
          */
-        ColorScale.prototype.scale = function (s) {
+        ColorScale.prototype.getColor = function (s) {
             if (!this.identifiers.has(s)) {
                 throw new Error("String " + s + " was not in the domain.");
             }
@@ -60,14 +60,23 @@ var tf_color_scale;
     }());
     tf_color_scale.ColorScale = ColorScale;
     /**
-     * A color scale whose domain is the set of runs currently available.
-     * Automatically updated as this data changes.
+     * A color scale of a domain from a store.  Automatically updated when the store
+     * emits a change.
      */
-    var _runsColorScale = new ColorScale();
-    tf_color_scale.runsColorScale = _runsColorScale.scale.bind(_runsColorScale);
-    function updateRunsColorScale() {
-        _runsColorScale.domain(tf_backend.runsStore.getRuns());
+    function createAutoUpdateColorScale(store, getDomain) {
+        var colorScale = new ColorScale();
+        function updateRunsColorScale() {
+            colorScale.setDomain(getDomain());
+        }
+        store.addListener(updateRunsColorScale);
+        updateRunsColorScale();
+        return function (domain) { return colorScale.getColor(domain); };
     }
-    tf_backend.runsStore.addListener(updateRunsColorScale);
-    updateRunsColorScale();
+    tf_color_scale.runsColorScale = createAutoUpdateColorScale(tf_backend.runsStore, function () { return tf_backend.runsStore.getRuns(); });
+    tf_color_scale.experimentsColorScale = createAutoUpdateColorScale(tf_backend.experimentsStore, function () {
+        return tf_backend.experimentsStore.getExperiments().map(function (_a) {
+            var name = _a.name;
+            return name;
+        });
+    });
 })(tf_color_scale || (tf_color_scale = {})); // tf_color_scale

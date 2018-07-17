@@ -21,22 +21,22 @@ var tf_color_scale;
             ccs = new tf_color_scale.ColorScale();
         });
         it('Returns consistent colors', function () {
-            ccs.domain(['train', 'eval', 'test']);
-            var trainColor = ccs.scale('train');
-            var trainColor2 = ccs.scale('train');
+            ccs.setDomain(['train', 'eval', 'test']);
+            var trainColor = ccs.getColor('train');
+            var trainColor2 = ccs.getColor('train');
             assert.equal(trainColor, trainColor2);
         });
         it('Returns consistent colors after new domain', function () {
-            ccs.domain(['train', 'eval']);
-            var trainColor = ccs.scale('train');
-            ccs.domain(['train', 'eval', 'test']);
-            var trainColor2 = ccs.scale('train');
+            ccs.setDomain(['train', 'eval']);
+            var trainColor = ccs.getColor('train');
+            ccs.setDomain(['train', 'eval', 'test']);
+            var trainColor2 = ccs.getColor('train');
             assert.equal(trainColor, trainColor2);
         });
         it('Throws an error if string is not in the domain', function () {
-            ccs.domain(['red', 'yellow', 'green']);
+            ccs.setDomain(['red', 'yellow', 'green']);
             assert.throws(function () {
-                ccs.scale('not in domain');
+                ccs.getColor('not in domain');
             }, 'String was not in the domain.');
         });
     });

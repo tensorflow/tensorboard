@@ -21,6 +21,12 @@ var tf_dashboard_common;
                 type: Array,
                 value: function () { return []; },
             },
+            coloring: {
+                type: Object,
+                value: {
+                    getColor: function () { return ''; },
+                },
+            },
             regex: {
                 type: String,
                 notify: true,
@@ -124,7 +130,7 @@ var tf_dashboard_common;
             this._setIsolatorIcon();
             var checkboxes = this.querySelectorAll('paper-checkbox');
             checkboxes.forEach(function (p) {
-                var color = tf_color_scale.runsColorScale(p.name);
+                var color = _this.coloring.getColor(p.name);
                 p.customStyle['--paper-checkbox-checked-color'] = color;
                 p.customStyle['--paper-checkbox-checked-ink-color'] = color;
                 p.customStyle['--paper-checkbox-unchecked-color'] = color;
@@ -132,7 +138,7 @@ var tf_dashboard_common;
             });
             var buttons = this.querySelectorAll('.isolator');
             buttons.forEach(function (p) {
-                var color = tf_color_scale.runsColorScale(p.name);
+                var color = _this.coloring.getColor(p.name);
                 p.style['color'] = color;
             });
             // The updateStyles call fails silently if the browser doesn't have focus,
