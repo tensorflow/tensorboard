@@ -19,14 +19,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard import lazy
+from tensorboard.lazy import LazyLoader
 
 pkg = lambda i: i  # helps google sync process
-mod = lambda i: lazy.LazyLoader(i[i.rindex('.') + 1:], globals(), i)
+mod = lambda i: LazyLoader(i[i.rindex('.') + 1:], globals(), i)
 
 program = mod(pkg('tensorboard.program'))
 summary = mod(pkg('tensorboard.summary'))
 
-del lazy
+del LazyLoader
 del mod
 del pkg
