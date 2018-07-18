@@ -44,7 +44,7 @@ limitations under the License.
           </div>
         </template>
         <div class="sidebar-section">
-          <div class="title">Values</div>
+          <h3>Values</h3>
           <paper-radio-group
             id="valuesSelector"
             selected="{{_values}}">
@@ -73,7 +73,7 @@ limitations under the License.
         <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
 
           <div class="sidebar-section">
-            <div class="title">Mode</div>
+            <h3>Mode</h3>
             <paper-radio-group id="modeSelector" selected="{{_mode}}">
               <paper-radio-button name="current"
                                   disabled="[[_controls_disabled]]">
@@ -85,7 +85,7 @@ limitations under the License.
               </paper-radio-button>
             </paper-radio-group>
             <template is="dom-if" if="[[_varianceSelected(_mode)]]">
-              <div class="title">Variance timesteps: {{_windowSize}}</div>
+              <h4>Variance timesteps: {{_windowSize}}</h4>
               <paper-slider
                 id="windowSlider"
                 value="{{_windowSize}}"
@@ -100,7 +100,7 @@ limitations under the License.
           </div>
 
           <div class="sidebar-section">
-            <div class="title">Image scaling</div>
+            <h3>Image scaling</h3>
             <paper-radio-group id="scalingSelector" selected="{{_scaling}}">
 
               <paper-radio-button id="option-layer" name="layer"
@@ -141,7 +141,7 @@ limitations under the License.
         </template>
 
         <div class="sidebar-section">
-          <div class="title">Updates per second: {{_FPS}}</div>
+          <h3>Updates per second: {{_FPS}}</h3>
           <paper-slider
             id="FPSSlider"
             value="{{_FPS}}"
@@ -155,13 +155,15 @@ limitations under the License.
         </div>
 
         <div class="sidebar-section">
-          <paper-button
-            class="x-button"
-            id="record_button"
-            on-tap="_toggleRecord"
-            disabled="[[_controls_disabled]]">
-            [[_recordText]]
-          </paper-button>
+          <div>
+            <paper-button
+              class="x-button"
+              id="record_button"
+              on-tap="_toggleRecord"
+              disabled="[[_controls_disabled]]">
+              [[_recordText]]
+            </paper-button>
+          </div>
         </div>
 
         <div class="sidebar-section">
@@ -235,17 +237,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
 
       .no-data-warning {
         max-width: 540px;
-        margin: 80px auto 0 auto;
-      }
-
-      .title {
-        font-size: 16px;
-        margin: 8px 5px 8px 0;
-        color: black;
-      }
-
-      .title small {
-        font-weight: normal;
+        margin: 80px auto 0;
       }
 
       paper-checkbox {
@@ -254,18 +246,34 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
       }
 
       paper-radio-button {
-        display: block;
+        display: flex;
         padding: 5px;
+
+        --paper-radio-button-radio-container: {
+          flex-grow: 0;
+          flex-shrink: 0;
+        }
+
+        --paper-radio-button-label: {
+          font-size: 13px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
 
       paper-radio-group {
         margin-top: 5px;
+        width: 100%;
       }
 
       paper-slider {
-        margin-left: 12px;
-        --paper-slider-knob-color: var(--tb-orange-strong);
         --paper-slider-active-color: var(--tb-orange-strong);
+        --paper-slider-knob-color: var(--tb-orange-strong);
+        --paper-slider-knob-start-border-color: var(--tb-orange-strong);
+        --paper-slider-knob-start-color: var(--tb-orange-strong);
+        --paper-slider-markers-color: var(--tb-orange-strong);
+        --paper-slider-pin-color: var(--tb-orange-strong);
+        --paper-slider-pin-start-color: var(--tb-orange-strong);
         flex-grow: 2;
       }
 
@@ -301,8 +309,10 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         width: 105px;
       }
 
-      .sidebar {
-        max-width: 350px;
+      h4 {
+        font-size: 14px;
+        font-weight: normal;
+        margin: 5px 0;
       }
 
       p.disclaimer {
@@ -315,6 +325,9 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         font-weight: bold;
       }
 
+      .sidebar {
+        font-size: 14px;
+      }
     </style>
   </template>
   <script>
@@ -332,8 +345,6 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           type: Object,
           value: () => new tf_backend.RequestManager(10, 0),
         },
-
-        ////
 
         _values: {
           type: String,
