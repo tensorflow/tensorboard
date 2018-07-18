@@ -78,7 +78,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                 ]
             ),
             # A category with this name is also present in a layout for a
-            # different run (the logdir run)
+            # different run (the logdir run) and also contains a duplicate chart
             layout_pb2.Category(
                 title='cross entropy',
                 chart=[
@@ -91,6 +91,11 @@ class CustomScalarsPluginTest(tf.test.TestCase):
                                     lower='cross entropy lower',
                                     upper='cross entropy upper'),
                             ],
+                        )),
+                    layout_pb2.Chart(
+                        title='cross entropy',
+                        multiline=layout_pb2.MultilineChartContent(
+                            tag=[r'cross entropy'],
                         )),
                 ]
             ),

@@ -275,8 +275,11 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         for category in layout_proto.category:
           if category.title in title_to_category:
             # A category with this name has been seen before. Do not create a
-            # new one. Merge their charts.
-            title_to_category[category.title].chart.extend(category.chart)
+            # new one. Merge their charts, skipping any duplicates.
+            title_to_category[category.title].chart.extend([
+                c for c in category.chart
+                if c not in title_to_category[category.title].chart
+            ])
           else:
             # This category has not been seen before.
             merged_layout.category.add().MergeFrom(category)
