@@ -27,6 +27,6 @@ mod = lambda i: LazyLoader(i[i.rindex('.') + 1:], globals(), i)
 program = mod(pkg('tensorboard.program'))
 summary = mod(pkg('tensorboard.summary'))
 
-del lazy
+del LazyLoader
 del mod
 del pkg
