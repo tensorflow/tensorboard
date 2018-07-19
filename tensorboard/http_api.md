@@ -59,14 +59,51 @@ Example response:
 
 ## `data/experiments`
 
-Returns an array of objects containing the names of all the experiments known to
-the TensorBoard backend at this time. Each entry is an object with a name for
-an experiment. Note that experiment is only properly populated when using a
-database backed datasource.
+Returns all experiments known to the TensorBoard backend at this time. Each
+entry contains id, name, and the start time, the first event time. The
+experiments are sorted by start time, name, and then Id.
+
+Note that experiment is only properly populated when using a database backed
+datasource.
 
 Example response:
 
-    [{"name": "experiment 1"}]
+    [{
+      "id": 123,
+      "name": "experiment 1",
+      "startedTime": 1531245577
+    }, {
+      "id": 456,
+      "name": "experiment 2",
+      "startedTime": 1600000000
+    }]
+
+## `data/experiment_runs`
+
+Returns runs of an experiment, specified with query param `experiment`, with
+their nested data, tag, populated. Runs returned are ordered by started time,
+then on the run name. Tags are sorted by its name, displayName, then inserted
+time.
+
+Input:
+- `experiment`: An experiment Id.
+
+Example request:
+
+    /data/experiment_runs?experiment=123
+
+Example response:
+
+    [{
+      "id": 123,
+      "names": "train",
+      "startTime": 1234567,
+      "tags": [{
+        "id": 789,
+        "displayName": "",
+        "name": "loss"
+      }]
+    }]
 
 ## `/data/plugin/scalars/...`
 

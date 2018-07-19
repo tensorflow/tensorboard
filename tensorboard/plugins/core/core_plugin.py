@@ -18,8 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import functools
 import gzip
+import math
 import mimetypes
 import os
 import zipfile
@@ -66,6 +68,7 @@ class CorePlugin(base_plugin.TBPlugin):
         '/data/logdir': self._serve_logdir,
         '/data/runs': self._serve_runs,
         '/data/experiments': self._serve_experiments,
+        '/data/experiment_runs': self._serve_experiment_runs,
         '/data/window_properties': self._serve_window_properties,
         '/events': self._redirect_to_index,
         '/favicon.ico': self._send_404_without_logging,
@@ -166,25 +169,84 @@ class CorePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _serve_experiments(self, request):
-    """Serve a JSON array of experiments, ordered by experiment started time.
-    Sort order is by started time (aka first event time) with empty times sorted
-    last, and then ties are broken by sorting on the experiment name.
+    """Serve a JSON array of experiments. Experiments are ordered by experiment
+    started time (aka first event time) with empty times sorted last, and then
+    ties are broken by sorting on the experiment name.
     """
+    results = []
     if self._db_connection_provider:
       db = self._db_connection_provider()
       cursor = db.execute('''
         SELECT
+          experiment_id,
           experiment_name,
-          started_time IS NULL as started_time_nulls_last,
-          started_time
+          started_time,
+          started_time IS NULL as started_time_nulls_last
         FROM Experiments
-        ORDER BY started_time_nulls_last, started_time, experiment_name
+        ORDER BY started_time_nulls_last, started_time, experiment_name,
+            experiment_id
       ''')
-      experiments = [{'name': row[0]} for row in cursor]
-    else:
-      # experiment is only useful when using db.
-      experiments = []
-    return http_util.Respond(request, experiments, 'application/json')
+      results = [{
+        "id": row[0],
+        "name": row[1],
+        "startTime": row[2],
+      } for row in cursor]
+
+    return http_util.Respond(request, results, 'application/json')
+
+  @wrappers.Request.application
+  def _serve_experiment_runs(self, request):
+    """Serve a JSON runs of an experiment, specified with query param
+    `experiment`, with their nested data, tag, populated. Runs returned are
+    ordered by started time (aka first event time) with empty times sorted last,
+    and then ties are broken by sorting on the run name. Tags are sorted by
+    its name, displayName, and lastly, inserted time.
+    """
+    results = []
+    if self._db_connection_provider:
+      exp_id = request.args.get('experiment')
+      runs_dict = collections.OrderedDict()
+
+      db = self._db_connection_provider()
+      cursor = db.execute('''
+        SELECT
+          Runs.run_id,
+          Runs.run_name,
+          Runs.started_time,
+          Runs.started_time IS NULL as started_time_nulls_last,
+          Tags.tag_id,
+          Tags.tag_name,
+          Tags.display_name,
+          Tags.inserted_time
+        From Runs
+        LEFT JOIN Tags ON Runs.run_id = Tags.run_id
+        WHERE Runs.experiment_id = %s
+        ORDER BY started_time_nulls_last,
+          Runs.started_time,
+          Runs.run_name,
+          Runs.run_id,
+          Tags.tag_name,
+          Tags.display_name,
+          Tags.inserted_time;
+      ''' % (exp_id,))
+      for row in cursor:
+        run_id = row[0]
+        if not run_id in runs_dict:
+          runs_dict[run_id] = {
+            "id": run_id,
+            "name": row[1],
+            "startTime": math.floor(row[2]),
+            "tags": [],
+          }
+        # tag can be missing.
+        if row[4]:
+          runs_dict[run_id].get("tags").append({
+            "id": row[4],
+            "displayName": row[6],
+            "name": row[5],
+          })
+      results = list(runs_dict.values())
+    return http_util.Respond(request, results, 'application/json')
 
 class CorePluginLoader(base_plugin.TBLoader):
   """CorePlugin factory."""
