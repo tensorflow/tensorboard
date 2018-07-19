@@ -60,7 +60,7 @@ limitations under the License.
             >Ignore outliers in chart scaling</paper-checkbox>
           </div>
           <div id="tooltip-sorting">
-            <div id="tooltip-sorting-label">Tooltip sorting method:</div>
+            <div>Tooltip sorting method:</div>
             <paper-dropdown-menu
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
@@ -157,20 +157,15 @@ limitations under the License.
     <style include="dashboard-style"></style>
     <style>
       #tooltip-sorting {
+        align-items: center;
         display: flex;
         font-size: 14px;
-        margin-top: 5px;
-      }
-      #tooltip-sorting-label {
-        margin-top: 13px;
+        margin-top: 15px;
       }
       #tooltip-sorting paper-dropdown-menu {
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
-      }
-      #x-type-selector paper-button {
-        margin: 5px 3px;
       }
       .line-item {
         display: block;
