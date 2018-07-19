@@ -33,14 +33,18 @@ Generic layout for a dashboard.
     </div>
     <style include="scrollbar-style"></style>
     <style>
-      #sidebar {
-        width: inherit;
+      :host {
+        display: flex;
+        flex-direction: row;
         height: 100%;
-        overflow: ellipsis;
-        flex-grow: 0;
-        flex-shrink: 0;
-        max-width: 30%;
+      }
+
+      #sidebar {
+        flex: 0 0 25%;
+        height: 100%;
+        max-width: 350px;
         min-width: 270px;
+        text-overflow: ellipsis;
       }
 
       #center {
@@ -51,13 +55,7 @@ Generic layout for a dashboard.
       }
 
       .tf-graph-dashboard #center {
-        background: white;
-      }
-
-      :host {
-        display: flex;
-        flex-direction: row;
-        height: 100%;
+        background: #fff;
       }
     </style>
   </template>
