@@ -40,11 +40,11 @@ Properties out:
 
     <tf-filterable-checkbox-dropdown
       label="Run"
-      items="[[_runs]]"
-      value="{{_selectedRuns}}"
-      selection-state="{{_runSelectionState}}"
-      regex="{{_runRegexInput}}"
       colorsCheckbox="false"
+      items="[[_runs]]"
+      regex="{{_runRegexInput}}"
+      selected-items="{{_selectedRuns}}"
+      selection-state="{{_runSelectionState}}"
     ></tf-filterable-checkbox-dropdown>
 
     <style>
@@ -59,10 +59,10 @@ Properties out:
 
         --paper-dropdown-menu-input: {
           --paper-input-container-input: {
-            font-size: 14px;
+            font-size: 12px;
           };
           --paper-input-container-label: {
-            font-size: 14px;
+            font-size: 12px;
           };
         }
 

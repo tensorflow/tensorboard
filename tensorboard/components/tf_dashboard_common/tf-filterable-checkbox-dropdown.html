@@ -43,12 +43,17 @@ Properties out:
 -->
 <dom-module id="tf-filterable-checkbox-dropdown">
   <template>
-    <paper-menu-button vertical-align="top" horizontal-align="left">
+    <paper-menu-button
+      vertical-align="top"
+      horizontal-align="left"
+      no-overlap="true"
+    >
       <div class="dropdown-trigger" slot="dropdown-trigger">
         <paper-ripple></paper-ripple>
         <!-- paper-input has type="text" for a11y, do not remove -->
         <paper-input
           label="[[label]]"
+          no-label-float="true"
           placeholder="[[placeholder]]"
           readonly
           type="text"
@@ -92,13 +97,6 @@ Properties out:
 
     paper-menu-button {
       padding: 0;
-    }
-
-    paper-ripple {
-      top: 12px;
-      left: 0;
-      right: 0;
-      bottom: 8px;
     }
 
     .dropdown-content {

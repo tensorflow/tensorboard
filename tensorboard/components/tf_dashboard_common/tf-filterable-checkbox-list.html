@@ -72,11 +72,13 @@ Properties out:
         </div>
       </template>
     </div>
-    <div class="item">
-      <paper-button class="x-button" on-tap="_toggleAll">
-        Toggle All [[label]]s
-      </paper-button>
-    </div>
+    <template is="dom-if" if="[[!allToggleDisabled]]">
+      <div class="item">
+        <paper-button class="x-button" on-tap="_toggleAll">
+          Toggle All [[label]]s
+        </paper-button>
+      </div>
+    </template>
     <style>
     paper-input {
       --paper-input-container-focus-color: var(--tb-orange-strong);
@@ -113,6 +115,7 @@ Properties out:
 
     .item {
       align-items: center;
+      box-sizing: border-box;
       display: flex;
       flex-direction: row;
       font-family: inherit;
@@ -120,7 +123,7 @@ Properties out:
       line-height: 24px;
       margin: 3px 0;
       padding: 0 16px;
-      width: 300px;
+      max-width: var(--tf-filterable-checkbox-list-content-max-width, 300px);
     }
 
     .matches {

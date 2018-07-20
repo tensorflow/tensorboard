@@ -17,9 +17,22 @@ namespace tf_data_selector {
 Polymer({
   is: 'tf-data-selector',
   properties: {
-    experiments: Array,
+    _showExperimentAdder: {
+      reflectToAttribute: true,
+      type: Boolean,
+      value: false,
+    },
 
-    experimentColors: {
+    _experiments: Array,
+
+    _experimentColoring: {
+      type: Object,
+      value: {
+        getColor: tf_color_scale.experimentsColorScale,
+      },
+    },
+
+    _selectedExperiments: {
       type: Array,
       value: () => [],
     },
@@ -39,56 +52,43 @@ Polymer({
       notify: true,
       value: () => [],
     },
-
-    runSelectionState: {
-      type: Object,
-      observer: '_storeRunSelectionState',
-      value: () => tf_storage.getObject('runSelectionState') || {},
-    },
-
-    runRegexInput: {
-      type: String,
-      value: tf_storage.getStringInitializer('regexInput', {defaultValue: ''}),
-      observer: '_runRegexInput',
-    },
   },
 
   get expsStore() {
     return tf_backend.experimentsStore;
   },
 
-  get runsStore() {
-    return tf_backend.runsStore;
-  },
-
   attached() {
     this._updateExpKey = this.expsStore.addListener(() => this._updateExps());
-    this._updateRunKey = this.runsStore.addListener(() => this._updateRuns());
-
     this._updateExps();
-    this._updateRuns();
   },
 
   detached() {
     this.expsStore.removeListenerByKey(this._updateExpKey);
-    this.runsStore.removeListenerByKey(this._updateRunKey);
   },
 
   _updateExps() {
     const expNames = this.expsStore.getExperiments().map(({name}) => name);
-    this.set('experiments', expNames);
+    this.set('_experiments', expNames);
   },
 
-  _updateRuns() {
-    const runNames = this.runsStore.getRuns();
-    this.set('runs', runNames);
+  _toggleExperimentAdder() {
+    this._showExperimentAdder = !this._showExperimentAdder;
   },
 
-  _storeRunSelectionState:
-      tf_storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
+  _addExperiments() {
+    this._showExperimentAdder = false;
+  },
 
-  _runRegexInput:
-      tf_storage.getStringObserver('regexInput', {defaultValue: ''}),
+  _getAddLabel(_) {
+    switch (this._selectedExperiments.length) {
+      case 0:
+      case 1:
+        return 'Add';
+      default:
+        return 'Add All'
+    }
+  },
 
 });
 

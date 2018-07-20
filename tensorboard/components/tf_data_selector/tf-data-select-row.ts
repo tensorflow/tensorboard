@@ -43,29 +43,17 @@ Polymer({
     },
   },
 
-  get _expsStore() {
-    return tf_backend.experimentsStore;
-  },
-
   get _runsStore() {
     return tf_backend.runsStore;
   },
 
   attached() {
-    this._updateExpKey = this._expsStore.addListener(() => this._updateExps());
     this._updateRunKey = this._runsStore.addListener(() => this._updateRuns());
-
-    this._updateExps();
     this._updateRuns();
   },
 
   detached() {
-    this._expsStore.removeListenerByKey(this._updateExpKey);
     this._runsStore.removeListenerByKey(this._updateRunKey);
-  },
-
-  _updateExps() {
-    this.set('_experiments', this._expsStore.getExperiments());
   },
 
   _updateRuns() {
