@@ -47,7 +47,7 @@ limitations under the License.
       tag="[[tag]]"
       tag-metadata="[[tagMetadata]]"
       active="[[active]]"
-      data-url="[[_dataUrl]]"
+      data-url="[[dataUrl]]"
       log-scale-active="[[_logScaleActive]]"
       process-data="[[_processData]]"
     >
@@ -179,6 +179,9 @@ limitations under the License.
         smoothingWeight: Number,
         tagMetadata: Object,
         tooltipSortingMethod: String,
+        // Function that takes 2 string arguments (tag and run) and returns a
+        // string URL for fetching data.
+        dataUrl: Function,
 
         // This function is called when data is received from the backend.
         _processData: {
@@ -202,11 +205,6 @@ limitations under the License.
 
         _logScaleActive: Boolean,
 
-        _dataUrl: {
-          type: Function,
-          value: () => (tag, run) => tf_backend.addParams(
-              tf_backend.getRouter().pluginRoute('scalars', '/scalars'), {tag, run}),
-        },
       },
       reload() {
         this.$$('tf-line-chart-data-loader').reload();
@@ -228,10 +226,10 @@ limitations under the License.
         }
       },
       _csvUrl(tag, run) {
-        return tf_backend.addParams(this._dataUrl(tag, run), {format: 'csv'});
+        return tf_backend.addParams(this.dataUrl(tag, run), {format: 'csv'});
       },
       _jsonUrl(tag, run) {
-        return this._dataUrl(tag, run);
+        return this.dataUrl(tag, run);
       },
   });
 </script>
