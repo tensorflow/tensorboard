@@ -1,0 +1,47 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
+<link rel="import" href="./tf-data-select-row.html">
+
+<!--
+tf-data-selector creates a widget for creating a group of data, a filtered data
+by experiment, runs, and tags. It allows user to add more groups too.
+
+Properties in: none.
+Properties out: none.
+
+-->
+<dom-module id="tf-data-selector">
+  <template>
+    <tf-data-select-row></tf-data-select-row>
+
+    <style>
+      :host {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        padding: 10px 0;
+      }
+    </style>
+  </template>
+  <script src="tf-data-selector.js"></script>
+</dom-module>
