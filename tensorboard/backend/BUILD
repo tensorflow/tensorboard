@@ -71,6 +71,7 @@ py_library(
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/pr_curve:metadata",
         "//tensorboard/plugins/scalar:metadata",
+         "//tensorboard/plugins/text:text_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
