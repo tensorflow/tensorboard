@@ -24,16 +24,47 @@ Generic layout for a dashboard.
 -->
 <dom-module id="tf-dashboard-layout">
   <template>
-    <div id="sidebar">
-      <content select=".sidebar"></content>
+    <div id="data-selector">
+      <content select=".data-selector"></content>
+    </div>
+    <div id="main">
+      <div id="sidebar">
+        <content select=".sidebar"></content>
+      </div>
+
+      <div id="center" class="scrollbar">
+        <content select=".center"></content>
+      </div>
     </div>
 
-    <div id="center" class="scrollbar">
-      <content select=".center"></content>
-    </div>
     <style include="scrollbar-style"></style>
     <style>
       :host {
+        --tb-layout-data-selector-min-height: 120px;
+        --tb-layout-center-color: unset;
+        display: flex;
+        justify-content: stretch;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        align-items: stretch;
+      }
+
+      #data-selector {
+        box-sizing: border-box;
+        flex-grow: 0;
+        flex-shrink: 0;
+        min-height: var(--tb-layout-data-selector-min-height);
+        padding: 10px 20px;
+        position: relative;
+      }
+
+      #data-selector:empty {
+        display: none;
+      }
+
+      #main {
+        box-sizing: border-box;
         display: flex;
         flex-direction: row;
         height: 100%;
@@ -48,14 +79,11 @@ Generic layout for a dashboard.
       }
 
       #center {
-        height: 100%;
-        overflow-y: auto;
+        background-color: var(--tb-layout-center-color);
         flex-grow: 1;
         flex-shrink: 1;
-      }
-
-      .tf-graph-dashboard #center {
-        background: #fff;
+        height: 100%;
+        overflow-y: auto;
       }
     </style>
   </template>
