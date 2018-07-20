@@ -1,0 +1,150 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="run-color-style.html">
+<link rel="import" href="scrollbar-style.html">
+
+<!--
+tf-filterable-checkbox-list creates a list of checkboxes with a filter input at
+the top. The list is primarily used for multiple selection of items.
+
+Properties in:
+  - colorsCheckbox: whether to color the check boxes.
+  - coloring: an object that contains method, getColor. Used only when
+              colorsCheckbox is true,
+  - items: items of choices.
+  - regexString: string for the regex filter.
+  - selectionState: object of checkbox selections.
+  - maxItemsToEnableByDefault: maximum number of items to automatically enable.
+
+Properties out:
+  - selectedItems: Array of items that are selected and not filterd out.
+
+-->
+<dom-module id="tf-filterable-checkbox-list">
+  <style include="scrollbar-style"></style>
+  <style include="run-color-style"></style>
+  <template>
+    <div class="item">
+      <paper-input
+        id="input"
+        autofocus
+        class="input"
+        no-label-float
+        label="Write a regex to filter [[label]]s"
+        value="[[regexString]]"
+        on-bind-value-changed="_debouncedRegexChange"
+      />
+    </div>
+    <div class="matches">
+      <template is="dom-if" if="[[!_itemsMatchingRegex.length]]">
+        <div class="item empty-match">
+          No matches
+        </div>
+      </template>
+      <template is="dom-repeat" items="[[_itemsMatchingRegex]]">
+        <div class="item">
+            <paper-checkbox
+              class="checkbox"
+              name="[[item]]"
+              checked$="[[_isChecked(item, selectionState.*)]]"
+              on-change="_checkboxChange"
+            >
+              [[item]]
+            </paper-checkbox>
+        </div>
+      </template>
+    </div>
+    <div class="item">
+      <paper-button class="x-button" on-tap="_toggleAll">
+        Toggle All [[label]]s
+      </paper-button>
+    </div>
+    <style>
+    paper-input {
+      --paper-input-container-focus-color: var(--tb-orange-strong);
+      --paper-input-container-input: {
+        font-size: 14px;
+      };
+      --paper-input-container-label: {
+        font-size: 14px;
+      };
+    }
+
+    paper-checkbox {
+      --paper-checkbox-ink-size: 40px;
+    }
+
+    paper-menu-button {
+      padding: 0;
+    }
+
+    paper-ripple {
+      top: 12px;
+      left: 0;
+      right: 0;
+      bottom: 8px;
+    }
+
+    .dropdown-content {
+      padding: 10px 0;
+    }
+
+    .input {
+      width: 100%;
+    }
+
+    .item {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 24px;
+      margin: 3px 0;
+      padding: 0 16px;
+      width: 300px;
+    }
+
+    .matches {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 5px 0;
+    }
+
+    .checkbox {
+      width: 100%;
+      display: flex;
+      padding: 7px 0;
+      align-items: center;
+    }
+
+    .empty-match {
+      color: var(--paper-grey-600);
+      font-size: 14px;
+    }
+
+    .x-button {
+      width: 100%;
+    }
+    </style>
+  </template>
+  <script src="tf-filterable-checkbox-list.js"></script>
+</dom-module>

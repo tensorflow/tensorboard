@@ -14,6 +14,14 @@
 +==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
+    // A unique reference to a listener for an easier dereferencing.
+    var ListenKey = /** @class */ (function () {
+        function ListenKey(listener) {
+            this.listener = listener;
+        }
+        return ListenKey;
+    }());
+    tf_backend.ListenKey = ListenKey;
     var BaseStore = /** @class */ (function () {
         function BaseStore() {
             this.requestManager = new tf_backend.RequestManager(1 /* simultaneous request */);
@@ -24,18 +32,20 @@ var tf_backend;
          * available.
          */
         BaseStore.prototype.addListener = function (listener) {
-            this._listeners.add(listener);
+            var key = new ListenKey(listener);
+            this._listeners.add(key);
+            return key;
         };
         /**
          * Remove a listener registered with `addListener`.
          */
-        BaseStore.prototype.removeListener = function (listener) {
-            this._listeners.delete(listener);
+        BaseStore.prototype.removeListenerByKey = function (listenKey) {
+            this._listeners.delete(listenKey);
         };
         BaseStore.prototype.emitChange = function () {
-            this._listeners.forEach(function (listener) {
+            this._listeners.forEach(function (listenKey) {
                 try {
-                    listener();
+                    listenKey.listener();
                 }
                 catch (e) {
                     // ignore exceptions on the listener side.
