@@ -142,6 +142,7 @@ limitations under the License.
                           tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                           active="[[page.active]]"
+                          data-url="[[_dataUrl]]"
                         ></tf-scalar-card>
                       </template>
                     </div>
@@ -228,6 +229,12 @@ limitations under the License.
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(50),
+        },
+        _dataUrl: {
+          type: Function,
+          value: () => (tag, run) => tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
+              {tag, run}),
         },
       },
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
