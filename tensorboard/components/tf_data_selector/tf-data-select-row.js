@@ -38,25 +38,16 @@ var tf_data_selector;
                 observer: '_storeRunRegexInput',
             },
         },
-        get _expsStore() {
-            return tf_backend.experimentsStore;
-        },
         get _runsStore() {
             return tf_backend.runsStore;
         },
         attached: function () {
             var _this = this;
-            this._updateExpKey = this._expsStore.addListener(function () { return _this._updateExps(); });
             this._updateRunKey = this._runsStore.addListener(function () { return _this._updateRuns(); });
-            this._updateExps();
             this._updateRuns();
         },
         detached: function () {
-            this._expsStore.removeListenerByKey(this._updateExpKey);
             this._runsStore.removeListenerByKey(this._updateRunKey);
-        },
-        _updateExps: function () {
-            this.set('_experiments', this._expsStore.getExperiments());
         },
         _updateRuns: function () {
             this.set('_runs', this._runsStore.getRuns());

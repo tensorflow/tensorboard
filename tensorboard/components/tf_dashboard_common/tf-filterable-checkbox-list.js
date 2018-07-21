@@ -61,6 +61,10 @@ var tf_dashboard_common;
                 type: Number,
                 value: 40,
             },
+            allToggleDisabled: {
+                type: Boolean,
+                value: false,
+            },
         },
         listeners: {
             'dom-change': '_synchronizeColors',

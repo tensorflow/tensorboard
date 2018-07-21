@@ -17,8 +17,19 @@ var tf_data_selector;
     Polymer({
         is: 'tf-data-selector',
         properties: {
-            experiments: Array,
-            experimentColors: {
+            _showExperimentAdder: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false,
+            },
+            _experiments: Array,
+            _experimentColoring: {
+                type: Object,
+                value: {
+                    getColor: tf_color_scale.experimentsColorScale,
+                },
+            },
+            _selectedExperiments: {
                 type: Array,
                 value: function () { return []; },
             },
@@ -35,46 +46,39 @@ var tf_data_selector;
                 notify: true,
                 value: function () { return []; },
             },
-            runSelectionState: {
-                type: Object,
-                observer: '_storeRunSelectionState',
-                value: function () { return tf_storage.getObject('runSelectionState') || {}; },
-            },
-            runRegexInput: {
-                type: String,
-                value: tf_storage.getStringInitializer('regexInput', { defaultValue: '' }),
-                observer: '_runRegexInput',
-            },
         },
         get expsStore() {
             return tf_backend.experimentsStore;
         },
-        get runsStore() {
-            return tf_backend.runsStore;
-        },
         attached: function () {
             var _this = this;
             this._updateExpKey = this.expsStore.addListener(function () { return _this._updateExps(); });
-            this._updateRunKey = this.runsStore.addListener(function () { return _this._updateRuns(); });
             this._updateExps();
-            this._updateRuns();
         },
         detached: function () {
             this.expsStore.removeListenerByKey(this._updateExpKey);
-            this.runsStore.removeListenerByKey(this._updateRunKey);
         },
         _updateExps: function () {
             var expNames = this.expsStore.getExperiments().map(function (_a) {
                 var name = _a.name;
                 return name;
             });
-            this.set('experiments', expNames);
+            this.set('_experiments', expNames);
         },
-        _updateRuns: function () {
-            var runNames = this.runsStore.getRuns();
-            this.set('runs', runNames);
+        _toggleExperimentAdder: function () {
+            this._showExperimentAdder = !this._showExperimentAdder;
         },
-        _storeRunSelectionState: tf_storage.getObjectObserver('runSelectionState', { defaultValue: {} }),
-        _runRegexInput: tf_storage.getStringObserver('regexInput', { defaultValue: '' }),
+        _addExperiments: function () {
+            this._showExperimentAdder = false;
+        },
+        _getAddLabel: function (_) {
+            switch (this._selectedExperiments.length) {
+                case 0:
+                case 1:
+                    return 'Add';
+                default:
+                    return 'Add All';
+            }
+        },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector
