@@ -70,6 +70,11 @@ Polymer({
       type: Number,
       value: 40,
     },
+
+    allToggleDisabled: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
