@@ -150,6 +150,10 @@ limitations under the License.
         justify-content: space-between;
       }
 
+      .feature-name-text {
+        padding-bottom: 3px;
+      }
+
       .slider {
         --paper-slider-input: {
           width: 100px
@@ -272,7 +276,7 @@ limitations under the License.
       </template>
       <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
         <div class="feature-name">
-          <div>[[feat.name]]</div>
+          <div class="feature-name-text">[[feat.name]]</div>
           <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
                              on-click="featureMoreClicked"
                              data-feature="[[feat.name]]"></paper-icon-button>
@@ -334,7 +338,7 @@ limitations under the License.
           <div class="flex-controls value-pills-holder">
             <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
               <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
-                    readonly="[[readonly]]"
+                    readonly$="[[readonly]]"
                     on-input="onValueChanged"
                     on-focus="onInputFocus"
                     on-blur="onInputBlur"
@@ -418,7 +422,7 @@ limitations under the License.
                           items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
                           as="seqvalue">
                   <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
-                      readonly="[[readonly]]"
+                      readonly$="[[readonly]]"
                       on-input="onValueChanged"
                       on-focus="onInputFocus"
                       on-blur="onInputBlur"

@@ -22,18 +22,30 @@ Fine, here are some demos:
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict whether a person earns more or less than $50k based on their
     census information
+  * To build and run the demo from code:
+    `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:demoserver`
+    then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/demo.html`
 * [Binary classifier for smile detection in images](https://???)
   * Dataset: [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
   * Task: Predict whether the person in an image is smiling
   * See below section “What can I learn about fairness?” below for a deep-dive
     into this demo.
+  * To build and run the demo from code:
+    `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:imagedemoserver`
+    then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/image_demo.html`
 * [Multiclass classifier for Iris dataset](https://???)
   * Dataset: [UCI Iris](https://archive.ics.uci.edu/ml/datasets/iris)
   * Task: Predict which of three classes of iris flowers that a flower falls
     into based on 4 measurements of the flower
+  * To build and run the demo from code:
+    `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:irisdemoserver`
+    then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/iris_demo.html`
 * [Regression model for UCI Census dataset age prediction](https://???)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict the age of a person based on their census information
+  * To build and run the demo from code:
+    `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:agedemoserver`
+    then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/age_demo.html`
 
 
 ## What do I need to use it?
@@ -96,6 +108,13 @@ it can be shared with others for them to view the same data in the What-If Tool.
   * For a selected example, detailed inference results (e.x. predicted classes
     and their confidence scores) are shown in the side panel.
 
+* Explore counterfactual examples
+  * For classification models, for any selected example, with one click you can
+    compare the example to the example most-similar to it but which is
+    classified as a different.
+  * Similarity is calculated based on the distribution of feature values across
+    all loaded examples and similarity can be calculated using either L1 or L2
+    distance.
 
 * Edit a selected example in the browser and re-run inference and visualize the
   difference in the inference results.

@@ -508,6 +508,14 @@ limitations under the License.
       .subfeature-table {
         margin-left: 10px;
       }
+
+      .examples-holder {
+        display: flex;
+      }
+
+      .counterfactual-button-intro {
+        padding: 7px 0 0 10px;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -539,6 +547,7 @@ limitations under the License.
     <div class="dashboard-layout">
       <div class$="[[getCenterClass_(panelExpanded)]]" id="center">
         <facets-dive id="dive" data="[[visdata]]"
+                    selected-indices="[[selected]]"
                     on-selected-indices-changed="selectedIndicesChanged_"
                     on-stats-changed="statsChanged_"
                     hide-info-card="true"
@@ -654,23 +663,52 @@ limitations under the License.
                   <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
                     <iron-icon icon="icons:search" prefix></iron-icon>
                   </paper-input>
+                  <template is="dom-if" if="[[!isRegression_(modelType)]]">
+                    <div class="flex">
+                      <div class="counterfactual-button-intro">Closest counterfactual:</div>
+                      <paper-button class="datapoint-control-pd-plot"
+                          on-click="findClosestL1Counterfactual_" alt="closest L1 counterfactual">
+                          L1
+                      </paper-button>
+                      <paper-button class="datapoint-control-pd-plot"
+                          on-click="findClosestL2Counterfactual_" alt="closest L2 counterfactual">
+                          L2
+                      </paper-button>
+                    </div>
+                  </template>
                   <paper-button class="datapoint-control-pd-plot"
                       on-click="showPartialDependencePlots_" alt="show partial dependence plots">
-                      See partial dependence plots
+                      Partial dependence plots
                   </paper-button>
                 </div>
-                <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
-                  <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
-                                      on-example-change="exampleChange_" id$="[[getViewerId_()]]"
-                                      display-mode="[[exampleDisplayMode]]"
-                                      feature-search-value="{{featureSearchValue}}">
-                  </vz-example-viewer>
-                  <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                    <div class="inference-header">Inference Results</div>
-                    <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                          id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                    </tf-inference-viewer>
+                <div class="examples-holder">
+                  <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                    <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
+                                        on-example-change="exampleChange_" id$="[[getViewerId_()]]"
+                                        display-mode="[[exampleDisplayMode]]"
+                                        feature-search-value="{{featureSearchValue}}">
+                    </vz-example-viewer>
+                    <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                      <div class="inference-header">Inference Results</div>
+                      <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                            id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                      </tf-inference-viewer>
+                    </div>
                   </div>
+                  <template is="dom-if" if="[[counterfactualExampleAndInference]]">
+                    <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                      <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{counterfactualExampleAndInference.example}}"
+                        readonly="true" display-mode="[[exampleDisplayMode]]"
+                        feature-search-value="{{featureSearchValue}}">
+                      </vz-example-viewer>
+                      <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                        <div class="inference-header">Inference Results</div>
+                        <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
+                                            model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                        </tf-inference-viewer>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </template>
               <template is="dom-if" if="[[!shouldShowExample_(selectedExampleAndInference)]]">
@@ -997,6 +1035,11 @@ limitations under the License.
         selectedExampleAndInference : {
           type: Object,
         },
+        // The closest counterfatual example to the currently selected item,
+        // if one is found through the counterfactual button.
+        counterfactualExampleAndInference : {
+          type: Object,
+        },
         // The examples list in the format to provide to Facets Dive.
         visdata: {
           type: Array,
@@ -1121,6 +1164,11 @@ limitations under the License.
           type: Number,
           value: 2,
         },
+        // Stats calculated from the overview stats proto used for determining
+        // counterfactual example distance.
+        distanceStats_: {
+          type: Object
+        },
       },
 
       // Required function.
@@ -1134,6 +1182,113 @@ limitations under the License.
 
       onTabSelect_: function() {
         this.hidePartialDependencePlots_();
+      },
+
+      findClosestL1Counterfactual_: function() {
+        this.findClosestCounterfactual_(false);
+      },
+
+      findClosestL2Counterfactual_: function() {
+        this.findClosestCounterfactual_(true);
+      },
+
+      findClosestCounterfactual_: function(useL2Distance) {
+        const selected = this.selected[0];
+        let closestDist = Number.POSITIVE_INFINITY;
+        let closest = -1;
+        for (let i = 0; i < this.visdata.length; i++) {
+          // Skip examples with the same inference class as the selected
+          // examples.
+          if (this.visdata[selected][inferenceValueStr] ==
+              this.visdata[i][inferenceValueStr]) {
+            continue;
+          }
+          let dist = this.getDist(
+            this.visdata[selected], this.visdata[i], useL2Distance);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closest = i;
+          }
+        }
+        if (closest != -1) {
+          // Add the closest counterfactual to the selected list and set it
+          // for display.
+          this.selected = [selected, closest];
+          this.counterfactualExampleAndInference =
+            this.examplesAndInferences[closest];
+        }
+      },
+
+      /**
+       * Gets distance between two examples using L1 or L2 distance.
+       */
+      getDist: function(a, b, useL2Distance) {
+        let dist = 0;
+        const allKeys = [...new Set([...Object.keys(a), ...Object.keys(b)])];
+        for (let featIndex = 0; featIndex < allKeys.length; featIndex++) {
+          const feat = allKeys[featIndex];
+          // Skip inferred keys, label feature and features with only unique
+          // values.
+          if (this.isInferenceKeyStr_(feat) ||
+              feat == this.selectedLabelFeature ||
+              this.stats[feat].uniqueCount ==
+              this.examplesAndInferences.length) {
+            continue;
+          }
+          let aVals = a[feat];
+          let bVals = b[feat];
+          if (!Array.isArray(aVals)) {
+            aVals = [aVals];
+          }
+          if (!Array.isArray(bVals)) {
+            bVals = [bVals];
+          }
+          const maxLength = Math.max(aVals.length, bVals.length);
+          let featureTotalDist = 0;
+          for (let i = 0; i < maxLength; i++) {
+            if (this.distanceStats_[feat].stdDev != null) {
+              featureTotalDist +=
+                this.getNumericDist(aVals[i], bVals[i],
+                this.distanceStats_[feat]);
+            } else {
+              featureTotalDist +=
+                this.getCategoricalDist(aVals[i], bVals[i],
+                this.distanceStats_[feat]);
+            }
+          }
+          let newDist = featureTotalDist / maxLength;
+          if (useL2Distance) {
+            newDist *= newDist;
+          }
+          dist += newDist;
+        }
+        return dist;
+      },
+
+      /** Gets distance between two numeric feature values. */
+      getNumericDist: function(a, b, stats) {
+        if (a == null || b == null) {
+          return 1;
+        }
+        if (!stats.stdDev) {
+          return 0;
+        }
+        // Return the difference divided by the standard deviation of that
+        // feature across all examples.
+        return Math.abs((a - b) / stats.stdDev);
+      },
+
+      /** Gets distance between two categorical feature values. */
+      getCategoricalDist: function(a, b, stats) {
+        if (a == null || b == null) {
+          return 1;
+        }
+        if (a == b) {
+          return 0;
+        }
+        // If they are different return the probability that any two examples
+        // have the same feature value for this feature.
+        return stats.probSameValue;
       },
 
       hidePartialDependencePlots_: function() {
@@ -1272,15 +1427,18 @@ limitations under the License.
       getFeatureList_: function(stats) {
         // Do not also threshold settings by the results of the inference as
         // they aren't real data features.
-        const features = Object.keys(stats).filter(function(feature) {
-          return feature !== inferenceValueStr && feature !== inferenceLabelStr
-            && feature !== inferenceCorrectStr && feature !== inferenceErrorStr
-            && feature !== inferenceScoreStr && feature !== inferenceAbsErrorStr
-            && feature !== inferenceSquaredErrorStr;
-        }).sort();
+        const features = Object.keys(stats).filter(
+          feature => !this.isInferenceKeyStr_(feature)).sort();
         // Add a blank feature to be used for clearing the selected feature.
         features.push('');
         return features;
+      },
+
+      isInferenceKeyStr_: function(feature) {
+        return feature == inferenceValueStr || feature == inferenceLabelStr
+            || feature == inferenceCorrectStr || feature == inferenceErrorStr
+            || feature == inferenceScoreStr || feature == inferenceAbsErrorStr
+            || feature == inferenceSquaredErrorStr;
       },
 
       /**
@@ -1940,17 +2098,14 @@ limitations under the License.
        * Sets the selected example from the facets dive selection.
        */
       computeSelectedExampleAndInference: function() {
+        this.counterfactualExampleAndInference = null;
         if (!this.selected || !this.examplesAndInferences) {
           this.selectedExampleAndInference = null;
           return;
         }
-        const self = this;
-        const selectedItems =
-          this.examplesAndInferences.filter(function(item, index) {
-            return self.selected.includes(index);
-          });
         this.selectedExampleAndInference =
-          selectedItems.length > 0 ? selectedItems[0] : null;
+          this.selected.length > 0
+          ? this.examplesAndInferences[this.selected[0]] : null;
       },
 
       shouldDisableGetExamplesButton_: function(examplesPath) {
@@ -2190,10 +2345,46 @@ limitations under the License.
         this.visdata = temp;
         this.$.overview.protoInput =
             this.$.overview.getStatsProto([{name: '', data: temp}]);
+        this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
         const tempSelected = this.$.dive.selectedData;
         this.$.dive.selectedData = [];
         this.$.dive.selectedData = tempSelected;
         this.updateSprite_();
+      },
+
+      /**
+       * Calculates and stores distance stats for each feature, used for
+       * calculating closest counterfactual example to a selected example.
+       */
+      calculateDistanceStats_: function(statsProto) {
+        // Only need distance stats for classification models, for
+        // counterfactual generation.
+        if (this.isRegression_(this.modelType)) {
+          return;
+        }
+        this.distanceStats_ = {};
+        for (let i = 0; i < statsProto.datasetsList[0].featuresList.length;
+             i++) {
+          const featureStats = statsProto.datasetsList[0].featuresList[i];
+          const feature = featureStats.name;
+          this.distanceStats_[feature] = {};
+          if (featureStats.numStats) {
+            // For numeric features, store standard deviation.
+            this.distanceStats_[feature].stdDev = featureStats.numStats.stdDev;
+          } else {
+            // For categorical features, calculate and store  the probability
+            // that any two feature values across all examples are the same.
+            let probSameValue = 0;
+            const buckets = featureStats.stringStats.rankHistogram.bucketsList;
+            for (let j = 0; j < buckets.length; j++) {
+              const probEntry =
+                buckets[j].sampleCount /
+                featureStats.stringStats.commonStats.numNonMissing;
+                probSameValue += probEntry * probEntry;
+            }
+            this.distanceStats_[feature].probSameValue = probSameValue;
+          }
+        }
       },
 
       /**
