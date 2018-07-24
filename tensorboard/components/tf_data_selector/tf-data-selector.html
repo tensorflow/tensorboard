@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-list.html">
+<link rel="import" href="./experiment-selector.html">
 <link rel="import" href="./tf-data-select-row.html">
 
 <!--
@@ -32,47 +33,21 @@ Properties out: none.
 -->
 <dom-module id="tf-data-selector">
   <template>
-    <tf-data-select-row></tf-data-select-row>
+    <template is="dom-if" if="[[!_comparingExps.length]]">
+      <tf-data-select-row no-experiment></tf-data-select-row>
+    </template>
+    <template is="dom-repeat" items="[[_comparingExps]]" as="exp">
+      <tf-data-select-row
+        experiment="[[exp]]"
+        persistence-number="[[index]]"
+      ></tf-data-select-row>
+    </template>
 
-    <div id="exp-add">
-      <template is="dom-if" if="[[_showExperimentAdder]]">
-        <div class="exp-selector">
-          <h4>Select data for comparison</h4>
-          <tf-filterable-checkbox-list
-            all-toggle-disabled
-            coloring="[[_experimentColoring]]"
-            items="[[_experiments]]"
-            label="Experiment"
-            max-items-to-enable-by-default="1"
-            selected-items="{{_selectedExperiments}}"
-          ></tf-filterable-checkbox-list>
-        </div>
-      </template>
-      <div class="buttons">
-        <template is="dom-if" if="[[!_showExperimentAdder]]">
-          <paper-button class="add-comparison" on-tap="_toggleExperimentAdder">
-            <iron-icon class="add" icon="add-circle-outline"></iron-icon>
-            &nbsp;Add comparison
-          </paper-buutton>
-        </template>
-        <template is="dom-if" if="[[_showExperimentAdder]]">
-          <span>
-            <paper-button on-tap="_toggleExperimentAdder">
-              Cancel
-            </paper-buutton>
-          </span>
-          <span>
-            <paper-button
-              id="add-button"
-              on-tap="_addExperiments"
-              disabled$="[[!_selectedExperiments.length]]"
-            >
-              [[_getAddLabel(_selectedExperiments.*)]]
-            </paper-button>
-          </span>
-        </template>
-      </div>
-    </div>
+    <experiment-selector
+      id="selector"
+      exclude-experiments="[[_comparingExps]]"
+      on-experiment-added="_experimentAdded"
+    ></experiment-selector>
     <style>
       :host {
         align-items: flex-start;
@@ -82,50 +57,13 @@ Properties out: none.
         flex-wrap: wrap;
       }
 
-      #exp-add {
+      #exp-selector {
         display: inline-flex;
         flex-direction: column;
         min-width: 400px;
       }
-
-      .exp-selector {
-        background: #fff;
-        border-radius: 4px;
-        border: 1px solid var(--google-grey-500);
-        margin-bottom: 10px;
-      }
-
-      h4 {
-        font-weight: 400;
-        margin: 20px 16px 5px;
-      }
-
-      tf-filterable-checkbox-list {
-        --tf-filterable-checkbox-list-content-max-width: 600px;
-      }
-
-      #add-button[disabled] {
-        color: var(--google-grey-500);
-      }
-
-      #add-button {
-        color: var(--google-blue-700);
-      }
-
-      paper-button {
-        font-size: 12px;
-      }
-
-      .add-comparison {
-        border: 1px solid var(--google-grey-500);
-        color: var(--paper-grey-800);
-      }
-
-      .add {
-        --iron-icon-height: 20px;
-        --iron-icon-width: 20px;
-      }
     </style>
   </template>
+  <script src="storage-utils.js"></script>
   <script src="tf-data-selector.js"></script>
 </dom-module>

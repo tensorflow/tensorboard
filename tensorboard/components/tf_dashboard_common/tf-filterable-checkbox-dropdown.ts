@@ -37,17 +37,8 @@ Polymer({
 
     maxItemsToEnableByDefault: Number,
 
-    regexString: {
-      type: String,
-      notify: true,
-      value: '',
-    },
-
     selectionState: {
-      // if an item is explicitly enabled, True, if explicitly disabled, False.
-      // if undefined, default value (enable for first k items, disable after).
       type: Object,
-      notify: true,
       value: () => ({}),
     },
 
@@ -73,7 +64,8 @@ Polymer({
     } else if (!this.selectedItems.length) {
       return '';
     } else if (this.selectedItems.length <= 3) {
-      const uniqueNames = new Set(this.selectedItems);
+      const titles = this.selectedItems.map(({title}) => title);
+      const uniqueNames = new Set(titles);
       return Array.from(uniqueNames).join(', ');
     }
     return `${this.selectedItems.length} Selected`;

@@ -14,64 +14,189 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_data_selector {
 
+enum Type {
+  RUN = 1,
+  TAG,
+}
+
 Polymer({
   is: 'tf-data-select-row',
   properties: {
-    experiment: Object,
+    experiment: {
+      type: Object,
+      value: () => ({
+        id: null,
+        name: 'Unknown experiment',
+        startTime: null,
+      }),
+    },
 
-    _runs: Array,
+    // Required field.
+    persistenceNumber: Number,
 
-    selectedRuns: {
+    noExperiment: {
+      type: Boolean,
+      value: false,
+    },
+
+    _runs: {
       type: Array,
-      notify: true,
       value: () => [],
     },
 
-    _runSelectionState: {
-      type: Object,
-      observer: '_storeRunSelectionState',
-      value: () => tf_storage.getObject('runSelectionState') || {},
+    _tags: {
+      type: Array,
+      value: () => [],
     },
 
-    _runRegexInput: {
-      type: String,
-      value: tf_storage.getStringInitializer('regexInput', {
-            defaultValue: '',
-            polymerProperty: '_runRegexInput',
-          }),
-      observer: '_storeRunRegexInput',
+    selection: {
+      type: Array,
+      notify: true,
+      computed: '_computeSelection(_selectedRuns, _selectedTags)',
+    },
+
+    _runSelectionStateString: {type: String, value: ''},
+
+    _selectedRuns: {
+      type: Array,
+      value: () => [],
+    },
+
+    _tagSelectionStateString: {type: String, value: ''},
+
+    _selectedTags: {
+      type: Array,
+      value: () => [],
     },
   },
 
-  get _runsStore() {
-    return tf_backend.runsStore;
+  observers: [
+    '_persistSelectedRuns(_selectedRuns)',
+    '_persistSelectedTags(_selectedTags)',
+  ],
+
+  _getPersistenceKey(type: Type): string {
+    const number = this.persistenceNumber || 0;
+    switch (type) {
+      case Type.RUN:
+        return `g${number}r`;
+      case Type.TAG:
+        return `g${number}t`;
+    }
+  },
+
+  ready() {
+    if (this.persistenceNumber == null) return;
+
+    const runInitializer = tf_storage.getStringInitializer(
+        this._getPersistenceKey(Type.RUN),
+        {defaultValue: '', polymerProperty: '_runSelectionStateString'});
+    runInitializer.call(this);
+
+    const tagInitializer = tf_storage.getStringInitializer(
+        this._getPersistenceKey(Type.TAG),
+        {defaultValue: '', polymerProperty: '_tagSelectionStateString'});
+    tagInitializer.call(this);
   },
 
   attached() {
-    this._updateRunKey = this._runsStore.addListener(() => this._updateRuns());
-    this._updateRuns();
+    this._fetchRunsAndTags().then(() => this._isDataReady = true);
   },
 
   detached() {
-    this._runsStore.removeListenerByKey(this._updateRunKey);
+    this._isDataReady = false;
   },
 
-  _updateRuns() {
-    this.set('_runs', this._runsStore.getRuns());
+  _fetchRunsAndTags() {
+    const requestManager = new tf_backend.RequestManager();
+    if (this.noExperiment) {
+      const fetchRuns = requestManager.request(tf_backend.getRouter().runs());
+      return Promise.all([fetchRuns]).then(([runs]) => {
+        this.set('_runs', Array.from(new Set(runs)).map(runName => ({
+          id: runName,
+          name: runName,
+          startedTime: null,
+        })));
+      });
+    } else if (this.experiment.id) {
+      const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
+      return requestManager.request(url).then(runs => {
+        this.set('_runs', runs);
+        // Flatten the tags.
+        const tagSet = new Map();
+        runs.forEach(({tags}) => {
+          tags.forEach(tag => tagSet.set(tag.id, tag));
+        })
+        this.set('_tags', Array.from(tagSet.values()));
+      });
+    }
   },
 
-  _storeRunSelectionState:
-      tf_storage.getObjectObserver('runSelectionState', {
-        defaultValue: {},
-        polymerProperty: '_runSelectionState',
-      }),
+  _getRunOptions(_) {
+    return this._runs.map(run => ({
+      id: run.id,
+      title: run.name,
+    }));
+  },
 
-  _storeRunRegexInput:
-      tf_storage.getStringObserver('regexInput', {
-        defaultValue: '',
-        polymerProperty: '_runRegexInput',
-      }),
+  _getTagOptions(_) {
+    return this._tags.map(tag => ({
+      id: tag.id,
+      title: tag.name,
+    }));
+  },
 
+  _getIsRunCheckboxesColored(_) {
+    return this.noExperiment;
+  },
+
+  _computeSelection(_, __) {
+    return [];
+  },
+
+  _persistSelectedRuns() {
+    if (!this._isDataReady) return;
+    const value = serializeValue(
+        this._runs, this._selectedRuns.map(({id}) => id));
+    tf_storage.setString(this._getPersistenceKey(Type.RUN), value);
+  },
+
+  _getRunsSelectionState() {
+    return this._getSelectionState(this._runSelectionStateString,
+        this._runs.map(({id}) => id));
+  },
+
+  _persistSelectedTags() {
+    if (!this._isDataReady) return;
+    const value = serializeValue(
+        this._tags, this._selectedTags.map(({id}) => id));
+    tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
+  },
+
+  _getTagsSelectionState() {
+    return this._getSelectionState(this._tagSelectionStateString,
+        this._tags.map(({id}) => id));
+  },
+
+  _getSelectionState(persistedString: string, allIds: Array<number>): Object {
+    const ids = deserializeValue(persistedString, allIds);
+    const prevSelection = new Set(ids);
+    const newSelection = {};
+    allIds.forEach(id => newSelection[id] = prevSelection.has(id));
+    return newSelection;
+  },
 });
+
+function serializeValue(source, selectedIds) {
+  if (selectedIds.length == source.length) return '$all';
+  if (selectedIds.length == 0) return '$none';
+  return  tf_data_selector.encodeIdArray(selectedIds);
+}
+
+function deserializeValue(str: string, allValues: Array<number>) {
+  if (str == '$all') return allValues;
+  if (str == '$none') return [];
+  return tf_data_selector.decodeIdArray(str);
+}
 
 }  // namespace tf_data_selector

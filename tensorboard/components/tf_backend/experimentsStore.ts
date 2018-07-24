@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
-export type Experiment = {name: string};
+export type Experiment = {id: string, name: string, startTime: number};
 
 export class ExperimentsStore extends BaseStore {
   private _experiments: Experiment[] = [];

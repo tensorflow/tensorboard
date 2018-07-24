@@ -21,6 +21,7 @@ export interface Router {
   pluginRoute: (pluginName: string, route: string) => string;
   pluginsListing: () => string;
   runs: () => string;
+  runsForExperiment: (id: string) => string;
 };
 
 /**
@@ -50,6 +51,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     pluginRoute,
     pluginsListing: () => dataDir + '/plugins_listing',
     runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
+    runsForExperiment: (id) => dataDir + `/experiment_runs?experiment=${id}`,
   };
 };
 

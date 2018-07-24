@@ -29,10 +29,9 @@ Properties in:
   - colorsCheckbox: whether to color the check boxes.
   - coloring: an object that contains method, getColor. Used only when
               colorsCheckbox is true,
-  - items: items of choices.
-  - regexString: string for the regex filter.
-  - selectionState: object of checkbox selections.
+  - items: items of {id: string, title: string, subtitle: ?string}.
   - maxItemsToEnableByDefault: maximum number of items to automatically enable.
+  - selectionState: object denoting selection state of the checkboxes.
 
 Properties out:
   - selectedItems: Array of items that are selected and not filterd out.
@@ -49,7 +48,7 @@ Properties out:
         class="input"
         no-label-float
         label="Write a regex to filter [[label]]s"
-        value="[[regexString]]"
+        value="[[_regexString]]"
         on-bind-value-changed="_debouncedRegexChange"
       />
     </div>
@@ -60,14 +59,18 @@ Properties out:
         </div>
       </template>
       <template is="dom-repeat" items="[[_itemsMatchingRegex]]">
-        <div class="item">
+        <div class="item" id="[[item.id]]">
             <paper-checkbox
               class="checkbox"
               name="[[item]]"
               checked$="[[_isChecked(item, selectionState.*)]]"
               on-change="_checkboxChange"
             >
-              [[item]]
+              <span>[[item.title]]</span>
+
+              <template is="dom-if" if="[[item.subtitle]]">
+                <span>[[item.subtitle]]</span>
+              </template>
             </paper-checkbox>
         </div>
       </template>

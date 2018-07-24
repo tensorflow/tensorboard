@@ -14,6 +14,12 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_dashboard_common {
 
+export type FilterableCheckboxListItem = {
+  id: string|number,
+  title: string,
+  subtitle?: string,
+}
+
 Polymer({
   is: 'tf-filterable-checkbox-list',
   properties: {
@@ -27,23 +33,23 @@ Polymer({
     coloring: {
       type: Object,
       value: {
-        getColor: () => '',
+        getColor: (item: FilterableCheckboxListItem): string => '',
       },
     },
 
-    // TODO(stephanwlee): Define a more rigid type of an item.
+    // `items` are Array of {id: string, title: string, subtitle: ?string}.
     items: {
       type: Array,
-      value: () => [],
+      value: (): Array<FilterableCheckboxListItem> => [],
+      observer: '_pruneSelectedItems',
     },
 
-    regexString: {
+    _regexString: {
       type: String,
-      notify: true,
       value: '',
     },
 
-    _regex: {type: Object, computed: '_makeRegex(regexString)'},
+    _regex: {type: Object, computed: '_makeRegex(_regexString)'},
 
     _itemsMatchingRegex: {
       type: Array,
@@ -54,14 +60,14 @@ Polymer({
       // if an item is explicitly enabled, True, if explicitly disabled, False.
       // if undefined, default value (enable for first k items, disable after).
       type: Object,
-      notify: true,
       value: () => ({}),
     },
 
     selectedItems: {
       type: Array,
       notify: true,
-      computed: '_computeValue(_itemsMatchingRegex.*, selectionState.*)',
+      computed:
+          '_computeSelectedItems(_itemsMatchingRegex.*, selectionState.*)',
     },
 
     maxItemsToEnableByDefault: {
@@ -94,16 +100,17 @@ Polymer({
 
   computeItemsMatchingRegex(__, ___) {
     const regex = this._regex;
-    return regex ? this.items.filter(n => regex.test(n)) : this.items;
+    return regex ? this.items.filter(n => regex.test(n.title)) : this.items;
   },
 
-  _computeValue(__, ___) {
-    const selectedNames = this.selectionState;
+  _computeSelectedItems(__, ___) {
+    const selectionState = this.selectionState;
     const num = this.maxItemsToEnableByDefault;
     const allEnabled = this._itemsMatchingRegex.length <= num;
     return this._itemsMatchingRegex
         .filter(n => {
-          return selectedNames[n] == null ? allEnabled : selectedNames[n];
+          return selectionState[n.id] == null ?
+              allEnabled : selectionState[n.id];
         });
   },
 
@@ -120,11 +127,11 @@ Polymer({
       // If the user cleared the field, they may be done typing, so
       // update more quickly.
       window.requestAnimationFrame(() => {
-        this.regexString = val;
+        this._regexString = val;
       });
     } else {
       this.debounce('_setRegex', () => {
-        this.regexString = val;
+        this._regexString = val;
       }, 150);
     };
   },
@@ -132,18 +139,13 @@ Polymer({
   _synchronizeColors(e) {
     if (!this.useCheckboxColors) return;
     const checkboxes = this.querySelectorAll('paper-checkbox');
-    const buttons = this.querySelectorAll('.isolator');
 
-    checkboxes.forEach(p => {
-      const color = this.coloring.getColor(p.name);
-      p.customStyle['--paper-checkbox-checked-color'] = color;
-      p.customStyle['--paper-checkbox-checked-ink-color'] = color;
-      p.customStyle['--paper-checkbox-unchecked-color'] = color;
-      p.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
-    });
-
-    buttons.forEach(p => {
-      p.style['color'] = this.coloring.getColor(p.name);
+    checkboxes.forEach(cb => {
+      const color = this.coloring.getColor(cb.name);
+      cb.customStyle['--paper-checkbox-checked-color'] = color;
+      cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
+      cb.customStyle['--paper-checkbox-unchecked-color'] = color;
+      cb.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
     });
 
     // The updateStyles call fails silently if the browser does not have focus,
@@ -154,17 +156,18 @@ Polymer({
 
   _checkboxChange(e) {
     const checkbox = (Polymer.dom(e) as any).localTarget;
-    const newSelectedNames = Object.assign({}, this.selectionState);
-    newSelectedNames[checkbox.name] = checkbox.checked;
+    const newSelectedNames = Object.assign({}, this.selectionState, {
+      [checkbox.name.id]: checkbox.checked,
+    });
     // n.b. notifyPath won't work because names may have periods.
     this.selectionState = newSelectedNames;
   },
 
   _toggleAll() {
     let anyToggledOn = this._itemsMatchingRegex
-        .some((n) => this.selectionState[n]);
+        .some((n) => this.selectionState[n.id]);
 
-    const selectedNamesIsDefault =
+    const selectionStateIsDefault =
         Object.keys(this.selectionState).length == 0;
 
     const defaultOff =
@@ -172,17 +175,26 @@ Polymer({
     // We have names toggled either if some were explicitly toggled on, or if
     // we are in the default state, and there are few enough that we default
     // to toggling on.
-    anyToggledOn = anyToggledOn || selectedNamesIsDefault && !defaultOff;
+    anyToggledOn = anyToggledOn || selectionStateIsDefault && !defaultOff;
 
     // If any are toggled on, we turn everything off. Or, if none are toggled
     // on, we turn everything on.
     const newSelection = {};
     this.items.forEach((n) => {
-      newSelection[n] = !anyToggledOn;
+      newSelection[n.id] = !anyToggledOn;
     });
     this.selectionState = newSelection;
   },
 
+  _pruneSelectedItems() {
+    // Object key turns numbered keys into string.
+    const itemIds = new Set(this.items.map(({id}) => String(id)));
+    const newSelection = Object.assign({}, this.selectionState);
+    Object.keys(newSelection).forEach(key => {
+      if (!itemIds.has(key)) delete newSelection[key];
+    });
+    this.selectionState = newSelection;
+  },
 });
 
 }  // namespace tf_dashboard_common
