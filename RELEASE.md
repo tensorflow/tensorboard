@@ -1,3 +1,23 @@
+# Release 1.10.0
+
+The 1.10 minor series tracks TensorFlow 1.10.
+
+## Changes
+- New logic for loading/launching TensorBoard (PR #1240)
+  - Plugin loading now uses new TBLoader API
+  - Argument parsing now uses argparse
+  - New `tb.program.launch()` API to launch TB from within Python
+- Sidebars adjusted to be consistent across plugins (PR #1296)
+- tb.summary.image() param order fixed to h, w (PR #1262) - thanks @ppwwyyxx
+- New TPU profile dashboard progress bar for loading tools (PR #1286)
+
+## Bug fixes
+- #1260 - Fix missing pie chart in TPU profile input pipeline analyzer
+- #1280 - Fix TPU profile memory viewer issue with XLA compatibility
+- #1287 - Fix dangling UI interaction layer issue in vz-line-chart
+- #1294 - Fix custom scalar dashboard to de-duplicate charts - thanks @lgeiger
+
+
 # Release 1.9.0
 
 The 1.9 minor series tracks TensorFlow 1.9.
