@@ -34,28 +34,42 @@ Properties out:
 -->
 <dom-module id="tf-data-select-row">
   <template>
-    <template is="dom-if" if="[[experiment]]">
-      <span>[[experiment]]</span>
+    <template is="dom-if" if="[[!noExperiment]]">
+      <span class="exp-name">[[experiment.name]]</span>
     </template>
 
     <tf-filterable-checkbox-dropdown
       label="Run"
-      colorsCheckbox="false"
-      items="[[_runs]]"
-      regex="{{_runRegexInput}}"
+      colorsCheckbox="[[_getIsRunCheckboxesColored(noExperiment)]]"
+      items="[[_getRunOptions(_runs.*)]]"
       selected-items="{{_selectedRuns}}"
-      selection-state="{{_runSelectionState}}"
+      selection-state="{{_getRunsSelectionState(_runSelectionStateString, _runs.*)}}"
+    ></tf-filterable-checkbox-dropdown>
+
+    <tf-filterable-checkbox-dropdown
+      label="Tag"
+      colorsCheckbox="false"
+      items="[[_getTagOptions(_tags.*)]]"
+      selected-items="{{_selectedTags}}"
+      selection-state="{{_getTagsSelectionState(_tagSelectionStateString, _tags.*)}}"
     ></tf-filterable-checkbox-dropdown>
 
     <style>
       :host {
+        align-items: center;
         box-sizing: border-box;
         display: flex;
         flex-direction: row;
+        font-size: 14px;
+      }
+
+      .exp-name {
+        color: var(--paper-grey-900);
+        padding: 4px 8px;
       }
 
       paper-dropdown-menu {
-        padding: 8px;
+        padding: 4px 8px;
 
         --paper-dropdown-menu-input: {
           --paper-input-container-input: {
@@ -70,5 +84,7 @@ Properties out:
       }
     </style>
   </template>
+  <script src="storage-utils.js"></script>
   <script src="tf-data-select-row.js"></script>
+
 </dom-module>

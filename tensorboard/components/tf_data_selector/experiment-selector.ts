@@ -15,28 +15,35 @@ limitations under the License.
 namespace tf_data_selector {
 
 Polymer({
-  is: 'tf-data-selector',
+  is: 'experiment-selector',
   properties: {
+    excludeExperiments: {
+      type: Array,
+      value: (): Array<tf_backend.Experiment> => [],
+    },
+
+    _expanded: {
+      type: Boolean,
+      value: false,
+    },
+
     _allExperiments: {
       type: Array,
       value: (): Array<tf_backend.Experiment> => [],
     },
 
-    _comparingExpsString: {
-      type: String,
-      value: tf_storage.getStringInitializer('e',
-          {defaultValue: '', polymerProperty: '_comparingExpsString'}),
+    _experimentColoring: {
+      type: Object,
+      value: {
+        getColor: (item) => tf_color_scale.experimentsColorScale(item.title),
+      },
     },
 
-    _comparingExps: {
+    _selectedExpOptions: {
       type: Array,
-      computed: '_getComparingExps(_comparingExpsString, _allExperiments.*)',
+      value: (): Array<tf_dashboard_common.FilterableCheckboxListItem> => [],
     },
   },
-
-  observers: [
-    '_expStringObserver(_comparingExpsString)',
-  ],
 
   attached() {
     this._updateExpKey = tf_backend.experimentsStore
@@ -52,21 +59,37 @@ Polymer({
     this.set('_allExperiments', tf_backend.experimentsStore.getExperiments());
   },
 
-  _getComparingExps() {
-    const lookupMap = new Map(this._allExperiments.map(e => [e.id, e]));
-    const ids = tf_data_selector.decodeIdArray(this._comparingExpsString);
-    return ids.filter(id => lookupMap.has(id)).map(id => lookupMap.get(id));
+  _getExperimentOptions(_) {
+    const exclude = new Set(this.excludeExperiments.map(({id}) => id));
+    return this._allExperiments
+        .filter(({id}) => !exclude.has(id))
+        .map(exp => ({
+          id: exp.id,
+          title: exp.name,
+          subtitle: exp.startedTime,
+        }));
   },
 
-  _expStringObserver: tf_storage.getStringObserver('e',
-      {defaultValue: '', polymerProperty: '_comparingExpsString'}),
+  _toggle() {
+    this._expanded = !this._expanded;
+  },
 
-  _experimentAdded(event) {
-    const newExperiments = event.detail;
-    const newComparingExpIds = this._comparingExps
-        .concat(newExperiments).map(({id}) => id);
-    this._comparingExpsString = tf_data_selector.encodeIdArray(
-        newComparingExpIds);
+  _addExperiments() {
+    const lookupMap = new Map(this._allExperiments.map(e => [e.id, e]));
+    const newItems = this._selectedExpOptions
+        .map(({id}) => lookupMap.get(id));
+    this._expanded = false;
+    this.fire('experiment-added', newItems);
+  },
+
+  _getAddLabel(_) {
+    switch (this._selectedExpOptions.length) {
+      case 0:
+      case 1:
+        return 'Add';
+      default:
+        return 'Add All'
+    }
   },
 
 });
