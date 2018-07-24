@@ -291,7 +291,7 @@ profile run can have multiple tools that present the performance profile as diff
     },
     /** True if the progress is not complete yet (< 100 %). */
     _isNotComplete: function(progress) {
-      return progress.value < 100;
+      return !this._dataNotFound && progress.value < 100;
     },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
