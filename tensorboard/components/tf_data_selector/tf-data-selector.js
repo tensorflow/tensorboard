@@ -17,68 +17,48 @@ var tf_data_selector;
     Polymer({
         is: 'tf-data-selector',
         properties: {
-            _showExperimentAdder: {
-                reflectToAttribute: true,
-                type: Boolean,
-                value: false,
-            },
-            _experiments: Array,
-            _experimentColoring: {
-                type: Object,
-                value: {
-                    getColor: tf_color_scale.experimentsColorScale,
-                },
-            },
-            _selectedExperiments: {
+            _allExperiments: {
                 type: Array,
                 value: function () { return []; },
             },
-            // TODO(stephanwlee): Figure out how to communicate group selection to
-            // plugins. It should be some data structure, not experiments, runs, and
-            // tags all separted.
-            runs: Array,
-            runsColors: {
-                type: Array,
-                value: function () { return []; },
+            _comparingExpsString: {
+                type: String,
+                value: tf_storage.getStringInitializer('e', { defaultValue: '', polymerProperty: '_comparingExpsString' }),
             },
-            selectedRuns: {
+            _comparingExps: {
                 type: Array,
-                notify: true,
-                value: function () { return []; },
+                computed: '_getComparingExps(_comparingExpsString, _allExperiments.*)',
             },
         },
-        get expsStore() {
-            return tf_backend.experimentsStore;
-        },
+        observers: [
+            '_expStringObserver(_comparingExpsString)',
+        ],
         attached: function () {
             var _this = this;
-            this._updateExpKey = this.expsStore.addListener(function () { return _this._updateExps(); });
+            this._updateExpKey = tf_backend.experimentsStore
+                .addListener(function () { return _this._updateExps(); });
             this._updateExps();
         },
         detached: function () {
-            this.expsStore.removeListenerByKey(this._updateExpKey);
+            tf_backend.experimentsStore.removeListenerByKey(this._updateExpKey);
         },
         _updateExps: function () {
-            var expNames = this.expsStore.getExperiments().map(function (_a) {
-                var name = _a.name;
-                return name;
+            this.set('_allExperiments', tf_backend.experimentsStore.getExperiments());
+        },
+        _getComparingExps: function () {
+            var lookupMap = new Map(this._allExperiments.map(function (e) { return [e.id, e]; }));
+            var ids = tf_data_selector.decodeIdArray(this._comparingExpsString);
+            return ids.filter(function (id) { return lookupMap.has(id); }).map(function (id) { return lookupMap.get(id); });
+        },
+        _expStringObserver: tf_storage.getStringObserver('e', { defaultValue: '', polymerProperty: '_comparingExpsString' }),
+        _experimentAdded: function (event) {
+            var newExperiments = event.detail;
+            var newComparingExpIds = this._comparingExps
+                .concat(newExperiments).map(function (_a) {
+                var id = _a.id;
+                return id;
             });
-            this.set('_experiments', expNames);
-        },
-        _toggleExperimentAdder: function () {
-            this._showExperimentAdder = !this._showExperimentAdder;
-        },
-        _addExperiments: function () {
-            this._showExperimentAdder = false;
-        },
-        _getAddLabel: function (_) {
-            switch (this._selectedExperiments.length) {
-                case 0:
-                case 1:
-                    return 'Add';
-                default:
-                    return 'Add All';
-            }
+            this._comparingExpsString = tf_data_selector.encodeIdArray(newComparingExpIds);
         },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

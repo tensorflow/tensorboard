@@ -44,6 +44,7 @@ var tf_backend;
             pluginRoute: pluginRoute,
             pluginsListing: function () { return dataDir + '/plugins_listing'; },
             runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
+            runsForExperiment: function (id) { return dataDir + ("/experiment_runs?experiment=" + id); },
         };
     }
     tf_backend.createRouter = createRouter;

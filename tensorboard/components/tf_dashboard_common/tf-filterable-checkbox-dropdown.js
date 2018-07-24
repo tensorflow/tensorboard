@@ -30,16 +30,8 @@ var tf_dashboard_common;
                 value: function () { return []; },
             },
             maxItemsToEnableByDefault: Number,
-            regexString: {
-                type: String,
-                notify: true,
-                value: '',
-            },
             selectionState: {
-                // if an item is explicitly enabled, True, if explicitly disabled, False.
-                // if undefined, default value (enable for first k items, disable after).
                 type: Object,
-                notify: true,
                 value: function () { return ({}); },
             },
             selectedItems: {
@@ -62,7 +54,11 @@ var tf_dashboard_common;
                 return '';
             }
             else if (this.selectedItems.length <= 3) {
-                var uniqueNames = new Set(this.selectedItems);
+                var titles = this.selectedItems.map(function (_a) {
+                    var title = _a.title;
+                    return title;
+                });
+                var uniqueNames = new Set(titles);
                 return Array.from(uniqueNames).join(', ');
             }
             return this.selectedItems.length + " Selected";

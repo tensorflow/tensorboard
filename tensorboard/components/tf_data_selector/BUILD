@@ -7,6 +7,9 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_data_selector",
     srcs = [
+        "experiment-selector.html",
+        "experiment-selector.js",
+        "storage-utils.js",
         "tf-data-select-row.html",
         "tf-data-select-row.js",
         "tf-data-selector.html",

@@ -32,10 +32,9 @@ Properties in:
   - colorsCheckbox: whether to color the check boxes.
   - coloring: an object that contains method, getColor. Used only when
               colorsCheckbox is true,
-  - items: items of choices.
-  - regexString: string for the regex filter.
-  - selectionState: object of checkbox selections.
+  - items: items of {id: string, title: string, subtitle: ?string}.
   - maxItemsToEnableByDefault: maximum number of items to automatically enable.
+  - selectionState: object of checkbox selections.
 
 Properties out:
   - selectedItems: Array of items that are selected and not filterd out.
@@ -68,9 +67,8 @@ Properties out:
           items="[[items]]"
           label="[[label]]"
           max-items-to-enable-by-default="[[maxItemsToEnableByDefault]]"
-          regex-string="{{regexString}}"
           selected-items="{{selectedItems}}"
-          selection-state="{{selectionState}}"
+          selection-state="[[selectionState]]"
           uses-checkbox-colors="[[useCheckboxColors]]"
         >
         </tf-filterable-checkbox-list>
