@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
+<link rel="import" href="../tf-data-selector/tf-data-selector.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view-store.html">
@@ -136,72 +137,80 @@ limitations under the License.
         </div>
       </paper-toolbar>
 
-      <div id="content" class="fit">
-        <slot id="injected-overview"></slot>
-        <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
-          <div class="warning-message">
-            <h3>Failed to load the set of active dashboards.</h3>
-            <p>
-            This can occur if the TensorBoard backend is no longer
-            running. Perhaps this page is cached?
-            <p>
-            If you think that you’ve fixed the problem, click the reload
-            button in the top-right.
-            <template is="dom-if" if="[[autoReloadEnabled]]">
-            We’ll try to reload every [[autoReloadIntervalSecs]]&nbsp;seconds as well.
-            </template>
-            <p><i>Last reload: [[_lastReloadTime]]</i>
-            <template is="dom-if" if="[[_dataLocation]]">
-              <p><i>Log directory: <span id="data_location">[[_dataLocation]]</span></i></p>
-            </template>
+      <div id="content-pane" class="fit">
+        <template is="dom-if" if="[[_isDataSelectorEnabled]]">
+          <div id="data-selector">
+            <tf-data-selector data-selection="{{_dataSelection}}">
+            </tf-data-selector>
           </div>
         </template>
-        <template is="dom-if" if="[[_showNoDashboardsMessage]]">
-          <div class="warning-message">
-            <h3>No dashboards are active for the current data set.</h3>
-            <p>Probable causes:</p>
-            <ul>
-              <li>You haven’t written any data to your event files.
-              <li>TensorBoard can’t find your event files.
-            </ul>
-            If you’re new to using TensorBoard, and want to find out how
-            to add data and set up your event files, check out the
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
-            <p>
-            If you think TensorBoard is configured properly, please see
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
-            and consider filing an issue on GitHub.
-            <p><i>Last reload: [[_lastReloadTime]]</i>
-            <template is="dom-if" if="[[_dataLocation]]">
-              <p><i>Data location: <span id="data_location">[[_dataLocation]]</span></i></p>
-            </template>
-          </div>
-        </template>
-        <template is="dom-if" if="[[_showNoSuchDashboardMessage]]">
-          <div class="warning-message">
-            <h3>There’s no dashboard by the name of “<tt>[[_selectedDashboard]]</tt>.”</h3>
-            <template is="dom-if" if="[[_activeDashboardsLoaded]]">
-              <p>You can select a dashboard from the list above.
-            </template>
-            <p><i>Last reload: [[_lastReloadTime]]</i>
-            <template is="dom-if" if="[[_dataLocation]]">
-              <p><i>Data location: <span id="data_location">[[_dataLocation]]</span></i></p>
-            </template>
-          </div>
-        </template>
-        <template
-          is="dom-repeat"
-          id="dashboards-template"
-          items="[[_dashboardData]]"
-          as="dashboardDatum"
-        >
-          <div
-            class="dashboard-container"
-            data-dashboard$="[[dashboardDatum.plugin]]"
-            data-selected$="[[_selectedStatus(_selectedDashboard, dashboardDatum.plugin)]]"
-          ><!-- Dashboards will be injected here dynamically. --></div>
-        </template>
+        <div id="content">
+          <slot id="injected-overview"></slot>
+          <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
+            <div class="warning-message">
+              <h3>Failed to load the set of active dashboards.</h3>
+              <p>
+              This can occur if the TensorBoard backend is no longer
+              running. Perhaps this page is cached?
+              <p>
+              If you think that you’ve fixed the problem, click the reload
+              button in the top-right.
+              <template is="dom-if" if="[[autoReloadEnabled]]">
+              We’ll try to reload every [[autoReloadIntervalSecs]]&nbsp;seconds as well.
+              </template>
+              <p><i>Last reload: [[_lastReloadTime]]</i>
+              <template is="dom-if" if="[[_dataLocation]]">
+                <p><i>Log directory: <span id="data_location">[[_dataLocation]]</span></i></p>
+              </template>
+            </div>
+          </template>
+          <template is="dom-if" if="[[_showNoDashboardsMessage]]">
+            <div class="warning-message">
+              <h3>No dashboards are active for the current data set.</h3>
+              <p>Probable causes:</p>
+              <ul>
+                <li>You haven’t written any data to your event files.
+                <li>TensorBoard can’t find your event files.
+              </ul>
+              If you’re new to using TensorBoard, and want to find out how
+              to add data and set up your event files, check out the
+              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+              and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+              <p>
+              If you think TensorBoard is configured properly, please see
+              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+              and consider filing an issue on GitHub.
+              <p><i>Last reload: [[_lastReloadTime]]</i>
+              <template is="dom-if" if="[[_dataLocation]]">
+                <p><i>Data location: <span id="data_location">[[_dataLocation]]</span></i></p>
+              </template>
+            </div>
+          </template>
+          <template is="dom-if" if="[[_showNoSuchDashboardMessage]]">
+            <div class="warning-message">
+              <h3>There’s no dashboard by the name of “<tt>[[_selectedDashboard]]</tt>.”</h3>
+              <template is="dom-if" if="[[_activeDashboardsLoaded]]">
+                <p>You can select a dashboard from the list above.
+              </template>
+              <p><i>Last reload: [[_lastReloadTime]]</i>
+              <template is="dom-if" if="[[_dataLocation]]">
+                <p><i>Data location: <span id="data_location">[[_dataLocation]]</span></i></p>
+              </template>
+            </div>
+          </template>
+          <template
+            is="dom-repeat"
+            id="dashboards-template"
+            items="[[_dashboardData]]"
+            as="dashboardDatum"
+          >
+            <div
+              class="dashboard-container"
+              data-dashboard$="[[dashboardDatum.plugin]]"
+              data-selected$="[[_selectedStatus(_selectedDashboard, dashboardDatum.plugin)]]"
+            ><!-- Dashboards will be injected here dynamically. --></div>
+          </template>
+        </div>
       </div>
     </paper-header-panel>
 
@@ -293,8 +302,26 @@ limitations under the License.
         align-items: center;
       }
 
-      #content {
+      #content-pane {
+        align-items: stretch;
+        display: flex;
+        flex-direction: column;
         height: 100%;
+        justify-content: stretch;
+        width: 100%;
+      }
+
+      #data-selector {
+        border-bottom: 1px solid var(--tb-ui-dark-accent);
+        margin: 0 30px;
+        padding: 10px 0;
+        flex-shrink: 0;
+      }
+
+      #content {
+        flex: 1 1;
+        max-height: 100%;
+        max-width: 100%;
       }
 
       .dashboard-container {
@@ -471,6 +498,14 @@ limitations under the License.
         _isReloadDisabled: {
           type: Boolean,
           value: false,
+        },
+        _isDataSelectorEnabled: {
+          type: Boolean,
+          value: false,
+        },
+        _dataSelection: {
+          type: Array,
+          value: () => [],
         },
         _lastReloadTime: {
           type: String,
@@ -652,7 +687,11 @@ limitations under the License.
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           container.appendChild(component);
         }
+        if (dashboard.useDataSelector) {
+          container.firstElementChild.dataSelection = this._dataSelection;
+        }
         this.set('_isReloadDisabled', dashboard.isReloadDisabled);
+        this.set('_isDataSelectorEnabled', dashboard.useDataSelector);
       },
 
       /**
