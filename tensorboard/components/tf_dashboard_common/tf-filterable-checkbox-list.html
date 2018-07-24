@@ -59,19 +59,19 @@ Properties out:
         </div>
       </template>
       <template is="dom-repeat" items="[[_itemsMatchingRegex]]">
-        <div class="item" id="[[item.id]]">
-            <paper-checkbox
-              class="checkbox"
-              name="[[item]]"
-              checked$="[[_isChecked(item, selectionState.*)]]"
-              on-change="_checkboxChange"
-            >
-              <span>[[item.title]]</span>
+        <div class="item">
+          <paper-checkbox
+            class="checkbox"
+            name="[[item]]"
+            checked$="[[_isChecked(item, selectionState.*)]]"
+            on-change="_checkboxChange"
+          >
+            <span>[[item.title]]</span>
 
-              <template is="dom-if" if="[[item.subtitle]]">
-                <span>[[item.subtitle]]</span>
-              </template>
-            </paper-checkbox>
+            <template is="dom-if" if="[[item.subtitle]]">
+              <span>[[item.subtitle]]</span>
+            </template>
+          </paper-checkbox>
         </div>
       </template>
     </div>
