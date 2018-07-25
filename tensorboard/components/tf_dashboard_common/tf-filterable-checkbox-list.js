@@ -32,7 +32,7 @@ var tf_dashboard_common;
             items: {
                 type: Array,
                 value: function () { return []; },
-                observer: '_pruneSelectedItems',
+                observer: '_pruneSelectionState',
             },
             _regexString: {
                 type: String,
@@ -156,7 +156,10 @@ var tf_dashboard_common;
             });
             this.selectionState = newSelection;
         },
-        _pruneSelectedItems: function () {
+        /**
+         * Remove selection state of an item that no longer exists in the `items`.
+         */
+        _pruneSelectionState: function () {
             // Object key turns numbered keys into string.
             var itemIds = new Set(this.items.map(function (_a) {
                 var id = _a.id;

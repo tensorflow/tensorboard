@@ -68,6 +68,7 @@ var tf_data_selector;
             var number = this.persistenceNumber || 0;
             switch (type) {
                 case Type.RUN:
+                    // Prefix with 'g' to denote a group.
                     return "g" + number + "r";
                 case Type.TAG:
                     return "g" + number + "t";
@@ -132,6 +133,7 @@ var tf_data_selector;
             return this.noExperiment;
         },
         _computeSelection: function (_, __) {
+            // TODO(stephanlee): Compute the real selection.
             return [];
         },
         _persistSelectedRuns: function () {
