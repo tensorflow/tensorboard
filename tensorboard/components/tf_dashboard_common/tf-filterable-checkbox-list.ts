@@ -41,7 +41,7 @@ Polymer({
     items: {
       type: Array,
       value: (): Array<FilterableCheckboxListItem> => [],
-      observer: '_pruneSelectedItems',
+      observer: '_pruneSelectionState',
     },
 
     _regexString: {
@@ -186,7 +186,10 @@ Polymer({
     this.selectionState = newSelection;
   },
 
-  _pruneSelectedItems() {
+  /**
+   * Remove selection state of an item that no longer exists in the `items`.
+   */
+  _pruneSelectionState() {
     // Object key turns numbered keys into string.
     const itemIds = new Set(this.items.map(({id}) => String(id)));
     const newSelection = Object.assign({}, this.selectionState);

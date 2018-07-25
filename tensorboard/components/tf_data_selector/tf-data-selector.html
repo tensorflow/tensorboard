@@ -34,7 +34,8 @@ Properties out: none.
 <dom-module id="tf-data-selector">
   <template>
     <template is="dom-if" if="[[!_comparingExps.length]]">
-      <tf-data-select-row no-experiment></tf-data-select-row>
+      <tf-data-select-row no-experiment persistence-number="0">
+      </tf-data-select-row>
     </template>
     <template is="dom-repeat" items="[[_comparingExps]]" as="exp">
       <tf-data-select-row

@@ -79,6 +79,7 @@ Polymer({
     const number = this.persistenceNumber || 0;
     switch (type) {
       case Type.RUN:
+        // Prefix with 'g' to denote a group.
         return `g${number}r`;
       case Type.TAG:
         return `g${number}t`;
@@ -151,6 +152,7 @@ Polymer({
   },
 
   _computeSelection(_, __) {
+    // TODO(stephanlee): Compute the real selection.
     return [];
   },
 
