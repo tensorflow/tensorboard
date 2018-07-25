@@ -52,7 +52,7 @@ Properties out:
         <!-- paper-input has type="text" for a11y, do not remove -->
         <paper-input
           label="[[label]]"
-          no-label-float="true"
+          no-label-float
           placeholder="[[placeholder]]"
           readonly
           type="text"
@@ -81,6 +81,9 @@ Properties out:
 
     paper-input {
       --paper-input-container-focus-color: var(--tb-orange-strong);
+      --paper-input-container: {
+        padding: 4px;
+      };
       --paper-input-container-input: {
         font-size: 14px;
       };

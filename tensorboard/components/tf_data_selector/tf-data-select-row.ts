@@ -41,38 +41,26 @@ Polymer({
 
     _runs: {
       type: Array,
-      value: () => [],
-    },
-
-    _tags: {
-      type: Array,
-      value: () => [],
-    },
-
-    selection: {
-      type: Array,
-      notify: true,
-      computed: '_computeSelection(_selectedRuns, _selectedTags)',
+      value: (): Array<tf_backend.Run> => [],
     },
 
     _runSelectionStateString: {type: String, value: ''},
 
     _selectedRuns: {
       type: Array,
-      value: () => [],
+      value: (): Array<tf_dashboard_common.FilterableCheckboxListItem> => [],
     },
 
-    _tagSelectionStateString: {type: String, value: ''},
-
-    _selectedTags: {
-      type: Array,
-      value: () => [],
+    _tagRegex: {
+      type: String,
+      value: '',
+      observer: '_persistRegex',
     },
   },
 
   observers: [
     '_persistSelectedRuns(_selectedRuns)',
-    '_persistSelectedTags(_selectedTags)',
+    '_fireChange(_selectedRuns, _tagRegex)',
   ],
 
   _getPersistenceKey(type: Type): string {
@@ -86,7 +74,7 @@ Polymer({
     }
   },
 
-  ready() {
+  ready(): void {
     if (this.persistenceNumber == null) return;
 
     const runInitializer = tf_storage.getStringInitializer(
@@ -96,19 +84,19 @@ Polymer({
 
     const tagInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.TAG),
-        {defaultValue: '', polymerProperty: '_tagSelectionStateString'});
+        {defaultValue: '', polymerProperty: '_tagRegex'});
     tagInitializer.call(this);
   },
 
-  attached() {
+  attached(): void {
     this._fetchRunsAndTags().then(() => this._isDataReady = true);
   },
 
-  detached() {
+  detached(): void {
     this._isDataReady = false;
   },
 
-  _fetchRunsAndTags() {
+  _fetchRunsAndTags(): Promise<void> {
     const requestManager = new tf_backend.RequestManager();
     if (this.noExperiment) {
       const fetchRuns = requestManager.request(tf_backend.getRouter().runs());
@@ -122,74 +110,55 @@ Polymer({
     } else if (this.experiment.id) {
       const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
       return requestManager.request(url).then(runs => {
-        this.set('_runs', runs);
-        // Flatten the tags.
-        const tagSet = new Map();
-        runs.forEach(({tags}) => {
-          tags.forEach(tag => tagSet.set(tag.id, tag));
-        })
-        this.set('_tags', Array.from(tagSet.values()));
+        this.set('_runs',
+            runs.map(({id, name, startTime}) => ({id, name, startTime})));
       });
     }
   },
 
-  _getRunOptions(_) {
+  _getRunOptions(_): Array<tf_dashboard_common.FilterableCheckboxListItem> {
     return this._runs.map(run => ({
       id: run.id,
       title: run.name,
     }));
   },
 
-  _getTagOptions(_) {
-    return this._tags.map(tag => ({
-      id: tag.id,
-      title: tag.name,
-    }));
-  },
-
-  _getIsRunCheckboxesColored(_) {
+  _getIsRunCheckboxesColored(_): boolean {
     return this.noExperiment;
   },
 
-  _computeSelection(_, __) {
-    // TODO(stephanlee): Compute the real selection.
-    return [];
-  },
-
-  _persistSelectedRuns() {
+  _persistSelectedRuns(): void {
     if (!this._isDataReady) return;
     const value = serializeValue(
         this._runs, this._selectedRuns.map(({id}) => id));
     tf_storage.setString(this._getPersistenceKey(Type.RUN), value);
   },
 
-  _getRunsSelectionState() {
-    return this._getSelectionState(this._runSelectionStateString,
-        this._runs.map(({id}) => id));
-  },
-
-  _persistSelectedTags() {
-    if (!this._isDataReady) return;
-    const value = serializeValue(
-        this._tags, this._selectedTags.map(({id}) => id));
-    tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
-  },
-
-  _getTagsSelectionState() {
-    return this._getSelectionState(this._tagSelectionStateString,
-        this._tags.map(({id}) => id));
-  },
-
-  _getSelectionState(persistedString: string, allIds: Array<number>): Object {
-    const ids = deserializeValue(persistedString, allIds);
+  _getRunsSelectionState(): Object {
+    const allIds = this._runs.map(({id}) => id);
+    const ids = deserializeValue(this._runSelectionStateString, allIds);
     const prevSelection = new Set(ids);
     const newSelection = {};
     allIds.forEach(id => newSelection[id] = prevSelection.has(id));
     return newSelection;
   },
+
+  _persistRegex(): void {
+    if (!this._isDataReady) return;
+    const value = this._tagRegex;
+    tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
+  },
+
+  _fireChange(_, __): void {
+    const runMap = new Map(this._runs.map(run => [run.id, run]));
+    this.fire('selection-changed', {
+      runs: this._selectedRuns.map(({id}) => runMap.get(id)),
+      tagRegex: this._tagRegex,
+    });
+  },
 });
 
-function serializeValue(source, selectedIds) {
+function serializeValue(source: Array<number>, selectedIds: Array<number>) {
   if (selectedIds.length == source.length) return '$all';
   if (selectedIds.length == 0) return '$none';
   return  tf_data_selector.encodeIdArray(selectedIds);

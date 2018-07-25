@@ -14,29 +14,10 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
-export class ExperimentsStore extends BaseStore {
-  private _experiments: Experiment[] = [];
+export type Experiment = {id: number, name: string, startTime: number};
 
-  refresh() {
-    const url = getRouter().experiments();
-    return this.requestManager.request(url).then(newExperiments => {
-      if (!_.isEqual(this._experiments, newExperiments)) {
-        this._experiments = newExperiments;
-        this.emitChange();
-      }
-    });
-  }
+export type Run = {id: number, name: string, startTime: number};
 
-  /**
-   * Get the current list of experiments. If no data is available, this will be
-   * an empty array (i.e., there is no distinction between "no experiment" and
-   * "no experiment yet").
-   */
-  getExperiments(): Experiment[] {
-    return this._experiments.slice();
-  }
-}
-
-export const experimentsStore = new ExperimentsStore();
+export type Tag = {id: number, name: string, displayName: string};
 
 }  // namespace tf_backend
