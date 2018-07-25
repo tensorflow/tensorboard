@@ -45,13 +45,15 @@ Generic layout for a dashboard.
         max-width: 350px;
         min-width: 270px;
         text-overflow: ellipsis;
+        will-change: transform;
       }
 
       #center {
-        height: 100%;
-        overflow-y: auto;
         flex-grow: 1;
         flex-shrink: 1;
+        height: 100%;
+        overflow-y: auto;
+        will-change: transform;
       }
 
       .tf-graph-dashboard #center {
