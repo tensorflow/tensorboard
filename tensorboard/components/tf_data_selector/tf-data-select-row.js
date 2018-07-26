@@ -40,29 +40,20 @@ var tf_data_selector;
                 type: Array,
                 value: function () { return []; },
             },
-            _tags: {
-                type: Array,
-                value: function () { return []; },
-            },
-            selection: {
-                type: Array,
-                notify: true,
-                computed: '_computeSelection(_selectedRuns, _selectedTags)',
-            },
             _runSelectionStateString: { type: String, value: '' },
             _selectedRuns: {
                 type: Array,
                 value: function () { return []; },
             },
-            _tagSelectionStateString: { type: String, value: '' },
-            _selectedTags: {
-                type: Array,
-                value: function () { return []; },
+            _tagRegex: {
+                type: String,
+                value: '',
+                observer: '_persistRegex',
             },
         },
         observers: [
             '_persistSelectedRuns(_selectedRuns)',
-            '_persistSelectedTags(_selectedTags)',
+            '_fireChange(_selectedRuns, _tagRegex)',
         ],
         _getPersistenceKey: function (type) {
             var number = this.persistenceNumber || 0;
@@ -79,7 +70,7 @@ var tf_data_selector;
                 return;
             var runInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.RUN), { defaultValue: '', polymerProperty: '_runSelectionStateString' });
             runInitializer.call(this);
-            var tagInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.TAG), { defaultValue: '', polymerProperty: '_tagSelectionStateString' });
+            var tagInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.TAG), { defaultValue: '', polymerProperty: '_tagRegex' });
             tagInitializer.call(this);
         },
         attached: function () {
@@ -106,14 +97,10 @@ var tf_data_selector;
             else if (this.experiment.id) {
                 var url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
                 return requestManager.request(url).then(function (runs) {
-                    _this.set('_runs', runs);
-                    // Flatten the tags.
-                    var tagSet = new Map();
-                    runs.forEach(function (_a) {
-                        var tags = _a.tags;
-                        tags.forEach(function (tag) { return tagSet.set(tag.id, tag); });
-                    });
-                    _this.set('_tags', Array.from(tagSet.values()));
+                    _this.set('_runs', runs.map(function (_a) {
+                        var id = _a.id, name = _a.name, startTime = _a.startTime;
+                        return ({ id: id, name: name, startTime: startTime });
+                    }));
                 });
             }
         },
@@ -123,18 +110,8 @@ var tf_data_selector;
                 title: run.name,
             }); });
         },
-        _getTagOptions: function (_) {
-            return this._tags.map(function (tag) { return ({
-                id: tag.id,
-                title: tag.name,
-            }); });
-        },
         _getIsRunCheckboxesColored: function (_) {
             return this.noExperiment;
-        },
-        _computeSelection: function (_, __) {
-            // TODO(stephanlee): Compute the real selection.
-            return [];
         },
         _persistSelectedRuns: function () {
             if (!this._isDataReady)
@@ -146,32 +123,31 @@ var tf_data_selector;
             tf_storage.setString(this._getPersistenceKey(Type.RUN), value);
         },
         _getRunsSelectionState: function () {
-            return this._getSelectionState(this._runSelectionStateString, this._runs.map(function (_a) {
+            var allIds = this._runs.map(function (_a) {
                 var id = _a.id;
                 return id;
-            }));
-        },
-        _persistSelectedTags: function () {
-            if (!this._isDataReady)
-                return;
-            var value = serializeValue(this._tags, this._selectedTags.map(function (_a) {
-                var id = _a.id;
-                return id;
-            }));
-            tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
-        },
-        _getTagsSelectionState: function () {
-            return this._getSelectionState(this._tagSelectionStateString, this._tags.map(function (_a) {
-                var id = _a.id;
-                return id;
-            }));
-        },
-        _getSelectionState: function (persistedString, allIds) {
-            var ids = deserializeValue(persistedString, allIds);
+            });
+            var ids = deserializeValue(this._runSelectionStateString, allIds);
             var prevSelection = new Set(ids);
             var newSelection = {};
             allIds.forEach(function (id) { return newSelection[id] = prevSelection.has(id); });
             return newSelection;
+        },
+        _persistRegex: function () {
+            if (!this._isDataReady)
+                return;
+            var value = this._tagRegex;
+            tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
+        },
+        _fireChange: function (_, __) {
+            var runMap = new Map(this._runs.map(function (run) { return [run.id, run]; }));
+            this.fire('selection-changed', {
+                runs: this._selectedRuns.map(function (_a) {
+                    var id = _a.id;
+                    return runMap.get(id);
+                }),
+                tagRegex: this._tagRegex,
+            });
         },
     });
     function serializeValue(source, selectedIds) {

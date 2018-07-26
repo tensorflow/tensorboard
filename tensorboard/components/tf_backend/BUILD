@@ -21,12 +21,22 @@ tf_web_library(
     path = "/tf-backend",
     visibility = ["//visibility:public"],
     deps = [
+        ":type",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
+)
+
+tf_web_library(
+    name = "type",
+    srcs = [
+        "type.js",
+    ],
+    path = "/tf-backend",
+    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(

@@ -28,12 +28,18 @@ tf-data-selector creates a widget for creating a group of data, a filtered data
 by experiment, runs, and tags. It allows user to add more groups too.
 
 Properties in: none.
-Properties out: none.
+Properties out:
+  - selection: array of data selection. Please refer to
+    tf_data_selector.Selection for its data type.
 
 -->
 <dom-module id="tf-data-selector">
   <template>
-    <template is="dom-if" if="[[!_comparingExps.length]]">
+    <template
+      is="dom-if"
+      if="[[!_canCompareExperiments(_comparingExps)]]"
+      restamp
+    >
       <tf-data-select-row no-experiment persistence-number="0">
       </tf-data-select-row>
     </template>
@@ -41,6 +47,7 @@ Properties out: none.
       <tf-data-select-row
         experiment="[[exp]]"
         persistence-number="[[index]]"
+        on-selection-changed="_selectionChanged"
       ></tf-data-select-row>
     </template>
 

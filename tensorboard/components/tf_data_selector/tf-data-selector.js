@@ -29,9 +29,20 @@ var tf_data_selector;
                 type: Array,
                 computed: '_getComparingExps(_comparingExpsString, _allExperiments.*)',
             },
+            selection: {
+                type: Array,
+                notify: true,
+                readOnly: true,
+                value: function () { return ([]); },
+            },
+            _selectionMap: {
+                type: Object,
+                value: function () { return new Map(); },
+            },
         },
         observers: [
             '_expStringObserver(_comparingExpsString)',
+            '_pruneSelection(_selectionMap, _comparingExps)',
         ],
         attached: function () {
             var _this = this;
@@ -59,6 +70,46 @@ var tf_data_selector;
                 return id;
             });
             this._comparingExpsString = tf_data_selector.encodeIdArray(newComparingExpIds);
+        },
+        _canCompareExperiments: function () {
+            return Boolean(this._comparingExps.length);
+        },
+        /**
+         * Prunes away an experiment that has been removed from `_comparingExps` from
+         * the _selectionMap.
+         */
+        _pruneSelection: function () {
+            var _this = this;
+            if (!this._canCompareExperiments()) {
+                this._selectionMap.clear();
+                return;
+            }
+            var comparingExpIds = new Set(this._comparingExps.map(function (_a) {
+                var id = _a.id;
+                return id;
+            }));
+            var curSelectedExpIds = Array.from(this._selectionMap.keys());
+            curSelectedExpIds
+                .filter(function (id) { return !comparingExpIds.has(id); })
+                .forEach(function (id) { return _this._selectionMap.delete(id); });
+            this._setSelection(Array.from(this._selectionMap.values()));
+        },
+        _selectionChanged: function (event) {
+            var _a = event.detail, runs = _a.runs, tagRegex = _a.tagRegex;
+            if (!this._canCompareExperiments()) {
+                this._setSelection([{ runs: runs, tagRegex: tagRegex }]);
+                return;
+            }
+            var expId = event.target.experiment.id;
+            this._selectionMap.set(expId, {
+                experiment: this._comparingExps.find(function (_a) {
+                    var id = _a.id;
+                    return expId == id;
+                }),
+                runs: runs,
+                tagRegex: tagRegex,
+            });
+            this._setSelection(Array.from(this._selectionMap.values()));
         },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector
