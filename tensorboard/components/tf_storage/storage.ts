@@ -85,35 +85,61 @@ export const {
   o => btoa(JSON.stringify(o)));
 
 export interface StorageOptions<T> {
-  defaultValue: T;
-  polymerProperty?: string;
+  defaultValue?: T;
   useLocalStorage?: boolean;
 }
 
-function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
-    get: (key: string, useLocalStorage?: boolean) => T,
-    set: (key: string, value: T, useLocalStorage?: boolean) => void,
-    getInitializer: (key: string, options: StorageOptions<T>) => Function,
-    getObserver: (key: string, options: StorageOptions<T>) => Function,
+export interface AutoStorageOptions<T> extends StorageOptions<T> {
+  polymerProperty?: string,
+}
+
+export interface SetterOptions<T> extends StorageOptions<T> {
+  defaultValue?: T;
+  useLocalStorage?: boolean;
+  useLocationReplace?: boolean;
+}
+
+export function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
+    get: (key: string, option?: StorageOptions<T>) => T,
+    set: (key: string, value: T, option?: SetterOptions<T>) => void,
+    getInitializer: (key: string, options: AutoStorageOptions<T>) => Function,
+    getObserver: (key: string, options: AutoStorageOptions<T>) => Function,
 } {
-  function get(key: string, useLocalStorage = false): T {
+  function get(key: string, options: StorageOptions<T> = {}): T {
+    const {
+      defaultValue,
+      useLocalStorage = false,
+    } = options;
     const value = useLocalStorage ?
       window.localStorage.getItem(key) :
       componentToDict(readComponent())[key];
-    return value == undefined ? undefined : fromString(value);
+    return value == undefined ? defaultValue : fromString(value);
   }
 
-  function set(key: string, value: T, useLocalStorage = false, useLocationReplace = false): void {
+  function set(key: string, value: T, options: SetterOptions<T> = {}): void {
+    const {
+      defaultValue,
+      useLocalStorage = false,
+      useLocationReplace = false,
+    } = options;
     const stringValue = toString(value);
     if (useLocalStorage) {
       window.localStorage.setItem(key, stringValue);
     } else {
       const items = componentToDict(readComponent());
       items[key] = stringValue;
-      writeComponent(dictToComponent(items), useLocationReplace);
+      if (_.isEqual(value, defaultValue)) {
+        unsetFromURI(key);
+      } else {
+        writeComponent(dictToComponent(items), useLocationReplace);
+      }
     }
   }
 
+  /**
+   * Returns a function that can be used on a `value` declaration to a Polymer
+   * property. It listens to hashchange,
+   */
   function getInitializer(key: string, options: StorageOptions<T>): Function {
     const fullOptions = {
       defaultValue: options.defaultValue,
@@ -129,7 +155,7 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
       // important that this function does not re-assign needlessly,
       // to avoid Polymer observer churn.
       const setComponentValue = () => {
-        const uriValue = get(uriStorageName, false);
+        const uriValue = get(uriStorageName, {useLocalStorage: false});
         const currentValue = this[fullOptions.polymerProperty];
         // if uriValue is undefined, we will ensure that the property has the
         // default value
@@ -141,10 +167,10 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
           // in this way, localStorage takes precedence over the default val
           // but not over the URI value.
           if (fullOptions.useLocalStorage) {
-            const useLocalStorageValue = get(uriStorageName, true);
-            valueToSet = useLocalStorageValue === undefined ?
-              fullOptions.defaultValue :
-              useLocalStorageValue;
+            const localStorageVal = get(uriStorageName, {useLocalStorage: true});
+            valueToSet = localStorageVal === undefined ?
+                fullOptions.defaultValue :
+                localStorageVal;
           } else {
             valueToSet = fullOptions.defaultValue;
           }
@@ -164,10 +190,13 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
           }
         }
       };
+      if (!fullOptions.useLocalStorage) {
+        // Update it when the hashchanges.
+        window.addEventListener('hashchange', setComponentValue);
+      }
       // Set the value on the property.
       setComponentValue();
-      // Update it when the hashchanges.
-      window.addEventListener('hashchange', setComponentValue);
+      return this[fullOptions.polymerProperty];
     };
   }
 
@@ -184,13 +213,12 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
       // if this is a localStorage property, we always synchronize the value
       // in localStorage to match the one currently in the URI.
       if (fullOptions.useLocalStorage) {
-        set(uriStorageName, newVal, true);
-      }
-      if (!_.isEqual(newVal, get(uriStorageName, false))) {
+        set(uriStorageName, newVal, fullOptions);
+      } else if (!_.isEqual(newVal, get(uriStorageName, {useLocalStorage: false}))) {
         if (_.isEqual(newVal, fullOptions.defaultValue)) {
           unsetFromURI(uriStorageName);
         } else {
-          set(uriStorageName, newVal, false);
+          set(uriStorageName, newVal, fullOptions);
         }
       }
     };
@@ -225,11 +253,11 @@ function readComponent(): string {
  */
 function writeComponent(component: string, useLocationReplace = false) {
   if (tf_globals.useHash()) {
-      if (useLocationReplace) {
-          window.location.replace('#' + component);
-      } else {
-          window.location.hash = component;
-      }
+    if (useLocationReplace) {
+      window.location.replace('#' + component);
+    } else {
+      window.location.hash = component;
+    }
   } else {
     tf_globals.setFakeHash(component);
   }

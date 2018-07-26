@@ -17,47 +17,47 @@ namespace tf_storage {
 /* tslint:disable:no-namespace */
 describe('URIStorage', () => {
   it('get/setString', () => {
-    setString('key_a', 'hello', false);
-    setString('key_b', 'there', false);
-    chai.assert.equal('hello', getString('key_a', false));
-    chai.assert.equal('there', getString('key_b', false));
-    chai.assert.equal(null, getString('key_c', false));
+    setString('key_a', 'hello', {useLocalStorage: false});
+    setString('key_b', 'there', {useLocalStorage: false});
+    chai.assert.equal('hello', getString('key_a', {useLocalStorage: false}));
+    chai.assert.equal('there', getString('key_b', {useLocalStorage: false}));
+    chai.assert.equal(null, getString('key_c', {useLocalStorage: false}));
   });
 
   it('get/setNumber', () => {
-    setNumber('key_a', 12, false);
-    setNumber('key_b', 3.4, false);
-    chai.assert.equal(12, getNumber('key_a', false));
-    chai.assert.equal(3.4, getNumber('key_b', false));
-    chai.assert.equal(null, getNumber('key_c', false));
+    setNumber('key_a', 12, {useLocalStorage: false});
+    setNumber('key_b', 3.4, {useLocalStorage: false});
+    chai.assert.equal(12, getNumber('key_a', {useLocalStorage: false}));
+    chai.assert.equal(3.4, getNumber('key_b', {useLocalStorage: false}));
+    chai.assert.equal(null, getNumber('key_c', {useLocalStorage: false}));
   });
 
   it('get/setObject', () => {
     const obj = {'foo': 2.3, 'bar': 'barstr'};
-    setObject('key_a', obj, false);
-    chai.assert.deepEqual(obj, getObject('key_a', false));
+    setObject('key_a', obj, {useLocalStorage: false});
+    chai.assert.deepEqual(obj, getObject('key_a', {useLocalStorage: false}));
   });
 
   it('get/setWeirdValues', () => {
-    setNumber('key_a', NaN, false);
-    chai.assert.deepEqual(NaN, getNumber('key_a', false));
+    setNumber('key_a', NaN, {useLocalStorage: false});
+    chai.assert.deepEqual(NaN, getNumber('key_a', {useLocalStorage: false}));
 
-    setNumber('key_a', +Infinity, false);
-    chai.assert.equal(+Infinity, getNumber('key_a', false));
+    setNumber('key_a', +Infinity, {useLocalStorage: false});
+    chai.assert.equal(+Infinity, getNumber('key_a', {useLocalStorage: false}));
 
-    setNumber('key_a', -Infinity, false);
-    chai.assert.equal(-Infinity, getNumber('key_a', false));
+    setNumber('key_a', -Infinity, {useLocalStorage: false});
+    chai.assert.equal(-Infinity, getNumber('key_a', {useLocalStorage: false}));
 
-    setNumber('key_a', 1 / 3, false);
-    chai.assert.equal(1 / 3, getNumber('key_a', false));
+    setNumber('key_a', 1 / 3, {useLocalStorage: false});
+    chai.assert.equal(1 / 3, getNumber('key_a', {useLocalStorage: false}));
 
-    setNumber('key_a', -0, false);
-    chai.assert.equal(-0, getNumber('key_a', false));
+    setNumber('key_a', -0, {useLocalStorage: false});
+    chai.assert.equal(-0, getNumber('key_a', {useLocalStorage: false}));
   });
 
   it('set/getTab', () => {
-    setString(TAB, 'scalars', false);
-    chai.assert.equal('scalars', getString(TAB, false));
+    setString(TAB, 'scalars', {useLocalStorage: false});
+    chai.assert.equal('scalars', getString(TAB, {useLocalStorage: false}));
   });
 });
 

@@ -40,7 +40,8 @@ export function removeLimitListener(listener: Listener): void {
 
 export function getLimit() {
   if (_limit == null) {
-    _limit = tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY, /*useLocalStorage=*/true);
+    _limit = tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY,
+        {useLocalStorage: true});
     if (_limit == null || !isFinite(_limit) || _limit <= 0) {
       _limit = DEFAULT_LIMIT;
     }
@@ -59,7 +60,8 @@ export function setLimit(limit: number) {
     return;
   }
   _limit = limit;
-  tf_storage.setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit, /*useLocalStorage=*/true);
+  tf_storage.setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit,
+      {useLocalStorage: true});
   listeners.forEach(listener => {
     listener();
   });
