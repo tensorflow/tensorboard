@@ -708,86 +708,11 @@ limitations under the License.
           <div class$="[[getSideHolderClass_(panelExpanded)]]" id="side">
             <div class="side-content">
               <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
+                <paper-tab>[[getModelTabName(modelType, multiClass)]]</paper-tab>
                 <paper-tab>Datapoint</paper-tab>
                 <paper-tab>Features</paper-tab>
-                <paper-tab>[[getModelTabName(modelType, multiClass)]]</paper-tab>
               </paper-tabs>
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
-                <div class="datapoint-tab">
-                  <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
-                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
-                      <div class="datapoint-left-controls-holder">
-                        <paper-icon-button class="datapoint-control-button" icon="content-copy"
-                            on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
-                            on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
-                            disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="delete-forever"
-                            on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
-                        </paper-icon-button>
-                      </div>
-                      <div class="datapoint-right-controls-holder">
-                        <paper-icon-button class="datapoint-control-button" icon="view-headline"
-                            class$="[[getStackedButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="view-module"
-                            class$="[[getGridButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="chevron-right"
-                            on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="chevron-left"
-                            on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
-                        </paper-icon-button>
-                      </div>
-                    </div>
-                    <div class="datapoint-controls-holder datapoint-control-search-holder">
-                      <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
-                        <iron-icon icon="icons:search" prefix></iron-icon>
-                      </paper-input>
-                    </div>
-                    <div class="examples-holder">
-                      <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
-                        <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
-                                            on-example-change="exampleChange_" id$="[[getViewerId_()]]"
-                                            display-mode="[[exampleDisplayMode]]"
-                                            feature-search-value="{{featureSearchValue}}">
-                        </vz-example-viewer>
-                        <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                          <div class="inference-header">Inference Results</div>
-                          <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                                id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                          </tf-inference-viewer>
-                        </div>
-                      </div>
-                      <template is="dom-if" if="[[counterfactualExampleAndInference]]">
-                        <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
-                          <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{counterfactualExampleAndInference.example}}"
-                            readonly="true" display-mode="[[exampleDisplayMode]]"
-                            feature-search-value="{{featureSearchValue}}">
-                          </vz-example-viewer>
-                          <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                            <div class="inference-header">Inference Results</div>
-                            <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
-                                                model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                            </tf-inference-viewer>
-                          </div>
-                        </div>
-                      </template>
-                    </div>
-                  </template>
-                  <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
-                    <div class="datapoint-info-text">Select a datapoint to see its details and inference results here.</div>
-                    <div class="datapoint-info-text">Datapoints can be edited and rerun through the model.</div>
-                  </template>
-                </div>
-                <div class="stats-tab">
-                  <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
-                </div>
                 <div class="config-tab">
                   <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                     <paper-dropdown-menu label="Select the true label feature in order to investigate model performance" class="threshold-dropdown">
@@ -1020,6 +945,81 @@ limitations under the License.
                     </template>
                   </template>
                 </div>
+                <div class="datapoint-tab">
+                  <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
+                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
+                      <div class="datapoint-left-controls-holder">
+                        <paper-icon-button class="datapoint-control-button" icon="content-copy"
+                            on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
+                            on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
+                            disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="delete-forever"
+                            on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
+                        </paper-icon-button>
+                      </div>
+                      <div class="datapoint-right-controls-holder">
+                        <paper-icon-button class="datapoint-control-button" icon="view-headline"
+                            class$="[[getStackedButtonClass(exampleDisplayMode)]]"
+                            on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="view-module"
+                            class$="[[getGridButtonClass(exampleDisplayMode)]]"
+                            on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="chevron-right"
+                            on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="chevron-left"
+                            on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
+                        </paper-icon-button>
+                      </div>
+                    </div>
+                    <div class="datapoint-controls-holder datapoint-control-search-holder">
+                      <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
+                        <iron-icon icon="icons:search" prefix></iron-icon>
+                      </paper-input>
+                    </div>
+                    <div class="examples-holder">
+                      <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                        <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
+                                            on-example-change="exampleChange_" id$="[[getViewerId_()]]"
+                                            display-mode="[[exampleDisplayMode]]"
+                                            feature-search-value="{{featureSearchValue}}">
+                        </vz-example-viewer>
+                        <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                          <div class="inference-header">Inference Results</div>
+                          <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                                id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                          </tf-inference-viewer>
+                        </div>
+                      </div>
+                      <template is="dom-if" if="[[counterfactualExampleAndInference]]">
+                        <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                          <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{counterfactualExampleAndInference.example}}"
+                            readonly="true" display-mode="[[exampleDisplayMode]]"
+                            feature-search-value="{{featureSearchValue}}">
+                          </vz-example-viewer>
+                          <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                            <div class="inference-header">Inference Results</div>
+                            <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
+                                                model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                            </tf-inference-viewer>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
+                    <div class="datapoint-info-text">Select a datapoint to see its details and inference results here.</div>
+                    <div class="datapoint-info-text">Datapoints can be edited and rerun through the model.</div>
+                  </template>
+                </div>
+                <div class="stats-tab">
+                  <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
+                </div>
               </iron-pages>
             </div>
           </div>
@@ -1187,7 +1187,7 @@ limitations under the License.
         // Which side-tab is selected.
         sideTabSelected: {
           type: Number,
-          value: 1,
+          value: 0,
         },
         // Boolean for if running in "local" demo mode, meaning this isn't
         // part of a TensorBoard build and has no backend.
@@ -1433,7 +1433,7 @@ limitations under the License.
         this.selectedDataUpdated_();
         // When a datapoint is selected, switch to the datapoint tab.
         if (this.selected.length > 0) {
-          this.sideTabSelected = 0;
+          this.sideTabSelected = 1;
         }
       },
 
@@ -1632,7 +1632,7 @@ limitations under the License.
       labelFeatureSelected_: function(feature) {
         // When the true label feature is selected, go the the performance tab
         // and update inference stats.
-        this.sideTabSelected = 2;
+        this.sideTabSelected = 0;
         requestAnimationFrame(() => {
           this.updateInferenceStats_(true);
           this.refreshDive_();
@@ -2083,16 +2083,16 @@ limitations under the License.
           val2 = item.value2;
         }
         return {
-          0: {
-            0: this.getConfMatrixValue(inferenceStats, threshold, 'TN', val,
+          'No': {
+            'No': this.getConfMatrixValue(inferenceStats, threshold, 'TN', val,
                                        val2),
-            1: this.getConfMatrixValue(inferenceStats, threshold, 'FP', val,
+            'Yes': this.getConfMatrixValue(inferenceStats, threshold, 'FP', val,
                                        val2)
           },
-          1: {
-            0: this.getConfMatrixValue(inferenceStats, threshold, 'FN', val,
+          'Yes': {
+            'No': this.getConfMatrixValue(inferenceStats, threshold, 'FN', val,
                                        val2),
-            1: this.getConfMatrixValue(inferenceStats, threshold, 'TP', val,
+            'Yes': this.getConfMatrixValue(inferenceStats, threshold, 'TP', val,
                                       val2)
           }
         };

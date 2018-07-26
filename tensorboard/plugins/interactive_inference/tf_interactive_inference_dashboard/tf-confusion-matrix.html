@@ -47,18 +47,18 @@ limitations under the License.
         vertical-align: bottom;
       }
       .correct {
-        background: DarkSeaGreen;
+        border-left: 3px solid DarkSeaGreen;
       }
       .incorrect {
-        background: LightCoral;
+        border-left: 3px solid lightcoral;
       }
       .blank {
-        background: lightgray;
+        background: darkgray;
       }
-      .percentage {
+      .parenthetical {
         padding-right: 5px;
         color: gray;
-        width: 60px;
+        width: 50px;
       }
     </style>
     <div id="holder"></div>
@@ -95,7 +95,15 @@ limitations under the License.
             allLabels[innerLabelList[j]] = true;
           }
         }
-        const labelsList = Object.keys(allLabels).sort();
+        let labelsList = Object.keys(allLabels).sort();
+
+        // For binary classification confusion matrices, we want the 'Yes'
+        // column/row to appear before 'No', so we reverse this labels list.
+        if (labelsList.length == 2 && labelsList[0] == 'No'
+            && labelsList[1] == 'Yes') {
+          labelsList = labelsList.reverse();
+        }
+
         const columnTotals = new Array(labelsList.length);
 
         // Create the confusion matrix from the counts dict.
@@ -149,7 +157,7 @@ limitations under the License.
               } else if (column <= countMatrix.length) {
                 return 'Predicted ' + labelsList[column - 1];
               } else {
-                return '';
+                return 'Total';
               }
             })
             .attr('class', column => {
@@ -179,8 +187,8 @@ limitations under the License.
           .append('td').attr('class', (d, i) => {
             if (i == 0) {
               return 'actual-label';
-            } else if (d.value == 0 && i <= countMatrix.length) {
-              return 'blank';
+            } else if (d.value == 0) {
+              return '';
             } else if (i - 1 == d.row) {
               return 'correct';
             } else if (i <= countMatrix.length) {
@@ -188,26 +196,35 @@ limitations under the License.
             } else {
               return '';
             }
+          }).style('background', (d, i) => {
+            if (i == 0 || i > countMatrix.length) {
+              return '#FFFFFF';
+            } else {
+              let c = d3.color('darkgrey');
+              c.opacity = d.value / total;
+              return c + '';
+            }
           });
         const cellDivs = cells.append('div').classed('flex', true);
-        cellDivs.append('div').classed('percentage', (d, i) => !!i)
+        cellDivs.append('div').classed('parenthetical', (d, i) => !!i)
             .text(d =>
-              'row' in d ? '(' + d3.format(",.1%")(d.value / total) + ')' : '');
-        cellDivs.append('div').text(d => d.value);
+              'row' in d ? '(' + d.value + ')' : '');
+        cellDivs.append('div').text(
+          (d, i) => i > 0 ? d3.format(",.1%")(d.value / total) : d.value);
 
         // Set the footer row.
         const footCells = tfoot.append('tr')
           .selectAll('td')
           .data(indices).enter()
           .append('td');
+        footCells.classed('actual-label', (d, i) => i == 0);
         const footCellDivs = footCells.append('div').classed('flex', true);
-        footCellDivs.append('div').classed('percentage', (d, i) => !!i).text(
+        footCellDivs.append('div').classed('parenthetical', (d, i) => !!i).text(
           column => {
             if (column == 0) {
-              return '';
+              return 'Total';
             } else if (column <= countMatrix.length) {
-              return '(' + d3.format(",.1%")(columnTotals[column - 1] / total) +
-                ')';
+              return '(' + columnTotals[column - 1] + ')';
             } else {
               return '';
             }
@@ -216,7 +233,7 @@ limitations under the License.
           if (column == 0) {
             return '';
           } else if (column <= countMatrix.length) {
-            return columnTotals[column - 1];
+            return d3.format(",.1%")(columnTotals[column - 1] / total);
           } else {
             return '';
           }
