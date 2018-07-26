@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
@@ -29,8 +31,10 @@ Properties in:
   - removable: Whether the row is removable.
 
 Properties out:
-  - selectedRuns: Array of run names that user enabled.
+  None
 
+Event out:
+  - selection-changed: Fired when selection or regex filter change.
 -->
 <dom-module id="tf-data-select-row">
   <template>
@@ -46,13 +50,13 @@ Properties out:
       selection-state="{{_getRunsSelectionState(_runSelectionStateString, _runs.*)}}"
     ></tf-filterable-checkbox-dropdown>
 
-    <tf-filterable-checkbox-dropdown
-      label="Tag"
-      colorsCheckbox="false"
-      items="[[_getTagOptions(_tags.*)]]"
-      selected-items="{{_selectedTags}}"
-      selection-state="{{_getTagsSelectionState(_tagSelectionStateString, _tags.*)}}"
-    ></tf-filterable-checkbox-dropdown>
+    <paper-input
+      no-label-float
+      label="Tag Regex"
+      value="{{_tagRegex}}"
+    >
+      <iron-icon prefix icon="search" slot="prefix"></iron-icon>
+    </paper-input>
 
     <style>
       :host {
@@ -63,24 +67,38 @@ Properties out:
         font-size: 14px;
       }
 
+      paper-input {
+        --paper-input-prefix: {
+          width: 22px;
+          height: 22px;
+        };
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        --paper-input-container: {
+          padding: 4px 0;
+        };
+        --paper-input-container-input: {
+          font-size: 14px;
+        };
+        --paper-input-container-label: {
+          font-size: 14px;
+        };
+        width: 200px;
+      }
+
+      paper-input iron-icon {
+        color: var(--paper-grey-600);
+      }
+      paper-input[focused] iron-icon {
+        color: inherit;
+      }
+
       .exp-name {
         color: var(--paper-grey-900);
         padding: 4px 8px;
       }
 
-      paper-dropdown-menu {
+      tf-filterable-checkbox-dropdown {
         padding: 4px 8px;
-
-        --paper-dropdown-menu-input: {
-          --paper-input-container-input: {
-            font-size: 12px;
-          };
-          --paper-input-container-label: {
-            font-size: 12px;
-          };
-        }
-
-        --paper-input-container-focus-color: var(--tb-orange-strong);
       }
     </style>
   </template>

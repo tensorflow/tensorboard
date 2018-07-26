@@ -32,10 +32,24 @@ Polymer({
       type: Array,
       computed: '_getComparingExps(_comparingExpsString, _allExperiments.*)',
     },
+
+    selection: {
+      type: Array,
+      notify: true,
+      readOnly: true,
+      value: (): Array<tf_data_selector.Selection> => ([]),
+    },
+
+    _selectionMap: {
+      type: Object,
+      value: (): Map<number, tf_data_selector.Selection> => new Map(),
+    },
+
   },
 
   observers: [
     '_expStringObserver(_comparingExpsString)',
+    '_pruneSelection(_selectionMap, _comparingExps)',
   ],
 
   attached() {
@@ -69,6 +83,45 @@ Polymer({
         newComparingExpIds);
   },
 
+  _canCompareExperiments(): boolean {
+    return Boolean(this._comparingExps.length);
+  },
+
+  /**
+   * Prunes away an experiment that has been removed from `_comparingExps` from
+   * the _selectionMap.
+   */
+  _pruneSelection() {
+    if (!this._canCompareExperiments()) {
+      this._selectionMap.clear();
+      return;
+    }
+
+    const comparingExpIds = new Set(this._comparingExps.map(({id}) => id));
+    const curSelectedExpIds = Array.from(this._selectionMap.keys());
+    curSelectedExpIds
+        .filter(id => !comparingExpIds.has(id))
+        .forEach(id => this._selectionMap.delete(id));
+
+    this._setSelection(Array.from(this._selectionMap.values()));
+  },
+
+  _selectionChanged(event) {
+    const {runs, tagRegex} = event.detail;
+
+    if (!this._canCompareExperiments()) {
+      this._setSelection([{runs, tagRegex}]);
+      return;
+    }
+
+    const expId = event.target.experiment.id;
+    this._selectionMap.set(expId, {
+      experiment: this._comparingExps.find(({id}) => expId == id),
+      runs,
+      tagRegex,
+    });
+    this._setSelection(Array.from(this._selectionMap.values()));
+  },
 });
 
 }  // namespace tf_data_selector
