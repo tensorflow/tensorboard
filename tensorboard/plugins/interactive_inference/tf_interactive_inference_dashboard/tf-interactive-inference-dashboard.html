@@ -233,19 +233,9 @@ limitations under the License.
         width: 60%;
       }
 
-      .center-expanded {
-        width: 0%;
-      }
-
       .side-holder {
+        position: relative;
         width: 40%;
-        display: flex;
-        flex-direction: column;
-        border-left: 1px solid black;
-      }
-
-      .side-holder-expanded {
-        width: 100%;
         display: flex;
         flex-direction: column;
         border-left: 1px solid black;
@@ -558,6 +548,16 @@ limitations under the License.
         --paper-radio-button-checked-color: #f57c00;
         --paper-radio-button-checked-ink-color: #f57c00;
       }
+
+      .resizer {
+        position: absolute;
+        width: 5px;
+        top: 0;
+        bottom: 0;
+        left: -5px;
+        border-left: 1px solid black;
+        cursor: pointer;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -616,10 +616,6 @@ limitations under the License.
             <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
               <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
             </a>
-            <paper-icon-button icon="[[getPanelExpandIcon_(panelExpanded)]]"
-                              on-click="panelExpandToggleClicked_" class="settings-button"
-                              title="[[getPanelExpandTooltip_(panelExpanded)]]">
-            </paper-icon-button>
           </div>
           <div class="datapoint-right-controls-holder">
             <paper-button on-click="inferClicked_" class="control-button"
@@ -649,7 +645,7 @@ limitations under the License.
           </div>
         </div>
         <div class="main-content">
-          <div class$="[[getCenterClass_(panelExpanded)]]" id="center">
+          <div class="center" id="center">
             <facets-dive id="dive" data="[[visdata]]"
                         selected-indices="[[selected]]"
                         on-selected-indices-changed="selectedIndicesChanged_"
@@ -705,7 +701,8 @@ limitations under the License.
               </template>
             </div>
           </div>
-          <div class$="[[getSideHolderClass_(panelExpanded)]]" id="side">
+          <div class="side-holder" id="side">
+            <div class="resizer" id="resizer"></div>
             <div class="side-content">
               <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
                 <paper-tab>[[getModelTabName(modelType, multiClass)]]</paper-tab>
@@ -1275,6 +1272,36 @@ limitations under the License.
       reload: function(){
       },
 
+      ready: function() {
+        const side = d3.select(this.$.side);
+        const center = d3.select(this.$.center);
+        const resizer = d3.select(this.$.resizer);
+        const self = this;
+
+        const dragResize = d3.drag().on('drag', () => {
+          // Determine resizer position relative to width of the tool.
+          const x = d3.mouse(this.parentNode.parentNode)[0];
+          const width = this.parentNode.parentNode.offsetWidth;
+          let perc = x / width * 100;
+
+          // Side panel will be a minimum of 20% width.
+          perc = Math.min(perc, 80);
+
+          center.style('width', perc + '%');
+          side.style('width', (100 - perc) + '%');
+
+          // If the center panel is less than 40% of the width, then consider
+          // the side panel to be expanded, for display purposes.
+          self.panelExpanded = perc < 40;
+        }).on('end', () => {
+          // Force a resize of the Dive visualization when finished resizing
+          // the side panel.
+          self.$.dive.$.vis.fire('iron-resize');
+        });
+
+        resizer.call(dragResize);
+      },
+
       settingsClicked_: function() {
         this.$.inferencesettings.toggle();
         this.$.spinner.hidden = false;
@@ -1424,7 +1451,6 @@ limitations under the License.
 
       showPartialDependencePlots_: function() {
         this.$.partialplotholder.style.display = 'block';
-        this.panelExpanded = false;
         requestAnimationFrame(() => this.populatePdTabs());
       },
 
@@ -1470,18 +1496,6 @@ limitations under the License.
         this.stats = event.detail.value;
       },
 
-      getPanelExpandIcon_: function(panelExpanded) {
-        return panelExpanded ? 'fullscreen-exit' : 'fullscreen'
-      },
-
-      getPanelExpandTooltip_: function(panelExpanded) {
-        return panelExpanded ? 'Collapse side-panel' : 'Expand side-panel'
-      },
-
-      panelExpandToggleClicked_: function() {
-        this.panelExpanded = !this.panelExpanded;
-      },
-
       getExampleAndInferenceHolderClass_: function(panelExpanded) {
         return panelExpanded
           ? 'example-and-inference-holder-expanded'
@@ -1495,14 +1509,6 @@ limitations under the License.
       getInferenceSectionClass_: function(panelExpanded) {
         return panelExpanded
           ? 'inference-section-expanded' : 'inference-section';
-      },
-
-      getCenterClass_: function(panelExpanded) {
-        return panelExpanded ? 'center-expanded' : 'center';
-      },
-
-      getSideHolderClass_: function(panelExpanded) {
-        return panelExpanded ? 'side-holder-expanded' : 'side-holder';
       },
 
       isBinaryClassification_: function(modelType, multiClass) {
