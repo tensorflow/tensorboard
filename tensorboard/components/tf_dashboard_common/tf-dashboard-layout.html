@@ -28,8 +28,8 @@ Generic layout for a dashboard.
       <content select=".sidebar"></content>
     </div>
 
-    <div id="center" class="scrollbar">
-      <content select=".center"></content>
+    <div id="center">
+      <content select=".center" class="scollbar"></content>
     </div>
     <style include="scrollbar-style"></style>
     <style>
@@ -52,7 +52,13 @@ Generic layout for a dashboard.
         flex-grow: 1;
         flex-shrink: 1;
         height: 100%;
+      }
+
+      ::content.center {
+        height: 100%;
+        overflow-x: hidden;
         overflow-y: auto;
+        width: 100%;
         will-change: transform;
       }
 
