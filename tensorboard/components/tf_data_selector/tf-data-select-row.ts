@@ -130,7 +130,7 @@ Polymer({
       const fetchRuns = requestManager.request(tf_backend.getRouter().runs());
       return Promise.all([fetchRuns]).then(([runs]) => {
         this.set('_runs', Array.from(new Set(runs)).map(runName => ({
-          id: runName,
+          id: null,
           name: runName,
           startedTime: null,
         })));
@@ -146,7 +146,10 @@ Polymer({
 
   _getRunOptions(_): Array<tf_dashboard_common.FilterableCheckboxListItem> {
     return this._runs.map(run => ({
-      id: run.id,
+      // /data/runs endpoint does not return ids. In case of logdir data source,
+      // runs cannot have an id and, for filtered-checkbox-list, we need to
+      // synthesize id from the name.
+      id: this.noExperiment ? run.name : run.id,
       title: run.name,
     }));
   },
@@ -157,14 +160,15 @@ Polymer({
 
   _persistSelectedRuns(): void {
     if (!this._isDataReady) return;
-    const value = serializeValue(
+    const value = this._serializeValue(
         this._runs, this._selectedRuns.map(({id}) => id));
-    tf_storage.setString(this._getPersistenceKey(Type.RUN), value);
+    tf_storage.setString(this._getPersistenceKey(Type.RUN), value,
+        {defaultValue: ''});
   },
 
   _getRunsSelectionState(): Object {
     const allIds = this._runs.map(({id}) => id);
-    const ids = deserializeValue(this._runSelectionStateString, allIds);
+    const ids = this._deserializeValue(this._runSelectionStateString, allIds);
     const prevSelection = new Set(ids);
     const newSelection = {};
     allIds.forEach(id => newSelection[id] = prevSelection.has(id));
@@ -174,13 +178,20 @@ Polymer({
   _persistRegex(): void {
     if (!this._isDataReady) return;
     const value = this._tagRegex;
-    tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
+    tf_storage.setString(this._getPersistenceKey(Type.TAG), value,
+        {defaultValue: ''});
   },
 
   _fireChange(_, __): void {
     const runMap = new Map(this._runs.map(run => [run.id, run]));
     this.fire('selection-changed', {
-      runs: this._selectedRuns.map(({id}) => runMap.get(id)),
+      runs: this._selectedRuns.map(({id}) => runMap.get(id))
+          .filter(Boolean)
+          .map(run => ({
+            id: this.noExperiment ? null : run.id,
+            name: run.name,
+            startTime: run.startTime,
+          })),
       tagRegex: this._tagRegex,
     });
   },
@@ -188,18 +199,25 @@ Polymer({
   _removeRow(): void {
     this.fire('remove');
   },
+
+  _serializeValue(
+      source: Array<number|string>, selectedIds: Array<number|string>) {
+    if (selectedIds.length == source.length) return '$all';
+    if (selectedIds.length == 0) return '$none';
+
+    // TODO(stephanwlee): Consider populating ids for /data/runs endpoint.
+    return this.noExperiment ?
+        selectedIds.join(',') :
+        tf_data_selector.encodeIdArray((selectedIds as Array<number>));
+  },
+
+  _deserializeValue(str: string, allValues: Array<number|string>) {
+    if (str == '$all') return allValues;
+    if (str == '$none') return [];
+    return this.noExperiment ?
+        str.split(',') :
+        tf_data_selector.decodeIdArray(str);
+  },
 });
-
-function serializeValue(source: Array<number>, selectedIds: Array<number>) {
-  if (selectedIds.length == source.length) return '$all';
-  if (selectedIds.length == 0) return '$none';
-  return  tf_data_selector.encodeIdArray(selectedIds);
-}
-
-function deserializeValue(str: string, allValues: Array<number>) {
-  if (str == '$all') return allValues;
-  if (str == '$none') return [];
-  return tf_data_selector.decodeIdArray(str);
-}
 
 }  // namespace tf_data_selector

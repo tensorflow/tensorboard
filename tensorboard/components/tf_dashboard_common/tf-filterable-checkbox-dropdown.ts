@@ -47,18 +47,11 @@ Polymer({
       notify: true,
       value: () => [],
     },
-
-    // ====== Computed properties ======
-
-    _labelValue: {
-      type: String,
-      computed: '_computeValueLabel(selectedItems)',
-    },
   },
 
   // ====================== COMPUTED ======================
 
-  _computeValueLabel(_) {
+  _getValueLabel(_) {
     if (this.selectedItems.length == this.items.length) {
       return `All ${this.label}s`;
     } else if (!this.selectedItems.length) {
