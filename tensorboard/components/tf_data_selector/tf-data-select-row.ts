@@ -31,6 +31,17 @@ Polymer({
       }),
     },
 
+    enabled: {
+      type: Boolean,
+      notify: true,
+      value: true,
+    },
+
+    checkboxColor: {
+      type: String,
+      value: '',
+    },
+
     // Required field.
     persistenceNumber: Number,
 
@@ -56,6 +67,10 @@ Polymer({
       value: '',
       observer: '_persistRegex',
     },
+  },
+
+  listeners: {
+    'dom-change': '_synchronizeColors',
   },
 
   observers: [
@@ -90,6 +105,19 @@ Polymer({
 
   attached(): void {
     this._fetchRunsAndTags().then(() => this._isDataReady = true);
+  },
+
+  _synchronizeColors() {
+    const cb = this.$$('#checkbox');
+    if (!cb) return;
+
+    const color = this.checkboxColor;
+    cb.customStyle['--paper-checkbox-checked-color'] = color;
+    cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
+    cb.customStyle['--paper-checkbox-unchecked-color'] = color;
+    cb.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
+
+    window.requestAnimationFrame(() => this.updateStyles());
   },
 
   detached(): void {
@@ -155,6 +183,10 @@ Polymer({
       runs: this._selectedRuns.map(({id}) => runMap.get(id)),
       tagRegex: this._tagRegex,
     });
+  },
+
+  _removeRow(): void {
+    this.fire('remove');
   },
 });
 

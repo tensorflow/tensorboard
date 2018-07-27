@@ -75,14 +75,6 @@ Polymer({
   _expStringObserver: tf_storage.getStringObserver('e',
       {defaultValue: '', polymerProperty: '_comparingExpsString'}),
 
-  _experimentAdded(event) {
-    const newExperiments = event.detail;
-    const newComparingExpIds = this._comparingExps
-        .concat(newExperiments).map(({id}) => id);
-    this._comparingExpsString = tf_data_selector.encodeIdArray(
-        newComparingExpIds);
-  },
-
   _canCompareExperiments(): boolean {
     return Boolean(this._comparingExps.length);
   },
@@ -91,7 +83,7 @@ Polymer({
    * Prunes away an experiment that has been removed from `_comparingExps` from
    * the _selectionMap.
    */
-  _pruneSelection() {
+  _pruneSelection(): void {
     if (!this._canCompareExperiments()) {
       this._selectionMap.clear();
       return;
@@ -121,6 +113,27 @@ Polymer({
       tagRegex,
     });
     this._setSelection(Array.from(this._selectionMap.values()));
+  },
+
+  _addExperiments(event) {
+    const newExperiments = event.detail;
+    const newComparingExpIds = this._comparingExps
+        .concat(newExperiments).map(({id}) => id);
+    this._comparingExpsString = tf_data_selector.encodeIdArray(
+        newComparingExpIds);
+  },
+
+  _removeExperiment(event) {
+    const expId = event.target.experiment.id;
+    const newComparingExpIds = this._comparingExps
+        .filter(({id}) => id != expId)
+        .map(({id}) => id);
+    this._comparingExpsString = tf_data_selector.encodeIdArray(
+        newComparingExpIds);
+  },
+
+  _getExperimentColor(experiment: tf_backend.Experiment): string {
+    return tf_color_scale.experimentsColorScale(experiment.name);
   },
 });
 
