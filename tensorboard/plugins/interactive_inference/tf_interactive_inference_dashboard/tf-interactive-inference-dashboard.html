@@ -310,13 +310,11 @@ limitations under the License.
 
       .datapoint-left-controls-holder {
         display: flex;
-        width: 50%;
       }
 
       .datapoint-right-controls-holder {
         display: flex;
         flex-direction: row-reverse;
-        width: 50%;
       }
 
       .tf-category-pane {
@@ -525,6 +523,7 @@ limitations under the License.
         flex-grow: 0;
         display: flex;
         border-top: 1px solid grey;
+        justify-content: space-between;
       }
 
       .main-content {
@@ -557,6 +556,14 @@ limitations under the License.
         left: -5px;
         border-left: 1px solid black;
         cursor: pointer;
+      }
+
+      .example-status {
+        font-size: 12px;
+        color: #777;
+        white-space: nowrap;
+        overflow: hidden;
+        padding-top: 22px;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
@@ -616,6 +623,7 @@ limitations under the License.
             <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
               <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
             </a>
+            <div class="example-status">[[exampleStatusStr]]</div>
           </div>
           <div class="datapoint-right-controls-holder">
             <paper-button on-click="inferClicked_" class="control-button"
@@ -1262,6 +1270,10 @@ limitations under the License.
           type: String,
           value: 'colorBy'
         },
+        exampleStatusStr: {
+          type: String,
+          value: 'No examples loaded yet.'
+        }
       },
 
       observers: [
@@ -2642,6 +2654,7 @@ limitations under the License.
        * Callback for when new examples are received from the backend.
        */
       updateExampleContents_: function(examples, hasSprite) {
+        this.exampleStatusStr = 'Loaded ' + examples.length + ' examples.';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;
         this.examplesAndInferences = examples.map(function(ex) {
@@ -2671,6 +2684,7 @@ limitations under the License.
           this.updateExampleContents_(
             result.value.examples, result.value.sprite);
         };
+        this.exampleStatusStr = 'Loading examples...'
         this.makeAsyncRequest_(url, updateExampleContents);
         this.$.spinner.hidden = false;
       },
