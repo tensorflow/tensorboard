@@ -2500,14 +2500,9 @@ limitations under the License.
 
       /**
        * Calculates and stores distance stats for each feature, used for
-       * calculating closest counterfactual example to a selected example.
+       * calculating distances between examples.
        */
       calculateDistanceStats_: function(statsProto) {
-        // Only need distance stats for classification models, for
-        // counterfactual generation.
-        if (this.isRegression_(this.modelType)) {
-          return;
-        }
         this.distanceStats_ = {};
         for (let i = 0; i < statsProto.datasetsList[0].featuresList.length;
              i++) {
