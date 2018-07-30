@@ -28,10 +28,10 @@ export enum CategoryType {
   PREFIX_GROUP,
 }
 export interface PrefixGroupMetadata {
-  type: CategoryType.PREFIX_GROUP;
+  type: CategoryType;
 }
 export interface SearchResultsMetadata {
-  type: CategoryType.SEARCH_RESULTS;
+  type: CategoryType;
   validRegex: boolean;
   universalRegex: boolean;  // is the search query ".*"? ("(?:)" doesn't count)
 }
@@ -44,6 +44,20 @@ export interface Category<T> {
 };
 export type TagCategory = Category<{tag: string, runs: string[]}>;
 export type RunTagCategory = Category<{tag: string, run: string}>;
+
+/**
+ * Organize data by tagPrefix, tag, experiments, and lastly runs. Specifically,
+ * for scalar plugin, sections are created from tagPrefixes, line graphs are
+ * created from tag name, and within a graph, lines are colored and grouped by
+ * experiments.
+ */
+export type FourLeveledCategory = Category<{
+  tag: string,
+  items: Array<{
+    experiment: string,
+    run: string,
+  }>,
+}>;
 
 export type RawCategory = Category<string>;  // Intermediate structure.
 
@@ -110,15 +124,8 @@ export function categorizeTags(
     query?: string): TagCategory[] {
   const tags = tf_backend.getTags(runToTag);
   const categories = categorize(tags, query);
-  const tagToRuns: {[tag: string]: string[]} = {};
-  tags.forEach(tag => {
-    tagToRuns[tag] = [];
-  });
-  selectedRuns.forEach(run => {
-    (runToTag[run] || []).forEach(tag => {
-      tagToRuns[tag].push(run);
-    });
-  });
+  const tagToRuns = createTagToRuns(_.pick(runToTag, selectedRuns));
+
   return categories.map(({name, metadata, items}) => ({
     name,
     metadata,
@@ -127,6 +134,84 @@ export function categorizeTags(
       runs: tagToRuns[tag].slice(),
     })),
   }));
+}
+
+/**
+ * Creates grouping of the data based on selection from tf-data-selector. It
+ * groups data by prefixes of tag names and by tag names. Each group contains
+ * names of experiments and runs.
+ */
+export function categorizeSelection(
+    selection: tf_data_selector.Selection[],
+    runToTag: RunToTag): FourLeveledCategory[] {
+  const tagToItems = new Map();
+  const searchTagToItems = new Map();
+
+  selection.forEach(({experiment, runs, tagRegex}) => {
+    const runNames = runs.map(({name}) => name);
+    const selectedRunToTag = (_.pick(runToTag, runNames) as RunToTag);
+    const tagToSelectedRuns = createTagToRuns(selectedRunToTag);
+    const tags = tf_backend.getTags(selectedRunToTag);
+
+    const searchCategory = categorizeBySearchQuery(tags, tagRegex);
+    // list of matching tags.
+    searchCategory.items.forEach(tag => {
+      const items = searchTagToItems.get(tag) || [];
+      items.push(...tagToSelectedRuns.get(tag)
+          .map(run => ({experiment: experiment.name, run})));
+      searchTagToItems.set(tag, items);
+    });
+
+    // list of all tags that has selected runs.
+    tags.forEach(tag => {
+      const items = tagToItems.get(tag) || [];
+      items.push(...tagToSelectedRuns.get(tag)
+          .map(run => ({experiment: experiment.name, run})));
+      tagToItems.set(tag, items);
+    });
+  });
+
+  const searchCategory = {
+    name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+    metadata: {
+      type: CategoryType.SEARCH_RESULTS,
+      validRegex: false,
+      universalRegex: false,
+    },
+    items: Array.from(searchTagToItems.entries())
+        .map(([tag, value]) => ({
+          tag,
+          items: value,
+        })),
+  };
+
+  // Organize the tag to items by prefix.
+  const prefixCategories = categorizeByPrefix(Array.from(tagToItems.keys()))
+      .map(({name, metadata, items}) => ({
+        name,
+        metadata,
+        items: items.map(tag => ({
+          tag,
+          items: tagToItems.get(tag),
+        })),
+      }));
+
+  return [
+    searchCategory,
+    ...prefixCategories,
+  ];
+}
+
+function createTagToRuns(runToTag: RunToTag): Map<string, string[]> {
+  const tagToRun = new Map();
+  Object.keys(runToTag).forEach(run => {
+    runToTag[run].forEach(tag => {
+      const runs = tagToRun.get(tag) || [];
+      runs.push(run);
+      tagToRun.set(tag, runs);
+    });
+  });
+  return tagToRun;
 }
 
 function compareTagRun(a, b: {tag: string, run: string}): number {

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_categorization_utils {
 
-const assert = chai.assert;
+const {assert, expect} = chai;
 
 describe('categorizationUtils', () => {
   const {CategoryType} = tf_categorization_utils;
@@ -192,6 +192,139 @@ describe('categorizationUtils', () => {
         items: ['singleton'],
       }];
       assert.deepEqual(actual, expected);
+    });
+  });
+
+  describe('categorizeSelection', () => {
+    const {categorizeSelection} = tf_categorization_utils;
+
+    beforeEach(function() {
+      this.run1 = {id: 1, name: 'run1', startTime: 10};
+      this.run2 = {id: 2, name: 'run2', startTime: 5};
+      this.run3 = {id: 3, name: 'run3', startTime: 0};
+      this.experiment1 = {
+        experiment: {id: 1, name: 'exp1', startTime: 0},
+        runs: [this.run1, this.run2],
+        tagRegex: '',
+      };
+      this.experiment2 = {
+        experiment: {id: 2, name: 'exp2', startTime: 0},
+        runs: [this.run2, this.run3],
+        tagRegex: '(subtag1|tag3)',
+      };
+
+      this.runToTag = {
+        [this.run1.name]: ['tag1'],
+        [this.run2.name]: ['tag2/subtag1', 'tag2/subtag2'],
+        [this.run3.name]: ['tag2/subtag1', 'tag3'],
+      };
+    });
+
+    it('merges the results of the query and the prefix groups', function() {
+      const result = categorizeSelection([this.experiment1], this.runToTag);
+
+      expect(result).to.have.lengthOf(3);
+      expect(result[0]).to.have.property('metadata')
+          .that.has.property('type', CategoryType.SEARCH_RESULTS);
+
+      expect(result[1]).to.have.property('metadata')
+          .that.has.property('type', CategoryType.PREFIX_GROUP);
+      expect(result[2]).to.have.property('metadata')
+          .that.has.property('type', CategoryType.PREFIX_GROUP);
+    });
+
+    describe('search group', () => {
+      it('filters groups by tag with a tagRegex', function() {
+        const [searchResult] = categorizeSelection(
+          [this.experiment2],
+          this.runToTag);
+
+        // should match 'tag2/subtag1' and 'tag3'.
+        expect(searchResult).to.have.property('items')
+            .that.has.lengthOf(2);
+        expect(searchResult.items[0]).to.have.property('tag', 'tag2/subtag1');
+        expect(searchResult.items[1]).to.have.property('tag', 'tag3');
+      });
+
+      it('combines selection without tagRegex with one', function() {
+        const [searchResult] = categorizeSelection(
+          [this.experiment1, this.experiment2],
+          this.runToTag);
+
+        // should match 'tag1', 'tag2/subtag1', 'tag2/subtag2', and 'tag3'.
+        expect(searchResult).to.have.property('items')
+            .that.has.lengthOf(4);
+        expect(searchResult.items[0]).to.have.property('tag', 'tag1');
+        expect(searchResult.items[1]).to.have.property('tag', 'tag2/subtag1');
+        expect(searchResult.items[2]).to.have.property('tag', 'tag2/subtag2');
+        expect(searchResult.items[3]).to.have.property('tag', 'tag3');
+
+        expect(searchResult.items[1]).to.have.property('items')
+            .that.has.lengthOf(3)
+            .and.that.deep.equal([
+              {experiment: 'exp1', run: 'run2'},
+              {experiment: 'exp2', run: 'run2'},
+              {experiment: 'exp2', run: 'run3'},
+            ]);
+      });
+
+      it('returns name `multi` when there are multiple selections', function() {
+        const [searchResult2] = categorizeSelection(
+          [this.experiment2],
+          this.runToTag);
+        expect(searchResult2).to.have.property('name', '(subtag1|tag3)');
+
+        const [searchResult1] = categorizeSelection(
+          [this.experiment1, this.experiment2],
+          this.runToTag);
+        expect(searchResult1).to.have.property('name', 'multi');
+      });
+    });
+
+    describe('prefix group', () => {
+      it('creates a group when a tag misses separator', function() {
+        const result = categorizeSelection([this.experiment1], this.runToTag);
+
+        expect(result[1]).to.have.property('items')
+            .that.has.lengthOf(1);
+
+        expect(result[1]).to.have.property('name', 'tag1');
+        expect(result[1].items[0]).to.have.property('tag', 'tag1');
+        expect(result[1].items[0]).to.have.property('items')
+            .that.has.lengthOf(1);
+      });
+
+      it('creates a grouping when tag has a separator', function() {
+        const result = categorizeSelection([this.experiment1], this.runToTag);
+
+        expect(result[2]).to.have.property('items')
+            .that.has.lengthOf(2);
+
+        expect(result[2]).to.have.property('name', 'tag2');
+        expect(result[2].items[0]).to.have.property('tag', 'tag2/subtag1');
+        expect(result[2].items[1]).to.have.property('tag', 'tag2/subtag2');
+        expect(result[2].items[0]).to.have.property('items')
+            .that.has.lengthOf(1);
+      });
+
+      it('creates a group with items with experiment and run', function() {
+        const result = categorizeSelection([this.experiment1], this.runToTag);
+
+        expect(result[1].items[0]).to.have.property('items')
+            .that.has.lengthOf(1)
+            .and.that.deep.equal([{experiment: 'exp1', run: 'run1'}]);
+      });
+
+      it('creates distinct subitems when tags exactly match', function() {
+        const result = categorizeSelection([this.experiment2], this.runToTag);
+
+        expect(result[1].items[0]).to.have.property('items')
+            .that.has.lengthOf(2)
+            .and.that.deep.equal([
+              {experiment: 'exp2', run: 'run2'},
+              {experiment: 'exp2', run: 'run3'},
+            ]);
+      });
     });
   });
 
