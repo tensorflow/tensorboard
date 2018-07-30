@@ -140,7 +140,7 @@ limitations under the License.
       <div id="content-pane" class="fit">
         <template is="dom-if" if="[[_isDataSelectorEnabled]]">
           <div id="data-selector">
-            <tf-data-selector data-selection="{{_dataSelection}}">
+            <tf-data-selector selection="{{_dataSelection}}">
             </tf-data-selector>
           </div>
         </template>
@@ -530,6 +530,8 @@ limitations under the License.
         ('_ensureSelectedDashboardStamped(' +
          '_dashboardContainersStamped, _activeDashboards, ' +
          '_selectedDashboard)'),
+        ('_updateDataSelection(_dataSelection, _activeDashboards,' +
+         '_selectedDashboard)'),
       ],
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
@@ -685,10 +687,10 @@ limitations under the License.
         if (container.children.length === 0) {
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
+          if (dashboard.useDataSelector) {
+            component.dataSelection = this._dataSelection;
+          }
           container.appendChild(component);
-        }
-        if (dashboard.useDataSelector) {
-          container.firstElementChild.dataSelection = this._dataSelection;
         }
         this.set('_isReloadDisabled', dashboard.isReloadDisabled);
         this.set('_isDataSelectorEnabled', dashboard.useDataSelector);
@@ -713,6 +715,15 @@ limitations under the License.
         var dashboard = this.$$(
           `.dashboard-container[data-dashboard=${selectedDashboard}] #dashboard`);
         return dashboard;
+      },
+
+      _updateDataSelection() {
+        // The dashboard is not ready yet until it stamped the containers.
+        if (!this._dashboardContainersStamped) return;
+        const component = this._selectedDashboardComponent();
+        // The dashboard may not exist.
+        if (!component) return;
+        component.dataSelection = this._dataSelection;
       },
 
       ready() {
