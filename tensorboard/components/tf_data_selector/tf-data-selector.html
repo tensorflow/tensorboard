@@ -45,16 +45,18 @@ Properties out:
     </template>
     <template is="dom-repeat" items="[[_comparingExps]]" as="exp">
       <tf-data-select-row
+        checkbox-color="[[_getExperimentColor(exp)]]"
         experiment="[[exp]]"
         persistence-number="[[index]]"
         on-selection-changed="_selectionChanged"
+        on-remove="_removeExperiment"
       ></tf-data-select-row>
     </template>
 
     <experiment-selector
       id="selector"
       exclude-experiments="[[_comparingExps]]"
-      on-experiment-added="_experimentAdded"
+      on-experiment-added="_addExperiments"
     ></experiment-selector>
     <style>
       :host {
@@ -63,12 +65,27 @@ Properties out:
         display: flex;
         flex-direction: column;
         flex-wrap: wrap;
+        width 100%;
       }
 
       #exp-selector {
         display: inline-flex;
         flex-direction: column;
         min-width: 400px;
+      }
+
+      tf-data-select-row {
+        margin: 5px 0;
+        max-width: 720px;
+        width: 100%;
+      }
+
+      tf-data-select-row[no-experiment] {
+        margin-left: -8px;
+      }
+
+      experiment-selector {
+        margin: 10px 0;
       }
     </style>
   </template>

@@ -62,15 +62,6 @@ var tf_data_selector;
             return ids.filter(function (id) { return lookupMap.has(id); }).map(function (id) { return lookupMap.get(id); });
         },
         _expStringObserver: tf_storage.getStringObserver('e', { defaultValue: '', polymerProperty: '_comparingExpsString' }),
-        _experimentAdded: function (event) {
-            var newExperiments = event.detail;
-            var newComparingExpIds = this._comparingExps
-                .concat(newExperiments).map(function (_a) {
-                var id = _a.id;
-                return id;
-            });
-            this._comparingExpsString = tf_data_selector.encodeIdArray(newComparingExpIds);
-        },
         _canCompareExperiments: function () {
             return Boolean(this._comparingExps.length);
         },
@@ -110,6 +101,31 @@ var tf_data_selector;
                 tagRegex: tagRegex,
             });
             this._setSelection(Array.from(this._selectionMap.values()));
+        },
+        _addExperiments: function (event) {
+            var newExperiments = event.detail;
+            var newComparingExpIds = this._comparingExps
+                .concat(newExperiments).map(function (_a) {
+                var id = _a.id;
+                return id;
+            });
+            this._comparingExpsString = tf_data_selector.encodeIdArray(newComparingExpIds);
+        },
+        _removeExperiment: function (event) {
+            var expId = event.target.experiment.id;
+            var newComparingExpIds = this._comparingExps
+                .filter(function (_a) {
+                var id = _a.id;
+                return id != expId;
+            })
+                .map(function (_a) {
+                var id = _a.id;
+                return id;
+            });
+            this._comparingExpsString = tf_data_selector.encodeIdArray(newComparingExpIds);
+        },
+        _getExperimentColor: function (experiment) {
+            return tf_color_scale.experimentsColorScale(experiment.name);
         },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

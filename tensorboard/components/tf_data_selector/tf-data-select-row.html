@@ -16,6 +16,8 @@ limitations under the License.
 -->
 
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
@@ -35,11 +37,18 @@ Properties out:
 
 Event out:
   - selection-changed: Fired when selection or regex filter change.
+  - remove: Fired when user wants to remove the selection row.
 -->
 <dom-module id="tf-data-select-row">
   <template>
     <template is="dom-if" if="[[!noExperiment]]">
-      <span class="exp-name">[[experiment.name]]</span>
+      <paper-checkbox
+        id="checkbox"
+        checked="{{enabled}}"
+        title="[[experiment.name]]"
+      >
+        [[experiment.name]]
+      </paper-checkbox>
     </template>
 
     <tf-filterable-checkbox-dropdown
@@ -58,6 +67,14 @@ Event out:
       <iron-icon prefix icon="search" slot="prefix"></iron-icon>
     </paper-input>
 
+    <template is="dom-if" if="[[!noExperiment]]">
+      <paper-icon-button
+        icon="remove-circle"
+        on-tap="_removeRow"
+        title="Remove the comparison"
+      ></paper-button>
+    </template>
+
     <style>
       :host {
         align-items: center;
@@ -67,6 +84,11 @@ Event out:
         font-size: 14px;
       }
 
+      #checkbox {
+        flex: 1 0;
+        max-width: 200px;
+      }
+
       paper-input {
         --paper-input-prefix: {
           width: 22px;
@@ -74,7 +96,7 @@ Event out:
         };
         --paper-input-container-focus-color: var(--tb-orange-strong);
         --paper-input-container: {
-          padding: 4px 0;
+          padding: 5px 0;
         };
         --paper-input-container-input: {
           font-size: 14px;
@@ -83,6 +105,7 @@ Event out:
           font-size: 14px;
         };
         width: 200px;
+        margin: 0 5px;
       }
 
       paper-input iron-icon {
@@ -92,13 +115,25 @@ Event out:
         color: inherit;
       }
 
-      .exp-name {
-        color: var(--paper-grey-900);
-        padding: 4px 8px;
+      tf-filterable-checkbox-dropdown {
+        --tf-filterable-checkbox-dropdown-input-container: {
+          padding: 5px;
+        };
+
+        padding: 0 5px;
+        margin: 0 5px;
       }
 
-      tf-filterable-checkbox-dropdown {
-        padding: 4px 8px;
+      paper-icon-button {
+        --paper-icon-button: {
+          height: 32px;
+          padding: 5px;
+          width: 32px;
+        };
+
+        color: var(--paper-grey-600);
+        flex-shrink: 0;
+        margin: 0 5px;
       }
     </style>
   </template>

@@ -30,6 +30,15 @@ var tf_data_selector;
                     startTime: null,
                 }); },
             },
+            enabled: {
+                type: Boolean,
+                notify: true,
+                value: true,
+            },
+            checkboxColor: {
+                type: String,
+                value: '',
+            },
             // Required field.
             persistenceNumber: Number,
             noExperiment: {
@@ -50,6 +59,9 @@ var tf_data_selector;
                 value: '',
                 observer: '_persistRegex',
             },
+        },
+        listeners: {
+            'dom-change': '_synchronizeColors',
         },
         observers: [
             '_persistSelectedRuns(_selectedRuns)',
@@ -76,6 +88,18 @@ var tf_data_selector;
         attached: function () {
             var _this = this;
             this._fetchRunsAndTags().then(function () { return _this._isDataReady = true; });
+        },
+        _synchronizeColors: function () {
+            var _this = this;
+            var cb = this.$$('#checkbox');
+            if (!cb)
+                return;
+            var color = this.checkboxColor;
+            cb.customStyle['--paper-checkbox-checked-color'] = color;
+            cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
+            cb.customStyle['--paper-checkbox-unchecked-color'] = color;
+            cb.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
+            window.requestAnimationFrame(function () { return _this.updateStyles(); });
         },
         detached: function () {
             this._isDataReady = false;
@@ -148,6 +172,9 @@ var tf_data_selector;
                 }),
                 tagRegex: this._tagRegex,
             });
+        },
+        _removeRow: function () {
+            this.fire('remove');
         },
     });
     function serializeValue(source, selectedIds) {

@@ -21,6 +21,8 @@ tf_web_library(
         ":type",
         "@org_polymer_iron_icon",
         "@org_polymer_paper_button",
+        "@org_polymer_paper_checkbox",
+        "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",
         "@org_polymer_paper_styles",
         "//tensorboard/components/tf_backend",
