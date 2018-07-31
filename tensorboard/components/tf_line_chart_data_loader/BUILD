@@ -7,6 +7,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_line_chart_data_loader",
     srcs = [
+        "data-loader-behavior.ts",
         "tf-line-chart-data-loader.html",
     ],
     path = "/tf-line-chart-data-loader",

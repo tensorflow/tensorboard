@@ -43,10 +43,11 @@ limitations under the License.
       default-y-range="[[_defaultYRange]]"
       smoothing-enabled="[[_smoothingEnabled]]"
       request-manager="[[requestManager]]"
-      runs="[[runs]]"
-      tag="[[tag]]"
-      data-url="[[_dataUrl]]"
-      process-data="[[_createProcessDataFunction()]]"
+      data-to-load="[[runs]]"
+      data-series="[[runs]]"
+      load-key="[[tag]]"
+      get-data-load-url="[[_dataUrl]]"
+      load-data-callback="[[_createProcessDataFunction()]]"
       active="[[active]]"
     ></tf-line-chart-data-loader>
 
@@ -292,8 +293,14 @@ limitations under the License.
         },
         _dataUrl: {
           type: Function,
-          value: () => (tag, run) => tf_backend.addParams(
-              tf_backend.getRouter().pluginRoute('pr_curves', '/pr_curves'), {tag, run}),
+          value: function() {
+            return (run) => {
+              const tag = this.tag;
+              return tf_backend.addParams(
+                tf_backend.getRouter().pluginRoute('pr_curves', '/pr_curves'),
+                {tag, run});
+            };
+          },
         },
         _smoothingEnabled: {
           type: Boolean,
