@@ -481,7 +481,7 @@ limitations under the License.
          */
         _selectedDashboard: {
           type: String,
-          value: tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false) || null,
+          value: tf_storage.getString(tf_storage.TAB) || null,
           observer: '_selectedDashboardChanged'
         },
         _dashboardToMaybeRemove: String,
@@ -612,7 +612,7 @@ limitations under the License.
        */
       _selectedDashboardChanged(selectedDashboard) {
         const pluginString = selectedDashboard || '';
-        tf_storage.setString(tf_storage.TAB, pluginString, /*useLocalStorage=*/false);
+        tf_storage.setString(tf_storage.TAB, pluginString);
         // Record this dashboard selection as a page view.
         ga('set', 'page', '/' + pluginString);
         ga('send', 'pageview');
@@ -629,8 +629,8 @@ limitations under the License.
             // Use location.replace for this call to avoid breaking back-button navigation.
             // Note that this will precede the update to tf_storage triggered by updating
             // _selectedDashboard and make it a no-op.
-            tf_storage.setString(tf_storage.TAB, selectedDashboard, /*useLocalStorage=*/false,
-                                 /*useLocationReplace=*/true);
+            tf_storage.setString(tf_storage.TAB, selectedDashboard,
+                {useLocationReplace: true});
             // Note: the following line will re-trigger this handler, but it
             // will be a no-op since selectedDashboard is no longer null.
             this._selectedDashboard = selectedDashboard;
@@ -639,7 +639,7 @@ limitations under the License.
       },
 
       _updateSelectedDashboardFromHash() {
-        const dashboardName = tf_storage.getString(tf_storage.TAB, /*useLocalStorage=*/false);
+        const dashboardName = tf_storage.getString(tf_storage.TAB);
         this.set('_selectedDashboard', dashboardName || null);
       },
 

@@ -35,7 +35,7 @@ var tf_paginated_view;
     tf_paginated_view.removeLimitListener = removeLimitListener;
     function getLimit() {
         if (_limit == null) {
-            _limit = tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY, /*useLocalStorage=*/ true);
+            _limit = tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY, { useLocalStorage: true });
             if (_limit == null || !isFinite(_limit) || _limit <= 0) {
                 _limit = DEFAULT_LIMIT;
             }
@@ -54,7 +54,7 @@ var tf_paginated_view;
             return;
         }
         _limit = limit;
-        tf_storage.setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit, /*useLocalStorage=*/ true);
+        tf_storage.setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit, { useLocalStorage: true });
         listeners.forEach(function (listener) {
             listener();
         });
