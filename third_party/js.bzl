@@ -173,12 +173,12 @@ def tensorboard_js_workspace():
   web_library_external(
       name = "com_lodash",
       licenses = ["notice"],  # MIT
-      sha256 = "0e88207e5f90af4ce8790d6e1e7d09d2702d81bce0bafdc253d18c0a5bf7661e",
+      sha256 = "6c5fa80d0fa9dc4eba634ab042404ff7c162dcb4cfe3473338801aeca0042285",
       urls = [
-          "https://mirror.bazel.build/github.com/lodash/lodash/archive/3.10.1.tar.gz",
-          "https://github.com/lodash/lodash/archive/3.10.1.tar.gz",
+          "https://mirror.bazel.build/github.com/lodash/lodash/archive/4.17.5.tar.gz",
+          "https://github.com/lodash/lodash/archive/4.17.5.tar.gz",
       ],
-      strip_prefix = "lodash-3.10.1",
+      strip_prefix = "lodash-4.17.5",
       path = "/lodash",
       srcs = ["lodash.js"],
       extra_build_file_content = "exports_files([\"LICENSE\"])",

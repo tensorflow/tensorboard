@@ -29,6 +29,9 @@ def tensorboard_typings_workspace():
               "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/5d0f2126c8dac8fce0ff020218aea06607213b0d/google.analytics/ga.d.ts",
               "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/5d0f2126c8dac8fce0ff020218aea06607213b0d/google.analytics/ga.d.ts",
           ],
+          # TODO(jart): Upgrade to Lodash v4 typing: Lodash package is broken
+          # down into small subpackages with many smaller type files. Loading
+          # one type file is no longer enough.
           "e4cd3d5de0eb3bc7b1063b50d336764a0ac82a658b39b5cf90511f489ffdee60": [
               "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/efd40e67ff323f7147651bdbef03c03ead7b1675/lodash/lodash.d.ts",
               "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/efd40e67ff323f7147651bdbef03c03ead7b1675/lodash/lodash.d.ts",

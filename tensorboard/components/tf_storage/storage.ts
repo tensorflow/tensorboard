@@ -248,13 +248,14 @@ function dictToComponent(items: StringDict): string {
   }
 
   // Join other strings with &key=value notation
-  const nonTab = _.pairs(items)
-                   .filter((pair) =>  pair[0] !== TAB)
-                   .map((pair) => {
-                     return encodeURIComponent(pair[0]) + '=' +
-                         encodeURIComponent(pair[1]);
-                   })
-                   .join('&');
+  const nonTab = Object.keys(items)
+      .map(key => [key, items[key]])
+      .filter((pair) =>  pair[0] !== TAB)
+      .map((pair) => {
+       return encodeURIComponent(pair[0]) + '=' +
+           encodeURIComponent(pair[1]);
+      })
+      .join('&');
 
   return nonTab.length > 0 ? (component + '&' + nonTab) : component;
 }

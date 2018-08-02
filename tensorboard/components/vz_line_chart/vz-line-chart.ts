@@ -995,7 +995,7 @@ class LineChart {
       };
     });
     let idx: number =
-        _.sortedIndex(points, target, (p: vz_chart_helpers.Point) => p.x);
+        sortedIndexBy(points, target, (p: vz_chart_helpers.Point) => p.x);
     if (idx === points.length) {
       return points[points.length - 1];
     } else if (idx === 0) {
@@ -1178,6 +1178,32 @@ class LineChart {
     // Destroying outer destroys all subcomponents recursively.
     if (this.outer) this.outer.destroy();
   }
+}
+
+/**
+ * Binary searches and finds "closest" index of a value in an array. As the name
+ * indicates, `array` must be sorted. When there is no exact match, it returns
+ * index of a first item that is larger than the value.
+ * API Signature and method inspired by lodash#sortedIndexBy.
+ * TODO(stephanwlee): Use _.sortedIndexBy when types are migrated to v4.
+ */
+function sortedIndexBy<T>(array: T[], value: T, iteratee: (val: T) => number):
+    number {
+  const query = iteratee(value);
+
+  let low = 0;
+  let high = array.length;
+
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    const midVal = iteratee(array[mid]);
+    if (midVal < query) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  return high;
 }
 
 }  // namespace vz_line_chart
