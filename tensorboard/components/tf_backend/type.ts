@@ -16,7 +16,8 @@ namespace tf_backend {
 
 export type Experiment = {id: number, name: string, startTime: number};
 
-export type Run = {id: number, name: string, startTime: number};
+// `id` is null when data source is logdir.
+export type Run = {id: number | null, name: string, startTime: number};
 
 export type Tag = {id: number, name: string, displayName: string};
 
