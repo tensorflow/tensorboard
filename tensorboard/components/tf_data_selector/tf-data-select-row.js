@@ -112,7 +112,7 @@ var tf_data_selector;
                 return Promise.all([fetchRuns]).then(function (_a) {
                     var runs = _a[0];
                     _this.set('_runs', Array.from(new Set(runs)).map(function (runName) { return ({
-                        id: runName,
+                        id: null,
                         name: runName,
                         startedTime: null,
                     }); }));
@@ -129,8 +129,12 @@ var tf_data_selector;
             }
         },
         _getRunOptions: function (_) {
+            var _this = this;
             return this._runs.map(function (run) { return ({
-                id: run.id,
+                // /data/runs endpoint does not return ids. In case of logdir data source,
+                // runs cannot have an id and, for filtered-checkbox-list, we need to
+                // synthesize id from the name.
+                id: _this.noExperiment ? run.name : run.id,
                 title: run.name,
             }); });
         },
@@ -140,18 +144,18 @@ var tf_data_selector;
         _persistSelectedRuns: function () {
             if (!this._isDataReady)
                 return;
-            var value = serializeValue(this._runs, this._selectedRuns.map(function (_a) {
+            var value = this._serializeValue(this._runs, this._selectedRuns.map(function (_a) {
                 var id = _a.id;
                 return id;
             }));
-            tf_storage.setString(this._getPersistenceKey(Type.RUN), value);
+            tf_storage.setString(this._getPersistenceKey(Type.RUN), value, { defaultValue: '' });
         },
         _getRunsSelectionState: function () {
             var allIds = this._runs.map(function (_a) {
                 var id = _a.id;
                 return id;
             });
-            var ids = deserializeValue(this._runSelectionStateString, allIds);
+            var ids = this._deserializeValue(this._runSelectionStateString, allIds);
             var prevSelection = new Set(ids);
             var newSelection = {};
             allIds.forEach(function (id) { return newSelection[id] = prevSelection.has(id); });
@@ -161,34 +165,46 @@ var tf_data_selector;
             if (!this._isDataReady)
                 return;
             var value = this._tagRegex;
-            tf_storage.setString(this._getPersistenceKey(Type.TAG), value);
+            tf_storage.setString(this._getPersistenceKey(Type.TAG), value, { defaultValue: '' });
         },
         _fireChange: function (_, __) {
+            var _this = this;
             var runMap = new Map(this._runs.map(function (run) { return [run.id, run]; }));
             this.fire('selection-changed', {
                 runs: this._selectedRuns.map(function (_a) {
                     var id = _a.id;
                     return runMap.get(id);
-                }),
+                })
+                    .filter(Boolean)
+                    .map(function (run) { return ({
+                    id: _this.noExperiment ? null : run.id,
+                    name: run.name,
+                    startTime: run.startTime,
+                }); }),
                 tagRegex: this._tagRegex,
             });
         },
         _removeRow: function () {
             this.fire('remove');
         },
+        _serializeValue: function (source, selectedIds) {
+            if (selectedIds.length == source.length)
+                return '$all';
+            if (selectedIds.length == 0)
+                return '$none';
+            // TODO(stephanwlee): Consider populating ids for /data/runs endpoint.
+            return this.noExperiment ?
+                selectedIds.join(',') :
+                tf_data_selector.encodeIdArray(selectedIds);
+        },
+        _deserializeValue: function (str, allValues) {
+            if (str == '$all')
+                return allValues;
+            if (str == '$none')
+                return [];
+            return this.noExperiment ?
+                str.split(',') :
+                tf_data_selector.decodeIdArray(str);
+        },
     });
-    function serializeValue(source, selectedIds) {
-        if (selectedIds.length == source.length)
-            return '$all';
-        if (selectedIds.length == 0)
-            return '$none';
-        return tf_data_selector.encodeIdArray(selectedIds);
-    }
-    function deserializeValue(str, allValues) {
-        if (str == '$all')
-            return allValues;
-        if (str == '$none')
-            return [];
-        return tf_data_selector.decodeIdArray(str);
-    }
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

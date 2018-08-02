@@ -39,14 +39,9 @@ var tf_dashboard_common;
                 notify: true,
                 value: function () { return []; },
             },
-            // ====== Computed properties ======
-            _labelValue: {
-                type: String,
-                computed: '_computeValueLabel(selectedItems)',
-            },
         },
         // ====================== COMPUTED ======================
-        _computeValueLabel: function (_) {
+        _getValueLabel: function (_) {
             if (this.selectedItems.length == this.items.length) {
                 return "All " + this.label + "s";
             }
