@@ -199,9 +199,34 @@ describe('categorizationUtils', () => {
     const {categorizeSelection} = tf_categorization_utils;
 
     beforeEach(function() {
-      this.run1 = {id: 1, name: 'run1', startTime: 10};
-      this.run2 = {id: 2, name: 'run2', startTime: 5};
-      this.run3 = {id: 3, name: 'run3', startTime: 0};
+      const tag1 = {
+        id: 1, pluginName: 'scalar',
+        name: 'tag1', displayName: 'tag1',
+
+      };
+      const tag2_1 = {
+        id: 2, pluginName: 'scalar',
+        name: 'tag2/subtag1', displayName: 'tag2/subtag1',
+
+      };
+      const tag2_2 = {
+        id: 3, pluginName: 'scalar',
+        name: 'tag2/subtag2', displayName: 'tag2/subtag2',
+
+      };
+      const tag3 = {
+        id: 4, pluginName: 'scalar',
+        name: 'tag3', displayName: 'tag3',
+      };
+      const tag4 = {
+        id: 5, pluginName: 'custom_scalar',
+        name: 'tag4', displayName: 'tag4',
+      };
+
+      this.run1 = {id: 1, name: 'run1', startTime: 10, tags: [tag1, tag4]};
+      this.run2 = {id: 2, name: 'run2', startTime: 5, tags: [tag2_1, tag2_2]};
+      this.run3 = {id: 3, name: 'run3', startTime: 0, tags: [tag2_1, tag3]};
+
       this.experiment1 = {
         experiment: {id: 1, name: 'exp1', startTime: 0},
         runs: [this.run1, this.run2],
@@ -212,16 +237,16 @@ describe('categorizationUtils', () => {
         runs: [this.run2, this.run3],
         tagRegex: '(subtag1|tag3)',
       };
-
-      this.runToTag = {
-        [this.run1.name]: ['tag1'],
-        [this.run2.name]: ['tag2/subtag1', 'tag2/subtag2'],
-        [this.run3.name]: ['tag2/subtag1', 'tag3'],
+      this.experiment3 = {
+        experiment: {id: 3, name: 'exp3', startTime: 0},
+        runs: [this.run1, this.run2, this.run3],
+        tagRegex: 'junk',
       };
     });
 
     it('merges the results of the query and the prefix groups', function() {
-      const result = categorizeSelection([this.experiment1], this.runToTag);
+      const result = categorizeSelection(
+          [this.experiment1], 'scalar');
 
       expect(result).to.have.lengthOf(3);
       expect(result[0]).to.have.property('metadata')
@@ -236,8 +261,7 @@ describe('categorizationUtils', () => {
     describe('search group', () => {
       it('filters groups by tag with a tagRegex', function() {
         const [searchResult] = categorizeSelection(
-          [this.experiment2],
-          this.runToTag);
+            [this.experiment2], 'scalar');
 
         // should match 'tag2/subtag1' and 'tag3'.
         expect(searchResult).to.have.property('items')
@@ -248,8 +272,7 @@ describe('categorizationUtils', () => {
 
       it('combines selection without tagRegex with one', function() {
         const [searchResult] = categorizeSelection(
-          [this.experiment1, this.experiment2],
-          this.runToTag);
+            [this.experiment1, this.experiment2], 'scalar');
 
         // should match 'tag1', 'tag2/subtag1', 'tag2/subtag2', and 'tag3'.
         expect(searchResult).to.have.property('items')
@@ -259,7 +282,7 @@ describe('categorizationUtils', () => {
         expect(searchResult.items[2]).to.have.property('tag', 'tag2/subtag2');
         expect(searchResult.items[3]).to.have.property('tag', 'tag3');
 
-        expect(searchResult.items[1]).to.have.property('items')
+        expect(searchResult.items[1]).to.have.property('series')
             .that.has.lengthOf(3)
             .and.that.deep.equal([
               {experiment: 'exp1', run: 'run2'},
@@ -270,32 +293,41 @@ describe('categorizationUtils', () => {
 
       it('returns name `multi` when there are multiple selections', function() {
         const [searchResult2] = categorizeSelection(
-          [this.experiment2],
-          this.runToTag);
+            [this.experiment2], 'scalar');
         expect(searchResult2).to.have.property('name', '(subtag1|tag3)');
 
         const [searchResult1] = categorizeSelection(
-          [this.experiment1, this.experiment2],
-          this.runToTag);
+            [this.experiment1, this.experiment2], 'scalar');
         expect(searchResult1).to.have.property('name', 'multi');
+      });
+
+      it('returns an empty array when tagRegex does not match any', function() {
+        const result = categorizeSelection(
+            [this.experiment3], 'custom_scalar');
+
+        expect(result).to.have.lengthOf(2);
+        expect(result[0]).to.have.property('items')
+            .that.has.lengthOf(0);
       });
     });
 
     describe('prefix group', () => {
       it('creates a group when a tag misses separator', function() {
-        const result = categorizeSelection([this.experiment1], this.runToTag);
+        const result = categorizeSelection(
+            [this.experiment1], 'scalar');
 
         expect(result[1]).to.have.property('items')
             .that.has.lengthOf(1);
 
         expect(result[1]).to.have.property('name', 'tag1');
         expect(result[1].items[0]).to.have.property('tag', 'tag1');
-        expect(result[1].items[0]).to.have.property('items')
+        expect(result[1].items[0]).to.have.property('series')
             .that.has.lengthOf(1);
       });
 
       it('creates a grouping when tag has a separator', function() {
-        const result = categorizeSelection([this.experiment1], this.runToTag);
+        const result = categorizeSelection(
+            [this.experiment1], 'scalar');
 
         expect(result[2]).to.have.property('items')
             .that.has.lengthOf(2);
@@ -303,26 +335,43 @@ describe('categorizationUtils', () => {
         expect(result[2]).to.have.property('name', 'tag2');
         expect(result[2].items[0]).to.have.property('tag', 'tag2/subtag1');
         expect(result[2].items[1]).to.have.property('tag', 'tag2/subtag2');
-        expect(result[2].items[0]).to.have.property('items')
+        expect(result[2].items[0]).to.have.property('series')
             .that.has.lengthOf(1);
       });
 
       it('creates a group with items with experiment and run', function() {
-        const result = categorizeSelection([this.experiment1], this.runToTag);
+        const result = categorizeSelection(
+            [this.experiment1], 'scalar');
 
-        expect(result[1].items[0]).to.have.property('items')
+        expect(result[1].items[0]).to.have.property('series')
             .that.has.lengthOf(1)
             .and.that.deep.equal([{experiment: 'exp1', run: 'run1'}]);
       });
 
       it('creates distinct subitems when tags exactly match', function() {
-        const result = categorizeSelection([this.experiment2], this.runToTag);
+        const result = categorizeSelection(
+            [this.experiment2], 'scalar');
 
-        expect(result[1].items[0]).to.have.property('items')
+        expect(result[1].items[0]).to.have.property('series')
             .that.has.lengthOf(2)
             .and.that.deep.equal([
               {experiment: 'exp2', run: 'run2'},
               {experiment: 'exp2', run: 'run3'},
+            ]);
+      });
+
+      it('filters out tags of a different pluguin', function() {
+        const result = categorizeSelection(
+            [this.experiment3], 'custom_scalar');
+
+        expect(result).to.have.lengthOf(2);
+        expect(result[1]).to.have.property('name', 'tag4');
+        expect(result[1]).to.have.property('items')
+            .that.has.lengthOf(1);
+        expect(result[1].items[0]).to.have.property('series')
+            .that.has.lengthOf(1)
+            .and.that.deep.equal([
+              {experiment: 'exp3', run: 'run1'},
             ]);
       });
     });

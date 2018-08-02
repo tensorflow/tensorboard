@@ -138,8 +138,7 @@ Polymer({
     } else if (this.experiment.id) {
       const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
       return requestManager.request(url).then(runs => {
-        this.set('_runs',
-            runs.map(({id, name, startTime}) => ({id, name, startTime})));
+        this.set('_runs', runs);
       });
     }
   },
@@ -191,6 +190,7 @@ Polymer({
             id: this.noExperiment ? null : run.id,
             name: run.name,
             startTime: run.startTime,
+            tags: run.tags,
           })),
       tagRegex: this._tagRegex,
     });
