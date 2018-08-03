@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl", "long_path")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
 
 def _tensorboard_zip_file(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
