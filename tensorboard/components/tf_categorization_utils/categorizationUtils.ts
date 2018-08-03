@@ -129,7 +129,7 @@ export function categorizeTags(
     metadata,
     items: items.map(tag => ({
       tag,
-      runs: tagToRuns[tag].slice(),
+      runs: tagToRuns.get(tag).slice(),
     })),
   }));
 }
