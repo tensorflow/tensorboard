@@ -222,12 +222,12 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.7.4/LICENSE",
-              "https://raw.githubusercontent.com/cpettitt/dagre/v0.7.4/LICENSE",
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.8.2/LICENSE",
+              "https://raw.githubusercontent.com/cpettitt/dagre/v0.8.2/LICENSE",
           ],
-          "7323829ddd77924a69e2b1235ded3eac30acd990da0f037e0fbd3c8e9035b50d": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.7.4/dist/dagre.core.js",
-              "https://raw.githubusercontent.com/cpettitt/dagre/v0.7.4/dist/dagre.core.js",
+          "43cb4e919196c177c149b63880d262074670af99db6a1e174b25e266da4935a9": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.8.2/dist/dagre.core.js",
+              "https://raw.githubusercontent.com/cpettitt/dagre/v0.8.2/dist/dagre.core.js",
           ],
       },
   )
@@ -237,12 +237,12 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/LICENSE",
-              "https://raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/LICENSE",
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/LICENSE",
+              "https://raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/LICENSE",
           ],
-          "772045d412b1513b549be991c2e1846c38019429d43974efcae943fbe83489bf": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/dist/graphlib.core.js",
-              "https://raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/dist/graphlib.core.js",
+          "ddc33a6aaf955ee24b0e0d30110adf350c65eedc5c0f2c424ca85bc128199a66": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/dist/graphlib.core.js",
+              "https://raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/dist/graphlib.core.js",
           ],
       },
   )
