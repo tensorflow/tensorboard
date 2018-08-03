@@ -28,8 +28,6 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "CLOSURE_WORKER_ATTR",
      "collect_js",
      "collect_runfiles",
-     "convert_path_to_es6_module_name",
-     "create_argfile",
      "difference",
      "long_path",
      "unfurl")
@@ -133,9 +131,6 @@ def _tf_web_library(ctx):
     execroot.inputs.append(entry)
 
   # compile typescript
-  workspace = ""
-  if ctx.label.workspace_root:
-    workspace = "/" + ctx.label.workspace_root
   if execroot.outputs:
     ts_config = _new_file(ctx, "-tsc.json")
     execroot.inputs.append(("tsconfig.json", ts_config.path))
