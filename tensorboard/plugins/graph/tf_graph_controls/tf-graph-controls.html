@@ -487,22 +487,16 @@ tf-graph-node-search {
       </div>
     </template>
     <template is="dom-if" if="[[_equals(colorBy, 'xla_cluster')]]">
-      <div class="color-text">
-        <div class="xlaClusterList">
-          <table>
-          <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
-            <tr>
-              <td style$="[[_getBackgroundColor(item.color)]]">
-                <div class="colorBox"></div>
-              </td>
-              <td>
-                <div>[[item.xla_cluster]]</div>
-              </td>
-            </tr>
-          </template>
-          </table>
-        </div>
-        <br/>
+      <div>
+        <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
+          <div class="color-legend-row">
+            <svg>
+              <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                   xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+            </svg>
+            <span class="color-legend-value">[[item.xla_cluster]]</span>
+          </div>
+        </template>
         <div class="color-legend-row">
           <svg>
             <use xmlns:xlink="http://www.w3.org/1999/xlink"

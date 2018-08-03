@@ -87,6 +87,7 @@ class HierarchyImpl implements Hierarchy {
     this.libraryFunctions = {};
     this.templates = null;
     this.devices = null;
+    this.xlaClusters = null;
     /**
      * @type {Object} Dictionary object that maps node name to the node
      * (could be op-node, metanode, or series-node)
@@ -475,15 +476,20 @@ export function build(graph: tf.graph.SlimGraph, params: HierarchyParams,
 
 export function joinAndAggregateStats(
     h: Hierarchy, stats: tf.graph.proto.StepStats) {
-  // Get all the possible device names.
+  // Get all the possible device and XLA cluster names.
   let deviceNames = {};
+  let xlaClusterNames = {};
   _.each(h.root.leaves(), nodeName => {
     let leaf = <OpNode> h.node(nodeName);
     if (leaf.device != null) {
       deviceNames[leaf.device] = true;
     }
+    if (leaf.xlaCluster != null) {
+      xlaClusterNames[leaf.xlaCluster] = true;
+    }
   });
   h.devices = _.keys(deviceNames);
+  h.xlaClusters = _.keys(xlaClusterNames);
 
   // Reset stats for each group node.
   _.each(h.getNodeMap(), (node, nodeName) => {
@@ -501,6 +507,12 @@ export function joinAndAggregateStats(
       if (leaf.device != null) {
         let deviceHistogram = (<GroupNode>node.parentNode).deviceHistogram;
         deviceHistogram[leaf.device] = (deviceHistogram[leaf.device] || 0) + 1;
+      }
+      if (leaf.xlaCluster != null) {
+        let xlaClusterHistogram =
+            (<GroupNode>node.parentNode).xlaClusterHistogram;
+        xlaClusterHistogram[leaf.xlaCluster] =
+            (xlaClusterHistogram[leaf.xlaCluster] || 0) + 1;
       }
       if (leaf.stats != null) {
         node.parentNode.stats.combine(leaf.stats);
@@ -591,6 +603,10 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
       if (node.device != null) {
         parent.deviceHistogram[node.device] =
             (parent.deviceHistogram[node.device] || 0) + 1;
+      }
+      if (node.xlaCluster != null) {
+        parent.xlaClusterHistogram[node.xlaCluster] =
+            (parent.xlaClusterHistogram[node.xlaCluster] || 0) + 1;
       }
 
       // Increment parents appropriate compatibility count
@@ -826,6 +842,10 @@ function groupSeries(metanode: Metanode, hierarchy: Hierarchy,
       if (child.device != null) {
         seriesNode.deviceHistogram[child.device] =
             (seriesNode.deviceHistogram[child.device] || 0) + 1;
+      }
+      if (child.xlaCluster != null) {
+        seriesNode.xlaClusterHistogram[child.xlaCluster] =
+            (seriesNode.xlaClusterHistogram[child.xlaCluster] || 0) + 1;
       }
 
       // Increment parents appropriate compatibility count
