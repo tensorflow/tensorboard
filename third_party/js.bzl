@@ -209,9 +209,9 @@ def tensorboard_js_workspace():
           # Plottable doesn't have a release tarball on GitHub. Using the
           # sources directly from git also requires running Node tooling
           # beforehand to generate files. NPM is the only place to get it.
-          "e3159beb279391c47433789f22b32bac88488cfcad6c0b6ec8605ce6b0081b0d": [
-              "https://mirror.bazel.build/registry.npmjs.org/plottable/-/plottable-3.1.0.tgz",
-              "https://registry.npmjs.org/plottable/-/plottable-3.1.0.tgz",
+          "377159c707151d2aa393c720a668a599a92194d55eb2a2d2cecabe4a3f164036": [
+              "https://mirror.bazel.build/registry.npmjs.org/plottable/-/plottable-3.8.3.tgz",
+              "https://registry.npmjs.org/plottable/-/plottable-3.8.3.tgz",
           ],
       },
   )
