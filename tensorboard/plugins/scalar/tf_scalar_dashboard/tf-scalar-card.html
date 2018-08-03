@@ -37,19 +37,21 @@ limitations under the License.
   ></tf-card-heading>
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
-      x-type="[[xType]]"
+      active="[[active]]"
+      data-series="[[_getDataSeries(dataToLoad.*)]]"
+      data-to-load="[[dataToLoad]]"
+      get-data-load-id="[[_getDataLoadId]]"
+      get-data-load-url="[[getDataLoadUrl]]"
+      ignore-y-outliers="[[ignoreYOutliers]]"
+      load-data-callback="[[_loadDataCallback]]"
+      load-key="[[tag]]"
+      log-scale-active="[[_logScaleActive]]"
+      request-manager="[[requestManager]]"
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
-      tooltip-sorting-method="[[tooltipSortingMethod]]"
-      ignore-y-outliers="[[ignoreYOutliers]]"
-      request-manager="[[requestManager]]"
-      runs="[[runs]]"
-      tag="[[tag]]"
       tag-metadata="[[tagMetadata]]"
-      active="[[active]]"
-      data-url="[[dataUrl]]"
-      log-scale-active="[[_logScaleActive]]"
-      process-data="[[_processData]]"
+      tooltip-sorting-method="[[tooltipSortingMethod]]"
+      x-type="[[xType]]"
     >
     </tf-line-chart-data-loader>
   </div>
@@ -163,8 +165,12 @@ limitations under the License.
   Polymer({
       is: 'tf-scalar-card',
       properties: {
-        runs: Array,  // of String
         tag: String,
+
+        /**
+         * @type {Array<Object>}
+         */
+        dataToLoad: Array,
 
         /**
          * @type {vz_chart_helpers.XType}
@@ -174,27 +180,36 @@ limitations under the License.
         active: Boolean,
         ignoreYOutliers: Boolean,
         requestManager: Object,
-        showDownloadLinks: Boolean,
+        showDownLinks: Boolean,
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
         tagMetadata: Object,
         tooltipSortingMethod: String,
-        // Function that takes 2 string arguments (tag and run) and returns a
-        // string URL for fetching data.
-        dataUrl: Function,
+        // Function that takes a data series and returns a string URL for
+        // fetching data.
+        getDataLoadUrl: Function,
 
         // This function is called when data is received from the backend.
-        _processData: {
+        _loadDataCallback: {
           type: Object,
-          value: () => ((scalarChart, run, data) => {
-            const formattedData = data.map(datum => ({
-              wall_time: new Date(datum[0] * 1000),
-              step: datum[1],
-              scalar: datum[2],
-            }));
-            scalarChart.setSeriesData(run, formattedData);
-          }),
+          value: function() {
+            return (scalarChart, datum, data) => {
+              const formattedData = data.map(datum => ({
+                wall_time: new Date(datum[0] * 1000),
+                step: datum[1],
+                scalar: datum[2],
+              }));
+              const name = this._getSeriesNameFromDatum(datum);
+              scalarChart.setSeriesData(name, formattedData);
+            };
+          },
           readOnly: true,
+        },
+
+        // TODO(stephanwlee): Make it experiment aware.
+        _getDataLoadId: {
+          type: Function,
+          value: () => ({run}) => run,
         },
 
         _expanded: {
@@ -226,10 +241,18 @@ limitations under the License.
         }
       },
       _csvUrl(tag, run) {
-        return tf_backend.addParams(this.dataUrl(tag, run), {format: 'csv'});
+        return tf_backend.addParams(
+            this.getDataLoadUrl({tag, run}),
+            {format: 'csv'});
       },
       _jsonUrl(tag, run) {
-        return this.dataUrl(tag, run);
+        return this.getDataLoadUrl({tag, run});
+      },
+      _getDataSeries() {
+        return this.dataToLoad.map(this._getSeriesNameFromDatum);
+      },
+      _getSeriesNameFromDatum(datum) {
+        return datum.run;
       },
   });
 </script>
