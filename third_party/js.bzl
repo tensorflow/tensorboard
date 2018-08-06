@@ -268,9 +268,9 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # BSD-3-Clause
       sha256_urls_extract = {
-          "d858c0878af36bd00e2af6029029106328d408c2bff0a60a9d78c4e27f47b99a": [
-              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v4.9.1/d3.zip",
-              "https://github.com/d3/d3/releases/download/v4.9.1/d3.zip",
+          "29288a2be82014ffa03f8ee1f8519bd43b71f09790409dcfa300ee3bb77fd81b": [
+              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v4.13.0/d3.zip",
+              "https://github.com/d3/d3/releases/download/v4.13.0/d3.zip",
           ],
       },
       # TODO(jart): Use srcs=["d3.js"] instead of this once supported.
