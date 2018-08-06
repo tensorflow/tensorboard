@@ -34,12 +34,6 @@ Properties out:
 -->
 <dom-module id="tf-runs-selector">
   <template>
-    <div id="plumbing">
-      <tf-color-scale
-        runs="[[runs]]"
-        out-color-scale="{{colorScale}}"
-      ></tf-color-scale>
-    </div>
     <paper-dialog with-backdrop id="data-location-dialog">
       <h2>Data Location</h2>
       <div inner-h-t-m-l="{{_breakString(dataLocation)}}"></div>
@@ -50,8 +44,10 @@ Properties out:
     <tf-multi-checkbox
       id="multiCheckbox"
       names="[[runs]]"
+      selection-state="{{runSelectionState}}"
       out-selected="{{selectedRuns}}"
-      color-scale="[[colorScale]]"
+      regex="{{regexInput}}"
+      coloring="[[coloring]]"
     ></tf-multi-checkbox>
     <paper-button
       class="x-button"
@@ -120,7 +116,21 @@ Properties out:
   Polymer({
     is: "tf-runs-selector",
     properties: {
-      selectedRuns: {type: Array, notify: true},
+      runSelectionState: {
+        type: Object,
+        observer: '_storeRunSelectionState',
+        value: () => tf_storage.getObject('runSelectionState') || {},
+      },
+      regexInput: {
+        type: String,
+        value:
+            tf_storage.getStringInitializer('regexInput', {defaultValue: ''}),
+        observer: '_regexObserver',
+      },
+      selectedRuns: {
+        type: Array,
+        notify: true,
+      },
       // runs: an array of strings, representing the run names that may be chosen
       runs: Array,
       dataLocation: {
@@ -137,12 +147,18 @@ Properties out:
         value: 250,
         readOnly: true,
       },
+      coloring: {
+        type: Object,
+        value: {
+          getColor: tf_color_scale.runsColorScale,
+        },
+      },
     },
     ready: function() {
       var updateRuns = function() {
-        this.set("runs", tf_backend.getRuns());
+        this.set("runs", tf_backend.runsStore.getRuns());
       }.bind(this);
-      tf_backend.addListener(updateRuns);
+      tf_backend.runsStore.addListener(updateRuns);
       updateRuns();
 
       var requestManager = new tf_backend.RequestManager();
@@ -182,6 +198,10 @@ Properties out:
     _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
       return dataLocation && dataLocation.length > _dataLocationClipLength;
     },
+    _storeRunSelectionState:
+        tf_storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
+    _regexObserver:
+        tf_storage.getStringObserver('regexInput', {defaultValue: ''}),
   });
   </script>
 </dom-module>

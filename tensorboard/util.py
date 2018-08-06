@@ -57,6 +57,8 @@ def setup_logging(streams=(sys.stderr,)):
     handler.setFormatter(formatter)
   tensorflow_logger = logging.getLogger('tensorflow')
   tensorflow_logger.handlers = handlers
+  tensorboard_logger = logging.getLogger('tensorboard')
+  tensorboard_logger.handlers = handlers
   werkzeug_logger = logging.getLogger('werkzeug')
   werkzeug_logger.setLevel(logging.WARNING)
   werkzeug_logger.handlers = handlers
@@ -419,7 +421,9 @@ class PersistentOpEvaluator(object):
       graph = tf.Graph()
       with graph.as_default():
         self.initialize_graph()
-      self._session = tf.Session(graph=graph)
+      # Don't reserve GPU because libpng can't run on GPU.
+      config = tf.ConfigProto(device_count={'GPU': 0})
+      self._session = tf.Session(graph=graph, config=config)
 
   def initialize_graph(self):
     """Create the TensorFlow graph needed to compute this operation.

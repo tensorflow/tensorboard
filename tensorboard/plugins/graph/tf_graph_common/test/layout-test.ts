@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-suite('layout', () => {
+describe('layout', () => {
   let assert = chai.assert;
 
-  test('dagre exists', () => { assert.isTrue(dagre != null); });
+  it('dagre exists', () => { assert.isTrue(dagre != null); });
 
   // TODO: write tests.
 

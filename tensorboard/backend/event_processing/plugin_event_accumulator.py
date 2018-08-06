@@ -145,10 +145,11 @@ class EventAccumulator(object):
     # first event encountered per tag, so we must store that first instance of
     # content for each tag.
     self._plugin_to_tag_to_content = collections.defaultdict(dict)
+    self._plugin_tag_locks = collections.defaultdict(threading.Lock)
 
-    self._generator_mutex = threading.Lock()
     self.path = path
     self._generator = _GeneratorFromPath(path)
+    self._generator_mutex = threading.Lock()
 
     self.purge_orphaned_data = purge_orphaned_data
 
@@ -238,7 +239,9 @@ class EventAccumulator(object):
     """
     if plugin_name not in self._plugin_to_tag_to_content:
       raise KeyError('Plugin %r could not be found.' % plugin_name)
-    return self._plugin_to_tag_to_content[plugin_name]
+    with self._plugin_tag_locks[plugin_name]:
+      # Return a snapshot to avoid concurrent mutation and iteration issues.
+      return dict(self._plugin_to_tag_to_content[plugin_name])
 
   def SummaryMetadata(self, tag):
     """Given a summary tag name, return the associated metadata object.
@@ -326,8 +329,9 @@ class EventAccumulator(object):
             self.summary_metadata[tag] = value.metadata
             plugin_data = value.metadata.plugin_data
             if plugin_data.plugin_name:
-              self._plugin_to_tag_to_content[plugin_data.plugin_name][tag] = (
-                  plugin_data.content)
+              with self._plugin_tag_locks[plugin_data.plugin_name]:
+                self._plugin_to_tag_to_content[plugin_data.plugin_name][tag] = (
+                    plugin_data.content)
             else:
               tf.logging.warn(
                   ('This summary with tag %r is oddly not associated with a '

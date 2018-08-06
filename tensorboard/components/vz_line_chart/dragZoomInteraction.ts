@@ -43,11 +43,19 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
     this.xScale(xScale);
     this.yScale(yScale);
     this._dragInteraction = new Plottable.Interactions.Drag();
-    this._dragInteraction.attachTo(this);
     this._doubleClickInteraction = new Plottable.Interactions.Click();
-    this._doubleClickInteraction.attachTo(this);
     this.setupCallbacks();
     this.unzoomMethod = unzoomMethod;
+
+    // Activate interaction only when the component is mounted onto DOM.
+    this.onDetach(() => {
+      this._doubleClickInteraction.detachFrom(this);
+      this._dragInteraction.detachFrom(this);
+    });
+    this.onAnchor(() => {
+      this._doubleClickInteraction.attachTo(this);
+      this._dragInteraction.attachTo(this);
+    });
   }
 
   /**

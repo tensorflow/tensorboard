@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl", "long_path")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
 
 def _tensorboard_zip_file(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
@@ -42,7 +42,7 @@ def _tensorboard_zip_file(ctx):
 tensorboard_zip_file = rule(
     implementation=_tensorboard_zip_file,
     attrs={
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(allow_files=True),
         "deps": attr.label_list(providers=["webfiles"], mandatory=True),
         "_Zipper": attr.label(
             default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Zipper"),

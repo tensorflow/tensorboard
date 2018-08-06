@@ -379,8 +379,7 @@ class Schema(object):
     """Creates the EventLogs table.
 
     Event logs are files written to disk by TensorFlow via FileWriter,
-    which uses PyRecordWriter to output records containing
-    binary-encoded tf.Event protocol buffers.
+    which outputs records containing binary-encoded tf.Event protocol buffers.
 
     This table is used by FileLoader to track the progress of files
     being loaded off disk into the database.

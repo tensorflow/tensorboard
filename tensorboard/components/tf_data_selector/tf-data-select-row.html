@@ -1,0 +1,143 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-dropdown.html">
+
+<!--
+tf-data-select-row creates a row of a data filteration widgets. It allows user
+to select, from an experiment, a subset of data to present in a plugin.
+
+Properties in:
+  - removable: Whether the row is removable.
+
+Properties out:
+  None
+
+Event out:
+  - selection-changed: Fired when selection or regex filter change.
+  - remove: Fired when user wants to remove the selection row.
+-->
+<dom-module id="tf-data-select-row">
+  <template>
+    <template is="dom-if" if="[[!noExperiment]]">
+      <paper-checkbox
+        id="checkbox"
+        checked="{{enabled}}"
+        title="[[experiment.name]]"
+      >
+        [[experiment.name]]
+      </paper-checkbox>
+    </template>
+
+    <tf-filterable-checkbox-dropdown
+      label="Run"
+      use-checkbox-colors="[[_getIsRunCheckboxesColored(noExperiment)]]"
+      items="[[_getRunOptions(_runs.*)]]"
+      selected-items="{{_selectedRuns}}"
+      selection-state="{{_getRunsSelectionState(_runSelectionStateString, _runs.*)}}"
+    ></tf-filterable-checkbox-dropdown>
+
+    <paper-input
+      no-label-float
+      label="Tag Regex"
+      value="{{_tagRegex}}"
+    >
+      <iron-icon prefix icon="search" slot="prefix"></iron-icon>
+    </paper-input>
+
+    <template is="dom-if" if="[[!noExperiment]]">
+      <paper-icon-button
+        icon="remove-circle"
+        on-tap="_removeRow"
+        title="Remove the comparison"
+      ></paper-button>
+    </template>
+
+    <style>
+      :host {
+        align-items: center;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        font-size: 14px;
+      }
+
+      #checkbox {
+        flex: 1 0;
+        max-width: 200px;
+      }
+
+      paper-input {
+        --paper-input-prefix: {
+          width: 22px;
+          height: 22px;
+        };
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        --paper-input-container: {
+          padding: 5px 0;
+        };
+        --paper-input-container-input: {
+          font-size: 14px;
+        };
+        --paper-input-container-label: {
+          font-size: 14px;
+        };
+        width: 200px;
+        margin: 0 5px;
+      }
+
+      paper-input iron-icon {
+        color: var(--paper-grey-600);
+      }
+      paper-input[focused] iron-icon {
+        color: inherit;
+      }
+
+      tf-filterable-checkbox-dropdown {
+        --tf-filterable-checkbox-dropdown-input-container: {
+          padding: 5px;
+        };
+
+        padding: 0 5px;
+        margin: 0 5px;
+      }
+
+      paper-icon-button {
+        --paper-icon-button: {
+          height: 32px;
+          padding: 5px;
+          width: 32px;
+        };
+
+        color: var(--paper-grey-600);
+        flex-shrink: 0;
+        margin: 0 5px;
+      }
+    </style>
+  </template>
+  <script src="storage-utils.js"></script>
+  <script src="tf-data-select-row.js"></script>
+
+</dom-module>

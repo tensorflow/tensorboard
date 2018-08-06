@@ -60,7 +60,7 @@ limitations under the License.
             >Ignore outliers in chart scaling</paper-checkbox>
           </div>
           <div id="tooltip-sorting">
-            <div id="tooltip-sorting-label">Tooltip sorting method:</div>
+            <div>Tooltip sorting method:</div>
             <paper-dropdown-menu
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
@@ -138,10 +138,11 @@ limitations under the License.
                           ignore-y-outliers="[[_ignoreYOutliers]]"
                           show-download-links="[[_showDownloadLinks]]"
                           request-manager="[[_requestManager]]"
-                          runs="[[item.runs]]"
+                          data-to-load="[[item.series]]"
                           tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                           active="[[page.active]]"
+                          get-data-load-url="[[_dataUrl]]"
                         ></tf-scalar-card>
                       </template>
                     </div>
@@ -157,20 +158,15 @@ limitations under the License.
     <style include="dashboard-style"></style>
     <style>
       #tooltip-sorting {
+        align-items: center;
         display: flex;
         font-size: 14px;
-        margin-top: 5px;
-      }
-      #tooltip-sorting-label {
-        margin-top: 13px;
+        margin-top: 15px;
       }
       #tooltip-sorting paper-dropdown-menu {
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
-      }
-      #x-type-selector paper-button {
-        margin: 5px 3px;
       }
       .line-item {
         display: block;
@@ -179,6 +175,9 @@ limitations under the License.
       .no-data-warning {
         max-width: 540px;
         margin: 80px auto 0 auto;
+      }
+      .center {
+        overflow-x: hidden;
       }
     </style>
   </template>
@@ -234,6 +233,12 @@ limitations under the License.
           type: Object,
           value: () => new tf_backend.RequestManager(50),
         },
+        _dataUrl: {
+          type: Function,
+          value: () => ({tag, run}) => tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
+              {tag, run}),
+        },
       },
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
@@ -283,8 +288,21 @@ limitations under the License.
       _makeCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
         const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-        return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
+        // TODO(stephanwlee): Apply the new categorization based on selection.
+        const categories = tf_categorization_utils.categorizeTags(
+            runToTag, selectedRuns, tagFilter);
+        categories.forEach(category => {
+          category.items = category.items.map(item => ({
+            tag: item.tag,
+            series: item.runs.map(run => ({
+              run,
+              tag: item.tag,
+            })),
+          }));
+        });
+        return categories;
       },
+
       _tagMetadata(runToTagsInfo, runs, tag) {
         const runToTagInfo = {};
         runs.forEach(run => {
@@ -300,6 +318,8 @@ limitations under the License.
     tf_tensorboard.registerDashboard({
       plugin: 'scalars',
       elementName: 'tf-scalar-dashboard',
+      useDataSelector: Boolean(
+          tf_storage.getBoolean('EnableDataSelector', {useLocalStorage: true})),
     });
 
   </script>

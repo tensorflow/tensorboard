@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-suite('graph', () => {
+describe('graph', () => {
   let assert = chai.assert;
 
-  test('graphlib exists', () => { assert.isTrue(graphlib != null); });
+  it('graphlib exists', () => { assert.isTrue(graphlib != null); });
 
   // TODO: write tests.
 

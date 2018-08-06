@@ -1,0 +1,94 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-list.html">
+<link rel="import" href="./experiment-selector.html">
+<link rel="import" href="./tf-data-select-row.html">
+
+<!--
+tf-data-selector creates a widget for creating a group of data, a filtered data
+by experiment, runs, and tags. It allows user to add more groups too.
+
+Properties in: none.
+Properties out:
+  - selection: array of data selection. Please refer to
+    tf_data_selector.Selection for its data type.
+
+-->
+<dom-module id="tf-data-selector">
+  <template>
+    <template
+      is="dom-if"
+      if="[[!_canCompareExperiments(_comparingExps)]]"
+      restamp
+    >
+      <tf-data-select-row no-experiment persistence-number="0">
+      </tf-data-select-row>
+    </template>
+    <template is="dom-repeat" items="[[_comparingExps]]" as="exp">
+      <tf-data-select-row
+        checkbox-color="[[_getExperimentColor(exp)]]"
+        experiment="[[exp]]"
+        persistence-number="[[index]]"
+        on-selection-changed="_selectionChanged"
+        on-remove="_removeExperiment"
+      ></tf-data-select-row>
+    </template>
+
+    <experiment-selector
+      id="selector"
+      exclude-experiments="[[_comparingExps]]"
+      on-experiment-added="_addExperiments"
+    ></experiment-selector>
+    <style>
+      :host {
+        align-items: flex-start;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        width 100%;
+      }
+
+      #exp-selector {
+        display: inline-flex;
+        flex-direction: column;
+        min-width: 400px;
+      }
+
+      tf-data-select-row {
+        margin: 5px 0;
+        max-width: 720px;
+        width: 100%;
+      }
+
+      tf-data-select-row[no-experiment] {
+        margin-left: -8px;
+      }
+
+      experiment-selector {
+        margin: 10px 0;
+      }
+    </style>
+  </template>
+  <script src="storage-utils.js"></script>
+  <script src="tf-data-selector.js"></script>
+</dom-module>
