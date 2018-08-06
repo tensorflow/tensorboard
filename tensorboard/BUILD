@@ -104,6 +104,7 @@ tf_web_library(
     ],
     path = "/",
     deps = ["@com_google_fonts_roboto"],
+    suppress= ["strictDependencies"],
 )
 
 py_library(
