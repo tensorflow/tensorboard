@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-suite('parser', () => {
+describe('parser', () => {
   let assert = chai.assert;
 
-  test('simple pbtxt', done => {
+  it('simple pbtxt', done => {
     let pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
        name: "Q"
        op: "Input"
@@ -31,7 +31,8 @@ suite('parser', () => {
        input: "Q"
        input: "W"
      }`);
-    tf.graph.parser.parseGraphPbTxt(pbtxt).then(nodes => {
+    tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+      let nodes = graph.node;
       assert.isTrue(nodes != null && nodes.length === 3);
 
       assert.equal('Q', nodes[0].name);
@@ -49,7 +50,7 @@ suite('parser', () => {
     });
   });
 
-  test('stats pbtxt parsing', done => {
+  it('stats pbtxt parsing', done => {
     let statsPbtxt = tf.graph.test.util.stringToArrayBuffer(`step_stats {
       dev_stats {
         device: "cpu"
@@ -76,7 +77,7 @@ suite('parser', () => {
     });
   });
 
-  test('d3 exists', () => { assert.isTrue(d3 != null); });
+  it('d3 exists', () => { assert.isTrue(d3 != null); });
 
   // TODO(nsthorat): write tests.
 

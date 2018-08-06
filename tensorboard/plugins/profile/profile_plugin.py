@@ -32,13 +32,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
 
-tf.flags.DEFINE_string(
-    'master_tpu_unsecure_channel', '',
-    'IP address of "master tpu", used for getting streaming trace data '
-    'through tpu profiler analysis grpc. The grpc channel is not secured.')
-
-FLAGS = tf.flags.FLAGS
-
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
 
@@ -56,18 +49,41 @@ TOOLS = {
     'op_profile': 'op_profile.json',
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
+    'memory_viewer': 'memory_viewer.json',
+    'google_chart_demo': 'google_chart_demo.json',
 }
 
 # Tools that consume raw data.
 _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
-                             'overview_page'])
+                             'overview_page',
+                             'memory_viewer',
+                             'google_chart_demo',])
 
 def process_raw_trace(raw_trace):
   """Processes raw trace data and returns the UI data."""
   trace = trace_events_pb2.Trace()
   trace.ParseFromString(raw_trace)
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
+
+
+class ProfilePluginLoader(base_plugin.TBLoader):
+  """Loader for Profile Plugin."""
+
+  def define_flags(self, parser):
+    group = parser.add_argument_group('profile plugin')
+    group.add_argument(
+        '--master_tpu_unsecure_channel',
+        metavar='ADDR',
+        type=str,
+        default='',
+        help='''\
+IP address of "master tpu", used for getting streaming trace data
+through tpu profiler analysis grpc. The grpc channel is not secured.\
+''')
+
+  def load(self, context):
+    return ProfilePlugin(context)
 
 
 class ProfilePlugin(base_plugin.TBPlugin):
@@ -87,6 +103,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     self.plugin_logdir = plugin_asset_util.PluginDirectory(
         self.logdir, ProfilePlugin.plugin_name)
     self.stub = None
+    self.master_tpu_unsecure_channel = context.flags.master_tpu_unsecure_channel
 
   @wrappers.Request.application
   def logdir_route(self, request):
@@ -102,7 +119,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     # 1. user specify the flags master_tpu_unsecure_channel to the ip address of
     #    as "master" TPU. grpc will be used to fetch streaming trace data.
     # 2. the logdir is on google cloud storage.
-    if FLAGS.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
+    if self.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
       if self.stub is None:
         import grpc
         from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pylint: disable=line-too-long
@@ -111,7 +128,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
         options = [('grpc.max_message_length', gigabyte),
                    ('grpc.max_send_message_length', gigabyte),
                    ('grpc.max_receive_message_length', gigabyte)]
-        tpu_profiler_port = FLAGS.master_tpu_unsecure_channel + ':8466'
+        tpu_profiler_port = self.master_tpu_unsecure_channel + ':8466'
         channel = grpc.insecure_channel(tpu_profiler_port, options)
         self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(
             channel)
@@ -178,11 +195,18 @@ class ProfilePlugin(base_plugin.TBPlugin):
         removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
         if removed_tool in run_to_tools[run]:
           run_to_tools[run].remove(removed_tool)
+      run_to_tools[run].sort()
+      op = 'overview_page'
+      if op in run_to_tools[run]:
+        # keep overview page at the top of the list
+        run_to_tools[run].remove(op)
+        run_to_tools[run].insert(0, op)
     return run_to_tools
 
   @wrappers.Request.application
   def tools_route(self, request):
     run_to_tools = self.index_impl()
+
     return http_util.Respond(request, run_to_tools, 'application/json')
 
   def host_impl(self, run, tool):
@@ -258,6 +282,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
       grpc_request.repository_root = self.plugin_logdir
       grpc_request.session_id = run[:-1]
       grpc_request.tool_name = 'trace_viewer'
+      # Remove the trailing dot if present
+      grpc_request.host_name = host.rstrip('.')
 
       grpc_request.parameters['resolution'] = request.args.get('resolution')
       if request.args.get('start_time_ms') is not None:

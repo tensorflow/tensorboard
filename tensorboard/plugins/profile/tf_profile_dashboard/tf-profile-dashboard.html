@@ -19,6 +19,7 @@ limitations under the License.
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -26,6 +27,9 @@ limitations under the License.
 <link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
 <link rel="import" href="../tf-overview-page/overview-page.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
+<link rel="import" href="../tf-profile-common/tf-profile-common.html">
+<link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
+<link rel="import" href="../google-chart/google-chart-demo.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -39,6 +43,12 @@ profile run can have multiple tools that present the performance profile as diff
 
 <dom-module id="tf-profile-dashboard">
 <template>
+<template is="dom-if" if="[[_isNotComplete(progress)]]">
+  <div id="progress-bar">
+    <div id="progress-msg">[[progress.msg]]</div>
+    <paper-progress value="[[progress.value]]"></paper-progress>
+  </div>
+</template>
 <template is="dom-if" if="[[_dataNotFound]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No profile data was found.</h3>
@@ -65,7 +75,7 @@ profile run can have multiple tools that present the performance profile as diff
 </template>
 <template is="dom-if" if="[[!_dataNotFound]]">
   <tf-dashboard-layout>
-  <div class="sidebar">
+  <div class="sidebar" style="width: 340px">
     <div class="allcontrols">
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
@@ -121,6 +131,12 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'overview_page')]]" restamp="true">
       <overview-page _data="[[_overviewPageData]]"></overview-page>
     </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
+      <memory-viewer-dashboard _data="[[_memoryViewerData]]"></memory-viewer-dashboard>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp=true">
+      <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
+    </template>
   </div>
   </tf-dashboard-layout>
 </template>
@@ -136,6 +152,26 @@ profile run can have multiple tools that present the performance profile as diff
     width: 100%;
     height: 100%;
     box-sizing: border-box;
+  }
+  #progress-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    font-size: 13px;
+  }
+  #progress-msg {
+    width: 400px;
+    margin-bottom: 5px;
+  }
+  paper-progress {
+    width: 400px;
+    --paper-progress-height: 6px;
+    --paper-progress-active-color: #f3913e;
   }
 </style>
 
@@ -168,6 +204,16 @@ profile run can have multiple tools that present the performance profile as diff
       _activeHostsList: {
         type: Array,
         observer: '_activeHostsChanged'
+      },
+      /**
+       * @type {{value: number, msg: string}}
+       *
+       * A number between 0 and 100 denoting the % of progress
+       * for the progress bar and the displayed message.
+       */
+      progress: {
+        type: Object,
+        notify: true,
       },
       selectedDatasetIndex: {
         type: Number,
@@ -203,6 +249,12 @@ profile run can have multiple tools that present the performance profile as diff
       _overviewPageData: {
         type: Object,
       },
+      _memoryViewerData: {
+        type: Object,
+      },
+      _googleChartDemoData: {
+        type: Object,
+      },
       _selectedDatasetName: {
         type: String,
         notify: true,
@@ -229,13 +281,17 @@ profile run can have multiple tools that present the performance profile as diff
     observers: [
       '_maybeInitializeDashboard(_isAttached)',
       '_maybeUpdateData(_selectedHostName)',
-      '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)'
+      '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
     ],
     attached: function() {
       this.set('_isAttached', true);
     },
     detached: function() {
       this.set('_isAttached', false);
+    },
+    /** True if the progress is not complete yet (< 100 %). */
+    _isNotComplete: function(progress) {
+      return !this._dataNotFound && progress.value < 100;
     },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
@@ -248,7 +304,36 @@ profile run can have multiple tools that present the performance profile as diff
       const profileTagsURL =
         tf_backend.getRouter().pluginRoute('profile', '/tools') +
         (tf_backend.getRouter().isDemoMode() ? '.json' : '');
-      this._requestManager.request(profileTagsURL).then((runToTool) => {
+      // Reset the progress bar to 0.
+      this.set('progress', {
+        value: 0,
+        msg: ''
+      });
+      let parent = this;
+      let tracker = tf.profile.util.getTracker(this);
+      tf.profile.util.runTask('Loading datasets', 20, () => {
+        console.log('start counting');
+        return parent._requestManager.request(profileTagsURL);
+      }, tracker)
+      .then((runToTool) => {
+        return tf.profile.util.runTask(
+            'Processing datasets', 70, () => {
+              return new Promise(function(resolve, reject) {
+                parent._processRunToTool(runToTool);
+                return Promise.resolve(null);
+              });
+            }, tracker);
+      })
+      .then(() => {
+        return tf.profile.util.runTask(
+            'Done', 10, () => {
+              return new Promise(function(resolve, reject) {
+                return Promise.resolve(null);
+              });
+            }, tracker);
+      });
+    },
+    _processRunToTool: function(runToTool) {
         var datasets = _.map(runToTool, (tools, run) => ({
           name: run,
           activeTools: tools,
@@ -261,7 +346,6 @@ profile run can have multiple tools that present the performance profile as diff
         });
         this.set('_dataNotFound', datasets.length === 0);
         this.set('_datasets', datasets);
-      });
     },
     // Return the item selected from the list
     _getSelected: function(index, li) {
@@ -273,14 +357,16 @@ profile run can have multiple tools that present the performance profile as diff
     },
     _getSelectedDatasetName: function(selectedDatasetIndex, datasets){
       if (selectedDatasetIndex == null) return;
-      if (datasets && selectedDatasetIndex >= 0 && selectedDatasetIndex < datasets.length) {
+      if (datasets && selectedDatasetIndex >= 0 &&
+          selectedDatasetIndex < datasets.length) {
         return datasets[selectedDatasetIndex].name;
       }
       return '';
     },
      _getActiveToolsList: function(selectedDatasetIndex, datasets) {
       if (selectedDatasetIndex == null) return;
-      if (datasets && selectedDatasetIndex >= 0 && selectedDatasetIndex < datasets.length) {
+      if (datasets && selectedDatasetIndex >= 0 &&
+          selectedDatasetIndex < datasets.length) {
         this.selectedToolIndex = 0;
         return datasets[selectedDatasetIndex].activeTools;
       }
@@ -291,7 +377,7 @@ profile run can have multiple tools that present the performance profile as diff
       var datasetName = this._selectedDatasetName;
       var toolName = this._selectedToolName;
       if (datasetName == null || toolName == null) return;
-      this.toolInScope = "undefined";
+      this._toolInScope = "undefined";
       if (toolName.startsWith("trace_viewer")) {
         var trace_data_url = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('profile', '/data'),
@@ -311,23 +397,50 @@ profile run can have multiple tools that present the performance profile as diff
         this._toolInScope = "trace_viewer";
         return;
       } else {
-        this._requestManager.request(tf_backend.addParams(
-          tf_backend.getRouter().pluginRoute('profile', '/data'),
-          {tag: toolName, host: hostName, run: datasetName})
-        ).catch(error => {}
-        ).then((data) => {
-           if (toolName == "op_profile") {
-               this._opProfileData = data;
-               this._toolInScope = "op_profile";
-           } else if (toolName == "input_pipeline_analyzer") {
-               this._inputPipelineData = data;
-               this._toolInScope = "input_pipeline_analyzer";
-           } else if (toolName == "overview_page") {
-               this._overviewPageData = data;
-               this._toolInScope = "overview_page";
-           }
+        // Reset the progress bar to 0.
+        this.set('progress', {
+          value: 0,
+          msg: ''
         });
-        return;
+        let parent = this;
+        let tracker = tf.profile.util.getTracker(this);
+        tf.profile.util.runTask('Reading ' + toolName + ' tool data', 20,
+          () => {
+            return parent._requestManager.request(tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('profile', '/data'),
+              {tag: toolName, host: hostName, run: datasetName}))
+          }, tracker)
+        .catch(error => {})
+        .then((data) => {
+          return tf.profile.util.runTask('Done', 80, () => {
+              parent._updateToolData(toolName, data);
+            }, tracker);
+        });
+      }
+    },
+
+   _updateToolData: function(toolName, data) {
+     switch(toolName) {
+       case "op_profile":
+          this._opProfileData = data;
+          this._toolInScope = "op_profile";
+          break;
+       case "input_pipeline_analyzer":
+          this._inputPipelineData = data;
+          this._toolInScope = "input_pipeline_analyzer";
+          break;
+       case "overview_page":
+          this._overviewPageData = data;
+          this._toolInScope = "overview_page";
+          break;
+      case "memory_viewer":
+          this._memoryViewerData = data;
+          this._toolInScope = "memory_viewer";
+          break;
+      case "google_chart_demo":
+          this._googleChartDemoData = data;
+          this._toolInScope = "google_chart_demo";
+          break;
       }
     },
     _maybeUpdateActiveHosts: function(datasetName, toolName) {
@@ -349,8 +462,9 @@ profile run can have multiple tools that present the performance profile as diff
       }
     },
     _activeToolsChanged: function(oldActiveTools, newActiveTools) {
-      // Same tool can have differernt index in different runs, therefore we force a change of
-      // 'selectedToolIndex', to make sure the label of the dropdown-menu is synced.
+      // Same tool can have differernt index in different runs, therefore we
+      // force a change of 'selectedToolIndex', to make sure the label of the
+      // dropdown-menu is synced.
       if (this._activeToolsList) {
          this.async(function() {
           this.set('selectedToolIndex', -1);

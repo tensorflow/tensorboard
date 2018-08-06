@@ -123,12 +123,11 @@ dashboard would integrate trace viewer app using iframe.
         this._displayOverlay("Trace data URL is not provided.", "Trace Viewer");
         return null;
       }
-      this._throbber.className = "active";
-
       this._loadTrace();
     },
 
-    _loadTrace : function() {
+    _loadTrace : function(requestedRange, replaceModel) {
+      this._throbber.className = "active";
       if (!this._isStreaming) {
         // Send HTTP request to get the trace data.
         var req = new XMLHttpRequest();
@@ -149,7 +148,7 @@ dashboard would integrate trace viewer app using iframe.
         };
         req.send(null);
       } else {
-        this._loadStreamingTrace();
+        this._loadStreamingTrace(requestedRange, replaceModel);
       }
     },
 
@@ -174,13 +173,6 @@ dashboard would integrate trace viewer app using iframe.
 	               tf_component_traceviewer.length(fetch);
       if (!tf_component_traceviewer.within(preserve, this._loadedRange) ||
           zoomFactor > tf_component_traceviewer.ZOOM_RATIO) {
-        console.log("loading more data: ", {
-          zoomFactor: zoomFactor,
-          loadedRange: this._loadedRange,
-          viewport: viewport,
-          preserve: preserve,
-          fetch: fetch,
-        });
         this._loadTrace(fetch, /*replaceModel=*/false);
       }
     },

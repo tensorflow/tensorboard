@@ -1,3 +1,54 @@
+# Release 1.10.0
+
+The 1.10 minor series tracks TensorFlow 1.10.
+
+## Changes
+- New logic for loading/launching TensorBoard (PR #1240)
+  - Plugin loading now uses new TBLoader API
+  - Argument parsing now uses argparse
+  - New `tb.program.launch()` API to launch TB from within Python
+- Sidebars adjusted to be consistent across plugins (PR #1296)
+- tb.summary.image() param order fixed to h, w (PR #1262) - thanks @ppwwyyxx
+- New TPU profile dashboard progress bar for loading tools (PR #1286)
+
+## Bug fixes
+- #1260 - Fix missing pie chart in TPU profile input pipeline analyzer
+- #1280 - Fix TPU profile memory viewer issue with XLA compatibility
+- #1287 - Fix dangling UI interaction layer issue in vz-line-chart
+- #1294 - Fix custom scalar dashboard to de-duplicate charts - thanks @lgeiger
+
+
+# Release 1.9.0
+
+The 1.9 minor series tracks TensorFlow 1.9.
+
+## Highlights
+
+- Improved performance with log directories on GCS (Google Cloud Storage) with
+  faster traversal time and reduced bandwidth consumption (PRs #1087, #1226)
+- Profile dashboard improvements, including:
+  - New memory viewer tool that visualizes peak memory usage (#1223)
+  - Trace viewer tool now supports streaming mode, that dynamically renders a
+    much longer trace (#1128)
+  - Op profile tool now shows memory utilization in op details card (#1238)
+  - Profile dashboard now supports visualizing data from multiple hosts (#1117)
+
+## Features
+- Graph dashboard now allows searching nodes by regex (#1130)
+- New --samples_per_plugin flag to control how many samples are kept (#1138)
+- Better error when --logdir/--db flag is omitted (#1189) - thanks @oxinabox
+- Debugger plugin can now show single elements of string tensors (#1131)
+
+## Bug fixes
+- #1107 - Beholder plugin should no longer reserve GPU (PR #1114)
+- #1190 - Beholder plugin summary placeholder no longer interferes with normal
+          summary use and/or Estimator - thanks @TanUkkii007 (PR #1148)
+- #427 and #588 - removed pip package deps on bleach and html5lib (PR #1142)
+- #1191 - fixed debugger plugin UnboundLocalError - thanks @cfroehli
+- #1200 - fixed debugger plugin binary-valued string tensor issues
+- #1201 - fixed "dictionary changed size" race condition in reloader (PR #1235)
+
+
 # Release 1.8.0
 
 The 1.8 minor series tracks TensorFlow 1.8.

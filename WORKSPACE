@@ -2,11 +2,11 @@ workspace(name = "org_tensorflow_tensorboard")
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "cc0ba00493a59fe129a03240330578d2d99aa9fa8007d7f73ea337b5184cae94",
-    strip_prefix = "rules_closure-dea93c4667e95802a8511c873fb8504eb1cf5125",
+    sha256 = "b29a8bc2cb10513c864cb1084d6f38613ef14a143797cea0af0f91cd385f5e8c",
+    strip_prefix = "rules_closure-0.8.0",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/dea93c4667e95802a8511c873fb8504eb1cf5125.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/dea93c4667e95802a8511c873fb8504eb1cf5125.tar.gz",  # 2018-05-09
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/0.8.0.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/0.8.0.tar.gz",  # 2018-08-06
     ],
 )
 
@@ -44,11 +44,11 @@ http_archive(
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "8028d51b4a911adeb9b8afa0ba6bcb99fa00a4949881cdad3ee67a8f33c8979a",
-    strip_prefix = "tensorflow-3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8",
+    sha256 = "88324ad9379eae4fdb2aefb8e0d6c7cd0dc748b44daa5cc96ffd9415705c00c3",
+    strip_prefix = "tensorflow-9752b117ff63f204c4975cad52b5aab5c1f5e9a9",
     urls = [
-        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8.tar.gz",  # 2018-04-16
-        "https://github.com/tensorflow/tensorflow/archive/3128b43eb0bf37ac3c49cb22a6e1789d8ea346e8.tar.gz",
+        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",  # 2018-04-16
+        "https://github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",
     ],
 )
 
@@ -74,15 +74,14 @@ http_archive(
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
 
-closure_repositories()
+closure_repositories(
+    omit_com_google_protobuf = True,
+    omit_com_google_protobuf_js = True,
+)
 
 load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
 
 tf_serving_workspace()
-
-load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
-
-tf_workspace()
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 

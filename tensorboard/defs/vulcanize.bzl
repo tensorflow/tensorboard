@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tensorboard/defs:defs.bzl", "legacy_js")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "unfurl", "long_path")
 
 def _tensorboard_html_binary(ctx):
@@ -107,8 +107,8 @@ tensorboard_html_binary = rule(
         "input_path": attr.string(mandatory=True),
         "output_path": attr.string(mandatory=True),
         "compile": attr.bool(),
-        "data": attr.label_list(cfg="data", allow_files=True),
-        "deps": attr.label_list(providers=["webfiles"], mandatory=True),
+        "data": attr.label_list(allow_files=True),
+        "deps": attr.label_list(aspects=[closure_js_aspect], mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
         "path_regexs_for_noinline": attr.label(allow_single_file=True),
         "_jslibs": attr.label(

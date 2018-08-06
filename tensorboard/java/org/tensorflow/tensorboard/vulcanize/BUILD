@@ -40,6 +40,7 @@ filegroup(
     name = "jslibs",
     srcs = [
         # Ordering probably matters
+        "//third_party:jspbfix",
         "@com_google_javascript_closure_compiler_externs",
         "@com_google_javascript_closure_compiler_externs_polymer",
         "externs.js",

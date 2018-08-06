@@ -63,7 +63,7 @@ class BasicTest(unittest.TestCase):
   def setUp(self):
     self.driver = webtest.new_webdriver_session()
     self.driver.get("http://localhost:%s" % self.port)
-    self.wait = wait.WebDriverWait(self.driver, 2)
+    self.wait = wait.WebDriverWait(self.driver, 10)
 
   def tearDown(self):
     try:
@@ -80,8 +80,7 @@ class BasicTest(unittest.TestCase):
   def testLogdirDisplays(self):
     self.wait.until(
       expected_conditions.text_to_be_present_in_element((
-        by.By.ID, "logdir"), self.logdir))
-
+        by.By.ID, "data_location"), self.logdir))
 
 class DashboardsTest(BasicTest):
   """Tests basic behavior when there is some data in TensorBoard.
@@ -95,6 +94,10 @@ class DashboardsTest(BasicTest):
   def setUpData(cls):
     scalars_demo.run_all(cls.logdir, verbose=False)
     audio_demo.run_all(cls.logdir, verbose=False)
+
+  def testLogdirDisplays(self):
+    # TensorBoard doesn't have logdir display when there is data
+    pass
 
   def testDashboardSelection(self):
     """Test that we can navigate among the different dashboards."""

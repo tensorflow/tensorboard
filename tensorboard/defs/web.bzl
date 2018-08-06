@@ -14,21 +14,20 @@
 
 """Same as web_library but supports TypeScript."""
 
-load("//tensorboard/defs:defs.bzl", "legacy_js")
-
 load("//third_party:clutz.bzl",
      "CLUTZ_ATTRIBUTES",
      "CLUTZ_OUTPUTS",
      "clutz_aspect",
      "extract_dts_from_closure_libraries")
 
+load("@io_bazel_rules_closure//closure:defs.bzl",
+     "closure_js_aspect")
+
 load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "CLOSURE_LIBRARY_BASE_ATTR",
      "CLOSURE_WORKER_ATTR",
      "collect_js",
      "collect_runfiles",
-     "convert_path_to_es6_module_name",
-     "create_argfile",
      "difference",
      "long_path",
      "unfurl")
@@ -132,9 +131,6 @@ def _tf_web_library(ctx):
     execroot.inputs.append(entry)
 
   # compile typescript
-  workspace = ""
-  if ctx.label.workspace_root:
-    workspace = "/" + ctx.label.workspace_root
   if execroot.outputs:
     ts_config = _new_file(ctx, "-tsc.json")
     execroot.inputs.append(("tsconfig.json", ts_config.path))
@@ -353,10 +349,10 @@ tf_web_library = rule(
         "deps": attr.label_list(
             aspects=[
                 clutz_aspect,
-                legacy_js,
+                closure_js_aspect,
             ]),
         "exports": attr.label_list(),
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(allow_files=True),
         "suppress": attr.string_list(),
         "strip_prefix": attr.string(),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
