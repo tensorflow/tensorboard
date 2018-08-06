@@ -565,6 +565,15 @@ limitations under the License.
         overflow: hidden;
         padding-top: 22px;
       }
+
+      .example-id-label {
+        padding: 10px 5px 0 0;
+      }
+
+      .example-id-input {
+        width: 70px;
+        padding-top: 4px;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -977,6 +986,10 @@ limitations under the License.
                         <paper-icon-button class="datapoint-control-button" icon="chevron-right"
                             on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
                         </paper-icon-button>
+                        <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
+                                     min="0" max="[[selectedExampleMax]]" no-label-float>
+                        </paper-input>
+                        <div class="example-id-label">Example ID:</div>
                         <paper-icon-button class="datapoint-control-button" icon="chevron-left"
                             on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
                         </paper-icon-button>
@@ -1273,7 +1286,14 @@ limitations under the License.
         exampleStatusStr: {
           type: String,
           value: 'No examples loaded yet.'
-        }
+        },
+        // The example ID number selected in the text input
+        selectedExampleNum: {
+          type: Number,
+          observer: 'selectedExampleInputChanged_'
+        },
+        // The max ID number for a selected example.
+        selectedExampleMax: Number,
       },
 
       observers: [
@@ -1476,14 +1496,25 @@ limitations under the License.
       },
 
       selectNextDatapoint_: function() {
-        this.$.dive.selectedIndices =
-          [(this.selected[0] + 1) % this.visdata.length];
+        const id = (this.selected[0] + 1) % this.visdata.length;
+        this.$.dive.selectedIndices = [id];
       },
 
       selectPrevDatapoint_: function() {
-        this.$.dive.selectedIndices =
-          [(((this.selected[0] - 1) % this.visdata.length) +
-            this.visdata.length) % this.visdata.length];
+        const id = (((this.selected[0] - 1) % this.visdata.length) +
+            this.visdata.length) % this.visdata.length
+        this.$.dive.selectedIndices = [id];
+      },
+
+      selectedExampleInputChanged_: function(newDatapoint) {
+        if (newDatapoint == null || newDatapoint == "") {
+          return;
+        }
+        const id = +newDatapoint;
+        if (isNaN(id) || id < 0 || id >= this.visdata.length) {
+          return;
+        }
+        this.$.dive.selectedIndices = [id];
       },
 
       setExampleStackedMode_: function() {
@@ -2489,6 +2520,7 @@ limitations under the License.
         const temp = this.visdata;
         this.visdata = [];
         this.visdata = temp;
+        this.selectedExampleMax = this.visdata.length - 1;
         this.$.overview.protoInput =
             this.$.overview.getStatsProto([{name: '', data: temp}]);
         this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
@@ -2697,6 +2729,7 @@ limitations under the License.
       },
 
       selectedDataUpdated_: function() {
+        this.selectedExampleNum = this.selected.length > 0 ? this.selected[0] : "";
         if (this.visdata && this.visdata.length > 0) {
           this.partialDepPlotPendingFeatures = [];
           this.populatePdTabs();
