@@ -217,10 +217,12 @@ class CorePlugin(base_plugin.TBPlugin):
           Tags.tag_id,
           Tags.tag_name,
           Tags.display_name,
+          Tags.plugin_name,
           Tags.inserted_time
         From Runs
         LEFT JOIN Tags ON Runs.run_id = Tags.run_id
-        WHERE Runs.experiment_id = %s
+        WHERE Runs.experiment_id = ?
+        AND (Tags.tag_id IS NULL OR Tags.plugin_name IS NOT NULL)
         ORDER BY started_time_nulls_last,
           Runs.started_time,
           Runs.run_name,
@@ -228,7 +230,7 @@ class CorePlugin(base_plugin.TBPlugin):
           Tags.tag_name,
           Tags.display_name,
           Tags.inserted_time;
-      ''' % (exp_id,))
+      ''', (exp_id,))
       for row in cursor:
         run_id = row[0]
         if not run_id in runs_dict:
@@ -244,6 +246,7 @@ class CorePlugin(base_plugin.TBPlugin):
             "id": row[4],
             "displayName": row[6],
             "name": row[5],
+            "pluginName": row[7],
           })
       results = list(runs_dict.values())
     return http_util.Respond(request, results, 'application/json')
