@@ -76,15 +76,19 @@ def tensorboard_js_workspace():
       sha256_urls = {
           "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47": [
               "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/LICENSE.txt",
           ],
-          "142835127a60e881e0cc476678392179b5c77565e3a1b930a4ba032c0fa04de4": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/tsc.js",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/tsc.js",
+          "9632bfccde117a8c82690a324bc5c18c3869e9b89ac536fc134ba655d7ec1e98": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/tsc.js",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/tsc.js",
           ],
-          "aeaa3ed17f0fca1e8519e323dfbddee1fb8870f1fd4752a89a6578580b17a88c": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/lib.es6.d.ts",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/lib.es6.d.ts",
+          "529c9f8b45939e0fa80950208bf80452ccb982b460cc25433813c919b67a3b2f": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.es6.d.ts",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.es6.d.ts",
+          ],
+          "f6e6efe57fb9fcf72eed013e2755d04505300f32b78577118ca5dacc85ec852d": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.dom.d.ts",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.dom.d.ts",
           ],
       },
       extra_build_file_content = "\n".join([

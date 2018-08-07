@@ -149,6 +149,7 @@ filegroup(
     srcs = [
         # Ordering probably matters.
         "@com_microsoft_typescript//:lib.es6.d.ts",
+        "@com_microsoft_typescript//:lib.dom.d.ts",
         "@io_angular_clutz//:src/resources/closure.lib.d.ts",
         "//tensorboard/defs:clutz.d.ts",
     ],
