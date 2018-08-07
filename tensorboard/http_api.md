@@ -101,7 +101,8 @@ Example response:
       "tags": [{
         "id": 789,
         "displayName": "",
-        "name": "loss"
+        "name": "loss",
+        "pluginName": "scalar"
       }]
     }]
 

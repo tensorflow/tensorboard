@@ -121,10 +121,7 @@ var tf_data_selector;
             else if (this.experiment.id) {
                 var url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
                 return requestManager.request(url).then(function (runs) {
-                    _this.set('_runs', runs.map(function (_a) {
-                        var id = _a.id, name = _a.name, startTime = _a.startTime;
-                        return ({ id: id, name: name, startTime: startTime });
-                    }));
+                    _this.set('_runs', runs);
                 });
             }
         },
@@ -180,6 +177,7 @@ var tf_data_selector;
                     id: _this.noExperiment ? null : run.id,
                     name: run.name,
                     startTime: run.startTime,
+                    tags: run.tags,
                 }); }),
                 tagRegex: this._tagRegex,
             });

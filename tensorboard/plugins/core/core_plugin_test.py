@@ -138,6 +138,8 @@ class CorePluginTest(tf.test.TestCase):
     self.assertEqual(len(exp2_runs), 1);
     self.assertEqual(exp2_runs[0].get('name'), 'run3');
 
+    # TODO(stephanwlee): Write test on runs that do not have any tag.
+
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 

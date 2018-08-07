@@ -88,15 +88,7 @@ var tf_categorization_utils;
     function categorizeTags(runToTag, selectedRuns, query) {
         var tags = tf_backend.getTags(runToTag);
         var categories = categorize(tags, query);
-        var tagToRuns = {};
-        tags.forEach(function (tag) {
-            tagToRuns[tag] = [];
-        });
-        selectedRuns.forEach(function (run) {
-            (runToTag[run] || []).forEach(function (tag) {
-                tagToRuns[tag].push(run);
-            });
-        });
+        var tagToRuns = createTagToRuns(_.pick(runToTag, selectedRuns));
         return categories.map(function (_a) {
             var name = _a.name, metadata = _a.metadata, items = _a.items;
             return ({
@@ -104,12 +96,95 @@ var tf_categorization_utils;
                 metadata: metadata,
                 items: items.map(function (tag) { return ({
                     tag: tag,
-                    runs: tagToRuns[tag].slice(),
+                    runs: tagToRuns.get(tag).slice(),
                 }); }),
             });
         });
     }
     tf_categorization_utils.categorizeTags = categorizeTags;
+    /**
+     * Creates grouping of the data based on selection from tf-data-selector. It
+     * groups data by prefixes of tag names and by tag names. Each group contains
+     * series, a tuple of experiment name and run name.
+     */
+    function categorizeSelection(selection, pluginName) {
+        var tagToSeries = new Map();
+        var searchTags = new Set();
+        selection.forEach(function (_a) {
+            var experiment = _a.experiment, runs = _a.runs, tagRegex = _a.tagRegex;
+            var runNames = runs.map(function (_a) {
+                var name = _a.name;
+                return name;
+            });
+            var selectedRunToTag = createRunToTagForPlugin(runs, pluginName);
+            var tagToSelectedRuns = createTagToRuns(selectedRunToTag);
+            var tags = tf_backend.getTags(selectedRunToTag);
+            var searchCategory = categorizeBySearchQuery(tags, tagRegex);
+            // list of matching tags.
+            searchCategory.items.forEach(function (tag) { return searchTags.add(tag); });
+            // list of all tags that has selected runs.
+            tags.forEach(function (tag) {
+                var series = tagToSeries.get(tag) || [];
+                series.push.apply(series, tagToSelectedRuns.get(tag)
+                    .map(function (run) { return ({ experiment: experiment.name, run: run }); }));
+                tagToSeries.set(tag, series);
+            });
+        });
+        var searchCategory = {
+            name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+            metadata: {
+                type: CategoryType.SEARCH_RESULTS,
+                validRegex: false,
+                universalRegex: false,
+            },
+            items: Array.from(searchTags)
+                .sort(vz_sorting.compareTagNames)
+                .map(function (tag) { return ({
+                tag: tag,
+                series: tagToSeries.get(tag),
+            }); }),
+        };
+        // Organize the tag to items by prefix.
+        var prefixCategories = categorizeByPrefix(Array.from(tagToSeries.keys()))
+            .map(function (_a) {
+            var name = _a.name, metadata = _a.metadata, items = _a.items;
+            return ({
+                name: name,
+                metadata: metadata,
+                items: items.map(function (tag) { return ({
+                    tag: tag,
+                    series: tagToSeries.get(tag),
+                }); }),
+            });
+        });
+        return [
+            searchCategory
+        ].concat(prefixCategories);
+    }
+    tf_categorization_utils.categorizeSelection = categorizeSelection;
+    function createTagToRuns(runToTag) {
+        var tagToRun = new Map();
+        Object.keys(runToTag).forEach(function (run) {
+            runToTag[run].forEach(function (tag) {
+                var runs = tagToRun.get(tag) || [];
+                runs.push(run);
+                tagToRun.set(tag, runs);
+            });
+        });
+        return tagToRun;
+    }
+    function createRunToTagForPlugin(runs, pluginName) {
+        var runToTag = {};
+        runs.forEach(function (run) {
+            runToTag[run.name] = run.tags
+                .filter(function (tag) { return tag.pluginName == pluginName; })
+                .map(function (_a) {
+                var name = _a.name;
+                return name;
+            });
+        });
+        return runToTag;
+    }
     function compareTagRun(a, b) {
         var c = vz_sorting.compareTagNames(a.tag, b.tag);
         if (c != 0) {

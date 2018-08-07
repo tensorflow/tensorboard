@@ -29,6 +29,8 @@ var tf_data_selector;
                 type: Array,
                 computed: '_getComparingExps(_comparingExpsString, _allExperiments.*)',
             },
+            // TODO(stephanwlee): Add list of active plugin from parent and filter out
+            // the unused tag names in the list of selection.
             selection: {
                 type: Array,
                 notify: true,
