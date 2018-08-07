@@ -46,7 +46,7 @@ export type TagCategory = Category<{tag: string, runs: string[]}>;
 export type RunTagCategory = Category<{tag: string, run: string}>;
 
 /**
- * Organize data by tagPrefix, tag, then llist of series which is comprised of
+ * Organize data by tagPrefix, tag, then list of series which is comprised of
  * an experiment and a run.
  */
 export type SeriesCategory = Category<{
@@ -172,6 +172,7 @@ export function categorizeSelection(
       universalRegex: false,
     },
     items: Array.from(searchTags)
+        .sort(vz_sorting.compareTagNames)
         .map(tag => ({
           tag,
           series: tagToSeries.get(tag),

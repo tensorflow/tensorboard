@@ -291,6 +291,19 @@ describe('categorizationUtils', () => {
             ]);
       });
 
+      it('sorts the tag by name', function() {
+        const [searchResult] = categorizeSelection(
+            [this.experiment2, this.experiment1], 'scalar');
+
+        // should match 'tag1', 'tag2/subtag1', 'tag2/subtag2', and 'tag3'.
+        expect(searchResult).to.have.property('items')
+            .that.has.lengthOf(4);
+        expect(searchResult.items[0]).to.have.property('tag', 'tag1');
+        expect(searchResult.items[1]).to.have.property('tag', 'tag2/subtag1');
+        expect(searchResult.items[2]).to.have.property('tag', 'tag2/subtag2');
+        expect(searchResult.items[3]).to.have.property('tag', 'tag3');
+      });
+
       it('returns name `multi` when there are multiple selections', function() {
         const [searchResult2] = categorizeSelection(
             [this.experiment2], 'scalar');
