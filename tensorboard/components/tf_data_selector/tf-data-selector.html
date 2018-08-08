@@ -53,7 +53,10 @@ Properties out:
       ></tf-data-select-row>
     </template>
 
-    <template is="dom-if" if="[[_allExperiments.length]]">
+    <template
+      is="dom-if"
+      if="[[_shouldShowAddComparison(_allExperiments, _comparingExps)]]"
+    >
       <experiment-selector
         id="selector"
         exclude-experiments="[[_comparingExps]]"

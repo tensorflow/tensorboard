@@ -61,10 +61,11 @@ Properties out:
       <template is="dom-repeat" items="[[_itemsMatchingRegex]]">
         <div class="item">
           <paper-checkbox
+            checked$="[[_isChecked(item, selectionState.*)]]"
             class="checkbox"
             name="[[item]]"
-            checked$="[[_isChecked(item, selectionState.*)]]"
             on-change="_checkboxChange"
+            title$="[[item.title]]"
           >
             <span>[[item.title]]</span>
 
@@ -95,6 +96,10 @@ Properties out:
 
     paper-checkbox {
       --paper-checkbox-ink-size: 40px;
+      --paper-checkbox-label: {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
     paper-menu-button {
@@ -126,7 +131,7 @@ Properties out:
       line-height: 24px;
       margin: 3px 0;
       padding: 0 16px;
-      max-width: var(--tf-filterable-checkbox-list-content-max-width, 300px);
+      max-width: var(--tf-filterable-checkbox-list-content-max-width, 450px);
     }
 
     .matches {
@@ -138,7 +143,7 @@ Properties out:
     .checkbox {
       width: 100%;
       display: flex;
-      padding: 7px 0;
+      padding: 5px 0;
       align-items: center;
     }
 

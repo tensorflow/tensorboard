@@ -218,6 +218,14 @@ Polymer({
         str.split(',') :
         tf_data_selector.decodeIdArray(str);
   },
+
+  _getColoring() {
+    return {
+      getColor: this.noExperiment ?
+          (item) => tf_color_scale.runsColorScale(item.id) :
+          () => '',
+    };
+  },
 });
 
 }  // namespace tf_data_selector

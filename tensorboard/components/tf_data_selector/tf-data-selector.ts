@@ -139,6 +139,10 @@ Polymer({
   _getExperimentColor(experiment: tf_backend.Experiment): string {
     return tf_color_scale.experimentsColorScale(experiment.name);
   },
+
+  _shouldShowAddComparison() {
+    return this._allExperiments.length > this._comparingExps.length;
+  },
 });
 
 }  // namespace tf_data_selector
