@@ -504,8 +504,11 @@ limitations under the License.
           value: false,
         },
         _dataSelection: {
-          type: Array,
-          value: () => [],
+          type: Object,
+          value: () => ({
+            type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+            selections: [],
+          }),
         },
         _lastReloadTime: {
           type: String,

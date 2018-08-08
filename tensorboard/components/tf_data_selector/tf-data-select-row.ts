@@ -57,6 +57,8 @@ Polymer({
 
     _runSelectionStateString: {type: String, value: ''},
 
+    // ListItem requires `id` and it is synthesized from name when it is in the
+    // `noExperiment` mode.
     _selectedRuns: {
       type: Array,
       value: (): Array<tf_dashboard_common.FilterableCheckboxListItem> => [],
@@ -148,7 +150,7 @@ Polymer({
       // /data/runs endpoint does not return ids. In case of logdir data source,
       // runs cannot have an id and, for filtered-checkbox-list, we need to
       // synthesize id from the name.
-      id: this.noExperiment ? run.name : run.id,
+      id: this._getSyntheticRunId(run),
       title: run.name,
     }));
   },
@@ -166,7 +168,7 @@ Polymer({
   },
 
   _getRunsSelectionState(): Object {
-    const allIds = this._runs.map(({id}) => id);
+    const allIds = this._runs.map(r => this._getSyntheticRunId(r));
     const ids = this._deserializeValue(this._runSelectionStateString, allIds);
     const prevSelection = new Set(ids);
     const newSelection = {};
@@ -182,12 +184,13 @@ Polymer({
   },
 
   _fireChange(_, __): void {
-    const runMap = new Map(this._runs.map(run => [run.id, run]));
+    const runMap = new Map(
+        this._runs.map(run => [this._getSyntheticRunId(run), run]));
     this.fire('selection-changed', {
       runs: this._selectedRuns.map(({id}) => runMap.get(id))
           .filter(Boolean)
           .map(run => ({
-            id: this.noExperiment ? null : run.id,
+            id: run.id,
             name: run.name,
             startTime: run.startTime,
             tags: run.tags,
@@ -205,7 +208,6 @@ Polymer({
     if (selectedIds.length == source.length) return '$all';
     if (selectedIds.length == 0) return '$none';
 
-    // TODO(stephanwlee): Consider populating ids for /data/runs endpoint.
     return this.noExperiment ?
         selectedIds.join(',') :
         tf_data_selector.encodeIdArray((selectedIds as Array<number>));
@@ -217,6 +219,10 @@ Polymer({
     return this.noExperiment ?
         str.split(',') :
         tf_data_selector.decodeIdArray(str);
+  },
+
+  _getSyntheticRunId(run) {
+    return this.noExperiment ? run.name : run.id;
   },
 });
 
