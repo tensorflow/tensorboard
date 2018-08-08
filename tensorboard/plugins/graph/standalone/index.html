@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+<link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
+<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-graph-board/tf-graph-board.html">
+<title>TF Graph Standalone</title>
+<dom-module id="tf-graph-standalone">
+  <template>
+    <style>
+      *,
+      :host /deep/ {
+        font-family: 'Roboto', sans-serif;
+      }
+
+      #main {
+        position: absolute;
+        right: 0;
+        left: 250px;
+        height: 100%;
+      }
+
+      #side {
+        border: 1px solid #000;
+        box-sizing: border-box;
+        left: 0;
+        height: 100%;
+        width: 250px;
+        position: absolute;
+      }
+
+      paper-dialog ul {
+        padding: 0 0 0 50px;
+      }
+    </style>
+    <div id="side">
+      <tf-graph-controls devices-for-stats="{{_devicesForStats}}" color-by-params="[[_colorByParams]]" stats="[[_stats]]" color-by="{{_colorBy}}"
+        datasets="[[_datasets]]" render-hierarchy="[[_renderHierarchy]]" selected-file="{{_selectedFile}}" selected-dataset="{{_selectedDataset}}"
+        selected-metadata-tag="{{_selectedMetadataTag}}"></tf-graph-controls>
+      <tf-graph-loader id="loader" datasets="{{_datasets}}" selected-dataset="{{_selectedDataset}}" selected-file="[[_selectedFile]]"
+        selected-metadata-tag="[[_selectedMetadataTag]]" out-graph-hierarchy="{{_graphHierarchy}}" out-graph="{{_graph}}" out-stats="{{_stats}}"
+        progress="{{_progress}}" out-hierarchy-params="{{_hierarchyParams}}"></tf-graph-loader>
+    </div>
+    <div id="main">
+      <tf-graph-board id="graphboard" color-by="[[_colorBy]]" color-by-params="{{_colorByParams}}" devices-for-stats="[[_devicesForStats]]"
+        graph-hierarchy="[[_graphHierarchy]]" graph="[[_graph]]" hierarchy-params="[[_hierarchyParams]]" progress="[[_progress]]"
+        render-hierarchy="{{_renderHierarchy}}" stats="[[_stats]]"></tf-graph-board>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: "tf-graph-standalone",
+    });
+  </script>
+</dom-module>
+<tf-graph-standalone></tf-graph-standalone>
