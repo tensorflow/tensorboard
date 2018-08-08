@@ -138,11 +138,11 @@ limitations under the License.
                           ignore-y-outliers="[[_ignoreYOutliers]]"
                           show-download-links="[[_showDownloadLinks]]"
                           request-manager="[[_requestManager]]"
-                          runs="[[item.runs]]"
+                          data-to-load="[[item.series]]"
                           tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                           active="[[page.active]]"
-                          data-url="[[_dataUrl]]"
+                          get-data-load-url="[[_dataUrl]]"
                         ></tf-scalar-card>
                       </template>
                     </div>
@@ -235,7 +235,7 @@ limitations under the License.
         },
         _dataUrl: {
           type: Function,
-          value: () => (tag, run) => tf_backend.addParams(
+          value: () => ({tag, run}) => tf_backend.addParams(
               tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
               {tag, run}),
         },
@@ -288,8 +288,21 @@ limitations under the License.
       _makeCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
         const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-        return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
+        // TODO(stephanwlee): Apply the new categorization based on selection.
+        const categories = tf_categorization_utils.categorizeTags(
+            runToTag, selectedRuns, tagFilter);
+        categories.forEach(category => {
+          category.items = category.items.map(item => ({
+            tag: item.tag,
+            series: item.runs.map(run => ({
+              run,
+              tag: item.tag,
+            })),
+          }));
+        });
+        return categories;
       },
+
       _tagMetadata(runToTagsInfo, runs, tag) {
         const runToTagInfo = {};
         runs.forEach(run => {
@@ -305,6 +318,8 @@ limitations under the License.
     tf_tensorboard.registerDashboard({
       plugin: 'scalars',
       elementName: 'tf-scalar-dashboard',
+      useDataSelector: Boolean(
+          tf_storage.getBoolean('EnableDataSelector', {useLocalStorage: true})),
     });
 
   </script>
