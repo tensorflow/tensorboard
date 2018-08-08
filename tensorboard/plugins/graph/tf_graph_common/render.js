@@ -236,12 +236,25 @@ var tf;
                 RenderGraphInfo.prototype.getNodeByName = function (nodeName) {
                     return this.hierarchy.node(nodeName);
                 };
+                RenderGraphInfo.prototype.colorHistogram = function (histogram, colors) {
+                    var pairs = _.pairs(histogram);
+                    if (pairs.length > 0) {
+                        // Compute the total # of items.
+                        var numItems_1 = _.sum(pairs, _.last);
+                        return _.map(pairs, function (pair) { return ({
+                            color: colors(pair[0]),
+                            // Normalize to a proportion of total # of items.
+                            proportion: pair[1] / numItems_1
+                        }); });
+                    }
+                    console.info('no pairs found!');
+                    return null;
+                };
                 /**
                  * Get a previously created RenderNodeInfo for the specified node name,
                  * or create one if it hasn't been created yet.
                  */
                 RenderGraphInfo.prototype.getOrCreateRenderNodeByName = function (nodeName) {
-                    var _this = this;
                     // Polymer may invoke this with null.
                     if (!nodeName) {
                         return null;
@@ -266,39 +279,56 @@ var tf;
                         renderInfo.computeTimeColor =
                             this.computeTimeScale(node.stats.getTotalMicros());
                     }
-                    if (!node.isGroupNode) {
-                        var clusterName = node.xlaCluster;
-                        if (clusterName) {
-                            renderInfo.xlaClusterColor = this.xlaClusterColorMap(clusterName);
-                        }
-                    }
                     // We only fade nodes when we're displaying stats.
                     renderInfo.isFadedOut = this.displayingStats &&
                         !tf.graph.util.hasDisplayableNodeStats(node.stats);
+                    var deviceHistogram = null;
+                    var xlaClusterHistogram = null;
+                    var opCompatibility = null;
                     if (node.isGroupNode) {
-                        // Make a list of tuples (device, proportion), where proportion
-                        // is the fraction of op nodes that have that device.
-                        var pairs = _.pairs(node.deviceHistogram);
-                        if (pairs.length > 0) {
-                            // Compute the total # of devices.
-                            var numDevices_1 = _.sum(pairs, _.last);
-                            renderInfo.deviceColors = _.map(pairs, function (pair) { return ({
-                                color: _this.deviceColorMap(pair[0]),
-                                // Normalize to a proportion of total # of devices.
-                                proportion: pair[1] / numDevices_1
-                            }); });
+                        deviceHistogram = node.deviceHistogram;
+                        xlaClusterHistogram = node.xlaClusterHistogram;
+                        var compat = node.compatibilityHistogram.compatible;
+                        var incompat = node.compatibilityHistogram.incompatible;
+                        if (compat != 0 || incompat != 0) {
+                            opCompatibility = compat / (compat + incompat);
                         }
                     }
                     else {
                         var device = renderInfo.node.device;
                         if (device) {
-                            renderInfo.deviceColors = [{
-                                    color: this.deviceColorMap(device),
-                                    proportion: 1.0
-                                }];
+                            deviceHistogram = (_a = {}, _a[device] = 1, _a);
+                        }
+                        var xlaCluster = renderInfo.node.xlaCluster;
+                        if (xlaCluster) {
+                            xlaClusterHistogram = (_b = {}, _b[xlaCluster] = 1, _b);
+                        }
+                        if (renderInfo.node.type === graph_1.NodeType.OP) {
+                            opCompatibility = renderInfo.node.compatible ? 1 : 0;
                         }
                     }
+                    if (deviceHistogram) {
+                        renderInfo.deviceColors =
+                            this.colorHistogram(deviceHistogram, this.deviceColorMap);
+                    }
+                    if (xlaClusterHistogram) {
+                        renderInfo.xlaClusterColors =
+                            this.colorHistogram(xlaClusterHistogram, this.xlaClusterColorMap);
+                    }
+                    if (opCompatibility != null) {
+                        renderInfo.compatibilityColors = [
+                            {
+                                color: tf.graph.render.OpNodeColors.COMPATIBLE,
+                                proportion: opCompatibility
+                            },
+                            {
+                                color: tf.graph.render.OpNodeColors.INCOMPATIBLE,
+                                proportion: 1 - opCompatibility
+                            }
+                        ];
+                    }
                     return this.index[nodeName];
+                    var _a, _b;
                 };
                 /**
                  * Return the nearest ancestor node, including itself, that is visible
@@ -471,6 +501,8 @@ var tf;
                     newMetanode.templateId = libraryMetanode.templateId;
                     newMetanode.opHistogram = _.clone(libraryMetanode.opHistogram);
                     newMetanode.deviceHistogram = _.clone(libraryMetanode.deviceHistogram);
+                    newMetanode.xlaClusterHistogram =
+                        _.clone(libraryMetanode.xlaClusterHistogram);
                     newMetanode.hasNonControlEdges = libraryMetanode.hasNonControlEdges;
                     newMetanode.include = libraryMetanode.include;
                     newMetanode.nodeAttributes = _.clone(libraryMetanode.nodeAttributes);

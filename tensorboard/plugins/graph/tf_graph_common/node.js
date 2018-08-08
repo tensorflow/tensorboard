@@ -579,6 +579,30 @@ var tf;
                     ColorBy[ColorBy["OP_COMPATIBILITY"] = 5] = "OP_COMPATIBILITY";
                 })(ColorBy = node_1.ColorBy || (node_1.ColorBy = {}));
                 ;
+                function getGradient(id, colors) {
+                    var escapedId = tf.graph.util.escapeQuerySelector(id);
+                    var gradientDefs = d3.select('svg#svg defs #linearGradients');
+                    var linearGradient = gradientDefs.select('linearGradient#' + escapedId);
+                    // If the linear gradient is not there yet, create it.
+                    if (linearGradient.size() === 0) {
+                        linearGradient = gradientDefs.append('linearGradient').attr('id', id);
+                        // Re-create the stops of the linear gradient.
+                        linearGradient.selectAll('*').remove();
+                        var cumulativeProportion_1 = 0;
+                        // For each color, create a stop using the proportion of that device.
+                        _.each(colors, function (d) {
+                            var color = d.color;
+                            linearGradient.append('stop')
+                                .attr('offset', cumulativeProportion_1)
+                                .attr('stop-color', color);
+                            linearGradient.append('stop')
+                                .attr('offset', cumulativeProportion_1 + d.proportion)
+                                .attr('stop-color', color);
+                            cumulativeProportion_1 += d.proportion;
+                        });
+                    }
+                    return "url(#" + escapedId + ")";
+                }
                 /**
                  * Returns the fill color for the node given its state and the 'color by'
                  * option.
@@ -621,32 +645,17 @@ var tf;
                                 // Return the hue for unknown device.
                                 return colorParams.UNKNOWN;
                             }
-                            var id = renderInfo.node.name;
-                            var escapedId = tf.graph.util.escapeQuerySelector(id);
-                            var gradientDefs = d3.select('svg#svg defs #linearGradients');
-                            var linearGradient_1 = gradientDefs.select('linearGradient#' + escapedId);
-                            // If the linear gradient is not there yet, create it.
-                            if (linearGradient_1.size() === 0) {
-                                linearGradient_1 = gradientDefs.append('linearGradient').attr('id', id);
-                                // Re-create the stops of the linear gradient.
-                                linearGradient_1.selectAll('*').remove();
-                                var cumulativeProportion_1 = 0;
-                                // For each device, create a stop using the proportion of that device.
-                                _.each(renderInfo.deviceColors, function (d) {
-                                    var color = d.color;
-                                    linearGradient_1.append('stop')
-                                        .attr('offset', cumulativeProportion_1)
-                                        .attr('stop-color', color);
-                                    linearGradient_1.append('stop')
-                                        .attr('offset', cumulativeProportion_1 + d.proportion)
-                                        .attr('stop-color', color);
-                                    cumulativeProportion_1 += d.proportion;
-                                });
-                            }
-                            return isExpanded ? colorParams.EXPANDED_COLOR : "url(#" + escapedId + ")";
+                            return isExpanded ?
+                                colorParams.EXPANDED_COLOR :
+                                getGradient('device-' + renderInfo.node.name, renderInfo.deviceColors);
                         case ColorBy.XLA_CLUSTER:
-                            return isExpanded ? colorParams.EXPANDED_COLOR :
-                                renderInfo.xlaClusterColor || colorParams.UNKNOWN;
+                            if (renderInfo.xlaClusterColors == null) {
+                                // Return the hue for unknown xlaCluster.
+                                return colorParams.UNKNOWN;
+                            }
+                            return isExpanded ?
+                                colorParams.EXPANDED_COLOR :
+                                getGradient('xla-' + renderInfo.node.name, renderInfo.xlaClusterColors);
                         case ColorBy.COMPUTE_TIME:
                             return isExpanded ?
                                 colorParams.EXPANDED_COLOR : renderInfo.computeTimeColor ||
@@ -656,48 +665,12 @@ var tf;
                                 colorParams.EXPANDED_COLOR : renderInfo.memoryColor ||
                                 colorParams.UNKNOWN;
                         case ColorBy.OP_COMPATIBILITY:
-                            if (renderInfo.node.type === graph.NodeType.OP) {
-                                return (renderInfo.node.compatible) ?
-                                    tf.graph.render.OpNodeColors.COMPATIBLE :
-                                    tf.graph.render.OpNodeColors.INCOMPATIBLE;
+                            if (renderInfo.compatibilityColors == null) {
+                                // Return the hue for unknown compatibility info.
+                                return colorParams.UNKNOWN;
                             }
-                            else if (renderInfo.node.isGroupNode) {
-                                var node_2 = renderInfo.node;
-                                var numCompat = node_2.compatibilityHistogram.compatible;
-                                var numIncompat = node_2.compatibilityHistogram.incompatible;
-                                if (numCompat == 0 && numIncompat == 0) {
-                                    // Return the hue for unknown device.
-                                    return colorParams.UNKNOWN;
-                                }
-                                var id_1 = "op-compat-" + node_2.name;
-                                var escapedId_1 = tf.graph.util.escapeQuerySelector(id_1);
-                                var gradientDefs_1 = d3.select('svg#svg defs #linearGradients');
-                                var linearGradient_2 = gradientDefs_1.select('linearGradient#' + escapedId_1);
-                                // If the linear gradient is not there yet, create it.
-                                if (linearGradient_2.size() === 0) {
-                                    var percentValid = numCompat / (numCompat + numIncompat);
-                                    linearGradient_2 = gradientDefs_1.append('linearGradient').attr('id', id_1);
-                                    // Re-create the stops of the linear gradient.
-                                    linearGradient_2.selectAll('*').remove();
-                                    linearGradient_2.append('stop')
-                                        .attr('offset', 0)
-                                        .attr('stop-color', tf.graph.render.OpNodeColors.COMPATIBLE);
-                                    linearGradient_2.append('stop')
-                                        .attr('offset', percentValid)
-                                        .attr('stop-color', tf.graph.render.OpNodeColors.COMPATIBLE);
-                                    linearGradient_2.append('stop')
-                                        .attr('offset', percentValid)
-                                        .attr('stop-color', tf.graph.render.OpNodeColors.INCOMPATIBLE);
-                                    linearGradient_2.append('stop')
-                                        .attr('offset', 1)
-                                        .attr('stop-color', tf.graph.render.OpNodeColors.INCOMPATIBLE);
-                                }
-                                return isExpanded ? colorParams.EXPANDED_COLOR : "url(#" + escapedId_1 + ")";
-                            }
-                            else {
-                                // All other nodes will be set to the default color
-                                return colorParams.DEFAULT_FILL;
-                            }
+                            return isExpanded ? colorParams.EXPANDED_COLOR :
+                                getGradient('op-compat-' + renderInfo.node.name, renderInfo.compatibilityColors);
                         default:
                             throw new Error('Unknown case to color nodes by');
                     }

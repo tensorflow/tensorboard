@@ -304,6 +304,7 @@ var tf;
                  */
                 this.opHistogram = {};
                 this.deviceHistogram = {};
+                this.xlaClusterHistogram = {};
                 this.compatibilityHistogram = { compatible: 0, incompatible: 0 };
                 /** unique id for a metanode of similar subgraph */
                 this.templateId = null;
@@ -446,6 +447,7 @@ var tf;
                 this.bridgegraph = null;
                 this.parentNode = null;
                 this.deviceHistogram = {};
+                this.xlaClusterHistogram = {};
                 this.compatibilityHistogram = { compatible: 0, incompatible: 0 };
                 this.hasNonControlEdges = false;
                 this.include = InclusionType.UNSPECIFIED;
