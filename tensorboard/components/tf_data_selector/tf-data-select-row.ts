@@ -43,7 +43,7 @@ Polymer({
     },
 
     // Required field.
-    persistenceNumber: Number,
+    persistenceId: String,
 
     noExperiment: {
       type: Boolean,
@@ -81,18 +81,18 @@ Polymer({
   ],
 
   _getPersistenceKey(type: Type): string {
-    const number = this.persistenceNumber || 0;
+    const id = this.persistenceId;
     switch (type) {
       case Type.RUN:
         // Prefix with 'g' to denote a group.
-        return `g${number}r`;
+        return `gr${id}`;
       case Type.TAG:
-        return `g${number}t`;
+        return `gt${id}`;
     }
   },
 
   ready(): void {
-    if (this.persistenceNumber == null) return;
+    if (this.persistenceId == null) return;
 
     const runInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.RUN),
@@ -200,6 +200,11 @@ Polymer({
   },
 
   _removeRow(): void {
+    // Clear persistance when being removed.
+    tf_storage.setString(
+        this._getPersistenceKey(Type.RUN), '', {defaultValue: ''});
+    tf_storage.setString(
+        this._getPersistenceKey(Type.TAG), '', {defaultValue: ''});
     this.fire('remove');
   },
 

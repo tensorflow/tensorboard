@@ -88,6 +88,10 @@ Polymer({
     return Boolean(this._comparingExps.length);
   },
 
+  _getPersistenceId(experiment) {
+    return tf_data_selector.encodeId(experiment.id);
+  },
+
   /**
    * Prunes away an experiment that has been removed from `_comparingExps` from
    * the _selectionMap.
