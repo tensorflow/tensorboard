@@ -350,9 +350,15 @@ export class RenderGraphInfo {
 
     var deviceHistogram = null;
     var xlaClusterHistogram = null;
+    var opCompatibility = null;
     if (node.isGroupNode) {
       deviceHistogram = (<GroupNode>node).deviceHistogram;
       xlaClusterHistogram = (<GroupNode>node).xlaClusterHistogram;
+      let compat = (<GroupNode>node).compatibilityHistogram.compatible;
+      let incompat = (<GroupNode>node).compatibilityHistogram.incompatible;
+      if (compat != 0 || incompat != 0) {
+        opCompatibility = compat / (compat + incompat);
+      }
     } else {
       let device = (<OpNode>renderInfo.node).device;
       if (device) {
@@ -362,6 +368,9 @@ export class RenderGraphInfo {
       if (xlaCluster) {
         xlaClusterHistogram = {[xlaCluster]: 1};
       }
+      if (renderInfo.node.type === NodeType.OP) {
+        opCompatibility = (<OpNode>renderInfo.node).compatible ? 1 : 0;
+      }
     }
     if (deviceHistogram) {
       renderInfo.deviceColors =
@@ -370,6 +379,18 @@ export class RenderGraphInfo {
     if (xlaClusterHistogram) {
       renderInfo.xlaClusterColors =
           this.colorHistogram(xlaClusterHistogram, this.xlaClusterColorMap);
+    }
+    if (opCompatibility != null) {
+      renderInfo.compatibilityColors = [
+        {
+          color: tf.graph.render.OpNodeColors.COMPATIBLE,
+          proportion: opCompatibility
+        },
+        {
+          color: tf.graph.render.OpNodeColors.INCOMPATIBLE,
+          proportion: 1 - opCompatibility
+        }
+      ];
     }
 
     return this.index[nodeName];
@@ -1587,6 +1608,13 @@ export class RenderNodeInfo {
    * color with proportion 1.0.
    */
   xlaClusterColors: Array<{color: string, proportion: number}>;
+
+  /**
+   * List of (color, proportion) tuples based on the proportion of compatible
+   * nodes of its children. If this node is an op node, this list will have only
+   * one color with proportion 1.0.
+   */
+  compatibilityColors: Array<{color: string, proportion: number}>;
 
   /**
    * Color according to the memory usage of this node.

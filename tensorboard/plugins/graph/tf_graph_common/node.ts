@@ -700,52 +700,14 @@ export function getFillForNode(templateIndex, colorBy,
         colorParams.EXPANDED_COLOR : renderInfo.memoryColor ||
         colorParams.UNKNOWN;
     case ColorBy.OP_COMPATIBILITY:
-      if (renderInfo.node.type === NodeType.OP) {
-        return ((<OpNode>renderInfo.node).compatible) ?
-            tf.graph.render.OpNodeColors.COMPATIBLE :
-            tf.graph.render.OpNodeColors.INCOMPATIBLE;
-      } else if (renderInfo.node.isGroupNode) {
-        let node = <GroupNode>renderInfo.node;
-
-        let numCompat = node.compatibilityHistogram.compatible;
-        let numIncompat = node.compatibilityHistogram.incompatible
-
-        if (numCompat == 0 && numIncompat == 0) {
-          // Return the hue for unknown device.
-          return colorParams.UNKNOWN;
-        }
-
-        let id = "op-compat-" + node.name;
-        let escapedId = tf.graph.util.escapeQuerySelector(id);
-        let gradientDefs = d3.select('svg#svg defs #linearGradients');
-        let linearGradient = gradientDefs.select('linearGradient#' + escapedId);
-        // If the linear gradient is not there yet, create it.
-        if (linearGradient.size() === 0) {
-          let percentValid = numCompat / (numCompat + numIncompat);
-          linearGradient = gradientDefs.append('linearGradient').attr('id', id);
-
-          // Re-create the stops of the linear gradient.
-          linearGradient.selectAll('*').remove();
-
-          linearGradient.append('stop')
-              .attr('offset', 0)
-              .attr('stop-color', tf.graph.render.OpNodeColors.COMPATIBLE);
-          linearGradient.append('stop')
-              .attr('offset', percentValid)
-              .attr('stop-color', tf.graph.render.OpNodeColors.COMPATIBLE);
-          linearGradient.append('stop')
-              .attr('offset', percentValid)
-              .attr('stop-color', tf.graph.render.OpNodeColors.INCOMPATIBLE);
-          linearGradient.append('stop')
-              .attr('offset', 1)
-              .attr('stop-color', tf.graph.render.OpNodeColors.INCOMPATIBLE);
-        }
-
-        return isExpanded ? colorParams.EXPANDED_COLOR : `url(#${escapedId})`;
-      } else {
-        // All other nodes will be set to the default color
-        return colorParams.DEFAULT_FILL;
+      if (renderInfo.compatibilityColors == null) {
+        // Return the hue for unknown compatibility info.
+        return colorParams.UNKNOWN;
       }
+      return isExpanded ? colorParams.EXPANDED_COLOR :
+                          getGradient(
+                              'op-compat-' + renderInfo.node.name,
+                              renderInfo.compatibilityColors);
     default:
       throw new Error('Unknown case to color nodes by');
   }
