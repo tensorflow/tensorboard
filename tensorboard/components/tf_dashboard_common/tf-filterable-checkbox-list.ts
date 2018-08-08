@@ -154,11 +154,21 @@ Polymer({
     window.requestAnimationFrame(() => this.updateStyles());
   },
 
-  _checkboxChange(e) {
-    const checkbox = (Polymer.dom(e) as any).localTarget;
+  _checkboxTapped(e) {
+    const checkbox = e.currentTarget;
     const newSelectedNames = Object.assign({}, this.selectionState, {
       [checkbox.name.id]: checkbox.checked,
     });
+
+    // If user presses alt while toggling checkbox, it deselects all items but
+    // the clicked one.
+    if (e.detail.sourceEvent instanceof MouseEvent &&
+        e.detail.sourceEvent.altKey) {
+      Object.keys(newSelectedNames).forEach(key => {
+        newSelectedNames[key] = key == checkbox.name.id;
+      });
+    }
+
     // n.b. notifyPath won't work because names may have periods.
     this.selectionState = newSelectedNames;
   },

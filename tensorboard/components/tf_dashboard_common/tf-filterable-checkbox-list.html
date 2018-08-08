@@ -64,8 +64,8 @@ Properties out:
             checked$="[[_isChecked(item, selectionState.*)]]"
             class="checkbox"
             name="[[item]]"
-            on-change="_checkboxChange"
-            title$="[[item.title]]"
+            on-tap="_checkboxTapped"
+            title="Alt+Click to select only [[item.title]]."
           >
             <span>[[item.title]]</span>
 
