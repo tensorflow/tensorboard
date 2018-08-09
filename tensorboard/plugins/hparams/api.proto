@@ -27,7 +27,6 @@ limitations under the License.
 
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 
 package tensorboard.hparams;
@@ -57,7 +56,8 @@ message Experiment {
   // An id for the owning user or group.
   string user = 2;
 
-  google.protobuf.Timestamp time_created = 3;
+  // The time the experiment was created. In seconds since the UNIX epoch.
+  double time_created_secs = 3;
 
   // Information about each hyperparameter used in the experiment.
   repeated HParamInfo hparam_infos = 4;
@@ -100,10 +100,10 @@ enum DataType {
   DATA_TYPE_FLOAT64 = 2;
 }
 
-// Represents the closed interval [min_val, max_val] of the real line.
+// Represents the closed interval [min_value, max_value] of the real line.
 message Interval {
-  double min_val = 1;
-  double max_val = 2;
+  double min_value = 1;
+  double max_value = 2;
 }
 
 message MetricName {
@@ -190,17 +190,26 @@ message SessionGroup {
 
 message MetricValue {
   MetricName name = 1;
+
   double value = 2;
+
+  // The training step at which this value is computed.
+  int32 training_step = 3;
+
+  // The wall time in seconds since UNIX epoch at which this value is computed.
+  double wall_time_secs = 4;
 }
 
 message Session {
   // An id for the session. Unique within an experiment (not just the group).
   string name = 1;
 
-  google.protobuf.Timestamp time_started = 2;
+  // In seconds since the UNIX epoch.
+  double start_time_secs = 2;
 
-  // May be empty if unavailable or the session has not finished yet.
-  google.protobuf.Timestamp time_completed = 3;
+  // In seconds since the UNIX epoch.
+  // May be 0 if unavailable or the session has not finished yet.
+  double end_time_secs = 3;
 
   // May be STATUS_UNKNOWN if unavailable.
   Status status = 4;
@@ -216,16 +225,8 @@ message Session {
   // message keys.
   repeated MetricValue metric_values = 6;
 
-  // The current training step.
-  // This is the step for which the values of 'metrics' are computed.
-  // Note that int64's are encoded in JSON as strings.
-  int64 training_step = 7;
-
-  // The wall time at which 'training_step' completed.
-  google.protobuf.Timestamp training_step_wall_time = 8;
-
   // An optional link to a web page monitoring the session.
-  string monitor_url = 9;
+  string monitor_url = 7;
 }
 
 // Represents the status of a Session.
@@ -305,6 +306,9 @@ message ColParams {
   // determines the "significance" of the associated column as a sorting key:
   // with the first being the primary sorting key, the second being the
   // secondary sorting key, etc.
+  // Note: The 'session group name' is added as a least significant sorting
+  // key to the keys defined by the user, so the order in the response is always
+  // deterministic.
   SortOrder order = 3;
   // This field is ignored if order is ORDER_UNSPECIFIED.
   // Otherwise, if true, missing values are ordered before every other value in
@@ -328,13 +332,13 @@ message ColParams {
     // the set of all strings matching the regular expression stored
     // in 'regexp' as a partial match (use '^<regexp>$' to have a full
     // match against regexp).
-    string regexp = 5;
+    string filter_regexp = 5;
 
     // Only valid for numeric-valued columns. The subset is the given interval.
-    Interval interval = 6;
+    Interval filter_interval = 6;
 
     // Valid for all data types. The subset is defined explicitly.
-    google.protobuf.ListValue discrete = 7;
+    google.protobuf.ListValue filter_discrete = 7;
   }
   // If true, the subset does not contain the missing value in this column.
   bool exclude_missing_values = 8;

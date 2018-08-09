@@ -28,10 +28,10 @@ export enum CategoryType {
   PREFIX_GROUP,
 }
 export interface PrefixGroupMetadata {
-  type: CategoryType.PREFIX_GROUP;
+  type: CategoryType;
 }
 export interface SearchResultsMetadata {
-  type: CategoryType.SEARCH_RESULTS;
+  type: CategoryType;
   validRegex: boolean;
   universalRegex: boolean;  // is the search query ".*"? ("(?:)" doesn't count)
 }
@@ -44,6 +44,18 @@ export interface Category<T> {
 };
 export type TagCategory = Category<{tag: string, runs: string[]}>;
 export type RunTagCategory = Category<{tag: string, run: string}>;
+
+/**
+ * Organize data by tagPrefix, tag, then list of series which is comprised of
+ * an experiment and a run.
+ */
+export type SeriesCategory = Category<{
+  tag: string,
+  series: Array<{
+    experiment: string,
+    run: string,
+  }>,
+}>;
 
 export type RawCategory = Category<string>;  // Intermediate structure.
 
@@ -110,23 +122,101 @@ export function categorizeTags(
     query?: string): TagCategory[] {
   const tags = tf_backend.getTags(runToTag);
   const categories = categorize(tags, query);
-  const tagToRuns: {[tag: string]: string[]} = {};
-  tags.forEach(tag => {
-    tagToRuns[tag] = [];
-  });
-  selectedRuns.forEach(run => {
-    (runToTag[run] || []).forEach(tag => {
-      tagToRuns[tag].push(run);
-    });
-  });
+  const tagToRuns = createTagToRuns(_.pick(runToTag, selectedRuns));
+
   return categories.map(({name, metadata, items}) => ({
     name,
     metadata,
     items: items.map(tag => ({
       tag,
-      runs: tagToRuns[tag].slice(),
+      runs: tagToRuns.get(tag).slice(),
     })),
   }));
+}
+
+/**
+ * Creates grouping of the data based on selection from tf-data-selector. It
+ * groups data by prefixes of tag names and by tag names. Each group contains
+ * series, a tuple of experiment name and run name.
+ */
+export function categorizeSelection(
+    selection: tf_data_selector.Selection[], pluginName: string):
+    SeriesCategory[] {
+  const tagToSeries = new Map();
+  const searchTags = new Set();
+
+  selection.forEach(({experiment, runs, tagRegex}) => {
+    const runNames = runs.map(({name}) => name);
+    const selectedRunToTag = createRunToTagForPlugin(runs, pluginName);
+    const tagToSelectedRuns = createTagToRuns(selectedRunToTag);
+    const tags = tf_backend.getTags(selectedRunToTag);
+
+    const searchCategory = categorizeBySearchQuery(tags, tagRegex);
+    // list of matching tags.
+    searchCategory.items.forEach(tag => searchTags.add(tag));
+
+    // list of all tags that has selected runs.
+    tags.forEach(tag => {
+      const series = tagToSeries.get(tag) || [];
+      series.push(...tagToSelectedRuns.get(tag)
+          .map(run => ({experiment: experiment.name, run})));
+      tagToSeries.set(tag, series);
+    });
+  });
+
+  const searchCategory = {
+    name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+    metadata: {
+      type: CategoryType.SEARCH_RESULTS,
+      validRegex: false,
+      universalRegex: false,
+    },
+    items: Array.from(searchTags)
+        .sort(vz_sorting.compareTagNames)
+        .map(tag => ({
+          tag,
+          series: tagToSeries.get(tag),
+        })),
+  };
+
+  // Organize the tag to items by prefix.
+  const prefixCategories = categorizeByPrefix(Array.from(tagToSeries.keys()))
+      .map(({name, metadata, items}) => ({
+        name,
+        metadata,
+        items: items.map(tag => ({
+          tag,
+          series: tagToSeries.get(tag),
+        })),
+      }));
+
+  return [
+    searchCategory,
+    ...prefixCategories,
+  ];
+}
+
+function createTagToRuns(runToTag: RunToTag): Map<string, string[]> {
+  const tagToRun = new Map();
+  Object.keys(runToTag).forEach(run => {
+    runToTag[run].forEach(tag => {
+      const runs = tagToRun.get(tag) || [];
+      runs.push(run);
+      tagToRun.set(tag, runs);
+    });
+  });
+  return tagToRun;
+}
+
+function createRunToTagForPlugin(runs: tf_backend.Run[], pluginName: string):
+    RunToTag {
+  const runToTag = {};
+  runs.forEach((run) => {
+    runToTag[run.name] = run.tags
+        .filter(tag => tag.pluginName == pluginName)
+        .map(({name}) => name);
+  })
+  return runToTag;
 }
 
 function compareTagRun(a, b: {tag: string, run: string}): number {

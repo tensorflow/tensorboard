@@ -224,7 +224,7 @@ export class RenderGraphInfo {
     // Maps node name to whether the rendering hierarchy was already
     // constructed.
     this.hasSubhierarchy = {};
-    this.root = new RenderGroupNodeInfo(hierarchy.root);
+    this.root = new RenderGroupNodeInfo(hierarchy.root, hierarchy.graphOptions);
     this.index[hierarchy.root.name] = this.root;
     this.renderedOpNames.push(hierarchy.root.name);
     this.buildSubhierarchy(hierarchy.root.name);
@@ -293,6 +293,24 @@ export class RenderGraphInfo {
     return this.hierarchy.node(nodeName);
   }
 
+  private colorHistogram(
+      histogram: {[name: string]: number},
+      colors: d3.ScaleOrdinal<string, string>):
+      Array<{color: string, proportion: number}> {
+    let pairs = _.pairs(histogram);
+    if (pairs.length > 0) {
+      // Compute the total # of items.
+      let numItems = _.sum(pairs, _.last);
+      return _.map(pairs, pair => ({
+                            color: colors(pair[0]),
+                            // Normalize to a proportion of total # of items.
+                            proportion: pair[1] / numItems
+                          }));
+    }
+    console.info('no pairs found!');
+    return null;
+  }
+
   /**
    * Get a previously created RenderNodeInfo for the specified node name,
    * or create one if it hasn't been created yet.
@@ -315,7 +333,7 @@ export class RenderGraphInfo {
       return null;
     }
     let renderInfo = node.isGroupNode ?
-        new RenderGroupNodeInfo(<GroupNode>node) :
+        new RenderGroupNodeInfo(<GroupNode>node, this.hierarchy.graphOptions) :
         new RenderNodeInfo(node);
     this.index[nodeName] = renderInfo;
     this.renderedOpNames.push(nodeName);
@@ -326,38 +344,53 @@ export class RenderGraphInfo {
           this.computeTimeScale(node.stats.getTotalMicros());
     }
 
-    if (!node.isGroupNode) {
-      let clusterName = (node as OpNode).xlaCluster;
-      if (clusterName) {
-        renderInfo.xlaClusterColor = this.xlaClusterColorMap(clusterName);
-      }
-    }
-
     // We only fade nodes when we're displaying stats.
     renderInfo.isFadedOut = this.displayingStats &&
         !tf.graph.util.hasDisplayableNodeStats(node.stats);
 
+    var deviceHistogram = null;
+    var xlaClusterHistogram = null;
+    var opCompatibility = null;
     if (node.isGroupNode) {
-      // Make a list of tuples (device, proportion), where proportion
-      // is the fraction of op nodes that have that device.
-      let pairs = _.pairs((<GroupNode>node).deviceHistogram);
-      if (pairs.length > 0) {
-        // Compute the total # of devices.
-        let numDevices = _.sum(pairs, _.last);
-        renderInfo.deviceColors = _.map(pairs, pair => ({
-              color: this.deviceColorMap(pair[0]),
-              // Normalize to a proportion of total # of devices.
-              proportion: pair[1] / numDevices
-            }));
+      deviceHistogram = (<GroupNode>node).deviceHistogram;
+      xlaClusterHistogram = (<GroupNode>node).xlaClusterHistogram;
+      let compat = (<GroupNode>node).compatibilityHistogram.compatible;
+      let incompat = (<GroupNode>node).compatibilityHistogram.incompatible;
+      if (compat != 0 || incompat != 0) {
+        opCompatibility = compat / (compat + incompat);
       }
     } else {
       let device = (<OpNode>renderInfo.node).device;
       if (device) {
-        renderInfo.deviceColors = [{
-          color: this.deviceColorMap(device),
-          proportion: 1.0
-        }];
+        deviceHistogram = {[device]: 1};
       }
+      let xlaCluster = (<OpNode>renderInfo.node).xlaCluster;
+      if (xlaCluster) {
+        xlaClusterHistogram = {[xlaCluster]: 1};
+      }
+      if (renderInfo.node.type === NodeType.OP) {
+        opCompatibility = (<OpNode>renderInfo.node).compatible ? 1 : 0;
+      }
+    }
+    if (deviceHistogram) {
+      renderInfo.deviceColors =
+          this.colorHistogram(deviceHistogram, this.deviceColorMap);
+    }
+    if (xlaClusterHistogram) {
+      renderInfo.xlaClusterColors =
+          this.colorHistogram(xlaClusterHistogram, this.xlaClusterColorMap);
+    }
+    if (opCompatibility != null) {
+      renderInfo.compatibilityColors = [
+        {
+          color: tf.graph.render.OpNodeColors.COMPATIBLE,
+          proportion: opCompatibility
+        },
+        {
+          color: tf.graph.render.OpNodeColors.INCOMPATIBLE,
+          proportion: 1 - opCompatibility
+        }
+      ];
     }
 
     return this.index[nodeName];
@@ -578,6 +611,8 @@ export class RenderGraphInfo {
     newMetanode.templateId = libraryMetanode.templateId;
     newMetanode.opHistogram = _.clone(libraryMetanode.opHistogram);
     newMetanode.deviceHistogram = _.clone(libraryMetanode.deviceHistogram);
+    newMetanode.xlaClusterHistogram =
+        _.clone(libraryMetanode.xlaClusterHistogram);
     newMetanode.hasNonControlEdges = libraryMetanode.hasNonControlEdges;
     newMetanode.include = libraryMetanode.include;
     newMetanode.nodeAttributes = _.clone(libraryMetanode.nodeAttributes);
@@ -704,7 +739,7 @@ export class RenderGraphInfo {
     // metagraph.
     const originalMetaEdges = this.hierarchy.getPredecessors(
         opNodeToReplace.name);
-    
+
     // Find the metaedge that the input index corresponds to.
     // A metaedge may correspond to several edges. For instance,
     // an edge may enter a series node.
@@ -1568,9 +1603,18 @@ export class RenderNodeInfo {
   deviceColors: Array<{color: string, proportion: number}>;
 
   /**
-   * Color according to the XLA cluster of this node.
+   * List of (color, proportion) tuples based on the proportion of xlaClusters
+   * of its children. If this node is an op node, this list will have only one
+   * color with proportion 1.0.
    */
-  xlaClusterColor: string;
+  xlaClusterColors: Array<{color: string, proportion: number}>;
+
+  /**
+   * List of (color, proportion) tuples based on the proportion of compatible
+   * nodes of its children. If this node is an op node, this list will have only
+   * one color with proportion 1.0.
+   */
+  compatibilityColors: Array<{color: string, proportion: number}>;
 
   /**
    * Color according to the memory usage of this node.
@@ -1788,13 +1832,14 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
   /** Array of nodes to show in the function library scene group. */
   libraryFunctionsExtract: RenderNodeInfo[];
 
-  constructor(groupNode: GroupNode) {
+  constructor(groupNode: GroupNode, graphOptions: graphlib.GraphOptions) {
     super(groupNode);
     let metagraph = groupNode.metagraph;
     let gl = metagraph.graph();
+    graphOptions.compound = true;
     this.coreGraph =
         createGraph<RenderNodeInfo, RenderMetaedgeInfo>(
-            gl.name, GraphType.CORE, { compound: true });
+            gl.name, GraphType.CORE, graphOptions);
     this.inExtractBox = {width: 0, height: 0};
     this.outExtractBox = {width: 0, height: 0};
     this.libraryFunctionsBox = {width: 0, height: 0};

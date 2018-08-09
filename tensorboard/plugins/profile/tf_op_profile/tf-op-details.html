@@ -116,6 +116,10 @@ tf-op-bar {
           <b>FLOPS utilization: </b>
           <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
         </div>
+        <div hidden="[[_hasMemoryUtilization(node)]]">
+          <b>Memory utilization: </b>
+          <tf-op-bar value="[[_memoryUtilization(node)]]"></tf-op-bar>
+        </div>
         <div hidden="[[!node.xla.expression]]">
           <b>Expression: </b>
           <code class="expression">[[node.xla.expression]]</code>
@@ -154,6 +158,10 @@ Polymer({
     },
   },
   _utilization: tf_op_profile.utilization,
+  _memoryUtilization: tf_op_profile.memoryUtilization,
+  _hasMemoryUtilization: function(node) {
+    return !node || !node.metrics || !node.metrics.memoryBandwidth;
+  },
   _updateCard: function(node){
     if (node == null) return;
     var color = tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);

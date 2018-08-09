@@ -1,0 +1,66 @@
+{
+  "cols": [
+    {
+      "id": "ga:country",
+      "label": "Country",
+      "type": "string"
+    },
+    {
+      "id": "ga:sessions",
+      "label": "Sessions",
+      "type": "number"
+    }
+  ],
+  "rows": [
+    {
+      "c": [
+        {
+          "v": "United States"
+        },
+        {
+          "v": 24748
+        }
+      ]
+    },
+    {
+      "c": [
+        {
+          "v": "Canada"
+        },
+        {
+          "v": 15232
+        }
+      ]
+    },
+    {
+      "c": [
+        {
+          "v": "India"
+        },
+        {
+          "v": 9100
+        }
+      ]
+    },
+    {
+      "c": [
+        {
+          "v": "Japan"
+        },
+        {
+          "v": 4845
+        }
+      ]
+    },
+    {
+      "c": [
+        {
+          "v": "United Kingdom"
+        },
+        {
+          "v": 2768
+        }
+      ]
+    }
+  ]
+}

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
+import binascii
 
 import numpy as np
 from tensorflow.python.debug.cli import command_parser
@@ -61,6 +62,54 @@ def parse_time_indices(s):
     return parsed[0]
 
 
+def translate_dtype(dtype):
+  """Translate numpy dtype into a string.
+
+  The 'object' type is understood as a TensorFlow string and translated into
+  'string'.
+
+  Args:
+    dtype: A numpy dtype object.
+
+  Returns:
+    A string representing the data type.
+  """
+  out = str(dtype)
+  # String-type TensorFlow Tensors are represented as object-type arrays in
+  # numpy. We map the type name back to 'string' for clarity.
+  return 'string' if out == 'object' else out
+
+
+def process_buffers_for_display(s, limit=40):
+  """Process a buffer for human-readable display.
+
+  This function performs the following operation on each of the buffers in `s`.
+    1. Truncate input buffer if the length of the buffer is greater than
+       `limit`, to prevent large strings from overloading the frontend.
+    2. Apply `binascii.b2a_qp` on the truncated buffer to make the buffer
+       printable and convertible to JSON.
+    3. If truncation happened (in step 1), append a string at the end
+       describing the original length and the truncation.
+
+  Args:
+    s: The buffer to be processed, either a single buffer or a nested array of
+      them.
+    limit: Length limit for each buffer, beyond which truncation will occur.
+
+  Return:
+    A single processed buffer or a nested array of processed buffers.
+  """
+  if isinstance(s, (list, tuple)):
+    return [process_buffers_for_display(elem, limit=limit) for elem in s]
+  else:
+    length = len(s)
+    if length > limit:
+      return (binascii.b2a_qp(s[:limit]) +
+              b' (length-%d truncated at %d bytes)' % (length, limit))
+    else:
+      return binascii.b2a_qp(s)
+
+
 def array_view(array, slicing=None, mapping=None):
   """View a slice or the entirety of an ndarray.
 
@@ -81,26 +130,39 @@ def array_view(array, slicing=None, mapping=None):
     3. the potentially sliced values, as a nested `list`.
   """
 
-  dtype = str(array.dtype)
+  dtype = translate_dtype(array.dtype)
   sliced_array = (array[command_parser._parse_slices(slicing)] if slicing
                   else array)
-  shape = sliced_array.shape
-  if mapping == "image/png":
-    if len(sliced_array.shape) == 2:
-      return dtype, shape, array_to_base64_png(sliced_array)
-    elif len(sliced_array.shape) == 3:
-      raise NotImplementedError(
-          "image/png mapping for 3D array has not been implemented")
-    else:
-      raise ValueError("Invalid rank for image/png mapping: %d" %
-                       len(sliced_array.shape))
-  elif mapping == 'health-pill':
-    health_pill = health_pill_calc.calc_health_pill(array)
-    return dtype, shape, health_pill
-  elif mapping is None or mapping == '' or  mapping.lower() == 'none':
-    return dtype, shape, sliced_array.tolist()
+
+  if np.isscalar(sliced_array) and str(dtype) == 'string':
+    # When a string Tensor (for which dtype is 'object') is sliced down to only
+    # one element, it becomes a string, instead of an numpy array.
+    # We preserve the dimensionality of original array in the returned shape
+    # and slice.
+    ndims = len(array.shape)
+    slice_shape = []
+    for _ in range(ndims):
+      sliced_array = [sliced_array]
+      slice_shape.append(1)
+    return dtype, tuple(slice_shape), sliced_array
   else:
-    raise ValueError("Invalid mapping: %s" % mapping)
+    shape = sliced_array.shape
+    if mapping == "image/png":
+      if len(sliced_array.shape) == 2:
+        return dtype, shape, array_to_base64_png(sliced_array)
+      elif len(sliced_array.shape) == 3:
+        raise NotImplementedError(
+            "image/png mapping for 3D array has not been implemented")
+      else:
+        raise ValueError("Invalid rank for image/png mapping: %d" %
+                         len(sliced_array.shape))
+    elif mapping == 'health-pill':
+      health_pill = health_pill_calc.calc_health_pill(array)
+      return dtype, shape, health_pill
+    elif mapping is None or mapping == '' or  mapping.lower() == 'none':
+      return dtype, shape, sliced_array.tolist()
+    else:
+      raise ValueError("Invalid mapping: %s" % mapping)
 
 
 IMAGE_COLOR_CHANNELS = 3

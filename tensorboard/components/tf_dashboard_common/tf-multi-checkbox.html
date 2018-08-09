@@ -41,10 +41,10 @@ handle these situations gracefully.
 
   <template>
       <paper-input
-        id="runs-regex"
+        id="names-regex"
         no-label-float
         label="Write a regex to filter runs"
-        value="[[regexInput]]"
+        value="[[regex]]"
         on-bind-value-changed="_debouncedRegexChange"
       ></paper-input>
     <div id="outer-container" class="scrollbar">
@@ -53,13 +53,13 @@ handle these situations gracefully.
         items="[[namesMatchingRegex]]"
       >
         <div
-          class="run-row"
+          class="name-row"
         >
           <div class="icon-container checkbox-container vertical-align-container">
             <paper-checkbox
               class="checkbox vertical-align-center"
               name="[[item]]"
-              checked$="[[_isChecked(item, runSelectionState.*)]]"
+              checked$="[[_isChecked(item, selectionState.*)]]"
               on-change="_checkboxChange"
             ></paper-checkbox>
 
@@ -68,7 +68,7 @@ handle these situations gracefully.
             <paper-icon-button
               icon="radio-button-unchecked"
               class="isolator vertical-align-center"
-              on-tap="_isolateRun"
+              on-tap="_isolateName"
               name="[[item]]"
             ></paper-icon-button>
           </div>
@@ -102,7 +102,7 @@ handle these situations gracefully.
       flex-shrink: 1;
       word-wrap: break-word;
     }
-    .run-row {
+    .name-row {
       padding-top: 5px;
       padding-bottom: 5px;
       display: flex;

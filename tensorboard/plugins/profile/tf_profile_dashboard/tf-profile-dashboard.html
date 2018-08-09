@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -25,6 +27,9 @@ limitations under the License.
 <link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
 <link rel="import" href="../tf-overview-page/overview-page.html">
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
+<link rel="import" href="../tf-profile-common/tf-profile-common.html">
+<link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
+<link rel="import" href="../google-chart/google-chart-demo.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -38,6 +43,12 @@ profile run can have multiple tools that present the performance profile as diff
 
 <dom-module id="tf-profile-dashboard">
 <template>
+<template is="dom-if" if="[[_isNotComplete(progress)]]">
+  <div id="progress-bar">
+    <div id="progress-msg">[[progress.msg]]</div>
+    <paper-progress value="[[progress.value]]"></paper-progress>
+  </div>
+</template>
 <template is="dom-if" if="[[_dataNotFound]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No profile data was found.</h3>
@@ -64,36 +75,46 @@ profile run can have multiple tools that present the performance profile as diff
 </template>
 <template is="dom-if" if="[[!_dataNotFound]]">
   <tf-dashboard-layout>
-  <div class="sidebar">
+  <div class="sidebar" style="width: 340px">
     <div class="allcontrols">
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-          <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}" slot="dropdown-content">
-            <template is="dom-repeat" items="[[_datasets]]">
+          <paper-listbox id="list_box_run" class="dropdown-content" selected="{{selectedDatasetIndex}}">
+            <template id="run_items" is="dom-repeat" items="[[_datasets]]">
               <paper-item>[[item.name]]</paper-item>
             </template>
-          </paper-menu>
+          </paper-listbox>
         </paper-dropdown-menu>
       </div>
       <div class="sidebar-section">
-        <div class="title">Tools <span class="counter">([[_activeTools.length]])</span></div>
+        <div class="title">Tools <span class="counter">([[_activeToolsList.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
-          <paper-menu id="select" class="dropdown-content" selected="{{selectedTool}}" slot="dropdown-content">
-            <template is="dom-repeat" items="[[_activeTools]]">
+          <paper-listbox id="list_box_tool" class="dropdown-content" selected="{{selectedToolIndex}}">
+            <template id="tool_items" is="dom-repeat" items="[[_activeToolsList]]">
               <paper-item>[[item]]</paper-item>
             </template>
-            <template is="dom-if" if="[[!_hasActiveTools(selectedDataset, _datasets)]]" restamp="true">
+            <template is="dom-if" if="[[!_hasActiveTools()]]" restamp="true">
               <paper-item>None</paper-item>
             </template>
-          </paper-menu>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </div>
+      <div class="sidebar-section">
+        <div class="title">Hosts <span class="counter">([[_activeHostsList.length]])</span></div>
+        <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
+          <paper-listbox id="list_box_host" class="dropdown-content" selected="{{selectedHostIndex}}">
+            <template id="host_items" is="dom-repeat" items="[[_activeHostsList]]">
+              <paper-item>[[_getHostDisplayName(item)]]</paper-item>
+            </template>
+          </paper-listbox>
         </paper-dropdown-menu>
       </div>
       <div class="sidebar-section"></div>
     </div>
   </div>
   <div class="center">
-    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'trace_viewer')]]" restamp="true">
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"
         height="100%"
@@ -101,17 +122,20 @@ profile run can have multiple tools that present the performance profile as diff
         src="[[_traceDataUrl]]">
       </iframe>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'op_profile')]]" restamp="true">
-      <tf-op-profile run="[[_getSelectedDataset(_datasets, currentSelected)]]">
-      </tf-op-profile>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'op_profile')]]" restamp="true">
+      <tf-op-profile _data="[[_opProfileData]]"></tf-op-profile>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'input_pipeline_analyzer')]]" restamp="true">
-      <input-pipeline-analyzer run="[[_getSelectedDataset(_datasets, currentSelected)]]">
-      </input-pipeline-analyzer>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'input_pipeline_analyzer')]]" restamp="true">
+      <input-pipeline-analyzer _data="[[_inputPipelineData]]"></input-pipeline-analyzer>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_datasets, currentSelected, 'overview_page')]]">
-      <overview-page run="[[_getSelectedDataset(_datasets, currentSelected)]]">
-      </overview-page>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'overview_page')]]" restamp="true">
+      <overview-page _data="[[_overviewPageData]]"></overview-page>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
+      <memory-viewer-dashboard _data="[[_memoryViewerData]]"></memory-viewer-dashboard>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp=true">
+      <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
     </template>
   </div>
   </tf-dashboard-layout>
@@ -129,13 +153,31 @@ profile run can have multiple tools that present the performance profile as diff
     height: 100%;
     box-sizing: border-box;
   }
+  #progress-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    font-size: 13px;
+  }
+  #progress-msg {
+    width: 400px;
+    margin-bottom: 5px;
+  }
+  paper-progress {
+    width: 400px;
+    --paper-progress-height: 6px;
+    --paper-progress-active-color: #f3913e;
+  }
 </style>
 
 </template>
 <script>
   "use strict";
-
-
 
   Polymer({
     is: "tf-profile-dashboard",
@@ -149,6 +191,45 @@ profile run can have multiple tools that present the performance profile as diff
       // initialized once.
       _initialized: Boolean,
       _dataNotFound: Boolean,
+      _datasets: {
+        type: Array,
+        notify: true,
+        observer: '_datasetsChanged'
+      },
+      _activeToolsList: {
+        type: Array,
+        computed: '_getActiveToolsList(selectedDatasetIndex, _datasets)',
+        observer: '_activeToolsChanged'
+      },
+      _activeHostsList: {
+        type: Array,
+        observer: '_activeHostsChanged'
+      },
+      /**
+       * @type {{value: number, msg: string}}
+       *
+       * A number between 0 and 100 denoting the % of progress
+       * for the progress bar and the displayed message.
+       */
+      progress: {
+        type: Object,
+        notify: true,
+      },
+      selectedDatasetIndex: {
+        type: Number,
+        notify: true,
+        value: 0,
+      },
+      selectedToolIndex: {
+        type: Number,
+        notify: true,
+        value: 0,
+      },
+      selectedHostIndex: {
+        type: Number,
+        notify: true,
+        value: 0,
+      },
       // The endpoint that serves trace viewer app.
       traceViewerBaseUrl: {
         type: String,
@@ -159,35 +240,38 @@ profile run can have multiple tools that present the performance profile as diff
         type: String,
         value: "",
       },
-      _datasets: {
-        type: Array,
-        notify: true,
-        observer: '_datasetsChanged'
+      _opProfileData: {
+        type: Object,
       },
-      _activeTools: {
-        type: Array,
-        computed: '_getActiveTools(selectedDataset, _datasets)'
+      _inputPipelineData: {
+        type: Object,
       },
-      selectedDataset: {
-        type: Number,
-        notify: true,
-        value: 0,
-        observer: '_selectedDatasetChanged'
+      _overviewPageData: {
+        type: Object,
       },
-      selectedTool: {
-        type: Number,
-        notify: true,
-        value: 0,
-        observer: '_selectedToolChanged'
+      _memoryViewerData: {
+        type: Object,
       },
-      // currentSelected will depends on selectedDataset and selectedTool.
-      // With this arrangement, we can achieve cascading Polymer effects
-      // propagation and atomic change of both dataset and tool.(e.g.
-      // when dataset change, the tool set to the first available one).
-      currentSelected: {
-        type: Number,
+      _googleChartDemoData: {
+        type: Object,
+      },
+      _selectedDatasetName: {
+        type: String,
         notify: true,
-        value: () => { return {'datasetIndex': 0, 'toolIndex': 0} },
+        computed: '_getSelectedDatasetName(selectedDatasetIndex, _datasets)'
+      },
+      _selectedToolName: {
+        type: String,
+        notify: true,
+        computed: '_getSelected(selectedToolIndex, _activeToolsList)'
+      },
+      _selectedHostName: {
+        type: String,
+        notify: true,
+        computed: '_getSelected(selectedHostIndex, _activeHostsList)'
+      },
+      _toolInScope: {
+        type: String,
       },
     },
     reload: function() {
@@ -196,13 +280,18 @@ profile run can have multiple tools that present the performance profile as diff
     },
     observers: [
       '_maybeInitializeDashboard(_isAttached)',
-      '_maybeUpdateTool(_datasets, currentSelected)',
+      '_maybeUpdateData(_selectedHostName)',
+      '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
     ],
     attached: function() {
       this.set('_isAttached', true);
     },
     detached: function() {
       this.set('_isAttached', false);
+    },
+    /** True if the progress is not complete yet (< 100 %). */
+    _isNotComplete: function(progress) {
+      return !this._dataNotFound && progress.value < 100;
     },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
@@ -215,7 +304,36 @@ profile run can have multiple tools that present the performance profile as diff
       const profileTagsURL =
         tf_backend.getRouter().pluginRoute('profile', '/tools') +
         (tf_backend.getRouter().isDemoMode() ? '.json' : '');
-      this._requestManager.request(profileTagsURL).then((runToTool) => {
+      // Reset the progress bar to 0.
+      this.set('progress', {
+        value: 0,
+        msg: ''
+      });
+      let parent = this;
+      let tracker = tf.profile.util.getTracker(this);
+      tf.profile.util.runTask('Loading datasets', 20, () => {
+        console.log('start counting');
+        return parent._requestManager.request(profileTagsURL);
+      }, tracker)
+      .then((runToTool) => {
+        return tf.profile.util.runTask(
+            'Processing datasets', 70, () => {
+              return new Promise(function(resolve, reject) {
+                parent._processRunToTool(runToTool);
+                return Promise.resolve(null);
+              });
+            }, tracker);
+      })
+      .then(() => {
+        return tf.profile.util.runTask(
+            'Done', 10, () => {
+              return new Promise(function(resolve, reject) {
+                return Promise.resolve(null);
+              });
+            }, tracker);
+      });
+    },
+    _processRunToTool: function(runToTool) {
         var datasets = _.map(runToTool, (tools, run) => ({
           name: run,
           activeTools: tools,
@@ -228,73 +346,156 @@ profile run can have multiple tools that present the performance profile as diff
         });
         this.set('_dataNotFound', datasets.length === 0);
         this.set('_datasets', datasets);
-      });
     },
-    _getSelectedTool: function(datasets, currentSelected) {
-      var activeTools = this._getActiveTools(currentSelected.datasetIndex, datasets);
-      if (currentSelected.toolIndex >= 0 && currentSelected.toolIndex < activeTools.length) {
-        return activeTools[currentSelected.toolIndex];
+    // Return the item selected from the list
+    _getSelected: function(index, li) {
+      if (index == null) return;
+      if (li && index >= 0 && index < li.length) {
+        return li[index];
       }
       return null;
     },
-    _getSelectedDataset: function(datasets, currentSelected) {
-      if (currentSelected.datasetIndex >= datasets.length) return null;
-      return datasets[currentSelected.datasetIndex].name;
+    _getSelectedDatasetName: function(selectedDatasetIndex, datasets){
+      if (selectedDatasetIndex == null) return;
+      if (datasets && selectedDatasetIndex >= 0 &&
+          selectedDatasetIndex < datasets.length) {
+        return datasets[selectedDatasetIndex].name;
+      }
+      return '';
     },
-    _maybeUpdateTool: function(datasets, currentSelected) {
-      var currentTool = this._getSelectedTool(datasets, currentSelected);
-      if (currentTool == null) return;
-      if (currentTool == "trace_viewer") {
+     _getActiveToolsList: function(selectedDatasetIndex, datasets) {
+      if (selectedDatasetIndex == null) return;
+      if (datasets && selectedDatasetIndex >= 0 &&
+          selectedDatasetIndex < datasets.length) {
+        this.selectedToolIndex = 0;
+        return datasets[selectedDatasetIndex].activeTools;
+      }
+      return [];
+    },
+    _maybeUpdateData: function(hostName) {
+      if (hostName == null) return;
+      var datasetName = this._selectedDatasetName;
+      var toolName = this._selectedToolName;
+      if (datasetName == null || toolName == null) return;
+      this._toolInScope = "undefined";
+      if (toolName.startsWith("trace_viewer")) {
         var trace_data_url = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: 'trace_viewer', run: this._getSelectedDataset(datasets, currentSelected)});
+            {tag: toolName,
+             run: datasetName,
+             host: hostName});
         // Make the trace data url relative to the root.
         if (trace_data_url[0] != '/') {
           trace_data_url = '/' + trace_data_url;
         }
         // Pass the URL of trace data via GET parameter to the iframed trace
         // viewer app.
-        this._traceDataUrl = this.traceViewerBaseUrl + "?trace_data_url=" +
-                            encodeURIComponent(trace_data_url);
+        var is_streaming = toolName.endsWith('@');
+        this._traceDataUrl = this.traceViewerBaseUrl + '?trace_data_url=' +
+            encodeURIComponent(trace_data_url) +
+            '&is_streaming=' + is_streaming;
+        this._toolInScope = "trace_viewer";
         return;
+      } else {
+        // Reset the progress bar to 0.
+        this.set('progress', {
+          value: 0,
+          msg: ''
+        });
+        let parent = this;
+        let tracker = tf.profile.util.getTracker(this);
+        tf.profile.util.runTask('Reading ' + toolName + ' tool data', 20,
+          () => {
+            return parent._requestManager.request(tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('profile', '/data'),
+              {tag: toolName, host: hostName, run: datasetName}))
+          }, tracker)
+        .catch(error => {})
+        .then((data) => {
+          return tf.profile.util.runTask('Done', 80, () => {
+              parent._updateToolData(toolName, data);
+            }, tracker);
+        });
       }
+    },
+
+   _updateToolData: function(toolName, data) {
+     switch(toolName) {
+       case "op_profile":
+          this._opProfileData = data;
+          this._toolInScope = "op_profile";
+          break;
+       case "input_pipeline_analyzer":
+          this._inputPipelineData = data;
+          this._toolInScope = "input_pipeline_analyzer";
+          break;
+       case "overview_page":
+          this._overviewPageData = data;
+          this._toolInScope = "overview_page";
+          break;
+      case "memory_viewer":
+          this._memoryViewerData = data;
+          this._toolInScope = "memory_viewer";
+          break;
+      case "google_chart_demo":
+          this._googleChartDemoData = data;
+          this._toolInScope = "google_chart_demo";
+          break;
+      }
+    },
+    _maybeUpdateActiveHosts: function(datasetName, toolName) {
+       if(datasetName == null || toolName == null) return null;
+       var profileHostsUrl = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('profile', '/hosts'),
+            {tag: toolName,
+             run: datasetName,
+            });
+       this._requestManager.request(profileHostsUrl).then((hostList) => {
+           this.set('_activeHostsList', hostList.sort((a, b) => {
+               return vz_sorting.compareTagNames(a, b);}
+           ));
+       });
     },
     _datasetsChanged: function(newDatasets, oldDatasets) {
-      if (oldDatasets != null || this.selected == null) {
-        // Select the first dataset by default.
-        this.set('selectedDataset', 0);
-        this.set('currentSelected', {'datasetIndex': 0, 'toolIndex': 0});
+      if (this._datasets) {
+        this.selectedDatasetIndex = 0;
       }
     },
-    _selectedDatasetChanged: function(newDataset, oldDataset) {
-      if (this._datasets) {
-        // Display the first tool by default when switching to another run.
-        this.set('currentSelected', {'datasetIndex': newDataset, 'toolIndex': 0});
-
-        // Same tool can have differernt index in different runs, therefore we force a change of
-        // 'selectedTool', to make sure the label of the dropdown-menu is synced.
-        this.async(function() {
-          this.set('selectedTool', undefined);
-          this.set('selectedTool', 0);
+    _activeToolsChanged: function(oldActiveTools, newActiveTools) {
+      // Same tool can have differernt index in different runs, therefore we
+      // force a change of 'selectedToolIndex', to make sure the label of the
+      // dropdown-menu is synced.
+      if (this._activeToolsList) {
+         this.async(function() {
+          this.set('selectedToolIndex', -1);
+          this.set('selectedToolIndex', 0);
         }.bind(this));
       }
     },
-    _selectedToolChanged: function(newTool, oldTool) {
-      if (this._datasets && !(newTool === undefined)) {
-        this.set('currentSelected', {'datasetIndex': this.selectedDataset, 'toolIndex': newTool});
+    _activeHostsChanged: function(oldActiveHosts, newActiveHosts) {
+      if (this._activeHostsList) {
+        this.async(function() {
+          this.set('selectedHostIndex', -1);
+          this.set('selectedHostIndex', 0);
+        }.bind(this));
       }
     },
-    _getActiveTools: function(selectedDataset, datasets) {
-      if (datasets && selectedDataset < datasets.length) {
-        return datasets[selectedDataset].activeTools;
+    _isCurrentTool: function(current, expected) {
+      return current == expected;
+    },
+    _hasActiveTools: function() {
+      if (this._activeToolsList && this._activeToolsList.length > 0) {
+        return true;
       }
-      return [];
+      return false;
     },
-    _hasActiveTools: function(selectedDataset, datasets) {
-      return datasets[selectedDataset].activeTools.length > 0;
-    },
-    _isCurrentTool: function(datasets, currentSelected, expected) {
-      return this._getSelectedTool(datasets, currentSelected) == expected;
+    _getHostDisplayName: function(host) {
+      // For old traces without a host prefix in file name, return default for
+      // backward compatibility.
+      if (host == null) return "";
+      if (host == "") return "default";
+      // Otherwise, remove the seperator, e.g. "host1_" => "host1".
+      return host.slice(0, -1);
     },
   });
 

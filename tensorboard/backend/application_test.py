@@ -40,10 +40,32 @@ import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
-from tensorboard import main as tensorboard
+from tensorboard import default
+from tensorboard import program as tensorboard
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
+
+
+class FakeFlags(object):
+  def __init__(
+      self,
+      logdir,
+      purge_orphaned_data=True,
+      reload_interval=60,
+      samples_per_plugin='',
+      max_reload_threads=1,
+      db='',
+      window_title='',
+      path_prefix=''):
+    self.logdir = logdir
+    self.purge_orphaned_data = purge_orphaned_data
+    self.reload_interval = reload_interval
+    self.samples_per_plugin = samples_per_plugin
+    self.max_reload_threads = max_reload_threads
+    self.db = db
+    self.window_title = window_title
+    self.path_prefix = path_prefix
 
 
 class FakePlugin(base_plugin.TBPlugin):
@@ -341,25 +363,24 @@ class TensorBoardPluginsTest(tf.test.TestCase):
 
   def setUp(self):
     self.context = None
-    plugins = [
-        functools.partial(
-            FakePlugin,
-            plugin_name='foo',
-            is_active_value=True,
-            routes_mapping={'/foo_route': self._foo_handler},
-            construction_callback=self._construction_callback),
-        functools.partial(
-            FakePlugin,
-            plugin_name='bar',
-            is_active_value=True,
-            routes_mapping={'/bar_route': self._bar_handler},
-            construction_callback=self._construction_callback),
-    ]
-
     # The application should have added routes for both plugins.
-    self.logdir = self.get_temp_dir()
     self.app = application.standard_tensorboard_wsgi(
-        self.logdir, True, 60, plugins)
+        FakeFlags(logdir=self.get_temp_dir()),
+        [
+          base_plugin.BasicLoader(functools.partial(
+              FakePlugin,
+              plugin_name='foo',
+              is_active_value=True,
+              routes_mapping={'/foo_route': self._foo_handler},
+              construction_callback=self._construction_callback)),
+          base_plugin.BasicLoader(functools.partial(
+              FakePlugin,
+              plugin_name='bar',
+              is_active_value=True,
+              routes_mapping={'/bar_route': self._bar_handler},
+              construction_callback=self._construction_callback)),
+        ],
+        default.get_assets_zip_provider())
 
   def _foo_handler(self):
     pass

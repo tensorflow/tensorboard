@@ -19,36 +19,39 @@ Polymer({
   properties: {
     names: {
       type: Array,
-      value: function() {
-        return [];
+      value: () => [],
+    },  // All the values of checkbox
+    coloring: {
+      type: Object,
+      value: {
+        getColor: () => '',
       },
-    },  // All the runs in consideration
-    regexInput: {
+    },
+    regex: {
       type: String,
-      value: tf_storage.getStringInitializer('regexInput', {defaultValue: ''}),
-      observer: '_regexInputObserver',
-    },  // Regex for filtering the runs
-    regex: {type: Object, computed: '_makeRegex(regexInput)'},
+      notify: true,
+      value: '',
+    },  // Regex for filtering the names
+    _regex: {type: Object, computed: '_makeRegex(regex)'},
     namesMatchingRegex: {
       type: Array,
-      computed: 'computeNamesMatchingRegex(names.*, regex)'
+      computed: 'computeNamesMatchingRegex(names.*, _regex)'
     },  // Runs that match the regex
-    runSelectionState: {
-      // if a run is explicitly enabled, True, if explicitly disabled, False.
-      // if undefined, default value (enable for first k runs, disable after).
+    selectionState: {
+      // if a name is explicitly enabled, True, if explicitly disabled, False.
+      // if undefined, default value (enable for first k names, disable after).
       type: Object,
-      value: tf_storage.getObjectInitializer(
-          'runSelectionState', {defaultValue: {}}),
-      observer: '_storeRunToIsCheckedMapping',
+      notify: true,
+      value: () => ({}),
     },
     // (Allows state to persist across regex filtering)
     outSelected: {
       type: Array,
       notify: true,
-      computed: 'computeOutSelected(namesMatchingRegex.*, runSelectionState.*)'
+      computed: 'computeOutSelected(namesMatchingRegex.*, selectionState.*)'
     },
-    maxRunsToEnableByDefault: {
-      // When TB first loads, if it has k or fewer runs, they are all enabled
+    maxNamesToEnableByDefault: {
+      // When TB first loads, if it has k or fewer names, they are all enabled
       // by default. If there are more, then they are all disabled.
       type: Number,
       value: 40,
@@ -60,17 +63,16 @@ Polymer({
       // this while the user is typing, as it may make a bad, laggy UI.
       // So we debounce the updates that come from user typing.
       value: function() {
-        const _this = this;
-        var debounced = _.debounce(function(r) {
-          _this.regexInput = r;
+        var debounced = _.debounce(r => {
+          this.regex = r;
         }, 150, {leading: false});
         return function() {
-          var r = this.$$('#runs-regex').value;
+          var r = this.$$('#names-regex').value;
           if (r == '') {
             // If the user cleared the field, they may be done typing, so
             // update more quickly.
-            this.async(function() {
-              _this.regexInput = r;
+            this.async(() => {
+              this.regex = r;
             }, 30);
           } else {
             debounced(r);
@@ -83,25 +85,23 @@ Polymer({
     'dom-change': 'synchronizeColors',
   },
   observers: [
-    '_setIsolatorIcon(runSelectionState, names)',
+    '_setIsolatorIcon(selectionState, names)',
   ],
-  _storeRunToIsCheckedMapping:
-      tf_storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
-  _makeRegex: function(regex) {
+  _makeRegex: function(regexString) {
     try {
-      return new RegExp(regex)
+      return new RegExp(regexString);
     } catch (e) {
       return null;
     }
   },
   _setIsolatorIcon: function() {
-    var runMap = this.runSelectionState;
-    var numChecked = _.filter(_.values(runMap)).length;
+    var selectionMap = this.selectionState;
+    var numChecked = _.filter(_.values(selectionMap)).length;
     var buttons =
         Array.prototype.slice.call(this.querySelectorAll('.isolator'));
 
     buttons.forEach(function(b) {
-      if (numChecked === 1 && runMap[b.name]) {
+      if (numChecked === 1 && selectionMap[b.name]) {
         b.icon = 'radio-button-checked';
       } else {
         b.icon = 'radio-button-unchecked';
@@ -109,25 +109,24 @@ Polymer({
     });
   },
   computeNamesMatchingRegex: function(__, ___) {
-    var regex = this.regex;
-    return this.names.filter(function(n) {
-      return regex == null || regex.test(n);
-    });
+    const regex = this._regex;
+    return regex ? this.names.filter(n => regex.test(n)) : this.names;
   },
   computeOutSelected: function(__, ___) {
-    var runSelectionState = this.runSelectionState;
-    var num = this.maxRunsToEnableByDefault;
+    var selectionState = this.selectionState;
+    var num = this.maxNamesToEnableByDefault;
     var allEnabled = this.namesMatchingRegex.length <= num;
-    return this.namesMatchingRegex.filter(function(n, i) {
-      return runSelectionState[n] == null ? allEnabled : runSelectionState[n];
-    });
+    return this.namesMatchingRegex
+        .filter(n => {
+          return selectionState[n] == null ? allEnabled : selectionState[n];
+        });
   },
   synchronizeColors: function(e) {
     this._setIsolatorIcon();
 
     const checkboxes = this.querySelectorAll('paper-checkbox');
     checkboxes.forEach(p => {
-      const color = tf_color_scale.runsColorScale(p.name);
+      const color = this.coloring.getColor(p.name);
       p.customStyle['--paper-checkbox-checked-color'] = color;
       p.customStyle['--paper-checkbox-checked-ink-color'] = color;
       p.customStyle['--paper-checkbox-unchecked-color'] = color;
@@ -135,7 +134,7 @@ Polymer({
     });
     const buttons = this.querySelectorAll('.isolator');
     buttons.forEach(p => {
-      const color = tf_color_scale.runsColorScale(p.name);
+      const color = this.coloring.getColor(p.name);
       p.style['color'] = color;
     });
     // The updateStyles call fails silently if the browser doesn't have focus,
@@ -145,43 +144,39 @@ Polymer({
       this.updateStyles();
     });
   },
-  _isolateRun: function(e) {
-    // If user clicks on the label for one run, enable it and disable all other
-    // runs.
-
+  _isolateName: function(e) {
+    // If user clicks on the label for one name, enable it and disable all other
+    // names.
     var name = (Polymer.dom(e) as any).localTarget.name;
     var selectionState = {};
     this.names.forEach(function(n) {
       selectionState[n] = n == name;
     });
-    this.runSelectionState = selectionState;
+    this.selectionState = selectionState;
   },
   _checkboxChange: function(e) {
     var target = (Polymer.dom(e) as any).localTarget;
-    this.runSelectionState[target.name] = target.checked;
-    // n.b. notifyPath won't work because run names may have periods.
-    this.runSelectionState = _.clone(this.runSelectionState);
+    const newSelectionState = _.clone(this.selectionState);
+    newSelectionState[target.name] = target.checked;
+    // n.b. notifyPath won't work because names may have periods.
+    this.selectionState = newSelectionState;
   },
   _isChecked: function(item, outSelectedChange) {
     return this.outSelected.indexOf(item) != -1;
   },
-  _regexInputObserver: tf_storage.getStringObserver('regexInput', {defaultValue: ''}),
   toggleAll: function() {
-    var _this = this;
-    var anyToggledOn = this.namesMatchingRegex.some(function(n) {
-      return _this.runSelectionState[n]
-    });
+    var anyToggledOn = this.namesMatchingRegex
+        .some((n) => this.selectionState[n]);
 
-
-    var runSelectionStateIsDefault =
-        Object.keys(this.runSelectionState).length == 0;
+    var selectionStateIsDefault =
+        Object.keys(this.selectionState).length == 0;
 
     var defaultOff =
         this.namesMatchingRegex.length > this.maxRunsToEnableByDefault;
-    // We have runs toggled either if some were explicitly toggled on, or if
+    // We have names toggled either if some were explicitly toggled on, or if
     // we are in the default state, and there are few enough that we default
     // to toggling on.
-    anyToggledOn = anyToggledOn || runSelectionStateIsDefault && !defaultOff;
+    anyToggledOn = anyToggledOn || selectionStateIsDefault && !defaultOff;
 
     // If any are toggled on, we turn everything off. Or, if none are toggled
     // on, we turn everything on.
@@ -190,7 +185,7 @@ Polymer({
     this.names.forEach(function(n) {
       newRunsDisabled[n] = !anyToggledOn;
     });
-    this.runSelectionState = newRunsDisabled;
+    this.selectionState = newRunsDisabled;
   },
 });
 

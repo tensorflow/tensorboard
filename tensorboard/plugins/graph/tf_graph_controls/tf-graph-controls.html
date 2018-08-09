@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
+<link rel="import" href="../tf-graph-node-search/tf-graph-node-search.html">
 
 <dom-module id="tf-graph-controls">
 <template>
@@ -280,6 +281,12 @@ table.tf-graph-controls td.input-element-table-data {
 .legend-clarifier paper-tooltip {
   width: 150px;
 }
+
+/** Otherwise, polymer UI controls appear atop node search. */
+tf-graph-node-search {
+  z-index: 1;
+  width: 100%;
+}
 </style>
 <svg width="0" height="0">
   <defs>
@@ -301,6 +308,11 @@ table.tf-graph-controls td.input-element-table-data {
   </defs>
 </svg>
 <div class="allcontrols">
+  <div class="control-holder">
+    <tf-graph-node-search
+      selected-node="{{selectedNode}}"
+      render-hierarchy="[[renderHierarchy]]"></tf-graph-node-search>
+  </div>
   <div class="control-holder">
     <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="fit" alt="Fit to screen">
     </paper-icon-button>
@@ -475,22 +487,16 @@ table.tf-graph-controls td.input-element-table-data {
       </div>
     </template>
     <template is="dom-if" if="[[_equals(colorBy, 'xla_cluster')]]">
-      <div class="color-text">
-        <div class="xlaClusterList">
-          <table>
-          <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
-            <tr>
-              <td style$="[[_getBackgroundColor(item.color)]]">
-                <div class="colorBox"></div>
-              </td>
-              <td>
-                <div>[[item.xla_cluster]]</div>
-              </td>
-            </tr>
-          </template>
-          </table>
-        </div>
-        <br/>
+      <div>
+        <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
+          <div class="color-legend-row">
+            <svg>
+              <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                   xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+            </svg>
+            <span class="color-legend-value">[[item.xla_cluster]]</span>
+          </div>
+        </template>
         <div class="color-legend-row">
           <svg>
             <use xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -801,6 +807,10 @@ Polymer({
       type: Number,
       notify: true,
       value: -1
+    },
+    selectedNode: {
+      type: String,
+      notify: true
     },
     _currentDevices: {
       type: Array,

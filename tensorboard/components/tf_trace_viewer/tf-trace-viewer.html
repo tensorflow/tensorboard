@@ -50,9 +50,15 @@ dashboard would integrate trace viewer app using iframe.
     transition-delay: 0.3s;
   }
 </style>
+<script src="tf-trace-viewer-helper.js"></script>
 <script>
   "use strict";
 
+  /* tf-trace-viewer will work in two modes: static mode and streaming mode.
+   * in static mode, data are load at 'ready' time,
+   * in streaming mode, data are load on demand when resolution and view port is changed.
+   * static mode limit the amount of trace that we can collect and show to the users.
+   */
   Polymer({
     is: "tf-trace-viewer",
     properties: {
@@ -61,6 +67,7 @@ dashboard would integrate trace viewer app using iframe.
         type: String,
         value: null,
       },
+      // _traceData is used for static mode.
       _traceData: {
         type: Object,
         observer: "_traceDataChanged"
@@ -69,7 +76,16 @@ dashboard would integrate trace viewer app using iframe.
       _traceContainer: Object,
       _traceModel: Object,
       _throbber: Object,
+      _isStreaming: { type: Boolean, value: false },
+      _loadedRange: Object,
+      _loadedTraceEents: Object,
+      _fullBounds: Object,
+      _isLoading: { type: Boolean, value: false },
+      _dirty: { type: Boolean, value: false },
+      _model: Object,
+      _resolution: { type: Number, value: 1000 },
     },
+
     ready: function() {
       // Initiate the trace viewer app.
       this._traceContainer = document.createElement("track-view-container");
@@ -97,44 +113,216 @@ dashboard would integrate trace viewer app using iframe.
           var components = parts[i].split('=');
           if (components[0] == "trace_data_url") {
             this.traceDataUrl = decodeURIComponent(components[1]);
-            break;
+          } else if (components[0] == "is_streaming") {
+            this._isStreaming = components[1] === 'true';
           }
         }
       }
 
-      this._throbber.className = "active";
-      this._loadTrace();
-    },
-    _loadTrace : function() {
       if (!this.traceDataUrl) {
         this._displayOverlay("Trace data URL is not provided.", "Trace Viewer");
         return null;
       }
-      // Send HTTP request to get the trace data.
-      var req = new XMLHttpRequest();
-      var is_binary = / [.] gz$ /.test(this.traceDataUrl) ||
-                      / [.] zip$ /.test(this.traceDataUrl);
-      req.overrideMimeType('text/plain; charset=x-user-defined');
-      req.open('GET', this.traceDataUrl, true);
-      if (is_binary) {
-        req.responseType = 'arraybuffer';
+      this._loadTrace();
+    },
+
+    _loadTrace : function(requestedRange, replaceModel) {
+      this._throbber.className = "active";
+      if (!this._isStreaming) {
+        // Send HTTP request to get the trace data.
+        var req = new XMLHttpRequest();
+        req.open('GET', this.traceDataUrl, true);
+
+	req.onreadystatechange = event => {
+          if (req.readyState !== 4) {
+            return;
+          }
+	  window.setTimeout(() => {
+            if (req.status === 200) {
+              this._throbber.className = "inactive";
+              this.set("_traceData", req.responseText);
+            } else {
+              this._displayOverlay(req.status, "Failed to fetch data");
+            }
+          }, 0);
+        };
+        req.send(null);
+      } else {
+        this._loadStreamingTrace(requestedRange, replaceModel);
+      }
+    },
+
+    // Something has changed, so consider reloading the data:
+    //   - if we have zoomed in enough to need more detail
+    //   - if we have scrolled too close to missing data regions
+    // We ensure there's only ever one request in flight.
+    _maybeLoad : function() {
+      if (this._isLoading || this._resolution == 0) return;
+      // We have several ranges of interest:
+      //             [viewport]           - what's on-screen
+      //         [----preserve----]       - issue loads to keep this full of data
+      //     [---------fetch----------]   - fetch this much data with each load
+      // [-----------full bounds--------] - the whole profile
+      var viewport = this._trackViewRange(this._traceViewer.trackView);
+      var PRESERVE_RATIO = tf_component_traceviewer.PRESERVE_RATIO;
+      var preserve = tf_component_traceviewer.intersect(
+          tf_component_traceviewer.expand(viewport, PRESERVE_RATIO), this._fullBounds);
+      var FETCH_RATIO = tf_component_traceviewer.FETCH_RATIO;
+      var fetch = tf_component_traceviewer.expand(viewport, FETCH_RATIO);
+      var zoomFactor = tf_component_traceviewer.length(this._loadedRange) /
+	               tf_component_traceviewer.length(fetch);
+      if (!tf_component_traceviewer.within(preserve, this._loadedRange) ||
+          zoomFactor > tf_component_traceviewer.ZOOM_RATIO) {
+        this._loadTrace(fetch, /*replaceModel=*/false);
+      }
+    },
+
+    _loadStreamingTrace : function(requestedRange, replaceModel) {
+      var success = true;
+      this._isLoading = true;
+
+      this._loadJSON(requestedRange).
+	  then((data) => { this._updateModel(data, replaceModel); }).
+	  then(() => { this._updateView(requestedRange); }).
+	  catch((err) => { this._displayOverlay("Trace Viewer", err);})
+	  .then(() => {
+            this._isLoading = false;
+            this._throbber.className = "inactive";
+            // Don't immediately load new data after the very first load. When
+            // we first load the trace viewer, the actual view is not properly
+            // initialized and we get an incorrect viewport leading to a spurious
+            // load of data.
+            if (success && requestedRange) this._maybeLoad();
+          });
+    },
+
+    // Loads a time window (the whole trace if requestedRange is null).
+    // Returns a promise for the JSON event data.
+    _loadJSON : function(requestedRange) {
+      // Set up an XMLHTTPRequest to the JSON endpoint, populating range and
+      // resolution if appropriate.
+      var requestURL = this._buildBaseURL();
+      var ZOOM_RATIO = tf_component_traceviewer.ZOOM_RATIO;
+      requestURL.searchParams.set("resolution", this._resolution * ZOOM_RATIO);
+      if (requestedRange != null) {
+        requestURL.searchParams.set("start_time_ms", requestedRange.min);
+        requestURL.searchParams.set("end_time_ms", requestedRange.max);
       }
 
-      req.onreadystatechange = function(event) {
-        if (req.readyState !== 4) {
-          return;
-        }
-        window.setTimeout(function() {
-          if (req.status === 200) {
-            this._throbber.className = "inactive";
-            this.set("_traceData", is_binary ? req.response : req.responseText);
-          } else {
-            this._displayOverlay(req.status, "Failed to fetch data");
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', requestURL);
+        xhr.onload = function() {
+          var contentType = this.getResponseHeader('Content-Type');
+          if (this.status !== 200 ||
+              !contentType.startsWith('application/json')) {
+            var msg = requestURL + ' could not be loaded';
+            if (contentType.startsWith('text/plain')) {
+              msg = msg + ': ' + xhr.statusText;
+            }
+            reject(msg);
           }
-        }.bind(this), 0);
-      }.bind(this);
-      req.send(null);
+          resolve(xhr.response);
+        };
+        xhr.onerror = function () {
+          reject(requestURL + 'could not be loaded: ' + xhr.statusText);
+        };
+        xhr.send();
+      });
     },
+    // Decodes the JSON trace events, removes all events that were loaded before
+    // and serializes to JSON again.
+    _filterKnownTraceEvents: function(data) {
+      var traceEvents = data.traceEvents;
+      data.traceEvents = [];
+      for (var i = 0; i < traceEvents.length; i++) {
+        // This is inefficient as we are serializing the events we just
+        // deserialized. If this becomes a problem in practice, we should assign
+        // IDs on the server.
+        var asString = JSON.stringify(traceEvents[i]);
+        if (!this._loadedTraceEvents.has(asString)) {
+          this._loadedTraceEvents.add(asString);
+          data.traceEvents.push(traceEvents[i]);
+        }
+      }
+      return data;
+    },
+
+    // Updates the model with data returned by the JSON endpoint.
+    // If replaceModel is true, the data set is completely replaced; otherwise,
+    // the new data is merged with the old data.
+    // Returns a void promise.
+    _updateModel: function(data, replaceModel) {
+      data = JSON.parse(data);
+      if (!this._model /* first load */ || replaceModel) {
+        this._dirty = true;
+        this._model = new tr.Model();
+        this._loadedTraceEvents = new Set();
+      } else {
+        // Delete metadata and displayTimeUnits as otherwise traceviewer
+        // accumulates them.
+        delete data['metadata'];
+        delete data['displayTimeUnit'];
+      }
+
+      data = this._filterKnownTraceEvents(data);
+      if (data.traceEvents.length > 0) {
+        var opt = new tr.importer.ImportOptions();
+        opt.shiftWorldToZero = false;
+        new tr.importer.Import(this._model, opt).importTraces([data]);
+        this._dirty = true;
+      }
+      return Promise.resolve();
+    },
+
+    // Updates the view based on the current model.
+    _updateView: function(requestedRange) {
+      if (requestedRange == null) {
+        this._fullBounds = {min: this._model.bounds.min, max: this._model.bounds.max};
+        this._loadedRange = tf_component_traceviewer.expand(
+	    this._fullBounds, tf_component_traceviewer.FETCH_RATIO);
+      } else {
+        this._loadedRange = requestedRange;
+      }
+      if (!this._dirty){
+        return;
+      }
+      this._dirty = false;
+      // We can't assign the model until the viewer is attached. This may be
+      // delayed indefinitely if the tab is backgrounded. This version of polymer
+      // doesn't provide a direct way to observe the viewer being attached.
+      // This is a hack: the browser won't paint until the viewer is attached.
+      window.requestAnimationFrame(function() {
+        this._traceViewer.model = this._model;
+        if (this._traceViewer.trackView != null) {  // Only initialized if data in nonempty!
+          // Wait 200ms to let an animated zoom/pan operation complete. Ideally,
+          // we could just explicitly wait for its end.
+
+          this._traceViewer.trackView.viewport.addEventListener(
+              "change", () => setTimeout(this._maybeLoad.bind(this), 200));
+        }
+        this._traceViewer.viewTitle = "";
+      }.bind(this));
+    },
+
+    // Access the {min, max} range of a trackView.
+    _trackViewRange: function(trackView) {
+      var xfm = trackView.viewport.currentDisplayTransform;
+      const pixelRatio = window.devicePixelRatio || 1;
+      const devicePixelWidth = pixelRatio * trackView.viewWidth_;
+      return {
+        min: xfm.xViewToWorld(0),
+        max: xfm.xViewToWorld(devicePixelWidth),
+      };
+    },
+
+    // Builds a base URL for fetching json data. The URL will be assembled with
+    // all filtering URL parameters, except resolution and range.
+    _buildBaseURL: function() {
+      var requestURL = new URL(this.traceDataUrl, window.location.href);
+      return requestURL;
+    },
+
     _traceDataChanged: function(data) {
       if (!data) {
         this._displayOverlay("Trace Viewer", "No trace to display...");
@@ -152,6 +340,7 @@ dashboard would integrate trace viewer app using iframe.
             'Import error', tr.b.normalizeException(err).message);
       });
     },
+
     _displayOverlay: function(title, content) {
       var overlay = new tr.ui.b.Overlay();
       overlay.textContent = content;

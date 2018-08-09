@@ -64,6 +64,8 @@ UNINITIALIZED_TAG = 'Uninitialized'
 UNSUPPORTED_TAG = 'Unsupported'
 NA_TAG = 'N/A'
 
+STRING_ELEMENT_MAX_LEN = 40
+
 
 def _comm_tensor_data(device_name,
                       node_name,
@@ -73,6 +75,15 @@ def _comm_tensor_data(device_name,
                       tensor_value,
                       wall_time):
   """Create a dict() as the outgoing data in the tensor data comm route.
+
+  Note: The tensor data in the comm route does not include the value of the
+  tensor in its entirety in general. Only if a tensor satisfies the following
+  conditions will its entire value be included in the return value of this
+  method:
+  1. Has a numeric data type (e.g., float32, int32) and has fewer than 5
+     elements.
+  2. Is a string tensor and has fewer than 5 elements. Each string element is
+     up to 40 bytes.
 
   Args:
     device_name: Name of the device that the tensor is on.
@@ -96,16 +107,21 @@ def _comm_tensor_data(device_name,
       tensor_shape = UNINITIALIZED_TAG
     else:
       tensor_dtype = UNSUPPORTED_TAG
-      tensor_dtype = UNSUPPORTED_TAG
+      tensor_shape = UNSUPPORTED_TAG
     tensor_values = NA_TAG
   else:
-    tensor_dtype = str(tensor_value.dtype)
+    tensor_dtype = tensor_helper.translate_dtype(tensor_value.dtype)
     tensor_shape = tensor_value.shape
+
     # The /comm endpoint should respond with tensor values only if the tensor is
     # small enough. Otherwise, the detailed values sould be queried through a
     # dedicated tensor_data that supports slicing.
     if tensor_helper.numel(tensor_shape) < 5:
       _, _, tensor_values = tensor_helper.array_view(tensor_value)
+      if tensor_dtype == 'string' and tensor_value is not None:
+        tensor_values = tensor_helper.process_buffers_for_display(
+            tensor_values, limit=STRING_ELEMENT_MAX_LEN)
+
   return {
       'type': 'tensor',
       'timestamp': wall_time,

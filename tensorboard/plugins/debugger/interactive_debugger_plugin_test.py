@@ -827,7 +827,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     self.assertAllClose(
         np.var([10.0, 20.0, 30.0]), tensor_data[11])  # Variance.
 
-  def _runStringNetwork(self):
+  def _runAsciiStringNetwork(self):
     session_run_results = []
     def session_run_job():
       with tf.Session() as sess:
@@ -841,8 +841,8 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     session_run_thread.start()
     return session_run_thread, session_run_results
 
-  def testStringTensorIsHandledCorrectly(self):
-    session_run_thread, session_run_results = self._runStringNetwork()
+  def testAsciiStringTensorIsHandledCorrectly(self):
+    session_run_thread, session_run_results = self._runAsciiStringNetwork()
     # Activate breakpoint for str1:0.
     self._serverGet(
         'gated_grpc',
@@ -853,7 +853,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     comm_response = self._serverGet('comm', {'pos': 2})
     comm_data = self._deserializeResponse(comm_response)
     self.assertEqual('tensor', comm_data['type'])
-    self.assertEqual('object', comm_data['data']['dtype'])
+    self.assertEqual('string', comm_data['data']['dtype'])
     self.assertEqual([], comm_data['data']['shape'])
     self.assertEqual('abc', comm_data['data']['values'])
     self.assertEqual(
@@ -872,6 +872,74 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     tensor_data = self._deserializeResponse(tensor_response)
     self.assertEqual(None, tensor_data['error'])
     self.assertEqual(['abc'], tensor_data['tensor_data'])
+
+    # Get the health pill of a string tensor.
+    tensor_response = self._serverGet(
+        'tensor_data',
+        {'watch_key': 'str1:0:DebugIdentity',
+         'time_indices': '-1',
+         'mapping': 'health-pill',
+         'slicing': ''})
+    tensor_data = self._deserializeResponse(tensor_response)
+    self.assertEqual(None, tensor_data['error'])
+    self.assertEqual([None], tensor_data['tensor_data'])
+
+  def _runBinaryStringNetwork(self):
+    session_run_results = []
+    def session_run_job():
+      with tf.Session() as sess:
+        str1 = tf.Variable([b'\x01' * 3, b'\x02' * 3], name='str1')
+        str2 = tf.Variable([b'\x03' * 3, b'\x04' * 3], name='str2')
+        str_concat = tf.add(str1, str2, name='str_concat')
+        sess.run(tf.global_variables_initializer())
+        sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
+        session_run_results.append(sess.run(str_concat))
+    session_run_thread = threading.Thread(target=session_run_job)
+    session_run_thread.start()
+    return session_run_thread, session_run_results
+
+  def testBinaryStringTensorIsHandledCorrectly(self):
+    session_run_thread, session_run_results = self._runBinaryStringNetwork()
+    # Activate breakpoint for str1:0.
+    self._serverGet(
+        'gated_grpc',
+        {'mode': 'set_state', 'node_name': 'str1', 'output_slot': 0,
+         'debug_op': 'DebugIdentity', 'state': 'break'})
+    self._serverGet('ack')
+    self._serverGet('ack')
+    comm_response = self._serverGet('comm', {'pos': 2})
+    comm_data = self._deserializeResponse(comm_response)
+    self.assertEqual('tensor', comm_data['type'])
+    self.assertEqual('string', comm_data['data']['dtype'])
+    self.assertEqual([2], comm_data['data']['shape'])
+    self.assertEqual(2, len(comm_data['data']['values']))
+    self.assertEqual(
+        b'=01' * 3, tf.compat.as_bytes(comm_data['data']['values'][0]))
+    self.assertEqual(
+        b'=02' * 3, tf.compat.as_bytes(comm_data['data']['values'][1]))
+    self.assertEqual(
+        'str1/(str1)', comm_data['data']['maybe_base_expanded_node_name'])
+    session_run_thread.join()
+    self.assertEqual(1, len(session_run_results))
+    self.assertAllEqual(
+        np.array([b'\x01\x01\x01\x03\x03\x03', b'\x02\x02\x02\x04\x04\x04'],
+                 dtype=np.object),
+        session_run_results[0])
+
+    # Get the value of a tensor without mapping.
+    tensor_response = self._serverGet(
+        'tensor_data',
+        {'watch_key': 'str1:0:DebugIdentity',
+         'time_indices': '-1',
+         'mapping': '',
+         'slicing': ''})
+    tensor_data = self._deserializeResponse(tensor_response)
+    self.assertEqual(None, tensor_data['error'])
+    self.assertEqual(2, len(tensor_data['tensor_data'][0]))
+    self.assertEqual(
+        b'=01=01=01', tf.compat.as_bytes(tensor_data['tensor_data'][0][0]))
+    self.assertEqual(
+        b'=02=02=02', tf.compat.as_bytes(tensor_data['tensor_data'][0][1]))
 
     # Get the health pill of a string tensor.
     tensor_response = self._serverGet(

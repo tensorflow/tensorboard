@@ -14,32 +14,23 @@
 
 """Same as web_library but supports TypeScript."""
 
-load("//tensorboard/defs:defs.bzl", "legacy_js")
-
 load("//third_party:clutz.bzl",
      "CLUTZ_ATTRIBUTES",
      "CLUTZ_OUTPUTS",
      "clutz_aspect",
      "extract_dts_from_closure_libraries")
 
+load("@io_bazel_rules_closure//closure:defs.bzl",
+     "closure_js_aspect")
+
 load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "CLOSURE_LIBRARY_BASE_ATTR",
-     "CLOSURE_LIBRARY_DEPS_ATTR",
+     "CLOSURE_WORKER_ATTR",
      "collect_js",
      "collect_runfiles",
-     "convert_path_to_es6_module_name",
-     "create_argfile",
      "difference",
      "long_path",
      "unfurl")
-
-_ASPECT_SLURP_FILE_TYPE = FileType([
-    ".html", ".js", ".css", ".gss", ".png", ".jpg", ".gif", ".ico", ".svg"])
-
-_CLOSURE_WORKER = attr.label(
-    default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure:ClosureWorker"),
-    executable=True,
-    cfg="host")
 
 def _tf_web_library(ctx):
   if not ctx.attr.srcs:
@@ -66,7 +57,6 @@ def _tf_web_library(ctx):
   ts_typings_paths = depset(
       [long_path(ctx, f) for f in ctx.files._default_typings])
   ts_typings_execroots = depset()
-  aspect_runfiles = depset()
   for dep in deps:
     webpaths += dep.webfiles.webpaths
     if hasattr(dep.webfiles, "ts_typings"):
@@ -75,8 +65,6 @@ def _tf_web_library(ctx):
       ts_typings_paths += dep.webfiles.ts_typings_paths
     if hasattr(dep.webfiles, "ts_typings_execroots"):
       ts_typings_execroots += dep.webfiles.ts_typings_execroots
-    if hasattr(dep.webfiles, "aspect_runfiles"):
-      aspect_runfiles += dep.webfiles.aspect_runfiles
 
   # process what comes now
   manifest_srcs = []
@@ -143,9 +131,6 @@ def _tf_web_library(ctx):
     execroot.inputs.append(entry)
 
   # compile typescript
-  workspace = ""
-  if ctx.label.workspace_root:
-    workspace = "/" + ctx.label.workspace_root
   if execroot.outputs:
     ts_config = _new_file(ctx, "-tsc.json")
     execroot.inputs.append(("tsconfig.json", ts_config.path))
@@ -187,10 +172,22 @@ def _tf_web_library(ctx):
   web_srcs.append(dummy)
 
   # define development web server that only applies to this transitive closure
+  if ctx.attr.srcs:
+    devserver_manifests = manifests
+    export_deps = []
+  else:
+    # If a rule exists purely to export other build rules, then it's
+    # appropriate for the exported sources to be included in the
+    # development web server.
+    devserver_manifests = depset(order="postorder")
+    export_deps = unfurl(ctx.attr.exports)
+    for dep in export_deps:
+      devserver_manifests += dep.webfiles.manifests
+    devserver_manifests = manifests + devserver_manifests
   params = struct(
       label=str(ctx.label),
       bind="[::]:6006",
-      manifest=[long_path(ctx, man) for man in manifests],
+      manifest=[long_path(ctx, man) for man in devserver_manifests],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = _new_file(ctx, "-params.pbtxt")
@@ -226,52 +223,21 @@ def _tf_web_library(ctx):
           ts_typings_paths=ts_typings_paths,
           ts_typings_execroots=ts_typings_execroots),
       closure_js_library=collect_js(
-          ctx, unfurl(ctx.attr.deps, provider="closure_js_library")),
+          unfurl(ctx.attr.deps, provider="closure_js_library"),
+          ctx.files._closure_library_base),
       runfiles=ctx.runfiles(
-          files=ctx.files.srcs + ctx.files.data + ts_outputs + [
-              manifest,
-              params_file,
-              ctx.outputs.executable,
-              dummy],
+          files=(ctx.files.srcs +
+                 ctx.files.data +
+                 ts_outputs +
+                 ctx.files._closure_library_base + [
+                     manifest,
+                     params_file,
+                     ctx.outputs.executable,
+                     dummy]),
           transitive_files=(collect_runfiles([ctx.attr._WebfilesServer]) |
                             collect_runfiles(deps) |
-                            collect_runfiles(ctx.attr.data) |
-                            aspect_runfiles)))
-
-def _web_aspect_impl(target, ctx):
-  if hasattr(target, "webfiles"):
-    return struct()
-  srcs = []
-  deps = []
-  if hasattr(ctx.rule.files, "srcs"):
-    srcs.extend(_ASPECT_SLURP_FILE_TYPE.filter(ctx.rule.files.srcs))
-  for attr in ("deps", "sticky_deps", "module_deps"):
-    value = getattr(ctx.rule.attr, attr, None)
-    if value:
-      deps.extend(value)
-  deps = unfurl(deps, provider="webfiles")
-  webpaths = depset()
-  aspect_runfiles = depset(srcs)
-  for dep in deps:
-    webpaths += dep.webfiles.webpaths
-    if hasattr(dep.webfiles, "aspect_runfiles"):
-      aspect_runfiles += dep.webfiles.aspect_runfiles
-  manifest_srcs = []
-  new_webpaths = []
-  for src in srcs:
-    webpath = "/" + long_path(ctx, src)
-    _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs)
-  webpaths += new_webpaths
-  manifest = _make_manifest(ctx, manifest_srcs)
-  dummy, manifests = _run_webfiles_validator(ctx, srcs, deps, manifest)
-  aspect_runfiles += [dummy, manifest]
-  return struct(
-      webfiles=struct(
-          manifest=manifest,
-          manifests=manifests,
-          webpaths=webpaths,
-          dummy=dummy,
-          aspect_runfiles=aspect_runfiles))
+                            collect_runfiles(export_deps) |
+                            collect_runfiles(ctx.attr.data))))
 
 def _make_manifest(ctx, src_list):
   manifest = _new_file(ctx, "-webfiles.pbtxt")
@@ -284,7 +250,7 @@ def _make_manifest(ctx, src_list):
 
 def _run_webfiles_validator(ctx, srcs, deps, manifest):
   dummy = _new_file(ctx, "-webfiles.ignoreme")
-  manifests = depset(order="topological")
+  manifests = depset(order="postorder")
   for dep in deps:
     manifests += dep.webfiles.manifests
   if srcs:
@@ -374,11 +340,6 @@ def _get_strip(ctx):
       strip += "/"
   return strip
 
-web_aspect = aspect(
-    implementation=_web_aspect_impl,
-    attr_aspects=["deps", "sticky_deps", "module_deps"],
-    attrs={"_ClosureWorkerAspect": _CLOSURE_WORKER})
-
 tf_web_library = rule(
     implementation=_tf_web_library,
     executable=True,
@@ -387,12 +348,11 @@ tf_web_library = rule(
         "srcs": attr.label_list(allow_files=True),
         "deps": attr.label_list(
             aspects=[
-                web_aspect,
                 clutz_aspect,
-                legacy_js,
+                closure_js_aspect,
             ]),
         "exports": attr.label_list(),
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(allow_files=True),
         "suppress": attr.string_list(),
         "strip_prefix": attr.string(),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
@@ -413,9 +373,7 @@ tf_web_library = rule(
             default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles/server:WebfilesServer"),
             executable=True,
             cfg="host"),
-        "_ClosureWorker": _CLOSURE_WORKER,
+        "_ClosureWorker": CLOSURE_WORKER_ATTR,
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
-        "_closure_library_deps": CLOSURE_LIBRARY_DEPS_ATTR,
     }.items()),
     outputs=CLUTZ_OUTPUTS)
-

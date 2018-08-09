@@ -71,67 +71,64 @@ PLUGINS_LISTING_ROUTE = '/plugins_listing'
 _VALID_PLUGIN_RE = re.compile(r'^[A-Za-z0-9_.-]+$')
 
 
-def standard_tensorboard_wsgi(
-    logdir,
-    purge_orphaned_data,
-    reload_interval,
-    plugins,
-    db_uri="",
-    assets_zip_provider=None,
-    path_prefix="",
-    window_title="",
-    flags=None):
+def tensor_size_guidance_from_flags(flags):
+  """Apply user per-summary size guidance overrides."""
+
+  tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
+  if not flags or not flags.samples_per_plugin:
+    return tensor_size_guidance
+
+  for token in flags.samples_per_plugin.split(','):
+    k, v = token.strip().split('=')
+    tensor_size_guidance[k] = int(v)
+
+  return tensor_size_guidance
+
+
+def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
   Args:
-    logdir: The path to the directory containing events files.
-    purge_orphaned_data: Whether to purge orphaned data.
-    reload_interval: The interval at which the backend reloads more data in
-        seconds.  Zero means load once at startup; negative means never load.
-    plugins: A list of constructor functions for TBPlugin subclasses.
-    path_prefix: A prefix of the path when app isn't served from root.
-    db_uri: A String containing the URI of the SQL database for persisting
-        data, or empty for memory-only mode.
+    flags: An argparse.Namespace containing TensorBoard CLI flags.
+    plugin_loaders: A list of TBLoader instances.
     assets_zip_provider: See TBContext documentation for more information.
-        If this value is not specified, this function will attempt to load
-        the `tensorboard.default` module to use the default. This behavior
-        might be removed in the future.
-    window_title: A string specifying the the window title.
-    flags: A dict of the runtime flags provided to the application, or None.
+
   Returns:
     The new TensorBoard WSGI application.
+
+  :type plugin_loaders: list[base_plugin.TBLoader]
+  :rtype: TensorBoardWSGI
   """
-  if assets_zip_provider is None:
-    from tensorboard import default
-    assets_zip_provider = default.get_assets_zip_provider()
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
-      tensor_size_guidance=DEFAULT_TENSOR_SIZE_GUIDANCE,
-      purge_orphaned_data=purge_orphaned_data)
-  db_module, db_connection_provider = get_database_info(db_uri)
-  # In DB mode, always disable loading event files.
-  if db_connection_provider:
-    reload_interval = -1
+      tensor_size_guidance=tensor_size_guidance_from_flags(flags),
+      purge_orphaned_data=flags.purge_orphaned_data,
+      max_reload_threads=flags.max_reload_threads)
+  db_module, db_connection_provider = get_database_info(flags.db)
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
-      db_uri=db_uri,
+      db_uri=flags.db,
       flags=flags,
-      logdir=logdir,
+      logdir=flags.logdir,
       multiplexer=multiplexer,
       assets_zip_provider=assets_zip_provider,
       plugin_name_to_instance=plugin_name_to_instance,
-      window_title=window_title)
-  plugin_instances = [constructor(context) for constructor in plugins]
-  for plugin_instance in plugin_instances:
-    plugin_name_to_instance[plugin_instance.plugin_name] = plugin_instance
-  return TensorBoardWSGIApp(
-      logdir, plugin_instances, multiplexer, reload_interval, path_prefix)
+      window_title=flags.window_title)
+  plugins = []
+  for loader in plugin_loaders:
+    plugin = loader.load(context)
+    if plugin is None:
+      continue
+    plugins.append(plugin)
+    plugin_name_to_instance[plugin.plugin_name] = plugin
+  return TensorBoardWSGIApp(flags.logdir, plugins, multiplexer,
+                            flags.reload_interval, flags.path_prefix)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-                       path_prefix):
+                       path_prefix=''):
   """Constructs the TensorBoard application.
 
   Args:
@@ -149,24 +146,27 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
 
   Raises:
     ValueError: If something is wrong with the plugin configuration.
+
+  :type plugins: list[base_plugin.TBPlugin]
+  :rtype: TensorBoardWSGI
   """
   path_to_run = parse_event_files_spec(logdir)
-  if reload_interval > 0:
+  if reload_interval >= 0:
+    # We either reload the multiplexer once when TensorBoard starts up, or we
+    # continuously reload the multiplexer.
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
-  elif reload_interval == 0:
-    reload_multiplexer(multiplexer, path_to_run)
   return TensorBoardWSGI(plugins, path_prefix)
 
 
 class TensorBoardWSGI(object):
   """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-  def __init__(self, plugins, path_prefix=""):
+  def __init__(self, plugins, path_prefix=''):
     """Constructs TensorBoardWSGI instance.
 
     Args:
       plugins: A list of base_plugin.TBPlugin subclass instances.
-      path_prefix: A prefix of the path when app isn't served from root.
+      flags: An argparse.Namespace containing TensorBoard CLI flags.
 
     Returns:
       A WSGI application for the set of all TBPlugin instances.
@@ -178,6 +178,8 @@ class TensorBoardWSGI(object):
       ValueError: If two plugins have the same plugin_name
       ValueError: If some plugin handles a route that does not start
           with a slash
+
+    :type plugins: list[base_plugin.TBPlugin]
     """
     self._plugins = plugins
     if path_prefix.endswith('/'):
@@ -223,8 +225,8 @@ class TensorBoardWSGI(object):
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
           path = self._path_prefix + route
         else:
-          path = self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' + \
-                    plugin.plugin_name + route
+          path = (self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' +
+                  plugin.plugin_name + route)
         self.data_applications[path] = app
 
   @wrappers.Request.application
@@ -341,28 +343,38 @@ def reload_multiplexer(multiplexer, path_to_run):
 def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   """Starts a thread to automatically reload the given multiplexer.
 
-  The thread will reload the multiplexer by calling `ReloadMultiplexer` every
-  `load_interval` seconds, starting immediately.
+  If `load_interval` is positive, the thread will reload the multiplexer
+  by calling `ReloadMultiplexer` every `load_interval` seconds, starting
+  immediately. Otherwise, reloads the multiplexer once and never again.
 
   Args:
     multiplexer: The `EventMultiplexer` to add runs to and reload.
     path_to_run: A dict mapping from paths to run names, where `None` as the run
       name is interpreted as a run name equal to the path.
-    load_interval: How many seconds to wait after one load before starting the
-      next load.
+    load_interval: An integer greater than or equal to 0. If positive, how many
+      seconds to wait after one load before starting the next load. Otherwise,
+      reloads the multiplexer once and never again (no continuous reloading).
 
   Returns:
     A started `threading.Thread` that reloads the multiplexer.
+
+  Raises:
+    ValueError: If `load_interval` is negative.
   """
+  if load_interval < 0:
+    raise ValueError('load_interval is negative: %d' % load_interval)
 
   # We don't call multiplexer.Reload() here because that would make
   # AddRunsFromDirectory block until the runs have all loaded.
-  def _reload_forever():
+  def _reload():
     while True:
       reload_multiplexer(multiplexer, path_to_run)
+      if load_interval == 0:
+        # Only load the multiplexer once. Do not continuously reload.
+        break
       time.sleep(load_interval)
 
-  thread = threading.Thread(target=_reload_forever, name='Reloader')
+  thread = threading.Thread(target=_reload, name='Reloader')
   thread.daemon = True
   thread.start()
   return thread

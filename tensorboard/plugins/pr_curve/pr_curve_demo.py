@@ -65,17 +65,26 @@ def start_runs(
   tf.set_random_seed(42)
 
   # Create a normal distribution layer used to generate true color labels.
-  channel_distribution = tf.distributions.Normal(loc=0., scale=142.)
+  distribution = tf.distributions.Normal(loc=0., scale=142.)
 
   # Sample the distribution to generate colors. Lets generate different numbers
   # of each color. The first dimension is the count of examples.
+
+  # The calls to sample() are given fixed random seed values that are "magic"
+  # in that they correspond to the default seeds for those ops when the PR
+  # curve test (which depends on this code) was written. We've pinned these
+  # instead of continuing to use the defaults since the defaults are based on
+  # node IDs from the sequence of nodes added to the graph, which can silently
+  # change when this code or any TF op implementations it uses are modified.
+
+  # TODO(nickfelt): redo the PR curve test to avoid reliance on random seeds.
 
   # Generate reds.
   number_of_reds = 100
   true_reds = tf.clip_by_value(
       tf.concat([
-          255 - tf.abs(channel_distribution.sample([number_of_reds, 1])),
-          tf.abs(channel_distribution.sample([number_of_reds, 2]))
+          255 - tf.abs(distribution.sample([number_of_reds, 1], seed=11)),
+          tf.abs(distribution.sample([number_of_reds, 2], seed=34))
       ], axis=1),
       0, 255)
 
@@ -83,9 +92,9 @@ def start_runs(
   number_of_greens = 200
   true_greens = tf.clip_by_value(
       tf.concat([
-          tf.abs(channel_distribution.sample([number_of_greens, 1])),
-          255 - tf.abs(channel_distribution.sample([number_of_greens, 1])),
-          tf.abs(channel_distribution.sample([number_of_greens, 1]))
+          tf.abs(distribution.sample([number_of_greens, 1], seed=61)),
+          255 - tf.abs(distribution.sample([number_of_greens, 1], seed=82)),
+          tf.abs(distribution.sample([number_of_greens, 1], seed=105))
       ], axis=1),
       0, 255)
 
@@ -93,8 +102,8 @@ def start_runs(
   number_of_blues = 150
   true_blues = tf.clip_by_value(
       tf.concat([
-          tf.abs(channel_distribution.sample([number_of_blues, 2])),
-          255 - tf.abs(channel_distribution.sample([number_of_blues, 1]))
+          tf.abs(distribution.sample([number_of_blues, 2], seed=132)),
+          255 - tf.abs(distribution.sample([number_of_blues, 1], seed=153))
       ], axis=1),
       0, 255)
 

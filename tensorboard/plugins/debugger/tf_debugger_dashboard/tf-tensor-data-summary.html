@@ -464,7 +464,7 @@ limitations under the License.
     //   A rendered HTML element.
     _renderHealthPill(
         healthPillWatchKey, healthPillWithoutValue, tapHandler) {
-      healthPillCell = document.createElement('td');
+      const healthPillCell = document.createElement('td');
       Polymer.dom(healthPillCell).classList.add('health-pill');
       if (tapHandler != null) {
         healthPillCell.addEventListener('tap', tapHandler, false);

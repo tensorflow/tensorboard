@@ -38,6 +38,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":lazy",
+        ":program",
         ":summary",
     ],
 )
@@ -50,7 +51,6 @@ py_library(
     deps = [
         ":util",
         ":version",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "@org_pocoo_werkzeug",
@@ -65,6 +65,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin",
         "//tensorboard/plugins/core:core_plugin",
@@ -82,7 +83,7 @@ py_library(
     ],
 )
 
-py_binary(
+py_library(
     name = "version",
     srcs = ["version.py"],
     srcs_version = "PY2AND3",

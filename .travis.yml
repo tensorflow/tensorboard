@@ -15,20 +15,54 @@ branches:
     - /^\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
-  - BAZEL=0.9.0 TF=NIGHTLY
+  - BAZEL=0.13.0 TF=NIGHTLY
 
 cache:
   directories:
     - $HOME/.bazel-output-base
 
+# Each bullet point is displayed in the Travis log as one collapsed line, which
+# indicates how long it took. Travis will check the return code at the end. We
+# can't use `set -e` in the YAML file since it might impact Travis internals.
+# If inline scripts get too long, Travis surprisingly prints them twice.
+
 before_install:
+  - wget -t 3 -O bazel https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64
+  - chmod +x bazel
+  - sudo mv bazel /usr/local/bin
+
+  # Storing build artifacts in this directory helps Travis cache them. This
+  # will sometimes cut latency in half, when we're lucky.
+  - echo "startup --output_base=${HOME}/.bazel-output-base" >>~/.bazelrc
+
+  # Travis Trusty Sudo GCE VMs have 2 cores and 7.5 GB RAM. These settings
+  # help Bazel go faster and not OOM the system.
+  - echo "startup --host_jvm_args=-Xms500m" >>~/.bazelrc
+  - echo "startup --host_jvm_args=-Xmx500m" >>~/.bazelrc
+  - echo "startup --host_jvm_args=-XX:-UseParallelGC" >>~/.bazelrc
+  - echo "build --local_resources=400,2,1.0" >>~/.bazelrc
+  - echo "build --worker_max_instances=2" >>~/.bazelrc
+
+  # This is the magic incantation for making protobuf build 2x faster.
+  - echo "build --distinct_host_configuration=false" >>~/.bazelrc
+
+  # Make Bazel as strict as possible, so TensorBoard will build correctly
+  # for users, regardless of their Bazel configuration.
+  - echo "build --worker_verbose" >>~/.bazelrc
+  - echo "build --worker_sandboxing" >>~/.bazelrc
+  - echo "build --spawn_strategy=sandboxed" >>~/.bazelrc
+  - echo "build --genrule_strategy=sandboxed" >>~/.bazelrc
+  - echo "test --test_verbose_timeout_warnings" >>~/.bazelrc
+
+  # It's helpful to see the errors on failure.
+  - echo "build --verbose_failures" >>~/.bazelrc
+  - echo "test --test_output=errors" >>~/.bazelrc
+
+install:
+  - pip install futures==3.1.1
+  - pip install grpcio==1.6.3
   - |
-    set -e
-    BAZEL_URL="https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-installer-linux-x86_64.sh"
-    wget -t 3 -O install.sh "${BAZEL_URL}"
-    chmod +x install.sh
-    ./install.sh --user
-    rm -f install.sh
+    # Install TensorFlow
     case "${TF}" in
       RELEASE)
         pip install -I tensorflow
@@ -41,50 +75,21 @@ before_install:
         ;;
     esac
 
-    pip install pylint==1.8.1
-    pip install futures==3.1.1
-    pip install grpcio==1.6.3
-
+# Commands in this section should only fail if it's our fault. Travis will
+# categorize them as 'failed', rather than 'error' for other sections.
 script:
-  - |
-    bazel \
-      --output_base="${HOME}/.bazel-output-base" \
-      --batch \
-      --host_jvm_args=-Xmx500m \
-      --host_jvm_args=-Xms500m \
-      build \
-      tensorboard/... \
-      --worker_verbose \
-      --verbose_failures \
-      --spawn_strategy=sandboxed \
-      --genrule_strategy=sandboxed \
-      --local_resources=400,2,1.0 \
-      --worker_max_instances=2 \
-      --strategy=Javac=worker \
-      --strategy=Closure=worker
+  # Note: bazel test implies fetch+build, but this gives us timing.
+  - bazel fetch //tensorboard/...
+  - bazel build //tensorboard/...
+  - bazel test //tensorboard/...
 
-  - |
-    bazel \
-      --output_base="${HOME}/.bazel-output-base" \
-      --batch \
-      --host_jvm_args=-Xmx500m \
-      --host_jvm_args=-Xms500m \
-      test \
-      tensorboard/... \
-      --verbose_failures \
-      --test_verbose_timeout_warnings \
-      --test_output=errors \
-      --spawn_strategy=sandboxed \
-      --local_resources=400,2,1.0
-  - |
-    TB=$(pwd)
-    cd bazel-genfiles
-    find tensorboard -name \*.py -exec cp {} "$TB"/{} \;
-    cd "$TB"
-    pylint tensorboard
+after_script:
+  # Bazel launches daemons unless --batch is used.
+  - bazel shutdown
 
 before_cache:
   - |
+    # Scrub tiny build artifacts not worth caching.
     find "${HOME}/.bazel-output-base" \
       -name \*.runfiles -print0 \
       -or -name \*.tar.gz -print0 \
