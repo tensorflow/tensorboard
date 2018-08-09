@@ -212,7 +212,11 @@ limitations under the License.
             return ({tag, run, experiment}) => {
               return tf_backend.addParams(
                   tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
-                  {tag, run, experiment});
+                  {
+                    tag,
+                    run,
+                    experiment: experiment ? experiment.id : '',
+                  });
             }
           },
         },

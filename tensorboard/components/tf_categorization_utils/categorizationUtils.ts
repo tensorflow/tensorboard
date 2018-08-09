@@ -49,6 +49,7 @@ export type RunTagCategory = Category<{tag: string, run: string}>;
 export type Series = {
   experiment: string,
   run: string,
+  tag: string,
 };
 
 /**
@@ -57,7 +58,7 @@ export type Series = {
  */
 export type SeriesCategory = Category<{
   tag: string,
-  series: Array<Series>,
+  series: Series[],
 }>;
 
 export type RawCategory = Category<string>;  // Intermediate structure.
@@ -146,10 +147,10 @@ export function categorizeTags(
 export function categorizeSelection(
     selection: tf_data_selector.Selection[], pluginName: string):
     SeriesCategory[] {
-  const tagToSeries = new Map<string, Array<Series>>();
+  const tagToSeries = new Map<string, Series[]>();
   // `tagToSearchSeries` contains subset of `tagToSeries`. tagRegex in each
   // selection can omit series from a tag category.
-  const tagToSearchSeries = new Map<string, Array<Series>>();
+  const tagToSearchSeries = new Map<string, Series[]>();
   const searchCategories = [];
 
   selection.forEach(({experiment, runs, tagRegex}) => {
@@ -161,7 +162,7 @@ export function categorizeSelection(
     tags.forEach(tag => {
       const series = tagToSeries.get(tag) || [];
       series.push(...tagToSelectedRuns.get(tag)
-          .map(run => ({experiment: experiment.name, run})));
+          .map(run => ({experiment, run, tag})));
       tagToSeries.set(tag, series);
     });
 
