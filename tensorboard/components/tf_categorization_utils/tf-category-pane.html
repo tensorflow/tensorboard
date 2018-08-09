@@ -25,20 +25,25 @@ limitations under the License.
               on-tap="_togglePane"
               open-button$="[[opened]]">
         <span class="name">
-          <template is="dom-if" if="[[_isSearchResults]]"><!--
-            --><span class="light">Tags matching /</span><!--
-            --><span class="category-name">[[category.name]]</span><!--
-            --><span class="light">/</span><!--
-            --><template is="dom-if" if="[[_isUniversalSearchQuery]]"><!--
-              --><span> (all tags)</span><!--
-            --></template><!--
-            --><template is="dom-if" if="[[_isInvalidSearchResults]]"><!--
-              --><span> <strong>(malformed regular expression)</strong></span><!--
-            --></template><!--
-          --></template><!--
-          --><template is="dom-if" if="[[!_isSearchResults]]"><!--
-            --><span class="category-name">[[category.name]]</span><!--
-          --></template>
+          <template is="dom-if" if="[[_isSearchResults]]">
+            <template is="dom-if" if="[[_isCompositeSearch(category)]]">
+              <span>Tags matching multiple experiments</span>
+            </template>
+            <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
+              <span class="light">Tags matching /</span>
+              <span class="category-name">[[category.name]]</span>
+              <span class="light">/</span>
+              <template is="dom-if" if="[[_isUniversalSearchQuery]]">
+                <span> (all tags)</span>
+              </template>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span> <strong>(malformed regular expression)</strong></span>
+              </template>
+            </template>
+          </template>
+          <template is="dom-if" if="[[!_isSearchResults]]">
+            <span class="category-name">[[category.name]]</span>
+          </template>
         </span>
         <span class="count"><span>[[_count]]</span></span>
       </button>
@@ -89,11 +94,12 @@ limitations under the License.
       }
 
       [open-button] {
-        border-bottom-left-radius: 0px !important;
-        border-bottom-right-radius: 0px !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
       }
 
       .name {
+        display: inline-flex;
         float: left;
       }
 
@@ -143,7 +149,7 @@ limitations under the License.
 
         _count: {
           type: Number,
-          computed: '_computeCount(category.items)',
+          computed: '_computeCount(category.items.*)',
         },
         _rendered: {
           type: Boolean,
@@ -175,24 +181,30 @@ limitations under the License.
         // Show a category unless it's a search results category where
         // there wasn't actually a search query.
         return !(
-          category.metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
+          category.metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
           && category.name === "");
       },
 
       _computeIsSearchResults(type) {
-        return type === tf_categorization_utils.CategoryType['SEARCH_RESULTS'];
+        return type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
       },
 
       _computeIsInvalidSearchResults(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
+          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
           && !metadata.validRegex);
       },
 
       _computeIsUniversalSearchQuery(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
+          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
           && metadata.universalRegex);
+      },
+
+      _isCompositeSearch() {
+        const {type, compositeSearch} = this.category.metadata;
+        return compositeSearch &&
+            type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
       },
     });
   </script>
