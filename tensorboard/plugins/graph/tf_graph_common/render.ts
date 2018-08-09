@@ -2266,7 +2266,7 @@ export function expandUntilNodeIsShown(
   // Graph names do not take into account the output slot. Strip it.
   if (splitTensorName[splitTensorName.length - 1].includes(':')) {
     const lastNodeNameMatch =
-      splitTensorName[splitTensorName.length - 1].match(/(.*):\w+/);
+        splitTensorName[splitTensorName.length - 1].match(/(.*):\w+/);
     if (lastNodeNameMatch.length === 2) {
       splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch[1];
     }
