@@ -242,6 +242,10 @@ Polymer({
   _getSyntheticRunId(run) {
     return this.noExperiment ? run.name : run.id;
   },
+
+  _fireCheckboxToggled() {
+    this.fire('checkbox-toggle');
+  },
 });
 
 }  // namespace tf_data_selector

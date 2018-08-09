@@ -46,6 +46,7 @@ Event out:
         id="checkbox"
         checked="{{enabled}}"
         title="[[experiment.name]]"
+        on-change="_fireCheckboxToggled"
       >
         [[experiment.name]]
       </paper-checkbox>
