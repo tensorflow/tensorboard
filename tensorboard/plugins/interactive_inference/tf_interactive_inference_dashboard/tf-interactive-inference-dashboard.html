@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icons/communication-icons.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
@@ -162,7 +163,7 @@ limitations under the License.
 
       .settings-button {
         color: black;
-        margin-top: 10px;
+        margin-top: 4px;
       }
 
       .button {
@@ -232,20 +233,17 @@ limitations under the License.
       }
 
       .center {
-        width: 60%;
+        width: 50%;
       }
 
       .side-holder {
         position: relative;
-        width: 40%;
+        width: 50%;
         display: flex;
-        flex-direction: column;
-        border-left: 1px solid black;
       }
 
       .side-content {
-        height: 80%;
-        flex: 1 0 auto;
+        width: 100%;
       }
 
       .top-side {
@@ -256,13 +254,14 @@ limitations under the License.
 
       .side-tabs {
         display: flex;
-        height: calc(100% - 60px);
+        height: calc(100% - 50px);
       }
 
       .datapoint-tab {
         display: flex;
         flex-direction: column;
         width: 100%;
+        overflow: auto;
       }
 
       .config-tab {
@@ -379,15 +378,17 @@ limitations under the License.
       }
 
       .datapoint-control-filter-input {
-        background: #f2f3f5;
         border-radius: 2px;
         max-width: 60%;
         --paper-input-container: { padding: 4px 6px 2px 4px; };
-        --paper-input-container-underline: { display: none; height: 0; };
-        --paper-input-container-underline-focus: { display: none; };
       }
+
       .datapoint-control-filter-input iron-icon {
         color: #9ba0a6;
+      }
+
+      .feature-search-input {
+        padding-top: 3px;
       }
 
       .control-button {
@@ -526,7 +527,7 @@ limitations under the License.
 
       .main-vertical {
         display: flex;
-        flex-direction: column-reverse;
+        flex-direction: column;
         width: 100%;
       }
 
@@ -535,7 +536,8 @@ limitations under the License.
         min-height: 50px;
         flex-grow: 0;
         display: flex;
-        border-top: 1px solid grey;
+        box-shadow: 0 2px 5px grey;
+        margin-bottom: 3px;
         justify-content: space-between;
       }
 
@@ -563,12 +565,11 @@ limitations under the License.
       }
 
       .resizer {
-        position: absolute;
-        width: 5px;
-        top: 0;
-        bottom: 0;
-        left: -5px;
-        border-left: 1px solid black;
+        display: table;
+        height: 100%;
+        width: 10px;
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
         cursor: pointer;
       }
 
@@ -577,7 +578,7 @@ limitations under the License.
         color: #777;
         white-space: nowrap;
         overflow: hidden;
-        padding-top: 22px;
+        padding-top: 16px;
       }
 
       .example-id-label {
@@ -613,6 +614,12 @@ limitations under the License.
         padding: 0 10px;
       }
 
+      .tooltip {
+        --paper-tooltip: {
+          font-size: 16px;
+        }
+      }
+
       .comment-icon {
         width: 30px;
         height: 30px;
@@ -622,10 +629,51 @@ limitations under the License.
         color: var(--tb-orange-dark);
       }
 
+      .resize-icon {
+        display: table-cell;
+        vertical-align: middle;
+        color: grey;
+        width: 10px;
+        height: 10px;
+        min-width: 10px;
+        min-height: 10px;
+      }
+
       .help-text {
         color: grey;
         font-size: 14px;
         padding-top: 10px;
+      }
+
+      .datapoint-info-holder {
+        display: table;
+        padding-left: 20%;
+        padding-right: 20%;
+        height: 100%;
+      }
+
+      .datapoint-info-content {
+        display: table-cell;
+        vertical-align: middle;
+      }
+
+      .datapoint-info-header {
+        color: var(--tb-orange-dark);
+        font-size: 26px;
+        margin-bottom: 15px;
+      }
+
+      .datapoint-info-main {
+        font-size: 18px;
+        margin-bottom: 15px;
+      }
+
+      .datapoint-info-bullet {
+        display: list-item;
+        list-style-type: disc;
+        list-style-position: inside;
+        font-size: 16px;
+        margin-bottom: 5px;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
@@ -682,15 +730,8 @@ limitations under the License.
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings"></paper-icon-button>
-            <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
-              <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
-            </a>
-            <div class="example-status">[[exampleStatusStr]]</div>
-          </div>
-          <div class="datapoint-right-controls-holder">
             <paper-button on-click="inferClicked_" class="main-button"
-                          disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+              disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
               Run inference
             </paper-button>
             <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
@@ -714,88 +755,46 @@ limitations under the License.
               </div>
             </template>
           </div>
+          <div class="datapoint-right-controls-holder">
+            <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+              <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
+            </a>
+            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings"></paper-icon-button>
+            <div class="example-status">[[exampleStatusStr]]</div>
+          </div>
         </div>
         <div class="main-content">
-          <div class="center" id="center">
-            <facets-dive id="dive" data="[[visdata]]"
-                        selected-indices="[[selected]]"
-                        on-selected-indices-changed="selectedIndicesChanged_"
-                        on-stats-changed="statsChanged_"
-                        hide-info-card="true"
-                        sprite-image-width="32" sprite-image-height="32">
-            </facets-dive>
-            <div id="noexamples" class="noexamples info-text">
-              Examples and their inference results will be displayed here.
-            </div>
-            <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
-            <div class="feature-container-holder" id="partialplotholder">
-              <div class="flex">
-                <paper-button on-click="hidePartialDependencePlots_" class="control-button close-partial-deps-button">Close partial dependence plots</paper-button>
-                <div class="pd-info-text">Click a feature name below to see how inference results would change if that feature was adjusted.</div>
-              </div>
-              <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
-                <div class="feature-container" data-feature-name$="[[item.name]]">
-                  <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
-                    [[item.name]]
-
-                    <div class="range-input-container">
-                      <span class="info-text"
-                            title="The range of mutant value (default values are automatically inferred from training data)."
-                            hidden$="[[item.samples]]">
-                        Value range to test:
-                      </span>
-                      <input type="number"
-                              class="style-input x-min"
-                              value="[[item.observedMin]]"
-                              title="The minimum mutant value (default value is automatically inferred from training data)."
-                              hidden$="[[item.samples]]"
-                              on-input="pdInputChanged">
-                      <input type="number"
-                              class="style-input x-max"
-                              value="[[item.observedMax]]"
-                              title="The maximum mutant value (default value is automatically inferred from training data)."
-                              hidden$="[[item.samples]]"
-                              on-input="pdInputChanged">
-
-                      <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields."
-                            hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
-                        <span class="info-text">Optional feature indices: </span>
-                        <input type="text"
-                                class="style-input feature-index-pattern"
-                                on-input="pdInputChanged">
-                      </span>
-                    </div>
-                  </button>
-                  <div class="tf-category-pane-content" hidden>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
           <div class="side-holder" id="side">
-            <div class="resizer" id="resizer"></div>
             <div class="side-content">
               <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
-                <paper-tab>[[getModelTabName(modelType, multiClass)]]</paper-tab>
+                <paper-tab>Performance + Optimization</paper-tab>
                 <paper-tab>Datapoint</paper-tab>
                 <paper-tab>Features</paper-tab>
               </paper-tabs>
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
                 <div class="config-tab">
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleTrueLabelSetup">True Label Setup</button>
+                    <button class="heading" on-click="toggleTrueLabelSetup">Ground Truth</button>
                     <iron-collapse class="card" id="collapsetruelabel" opened="{{openedTrueLabel}}">
                       <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                         <div class="flex">
-                          <paper-dropdown-menu label="True Label Feature" class="threshold-dropdown">
+                          <paper-dropdown-menu label="Ground Truth Feature" class="threshold-dropdown">
                             <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                               <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                 <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                               </template>
                             </paper-listbox>
                           </paper-dropdown-menu>
-                          <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
-                          <div class="help-text">Select the true label feature to investigate model performance.</div>
+                          <div>
+                            <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
+                            <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
+                              <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
+                                to predict, then selecting that feature here allows the tool to investigate the performance of
+                                the model.
+                              </div>
+                            </paper-tooltip>
+                          </div>
+                          <div class="help-text">Select the true label feature to investigate model performance</div>
                         </div>
                         <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
                           <div class="flex">
@@ -803,9 +802,16 @@ limitations under the License.
                               label="Cost Ratio"
                               type="number" class="threshold-cost-input">
                             </paper-input>
-                            <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
-                            <div class="help-text">Define the ratio of false positive cost to false negative cost. 2 means that false positives are twice
-                              as costly as false negatives.</div>
+                            <div>
+                              <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
+                              <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
+                                <div class="bold">Examples:</div>
+                                <div>1 means that false positives and false negatives are equally costly.</div>
+                                <div>2 means that false positives are twice as costly as false negatives.</div>
+                                <div>0.5 means that false positives are half as costly as false negatives.</div>
+                              </paper-tooltip>
+                            </div>
+                            <div class="help-text">Define the ratio of false positive cost to false negative cost</div>
                             </div>
 
                           <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
@@ -822,7 +828,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleExplorerSetup">Fairness Explorer</button>
+                    <button class="heading" on-click="toggleExplorerSetup">Slice Explorer</button>
                     <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
                       <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                         <div class="flex">
@@ -1030,22 +1036,26 @@ limitations under the License.
                             class$="[[getGridButtonClass(exampleDisplayMode)]]"
                             on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
                         </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="chevron-right"
-                            on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
-                        </paper-icon-button>
-                        <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
-                                     min="0" max="[[selectedExampleMax]]" no-label-float>
-                        </paper-input>
-                        <div class="example-id-label">Example ID:</div>
+                      </div>
+                    </div>
+                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
+                      <div class="datapoint-left-controls-holder">
                         <paper-icon-button class="datapoint-control-button" icon="chevron-left"
                             on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
                         </paper-icon-button>
+                        <div class="example-id-label">Example ID:</div>
+                        <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
+                                    min="0" max="[[selectedExampleMax]]" no-label-float>
+                        </paper-input>
+                        <paper-icon-button class="datapoint-control-button" icon="chevron-right"
+                          on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
+                        </paper-icon-button>
                       </div>
-                    </div>
-                    <div class="datapoint-controls-holder datapoint-control-search-holder">
-                      <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input" no-label-float>
-                        <iron-icon icon="icons:search" prefix></iron-icon>
-                      </paper-input>
+                      <div class="datapoint-right-controls-holder">
+                        <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input feature-search-input" no-label-float>
+                          <iron-icon icon="icons:search" prefix></iron-icon>
+                        </paper-input>
+                      </div>
                     </div>
                     <div class="examples-holder">
                       <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
@@ -1078,14 +1088,99 @@ limitations under the License.
                     </div>
                   </template>
                   <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
-                    <div class="datapoint-info-text">Select a datapoint to see its details and inference results here.</div>
-                    <div class="datapoint-info-text">Datapoints can be edited and rerun through the model.</div>
+                    <div class="datapoint-info-holder">
+                      <div class="datapoint-info-content">
+                        <div class="datapoint-info-header">Select a datapoint to begin editing features and values.</div>
+                        <div class="datapoint-info-main">Clicking on a datapoint in the visualization will load
+                          all the features and values associated with that example. Here are some of the things you can do:</div>
+                        <div class="datapoint-info-bullet">
+                          <span class="bold">Edit features and values and rerun inference</span>
+                          to see how your model performs.
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <span class="bold">Run inference on new examples:</span>
+                          Duplicate existing examples and make edits and rerun inference.
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <span class="bold">Distance Feature:</span>
+                          Select an example to be an anchor and create a new L1 or L2 distance feature for all loaded examples.
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <span class="bold">Closest Counterfactuals:</span>
+                          For classification models, find the closest example with a different classification using L1 or L2 distance.
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <span class="bold">Partial Dependency Plots:</span>
+                          For a selected example, explore plots for every feature that show the change in inference results across
+                          different valid values for that feature.
+                        </div>
+                      </div>
+                    </div>
                   </template>
                 </div>
                 <div class="stats-tab">
                   <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
                 </div>
               </iron-pages>
+            </div>
+            <div class="resizer" id="resizer">
+              <iron-icon icon="av:pause" class="resize-icon"></iron-icon>
+            </div>
+          </div>
+          <div class="center" id="center">
+            <facets-dive id="dive" data="[[visdata]]"
+                        selected-indices="[[selected]]"
+                        on-selected-indices-changed="selectedIndicesChanged_"
+                        on-stats-changed="statsChanged_"
+                        hide-info-card="true"
+                        sprite-image-width="32" sprite-image-height="32">
+            </facets-dive>
+            <div id="noexamples" class="noexamples info-text">
+              Examples and their inference results will be displayed here.
+            </div>
+            <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+            <div class="feature-container-holder" id="partialplotholder">
+              <div class="flex">
+                <paper-button on-click="hidePartialDependencePlots_" class="control-button close-partial-deps-button">Close partial dependence plots</paper-button>
+                <div class="pd-info-text">Click a feature name below to see how inference results would change if that feature was adjusted.</div>
+              </div>
+              <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
+                <div class="feature-container" data-feature-name$="[[item.name]]">
+                  <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
+                    [[item.name]]
+
+                    <div class="range-input-container">
+                      <span class="info-text"
+                            title="The range of mutant value (default values are automatically inferred from training data)."
+                            hidden$="[[item.samples]]">
+                        Value range to test:
+                      </span>
+                      <input type="number"
+                              class="style-input x-min"
+                              value="[[item.observedMin]]"
+                              title="The minimum mutant value (default value is automatically inferred from training data)."
+                              hidden$="[[item.samples]]"
+                              on-input="pdInputChanged">
+                      <input type="number"
+                              class="style-input x-max"
+                              value="[[item.observedMax]]"
+                              title="The maximum mutant value (default value is automatically inferred from training data)."
+                              hidden$="[[item.samples]]"
+                              on-input="pdInputChanged">
+
+                      <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields."
+                            hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
+                        <span class="info-text">Optional feature indices: </span>
+                        <input type="text"
+                                class="style-input feature-index-pattern"
+                                on-input="pdInputChanged">
+                      </span>
+                    </div>
+                  </button>
+                  <div class="tf-category-pane-content" hidden>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -1333,7 +1428,7 @@ limitations under the License.
         },
         exampleStatusStr: {
           type: String,
-          value: 'No examples loaded yet.'
+          value: 'No examples loaded yet'
         },
         // The example ID number selected in the text input
         selectedExampleNum: {
@@ -1377,14 +1472,14 @@ limitations under the License.
           let perc = x / width * 100;
 
           // Side panel will be a minimum of 20% width.
-          perc = Math.min(perc, 80);
+          perc = Math.max(perc, 20);
 
-          center.style('width', perc + '%');
-          side.style('width', (100 - perc) + '%');
+          center.style('width', (100 - perc) + '%');
+          side.style('width', perc + '%');
 
           // If the center panel is less than 40% of the width, then consider
           // the side panel to be expanded, for display purposes.
-          self.panelExpanded = perc < 40;
+          self.panelExpanded = perc > 60;
         }).on('end', () => {
           // Force a resize of the Dive visualization when finished resizing
           // the side panel.
@@ -1396,7 +1491,6 @@ limitations under the License.
 
       settingsClicked_: function() {
         this.$.inferencesettings.toggle();
-        this.$.spinner.hidden = false;
       },
 
       onTabSelect_: function() {
@@ -2770,7 +2864,7 @@ limitations under the License.
        * Callback for when new examples are received from the backend.
        */
       updateExampleContents_: function(examples, hasSprite) {
-        this.exampleStatusStr = 'Loaded ' + examples.length + ' examples.';
+        this.exampleStatusStr = examples.length + ' examples loaded';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;
         this.examplesAndInferences = examples.map(function(ex) {
@@ -2919,16 +3013,6 @@ limitations under the License.
           this.selectedExampleAndInference.example, this.selected[0]);
         this.updateExample_(origExampleJsonString, this.selected[0]);
         this.refreshDive_();
-      },
-
-      getModelTabName: function(modelType, multiClass) {
-        // For binary classification, the performance tab also is used for
-        // fairness analysis.
-        let name = 'Performance';
-        if (modelType == 'classification' && !multiClass) {
-          name += '/Fairness';
-        }
-        return name;
       },
 
       /**
