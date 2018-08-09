@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<link rel="import" href="../iron-icons/communication-icons.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -184,7 +186,7 @@ limitations under the License.
 
       .threshold-dropdown {
         display: block;
-        width: 50%;
+        width: 250px;
         padding-right: 16px;
       }
 
@@ -205,7 +207,7 @@ limitations under the License.
 
       .slider {
         margin-top: -30px;
-        width: 50%;
+        width: 250px;
         --paper-slider-input: {
           width: 80px;
         }
@@ -395,27 +397,36 @@ limitations under the License.
         font-size: 14px;
         font-weight: 500;
         padding: 8px 12px;
-        text-transform: uppercase;
+        text-transform: none;
         margin: 5px;
       }
 
       .control-button[disabled] {
-        background-color: #ccc;
-        color: white;
+        color: lightgray;
       }
 
-      .generic-button {
-        background-color: white;
-        border: 1px solid lightgray;
-        color: var(--tb-orange-dark);
+      .main-button {
+        background-color: var(--tb-orange-dark);
+        border: 1px solid var(--tb-orange-dark);
+        color: white;
         font-size: 14px;
         font-weight: 500;
         padding: 8px 12px;
         text-transform: none;
+        margin: 5px;
+      }
+
+      .main-button[disabled] {
+        background-color: lightgray;
+        border: 1px solid lightgray;
+        color: gray;
       }
 
       .optimize-threshold-button {
-        margin: 10px;
+        margin: 5px 0;
+        width: 250px;
+        min-width: 250px;
+        margin-right: 16px;
       }
 
       .close-partial-deps-button {
@@ -471,7 +482,9 @@ limitations under the License.
       }
 
       .threshold-cost-input {
-        width: 50%;
+        width: 250px;
+        min-width: 250px;
+        margin-right: 16px;
       }
 
       .bold {
@@ -537,6 +550,7 @@ limitations under the License.
 
       #distancedialog {
         width: 30%;
+        border-radius: 10px;
       }
 
       #distancedialog .buttons {
@@ -574,6 +588,45 @@ limitations under the License.
         width: 70px;
         padding-top: 4px;
       }
+
+      .heading-and-card {
+        border: 1px solid lightgray;
+        margin-right: 5px;
+        margin-top: 10px;
+        padding-top: 1px;
+      }
+      .heading {
+        padding: 10px 8px;
+        background-color: #ffe8cc;
+        border-bottom: 1px solid #dedede;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        font-size: 18px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        width: 100%;
+        text-align: left;
+      }
+
+      .card {
+        padding: 0 10px;
+      }
+
+      .comment-icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        min-height: 30px;
+        margin-top: 10px;
+        color: var(--tb-orange-dark);
+      }
+
+      .help-text {
+        color: grey;
+        font-size: 14px;
+        padding-top: 10px;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -603,20 +656,21 @@ limitations under the License.
       </div>
     </paper-dialog>
     <paper-dialog id="distancedialog" modal>
-      <label id="radiolabel">Distance metric:</label>
+      <h2>Create a distance feature</h2>
+      <paper-input value="{{facetDistFeatureName}}" label="Enter feature name" class="datapoint-control-filter-input">
+      </paper-input>
+      <div class="radiolabel">Distance type</div>
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
         <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
         <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
       </paper-radio-group>
-      <paper-input value="{{facetDistFeatureName}}" label="Customize name of distance metric" class="datapoint-control-filter-input">
-      </paper-input>
-      <paper-dropdown-menu label="Visualize distance as" class="threshold-dropdown">
+      <paper-dropdown-menu label="Apply to visualization" class="threshold-dropdown">
         <paper-listbox class="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
-          <paper-item name="colorBy">Background color</paper-item>
-          <paper-item name="horizontalFacet">X-Axis Facet</paper-item>
-          <paper-item name="verticalFacet">Y-Axis Facet</paper-item>
-          <paper-item name="horizontalPosition">X-Axis Position</paper-item>
-          <paper-item name="verticalPosition">Y-Axis Position</paper-item>
+          <paper-item name="colorBy">Color By</paper-item>
+          <paper-item name="horizontalFacet">X-Axis Binning</paper-item>
+          <paper-item name="verticalFacet">Y-Axis Binning</paper-item>
+          <paper-item name="horizontalPosition">X-Axis Scatter</paper-item>
+          <paper-item name="verticalPosition">Y-Axis Scatter</paper-item>
         </paper-listbox>
       </paper-dropdown-menu>
       <div class="buttons">
@@ -635,7 +689,7 @@ limitations under the License.
             <div class="example-status">[[exampleStatusStr]]</div>
           </div>
           <div class="datapoint-right-controls-holder">
-            <paper-button on-click="inferClicked_" class="control-button"
+            <paper-button on-click="inferClicked_" class="main-button"
                           disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
               Run inference
             </paper-button>
@@ -644,8 +698,8 @@ limitations under the License.
                 Partial dependence plots
             </paper-button>
             <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                on-click="showDistanceClicked_" alt="show distance to example">
-                Show distance to example
+                on-click="showDistanceClicked_" alt="create distance feature">
+                Create distance feature
             </paper-button>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
@@ -676,7 +730,7 @@ limitations under the License.
             <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
             <div class="feature-container-holder" id="partialplotholder">
               <div class="flex">
-                <paper-button on-click="hidePartialDependencePlots_" class="generic-button close-partial-deps-button">Close partial dependence plots</paper-button>
+                <paper-button on-click="hidePartialDependencePlots_" class="control-button close-partial-deps-button">Close partial dependence plots</paper-button>
                 <div class="pd-info-text">Click a feature name below to see how inference results would change if that feature was adjusted.</div>
               </div>
               <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
@@ -728,236 +782,229 @@ limitations under the License.
               </paper-tabs>
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
                 <div class="config-tab">
-                  <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
-                    <paper-dropdown-menu label="Select the true label feature in order to investigate model performance" class="threshold-dropdown">
-                      <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
-                        <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                          <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                        </template>
-                      </paper-listbox>
-                    </paper-dropdown-menu>
-                    <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
-                      <div class="flex">
-                        <paper-input value="{{incorrectPredCostRatio}}"
-                            label="Ratio of false positive cost to false negative cost"
-                            type="number" class="threshold-cost-input">
-                        </paper-input>
-                        <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <paper-button class="generic-button optimize-threshold-button" on-click="optimizeThresholdClicked_">
-                              Optimize threshold
-                          </paper-button>
-                        </template>
-                      </div>
-                    </template>
-                  </template>
-                  <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
-                    <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
-                      <div class="flex">
-                        <paper-dropdown-menu label="Investigate fairness across all values of a feature" class="threshold-dropdown">
-                          <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
-                            <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                              <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
-                        <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
-                          <paper-dropdown-menu label="Add second feature to slice data by" class="threshold-dropdown">
-                            <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
+                  <div class="heading-and-card">
+                    <button class="heading" on-click="toggleTrueLabelSetup">True Label Setup</button>
+                    <iron-collapse class="card" id="collapsetruelabel" opened="{{openedTrueLabel}}">
+                      <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
+                        <div class="flex">
+                          <paper-dropdown-menu label="True Label Feature" class="threshold-dropdown">
+                            <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                               <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                 <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                               </template>
                             </paper-listbox>
                           </paper-dropdown-menu>
-                        </template>
-                      </div>
-                      <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                        <div class="optimize-text">Optimize each threshold with any of the following constraints:</div>
-                        <div class="flex-wrap">
-                          <paper-button class="generic-button optimize-selection-button" on-click="optimizeFacetedThresholdsClicked_">
-                              Indivdual thresholds
-                          </paper-button>
-                          <paper-button class="generic-button optimize-selection-button" on-click="equalOppoClicked_">
-                              Equal opportunity
-                          </paper-button>
-                          <paper-button class="generic-button optimize-selection-button" on-click="equalAccClicked_">
-                              Equal accuracy
-                          </paper-button>
-                          <paper-button class="generic-button optimize-selection-button" on-click="demoParityClicked_">
-                              Demographic parity
-                          </paper-button>
-                          <paper-button class="generic-button optimize-selection-button" on-click="optimizeThresholdClicked_">
-                              Single threshold
-                          </paper-button>
-                          <div>
-                            <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-                            <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
-                              <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all groups individually</div>
-                              <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each group</div>
-                              <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each group are correctly predicted either as yes (1) or no (0)</div>
-                              <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each group are predicted yes (1)</div>
-                              <div><span class="bold">Single threshold</span> - Optimize a single threshold across all datapoints</div>
-                            </paper-tooltip>
-                          </div>
-
+                          <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
+                          <div class="help-text">Select the true label feature to investigate model performance.</div>
                         </div>
+                        <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
+                          <div class="flex">
+                            <paper-input value="{{incorrectPredCostRatio}}"
+                              label="Cost Ratio"
+                              type="number" class="threshold-cost-input">
+                            </paper-input>
+                            <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
+                            <div class="help-text">Define the ratio of false positive cost to false negative cost. 2 means that false positives are twice
+                              as costly as false negatives.</div>
+                            </div>
+
+                          <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="flex">
+                              <paper-button class="control-button optimize-threshold-button" on-click="optimizeThresholdClicked_">
+                                  Optimize threshold
+                              </paper-button>
+                              <div class="help-text">Find the least costly decision threshold</div>
+                            </div>
+                          </template>
+                        </template>
                       </template>
-                      <template is="dom-repeat" items="[[featureValueThresholds]]">
-                        <div class="feature-breakdown">
-                          <paper-input value="[[getPrintableValue_(item)]]" readonly=true
-                                        class="slider-label" no-label-float=true>
-                          </paper-input>
-                          <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                        immediate-value="{{item.threshold}}" value="[[item.threshold]]"
-                                        on-value-changed="refreshInferencesNoRegen_">
-                          </paper-slider>
+                    </iron-collapse>
+                  </div>
+
+                  <div class="heading-and-card">
+                    <button class="heading" on-click="toggleExplorerSetup">Fairness Explorer</button>
+                    <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
+                      <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
+                        <div class="flex">
+                          <paper-dropdown-menu label="Slice by" class="threshold-dropdown">
+                            <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
+                              <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                                <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                              </template>
+                            </paper-listbox>
+                          </paper-dropdown-menu>
+                          <div class="help-text">Investigate performance for examples with each unique value of a selected feature</div>
+                        </div>
+                        <div class="flex">
+                          <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
+                            <paper-dropdown-menu label="Slice by (secondary)" class="threshold-dropdown">
+                              <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
+                                <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                                  <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                                </template>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
+                            <div class="help-text">Specify a second feature to slice the data by</div>
+                          </template>
+                        </div>
+                        <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
                           <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="optimize-text">Optimize thresholds for:</div>
+                            <div class="flex-wrap">
+                              <paper-button class="control-button optimize-selection-button" on-click="optimizeFacetedThresholdsClicked_">
+                                  Indivdual thresholds
+                              </paper-button>
+                              <paper-button class="control-button optimize-selection-button" on-click="equalOppoClicked_">
+                                  Equal opportunity
+                              </paper-button>
+                              <paper-button class="control-button optimize-selection-button" on-click="equalAccClicked_">
+                                  Equal accuracy
+                              </paper-button>
+                              <paper-button class="control-button optimize-selection-button" on-click="demoParityClicked_">
+                                  Demographic parity
+                              </paper-button>
+                              <paper-button class="control-button optimize-selection-button" on-click="optimizeThresholdClicked_">
+                                  Single threshold
+                              </paper-button>
+                              <div>
+                                <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
+                                <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
+                                  <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all groups individually</div>
+                                  <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each group</div>
+                                  <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each group are correctly predicted either as yes (1) or no (0)</div>
+                                  <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each group are predicted yes (1)</div>
+                                  <div><span class="bold">Single threshold</span> - Optimize a single threshold across all datapoints</div>
+                                </paper-tooltip>
+                              </div>
+                            </div>
+                          </template>
+                        </template>
+                      </template>
+                    </iron-collapse>
+                  </div>
+
+                  <div class="heading-and-card">
+                    <button class="heading" on-click="togglePerformance">Performance</button>
+                    <iron-collapse class="card" id="collapseperformance" opened="{{openedPerformance}}">
+                      <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
+                        <template is="dom-repeat" items="[[featureValueThresholds]]">
+                          <div class="feature-breakdown">
+                            <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                                          class="slider-label" no-label-float=true>
+                            </paper-input>
+                            <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                          immediate-value="{{item.threshold}}" value="[[item.threshold]]"
+                                          on-value-changed="refreshInferencesNoRegen_">
+                            </paper-slider>
+                            <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                              <div class="roc-and-conf-matrix">
+                                <div class="roc-holder">
+                                  <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                  </vz-line-chart>
+                                </div>
+                                <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, item.threshold, item)]]"
+                                                    class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </div>
+                            </template>
+                          </div>
+                        </template>
+                        <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedBreakdownFeature)]]">
+                          <div>
+                            <paper-input value="Threshold for positive label" readonly=true class="slider-label"
+                                          no-label-float=true>
+                            </paper-input>
+                            <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                          immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
+                            </paper-slider>
+                          </div>
+                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="roc-and-conf-matrix">
                               <div class="roc-holder">
-                                <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                <vz-line-chart id="prchart" class="pr-line-chart"
                                     x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                                 </vz-line-chart>
                               </div>
-                              <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, item.threshold, item)]]"
-                                                  class="conf-matrix">
+                              <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, overallThreshold)]]"
+                                                  class="conf-matrix"></tf-confusion-matrix>
                               </tf-confusion-matrix>
                             </div>
                           </template>
-                        </div>
-                      </template>
-                    </template>
-                    <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedBreakdownFeature)]]">
-                      <div>
-                        <paper-input value="Threshold for positive label" readonly=true class="slider-label"
-                                      no-label-float=true>
-                        </paper-input>
-                        <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                      immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
-                        </paper-slider>
-                      </div>
-                      <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                        <div class="roc-and-conf-matrix">
-                          <div class="roc-holder">
-                            <vz-line-chart id="prchart" class="pr-line-chart"
-                                x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                            </vz-line-chart>
-                          </div>
-                          <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, overallThreshold)]]"
-                                              class="conf-matrix"></tf-confusion-matrix>
-                          </tf-confusion-matrix>
-                        </div>
-                      </template>
-                    </template>
-                  </template>
-                  <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]">
-                    <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
-                      <div class="flex">
-                        <paper-dropdown-menu label="Investigate performance across all values of a feature" class="threshold-dropdown">
-                          <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
-                            <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                              <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
-                        <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
-                          <paper-dropdown-menu label="Add second feature to slice data by" class="threshold-dropdown">
-                            <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
-                              <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                                <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
                         </template>
-                      </div>
-                    </template>
-                    <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                      <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_)]]"
-                                            class="conf-matrix">
-                      </tf-confusion-matrix>
-                    </template>
-                    <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                      <template is="dom-repeat" items="[[featureValueThresholds]]">
-                        <div class="feature-breakdown">
-                          <paper-input value="[[getPrintableValue_(item)]]" readonly=true
-                                        class="facet-label" no-label-float=true>
-                          </paper-input>
-                          <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, item)]]"
+                      </template>
+                      <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]">
+                        <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_)]]"
                                                 class="conf-matrix">
                           </tf-confusion-matrix>
-                        </div>
-                      </template>
-                    </template>
-                  </template>
-                  <template is="dom-if" if="[[isRegression_(modelType)]]">
-                    <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
-                      <div class="flex">
-                        <paper-dropdown-menu label="Investigate performance across all values of a feature" class="threshold-dropdown">
-                          <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
-                            <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                              <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
-                        <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
-                          <paper-dropdown-menu label="Add second feature to slice data by" class="threshold-dropdown">
-                            <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
-                              <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                                <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
                         </template>
-                      </div>
-                    </template>
-                    <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                      <table>
-                        <tr>
-                          <th class="reg-table-category">Count</th>
-                          <td class="reg-table-value">[[getRegressionCount(inferenceStats_)]]</td>
-                        </tr>
-                        <tr>
-                          <th class="reg-table-category">Mean error</th>
-                          <td class="reg-table-value">[[getRegressionMean(inferenceStats_)]]</td>
-                        </tr>
-                        <tr>
-                          <th class="reg-table-category">Mean absolute error</th>
-                          <td class="reg-table-value">[[getRegressionAbsMean(inferenceStats_)]]</td>
-                        </tr>
-                        <tr>
-                          <th class="reg-table-category">Mean squared error</th>
-                          <td class="reg-table-value">[[getRegressionSquaredMean(inferenceStats_)]]</td>
-                        </tr>
-                      </table>
-                    </template>
-                    <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                      <template is="dom-repeat" items="[[featureValueThresholds]]">
-                        <div class="feature-breakdown">
-                          <paper-input value="[[getPrintableValue_(item)]]" readonly=true
-                                        class="facet-label" no-label-float=true>
-                          </paper-input>
-                          <table class="subfeature-table">
+                        <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <template is="dom-repeat" items="[[featureValueThresholds]]">
+                            <div class="feature-breakdown">
+                              <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                                            class="facet-label" no-label-float=true>
+                              </paper-input>
+                              <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, item)]]"
+                                                    class="conf-matrix">
+                              </tf-confusion-matrix>
+                            </div>
+                          </template>
+                        </template>
+                      </template>
+                      <template is="dom-if" if="[[isRegression_(modelType)]]">
+                        <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <table>
                             <tr>
                               <th class="reg-table-category">Count</th>
-                              <td class="reg-table-value">[[getRegressionCount(inferenceStats_, item)]]</td>
+                              <td class="reg-table-value">[[getRegressionCount(inferenceStats_)]]</td>
                             </tr>
                             <tr>
                               <th class="reg-table-category">Mean error</th>
-                              <td class="reg-table-value">[[getRegressionMean(inferenceStats_, item)]]</td>
+                              <td class="reg-table-value">[[getRegressionMean(inferenceStats_)]]</td>
                             </tr>
                             <tr>
                               <th class="reg-table-category">Mean absolute error</th>
-                              <td class="reg-table-value">[[getRegressionAbsMean(inferenceStats_, item)]]</td>
+                              <td class="reg-table-value">[[getRegressionAbsMean(inferenceStats_)]]</td>
                             </tr>
                             <tr>
                               <th class="reg-table-category">Mean squared error</th>
-                              <td class="reg-table-value">[[getRegressionSquaredMean(inferenceStats_, item)]]</td>
+                              <td class="reg-table-value">[[getRegressionSquaredMean(inferenceStats_)]]</td>
                             </tr>
                           </table>
-                        </div>
+                        </template>
+                        <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <template is="dom-repeat" items="[[featureValueThresholds]]">
+                            <div class="feature-breakdown">
+                              <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                                            class="facet-label" no-label-float=true>
+                              </paper-input>
+                              <table class="subfeature-table">
+                                <tr>
+                                  <th class="reg-table-category">Count</th>
+                                  <td class="reg-table-value">[[getRegressionCount(inferenceStats_, item)]]</td>
+                                </tr>
+                                <tr>
+                                  <th class="reg-table-category">Mean error</th>
+                                  <td class="reg-table-value">[[getRegressionMean(inferenceStats_, item)]]</td>
+                                </tr>
+                                <tr>
+                                  <th class="reg-table-category">Mean absolute error</th>
+                                  <td class="reg-table-value">[[getRegressionAbsMean(inferenceStats_, item)]]</td>
+                                </tr>
+                                <tr>
+                                  <th class="reg-table-category">Mean squared error</th>
+                                  <td class="reg-table-value">[[getRegressionSquaredMean(inferenceStats_, item)]]</td>
+                                </tr>
+                              </table>
+                            </div>
+                          </template>
+                        </template>
                       </template>
-                    </template>
-                  </template>
+                    </iron-collapse>
+                  </div>
                 </div>
                 <div class="datapoint-tab">
                   <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
@@ -1058,6 +1105,7 @@ limitations under the License.
     const inferenceAbsErrorStr = 'inference absolute error';
     const inferenceSquaredErrorStr = 'inference squared error';
     const inferenceScoreStr = 'inference score';
+    const exampleIdKey = 'WIT Example ID'
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -1294,6 +1342,18 @@ limitations under the License.
         },
         // The max ID number for a selected example.
         selectedExampleMax: Number,
+        openedPerformance: {
+          type: Boolean,
+          value: true
+        },
+        openedTrueLabel: {
+          type: Boolean,
+          value: true
+        },
+        openedExplorer: {
+          type: Boolean,
+          value: true
+        },
       },
 
       observers: [
@@ -1614,7 +1674,7 @@ limitations under the License.
         return feature == inferenceValueStr || feature == inferenceLabelStr
             || feature == inferenceCorrectStr || feature == inferenceErrorStr
             || feature == inferenceScoreStr || feature == inferenceAbsErrorStr
-            || feature == inferenceSquaredErrorStr
+            || feature == inferenceSquaredErrorStr || feature == exampleIdKey
             || this.facetDistFeatureNames.indexOf(feature) != -1
       },
 
@@ -1672,7 +1732,6 @@ limitations under the License.
             }
           }
         }
-
         this.featureValueThresholds = thresholds;
         this.featureValueThresholdsMap = thresholdsMap;
         this.refreshInferences_();
@@ -1858,6 +1917,24 @@ limitations under the License.
             regenInferenceStats);
         }
         this.updateCorrectness_();
+
+        const temp = this.featureValueThresholds;
+        this.featureValueThresholds = [];
+        temp.sort((a, b) => {
+          if (this.isRegression_(this.modelType)) {
+            return this.getRegressionCount(this.inferenceStats_, b) -
+                this.getRegressionCount(this.inferenceStats_, a);
+          } else if (this.isBinaryClassification_(
+            this.modelType, this.multiClass)) {
+            return this.getBinaryClassificationCount(this.inferenceStats_, b) -
+                this.getBinaryClassificationCount(this.inferenceStats_, a);
+          } else {
+            return this.getMulticlassClassificationCount(
+              this.inferenceStats_, b) - this.getMulticlassClassificationCount(
+                this.inferenceStats_, a);
+          }
+        });
+        this.featureValueThresholds = temp;
       },
 
       fillInRegressionStats: function(regressionStats) {
@@ -2180,13 +2257,13 @@ limitations under the License.
       },
 
       /**
-       * Gets a regression statistic from inference results.
+       * Gets a inference statistic from inference results.
        */
-      getRegressionStat: function(regressionStats, facetItem, getter,
+      getInferenceStat: function(inferenceStats, facetItem, getter,
           formatter) {
         const stats = facetItem
-            ? regressionStats.faceted[this.getPrintableValue_(facetItem)]
-            : regressionStats.results;
+            ? inferenceStats.faceted[this.getPrintableValue_(facetItem)]
+            : inferenceStats.results;
         if (!stats) {
           return null;
         }
@@ -2199,28 +2276,38 @@ limitations under the License.
       },
 
       getRegressionMean: function(regressionStats, facetItem) {
-        return this.getRegressionStat(regressionStats, facetItem,
+        return this.getInferenceStat(regressionStats, facetItem,
           stat => stat.mean, d3.format('.3f'));
       },
 
       getRegressionAbsMean: function(regressionStats, facetItem) {
-        return this.getRegressionStat(regressionStats, facetItem,
+        return this.getInferenceStat(regressionStats, facetItem,
           stat => stat.absMean, d3.format('.3f'));
       },
 
       getRegressionSquaredMean: function(regressionStats, facetItem) {
-        return this.getRegressionStat(regressionStats, facetItem,
+        return this.getInferenceStat(regressionStats, facetItem,
           stat => stat.squaredMean, d3.format('.3f'));
       },
 
       getRegressionCount: function(regressionStats, facetItem) {
-        const count = this.getRegressionStat(regressionStats, facetItem,
+        const count = this.getInferenceStat(regressionStats, facetItem,
           stat => stat.errors.length);
         if (count == null) {
           return 0;
         } else {
           return count;
         }
+      },
+
+      getBinaryClassificationCount: function(classificationStats, facetItem) {
+        return this.getInferenceStat(classificationStats, facetItem,
+          stat => Object.values(stat[0]).reduce((a, b) => a + b));
+      },
+
+      getMulticlassClassificationCount: function(classificationStats, facetItem) {
+        return this.getInferenceStat(classificationStats, facetItem,
+          stat => Object.values(stat).reduce((a, b) => a + b));
       },
 
       getPrChartId: function(index) {
@@ -2510,7 +2597,8 @@ limitations under the License.
         const inferenceViewerIdStr = '#' + this.getInferenceHolderId_(id);
         const inferenceViewer = this.$$(inferenceViewerIdStr);
         inferenceViewer.inference = null;
-        this.visdata[index] = this.exampleToDataPoint_(event.target.json);
+        this.visdata[index] =
+          this.exampleToDataPoint_(event.target.json, index);
         this.refreshDive_();
         this.updatedExample = true;
         this.selectedDataUpdated_();
@@ -2622,7 +2710,7 @@ limitations under the License.
        * Converts a single TF examples into an item dict for display in Facets
        * Dive.
        */
-      exampleToDataPoint_: function(example) {
+      exampleToDataPoint_: function(example, index) {
         const d = {};
         const features = 'features' in example ?
             Object.keys(example.features.feature) : [];
@@ -2669,6 +2757,7 @@ limitations under the License.
             d[fname] = v;
           }
         }
+        d[exampleIdKey] = index;
         return d;
       },
 
@@ -2689,10 +2778,11 @@ limitations under the License.
           return {example: example, changed: false, orig: JSON.parse(ex)};});
         this.updatedExample = true;
         const self = this;
-        this.visdata = this.examplesAndInferences.map(function(ex) {
-          return self.exampleToDataPoint_(ex.example);
+        this.visdata = this.examplesAndInferences.map(function(ex, i) {
+          return self.exampleToDataPoint_(ex.example, i);
         });
         this.$.dive.atlasUrl = '';
+        this.$.dive.imageFieldName = exampleIdKey;
         this.hasSprite = hasSprite;
         this.updateSprite_();
         if (!this.shouldDisableInferButton_(
@@ -2748,7 +2838,8 @@ limitations under the License.
         this.examplesAndInferences.push(exampleAndInference);
         this.selectedExampleAndInference = exampleAndInference;
         this.visdata.push(
-          this.exampleToDataPoint_(exampleAndInference.example));
+          this.exampleToDataPoint_(exampleAndInference.example,
+                                   this.visdata.length));
         const duplicatedIndex = this.selected[0];
 
         // Automatically select the new datapoint.
@@ -2783,6 +2874,12 @@ limitations under the License.
         const deletedIndex = this.selected[0];
         this.examplesAndInferences.splice(deletedIndex, 1);
         this.visdata.splice(deletedIndex, 1);
+
+        // Fix example IDs due to deleted index.
+        for (let i = deletedIndex; i < this.visdata.length; i++) {
+          this.visdata[i][exampleIdKey] = i;
+        }
+
         this.selected = [];
         this.selectedDataUpdated_();
         this.fire('delete-example', {'index': deletedIndex});
@@ -2819,7 +2916,7 @@ limitations under the License.
 
         this.updatedExample = true;
         this.visdata[this.selected[0]] = this.exampleToDataPoint_(
-          this.selectedExampleAndInference.example);
+          this.selectedExampleAndInference.example, this.selected[0]);
         this.updateExample_(origExampleJsonString, this.selected[0]);
         this.refreshDive_();
       },
@@ -3199,6 +3296,18 @@ limitations under the License.
         } else {
           this.fire('get-eligible-features');
         }
+      },
+
+      toggleTrueLabelSetup: function() {
+        this.$.collapsetruelabel.toggle();
+      },
+
+      toggleExplorerSetup: function() {
+        this.$.collapseexplorer.toggle();
+      },
+
+      togglePerformance: function() {
+        this.$.collapseperformance.toggle();
       },
     });
 
