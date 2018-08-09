@@ -1847,6 +1847,16 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
     this.isolatedOutExtract = [];
     this.libraryFunctionsExtract = [];
   }
+
+  collapseAll() {
+    _.each(this.coreGraph.nodes(), nodeName => {
+      let node = this.coreGraph.node(nodeName);
+      if (node instanceof RenderGroupNodeInfo) {
+        node.collapseAll();
+      }
+    });
+    this.expanded = false;
+  }
 }
 
 function setGroupNodeDepth(renderInfo: RenderGroupNodeInfo,
@@ -2251,17 +2261,23 @@ function extractHighDegrees(renderNode: RenderGroupNodeInfo) {
 export function expandUntilNodeIsShown(
     scene, renderHierarchy, tensorName: string) {
   const splitTensorName = tensorName.split('/');
+  if (splitTensorName.length == 0) return null;
 
   // Graph names do not take into account the output slot. Strip it.
-  const lastNodeNameMatch =
+  if (splitTensorName[splitTensorName.length - 1].includes(':')) {
+    const lastNodeNameMatch =
       splitTensorName[splitTensorName.length - 1].match(/(.*):\w+/);
-  if (lastNodeNameMatch.length === 2) {
-    splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch[1];
+    if (lastNodeNameMatch.length === 2) {
+      splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch[1];
+    }
   }
 
-  let nodeName = splitTensorName[0];
-  let renderNode = renderHierarchy.getRenderNodeByName(nodeName);
-  for (let i = 1; i < splitTensorName.length; i++) {
+  let nodeName = '';
+  var renderNode;
+  for (let i = 0; i < splitTensorName.length; i++) {
+    nodeName += splitTensorName[i];
+    renderNode = renderHierarchy.getRenderNodeByName(nodeName);
+    if (!renderNode) return null;
     // Op nodes are not expandable.
     if (renderNode.node.type === tf.graph.NodeType.OP) {
       break;
@@ -2269,8 +2285,7 @@ export function expandUntilNodeIsShown(
     renderHierarchy.buildSubhierarchy(nodeName);
     renderNode.expanded = true;
     scene.setNodeExpanded(renderNode);
-    nodeName += '/' + splitTensorName[i];
-    renderNode = renderHierarchy.getRenderNodeByName(nodeName);
+    nodeName += '/';
   }
 
   return renderNode.node.name;

@@ -223,6 +223,14 @@ svg.icon {
   margin-top: 4px;
 }
 
+.collapse-button {
+  width: 165px;
+  height: 25px;
+  text-transform: none;
+  margin-top: 4px;
+  margin-left: 0px;
+}
+
 .iconbutton {
   padding: 2px;
   width: 30px;
@@ -370,6 +378,12 @@ tf-graph-node-search {
       <div class="title">Show health pills</div>
     </div>
   </template>
+  <div class="control-holder">
+    <paper-input label="Expand" on-input="_expand" value="{{expand}}"></paper-input>
+  </div>
+  <div class="control-holder">
+    <paper-button raised class="text-button collapse-button" on-click="_collapseAll">Collapse All</paper-button>
+  </div>
   <div class="control-holder">
     <div class="title">Color</div>
     <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
@@ -851,6 +865,25 @@ Polymer({
   },
   listeners: {
     'trace-inputs.change': '_traceInputToggleChanged'
+  },
+  _expand: function() {
+    let scene = document.querySelector('#scene');
+    node = tf.graph.render.expandUntilNodeIsShown(
+      scene,
+      this.renderHierarchy,
+      this.expand);
+    if (node) {
+      setTimeout(() => {
+        scene.panToNode(node);
+      }, tf.graph.layout.PARAMS.animation.duration);
+
+    }
+  },
+  _collapseAll: function() {
+    let scene = document.querySelector('#scene');
+    this.renderHierarchy.root.collapseAll(scene);
+    scene.setNodeExpanded(this.renderHierarchy.root);
+    scene.fit();
   },
   _traceInputToggleChanged: function(event) {
     // Flip the state of the trace inputs flag.
