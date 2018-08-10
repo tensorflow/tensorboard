@@ -56,11 +56,17 @@ Properties out:
       ></tf-data-select-row>
     </template>
 
-    <experiment-selector
-      id="selector"
-      exclude-experiments="[[_comparingExps]]"
-      on-experiment-added="_addExperiments"
-    ></experiment-selector>
+    <template
+      is="dom-if"
+      if="[[_shouldShowAddComparison(_allExperiments, _comparingExps)]]"
+    >
+      <experiment-selector
+        id="selector"
+        exclude-experiments="[[_comparingExps]]"
+        on-experiment-added="_addExperiments"
+      ></experiment-selector>
+    </template>
+
     <style>
       :host {
         align-items: flex-start;
