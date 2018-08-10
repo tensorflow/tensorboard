@@ -129,11 +129,19 @@ var tf_dashboard_common;
             // So we wait for requestAnimationFrame.
             window.requestAnimationFrame(function () { return _this.updateStyles(); });
         },
-        _checkboxChange: function (e) {
-            var checkbox = Polymer.dom(e).localTarget;
+        _checkboxTapped: function (e) {
+            var checkbox = e.currentTarget;
             var newSelectedNames = Object.assign({}, this.selectionState, (_a = {},
                 _a[checkbox.name.id] = checkbox.checked,
                 _a));
+            // If user presses alt while toggling checkbox, it deselects all items but
+            // the clicked one.
+            if (e.detail.sourceEvent instanceof MouseEvent &&
+                e.detail.sourceEvent.altKey) {
+                Object.keys(newSelectedNames).forEach(function (key) {
+                    newSelectedNames[key] = key == checkbox.name.id;
+                });
+            }
             // n.b. notifyPath won't work because names may have periods.
             this.selectionState = newSelectedNames;
             var _a;

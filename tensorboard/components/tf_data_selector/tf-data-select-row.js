@@ -203,6 +203,13 @@ var tf_data_selector;
                 str.split(',') :
                 tf_data_selector.decodeIdArray(str);
         },
+        _getColoring: function () {
+            return {
+                getColor: this.noExperiment ?
+                    function (item) { return tf_color_scale.runsColorScale(item.id); } :
+                    function () { return ''; },
+            };
+        },
         _getSyntheticRunId: function (run) {
             return this.noExperiment ? run.name : run.id;
         },

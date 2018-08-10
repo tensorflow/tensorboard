@@ -54,6 +54,7 @@ Event out:
     <tf-filterable-checkbox-dropdown
       label="Run"
       use-checkbox-colors="[[_getIsRunCheckboxesColored(noExperiment)]]"
+      coloring="[[_getColoring(noExperiment)]]"
       items="[[_getRunOptions(_runs.*)]]"
       selected-items="{{_selectedRuns}}"
       selection-state="{{_getRunsSelectionState(_runSelectionStateString, _runs.*)}}"

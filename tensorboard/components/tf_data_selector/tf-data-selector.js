@@ -143,5 +143,8 @@ var tf_data_selector;
         _getExperimentColor: function (experiment) {
             return tf_color_scale.experimentsColorScale(experiment.name);
         },
+        _shouldShowAddComparison: function () {
+            return this._allExperiments.length > this._comparingExps.length;
+        },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector
