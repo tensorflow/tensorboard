@@ -30,7 +30,7 @@ export type DataFn = (run: string, tag: string) => Promise<Array<Datum>>;
 
 export interface LineChartSymbol {
   // A single unicode character string representing the symbol. Maybe a diamond
-  // unicode character for instance. 
+  // unicode character for instance.
   character: string;
   // A special method used by Plottable to draw the symbol in the line chart.
   method: (() => Plottable.SymbolFactories.SymbolFactory);

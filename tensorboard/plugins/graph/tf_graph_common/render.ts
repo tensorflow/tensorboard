@@ -299,7 +299,7 @@ export class RenderGraphInfo {
       Array<{color: string, proportion: number}> {
     if (Object.keys(histogram).length > 0) {
       // Compute the total # of items.
-      const numItems = _.sum(Object.keys(histogram).map(key => histogram[key]);
+      const numItems = _.sum(Object.keys(histogram).map(key => histogram[key]));
       return Object.keys(histogram).map(key => ({
         color: colors(key),
         // Normalize to a proportion of total # of items.

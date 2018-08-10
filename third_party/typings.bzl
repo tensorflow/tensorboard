@@ -63,9 +63,11 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_array",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "4dcaaf18d720a1aa200ee455fe5d2a3bc577366ee5ba825bf9cabb6ed313f94c": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-array/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-array/index.d.ts",  # 2018-08-06
+          # TODO(stephanwlee): d3-array is pinned at b6746d. number[] does not
+          # cast to d3.ArrayLike<number> for some reason.
+          "61e7abb7b1f01fbcb0cab8cf39003392f422566209edd681fbd070eaa84ca000": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/b6746d73a2ddf103c6825449ee2b0953f716d994/types/d3-array/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/b6746d73a2ddf103c6825449ee2b0953f716d994/types/d3-array/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -283,9 +285,13 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_scale",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "a4d4d1605d835182b2e7af77ea00c982cac6835e4692ab0931c7e3cd68c320a2": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-scale/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-scale/index.d.ts",  # 2018-08-06
+          # TODO(stephanwlee): Pinned at ff2359 because versions after this
+          # upgrades to d3-scale v2 which is part of d3 v5. In d3 v5, it splits
+          # d3-scale into d3-scale and d3-scale-chromatic and deprecates
+          # d3.schemeCategory20.
+          "58646b85fbbeaa88ff29342e9f1a89cea2d6fa8cb1b5549dc7ec8e9f7e021894": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/ff2359e74ce1c539097e47dc586d49d348a94587/types/d3-scale/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/ff2359e74ce1c539097e47dc586d49d348a94587/types/d3-scale/index.d.ts",  # 2018-08-06
           ],
       },
   )
