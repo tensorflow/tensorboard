@@ -90,12 +90,14 @@ The pbtxt format is the stringified version of the graphdef.
           color-by="{{colorBy}}"
           render-hierarchy="[[_renderHierarchy]]"
           selected-node="{{selectedNode}}"
+          selected-file="{{selectedFile}}"
       ></tf-graph-controls>
       <tf-graph-loader id="loader"
           out-graph-hierarchy="{{graphHierarchy}}"
           out-graph="{{graph}}"
           out-stats="{{stats}}"
           progress="{{_progress}}"
+          selected-file="[[selectedFile]]"
       ></tf-graph-loader>
     </div>
     <div class="main">

@@ -37,10 +37,13 @@ Polymer({
     // the unused tag names in the list of selection.
 
     selection: {
-      type: Array,
+      type: Object,
       notify: true,
       readOnly: true,
-      value: (): Array<tf_data_selector.Selection> => ([]),
+      value: (): DataSelection => ({
+        type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+        selections: [],
+      }),
     },
 
 
@@ -80,6 +83,8 @@ Polymer({
       {defaultValue: '', polymerProperty: '_comparingExpsString'}),
 
   _canCompareExperiments(): boolean {
+    // TODO(stephanwlee): change this to be based on whether user is using
+    // logdir or db.
     return Boolean(this._comparingExps.length);
   },
 
@@ -99,14 +104,20 @@ Polymer({
         .filter(id => !comparingExpIds.has(id))
         .forEach(id => this._selectionMap.delete(id));
 
-    this._setSelection(Array.from(this._selectionMap.values()));
+    this._setSelection({
+      type: tf_data_selector.Type.WITH_EXPERIMENT,
+      selections: Array.from(this._selectionMap.values()),
+    });
   },
 
   _selectionChanged(event) {
     const {runs, tagRegex} = event.detail;
 
     if (!this._canCompareExperiments()) {
-      this._setSelection([{runs, tagRegex}]);
+      this._setSelection({
+        type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+        selections: [{runs, tagRegex}],
+      });
       return;
     }
 
@@ -116,7 +127,10 @@ Polymer({
       runs,
       tagRegex,
     });
-    this._setSelection(Array.from(this._selectionMap.values()));
+    this._setSelection({
+      type: tf_data_selector.Type.WITH_EXPERIMENT,
+      selections: Array.from(this._selectionMap.values())
+    });
   },
 
   _addExperiments(event) {

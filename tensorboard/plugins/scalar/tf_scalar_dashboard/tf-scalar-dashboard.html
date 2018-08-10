@@ -29,6 +29,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-data-selector/tf-data-selector.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
@@ -139,10 +140,10 @@ limitations under the License.
                           show-download-links="[[_showDownloadLinks]]"
                           request-manager="[[_requestManager]]"
                           data-to-load="[[item.series]]"
+                          multi-experiments="[[_getMultiExperiments(dataSelection.*)]]"
                           tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                           active="[[page.active]]"
-                          get-data-load-url="[[_dataUrl]]"
                         ></tf-scalar-card>
                       </template>
                     </div>
@@ -183,9 +184,15 @@ limitations under the License.
   </template>
 
   <script>
+    const PLUGIN_NAME = 'scalars';
+    const USE_DATA_SELECTOR = Boolean(
+        tf_storage.getBoolean('EnableDataSelector', {useLocalStorage: true}));
+
     Polymer({
       is: 'tf-scalar-dashboard',
       properties: {
+        /** @type {!tf_data_selector.DataSelection} */
+        dataSelection: Object,
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
@@ -226,18 +233,17 @@ limitations under the License.
         _categories: {
           type: Array,
           computed:
-            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
+            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
         },
 
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(50),
         },
-        _dataUrl: {
-          type: Function,
-          value: () => ({tag, run}) => tf_backend.addParams(
-              tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
-              {tag, run}),
+
+        useDataSelector: {
+          type: Boolean,
+          value: USE_DATA_SELECTOR,
         },
       },
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
@@ -287,10 +293,38 @@ limitations under the License.
 
       _makeCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
-        const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-        // TODO(stephanwlee): Apply the new categorization based on selection.
+        if (this.useDataSelector &&
+            this.dataSelection.type == tf_data_selector.Type.WITH_EXPERIMENT) {
+          const categories = tf_categorization_utils.categorizeSelection(
+              this.dataSelection.selections, PLUGIN_NAME);
+          categories.forEach(category => {
+            category.items.forEach(item => {
+              // Add tags information to series.
+              item.series = item.series.map(series => ({
+                experiment: series.experiment,
+                run: series.run,
+                tag: item.tag,
+              }));
+            });
+          });
+          return categories;
+        }
+
+        let query = tagFilter;
+
+        if (this.useDataSelector) {
+          const {runs, tagRegex} = this.dataSelection.selections[0];
+          query = tagRegex;
+          selectedRuns = this.useDataSelector ?
+              runs.map(({name}) => name) :
+              selectedRuns;
+        }
+
+        const runToTag = _.mapValues(
+            _.pick(runToTagInfo, selectedRuns),
+            x => Object.keys(x));
         const categories = tf_categorization_utils.categorizeTags(
-            runToTag, selectedRuns, tagFilter);
+            runToTag, selectedRuns, query);
         categories.forEach(category => {
           category.items = category.items.map(item => ({
             tag: item.tag,
@@ -313,13 +347,16 @@ limitations under the License.
         const defaultDisplayName = tag.replace(/\/scalar_summary$/, '');
         return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
       },
+
+      _getMultiExperiments() {
+        return this.dataSelection.type == tf_data_selector.Type.WITH_EXPERIMENT;
+      },
     });
 
     tf_tensorboard.registerDashboard({
-      plugin: 'scalars',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-scalar-dashboard',
-      useDataSelector: Boolean(
-          tf_storage.getBoolean('EnableDataSelector', {useLocalStorage: true})),
+      useDataSelector: USE_DATA_SELECTOR,
     });
 
   </script>
