@@ -141,10 +141,9 @@ class HierarchyImpl implements Hierarchy {
     // For each of the parent node's two Metaedge containing graphs, process
     // each Metaedge involving this node.
     _.each([parentMetagraph, parentBridgegraph], parentGraph => {
-      _(parentGraph.edges())
+      parentGraph.edges()
         .filter(e => e.v === nodeName || e.w === nodeName)
-        .each(parentEdgeObj => {
-
+        .forEach(parentEdgeObj => {
           let inbound = parentEdgeObj.w === nodeName;
           let parentMetaedge = parentGraph.edge(parentEdgeObj);
 
@@ -182,8 +181,7 @@ class HierarchyImpl implements Hierarchy {
             // bridgegraph Metaedge.
             bridgeMetaedge.addBaseEdge(baseEdge, this);
           });
-        })
-        .value(); // force lodash chain execution.
+        });
     });
 
     return bridgegraph;

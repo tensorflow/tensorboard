@@ -297,15 +297,14 @@ export class RenderGraphInfo {
       histogram: {[name: string]: number},
       colors: d3.ScaleOrdinal<string, string>):
       Array<{color: string, proportion: number}> {
-    let pairs = _.pairs(histogram);
-    if (pairs.length > 0) {
+    if (Object.keys(histogram).length > 0) {
       // Compute the total # of items.
-      let numItems = _.sum(pairs, _.last);
-      return _.map(pairs, pair => ({
-                            color: colors(pair[0]),
-                            // Normalize to a proportion of total # of items.
-                            proportion: pair[1] / numItems
-                          }));
+      const numItems = _.sum(Object.keys(histogram).map(key => histogram[key]));
+      return Object.keys(histogram).map(key => ({
+        color: colors(key),
+        // Normalize to a proportion of total # of items.
+        proportion: histogram[key] / numItems,
+      }));
     }
     console.info('no pairs found!');
     return null;
