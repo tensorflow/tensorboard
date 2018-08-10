@@ -87,9 +87,9 @@ var tf;
                     // For each of the parent node's two Metaedge containing graphs, process
                     // each Metaedge involving this node.
                     _.each([parentMetagraph, parentBridgegraph], function (parentGraph) {
-                        _(parentGraph.edges())
+                        parentGraph.edges()
                             .filter(function (e) { return e.v === nodeName || e.w === nodeName; })
-                            .each(function (parentEdgeObj) {
+                            .forEach(function (parentEdgeObj) {
                             var inbound = parentEdgeObj.w === nodeName;
                             var parentMetaedge = parentGraph.edge(parentEdgeObj);
                             // The parent's Metaedge represents some number of underlying
@@ -120,8 +120,7 @@ var tf;
                                 // bridgegraph Metaedge.
                                 bridgeMetaedge.addBaseEdge(baseEdge, _this);
                             });
-                        })
-                            .value(); // force lodash chain execution.
+                        });
                     });
                     return bridgegraph;
                 };
@@ -786,11 +785,11 @@ var tf;
                         var prefix;
                         var id;
                         var suffix = '';
-                        if (matches) {
+                        if (matches) { // if found '<number>' in the name, assign id.
                             prefix = matches[1]; // the front non-numeric characters
                             id = matches[2]; // the digits
                         }
-                        else {
+                        else { // for node without '_<number>', make them zero-th items.
                             prefix = isGroup ? leaf.substr(0, leaf.length - 1) : leaf;
                             id = 0;
                             suffix = isGroup ? '*' : '';

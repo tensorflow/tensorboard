@@ -40,16 +40,12 @@ var tf;
                 // Sort the templates by minimum level in the graph at which they appear,
                 // as this leads to optimal setting of the colors of each template for
                 // maximum differentiation.
-                return _(templates)
-                    .pairs()
-                    .sortBy(function (pair) {
-                    return pair[1].level;
-                })
-                    .map(function (pair) {
-                    return [pair[0], pair[1].nodes];
-                })
-                    .object()
-                    .value();
+                return Object.keys(templates)
+                    .sort(function (key) { return templates[key].level; })
+                    .reduce(function (obj, key) {
+                    obj[key] = templates[key];
+                    return obj;
+                }, {});
             }
             template.detect = detect;
             ;
@@ -97,10 +93,11 @@ var tf;
                     }
                     return hash;
                 }, {});
-                return _(hashDict)
-                    .pairs()
-                    .filter(function (pair) {
-                    var nodes = pair[1].nodes;
+                return Object.keys(hashDict)
+                    .map(function (key) { return [key, hashDict[key]]; })
+                    .filter(function (_a) {
+                    var _ = _a[0], subGraph = _a[1];
+                    var nodes = subGraph.nodes;
                     if (nodes.length > 1) {
                         // There is more than 1 node with this template. It is worth assigning
                         // a unique color to this template.
@@ -113,12 +110,12 @@ var tf;
                     return node.type === graph_1.NodeType.META &&
                         node.associatedFunction;
                 })
-                    .sortBy(function (pair) {
+                    .sort(function (_a) {
+                    var _ = _a[0], subGraph = _a[1];
                     // sort by depth
                     // (all members in the same nnGroup has equal depth)
-                    return pair[1].nodes[0].depth;
-                })
-                    .value();
+                    return subGraph.nodes[0].depth;
+                });
             }
             function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
                 // For each metanode, compare its subgraph (starting from shallower groups)
@@ -156,21 +153,14 @@ var tf;
                 }, result);
             }
             function sortNodes(names, graph, prefix) {
-                return _.sortByAll(names, function (name) {
-                    var node = graph.node(name);
-                    return node.op;
-                }, function (name) {
-                    var node = graph.node(name);
-                    return node.templateId;
-                }, function (name) {
-                    return graph.neighbors(name).length;
-                }, function (name) {
-                    return graph.predecessors(name).length;
-                }, function (name) {
-                    return graph.successors(name).length;
-                }, function (name) {
-                    return name.substr(prefix.length);
-                });
+                return _.sortBy(names, [
+                    function (name) { return graph.node(name).op; },
+                    function (name) { return graph.node(name).templateId; },
+                    function (name) { return graph.neighbors(name).length; },
+                    function (name) { return graph.predecessors(name).length; },
+                    function (name) { return graph.successors(name).length; },
+                    function (name) { return name.substr(prefix.length); },
+                ]);
             }
             function isSimilarSubgraph(g1, g2) {
                 if (!tf.graph.hasSimilarDegreeSequence(g1, g2)) {
@@ -196,7 +186,7 @@ var tf;
                         return true;
                     }
                     /* tslint:enable */
-                    if (!visited1[sub1]) {
+                    if (!visited1[sub1]) { // implied && !visited2[sub2]
                         visited1[sub1] = visited2[sub2] = true;
                         stack.push({ n1: n1, n2: n2 });
                     }

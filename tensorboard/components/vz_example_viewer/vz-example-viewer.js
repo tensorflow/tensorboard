@@ -188,6 +188,7 @@ var vz_example_viewer;
             this.saliency = JSON.parse(this.saliencyJsonString);
         },
         getColors: function () {
+            var _a;
             _a = this.getMinMaxSaliency(this.saliency), this.minSal = _a[0], this.maxSal = _a[1];
             return d3.scaleLinear()
                 .domain([this.minSal, 0, this.maxSal])
@@ -197,7 +198,6 @@ var vz_example_viewer;
                 negSaliencyColor, neutralSaliencyColor,
                 posSaliencyColor
             ]);
-            var _a;
         },
         haveSaliency: function () {
             var _this = this;

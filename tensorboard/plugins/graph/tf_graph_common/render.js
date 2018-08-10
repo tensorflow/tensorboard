@@ -237,14 +237,13 @@ var tf;
                     return this.hierarchy.node(nodeName);
                 };
                 RenderGraphInfo.prototype.colorHistogram = function (histogram, colors) {
-                    var pairs = _.pairs(histogram);
-                    if (pairs.length > 0) {
+                    if (Object.keys(histogram).length > 0) {
                         // Compute the total # of items.
-                        var numItems_1 = _.sum(pairs, _.last);
-                        return _.map(pairs, function (pair) { return ({
-                            color: colors(pair[0]),
+                        var numItems_1 = _.sum(Object.keys(histogram).map(function (key) { return histogram[key]; }));
+                        return Object.keys(histogram).map(function (key) { return ({
+                            color: colors(key),
                             // Normalize to a proportion of total # of items.
-                            proportion: pair[1] / numItems_1
+                            proportion: histogram[key] / numItems_1,
                         }); });
                     }
                     console.info('no pairs found!');
@@ -255,6 +254,7 @@ var tf;
                  * or create one if it hasn't been created yet.
                  */
                 RenderGraphInfo.prototype.getOrCreateRenderNodeByName = function (nodeName) {
+                    var _a, _b;
                     // Polymer may invoke this with null.
                     if (!nodeName) {
                         return null;
@@ -328,7 +328,6 @@ var tf;
                         ];
                     }
                     return this.index[nodeName];
-                    var _a, _b;
                 };
                 /**
                  * Return the nearest ancestor node, including itself, that is visible
@@ -1329,6 +1328,7 @@ var tf;
                             case graph_1.NodeType.SERIES:
                                 setGroupNodeDepth(child, depth - 1);
                                 break;
+                            // Do nothing for leaf
                         }
                     }
                 });
@@ -1671,14 +1671,14 @@ var tf;
                     if (degree === 0) {
                         var hasOutAnnotations = child.outAnnotations.list.length > 0;
                         var hasInAnnotations = child.inAnnotations.list.length > 0;
-                        if (child.isInExtract) {
+                        if (child.isInExtract) { // Is source-like.
                             // This case only happens if detachAllEdgesForHighDegree is false.
                             // (Otherwise all source-like nodes are all isolated already.)
                             renderNode.isolatedInExtract.push(child);
                             child.node.include = graph_1.InclusionType.EXCLUDE;
                             graph.removeNode(n);
                         }
-                        else if (child.isOutExtract) {
+                        else if (child.isOutExtract) { // Is sink-like.
                             // This case only happens if detachAllEdgesForHighDegree is false.
                             // // (Otherwise all sink-like nodes are all isolated already.)
                             renderNode.isolatedOutExtract.push(child);

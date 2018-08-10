@@ -157,11 +157,11 @@ var vz_projector;
             this.projectionsPanel.metadataChanged(spriteAndMetadata);
             this.inspectorPanel.metadataChanged(spriteAndMetadata);
             this.dataPanel.metadataChanged(spriteAndMetadata, this.metadataFile);
-            if (this.selectedPointIndices.length > 0) {
+            if (this.selectedPointIndices.length > 0) { // at least one selected point
                 this.metadataCard.updateMetadata(// show metadata for first selected point
                 this.dataSet.points[this.selectedPointIndices[0]].metadata);
             }
-            else {
+            else { // no points selected
                 this.metadataCard.updateMetadata(null); // clear metadata
             }
             this.setSelectedLabelOption(this.selectedLabelOption);
@@ -211,8 +211,8 @@ var vz_projector;
             var _this = this;
             var neighbors = [];
             if (this.editMode // point selection toggle in existing selection
-                && newSelectedPointIndices.length > 0) {
-                if (this.selectedPointIndices.length === 1) {
+                && newSelectedPointIndices.length > 0) { // selection required
+                if (this.selectedPointIndices.length === 1) { // main point with neighbors
                     var main_point_vector_1 = this.dataSet.points[this.selectedPointIndices[0]].vector;
                     neighbors = this.neighborsOfFirstPoint.filter(function (n) {
                         return newSelectedPointIndices.filter(function (p) { return p == n.index; }).length == 0;
@@ -223,31 +223,31 @@ var vz_projector;
                             var p_vector = _this.dataSet.points[p].vector;
                             var n_dist = _this.inspectorPanel.distFunc(main_point_vector_1, p_vector);
                             var pos = 0; // insertion position into dist ordered neighbors
-                            while (pos < neighbors.length && neighbors[pos].dist < n_dist)
+                            while (pos < neighbors.length && neighbors[pos].dist < n_dist) // find pos
                                 pos = pos + 1; // move up the sorted neighbors list according to dist
                             neighbors.splice(pos, 0, { index: p, dist: n_dist }); // add new neighbor
                         }
                     });
                 }
-                else {
+                else { // multiple selections
                     var updatedSelectedPointIndices_1 = this.selectedPointIndices.filter(function (n) {
                         return newSelectedPointIndices.filter(function (p) { return p == n; }).length == 0;
                     }); // deselect
                     newSelectedPointIndices.forEach(function (p) {
-                        if (_this.selectedPointIndices.filter(function (s) { return s == p; }).length == 0)
+                        if (_this.selectedPointIndices.filter(function (s) { return s == p; }).length == 0) // unselected
                             updatedSelectedPointIndices_1.push(p);
                     });
                     this.selectedPointIndices = updatedSelectedPointIndices_1; // update selection
-                    if (this.selectedPointIndices.length > 0) {
+                    if (this.selectedPointIndices.length > 0) { // at least one selected point
                         this.metadataCard.updateMetadata(// show metadata for first selected point
                         this.dataSet.points[this.selectedPointIndices[0]].metadata);
                     }
-                    else {
+                    else { // no points selected
                         this.metadataCard.updateMetadata(null); // clear metadata
                     }
                 }
             }
-            else {
+            else { // normal selection mode
                 this.selectedPointIndices = newSelectedPointIndices;
                 if (newSelectedPointIndices.length === 1) {
                     neighbors = this.dataSet.findNeighbors(newSelectedPointIndices[0], this.inspectorPanel.distFunc, this.inspectorPanel.numNN);

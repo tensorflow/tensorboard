@@ -84,6 +84,7 @@ var tf;
                         sceneElement.addNodeGroup(d.node.name, nodeGroup);
                     })
                         .merge(nodeGroups)
+                        // ENTER + UPDATE
                         .attr('class', function (d) { return scene.Class.Node.GROUP + ' ' + nodeClass(d); })
                         .each(function (d) {
                         var nodeGroup = d3.select(this);
@@ -361,7 +362,7 @@ var tf;
                     var maxLength = null;
                     switch (nodeType) {
                         case graph.NodeType.META:
-                            if (renderNodeInfo && !renderNodeInfo.expanded) {
+                            if (renderNodeInfo && !renderNodeInfo.expanded) { // Only trim text if
                                 // node expanded.
                                 maxLength = graph.layout.PARAMS.nodeSize.meta.maxLabelWidth;
                             }
@@ -753,7 +754,10 @@ var tf;
                             traceAllInputsOfOpNode(renderGraphInfo, nodeInstance, allTracedNodes);
                     });
                     d3.selectAll(selectedNodeSelectorString)
+                        // Remove the input-highlight from the selected node.
                         .classed('input-highlight', false)
+                        // Add input-highlight-selected class to selected node, which allows
+                        // treating the selected not as a special case of an input node.
                         .classed('input-highlight-selected', true);
                     // Highlight all parent nodes of each OpNode as input parent to allow
                     // specific highlighting.
@@ -836,7 +840,7 @@ var tf;
                         if (visibleInputsEntry) {
                             visibleInputsEntry.opNodes.push(resolvedNode);
                         }
-                        else {
+                        else { // Create new entry.
                             visibleInputs[visibleParent.name] = {
                                 visibleParent: visibleParent,
                                 opNodes: [resolvedNode]

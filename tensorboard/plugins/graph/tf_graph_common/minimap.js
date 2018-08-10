@@ -198,12 +198,12 @@ var tf;
                     context.clearRect(0, 0, _this.canvasBuffer.width, _this.canvasBuffer.height);
                     context.drawImage(image, 0, 0, _this.minimapSize.width, _this.minimapSize.height);
                     requestAnimationFrame(function () {
+                        var _a;
                         // Hide the old canvas and show the new buffer canvas.
                         d3.select(_this.canvasBuffer).style('display', null);
                         d3.select(_this.canvas).style('display', 'none');
                         // Swap the two canvases.
                         _a = [_this.canvasBuffer, _this.canvas], _this.canvas = _a[0], _this.canvasBuffer = _a[1];
-                        var _a;
                     });
                     var downloadContext = _this.downloadCanvas.getContext('2d');
                     downloadContext.clearRect(0, 0, _this.downloadCanvas.width, _this.downloadCanvas.height);

@@ -130,6 +130,7 @@ var tf_dashboard_common;
             window.requestAnimationFrame(function () { return _this.updateStyles(); });
         },
         _checkboxTapped: function (e) {
+            var _a;
             var checkbox = e.currentTarget;
             var newSelectedNames = Object.assign({}, this.selectionState, (_a = {},
                 _a[checkbox.name.id] = checkbox.checked,
@@ -144,7 +145,6 @@ var tf_dashboard_common;
             }
             // n.b. notifyPath won't work because names may have periods.
             this.selectionState = newSelectedNames;
-            var _a;
         },
         _toggleAll: function () {
             var _this = this;

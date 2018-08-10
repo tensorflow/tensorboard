@@ -167,13 +167,13 @@ var vz_projector;
             var dx2 = x - x2;
             var dy1 = y - y1;
             var dy2 = y - y2;
-            if (dx1 * dx2 <= 0) {
-                if (dy1 * dy2 <= 0) {
+            if (dx1 * dx2 <= 0) { // x is between x1 and x2
+                if (dy1 * dy2 <= 0) { // (x,y) is inside the rectangle
                     return 0; // return 0 as point is in rect
                 }
                 return Math.min(Math.abs(dy1), Math.abs(dy2));
             }
-            if (dy1 * dy2 <= 0) {
+            if (dy1 * dy2 <= 0) { // y is between y1 and y2
                 // We know it is already inside the rectangle
                 return Math.min(Math.abs(dx1), Math.abs(dx2));
             }

@@ -435,7 +435,8 @@ var tf;
                 // Calculate the position of nodes in isolatedInExtract relative to the
                 // top-left corner of inExtractBox (the bounding box for all inExtract nodes)
                 // and calculate the size of the inExtractBox.
-                var maxInExtractWidth = _.max(renderNodeInfo.isolatedInExtract, function (renderNode) { return renderNode.width; }).width;
+                var maxInExtractWidth = renderNodeInfo.isolatedInExtract.length ?
+                    _.max(renderNodeInfo.isolatedInExtract, function (renderNode) { return renderNode.width; }).width : null;
                 renderNodeInfo.inExtractBox.width = maxInExtractWidth != null ?
                     maxInExtractWidth : 0;
                 renderNodeInfo.inExtractBox.height =
@@ -449,7 +450,8 @@ var tf;
                 // Calculate the position of nodes in isolatedOutExtract relative to the
                 // top-left corner of outExtractBox (the bounding box for all outExtract
                 // nodes) and calculate the size of the outExtractBox.
-                var maxOutExtractWidth = _.max(renderNodeInfo.isolatedOutExtract, function (renderNode) { return renderNode.width; }).width;
+                var maxOutExtractWidth = renderNodeInfo.isolatedOutExtract.length ?
+                    _.max(renderNodeInfo.isolatedOutExtract, function (renderNode) { return renderNode.width; }).width : null;
                 renderNodeInfo.outExtractBox.width = maxOutExtractWidth != null ?
                     maxOutExtractWidth : 0;
                 renderNodeInfo.outExtractBox.height =
@@ -463,7 +465,8 @@ var tf;
                 // Calculate the position of nodes in libraryFunctionsExtract relative to the
                 // top-left corner of libraryFunctionsBox (the bounding box for all library
                 // function nodes) and calculate the size of the libraryFunctionsBox.
-                var maxLibraryFunctionsWidth = _.max(renderNodeInfo.libraryFunctionsExtract, function (renderNode) { return renderNode.width; }).width;
+                var maxLibraryFunctionsWidth = renderNodeInfo.libraryFunctionsExtract.length ?
+                    _.max(renderNodeInfo.libraryFunctionsExtract, function (renderNode) { return renderNode.width; }).width : null;
                 renderNodeInfo.libraryFunctionsBox.width = maxLibraryFunctionsWidth != null ?
                     maxLibraryFunctionsWidth : 0;
                 renderNodeInfo.libraryFunctionsBox.height =

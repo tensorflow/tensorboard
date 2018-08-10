@@ -782,7 +782,7 @@ var vz_line_chart;
             if (this.tooltipPosition === 'right') {
                 left = Math.min(parentRect.width, left);
             }
-            else {
+            else { // 'bottom'
                 left = Math.min(0, left);
                 top = parentRect.height + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
             }
@@ -802,7 +802,7 @@ var vz_line_chart;
                     dataset: dataset,
                 };
             });
-            var idx = _.sortedIndex(points, target, function (p) { return p.x; });
+            var idx = sortedIndexBy(points, target, function (p) { return p.x; });
             if (idx === points.length) {
                 return points[points.length - 1];
             }
@@ -973,4 +973,27 @@ var vz_line_chart;
         };
         return LineChart;
     }());
+    /**
+     * Binary searches and finds "closest" index of a value in an array. As the name
+     * indicates, `array` must be sorted. When there is no exact match, it returns
+     * index of a first item that is larger than the value.
+     * API Signature and method inspired by lodash#sortedIndexBy.
+     * TODO(stephanwlee): Use _.sortedIndexBy when types are migrated to v4.
+     */
+    function sortedIndexBy(array, value, iteratee) {
+        var query = iteratee(value);
+        var low = 0;
+        var high = array.length;
+        while (low < high) {
+            var mid = Math.floor((low + high) / 2);
+            var midVal = iteratee(array[mid]);
+            if (midVal < query) {
+                low = mid + 1;
+            }
+            else {
+                high = mid;
+            }
+        }
+        return high;
+    }
 })(vz_line_chart || (vz_line_chart = {})); // namespace vz_line_chart

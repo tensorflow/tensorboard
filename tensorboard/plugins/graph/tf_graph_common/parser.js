@@ -245,7 +245,7 @@ var tf;
                     }
                     line = line.trim();
                     switch (line[line.length - 1]) {
-                        case '{':// create new object
+                        case '{': // create new object
                             var name_1 = line.substring(0, line.length - 2).trim();
                             var newValue = {};
                             stack.push(current);

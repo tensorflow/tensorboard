@@ -234,13 +234,14 @@ var tf;
                 else {
                     newElement.classList.add(className);
                 }
-                if (before) {
+                if (before) { // if before exists, insert
                     container.node().insertBefore(newElement, before);
                 }
-                else {
+                else { // otherwise, append
                     container.node().appendChild(newElement);
                 }
                 return d3.select(newElement)
+                    // need to bind data to emulate d3_selection.append
                     .datum(container.datum());
             }
             scene.selectOrCreateChild = selectOrCreateChild;

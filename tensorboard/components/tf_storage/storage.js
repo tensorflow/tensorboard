@@ -22,6 +22,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_storage;
 (function (tf_storage) {
+    var _a, _b, _c, _d;
     /**
      * A keyword that users cannot use, since TensorBoard uses this to store info
      * about the active tab.
@@ -170,7 +171,8 @@ var tf_storage;
             component += items[tf_storage.TAB];
         }
         // Join other strings with &key=value notation
-        var nonTab = _.pairs(items)
+        var nonTab = Object.keys(items)
+            .map(function (key) { return [key, items[key]]; })
             .filter(function (pair) { return pair[0] !== tf_storage.TAB; })
             .map(function (pair) {
             return encodeURIComponent(pair[0]) + '=' +
@@ -209,5 +211,4 @@ var tf_storage;
         delete items[key];
         writeComponent(dictToComponent(items));
     }
-    var _a, _b, _c, _d;
 })(tf_storage || (tf_storage = {})); // namespace tf_storage
