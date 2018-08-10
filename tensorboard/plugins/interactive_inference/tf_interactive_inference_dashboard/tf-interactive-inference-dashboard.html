@@ -287,6 +287,7 @@ limitations under the License.
         width: 100%;
         text-align: left;
         border-style: none;
+        cursor: pointer;
       }
 
       .conf-matrix {
@@ -677,6 +678,12 @@ limitations under the License.
         font-size: 16px;
         margin-bottom: 5px;
       }
+
+      .button-prefix-label {
+        margin: 10px 0 0 10px;
+        color: grey;
+        font-size: 14px;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -746,14 +753,15 @@ limitations under the License.
             </paper-button>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
+                <div class="button-prefix-label">Find closest counterfactual:</div>
                 <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="findClosestCounterfactual_" alt="closest counterfactual">
-                  Find closest counterfactual
+                  on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual">
+                  L1
                 </paper-button>
-                <paper-radio-group class="dist-switch" selected="{{counterfactualDistSwitch}}">
-                  <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
-                  <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
-                </paper-radio-group>
+                <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                  on-click="findClosestCounterfactualL2_" alt="closest L2 counterfactual">
+                  L2
+                </paper-button>
               </div>
             </template>
           </div>
@@ -1036,10 +1044,12 @@ limitations under the License.
                             feature-search-value="{{featureSearchValue}}">
                           </vz-example-viewer>
                           <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                            <div class="inference-header">Inference Results</div>
-                            <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
-                                                model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                            </tf-inference-viewer>
+                            <button class="inference-header" on-click="toggleSecondInferenceResults">[[getInferenceResultsHeaderText(selected)]]</button>
+                            <iron-collapse class="card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
+                              <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
+                                                  model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                              </tf-inference-viewer>
+                            </iron-collapse>
                           </div>
                         </div>
                       </template>
@@ -1358,11 +1368,6 @@ limitations under the License.
         distanceStats_: {
           type: Object
         },
-        // Whether to find closest counterfactual by L1 or L2 distance.
-        counterfactualDistSwitch: {
-          type: String,
-          value: 'L1'
-        },
         // Whether to show distance to selected example by L1 or L2 distance.
         facetDistSwitch: {
           type: String,
@@ -1408,6 +1413,10 @@ limitations under the License.
           value: true
         },
         openedInferenceResults: {
+          type: Boolean,
+          value: true
+        },
+        openedSecondInferenceResults: {
           type: Boolean,
           value: true
         },
@@ -1496,8 +1505,15 @@ limitations under the License.
             selected[0];
       },
 
-      findClosestCounterfactual_: function() {
-        const useL2Distance = this.counterfactualDistSwitch == 'L2';
+      findClosestCounterfactualL1_: function() {
+        this.findClosestCounterfactual_(false);
+      },
+
+      findClosestCounterfactualL2_: function() {
+        this.findClosestCounterfactual_(true);
+      },
+
+      findClosestCounterfactual_: function(useL2Distance) {
         const selected = this.selected[0];
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
@@ -1967,21 +1983,6 @@ limitations under the License.
 
           this.inferenceStats_ = inferenceStats;
         }
-        this.plotPr(
-          this.$$('#prchart'), this.inferenceStats_.thresholds,
-          this.overallThreshold, regenInferenceStats);
-
-        for (let i = 0; i < this.featureValueThresholds.length; i++) {
-          const key = this.createCombinedValueString_(
-            this.featureValueThresholds[i].value,
-            this.featureValueThresholds[i].value2);
-          this.plotPr(
-            this.$$('#' + this.getPrChartId(i)),
-            this.inferenceStats_.faceted[key],
-            this.featureValueThresholds[i].threshold,
-            regenInferenceStats);
-        }
-        this.updateCorrectness_();
 
         const temp = this.featureValueThresholds;
         this.featureValueThresholds = [];
@@ -2000,6 +2001,22 @@ limitations under the License.
           }
         });
         this.featureValueThresholds = temp;
+
+        this.plotPr(
+          this.$$('#prchart'), this.inferenceStats_.thresholds,
+          this.overallThreshold, regenInferenceStats);
+
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          const key = this.createCombinedValueString_(
+            this.featureValueThresholds[i].value,
+            this.featureValueThresholds[i].value2);
+          this.plotPr(
+            this.$$('#' + this.getPrChartId(i)),
+            this.inferenceStats_.faceted[key],
+            this.featureValueThresholds[i].threshold,
+            regenInferenceStats);
+        }
+        this.updateCorrectness_();
       },
 
       fillInRegressionStats: function(regressionStats, name) {
@@ -3371,6 +3388,18 @@ limitations under the License.
 
       toggleInferenceResults: function() {
         this.$$('#collapseinference').toggle();
+      },
+
+      toggleSecondInferenceResults: function() {
+        this.$$('#collapsesecondinference').toggle();
+      },
+
+      getInferenceResultsHeaderText: function(selected) {
+        let str = 'Inference Results - ';
+        if (selected && selected.length > 1) {
+          str += 'Example ' + selected[1];
+        }
+        return str;
       },
     });
 
