@@ -40,8 +40,11 @@ Properties out:
       if="[[!_canCompareExperiments(_comparingExps)]]"
       restamp
     >
-      <tf-data-select-row no-experiment persistence-number="0">
-      </tf-data-select-row>
+      <tf-data-select-row
+        no-experiment
+        persistence-number="0"
+        on-selection-changed="_selectionChanged"
+      ></tf-data-select-row>
     </template>
     <template is="dom-repeat" items="[[_comparingExps]]" as="exp">
       <tf-data-select-row
@@ -90,5 +93,6 @@ Properties out:
     </style>
   </template>
   <script src="storage-utils.js"></script>
+  <script src="type.js"></script>
   <script src="tf-data-selector.js"></script>
 </dom-module>

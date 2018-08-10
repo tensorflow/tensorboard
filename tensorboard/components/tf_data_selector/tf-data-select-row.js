@@ -50,6 +50,8 @@ var tf_data_selector;
                 value: function () { return []; },
             },
             _runSelectionStateString: { type: String, value: '' },
+            // ListItem requires `id` and it is synthesized from name when it is in the
+            // `noExperiment` mode.
             _selectedRuns: {
                 type: Array,
                 value: function () { return []; },
@@ -131,7 +133,7 @@ var tf_data_selector;
                 // /data/runs endpoint does not return ids. In case of logdir data source,
                 // runs cannot have an id and, for filtered-checkbox-list, we need to
                 // synthesize id from the name.
-                id: _this.noExperiment ? run.name : run.id,
+                id: _this._getSyntheticRunId(run),
                 title: run.name,
             }); });
         },
@@ -148,10 +150,8 @@ var tf_data_selector;
             tf_storage.setString(this._getPersistenceKey(Type.RUN), value, { defaultValue: '' });
         },
         _getRunsSelectionState: function () {
-            var allIds = this._runs.map(function (_a) {
-                var id = _a.id;
-                return id;
-            });
+            var _this = this;
+            var allIds = this._runs.map(function (r) { return _this._getSyntheticRunId(r); });
             var ids = this._deserializeValue(this._runSelectionStateString, allIds);
             var prevSelection = new Set(ids);
             var newSelection = {};
@@ -166,7 +166,7 @@ var tf_data_selector;
         },
         _fireChange: function (_, __) {
             var _this = this;
-            var runMap = new Map(this._runs.map(function (run) { return [run.id, run]; }));
+            var runMap = new Map(this._runs.map(function (run) { return [_this._getSyntheticRunId(run), run]; }));
             this.fire('selection-changed', {
                 runs: this._selectedRuns.map(function (_a) {
                     var id = _a.id;
@@ -174,7 +174,7 @@ var tf_data_selector;
                 })
                     .filter(Boolean)
                     .map(function (run) { return ({
-                    id: _this.noExperiment ? null : run.id,
+                    id: run.id,
                     name: run.name,
                     startTime: run.startTime,
                     tags: run.tags,
@@ -190,7 +190,6 @@ var tf_data_selector;
                 return '$all';
             if (selectedIds.length == 0)
                 return '$none';
-            // TODO(stephanwlee): Consider populating ids for /data/runs endpoint.
             return this.noExperiment ?
                 selectedIds.join(',') :
                 tf_data_selector.encodeIdArray(selectedIds);
@@ -203,6 +202,9 @@ var tf_data_selector;
             return this.noExperiment ?
                 str.split(',') :
                 tf_data_selector.decodeIdArray(str);
+        },
+        _getSyntheticRunId: function (run) {
+            return this.noExperiment ? run.name : run.id;
         },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

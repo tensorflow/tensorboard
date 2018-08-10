@@ -32,10 +32,13 @@ var tf_data_selector;
             // TODO(stephanwlee): Add list of active plugin from parent and filter out
             // the unused tag names in the list of selection.
             selection: {
-                type: Array,
+                type: Object,
                 notify: true,
                 readOnly: true,
-                value: function () { return ([]); },
+                value: function () { return ({
+                    type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+                    selections: [],
+                }); },
             },
             _selectionMap: {
                 type: Object,
@@ -65,6 +68,8 @@ var tf_data_selector;
         },
         _expStringObserver: tf_storage.getStringObserver('e', { defaultValue: '', polymerProperty: '_comparingExpsString' }),
         _canCompareExperiments: function () {
+            // TODO(stephanwlee): change this to be based on whether user is using
+            // logdir or db.
             return Boolean(this._comparingExps.length);
         },
         /**
@@ -85,12 +90,18 @@ var tf_data_selector;
             curSelectedExpIds
                 .filter(function (id) { return !comparingExpIds.has(id); })
                 .forEach(function (id) { return _this._selectionMap.delete(id); });
-            this._setSelection(Array.from(this._selectionMap.values()));
+            this._setSelection({
+                type: tf_data_selector.Type.WITH_EXPERIMENT,
+                selections: Array.from(this._selectionMap.values()),
+            });
         },
         _selectionChanged: function (event) {
             var _a = event.detail, runs = _a.runs, tagRegex = _a.tagRegex;
             if (!this._canCompareExperiments()) {
-                this._setSelection([{ runs: runs, tagRegex: tagRegex }]);
+                this._setSelection({
+                    type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+                    selections: [{ runs: runs, tagRegex: tagRegex }],
+                });
                 return;
             }
             var expId = event.target.experiment.id;
@@ -102,7 +113,10 @@ var tf_data_selector;
                 runs: runs,
                 tagRegex: tagRegex,
             });
-            this._setSelection(Array.from(this._selectionMap.values()));
+            this._setSelection({
+                type: tf_data_selector.Type.WITH_EXPERIMENT,
+                selections: Array.from(this._selectionMap.values())
+            });
         },
         _addExperiments: function (event) {
             var newExperiments = event.detail;

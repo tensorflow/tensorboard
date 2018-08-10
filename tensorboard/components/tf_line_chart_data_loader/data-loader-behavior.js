@@ -35,7 +35,7 @@ var tf_line_chart_data_loader;
              * A function that takes a datum as an input and returns a unique
              * identifiable string. Used for caching purposes.
              */
-            getDataLoadId: {
+            getDataLoadName: {
                 type: Function,
                 value: function () { return function (datum) { return String(datum); }; },
             },
@@ -107,15 +107,16 @@ var tf_line_chart_data_loader;
                 // Before updating, cancel any network-pending updates, to
                 // prevent race conditions where older data stomps newer data.
                 _this._canceller.cancelAll();
-                var promises = _this.dataToLoad.map(function (datum) {
-                    var id = _this.getDataLoadId(datum);
-                    if (_this._loadedData.has(id))
-                        return Promise.resolve();
+                var promises = _this.dataToLoad.filter(function (datum) {
+                    var name = _this.getDataLoadName(datum);
+                    return !_this._loadedData.has(name);
+                }).map(function (datum) {
+                    var name = _this.getDataLoadName(datum);
                     var url = _this.getDataLoadUrl(datum);
                     var updateSeries = _this._canceller.cancellable(function (result) {
                         if (result.cancelled)
                             return;
-                        _this._loadedData.add(id);
+                        _this._loadedData.add(name);
                         _this.loadDataCallback(_this, datum, result.value);
                     });
                     return _this.requestManager.request(url).then(updateSeries);
