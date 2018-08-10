@@ -44,6 +44,7 @@ limitations under the License.
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
+<link rel="import" href="./tf-regression-table.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="../facets-overview/components/facets-overview/facets-overview.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
@@ -101,13 +102,11 @@ limitations under the License.
 
       .inference-section {
         flex-shrink: 0;
-        margin: 0 5px;
         border: 1px solid #DADCE0;
       }
 
       .inference-section-expanded {
         flex-shrink: 0;
-        margin: 0 5px;
         border: 1px solid #DADCE0;
         width: 40%;
       }
@@ -284,7 +283,10 @@ limitations under the License.
       .inference-header {
         font-size: 16px;
         padding: 4px 0 4px 8px;
-        background: #CBF0F8;
+        background: #e1f4f7;
+        width: 100%;
+        text-align: left;
+        border-style: none;
       }
 
       .conf-matrix {
@@ -598,7 +600,7 @@ limitations under the License.
       }
       .heading {
         padding: 10px 8px;
-        background-color: #ffe8cc;
+        background-color: #f7ecd9;
         border-bottom: 1px solid #dedede;
         border-top: none;
         border-left: none;
@@ -740,7 +742,7 @@ limitations under the License.
             </paper-button>
             <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                 on-click="showDistanceClicked_" alt="create distance feature">
-                Create distance feature
+                Compute distance
             </paper-button>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
@@ -961,53 +963,7 @@ limitations under the License.
                         </template>
                       </template>
                       <template is="dom-if" if="[[isRegression_(modelType)]]">
-                        <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <table>
-                            <tr>
-                              <th class="reg-table-category">Count</th>
-                              <td class="reg-table-value">[[getRegressionCount(inferenceStats_)]]</td>
-                            </tr>
-                            <tr>
-                              <th class="reg-table-category">Mean error</th>
-                              <td class="reg-table-value">[[getRegressionMean(inferenceStats_)]]</td>
-                            </tr>
-                            <tr>
-                              <th class="reg-table-category">Mean absolute error</th>
-                              <td class="reg-table-value">[[getRegressionAbsMean(inferenceStats_)]]</td>
-                            </tr>
-                            <tr>
-                              <th class="reg-table-category">Mean squared error</th>
-                              <td class="reg-table-value">[[getRegressionSquaredMean(inferenceStats_)]]</td>
-                            </tr>
-                          </table>
-                        </template>
-                        <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <template is="dom-repeat" items="[[featureValueThresholds]]">
-                            <div class="feature-breakdown">
-                              <paper-input value="[[getPrintableValue_(item)]]" readonly=true
-                                            class="facet-label" no-label-float=true>
-                              </paper-input>
-                              <table class="subfeature-table">
-                                <tr>
-                                  <th class="reg-table-category">Count</th>
-                                  <td class="reg-table-value">[[getRegressionCount(inferenceStats_, item)]]</td>
-                                </tr>
-                                <tr>
-                                  <th class="reg-table-category">Mean error</th>
-                                  <td class="reg-table-value">[[getRegressionMean(inferenceStats_, item)]]</td>
-                                </tr>
-                                <tr>
-                                  <th class="reg-table-category">Mean absolute error</th>
-                                  <td class="reg-table-value">[[getRegressionAbsMean(inferenceStats_, item)]]</td>
-                                </tr>
-                                <tr>
-                                  <th class="reg-table-category">Mean squared error</th>
-                                  <td class="reg-table-value">[[getRegressionSquaredMean(inferenceStats_, item)]]</td>
-                                </tr>
-                              </table>
-                            </div>
-                          </template>
-                        </template>
+                        <tf-regression-table entries="[[regressionEntries_]]"></tf-regression-table>
                       </template>
                     </iron-collapse>
                   </div>
@@ -1065,10 +1021,12 @@ limitations under the License.
                                             feature-search-value="{{featureSearchValue}}">
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                          <div class="inference-header">Inference Results</div>
-                          <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                                id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                          </tf-inference-viewer>
+                          <button class="inference-header" on-click="toggleInferenceResults">Inference Results</button>
+                          <iron-collapse class="card" id="collapseinference" opened="{{openedInferenceResults}}">
+                            <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                                  id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                            </tf-inference-viewer>
+                          </iron-collapse>
                         </div>
                       </div>
                       <template is="dom-if" if="[[counterfactualExampleAndInference]]">
@@ -1448,6 +1406,13 @@ limitations under the License.
         openedExplorer: {
           type: Boolean,
           value: true
+        },
+        openedInferenceResults: {
+          type: Boolean,
+          value: true
+        },
+        regressionEntries_: {
+          type: Array
         },
       },
 
@@ -1988,10 +1953,16 @@ limitations under the License.
               }
             }
 
-            this.fillInRegressionStats(inferenceStats.results);
+            const regressionEntries = [];
+            regressionEntries.push(
+              this.fillInRegressionStats(inferenceStats.results, 'Total'));
             for (let key in inferenceStats.faceted) {
-              this.fillInRegressionStats(inferenceStats.faceted[key]);
+              regressionEntries.push(
+                this.fillInRegressionStats(inferenceStats.faceted[key], key));
             }
+            regressionEntries.sort((a, b) => b.count - a.count);
+            this.regressionEntries_ = [];
+            this.regressionEntries_ = regressionEntries;
           }
 
           this.inferenceStats_ = inferenceStats;
@@ -2031,7 +2002,7 @@ limitations under the License.
         this.featureValueThresholds = temp;
       },
 
-      fillInRegressionStats: function(regressionStats) {
+      fillInRegressionStats: function(regressionStats, name) {
         // From initial regression stats having regression error per example,
         // calculate mean error, mean abs error, and mean squared error.
         function mean(data) {
@@ -2045,9 +2016,13 @@ limitations under the License.
         const absErrors = regressionStats.errors.map(err => Math.abs(err));
         const squaredErrors = regressionStats.errors.map(err => err * err);
 
-        regressionStats.mean = mean(regressionStats.errors);
-        regressionStats.absMean = mean(absErrors);
-        regressionStats.squaredMean = mean(squaredErrors);
+        return {
+          name: name,
+          meanError: mean(regressionStats.errors),
+          meanAbsError: mean(absErrors),
+          meanSquaredError: mean(squaredErrors),
+          count: regressionStats.errors.length
+        };
       },
 
       /**
@@ -3392,6 +3367,10 @@ limitations under the License.
 
       togglePerformance: function() {
         this.$.collapseperformance.toggle();
+      },
+
+      toggleInferenceResults: function() {
+        this.$$('#collapseinference').toggle();
       },
     });
 
