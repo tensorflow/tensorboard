@@ -1101,7 +1101,8 @@ limitations under the License.
                         on-selected-indices-changed="selectedIndicesChanged_"
                         on-stats-changed="statsChanged_"
                         hide-info-card="true"
-                        sprite-image-width="32" sprite-image-height="32">
+                        sprite-image-width="32" sprite-image-height="32"
+                        fit-grid-aspect-ratio-to-viewport="true">
             </facets-dive>
             <div id="noexamples" class="noexamples info-text">
               Examples and their inference results will be displayed here.
@@ -1454,10 +1455,11 @@ limitations under the License.
           // If the center panel is less than 40% of the width, then consider
           // the side panel to be expanded, for display purposes.
           self.panelExpanded = perc > 60;
-        }).on('end', () => {
-          // Force a resize of the Dive visualization when finished resizing
-          // the side panel.
-          self.$.dive.$.vis.fire('iron-resize');
+
+          // Force the Dive visualization to recompute item positions and handle
+          // changed container size.
+          self.$.dive.$.vis._updateGridFaceting();
+          self.$.dive.$.vis._onIronResize();
         });
 
         resizer.call(dragResize);
