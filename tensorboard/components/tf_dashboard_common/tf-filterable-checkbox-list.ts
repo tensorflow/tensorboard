@@ -87,6 +87,9 @@ Polymer({
     'dom-change': '_synchronizeColors',
   },
 
+  detached() {
+    this.cancelDebouncer('_setRegex');
+  },
 
   // ====================== COMPUTED ======================
 
