@@ -116,7 +116,7 @@ const DEFAULT_WINDOW_CENTER = 128;
 Polymer({
   is: 'vz-example-viewer',
   properties: {
-    example: Object,
+    example: {type: Object},
     serializedExample: {type: String, observer: 'updateExample'},
     serializedSeqExample: {type: String, observer: 'updateSeqExample'},
     json: {type: Object, observer: 'createExamplesFromJson'},
@@ -140,7 +140,7 @@ Polymer({
     features: {type: Object, computed: 'getFeatures(example)'},
     featuresList: {type: Object, computed: 'getFeaturesList(features)'},
     seqFeatures: {type: Object, computed: 'getSeqFeatures(example)'},
-    seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(features)'},
+    seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(seqFeatures)'},
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
     displayMode: {type: String, value: 'grid'},
@@ -151,11 +151,19 @@ Polymer({
     focusedFeatureValueIndex: Number,
     focusedSeqNumber: Number,
     showDeleteValueButton: {type: Boolean, value: false},
+    expandedFeatures: {type: Object, value: {}},
+    expandPillClass: {type: String, value: 'expandPill'},
+    expandAllFeatures: {type: Boolean, value: false},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
     'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
   ],
+
+  isExpanded: function(featName: string, expandAllFeatures: boolean) {
+    return this.expandAllFeatures ||
+        this.sanitizeFeature(featName) in this.expandedFeatures;
+  },
 
   updateExample: function() {
     this.deserializeExample(this.serializedExample, Example.deserializeBinary);
@@ -443,6 +451,16 @@ Polymer({
     return [];
   },
 
+  /** Returns the first feature value for a feature. */
+  getFirstFeatureValue: function(feature: string) {
+    return this.getFeatureValues(feature)[0];
+  },
+
+  /** Returns if a feature has more than one feature value. */
+  featureHasMultipleValues: function(feature: string) {
+    return this.getFeatureValues(feature).length > 1;
+  },
+
   /**
    * Returns a list of the sequence feature values for a string for a given
    * sequence number. If keepBytes is true then return the raw bytes. Otherwise
@@ -477,6 +495,16 @@ Polymer({
       return feat.getFloatList()!.getValueList();
     }
     return [];
+  },
+
+  /** Returns the first feature value for a sequence feature. */
+  getFirstSeqFeatureValue: function(feature: string, seqNum: number) {
+    return this.getSeqFeatureValues(feature, seqNum)[0];
+  },
+
+  /** Returns if a sequence feature has more than one feature value. */
+  seqFeatureHasMultipleValues: function(feature: string, seqNum: number) {
+    return this.getSeqFeatureValues(feature, seqNum).length > 1;
   },
 
   /**
@@ -1058,19 +1086,22 @@ Polymer({
     if (typeof this.json === 'string') {
       json = JSON.parse(this.json);
     }
-    const ex = new Example();
     if (json.features) {
+      const ex = new Example();
       ex.setFeatures(this.parseFeatures(json.features));
-    } else {
-      const ex = new SequenceExample();
+      this.example = ex;
+    } else if (json.context || json.featureLists) {
+      const seqex = new SequenceExample();
       if (json.context) {
-        ex.setContext(this.parseFeatures(json.context));
+        seqex.setContext(this.parseFeatures(json.context));
       }
       if (json.featureLists) {
-        ex.setFeatureLists(this.parseFeatureLists(json.featureLists));
+        seqex.setFeatureLists(this.parseFeatureLists(json.featureLists));
       }
+      this.example = seqex;
+    } else {
+      this.example = new Example();
     }
-    this.example = ex;
   },
 
   // tslint:disable-next-line:no-any Parsing arbitary json.
@@ -1152,6 +1183,12 @@ Polymer({
     const dialog = this.$$('#' + this.sanitizeFeature(feature) + '_dialog');
     dialog.positionTarget = button;
     dialog.open();
+  },
+
+  expandFeature: function(event: Event) {
+    const feature = (event.srcElement as any).dataFeature;
+    this.set('expandedFeatures.' + this.sanitizeFeature(feature), true);
+    this.refreshExampleViewer();
   },
 
   decodedStringToCharCodes: function(str: string): Uint8Array {

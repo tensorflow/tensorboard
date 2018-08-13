@@ -309,7 +309,6 @@ limitations under the License.
         flex-shrink: 0;
         justify-content: space-between;
         margin-left: 1px;
-        padding: 2px 6px;
       }
 
       .datapoint-left-controls-holder {
@@ -684,6 +683,14 @@ limitations under the License.
         color: grey;
         font-size: 14px;
       }
+
+      .border-right {
+        border-right: 1px solid lightgrey;
+      }
+
+      .tabs {
+        border-bottom: 1px solid lightgrey;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -776,7 +783,7 @@ limitations under the License.
         <div class="main-content">
           <div class="side-holder" id="side">
             <div class="side-content">
-              <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_">
+              <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_" class="tabs">
                 <paper-tab>Performance + Optimization</paper-tab>
                 <paper-tab>Datapoint</paper-tab>
                 <paper-tab>Features</paper-tab>
@@ -992,13 +999,20 @@ limitations under the License.
                         </paper-icon-button>
                       </div>
                       <div class="datapoint-right-controls-holder">
-                        <paper-icon-button class="datapoint-control-button" icon="view-headline"
+                          <paper-icon-button class="datapoint-control-button" icon="view-headline"
                             class$="[[getStackedButtonClass(exampleDisplayMode)]]"
                             on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="view-module"
+                          </paper-icon-button>
+                          <paper-icon-button class="datapoint-control-button" icon="view-module"
                             class$="[[getGridButtonClass(exampleDisplayMode)]]"
                             on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
+                          </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="line-weight"
+                            on-click="setExampleExpanded_" alt="expand all features" title="Expand all features"
+                            class="border-right">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="list"
+                            on-click="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
                         </paper-icon-button>
                       </div>
                     </div>
@@ -1024,7 +1038,7 @@ limitations under the License.
                     <div class="examples-holder">
                       <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
                         <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
-                                            on-example-change="exampleChange_" id$="[[getViewerId_()]]"
+                                            on-example-change="exampleChange_" id="viewer"
                                             display-mode="[[exampleDisplayMode]]"
                                             feature-search-value="{{featureSearchValue}}">
                         </vz-example-viewer>
@@ -1665,6 +1679,16 @@ limitations under the License.
 
       setExampleGridMode_: function() {
         this.exampleDisplayMode = 'grid';
+      },
+
+      setExampleCollapsed_: function() {
+        this.$$('#viewer').expandedFeatures = {};
+        this.$$('#viewer').expandAllFeatures = false;
+        this.$$('#viewer').refreshExampleViewer();
+      },
+
+      setExampleExpanded_: function() {
+        this.$$('#viewer').expandAllFeatures = true;
       },
 
       getStackedButtonClass: function(exampleDisplayMode) {
@@ -2752,10 +2776,6 @@ limitations under the License.
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
                                               'index': index});
         }
-      },
-
-      getViewerId_: function() {
-        return 'viewer_';
       },
 
       getInferenceHolderId_: function() {

@@ -85,7 +85,8 @@ limitations under the License.
       .outer {
         width: 100%;
         overflow: auto;
-        padding: 5px;
+        margin: 5px;
+        border-top: 1px solid lightgrey;
       }
 
       .image {
@@ -96,22 +97,20 @@ limitations under the License.
       .flex-controls {
         display: flex;
         flex-wrap: wrap;
-        max-height: 100px;
         overflow: auto;
       }
 
       .value-pills-holder {
-        margin-left: 5px;
+        flex-grow: 1;
       }
 
       .value-pill {
         display: flex;
         border-radius: 18px;
-        background: #f1f3f4;
         margin: 0 8px 8px 0;
         text-overflow: ellipsis;
         padding: 0 8px 4px;
-        border: 1px solid #f1f3f4;
+        border: 1px solid lightgray;
       }
 
       .value-pill:hover {
@@ -121,8 +120,7 @@ limitations under the License.
       }
 
       .value-pill:focus {
-        background : #e8eaed;
-        border: 2px solid rgba(224,145,31,0.8);
+        border: 1px solid rgba(224,145,31,0.8);
         box-shadow: 0px 0px 2px 0px rgba(241,101,40,0.4);
         outline: none;
       }
@@ -135,23 +133,31 @@ limitations under the License.
 
       .value-pill-stacked {
         width: 100%;
+        margin: 4px 4px 4px 0;
       }
 
       .value-pill-grid {
         width: 120px;
+        margin: 4px 8px 4px 0;
       }
 
       .feature-name {
-        display:flex;
-        font-weight: 500;
-        margin-bottom: 5px;
+        display: flex;
         padding-left: 5px;
-        border: 1px solid #DADCE0;
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
+        border-bottom: 1px solid lightgrey;
         justify-content: space-between;
       }
 
       .feature-name-text {
-        padding-bottom: 3px;
+        margin-top: 3px;
+        width: 300px;
+        max-width: 300px;
+        min-width: 300px;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
 
       .slider {
@@ -220,6 +226,8 @@ limitations under the License.
         margin-top: 2px;
         max-height: 20px;
         max-width: 20px;
+        min-height: 20px;
+        min-width: 20px;
         padding: 0;
       }
 
@@ -237,8 +245,7 @@ limitations under the License.
       }
 
       .imagecard {
-        margin-bottom: 5px;
-        margin-left: 5px;
+        margin: 5px 2px;
       }
 
       .image-scale-button {
@@ -275,112 +282,15 @@ limitations under the License.
         </paper-input>
       </template>
       <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
-        <div class="feature-name">
-          <div class="feature-name-text">[[feat.name]]</div>
-          <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
-                             on-click="featureMoreClicked"
-                             data-feature="[[feat.name]]"></paper-icon-button>
-          <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
-                        horizontal-align="right" vertical-align="bottom">
-            <div class="feature-dialog">
-              <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
-                Delete feature
-              </paper-button>
-              <template is="dom-if" if="[[!isImage(feat.name)]]">
-                <paper-button data-feature="[[feat.name]]" on-click="addValue" class="feature-dialog-button">
-                  Add feature value
-                </paper-button>
-              </template>
-            </div>
-          </paper-dialog>
-        </div>
         <template is="dom-if" if="[[isImage(feat.name)]]">
-          <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
-            <img class="image" src="[[getImageSrc(feat.name)]]"
-                  id="[[getImageId(feat.name)]]"></img>
-            <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
-            <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
-              <div>Image windowing (contrast)</div>
-              <div class="slider-holder indent">
-                <div class="slider-label windowing-label">Window center:</div>
-                <paper-slider class="slider" editable=true  max="255"
-                              immediate-value="{{windowCenter}}" value="[[windowCenter]]">
-                </paper-slider>
-              </div>
-              <div class="slider-holder indent">
-                <div class="slider-label windowing-label">Window width:</div>
-                <paper-slider class="slider" editable=true  max="512" min="1"
-                              immediate-value="{{windowWidth}}" value="[[windowWidth]]">
-                </paper-slider>
-              </div>
-              <div class="flex-controls">
-                <div class="scale-label">Image scale percentage:</div>
-                <paper-input no-label-float type="number" min="10" max="500"
-                              value="{{imageScalePercentage}}">
-                </paper-input>
-                <paper-button raised on-click="updateImages" class="image-scale-button">
-                  set
-                </paper-button>
-              </div>
-            </template>
-            <div class="image-bottom-bar">
-              <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
-                  icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]" title="Upload image">
-              </paper-icon-button>
-              <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
-                  data-feature="[[feat.name]]"
-                  data-index="[[index]]">
-              </paper-input>
-            </div>
-          </paper-card>
-        </template>
-        <template is="dom-if" if="[[!isImage(feat.name)]]">
-          <div class="flex-controls value-pills-holder">
-            <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
-              <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
-                    readonly$="[[readonly]]"
-                    on-input="onValueChanged"
-                    on-focus="onInputFocus"
-                    on-blur="onInputBlur"
-                    data-feature="[[feat.name]]"
-                    data-index="[[index]]"
-                    type="[[getInputType(feat.name)]]"
-                    value="[[value]]">
-              </input>
-            </template>
-          </div>
-        </template>
-      </template>
-      <template is="dom-if" if="[[isSeqExample(maxSeqNumber)]]">
-        <div class="slider-holder">
-          <div class="slider-label">Sequence Number:</div>
-          <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
-          </paper-slider>
-        </div>
-        <template is="dom-repeat" items="[[filteredSeqFeaturesList]]" as="seqfeat">
-          <div class="seqfeat">
-            <div class="feature-name">
-              <div class="feature-name-text">[[seqfeat.name]]</div>
-              <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
-              <paper-dialog>
-                <paper-button data-feature="[[seqfeat.name]]"
-                              on-click="deleteFeature">
-                  Delete feature
-                </paper-button>
-                <paper-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]"
-                              on-click="addValue">
-                  Add feature value
-                </paper-button>
-              </paper-dialog>
-            </div>
-            <template is="dom-if" if="[[isImage(seqfeat.name)]]">
-              <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
-                    id="[[getImageId(seqfeat.name)]]"></img>
-              <canvas id="[[getCanvasId(seqfeat.name)]]"
-                      data-feature="[[seqfeat.name]]"
-                      data-seq-num="[[seqNumber]]"></canvas>
-              <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
-                <div class="image-controls">
+          <div class="feature-name">
+            <div class="feature-name-text">[[feat.name]]</div>
+            <div class="value-pills-holder">
+              <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
+                <img class="image" src="[[getImageSrc(feat.name)]]"
+                      id="[[getImageId(feat.name)]]"></img>
+                <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
+                <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
                   <div>Image windowing (contrast)</div>
                   <div class="slider-holder indent">
                     <div class="slider-label windowing-label">Window center:</div>
@@ -403,25 +313,172 @@ limitations under the License.
                       set
                     </paper-button>
                   </div>
+                </template>
+                <div class="image-bottom-bar">
+                  <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
+                      icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]" title="Upload image">
+                  </paper-icon-button>
+                  <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
+                      data-feature="[[feat.name]]"
+                      data-index="[[index]]">
+                  </paper-input>
                 </div>
+              </paper-card>
+            </div>
+            <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
+                              on-click="featureMoreClicked"
+                              data-feature="[[feat.name]]"></paper-icon-button>
+            <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
+                          horizontal-align="right" vertical-align="bottom">
+              <div class="feature-dialog">
+                <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
+                  Delete feature
+                </paper-button>
+              </div>
+            </paper-dialog>
+          </div>
+        </template>
+        <template is="dom-if" if="[[!isImage(feat.name)]]">
+          <div class="feature-name">
+            <div class="feature-name-text">[[feat.name]]</div>
+            <div class="flex-controls value-pills-holder">
+              <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
+                <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
+                  <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                        readonly$="[[readonly]]"
+                        on-input="onValueChanged"
+                        on-focus="onInputFocus"
+                        on-blur="onInputBlur"
+                        data-feature="[[feat.name]]"
+                        data-index="[[index]]"
+                        type="[[getInputType(feat.name)]]"
+                        value="[[value]]">
+                  </input>
+                </template>
               </template>
-              <div class="image-bottom-bar">
-                <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
-                    icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]" title="Upload image">
-                </paper-icon-button>
-                <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
-                    data-feature="[[seqfeat.name]]"
-                    data-index="[[index]]"
-                    data-seq-num="[[seqNumber]]">
-                </paper-input>
+              <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
+                <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                  readonly$="[[readonly]]"
+                  on-input="onValueChanged"
+                  on-focus="onInputFocus"
+                  on-blur="onInputBlur"
+                  data-feature="[[feat.name]]"
+                  data-index="[[index]]"
+                  type="[[getInputType(feat.name)]]"
+                  value="[[getFirstFeatureValue(feat.name)]]">
+                </input>
+                <template is="dom-if" if="[[featureHasMultipleValues(feat.name)]]">
+                  <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                    ...
+                  </paper-button>
+                </template>
+              </template>
+            </div>
+            <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
+                              on-click="featureMoreClicked"
+                              data-feature="[[feat.name]]"></paper-icon-button>
+            <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
+                          horizontal-align="right" vertical-align="bottom">
+              <div class="feature-dialog">
+                <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
+                  Delete feature
+                </paper-button>
+                <paper-button data-feature="[[feat.name]]" on-click="addValue" class="feature-dialog-button">
+                  Add feature value
+                </paper-button>
+              </div>
+            </paper-dialog>
+          </div>
+        </template>
+      </template>
+      <template is="dom-if" if="[[isSeqExample(maxSeqNumber)]]">
+        <div class="slider-holder">
+          <div class="slider-label">Sequence Number:</div>
+          <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
+          </paper-slider>
+        </div>
+        <template is="dom-repeat" items="[[filteredSeqFeaturesList]]" as="seqfeat">
+          <div class="seqfeat">
+            <template is="dom-if" if="[[isImage(seqfeat.name)]]">
+              <div class="feature-name">
+                <div class="feature-name-text">[[seqfeat.name]]</div>
+                <div class="value-pills-holder">
+                  <paper-card id="[[getImageCardId(seqfeat.name)]]" class="imagecard">
+                    <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                        id="[[getImageId(seqfeat.name)]]"></img>
+                    <canvas id="[[getCanvasId(seqfeat.name)]]"
+                        data-feature="[[seqfeat.name]]"
+                        data-seq-num="[[seqNumber]]"></canvas>
+                    <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+                      <div class="image-controls">
+                        <div>Image windowing (contrast)</div>
+                        <div class="slider-holder indent">
+                          <div class="slider-label windowing-label">Window center:</div>
+                          <paper-slider class="slider" editable=true  max="255"
+                                        immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                          </paper-slider>
+                        </div>
+                        <div class="slider-holder indent">
+                          <div class="slider-label windowing-label">Window width:</div>
+                          <paper-slider class="slider" editable=true  max="512" min="1"
+                                        immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                          </paper-slider>
+                        </div>
+                        <div class="flex-controls">
+                          <div class="scale-label">Image scale percentage:</div>
+                          <paper-input no-label-float type="number" min="10" max="500"
+                                        value="{{imageScalePercentage}}">
+                          </paper-input>
+                          <paper-button raised on-click="updateImages" class="image-scale-button">
+                            set
+                          </paper-button>
+                        </div>
+                      </div>
+                    </template>
+                    <div class="image-bottom-bar">
+                      <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
+                          icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]" title="Upload image">
+                      </paper-icon-button>
+                      <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
+                          data-feature="[[seqfeat.name]]"
+                          data-index="[[index]]"
+                          data-seq-num="[[seqNumber]]">
+                      </paper-input>
+                    </div>
+                  </paper-card>
+                </div>
+                <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
+                <paper-dialog>
+                  <paper-button data-feature="[[seqfeat.name]]"
+                                on-click="deleteFeature">
+                    Delete feature
+                  </paper-button>
+                </paper-dialog>
               </div>
             </template>
             <template is="dom-if" if="[[!isImage(seqfeat.name)]]">
-              <div class="flex-controls value-pills-holder">
-                <template is="dom-repeat"
-                          items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
-                          as="seqvalue">
-                  <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+              <div class="feature-name">
+                <div class="feature-name-text">[[seqfeat.name]]</div>
+                <div class="flex-controls value-pills-holder">
+                  <template is="dom-if" if="[[isExpanded(seqfeat.name, expandAllFeatures)]]">
+                    <template is="dom-repeat"
+                              items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                              as="seqvalue">
+                      <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                          readonly$="[[readonly]]"
+                          on-input="onValueChanged"
+                          on-focus="onInputFocus"
+                          on-blur="onInputBlur"
+                          data-feature="[[seqfeat.name]]"
+                          data-index="[[index]]"
+                          data-seq-num="[[seqNumber]]"
+                          type="[[getInputType(seqfeat.name)]]"
+                          value="[[seqvalue]]">
+                      </input>
+                    </template>
+                  </template>
+                  <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
+                    <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
                       readonly$="[[readonly]]"
                       on-input="onValueChanged"
                       on-focus="onInputFocus"
@@ -430,9 +487,25 @@ limitations under the License.
                       data-index="[[index]]"
                       data-seq-num="[[seqNumber]]"
                       type="[[getInputType(seqfeat.name)]]"
-                      value="[[seqvalue]]">
-                  </input>
-                </template>
+                      value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]">
+                    </input>
+                    <template is="dom-if" if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
+                      <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                        ...
+                      </paper-button>
+                    </template>
+                  </template>
+                </div>
+                <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
+                <paper-dialog>
+                  <paper-button data-feature="[[seqfeat.name]]"
+                                on-click="deleteFeature">
+                    Delete feature
+                  </paper-button>
+                  <paper-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]" on-click="addValue" class="feature-dialog-button">
+                    Add feature value
+                  </paper-button>
+                </paper-dialog>
               </div>
             </template>
           </div>
