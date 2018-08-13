@@ -363,6 +363,18 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertEqual(0, start_mock.call_count)
     self.assertEqual(0, join_mock.call_count)
 
+  def testBlacklistedSubdirectoriesNotLoaded(self):
+    x = event_multiplexer.EventMultiplexer(subdirectory_blacklist_regex=r'ba.')
+    logdir = self.get_temp_dir()
+    for potential_run in ('foo', 'bar', 'baz'):
+      subdirectory = os.path.join(logdir, potential_run)
+      _CreateCleanDirectory(subdirectory)
+      _AddEvents(subdirectory)
+    x.AddRunsFromDirectory(logdir)
+
+    # The other runs (bar and baz) should have been filtered away by the regex.
+    self.assertItemsEqual(x.Runs(), ['foo'])
+
 
 class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
 

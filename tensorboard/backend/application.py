@@ -103,7 +103,9 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       tensor_size_guidance=tensor_size_guidance_from_flags(flags),
       purge_orphaned_data=flags.purge_orphaned_data,
-      max_reload_threads=flags.max_reload_threads)
+      max_reload_threads=flags.max_reload_threads,
+      subdirectory_blacklist_regex=_compile_subdirectory_blacklist_regex(
+          flags.subdirectory_blacklist_regex))
   db_module, db_connection_provider = get_database_info(flags.db)
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
@@ -453,3 +455,24 @@ def _clean_path(path, path_prefix=""):
   if path != path_prefix + '/' and path.endswith('/'):
     return path[:-1]
   return path
+
+
+def _compile_subdirectory_blacklist_regex(regex_string):
+  """Compiles a subdirectory_blacklist_regex value from a raw string.
+
+  Args:
+    regex_string: The raw string for the regex.
+
+  Raises:
+    ValueError: if the string cannot be compiled into a regular expression.
+
+  Returns:
+    The compiled regex. Or None if the `regex_string` argument is empty.
+  """
+  if not regex_string:
+    return None
+
+  try:
+    return re.compile(regex_string)
+  except re.error:
+    raise ValueError('%r is an invalid regex string' % regex_string)

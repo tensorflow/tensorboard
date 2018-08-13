@@ -402,6 +402,16 @@ keeps 500 scalars and all images. Most users should not need to set this
 flag.\
 ''')
 
+    parser.add_argument(
+        '--subdirectory_blacklist_regex',
+        type=str,
+        default='',
+        help='''\
+If provided, any subdirectory whose absolute path partially matches this regular
+expression will not be read from: Data within the subdirectory will be excluded
+from TensorBoard. This flag is irrelevant to db mode.\
+''')
+
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     if not flags.db and not flags.logdir:
