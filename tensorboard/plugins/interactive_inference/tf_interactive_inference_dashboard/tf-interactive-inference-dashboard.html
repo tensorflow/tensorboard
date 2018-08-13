@@ -1044,7 +1044,7 @@ limitations under the License.
                             feature-search-value="{{featureSearchValue}}">
                           </vz-example-viewer>
                           <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                            <button class="inference-header" on-click="toggleSecondInferenceResults">[[getInferenceResultsHeaderText(selected)]]</button>
+                            <button class="inference-header" on-click="toggleSecondInferenceResults">[[getInferenceResultsHeaderText(comparedIndices)]]</button>
                             <iron-collapse class="card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
                               <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
                                                   model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
@@ -1098,6 +1098,7 @@ limitations under the License.
           <div class="center" id="center">
             <facets-dive id="dive" data="[[visdata]]"
                         selected-indices="[[selected]]"
+                        compared-indices="[[comparedIndices]]"
                         on-selected-indices-changed="selectedIndicesChanged_"
                         on-stats-changed="statsChanged_"
                         hide-info-card="true"
@@ -1250,6 +1251,11 @@ limitations under the License.
           type: Array,
           value: [],
           observer: 'computeSelectedExampleAndInference',
+        },
+        // The selected item to compare, provided to Facets Dive.
+        comparedIndices: {
+          type: Array,
+          value: [],
         },
         // List of strings corresponding to inference numeric labels for
         // classification models, from file at labelVocabPath.
@@ -1534,9 +1540,8 @@ limitations under the License.
           }
         }
         if (closest != -1) {
-          // Add the closest counterfactual to the selected list and set it
-          // for display.
-          this.selected = [selected, closest];
+          // Display the counterfactual in dive and example viewer.
+          this.comparedIndices = [closest];
           this.counterfactualExampleAndInference =
             this.examplesAndInferences[closest];
         }
@@ -3396,10 +3401,10 @@ limitations under the License.
         this.$$('#collapsesecondinference').toggle();
       },
 
-      getInferenceResultsHeaderText: function(selected) {
+      getInferenceResultsHeaderText: function(indices) {
         let str = 'Inference Results - ';
-        if (selected && selected.length > 1) {
-          str += 'Example ' + selected[1];
+        if (indices && indices.length > 0) {
+          str += 'Example ' + indices[0];
         }
         return str;
       },
