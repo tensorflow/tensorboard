@@ -19,7 +19,11 @@ var tf_data_selector;
     }
     tf_data_selector.decodeIdArray = decodeIdArray;
     function encodeIdArray(arr) {
-        return arr.map(function (id) { return id.toString(36); }).join(',');
+        return arr.map(encodeId).join(',');
     }
     tf_data_selector.encodeIdArray = encodeIdArray;
+    function encodeId(id) {
+        return id.toString(36);
+    }
+    tf_data_selector.encodeId = encodeId;
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

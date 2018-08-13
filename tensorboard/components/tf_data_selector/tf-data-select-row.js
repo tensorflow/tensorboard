@@ -40,7 +40,7 @@ var tf_data_selector;
                 value: '',
             },
             // Required field.
-            persistenceNumber: Number,
+            persistenceId: String,
             noExperiment: {
                 type: Boolean,
                 value: false,
@@ -70,17 +70,17 @@ var tf_data_selector;
             '_fireChange(_selectedRuns, _tagRegex)',
         ],
         _getPersistenceKey: function (type) {
-            var number = this.persistenceNumber || 0;
+            var id = this.persistenceId;
             switch (type) {
                 case Type.RUN:
                     // Prefix with 'g' to denote a group.
-                    return "g" + number + "r";
+                    return "gr" + id;
                 case Type.TAG:
-                    return "g" + number + "t";
+                    return "gt" + id;
             }
         },
         ready: function () {
-            if (this.persistenceNumber == null)
+            if (this.persistenceId == null)
                 return;
             var runInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.RUN), { defaultValue: '', polymerProperty: '_runSelectionStateString' });
             runInitializer.call(this);
@@ -183,6 +183,9 @@ var tf_data_selector;
             });
         },
         _removeRow: function () {
+            // Clear persistance when being removed.
+            tf_storage.setString(this._getPersistenceKey(Type.RUN), '', { defaultValue: '' });
+            tf_storage.setString(this._getPersistenceKey(Type.TAG), '', { defaultValue: '' });
             this.fire('remove');
         },
         _serializeValue: function (source, selectedIds) {
