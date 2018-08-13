@@ -312,8 +312,9 @@ limitations under the License.
 
         let query = tagFilter;
 
-        if (this.useDataSelector && this.dataSelection.selections.length) {
-          const {runs, tagRegex} = this.dataSelection.selections[0];
+        if (this.useDataSelector) {
+          const selection = this.dataSelection.selections[0] || {};
+          const {runs = [], tagRegex = ''} = selection;
           query = tagRegex;
           selectedRuns = runs.map(({name}) => name);
         }

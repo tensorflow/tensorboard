@@ -146,6 +146,7 @@ Polymer({
         this.set('_runs', runs);
       });
     }
+    return Promise.resolve();
   },
 
   _getRunOptions(_): Array<tf_dashboard_common.FilterableCheckboxListItem> {
