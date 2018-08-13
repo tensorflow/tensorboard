@@ -42,7 +42,7 @@ Properties out:
     >
       <tf-data-select-row
         no-experiment
-        persistence-number="0"
+        persistence-id="_default"
         on-selection-changed="_selectionChanged"
       ></tf-data-select-row>
     </template>
@@ -50,7 +50,7 @@ Properties out:
       <tf-data-select-row
         checkbox-color="[[_getExperimentColor(exp)]]"
         experiment="[[exp]]"
-        persistence-number="[[index]]"
+        persistence-id="[[_getPersistenceId(exp)]]"
         on-selection-changed="_selectionChanged"
         on-remove="_removeExperiment"
       ></tf-data-select-row>

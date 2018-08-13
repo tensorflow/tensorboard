@@ -19,7 +19,11 @@ export function decodeIdArray(str: string): Array<number> {
 }
 
 export function encodeIdArray(arr: Array<number>): string {
-  return arr.map(id => id.toString(36)).join(',');
+  return arr.map(encodeId).join(',');
+}
+
+export function encodeId(id: number): string {
+  return id.toString(36);
 }
 
 }  // namespace tf_data_selector
