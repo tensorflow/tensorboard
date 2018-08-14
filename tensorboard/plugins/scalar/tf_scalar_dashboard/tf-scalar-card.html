@@ -263,7 +263,7 @@ limitations under the License.
         return this.dataToLoad.map(d => this._getSeriesNameFromDatum(d));
       },
       _getSeriesNameFromDatum(datum) {
-        return datum.experiment ?
+        return this.multiExperiments ?
             `${datum.experiment}/${datum.run}` :
             datum.run;
       },
@@ -272,10 +272,9 @@ limitations under the License.
           scale: (name) => {
             const splitIndex = name.indexOf('/');
             const exp = name.slice(0, splitIndex);
-            const run = name.slice(splitIndex + 1);
             return this.multiExperiments ?
                 tf_color_scale.experimentsColorScale(exp) :
-                tf_color_scale.runsColorScale(run);
+                tf_color_scale.runsColorScale(name);
           },
         };
       },
