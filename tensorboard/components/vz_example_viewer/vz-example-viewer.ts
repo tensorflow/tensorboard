@@ -154,6 +154,7 @@ Polymer({
     expandedFeatures: {type: Object, value: {}},
     expandPillClass: {type: String, value: 'expandPill'},
     expandAllFeatures: {type: Boolean, value: false},
+    zeroIndex: {type: Number, value: 0},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
