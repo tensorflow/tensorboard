@@ -58,7 +58,7 @@ class FakeFlags(object):
       db='',
       window_title='',
       path_prefix='',
-      subdirectory_blacklist_regex=''):
+      exclude_subdirs=''):
     self.logdir = logdir
     self.purge_orphaned_data = purge_orphaned_data
     self.reload_interval = reload_interval
@@ -67,7 +67,7 @@ class FakeFlags(object):
     self.db = db
     self.window_title = window_title
     self.path_prefix = path_prefix
-    self.subdirectory_blacklist_regex = subdirectory_blacklist_regex
+    self.exclude_subdirs = exclude_subdirs
 
 
 class FakePlugin(base_plugin.TBPlugin):

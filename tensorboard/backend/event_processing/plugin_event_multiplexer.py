@@ -75,7 +75,7 @@ class EventMultiplexer(object):
                tensor_size_guidance=None,
                purge_orphaned_data=True,
                max_reload_threads=None,
-               subdirectory_blacklist_regex=None):
+               exclude_subdirs=None):
     """Constructor for the `EventMultiplexer`.
 
     Args:
@@ -93,9 +93,9 @@ class EventMultiplexer(object):
       max_reload_threads: The max number of threads that TensorBoard can use
         to reload runs. Each thread reloads one run at a time. If not provided,
         reloads runs serially (one after another).
-      subdirectory_blacklist_regex: If provided, TensorBoard excludes data from
-        any subdirectory with an absolute path that partially matches this
-        regular expression.
+      exclude_subdirs: A list of strings. If provided, TensorBoard excludes data
+        from any subdirectory path (relative to the logdir) that contains one of
+        the terms as a substring. Subpaths under those paths are excluded too.
     """
     tf.logging.info('Event Multiplexer initializing.')
     self._accumulators_mutex = threading.Lock()
@@ -107,7 +107,7 @@ class EventMultiplexer(object):
     self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads or 1
-    self._subdirectory_blacklist_regex = subdirectory_blacklist_regex
+    self._exclude_subdirs = exclude_subdirs
     if run_path_map is not None:
       tf.logging.info('Event Multplexer doing initialization load for %s',
                       run_path_map)
@@ -184,15 +184,9 @@ class EventMultiplexer(object):
       The `EventMultiplexer`.
     """
     tf.logging.info('Starting AddRunsFromDirectory: %s', path)
-    for subdir in io_wrapper.GetLogdirSubdirectories(path):
-      if (self._subdirectory_blacklist_regex is not None and
-          re.search(self._subdirectory_blacklist_regex, subdir)):
-        tf.logging.info(
-            'Subdirectory %r will be excluded from TensorBoard because it '
-            'matches regex %r', subdir,
-            self._subdirectory_blacklist_regex.pattern)
-        continue
-
+    logdir_subdirectories = io_wrapper.GetLogdirSubdirectories(
+        path, self._exclude_subdirs)
+    for subdir in logdir_subdirectories:
       tf.logging.info('Adding run from directory %s', subdir)
       rpath = os.path.relpath(subdir, path)
       subname = os.path.join(name, rpath) if name else rpath

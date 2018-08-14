@@ -403,13 +403,14 @@ flag.\
 ''')
 
     parser.add_argument(
-        '--subdirectory_blacklist_regex',
+        '--exclude_subdirs',
         type=str,
-        default='',
+        nargs='*',
+        default=[],
         help='''\
-If provided, any subdirectory whose absolute path partially matches this regular
-expression will not be read from: Data within the subdirectory will be excluded
-from TensorBoard. This flag is irrelevant to db mode.\
+If provided, TensorBoard excludes data from any subdirectory path (relative to
+the logdir) that contains one of the terms as a substring. This flag offers a
+way to exclude entire directories (that may contain other subdirectories). \
 ''')
 
   def fix_flags(self, flags):
