@@ -92,18 +92,17 @@ class ProfilePluginTest(tf.test.TestCase):
 
   def testRuns(self):
     runs = self.plugin.index_impl()
-    self.assertItemsEqual(runs.keys(), self.run_to_tools.keys())
-    self.assertItemsEqual(runs['foo'], self.run_to_tools['foo'])
-    self.assertItemsEqual(runs['bar'], [])
-    self.assertItemsEqual(runs['empty'], [])
+    self.assertItemsEqual(runs['/plugins/profile/foo'], self.run_to_tools['foo'])
+    self.assertItemsEqual(runs['/plugins/profile/bar'], [])
+    self.assertItemsEqual(runs['/plugins/profile/empty'], [])
 
   def makeRequest(self, run, tag, host):
     req = Request({})
-    req.args = {'run': run, 'tag': tag, 'host': host,}
+    req.args = {'run': '/plugins/profile/' + run, 'tag': tag, 'host': host,}
     return req
 
   def testHosts(self):
-    hosts = self.plugin.host_impl('foo', 'trace_viewer')
+    hosts = self.plugin.host_impl('/plugins/profile/foo', 'trace_viewer')
     self.assertItemsEqual(['host0', 'host1'], sorted(hosts))
 
   def testData(self):

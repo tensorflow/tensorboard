@@ -22,11 +22,13 @@ from __future__ import print_function
 
 import logging
 import os
+import re
 from werkzeug import wrappers
 
 import tensorflow as tf
 
 from tensorboard.backend import http_util
+
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
@@ -34,6 +36,7 @@ from tensorboard.plugins.profile import trace_events_pb2
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
+PLUGIN_DIR = 'plugins'
 
 # HTTP routes
 LOGDIR_ROUTE = '/logdir'
@@ -100,18 +103,17 @@ class ProfilePlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self.logdir = context.logdir
-    self.plugin_logdir = plugin_asset_util.PluginDirectory(
-        self.logdir, ProfilePlugin.plugin_name)
     self.stub = None
+    self.run_to_tools = {}
     self.master_tpu_unsecure_channel = context.flags.master_tpu_unsecure_channel
 
   @wrappers.Request.application
   def logdir_route(self, request):
-    return http_util.Respond(request, {'logdir': self.plugin_logdir},
+    return http_util.Respond(request, {'logdir': self.logdir},
                              'application/json')
 
   def _run_dir(self, run):
-    run_dir = os.path.join(self.plugin_logdir, run)
+    run_dir = self.logdir + run
     return run_dir if tf.gfile.IsDirectory(run_dir) else None
 
   def start_grpc_stub_if_necessary(self):
@@ -142,65 +144,77 @@ class ProfilePlugin(base_plugin.TBPlugin):
     for a specific tool "x" will have a suffix name TOOLS["x"].
     Example:
       log/
-        run1/
+        model1/
           plugins/
             profile/
-              host1.trace
-              host2.trace
-        run2/
+              run1/
+                host1.trace
+              run2/
+                host2.trace
+        model2/
           plugins/
             profile/
-              host1.trace
-              host2.trace
+              run1/
+                host1.trace
+              run2/
+                host2.trace
 
     Returns:
       A map from runs to tool names e.g.
-        {"run1": ["trace_viewer"], "run2": ["trace_viewer"]} for the example.
+        {"model1,run1": ["trace_viewer"], "model1,run2": ["trace_viewer"]}
+        for the example.
     """
-    # TODO(ioeric): use the following structure and use EventMultiplexer so that
-    # the plugin still works when logdir is set to root_logdir/run1/
-    #     root_logdir/
-    #       run1/
-    #         plugins/
-    #           profile/
-    #             host1.trace
-    #       run2/
-    #         plugins/
-    #           profile/
-    #             host2.trace
+
+    if any(self.run_to_tools.values()):
+      return self.run_to_tools
     run_to_tools = {}
-    if not tf.gfile.IsDirectory(self.plugin_logdir):
+    profile_logdirs = []
+    if not tf.gfile.IsDirectory(self.logdir):
       return run_to_tools
+    matcher = re.compile(r'profile')
+    folders = [self.logdir]
+    while folders:
+      cpath = folders.pop()
+      for fname in tf.gfile.ListDirectory(cpath):
+        fpath = os.path.join(cpath, fname)
+        if matcher.match(fname):
+          profile_logdirs.append(fpath)
+        elif tf.gfile.IsDirectory(fpath):
+          folders.append(fpath)
 
     self.start_grpc_stub_if_necessary()
-    for run in tf.gfile.ListDirectory(self.plugin_logdir):
-      run_dir = self._run_dir(run)
-      if not run_dir:
-        continue
-      run_to_tools[run] = []
-      for tool in TOOLS:
-        tool_pattern = '*' + TOOLS[tool]
-        path = os.path.join(run_dir, tool_pattern)
-        try:
-          files = tf.gfile.Glob(path)
-          if len(files) >= 1:
-            run_to_tools[run].append(tool)
-        except tf.errors.OpError as e:
-          logging.warning("Cannot read asset directory: %s, OpError %s",
-                          run_dir, e)
-      if 'trace_viewer@' in run_to_tools[run]:
-        # streaming trace viewer always override normal trace viewer.
-        # the trailing '@' is to inform tf-profile-dashboard.html and
-        # tf-trace-viewer.html that stream trace viewer should be used.
-        removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
-        if removed_tool in run_to_tools[run]:
-          run_to_tools[run].remove(removed_tool)
-      run_to_tools[run].sort()
-      op = 'overview_page'
-      if op in run_to_tools[run]:
-        # keep overview page at the top of the list
-        run_to_tools[run].remove(op)
-        run_to_tools[run].insert(0, op)
+    for logdir in profile_logdirs:
+      for run in tf.gfile.ListDirectory(logdir):
+        model_run = logdir.replace(self.logdir, '')
+        run_name = os.path.join(model_run, run)
+        run_dir = self._run_dir(run_name)
+        if not run_dir:
+          continue
+        run_to_tools[run_name] = []
+        for tool in TOOLS:
+          tool_pattern = '*' + TOOLS[tool]
+          path = os.path.join(run_dir, tool_pattern)
+          try:
+            files = tf.gfile.Glob(path)
+            if len(files) >= 1:
+              run_to_tools[run_name].append(tool)
+          except tf.errors.OpError as e:
+            logging.warning("Cannot read asset directory: %s, OpError %s",
+                            run_dir, e)
+        if 'trace_viewer@' in run_to_tools[run_name]:
+          # streaming trace viewer always override normal trace viewer.
+          # the trailing '@' is to inform tf-profile-dashboard.html and
+          # tf-trace-viewer.html that stream trace viewer should be used.
+          removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
+          if removed_tool in run_to_tools[run_name]:
+            run_to_tools[run_name].remove(removed_tool)
+        run_to_tools[run_name].sort()
+        op = 'overview_page'
+        if op in run_to_tools[run_name]:
+          # keep overview page at the top of the list
+          run_to_tools[run_name].remove(op)
+          run_to_tools[run_name].insert(0, op)
+    self.run_to_tools = run_to_tools
     return run_to_tools
 
   @wrappers.Request.application
@@ -235,8 +249,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
         {"host1", "host2", "host3"} for the example.
     """
     hosts = {}
-    if not tf.gfile.IsDirectory(self.plugin_logdir):
-      return hosts
     run_dir = self._run_dir(run)
     if not run_dir:
       logging.warning("Cannot find asset directory: %s", run_dir)
@@ -279,8 +291,9 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if tool == 'trace_viewer@' and self.stub is not None:
       from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
       grpc_request = tpu_profiler_analysis_pb2.ProfileSessionDataRequest()
-      grpc_request.repository_root = self.plugin_logdir
-      grpc_request.session_id = run[:-1]
+      log_paths = run[:-1].split('/')
+      grpc_request.session_id = log_paths.pop()
+      grpc_request.repository_root = self.logdir + '/'.join(log_paths)
       grpc_request.tool_name = 'trace_viewer'
       # Remove the trailing dot if present
       grpc_request.host_name = host.rstrip('.')
@@ -297,8 +310,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if tool not in TOOLS:
       return None
     tool_name = str(host) + TOOLS[tool]
-    rel_data_path = os.path.join(run, tool_name)
-    asset_path = os.path.join(self.plugin_logdir, rel_data_path)
+    run_dir = self._run_dir(run)
+    asset_path = os.path.join(run_dir, tool_name)
     raw_data = None
     try:
       with tf.gfile.Open(asset_path, 'rb') as f:
