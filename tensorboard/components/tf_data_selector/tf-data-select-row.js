@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_data_selector;
 (function (tf_data_selector) {
+    var CHANGE_EVENT_DEBOUNCE_MS = 250;
     var Type;
     (function (Type) {
         Type[Type["RUN"] = 1] = "RUN";
@@ -105,6 +106,7 @@ var tf_data_selector;
         },
         detached: function () {
             this._isDataReady = false;
+            this.cancelDebouncer('fire');
         },
         _fetchRunsAndTags: function () {
             var _this = this;
@@ -166,21 +168,23 @@ var tf_data_selector;
         },
         _fireChange: function (_, __) {
             var _this = this;
-            var runMap = new Map(this._runs.map(function (run) { return [_this._getSyntheticRunId(run), run]; }));
-            this.fire('selection-changed', {
-                runs: this._selectedRuns.map(function (_a) {
-                    var id = _a.id;
-                    return runMap.get(id);
-                })
-                    .filter(Boolean)
-                    .map(function (run) { return ({
-                    id: run.id,
-                    name: run.name,
-                    startTime: run.startTime,
-                    tags: run.tags,
-                }); }),
-                tagRegex: this._tagRegex,
-            });
+            this.debounce('fire', function () {
+                var runMap = new Map(_this._runs.map(function (run) { return [_this._getSyntheticRunId(run), run]; }));
+                _this.fire('selection-changed', {
+                    runs: _this._selectedRuns.map(function (_a) {
+                        var id = _a.id;
+                        return runMap.get(id);
+                    })
+                        .filter(Boolean)
+                        .map(function (run) { return ({
+                        id: run.id,
+                        name: run.name,
+                        startTime: run.startTime,
+                        tags: run.tags,
+                    }); }),
+                    tagRegex: _this._tagRegex,
+                });
+            }, CHANGE_EVENT_DEBOUNCE_MS);
         },
         _removeRow: function () {
             // Clear persistance when being removed.

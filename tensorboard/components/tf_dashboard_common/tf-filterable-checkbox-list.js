@@ -68,6 +68,9 @@ var tf_dashboard_common;
         listeners: {
             'dom-change': '_synchronizeColors',
         },
+        detached: function () {
+            this.cancelDebouncer('_setRegex');
+        },
         // ====================== COMPUTED ======================
         _makeRegex: function (regexString) {
             try {
