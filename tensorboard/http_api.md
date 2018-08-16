@@ -106,6 +106,20 @@ Example response:
       }]
     }]
 
+## `data/environment`
+
+Returns environment in which the TensorBoard app is running. Possible values of
+the `mode` are: `db` and `logdir`.
+
+Example response:
+
+    {
+      "window_title": "Custom Name",
+      "mode": "db",
+      "data_location": "sqlite:/Users/tbuser/some_session.sqlite"
+    }
+
+
 ## `/data/plugin/scalars/...`
 
 See the [scalar plugin documentation](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/scalar/http_api.md).
