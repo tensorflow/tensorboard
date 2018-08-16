@@ -120,10 +120,11 @@ limitations under the License.
           </template>
           <div class="global-actions">
             <paper-icon-button
+              id="reload-button"
+              disabled$="[[_isReloadDisabled]]"
               icon="refresh"
               on-tap="reload"
-              disabled$="[[_isReloadDisabled]]"
-              id="reload-button"
+              title$="Last updated: [[_lastReloadTimeShort]]"
             ></paper-icon-button>
             <paper-icon-button
               icon="settings"
@@ -514,6 +515,10 @@ limitations under the License.
           type: String,
           value: "not yet loaded",
         },
+        _lastReloadTimeShort: {
+          type: String,
+          value: "Not yet loaded",
+        },
         _dataLocation: {
           type: String,
           value: null,
@@ -746,10 +751,7 @@ limitations under the License.
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
 
-        tf_backend.runsStore.refresh();
-        tf_backend.experimentsStore.refresh();
-        this._fetchEnvironment();
-        this._fetchActiveDashboards();
+        this._reloadData();
         this._lastReloadTime = new Date().toString();
       },
 
@@ -818,21 +820,29 @@ limitations under the License.
       },
 
       reload() {
-        if (this._isReloadDisabled) {
-          return;
-        }
-        this._fetchEnvironment();
-        Promise.all([
+        if (this._isReloadDisabled) return;
+        this._reloadData().then(() => {
+          const dashboard = this._selectedDashboardComponent();
+          if (dashboard) dashboard.reload();
+        });
+        this._lastReloadTime = new Date().toString();
+      },
+
+      _reloadData() {
+        return Promise.all([
+          this._fetchEnvironment(),
           this._fetchActiveDashboards(),
           tf_backend.runsStore.refresh(),
           tf_backend.experimentsStore.refresh(),
         ]).then(() => {
-          const dashboard = this._selectedDashboardComponent();
-          if (dashboard) {
-            dashboard.reload();
-          }
+          this._lastReloadTimeShort = new Date().toLocaleDateString(undefined, {
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+          });
         });
-        this._lastReloadTime = new Date().toString();
       },
 
       openSettings() {
