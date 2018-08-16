@@ -154,21 +154,20 @@ Properties out:
         },
       },
     },
-    ready: function() {
-      var updateRuns = function() {
-        this.set("runs", tf_backend.runsStore.getRuns());
-      }.bind(this);
-      tf_backend.runsStore.addListener(updateRuns);
-      updateRuns();
-
-      var requestManager = new tf_backend.RequestManager();
-      requestManager.request(
-          tf_backend.getRouter().environment()).then(environmentObject => {
-        this.set('dataLocation', environmentObject.data_location);
-      }).catch(e => {
-        // Fetching the dataLocation failed. Prevent the exception from
-        // logging to console. The console already logs a 404 network event.
+    attached() {
+      this._runStoreListener = tf_backend.runsStore.addListener(() => {
+        this.set('runs', tf_backend.runsStore.getRuns());
       });
+      this.set('runs', tf_backend.runsStore.getRuns());
+
+      this._envStoreListener = tf_backend.runsStore.addListener(() => {
+        this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
+      });
+      this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
+    },
+    detached() {
+      tf_backend.runsStore.removeListenerByKey(this._runStoreListener);
+      tf_backend.runsStore.removeListenerByKey(this._envStoreListener);
     },
     _toggleAll: function() {
       this.$.multiCheckbox.toggleAll();
