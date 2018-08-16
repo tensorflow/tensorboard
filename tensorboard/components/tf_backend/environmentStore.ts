@@ -15,8 +15,8 @@ limitations under the License.
 namespace tf_backend {
 
 export enum Mode {
-  DB = 'db',
-  LOGDIR = 'logdir',
+  DB,
+  LOGDIR,
 }
 
 interface Environment {

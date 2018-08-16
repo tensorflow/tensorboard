@@ -75,6 +75,12 @@ Polymer({
       notify: true,
       computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
     },
+
+    _mode: {
+      type: Number,
+      value: '',
+    },
+
   },
 
   observers: [
@@ -96,37 +102,33 @@ Polymer({
   }),
 
   attached() {
-    this._updateExpKey = tf_backend.experimentsStore
-        .addListener(() => this._updateExps());
-    this._updateExps();
+    this._updateExpKey = tf_backend.experimentsStore.addListener(() => {
+      this._allExperiments = tf_backend.experimentsStore.getExperiments();
+    });
+    this._allExperiments = tf_backend.experimentsStore.getExperiments();
+
+    this._updateEnvKey = tf_backend.environmentStore.addListener(() => {
+      this._mode = tf_backend.environmentStore.getMode();
+    });
+    this._mode = tf_backend.environmentStore.getMode();
   },
 
   detached() {
     tf_backend.experimentsStore.removeListenerByKey(this._updateExpKey);
-  },
-
-  _updateExps() {
-    this._dataReady = true;
-    this._allExperiments = tf_backend.experimentsStore.getExperiments();
+    tf_backend.environmentStore.removeListenerByKey(this._updateEnvKey);
   },
 
   _canCompareExperiments(): boolean {
-    // TODO(stephanwlee): change this to be based on whether user is using
-    // logdir or db.
-    return Boolean(this._experiments.length);
+    return this._mode == tf_backend.Mode.DB;
   },
 
-  _shouldShowAddComparison() {
-    return this._allExperiments.length > this._experiments.length;
+  _getPersistenceId(experiment) {
+    return tf_data_selector.encodeId(experiment.id);
   },
 
   _isExperimentEnabled(experiment) {
     const enabledExperimentIds = new Set(this._enabledExperimentIds);
     return enabledExperimentIds.has(experiment.id);
-  },
-
-  _getPersistenceId(experiment) {
-    return tf_data_selector.encodeId(experiment.id);
   },
 
   _getExperimentColor(experiment: tf_backend.Experiment): string {
@@ -243,6 +245,11 @@ Polymer({
       this._enabledExperimentIds = this._enabledExperimentIds
           .filter(id => id != newId);
     }
+  },
+
+  _shouldShowAddComparison() {
+    return this._canCompareExperiments() &&
+        this._allExperiments.length > this._experiments.length;
   },
 });
 
