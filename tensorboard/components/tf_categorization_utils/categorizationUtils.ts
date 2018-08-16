@@ -32,6 +32,7 @@ export interface PrefixGroupMetadata {
 }
 export interface SearchResultsMetadata {
   type: CategoryType;
+  compositeSearch?: boolean;
   validRegex: boolean;
   universalRegex: boolean;  // is the search query ".*"? ("(?:)" doesn't count)
 }
@@ -145,6 +146,7 @@ export function categorizeSelection(
     SeriesCategory[] {
   const tagToSeries = new Map();
   const searchTags = new Set();
+  const searchCategories = [];
 
   selection.forEach(({experiment, runs, tagRegex}) => {
     const runNames = runs.map(({name}) => name);
@@ -152,9 +154,7 @@ export function categorizeSelection(
     const tagToSelectedRuns = createTagToRuns(selectedRunToTag);
     const tags = tf_backend.getTags(selectedRunToTag);
 
-    const searchCategory = categorizeBySearchQuery(tags, tagRegex);
-    // list of matching tags.
-    searchCategory.items.forEach(tag => searchTags.add(tag));
+    searchCategories.push(categorizeBySearchQuery(tags, tagRegex))
 
     // list of all tags that has selected runs.
     tags.forEach(tag => {
@@ -165,11 +165,17 @@ export function categorizeSelection(
     });
   });
 
-  const searchCategory = {
-    name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+  // list of matching tags.
+  searchCategories
+      .forEach(({items}) => items.forEach(tag => searchTags.add(tag)));
+
+  // If there is only one searchCategory, use it.
+  const searchCategory = searchCategories.length == 1 ? searchCategories[0] : {
+    name: searchCategories.every(({name}) => !Boolean(name)) ? '' : 'multi',
     metadata: {
       type: CategoryType.SEARCH_RESULTS,
-      validRegex: false,
+      compositeSearch: true,
+      validRegex: true,
       universalRegex: false,
     },
     items: Array.from(searchTags)
