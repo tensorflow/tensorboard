@@ -113,6 +113,7 @@ class CorePlugin(base_plugin.TBPlugin):
         request,
         {
             'data_location': self._logdir or self._db_uri,
+            'mode': 'logdir' if self._logdir else 'db',
             'window_title': self._window_title,
         },
         'application/json')
