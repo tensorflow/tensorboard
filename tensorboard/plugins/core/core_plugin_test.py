@@ -79,6 +79,17 @@ class CorePluginTest(tf.test.TestCase):
         self.logdir_based_server, '/data/environment')
     self.assertEqual(parsed_object['data_location'], self.logdir)
 
+  def testEnvironmentForModeForDbServer(self):
+    """Tests environment route that returns the mode for db based server."""
+    parsed_object = self._get_json(self.db_based_server, '/data/environment')
+    self.assertEqual(parsed_object['mode'], 'db')
+
+  def testEnvironmentForModeForLogServer(self):
+    """Tests environment route that returns the mode for logdir based server."""
+    parsed_object = self._get_json(
+        self.logdir_based_server, '/data/environment')
+    self.assertEqual(parsed_object['mode'], 'logdir')
+
   def testEnvironmentForWindowTitle(self):
     """Test that the environment route correctly returns the window title."""
     parsed_object_db = self._get_json(
