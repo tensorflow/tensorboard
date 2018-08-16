@@ -111,6 +111,7 @@ var tf_categorization_utils;
     function categorizeSelection(selection, pluginName) {
         var tagToSeries = new Map();
         var searchTags = new Set();
+        var searchCategories = [];
         selection.forEach(function (_a) {
             var experiment = _a.experiment, runs = _a.runs, tagRegex = _a.tagRegex;
             var runNames = runs.map(function (_a) {
@@ -120,9 +121,7 @@ var tf_categorization_utils;
             var selectedRunToTag = createRunToTagForPlugin(runs, pluginName);
             var tagToSelectedRuns = createTagToRuns(selectedRunToTag);
             var tags = tf_backend.getTags(selectedRunToTag);
-            var searchCategory = categorizeBySearchQuery(tags, tagRegex);
-            // list of matching tags.
-            searchCategory.items.forEach(function (tag) { return searchTags.add(tag); });
+            searchCategories.push(categorizeBySearchQuery(tags, tagRegex));
             // list of all tags that has selected runs.
             tags.forEach(function (tag) {
                 var series = tagToSeries.get(tag) || [];
@@ -131,11 +130,22 @@ var tf_categorization_utils;
                 tagToSeries.set(tag, series);
             });
         });
-        var searchCategory = {
-            name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+        // list of matching tags.
+        searchCategories
+            .forEach(function (_a) {
+            var items = _a.items;
+            return items.forEach(function (tag) { return searchTags.add(tag); });
+        });
+        // If there is only one searchCategory, use it.
+        var searchCategory = searchCategories.length == 1 ? searchCategories[0] : {
+            name: searchCategories.every(function (_a) {
+                var name = _a.name;
+                return !Boolean(name);
+            }) ? '' : 'multi',
             metadata: {
                 type: CategoryType.SEARCH_RESULTS,
-                validRegex: false,
+                compositeSearch: true,
+                validRegex: true,
                 universalRegex: false,
             },
             items: Array.from(searchTags)
