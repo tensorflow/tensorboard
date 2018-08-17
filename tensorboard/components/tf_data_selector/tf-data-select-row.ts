@@ -21,6 +21,7 @@ enum Type {
   TAG,
 }
 
+const MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
 const STORAGE_ALL_VALUE = '$all';
 const STORAGE_NONE_VALUE = '$none';
 
@@ -69,6 +70,8 @@ Polymer({
       value: (): Array<tf_dashboard_common.FilterableCheckboxListItem> => [],
     },
 
+    _defaultRunStorageValue: String,
+
     _tagRegex: {
       type: String,
       value: '',
@@ -100,14 +103,6 @@ Polymer({
     if (this.persistenceId == null) {
       throw new RangeError('Required `persistenceId` missing');
     }
-
-    const runInitializer = tf_storage.getStringInitializer(
-        this._getPersistenceKey(Type.RUN),
-        {
-          defaultValue: STORAGE_ALL_VALUE,
-          polymerProperty: '_runSelectionStateString',
-        });
-    runInitializer.call(this);
 
     const tagInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.TAG),
@@ -151,6 +146,16 @@ Polymer({
 
     const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
     return requestManager.request(url).then(runs => {
+      this._defaultRunStorageValue =
+          runs.length < MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
+              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+      const runInitializer = tf_storage.getStringInitializer(
+          this._getPersistenceKey(Type.RUN),
+          {
+            defaultValue: this._defaultRunStorageValue,
+            polymerProperty: '_runSelectionStateString',
+          });
+      runInitializer.call(this);
       this.set('_runs', runs);
     });
   },
@@ -174,8 +179,10 @@ Polymer({
     const value = this._serializeValue(
         this._runs,
         this._selectedRuns.map(({id}) => id));
-    tf_storage.setString(this._getPersistenceKey(Type.RUN), value,
-        {defaultValue: ''});
+    tf_storage.setString(
+        this._getPersistenceKey(Type.RUN),
+        value,
+        {defaultValue: this._defaultRunStorageValue});
   },
 
   _getRunsSelectionState(): Object {
