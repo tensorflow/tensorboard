@@ -245,7 +245,16 @@ var tf_categorization_utils;
                     expect(searchResult).to.have.property('items')
                         .that.has.lengthOf(2);
                     expect(searchResult.items[0]).to.have.property('tag', 'tag2/subtag1');
+                    expect(searchResult.items[0]).to.have.property('series')
+                        .that.deep.equal([
+                        { experiment: 'exp2', run: 'run2' },
+                        { experiment: 'exp2', run: 'run3' },
+                    ]);
                     expect(searchResult.items[1]).to.have.property('tag', 'tag3');
+                    expect(searchResult.items[1]).to.have.property('series')
+                        .that.deep.equal([
+                        { experiment: 'exp2', run: 'run3' },
+                    ]);
                 });
                 it('combines selection without tagRegex with one', function () {
                     var searchResult = categorizeSelection([this.experiment1, this.experiment2], 'scalar')[0];
@@ -285,6 +294,20 @@ var tf_categorization_utils;
                     expect(result).to.have.lengthOf(2);
                     expect(result[0]).to.have.property('items')
                         .that.has.lengthOf(0);
+                });
+                it('omits selection from tag series when its regex does not match', function () {
+                    var searchResult = categorizeSelection([this.experiment1, this.experiment3], 'scalar')[0];
+                    // should match 'tag1', 'tag2/subtag1', 'tag2/subtag2', and 'tag3'.
+                    expect(searchResult).to.have.property('items')
+                        .that.has.lengthOf(3);
+                    expect(searchResult.items[0]).to.have.property('tag', 'tag1');
+                    expect(searchResult.items[1]).to.have.property('tag', 'tag2/subtag1');
+                    expect(searchResult.items[2]).to.have.property('tag', 'tag2/subtag2');
+                    // experiment3 also matches the tag1 but it has tagRegex of `junk`.
+                    expect(searchResult.items[0]).to.have.property('series')
+                        .that.deep.equal([
+                        { experiment: 'exp1', run: 'run1' },
+                    ]);
                 });
             });
             describe('prefix group', function () {

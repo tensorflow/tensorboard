@@ -110,7 +110,9 @@ var tf_categorization_utils;
      */
     function categorizeSelection(selection, pluginName) {
         var tagToSeries = new Map();
-        var searchTags = new Set();
+        // `tagToSearchSeries` contains subset of `tagToSeries`. tagRegex in each
+        // selection can omit series from a tag category.
+        var tagToSearchSeries = new Map();
         var searchCategories = [];
         selection.forEach(function (_a) {
             var experiment = _a.experiment, runs = _a.runs, tagRegex = _a.tagRegex;
@@ -121,7 +123,6 @@ var tf_categorization_utils;
             var selectedRunToTag = createRunToTagForPlugin(runs, pluginName);
             var tagToSelectedRuns = createTagToRuns(selectedRunToTag);
             var tags = tf_backend.getTags(selectedRunToTag);
-            searchCategories.push(categorizeBySearchQuery(tags, tagRegex));
             // list of all tags that has selected runs.
             tags.forEach(function (tag) {
                 var series = tagToSeries.get(tag) || [];
@@ -129,32 +130,35 @@ var tf_categorization_utils;
                     .map(function (run) { return ({ experiment: experiment.name, run: run }); }));
                 tagToSeries.set(tag, series);
             });
+            var searchCategory = categorizeBySearchQuery(tags, tagRegex);
+            searchCategories.push(searchCategory);
+            // list of tags matching tagRegex in the selection.
+            searchCategory.items.forEach(function (tag) {
+                var series = tagToSearchSeries.get(tag) || [];
+                series.push.apply(series, tagToSelectedRuns.get(tag)
+                    .map(function (run) { return ({ experiment: experiment.name, run: run }); }));
+                tagToSearchSeries.set(tag, series);
+            });
         });
-        // list of matching tags.
-        searchCategories
-            .forEach(function (_a) {
-            var items = _a.items;
-            return items.forEach(function (tag) { return searchTags.add(tag); });
-        });
-        // If there is only one searchCategory, use it.
-        var searchCategory = searchCategories.length == 1 ? searchCategories[0] : {
-            name: searchCategories.every(function (_a) {
-                var name = _a.name;
-                return !Boolean(name);
-            }) ? '' : 'multi',
-            metadata: {
-                type: CategoryType.SEARCH_RESULTS,
-                compositeSearch: true,
-                validRegex: true,
-                universalRegex: false,
-            },
-            items: Array.from(searchTags)
-                .sort(vz_sorting.compareTagNames)
-                .map(function (tag) { return ({
+        var searchCategory = searchCategories.length == 1 ?
+            searchCategories[0] :
+            {
+                name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+                metadata: {
+                    type: CategoryType.SEARCH_RESULTS,
+                    compositeSearch: true,
+                    validRegex: true,
+                    universalRegex: false,
+                },
+                items: Array.from(tagToSearchSeries.keys())
+                    .sort(vz_sorting.compareTagNames),
+            };
+        var searchSeriesCategory = Object.assign({}, searchCategory, {
+            items: searchCategory.items.map(function (tag) { return ({
                 tag: tag,
-                series: tagToSeries.get(tag),
+                series: tagToSearchSeries.get(tag),
             }); }),
-        };
+        });
         // Organize the tag to items by prefix.
         var prefixCategories = categorizeByPrefix(Array.from(tagToSeries.keys()))
             .map(function (_a) {
@@ -169,7 +173,7 @@ var tf_categorization_utils;
             });
         });
         return [
-            searchCategory
+            searchSeriesCategory
         ].concat(prefixCategories);
     }
     tf_categorization_utils.categorizeSelection = categorizeSelection;
