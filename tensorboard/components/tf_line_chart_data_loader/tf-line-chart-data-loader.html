@@ -19,7 +19,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
 <script src="data-loader-behavior.js"></script>
 
 <!--
@@ -29,7 +29,7 @@ limitations under the License.
 <dom-module id="tf-line-chart-data-loader">
   <template>
     <div id="chart-and-spinner-container">
-      <vz-line-chart
+      <vz-line-chart2
         id="chart"
         x-components-creation-method="[[xComponentsCreationMethod]]"
         x-type="[[xType]]"
@@ -45,7 +45,7 @@ limitations under the License.
         default-y-range="[[defaultYRange]]"
         fill-area="[[fillArea]]"
         symbol-function="[[symbolFunction]]"
-      ></vz-line-chart>
+      ></vz-line-chart2>
       <template is="dom-if" if="[[dataLoading]]">
         <div id="loading-spinner-container">
           <paper-spinner-lite active></paper-spinner-lite>
@@ -219,8 +219,8 @@ limitations under the License.
       },
 
       _dataSeriesChanged(_) {
+        // Setting visible series redraws the chart.
         this.$.chart.setVisibleSeries(this.dataSeries);
-        this.redraw();
       },
 
       _logScaleChanged(logScaleActive) {
@@ -245,6 +245,7 @@ limitations under the License.
       },
 
     });
+
     })();
   </script>
 </dom-module>
