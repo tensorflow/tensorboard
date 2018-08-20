@@ -26,7 +26,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="../tf-data-selector/tf-data-selector.html">
+<link rel="import" href="../tf-data-selector/tf-collapsible-data-selector.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view-store.html">
@@ -141,8 +141,8 @@ limitations under the License.
       <div id="content-pane" class="fit">
         <template is="dom-if" if="[[_isDataSelectorEnabled]]">
           <div id="data-selector">
-            <tf-data-selector selection="{{_dataSelection}}">
-            </tf-data-selector>
+            <tf-collapsible-data-selector selection="{{_dataSelection}}">
+            </tf-collapsible-data-selector>
           </div>
         </template>
         <div id="content">
@@ -313,10 +313,19 @@ limitations under the License.
       }
 
       #data-selector {
-        border-bottom: 1px solid var(--tb-ui-dark-accent);
-        margin: 0 30px;
-        padding: 10px 0;
         flex-shrink: 0;
+      }
+
+      tf-collapsible-data-selector {
+        --tf-collapsible-data-selector: {
+          margin: 0 30px;
+        };
+
+        --tf-collapsible-data-selector-data-selector: {
+          border-bottom: 1px solid var(--tb-ui-dark-accent);
+          margin: 0 -30px;
+          padding: 10px 30px;
+        };
       }
 
       #content {

@@ -99,6 +99,7 @@ var tf_data_selector;
             });
         },
         _selectionChanged: function (event) {
+            event.stopPropagation();
             var _a = event.detail, runs = _a.runs, tagRegex = _a.tagRegex;
             if (!this._canCompareExperiments()) {
                 this._setSelection({
