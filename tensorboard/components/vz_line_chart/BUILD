@@ -8,18 +8,32 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "vz_line_chart",
     srcs = [
-        "dragZoomInteraction.js",
         "vz-line-chart.html",
         "vz-line-chart.js",
     ],
     path = "/vz-line-chart",
     visibility = ["//visibility:public"],
     deps = [
+        ":dragZoomInteraction",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_chart_helpers",
+    ],
+)
+
+tf_web_library(
+    name = "dragZoomInteraction",
+    srcs = [
+        "dragZoomInteraction.html",
+        "dragZoomInteraction.js",
+    ],
+    path = "/vz-line-chart",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:plottable",
     ],
 )
 
@@ -45,4 +59,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-
