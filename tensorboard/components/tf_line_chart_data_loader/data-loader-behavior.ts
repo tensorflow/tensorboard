@@ -140,7 +140,7 @@ export const DataLoaderBehavior = {
 
       return Promise.all(promises).then(this._canceller.cancellable(result => {
         this.dataLoading = false;
-        if (result.cancelled) return;
+        if (result.cancelled || !promises.length) return;
         this.onLoadFinish();
       }));
     });

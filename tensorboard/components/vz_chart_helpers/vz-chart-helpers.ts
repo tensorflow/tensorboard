@@ -100,6 +100,7 @@ export interface TooltipColumnState {
 
 export interface TooltipColumn {
   title: string;
+  static: boolean;
   evaluate: ((p: Point, status?: TooltipColumnState) => string);
 }
 
