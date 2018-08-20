@@ -46,7 +46,6 @@ Polymer({
       }),
     },
 
-
     _selectionMap: {
       type: Object,
       value: (): Map<number, tf_data_selector.Selection> => new Map(),
@@ -115,6 +114,7 @@ Polymer({
   },
 
   _selectionChanged(event) {
+    event.stopPropagation();
     const {runs, tagRegex} = event.detail;
 
     if (!this._canCompareExperiments()) {
