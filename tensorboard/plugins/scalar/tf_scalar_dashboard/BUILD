@@ -20,6 +20,7 @@ tf_web_library(
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_data_selector",
+        "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_line_chart_data_loader",

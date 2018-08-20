@@ -35,4 +35,8 @@ var tf_globals;
         return _fakeHash;
     }
     tf_globals.getFakeHash = getFakeHash;
+    function getEnableDataSelector() {
+        return new URLSearchParams(window.location.search).has('EnableDataSelector');
+    }
+    tf_globals.getEnableDataSelector = getEnableDataSelector;
 })(tf_globals || (tf_globals = {})); // namespace tf_globals
