@@ -37,4 +37,8 @@ export function getFakeHash() {
   return _fakeHash;
 }
 
+export function getEnableDataSelector(): boolean {
+  return new URLSearchParams(window.location.search).has('EnableDataSelector');
+}
+
 }  // namespace tf_globals
