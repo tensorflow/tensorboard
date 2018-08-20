@@ -141,8 +141,10 @@ limitations under the License.
       <div id="content-pane" class="fit">
         <template is="dom-if" if="[[_isDataSelectorEnabled]]">
           <div id="data-selector">
-            <tf-collapsible-data-selector selection="{{_dataSelection}}">
-            </tf-collapsible-data-selector>
+            <tf-collapsible-data-selector
+              selection="{{_dataSelection}}"
+              active-plugins="[[_activeDashboards]]"
+            ></tf-collapsible-data-selector>
           </div>
         </template>
         <div id="content">
@@ -432,7 +434,7 @@ limitations under the License.
          * The set of all dashboards. Each object within this array is a
          * DashboardDatum object.
          *
-         * @type {Array<Object>}
+         * @type {Array<!Dashboard>}
          */
         _dashboardData: {
           type: Array,

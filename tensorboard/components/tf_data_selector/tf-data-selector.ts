@@ -57,9 +57,6 @@ Polymer({
       }),
     },
 
-    // TODO(stephanwlee): Add list of active plugin from parent and filter out
-    // the unused tag names in the list of selection.
-
     _selections: {
       type: Object,
       value: (): Map<tf_backend.ExperimentId, tf_data_selector.Selection> => {
@@ -67,11 +64,16 @@ Polymer({
       },
     },
 
+    activePlugins: {
+      type: Array,
+      value: (): string[] => [],
+    },
+
     // Output property. It has subset of _selections.
     selection: {
       type: Object,
       notify: true,
-      computed: '_computeSelection(_enabledExperimentIds.*, _selections.*)',
+      computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
     },
   },
 
@@ -165,15 +167,34 @@ Polymer({
   _computeSelection() {
     if (this._canCompareExperiments()) {
       const enabledExperiments = new Set(this._enabledExperimentIds);
+
       // Make a copy of the all selections.
-      const newSelection = new Map(this._selections);
-      // Now, filter out disabled experiments from next `selection`.
-      newSelection.forEach((_, id) => {
-        if (!enabledExperiments.has(id)) newSelection.delete(id);
+      const newSelections = new Map(this._selections);
+
+      // Filter out disabled experiments from next `selection`.
+      newSelections.forEach((_, id) => {
+        if (!enabledExperiments.has(id)) newSelections.delete(id);
       });
+
+      const activePluginNames = new Set(this.activePlugins);
+      newSelections.forEach((selection, id) => {
+        const updatedSelection = cloneSelection(selection as Selection);
+        // Update tags in a run based on active plugin.
+        updatedSelection.runs.forEach(run => {
+          run.tags = run.tags
+              .filter(tag => activePluginNames.has(tag.pluginName));
+        });
+        // Filter out runs that does not have any tag that pertains to active
+        // plugins.
+        updatedSelection.runs = updatedSelection.runs
+            .filter(run => run.tags.length);
+
+        newSelections.set(id, updatedSelection);
+      });
+
       return {
         type: tf_data_selector.Type.WITH_EXPERIMENT,
-        selections: Array.from(newSelection.values()),
+        selections: Array.from(newSelections.values()),
       };
     }
     return {
@@ -218,9 +239,12 @@ Polymer({
   _experimentCheckboxToggled(e) {
     const newId = e.target.experiment.id;
     if (e.target.enabled) {
-      this._experimentIds = uniqueAdd(this._experimentIds, [newId]);
+      this._enabledExperimentIds = uniqueAdd(
+          this._enabledExperimentIds,
+          [newId]);
     } else {
-      this._experimentIds = this._experimentIds.filter(id => id != newId);
+      this._enabledExperimentIds = this._enabledExperimentIds
+          .filter(id => id != newId);
     }
   },
 });
@@ -232,6 +256,13 @@ function uniqueAdd<T>(to: T[], items: T[]): T[] {
   const toSet = new Set(to);
   items.forEach(item => toSet.add(item));
   return Array.from(toSet);
+}
+
+function cloneSelection(selection: Selection): Selection {
+  const newSelection = Object.assign({}, selection);
+  newSelection.runs = newSelection.runs
+      .map(run => Object.assign({}, run, {tags: run.tags.slice(0)}));
+  return newSelection;
 }
 
 }  // namespace tf_data_selector

@@ -23,6 +23,8 @@ Polymer({
       notify: true,
     },
 
+    activePlugins: Array,
+
     opened: {
       type: Boolean,
       reflectToAttribute: true,
