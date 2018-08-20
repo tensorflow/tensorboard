@@ -46,16 +46,18 @@ export interface Category<T> {
 export type TagCategory = Category<{tag: string, runs: string[]}>;
 export type RunTagCategory = Category<{tag: string, run: string}>;
 
+export type Series = {
+  experiment: string,
+  run: string,
+};
+
 /**
  * Organize data by tagPrefix, tag, then list of series which is comprised of
  * an experiment and a run.
  */
 export type SeriesCategory = Category<{
   tag: string,
-  series: Array<{
-    experiment: string,
-    run: string,
-  }>,
+  series: Array<Series>,
 }>;
 
 export type RawCategory = Category<string>;  // Intermediate structure.
@@ -144,8 +146,10 @@ export function categorizeTags(
 export function categorizeSelection(
     selection: tf_data_selector.Selection[], pluginName: string):
     SeriesCategory[] {
-  const tagToSeries = new Map();
-  const searchTags = new Set();
+  const tagToSeries = new Map<string, Array<Series>>();
+  // `tagToSearchSeries` contains subset of `tagToSeries`. tagRegex in each
+  // selection can omit series from a tag category.
+  const tagToSearchSeries = new Map<string, Array<Series>>();
   const searchCategories = [];
 
   selection.forEach(({experiment, runs, tagRegex}) => {
@@ -153,9 +157,6 @@ export function categorizeSelection(
     const selectedRunToTag = createRunToTagForPlugin(runs, pluginName);
     const tagToSelectedRuns = createTagToRuns(selectedRunToTag);
     const tags = tf_backend.getTags(selectedRunToTag);
-
-    searchCategories.push(categorizeBySearchQuery(tags, tagRegex))
-
     // list of all tags that has selected runs.
     tags.forEach(tag => {
       const series = tagToSeries.get(tag) || [];
@@ -163,42 +164,57 @@ export function categorizeSelection(
           .map(run => ({experiment: experiment.name, run})));
       tagToSeries.set(tag, series);
     });
+
+    const searchCategory = categorizeBySearchQuery(tags, tagRegex);
+    searchCategories.push(searchCategory);
+    // list of tags matching tagRegex in the selection.
+    searchCategory.items.forEach(tag => {
+      const series = tagToSearchSeries.get(tag) || [];
+      series.push(...tagToSelectedRuns.get(tag)
+          .map(run => ({experiment: experiment.name, run})));
+      tagToSearchSeries.set(tag, series);
+    });
   });
 
-  // list of matching tags.
-  searchCategories
-      .forEach(({items}) => items.forEach(tag => searchTags.add(tag)));
+  const searchCategory: RawCategory = searchCategories.length == 1 ?
+      searchCategories[0] :
+      {
+        name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+        metadata: {
+          type: CategoryType.SEARCH_RESULTS,
+          compositeSearch: true,
+          validRegex: true,
+          universalRegex: false,
+        },
+        items: Array.from(tagToSearchSeries.keys())
+            .sort(vz_sorting.compareTagNames),
+      };
 
-  // If there is only one searchCategory, use it.
-  const searchCategory = searchCategories.length == 1 ? searchCategories[0] : {
-    name: searchCategories.every(({name}) => !Boolean(name)) ? '' : 'multi',
-    metadata: {
-      type: CategoryType.SEARCH_RESULTS,
-      compositeSearch: true,
-      validRegex: true,
-      universalRegex: false,
+  const searchSeriesCategory: SeriesCategory = Object.assign(
+    {},
+    searchCategory,
+    {
+      items: searchCategory.items.map(tag => ({
+        tag,
+        series: tagToSearchSeries.get(tag),
+      })),
     },
-    items: Array.from(searchTags)
-        .sort(vz_sorting.compareTagNames)
-        .map(tag => ({
-          tag,
-          series: tagToSeries.get(tag),
-        })),
-  };
+  );
 
   // Organize the tag to items by prefix.
-  const prefixCategories = categorizeByPrefix(Array.from(tagToSeries.keys()))
-      .map(({name, metadata, items}) => ({
-        name,
-        metadata,
-        items: items.map(tag => ({
-          tag,
-          series: tagToSeries.get(tag),
-        })),
-      }));
+  const prefixCategories: SeriesCategory[] = categorizeByPrefix(
+      Array.from(tagToSeries.keys()))
+          .map(({name, metadata, items}) => ({
+            name,
+            metadata,
+            items: items.map(tag => ({
+              tag,
+              series: tagToSeries.get(tag),
+            })),
+          }));
 
   return [
-    searchCategory,
+    searchSeriesCategory,
     ...prefixCategories,
   ];
 }
