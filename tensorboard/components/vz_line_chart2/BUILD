@@ -8,10 +8,11 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "vz_line_chart2",
     srcs = [
+        "line-chart.js",
         "vz-line-chart2.html",
         "vz-line-chart2.js",
     ],
-    path = "/vz-line-chart",
+    path = "/vz-line-chart2",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",

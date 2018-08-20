@@ -123,7 +123,7 @@ var tf_line_chart_data_loader;
                 });
                 return Promise.all(promises).then(_this._canceller.cancellable(function (result) {
                     _this.dataLoading = false;
-                    if (result.cancelled)
+                    if (result.cancelled || !promises.length)
                         return;
                     _this.onLoadFinish();
                 }));

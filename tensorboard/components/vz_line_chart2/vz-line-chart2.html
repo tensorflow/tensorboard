@@ -20,16 +20,15 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-imports/plottable.html">
 <link rel="import" href="../vz-chart-helpers/vz-chart-helpers.html">
-<link rel="import" href="../vz-line-chart/dragZoomInteraction.html">
 
 <!--
-vz-line-chart2 creates an element that draws a line chart for
+vz-line-chart creates an element that draws a line chart for
 displaying event values.
 
 This line chart supports drawing multiple lines at the same time, with features
 such as different X scales (linear and temporal), tooltips and smoothing.
 
-@element vz-line-chart2
+@element vz-line-chart
 @demo demo/index.html
 -->
 <dom-module id="vz-line-chart2">
@@ -49,14 +48,15 @@ such as different X scales (linear and temporal), tooltips and smoothing.
     <div id="chartdiv"></div>
     <style>
       :host {
-        -webkit-user-select: none;
         -moz-user-select: none;
+        -webkit-user-select: none;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
         flex-shrink: 1;
-        position: relative;
         outline: none;
+        position: relative;
+        white-space: nowrap;
       }
       div {
         -webkit-user-select: none;
@@ -64,36 +64,42 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         flex-grow: 1;
         flex-shrink: 1;
       }
+      tr:empty {
+        margin: 0;
+        padding: 0;
+      }
       td {
         padding-left: 5px;
         padding-right: 5px;
         font-size: 13px;
+        line-height: 21px;
         opacity: 1;
       }
       #tooltip {
+        background: rgba(0, 0, 0, .8);
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+        color: #fff;
+        cursor: none;
+        font-size: 14px;
+        line-height: 1.4em;
+        margin-top: 10px;
+        opacity: 0;
+        padding: 8px;
         pointer-events: none;
         position: absolute;
-        opacity: 0;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-        font-size: 14px;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border-radius: 4px;
-        line-height: 1.4em;
-        padding: 8px;
+        will-change: transform;
         z-index: 5;
-        cursor: none;
-        margin-top: 10px;
       }
       .swatch {
         border-radius: 50%;
         width: 14px;
         height: 14px;
         display: block;
-        border: 2px solid rgba(0,0,0,0);
+        border: 2px solid rgba(0, 0, 0, 0);
       }
       .closest .swatch {
-        border: 2px solid white;
+        border: 2px solid #fff;
       }
       th {
         padding-left: 5px;
@@ -101,7 +107,7 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         text-align: left;
       }
       .distant td {
-        opacity: 0.8;
+        opacity: .8;
       }
 
       .distant td.swatch {
@@ -109,7 +115,7 @@ such as different X scales (linear and temporal), tooltips and smoothing.
       }
 
       .ghost {
-        opacity: 0.2;
+        opacity: .2;
         stroke-width: 1px;
       }
 
@@ -117,8 +123,11 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         stroke: #999;
         stroke-width: 1.5px;
       }
-
+      #chartdiv:hover {
+        will-change: transform;
+      }
     </style>
   </template>
+  <script src="line-chart.js"></script>
   <script src="vz-line-chart2.js"></script>
 </dom-module>
