@@ -105,7 +105,7 @@ limitations under the License.
       }
 
       .value-pill {
-        display: flex;
+        text-align: left;
         border-radius: 18px;
         margin: 0 8px 8px 0;
         text-overflow: ellipsis;
@@ -116,13 +116,29 @@ limitations under the License.
       .value-pill:hover {
         box-shadow:  0px 2px 2px 0px rgba(0,0,0,0.12), 0px 1px 3px 0px rgba(0,0,0,0.20);
         background: #e8eaed;
-        border: 1px solid #e8eaed;;
+        border: 1px solid #e8eaed;
       }
 
       .value-pill:focus {
         border: 1px solid rgba(224,145,31,0.8);
         box-shadow: 0px 0px 2px 0px rgba(241,101,40,0.4);
         outline: none;
+      }
+
+      .value-compare {
+        text-align: left;
+        margin: 0 8px 8px 0;
+        text-overflow: ellipsis;
+        padding: 0 8px 4px;
+        border: none;
+      }
+
+      .value-different {
+        color: #e17500;
+      }
+
+      .value-same {
+        color: #1b4ca6;
       }
 
       input[type=number]::-webkit-inner-spin-button,
@@ -389,7 +405,7 @@ limitations under the License.
               <div class="flex-controls value-pills-holder">
                 <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
                   <template is="dom-repeat" items="[[getCompareFeatureValues(feat.name)]]" as="value">
-                    <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                    <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
                           readonly
                           type="[[getInputType(feat.name)]]"
                           value="[[value]]">
@@ -397,13 +413,13 @@ limitations under the License.
                   </template>
                 </template>
                 <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
-                  <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                  <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
                     readonly
                     type="[[getInputType(feat.name)]]"
                     value="[[getFirstCompareFeatureValue(feat.name)]]">
                   </input>
                   <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
-                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getCompareInputClass(expandPillClass, displayMode)]]">
                       ...
                     </paper-button>
                   </template>
@@ -552,7 +568,7 @@ limitations under the License.
                       <template is="dom-repeat"
                                 items="[[getCompareSeqFeatureValues(seqfeat.name, seqNumber)]]"
                                 as="seqvalue">
-                        <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                        <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
                             readonly
                             type="[[getInputType(seqfeat.name)]]"
                             value="[[seqvalue]]">
@@ -560,13 +576,13 @@ limitations under the License.
                       </template>
                     </template>
                     <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
-                      <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                      <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
                         readonly
                         type="[[getInputType(seqfeat.name)]]"
                         value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
                       </input>
                       <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
-                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getSeqCompareInputClass(expandPillClass, displayMode, seqNumber)]]">
                           ...
                         </paper-button>
                       </template>

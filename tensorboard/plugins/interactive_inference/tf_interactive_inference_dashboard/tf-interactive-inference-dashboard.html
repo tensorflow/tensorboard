@@ -771,7 +771,7 @@ limitations under the License.
             </paper-button>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
-                <div class="button-prefix-label">Find closest counterfactual:</div>
+                <div class="button-prefix-label">Show nearest different classification:</div>
                 <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                   on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual">
                   L1
@@ -856,7 +856,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleExplorerSetup">Slice Explorer</button>
+                    <button class="heading" on-click="toggleExplorerSetup">Slices</button>
                     <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
                       <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                         <div class="flex">

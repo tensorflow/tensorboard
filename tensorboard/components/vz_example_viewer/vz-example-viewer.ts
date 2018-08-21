@@ -1007,6 +1007,40 @@ Polymer({
         (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
   },
 
+  getCompareInputClass: function(feat: string, displayMode: string,
+      index?: number) {
+    let str = 'value-compare' +
+        (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
+    if (index != null) {
+      const values = this.getFeatureValues(feat, true);
+      const compValues = this.getCompareFeatureValues(feat, true);
+      if (index >= values.length || index >= compValues.length ||
+          values[index] != compValues[index]) {
+        str += ' value-different'
+      } else {
+        str += ' value-same';
+      }
+    }
+    return str;
+  },
+
+  getSeqCompareInputClass: function(feat: string, displayMode: string,
+      seqNumber: number, index?: number) {
+    let str = 'value-compare' +
+        (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
+    if (index != null) {
+      const values = this.getSeqFeatureValues(feat, seqNumber, true);
+      const compValues = this.getCompareSeqFeatureValues(feat, seqNumber, true);
+      if (index >= values.length || index >= compValues.length ||
+          values[index] != compValues[index]) {
+        str += ' value-different'
+      } else {
+        str += ' value-same';
+      }
+    }
+    return str;
+  },
+
   /**
    * Replaces non-standard chars in feature names with underscores so they can
    * be used in css classes/ids.
@@ -1517,8 +1551,8 @@ Polymer({
         // available width in the container, considering padding.
         if (!this.allowImageControls) {
           const holder = this.$$(
-            '#' + this.getImageCardId(feat, compare)).parentElement
-            as HTMLElement;
+            '#' +
+            this.getImageCardId(feat, compare)).parentElement as HTMLElement;
           let cardWidthForScaling = holder.getBoundingClientRect().width / 2;
           if (cardWidthForScaling > 16) {
             cardWidthForScaling -= 16;
