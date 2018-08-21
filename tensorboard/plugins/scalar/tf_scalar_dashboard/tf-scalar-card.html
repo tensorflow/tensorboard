@@ -268,7 +268,7 @@ limitations under the License.
       },
       _getSeriesNameFromDatum(datum) {
         return this.multiExperiments ?
-            `${datum.experiment}/${datum.run}` :
+            `${datum.experiment.name}/${datum.run}` :
             datum.run;
       },
       _getColorScale() {

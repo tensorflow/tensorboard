@@ -47,7 +47,7 @@ export type TagCategory = Category<{tag: string, runs: string[]}>;
 export type RunTagCategory = Category<{tag: string, run: string}>;
 
 export type Series = {
-  experiment: string,
+  experiment: tf_backend.Experiment,
   run: string,
   tag: string,
 };
@@ -172,7 +172,7 @@ export function categorizeSelection(
     searchCategory.items.forEach(tag => {
       const series = tagToSearchSeries.get(tag) || [];
       series.push(...tagToSelectedRuns.get(tag)
-          .map(run => ({experiment: experiment.name, run})));
+          .map(run => ({experiment, run, tag})));
       tagToSearchSeries.set(tag, series);
     });
   });
