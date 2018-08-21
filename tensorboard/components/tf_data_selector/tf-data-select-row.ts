@@ -145,13 +145,14 @@ Polymer({
           startedTime: null,
         })));
       });
-    } else if (this.experiment.id) {
-      const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
-      return requestManager.request(url).then(runs => {
-        this.set('_runs', runs);
-      });
     }
-    return Promise.resolve();
+
+    console.assert(this.experiment.id != null, 'Expected an experiment Id');
+
+    const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
+    return requestManager.request(url).then(runs => {
+      this.set('_runs', runs);
+    });
   },
 
   _getRunOptions(_): Array<tf_dashboard_common.FilterableCheckboxListItem> {

@@ -76,8 +76,9 @@ Polymer({
   },
 
   observers: [
-    '_pruneAllSelection(_experiments.*)',
-    '_updateEnabledExperiments(_allExperiments.*)',
+    '_pruneSelections(_experiments.*)',
+    '_pruneExperimentIds(_allExperiments.*)',
+    '_pruneEnabledExperiments(_experimentIds.*)',
     '_persistExperimentIds(_experimentIds.*)',
     '_persistEnabledExperiments(_enabledExperimentIds.*)',
   ],
@@ -104,7 +105,7 @@ Polymer({
 
   _updateExps() {
     this._dataReady = true;
-    this.set('_allExperiments', tf_backend.experimentsStore.getExperiments());
+    this._allExperiments = tf_backend.experimentsStore.getExperiments();
   },
 
   _canCompareExperiments(): boolean {
@@ -134,16 +135,31 @@ Polymer({
    * Prunes away an experiment that has been removed from `_experiments` from
    * the selection.
    */
-  _pruneAllSelection() {
+  _pruneSelections() {
     if (!this._selections) return;
     const experimentIds = new Set(this._experiments.map(({id}) => id));
-    const newAllSelections = new Map(this._selections);
-    newAllSelections.forEach((_, id) => {
+    const newSelections = new Map(this._selections);
+    newSelections.forEach((_, id) => {
       // No experiment selection is still a valid selection. Do not prune.
       if (id == NO_EXPERIMENT_ID) return;
-      if (!experimentIds.has(id)) newAllSelections.delete(id);
+      if (!experimentIds.has(id)) newSelections.delete(id);
     });
-    this.set('_selections', newAllSelections);
+    this._selections = newSelections;
+  },
+
+  _pruneExperimentIds() {
+    if (!this._dataReady) return;
+    const allExpIds = new Set(this._allExperiments.map(({id}) => id));
+    this._experimentIds = this._experimentIds.filter(id => allExpIds.has(id));
+  },
+
+  _pruneEnabledExperiments() {
+    // When the component never fully loaded the list of experiments, it
+    // cannot correctly prune/adjust the enabledExperiments.
+    if (!this._dataReady) return;
+    const expIds = new Set(this._experimentIds);
+    this._enabledExperimentIds = this._enabledExperimentIds
+        .filter(id => expIds.has(id));
   },
 
   _computeSelection() {
@@ -173,7 +189,7 @@ Polymer({
     const expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
     const newSelections = new Map(this._selections);
     newSelections.set(expId, {experiment, runs, tagRegex});
-    this.set('_selections', newSelections);
+    this._selections = newSelections;
   },
 
   _computeExperiments() {
@@ -185,44 +201,37 @@ Polymer({
 
   _addExperiments(event) {
     const addedIds = event.detail.map(({id}) => id);
-    this._experimentIds = this._experimentIds.concat(addedIds);
+    this._experimentIds = uniqueAdd(this._experimentIds, addedIds);
 
-    // Enable newly added experiments by default.
-    this._mutateEnabledExperiment({added: addedIds});
+    // Enable newly added experiments by default
+    this._enabledExperimentIds = uniqueAdd(
+        this._enabledExperimentIds,
+        addedIds);
   },
 
   _removeExperiment(event) {
     const removedId = event.target.experiment.id;
+    // Changing _experimentIds will remove the id from _enabledExperimentIds.
     this._experimentIds = this._experimentIds.filter(id => id != removedId);
-
-    this._mutateEnabledExperiment({removed: [removedId]});
-  },
-
-  _updateEnabledExperiments() {
-    // When the component never fully loaded the list of experiments, it
-    // cannot correctly prune/adjust the enabledExperiments.
-    if (!this._dataReady) return;
-    const experimentIds = new Set(this._allExperiments.map(({id}) => id));
-    const removed = this._enabledExperimentIds
-        .filter(id => !experimentIds.has(id));
-    this._mutateEnabledExperiment({removed});
   },
 
   _experimentCheckboxToggled(e) {
-    const added = e.target.enabled ? [e.target.experiment.id] : [];
-    const removed = !e.target.enabled ? [e.target.experiment.id] : [];
-    this._mutateEnabledExperiment({added, removed});
-  },
-
-  _mutateEnabledExperiment({
-    added = [],
-    removed = [],
-  }) {
-    const enabledIds = new Set(this._enabledExperimentIds);
-    added.forEach(id => enabledIds.add(id));
-    removed.forEach(id => enabledIds.delete(id));
-    this.set('_enabledExperimentIds', Array.from(enabledIds));
+    const newId = e.target.experiment.id;
+    if (e.target.enabled) {
+      this._experimentIds = uniqueAdd(this._experimentIds, [newId]);
+    } else {
+      this._experimentIds = this._experimentIds.filter(id => id != newId);
+    }
   },
 });
+
+/**
+ * Append items to an array without duplicate entries.
+ */
+function uniqueAdd<T>(to: T[], items: T[]): T[] {
+  const toSet = new Set(to);
+  items.forEach(item => toSet.add(item));
+  return Array.from(toSet);
+}
 
 }  // namespace tf_data_selector
