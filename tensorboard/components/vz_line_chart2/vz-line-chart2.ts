@@ -216,6 +216,17 @@ Polymer({
     },
 
     /**
+     * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
+     * table element because Polymer does not support that. This seems like
+     * a bug in Polymer. Hence, we manually generate the HTML for creating a row
+     * of table headers.
+     */
+    _tooltipTableHeaderHtml: {
+      type: String,
+      computed: '_computeTooltipTableHeaderHtml(tooltipColumns)',
+    },
+
+    /**
      * Change how the tooltip is sorted. Allows:
      * - "default" - Sort the tooltip by input order.
      * - "ascending" - Sort the tooltip by ascending value.
@@ -246,6 +257,7 @@ Polymer({
     },
     _makeChartAsyncCallbackId: {type: Number, value: null},
   },
+
   observers: [
     '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale)',
     '_reloadFromCache(_chart)',
@@ -393,6 +405,12 @@ Polymer({
     this._chart.ignoreYOutliers(this.ignoreYOutliers);
   },
 
+  _computeTooltipTableHeaderHtml() {
+    // The first column contains the circle with the color of the run.
+    const titles = ['', ...this.tooltipColumns.map(c => c.title)];
+    return titles.map(title => `<th>${this._sanitize(title)}</th>`).join('');
+  },
+
   _tooltipSortingMethodChanged: function() {
     if (!this._chart) return;
     this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
@@ -402,6 +420,13 @@ Polymer({
     if (!this._chart) return;
     this._chart.setTooltipPosition(this.tooltipPosition);
   },
+
+  _sanitize(value) {
+    return value.replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')  // for symmetry :-)
+                .replace(/&/g, '&amp;');
+  },
+
 });
 
 }  // namespace vz_line_chart2
