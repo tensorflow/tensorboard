@@ -435,8 +435,8 @@ export class LineChart {
         let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
         // pts is the closets point to the tooltip for each dataset
         let pts = this.linePlot.datasets()
-                      .map((dataset) => this.findClosestPoint(target, dataset))
-                      .filter(Boolean);
+            .map((dataset) => this.findClosestPoint(target, dataset))
+            .filter(Boolean);
         let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
         // We draw tooltips for points that are NaN, or are currently visible
         let ptsForTooltips = pts.filter(
@@ -493,13 +493,18 @@ export class LineChart {
       points: vz_chart_helpers.Point[],
       target: vz_chart_helpers.Point,
       tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
+    if (!points.length) {
+      this.tooltip.style('opacity', 0);
+      return;
+    }
+
     // Formatters for value, step, and wall_time
     let valueFormatter = vz_chart_helpers.multiscaleFormatter(
         vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
 
-    let dist = (p: vz_chart_helpers.Point) =>
+    const dist = (p: vz_chart_helpers.Point) =>
         Math.pow(p.x - target.x, 2) + Math.pow(p.y - target.y, 2);
-    let closestDist = _.min(points.map(dist));
+    const closestDist = _.min(points.map(dist));
 
     const valueSortMethod = this.smoothingEnabled ?
         this.smoothedAccessor : this.yValueAccessor;
@@ -629,12 +634,13 @@ export class LineChart {
 
   private findClosestPoint(
       target: vz_chart_helpers.Point,
-      dataset: Plottable.Dataset): vz_chart_helpers.Point {
+      dataset: Plottable.Dataset): vz_chart_helpers.Point | null {
     const xPoints: number[] = dataset.data()
         .map((d, i) => this.xScale.scale(this.xAccessor(d, i, dataset)));
 
     let idx: number = _.sortedIndex(xPoints, target.x);
 
+    if (xPoints.length == 0) return null;
     if (idx === xPoints.length) {
       idx = idx - 1;
     } else if (idx !== 0) {
