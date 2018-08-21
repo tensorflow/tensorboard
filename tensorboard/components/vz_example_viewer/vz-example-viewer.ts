@@ -140,7 +140,7 @@ Polymer({
     features: {type: Object, computed: 'getFeatures(example)'},
     featuresList: {type: Object, computed: 'getFeaturesList(features, compareFeatures)'},
     seqFeatures: {type: Object, computed: 'getSeqFeatures(example)'},
-    seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(seqFeatures, compareSeqFeatures)'},
+    seqFeaturesList: {type: Object, computed: 'getFeaturesList(seqFeatures, compareSeqFeatures)'},
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
     displayMode: {type: String, value: 'grid'},
@@ -213,6 +213,9 @@ Polymer({
     this.imageInfo = {};
     this.hasImage = false;
 
+    if (example == null) {
+      return new Map<string, FeatureList>([]);
+    }
     if (example instanceof Example) {
       this.isSequence = false;
       if (!example.hasFeatures()) {
@@ -263,33 +266,12 @@ Polymer({
   },
 
   /** A computed map of all sequence features in an example. */
-  getSeqFeatures: function() {
-    if (this.example instanceof Example) {
+  getSeqFeatures: function(example: Example|SequenceExample) {
+    if (example == null || example instanceof Example) {
       return new Map<string, FeatureList>([]);
     }
     return (this.example as SequenceExample)
         .getFeatureLists()!.getFeatureListMap();
-  },
-
-  /**
-   * A computed list of all sequence features in an example, for driving the
-   * display.
-   */
-  getSeqFeaturesList: function() {
-    const features: NameAndFeature[] = [];
-    if (!this.seqFeatures) {
-      return features;
-    }
-    const it = this.seqFeatures!.keys();
-    if (it) {
-      let next = it.next();
-      while (!next.done) {
-        features.push(
-            {name: next.value, feature: this.seqFeatures.get(next.value)!});
-        next = it.next();
-      }
-    }
-    return features;
   },
 
   getFilteredFeaturesList: function(featureList: NameAndFeature[],

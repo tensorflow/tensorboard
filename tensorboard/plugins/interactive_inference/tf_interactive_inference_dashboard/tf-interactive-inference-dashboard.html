@@ -234,6 +234,7 @@ limitations under the License.
         padding: 20px;
         width: 30%;
         overflow-y: auto;
+        border-radius: 10px;
       }
 
       .dashboard-layout {
@@ -561,6 +562,11 @@ limitations under the License.
 
       .dist-switch {
         display: flex;
+        margin-top: 0;
+      }
+
+      .distance-vis-dropdown {
+        margin-top: 0;
       }
 
       #distancedialog {
@@ -570,6 +576,10 @@ limitations under the License.
 
       #distancedialog .buttons {
         color: #f57c00;
+      }
+
+      #deletedialog {
+        border-radius: 10px;
       }
 
       paper-radio-button {
@@ -631,6 +641,7 @@ limitations under the License.
         --paper-tooltip: {
           font-size: 16px;
         }
+        --paper-tooltip-delay-out: 2000ms;
       }
 
       .comment-icon {
@@ -640,6 +651,24 @@ limitations under the License.
         min-height: 30px;
         margin-top: 10px;
         color: var(--tb-orange-dark);
+      }
+
+      .arrow-icon {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        min-height: 50px;
+        margin-top: 5px;
+        color: var(--tb-orange-dark);
+      }
+
+      .info-icon {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        margin-top: 10px;
+        color: grey;
       }
 
       .resize-icon {
@@ -673,6 +702,7 @@ limitations under the License.
       .datapoint-info-header {
         color: var(--tb-orange-dark);
         font-size: 26px;
+        margin-top: 5px;
         margin-bottom: 15px;
       }
 
@@ -717,17 +747,18 @@ limitations under the License.
           max-classes-to-display="{{maxInferenceEntriesPerRun}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
-        <paper-button on-click="getExamplesAndCloseSettings_" class="button"
+        <paper-button on-click="getExamplesAndCloseSettings_" class="main-button"
                       disabled$="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
           Accept
         </paper-button>
+        <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
       </div>
     </paper-dialog>
     <paper-dialog id="deletedialog" modal>
       <p>Are you sure you want to delete the selected example?</p>
       <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm autofocus on-click="deleteDatapoint_">Delete</paper-button>
+        <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
+        <paper-button dialog-confirm autofocus on-click="deleteDatapoint_" class="main-button">Delete</paper-button>
       </div>
     </paper-dialog>
     <paper-dialog id="distancedialog" modal>
@@ -739,7 +770,7 @@ limitations under the License.
         <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
         <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
       </paper-radio-group>
-      <paper-dropdown-menu label="Apply to visualization" class="threshold-dropdown">
+      <paper-dropdown-menu label="Apply to visualization" class="threshold-dropdown distance-vis-dropdown">
         <paper-listbox class="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
           <paper-item name="colorBy">Color By</paper-item>
           <paper-item name="horizontalFacet">X-Axis Binning</paper-item>
@@ -749,8 +780,8 @@ limitations under the License.
         </paper-listbox>
       </paper-dropdown-menu>
       <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm autofocus on-click="addDistanceMetric">Apply</paper-button>
+        <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
+        <paper-button dialog-confirm autofocus on-click="addDistanceMetric" class="main-button">Apply</paper-button>
       </div>
     </paper-dialog>
     <div class="dashboard-layout">
@@ -780,6 +811,17 @@ limitations under the License.
                   on-click="findClosestCounterfactualL2_" alt="closest L2 counterfactual">
                   L2
                 </paper-button>
+                <div>
+                  <iron-icon icon="info-outline" class="info-icon"></iron-icon>
+                  <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
+                    <div>See nearest neighbors from a different classification using L1 or L2 distance,
+                      which are two popular distance measures. Find out more
+                      <a target="_blank" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">
+                        here
+                      </a>.
+                    </div>
+                  </paper-tooltip>
+                </div>
               </div>
             </template>
           </div>
@@ -1081,7 +1123,10 @@ limitations under the License.
                   <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
                     <div class="datapoint-info-holder">
                       <div class="datapoint-info-content">
-                        <div class="datapoint-info-header">Select a datapoint to begin editing features and values.</div>
+                        <div class="flex">
+                          <div class="datapoint-info-header">Select a datapoint to begin editing features and values.</div>
+                          <iron-icon icon="arrow-forward" class="arrow-icon"></iron-icon>
+                        </div>
                         <div class="datapoint-info-main">Clicking on a datapoint in the visualization will load
                           all the features and values associated with that example. Here are some of the things you can do:</div>
                         <div class="datapoint-info-bullet">
