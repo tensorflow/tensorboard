@@ -22,6 +22,11 @@ Polymer({
       value: (): Array<tf_backend.Experiment> => [],
     },
 
+    alwaysExpanded: {
+      type: Boolean,
+      value: false,
+    },
+
     _expanded: {
       type: Boolean,
       value: false,
@@ -44,6 +49,10 @@ Polymer({
       value: (): Array<tf_dashboard_common.FilterableCheckboxListItem> => [],
     },
   },
+
+  observers: [
+    '_changeExpanded(alwaysExpanded)',
+  ],
 
   attached() {
     this._updateExpKey = tf_backend.experimentsStore
@@ -68,6 +77,12 @@ Polymer({
           title: exp.name,
           subtitle: exp.startedTime,
         }));
+  },
+
+  _changeExpanded() {
+    if (this.alwaysExpanded && !this._expanded) {
+      this._expanded = true;
+    }
   },
 
   _toggle() {

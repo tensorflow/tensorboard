@@ -37,7 +37,7 @@ Properties out:
   <template>
     <template
       is="dom-if"
-      if="[[!_canCompareExperiments(_mode)]]"
+      if="[[!_canCompareExperiments]]"
       restamp
     >
       <tf-data-select-row
@@ -62,10 +62,11 @@ Properties out:
 
     <template
       is="dom-if"
-      if="[[_shouldShowAddComparison(_allExperiments, _experiments)]]"
+      if="[[_getAddComparisonVisible(_allExperiments, _experiments, _canCompareExperiments)]]"
     >
       <experiment-selector
         id="selector"
+        always-expanded="[[_getAddComparisonAlwaysExpanded(_canCompareExperiments, _experiments)]]"
         exclude-experiments="[[_experiments]]"
         on-experiment-added="_addExperiments"
       ></experiment-selector>
