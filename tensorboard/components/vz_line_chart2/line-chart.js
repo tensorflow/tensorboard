@@ -348,6 +348,10 @@ var vz_line_chart2;
         };
         LineChart.prototype.drawTooltips = function (points, target, tooltipColumns) {
             var _this = this;
+            if (!points.length) {
+                this.tooltip.style('opacity', 0);
+                return;
+            }
             // Formatters for value, step, and wall_time
             var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
             var dist = function (p) {
@@ -473,6 +477,8 @@ var vz_line_chart2;
             var xPoints = dataset.data()
                 .map(function (d, i) { return _this.xScale.scale(_this.xAccessor(d, i, dataset)); });
             var idx = _.sortedIndex(xPoints, target.x);
+            if (xPoints.length == 0)
+                return null;
             if (idx === xPoints.length) {
                 idx = idx - 1;
             }

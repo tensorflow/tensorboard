@@ -195,6 +195,16 @@ var vz_line_chart2;
                 value: false,
             },
             /**
+             * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
+             * table element because Polymer does not support that. This seems like
+             * a bug in Polymer. Hence, we manually generate the HTML for creating a row
+             * of table headers.
+             */
+            _tooltipTableHeaderHtml: {
+                type: String,
+                computed: '_computeTooltipTableHeaderHtml(tooltipColumns)',
+            },
+            /**
              * Change how the tooltip is sorted. Allows:
              * - "default" - Sort the tooltip by input order.
              * - "ascending" - Sort the tooltip by ascending value.
@@ -350,6 +360,12 @@ var vz_line_chart2;
                 return;
             this._chart.ignoreYOutliers(this.ignoreYOutliers);
         },
+        _computeTooltipTableHeaderHtml: function () {
+            var _this = this;
+            // The first column contains the circle with the color of the run.
+            var titles = [''].concat(this.tooltipColumns.map(function (c) { return c.title; }));
+            return titles.map(function (title) { return "<th>" + _this._sanitize(title) + "</th>"; }).join('');
+        },
         _tooltipSortingMethodChanged: function () {
             if (!this._chart)
                 return;
@@ -359,6 +375,11 @@ var vz_line_chart2;
             if (!this._chart)
                 return;
             this._chart.setTooltipPosition(this.tooltipPosition);
+        },
+        _sanitize: function (value) {
+            return value.replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;') // for symmetry :-)
+                .replace(/&/g, '&amp;');
         },
     });
 })(vz_line_chart2 || (vz_line_chart2 = {})); // namespace vz_line_chart2
