@@ -325,6 +325,17 @@ limitations under the License.
                 </div>
               </paper-card>
             </div>
+            <template is="dom-if" if="[[compareMode]]">
+              <div class="value-pills-holder">
+                <paper-card id="[[getCompareImageCardId(feat.name)]]" class="imagecard">
+                  <img class="image" src="[[getCompareImageSrc(feat.name)]]"
+                        id="[[getCompareImageId(feat.name)]]"></img>
+                  <canvas id="[[getCompareCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
+                  <div class="image-bottom-bar">
+                  </div>
+                </paper-card>
+              </div>
+            </template>
             <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
                               on-click="featureMoreClicked"
                               data-feature="[[feat.name]]"></paper-icon-button>
@@ -374,6 +385,32 @@ limitations under the License.
                 </template>
               </template>
             </div>
+            <template is="dom-if" if="[[compareMode]]">
+              <div class="flex-controls value-pills-holder">
+                <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
+                  <template is="dom-repeat" items="[[getCompareFeatureValues(feat.name)]]" as="value">
+                    <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                          readonly
+                          type="[[getInputType(feat.name)]]"
+                          value="[[value]]">
+                    </input>
+                  </template>
+                </template>
+                <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
+                  <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                    readonly
+                    type="[[getInputType(feat.name)]]"
+                    value="[[getFirstCompareFeatureValue(feat.name)]]">
+                  </input>
+                  <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
+                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                      ...
+                    </paper-button>
+                  </template>
+                </template>
+              </div>
+            </template>
+
             <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
                               on-click="featureMoreClicked"
                               data-feature="[[feat.name]]"></paper-icon-button>
@@ -447,6 +484,19 @@ limitations under the License.
                     </div>
                   </paper-card>
                 </div>
+                <template is="dom-if" if="[[compareMode]]">
+                  <div class="value-pills-holder">
+                    <paper-card id="[[getCompareImageCardId(seqfeat.name)]]" class="imagecard">
+                      <img class="image" src="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
+                          id="[[getCompareImageId(seqfeat.name)]]"></img>
+                      <canvas id="[[getCompareCanvasId(seqfeat.name)]]"
+                          data-feature="[[seqfeat.name]]"
+                          data-seq-num="[[seqNumber]]"></canvas>
+                      <div class="image-bottom-bar">
+                      </div>
+                    </paper-card>
+                  </div>
+                </template>
                 <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
                 <paper-dialog>
                   <paper-button data-feature="[[seqfeat.name]]"
@@ -496,6 +546,33 @@ limitations under the License.
                     </template>
                   </template>
                 </div>
+                <template is="dom-if" if="[[compareMode]]">
+                  <div class="flex-controls value-pills-holder">
+                    <template is="dom-if" if="[[isExpanded(seqfeat.name, expandAllFeatures)]]">
+                      <template is="dom-repeat"
+                                items="[[getCompareSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                                as="seqvalue">
+                        <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                            readonly
+                            type="[[getInputType(seqfeat.name)]]"
+                            value="[[seqvalue]]">
+                        </input>
+                      </template>
+                    </template>
+                    <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
+                      <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                        readonly
+                        type="[[getInputType(seqfeat.name)]]"
+                        value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
+                      </input>
+                      <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
+                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                          ...
+                        </paper-button>
+                      </template>
+                    </template>
+                  </div>
+                </template>
                 <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
                 <paper-dialog>
                   <paper-button data-feature="[[seqfeat.name]]"

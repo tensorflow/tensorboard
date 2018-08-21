@@ -138,9 +138,9 @@ Polymer({
     allowImageControls: {type: Boolean, value: false},
     imageScalePercentage: {type: Number, value: 100},
     features: {type: Object, computed: 'getFeatures(example)'},
-    featuresList: {type: Object, computed: 'getFeaturesList(features)'},
+    featuresList: {type: Object, computed: 'getFeaturesList(features, compareFeatures)'},
     seqFeatures: {type: Object, computed: 'getSeqFeatures(example)'},
-    seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(seqFeatures)'},
+    seqFeaturesList: {type: Object, computed: 'getSeqFeaturesList(seqFeatures, compareSeqFeatures)'},
     maxSeqNumber: {type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)'},
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
     displayMode: {type: String, value: 'grid'},
@@ -155,6 +155,20 @@ Polymer({
     expandPillClass: {type: String, value: 'expandPill'},
     expandAllFeatures: {type: Boolean, value: false},
     zeroIndex: {type: Number, value: 0},
+    compareJson: {type: Object, observer: 'createCompareExamplesFromJson'},
+    compareExample: {type: Object},
+    compareFeatures: {
+      type: Object,
+      computed: 'getFeatures(compareExample)',
+      observer: 'updateCompareMode'
+    },
+    compareSeqFeatures: {
+      type: Object,
+      computed: 'getSeqFeatures(compareExample)',
+      observer: 'updateCompareMode'
+    },
+    compareMode: Boolean,
+    compareImageInfo: {type: Object, value: {}},
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
@@ -194,23 +208,23 @@ Polymer({
   },
 
   /** A computed map of all standard features in an example. */
-  getFeatures: function() {
+  getFeatures: function(example: Example|SequenceExample) {
     // Reset our maps of image information when a new example is supplied.
     this.imageInfo = {};
     this.hasImage = false;
 
-    if (this.example instanceof Example) {
+    if (example instanceof Example) {
       this.isSequence = false;
-      if (!this.example.hasFeatures()) {
-        this.example.setFeatures(new Features());
+      if (!example.hasFeatures()) {
+        example.setFeatures(new Features());
       }
-      return this.example.getFeatures()!.getFeatureMap();
+      return example.getFeatures()!.getFeatureMap();
     } else {
       this.isSequence = true;
-      if (!this.example.hasContext()) {
-        this.example.setContext(new Features());
+      if (!example.hasContext()) {
+        example.setContext(new Features());
       }
-      return this.example.getContext()!.getFeatureMap();
+      return example.getContext()!.getFeatureMap();
     }
   },
 
@@ -218,18 +232,34 @@ Polymer({
    * A computed list of all standard features in an example, for driving the
    * display.
    */
-  getFeaturesList: function() {
-    const features: NameAndFeature[] = [];
-    const it = this.features.keys();
+  getFeaturesList: function(features: any, compareFeatures: any) {
+    const featuresList: NameAndFeature[] = [];
+    const featureSet: {[key: string]: boolean} = {};
+    let it = features.keys();
     if (it) {
       let next = it.next();
       while (!next.done) {
-        features.push(
-            {name: next.value, feature: this.features.get(next.value)!});
+        featuresList.push(
+            {name: next.value, feature: features.get(next.value)!});
+        featureSet[next.value] = true;
         next = it.next();
       }
     }
-    return features;
+    it = compareFeatures.keys();
+    if (it) {
+      let next = it.next();
+      while (!next.done) {
+        if (next.value in featureSet) {
+          next = it.next();
+          continue;
+        }
+        featuresList.push(
+            {name: next.value, feature: compareFeatures.get(next.value)!});
+        featureSet[next.value] = true;
+        next = it.next();
+      }
+    }
+    return featuresList;
   },
 
   /** A computed map of all sequence features in an example. */
@@ -427,13 +457,15 @@ Polymer({
   },
 
   /**
-   * Returns a list of the feature values for a string. If keepBytes is true
+   * Returns a list of the feature values for a feature. If keepBytes is true
    * then return the raw bytes. Otherwise convert them to a a readable string.
    */
   getFeatureValues: function(
       feature: string, keepBytes?: boolean,
-      isImage?: boolean): Array<string|number> {
-    const feat = this.features.get(feature);
+      isImage?: boolean, compareValues?: boolean): Array<string|number> {
+    const feat = compareValues ?
+      this.compareFeatures.get(feature) :
+      this.features.get(feature);
     if (!feat) {
       return [];
     }
@@ -452,9 +484,24 @@ Polymer({
     return [];
   },
 
+  /**
+   * Returns a list of the feature values for a the compared example for
+   * a feature.
+   */
+  getCompareFeatureValues: function(
+    feature: string, keepBytes?: boolean,
+    isImage?: boolean): Array<string|number> {
+  return this.getFeatureValues(feature, keepBytes, isImage, true);
+},
+
   /** Returns the first feature value for a feature. */
   getFirstFeatureValue: function(feature: string) {
     return this.getFeatureValues(feature)[0];
+  },
+
+  /** Returns the first feature value for a compared example for a feature. */
+  getFirstCompareFeatureValue: function(feature: string) {
+    return this.getCompareFeatureValues(feature)[0];
   },
 
   /** Returns if a feature has more than one feature value. */
@@ -463,13 +510,24 @@ Polymer({
   },
 
   /**
-   * Returns a list of the sequence feature values for a string for a given
+   * Returns if a feature has more than one feature value in the compared
+   * example.
+   */
+  compareFeatureHasMultipleValues: function(feature: string) {
+    return this.getCompareFeatureValues(feature).length > 1;
+  },
+
+  /**
+   * Returns a list of the sequence feature values for a feature for a given
    * sequence number. If keepBytes is true then return the raw bytes. Otherwise
    * convert them to a a readable string.
    */
   getSeqFeatureValues: function(
-      feature: string, seqNum: number, keepBytes?: boolean, isImage?: boolean) {
-    const featlistholder = this.seqFeatures!.get(feature);
+      feature: string, seqNum: number, keepBytes?: boolean, isImage?: boolean,
+      compareValues?: boolean) {
+    const featlistholder = compareValues ?
+        this.compareSeqFeatures!.get(feature) :
+        this.seqFeatures!.get(feature);
     if (!featlistholder) {
       return [];
     }
@@ -498,14 +556,38 @@ Polymer({
     return [];
   },
 
+  /**
+   * Returns a list of the sequence feature values for a feature for a given
+   * sequence number of the compared example.
+   */
+  getCompareSeqFeatureValues: function(
+      feature: string, seqNum: number,  keepBytes?: boolean,
+      isImage?: boolean): Array<string|number> {
+    return this.getSeqFeatureValues(feature, seqNum, keepBytes, isImage, true);
+  },
+
   /** Returns the first feature value for a sequence feature. */
   getFirstSeqFeatureValue: function(feature: string, seqNum: number) {
     return this.getSeqFeatureValues(feature, seqNum)[0];
   },
 
+  /** Returns the first feature value for the compared example for a feature. */
+  getFirstSeqCompareFeatureValue: function(feature: string, seqNum: number) {
+    return this.getCompareSeqFeatureValues(feature, seqNum)[0];
+  },
+
   /** Returns if a sequence feature has more than one feature value. */
   seqFeatureHasMultipleValues: function(feature: string, seqNum: number) {
     return this.getSeqFeatureValues(feature, seqNum).length > 1;
+  },
+
+  /**
+   * Returns if a sequence feature has more than one feature value in the
+   * compared example.
+   */
+  compareSeqFeatureHasMultipleValues: function(
+      feature: string, seqNum: number) {
+    return this.getCompareSeqFeatureValues(feature, seqNum).length > 1;
   },
 
   /**
@@ -515,7 +597,8 @@ Polymer({
    * Returns an empty string for arrays over 250MB in size, which should not
    * be an issue in practice with tf.Examples.
    */
-  decodeBytesListString: function(bytes: Uint8Array, singleByteChars?: boolean) {
+  decodeBytesListString: function(
+      bytes: Uint8Array, singleByteChars?: boolean) {
     if (bytes.length > MAX_BYTES_LIST_LENGTH) {
       return MAX_STRING_INDICATION;
     }
@@ -722,8 +805,12 @@ Polymer({
     this.focusedFeatureName = data.feature;
     this.focusedFeatureValueIndex = data.valueIndex;
     this.focusedSeqNumber = data.seqNum;
-    this.$.deletevalue.style.top = (inputControl.getBoundingClientRect().top - this.getBoundingClientRect().top- 25) + 'px';
-    this.$.deletevalue.style.right = (this.getBoundingClientRect().right - inputControl.getBoundingClientRect().right + 30) + 'px';
+    this.$.deletevalue.style.top = (
+      inputControl.getBoundingClientRect().top -
+      this.getBoundingClientRect().top- 25) + 'px';
+    this.$.deletevalue.style.right = (
+      this.getBoundingClientRect().right -
+      inputControl.getBoundingClientRect().right + 30) + 'px';
     this.showDeleteValueButton = true;
 
   },
@@ -1031,6 +1118,17 @@ Polymer({
   },
 
   /**
+   * Returns the data URI src for a feature value that is an encoded image, for
+   * the compared example.
+   */
+  getCompareImageSrc: function(feat: string) {
+    this.setupOnloadCallback(feat, true);
+    return this.getImageSrcForData(
+        feat, this.getCompareFeatureValues(feat, false, true)[0] as string,
+        true);
+  },
+
+  /**
    * Returns the data URI src for a sequence feature value that is an encoded
    * image.
    */
@@ -1041,19 +1139,33 @@ Polymer({
   },
 
   /**
+   * Returns the data URI src for a sequence feature value that is an encoded
+   * image, for the compared example.
+   */
+  getCompareSeqImageSrc: function(feat: string, seqNum: number) {
+    this.setupOnloadCallback(feat, true);
+    return this.getImageSrcForData(
+        feat, this.getCompareSeqFeatureValues(
+          feat, seqNum, false, true)[0] as string,
+        true);
+  },
+
+  /**
    * On the next frame, sets the onload callback for the image for the given
    * feature. This is delayed until the next frame to ensure the img element
    * is rendered before setting up the onload function.
    */
-  setupOnloadCallback: function(feat: string) {
+  setupOnloadCallback: function(feat: string, compare?: boolean) {
     requestAnimationFrame(() => {
-      const img = this.$$('#' + this.getImageId(feat)) as HTMLImageElement;
-      img.onload = this.getOnLoadForImage(feat, img);
+      const img = this.$$(
+        '#' + this.getImageId(feat, compare)) as HTMLImageElement;
+      img.onload = this.getOnLoadForImage(feat, img, compare);
     });
   },
 
   /** Helper method used by getImageSrc and getSeqImageSrc. */
-  getImageSrcForData: function(feat: string, imageData: string) {
+  getImageSrcForData: function(feat: string, imageData: string,
+      compare?: boolean) {
     // Get the format of the encoded image, according to the feature name
     // specified by go/tf-example. Defaults to jpeg as specified in the doc.
     const regExResult = IMG_FEATURE_REGEX.exec(feat);
@@ -1061,7 +1173,9 @@ Polymer({
       return null;
     }
     const featureMiddle = regExResult[1] || '';
-    const formatVals =
+    const formatVals = compare ?
+        this.getCompareFeatureValues(
+          'image' + featureMiddle + '/format', false) :
         this.getFeatureValues('image' + featureMiddle + '/format', false);
     let format = 'jpeg';
     if (formatVals.length > 0) {
@@ -1074,14 +1188,57 @@ Polymer({
     return src;
   },
 
+  /** Returns the length of an iterator. */
+  getIterLength: function(it: any) {
+    let len = 0;
+    if (it) {
+      let next = it.next();
+      while (!next.done) {
+        len++;
+        next = it.next();
+      }
+    }
+    return len;
+  },
+
   /**
-   * Creates tf.Example or tf.SequenceExample jspb object from json. Useful
-   * when this is embedded into a OnePlatform app that sends protos as json.
+   * Updates the compare mode based off of the compared example.
    */
-  createExamplesFromJson: function() {
-    let json = this.json;
+  updateCompareMode: function() {
+    let compareMode = false;
+    if ((this.compareFeatures &&
+         this.getIterLength(this.compareFeatures.keys()) > 0) ||
+        (this.compareSeqFeatures &&
+        this.getIterLength(this.compareSeqFeatures.keys()) > 0)) {
+          compareMode = true;
+    }
+    this.compareMode = compareMode;
+  },
+
+  /**
+   * Creates tf.Example or tf.SequenceExample jspb object from json. Useful when
+   * this is embedded into a OnePlatform app that sends protos as json.
+   */
+  createExamplesFromJson: function(json: string) {
+    this.example = this.createExamplesFromJsonHelper(json);
+    this.compareJson = {};
+  },
+
+  /**
+   * Creates compared tf.Example or tf.SequenceExample jspb object from json.
+   * Useful when this is embedded into a OnePlatform app that sends protos as
+   * json.
+   */
+  createCompareExamplesFromJson: function(json: string) {
     if (!json) {
       return;
+    }
+    this.compareExample = this.createExamplesFromJsonHelper(json);
+  },
+
+  createExamplesFromJsonHelper: function(json: any) {
+    if (!json) {
+      return null;
     }
     // If the provided json is a json string, parse it into an object.
     if (typeof this.json === 'string') {
@@ -1090,7 +1247,7 @@ Polymer({
     if (json.features) {
       const ex = new Example();
       ex.setFeatures(this.parseFeatures(json.features));
-      this.example = ex;
+      return ex;
     } else if (json.context || json.featureLists) {
       const seqex = new SequenceExample();
       if (json.context) {
@@ -1099,9 +1256,9 @@ Polymer({
       if (json.featureLists) {
         seqex.setFeatureLists(this.parseFeatureLists(json.featureLists));
       }
-      this.example = seqex;
+      return seqex;
     } else {
-      this.example = new Example();
+      return new Example();
     }
   },
 
@@ -1162,16 +1319,37 @@ Polymer({
     return feat;
   },
 
-  getImageId: function(feat: string) {
+  getImageId: function(feat: string, compare?: boolean) {
+    if (compare) {
+      return this.getCompareImageId(feat);
+    }
     return this.sanitizeFeature(feat) + '_image';
   },
 
-  getCanvasId: function(feat: string) {
+  getCanvasId: function(feat: string, compare?: boolean) {
+    if (compare) {
+      return this.getCompareCanvasId(feat);
+    }
     return this.sanitizeFeature(feat) + '_canvas';
   },
 
-  getImageCardId: function(feat: string) {
+  getImageCardId: function(feat: string, compare?: boolean) {
+    if (compare) {
+      return this.getCompareImageCardId(feat);
+    }
     return this.sanitizeFeature(feat) + '_card';
+  },
+
+  getCompareImageId: function(feat: string) {
+    return this.sanitizeFeature(feat) + '_image_compare';
+  },
+
+  getCompareCanvasId: function(feat: string) {
+    return this.sanitizeFeature(feat) + '_canvas_compare';
+  },
+
+  getCompareImageCardId: function(feat: string) {
+    return this.sanitizeFeature(feat) + '_card_compare';
   },
 
   getFeatureDialogId: function(feat: string) {
@@ -1320,10 +1498,14 @@ Polymer({
    * to the appropriate canvas element and adds the saliency information to the
    * canvas if it exists.
    */
-  getOnLoadForImage: function(feat: string, image: HTMLImageElement) {
-    const f = (feat: string, image: HTMLImageElement) => {
-      const canvas = this.$$('#' + this.getCanvasId(feat)) as HTMLCanvasElement;
-      this.addDragDropBehaviorToCanvas(canvas);
+  getOnLoadForImage: function(feat: string, image: HTMLImageElement,
+      compare?: boolean) {
+    const f = (feat: string, image: HTMLImageElement, compare?: boolean) => {
+      const canvas = this.$$(
+        '#' + this.getCanvasId(feat, compare)) as HTMLCanvasElement;
+      if (!compare) {
+        this.addDragDropBehaviorToCanvas(canvas);
+      }
 
       if (image && canvas) {
         // Draw the image to the canvas and size the canvas.
@@ -1334,7 +1516,9 @@ Polymer({
         // If not using image controls then scale the image to match the
         // available width in the container, considering padding.
         if (!this.allowImageControls) {
-          const holder = this.$$('#' + this.getImageCardId(feat)).parentElement as HTMLElement;
+          const holder = this.$$(
+            '#' + this.getImageCardId(feat, compare)).parentElement
+            as HTMLElement;
           let cardWidthForScaling = holder.getBoundingClientRect().width / 2;
           if (cardWidthForScaling > 16) {
             cardWidthForScaling -= 16;
@@ -1350,12 +1534,13 @@ Polymer({
           context.clearRect(0, 0, canvas.width, canvas.height);
           context.translate(transform.x, transform.y);
           context.scale(transform.k, transform.k);
-          this.renderImageOnCanvas(context, canvas.width, canvas.height, feat);
+          this.renderImageOnCanvas(context, canvas.width, canvas.height, feat,
+            compare);
           context.restore();
         };
         const zoom = () => {
           const transform = d3.event.transform;
-          this.addImageTransform(feat, transform);
+          this.addImageTransform(feat, transform, compare);
           transformFn(d3.event.transform);
         };
         const d3zoom = d3.zoom().scaleExtent(ZOOM_EXTENT).on('zoom', zoom);
@@ -1367,42 +1552,73 @@ Polymer({
         context.scale(imageScaleFactor, imageScaleFactor);
         context.drawImage(image, 0, 0);
         context.restore();
-        this.setImageDatum(context, canvas.width, canvas.height, feat);
-        this.renderImageOnCanvas(context, canvas.width, canvas.height, feat);
-        if (this.imageInfo[feat].transform) {
-          transformFn(this.imageInfo[feat].transform!);
+        this.setImageDatum(context, canvas.width, canvas.height, feat, compare);
+        this.renderImageOnCanvas(context, canvas.width, canvas.height, feat,
+          compare);
+        if (compare) {
+          if (this.compareImageInfo[feat].transform) {
+            transformFn(this.compareImageInfo[feat].transform!);
+          }
+        } else {
+          if (this.imageInfo[feat].transform) {
+            transformFn(this.imageInfo[feat].transform!);
+          }
         }
       } else {
         // If the image and canvas are not yet rendered, wait to perform this
         // processing.
-        requestAnimationFrame(() => f(feat, image));
+        requestAnimationFrame(() => f(feat, image, compare));
       }
     };
-    this.addImageElement(feat, image);
-    this.addImageOnLoad(feat, f);
-    return f.apply(this, [feat, image]);
+    this.addImageElement(feat, image, compare);
+    this.addImageOnLoad(feat, f, compare);
+    return f.apply(this, [feat, image, compare]);
   },
 
-  addImageOnLoad: function(feat: string, onload: OnloadFunction) {
+  addImageOnLoad: function(feat: string, onload: OnloadFunction,
+      compare?: boolean) {
     this.hasImage = true;
-    if (!this.imageInfo[feat]) {
-      this.imageInfo[feat] = {};
+    if (compare) {
+      if (!this.compareImageInfo[feat]) {
+        this.compareImageInfo[feat] = {};
+       }
+       this.compareImageInfo[feat].onload = onload;
+    } else {
+      if (!this.imageInfo[feat]) {
+       this.imageInfo[feat] = {};
+      }
+      this.imageInfo[feat].onload = onload;
     }
-    this.imageInfo[feat].onload = onload;
   },
 
-  addImageData: function(feat: string, imageData: Uint8ClampedArray) {
-    if (!this.imageInfo[feat]) {
-      this.imageInfo[feat] = {};
+  addImageData: function(feat: string, imageData: Uint8ClampedArray,
+      compare?: boolean) {
+    if (compare) {
+      if (!this.compareImageInfo[feat]) {
+        this.compareImageInfo[feat] = {};
+       }
+       this.compareImageInfo[feat].imageData = imageData;
+    } else {
+      if (!this.imageInfo[feat]) {
+       this.imageInfo[feat] = {};
+      }
+      this.imageInfo[feat].imageData = imageData;
     }
-    this.imageInfo[feat].imageData = imageData;
   },
 
-  addImageElement: function(feat: string, image: HTMLImageElement) {
-    if (!this.imageInfo[feat]) {
-      this.imageInfo[feat] = {};
+  addImageElement: function(feat: string, image: HTMLImageElement,
+      compare?: boolean) {
+    if (compare) {
+      if (!this.compareImageInfo[feat]) {
+        this.compareImageInfo[feat] = {};
+      }
+      this.compareImageInfo[feat].imageElement = image;
+    } else {
+      if (!this.imageInfo[feat]) {
+        this.imageInfo[feat] = {};
+      }
+      this.imageInfo[feat].imageElement = image;
     }
-    this.imageInfo[feat].imageElement = image;
   },
 
   addImageGrayscaleData: function(
@@ -1413,11 +1629,19 @@ Polymer({
     this.imageInfo[feat].imageGrayscaleData = imageGrayscaleData;
   },
 
-  addImageTransform: function(feat: string, transform: d3.ZoomTransform) {
-    if (!this.imageInfo[feat]) {
-      this.imageInfo[feat] = {};
+  addImageTransform: function(feat: string, transform: d3.ZoomTransform,
+      compare?: boolean) {
+    if (compare) {
+      if (!this.compareImageInfo[feat]) {
+        this.compareImageInfo[feat] = {};
+      }
+      this.compareImageInfo[feat].transform = transform;
+    } else {
+      if (!this.imageInfo[feat]) {
+        this.imageInfo[feat] = {};
+      }
+      this.imageInfo[feat].transform = transform;
     }
-    this.imageInfo[feat].transform = transform;
   },
 
   /**
@@ -1427,12 +1651,16 @@ Polymer({
    */
   setImageDatum: function(
       context: CanvasRenderingContext2D, width: number, height: number,
-      feat: string) {
+      feat: string, compare?: boolean) {
+    if (!width || !height) {
+      return;
+    }
     const contextData = context.getImageData(0, 0, width, height);
     const imageData = Uint8ClampedArray.from(contextData.data);
-    this.addImageData(feat, imageData);
+    this.addImageData(feat, imageData, compare);
 
-    if (!this.saliency || !this.showSaliency || !this.saliency[feat]) {
+    if (!this.saliency || !this.showSaliency || !this.saliency[feat] ||
+        compare) {
       return;
     }
 
@@ -1539,20 +1767,27 @@ Polymer({
 
   renderImageOnCanvas: function(
       context: CanvasRenderingContext2D, width: number, height: number,
-      feat: string) {
+      feat: string, compare?: boolean) {
+    if (!width || !height) {
+      return;
+    }
     // Set the correct image data array.
     const id = context.getImageData(0, 0, width, height);
+    if (compare) {
+      id.data.set(this.compareImageInfo[feat].imageData!)
+    } else {
     id.data.set(
         this.saliency && this.showSaliency && this.saliency[feat] ?
             this.imageInfo[feat].imageGrayscaleData! :
             this.imageInfo[feat].imageData!);
+    }
 
     // Adjust the contrast and add saliency mask if neccessary.
     if (this.windowWidth !== DEFAULT_WINDOW_WIDTH ||
         this.windowCenter !== DEFAULT_WINDOW_CENTER) {
       this.contrastImage(id.data, this.windowWidth, this.windowCenter);
     }
-    if (this.saliency && this.showSaliency && this.saliency[feat]) {
+    if (!compare && this.saliency && this.showSaliency && this.saliency[feat]) {
       this.addSaliencyToImage(id.data, this.saliency[feat]);
     }
 

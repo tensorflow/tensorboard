@@ -100,15 +100,26 @@ limitations under the License.
         width: 60%;
       }
 
-      .inference-section {
+      .inference-section-holder {
+        display: flex;
         flex-shrink: 0;
+        margin: 0 5px;
+      }
+
+      .inference-section-holder-expanded {
+        width: 40%;
+        flex-shrink: 0;
+        margin: 5px;
+      }
+
+      .inference-section {
         border: 1px solid #DADCE0;
+        width: 100%;
       }
 
       .inference-section-expanded {
-        flex-shrink: 0;
         border: 1px solid #DADCE0;
-        width: 40%;
+        width: 100%;
       }
 
       .inference-viewer {
@@ -1037,36 +1048,34 @@ limitations under the License.
                     </div>
                     <div class="examples-holder">
                       <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
-                        <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{selectedExampleAndInference.example}}"
-                                            on-example-change="exampleChange_" id="viewer"
-                                            display-mode="[[exampleDisplayMode]]"
-                                            feature-search-value="{{featureSearchValue}}">
+                        <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]"
+                                           json="{{selectedExampleAndInference.example}}"
+                                           compare-json="{{counterfactualExampleAndInference.example}}"
+                                           on-example-change="exampleChange_" id="viewer"
+                                           display-mode="[[exampleDisplayMode]]"
+                                           feature-search-value="{{featureSearchValue}}">
                         </vz-example-viewer>
-                        <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                          <button class="inference-header" on-click="toggleInferenceResults">Inference Results</button>
-                          <iron-collapse class="card" id="collapseinference" opened="{{openedInferenceResults}}">
-                            <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                                  id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                            </tf-inference-viewer>
-                          </iron-collapse>
-                        </div>
-                      </div>
-                      <template is="dom-if" if="[[counterfactualExampleAndInference]]">
-                        <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
-                          <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]" json="{{counterfactualExampleAndInference.example}}"
-                            readonly="true" display-mode="[[exampleDisplayMode]]"
-                            feature-search-value="{{featureSearchValue}}">
-                          </vz-example-viewer>
+                        <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
                           <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                            <button class="inference-header" on-click="toggleSecondInferenceResults">[[getInferenceResultsHeaderText(comparedIndices)]]</button>
-                            <iron-collapse class="card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
-                              <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
-                                                  model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                            <button class="inference-header" on-click="toggleInferenceResults">Inference Results</button>
+                            <iron-collapse class="card" id="collapseinference" opened="{{openedInferenceResults}}">
+                              <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                                    id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                               </tf-inference-viewer>
                             </iron-collapse>
                           </div>
+                          <template is="dom-if" if="[[counterfactualExampleAndInference]]">
+                            <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
+                              <button class="inference-header" on-click="toggleSecondInferenceResults">[[getInferenceResultsHeaderText(comparedIndices)]]</button>
+                              <iron-collapse class="card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
+                                <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
+                                                    model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                                </tf-inference-viewer>
+                              </iron-collapse>
+                            </div>
+                          </template>
                         </div>
-                      </template>
+                      </div>
                     </div>
                   </template>
                   <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
@@ -1177,14 +1186,14 @@ limitations under the License.
     "use strict";
 
     const maxStringLengthToDecode = 100000;
-    const inferenceLabelStr = 'inference label';
-    const inferenceValueStr = 'inference value';
-    const inferenceCorrectStr = 'inference correct';
-    const inferenceErrorStr = 'inference error';
-    const inferenceAbsErrorStr = 'inference absolute error';
-    const inferenceSquaredErrorStr = 'inference squared error';
-    const inferenceScoreStr = 'inference score';
-    const exampleIdKey = 'WIT Example ID'
+    const inferenceLabelStr = ' inference label';
+    const inferenceValueStr = ' inference value';
+    const inferenceCorrectStr = ' inference correct';
+    const inferenceErrorStr = ' inference error';
+    const inferenceAbsErrorStr = ' inference absolute error';
+    const inferenceSquaredErrorStr = ' inference squared error';
+    const inferenceScoreStr = ' inference score';
+    const exampleIdKey = ' WIT Example ID'
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -1643,6 +1652,7 @@ limitations under the License.
       },
 
       selectedIndicesChanged_: function(event) {
+        this.comparedIndices = [];
         this.selected = event.detail.value;
         this.selectedDataUpdated_();
         // When a datapoint is selected, switch to the datapoint tab.
@@ -1718,6 +1728,11 @@ limitations under the License.
       getInferenceSectionClass_: function(panelExpanded) {
         return panelExpanded
           ? 'inference-section-expanded' : 'inference-section';
+      },
+
+      getInferenceSectionHolderClass_: function(panelExpanded) {
+        return panelExpanded
+          ? 'inference-section-holder-expanded' : 'inference-section-holder';
       },
 
       isBinaryClassification_: function(modelType, multiClass) {
@@ -2993,6 +3008,7 @@ limitations under the License.
           this.visdata[i][exampleIdKey] = i;
         }
 
+        this.comparedIndices = [];
         this.selected = [];
         this.selectedDataUpdated_();
         this.fire('delete-example', {'index': deletedIndex});
