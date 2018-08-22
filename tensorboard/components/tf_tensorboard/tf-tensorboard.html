@@ -121,6 +121,7 @@ limitations under the License.
           <div class="global-actions">
             <paper-icon-button
               id="reload-button"
+              class$="[[_getDataRefreshingClass(_refreshing)]]"
               disabled$="[[_isReloadDisabled]]"
               icon="refresh"
               on-tap="reload"
@@ -360,6 +361,22 @@ limitations under the License.
         opacity: 0.2;
         color: white;
       }
+
+      #reload-button.refreshing {
+        animation: rotate 2s linear infinite;
+      }
+
+      @keyframes rotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(180deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   </template>
   <script src="autoReloadBehavior.js"></script>
@@ -540,6 +557,10 @@ limitations under the License.
           type: Object,
           value: () => new tf_backend.Canceller(),
         },
+        _refreshing: {
+          type: Boolean,
+          value: false,
+        }
       },
       observers: [
         ('_updateSelectedDashboardFromActive(' +
@@ -750,6 +771,14 @@ limitations under the License.
           this._updateSelectedDashboardFromHash();
         }, /*useCapture=*/false);
 
+        tf_backend.environmentStore.addListener(() => {
+          this._dataLocation = tf_backend.environmentStore.getDataLocation();
+          const title = tf_backend.environmentStore.getWindowTitle();
+          if (title) {
+            window.document.title = title;
+          }
+        });
+
         // We have to wait for our dashboard-containers to be stamped
         // before we can do anything.
         const dashboardsTemplate = this.$$('#dashboards-template');
@@ -762,16 +791,6 @@ limitations under the License.
 
         this._reloadData();
         this._lastReloadTime = new Date().toString();
-      },
-
-      _fetchEnvironment() {
-        const url = tf_backend.getRouter().environment();
-        return this._requestManager.request(url).then(result => {
-          this._dataLocation = result.data_location;
-          if (result.window_title) {
-            window.document.title = result.window_title;
-          }
-        });
       },
 
       _fetchActiveDashboards() {
@@ -838,9 +857,10 @@ limitations under the License.
       },
 
       _reloadData() {
+        this._refreshing = true;
         return Promise.all([
-          this._fetchEnvironment(),
           this._fetchActiveDashboards(),
+          tf_backend.environmentStore.refresh(),
           tf_backend.runsStore.refresh(),
           tf_backend.experimentsStore.refresh(),
         ]).then(() => {
@@ -851,7 +871,13 @@ limitations under the License.
             minute: 'numeric',
             second: 'numeric',
           });
+        }).finally(() => {
+          this._refreshing = false;
         });
+      },
+
+      _getDataRefreshingClass() {
+        return this._refreshing ? 'refreshing' : ''
       },
 
       openSettings() {
