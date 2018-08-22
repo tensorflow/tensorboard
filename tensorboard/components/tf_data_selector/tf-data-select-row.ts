@@ -21,6 +21,9 @@ enum Type {
   TAG,
 }
 
+const STORAGE_ALL_VALUE = '$all';
+const STORAGE_NONE_VALUE = '$none';
+
 Polymer({
   is: 'tf-data-select-row',
   properties: {
@@ -93,21 +96,23 @@ Polymer({
     }
   },
 
-  ready(): void {
-    if (this.persistenceId == null) return;
+  attached(): void {
+    if (this.persistenceId == null) {
+      throw new RangeError('Required `persistenceId` missing');
+    }
 
     const runInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.RUN),
-        {defaultValue: '', polymerProperty: '_runSelectionStateString'});
+        {
+          defaultValue: STORAGE_ALL_VALUE,
+          polymerProperty: '_runSelectionStateString',
+        });
     runInitializer.call(this);
 
     const tagInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.TAG),
         {defaultValue: '', polymerProperty: '_tagRegex'});
     tagInitializer.call(this);
-  },
-
-  attached(): void {
     this._fetchRunsAndTags().then(() => this._isDataReady = true);
   },
 
@@ -140,12 +145,14 @@ Polymer({
           startedTime: null,
         })));
       });
-    } else if (this.experiment.id) {
-      const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
-      return requestManager.request(url).then(runs => {
-        this.set('_runs', runs);
-      });
     }
+
+    console.assert(this.experiment.id != null, 'Expected an experiment Id');
+
+    const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
+    return requestManager.request(url).then(runs => {
+      this.set('_runs', runs);
+    });
   },
 
   _getRunOptions(_): Array<tf_dashboard_common.FilterableCheckboxListItem> {
@@ -165,14 +172,15 @@ Polymer({
   _persistSelectedRuns(): void {
     if (!this._isDataReady) return;
     const value = this._serializeValue(
-        this._runs, this._selectedRuns.map(({id}) => id));
+        this._runs,
+        this._selectedRuns.map(({id}) => id));
     tf_storage.setString(this._getPersistenceKey(Type.RUN), value,
         {defaultValue: ''});
   },
 
   _getRunsSelectionState(): Object {
     const allIds = this._runs.map(r => this._getSyntheticRunId(r));
-    const ids = this._deserializeValue(this._runSelectionStateString, allIds);
+    const ids = this._deserializeValue(allIds, this._runSelectionStateString);
     const prevSelection = new Set(ids);
     const newSelection = {};
     allIds.forEach(id => newSelection[id] = prevSelection.has(id));
@@ -215,17 +223,17 @@ Polymer({
 
   _serializeValue(
       source: Array<number|string>, selectedIds: Array<number|string>) {
-    if (selectedIds.length == source.length) return '$all';
-    if (selectedIds.length == 0) return '$none';
+    if (selectedIds.length == source.length) return STORAGE_ALL_VALUE;
+    if (selectedIds.length == 0) return STORAGE_NONE_VALUE;
 
     return this.noExperiment ?
         selectedIds.join(',') :
         tf_data_selector.encodeIdArray((selectedIds as Array<number>));
   },
 
-  _deserializeValue(str: string, allValues: Array<number|string>) {
-    if (str == '$all') return allValues;
-    if (str == '$none') return [];
+  _deserializeValue(allValues: Array<number|string>, str: string) {
+    if (str == STORAGE_ALL_VALUE) return allValues;
+    if (str == STORAGE_NONE_VALUE) return [];
     return this.noExperiment ?
         str.split(',') :
         tf_data_selector.decodeIdArray(str);
@@ -241,6 +249,10 @@ Polymer({
 
   _getSyntheticRunId(run) {
     return this.noExperiment ? run.name : run.id;
+  },
+
+  _fireCheckboxToggled() {
+    this.fire('checkbox-toggle');
   },
 });
 
