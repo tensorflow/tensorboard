@@ -25,12 +25,11 @@ limitations under the License.
         display: block;
       }
       .runs-holder {
-        padding: 2px 0;
+        padding: 0;
         display: flex;
         flex-direction: column-reverse;
         overflow-y: auto;
         max-height: 200px;
-        border-bottom: 1px solid lightgrey;
       }
       .row {
         display: flex;
@@ -41,8 +40,14 @@ limitations under the License.
         font-size: 12px;
         padding: 5px 0;
       }
-      .non-header {
-        border-top: 1px solid lightgrey;
+      .dark-row {
+        background: #cbf0f8
+      }
+      .stripe-row {
+        background: #e4f7fb;
+      }
+      .white-row {
+        background: white;
       }
       .marker {
         flex: 0.5;
@@ -50,6 +55,7 @@ limitations under the License.
       }
       .marker.mark {
         background: #007B83;
+        padding-left: 1px;
       }
       .run {
         flex: 10;
@@ -91,7 +97,7 @@ limitations under the License.
       <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
         <div class="rows-for-run">
           <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
-            <div class="row non-header">
+            <div class$="[[getRowClass(runindex, inferences, index)]]">
               <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
               <div class="run">[[getRunNumber(runindex)]]</div>
               <div class$="[[getLabelClass(modelType)]]">
@@ -183,6 +189,16 @@ limitations under the License.
 
       getMarkerClass: function(index, inferences) {
         return 'marker' + (index == (inferences.length - 1) ? ' mark' : '');
+      },
+
+      getRowClass: function(index, inferences, subindex) {
+        let str = 'row ';
+        if (index == (inferences.length - 1)) {
+          str += 'dark-row';
+        } else {
+          str += subindex % 2 == 0 ? 'white-row' : 'stripe-row';
+        }
+        return str;
       },
 
       getInference: function(inference, index) {

@@ -113,13 +113,13 @@ limitations under the License.
       }
 
       .inference-section {
-        border: 1px solid #DADCE0;
         width: 100%;
+        border: 1px solid lightgrey;
       }
 
       .inference-section-expanded {
-        border: 1px solid #DADCE0;
         width: 100%;
+        border: 1px solid lightgrey;
       }
 
       .inference-viewer {
@@ -650,7 +650,7 @@ limitations under the License.
         padding: 0 10px;
       }
 
-      .performance-card {
+      .no-padding-card {
         padding: 0;
       }
 
@@ -1009,7 +1009,7 @@ limitations under the License.
                         <iron-icon icon="[[getExpandCollapseIcon(openedPerformance)]]" class="expand-collapse-button"></iron-icon>
                       </div>
                     </button>
-                    <iron-collapse class="performance-card" id="collapseperformance" opened="{{openedPerformance}}">
+                    <iron-collapse class="no-padding-card" id="collapseperformance" opened="{{openedPerformance}}">
                       <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
                         <template is="dom-repeat" items="[[featureValueThresholds]]">
                           <div class="feature-breakdown">
@@ -1188,7 +1188,7 @@ limitations under the License.
                                 <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                               </div>
                             </button>
-                            <iron-collapse class="card" id="collapseinference" opened="{{openedInferenceResults}}">
+                            <iron-collapse class="no-padding-card" id="collapseinference" opened="{{openedInferenceResults}}">
                               <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
                                                     id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                               </tf-inference-viewer>
@@ -1201,7 +1201,7 @@ limitations under the License.
                                   <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                                 </div>
                               </button>
-                              <iron-collapse class="card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
+                              <iron-collapse class="no-padding-card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
                                 <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
                                                     model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                                 </tf-inference-viewer>
@@ -1694,8 +1694,8 @@ limitations under the License.
       },
 
       setFacetDistFeatureName: function(facetDistSwitch, selected) {
-        this.facetDistFeatureName = facetDistSwitch + ' distance to example ' +
-            selected[0];
+        this.facetDistFeatureName = ' ' + facetDistSwitch +
+            ' distance to example ' + selected[0];
       },
 
       findClosestCounterfactualL1_: function() {
