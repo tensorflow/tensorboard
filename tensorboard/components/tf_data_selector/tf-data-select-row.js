@@ -20,6 +20,8 @@ var tf_data_selector;
         Type[Type["RUN"] = 1] = "RUN";
         Type[Type["TAG"] = 2] = "TAG";
     })(Type || (Type = {}));
+    var STORAGE_ALL_VALUE = '$all';
+    var STORAGE_NONE_VALUE = '$none';
     Polymer({
         is: 'tf-data-select-row',
         properties: {
@@ -80,16 +82,18 @@ var tf_data_selector;
                     return "gt" + id;
             }
         },
-        ready: function () {
-            if (this.persistenceId == null)
-                return;
-            var runInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.RUN), { defaultValue: '', polymerProperty: '_runSelectionStateString' });
+        attached: function () {
+            var _this = this;
+            if (this.persistenceId == null) {
+                throw new RangeError('Required `persistenceId` missing');
+            }
+            var runInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.RUN), {
+                defaultValue: STORAGE_ALL_VALUE,
+                polymerProperty: '_runSelectionStateString',
+            });
             runInitializer.call(this);
             var tagInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.TAG), { defaultValue: '', polymerProperty: '_tagRegex' });
             tagInitializer.call(this);
-        },
-        attached: function () {
-            var _this = this;
             this._fetchRunsAndTags().then(function () { return _this._isDataReady = true; });
         },
         _synchronizeColors: function () {
@@ -122,12 +126,11 @@ var tf_data_selector;
                     }); }));
                 });
             }
-            else if (this.experiment.id) {
-                var url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
-                return requestManager.request(url).then(function (runs) {
-                    _this.set('_runs', runs);
-                });
-            }
+            console.assert(this.experiment.id != null, 'Expected an experiment Id');
+            var url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
+            return requestManager.request(url).then(function (runs) {
+                _this.set('_runs', runs);
+            });
         },
         _getRunOptions: function (_) {
             var _this = this;
@@ -154,7 +157,7 @@ var tf_data_selector;
         _getRunsSelectionState: function () {
             var _this = this;
             var allIds = this._runs.map(function (r) { return _this._getSyntheticRunId(r); });
-            var ids = this._deserializeValue(this._runSelectionStateString, allIds);
+            var ids = this._deserializeValue(allIds, this._runSelectionStateString);
             var prevSelection = new Set(ids);
             var newSelection = {};
             allIds.forEach(function (id) { return newSelection[id] = prevSelection.has(id); });
@@ -194,17 +197,17 @@ var tf_data_selector;
         },
         _serializeValue: function (source, selectedIds) {
             if (selectedIds.length == source.length)
-                return '$all';
+                return STORAGE_ALL_VALUE;
             if (selectedIds.length == 0)
-                return '$none';
+                return STORAGE_NONE_VALUE;
             return this.noExperiment ?
                 selectedIds.join(',') :
                 tf_data_selector.encodeIdArray(selectedIds);
         },
-        _deserializeValue: function (str, allValues) {
-            if (str == '$all')
+        _deserializeValue: function (allValues, str) {
+            if (str == STORAGE_ALL_VALUE)
                 return allValues;
-            if (str == '$none')
+            if (str == STORAGE_NONE_VALUE)
                 return [];
             return this.noExperiment ?
                 str.split(',') :
@@ -219,6 +222,9 @@ var tf_data_selector;
         },
         _getSyntheticRunId: function (run) {
             return this.noExperiment ? run.name : run.id;
+        },
+        _fireCheckboxToggled: function () {
+            this.fire('checkbox-toggle');
         },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector
