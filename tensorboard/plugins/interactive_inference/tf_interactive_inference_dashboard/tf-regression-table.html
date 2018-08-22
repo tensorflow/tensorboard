@@ -22,17 +22,24 @@ limitations under the License.
     <style>
       .table {
         display: table;
+        border-collapse: collapse;
       }
       .total-row {
+        border-bottom: 1px solid grey;
         display: table-row;
         font-weight: 500;
       }
+      .header-row {
+        display: table-row;
+      }
       .row {
+        border-bottom: 1px solid grey;
         display: table-row;
       }
       .header {
+        color: grey;
         display: table-cell;
-        background: #e3ecfc
+        background: #e3ecfc;
         font-weight: 400;
         padding: 4px 10px;
       }
@@ -45,7 +52,7 @@ limitations under the License.
       }
     </style>
     <div class="table">
-      <div class="row">
+      <div class="header-row">
         <div class="header">Name</div>
         <div class="header">Count</div>
         <div class="header">Mean Error</div>

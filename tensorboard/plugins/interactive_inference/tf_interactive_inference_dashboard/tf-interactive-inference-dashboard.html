@@ -156,9 +156,10 @@ limitations under the License.
       }
 
       .pd-info-text {
-        font-size: 12px;
+        font-size: 18px;
         color: #777;
-        padding-top: 22px;
+        padding-top: 12px;
+        padding-right: 5px;
       }
 
       .datapoint-info-text {
@@ -202,9 +203,7 @@ limitations under the License.
       }
 
       .slider-label {
-        --paper-input-container-underline: {
-          display: none;
-        };
+        margin-top: 8px;
       }
 
       .facet-label {
@@ -217,8 +216,9 @@ limitations under the License.
       }
 
       .slider {
-        margin-top: -30px;
-        width: 250px;
+        margin-top: -18px;
+        margin-left: -12px;
+        width: 340px;
         --paper-slider-input: {
           width: 80px;
         }
@@ -293,6 +293,7 @@ limitations under the License.
       }
 
       .inference-header {
+        position: relative;
         font-size: 16px;
         padding: 4px 0 4px 8px;
         background: #e1f4f7;
@@ -300,6 +301,16 @@ limitations under the License.
         text-align: left;
         border-style: none;
         cursor: pointer;
+      }
+
+      .right-side {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      .right-side-performance-tab {
+        margin-top: 8px;
       }
 
       .conf-matrix {
@@ -365,8 +376,9 @@ limitations under the License.
         display: inline-block;
       }
 
-      .range-input-container {
-        position:absolute;
+      .pd-input-container {
+        display: flex;
+        position: absolute;
         right: 4px;
         top:4px;
       }
@@ -620,6 +632,7 @@ limitations under the License.
         padding-top: 1px;
       }
       .heading {
+        position: relative;
         padding: 10px 8px;
         background-color: #f7ecd9;
         border-bottom: 1px solid #dedede;
@@ -635,6 +648,10 @@ limitations under the License.
 
       .card {
         padding: 0 10px;
+      }
+
+      .performance-card {
+        padding: 0;
       }
 
       .tooltip {
@@ -662,6 +679,15 @@ limitations under the License.
         color: var(--tb-orange-dark);
       }
 
+      .pd-arrow-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        margin-top: 5px;
+        color: grey;
+      }
+
       .info-icon {
         width: 20px;
         height: 20px;
@@ -669,6 +695,16 @@ limitations under the License.
         min-height: 20px;
         margin-top: 10px;
         color: grey;
+      }
+
+      .info-icon.pd-info-icon {
+        margin-top: 14px;
+      }
+
+      .info-icon.threshold-info-icon {
+        margin-top: 0;
+        margin-bottom: 10px;
+        margin-left: 5px;
       }
 
       .resize-icon {
@@ -844,7 +880,11 @@ limitations under the License.
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
                 <div class="config-tab">
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleTrueLabelSetup">Ground Truth</button>
+                    <button class="heading" on-click="toggleTrueLabelSetup">Ground Truth
+                      <div class="right-side right-side-performance-tab">
+                        <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
+                      </div>
+                    </button>
                     <iron-collapse class="card" id="collapsetruelabel" opened="{{openedTrueLabel}}">
                       <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                         <div class="flex">
@@ -898,7 +938,11 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleExplorerSetup">Slices</button>
+                    <button class="heading" on-click="toggleExplorerSetup">Slices
+                      <div class="right-side right-side-performance-tab">
+                        <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
+                      </div>
+                    </button>
                     <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
                       <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                         <div class="flex">
@@ -960,18 +1004,40 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="togglePerformance">Performance</button>
-                    <iron-collapse class="card" id="collapseperformance" opened="{{openedPerformance}}">
+                    <button class="heading" on-click="togglePerformance">Performance
+                      <div class="right-side right-side-performance-tab">
+                        <iron-icon icon="[[getExpandCollapseIcon(openedPerformance)]]" class="expand-collapse-button"></iron-icon>
+                      </div>
+                    </button>
+                    <iron-collapse class="performance-card" id="collapseperformance" opened="{{openedPerformance}}">
                       <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
                         <template is="dom-repeat" items="[[featureValueThresholds]]">
                           <div class="feature-breakdown">
-                            <paper-input value="[[getPrintableValue_(item)]]" readonly=true
-                                          class="slider-label" no-label-float=true>
-                            </paper-input>
-                            <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                          immediate-value="{{item.threshold}}" value="[[item.threshold]]"
-                                          on-value-changed="refreshInferencesNoRegen_">
-                            </paper-slider>
+                            <div class="slider-label">[[getPrintableValue_(item)]]</div>
+                            <div class="flex">
+                              <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                            immediate-value="{{item.threshold}}" value="[[item.threshold]]"
+                                            on-value-changed="refreshInferencesNoRegen_">
+                              </paper-slider>
+                              <div>
+                                <iron-icon icon="info-outline" class="info-icon threshold-info-icon"></iron-icon>
+                                <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0" fit-to-visible-bounds="true">
+                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
+                                    are considered a positive classification, while inference values below this threshold are considered
+                                    a negative classification.
+                                  </div>
+                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                    are updated as the classification threshold changes.
+                                  </div>
+                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the false
+                                    positive rate (FPR) at various classification thresholds. Find out more
+                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                      here
+                                    </a>.
+                                  </div>
+                                </paper-tooltip>
+                              </div>
+                            </div>
                             <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                               <div class="roc-and-conf-matrix">
                                 <div class="roc-holder">
@@ -988,13 +1054,31 @@ limitations under the License.
                           </div>
                         </template>
                         <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedBreakdownFeature)]]">
-                          <div>
-                            <paper-input value="Threshold for positive label" readonly=true class="slider-label"
-                                          no-label-float=true>
-                            </paper-input>
-                            <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                          immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
-                            </paper-slider>
+                          <div class="feature-breakdown">
+                            <div class="slider-label">Threshold for positive label</div>
+                            <div class="flex">
+                              <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                            immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
+                              </paper-slider>
+                              <div>
+                                <iron-icon icon="info-outline" class="info-icon threshold-info-icon"></iron-icon>
+                                <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0" fit-to-visible-bounds="true">
+                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
+                                    are considered a positive classification, while inference values below this threshold are considered
+                                    a negative classification.
+                                  </div>
+                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                    are updated as the classification threshold changes.
+                                  </div>
+                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the false
+                                    positive rate (FPR) at various classification thresholds. Find out more
+                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                      here
+                                    </a>.
+                                  </div>
+                                </paper-tooltip>
+                              </div>
+                            </div>
                           </div>
                           <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="roc-and-conf-matrix">
@@ -1099,7 +1183,11 @@ limitations under the License.
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
                           <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                            <button class="inference-header" on-click="toggleInferenceResults">Inference Results</button>
+                            <button class="inference-header" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
+                              <div class="right-side">
+                                <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
+                              </div>
+                            </button>
                             <iron-collapse class="card" id="collapseinference" opened="{{openedInferenceResults}}">
                               <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
                                                     id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
@@ -1108,7 +1196,11 @@ limitations under the License.
                           </div>
                           <template is="dom-if" if="[[counterfactualExampleAndInference]]">
                             <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                              <button class="inference-header" on-click="toggleSecondInferenceResults">[[getInferenceResultsHeaderText(comparedIndices)]]</button>
+                              <button class="inference-header" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
+                                <div class="right-side">
+                                  <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
+                                </div>
+                              </button>
                               <iron-collapse class="card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
                                 <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
                                                     model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
@@ -1179,40 +1271,60 @@ limitations under the License.
             <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
             <div class="feature-container-holder" id="partialplotholder">
               <div class="flex">
-                <paper-button on-click="hidePartialDependencePlots_" class="control-button close-partial-deps-button">Close partial dependence plots</paper-button>
-                <div class="pd-info-text">Click a feature name below to see how inference results would change if that feature was adjusted.</div>
+                <paper-icon-button icon="arrow-back" on-click="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
+                <div class="pd-info-text">Partial Depdendency Plots</div>
+                <div>
+                  <iron-icon icon="info-outline" class="info-icon pd-info-icon"></iron-icon>
+                  <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0" fit-to-visible-bounds="true">
+                    <div>Partial dependency plots visualize the change in inference results for every feature,
+                      as the value for that feature is changed to different valid values.
+                    </div>
+                    <div>For numeric features, you can set the minimum and maximum values to plot.</div>
+                    <div>For string features, the most popular feature values are shown as alternatives to
+                      the feature value for the selected example.
+                    </div>
+                    <div>For features with multiple feature values per example, a single plot is shown for for
+                      each feature value in the selected example. You can override which feature values have
+                      plots created for them by specifying the indices to shown partial dependence plots for,
+                      if the example contains multiple feature values for a feature.
+                    </div>
+                  </paper-tooltip>
+                </div>
               </div>
               <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                 <div class="feature-container" data-feature-name$="[[item.name]]">
                   <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
                     [[item.name]]
 
-                    <div class="range-input-container">
-                      <span class="info-text"
-                            title="The range of mutant value (default values are automatically inferred from training data)."
-                            hidden$="[[item.samples]]">
-                        Value range to test:
-                      </span>
-                      <input type="number"
-                              class="style-input x-min"
-                              value="[[item.observedMin]]"
-                              title="The minimum mutant value (default value is automatically inferred from training data)."
-                              hidden$="[[item.samples]]"
-                              on-input="pdInputChanged">
-                      <input type="number"
-                              class="style-input x-max"
-                              value="[[item.observedMax]]"
-                              title="The maximum mutant value (default value is automatically inferred from training data)."
-                              hidden$="[[item.samples]]"
-                              on-input="pdInputChanged">
-
-                      <span title="An optional printer-page-style pattern like '0,2,4-6' to select the feature indices to generate mutants for. Useful for features with many repeated fields."
-                            hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
-                        <span class="info-text">Optional feature indices: </span>
-                        <input type="text"
-                                class="style-input feature-index-pattern"
+                    <div class="pd-input-container">
+                      <div class="range-input-container">
+                        <span class="info-text"
+                              title="The range of values to test (default values are automatically inferred)."
+                              hidden$="[[item.samples]]">
+                          Value range to test:
+                        </span>
+                        <input type="number"
+                                class="style-input x-min"
+                                value="[[item.observedMin]]"
+                                title="The minimum value to test (default value is automatically inferred)."
+                                hidden$="[[item.samples]]"
                                 on-input="pdInputChanged">
-                      </span>
+                        <input type="number"
+                                class="style-input x-max"
+                                value="[[item.observedMax]]"
+                                title="The maximum value to test (default value is automatically inferred)."
+                                hidden$="[[item.samples]]"
+                                on-input="pdInputChanged">
+
+                        <span title="An optional printer-page-style pattern like '0,2,4-6' to select the indices of the feature values to generate plots for. Useful for features with many repeated fields."
+                              hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
+                          <span class="info-text">Optional feature indices: </span>
+                          <input type="text"
+                                  class="style-input feature-index-pattern"
+                                  on-input="pdInputChanged">
+                        </span>
+                      </div>
+                      <iron-icon class="expand-collapse-button" icon="expand-less"></iron-icon>
                     </div>
                   </button>
                   <div class="tf-category-pane-content" hidden>
@@ -1231,14 +1343,14 @@ limitations under the License.
     "use strict";
 
     const maxStringLengthToDecode = 100000;
-    const inferenceLabelStr = ' inference label';
-    const inferenceValueStr = ' inference value';
-    const inferenceCorrectStr = ' inference correct';
-    const inferenceErrorStr = ' inference error';
-    const inferenceAbsErrorStr = ' inference absolute error';
-    const inferenceSquaredErrorStr = ' inference squared error';
-    const inferenceScoreStr = ' inference score';
-    const exampleIdKey = ' WIT Example ID'
+    const inferenceLabelStr = ' Inference label';
+    const inferenceValueStr = ' Inference value';
+    const inferenceCorrectStr = ' Inference correct';
+    const inferenceErrorStr = ' Inference error';
+    const inferenceAbsErrorStr = ' Inference absolute error';
+    const inferenceSquaredErrorStr = ' Inference squared error';
+    const inferenceScoreStr = ' Inference score';
+    const exampleIdKey = ' Example ID'
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -1401,9 +1513,10 @@ limitations under the License.
         // List of features for which we can make partial dep plots.
         partialDepPlotEligibleFeatures: {
           type: Array,
-          value: [] // [{name: 'a_numeric_feature', observedMin: -10,
-                    //   observedMax: 10},
-                    // {name: 'a_categorical_feature', samples: []}]
+          value: [], // [{name: 'a_numeric_feature', observedMin: -10,
+                     //   observedMax: 10},
+                     // {name: 'a_categorical_feature', samples: []}]
+          observer: 'partialDepPlotEligibleFeaturesSet'
         },
         // Features that we are currently creating partial dep plots for.
         partialDepPlotPendingFeatures: {
@@ -1498,6 +1611,10 @@ limitations under the License.
         regressionEntries_: {
           type: Array
         },
+        neighborByL2: {
+          type: Boolean,
+          value: false
+        },
       },
 
       observers: [
@@ -1590,6 +1707,7 @@ limitations under the License.
       },
 
       findClosestCounterfactual_: function(useL2Distance) {
+        this.neighborByL2 = useL2Distance;
         const selected = this.selected[0];
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
@@ -3378,6 +3496,16 @@ limitations under the License.
         return !this.hasAncestorClass(event, 'range-input-container');
       },
 
+      partialDepPlotEligibleFeaturesSet: function(features) {
+        if (!features || features.length == 0) {
+          return;
+        }
+        // Open up the first PD plot pane after the category panes have loaded.
+        setTimeout(() => {
+          this.$$('.tf-category-pane').click();
+        }, 100);
+      },
+
       /**
        * Handler for click on button to generate partial dependence plots for
        * a feature.
@@ -3390,6 +3518,8 @@ limitations under the License.
 
         const element =
           this.getUniqueByEvent(event, '.tf-category-pane-content');
+        const icon =
+          this.getUniqueByEvent(event, 'iron-icon');
 
         if (element.hasAttribute('hidden')){
           element.removeAttribute('hidden');
@@ -3403,8 +3533,10 @@ limitations under the License.
 
           this.getInferenceVisualization(featureName, event);
 
+          icon.icon = 'expand-more';
         } else {
           this.hidePdElement_(element);
+          icon.icon = 'expand-less';
         }
       },
 
@@ -3435,6 +3567,9 @@ limitations under the License.
           this.getUniqueByEvent(event, '.tf-category-pane-content');
         if (!element.hasAttribute('hidden')) {
           this.hidePdElement_(element);
+          const icon =
+            this.getUniqueByEvent(event, 'iron-icon');
+          icon.icon = 'expand-less';
         }
       },
 
@@ -3483,11 +3618,23 @@ limitations under the License.
       },
 
       getInferenceResultsHeaderText: function(indices) {
-        let str = 'Inference Results - ';
+        let str = 'Inference Results: ';
         if (indices && indices.length > 0) {
           str += 'Example ' + indices[0];
         }
         return str;
+      },
+
+      getCompareInferenceResultsHeaderText: function(indices, useL2Distance) {
+        let str = (useL2Distance ? 'L2' : 'L1') + ': ';
+        if (indices && indices.length > 0) {
+          str += 'Example ' + indices[0];
+        }
+        return str;
+      },
+
+      getExpandCollapseIcon: function(opened) {
+        return opened ? 'expand-less' : 'expand-more';
       },
     });
 
