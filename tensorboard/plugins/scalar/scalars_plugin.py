@@ -141,7 +141,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
-          Runs.experiment_id = ?
+          Runs.experiment_id IS ?
           AND Runs.run_name = ?
           AND Tags.tag_name = ?
           AND Tags.plugin_name = ?
