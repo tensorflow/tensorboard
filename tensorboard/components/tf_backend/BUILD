@@ -11,6 +11,7 @@ tf_web_library(
         "backend.js",
         "baseStore.js",
         "canceller.js",
+        "environmentStore.js",
         "experimentsStore.js",
         "requestManager.js",
         "router.js",
