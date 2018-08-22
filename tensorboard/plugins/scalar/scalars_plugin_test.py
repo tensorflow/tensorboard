@@ -84,18 +84,8 @@ class ScalarsPluginTest(tf.test.TestCase):
 
   def generate_run_to_db(self, experiment_name, run_name):
     tf.reset_default_graph()
-    global_step = tf.get_variable(
-      tf.GraphKeys.GLOBAL_STEP,
-      shape=[],
-      dtype=tf.int64,
-      initializer=tf.ones_initializer,
-      trainable=False,
-      collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.GLOBAL_STEP],
-      caching_device='/cpu:0',
-      use_resource=True)
-    train_op = global_step.assign_add(1, read_value=False)
-    placeholder = tf.placeholder(tf.float32, shape=[3])
 
+    global_step = tf.placeholder(tf.int64)
     db_writer = tf.contrib.summary.create_db_writer(
         db_uri=self.db_path,
         experiment_name=experiment_name,
@@ -104,16 +94,14 @@ class ScalarsPluginTest(tf.test.TestCase):
 
     scalar_ops = None
     with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
-      tf.contrib.summary.scalar(self._SCALAR_TAG, tf.reduce_mean(placeholder))
-      flush_op = tf.contrib.summary.flush(db_writer._resource)
+      tf.contrib.summary.scalar(self._SCALAR_TAG, 42, step=global_step)
 
     with tf.Session() as sess:
       sess.run(tf.global_variables_initializer())
       sess.run(tf.contrib.summary.summary_writer_initializer_op())
       for step in xrange(self._STEPS):
-        feed_dict = {placeholder: [1 + step, 2 + step, 3 + step]}
+        feed_dict = {global_step: step}
         sess.run(tf.contrib.summary.all_summary_ops(), feed_dict=feed_dict)
-        sess.run([train_op, flush_op])
 
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
