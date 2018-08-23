@@ -21,6 +21,7 @@ enum Type {
   TAG,
 }
 
+const MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
 const STORAGE_ALL_VALUE = '$all';
 const STORAGE_NONE_VALUE = '$none';
 
@@ -104,16 +105,24 @@ Polymer({
     const runInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.RUN),
         {
-          defaultValue: STORAGE_ALL_VALUE,
+          defaultValue: '',
           polymerProperty: '_runSelectionStateString',
         });
     runInitializer.call(this);
-
     const tagInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.TAG),
         {defaultValue: '', polymerProperty: '_tagRegex'});
     tagInitializer.call(this);
-    this._fetchRunsAndTags().then(() => this._isDataReady = true);
+    this._fetchRunsAndTags()
+        .then(() => this._isDataReady = true)
+        .then(() => {
+          if (this._runSelectionStateString) return;
+          const val = this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
+              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+          tf_storage.setString(this._getPersistenceKey(Type.RUN), val,
+              {defaultValue: ''});
+          this._runSelectionStateString = val;
+        });
   },
 
   _synchronizeColors() {
