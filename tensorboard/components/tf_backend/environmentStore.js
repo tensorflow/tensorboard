@@ -26,8 +26,8 @@ var tf_backend;
 (function (tf_backend) {
     var Mode;
     (function (Mode) {
-        Mode["DB"] = "db";
-        Mode["LOGDIR"] = "logdir";
+        Mode[Mode["DB"] = 0] = "DB";
+        Mode[Mode["LOGDIR"] = 1] = "LOGDIR";
     })(Mode = tf_backend.Mode || (tf_backend.Mode = {}));
     var EnvironmentStore = /** @class */ (function (_super) {
         __extends(EnvironmentStore, _super);

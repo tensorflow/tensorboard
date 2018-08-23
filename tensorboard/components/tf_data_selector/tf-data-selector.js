@@ -63,6 +63,10 @@ var tf_data_selector;
                 notify: true,
                 computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
             },
+            _mode: {
+                type: Number,
+                value: '',
+            },
         },
         observers: [
             '_pruneSelections(_experiments.*)',
@@ -81,31 +85,28 @@ var tf_data_selector;
         }),
         attached: function () {
             var _this = this;
-            this._updateExpKey = tf_backend.experimentsStore
-                .addListener(function () { return _this._updateExps(); });
-            this._updateExps();
+            this._updateExpKey = tf_backend.experimentsStore.addListener(function () {
+                _this._allExperiments = tf_backend.experimentsStore.getExperiments();
+            });
+            this._allExperiments = tf_backend.experimentsStore.getExperiments();
+            this._updateEnvKey = tf_backend.environmentStore.addListener(function () {
+                _this._mode = tf_backend.environmentStore.getMode();
+            });
+            this._mode = tf_backend.environmentStore.getMode();
         },
         detached: function () {
             tf_backend.experimentsStore.removeListenerByKey(this._updateExpKey);
-        },
-        _updateExps: function () {
-            this._dataReady = true;
-            this._allExperiments = tf_backend.experimentsStore.getExperiments();
+            tf_backend.environmentStore.removeListenerByKey(this._updateEnvKey);
         },
         _canCompareExperiments: function () {
-            // TODO(stephanwlee): change this to be based on whether user is using
-            // logdir or db.
-            return Boolean(this._experiments.length);
+            return this._mode == tf_backend.Mode.DB;
         },
-        _shouldShowAddComparison: function () {
-            return this._allExperiments.length > this._experiments.length;
+        _getPersistenceId: function (experiment) {
+            return tf_data_selector.encodeId(experiment.id);
         },
         _isExperimentEnabled: function (experiment) {
             var enabledExperimentIds = new Set(this._enabledExperimentIds);
             return enabledExperimentIds.has(experiment.id);
-        },
-        _getPersistenceId: function (experiment) {
-            return tf_data_selector.encodeId(experiment.id);
         },
         _getExperimentColor: function (experiment) {
             return tf_color_scale.experimentsColorScale(experiment.name);
@@ -218,6 +219,10 @@ var tf_data_selector;
                 this._enabledExperimentIds = this._enabledExperimentIds
                     .filter(function (id) { return id != newId; });
             }
+        },
+        _shouldShowAddComparison: function () {
+            return this._canCompareExperiments() &&
+                this._allExperiments.length > this._experiments.length;
         },
     });
     /**
