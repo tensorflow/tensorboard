@@ -37,7 +37,10 @@ Properties out:
 <dom-module id="tf-collapsible-data-selector">
   <template>
     <iron-collapse id="collapse" opened="[[opened]]" no-animation>
-      <tf-data-selector selection="{{selection}}"></tf-data-selector>
+      <tf-data-selector
+        selection="{{selection}}"
+        active-plugins="[[activePlugins]]"
+      ></tf-data-selector>
     </iron-collapse>
     <span>
       <paper-button on-tap="_toggleSelector" title="Toggle Data Selector">
