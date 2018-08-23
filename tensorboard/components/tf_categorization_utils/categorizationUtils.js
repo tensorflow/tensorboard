@@ -127,7 +127,7 @@ var tf_categorization_utils;
             tags.forEach(function (tag) {
                 var series = tagToSeries.get(tag) || [];
                 series.push.apply(series, tagToSelectedRuns.get(tag)
-                    .map(function (run) { return ({ experiment: experiment.name, run: run }); }));
+                    .map(function (run) { return ({ experiment: experiment, run: run, tag: tag }); }));
                 tagToSeries.set(tag, series);
             });
             var searchCategory = categorizeBySearchQuery(tags, tagRegex);
@@ -136,7 +136,7 @@ var tf_categorization_utils;
             searchCategory.items.forEach(function (tag) {
                 var series = tagToSearchSeries.get(tag) || [];
                 series.push.apply(series, tagToSelectedRuns.get(tag)
-                    .map(function (run) { return ({ experiment: experiment.name, run: run }); }));
+                    .map(function (run) { return ({ experiment: experiment, run: run, tag: tag }); }));
                 tagToSearchSeries.set(tag, series);
             });
         });

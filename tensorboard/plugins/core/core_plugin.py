@@ -174,6 +174,10 @@ class CorePlugin(base_plugin.TBPlugin):
     started time (aka first event time) with empty times sorted last, and then
     ties are broken by sorting on the experiment name.
     """
+    results = self.list_experiments_impl()
+    return http_util.Respond(request, results, 'application/json')
+
+  def list_experiments_impl(self):
     results = []
     if self._db_connection_provider:
       db = self._db_connection_provider()
@@ -193,7 +197,7 @@ class CorePlugin(base_plugin.TBPlugin):
         "startTime": row[2],
       } for row in cursor]
 
-    return http_util.Respond(request, results, 'application/json')
+    return results
 
   @wrappers.Request.application
   def _serve_experiment_runs(self, request):

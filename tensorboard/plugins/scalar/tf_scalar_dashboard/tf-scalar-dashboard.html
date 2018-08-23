@@ -297,28 +297,16 @@ limitations under the License.
             this.dataSelection.type == tf_data_selector.Type.WITH_EXPERIMENT) {
           const categories = tf_categorization_utils.categorizeSelection(
               this.dataSelection.selections, PLUGIN_NAME);
-          categories.forEach(category => {
-            category.items.forEach(item => {
-              // Add tags information to series.
-              item.series = item.series.map(series => ({
-                experiment: series.experiment,
-                run: series.run,
-                tag: item.tag,
-              }));
-            });
-          });
           return categories;
         }
 
         let query = tagFilter;
-
         if (this.useDataSelector) {
           const selection = this.dataSelection.selections[0] || {};
           const {runs = [], tagRegex = ''} = selection;
           query = tagRegex;
           selectedRuns = runs.map(({name}) => name);
         }
-
         const runToTag = _.mapValues(
             _.pick(runToTagInfo, selectedRuns),
             x => Object.keys(x));
