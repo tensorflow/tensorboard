@@ -212,10 +212,11 @@ var tf_data_selector;
         _experimentCheckboxToggled: function (e) {
             var newId = e.target.experiment.id;
             if (e.target.enabled) {
-                this._experimentIds = uniqueAdd(this._experimentIds, [newId]);
+                this._enabledExperimentIds = uniqueAdd(this._enabledExperimentIds, [newId]);
             }
             else {
-                this._experimentIds = this._experimentIds.filter(function (id) { return id != newId; });
+                this._enabledExperimentIds = this._enabledExperimentIds
+                    .filter(function (id) { return id != newId; });
             }
         },
     });
