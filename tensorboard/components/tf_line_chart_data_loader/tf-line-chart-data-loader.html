@@ -204,6 +204,7 @@ limitations under the License.
       },
 
       setSeriesData(name, data) {
+        this._resetDomainOnNextLoad = true;
         this.$.chart.setSeriesData(name, data);
       },
 

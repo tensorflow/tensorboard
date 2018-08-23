@@ -117,8 +117,9 @@ export const DataLoaderBehavior = {
 
   _loadDataImpl() {
     this.cancelAsync(this._loadDataAsync);
+
+    if (!this.isAttached) return;
     this._loadDataAsync = this.async(() => {
-      if (!this.isAttached) return;
       this.dataLoading = true;
 
       // Before updating, cancel any network-pending updates, to
@@ -140,7 +141,7 @@ export const DataLoaderBehavior = {
 
       return Promise.all(promises).then(this._canceller.cancellable(result => {
         this.dataLoading = false;
-        if (result.cancelled || !promises.length) return;
+        if (result.cancelled) return;
         this.onLoadFinish();
       }));
     });

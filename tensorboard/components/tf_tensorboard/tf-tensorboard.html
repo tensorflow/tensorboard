@@ -387,6 +387,8 @@ limitations under the License.
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
 
+    const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
+
     Polymer({
       is: "tf-tensorboard",
       behaviors: [tf_tensorboard.AutoReloadBehavior],
@@ -728,6 +730,7 @@ limitations under the License.
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           if (dashboard.useDataSelector) {
+            this.cancelDebouncer('updateDataSelection');
             component.dataSelection = this._dataSelection;
           }
           container.appendChild(component);
@@ -760,10 +763,20 @@ limitations under the License.
       _updateDataSelection() {
         // The dashboard is not ready yet until it stamped the containers.
         if (!this._dashboardContainersStamped) return;
+
+        this.cancelDebouncer('updateDataSelection');
+
         const component = this._selectedDashboardComponent();
         // The dashboard may not exist.
         if (!component) return;
-        component.dataSelection = this._dataSelection;
+
+        const selectedDashboard = this._selectedDashboard;
+        const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
+        if (dashboard.useDataSelector) {
+          this.debounce('updateDataSelection', () => {
+            component.dataSelection = this._dataSelection;
+          }, DATA_SELECTION_CHANGE_DEBOUNCE_MS);
+        }
       },
 
       ready() {

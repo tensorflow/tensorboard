@@ -259,7 +259,7 @@ Polymer({
   },
 
   observers: [
-    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale)',
+    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, isAttached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
