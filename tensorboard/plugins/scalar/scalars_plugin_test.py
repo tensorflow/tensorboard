@@ -95,13 +95,14 @@ class ScalarsPluginTest(tf.test.TestCase):
     scalar_ops = None
     with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
       tf.contrib.summary.scalar(self._SCALAR_TAG, 42, step=global_step)
+      flush_op = tf.contrib.summary.flush(db_writer._resource)
 
     with tf.Session() as sess:
-      sess.run(tf.global_variables_initializer())
       sess.run(tf.contrib.summary.summary_writer_initializer_op())
       for step in xrange(self._STEPS):
         feed_dict = {global_step: step}
         sess.run(tf.contrib.summary.all_summary_ops(), feed_dict=feed_dict)
+      sess.run(flush_op)
 
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
