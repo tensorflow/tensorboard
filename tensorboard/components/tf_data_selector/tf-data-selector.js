@@ -47,19 +47,21 @@ var tf_data_selector;
                     polymerProperty: '_enabledExperimentIds',
                 }),
             },
-            // TODO(stephanwlee): Add list of active plugin from parent and filter out
-            // the unused tag names in the list of selection.
             _selections: {
                 type: Object,
                 value: function () {
                     return new Map();
                 },
             },
+            activePlugins: {
+                type: Array,
+                value: function () { return []; },
+            },
             // Output property. It has subset of _selections.
             selection: {
                 type: Object,
                 notify: true,
-                computed: '_computeSelection(_enabledExperimentIds.*, _selections.*)',
+                computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
             },
         },
         observers: [
@@ -151,15 +153,26 @@ var tf_data_selector;
             if (this._canCompareExperiments()) {
                 var enabledExperiments_1 = new Set(this._enabledExperimentIds);
                 // Make a copy of the all selections.
-                var newSelection_1 = new Map(this._selections);
-                // Now, filter out disabled experiments from next `selection`.
-                newSelection_1.forEach(function (_, id) {
+                var newSelections_1 = new Map(this._selections);
+                // Filter out disabled experiments from next `selection`.
+                newSelections_1.forEach(function (_, id) {
                     if (!enabledExperiments_1.has(id))
-                        newSelection_1.delete(id);
+                        newSelections_1.delete(id);
+                });
+                var activePluginNames_1 = new Set(this.activePlugins);
+                newSelections_1.forEach(function (sel, id) {
+                    var selection = sel;
+                    var updatedSelection = Object.assign({}, selection);
+                    updatedSelection.runs = selection.runs.map(function (run) {
+                        return Object.assign({}, run, {
+                            tags: run.tags.filter(function (tag) { return activePluginNames_1.has(tag.pluginName); }),
+                        });
+                    }).filter(function (run) { return run.tags.length; });
+                    newSelections_1.set(id, updatedSelection);
                 });
                 return {
                     type: tf_data_selector.Type.WITH_EXPERIMENT,
-                    selections: Array.from(newSelection_1.values()),
+                    selections: Array.from(newSelections_1.values()),
                 };
             }
             return {

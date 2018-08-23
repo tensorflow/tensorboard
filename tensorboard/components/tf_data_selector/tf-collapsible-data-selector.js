@@ -21,6 +21,7 @@ var tf_data_selector;
                 type: Object,
                 notify: true,
             },
+            activePlugins: Array,
             opened: {
                 type: Boolean,
                 reflectToAttribute: true,
