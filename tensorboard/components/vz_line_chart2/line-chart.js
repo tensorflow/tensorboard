@@ -397,7 +397,9 @@ var vz_line_chart2;
                 .classed('closest', function (p) { return dist(p) === closestDist; })
                 .each(function (point) {
                 self.drawTooltipRow(this, tooltipColumns, point);
-            });
+            })
+                // reorders DOM to match the ordering of the `data`.
+                .order();
             rows.exit().remove();
             rows.enter().append('tr').each(function (point) {
                 self.drawTooltipRow(this, tooltipColumns, point);
