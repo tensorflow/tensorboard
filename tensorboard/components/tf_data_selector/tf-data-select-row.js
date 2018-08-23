@@ -20,6 +20,7 @@ var tf_data_selector;
         Type[Type["RUN"] = 1] = "RUN";
         Type[Type["TAG"] = 2] = "TAG";
     })(Type || (Type = {}));
+    var MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
     var STORAGE_ALL_VALUE = '$all';
     var STORAGE_NONE_VALUE = '$none';
     Polymer({
@@ -88,13 +89,22 @@ var tf_data_selector;
                 throw new RangeError('Required `persistenceId` missing');
             }
             var runInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.RUN), {
-                defaultValue: STORAGE_ALL_VALUE,
+                defaultValue: '',
                 polymerProperty: '_runSelectionStateString',
             });
             runInitializer.call(this);
             var tagInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.TAG), { defaultValue: '', polymerProperty: '_tagRegex' });
             tagInitializer.call(this);
-            this._fetchRunsAndTags().then(function () { return _this._isDataReady = true; });
+            this._fetchRunsAndTags()
+                .then(function () { return _this._isDataReady = true; })
+                .then(function () {
+                if (_this._runSelectionStateString)
+                    return;
+                var val = _this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
+                    STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+                tf_storage.setString(_this._getPersistenceKey(Type.RUN), val, { defaultValue: '' });
+                _this._runSelectionStateString = val;
+            });
         },
         _synchronizeColors: function () {
             var _this = this;
