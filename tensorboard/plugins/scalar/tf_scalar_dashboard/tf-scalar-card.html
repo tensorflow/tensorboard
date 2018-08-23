@@ -224,7 +224,7 @@ limitations under the License.
         _getDataLoadName: {
           type: Function,
           value: function() {
-            return this._getSeriesNameFromDatum;
+            return (datum) => this._getSeriesNameFromDatum(datum);
           },
         },
 
