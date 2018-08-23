@@ -218,9 +218,12 @@ Polymer({
   _experimentCheckboxToggled(e) {
     const newId = e.target.experiment.id;
     if (e.target.enabled) {
-      this._experimentIds = uniqueAdd(this._experimentIds, [newId]);
+      this._enabledExperimentIds = uniqueAdd(
+          this._enabledExperimentIds,
+          [newId]);
     } else {
-      this._experimentIds = this._experimentIds.filter(id => id != newId);
+      this._enabledExperimentIds = this._enabledExperimentIds
+          .filter(id => id != newId);
     }
   },
 });
