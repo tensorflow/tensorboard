@@ -37,7 +37,7 @@ Properties out:
   <template>
     <template
       is="dom-if"
-      if="[[!_canCompareExperiments(_experiments)]]"
+      if="[[!_canCompareExperiments(_mode)]]"
       restamp
     >
       <tf-data-select-row
