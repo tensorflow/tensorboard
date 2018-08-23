@@ -70,8 +70,6 @@ Polymer({
       value: (): Array<tf_dashboard_common.FilterableCheckboxListItem> => [],
     },
 
-    _defaultRunStorageValue: String,
-
     _tagRegex: {
       type: String,
       value: '',
@@ -104,11 +102,27 @@ Polymer({
       throw new RangeError('Required `persistenceId` missing');
     }
 
+    const runInitializer = tf_storage.getStringInitializer(
+        this._getPersistenceKey(Type.RUN),
+        {
+          defaultValue: '',
+          polymerProperty: '_runSelectionStateString',
+        });
+    runInitializer.call(this);
     const tagInitializer = tf_storage.getStringInitializer(
         this._getPersistenceKey(Type.TAG),
         {defaultValue: '', polymerProperty: '_tagRegex'});
     tagInitializer.call(this);
-    this._fetchRunsAndTags().then(() => this._isDataReady = true);
+    this._fetchRunsAndTags()
+        .then(() => this._isDataReady = true)
+        .then(() => {
+          if (this._runSelectionStateString) return;
+          const val = this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
+              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+          tf_storage.setString(this._getPersistenceKey(Type.RUN), val,
+              {defaultValue: ''});
+          this._runSelectionStateString = val;
+        });
   },
 
   _synchronizeColors() {
@@ -146,16 +160,6 @@ Polymer({
 
     const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
     return requestManager.request(url).then(runs => {
-      this._defaultRunStorageValue =
-          runs.length < MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
-              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
-      const runInitializer = tf_storage.getStringInitializer(
-          this._getPersistenceKey(Type.RUN),
-          {
-            defaultValue: this._defaultRunStorageValue,
-            polymerProperty: '_runSelectionStateString',
-          });
-      runInitializer.call(this);
       this.set('_runs', runs);
     });
   },
@@ -179,10 +183,8 @@ Polymer({
     const value = this._serializeValue(
         this._runs,
         this._selectedRuns.map(({id}) => id));
-    tf_storage.setString(
-        this._getPersistenceKey(Type.RUN),
-        value,
-        {defaultValue: this._defaultRunStorageValue});
+    tf_storage.setString(this._getPersistenceKey(Type.RUN), value,
+        {defaultValue: ''});
   },
 
   _getRunsSelectionState(): Object {
