@@ -28,7 +28,7 @@ interface Environment {
 export class EnvironmentStore extends BaseStore {
   private environment: Environment;
 
-  refresh() {
+  load() {
     const url = tf_backend.getRouter().environment();
     return this.requestManager.request(url).then(result => {
       const environment = {

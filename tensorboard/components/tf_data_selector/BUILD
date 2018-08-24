@@ -32,6 +32,7 @@ tf_web_library(
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
     ],
 )

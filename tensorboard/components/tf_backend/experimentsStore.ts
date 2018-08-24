@@ -17,7 +17,7 @@ namespace tf_backend {
 export class ExperimentsStore extends BaseStore {
   private _experiments: Experiment[] = [];
 
-  refresh() {
+  load() {
     const url = getRouter().experiments();
     return this.requestManager.request(url).then(newExperiments => {
       if (!_.isEqual(this._experiments, newExperiments)) {

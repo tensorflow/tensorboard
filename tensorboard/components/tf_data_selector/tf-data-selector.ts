@@ -25,7 +25,7 @@ export const {
 Polymer({
   is: 'tf-data-selector',
   properties: {
-    _dataReady: {
+    _allExperimentsFetched: {
       type: Boolean,
       value: false,
     },
@@ -84,7 +84,7 @@ Polymer({
   },
 
   observers: [
-    '_pruneSelections(_experiments.*)',
+    '_pruneSelections(_experimentIds.*)',
     '_pruneExperimentIds(_allExperiments.*)',
     '_pruneEnabledExperiments(_experimentIds.*)',
     '_persistExperimentIds(_experimentIds.*)',
@@ -104,8 +104,10 @@ Polymer({
   attached() {
     this._updateExpKey = tf_backend.experimentsStore.addListener(() => {
       this._allExperiments = tf_backend.experimentsStore.getExperiments();
+      this._allExperimentsFetched = true;
     });
     this._allExperiments = tf_backend.experimentsStore.getExperiments();
+    this._allExperimentsFetched = tf_backend.experimentsStore.initialized;
 
     this._updateEnvKey = tf_backend.environmentStore.addListener(() => {
       this._mode = tf_backend.environmentStore.getMode();
@@ -141,7 +143,7 @@ Polymer({
    */
   _pruneSelections() {
     if (!this._selections) return;
-    const experimentIds = new Set(this._experiments.map(({id}) => id));
+    const experimentIds = new Set(this._experimentIds);
     const newSelections = new Map(this._selections);
     newSelections.forEach((_, id) => {
       // No experiment selection is still a valid selection. Do not prune.
@@ -152,7 +154,7 @@ Polymer({
   },
 
   _pruneExperimentIds() {
-    if (!this._dataReady) return;
+    if (!this._allExperimentsFetched) return;
     const allExpIds = new Set(this._allExperiments.map(({id}) => id));
     this._experimentIds = this._experimentIds.filter(id => allExpIds.has(id));
   },
@@ -160,7 +162,7 @@ Polymer({
   _pruneEnabledExperiments() {
     // When the component never fully loaded the list of experiments, it
     // cannot correctly prune/adjust the enabledExperiments.
-    if (!this._dataReady) return;
+    if (!this._allExperimentsFetched) return;
     const expIds = new Set(this._experimentIds);
     this._enabledExperimentIds = this._enabledExperimentIds
         .filter(id => expIds.has(id));
@@ -208,8 +210,23 @@ Polymer({
     const {runs, tagRegex} = event.detail;
     const experiment = event.target.experiment;
     const expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
+
+    // Check if selction change event was triggered from a removed row. Removal
+    // triggers change in persistence (clears the value) and this causes
+    // property to change which in turn triggers an event. If there is any
+    // asynchronity in propagating the change from the row, below condition is
+    // truthy.
+    if (expId != NO_EXPERIMENT_ID && !this._experimentIds.includes(expId)) {
+      return;
+    }
+
     const newSelections = new Map(this._selections);
     newSelections.set(expId, {experiment, runs, tagRegex});
+
+    // Ignore the selection changed event if it makes no tangible difference to
+    // the _selections.
+    if (_.isEqual(newSelections, this._selections)) return;
+
     this._selections = newSelections;
   },
 
@@ -231,6 +248,7 @@ Polymer({
   },
 
   _removeExperiment(event) {
+    console.log('removed experiment');
     const removedId = event.target.experiment.id;
     // Changing _experimentIds will remove the id from _enabledExperimentIds.
     this._experimentIds = this._experimentIds.filter(id => id != removedId);
