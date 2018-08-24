@@ -873,8 +873,8 @@ limitations under the License.
           <div class="side-holder" id="side">
             <div class="side-content">
               <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_" class="tabs">
-                <paper-tab>Performance + Optimization</paper-tab>
-                <paper-tab>Datapoint</paper-tab>
+                <paper-tab>[[getPerformanceTabTitle(modelType, multiClass)]]</paper-tab>
+                <paper-tab>Datapoint Auditor</paper-tab>
                 <paper-tab>Features</paper-tab>
               </paper-tabs>
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
@@ -1055,7 +1055,7 @@ limitations under the License.
                         </template>
                         <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedBreakdownFeature)]]">
                           <div class="feature-breakdown">
-                            <div class="slider-label">Threshold for positive label</div>
+                            <div class="slider-label">Threshold for positive classification</div>
                             <div class="flex">
                               <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
                                             immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
@@ -1263,7 +1263,8 @@ limitations under the License.
                         on-stats-changed="statsChanged_"
                         hide-info-card="true"
                         sprite-image-width="32" sprite-image-height="32"
-                        fit-grid-aspect-ratio-to-viewport="true">
+                        fit-grid-aspect-ratio-to-viewport="true"
+                        stable-colors="true">
             </facets-dive>
             <div id="noexamples" class="noexamples info-text">
               Examples and their inference results will be displayed here.
@@ -1503,7 +1504,8 @@ limitations under the License.
         // Which side-tab is selected.
         sideTabSelected: {
           type: Number,
-          value: 0,
+          value: 1,
+          observer: 'sideTabSelectedChanged_'
         },
         // Boolean for if running in "local" demo mode, meaning this isn't
         // part of a TensorBoard build and has no backend.
@@ -2022,13 +2024,19 @@ limitations under the License.
       },
 
       labelFeatureSelected_: function(feature) {
-        // When the true label feature is selected, go the the performance tab
-        // and update inference stats.
-        this.sideTabSelected = 0;
+        // When the true label feature is selected, update inference stats.
         requestAnimationFrame(() => {
           this.updateInferenceStats_(true);
           this.refreshDive_();
         });
+      },
+
+      sideTabSelectedChanged_: function(tab) {
+        if (tab == 0) {
+          requestAnimationFrame(() => {
+            this.updateInferenceStats_(true);
+          });
+        }
       },
 
       /**
@@ -3635,6 +3643,11 @@ limitations under the License.
 
       getExpandCollapseIcon: function(opened) {
         return opened ? 'expand-less' : 'expand-more';
+      },
+
+      getPerformanceTabTitle: function(modelType, multiClass) {
+        return this.isBinaryClassification_(modelType, multiClass) ?
+            'Performance + Fairness' : 'Performance';
       },
     });
 
