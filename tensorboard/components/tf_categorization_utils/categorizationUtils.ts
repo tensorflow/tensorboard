@@ -180,11 +180,11 @@ export function categorizeSelection(
   const searchCategory: RawCategory = searchCategories.length == 1 ?
       searchCategories[0] :
       {
-        name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+        name: searchCategories.every(c => !c.name) ? '' : 'multi',
         metadata: {
           type: CategoryType.SEARCH_RESULTS,
           compositeSearch: true,
-          validRegex: true,
+          validRegex: searchCategories.every(c => c.metadata.validRegex),
           universalRegex: false,
         },
         items: Array.from(tagToSearchSeries.keys())
@@ -270,4 +270,4 @@ export function categorizeRunTagCombinations(
   return tagCategories.map(explodeCategory);
 }
 
-}  // namespace tf_categorization_utils
+}  // namespace wtf_categorization_utils
