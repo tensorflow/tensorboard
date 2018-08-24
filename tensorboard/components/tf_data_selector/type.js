@@ -17,6 +17,7 @@ var tf_data_selector;
     var Type;
     (function (Type) {
         Type[Type["WITHOUT_EXPERIMENT"] = 0] = "WITHOUT_EXPERIMENT";
-        Type[Type["WITH_EXPERIMENT"] = 1] = "WITH_EXPERIMENT";
+        Type[Type["SINGLE"] = 1] = "SINGLE";
+        Type[Type["COMPARISON"] = 2] = "COMPARISON";
     })(Type = tf_data_selector.Type || (tf_data_selector.Type = {}));
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

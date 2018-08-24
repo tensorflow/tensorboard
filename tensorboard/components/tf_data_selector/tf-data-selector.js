@@ -172,7 +172,8 @@ var tf_data_selector;
                     newSelections_1.set(id, updatedSelection);
                 });
                 return {
-                    type: tf_data_selector.Type.WITH_EXPERIMENT,
+                    type: this._selections.size == 1 ?
+                        tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
                     selections: Array.from(newSelections_1.values()),
                 };
             }
