@@ -145,7 +145,7 @@ limitations under the License.
                           show-download-links="[[_showDownloadLinks]]"
                           request-manager="[[_requestManager]]"
                           data-to-load="[[item.series]]"
-                          multi-experiments="[[_getMultiExperiments(dataSelection.*)]]"
+                          multi-experiments="[[_getMultiExperiments(dataSelection)]]"
                           tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                           active="[[page.active]]"
@@ -196,8 +196,11 @@ limitations under the License.
     Polymer({
       is: 'tf-scalar-dashboard',
       properties: {
-        /** @type {!tf_data_selector.DataSelection} */
-        dataSelection: Object,
+        /** @type {?tf_data_selector.DataSelection} */
+        dataSelection: {
+          type: Object,
+          value: () => null,
+        },
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
@@ -304,9 +307,10 @@ limitations under the License.
 
       _makeCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
-        if (this.useDataSelector && this.dataSelection.selections.length == 0) {
+        const usesDataSelection = this.useDataSelector && this.dataSelection;
+        if (usesDataSelection && this.dataSelection.selections.length == 0) {
           return [];
-        } else if (this.useDataSelector &&
+        } else if (usesDataSelection &&
             this.dataSelection.type != SelectionType.WITHOUT_EXPERIMENT) {
           const categories = tf_categorization_utils.categorizeSelection(
               this.dataSelection.selections, PLUGIN_NAME);
@@ -314,7 +318,7 @@ limitations under the License.
         }
 
         let query = tagFilter;
-        if (this.useDataSelector) {
+        if (usesDataSelection) {
           const selection = this.dataSelection.selections[0] || {};
           const {runs = [], tagRegex = ''} = selection;
           query = tagRegex;
@@ -349,7 +353,8 @@ limitations under the License.
       },
 
       _getMultiExperiments() {
-        return this.dataSelection.type == SelectionType.COMPARISON;
+        return Boolean(this.dataSelection) &&
+            this.dataSelection.type == SelectionType.COMPARISON;
       },
     });
 
