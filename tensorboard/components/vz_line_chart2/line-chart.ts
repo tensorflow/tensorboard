@@ -569,9 +569,14 @@ export class LineChart {
     const self = this;
     const swatchCol = {
       name: 'Swatch',
-      static: true,
       evalType: TooltipColumnEvalType.DOM,
-      evaluate: function(d: vz_chart_helpers.Point) {},
+      evaluate: function(d: vz_chart_helpers.Point) {
+        d3.select(this)
+            .select('span')
+            .style(
+                'background-color',
+                () => colorScale.scale(d.dataset.metadata().name));
+      },
       enter(d: vz_chart_helpers.Point) {
         d3.select(this)
             .append('span')
@@ -698,7 +703,10 @@ export class LineChart {
 
   private getDataset(name: string) {
     if (this.name2datasets[name] === undefined) {
-      this.name2datasets[name] = new Plottable.Dataset([], {name: name});
+      this.name2datasets[name] = new Plottable.Dataset([], {
+        name,
+        getTitle: name => name,
+      });
     }
     return this.name2datasets[name];
   }
@@ -759,10 +767,23 @@ export class LineChart {
   }
 
   /**
-   * Set the data of a series on the chart.
+   * Sets the data of a series on the chart.
    */
-  public setSeriesData(name: string, data:  vz_chart_helpers.ScalarDatum[]) {
+  public setSeriesData(name: string, data: vz_chart_helpers.ScalarDatum[]) {
     this.getDataset(name).data(data);
+  }
+
+  /**
+   * Sets getTitle callback on a series.
+   */
+  public setSeriesTitleGetter(name: string, getTitle: (name: string) => string) {
+    this.getDataset(name).metadata(
+        Object.assign(
+            {},
+            this.getDataset(name).metadata(),
+            {
+              getTitle: (name) => getTitle(name),
+            }));
   }
 
   public smoothingUpdate(weight: number) {

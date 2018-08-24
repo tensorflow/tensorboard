@@ -200,6 +200,9 @@ limitations under the License.
                 scalar: datum[2],
               }));
               const name = this._getSeriesNameFromDatum(datum);
+              scalarChart.setSeriesTitleGetter(name, () => {
+                return this._getSeriesTitleFromDatum(datum);
+              });
               scalarChart.setSeriesData(name, formattedData);
             };
           },
@@ -266,7 +269,12 @@ limitations under the License.
       _getDataSeries() {
         return this.dataToLoad.map(d => this._getSeriesNameFromDatum(d));
       },
-      _getSeriesNameFromDatum(datum) {
+      // name is a stable identifier for a series.
+      _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
+        return `${experiment.name}/${run}`;
+      },
+      // title is a visible string of a series for the UI.
+      _getSeriesTitleFromDatum(datum) {
         return this.multiExperiments ?
             `${datum.experiment.name}/${datum.run}` :
             datum.run;
@@ -276,9 +284,10 @@ limitations under the License.
           scale: (name) => {
             const splitIndex = name.indexOf('/');
             const exp = name.slice(0, splitIndex);
+            const run = name.slice(splitIndex + 1);
             return this.multiExperiments ?
                 tf_color_scale.experimentsColorScale(exp) :
-                tf_color_scale.runsColorScale(name);
+                tf_color_scale.runsColorScale(run);
           },
         };
       },

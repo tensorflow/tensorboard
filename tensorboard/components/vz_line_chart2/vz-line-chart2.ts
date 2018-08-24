@@ -140,8 +140,7 @@ Polymer({
         return [
           {
             title: 'Name',
-            static: true,
-            evaluate: (d) => d.dataset.metadata().name,
+            evaluate: (d) => d.dataset.metadata().getTitle(),
           },
           {
             title: 'Smoothed',
@@ -245,15 +244,15 @@ Polymer({
     _chart: Object,
     _visibleSeriesCache: {
       type: Array,
-      value: function() {
-        return []
-      }
+      value: () => [],
     },
     _seriesDataCache: {
       type: Object,
-      value: function() {
-        return {}
-      }
+      value: () => ({}),
+    },
+    _seriesGetTitleCache: {
+      type: Object,
+      value: () => ({}),
     },
     _makeChartAsyncCallbackId: {type: Number, value: null},
   },
@@ -301,6 +300,13 @@ Polymer({
     }
   },
 
+  setSeriesTitleGetter(name: string, getTitle: (name: string) => string) {
+    this._seriesGetTitleCache[name] = getTitle;
+    if (this._chart) {
+      this._chart.setSeriesTitleGetter(name, getTitle);
+    }
+  },
+
   /**
    * Reset the chart domain. If the chart has not rendered yet, a call to this
    * method no-ops.
@@ -321,6 +327,7 @@ Polymer({
   },
 
   detached: function() {
+    this.cancelAsync(this._makeChartAsyncCallbackId);
     if (this._chart) this._chart.destroy();
   },
 
@@ -388,6 +395,11 @@ Polymer({
     this._visibleSeriesCache.forEach(name => {
       this._chart.setSeriesData(name, this._seriesDataCache[name] || []);
     });
+    this._visibleSeriesCache
+        .filter(name => this._seriesGetTitleCache[name])
+        .forEach(name => {
+          this._chart.setSeriesTitleGetter(name, this._seriesGetTitleCache[name]);
+        });
     this._chart.setVisibleSeries(this._visibleSeriesCache);
   },
 

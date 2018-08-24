@@ -208,6 +208,10 @@ limitations under the License.
         this.$.chart.setSeriesData(name, data);
       },
 
+      setSeriesTitleGetter(name, getTitle) {
+        this.$.chart.setSeriesTitleGetter(name, getTitle);
+      },
+
       redraw() {
         cancelAnimationFrame(this._redrawRaf);
         this._redrawRaf = window.requestAnimationFrame(() => {
