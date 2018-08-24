@@ -28,6 +28,9 @@ limitations under the License.
           <template is="dom-if" if="[[_isSearchResults]]">
             <template is="dom-if" if="[[_isCompositeSearch(category)]]">
               <span>Tags matching multiple experiments</span>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span>&nbsp;<strong>(malformed regular expression)</strong></span>
+              </template>
             </template>
             <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
               <span class="light">Tags matching /</span>
