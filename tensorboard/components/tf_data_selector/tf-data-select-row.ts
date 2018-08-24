@@ -56,6 +56,16 @@ Polymer({
       value: false,
     },
 
+    shouldColorRuns: {
+      type: Boolean,
+      value: false,
+    },
+
+    _coloring: {
+      type: Object,
+      computed: '_getColoring(shouldColorRuns)',
+    },
+
     _runs: {
       type: Array,
       value: (): Array<tf_backend.Run> => [],
@@ -174,10 +184,6 @@ Polymer({
     }));
   },
 
-  _getIsRunCheckboxesColored(_): boolean {
-    return this.noExperiment;
-  },
-
   _persistSelectedRuns(): void {
     if (!this._isDataReady) return;
     const value = this._serializeValue(
@@ -250,8 +256,8 @@ Polymer({
 
   _getColoring() {
     return {
-      getColor: this.noExperiment ?
-          (item) => tf_color_scale.runsColorScale(item.id) :
+      getColor: this.shouldColorRuns ?
+          (item) => tf_color_scale.runsColorScale(item.title) :
           () => '',
     };
   },
