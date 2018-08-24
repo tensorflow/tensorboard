@@ -143,11 +143,11 @@ var tf_categorization_utils;
         var searchCategory = searchCategories.length == 1 ?
             searchCategories[0] :
             {
-                name: selection.length == 1 ? selection[0].tagRegex : 'multi',
+                name: searchCategories.every(function (c) { return !c.name; }) ? '' : 'multi',
                 metadata: {
                     type: CategoryType.SEARCH_RESULTS,
                     compositeSearch: true,
-                    validRegex: true,
+                    validRegex: searchCategories.every(function (c) { return c.metadata.validRegex; }),
                     universalRegex: false,
                 },
                 items: Array.from(tagToSearchSeries.keys())
@@ -224,4 +224,4 @@ var tf_categorization_utils;
         return tagCategories.map(explodeCategory);
     }
     tf_categorization_utils.categorizeRunTagCombinations = categorizeRunTagCombinations;
-})(tf_categorization_utils || (tf_categorization_utils = {})); // namespace tf_categorization_utils
+})(tf_categorization_utils || (tf_categorization_utils = {})); // namespace wtf_categorization_utils

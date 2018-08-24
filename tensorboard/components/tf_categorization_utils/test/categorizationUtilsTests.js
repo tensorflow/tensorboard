@@ -247,13 +247,25 @@ var tf_categorization_utils;
                     expect(searchResult.items[0]).to.have.property('tag', 'tag2/subtag1');
                     expect(searchResult.items[0]).to.have.property('series')
                         .that.deep.equal([
-                        { experiment: 'exp2', run: 'run2' },
-                        { experiment: 'exp2', run: 'run3' },
+                        {
+                            experiment: this.selection2.experiment,
+                            run: 'run2',
+                            tag: 'tag2/subtag1',
+                        },
+                        {
+                            experiment: this.selection2.experiment,
+                            run: 'run3',
+                            tag: 'tag2/subtag1',
+                        },
                     ]);
                     expect(searchResult.items[1]).to.have.property('tag', 'tag3');
                     expect(searchResult.items[1]).to.have.property('series')
                         .that.deep.equal([
-                        { experiment: 'exp2', run: 'run3' },
+                        {
+                            experiment: this.selection2.experiment,
+                            run: 'run3',
+                            tag: 'tag3'
+                        },
                     ]);
                 });
                 it('combines selection without tagRegex with one', function () {
@@ -274,6 +286,21 @@ var tf_categorization_utils;
                         { experiment: sel2.experiment, run: 'run2', tag: 'tag2/subtag1' },
                         { experiment: sel2.experiment, run: 'run3', tag: 'tag2/subtag1' },
                     ]);
+                });
+                it('keeps name as empty if all selections have no regex', function () {
+                    var sel1 = this.selection1;
+                    var sel2 = Object.assign({}, this.selection2, { tagRegex: '' });
+                    var searchResult = categorizeSelection([sel1, sel2], 'scalar')[0];
+                    expect(searchResult).to.have.property('items')
+                        .that.has.lengthOf(4);
+                    expect(searchResult).to.have.property('name', '');
+                });
+                it('reports bad regex when at least one selection is bad', function () {
+                    var sel1 = this.selection1;
+                    var sel2 = Object.assign({}, this.selection2, { tagRegex: '))' });
+                    var searchResult = categorizeSelection([sel1, sel2], 'scalar')[0];
+                    expect(searchResult).to.have.property('metadata')
+                        .that.has.property('validRegex', false);
                 });
                 it('sorts the tag by name', function () {
                     var searchResult = categorizeSelection([this.selection2, this.selection1], 'scalar')[0];
@@ -298,7 +325,7 @@ var tf_categorization_utils;
                         .that.has.lengthOf(0);
                 });
                 it('omits selection from tag series when its regex does not match', function () {
-                    var searchResult = categorizeSelection([this.experiment1, this.experiment3], 'scalar')[0];
+                    var searchResult = categorizeSelection([this.selection1, this.selection3], 'scalar')[0];
                     // should match 'tag1', 'tag2/subtag1', 'tag2/subtag2', and 'tag3'.
                     expect(searchResult).to.have.property('items')
                         .that.has.lengthOf(3);
@@ -308,7 +335,11 @@ var tf_categorization_utils;
                     // experiment3 also matches the tag1 but it has tagRegex of `junk`.
                     expect(searchResult.items[0]).to.have.property('series')
                         .that.deep.equal([
-                        { experiment: 'exp1', run: 'run1' },
+                        {
+                            experiment: this.selection1.experiment,
+                            run: 'run1',
+                            tag: 'tag1',
+                        },
                     ]);
                 });
             });
