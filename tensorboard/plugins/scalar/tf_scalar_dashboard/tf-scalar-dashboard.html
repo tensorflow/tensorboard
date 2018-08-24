@@ -191,6 +191,7 @@ limitations under the License.
   <script>
     const PLUGIN_NAME = 'scalars';
     const USE_DATA_SELECTOR = tf_globals.getEnableDataSelector();
+    const SelectionType = tf_data_selector.Type;
 
     Polymer({
       is: 'tf-scalar-dashboard',
@@ -306,7 +307,7 @@ limitations under the License.
         if (this.useDataSelector && this.dataSelection.selections.length == 0) {
           return [];
         } else if (this.useDataSelector &&
-            this.dataSelection.type == tf_data_selector.Type.WITH_EXPERIMENT) {
+            this.dataSelection.type != SelectionType.WITHOUT_EXPERIMENT) {
           const categories = tf_categorization_utils.categorizeSelection(
               this.dataSelection.selections, PLUGIN_NAME);
           return categories;
@@ -348,7 +349,7 @@ limitations under the License.
       },
 
       _getMultiExperiments() {
-        return this.dataSelection.type == tf_data_selector.Type.WITH_EXPERIMENT;
+        return this.dataSelection.type == SelectionType.COMPARISON;
       },
     });
 

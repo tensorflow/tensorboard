@@ -192,7 +192,8 @@ Polymer({
       });
 
       return {
-        type: tf_data_selector.Type.WITH_EXPERIMENT,
+        type: this._selections.size == 1 ?
+            tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
         selections: Array.from(newSelections.values()),
       };
     }
