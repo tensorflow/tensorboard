@@ -506,6 +506,8 @@ limitations under the License.
 
       .optimize-text {
         margin: 5px 0;
+        color: grey;
+        font-size: 14px;
       }
 
       .threshold-cost-input {
@@ -583,15 +585,10 @@ limitations under the License.
 
       #distancedialog {
         width: 30%;
-        border-radius: 10px;
       }
 
       #distancedialog .buttons {
         color: #f57c00;
-      }
-
-      #deletedialog {
-        border-radius: 10px;
       }
 
       paper-radio-button {
@@ -707,6 +704,10 @@ limitations under the License.
         margin-left: 5px;
       }
 
+      .no-padding {
+        padding: 0;
+      }
+
       .resize-icon {
         display: table-cell;
         vertical-align: middle;
@@ -720,7 +721,47 @@ limitations under the License.
       .help-text {
         color: grey;
         font-size: 14px;
-        padding-top: 10px;
+        font-weight: 400;
+      }
+
+      .help-title {
+        color: var(--tb-orange-dark);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .help-title-margin {
+        margin-top: 14px;
+      }
+
+      .help-title-margin-button {
+        margin-top: 4px;
+      }
+
+      .help-title-margin-title {
+        margin-top: 7px;
+      }
+
+      .dialog-link {
+        color: grey;
+        font-size: 14px;
+        font-style: italic;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .dialog-text {
+        font-style: normal;
+      }
+
+      .dialog-title {
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .title-width {
+        width: 250px;
+        padding-right: 16px;
       }
 
       .datapoint-info-holder {
@@ -756,7 +797,7 @@ limitations under the License.
       }
 
       .button-prefix-label {
-        margin: 10px 0 0 10px;
+        margin: 11px 0 0 10px;
         color: grey;
         font-size: 14px;
       }
@@ -768,6 +809,11 @@ limitations under the License.
       .tabs {
         border-bottom: 1px solid lightgrey;
       }
+
+      paper-dialog {
+        border-radius: 10px;
+      }
+
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -824,40 +870,54 @@ limitations under the License.
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <paper-button on-click="inferClicked_" class="main-button"
-              disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-              Run inference
-            </paper-button>
-            <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                on-click="showPartialDependencePlots_" alt="show partial dependence plots">
-                Partial dependence plots
-            </paper-button>
-            <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                on-click="showDistanceClicked_" alt="create distance feature">
-                Compute distance
-            </paper-button>
+            <div title="Select and edit a datapoint to use this feature">
+              <paper-button on-click="inferClicked_" class="main-button"
+                disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+                Run inference
+              </paper-button>
+            </div>
+            <div title="Select a datapoint to use this feature">
+              <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                  on-click="showPartialDependencePlots_" alt="show partial dependence plots"
+                  title="Select a datapoint to use this feature">
+                  Partial dependence plots
+              </paper-button>
+            </div>
+            <div title="Select a datapoint to use this feature">
+              <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                  on-click="showDistanceClicked_" alt="create distance feature"
+                  title="Select a datapoint to use this feature">
+                  Compute distance
+              </paper-button>
+            </div>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
                 <div class="button-prefix-label">Show nearest different classification:</div>
-                <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual">
-                  L1
-                </paper-button>
-                <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="findClosestCounterfactualL2_" alt="closest L2 counterfactual">
-                  L2
-                </paper-button>
-                <div>
-                  <iron-icon icon="info-outline" class="info-icon"></iron-icon>
-                  <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
-                    <div>See nearest neighbors from a different classification using L1 or L2 distance,
-                      which are two popular distance measures. Find out more
-                      <a target="_blank" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">
-                        here
-                      </a>.
-                    </div>
-                  </paper-tooltip>
+                <div title="Select a datapoint to use this feature">
+                  <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                    on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
+                    title="Select a datapoint to use this feature">
+                    L1
+                  </paper-button>
                 </div>
+                <div title="Select a datapoint to use this feature">
+                  <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                    on-click="findClosestCounterfactualL2_" alt="closest L2 counterfactual"
+                    title="Select a datapoint to use this feature">
+                    L2
+                  </paper-button>
+                </div>
+                <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
+                </paper-icon-button>
+                <paper-dialog class="dialog-text">
+                  <div class="dialog-title">Nearest neighbors of different classification</div>
+                  <div>Compares the selected example with its nearest neighbor from a different classification using L1 or L2 distance,
+                    which are two popular distance measures. Find out more
+                    <a target="_blank" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">
+                      here
+                    </a>.
+                  </div>
+                </paper-dialog>
               </div>
             </template>
           </div>
@@ -880,7 +940,7 @@ limitations under the License.
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
                 <div class="config-tab">
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleTrueLabelSetup">Ground Truth
+                    <button class="heading" on-click="toggleTrueLabelSetup">Set Ground Truth
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -896,15 +956,19 @@ limitations under the License.
                             </paper-listbox>
                           </paper-dropdown-menu>
                           <div>
-                            <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
-                            <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
-                              <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
-                                to predict, then selecting that feature here allows the tool to investigate the performance of
-                                the model.
-                              </div>
-                            </paper-tooltip>
+                            <div class="help-title help-title-margin">What is this?</div>
+                            <div class="help-text">Select the feature to set as the true label in order to investigate model performance.
+                              <span class="dialog-link" on-click="openDialog">More.
+                                <paper-dialog class="dialog-text">
+                                  <div class="dialog-title">Ground Truth Feature</div>
+                                  <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
+                                    to predict, then selecting that feature here allows the tool to investigate the performance of
+                                    the model.
+                                  </div>
+                                </paper-dialog>
+                              </span>
+                            </div>
                           </div>
-                          <div class="help-text">Select the true label feature to investigate model performance</div>
                         </div>
                         <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
                           <div class="flex">
@@ -913,23 +977,30 @@ limitations under the License.
                               type="number" class="threshold-cost-input">
                             </paper-input>
                             <div>
-                              <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
-                              <paper-tooltip class="tooltip" animation-delay="0" position="right" offset="0">
-                                <div class="bold">Examples:</div>
-                                <div>1 means that false positives and false negatives are equally costly.</div>
-                                <div>2 means that false positives are twice as costly as false negatives.</div>
-                                <div>0.5 means that false positives are half as costly as false negatives.</div>
-                              </paper-tooltip>
+                              <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
+                              <div class="help-text">Define the ratio of false positive cost to false negative cost to guide optimization of the classification threshold.
+                                <span class="dialog-link" on-click="openDialog">More.
+                                  <paper-dialog class="dialog-text">
+                                    <div class="dialog-title">Cost Ratio</div>
+                                    <div class="bold">Examples:</div>
+                                    <div>1 means that false positives and false negatives are equally costly.</div>
+                                    <div>2 means that false positives are twice as costly as false negatives.</div>
+                                    <div>0.5 means that false positives are half as costly as false negatives.</div>
+                                  </paper-dialog>
+                                </span>
+                              </div>
                             </div>
-                            <div class="help-text">Define the ratio of false positive cost to false negative cost</div>
-                            </div>
-
+                          </div>
                           <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="flex">
                               <paper-button class="control-button optimize-threshold-button" on-click="optimizeThresholdClicked_">
                                   Optimize threshold
                               </paper-button>
-                              <div class="help-text">Find the least costly decision threshold</div>
+                              <div>
+                                <div class="help-title help-title-margin-button">What am I optimizing for?</div>
+                                <div class="help-text">Finds the least costly decision threshold for the cost ratio defined above.
+                                </div>
+                              </div>
                             </div>
                           </template>
                         </template>
@@ -938,7 +1009,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleExplorerSetup">Slices
+                    <button class="heading" on-click="toggleExplorerSetup">Compare Slices
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -953,7 +1024,11 @@ limitations under the License.
                               </template>
                             </paper-listbox>
                           </paper-dropdown-menu>
-                          <div class="help-text">Investigate performance for examples with each unique value of a selected feature</div>
+                          <div>
+                            <div class="help-title help-title-margin">What does slicing do?</div>
+                            <div class="help-text">Investigate performance for the groups of examples with each unique value of the selected feature.
+                            </div>
+                          </div>
                         </div>
                         <div class="flex">
                           <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
@@ -964,15 +1039,29 @@ limitations under the License.
                                 </template>
                               </paper-listbox>
                             </paper-dropdown-menu>
-                            <div class="help-text">Specify a second feature to slice the data by</div>
+                            <div class="help-text help-title-margin">Specify a second feature to slice the data by.</div>
                           </template>
                         </div>
                         <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
                           <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                            <div class="optimize-text">Optimize thresholds for:</div>
+                            <div class="flex">
+                              <div class="optimize-text title-width">Optimize sliced thresholds for:</div>
+                              <div class="help-title help-title-margin-title">What am I optimizing for?
+                                <span class="help-text dialog-link" on-click="openDialog">More.
+                                  <paper-dialog class="dialog-text">
+                                    <div class="dialog-title">Classification Threshold Optimization Options</div>
+                                    <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all slices individually</div>
+                                    <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each slices</div>
+                                    <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each slices are correctly predicted either as yes (1) or no (0)</div>
+                                    <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each slices are predicted yes (1)</div>
+                                    <div><span class="bold">Single threshold</span> - Optimize a single threshold across all slices</div>
+                                  </paper-dialog>
+                                </span>
+                              </div>
+                            </div>
                             <div class="flex-wrap">
                               <paper-button class="control-button optimize-selection-button" on-click="optimizeFacetedThresholdsClicked_">
-                                  Indivdual thresholds
+                                  Individual thresholds
                               </paper-button>
                               <paper-button class="control-button optimize-selection-button" on-click="equalOppoClicked_">
                                   Equal opportunity
@@ -986,16 +1075,6 @@ limitations under the License.
                               <paper-button class="control-button optimize-selection-button" on-click="optimizeThresholdClicked_">
                                   Single threshold
                               </paper-button>
-                              <div>
-                                <iron-icon icon="communication:comment" class="comment-icon"></iron-icon>
-                                <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
-                                  <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all groups individually</div>
-                                  <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each group</div>
-                                  <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each group are correctly predicted either as yes (1) or no (0)</div>
-                                  <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each group are predicted yes (1)</div>
-                                  <div><span class="bold">Single threshold</span> - Optimize a single threshold across all datapoints</div>
-                                </paper-tooltip>
-                              </div>
                             </div>
                           </template>
                         </template>
@@ -1004,7 +1083,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="togglePerformance">Performance
+                    <button class="heading" on-click="togglePerformance">Explore Performance
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedPerformance)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1020,9 +1099,11 @@ limitations under the License.
                                             on-value-changed="refreshInferencesNoRegen_">
                               </paper-slider>
                               <div>
-                                <iron-icon icon="info-outline" class="info-icon threshold-info-icon"></iron-icon>
-                                <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0" fit-to-visible-bounds="true">
-                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text">
+                                  <div class="dialog-title">Exploring Classification Performance</div>
+                                  <div>Use this slider to adjust the classification threshold for this slice. Inference values at or above this threshold
                                     are considered a positive classification, while inference values below this threshold are considered
                                     a negative classification.
                                   </div>
@@ -1035,7 +1116,7 @@ limitations under the License.
                                       here
                                     </a>.
                                   </div>
-                                </paper-tooltip>
+                                </paper-dialog>
                               </div>
                             </div>
                             <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
@@ -1061,8 +1142,10 @@ limitations under the License.
                                             immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
                               </paper-slider>
                               <div>
-                                <iron-icon icon="info-outline" class="info-icon threshold-info-icon"></iron-icon>
-                                <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0" fit-to-visible-bounds="true">
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text">
+                                  <div class="dialog-title">Exploring Classification Performance</div>
                                   <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
                                     are considered a positive classification, while inference values below this threshold are considered
                                     a negative classification.
@@ -1076,7 +1159,7 @@ limitations under the License.
                                       here
                                     </a>.
                                   </div>
-                                </paper-tooltip>
+                                </paper-dialog>
                               </div>
                             </div>
                           </div>
@@ -1274,23 +1357,23 @@ limitations under the License.
               <div class="flex">
                 <paper-icon-button icon="arrow-back" on-click="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
                 <div class="pd-info-text">Partial Depdendency Plots</div>
-                <div>
-                  <iron-icon icon="info-outline" class="info-icon pd-info-icon"></iron-icon>
-                  <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0" fit-to-visible-bounds="true">
-                    <div>Partial dependency plots visualize the change in inference results for every feature,
-                      as the value for that feature is changed to different valid values.
-                    </div>
-                    <div>For numeric features, you can set the minimum and maximum values to plot.</div>
-                    <div>For string features, the most popular feature values are shown as alternatives to
-                      the feature value for the selected example.
-                    </div>
-                    <div>For features with multiple feature values per example, a single plot is shown for for
-                      each feature value in the selected example. You can override which feature values have
-                      plots created for them by specifying the indices to shown partial dependence plots for,
-                      if the example contains multiple feature values for a feature.
-                    </div>
-                  </paper-tooltip>
-                </div>
+                <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-click="openDialog">
+                </paper-icon-button>
+                <paper-dialog class="dialog-text">
+                  <div class="dialog-title">Partial Dependency Plots</div>
+                  <div>Partial dependency plots visualize the change in inference results for every feature,
+                    as the value for that feature is changed to different valid values.
+                  </div>
+                  <div>For numeric features, you can set the minimum and maximum values to plot.</div>
+                  <div>For string features, the most popular feature values are shown as alternatives to
+                    the feature value for the selected example.
+                  </div>
+                  <div>For features with multiple feature values per example, a single plot is shown for for
+                    each feature value in the selected example. You can override which feature values have
+                    plots created for them by specifying the indices to shown partial dependence plots for,
+                    if the example contains multiple feature values for a feature.
+                  </div>
+                </paper-dialog>
               </div>
               <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                 <div class="feature-container" data-feature-name$="[[item.name]]">
@@ -1625,6 +1708,13 @@ limitations under the License.
 
       // Required function.
       reload: function(){
+      },
+
+      openDialog: function(event) {
+        const dialog = event.target.parentElement.parentElement
+          .querySelector('paper-dialog');
+        //dialog.positionTarget = event.target;
+        dialog.open();
       },
 
       ready: function() {
