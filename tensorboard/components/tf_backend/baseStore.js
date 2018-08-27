@@ -26,7 +26,14 @@ var tf_backend;
         function BaseStore() {
             this.requestManager = new tf_backend.RequestManager(1 /* simultaneous request */);
             this._listeners = new Set();
+            this.initialized = false;
         }
+        BaseStore.prototype.refresh = function () {
+            var _this = this;
+            return this.load().then(function () {
+                _this.initialized = true;
+            });
+        };
         /**
          * Register a listener (nullary function) to be called when new runs are
          * available.

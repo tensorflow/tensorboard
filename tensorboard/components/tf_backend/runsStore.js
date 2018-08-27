@@ -31,7 +31,7 @@ var tf_backend;
             _this._runs = [];
             return _this;
         }
-        RunsStore.prototype.refresh = function () {
+        RunsStore.prototype.load = function () {
             var _this = this;
             var url = tf_backend.getRouter().runs();
             return this.requestManager.request(url).then(function (newRuns) {

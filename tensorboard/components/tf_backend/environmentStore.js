@@ -34,7 +34,7 @@ var tf_backend;
         function EnvironmentStore() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        EnvironmentStore.prototype.refresh = function () {
+        EnvironmentStore.prototype.load = function () {
             var _this = this;
             var url = tf_backend.getRouter().environment();
             return this.requestManager.request(url).then(function (result) {

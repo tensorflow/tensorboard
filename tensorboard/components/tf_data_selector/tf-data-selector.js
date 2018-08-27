@@ -20,7 +20,7 @@ var tf_data_selector;
     Polymer({
         is: 'tf-data-selector',
         properties: {
-            _dataReady: {
+            _allExperimentsFetched: {
                 type: Boolean,
                 value: false,
             },
@@ -73,7 +73,7 @@ var tf_data_selector;
             },
         },
         observers: [
-            '_pruneSelections(_experiments.*)',
+            '_pruneSelections(_experimentIds.*)',
             '_pruneExperimentIds(_allExperiments.*)',
             '_pruneEnabledExperiments(_experimentIds.*)',
             '_persistExperimentIds(_experimentIds.*)',
@@ -91,8 +91,10 @@ var tf_data_selector;
             var _this = this;
             this._updateExpKey = tf_backend.experimentsStore.addListener(function () {
                 _this._allExperiments = tf_backend.experimentsStore.getExperiments();
+                _this._allExperimentsFetched = true;
             });
             this._allExperiments = tf_backend.experimentsStore.getExperiments();
+            this._allExperimentsFetched = tf_backend.experimentsStore.initialized;
             this._updateEnvKey = tf_backend.environmentStore.addListener(function () {
                 _this._mode = tf_backend.environmentStore.getMode();
             });
@@ -125,10 +127,7 @@ var tf_data_selector;
         _pruneSelections: function () {
             if (!this._selections)
                 return;
-            var experimentIds = new Set(this._experiments.map(function (_a) {
-                var id = _a.id;
-                return id;
-            }));
+            var experimentIds = new Set(this._experimentIds);
             var newSelections = new Map(this._selections);
             newSelections.forEach(function (_, id) {
                 // No experiment selection is still a valid selection. Do not prune.
@@ -140,7 +139,7 @@ var tf_data_selector;
             this._selections = newSelections;
         },
         _pruneExperimentIds: function () {
-            if (!this._dataReady)
+            if (!this._allExperimentsFetched)
                 return;
             var allExpIds = new Set(this._allExperiments.map(function (_a) {
                 var id = _a.id;
@@ -151,7 +150,7 @@ var tf_data_selector;
         _pruneEnabledExperiments: function () {
             // When the component never fully loaded the list of experiments, it
             // cannot correctly prune/adjust the enabledExperiments.
-            if (!this._dataReady)
+            if (!this._allExperimentsFetched)
                 return;
             var expIds = new Set(this._experimentIds);
             this._enabledExperimentIds = this._enabledExperimentIds
@@ -194,8 +193,20 @@ var tf_data_selector;
             var _a = event.detail, runs = _a.runs, tagRegex = _a.tagRegex;
             var experiment = event.target.experiment;
             var expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
+            // Check if selction change event was triggered from a removed row. Removal
+            // triggers change in persistence (clears the value) and this causes
+            // property to change which in turn triggers an event. If there is any
+            // asynchronity in propagating the change from the row, below condition is
+            // truthy.
+            if (expId != NO_EXPERIMENT_ID && !this._experimentIds.includes(expId)) {
+                return;
+            }
             var newSelections = new Map(this._selections);
             newSelections.set(expId, { experiment: experiment, runs: runs, tagRegex: tagRegex });
+            // Ignore the selection changed event if it makes no tangible difference to
+            // the _selections.
+            if (_.isEqual(newSelections, this._selections))
+                return;
             this._selections = newSelections;
         },
         _computeExperiments: function () {
@@ -214,6 +225,7 @@ var tf_data_selector;
             this._enabledExperimentIds = uniqueAdd(this._enabledExperimentIds, addedIds);
         },
         _removeExperiment: function (event) {
+            console.log('removed experiment');
             var removedId = event.target.experiment.id;
             // Changing _experimentIds will remove the id from _enabledExperimentIds.
             this._experimentIds = this._experimentIds.filter(function (id) { return id != removedId; });

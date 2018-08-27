@@ -31,7 +31,7 @@ var tf_backend;
             _this._experiments = [];
             return _this;
         }
-        ExperimentsStore.prototype.refresh = function () {
+        ExperimentsStore.prototype.load = function () {
             var _this = this;
             var url = tf_backend.getRouter().experiments();
             return this.requestManager.request(url).then(function (newExperiments) {
