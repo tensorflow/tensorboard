@@ -90,6 +90,7 @@ Polymer({
   },
 
   observers: [
+    '_synchronizeColors(checkboxColor)',
     '_persistSelectedRuns(_selectedRuns)',
     '_fireChange(_selectedRuns, _tagRegex)',
   ],

@@ -76,9 +76,9 @@ Polymer({
       computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
     },
 
-    _mode: {
-      type: Number,
-      value: '',
+    _canCompareExperiments: {
+      type: Boolean,
+      value: false
     },
 
     _shouldColorRuns: {
@@ -115,18 +115,16 @@ Polymer({
     this._allExperimentsFetched = tf_backend.experimentsStore.initialized;
 
     this._updateEnvKey = tf_backend.environmentStore.addListener(() => {
-      this._mode = tf_backend.environmentStore.getMode();
+      this._canCompareExperiments = tf_backend.Mode.DB ==
+          tf_backend.environmentStore.getMode();
     });
-    this._mode = tf_backend.environmentStore.getMode();
+    this._canCompareExperiments = tf_backend.Mode.DB ==
+        tf_backend.environmentStore.getMode();
   },
 
   detached() {
     tf_backend.experimentsStore.removeListenerByKey(this._updateExpKey);
     tf_backend.environmentStore.removeListenerByKey(this._updateEnvKey);
-  },
-
-  _canCompareExperiments(): boolean {
-    return this._mode == tf_backend.Mode.DB;
   },
 
   _getPersistenceId(experiment) {
@@ -178,7 +176,7 @@ Polymer({
   },
 
   _computeSelection() {
-    if (this._canCompareExperiments()) {
+    if (this._canCompareExperiments) {
       const enabledExperiments = new Set(this._enabledExperimentIds);
 
       // Make a copy of the all selections.
@@ -275,9 +273,13 @@ Polymer({
     }
   },
 
-  _shouldShowAddComparison() {
-    return this._canCompareExperiments() &&
+  _getAddComparisonVisible() {
+    return this._canCompareExperiments &&
         this._allExperiments.length > this._experiments.length;
+  },
+
+  _getAddComparisonAlwaysExpanded() {
+    return this._canCompareExperiments && !this._experiments.length;
   },
 
 });
