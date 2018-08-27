@@ -49,6 +49,14 @@ var tf_data_selector;
                 type: Boolean,
                 value: false,
             },
+            shouldColorRuns: {
+                type: Boolean,
+                value: false,
+            },
+            _coloring: {
+                type: Object,
+                computed: '_getColoring(shouldColorRuns)',
+            },
             _runs: {
                 type: Array,
                 value: function () { return []; },
@@ -152,9 +160,6 @@ var tf_data_selector;
                 title: run.name,
             }); });
         },
-        _getIsRunCheckboxesColored: function (_) {
-            return this.noExperiment;
-        },
         _persistSelectedRuns: function () {
             if (!this._isDataReady)
                 return;
@@ -225,8 +230,8 @@ var tf_data_selector;
         },
         _getColoring: function () {
             return {
-                getColor: this.noExperiment ?
-                    function (item) { return tf_color_scale.runsColorScale(item.id); } :
+                getColor: this.shouldColorRuns ?
+                    function (item) { return tf_color_scale.runsColorScale(item.title); } :
                     function () { return ''; },
             };
         },

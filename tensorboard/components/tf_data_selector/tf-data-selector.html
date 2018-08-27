@@ -42,12 +42,14 @@ Properties out:
     >
       <tf-data-select-row
         no-experiment
+        should-color-runs
         persistence-id="_default"
         on-selection-changed="_selectionChanged"
       ></tf-data-select-row>
     </template>
     <template is="dom-repeat" items="[[_experiments]]" as="exp">
       <tf-data-select-row
+        should-color-runs="[[_shouldColorRuns]]"
         checkbox-color="[[_getExperimentColor(exp)]]"
         enabled="[[_isExperimentEnabled(exp)]]"
         experiment="[[exp]]"

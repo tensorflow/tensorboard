@@ -67,6 +67,10 @@ var tf_data_selector;
                 type: Number,
                 value: '',
             },
+            _shouldColorRuns: {
+                type: Boolean,
+                computed: '_computeShouldColorRuns(_experiments)',
+            },
         },
         observers: [
             '_pruneSelections(_experiments.*)',
@@ -110,6 +114,9 @@ var tf_data_selector;
         },
         _getExperimentColor: function (experiment) {
             return tf_color_scale.experimentsColorScale(experiment.name);
+        },
+        _computeShouldColorRuns: function () {
+            return this._experiments.length <= 1;
         },
         /**
          * Prunes away an experiment that has been removed from `_experiments` from
