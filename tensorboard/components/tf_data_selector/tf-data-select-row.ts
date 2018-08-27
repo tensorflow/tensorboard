@@ -14,8 +14,6 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_data_selector {
 
-const CHANGE_EVENT_DEBOUNCE_MS = 250;
-
 enum Type {
   RUN = 1,
   TAG,
@@ -150,7 +148,6 @@ Polymer({
 
   detached(): void {
     this._isDataReady = false;
-    this.cancelDebouncer('fire');
   },
 
   _fetchRunsAndTags(): Promise<void> {
@@ -210,21 +207,19 @@ Polymer({
   },
 
   _fireChange(_, __): void {
-    this.debounce('fire', () => {
-      const runMap = new Map(
-          this._runs.map(run => [this._getSyntheticRunId(run), run]));
-      this.fire('selection-changed', {
-        runs: this._selectedRuns.map(({id}) => runMap.get(id))
-            .filter(Boolean)
-            .map(run => ({
-              id: run.id,
-              name: run.name,
-              startTime: run.startTime,
-              tags: run.tags,
-            })),
-        tagRegex: this._tagRegex,
-      });
-    }, CHANGE_EVENT_DEBOUNCE_MS);
+    const runMap = new Map(
+        this._runs.map(run => [this._getSyntheticRunId(run), run]));
+    this.fire('selection-changed', {
+      runs: this._selectedRuns.map(({id}) => runMap.get(id))
+          .filter(Boolean)
+          .map(run => ({
+            id: run.id,
+            name: run.name,
+            startTime: run.startTime,
+            tags: run.tags,
+          })),
+      tagRegex: this._tagRegex,
+    });
   },
 
   _removeRow(): void {
