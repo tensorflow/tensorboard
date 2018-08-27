@@ -672,7 +672,6 @@ limitations under the License.
         height: 50px;
         min-width: 50px;
         min-height: 50px;
-        margin-top: 5px;
         color: var(--tb-orange-dark);
       }
 
@@ -909,7 +908,7 @@ limitations under the License.
                 </div>
                 <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
                 </paper-icon-button>
-                <paper-dialog class="dialog-text">
+                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                   <div class="dialog-title">Nearest neighbors of different classification</div>
                   <div>Compares the selected example with its nearest neighbor from a different classification using L1 or L2 distance,
                     which are two popular distance measures. Find out more
@@ -959,7 +958,7 @@ limitations under the License.
                             <div class="help-title help-title-margin">What is this?</div>
                             <div class="help-text">Select the feature to set as the true label in order to investigate model performance.
                               <span class="dialog-link" on-click="openDialog">More.
-                                <paper-dialog class="dialog-text">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Ground Truth Feature</div>
                                   <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
                                     to predict, then selecting that feature here allows the tool to investigate the performance of
@@ -980,7 +979,7 @@ limitations under the License.
                               <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
                               <div class="help-text">Define the ratio of false positive cost to false negative cost to guide optimization of the classification threshold.
                                 <span class="dialog-link" on-click="openDialog">More.
-                                  <paper-dialog class="dialog-text">
+                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">Cost Ratio</div>
                                     <div class="bold">Examples:</div>
                                     <div>1 means that false positives and false negatives are equally costly.</div>
@@ -1048,7 +1047,7 @@ limitations under the License.
                               <div class="optimize-text title-width">Optimize sliced thresholds for:</div>
                               <div class="help-title help-title-margin-title">What am I optimizing for?
                                 <span class="help-text dialog-link" on-click="openDialog">More.
-                                  <paper-dialog class="dialog-text">
+                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">Classification Threshold Optimization Options</div>
                                     <div><span class="bold">Individual thresholds</span> - Optimize thresholds for all slices individually</div>
                                     <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each slices</div>
@@ -1101,7 +1100,7 @@ limitations under the License.
                               <div>
                                 <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Exploring Classification Performance</div>
                                   <div>Use this slider to adjust the classification threshold for this slice. Inference values at or above this threshold
                                     are considered a positive classification, while inference values below this threshold are considered
@@ -1144,7 +1143,7 @@ limitations under the License.
                               <div>
                                 <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Exploring Classification Performance</div>
                                   <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
                                     are considered a positive classification, while inference values below this threshold are considered
@@ -1299,7 +1298,7 @@ limitations under the License.
                     <div class="datapoint-info-holder">
                       <div class="datapoint-info-content">
                         <div class="flex">
-                          <div class="datapoint-info-header">Select a datapoint to begin editing features and values.</div>
+                          <div class="datapoint-info-header">Select a datapoint to begin exploring features and values.</div>
                           <iron-icon icon="arrow-forward" class="arrow-icon"></iron-icon>
                         </div>
                         <div class="datapoint-info-main">Clicking on a datapoint in the visualization will load
@@ -1309,11 +1308,7 @@ limitations under the License.
                           to see how your model performs.
                         </div>
                         <div class="datapoint-info-bullet">
-                          <span class="bold">Run inference on new examples:</span>
-                          Duplicate existing examples and make edits and rerun inference.
-                        </div>
-                        <div class="datapoint-info-bullet">
-                          <span class="bold">Distance Feature:</span>
+                          <span class="bold">Compute Distance:</span>
                           Select an example to be an anchor and create a new L1 or L2 distance feature for all loaded examples.
                         </div>
                         <div class="datapoint-info-bullet">
@@ -1325,6 +1320,9 @@ limitations under the License.
                           For a selected example, explore plots for every feature that show the change in inference results across
                           different valid values for that feature.
                         </div>
+                        <div class="datapoint-info-header">Use the "Performance" tab to investigate model performance across your dataset.</div>
+
+                        <div class="datapoint-info-header">Use the "Features" tab to view statistics about your dataset.</div>
                       </div>
                     </div>
                   </template>
@@ -1359,7 +1357,7 @@ limitations under the License.
                 <div class="pd-info-text">Partial Depdendency Plots</div>
                 <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-click="openDialog">
                 </paper-icon-button>
-                <paper-dialog class="dialog-text">
+                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                   <div class="dialog-title">Partial Dependency Plots</div>
                   <div>Partial dependency plots visualize the change in inference results for every feature,
                     as the value for that feature is changed to different valid values.
