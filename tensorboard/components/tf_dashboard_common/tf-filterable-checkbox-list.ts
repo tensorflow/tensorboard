@@ -87,6 +87,11 @@ Polymer({
     'dom-change': '_synchronizeColors',
   },
 
+  observers: [
+    '_synchronizeColors(useCheckboxColors)',
+    '_synchronizeColors(coloring)',
+  ],
+
   detached() {
     this.cancelDebouncer('_setRegex');
   },

@@ -81,6 +81,11 @@ Polymer({
       value: '',
     },
 
+    _shouldColorRuns: {
+      type: Boolean,
+      computed: '_computeShouldColorRuns(_experiments)',
+    },
+
   },
 
   observers: [
@@ -133,6 +138,10 @@ Polymer({
 
   _getExperimentColor(experiment: tf_backend.Experiment): string {
     return tf_color_scale.experimentsColorScale(experiment.name);
+  },
+
+  _computeShouldColorRuns() {
+    return this._experiments.length <= 1;
   },
 
   /**
@@ -252,6 +261,7 @@ Polymer({
     return this._canCompareExperiments() &&
         this._allExperiments.length > this._experiments.length;
   },
+
 });
 
 /**
