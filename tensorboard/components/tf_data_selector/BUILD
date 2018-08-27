@@ -15,6 +15,8 @@ tf_web_library(
         "tf-collapsible-data-selector.ts",
         "tf-data-select-row.html",
         "tf-data-select-row.ts",
+        "tf-data-selector-alt.html",
+        "tf-data-selector-alt.ts",
         "tf-data-selector.html",
         "tf-data-selector.ts",
     ],
