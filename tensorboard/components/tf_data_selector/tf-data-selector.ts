@@ -255,7 +255,6 @@ Polymer({
   },
 
   _removeExperiment(event) {
-    console.log('removed experiment');
     const removedId = event.target.experiment.id;
     // Changing _experimentIds will remove the id from _enabledExperimentIds.
     this._experimentIds = this._experimentIds.filter(id => id != removedId);
