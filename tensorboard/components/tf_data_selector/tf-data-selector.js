@@ -63,9 +63,9 @@ var tf_data_selector;
                 notify: true,
                 computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
             },
-            _mode: {
-                type: Number,
-                value: '',
+            _canCompareExperiments: {
+                type: Boolean,
+                value: false
             },
             _shouldColorRuns: {
                 type: Boolean,
@@ -96,16 +96,15 @@ var tf_data_selector;
             this._allExperiments = tf_backend.experimentsStore.getExperiments();
             this._allExperimentsFetched = tf_backend.experimentsStore.initialized;
             this._updateEnvKey = tf_backend.environmentStore.addListener(function () {
-                _this._mode = tf_backend.environmentStore.getMode();
+                _this._canCompareExperiments = tf_backend.Mode.DB ==
+                    tf_backend.environmentStore.getMode();
             });
-            this._mode = tf_backend.environmentStore.getMode();
+            this._canCompareExperiments = tf_backend.Mode.DB ==
+                tf_backend.environmentStore.getMode();
         },
         detached: function () {
             tf_backend.experimentsStore.removeListenerByKey(this._updateExpKey);
             tf_backend.environmentStore.removeListenerByKey(this._updateEnvKey);
-        },
-        _canCompareExperiments: function () {
-            return this._mode == tf_backend.Mode.DB;
         },
         _getPersistenceId: function (experiment) {
             return tf_data_selector.encodeId(experiment.id);
@@ -157,7 +156,7 @@ var tf_data_selector;
                 .filter(function (id) { return expIds.has(id); });
         },
         _computeSelection: function () {
-            if (this._canCompareExperiments()) {
+            if (this._canCompareExperiments) {
                 var enabledExperiments_1 = new Set(this._enabledExperimentIds);
                 // Make a copy of the all selections.
                 var newSelections_1 = new Map(this._selections);
@@ -240,9 +239,12 @@ var tf_data_selector;
                     .filter(function (id) { return id != newId; });
             }
         },
-        _shouldShowAddComparison: function () {
-            return this._canCompareExperiments() &&
+        _getAddComparisonVisible: function () {
+            return this._canCompareExperiments &&
                 this._allExperiments.length > this._experiments.length;
+        },
+        _getAddComparisonAlwaysExpanded: function () {
+            return this._canCompareExperiments && !this._experiments.length;
         },
     });
     /**

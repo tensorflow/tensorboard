@@ -21,6 +21,10 @@ var tf_data_selector;
                 type: Array,
                 value: function () { return []; },
             },
+            alwaysExpanded: {
+                type: Boolean,
+                value: false,
+            },
             _expanded: {
                 type: Boolean,
                 value: false,
@@ -40,6 +44,9 @@ var tf_data_selector;
                 value: function () { return []; },
             },
         },
+        observers: [
+            '_changeExpanded(alwaysExpanded)',
+        ],
         attached: function () {
             var _this = this;
             this._updateExpKey = tf_backend.experimentsStore
@@ -67,6 +74,11 @@ var tf_data_selector;
                 title: exp.name,
                 subtitle: exp.startedTime,
             }); });
+        },
+        _changeExpanded: function () {
+            if (this.alwaysExpanded && !this._expanded) {
+                this._expanded = true;
+            }
         },
         _toggle: function () {
             this._expanded = !this._expanded;

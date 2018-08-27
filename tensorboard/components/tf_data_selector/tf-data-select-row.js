@@ -77,6 +77,7 @@ var tf_data_selector;
             'dom-change': '_synchronizeColors',
         },
         observers: [
+            '_synchronizeColors(checkboxColor)',
             '_persistSelectedRuns(_selectedRuns)',
             '_fireChange(_selectedRuns, _tagRegex)',
         ],
