@@ -14,6 +14,45 @@ limitations under the License.
 ==============================================================================*/
 namespace vz_line_chart2 {
 
+const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+    vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+
+export const DEFAULT_TOOLTIP_COLUMNS = [
+  {
+    title: 'Name',
+    evaluate: (d: vz_chart_helpers.Point) => d.dataset.metadata().name,
+  },
+  {
+    title: 'Smoothed',
+    evaluate(d: vz_chart_helpers.Point, statusObject: LineChartStatus) {
+      const {smoothingEnabled} = statusObject;
+      return formatValueOrNaN(
+          smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
+    },
+  },
+  {
+    title: 'Value',
+    evaluate: (d: vz_chart_helpers.Point) => formatValueOrNaN(d.datum.scalar),
+  },
+  {
+    title: 'Step',
+    evaluate: (d: vz_chart_helpers.Point) =>
+        vz_chart_helpers.stepFormatter(d.datum.step),
+  },
+  {
+    title: 'Time',
+    evaluate: (d: vz_chart_helpers.Point) =>
+        vz_chart_helpers.timeFormatter(d.datum.wall_time),
+  },
+  {
+    title: 'Relative',
+    evaluate: (d: vz_chart_helpers.Point) =>
+        vz_chart_helpers.relativeFormatter(
+            vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
+  },
+];
+
 Polymer({
   is: 'vz-line-chart2',
   properties: {
@@ -132,46 +171,7 @@ Polymer({
      */
     tooltipColumns: {
       type: Array,
-      value: function() {
-        const valueFormatter = vz_chart_helpers.multiscaleFormatter(
-            vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-        const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
-
-        return [
-          {
-            title: 'Name',
-            evaluate: (d) => d.dataset.metadata().getTitle(),
-          },
-          {
-            title: 'Smoothed',
-            evaluate: (d, statusObject) => {
-              const smoothingEnabled =
-                  statusObject && statusObject.smoothingEnabled;
-              return formatValueOrNaN(
-                  smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
-            },
-          },
-          {
-            title: 'Value',
-            evaluate: (d) => formatValueOrNaN(d.datum.scalar),
-          },
-          {
-            title: 'Step',
-            evaluate: (d) => vz_chart_helpers.stepFormatter(
-                d.datum.step),
-          },
-          {
-            title: 'Time',
-            evaluate: (d) => vz_chart_helpers.timeFormatter(
-                d.datum.wall_time),
-          },
-          {
-            title: 'Relative',
-            evaluate: (d) => vz_chart_helpers.relativeFormatter(
-                vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
-          },
-        ];
-      }
+      value: () => DEFAULT_TOOLTIP_COLUMNS,
     },
 
     /**
@@ -250,7 +250,7 @@ Polymer({
       type: Object,
       value: () => ({}),
     },
-    _seriesGetTitleCache: {
+    _seriesMetadataCache: {
       type: Object,
       value: () => ({}),
     },
@@ -287,7 +287,7 @@ Polymer({
    * its name must be in the setVisibleSeries() array.
    *
    * @param {string} name Name of the series.
-   * @param {Array< vz_chart_helpers.ScalarDatum>} data Data of the series.
+   * @param {Array<!vz_chart_helpers.ScalarDatum>} data Data of the series.
    * This is an array of objects with at least the following properties:
    * - step: (Number) - index of the datum.
    * - wall_time: (Date) - Date object with the datum's time.
@@ -300,10 +300,17 @@ Polymer({
     }
   },
 
-  setSeriesTitleGetter(name: string, getTitle: (name: string) => string) {
-    this._seriesGetTitleCache[name] = getTitle;
+  /**
+   * Sets the data of one of the series. Note that to display this series
+   * its name must be in the setVisibleSeries() array.
+   *
+   * @param {string} name Name of the series.
+   * @param {*} meta Metadata of the dataset used for later
+   */
+  setSeriesMetadata(name: string, meta: any) {
+    this._seriesMetadataCache[name] = meta;
     if (this._chart) {
-      this._chart.setSeriesTitleGetter(name, getTitle);
+      this._chart.setSeriesMetadata(name, meta);
     }
   },
 
@@ -396,9 +403,9 @@ Polymer({
       this._chart.setSeriesData(name, this._seriesDataCache[name] || []);
     });
     this._visibleSeriesCache
-        .filter(name => this._seriesGetTitleCache[name])
+        .filter(name => this._seriesMetadataCache[name])
         .forEach(name => {
-          this._chart.setSeriesTitleGetter(name, this._seriesGetTitleCache[name]);
+          this._chart.setSeriesMetadata(name, this._seriesMetadataCache[name]);
         });
     this._chart.setVisibleSeries(this._visibleSeriesCache);
   },

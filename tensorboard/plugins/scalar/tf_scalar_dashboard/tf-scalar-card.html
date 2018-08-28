@@ -51,6 +51,7 @@ limitations under the License.
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
       tag-metadata="[[tagMetadata]]"
+      tooltip-columns="[[_tooltipColumns]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
       x-type="[[xType]]"
     >
@@ -200,9 +201,7 @@ limitations under the License.
                 scalar: datum[2],
               }));
               const name = this._getSeriesNameFromDatum(datum);
-              scalarChart.setSeriesTitleGetter(name, () => {
-                return this._getSeriesTitleFromDatum(datum);
-              });
+              scalarChart.setSeriesMetadata(name, datum);
               scalarChart.setSeriesData(name, formattedData);
             };
           },
@@ -238,6 +237,22 @@ limitations under the License.
         },
 
         _logScaleActive: Boolean,
+
+        _tooltipColumns: {
+          type: Array,
+          value: function() {
+            const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
+            const ind = columns.findIndex(c => c.title == 'Name');
+            columns.splice(ind, 1, {
+              title: 'Name',
+              evaluate: (d) => {
+                const datum = d.dataset.metadata().meta;
+                return this._getSeriesDisplayNameFromDatum(datum);
+              },
+            });
+            return columns;
+          },
+        }
       },
       reload() {
         this.$$('tf-line-chart-data-loader').reload();
@@ -274,7 +289,7 @@ limitations under the License.
         return `${experiment.name}/${run}`;
       },
       // title is a visible string of a series for the UI.
-      _getSeriesTitleFromDatum(datum) {
+      _getSeriesDisplayNameFromDatum(datum) {
         return this.multiExperiments ?
             `${datum.experiment.name}/${datum.run}` :
             datum.run;

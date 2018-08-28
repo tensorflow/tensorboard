@@ -31,6 +31,10 @@ enum TooltipColumnEvalType {
   DOM,
 }
 
+export type LineChartStatus = {
+  smoothingEnabled: boolean
+};
+
 /**
  * Adds private APIs for default swatch column on the first column.
  */
@@ -38,6 +42,11 @@ interface TooltipColumn extends vz_chart_helpers.TooltipColumn {
   evalType?: TooltipColumnEvalType;
   enter: () => void;
 }
+
+export type Metadata = {
+  name: string,
+  meta: any,
+};
 
 /**
  * The maximum number of marker symbols within any line for a data series. Too
@@ -608,7 +617,7 @@ export class LineChart {
       point: vz_chart_helpers.Point) {
     const {smoothingEnabled} = this;
     if (tooltipCol.evalType == TooltipColumnEvalType.DOM) {
-      tooltipCol.evaluate.call(column, point);
+      tooltipCol.evaluate.call(column, point, {smoothingEnabled});
     } else {
       d3.select(column)
           .text(tooltipCol.evaluate.call(column, point, {smoothingEnabled}));
@@ -705,7 +714,7 @@ export class LineChart {
     if (this.name2datasets[name] === undefined) {
       this.name2datasets[name] = new Plottable.Dataset([], {
         name,
-        getTitle: name => name,
+        meta: null,
       });
     }
     return this.name2datasets[name];
@@ -774,16 +783,11 @@ export class LineChart {
   }
 
   /**
-   * Sets getTitle callback on a series.
+   * Sets the metadata of a series on the chart.
    */
-  public setSeriesTitleGetter(name: string, getTitle: (name: string) => string) {
-    this.getDataset(name).metadata(
-        Object.assign(
-            {},
-            this.getDataset(name).metadata(),
-            {
-              getTitle: (name) => getTitle(name),
-            }));
+  public setSeriesMetadata(name: string, meta: any) {
+    const newMeta = Object.assign({}, this.getDataset(name).metadata(), {meta});
+    this.getDataset(name).metadata(newMeta);
   }
 
   public smoothingUpdate(weight: number) {
