@@ -407,6 +407,17 @@ keeps 500 scalars and all images. Most users should not need to set this
 flag.\
 ''')
 
+    parser.add_argument(
+        '--exclude_subdirs',
+        type=str,
+        nargs='*',
+        default=[],
+        help='''\
+If provided, TensorBoard excludes data from any subdirectory path (relative to
+the logdir) that contains one of the terms as a substring. This flag offers a
+way to exclude entire directories (that may contain other subdirectories). \
+''')
+
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     if not flags.db and not flags.logdir:

@@ -75,7 +75,7 @@ def _EscapeGlobCharacters(path):
   return '%s%s' % (drive, _ESCAPE_GLOB_CHARACTERS_REGEX.sub(r'[\1]', path))
 
 
-def ListRecursivelyViaGlobbing(top):
+def ListRecursivelyViaGlobbing(top, exclude_subdirs=None):
   """Recursively lists all files within the directory.
 
   This method does not list subdirectories (in addition to regular files), and
@@ -96,6 +96,10 @@ def ListRecursivelyViaGlobbing(top):
 
   Args:
     top: A path to a directory.
+    exclude_subdirs: An iterable of strings. If provided, any recursive
+      subdirectory path (relative to the given `path` argument) that contains
+      one of the terms as a substring is excluded from the subdirectories
+      returned. Subpaths under those paths are excluded too.
 
   Yields:
     A (dir_path, file_paths) tuple for each directory/subdirectory.
@@ -116,7 +120,13 @@ def ListRecursivelyViaGlobbing(top):
     # Map subdirectory to a list of files.
     pairs = collections.defaultdict(list)
     for file_path in glob:
-      pairs[os.path.dirname(file_path)].append(file_path)
+      subdirectory = os.path.dirname(file_path)
+      if exclude_subdirs:
+        rel_path = os.path.relpath(top, subdirectory)
+        if (any((d in rel_path) for d in exclude_subdirs)):
+          # This subdirectory has been excluded.
+          continue
+      pairs[subdirectory].append(file_path)
     for dir_name, file_paths in six.iteritems(pairs):
       yield (dir_name, tuple(file_paths))
 
@@ -132,29 +142,48 @@ def ListRecursivelyViaGlobbing(top):
     level += 1
 
 
-def ListRecursivelyViaWalking(top):
+def ListRecursivelyViaWalking(top, exclude_subdirs=None):
   """Walks a directory tree, yielding (dir_path, file_paths) tuples.
 
   For each of `top` and its subdirectories, yields a tuple containing the path
-  to the directory and the path to each of the contained files.  Note that
-  unlike os.Walk()/tf.gfile.Walk()/ListRecursivelyViaGlobbing, this does not
-  list subdirectories. The file paths are all absolute. If the directory does
-  not exist, this yields nothing.
+  to the directory and the path to each of the contained files. The file paths
+  are all absolute. If the directory does not exist, this yields nothing.
 
   Walking may be incredibly slow on certain file systems.
 
   Args:
     top: A path to a directory.
+    exclude_subdirs: An iterable of strings. If provided, any recursive
+      subdirectory path (relative to the given `top` argument) that contains
+      one of the terms as a substring is excluded from the subdirectories
+      returned. Subpaths under those paths are excluded too.
 
   Yields:
     A (dir_path, file_paths) tuple for each directory/subdirectory.
   """
-  for dir_path, _, filenames in tf.gfile.Walk(top):
-    yield (dir_path, (os.path.join(dir_path, filename)
-                      for filename in filenames))
+  print('exclude_subdirs: %r' % exclude_subdirs)
+
+  stack = [(top, tf.gfile.ListDirectory(top))]
+  while stack:
+    dir_path, file_names = stack.pop()
+    absolute_paths = list(os.path.join(dir_path, f) for f in file_names)
+    yield (dir_path, absolute_paths)
+
+    for absolute_path in absolute_paths:
+      if not tf.gfile.IsDirectory(absolute_path):
+        continue
+
+      if exclude_subdirs:
+        rel_path = os.path.relpath(absolute_path, top)
+        if (any((term in rel_path) for term in exclude_subdirs)):
+          # This subdirectory has been excluded. Do not even explore directories
+          # under it.
+          continue
+
+      stack.append((absolute_path, tf.gfile.ListDirectory(absolute_path)))
 
 
-def GetLogdirSubdirectories(path):
+def GetLogdirSubdirectories(path, exclude_subdirs=None):
   """Obtains all subdirectories with events files.
 
   The order of the subdirectories returned is unspecified. The internal logic
@@ -162,10 +191,15 @@ def GetLogdirSubdirectories(path):
 
   Args:
     path: The path to a directory under which to find subdirectories.
+    exclude_subdirs: An iterable of strings. If provided, any recursive
+      subdirectory path (relative to the given `path` argument) that contains
+      one of the terms as a substring is excluded from the subdirectories
+      returned. Subpaths under those paths are excluded too.
 
   Returns:
-    A tuple of absolute paths of all subdirectories each with at least 1 events
-    file directly within the subdirectory.
+    A tuple of absolute paths of subdirectories that
+    (1) have not been excluded.
+    (2) each with at least 1 events file directly within the subdirectory.
 
   Raises:
     ValueError: If the path passed to the method exists and is not a directory.
@@ -193,6 +227,6 @@ def GetLogdirSubdirectories(path):
 
   return (
       subdir
-      for (subdir, files) in traversal_method(path)
+      for (subdir, files) in traversal_method(path, exclude_subdirs)
       if any(IsTensorFlowEventsFile(f) for f in files)
   )
