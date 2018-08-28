@@ -349,7 +349,19 @@ limitations under the License.
         // All new-style scalar tags include the `/scalar_summary`
         // suffix. We can trim that from the display name.
         const defaultDisplayName = tag.replace(/\/scalar_summary$/, '');
-        return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
+        let {description, displayName} = tf_utils.aggregateTagInfo(
+            runToTagInfo,
+            defaultDisplayName);
+
+        // If category name is a prefix group, strip the prefix from the name
+        // of the scalar-card if name != prefix.
+        if (category.metadata.type ==
+            tf_categorization_utils.CategoryType.PREFIX_GROUP &&
+            displayName.startsWith(category.name + '/')) {
+          // + 1 to strip off the separator.
+          displayName = displayName.slice(category.name.length + 1);
+        }
+        return {description, displayName};
       },
 
       _getMultiExperiments() {
