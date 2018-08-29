@@ -956,7 +956,7 @@ limitations under the License.
                           </paper-dropdown-menu>
                           <div>
                             <div class="help-title help-title-margin">What is this?</div>
-                            <div class="help-text">Select the feature to set as the true label in order to investigate model performance.
+                            <div class="help-text">Select the feature to set as a ground true label for all loaded examples in order to in order to investigate model performance.
                               <span class="dialog-link" on-click="openDialog">More.
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Ground Truth Feature</div>
@@ -976,15 +976,15 @@ limitations under the License.
                               type="number" class="threshold-cost-input">
                             </paper-input>
                             <div>
-                              <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
-                              <div class="help-text">Define the ratio of false positive cost to false negative cost to guide optimization of the classification threshold.
+                              <div class="help-title help-title-margin">Should false positives or false negatives be more costly?</div>
+                              <div class="help-text">Set a ratio to determine how conservative you would like your model to be when optimizing the classification threshold.
                                 <span class="dialog-link" on-click="openDialog">More.
                                   <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Cost Ratio</div>
+                                    <div class="dialog-title">Should false positives or false negatives be more costly?</div>
                                     <div class="bold">Examples:</div>
-                                    <div>1 means that false positives and false negatives are equally costly.</div>
-                                    <div>2 means that false positives are twice as costly as false negatives.</div>
-                                    <div>0.5 means that false positives are half as costly as false negatives.</div>
+                                    <div>1.00 = false positives and false negatives are equally undesirable</div>
+                                    <div>0.25 = false negatives are 4 times more undesirable than false positives</div>
+                                    <div>4.00 = false positives are 4 times more undesirable than false negatives</div>
                                   </paper-dialog>
                                 </span>
                               </div>
@@ -1261,7 +1261,8 @@ limitations under the License.
                                            compare-json="{{counterfactualExampleAndInference.example}}"
                                            on-example-change="exampleChange_" id="viewer"
                                            display-mode="[[exampleDisplayMode]]"
-                                           feature-search-value="{{featureSearchValue}}">
+                                           feature-search-value="{{featureSearchValue}}"
+                                           compare-title="[[compareTitle]]">
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
                           <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
@@ -1698,6 +1699,7 @@ limitations under the License.
           type: Boolean,
           value: false
         },
+        compareTitle: String,
       },
 
       observers: [
@@ -1820,6 +1822,7 @@ limitations under the License.
           this.comparedIndices = [closest];
           this.counterfactualExampleAndInference =
             this.examplesAndInferences[closest];
+          this.compareTitle = (useL2Distance ? 'L2' : 'L1') + ' neighbor value'
         }
       },
 

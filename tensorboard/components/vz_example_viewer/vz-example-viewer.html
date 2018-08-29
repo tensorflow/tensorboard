@@ -175,6 +175,14 @@ limitations under the License.
         word-wrap: break-word;
       }
 
+      .feature-name-header-text {
+        width: 300px;
+        max-width: 300px;
+        min-width: 300px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
       .slider {
         --paper-slider-input: {
           width: 100px
@@ -289,6 +297,19 @@ limitations under the License.
       .image-upload-input {
         display: none;
       }
+
+      .bold {
+        font-weight: 500;
+      }
+
+      .space-for-more-button {
+        width: 20px;
+      }
+
+      .value-header-text {
+        min-width: 130px;
+        width: 130px;
+      }
     </style>
     <div class="outer">
       <template is="dom-if" if="[[showSearchBox]]">
@@ -296,6 +317,14 @@ limitations under the License.
           <iron-icon icon="icons:search" prefix></iron-icon>
         </paper-input>
       </template>
+      <div class="feature-name bold">
+        <div class="feature-name-header-text">Feature name</div>
+        <div class="value-pills-holder flex-controls value-header-text">Value</div>
+        <template is="dom-if" if="[[compareMode]]">
+            <div class="value-pills-holder flex-controls value-header-text">[[compareTitle]]</div>
+        </template>
+        <div class="space-for-more-button"></div>
+      </div>
       <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
         <template is="dom-if" if="[[isImage(feat.name)]]">
           <div class="feature-name">

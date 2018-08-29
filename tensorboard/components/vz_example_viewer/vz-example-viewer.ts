@@ -169,6 +169,7 @@ Polymer({
     },
     compareMode: Boolean,
     compareImageInfo: {type: Object, value: {}},
+    compareTitle: String,
   },
   observers: [
     'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
