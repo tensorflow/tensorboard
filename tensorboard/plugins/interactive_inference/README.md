@@ -2,7 +2,7 @@
 
 ![What-If Tool Screenshot](/tensorboard/plugins/interactive_inference/img/wit-smile-intro.png "What-If Tool Screenshot")
 
-The What-If Tool (WIT) provides an easy-to-use interface for expanding
+The [What-If Tool](https://pair-code.github.io/what-if-tool) (WIT) provides an easy-to-use interface for expanding
 understanding of a black-box ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
@@ -18,35 +18,36 @@ with absolutely no code required.
 ## I don’t want to read this document. Can I just play with a demo?
 
 Fine, here are some demos:
-* [Binary classifier for UCI Census dataset salary prediction](https://???)
+* [Binary classifier for UCI Census dataset salary prediction](https://pair-code.github.io/what-if-tool/demoserver.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict whether a person earns more or less than $50k based on their
     census information
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:demoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/demo.html`
-* [Binary classifier for smile detection in images](https://???)
+* [Binary classifier for smile detection in images](https://pair-code.github.io/what-if-tool/imagedemoserver.html)
   * Dataset: [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
   * Task: Predict whether the person in an image is smiling
-  * See below section “What can I learn about fairness?” below for a deep-dive
-    into this demo.
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:imagedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/image_demo.html`
-* [Multiclass classifier for Iris dataset](https://???)
+* [Multiclass classifier for Iris dataset](https://pair-code.github.io/what-if-tool/irisdemoserver.html)
   * Dataset: [UCI Iris](https://archive.ics.uci.edu/ml/datasets/iris)
   * Task: Predict which of three classes of iris flowers that a flower falls
     into based on 4 measurements of the flower
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:irisdemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/iris_demo.html`
-* [Regression model for UCI Census dataset age prediction](https://???)
+* [Regression model for UCI Census dataset age prediction](https://pair-code.github.io/what-if-tool/agedemoserver.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict the age of a person based on their census information
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:agedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/age_demo.html`
 
+## How about a walkthrough video I can watch instead?
+
+[Check this out](https://youtube.com/???).
 
 ## What do I need to use it?
 
@@ -149,7 +150,7 @@ it can be shared with others for them to view the same data in the What-If Tool.
     such as the cost of a false positive vs a false negative and satisfying
     fairness measures such as equality of opportunity or demographic parity.
 
-![ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal accuracy" fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal accuracy" fairness criteria button")
+![ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal opporitunity" fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the “sex” feature. The current positive classification thresholds have been set based on on the "equal opporitunity" fairness criteria button")
 
 * If using a multi-class classification model and your examples include a
   feature that describes the true label, you can do the following:
@@ -173,124 +174,3 @@ We imagine WIT to be useful for a wide variety of users.
   model on a dataset. Try it out with your own data.
 * Lay users - Learn about machine learning by interactively playing with
   datasets and models.
-
-## What can I learn about fairness?
-This section will walkthrough use of the smile detection demo through the lens
-of fairness.
-As a reminder, this demo uses a model that, given an image of a person, detects
-if the person in that image is smiling or not (binary classification).
-
-On the Performance/Fairness tab, we have set the “true label” feature to be
-“Smiling”, so that the tool can evaluate model smile detection performance on
-the 250 test images versus the true labels of those images (whether they were
-human-labeled as smiling or not smiling).
-
-In this example, we have set the ratio of false positive cost to false negative
-cost to be 1 (the default), meaning that we consider a false positive just as
-costly as a false negative.
-We could change that ratio if we wanted to optimize our classifier in a
-different way (e.x. If the smile detector was used to ensure that some action
-only occurred after seeing a smile, we would probably want a higher cost for
-false positives than false negatives, to avoid incorrectly performing that
-action.
-Then we clicked the “optimize threshold” button to find the decision threshold
-of the classifier over these 250 examples that is the least costly (makes the
-fewest mistakes).
-
-The threshold was determined to be .67, leading to 14% of our examples as being
-incorrectly classified.
-This threshold means that only when the model is at least 67% confident that the
-image contains a smile will it report back that it detected a smile.
-Any other threshold you set will lead to a higher percentage of incorrectly
-classified examples on our sample.
-
-![Smile examples faceted](/tensorboard/plugins/interactive_inference/img/wit-smile-fullscreen.png "Smile examples faceted")
-
-In the above screenshot, we have set up the left-side of the screen to show two
-separate groups of images, images of young people and images of older people.
-Each group is laid out with the X axis representing how confident the model
-thinks the image contains a smile (left side being not confident at all).
-Additionally, each image is colored by if the classifier was correct (red
-meaning incorrect, blue meaning correct).
-This helps us see where the model is making mistakes, specifically in regards to
-young people vs. older people.
-
-Let’s dive deeper into performance on young vs older images. We select the
-“Young” feature to investigate fairness by, through the dropdown menu on the
-right side. We immediately see that with the threshold set to .67 for both
-groups that the model significantly outperforms on young people compared to
-older people.
-The model is incorrect on over 23% of older samples, compared to just 11% of
-younger samples.
-
-![Single threshold](/tensorboard/plugins/interactive_inference/img/wit-smile-single-threshold.png "Single threshold")
-
-If we click the button to optimize the thresholds individually for each group,
-we see that the best it can do on older samples is to get over 18% incorrect,
-versus 11% for younger samples. The model has a significantly higher rate of
-false positives for the older samples.
-
-![Individual thresholds](/tensorboard/plugins/interactive_inference/img/wit-smile-individual-thresholds.png "Individual thresholds")
-
-Fairness of a classifier between different subgroups (such as young people
-versus older people) can be thought of in multiple ways.
-There are many measures of fairness and it can be shown mathematically that it
-is impossible to optimize a classifier for all of these different measures.
-One such measure of fairness is called “demographic parity” and it refers to
-when a classifier predicts the positive class (in this case, smiling) the same
-percentage of the time for both classes (young images and older images).
-
-If we click the “Demographic parity” button, the thresholds for the two groups
-are set independently in a way that tries to minimize the cost of the mistakes
-while maintaining demographic parity.
-You can see the parity in the two circled numbers in the below screenshot.
-But notice that in order to achieve this parity, you end up with a classifier
-that has false positives on older images at over 3 times the rate of younger
-images (10.2% vs 3.1%).
-So, while technically this fairness measure has been achieved, the classifier
-will incorrectly claim smiles on older images much more frequently than younger
-images.
-
-![Demographic parity](/tensorboard/plugins/interactive_inference/img/wit-smile-demographic-parity.png "Demographic parity")
-
-Another fairness measure is called equal accuracy, which refers to when a
-classifier predicts correctly (either a true negative case or a true positive
-case) the same percentage of the time for both classes.
-Clicking the “Equal Accuracy” button sets the thresholds in such a way that both
-classifiers have an accuracy of about 18.8%, which is well below the best
-possible performance of the classifier on young images.
-Satisfying this fairness measure causes our classifier to be unnecessarily
-bad on young images, with over 16% of images being falsely classified as
-smiling.
-
-![Equal accuracy](/tensorboard/plugins/interactive_inference/img/wit-smile-equal-acc.png "Equal accuracy")
-
-Lastly, the tool exposes another fairness measure, called equal opportunity.
-In this context, opportunity is defined as the percentage of examples that were
-predicted positive that were correctly predicted as positive (e.x. If 10 images
-in some group were predicted as smiling, but only 7 of those images were
-actually smiling, then the opportunity measure there is 7/10 = 0.7).
-Equal opportunity refers to when a classifier has the same opportunity measure
-for different groups.
-
-When clicking the “Equal opportunity” button, the thresholds are set in a way
-where the percentages of true positives and false negatives are similar between
-groups, but the older images have a much higher false positive rate than the
-younger images (11.9% vs 2.6%).
-
-![Equal opporitunity](/tensorboard/plugins/interactive_inference/img/wit-smile-equal-oppo.png "Equal opporitunity")
-
-Through this investigation, we’ve shown that the classifier is clearly less
-accurate on older images.
-We’ve also shown what sacrifices need to be made by our classifier if we wish
-to set different thresholds on younger and older images in different ways to
-satisfy different measures of fairness.
-
-This investigation doesn’t uncover a root cause for the fundamental unfairness
-of our classifier but does show that there is such as issue.
-This investigation could lead one to dig back into the training of this model,
-where they would discover that the data used to actually train this model only
-consisted of young images. No older images were included in the training data,
-leading to this unfairness.
-If the model is retrained including older images from this CelebA dataset, the
-massive age-related performance gap does go away.
