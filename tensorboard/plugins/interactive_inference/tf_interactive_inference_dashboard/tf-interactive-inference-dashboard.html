@@ -933,7 +933,7 @@ limitations under the License.
             <div class="side-content">
               <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_" class="tabs">
                 <paper-tab>[[getPerformanceTabTitle(modelType, multiClass)]]</paper-tab>
-                <paper-tab>Datapoint Auditor</paper-tab>
+                <paper-tab>Datapoint Editor</paper-tab>
                 <paper-tab>Features</paper-tab>
               </paper-tabs>
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
@@ -956,16 +956,19 @@ limitations under the License.
                           </paper-dropdown-menu>
                           <div>
                             <div class="help-title help-title-margin">What is this?</div>
-                            <div class="help-text">Select the feature to set as a ground true label for all loaded examples in order to in order to investigate model performance.
-                              <span class="dialog-link" on-click="openDialog">More.
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Ground Truth Feature</div>
-                                  <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
-                                    to predict, then selecting that feature here allows the tool to investigate the performance of
-                                    the model.
-                                  </div>
-                                </paper-dialog>
-                              </span>
+                            <div class="help-text">
+                              <div>Select the feature to set as a ground true label for all loaded examples</div>
+                              <div>in order to in order to investigate model performance.
+                                <span class="dialog-link" on-click="openDialog">More.
+                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                    <div class="dialog-title">Ground Truth Feature</div>
+                                    <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
+                                      to predict, then selecting that feature here allows the tool to investigate the performance of
+                                      the model by comparing the model's results to the ground truth feature.
+                                    </div>
+                                  </paper-dialog>
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -976,17 +979,23 @@ limitations under the License.
                               type="number" class="threshold-cost-input">
                             </paper-input>
                             <div>
-                              <div class="help-title help-title-margin">Should false positives or false negatives be more costly?</div>
-                              <div class="help-text">Set a ratio to determine how conservative you would like your model to be when optimizing the classification threshold.
-                                <span class="dialog-link" on-click="openDialog">More.
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Should false positives or false negatives be more costly?</div>
-                                    <div class="bold">Examples:</div>
-                                    <div>1.00 = false positives and false negatives are equally undesirable</div>
-                                    <div>0.25 = false negatives are 4 times more undesirable than false positives</div>
-                                    <div>4.00 = false positives are 4 times more undesirable than false negatives</div>
-                                  </paper-dialog>
-                                </span>
+                              <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
+                              <div class="help-text">
+                                <div>Necessary to optimize the classification threshold.</div>
+                                <div>1.00 = false positives and false negatives are equally as costly</div>
+                                <div>4.00 = false positives are 4 times more costly than false negatives</div>
+                                <div>0.25 = false negatives are 4 times more costly than false positives.
+                                  <span class="dialog-link" on-click="openDialog">More.
+                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                      <div class="dialog-title">Why do I need a cost ratio?</div>
+                                      <div>Click
+                                        <a target="_blank" href="https://manoa.hawaii.edu/exploringourfluidearth/chemical/matter/properties-matter/practices-science-false-positives-and-false-negatives">
+                                          here
+                                        </a>
+                                         for an article about false positives, false negatives and when why one might wish to weight them differently.</div>
+                                    </paper-dialog>
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1025,7 +1034,9 @@ limitations under the License.
                           </paper-dropdown-menu>
                           <div>
                             <div class="help-title help-title-margin">What does slicing do?</div>
-                            <div class="help-text">Investigate performance for the groups of examples with each unique value of the selected feature.
+                            <div class="help-text">
+                              <div>Investigate performance for the groups of examples with each unique</div>
+                              <div>value of the selected feature.</div>
                             </div>
                           </div>
                         </div>
