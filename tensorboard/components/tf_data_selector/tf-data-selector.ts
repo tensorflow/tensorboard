@@ -200,8 +200,10 @@ Polymer({
         newSelections.set(id, updatedSelection);
       });
 
+      const isSingleSelection = this._selections.size ===
+          1 + Number(this._selections.has(NO_EXPERIMENT_ID));
       return {
-        type: this._selections.size == 1 ?
+        type: isSingleSelection ?
             tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
         selections: Array.from(newSelections.values()),
       };

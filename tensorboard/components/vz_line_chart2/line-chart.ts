@@ -579,7 +579,7 @@ export class LineChart {
     const swatchCol = {
       name: 'Swatch',
       evalType: TooltipColumnEvalType.DOM,
-      evaluate: function(d: vz_chart_helpers.Point) {
+      evaluate(d: vz_chart_helpers.Point) {
         d3.select(this)
             .select('span')
             .style(
