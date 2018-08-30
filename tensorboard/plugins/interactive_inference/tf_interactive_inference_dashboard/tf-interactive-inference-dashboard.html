@@ -782,6 +782,10 @@ limitations under the License.
         margin-bottom: 15px;
       }
 
+      .datapoint-info-header.datapoint-info-header-more-margin {
+        margin-top: 15px;
+      }
+
       .datapoint-info-main {
         font-size: 18px;
         margin-bottom: 15px;
@@ -812,6 +816,8 @@ limitations under the License.
       paper-dialog {
         border-radius: 10px;
       }
+
+
 
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
@@ -924,7 +930,7 @@ limitations under the License.
             <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
               <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
             </a>
-            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings"></paper-icon-button>
+            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
             <div class="example-status">[[exampleStatusStr]]</div>
           </div>
         </div>
@@ -1332,9 +1338,13 @@ limitations under the License.
                           For a selected example, explore plots for every feature that show the change in inference results across
                           different valid values for that feature.
                         </div>
-                        <div class="datapoint-info-header">Use the "Performance" tab to investigate model performance across your dataset.</div>
-
-                        <div class="datapoint-info-header">Use the "Features" tab to view statistics about your dataset.</div>
+                        <div class="datapoint-info-header datapoint-info-header-more-margin">Use the
+                          <span>[[getPerformanceTabTitle(modelType, multiClass)]]</span>
+                          tab to investigate model performance across your dataset.
+                        </div>
+                        <div class="datapoint-info-header datapoint-info-header-more-margin">
+                          Use the Features tab to view statistics about your dataset.
+                        </div>
                       </div>
                     </div>
                   </template>
@@ -3223,7 +3233,9 @@ limitations under the License.
         this.selectedExampleNum = this.selected.length > 0 ? this.selected[0] : "";
         if (this.visdata && this.visdata.length > 0) {
           this.partialDepPlotPendingFeatures = [];
-          this.populatePdTabs();
+          if (this.$.partialplotholder.style.display != 'none') {
+            this.populatePdTabs();
+          }
         }
       },
 
@@ -3612,7 +3624,9 @@ limitations under the License.
         }
         // Open up the first PD plot pane after the category panes have loaded.
         setTimeout(() => {
-          this.$$('.tf-category-pane').click();
+          if (this.$$('.tf-category-pane-content').hidden) {
+            this.$$('.tf-category-pane').click();
+          }
         }, 100);
       },
 
