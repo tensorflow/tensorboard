@@ -29,15 +29,6 @@ You may obtain a copy of the License at
 <dom-module id="tf-op-profile">
   <template>
     <style>
-/* The detail box lives in the left navigation column.
- * This is weird, but makes good use of our horizontal space. */
-tf-op-details {
-  position: fixed;
-  /* don't set top, so it ends up next to tf-op-table */
-  margin-top: 10em;
-  left: 16px;
-  width: 330px;
-}
 :host {
   display: block;
   margin-right: 1.5em;
@@ -56,8 +47,7 @@ tf-op-details {
         <p>Modifying your model's architecture, data dimensions, and improving
         the efficiency of CPU operations may help reach the TPU's FLOPS potential.
       </p></div>
-      <tf-op-details hidden="[[!_active]]" node=[[_active]]></tf-op-details>
-      <tf-op-table root-node="[[_root]]" active={{_active}}></tf-op-table>
+      <tf-op-table root-node="[[_root]]" active={{active}}></tf-op-table>
     </div>
   </template>
 
@@ -74,10 +64,10 @@ Polymer({
       computed: '_getRoot(_data, "byCategory")',
       notify: true,
     },
-    _active: {
+    active: {
       type: Object,
-      value: null,
       notify: true,
+      value: null,
     },
   },
   _getRoot: function(data, breakdown) { return data[breakdown]; },
