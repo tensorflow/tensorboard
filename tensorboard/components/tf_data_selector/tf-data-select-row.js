@@ -72,6 +72,10 @@ var tf_data_selector;
                 value: '',
                 observer: '_persistRegex',
             },
+            _storageBinding: {
+                type: Object,
+                value: function () { return null; },
+            },
         },
         listeners: {
             'dom-change': '_synchronizeColors',
@@ -79,6 +83,8 @@ var tf_data_selector;
         observers: [
             '_synchronizeColors(checkboxColor)',
             '_persistSelectedRuns(_selectedRuns)',
+            '_initRunsAndTags(experiment)',
+            '_initFromStorage(persistenceId)',
             '_fireChange(_selectedRuns, _tagRegex)',
         ],
         _getPersistenceKey: function (type) {
@@ -96,22 +102,40 @@ var tf_data_selector;
             if (this.persistenceId == null) {
                 throw new RangeError('Required `persistenceId` missing');
             }
-            var runInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.RUN), {
-                defaultValue: '',
-                polymerProperty: '_runSelectionStateString',
-            });
-            runInitializer.call(this);
-            var tagInitializer = tf_storage.getStringInitializer(this._getPersistenceKey(Type.TAG), { defaultValue: '', polymerProperty: '_tagRegex' });
-            tagInitializer.call(this);
-            this._fetchRunsAndTags()
-                .then(function () { return _this._isDataReady = true; })
+            this._initFromStorage();
+            this._initRunsAndTags()
                 .then(function () {
                 if (_this._runSelectionStateString)
                     return;
                 var val = _this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
                     STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
-                tf_storage.setString(_this._getPersistenceKey(Type.RUN), val, { defaultValue: '' });
+                _this._storageBinding.set(_this._getPersistenceKey(Type.RUN), val, { defaultValue: '' });
                 _this._runSelectionStateString = val;
+            });
+        },
+        detached: function () {
+            this._isDataReady = false;
+            if (this._storageBinding)
+                this._storageBinding.disposeBinding();
+        },
+        _initFromStorage: function () {
+            if (this._storageBinding)
+                this._storageBinding.disposeBinding();
+            this._storageBinding = tf_storage.makeBindings(function (x) { return x; }, function (x) { return x; });
+            var runInitializer = this._storageBinding.getInitializer(this._getPersistenceKey(Type.RUN), {
+                defaultValue: '',
+                polymerProperty: '_runSelectionStateString',
+            });
+            runInitializer.call(this);
+            var tagInitializer = this._storageBinding.getInitializer(this._getPersistenceKey(Type.TAG), { defaultValue: '', polymerProperty: '_tagRegex' });
+            tagInitializer.call(this);
+        },
+        _initRunsAndTags: function () {
+            var _this = this;
+            this._isDataReady = false;
+            return this._fetchRunsAndTags()
+                .then(function () {
+                _this._isDataReady = true;
             });
         },
         _synchronizeColors: function () {
@@ -125,9 +149,6 @@ var tf_data_selector;
             cb.customStyle['--paper-checkbox-unchecked-color'] = color;
             cb.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
             window.requestAnimationFrame(function () { return _this.updateStyles(); });
-        },
-        detached: function () {
-            this._isDataReady = false;
         },
         _fetchRunsAndTags: function () {
             var _this = this;
@@ -166,7 +187,7 @@ var tf_data_selector;
                 var id = _a.id;
                 return id;
             }));
-            tf_storage.setString(this._getPersistenceKey(Type.RUN), value, { defaultValue: '' });
+            this._storageBinding.set(this._getPersistenceKey(Type.RUN), value, { defaultValue: '' });
         },
         _getRunsSelectionState: function () {
             var _this = this;
@@ -181,7 +202,7 @@ var tf_data_selector;
             if (!this._isDataReady)
                 return;
             var value = this._tagRegex;
-            tf_storage.setString(this._getPersistenceKey(Type.TAG), value, { defaultValue: '' });
+            this._storageBinding.set(this._getPersistenceKey(Type.TAG), value, { defaultValue: '' });
         },
         _fireChange: function (_, __) {
             var _this = this;
@@ -203,8 +224,8 @@ var tf_data_selector;
         },
         _removeRow: function () {
             // Clear persistance when being removed.
-            tf_storage.setString(this._getPersistenceKey(Type.RUN), '', { defaultValue: '' });
-            tf_storage.setString(this._getPersistenceKey(Type.TAG), '', { defaultValue: '' });
+            this._storageBinding.set(this._getPersistenceKey(Type.RUN), '', { defaultValue: '' });
+            this._storageBinding.set(this._getPersistenceKey(Type.TAG), '', { defaultValue: '' });
             this.fire('remove');
         },
         _serializeValue: function (source, selectedIds) {

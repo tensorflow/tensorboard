@@ -224,7 +224,6 @@ var tf_data_selector;
             this._enabledExperimentIds = uniqueAdd(this._enabledExperimentIds, addedIds);
         },
         _removeExperiment: function (event) {
-            console.log('removed experiment');
             var removedId = event.target.experiment.id;
             // Changing _experimentIds will remove the id from _enabledExperimentIds.
             this._experimentIds = this._experimentIds.filter(function (id) { return id != removedId; });

@@ -50,6 +50,8 @@ var tf_storage;
     _c = makeBindings(function (s) { return +s; }, function (n) { return n.toString(); }), tf_storage.getNumber = _c.get, tf_storage.setNumber = _c.set, tf_storage.getNumberInitializer = _c.getInitializer, tf_storage.getNumberObserver = _c.getObserver;
     _d = makeBindings(function (s) { return JSON.parse(atob(s)); }, function (o) { return btoa(JSON.stringify(o)); }), tf_storage.getObject = _d.get, tf_storage.setObject = _d.set, tf_storage.getObjectInitializer = _d.getInitializer, tf_storage.getObjectObserver = _d.getObserver;
     function makeBindings(fromString, toString) {
+        var hashListeners = [];
+        var storageListeners = [];
         function get(key, options) {
             if (options === void 0) { options = {}; }
             var defaultValue = options.defaultValue, _a = options.useLocalStorage, useLocalStorage = _a === void 0 ? false : _a;
@@ -99,17 +101,26 @@ var tf_storage;
                         _this[fullOptions.polymerProperty] = storedValue;
                     }
                 };
-                var eventName = fullOptions.useLocalStorage ? 'storage' : 'hashchange';
+                var addListener = fullOptions.useLocalStorage ?
+                    tf_storage.addStorageListener :
+                    tf_storage.addHashListener;
                 // TODO(stephanwlee): When using fakeHash, it _should not_ listen to the
                 //                    window.hashchange.
-                // TODO(stephanwlee): Remove the event listen on component teardown.
-                window.addEventListener(eventName, function () {
-                    setComponentValue();
-                });
+                var listenKey = addListener(function () { return setComponentValue(); });
+                if (fullOptions.useLocalStorage) {
+                    storageListeners.push(listenKey);
+                }
+                else {
+                    hashListeners.push(listenKey);
+                }
                 // Set the value on the property.
                 setComponentValue();
                 return this[fullOptions.polymerProperty];
             };
+        }
+        function disposeBinding() {
+            hashListeners.forEach(function (key) { return tf_storage.removeHashListenerByKey(key); });
+            storageListeners.forEach(function (key) { return tf_storage.removeStorageListenerByKey(key); });
         }
         function getObserver(key, options) {
             var fullOptions = __assign({ defaultValue: options.defaultValue, polymerProperty: key, useLocalStorage: false }, options);
@@ -119,7 +130,7 @@ var tf_storage;
                 set(uriStorageName, newVal, fullOptions);
             };
         }
-        return { get: get, set: set, getInitializer: getInitializer, getObserver: getObserver };
+        return { get: get, set: set, getInitializer: getInitializer, getObserver: getObserver, disposeBinding: disposeBinding };
     }
     tf_storage.makeBindings = makeBindings;
     /**
