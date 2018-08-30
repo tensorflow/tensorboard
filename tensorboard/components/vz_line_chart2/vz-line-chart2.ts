@@ -301,8 +301,7 @@ Polymer({
   },
 
   /**
-   * Sets the data of one of the series. Note that to display this series
-   * its name must be in the setVisibleSeries() array.
+   * Sets the metadata of one of the series.
    *
    * @param {string} name Name of the series.
    * @param {*} meta Metadata of the dataset used for later
