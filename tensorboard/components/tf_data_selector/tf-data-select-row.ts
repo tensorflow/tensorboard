@@ -83,6 +83,11 @@ Polymer({
       value: '',
       observer: '_persistRegex',
     },
+
+    _storageBinding: {
+      type: Object,
+      value: () => null,
+    },
   },
 
   listeners: {
@@ -92,6 +97,8 @@ Polymer({
   observers: [
     '_synchronizeColors(checkboxColor)',
     '_persistSelectedRuns(_selectedRuns)',
+    '_initRunsAndTags(experiment)',
+    '_initFromStorage(persistenceId)',
     '_fireChange(_selectedRuns, _tagRegex)',
   ],
 
@@ -111,26 +118,44 @@ Polymer({
       throw new RangeError('Required `persistenceId` missing');
     }
 
-    const runInitializer = tf_storage.getStringInitializer(
+    this._initFromStorage();
+    this._initRunsAndTags()
+        .then(() => {
+          if (this._runSelectionStateString) return;
+          const val = this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
+              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+          this._storageBinding.set(this._getPersistenceKey(Type.RUN), val,
+              {defaultValue: ''});
+          this._runSelectionStateString = val;
+        });
+  },
+
+  detached(): void {
+    this._isDataReady = false;
+    if (this._storageBinding) this._storageBinding.disposeBinding();
+  },
+
+  _initFromStorage() {
+    if (this._storageBinding) this._storageBinding.disposeBinding();
+    this._storageBinding = tf_storage.makeBindings(x => x, x => x);
+    const runInitializer = this._storageBinding.getInitializer(
         this._getPersistenceKey(Type.RUN),
         {
           defaultValue: '',
           polymerProperty: '_runSelectionStateString',
         });
     runInitializer.call(this);
-    const tagInitializer = tf_storage.getStringInitializer(
+    const tagInitializer = this._storageBinding.getInitializer(
         this._getPersistenceKey(Type.TAG),
         {defaultValue: '', polymerProperty: '_tagRegex'});
     tagInitializer.call(this);
-    this._fetchRunsAndTags()
-        .then(() => this._isDataReady = true)
+  },
+
+  _initRunsAndTags(): Promise<void> {
+    this._isDataReady = false;
+    return this._fetchRunsAndTags()
         .then(() => {
-          if (this._runSelectionStateString) return;
-          const val = this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
-              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
-          tf_storage.setString(this._getPersistenceKey(Type.RUN), val,
-              {defaultValue: ''});
-          this._runSelectionStateString = val;
+          this._isDataReady = true;
         });
   },
 
@@ -145,10 +170,6 @@ Polymer({
     cb.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
 
     window.requestAnimationFrame(() => this.updateStyles());
-  },
-
-  detached(): void {
-    this._isDataReady = false;
   },
 
   _fetchRunsAndTags(): Promise<void> {
@@ -187,7 +208,7 @@ Polymer({
     const value = this._serializeValue(
         this._runs,
         this._selectedRuns.map(({id}) => id));
-    tf_storage.setString(this._getPersistenceKey(Type.RUN), value,
+    this._storageBinding.set(this._getPersistenceKey(Type.RUN), value,
         {defaultValue: ''});
   },
 
@@ -203,7 +224,7 @@ Polymer({
   _persistRegex(): void {
     if (!this._isDataReady) return;
     const value = this._tagRegex;
-    tf_storage.setString(this._getPersistenceKey(Type.TAG), value,
+    this._storageBinding.set(this._getPersistenceKey(Type.TAG), value,
         {defaultValue: ''});
   },
 
@@ -225,9 +246,9 @@ Polymer({
 
   _removeRow(): void {
     // Clear persistance when being removed.
-    tf_storage.setString(
+    this._storageBinding.set(
         this._getPersistenceKey(Type.RUN), '', {defaultValue: ''});
-    tf_storage.setString(
+    this._storageBinding.set(
         this._getPersistenceKey(Type.TAG), '', {defaultValue: ''});
     this.fire('remove');
   },
