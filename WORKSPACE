@@ -64,11 +64,11 @@ http_archive(
 
 http_archive(
     name = "ai_google_pair_facets",
-    sha256 = "8c0e569c9cbfe7fabcc8dff9fe28d66f1931064915797ffbee18171a30234f05",
-    strip_prefix = "facets-97ce94dd58ca0dfe764ff6f5bcaaaf68acba9492",
+    sha256 = "2d289247804deef3bd6030806a8b4833133d64ddf3f9314e4cfa8de736aa845f",
+    strip_prefix = "facets-8f8059717a8a8cf82c53434ee4ca4b99ec7e3d8c",
     urls = [
-        "http://mirror.bazel.build/github.com/pair-code/facets/archive/97ce94dd58ca0dfe764ff6f5bcaaaf68acba9492.tar.gz",
-        "https://github.com/pair-code/facets/archive/97ce94dd58ca0dfe764ff6f5bcaaaf68acba9492.tar.gz",
+        "http://mirror.bazel.build/github.com/pair-code/facets/archive/8f8059717a8a8cf82c53434ee4ca4b99ec7e3d8c.tar.gz",
+        "https://github.com/pair-code/facets/archive/8f8059717a8a8cf82c53434ee4ca4b99ec7e3d8c.tar.gz",
     ],
 )
 
