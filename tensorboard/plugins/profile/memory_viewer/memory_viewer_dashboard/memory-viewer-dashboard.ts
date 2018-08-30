@@ -37,12 +37,12 @@ Polymer({
       type:Object,
       notify:true
     },
-    active_:{
-      type:Object,
-      value:null,
-      notify:true
+    active: {
+      type: Object,
+      notify: true,
+      value: null,
     },
-  }, 
+  },
   dataChanged_(newData) {
     if (newData && newData.hloModule && newData.bufferAssignment) {
       this.hloModule_ = newData.hloModule;
