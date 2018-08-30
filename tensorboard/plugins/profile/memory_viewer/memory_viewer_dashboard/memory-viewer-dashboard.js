@@ -36,10 +36,10 @@ var memory_viewer;
                 type: Object,
                 notify: true
             },
-            active_: {
+            active: {
                 type: Object,
+                notify: true,
                 value: null,
-                notify: true
             },
         },
         dataChanged_: function (newData) {
