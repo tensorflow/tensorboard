@@ -56,6 +56,7 @@ class FakeFlags(object):
       samples_per_plugin='',
       max_reload_threads=1,
       db='',
+      db_import=False,
       window_title='',
       path_prefix=''):
     self.logdir = logdir
@@ -64,6 +65,7 @@ class FakeFlags(object):
     self.samples_per_plugin = samples_per_plugin
     self.max_reload_threads = max_reload_threads
     self.db = db
+    self.db_import = db_import
     self.window_title = window_title
     self.path_prefix = path_prefix
 

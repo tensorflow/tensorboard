@@ -113,7 +113,7 @@ class CorePlugin(base_plugin.TBPlugin):
         request,
         {
             'data_location': self._logdir or self._db_uri,
-            'mode': 'logdir' if self._logdir else 'db',
+            'mode': 'db' if self._db_uri else 'logdir',
             'window_title': self._window_title,
         },
         'application/json')
@@ -329,6 +329,11 @@ load just once at startup and a negative number to never reload at all.
         help='[experimental] sets SQL database URI')
 
     parser.add_argument(
+        '--db_import',
+        action='store_true',
+        help='[experimental] imports logdir into a SQL database on the fly')
+
+    parser.add_argument(
         '--inspect',
         action='store_true',
         help='''\
@@ -417,8 +422,6 @@ flag.\
     flags.logdir = os.path.expanduser(flags.logdir)
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]
-    if flags.db:
-      flags.reload_interval = -1  # Never load event logs in DB mode.
 
   def load(self, context):
     """Creates CorePlugin instance."""
