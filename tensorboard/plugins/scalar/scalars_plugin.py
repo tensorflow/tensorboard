@@ -141,14 +141,16 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
-          Runs.experiment_id IS ?
-          AND Runs.run_name = ?
-          AND Tags.tag_name = ?
-          AND Tags.plugin_name = ?
+          /* For backwards compatiblity, ignore the experiment id
+             for matching purposes if it is empty. */
+          (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
+          AND Runs.run_name = :run
+          AND Tags.tag_name = :tag
+          AND Tags.plugin_name = :plugin
           AND Tensors.shape = ''
           AND Tensors.step > -1
         ORDER BY Tensors.step
-      ''', (experiment, run, tag, metadata.PLUGIN_NAME))
+      ''', dict(exp=experiment, run=run, tag=tag, plugin=metadata.PLUGIN_NAME))
       values = [(wall_time, step, self._get_value(data, dtype_enum))
                 for (step, wall_time, data, dtype_enum) in cursor]
     else:
