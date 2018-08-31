@@ -196,6 +196,7 @@ export let stepFormatter =
     Plottable.Formatters.siSuffix(STEP_FORMATTER_PRECISION);
 export function stepX(): XComponents {
   let scale = new Plottable.Scales.Linear();
+  scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());
   let axis = new Plottable.Axes.Numeric(scale, 'bottom');
   axis.formatter(stepFormatter);
   return {
