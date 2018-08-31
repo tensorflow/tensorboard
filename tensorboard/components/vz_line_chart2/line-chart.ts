@@ -31,6 +31,10 @@ enum TooltipColumnEvalType {
   DOM,
 }
 
+export type LineChartStatus = {
+  smoothingEnabled: boolean
+};
+
 /**
  * Adds private APIs for default swatch column on the first column.
  */
@@ -38,6 +42,11 @@ interface TooltipColumn extends vz_chart_helpers.TooltipColumn {
   evalType?: TooltipColumnEvalType;
   enter: () => void;
 }
+
+export type Metadata = {
+  name: string,
+  meta: any,
+};
 
 /**
  * The maximum number of marker symbols within any line for a data series. Too
@@ -569,9 +578,14 @@ export class LineChart {
     const self = this;
     const swatchCol = {
       name: 'Swatch',
-      static: true,
       evalType: TooltipColumnEvalType.DOM,
-      evaluate: function(d: vz_chart_helpers.Point) {},
+      evaluate: function(d: vz_chart_helpers.Point) {
+        d3.select(this)
+            .select('span')
+            .style(
+                'background-color',
+                () => colorScale.scale(d.dataset.metadata().name));
+      },
       enter(d: vz_chart_helpers.Point) {
         d3.select(this)
             .append('span')
@@ -603,7 +617,7 @@ export class LineChart {
       point: vz_chart_helpers.Point) {
     const {smoothingEnabled} = this;
     if (tooltipCol.evalType == TooltipColumnEvalType.DOM) {
-      tooltipCol.evaluate.call(column, point);
+      tooltipCol.evaluate.call(column, point, {smoothingEnabled});
     } else {
       d3.select(column)
           .text(tooltipCol.evaluate.call(column, point, {smoothingEnabled}));
@@ -698,7 +712,10 @@ export class LineChart {
 
   private getDataset(name: string) {
     if (this.name2datasets[name] === undefined) {
-      this.name2datasets[name] = new Plottable.Dataset([], {name: name});
+      this.name2datasets[name] = new Plottable.Dataset([], {
+        name,
+        meta: null,
+      });
     }
     return this.name2datasets[name];
   }
@@ -759,10 +776,18 @@ export class LineChart {
   }
 
   /**
-   * Set the data of a series on the chart.
+   * Sets the data of a series on the chart.
    */
-  public setSeriesData(name: string, data:  vz_chart_helpers.ScalarDatum[]) {
+  public setSeriesData(name: string, data: vz_chart_helpers.ScalarDatum[]) {
     this.getDataset(name).data(data);
+  }
+
+  /**
+   * Sets the metadata of a series on the chart.
+   */
+  public setSeriesMetadata(name: string, meta: any) {
+    const newMeta = Object.assign({}, this.getDataset(name).metadata(), {meta});
+    this.getDataset(name).metadata(newMeta);
   }
 
   public smoothingUpdate(weight: number) {
