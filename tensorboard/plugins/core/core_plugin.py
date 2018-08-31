@@ -414,7 +414,6 @@ flag.\
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
-    flags.logdir = os.path.expanduser(flags.logdir)
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]
     if flags.db:

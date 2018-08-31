@@ -317,7 +317,7 @@ def parse_event_files_spec(logdir):
       run_name = None
       path = specification
     if uri_pattern.match(path) is None:
-      path = os.path.realpath(path)
+      path = os.path.realpath(os.path.expanduser(path))
     files[path] = run_name
   return files
 
