@@ -14,6 +14,43 @@ limitations under the License.
 ==============================================================================*/
 var vz_line_chart2;
 (function (vz_line_chart2) {
+    var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+    var formatValueOrNaN = function (x) { return isNaN(x) ? 'NaN' : valueFormatter(x); };
+    vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS = [
+        {
+            title: 'Name',
+            evaluate: function (d) { return d.dataset.metadata().name; },
+        },
+        {
+            title: 'Smoothed',
+            evaluate: function (d, statusObject) {
+                var smoothingEnabled = statusObject.smoothingEnabled;
+                return formatValueOrNaN(smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
+            },
+        },
+        {
+            title: 'Value',
+            evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
+        },
+        {
+            title: 'Step',
+            evaluate: function (d) {
+                return vz_chart_helpers.stepFormatter(d.datum.step);
+            },
+        },
+        {
+            title: 'Time',
+            evaluate: function (d) {
+                return vz_chart_helpers.timeFormatter(d.datum.wall_time);
+            },
+        },
+        {
+            title: 'Relative',
+            evaluate: function (d) {
+                return vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset));
+            },
+        },
+    ];
     Polymer({
         is: 'vz-line-chart2',
         properties: {
@@ -124,40 +161,7 @@ var vz_line_chart2;
              */
             tooltipColumns: {
                 type: Array,
-                value: function () {
-                    var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-                    var formatValueOrNaN = function (x) { return isNaN(x) ? 'NaN' : valueFormatter(x); };
-                    return [
-                        {
-                            title: 'Name',
-                            static: true,
-                            evaluate: function (d) { return d.dataset.metadata().name; },
-                        },
-                        {
-                            title: 'Smoothed',
-                            evaluate: function (d, statusObject) {
-                                var smoothingEnabled = statusObject && statusObject.smoothingEnabled;
-                                return formatValueOrNaN(smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
-                            },
-                        },
-                        {
-                            title: 'Value',
-                            evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
-                        },
-                        {
-                            title: 'Step',
-                            evaluate: function (d) { return vz_chart_helpers.stepFormatter(d.datum.step); },
-                        },
-                        {
-                            title: 'Time',
-                            evaluate: function (d) { return vz_chart_helpers.timeFormatter(d.datum.wall_time); },
-                        },
-                        {
-                            title: 'Relative',
-                            evaluate: function (d) { return vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)); },
-                        },
-                    ];
-                }
+                value: function () { return vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS; },
             },
             /**
              * An optional FillArea object. If provided, the chart will
@@ -221,15 +225,15 @@ var vz_line_chart2;
             _chart: Object,
             _visibleSeriesCache: {
                 type: Array,
-                value: function () {
-                    return [];
-                }
+                value: function () { return []; },
             },
             _seriesDataCache: {
                 type: Object,
-                value: function () {
-                    return {};
-                }
+                value: function () { return ({}); },
+            },
+            _seriesMetadataCache: {
+                type: Object,
+                value: function () { return ({}); },
             },
             _makeChartAsyncCallbackId: { type: Number, value: null },
         },
@@ -262,7 +266,7 @@ var vz_line_chart2;
          * its name must be in the setVisibleSeries() array.
          *
          * @param {string} name Name of the series.
-         * @param {Array< vz_chart_helpers.ScalarDatum>} data Data of the series.
+         * @param {Array<!vz_chart_helpers.ScalarDatum>} data Data of the series.
          * This is an array of objects with at least the following properties:
          * - step: (Number) - index of the datum.
          * - wall_time: (Date) - Date object with the datum's time.
@@ -272,6 +276,18 @@ var vz_line_chart2;
             this._seriesDataCache[name] = data;
             if (this._chart) {
                 this._chart.setSeriesData(name, data);
+            }
+        },
+        /**
+         * Sets the metadata of one of the series.
+         *
+         * @param {string} name Name of the series.
+         * @param {*} meta Metadata of the dataset used for later
+         */
+        setSeriesMetadata: function (name, meta) {
+            this._seriesMetadataCache[name] = meta;
+            if (this._chart) {
+                this._chart.setSeriesMetadata(name, meta);
             }
         },
         /**
@@ -292,6 +308,7 @@ var vz_line_chart2;
             }
         },
         detached: function () {
+            this.cancelAsync(this._makeChartAsyncCallbackId);
             if (this._chart)
                 this._chart.destroy();
         },
@@ -342,6 +359,11 @@ var vz_line_chart2;
                 return;
             this._visibleSeriesCache.forEach(function (name) {
                 _this._chart.setSeriesData(name, _this._seriesDataCache[name] || []);
+            });
+            this._visibleSeriesCache
+                .filter(function (name) { return _this._seriesMetadataCache[name]; })
+                .forEach(function (name) {
+                _this._chart.setSeriesMetadata(name, _this._seriesMetadataCache[name]);
             });
             this._chart.setVisibleSeries(this._visibleSeriesCache);
         },

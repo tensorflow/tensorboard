@@ -416,9 +416,12 @@ var vz_line_chart2;
             var self = this;
             var swatchCol = {
                 name: 'Swatch',
-                static: true,
                 evalType: TooltipColumnEvalType.DOM,
-                evaluate: function (d) { },
+                evaluate: function (d) {
+                    d3.select(this)
+                        .select('span')
+                        .style('background-color', function () { return colorScale.scale(d.dataset.metadata().name); });
+                },
                 enter: function (d) {
                     d3.select(this)
                         .append('span')
@@ -445,7 +448,7 @@ var vz_line_chart2;
         LineChart.prototype.drawTooltipColumn = function (column, tooltipCol, point) {
             var smoothingEnabled = this.smoothingEnabled;
             if (tooltipCol.evalType == TooltipColumnEvalType.DOM) {
-                tooltipCol.evaluate.call(column, point);
+                tooltipCol.evaluate.call(column, point, { smoothingEnabled: smoothingEnabled });
             }
             else {
                 d3.select(column)
@@ -536,7 +539,10 @@ var vz_line_chart2;
         };
         LineChart.prototype.getDataset = function (name) {
             if (this.name2datasets[name] === undefined) {
-                this.name2datasets[name] = new Plottable.Dataset([], { name: name });
+                this.name2datasets[name] = new Plottable.Dataset([], {
+                    name: name,
+                    meta: null,
+                });
             }
             return this.name2datasets[name];
         };
@@ -591,10 +597,17 @@ var vz_line_chart2;
             return new Plottable.Dataset(data, original.metadata());
         };
         /**
-         * Set the data of a series on the chart.
+         * Sets the data of a series on the chart.
          */
         LineChart.prototype.setSeriesData = function (name, data) {
             this.getDataset(name).data(data);
+        };
+        /**
+         * Sets the metadata of a series on the chart.
+         */
+        LineChart.prototype.setSeriesMetadata = function (name, meta) {
+            var newMeta = Object.assign({}, this.getDataset(name).metadata(), { meta: meta });
+            this.getDataset(name).metadata(newMeta);
         };
         LineChart.prototype.smoothingUpdate = function (weight) {
             var _this = this;

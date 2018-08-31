@@ -51,6 +51,7 @@ limitations under the License.
       smoothing-enabled="[[smoothingEnabled]]"
       smoothing-weight="[[smoothingWeight]]"
       tag-metadata="[[tagMetadata]]"
+      tooltip-columns="[[_tooltipColumns]]"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
       x-type="[[xType]]"
     >
@@ -200,6 +201,7 @@ limitations under the License.
                 scalar: datum[2],
               }));
               const name = this._getSeriesNameFromDatum(datum);
+              scalarChart.setSeriesMetadata(name, datum);
               scalarChart.setSeriesData(name, formattedData);
             };
           },
@@ -235,6 +237,22 @@ limitations under the License.
         },
 
         _logScaleActive: Boolean,
+
+        _tooltipColumns: {
+          type: Array,
+          value: function() {
+            const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
+            const ind = columns.findIndex(c => c.title == 'Name');
+            columns.splice(ind, 1, {
+              title: 'Name',
+              evaluate: (d) => {
+                const datum = d.dataset.metadata().meta;
+                return this._getSeriesDisplayNameFromDatum(datum);
+              },
+            });
+            return columns;
+          },
+        }
       },
       reload() {
         this.$$('tf-line-chart-data-loader').reload();
@@ -266,7 +284,12 @@ limitations under the License.
       _getDataSeries() {
         return this.dataToLoad.map(d => this._getSeriesNameFromDatum(d));
       },
-      _getSeriesNameFromDatum(datum) {
+      // name is a stable identifier for a series.
+      _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
+        return `${experiment.name}/${run}`;
+      },
+      // title is a visible string of a series for the UI.
+      _getSeriesDisplayNameFromDatum(datum) {
         return this.multiExperiments ?
             `${datum.experiment.name}/${datum.run}` :
             datum.run;
@@ -276,9 +299,10 @@ limitations under the License.
           scale: (name) => {
             const splitIndex = name.indexOf('/');
             const exp = name.slice(0, splitIndex);
+            const run = name.slice(splitIndex + 1);
             return this.multiExperiments ?
                 tf_color_scale.experimentsColorScale(exp) :
-                tf_color_scale.runsColorScale(name);
+                tf_color_scale.runsColorScale(run);
           },
         };
       },
