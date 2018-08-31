@@ -141,6 +141,7 @@ var vz_chart_helpers;
     vz_chart_helpers.stepFormatter = Plottable.Formatters.siSuffix(vz_chart_helpers.STEP_FORMATTER_PRECISION);
     function stepX() {
         var scale = new Plottable.Scales.Linear();
+        scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());
         var axis = new Plottable.Axes.Numeric(scale, 'bottom');
         axis.formatter(vz_chart_helpers.stepFormatter);
         return {
