@@ -40,7 +40,7 @@ class DbImportMultiplexer(object):
   def __init__(self,
                db_connection_provider,
                purge_orphaned_data=True,
-               max_reload_threads=None):
+               max_reload_threads=1):
     """Constructor for `DbImportMultiplexer`.
 
     Args:
@@ -68,7 +68,7 @@ class DbImportMultiplexer(object):
     if self.purge_orphaned_data:
       tf.logging.warning(
           '--db_import does not yet support purging orphaned data')
-    self._max_reload_threads = max_reload_threads or 1
+    self._max_reload_threads = max_reload_threads
     if self._max_reload_threads > 1:
       tf.logging.warning(
           '--db_import does not yet support more than one reload thread')
