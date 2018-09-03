@@ -22,7 +22,15 @@ import os
 import threading
 
 import six
-import tensorflow as tf
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_accumulator

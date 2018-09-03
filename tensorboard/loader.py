@@ -35,10 +35,18 @@ import time
 import types  # pylint: disable=unused-import
 
 import six
-import tensorflow as tf
 
+from tensorboard import build_with_tf
 from tensorboard import db
 from tensorboard import util
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+    from tensorboard.proto import event_pb2
 
 
 class Record(collections.namedtuple('Record', ('record', 'offset'))):
@@ -144,9 +152,14 @@ class RecordReader(object):
 
   def _open(self):
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      return tf.pywrap_tensorflow.PyRecordReader_New(
-          tf.resource_loader.readahead_file_path(tf.compat.as_bytes(self.path)),
-          self._offset, tf.compat.as_bytes(''), status)
+      if USE_TF:
+          return tf.pywrap_tensorflow.PyRecordReader_New(
+              tf.resource_loader.readahead_file_path(tf.compat.as_bytes(self.path)),
+              self._offset, tf.compat.as_bytes(''), status)
+      else:
+          return tf.record_reader.RecordReader(
+              tf.resource_loader.readahead_file_path(tf.compat.as_bytes(self.path)),
+              self._offset, tf.compat.as_bytes(''))
 
   def __str__(self):
     return u'RecordReader{%s}' % self.path
@@ -743,7 +756,7 @@ class EventLogReader(object):
     record = self._reader.get_next_record()
     if record is None:
       return None
-    event = tf.Event()
+    event = tf.Event() if USE_TF else event_pb2.Event()
     event.ParseFromString(record.record)
     self._offset = record.offset
     return event

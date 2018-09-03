@@ -29,8 +29,16 @@ import re
 import threading
 import time
 
-import tensorflow as tf
-from tensorflow.python.debug.lib import grpc_debug_server
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+    from tensorflow.python.debug.lib import grpc_debug_server
+else:
+    import tensorboard.utils as tf
+    from tensorboard.utils import grpc_debug_server
 
 from tensorboard.plugins.debugger import constants
 # pylint: disable=line-too-long

@@ -21,7 +21,16 @@ import collections
 import threading
 
 import six
-import tensorflow as tf
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+    from tensorboard.proto import config_pb2, graph_pb2, meta_graph_pb2
 
 from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_watcher
@@ -297,7 +306,7 @@ class EventAccumulator(object):
       if self._graph is None or self._graph_from_metagraph:
         # We may have a graph_def in the metagraph.  If so, and no
         # graph_def is directly available, use this one instead.
-        meta_graph = tf.MetaGraphDef()
+        meta_graph = tf.MetaGraphDef() if USE_TF else meta_graph_pb2.MetaGraphDef()
         meta_graph.ParseFromString(self._meta_graph)
         if meta_graph.graph_def:
           if self._graph is not None:
@@ -374,7 +383,7 @@ class EventAccumulator(object):
     Returns:
       The `graph_def` proto.
     """
-    graph = tf.GraphDef()
+    graph = tf.GraphDef() if USE_TF else graph_pb2.GraphDef()
     if self._graph is not None:
       graph.ParseFromString(self._graph)
       return graph
@@ -391,7 +400,7 @@ class EventAccumulator(object):
     """
     if self._meta_graph is None:
       raise ValueError('There is no metagraph in this EventAccumulator')
-    meta_graph = tf.MetaGraphDef()
+    meta_graph = tf.MetaGraphDef() if USE_TF else meta_graph_pb2.MetaGraphDef()
     meta_graph.ParseFromString(self._meta_graph)
     return meta_graph
 
@@ -410,7 +419,7 @@ class EventAccumulator(object):
     if tag not in self._tagged_metadata:
       raise ValueError('There is no run metadata with this tag name')
 
-    run_metadata = tf.RunMetadata()
+    run_metadata = tf.RunMetadata() if USE_TF else config_pb2.RunMetadata()
     run_metadata.ParseFromString(self._tagged_metadata[tag])
     return run_metadata
 

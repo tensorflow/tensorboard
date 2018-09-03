@@ -20,8 +20,14 @@ from __future__ import print_function
 
 import bisect
 
-import tensorflow as tf
+from tensorboard import build_with_tf
 
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 from tensorboard.backend.event_processing import io_wrapper
 
@@ -181,7 +187,7 @@ class DirectoryWatcher(object):
     if old_path and not io_wrapper.IsGCSPath(old_path):
       try:
         # We're done with the path, so store its size.
-        size = tf.gfile.Stat(old_path).length
+        size = tf.gfile.Stat(old_path).length if USE_TF else tf.gfile.Stat(old_path).st_size
         tf.logging.debug('Setting latest size of %s to %d', old_path, size)
         self._finalized_sizes[old_path] = size
       except tf.errors.OpError as e:
@@ -230,7 +236,8 @@ class DirectoryWatcher(object):
   def _HasOOOWrite(self, path):
     """Returns whether the path has had an out-of-order write."""
     # Check the sizes of each path before the current one.
-    size = tf.gfile.Stat(path).length
+    # Only TensorFlow has .length, we need to use .st_size otherwise
+    size = tf.gfile.Stat(path).length if USE_TF else tf.gfile.Stat(path).st_size
     old_size = self._finalized_sizes.get(path, None)
     if size != old_size:
       if old_size is None:

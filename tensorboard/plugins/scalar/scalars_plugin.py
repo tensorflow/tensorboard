@@ -30,11 +30,17 @@ from six import StringIO
 from werkzeug import wrappers
 
 import numpy as np
-import tensorflow as tf
-from tensorboard import plugin_util
+from tensorboard import build_with_tf, plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 
 class OutputFormat(object):
@@ -153,10 +159,16 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 for (step, wall_time, data, dtype_enum) in cursor]
     else:
       tensor_events = self._multiplexer.Tensors(run, tag)
-      values = [(tensor_event.wall_time,
-                 tensor_event.step,
-                 tf.make_ndarray(tensor_event.tensor_proto).item())
-                for tensor_event in tensor_events]
+      if USE_TF:
+          values = [(tensor_event.wall_time,
+                     tensor_event.step,
+                     tf.make_ndarray(tensor_event.tensor_proto).item())
+                    for tensor_event in tensor_events]
+      else:
+          values = [(tensor_event.wall_time,
+                     tensor_event.step,
+                     tf.tensor_manip.make_ndarray(tensor_event.tensor_proto).item())
+                    for tensor_event in tensor_events]
 
     if output_format == OutputFormat.CSV:
       string_io = StringIO()
@@ -177,7 +189,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     Returns:
       The scalar value.
     """
-    tensorflow_dtype = tf.DType(dtype_enum)
+    tensorflow_dtype = tf.DType(dtype_enum) if USE_TF else tf.dtypes.DType(dtype_enum)
     buf = np.frombuffer(scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype)
     return np.asscalar(buf)
 

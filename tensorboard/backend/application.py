@@ -31,10 +31,10 @@ import time
 
 import six
 from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-order
-import tensorflow as tf
+
 from werkzeug import wrappers
 
-from tensorboard import db
+from tensorboard import build_with_tf, db
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
@@ -46,6 +46,12 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 DEFAULT_SIZE_GUIDANCE = {
     event_accumulator.TENSORS: 10,

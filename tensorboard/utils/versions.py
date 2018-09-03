@@ -1,0 +1,79 @@
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+"""TensorFlow versions."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+from . import pywrap_tensorflow, tf_export
+
+# __version__ = pywrap_tensorflow.__version__
+# __git_version__ = pywrap_tensorflow.__git_version__
+# __compiler_version__ = pywrap_tensorflow.__compiler_version__
+# __cxx11_abi_flag__ = pywrap_tensorflow.__cxx11_abi_flag__
+# __monolithic_build__ = pywrap_tensorflow.__monolithic_build__
+
+__version__ = 0
+__git_version__ = 0
+__compiler_version__ = 0
+__cxx11_abi_flag__ = 0
+__monolithic_build__ = 0
+
+VERSION = __version__
+# tf_export("VERSION", "__version__").export_constant(__name__, "VERSION")
+GIT_VERSION = __git_version__
+# tf_export("GIT_VERSION", "__git_version__").export_constant(
+#     __name__, "GIT_VERSION")
+COMPILER_VERSION = __compiler_version__
+# tf_export("COMPILER_VERSION", "__compiler_version__").export_constant(
+#     __name__, "COMPILER_VERSION")
+CXX11_ABI_FLAG = __cxx11_abi_flag__
+# tf_export("CXX11_ABI_FLAG", "__cxx11_abi_flag__").export_constant(
+#     __name__, "CXX11_ABI_FLAG")
+MONOLITHIC_BUILD = __monolithic_build__
+# tf_export("MONOLITHIC_BUILD", "__monolithic_build__").export_constant(
+#     __name__, "MONOLITHIC_BUILD")
+
+# GRAPH_DEF_VERSION = pywrap_tensorflow.GRAPH_DEF_VERSION
+GRAPH_DEF_VERSION = 0
+# tf_export("GRAPH_DEF_VERSION").export_constant(__name__, "GRAPH_DEF_VERSION")
+# GRAPH_DEF_VERSION_MIN_CONSUMER = (
+#     pywrap_tensorflow.GRAPH_DEF_VERSION_MIN_CONSUMER)
+GRAPH_DEF_VERSION_MIN_CONSUMER = 0
+# tf_export("GRAPH_DEF_VERSION_MIN_CONSUMER").export_constant(
+#     __name__, "GRAPH_DEF_VERSION_MIN_CONSUMER")
+# GRAPH_DEF_VERSION_MIN_PRODUCER = (
+#     pywrap_tensorflow.GRAPH_DEF_VERSION_MIN_PRODUCER)
+GRAPH_DEF_VERSION_MIN_PRODUCER = 0
+# tf_export("GRAPH_DEF_VERSION_MIN_PRODUCER").export_constant(
+#     __name__, "GRAPH_DEF_VERSION_MIN_PRODUCER")
+
+__all__ = [
+    "__version__",
+    "__git_version__",
+    "__compiler_version__",
+    "__cxx11_abi_flag__",
+    "__monolithic_build__",
+    "COMPILER_VERSION",
+    "CXX11_ABI_FLAG",
+    "GIT_VERSION",
+    "GRAPH_DEF_VERSION",
+    "GRAPH_DEF_VERSION_MIN_CONSUMER",
+    "GRAPH_DEF_VERSION_MIN_PRODUCER",
+    "VERSION",
+    "MONOLITHIC_BUILD",
+]

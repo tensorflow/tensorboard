@@ -20,7 +20,14 @@ from __future__ import print_function
 
 import threading
 
-from tensorflow.python.debug.lib import debug_graphs
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    from tensorflow.python.debug.lib import debug_graphs
+else:
+    from tensorboard.utils import debug_graphs
 
 
 class DebugGraphWrapper(object):

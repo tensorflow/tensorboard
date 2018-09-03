@@ -27,11 +27,23 @@ import functools
 import json
 
 from six.moves import queue
-import tensorflow as tf
-from tensorflow.python import debug as tf_debug
-from tensorflow.core.debug import debug_service_pb2
-from tensorflow.python.debug.lib import debug_data
-from tensorflow.python.debug.lib import grpc_debug_server
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+    from tensorflow.python import debug as tf_debug
+    from tensorflow.core.debug import debug_service_pb2
+    from tensorflow.python.debug.lib import debug_data
+    from tensorflow.python.debug.lib import grpc_debug_server
+else:
+    import tensorboard.utils as tf
+    from tensorboard.utils import (
+        debug_data, debug_graphs as tf_debug, grpc_debug_server
+    )
+    from tensorboard.proto import debug_service_pb2
 
 from tensorboard.plugins.debugger import comm_channel as comm_channel_lib
 from tensorboard.plugins.debugger import debug_graphs_helper

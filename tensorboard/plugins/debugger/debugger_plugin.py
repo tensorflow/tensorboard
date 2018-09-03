@@ -26,7 +26,15 @@ import re
 import sys
 import threading
 
-import tensorflow as tf
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -472,14 +480,19 @@ class DebuggerPlugin(base_plugin.TBPlugin):
     # Since we seek health pills for a specific step, this function
     # returns 1 health pill per node per step. The wall time is the
     # seconds since the epoch.
-    elements = list(tf.make_ndarray(tensor_proto))
+    if USE_TF:
+        elements = list(tf.make_ndarray(tensor_proto))
+        hpe_dtype = repr(tf.as_dtype(elements[12]))
+    else:
+        elements = list(tf.tensor_manip.make_ndarray(tensor_proto))
+        hpe_dtype = repr(tf.dtype.as_dtype(elements[12]))
     return HealthPillEvent(
         wall_time=wall_time,
         step=step,
         device_name=device_name,
         output_slot=output_slot,
         node_name=node_name,
-        dtype=repr(tf.as_dtype(elements[12])),
+        dtype=hpe_dtype,
         shape=elements[14:],
         value=elements)
 

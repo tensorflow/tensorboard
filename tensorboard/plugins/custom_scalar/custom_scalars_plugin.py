@@ -29,7 +29,15 @@ import re
 
 from google.protobuf import json_format
 import numpy as np
-import tensorflow as tf
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -267,7 +275,10 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           run, metadata.CONFIG_SUMMARY_TAG)
 
       # This run has a layout. Merge it with the ones currently found.
-      string_array = tf.make_ndarray(tensor_events[0].tensor_proto)
+      if USE_TF:
+          string_array = tf.make_ndarray(tensor_events[0].tensor_proto)
+      else:
+          string_array = tf.tensor_manip.make_ndarray(tensor_events[0].tensor_proto)
       content = np.asscalar(string_array)
       layout_proto = layout_pb2.Layout()
       layout_proto.ParseFromString(tf.compat.as_bytes(content))

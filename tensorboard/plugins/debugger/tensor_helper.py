@@ -22,9 +22,16 @@ import base64
 import binascii
 
 import numpy as np
-from tensorflow.python.debug.cli import command_parser
 
-from tensorboard import util
+from tensorboard import build_with_tf, util
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    from tensorflow.python.debug.cli import command_parser
+else:
+    from tensorboard.utils import command_parser
+
 from tensorboard.plugins.debugger import health_pill_calc
 
 

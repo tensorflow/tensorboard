@@ -17,15 +17,21 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
 import six
 from werkzeug import wrappers
 
-from tensorboard import plugin_util
+from tensorboard import build_with_tf, plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import plugin_data_pb2
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
@@ -114,7 +120,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
       for (run, step, wall_time, data, dtype, shape, plugin_data) in cursor:
         if run not in response_mapping:
           response_mapping[run] = []
-        buf = np.frombuffer(data, dtype=tf.DType(dtype).as_numpy_dtype)
+        dtype_for_buf = tf.DType(dtype) if USE_TF else tf.dtypes.DType(dtype)
+        buf = np.frombuffer(data, dtype=dtype_for_buf.as_numpy_dtype)
         data_array = buf.reshape([int(i) for i in shape.split(',')])
         plugin_data_proto = plugin_data_pb2.PrCurvePluginData()
         string_buffer = np.frombuffer(plugin_data, dtype=np.dtype('b'))
@@ -350,10 +357,12 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     Returns:
       A JSON-able dictionary of PR curve data for 1 step.
     """
+    array_from_tensor = tf.make_ndarray(event.tensor_proto) if USE_TF \
+        else tf.tensor_manip.make_ndarray(event.tensor_proto)
     return self._make_pr_entry(
         event.step,
         event.wall_time,
-        tf.make_ndarray(event.tensor_proto),
+        array_from_tensor,
         thresholds)
 
   def _make_pr_entry(self, step, wall_time, data_array, thresholds):

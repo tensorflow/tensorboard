@@ -31,7 +31,14 @@ from __future__ import print_function
 import logging
 import os
 
-import tensorflow as tf
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin

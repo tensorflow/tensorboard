@@ -27,10 +27,17 @@ import random
 
 import numpy as np
 import six
-import tensorflow as tf
 from werkzeug import wrappers
 
-from tensorboard import plugin_util
+from tensorboard import build_with_tf, plugin_util
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
@@ -193,8 +200,12 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
         raise ValueError('No histogram tag %r for run %r' % (tag, run))
-      events = [[e.wall_time, e.step, tf.make_ndarray(e.tensor_proto).tolist()]
-                for e in tensor_events]
+      if USE_TF:
+          events = [[e.wall_time, e.step, tf.make_ndarray(e.tensor_proto).tolist()]
+                    for e in tensor_events]
+      else:
+          events = [[e.wall_time, e.step, tf.tensor_manip.make_ndarray(e.tensor_proto).tolist()]
+                    for e in tensor_events]
       if downsample_to is not None and len(events) > downsample_to:
         indices = sorted(random.Random(0).sample(list(range(len(events))),
                                                  downsample_to))
@@ -210,7 +221,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     Returns:
       The histogram values as a list served to the frontend.
     """
-    buf = np.frombuffer(data_blob, dtype=tf.DType(dtype_enum).as_numpy_dtype)
+    gv_dtype = tf.DType(dtype_enum) if USE_TF else tf.dtypes.DType(dtype_enum)
+    buf = np.frombuffer(data_blob, dtype=gv_dtype.as_numpy_dtype)
     return buf.reshape([int(i) for i in shape_string.split(',')]).tolist()
 
   @wrappers.Request.application

@@ -25,7 +25,6 @@ import os
 import threading
 
 import numpy as np
-import tensorflow as tf
 from werkzeug import wrappers
 
 from google.protobuf import json_format
@@ -33,6 +32,16 @@ from google.protobuf import text_format
 from tensorboard.backend.http_util import Respond
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+
 
 # The prefix of routes provided by this plugin.
 _PLUGIN_PREFIX_ROUTE = 'projector'
@@ -397,7 +406,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
           config.model_checkpoint_path = ckpt_path
 
       # Sanity check for the checkpoint file.
-      if (config.model_checkpoint_path and
+      if (config.model_checkpoint_path and USE_TF and
           not tf.train.checkpoint_exists(config.model_checkpoint_path)):
         tf.logging.warning('Checkpoint file "%s" not found',
                            config.model_checkpoint_path)
@@ -412,7 +421,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     config = self._configs[run]
     reader = None
-    if config.model_checkpoint_path:
+    if config.model_checkpoint_path and USE_TF:
       try:
         reader = tf.pywrap_tensorflow.NewCheckpointReader(
             config.model_checkpoint_path)
@@ -645,6 +654,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
 
 def _find_latest_checkpoint(dir_path):
+  if not USE_TF:
+      return None
   try:
     ckpt_path = tf.train.latest_checkpoint(dir_path)
     if not ckpt_path:
@@ -655,7 +666,173 @@ def _find_latest_checkpoint(dir_path):
     return None
 
 
-def _make_sprite_image(thumbnails, thumbnail_dim):
+def resize_images(images,
+                  size,
+                  method=ResizeMethod.BILINEAR,
+                  align_corners=False,
+                  preserve_aspect_ratio=False):
+    """Resize `images` to `size` using the specified `method`.
+
+    Resized images will be distorted if their original aspect ratio is not
+    the same as `size`.  To avoid distortions see
+    @{tf.image.resize_image_with_pad}.
+
+    `method` can be one of:
+
+    *   <b>`ResizeMethod.BILINEAR`</b>: [Bilinear interpolation.](
+    https://en.wikipedia.org/wiki/Bilinear_interpolation)
+    *   <b>`ResizeMethod.NEAREST_NEIGHBOR`</b>: [Nearest neighbor interpolation.](
+    https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation)
+    *   <b>`ResizeMethod.BICUBIC`</b>: [Bicubic interpolation.](
+    https://en.wikipedia.org/wiki/Bicubic_interpolation)
+    *   <b>`ResizeMethod.AREA`</b>: Area interpolation.
+
+    The return value has the same type as `images` if `method` is
+    `ResizeMethod.NEAREST_NEIGHBOR`. It will also have the same type as `images`
+    if the size of `images` can be statically determined to be the same as `size`,
+    because `images` is returned in this case. Otherwise, the return value has
+    type `float32`.
+
+    Args:
+    images: 4-D Tensor of shape `[batch, height, width, channels]` or
+            3-D Tensor of shape `[height, width, channels]`.
+    size: A 1-D int32 Tensor of 2 elements: `new_height, new_width`.  The
+          new size for the images.
+    method: ResizeMethod.  Defaults to `ResizeMethod.BILINEAR`.
+    align_corners: bool.  If True, the centers of the 4 corner pixels of the
+        input and output tensors are aligned, preserving the values at the
+        corner pixels. Defaults to `False`.
+    preserve_aspect_ratio: Whether to preserve the aspect ratio. If this is set,
+      then `images` will be resized to a size that fits in `size` while
+      preserving the aspect ratio of the original image. Scales up the image if
+      `size` is bigger than the current size of the `image`. Defaults to False.
+
+    Raises:
+    ValueError: if the shape of `images` is incompatible with the
+      shape arguments to this function
+    ValueError: if `size` has invalid shape or type.
+    ValueError: if an unsupported resize method is specified.
+
+    Returns:
+    If `images` was 4-D, a 4-D float Tensor of shape
+    `[batch, new_height, new_width, channels]`.
+    If `images` was 3-D, a 3-D float Tensor of shape
+    `[new_height, new_width, channels]`.
+    """
+    # images = ops.convert_to_tensor(images, name='images')
+    images = np.array(images)
+    images_shape = images.shape
+    if images_shape is None or len(images_shape) < 3 or len(images_shape) > 4:
+        raise ValueError('\'images\' contains no shape.')
+    # TODO(shlens): Migrate this functionality to the underlying Op's.
+    is_batch = True
+    if len(images_shape) == 3:
+        is_batch = False
+        images = np.expand_dims(images, axis=0)
+    elif len(images_shape) != 4:
+        raise ValueError('\'images\' must have either 3 or 4 dimensions.')
+
+    _, height, width, _ = images_shape
+
+    size = np.array(size)
+
+    try:
+        size = size.astype(np.int32)
+    except (TypeError, ValueError):
+        raise ValueError('\'size\' must be a 1-D int32 Tensor')
+    if not size.get_shape().is_compatible_with([2]):
+        raise ValueError('\'size\' must be a 1-D Tensor of 2 elements: '
+                         'new_height, new_width')
+    # size_const_as_shape = tensor_util.constant_value_as_shape(size)
+    # new_height_const = size_const_as_shape[0].value
+    # new_width_const = size_const_as_shape[1].value
+    new_height_const = size[0]
+    new_width_const = size[1]
+
+    if preserve_aspect_ratio:
+        # Get the current shapes of the image, even if dynamic.
+        _, current_height, current_width, _ = images.shape
+
+        # do the computation to find the right scale and height/width.
+        scale_factor_height = np.float(new_height_const) / current_height
+        scale_factor_width = np.float(new_width_const) / current_width
+        scale_factor = min(scale_factor_height, scale_factor_width)
+        scaled_height_const = np.array(
+            [scale_factor * current_height]).astype(np.int32)[0]
+        scaled_width_const = np.array(
+            [scale_factor * current_width]).astype(np.int32)[0]
+
+        size = np.array(
+            [scaled_height_const, scaled_width_const], dtype=np.int32)
+
+        # NOTE: Reset the size and other constants used later.
+        # size = ops.convert_to_tensor([scaled_height_const, scaled_width_const],
+        #                            dtypes.int32, name='size')
+        # size_const_as_shape = tensor_util.constant_value_as_shape(size)
+        new_height_const = size[0]
+        new_width_const = size[1]
+
+    # If we can determine that the height and width will be unmodified by this
+    # transformation, we avoid performing the resize.
+    if all(x is not None
+           for x in [new_width_const, width, new_height_const, height]) and (
+               width == new_width_const and height == new_height_const):
+        if not is_batch:
+            images = np.squeeze(images, axis=0)
+        return images
+
+    VALID_RESIZE_METHODS = [a for a in dir(ResizeMethod)
+                            if not a.startswith('__')]
+    if method in VALID_RESIZE_METHODS:
+        images = sp.misc.imresize(images, size, method, align_corners)
+    else:
+        raise ValueError('Resize method is not implemented.')
+
+    # NOTE(mrry): The shape functions for the resize ops cannot unpack
+    # the packed values in `new_size`, so set the shape here.
+    # images.set_shape([None, new_height_const, new_width_const, None])
+
+    if not is_batch:
+        images = np.squeeze(images, axis=0)
+    return images
+
+
+def _make_sprite_image_notf(thumbnails, thumbnail_dim):
+    """Constructs a sprite image from thumbnails and returns the png bytes."""
+    if len(thumbnails) < 1:
+        raise ValueError('The length of "thumbnails" must be >= 1')
+
+    if isinstance(thumbnails, np.ndarray) and thumbnails.ndim != 4:
+        raise ValueError('"thumbnails" should be of rank 4, '
+                         'but is of rank %d' % thumbnails.ndim)
+    if isinstance(thumbnails, list):
+        if not isinstance(thumbnails[0],
+                          np.ndarray) or thumbnails[0].ndim != 3:
+            raise ValueError(
+                'Each element of "thumbnails" must be a 3D `ndarray`')
+        thumbnails = np.array(thumbnails)
+
+    resized_images = resize_images(thumbnails, thumbnail_dim)
+    images_per_row = int(math.ceil(math.sqrt(len(thumbnails))))
+    thumb_height = thumbnail_dim[0]
+    thumb_width = thumbnail_dim[1]
+    master_height = images_per_row * thumb_height
+    master_width = images_per_row * thumb_width
+    num_channels = thumbnails.shape[3]
+    master = np.zeros([master_height, master_width, num_channels])
+    for idx, image in enumerate(resized_images):
+        left_idx = idx % images_per_row
+        top_idx = int(math.floor(idx / images_per_row))
+        left_start = left_idx * thumb_width
+        left_end = left_start + thumb_width
+        top_start = top_idx * thumb_height
+        top_end = top_start + thumb_height
+        master[top_start:top_end, left_start:left_end, :] = image
+
+    return master.tobytes()
+
+
+def _make_sprite_image_tf(thumbnails, thumbnail_dim):
   """Constructs a sprite image from thumbnails and returns the png bytes."""
   if len(thumbnails) < 1:
     raise ValueError('The length of "thumbnails" must be >= 1')
@@ -689,3 +866,10 @@ def _make_sprite_image(thumbnails, thumbnail_dim):
       master[top_start:top_end, left_start:left_end, :] = image
 
     return tf.image.encode_png(master).eval(session=s)
+
+
+def _make_sprite_image(thumbnails, thumbnail_dim):
+    if USE_TF:
+        return _make_sprite_image_tf(thumbnails, thumbnail_dim)
+    else:
+        return _make_sprite_image_notf(thumbnails, thumbnail_dim)

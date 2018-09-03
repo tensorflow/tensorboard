@@ -22,12 +22,18 @@ import six
 from six.moves import urllib
 from werkzeug import wrappers
 
-import tensorflow as tf
-
-from tensorboard import plugin_util
+from tensorboard import build_with_tf, plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import metadata
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    # make_ndarray() is the only function used in this file
+    import tensorboard.utils.tensor_manip as tf
 
 _DEFAULT_MIME_TYPE = 'application/octet-stream'
 _MIME_TYPES = {

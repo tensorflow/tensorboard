@@ -26,9 +26,17 @@ import collections
 import json
 import re
 
-import tensorflow as tf
+from tensorboard import build_with_tf
 
-from tensorflow.python import debug as tf_debug
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+    from tensorflow.python import debug as tf_debug
+else:
+    import tensorboard.utils as tf
+    from tensorboard.utils import debug_graphs as tf_debug
+
 from tensorboard.plugins.debugger import constants
 
 # The following two namedtuples are the same except that

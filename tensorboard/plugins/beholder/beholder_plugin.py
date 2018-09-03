@@ -20,17 +20,23 @@ import threading
 import time
 
 import numpy as np
-import tensorflow as tf
 from google.protobuf import message
 from werkzeug import wrappers
 
-from tensorboard import util
+from tensorboard import build_with_tf, util
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util as pau
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.beholder import file_system_tools
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder import shared_config
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 DEFAULT_INFO = [{
     'name': 'Waiting for data...',

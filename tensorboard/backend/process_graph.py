@@ -19,8 +19,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard import build_with_tf
 
-import tensorflow as tf
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 
 def prepare_graph_for_ui(graph, limit_attr_size=1024,

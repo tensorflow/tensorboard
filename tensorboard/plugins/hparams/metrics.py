@@ -18,9 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    # make_ndarray() is the only method used
+    import tensorboard.utils.tensor_manip as tf
 
 from tensorboard.plugins.hparams import api_pb2
+
 
 def last_metric_eval(multiplexer, session_name, metric_name):
   """Returns the last evaluations of the given metric at the given session.

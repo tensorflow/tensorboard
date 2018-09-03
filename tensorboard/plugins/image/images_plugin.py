@@ -23,10 +23,18 @@ import imghdr
 
 import six
 from six.moves import urllib
-import tensorflow as tf
 from werkzeug import wrappers
 
-from tensorboard import plugin_util
+from tensorboard import build_with_tf, plugin_util
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    # tf.string, from dtypes.py, is the only attr used
+    from tensorboard.utils import dtypes as tf
+
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata

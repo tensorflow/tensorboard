@@ -20,7 +20,16 @@ import os
 import time
 
 import numpy as np
-import tensorflow as tf
+
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder.file_system_tools import read_pickle,\
@@ -43,12 +52,13 @@ class Beholder(object):
             video_writing.FFmpegVideoOutput,
             video_writing.PNGVideoOutput])
 
-    self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
-    self.summary_op = tf.summary.tensor_summary(TAG_NAME,
-                                                self.frame_placeholder,
-                                                collections=[
-                                                    SUMMARY_COLLECTION_KEY_NAME
-                                                ])
+    if USE_TF:
+        self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
+        self.summary_op = tf.summary.tensor_summary(TAG_NAME,
+                                                    self.frame_placeholder,
+                                                    collections=[
+                                                        SUMMARY_COLLECTION_KEY_NAME
+                                                    ])
 
     self.last_image_shape = []
     self.last_update_time = time.time()
@@ -103,7 +113,7 @@ class Beholder(object):
       else:
         final_image = self.visualizer.build_frame(arrays)
 
-    elif config['values'] == 'trainable_variables':
+    elif config['values'] == 'trainable_variables' and USE_TF:
       arrays = [session.run(x) for x in tf.trainable_variables()]
       final_image = self.visualizer.build_frame(arrays)
 
@@ -183,7 +193,7 @@ class Beholder(object):
 
     Returns: the gradient tensors and the train_step op.
     '''
-    if var_list is None:
+    if var_list is None and USE_TF:
       var_list = tf.trainable_variables()
 
     grads_and_vars = optimizer.compute_gradients(loss, var_list=var_list)

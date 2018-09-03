@@ -23,7 +23,15 @@ import threading
 
 import six
 from six.moves import queue, xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long

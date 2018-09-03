@@ -29,13 +29,19 @@ import numpy as np
 # pylint: enable=g-bad-import-order
 
 import six
-import tensorflow as tf
 from werkzeug import wrappers
 
-from tensorboard import plugin_util
+from tensorboard import build_with_tf, plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 # HTTP routes
 TAGS_ROUTE = '/tags'
@@ -182,7 +188,10 @@ def text_array_to_html(text_arr):
 
 def process_string_tensor_event(event):
   """Convert a TensorEvent into a JSON-compatible response."""
-  string_arr = tf.make_ndarray(event.tensor_proto)
+  if USE_TF:
+      string_arr = tf.make_ndarray(event.tensor_proto)
+  else:
+      string_arr = tf.tensor_manip.make_ndarray(event.tensor_proto)
   html = text_array_to_html(string_arr)
   return {
       'wall_time': event.wall_time,

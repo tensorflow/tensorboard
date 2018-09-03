@@ -27,7 +27,16 @@ import time
 import wsgiref.handlers
 
 import six
-import tensorflow as tf
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+
 import werkzeug
 
 from tensorboard.backend import json_util

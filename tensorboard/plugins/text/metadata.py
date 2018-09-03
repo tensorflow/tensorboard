@@ -18,9 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 from tensorboard.plugins.text import plugin_data_pb2
 
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+    from tensorboard.proto import summary_pb2
 
 PLUGIN_NAME = 'text'
 
@@ -35,12 +43,20 @@ def create_summary_metadata(display_name, description):
     A `tf.SummaryMetadata` protobuf object.
   """
   content = plugin_data_pb2.TextPluginData(version=PROTO_VERSION)
-  metadata = tf.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(
-          plugin_name=PLUGIN_NAME,
-          content=content.SerializeToString()))
+  if USE_TF:
+      metadata = tf.SummaryMetadata(
+          display_name=display_name,
+          summary_description=description,
+          plugin_data=tf.SummaryMetadata.PluginData(
+              plugin_name=PLUGIN_NAME,
+              content=content.SerializeToString()))
+  else:
+      metadata = summary_pb2.SummaryMetadata(
+          display_name=display_name,
+          summary_description=description,
+          plugin_data=summary_pb2.SummaryMetadata.PluginData(
+              plugin_name=PLUGIN_NAME,
+              content=content.SerializeToString()))
   return metadata
 
 

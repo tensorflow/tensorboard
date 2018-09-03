@@ -20,7 +20,14 @@ from __future__ import print_function
 
 import inspect
 
-import tensorflow as tf
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 
 class EventFileLoader(object):
@@ -32,8 +39,12 @@ class EventFileLoader(object):
     file_path = tf.resource_loader.readahead_file_path(file_path)
     tf.logging.debug('Opening a record reader pointing at %s', file_path)
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      self._reader = tf.pywrap_tensorflow.PyRecordReader_New(
-          tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
+      if USE_TF:
+          self._reader = tf.pywrap_tensorflow.PyRecordReader_New(
+              tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
+      else:
+          self._reader = tf.record_reader.RecordReader(
+              tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''))
     # Store it for logging purposes.
     self._file_path = file_path
     if not self._reader:

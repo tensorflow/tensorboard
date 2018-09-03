@@ -18,14 +18,49 @@ package_group(
 # The standard TensorBoard binary that serves the webapp.
 py_binary(
     name = "tensorboard",
-    srcs = ["main.py"],
+    srcs = [
+        "tf_enabled.py",
+        "build_with_tf.py",
+        "main.py",
+    ],
+    main = "main.py",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        ":default",
+        ":program",
+    ],
+)
+
+# The standard TensorBoard binary that does not use TensorFlow and serves the
+# webapp.
+py_binary(
+    name = "tensorboard-notf",
+    srcs = [
+        "tf_disabled.py",
+        "build_with_tf.py",
+        "main.py",
+    ],
     main = "main.py",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
         ":default",
         ":program",
-        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+# The TensorBoard binary that does not require a TensorFlow dependency
+py_binary(
+    name = "tensorboard-notf",
+    srcs = ["build_with_tf.py", "main.py", "tf_disabled.py"],
+    main = "main.py",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":default",
+        ":program",
     ],
 )
 

@@ -18,7 +18,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
+    from tensorboard.proto import summary_pb2
+
 from tensorboard.plugins.pr_curve import plugin_data_pb2
 
 
@@ -50,11 +59,18 @@ def create_summary_metadata(display_name, description, num_thresholds):
   pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
       version=PROTO_VERSION, num_thresholds=num_thresholds)
   content = pr_curve_plugin_data.SerializeToString()
-  return tf.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
-                                                content=content))
+  if USE_TF:
+      return tf.SummaryMetadata(
+          display_name=display_name,
+          summary_description=description,
+          plugin_data=tf.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
+                                                    content=content))
+  else:
+      return summary_pb2.SummaryMetadata(
+          display_name=display_name,
+          summary_description=description,
+          plugin_data=summary_pb2.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
+                                                    content=content))
 
 def parse_plugin_metadata(content):
   """Parse summary metadata to a Python object.

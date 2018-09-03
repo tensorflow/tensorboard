@@ -18,8 +18,16 @@ from __future__ import print_function
 
 import pickle
 
-import tensorflow as tf
 from google.protobuf import message
+
+from tensorboard import build_with_tf
+
+USE_TF = build_with_tf.use_tf()
+
+if USE_TF:
+    import tensorflow as tf
+else:
+    import tensorboard.utils as tf
 
 
 def write_file(contents, path, mode='wb'):
@@ -34,10 +42,13 @@ def read_tensor_summary(path):
   if not summary_string:
     raise message.DecodeError('Empty summary.')
 
-  summary_proto = tf.Summary()
+  summary_proto = tf.Summary() if USE_TF else summary_pb2.Summary()
   summary_proto.ParseFromString(summary_string)
   tensor_proto = summary_proto.value[0].tensor
-  array = tf.make_ndarray(tensor_proto)
+  if USE_TF:
+      array = tf.make_ndarray(tensor_proto)
+  else:
+      array = tf.tensor_manip.make_ndarray(tensor_proto)
 
   return array
 
