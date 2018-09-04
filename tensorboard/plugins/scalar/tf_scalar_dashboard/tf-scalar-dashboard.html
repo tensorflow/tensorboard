@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
+<link rel="import" href="../tf-dashboard-common/array-update-helper.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
@@ -244,10 +245,10 @@ limitations under the License.
         // true and then polymer DOM templating responds to that finding. We
         // thus use this property to guard when categories are computed.
         _categoriesDomReady: Boolean,
+
         _categories: {
           type: Array,
-          computed:
-            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
+          value: () => [],
         },
 
         _requestManager: {
@@ -260,6 +261,12 @@ limitations under the License.
           value: USE_DATA_SELECTOR,
         },
       },
+      behaviors: [
+        tf_dashboard_common.ArrayUpdateHelper,
+      ],
+      observers: [
+        '_updateCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
+      ],
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
       _smoothingWeightObserver: tf_storage.getNumberObserver(
@@ -305,7 +312,7 @@ limitations under the License.
         });
       },
 
-      _makeCategories(
+      _updateCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
         const usesDataSelection = this.useDataSelector && this.dataSelection;
         if (usesDataSelection && this.dataSelection.selections.length == 0) {
@@ -338,7 +345,8 @@ limitations under the License.
             })),
           }));
         });
-        return categories;
+
+        this.updateArrayProp('_categories', categories, (c) => c.name);
       },
 
       _tagMetadata(runToTagsInfo, runs, tag) {
