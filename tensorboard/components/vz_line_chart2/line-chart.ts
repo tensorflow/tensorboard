@@ -849,13 +849,20 @@ export class LineChart {
     }
   }
 
-  public redraw() {
+  public redraw(clearCache: boolean = false) {
+    if (clearCache) {
+      this.outer.invalidateCache();
+    }
     this.outer.redraw();
   }
 
   public destroy() {
     // Destroying outer destroys all subcomponents recursively.
     if (this.outer) this.outer.destroy();
+  }
+
+  public onAnchor(fn: () => void) {
+    if (this.outer) this.outer.onAnchor(fn);
   }
 }
 

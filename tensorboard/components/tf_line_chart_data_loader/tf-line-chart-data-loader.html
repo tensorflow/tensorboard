@@ -45,6 +45,7 @@ limitations under the License.
         default-y-range="[[defaultYRange]]"
         fill-area="[[fillArea]]"
         symbol-function="[[symbolFunction]]"
+        on-chart-attached="_onChartAttached"
       ></vz-line-chart2>
       <template is="dom-if" if="[[dataLoading]]">
         <div id="loading-spinner-container">
@@ -105,7 +106,10 @@ limitations under the License.
         if (redrawQueue.length == 0) return;
         const x = redrawQueue.shift();
         if (x.active) {
-          x.redraw();
+          // When incorrectly drawn, Plottable, more specifically, Typesettable,
+          // can have incorrect values in its measurement cache. For correct
+          // axis layout, we must bust the cache.
+          x.redraw(true /* clearCache */);
           x._maybeRenderedInBadState = false;
         }
         window.cancelAnimationFrame(redrawRaf);
@@ -185,13 +189,7 @@ limitations under the License.
           this.$.chart.resetDomain();
         }
 
-        if (this.active) {
-          this.redraw();
-        } else {
-          // If we reached a point where we should render while the page
-          // is not active, we've gotten into a bad state.
-          this._maybeRenderedInBadState = true;
-        }
+        this.redraw();
       },
 
       detached() {
@@ -212,10 +210,16 @@ limitations under the License.
         this.$.chart.setSeriesMetadata(name, metadata);
       },
 
-      redraw() {
+      redraw(clearCache) {
         cancelAnimationFrame(this._redrawRaf);
         this._redrawRaf = window.requestAnimationFrame(() => {
-          this.$.chart.redraw();
+          if (this.active) {
+            this.$.chart.redraw(clearCache);
+          } else {
+            // If we reached a point where we should render while the page
+            // is not active, we've gotten into a bad state.
+            this._maybeRenderedInBadState = true;
+          }
         });
       },
 
@@ -246,6 +250,12 @@ limitations under the License.
         if (this.active && this._maybeRenderedInBadState) {
           redrawQueue.push(this);
           cascadingRedraw();
+        }
+      },
+
+      _onChartAttached() {
+        if (!this.active) {
+          this._maybeRenderedInBadState = true;
         }
       },
 
