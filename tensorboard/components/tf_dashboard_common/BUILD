@@ -8,6 +8,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_dashboard_common",
     srcs = [
+        "array-update-helper.html",
+        "array-update-helper.js",
         "dashboard-style.html",
         "run-color-style.html",
         "scrollbar-style.html",
