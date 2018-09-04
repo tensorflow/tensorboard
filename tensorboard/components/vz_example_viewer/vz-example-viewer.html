@@ -181,6 +181,9 @@ limitations under the License.
         min-width: 300px;
         white-space: pre-wrap;
         word-wrap: break-word;
+        color: grey;
+        font-weight: 500;
+        font-size: 12px;
       }
 
       .slider {
@@ -309,6 +312,28 @@ limitations under the License.
       .value-header-text {
         min-width: 130px;
         width: 130px;
+        color: grey;
+        font-weight: 500;
+        font-size: 12px;
+      }
+
+      paper-dialog {
+        border-radius: 10px;
+      }
+
+      .control-button {
+        background-color: white;
+        border: 1px solid lightgray;
+        color: var(--tb-orange-dark);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 12px;
+        text-transform: none;
+        margin: 5px;
+      }
+
+      .control-button[disabled] {
+        color: lightgray;
       }
     </style>
     <div class="outer">
@@ -353,7 +378,7 @@ limitations under the License.
                     <paper-input no-label-float type="number" min="10" max="500"
                                   value="{{imageScalePercentage}}">
                     </paper-input>
-                    <paper-button raised on-click="updateImages" class="image-scale-button">
+                    <paper-button class="control-button" on-click="updateImages" class="image-scale-button">
                       set
                     </paper-button>
                   </div>
@@ -510,7 +535,7 @@ limitations under the License.
                           <paper-input no-label-float type="number" min="10" max="500"
                                         value="{{imageScalePercentage}}">
                           </paper-input>
-                          <paper-button raised on-click="updateImages" class="image-scale-button">
+                          <paper-button class="control-button" on-click="updateImages" class="image-scale-button">
                             set
                           </paper-button>
                         </div>
@@ -663,7 +688,7 @@ limitations under the License.
         <paper-radio-button name="float">Float</paper-radio-button>
         <paper-radio-button name="bytes">Bytes</paper-radio-button>
       </paper-radio-group>
-      <paper-button dialog-dismiss raised on-click="addFeature"
+      <paper-button dialog-dismiss class="control-button" on-click="addFeature"
                     disabled="[[!shouldEnableAddFeature(newFeatureName)]]">
         Create
       </paper-button>

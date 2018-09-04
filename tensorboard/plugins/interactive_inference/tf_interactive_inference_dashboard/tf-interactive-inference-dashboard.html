@@ -118,11 +118,6 @@ limitations under the License.
         border: 1px solid lightgrey;
       }
 
-      .inference-section-expanded {
-        width: 100%;
-        border: 1px solid lightgrey;
-      }
-
       .inference-viewer {
         max-height: 35%;
       }
@@ -293,15 +288,8 @@ limitations under the License.
         height: 100%;
       }
 
-      .inference-header {
-        position: relative;
-        font-size: 16px;
-        padding: 4px 0 4px 8px;
+      .inference-header.heading {
         background: #e1f4f7;
-        width: 100%;
-        text-align: left;
-        border-style: none;
-        cursor: pointer;
       }
 
       .right-side {
@@ -616,12 +604,12 @@ limitations under the License.
       }
 
       .example-id-label {
-        padding: 10px 5px 0 0;
+        padding: 9px 5px 9px 0;
       }
 
       .example-id-input {
         width: 70px;
-        padding-top: 4px;
+        padding-top: 3px;
       }
 
       .heading-and-card {
@@ -630,6 +618,7 @@ limitations under the License.
         margin-top: 10px;
         padding-top: 1px;
       }
+
       .heading {
         position: relative;
         padding: 10px 8px;
@@ -819,7 +808,13 @@ limitations under the License.
         border-radius: 10px;
       }
 
+      .run-button-container {
+        margin-left: 68px;
+      }
 
+      .main-button.run-button {
+        padding: 5px;
+      }
 
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
@@ -877,12 +872,6 @@ limitations under the License.
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <div title="Select and edit a datapoint to use this feature">
-              <paper-button on-click="inferClicked_" class="main-button"
-                disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-                Run inference
-              </paper-button>
-            </div>
             <div title="Select a datapoint to use this feature">
               <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                   on-click="showPartialDependencePlots_" alt="show partial dependence plots"
@@ -1073,6 +1062,12 @@ limitations under the License.
                                     <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each slices are correctly predicted either as yes (1) or no (0)</div>
                                     <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each slices are predicted yes (1)</div>
                                     <div><span class="bold">Single threshold</span> - Optimize a single threshold across all slices</div>
+                                    <div>To learn more about ML fairness, see the
+                                      <a target="_blank" href="https://developers.google.com/machine-learning/crash-course/fairness/video-lecture">
+                                        fairness module of the Machine Learning Crash Course
+                                      </a>
+                                      .
+                                    </div>
                                   </paper-dialog>
                                 </span>
                               </div>
@@ -1266,6 +1261,12 @@ limitations under the License.
                         <paper-icon-button class="datapoint-control-button" icon="chevron-right"
                           on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
                         </paper-icon-button>
+                        <div class="run-button-container" title="Edit the datapoint to use this feature">
+                          <paper-button on-click="inferClicked_" class="main-button run-button"
+                            disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+                            Run inference
+                          </paper-button>
+                        </div>
                       </div>
                       <div class="datapoint-right-controls-holder">
                         <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input feature-search-input" no-label-float>
@@ -1284,9 +1285,9 @@ limitations under the License.
                                            compare-title="[[compareTitle]]">
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
-                          <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                            <button class="inference-header" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
-                              <div class="right-side">
+                          <div class="inference-section">
+                            <button class="inference-header heading" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
+                              <div class="right-side right-side-performance-tab">
                                 <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                               </div>
                             </button>
@@ -1297,9 +1298,9 @@ limitations under the License.
                             </iron-collapse>
                           </div>
                           <template is="dom-if" if="[[counterfactualExampleAndInference]]">
-                            <div class$="[[getInferenceSectionClass_(panelExpanded)]]">
-                              <button class="inference-header" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
-                                <div class="right-side">
+                            <div class="inference-section">
+                              <button class="inference-header heading" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
+                                <div class="right-side right-side-performance-tab">
                                   <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                                 </div>
                               </button>
@@ -1336,7 +1337,7 @@ limitations under the License.
                           For classification models, find the closest example with a different classification using L1 or L2 distance.
                         </div>
                         <div class="datapoint-info-bullet">
-                          <span class="bold">Partial Dependency Plots:</span>
+                          <span class="bold">Partial Dependence Plots:</span>
                           For a selected example, explore plots for every feature that show the change in inference results across
                           different valid values for that feature.
                         </div>
@@ -1378,12 +1379,12 @@ limitations under the License.
             <div class="feature-container-holder" id="partialplotholder">
               <div class="flex">
                 <paper-icon-button icon="arrow-back" on-click="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
-                <div class="pd-info-text">Partial Depdendency Plots</div>
+                <div class="pd-info-text">Partial Dependence Plots</div>
                 <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-click="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                  <div class="dialog-title">Partial Dependency Plots</div>
-                  <div>Partial dependency plots visualize the change in inference results for every feature,
+                  <div class="dialog-title">Partial Dependence Plots</div>
+                  <div>Partial dependence plots visualize the change in inference results for every feature,
                     as the value for that feature is changed to different valid values.
                   </div>
                   <div>For numeric features, you can set the minimum and maximum values to plot.</div>
@@ -2002,11 +2003,6 @@ limitations under the License.
 
       getExampleHolderClass_: function(panelExpanded) {
         return panelExpanded ? 'example-holder-expanded' : 'example-holder';
-      },
-
-      getInferenceSectionClass_: function(panelExpanded) {
-        return panelExpanded
-          ? 'inference-section-expanded' : 'inference-section';
       },
 
       getInferenceSectionHolderClass_: function(panelExpanded) {
