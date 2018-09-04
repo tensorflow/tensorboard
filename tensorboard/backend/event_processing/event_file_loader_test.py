@@ -89,5 +89,22 @@ class EventFileLoaderTest(tf.test.TestCase):
     self.assertEqual(len(list(loader.Load())), 2)
 
 
+class RawEventFileLoaderTest(EventFileLoaderTest):
+
+  def _LoaderForTestFile(self, filename):
+    return event_file_loader.RawEventFileLoader(
+        os.path.join(self.get_temp_dir(), filename))
+
+  def testSingleWrite(self):
+    filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
+    self._WriteToFile(filename, EventFileLoaderTest.RECORD)
+    loader = self._LoaderForTestFile(filename)
+    event_protos = list(loader.Load())
+    self.assertEqual(len(event_protos), 1)
+    # Record format has a 12 byte header and a 4 byte trailer.
+    expected_event_proto = EventFileLoaderTest.RECORD[12:-4]
+    self.assertEqual(event_protos[0], expected_event_proto)
+
+
 if __name__ == '__main__':
   tf.test.main()
