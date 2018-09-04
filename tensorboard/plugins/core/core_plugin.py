@@ -318,7 +318,7 @@ disappearance. (default: %(default)s)\
         help='''\
 How often the backend should load more data, in seconds. Set to 0 to
 load just once at startup and a negative number to never reload at all.
-(default: %(default)s)\
+Not relevant for DB read-only mode. (default: %(default)s)\
 ''')
 
     parser.add_argument(
@@ -326,12 +326,19 @@ load just once at startup and a negative number to never reload at all.
         metavar='URI',
         type=str,
         default='',
-        help='[experimental] sets SQL database URI')
+        help='''\
+[experimental] sets SQL database URI and enables DB backend mode, which is
+read-only unless --db_import is also passed.\
+''')
 
     parser.add_argument(
         '--db_import',
         action='store_true',
-        help='[experimental] imports logdir into a SQL database on the fly')
+        help='''\
+[experimental] enables DB read-and-import mode, which in combination with
+--logdir imports event files into a DB backend on the fly. The backing DB is
+temporary unless --db is also passed to specify a DB path to use.\
+''')
 
     parser.add_argument(
         '--inspect',
@@ -394,7 +401,8 @@ routing of an elb when the website base_url is not available e.g.
         default=1,
         help='''\
 The max number of threads that TensorBoard can use to reload runs. Not
-relevant for db mode. Each thread reloads one run at a time.\
+relevant for db read-only mode. Each thread reloads one run at a time.
+(default: %(default)s)\
 ''')
 
     parser.add_argument(
