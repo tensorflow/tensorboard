@@ -148,7 +148,7 @@ limitations under the License.
                           data-to-load="[[item.series]]"
                           multi-experiments="[[_getMultiExperiments(dataSelection)]]"
                           tag="[[item.tag]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
+                          tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
                           active="[[page.active]]"
                         ></tf-scalar-card>
                       </template>
@@ -349,9 +349,10 @@ limitations under the License.
         this.updateArrayProp('_categories', categories, (c) => c.name);
       },
 
-      _tagMetadata(runToTagsInfo, runs, tag) {
+      _tagMetadata(category, runToTagsInfo, item) {
+        const tag = item.tag;
         const runToTagInfo = {};
-        runs.forEach(run => {
+        item.series.forEach(({run}) => {
             runToTagInfo[run] = runToTagsInfo[run][tag];
         });
         // All new-style scalar tags include the `/scalar_summary`
