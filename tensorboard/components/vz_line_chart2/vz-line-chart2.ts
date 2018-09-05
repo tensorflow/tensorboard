@@ -326,9 +326,9 @@ Polymer({
   /**
    * Re-renders the chart. Useful if e.g. the container size changed.
    */
-  redraw: function() {
+  redraw: function(clearCache: boolean) {
     if (this._chart) {
-      this._chart.redraw();
+      this._chart.redraw(clearCache);
     }
   },
 
@@ -393,6 +393,7 @@ Polymer({
       chart.renderTo(div);
       if (this._chart) this._chart.destroy();
       this._chart = chart;
+      this._chart.onAnchor(() => this.fire('chart-attached'));
     }, 350);
   },
 
