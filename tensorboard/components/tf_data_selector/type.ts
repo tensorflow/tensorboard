@@ -14,10 +14,21 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_data_selector {
 
+export enum Type {
+  WITHOUT_EXPERIMENT,
+  SINGLE,
+  COMPARISON,
+}
+
 export type Selection = {
   experiment?: tf_backend.Experiment,
   runs: Array<tf_backend.Run>,
   tagRegex: string,
+}
+
+export type DataSelection = {
+  type: Type,
+  selections: Array<Selection>
 }
 
 }  // namespace tf_data_selector

@@ -54,9 +54,11 @@ Properties out: none.
       </template>
       <template is="dom-if" if="[[_expanded]]">
         <span>
-          <paper-button on-tap="_toggle">
-            Cancel
-          </paper-buutton>
+          <template is="dom-if" if="[[!alwaysExpanded]]">
+              <paper-button on-tap="_toggle">
+                Cancel
+              </paper-buutton>
+          </template>
         </span>
         <span>
           <paper-button

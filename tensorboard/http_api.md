@@ -101,9 +101,24 @@ Example response:
       "tags": [{
         "id": 789,
         "displayName": "",
-        "name": "loss"
+        "name": "loss",
+        "pluginName": "scalar"
       }]
     }]
+
+## `data/environment`
+
+Returns environment in which the TensorBoard app is running. Possible values of
+the `mode` are: `db` and `logdir`.
+
+Example response:
+
+    {
+      "window_title": "Custom Name",
+      "mode": "db",
+      "data_location": "sqlite:/Users/tbuser/some_session.sqlite"
+    }
+
 
 ## `/data/plugin/scalars/...`
 

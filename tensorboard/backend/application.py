@@ -22,10 +22,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import atexit
 import json
 import os
 import re
+import shutil
 import sqlite3
+import tempfile
 import threading
 import time
 
@@ -36,6 +39,7 @@ from werkzeug import wrappers
 
 from tensorboard import db
 from tensorboard.backend import http_util
+from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -104,12 +108,32 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       tensor_size_guidance=tensor_size_guidance_from_flags(flags),
       purge_orphaned_data=flags.purge_orphaned_data,
       max_reload_threads=flags.max_reload_threads)
-  db_module, db_connection_provider = get_database_info(flags.db)
+  loading_multiplexer = multiplexer
+  reload_interval = flags.reload_interval
+  db_uri = flags.db
+  # For DB import mode, create a DB file if we weren't given one.
+  if flags.db_import and not flags.db:
+    tmpdir = tempfile.mkdtemp(prefix='tbimport')
+    atexit.register(shutil.rmtree, tmpdir)
+    db_uri = 'sqlite:%s/tmp.sqlite' % tmpdir
+  db_module, db_connection_provider = get_database_info(db_uri)
+  if flags.db_import:
+    # DB import mode.
+    if db_module != sqlite3:
+        raise ValueError('--db_import is only compatible with sqlite DBs')
+    tf.logging.info('Importing logdir into DB at %s', db_uri)
+    loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
+        db_connection_provider=db_connection_provider,
+        purge_orphaned_data=flags.purge_orphaned_data,
+        max_reload_threads=flags.max_reload_threads)
+  elif flags.db:
+    # DB read-only mode, never load event logs.
+    reload_interval = -1
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       db_module=db_module,
       db_connection_provider=db_connection_provider,
-      db_uri=flags.db,
+      db_uri=db_uri,
       flags=flags,
       logdir=flags.logdir,
       multiplexer=multiplexer,
@@ -123,8 +147,8 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       continue
     plugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-  return TensorBoardWSGIApp(flags.logdir, plugins, multiplexer,
-                            flags.reload_interval, flags.path_prefix)
+  return TensorBoardWSGIApp(flags.logdir, plugins, loading_multiplexer,
+                            reload_interval, flags.path_prefix)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
@@ -317,7 +341,7 @@ def parse_event_files_spec(logdir):
       run_name = None
       path = specification
     if uri_pattern.match(path) is None:
-      path = os.path.realpath(path)
+      path = os.path.realpath(os.path.expanduser(path))
     files[path] = run_name
   return files
 

@@ -281,6 +281,6 @@ def _handle_error(unused_request, client_address):
   exc_info = sys.exc_info()
   e = exc_info[1]
   if isinstance(e, IOError) and e.errno == errno.EPIPE:
-    logger.warn('EPIPE caused by %s:%d in HTTP serving' % client_address)
+    logger.warn('EPIPE caused by %s in HTTP serving' % client_address)
   else:
     logger.error('HTTP serving error', exc_info=exc_info)

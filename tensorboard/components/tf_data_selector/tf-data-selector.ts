@@ -14,127 +14,289 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_data_selector {
 
+const NO_EXPERIMENT_ID = null;
+export const {
+  getInitializer: getIdInitializer,
+  getObserver: getIdObserver,
+} = tf_storage.makeBindings(
+    (str: string): number[] => tf_data_selector.decodeIdArray(str),
+    (ids: number[]): string => tf_data_selector.encodeIdArray(ids));
+
 Polymer({
   is: 'tf-data-selector',
   properties: {
+    _allExperimentsFetched: {
+      type: Boolean,
+      value: false,
+    },
+
     _allExperiments: {
       type: Array,
       value: (): Array<tf_backend.Experiment> => [],
     },
 
-    _comparingExpsString: {
-      type: String,
-      value: tf_storage.getStringInitializer('e',
-          {defaultValue: '', polymerProperty: '_comparingExpsString'}),
-    },
-
-    _comparingExps: {
+    // Subset of allExperiments user chose and added.
+    _experimentIds: {
       type: Array,
-      computed: '_getComparingExps(_comparingExpsString, _allExperiments.*)',
+      value: getIdInitializer('e', {
+        defaultValue: [],
+        polymerProperty: '_experimentIds',
+      }),
     },
 
-    selection: {
+    _experiments: {
       type: Array,
-      notify: true,
-      readOnly: true,
-      value: (): Array<tf_data_selector.Selection> => ([]),
+      computed: '_computeExperiments(_allExperiments.*, _experimentIds.*)',
     },
 
-    _selectionMap: {
+    _enabledExperimentIds: {
+      type: Array,
+      value: getIdInitializer('ee', {
+        defaultValue: [],
+        polymerProperty: '_enabledExperimentIds',
+      }),
+    },
+
+    _selections: {
       type: Object,
-      value: (): Map<number, tf_data_selector.Selection> => new Map(),
+      value: (): Map<tf_backend.ExperimentId, tf_data_selector.Selection> => {
+        return new Map();
+      },
+    },
+
+    activePlugins: {
+      type: Array,
+      value: (): string[] => [],
+    },
+
+    // Output property. It has subset of _selections.
+    selection: {
+      type: Object,
+      notify: true,
+      computed: '_computeSelection(_enabledExperimentIds.*, _selections.*, activePlugins.*)',
+    },
+
+    _canCompareExperiments: {
+      type: Boolean,
+      value: false
+    },
+
+    _shouldColorRuns: {
+      type: Boolean,
+      computed: '_computeShouldColorRuns(_experiments)',
     },
 
   },
 
   observers: [
-    '_expStringObserver(_comparingExpsString)',
-    '_pruneSelection(_selectionMap, _comparingExps)',
+    '_pruneSelections(_experimentIds.*)',
+    '_pruneExperimentIds(_allExperiments.*)',
+    '_pruneEnabledExperiments(_experimentIds.*)',
+    '_persistExperimentIds(_experimentIds.*)',
+    '_persistEnabledExperiments(_enabledExperimentIds.*)',
   ],
 
+  _persistExperimentIds: getIdObserver('e', {
+    defaultValue: [],
+    polymerProperty: '_experimentIds',
+  }),
+
+  _persistEnabledExperiments: getIdObserver('ee', {
+    defaultValue: [],
+    polymerProperty: '_enabledExperimentIds',
+  }),
+
   attached() {
-    this._updateExpKey = tf_backend.experimentsStore
-        .addListener(() => this._updateExps());
-    this._updateExps();
+    this._updateExpKey = tf_backend.experimentsStore.addListener(() => {
+      this._allExperiments = tf_backend.experimentsStore.getExperiments();
+      this._allExperimentsFetched = true;
+    });
+    this._allExperiments = tf_backend.experimentsStore.getExperiments();
+    this._allExperimentsFetched = tf_backend.experimentsStore.initialized;
+
+    this._updateEnvKey = tf_backend.environmentStore.addListener(() => {
+      this._canCompareExperiments = tf_backend.Mode.DB ==
+          tf_backend.environmentStore.getMode();
+    });
+    this._canCompareExperiments = tf_backend.Mode.DB ==
+        tf_backend.environmentStore.getMode();
   },
 
   detached() {
     tf_backend.experimentsStore.removeListenerByKey(this._updateExpKey);
+    tf_backend.environmentStore.removeListenerByKey(this._updateEnvKey);
   },
 
-  _updateExps() {
-    this.set('_allExperiments', tf_backend.experimentsStore.getExperiments());
+  _getPersistenceId(experiment) {
+    return tf_data_selector.encodeId(experiment.id);
   },
 
-  _getComparingExps() {
-    const lookupMap = new Map(this._allExperiments.map(e => [e.id, e]));
-    const ids = tf_data_selector.decodeIdArray(this._comparingExpsString);
-    return ids.filter(id => lookupMap.has(id)).map(id => lookupMap.get(id));
-  },
-
-  _expStringObserver: tf_storage.getStringObserver('e',
-      {defaultValue: '', polymerProperty: '_comparingExpsString'}),
-
-  _canCompareExperiments(): boolean {
-    return Boolean(this._comparingExps.length);
-  },
-
-  /**
-   * Prunes away an experiment that has been removed from `_comparingExps` from
-   * the _selectionMap.
-   */
-  _pruneSelection(): void {
-    if (!this._canCompareExperiments()) {
-      this._selectionMap.clear();
-      return;
-    }
-
-    const comparingExpIds = new Set(this._comparingExps.map(({id}) => id));
-    const curSelectedExpIds = Array.from(this._selectionMap.keys());
-    curSelectedExpIds
-        .filter(id => !comparingExpIds.has(id))
-        .forEach(id => this._selectionMap.delete(id));
-
-    this._setSelection(Array.from(this._selectionMap.values()));
-  },
-
-  _selectionChanged(event) {
-    const {runs, tagRegex} = event.detail;
-
-    if (!this._canCompareExperiments()) {
-      this._setSelection([{runs, tagRegex}]);
-      return;
-    }
-
-    const expId = event.target.experiment.id;
-    this._selectionMap.set(expId, {
-      experiment: this._comparingExps.find(({id}) => expId == id),
-      runs,
-      tagRegex,
-    });
-    this._setSelection(Array.from(this._selectionMap.values()));
-  },
-
-  _addExperiments(event) {
-    const newExperiments = event.detail;
-    const newComparingExpIds = this._comparingExps
-        .concat(newExperiments).map(({id}) => id);
-    this._comparingExpsString = tf_data_selector.encodeIdArray(
-        newComparingExpIds);
-  },
-
-  _removeExperiment(event) {
-    const expId = event.target.experiment.id;
-    const newComparingExpIds = this._comparingExps
-        .filter(({id}) => id != expId)
-        .map(({id}) => id);
-    this._comparingExpsString = tf_data_selector.encodeIdArray(
-        newComparingExpIds);
+  _isExperimentEnabled(experiment) {
+    const enabledExperimentIds = new Set(this._enabledExperimentIds);
+    return enabledExperimentIds.has(experiment.id);
   },
 
   _getExperimentColor(experiment: tf_backend.Experiment): string {
     return tf_color_scale.experimentsColorScale(experiment.name);
   },
+
+  _computeShouldColorRuns() {
+    return this._experiments.length <= 1;
+  },
+
+  /**
+   * Prunes away an experiment that has been removed from `_experiments` from
+   * the selection.
+   */
+  _pruneSelections() {
+    if (!this._selections) return;
+    const experimentIds = new Set(this._experimentIds);
+    const newSelections = new Map(this._selections);
+    newSelections.forEach((_, id) => {
+      // No experiment selection is still a valid selection. Do not prune.
+      if (id == NO_EXPERIMENT_ID) return;
+      if (!experimentIds.has(id)) newSelections.delete(id);
+    });
+    this._selections = newSelections;
+  },
+
+  _pruneExperimentIds() {
+    if (!this._allExperimentsFetched) return;
+    const allExpIds = new Set(this._allExperiments.map(({id}) => id));
+    this._experimentIds = this._experimentIds.filter(id => allExpIds.has(id));
+  },
+
+  _pruneEnabledExperiments() {
+    // When the component never fully loaded the list of experiments, it
+    // cannot correctly prune/adjust the enabledExperiments.
+    if (!this._allExperimentsFetched) return;
+    const expIds = new Set(this._experimentIds);
+    this._enabledExperimentIds = this._enabledExperimentIds
+        .filter(id => expIds.has(id));
+  },
+
+  _computeSelection() {
+    if (this._canCompareExperiments) {
+      const enabledExperiments = new Set(this._enabledExperimentIds);
+
+      // Make a copy of the all selections.
+      const enabledSelections = new Map(this._selections);
+
+      // Filter out disabled experiments from the `_selections`.
+      enabledSelections.forEach((_, id) => {
+        if (!enabledExperiments.has(id)) enabledSelections.delete(id);
+      });
+
+      const activePluginNames = new Set(this.activePlugins);
+      enabledSelections.forEach((sel, id) => {
+        const selection = sel as Selection;
+        const updatedSelection = Object.assign({}, selection);
+        updatedSelection.runs = selection.runs.map(run => {
+          return Object.assign({}, run, {
+            tags: run.tags.filter(tag => activePluginNames.has(tag.pluginName)),
+          });
+        }).filter(run => run.tags.length);
+
+        enabledSelections.set(id, updatedSelection);
+      });
+
+      // Single selection: one experimentful selection whether it is enabled or
+      // not.
+      // NOTE: `_selections` can contain not only selections for experiment
+      // diffing but also one for no-experiment mode. If it contains one,
+      // "remove" the size by one.
+      const isSingleSelection = this._selections.size ==
+          1 + Number(this._selections.has(NO_EXPERIMENT_ID));
+      return {
+        type: isSingleSelection ?
+            tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
+        selections: Array.from(enabledSelections.values()),
+      };
+    }
+    return {
+      type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+      selections: [this._selections.get(NO_EXPERIMENT_ID)],
+    };
+  },
+
+  _selectionChanged(event) {
+    event.stopPropagation();
+    const {runs, tagRegex} = event.detail;
+    const experiment = event.target.experiment;
+    const expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
+
+    // Check if selction change event was triggered from a removed row. Removal
+    // triggers change in persistence (clears the value) and this causes
+    // property to change which in turn triggers an event. If there is any
+    // asynchronity in propagating the change from the row, below condition is
+    // truthy.
+    if (expId != NO_EXPERIMENT_ID && !this._experimentIds.includes(expId)) {
+      return;
+    }
+
+    const newSelections = new Map(this._selections);
+    newSelections.set(expId, {experiment, runs, tagRegex});
+
+    // Ignore the selection changed event if it makes no tangible difference to
+    // the _selections.
+    if (_.isEqual(newSelections, this._selections)) return;
+
+    this._selections = newSelections;
+  },
+
+  _computeExperiments() {
+    const lookup = new Map(this._allExperiments.map(e => [e.id, e]));
+    return this._experimentIds
+        .filter(id => lookup.has(id))
+        .map(id => lookup.get(id));
+  },
+
+  _addExperiments(event) {
+    const addedIds = event.detail.map(({id}) => id);
+    this._experimentIds = uniqueAdd(this._experimentIds, addedIds);
+
+    // Enable newly added experiments by default
+    this._enabledExperimentIds = uniqueAdd(
+        this._enabledExperimentIds,
+        addedIds);
+  },
+
+  _removeExperiment(event) {
+    const removedId = event.target.experiment.id;
+    // Changing _experimentIds will remove the id from _enabledExperimentIds.
+    this._experimentIds = this._experimentIds.filter(id => id != removedId);
+  },
+
+  _experimentCheckboxToggled(e) {
+    const newId = e.target.experiment.id;
+    if (e.target.enabled) {
+      this._enabledExperimentIds = uniqueAdd(
+          this._enabledExperimentIds,
+          [newId]);
+    } else {
+      this._enabledExperimentIds = this._enabledExperimentIds
+          .filter(id => id != newId);
+    }
+  },
+
+  _getAddComparisonVisible() {
+    return this._canCompareExperiments &&
+        this._allExperiments.length > this._experiments.length;
+  },
+
+  _getAddComparisonAlwaysExpanded() {
+    return this._canCompareExperiments && !this._experiments.length;
+  },
+
 });
+
+/**
+ * Append items to an array without duplicate entries.
+ */
+function uniqueAdd<T>(to: T[], items: T[]): T[] {
+  const toSet = new Set(to);
+  items.forEach(item => toSet.add(item));
+  return Array.from(toSet);
+}
 
 }  // namespace tf_data_selector

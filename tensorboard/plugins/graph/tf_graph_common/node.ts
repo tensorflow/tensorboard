@@ -612,6 +612,32 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
 export enum ColorBy {STRUCTURE, DEVICE, XLA_CLUSTER, COMPUTE_TIME, MEMORY,
                      OP_COMPATIBILITY};
 
+function getGradient(
+    id: string, colors: Array<{color: string, proportion: number}>) {
+  let escapedId = tf.graph.util.escapeQuerySelector(id);
+  let gradientDefs = d3.select('svg#svg defs #linearGradients');
+  let linearGradient = gradientDefs.select('linearGradient#' + escapedId);
+  // If the linear gradient is not there yet, create it.
+  if (linearGradient.size() === 0) {
+    linearGradient = gradientDefs.append('linearGradient').attr('id', id);
+    // Re-create the stops of the linear gradient.
+    linearGradient.selectAll('*').remove();
+    let cumulativeProportion = 0;
+    // For each color, create a stop using the proportion of that device.
+    _.each(colors, d => {
+      let color = d.color;
+      linearGradient.append('stop')
+          .attr('offset', cumulativeProportion)
+          .attr('stop-color', color);
+      linearGradient.append('stop')
+          .attr('offset', cumulativeProportion + d.proportion)
+          .attr('stop-color', color);
+      cumulativeProportion += d.proportion;
+    });
+  }
+  return `url(#${escapedId})`;
+}
+
 /**
  * Returns the fill color for the node given its state and the 'color by'
  * option.
@@ -650,32 +676,21 @@ export function getFillForNode(templateIndex, colorBy,
         // Return the hue for unknown device.
         return colorParams.UNKNOWN;
       }
-      let id = renderInfo.node.name;
-      let escapedId = tf.graph.util.escapeQuerySelector(id);
-      let gradientDefs = d3.select('svg#svg defs #linearGradients');
-      let linearGradient = gradientDefs.select('linearGradient#' + escapedId);
-      // If the linear gradient is not there yet, create it.
-      if (linearGradient.size() === 0) {
-        linearGradient = gradientDefs.append('linearGradient').attr('id', id);
-        // Re-create the stops of the linear gradient.
-        linearGradient.selectAll('*').remove();
-        let cumulativeProportion = 0;
-        // For each device, create a stop using the proportion of that device.
-        _.each(renderInfo.deviceColors, d => {
-          let color = d.color;
-          linearGradient.append('stop')
-              .attr('offset', cumulativeProportion)
-              .attr('stop-color', color);
-          linearGradient.append('stop')
-              .attr('offset', cumulativeProportion + d.proportion)
-              .attr('stop-color', color);
-          cumulativeProportion += d.proportion;
-        });
-      }
-      return isExpanded ? colorParams.EXPANDED_COLOR : `url(#${escapedId})`;
+      return isExpanded ?
+          colorParams.EXPANDED_COLOR :
+          getGradient(
+              'device-' + renderInfo.node.name, renderInfo.deviceColors);
+
     case ColorBy.XLA_CLUSTER:
-      return isExpanded ? colorParams.EXPANDED_COLOR :
-                          renderInfo.xlaClusterColor || colorParams.UNKNOWN;
+      if (renderInfo.xlaClusterColors == null) {
+        // Return the hue for unknown xlaCluster.
+        return colorParams.UNKNOWN;
+      }
+      return isExpanded ?
+          colorParams.EXPANDED_COLOR :
+          getGradient(
+              'xla-' + renderInfo.node.name, renderInfo.xlaClusterColors);
+
     case ColorBy.COMPUTE_TIME:
       return isExpanded ?
         colorParams.EXPANDED_COLOR : renderInfo.computeTimeColor ||
@@ -685,52 +700,14 @@ export function getFillForNode(templateIndex, colorBy,
         colorParams.EXPANDED_COLOR : renderInfo.memoryColor ||
         colorParams.UNKNOWN;
     case ColorBy.OP_COMPATIBILITY:
-      if (renderInfo.node.type === NodeType.OP) {
-        return ((<OpNode>renderInfo.node).compatible) ?
-            tf.graph.render.OpNodeColors.COMPATIBLE :
-            tf.graph.render.OpNodeColors.INCOMPATIBLE;
-      } else if (renderInfo.node.isGroupNode) {
-        let node = <GroupNode>renderInfo.node;
-
-        let numCompat = node.compatibilityHistogram.compatible;
-        let numIncompat = node.compatibilityHistogram.incompatible
-
-        if (numCompat == 0 && numIncompat == 0) {
-          // Return the hue for unknown device.
-          return colorParams.UNKNOWN;
-        }
-
-        let id = "op-compat-" + node.name;
-        let escapedId = tf.graph.util.escapeQuerySelector(id);
-        let gradientDefs = d3.select('svg#svg defs #linearGradients');
-        let linearGradient = gradientDefs.select('linearGradient#' + escapedId);
-        // If the linear gradient is not there yet, create it.
-        if (linearGradient.size() === 0) {
-          let percentValid = numCompat / (numCompat + numIncompat);
-          linearGradient = gradientDefs.append('linearGradient').attr('id', id);
-
-          // Re-create the stops of the linear gradient.
-          linearGradient.selectAll('*').remove();
-
-          linearGradient.append('stop')
-              .attr('offset', 0)
-              .attr('stop-color', tf.graph.render.OpNodeColors.COMPATIBLE);
-          linearGradient.append('stop')
-              .attr('offset', percentValid)
-              .attr('stop-color', tf.graph.render.OpNodeColors.COMPATIBLE);
-          linearGradient.append('stop')
-              .attr('offset', percentValid)
-              .attr('stop-color', tf.graph.render.OpNodeColors.INCOMPATIBLE);
-          linearGradient.append('stop')
-              .attr('offset', 1)
-              .attr('stop-color', tf.graph.render.OpNodeColors.INCOMPATIBLE);
-        }
-
-        return isExpanded ? colorParams.EXPANDED_COLOR : `url(#${escapedId})`;
-      } else {
-        // All other nodes will be set to the default color
-        return colorParams.DEFAULT_FILL;
+      if (renderInfo.compatibilityColors == null) {
+        // Return the hue for unknown compatibility info.
+        return colorParams.UNKNOWN;
       }
+      return isExpanded ? colorParams.EXPANDED_COLOR :
+                          getGradient(
+                              'op-compat-' + renderInfo.node.name,
+                              renderInfo.compatibilityColors);
     default:
       throw new Error('Unknown case to color nodes by');
   }

@@ -113,6 +113,7 @@ class CorePlugin(base_plugin.TBPlugin):
         request,
         {
             'data_location': self._logdir or self._db_uri,
+            'mode': 'db' if self._db_uri else 'logdir',
             'window_title': self._window_title,
         },
         'application/json')
@@ -173,6 +174,10 @@ class CorePlugin(base_plugin.TBPlugin):
     started time (aka first event time) with empty times sorted last, and then
     ties are broken by sorting on the experiment name.
     """
+    results = self.list_experiments_impl()
+    return http_util.Respond(request, results, 'application/json')
+
+  def list_experiments_impl(self):
     results = []
     if self._db_connection_provider:
       db = self._db_connection_provider()
@@ -192,7 +197,7 @@ class CorePlugin(base_plugin.TBPlugin):
         "startTime": row[2],
       } for row in cursor]
 
-    return http_util.Respond(request, results, 'application/json')
+    return results
 
   @wrappers.Request.application
   def _serve_experiment_runs(self, request):
@@ -217,10 +222,12 @@ class CorePlugin(base_plugin.TBPlugin):
           Tags.tag_id,
           Tags.tag_name,
           Tags.display_name,
+          Tags.plugin_name,
           Tags.inserted_time
         From Runs
         LEFT JOIN Tags ON Runs.run_id = Tags.run_id
-        WHERE Runs.experiment_id = %s
+        WHERE Runs.experiment_id = ?
+        AND (Tags.tag_id IS NULL OR Tags.plugin_name IS NOT NULL)
         ORDER BY started_time_nulls_last,
           Runs.started_time,
           Runs.run_name,
@@ -228,7 +235,7 @@ class CorePlugin(base_plugin.TBPlugin):
           Tags.tag_name,
           Tags.display_name,
           Tags.inserted_time;
-      ''' % (exp_id,))
+      ''', (exp_id,))
       for row in cursor:
         run_id = row[0]
         if not run_id in runs_dict:
@@ -244,6 +251,7 @@ class CorePlugin(base_plugin.TBPlugin):
             "id": row[4],
             "displayName": row[6],
             "name": row[5],
+            "pluginName": row[7],
           })
       results = list(runs_dict.values())
     return http_util.Respond(request, results, 'application/json')
@@ -310,7 +318,7 @@ disappearance. (default: %(default)s)\
         help='''\
 How often the backend should load more data, in seconds. Set to 0 to
 load just once at startup and a negative number to never reload at all.
-(default: %(default)s)\
+Not relevant for DB read-only mode. (default: %(default)s)\
 ''')
 
     parser.add_argument(
@@ -318,7 +326,19 @@ load just once at startup and a negative number to never reload at all.
         metavar='URI',
         type=str,
         default='',
-        help='[experimental] sets SQL database URI')
+        help='''\
+[experimental] sets SQL database URI and enables DB backend mode, which is
+read-only unless --db_import is also passed.\
+''')
+
+    parser.add_argument(
+        '--db_import',
+        action='store_true',
+        help='''\
+[experimental] enables DB read-and-import mode, which in combination with
+--logdir imports event files into a DB backend on the fly. The backing DB is
+temporary unless --db is also passed to specify a DB path to use.\
+''')
 
     parser.add_argument(
         '--inspect',
@@ -381,7 +401,8 @@ routing of an elb when the website base_url is not available e.g.
         default=1,
         help='''\
 The max number of threads that TensorBoard can use to reload runs. Not
-relevant for db mode. Each thread reloads one run at a time.\
+relevant for db read-only mode. Each thread reloads one run at a time.
+(default: %(default)s)\
 ''')
 
     parser.add_argument(
@@ -406,11 +427,8 @@ flag.\
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
-    flags.logdir = os.path.expanduser(flags.logdir)
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]
-    if flags.db:
-      flags.reload_interval = -1  # Never load event logs in DB mode.
 
   def load(self, context):
     """Creates CorePlugin instance."""

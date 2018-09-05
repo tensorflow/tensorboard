@@ -26,7 +26,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="../tf-data-selector/tf-data-selector.html">
+<link rel="import" href="../tf-data-selector/tf-collapsible-data-selector.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view-store.html">
@@ -120,10 +120,12 @@ limitations under the License.
           </template>
           <div class="global-actions">
             <paper-icon-button
+              id="reload-button"
+              class$="[[_getDataRefreshingClass(_refreshing)]]"
+              disabled$="[[_isReloadDisabled]]"
               icon="refresh"
               on-tap="reload"
-              disabled$="[[_isReloadDisabled]]"
-              id="reload-button"
+              title$="Last updated: [[_lastReloadTimeShort]]"
             ></paper-icon-button>
             <paper-icon-button
               icon="settings"
@@ -140,8 +142,10 @@ limitations under the License.
       <div id="content-pane" class="fit">
         <template is="dom-if" if="[[_isDataSelectorEnabled]]">
           <div id="data-selector">
-            <tf-data-selector selection="{{_dataSelection}}">
-            </tf-data-selector>
+            <tf-collapsible-data-selector
+              selection="{{_dataSelection}}"
+              active-plugins="[[_activeDashboards]]"
+            ></tf-collapsible-data-selector>
           </div>
         </template>
         <div id="content">
@@ -312,10 +316,19 @@ limitations under the License.
       }
 
       #data-selector {
-        border-bottom: 1px solid var(--tb-ui-dark-accent);
-        margin: 0 30px;
-        padding: 10px 0;
         flex-shrink: 0;
+      }
+
+      tf-collapsible-data-selector {
+        --tf-collapsible-data-selector: {
+          margin: 0 30px;
+        };
+
+        --tf-collapsible-data-selector-data-selector: {
+          border-bottom: 1px solid var(--tb-ui-dark-accent);
+          margin: 0 -30px;
+          padding: 10px 30px;
+        };
       }
 
       #content {
@@ -350,6 +363,22 @@ limitations under the License.
         opacity: 0.2;
         color: white;
       }
+
+      #reload-button.refreshing {
+        animation: rotate 2s linear infinite;
+      }
+
+      @keyframes rotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(180deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   </template>
   <script src="autoReloadBehavior.js"></script>
@@ -357,6 +386,8 @@ limitations under the License.
     if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
       throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
     }
+
+    const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
 
     Polymer({
       is: "tf-tensorboard",
@@ -422,7 +453,7 @@ limitations under the License.
          * The set of all dashboards. Each object within this array is a
          * DashboardDatum object.
          *
-         * @type {Array<Object>}
+         * @type {Array<!Dashboard>}
          */
         _dashboardData: {
           type: Array,
@@ -504,12 +535,19 @@ limitations under the License.
           value: false,
         },
         _dataSelection: {
-          type: Array,
-          value: () => [],
+          type: Object,
+          value: () => ({
+            type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
+            selections: [],
+          }),
         },
         _lastReloadTime: {
           type: String,
           value: "not yet loaded",
+        },
+        _lastReloadTimeShort: {
+          type: String,
+          value: "Not yet loaded",
         },
         _dataLocation: {
           type: String,
@@ -523,6 +561,10 @@ limitations under the License.
           type: Object,
           value: () => new tf_backend.Canceller(),
         },
+        _refreshing: {
+          type: Boolean,
+          value: false,
+        }
       },
       observers: [
         ('_updateSelectedDashboardFromActive(' +
@@ -688,6 +730,7 @@ limitations under the License.
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
           if (dashboard.useDataSelector) {
+            this.cancelDebouncer('updateDataSelection');
             component.dataSelection = this._dataSelection;
           }
           container.appendChild(component);
@@ -720,10 +763,20 @@ limitations under the License.
       _updateDataSelection() {
         // The dashboard is not ready yet until it stamped the containers.
         if (!this._dashboardContainersStamped) return;
+
+        this.cancelDebouncer('updateDataSelection');
+
         const component = this._selectedDashboardComponent();
         // The dashboard may not exist.
         if (!component) return;
-        component.dataSelection = this._dataSelection;
+
+        const selectedDashboard = this._selectedDashboard;
+        const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
+        if (dashboard.useDataSelector) {
+          this.debounce('updateDataSelection', () => {
+            component.dataSelection = this._dataSelection;
+          }, DATA_SELECTION_CHANGE_DEBOUNCE_MS);
+        }
       },
 
       ready() {
@@ -732,6 +785,14 @@ limitations under the License.
         window.addEventListener('hashchange', () => {
           this._updateSelectedDashboardFromHash();
         }, /*useCapture=*/false);
+
+        tf_backend.environmentStore.addListener(() => {
+          this._dataLocation = tf_backend.environmentStore.getDataLocation();
+          const title = tf_backend.environmentStore.getWindowTitle();
+          if (title) {
+            window.document.title = title;
+          }
+        });
 
         // We have to wait for our dashboard-containers to be stamped
         // before we can do anything.
@@ -743,21 +804,8 @@ limitations under the License.
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
 
-        tf_backend.runsStore.refresh();
-        tf_backend.experimentsStore.refresh();
-        this._fetchEnvironment();
-        this._fetchActiveDashboards();
+        this._reloadData();
         this._lastReloadTime = new Date().toString();
-      },
-
-      _fetchEnvironment() {
-        const url = tf_backend.getRouter().environment();
-        return this._requestManager.request(url).then(result => {
-          this._dataLocation = result.data_location;
-          if (result.window_title) {
-            window.document.title = result.window_title;
-          }
-        });
       },
 
       _fetchActiveDashboards() {
@@ -815,21 +863,36 @@ limitations under the License.
       },
 
       reload() {
-        if (this._isReloadDisabled) {
-          return;
-        }
-        this._fetchEnvironment();
-        Promise.all([
+        if (this._isReloadDisabled) return;
+        this._reloadData().then(() => {
+          const dashboard = this._selectedDashboardComponent();
+          if (dashboard) dashboard.reload();
+        });
+        this._lastReloadTime = new Date().toString();
+      },
+
+      _reloadData() {
+        this._refreshing = true;
+        return Promise.all([
           this._fetchActiveDashboards(),
+          tf_backend.environmentStore.refresh(),
           tf_backend.runsStore.refresh(),
           tf_backend.experimentsStore.refresh(),
         ]).then(() => {
-          const dashboard = this._selectedDashboardComponent();
-          if (dashboard) {
-            dashboard.reload();
-          }
+          this._lastReloadTimeShort = new Date().toLocaleDateString(undefined, {
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+          });
+        }).finally(() => {
+          this._refreshing = false;
         });
-        this._lastReloadTime = new Date().toString();
+      },
+
+      _getDataRefreshingClass() {
+        return this._refreshing ? 'refreshing' : ''
       },
 
       openSettings() {

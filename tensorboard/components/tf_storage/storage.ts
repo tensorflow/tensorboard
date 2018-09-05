@@ -103,7 +103,11 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     set: (key: string, value: T, option?: SetterOptions<T>) => void,
     getInitializer: (key: string, options: AutoStorageOptions<T>) => Function,
     getObserver: (key: string, options: AutoStorageOptions<T>) => Function,
+    disposeBinding: () => void,
 } {
+  const hashListeners = [];
+  const storageListeners = [];
+
   function get(key: string, options: StorageOptions<T> = {}): T {
     const {
       defaultValue,
@@ -163,19 +167,28 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
         }
       };
 
-      const eventName = fullOptions.useLocalStorage ? 'storage' : 'hashchange';
+      const addListener = fullOptions.useLocalStorage ?
+          addStorageListener :
+          addHashListener;
 
       // TODO(stephanwlee): When using fakeHash, it _should not_ listen to the
       //                    window.hashchange.
-      // TODO(stephanwlee): Remove the event listen on component teardown.
-      window.addEventListener(eventName, () => {
-        setComponentValue();
-      });
+      const listenKey = addListener(() => setComponentValue());
+      if (fullOptions.useLocalStorage) {
+        storageListeners.push(listenKey);
+      } else {
+        hashListeners.push(listenKey);
+      }
 
       // Set the value on the property.
       setComponentValue();
       return this[fullOptions.polymerProperty];
     };
+  }
+
+  function disposeBinding() {
+    hashListeners.forEach(key => removeHashListenerByKey(key));
+    storageListeners.forEach(key => removeStorageListenerByKey(key));
   }
 
   function getObserver(key: string, options: StorageOptions<T>): Function {
@@ -192,7 +205,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     };
   }
 
-  return {get, set, getInitializer, getObserver};
+  return {get, set, getInitializer, getObserver, disposeBinding};
 }
 
 /**
@@ -248,13 +261,14 @@ function dictToComponent(items: StringDict): string {
   }
 
   // Join other strings with &key=value notation
-  const nonTab = _.pairs(items)
-                   .filter((pair) =>  pair[0] !== TAB)
-                   .map((pair) => {
-                     return encodeURIComponent(pair[0]) + '=' +
-                         encodeURIComponent(pair[1]);
-                   })
-                   .join('&');
+  const nonTab = Object.keys(items)
+      .map(key => [key, items[key]])
+      .filter((pair) =>  pair[0] !== TAB)
+      .map((pair) => {
+       return encodeURIComponent(pair[0]) + '=' +
+           encodeURIComponent(pair[1]);
+      })
+      .join('&');
 
   return nonTab.length > 0 ? (component + '&' + nonTab) : component;
 }

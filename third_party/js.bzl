@@ -76,15 +76,19 @@ def tensorboard_js_workspace():
       sha256_urls = {
           "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47": [
               "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/LICENSE.txt",
           ],
-          "142835127a60e881e0cc476678392179b5c77565e3a1b930a4ba032c0fa04de4": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/tsc.js",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/tsc.js",
+          "9632bfccde117a8c82690a324bc5c18c3869e9b89ac536fc134ba655d7ec1e98": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/tsc.js",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/tsc.js",
           ],
-          "aeaa3ed17f0fca1e8519e323dfbddee1fb8870f1fd4752a89a6578580b17a88c": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/lib.es6.d.ts",
-              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/lib/lib.es6.d.ts",
+          "529c9f8b45939e0fa80950208bf80452ccb982b460cc25433813c919b67a3b2f": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.es6.d.ts",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.es6.d.ts",
+          ],
+          "f6e6efe57fb9fcf72eed013e2755d04505300f32b78577118ca5dacc85ec852d": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.dom.d.ts",
+              "https://raw.githubusercontent.com/Microsoft/TypeScript/v2.9.2/lib/lib.dom.d.ts",
           ],
       },
       extra_build_file_content = "\n".join([
@@ -173,12 +177,12 @@ def tensorboard_js_workspace():
   web_library_external(
       name = "com_lodash",
       licenses = ["notice"],  # MIT
-      sha256 = "0e88207e5f90af4ce8790d6e1e7d09d2702d81bce0bafdc253d18c0a5bf7661e",
+      sha256 = "6c5fa80d0fa9dc4eba634ab042404ff7c162dcb4cfe3473338801aeca0042285",
       urls = [
-          "https://mirror.bazel.build/github.com/lodash/lodash/archive/3.10.1.tar.gz",
-          "https://github.com/lodash/lodash/archive/3.10.1.tar.gz",
+          "https://mirror.bazel.build/github.com/lodash/lodash/archive/4.17.5.tar.gz",
+          "https://github.com/lodash/lodash/archive/4.17.5.tar.gz",
       ],
-      strip_prefix = "lodash-3.10.1",
+      strip_prefix = "lodash-4.17.5",
       path = "/lodash",
       srcs = ["lodash.js"],
       extra_build_file_content = "exports_files([\"LICENSE\"])",
@@ -209,9 +213,9 @@ def tensorboard_js_workspace():
           # Plottable doesn't have a release tarball on GitHub. Using the
           # sources directly from git also requires running Node tooling
           # beforehand to generate files. NPM is the only place to get it.
-          "e3159beb279391c47433789f22b32bac88488cfcad6c0b6ec8605ce6b0081b0d": [
-              "https://mirror.bazel.build/registry.npmjs.org/plottable/-/plottable-3.1.0.tgz",
-              "https://registry.npmjs.org/plottable/-/plottable-3.1.0.tgz",
+          "08df639782baf9b8cfeeb5fcdfbe3a1ce25b5a916903fc580e201a0a1142a6c4": [
+              "https://mirror.bazel.build/registry.npmjs.org/plottable/-/plottable-3.7.0.tgz",
+              "https://registry.npmjs.org/plottable/-/plottable-3.7.0.tgz",
           ],
       },
   )
@@ -222,12 +226,12 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.7.4/LICENSE",
-              "https://raw.githubusercontent.com/cpettitt/dagre/v0.7.4/LICENSE",
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.8.2/LICENSE",
+              "https://raw.githubusercontent.com/cpettitt/dagre/v0.8.2/LICENSE",
           ],
-          "7323829ddd77924a69e2b1235ded3eac30acd990da0f037e0fbd3c8e9035b50d": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.7.4/dist/dagre.core.js",
-              "https://raw.githubusercontent.com/cpettitt/dagre/v0.7.4/dist/dagre.core.js",
+          "43cb4e919196c177c149b63880d262074670af99db6a1e174b25e266da4935a9": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/dagre/v0.8.2/dist/dagre.core.js",
+              "https://raw.githubusercontent.com/cpettitt/dagre/v0.8.2/dist/dagre.core.js",
           ],
       },
   )
@@ -237,12 +241,12 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/LICENSE",
-              "https://raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/LICENSE",
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/LICENSE",
+              "https://raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/LICENSE",
           ],
-          "772045d412b1513b549be991c2e1846c38019429d43974efcae943fbe83489bf": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/dist/graphlib.core.js",
-              "https://raw.githubusercontent.com/cpettitt/graphlib/v1.0.7/dist/graphlib.core.js",
+          "ddc33a6aaf955ee24b0e0d30110adf350c65eedc5c0f2c424ca85bc128199a66": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/dist/graphlib.core.js",
+              "https://raw.githubusercontent.com/cpettitt/graphlib/v2.1.5/dist/graphlib.core.js",
           ],
       },
   )
@@ -268,9 +272,9 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # BSD-3-Clause
       sha256_urls_extract = {
-          "d858c0878af36bd00e2af6029029106328d408c2bff0a60a9d78c4e27f47b99a": [
-              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v4.9.1/d3.zip",
-              "https://github.com/d3/d3/releases/download/v4.9.1/d3.zip",
+          "29288a2be82014ffa03f8ee1f8519bd43b71f09790409dcfa300ee3bb77fd81b": [
+              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v4.13.0/d3.zip",
+              "https://github.com/d3/d3/releases/download/v4.13.0/d3.zip",
           ],
       },
       # TODO(jart): Use srcs=["d3.js"] instead of this once supported.

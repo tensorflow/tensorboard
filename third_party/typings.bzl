@@ -29,6 +29,9 @@ def tensorboard_typings_workspace():
               "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/5d0f2126c8dac8fce0ff020218aea06607213b0d/google.analytics/ga.d.ts",
               "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/5d0f2126c8dac8fce0ff020218aea06607213b0d/google.analytics/ga.d.ts",
           ],
+          # TODO(jart): Upgrade to Lodash v4 typing: Lodash package is broken
+          # down into small subpackages with many smaller type files. Loading
+          # one type file is no longer enough.
           "e4cd3d5de0eb3bc7b1063b50d336764a0ac82a658b39b5cf90511f489ffdee60": [
               "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/efd40e67ff323f7147651bdbef03c03ead7b1675/lodash/lodash.d.ts",
               "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/efd40e67ff323f7147651bdbef03c03ead7b1675/lodash/lodash.d.ts",
@@ -60,9 +63,11 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_array",
       licenses = ["notice"],  # MIT
       sha256_urls = {
+          # TODO(stephanwlee): d3-array is pinned at b6746d. number[] does not
+          # cast to d3.ArrayLike<number> for some reason.
           "61e7abb7b1f01fbcb0cab8cf39003392f422566209edd681fbd070eaa84ca000": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-array/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-array/index.d.ts",  # 2017-06-08
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/b6746d73a2ddf103c6825449ee2b0953f716d994/types/d3-array/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/b6746d73a2ddf103c6825449ee2b0953f716d994/types/d3-array/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -71,9 +76,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_axis",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "95f75c8dcc89850b2e72581d96a7b5f46ea4ac852f828893f141f14a597421f9": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-axis/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-axis/index.d.ts",  # 2017-06-08
+          "6a43110a41bbf3190ef6c515fc8b932086122b7d2fd32e841f4756ba507406c3": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-axis/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-axis/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -82,9 +87,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_brush",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "a2738e693ce8a8640c2d29001e77582c9c361fd23bda44db471629866b60ada7": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-brush/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-brush/index.d.ts",  # 2017-06-08
+          "fb5d5bef5af05e086085892946769b9ec8c0f9217876933671038b665a6ec603": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-brush/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-brush/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -93,9 +98,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_chord",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "c54d24756eb6d744b31e538ad9bab3a75f6d54e2288b29cc72338d4a057d3e83": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-chord/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-chord/index.d.ts",  # 2017-06-08
+          "9a06f750a483ae5ce10ceda48c5004cd918c4d803762661dca52eedfd2ed7afd": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-chord/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-chord/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -104,9 +109,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_collection",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "39e8599a768f45f80aa70ca3032f026111da50d409c7e39a2ef091667cc343d9": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-collection/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-collection/index.d.ts",  # 2017-06-08
+          "8f6ec0925d0ba17efa0dcfea9ab8b3f73114222a569704849e8a169533ea0f95": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-collection/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-collection/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -115,9 +120,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_color",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "6dd19edd11276476c5d535279237d1a009c1a733611cc44621a88fda1ca04377": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-color/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-color/index.d.ts",  # 2017-06-08
+          "83a206846be71cca27273fa5c39544b7d51c9aab8336ae6b5135c6b71a178bbf": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-color/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-color/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -126,9 +131,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_dispatch",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "af1474301e594fcb4bbdb134361fb6d26c7b333386c3213821532acde59e61a3": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-dispatch/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-dispatch/index.d.ts",  # 2017-06-08
+          "4ddaa6005cfd5fd07df24e8af735d2c1a90d896bd5cacc2f657fe8748ae25af9": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-dispatch/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-dispatch/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -137,9 +142,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_drag",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "2f8248ae2bf33fb1d61bb1ea4271cb4bacfd9a9939dc8d7bde7ec8b66d4441ed": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-drag/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-drag/index.d.ts",  # 2017-06-08
+          "99c4e6872495378bcb768d8cc99551aaee43ba2324fd56282f8f03d81c499975": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-drag/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-drag/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -148,9 +153,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_dsv",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "62594d00cf9e4bb895339c8e56f64330e202a5eb2a0fa580a1f6e6336f2c93ce": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-dsv/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-dsv/index.d.ts",  # 2017-06-08
+          "5fccc13fc4d3b1c6a434cb277c491ac8d47baed9baba86bdb441ee18ec5bc76e": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-dsv/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-dsv/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -160,8 +165,8 @@ def tensorboard_typings_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "d5a9be5316b2d1823a3faa7f75de1e2c2efda5c75f0631b44a0f7b69e11f3a90": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-ease/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-ease/index.d.ts",  # 2017-06-08
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-ease/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-ease/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -170,9 +175,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_force",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "288421e2008668d2076a4684657dd3d29b992832ef02c552981eb94a91042553": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-force/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-force/index.d.ts",  # 2017-06-08
+          "a6941d869584c8f426d5dfbe89ad0f082c104477f81c7d2fe432ccae3cc2ece8": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-force/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-force/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -181,9 +186,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_format",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "b42cb17e580c1fd0b64d478f7bd80ca806efaefda24426a833cf1f30a7275bca": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-format/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-format/index.d.ts",  # 2017-06-08
+          "b5b8cf2707e4c60ea98341e3c5c913f1af2e2bd7c61b90a8329260692fe1f694": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-format/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-format/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -192,9 +197,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_hierarchy",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "a5683f5835d8716c6b89c075235078438cfab5897023ed720bfa492e244e969e": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-hierarchy/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-hierarchy/index.d.ts",  # 2017-06-08
+          "eb527ec61d4a7d81db35f823104fa57cb3def41d72eaa9ce827295d440283206": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-hierarchy/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-hierarchy/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -203,9 +208,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_interpolate",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "effeefea9ac02539def43d7b9aa2f39e8672c03aac9b407a61b09563ff141fad": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-interpolate/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-interpolate/index.d.ts",  # 2017-06-08
+          "e2f3ebafe2b7c6011fe76d19f9e32d8c8b67076b39f7cfa945d543e39f3ef18f": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-interpolate/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-interpolate/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -214,9 +219,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_path",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "deea4ab3654925d365dd1ffab69a2140808c6173e7f23c461ded2852c309eb9c": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-path/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-path/index.d.ts",  # 2017-06-08
+          "daad2baf9dd5af11d3c3095c6fb93f7749e581943873b29b6dfc4a6f22d3d6e2": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-path/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-path/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -225,9 +230,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_polygon",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "ec7a42affe79c87066f14173fcbc8d8b5747f54bfbe0e60111e2786ee4d227bf": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-polygon/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-polygon/index.d.ts",  # 2017-06-08
+          "a76d53d353351cabaaca7f149a57c5ffc7d90c0f181d7f3f40e4a51424289a75": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-polygon/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-polygon/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -236,9 +241,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_quadtree",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "2908631a7da3bfb0096e3b89f464b45390bbb31ec798d1b6c0898ff82e344560": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-quadtree/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-quadtree/index.d.ts",  # 2017-06-08
+          "4ebfae1202903a6d8d2ab52dede7631f2d8d277cbec8107607df7372d19ebbb6": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-quadtree/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-quadtree/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -247,9 +252,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_queue",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "4fc0503e3558d136b855335f36ea8984937ab63a2a28b8c7b293d35825388615": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-queue/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-queue/index.d.ts",  # 2017-06-08
+          "3d48a2e31ee7b4bc687a6b85b49bcb37e043e0dec4c83fcda8baad27fda7c114": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-queue/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-queue/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -258,9 +263,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_random",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "5130e803ba26d2dc931ddd0fa574b5abbb0fc4486e7975f97a83c01630763676": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-random/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-random/index.d.ts",  # 2017-06-08
+          "e30e9105a9c2e11410a452a02e320aebe66a1856e6b9410035ee7b3ad7d80839": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-random/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-random/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -270,8 +275,8 @@ def tensorboard_typings_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "fc2b7c2c05498011eb039825aab76a7916698fb3e7133e278fc92ae529ae99f0": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-request/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-request/index.d.ts",  # 2017-06-08
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-request/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-request/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -280,9 +285,13 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_scale",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "ff3e2d2033a37d698c3bd2896ffd9dd4ceab1903d96aa90d388a6a2d14d8ee05": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-scale/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-scale/index.d.ts",  # 2017-06-08
+          # TODO(stephanwlee): Pinned at ff2359 because versions after this
+          # upgrades to d3-scale v2 which is part of d3 v5. In d3 v5, it splits
+          # d3-scale into d3-scale and d3-scale-chromatic and deprecates
+          # d3.schemeCategory20.
+          "58646b85fbbeaa88ff29342e9f1a89cea2d6fa8cb1b5549dc7ec8e9f7e021894": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/ff2359e74ce1c539097e47dc586d49d348a94587/types/d3-scale/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/ff2359e74ce1c539097e47dc586d49d348a94587/types/d3-scale/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -291,9 +300,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_selection",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "47fae7c4bc425101490daae067727b74ee09e6c830331a4cf333cdb532a5d108": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-selection/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-selection/index.d.ts",  # 2017-06-08
+          "0e1bf1308ca27649010d5ae91783decd1337bda581b66aaa8be12060110662fa": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-selection/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-selection/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -302,9 +311,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_shape",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "7fec580ba54bc29417dc9030bb3731c9756a65c5e57dcce5a4f183fff7180cd8": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-shape/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-shape/index.d.ts",  # 2017-06-08
+          "47c61d4d8ba88c113fe9f3b37585656c66eddd95262554108a6507674a6c3b3a": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-shape/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-shape/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -313,9 +322,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_time",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "4b68f2a4ee428f21f2e7d706c0a64f628f0ff5f130cd9f023ab23a04a8fe31de": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-time/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-time/index.d.ts",  # 2017-06-08
+          "39fb4b2ad57ef393eabd017356f05854a44268a6b98cd2b235c8732fb9989d83": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-time/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-time/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -324,9 +333,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_timer",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "a196f42560be9fa1a77d473c0180f9f2f8d570ed0eee616aad0da94d90ef3661": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-timer/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-timer/index.d.ts",  # 2017-06-08
+          "79021d12162bdd6a850ce4c1a9014b342067db30816f907d4118578c2a59db76": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-timer/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-timer/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -335,9 +344,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_transition",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "10c6cf259d6f965014e75a63925f302911c5afb8581d6d63b0597544fe104bd7": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-transition/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-transition/index.d.ts",  # 2017-06-08
+          "88e6d462d5a592a2ebbdad7865142160341c93698c50701c4186bcb65a7685a7": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-transition/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-transition/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -346,9 +355,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_voronoi",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "411482515e2ccda4659f7b3d2fbd3a7ef5ea2c7053eec62c95a174b68ad60c3d": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-voronoi/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-voronoi/index.d.ts",  # 2017-06-08
+          "8936e0e6b0f0416c4c08f79e1555869a8553dc04723c4d8fa12990e755f460f5": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-voronoi/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-voronoi/index.d.ts",  # 2018-08-06
           ],
       },
   )
@@ -357,9 +366,9 @@ def tensorboard_typings_workspace():
       name = "org_definitelytyped_types_d3_zoom",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "df0bedbb7711366a43418d6a3b47c4688ccb02a3d8ad0c2468cafcb6c2faa346": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-zoom/index.d.ts",
-              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/dc27c3788c00d279ae5ff61e8e2dfd568aae5e8e/types/d3-zoom/index.d.ts",  # 2017-06-08
+          "65ea463a1297778ebf88e37444722bacd4d33db9a59ac69e78127e1c23670dd3": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-zoom/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/526dd2e57684fa586452445a181d37369533d02e/types/d3-zoom/index.d.ts",  # 2018-08-06
           ],
       },
   )

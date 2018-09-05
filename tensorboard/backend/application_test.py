@@ -56,6 +56,7 @@ class FakeFlags(object):
       samples_per_plugin='',
       max_reload_threads=1,
       db='',
+      db_import=False,
       window_title='',
       path_prefix=''):
     self.logdir = logdir
@@ -64,6 +65,7 @@ class FakeFlags(object):
     self.samples_per_plugin = samples_per_plugin
     self.max_reload_threads = max_reload_threads
     self.db = db
+    self.db_import = db_import
     self.window_title = window_title
     self.path_prefix = path_prefix
 
@@ -290,7 +292,11 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
     with mock.patch('os.path', pathObj):
       self.assertEqual(application.parse_event_files_spec(logdir), expected)
 
-
+  def testBasic(self):
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, '/lol/cat', {'/lol/cat': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'C:\\lol\cat', {'C:\\lol\cat': None})
 
   def testRunName(self):
     self.assertPlatformSpecificLogdirParsing(
@@ -301,6 +307,34 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
   def testPathWithColonThatComesAfterASlash_isNotConsideredARunName(self):
     self.assertPlatformSpecificLogdirParsing(
         posixpath, '/lol:/cat', {'/lol:/cat': None})
+
+  def testExpandsUser(self):
+    oldhome = os.environ.get('HOME', None)
+    try:
+      os.environ['HOME'] = '/usr/eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          posixpath, '~/lol/cat~dog', {'/usr/eliza/lol/cat~dog': None})
+      os.environ['HOME'] = 'C:\\Users\eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          ntpath, '~\lol\cat~dog', {'C:\\Users\eliza\lol\cat~dog': None})
+    finally:
+      if oldhome is not None:
+        os.environ['HOME'] = oldhome
+
+  def testExpandsUserForMultipleDirectories(self):
+    oldhome = os.environ.get('HOME', None)
+    try:
+      os.environ['HOME'] = '/usr/eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          posixpath, 'a:~/lol,b:~/cat',
+          {'/usr/eliza/lol': 'a', '/usr/eliza/cat': 'b'})
+      os.environ['HOME'] = 'C:\\Users\eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          ntpath, 'aa:~\lol,bb:~\cat',
+          {'C:\\Users\eliza\lol': 'aa', 'C:\\Users\eliza\cat': 'bb'})
+    finally:
+      if oldhome is not None:
+        os.environ['HOME'] = oldhome
 
   def testMultipleDirectories(self):
     self.assertPlatformSpecificLogdirParsing(

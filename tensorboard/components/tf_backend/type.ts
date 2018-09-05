@@ -14,11 +14,24 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
-export type Experiment = {id: number, name: string, startTime: number};
+export type ExperimentId = number;
+export type RunId = number | null;
+export type TagId = number;
 
-// `id` is null when data source is logdir.
-export type Run = {id: number | null, name: string, startTime: number};
+export type Experiment = {id: ExperimentId, name: string, startTime: number};
 
-export type Tag = {id: number, name: string, displayName: string};
+export type Run = {
+  id: RunId,
+  name: string,
+  startTime: number,
+  tags: Tag[],
+};
+
+export type Tag = {
+  id: TagId,
+  name: string,
+  displayName: string,
+  pluginName: string,
+};
 
 }  // namespace tf_backend
