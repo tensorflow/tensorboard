@@ -659,13 +659,21 @@ var vz_line_chart2;
                 this.resetYDomain();
             }
         };
-        LineChart.prototype.redraw = function () {
+        LineChart.prototype.redraw = function (clearCache) {
+            if (clearCache === void 0) { clearCache = false; }
+            if (clearCache) {
+                this.outer.invalidateCache();
+            }
             this.outer.redraw();
         };
         LineChart.prototype.destroy = function () {
             // Destroying outer destroys all subcomponents recursively.
             if (this.outer)
                 this.outer.destroy();
+        };
+        LineChart.prototype.onAnchor = function (fn) {
+            if (this.outer)
+                this.outer.onAnchor(fn);
         };
         return LineChart;
     }());

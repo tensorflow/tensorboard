@@ -302,9 +302,9 @@ var vz_line_chart2;
         /**
          * Re-renders the chart. Useful if e.g. the container size changed.
          */
-        redraw: function () {
+        redraw: function (clearCache) {
             if (this._chart) {
-                this._chart.redraw();
+                this._chart.redraw(clearCache);
             }
         },
         detached: function () {
@@ -335,6 +335,7 @@ var vz_line_chart2;
                 this._makeChartAsyncCallbackId = null;
             }
             this._makeChartAsyncCallbackId = this.async(function () {
+                var _this = this;
                 this._makeChartAsyncCallbackId = null;
                 if (!xComponentsCreationMethod ||
                     !this.yValueAccessor ||
@@ -351,6 +352,7 @@ var vz_line_chart2;
                 if (this._chart)
                     this._chart.destroy();
                 this._chart = chart;
+                this._chart.onAnchor(function () { return _this.fire('chart-attached'); });
             }, 350);
         },
         _reloadFromCache: function () {
