@@ -180,15 +180,15 @@ Polymer({
       const enabledExperiments = new Set(this._enabledExperimentIds);
 
       // Make a copy of the all selections.
-      const newSelections = new Map(this._selections);
+      const enabledSelections = new Map(this._selections);
 
-      // Filter out disabled experiments from next `selection`.
-      newSelections.forEach((_, id) => {
-        if (!enabledExperiments.has(id)) newSelections.delete(id);
+      // Filter out disabled experiments from the `_selections`.
+      enabledSelections.forEach((_, id) => {
+        if (!enabledExperiments.has(id)) enabledSelections.delete(id);
       });
 
       const activePluginNames = new Set(this.activePlugins);
-      newSelections.forEach((sel, id) => {
+      enabledSelections.forEach((sel, id) => {
         const selection = sel as Selection;
         const updatedSelection = Object.assign({}, selection);
         updatedSelection.runs = selection.runs.map(run => {
@@ -197,13 +197,20 @@ Polymer({
           });
         }).filter(run => run.tags.length);
 
-        newSelections.set(id, updatedSelection);
+        enabledSelections.set(id, updatedSelection);
       });
 
+      // Single selection: one experimentful selection whether it is enabled or
+      // not.
+      // NOTE: `_selections` can contain not only selections for experiment
+      // diffing but also one for no-experiment mode. If it contains one,
+      // "remove" the size by one.
+      const isSingleSelection = this._selections.size ==
+          1 + Number(this._selections.has(NO_EXPERIMENT_ID));
       return {
-        type: this._selections.size == 1 ?
+        type: isSingleSelection ?
             tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
-        selections: Array.from(newSelections.values()),
+        selections: Array.from(enabledSelections.values()),
       };
     }
     return {

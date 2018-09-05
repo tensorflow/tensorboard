@@ -46,6 +46,7 @@ Properties out:
       vertical-align="top"
       horizontal-align="left"
       no-overlap="true"
+      opened="{{_opened}}"
     >
       <div class="dropdown-trigger" slot="dropdown-trigger">
         <paper-ripple></paper-ripple>
@@ -63,7 +64,7 @@ Properties out:
       </div>
       <div class="dropdown-content">
         <tf-filterable-checkbox-list
-          coloring="[[coloring]]"
+          coloring="[[_coloring]]"
           items="[[items]]"
           label="[[label]]"
           max-items-to-enable-by-default="[[maxItemsToEnableByDefault]]"
