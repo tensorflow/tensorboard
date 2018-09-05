@@ -159,14 +159,14 @@ var tf_data_selector;
             if (this._canCompareExperiments) {
                 var enabledExperiments_1 = new Set(this._enabledExperimentIds);
                 // Make a copy of the all selections.
-                var newSelections_1 = new Map(this._selections);
-                // Filter out disabled experiments from next `selection`.
-                newSelections_1.forEach(function (_, id) {
+                var enabledSelections_1 = new Map(this._selections);
+                // Filter out disabled experiments from the `_selections`.
+                enabledSelections_1.forEach(function (_, id) {
                     if (!enabledExperiments_1.has(id))
-                        newSelections_1.delete(id);
+                        enabledSelections_1.delete(id);
                 });
                 var activePluginNames_1 = new Set(this.activePlugins);
-                newSelections_1.forEach(function (sel, id) {
+                enabledSelections_1.forEach(function (sel, id) {
                     var selection = sel;
                     var updatedSelection = Object.assign({}, selection);
                     updatedSelection.runs = selection.runs.map(function (run) {
@@ -174,12 +174,19 @@ var tf_data_selector;
                             tags: run.tags.filter(function (tag) { return activePluginNames_1.has(tag.pluginName); }),
                         });
                     }).filter(function (run) { return run.tags.length; });
-                    newSelections_1.set(id, updatedSelection);
+                    enabledSelections_1.set(id, updatedSelection);
                 });
+                // Single selection: one experimentful selection whether it is enabled or
+                // not.
+                // NOTE: `_selections` can contain not only selections for experiment
+                // diffing but also one for no-experiment mode. If it contains one,
+                // "remove" the size by one.
+                var isSingleSelection = this._selections.size ==
+                    1 + Number(this._selections.has(NO_EXPERIMENT_ID));
                 return {
-                    type: this._selections.size == 1 ?
+                    type: isSingleSelection ?
                         tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
-                    selections: Array.from(newSelections_1.values()),
+                    selections: Array.from(enabledSelections_1.values()),
                 };
             }
             return {

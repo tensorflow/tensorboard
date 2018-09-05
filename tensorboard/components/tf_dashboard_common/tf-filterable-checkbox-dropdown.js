@@ -25,6 +25,14 @@ var tf_dashboard_common;
                 value: true,
             },
             coloring: Object,
+            // TODO(stephanwlee): Devise a better way for components to react to color
+            // scale change. Recoloring on open may not be good enough.
+            // The property simply clones the `coloring` to force redraw when dropdown
+            // is opened.
+            _coloring: {
+                type: Object,
+                computed: '_computeColoring(_opened, coloring)',
+            },
             items: {
                 type: Array,
                 value: function () { return []; },
@@ -38,6 +46,11 @@ var tf_dashboard_common;
                 type: Array,
                 notify: true,
                 value: function () { return []; },
+            },
+            // ====== Others ======
+            _opened: {
+                type: Boolean,
+                value: false,
             },
         },
         // ====================== COMPUTED ======================
@@ -57,6 +70,9 @@ var tf_dashboard_common;
                 return Array.from(uniqueNames).join(', ');
             }
             return this.selectedItems.length + " Selected";
+        },
+        _computeColoring: function () {
+            return Object.assign({}, this.coloring);
         },
     });
 })(tf_dashboard_common || (tf_dashboard_common = {})); // namespace tf_dashboard_common
