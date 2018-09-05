@@ -202,7 +202,7 @@ export const PARAMS = {
 
 /**
  * The minimum width we confer upon the auxiliary nodes section if functions
- * also appear. Without enforcing this minimum, metanodes in the function 
+ * also appear. Without enforcing this minimum, metanodes in the function
  * library section could jut into the auxiliary nodes section because the
  * title "Auxiliary Nodes" is longer than the width of the auxiliary nodes
  * section itself.
@@ -453,8 +453,11 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // Calculate the position of nodes in isolatedInExtract relative to the
   // top-left corner of inExtractBox (the bounding box for all inExtract nodes)
   // and calculate the size of the inExtractBox.
-  let maxInExtractWidth = _.max(renderNodeInfo.isolatedInExtract,
-      renderNode => renderNode.width).width;
+  let maxInExtractWidth = renderNodeInfo.isolatedInExtract.length ?
+      _.max(
+          renderNodeInfo.isolatedInExtract,
+          renderNode => renderNode.width,
+      ).width : null;
   renderNodeInfo.inExtractBox.width = maxInExtractWidth != null ?
       maxInExtractWidth : 0;
 
@@ -470,8 +473,11 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // Calculate the position of nodes in isolatedOutExtract relative to the
   // top-left corner of outExtractBox (the bounding box for all outExtract
   // nodes) and calculate the size of the outExtractBox.
-  let maxOutExtractWidth = _.max(renderNodeInfo.isolatedOutExtract,
-      renderNode => renderNode.width).width;
+  let maxOutExtractWidth = renderNodeInfo.isolatedOutExtract.length ?
+      _.max(
+          renderNodeInfo.isolatedOutExtract,
+          renderNode => renderNode.width,
+      ).width : null;
   renderNodeInfo.outExtractBox.width = maxOutExtractWidth != null ?
       maxOutExtractWidth : 0;
 
@@ -487,8 +493,11 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // Calculate the position of nodes in libraryFunctionsExtract relative to the
   // top-left corner of libraryFunctionsBox (the bounding box for all library
   // function nodes) and calculate the size of the libraryFunctionsBox.
-  let maxLibraryFunctionsWidth = _.max(renderNodeInfo.libraryFunctionsExtract,
-      renderNode => renderNode.width).width;
+  let maxLibraryFunctionsWidth = renderNodeInfo.libraryFunctionsExtract.length ?
+      _.max(
+          renderNodeInfo.libraryFunctionsExtract,
+          renderNode => renderNode.width,
+      ).width : null;
   renderNodeInfo.libraryFunctionsBox.width = maxLibraryFunctionsWidth != null ?
       maxLibraryFunctionsWidth : 0;
 

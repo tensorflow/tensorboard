@@ -75,11 +75,11 @@ profile run can have multiple tools that present the performance profile as diff
 </template>
 <template is="dom-if" if="[[!_dataNotFound]]">
   <tf-dashboard-layout>
-  <div class="sidebar" style="width: 340px">
+  <div class="sidebar">
     <div class="allcontrols">
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
-        <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
+        <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
           <paper-listbox id="list_box_run" class="dropdown-content" selected="{{selectedDatasetIndex}}">
             <template id="run_items" is="dom-repeat" items="[[_datasets]]">
               <paper-item>[[item.name]]</paper-item>
@@ -89,7 +89,7 @@ profile run can have multiple tools that present the performance profile as diff
       </div>
       <div class="sidebar-section">
         <div class="title">Tools <span class="counter">([[_activeToolsList.length]])</span></div>
-        <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
+        <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
           <paper-listbox id="list_box_tool" class="dropdown-content" selected="{{selectedToolIndex}}">
             <template id="tool_items" is="dom-repeat" items="[[_activeToolsList]]">
               <paper-item>[[item]]</paper-item>
@@ -102,7 +102,7 @@ profile run can have multiple tools that present the performance profile as diff
       </div>
       <div class="sidebar-section">
         <div class="title">Hosts <span class="counter">([[_activeHostsList.length]])</span></div>
-        <paper-dropdown-menu no-label-float no-animations noink class="run-dropdown">
+        <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
           <paper-listbox id="list_box_host" class="dropdown-content" selected="{{selectedHostIndex}}">
             <template id="host_items" is="dom-repeat" items="[[_activeHostsList]]">
               <paper-item>[[_getHostDisplayName(item)]]</paper-item>
@@ -110,7 +110,20 @@ profile run can have multiple tools that present the performance profile as diff
           </paper-listbox>
         </paper-dropdown-menu>
       </div>
-      <div class="sidebar-section"></div>
+      <div class="sidebar-section details-container">
+        <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'op_profile')]]" restamp="true">
+          <tf-op-details
+            hidden="[[!_activeOpDetails]]"
+            node="[[_activeOpDetails]]"
+          ></tp-op-details>
+        </template>
+        <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
+          <buffer-details
+            hidden="[[!_activeBufferDetails]]"
+            node="[[_activeBufferDetails]]"
+          ></buffer-details>
+        </template>
+      </div>
     </div>
   </div>
   <div class="center">
@@ -123,7 +136,10 @@ profile run can have multiple tools that present the performance profile as diff
       </iframe>
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'op_profile')]]" restamp="true">
-      <tf-op-profile _data="[[_opProfileData]]"></tf-op-profile>
+      <tf-op-profile
+        _data="[[_opProfileData]]"
+        active="{{_activeOpDetails}}"
+      ></tf-op-profile>
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'input_pipeline_analyzer')]]" restamp="true">
       <input-pipeline-analyzer _data="[[_inputPipelineData]]"></input-pipeline-analyzer>
@@ -132,9 +148,12 @@ profile run can have multiple tools that present the performance profile as diff
       <overview-page _data="[[_overviewPageData]]"></overview-page>
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
-      <memory-viewer-dashboard _data="[[_memoryViewerData]]"></memory-viewer-dashboard>
+      <memory-viewer-dashboard
+        _data="[[_memoryViewerData]]"
+        active="{{_activeBufferDetails}}"
+      ></memory-viewer-dashboard>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp=true">
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp="true">
       <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
     </template>
   </div>
@@ -172,6 +191,17 @@ profile run can have multiple tools that present the performance profile as diff
     width: 400px;
     --paper-progress-height: 6px;
     --paper-progress-active-color: #f3913e;
+  }
+  paper-dropdown-menu {
+    width: 100%;
+  }
+  .details-container {
+    padding-right: 5px;
+  }
+  tf-op-details,
+  buffer-details {
+    width: 100%;
+    will-change: transform;
   }
 </style>
 
@@ -272,6 +302,14 @@ profile run can have multiple tools that present the performance profile as diff
       },
       _toolInScope: {
         type: String,
+      },
+      _activeOpDetails: {
+        type: Object,
+        value: () => null,
+      },
+      _activeBufferDetails: {
+        type: Object,
+        value: () => null,
       },
     },
     reload: function() {

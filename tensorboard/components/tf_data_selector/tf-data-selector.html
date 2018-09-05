@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-list.html">
+<link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="./experiment-selector.html">
 <link rel="import" href="./tf-data-select-row.html">
 
@@ -37,27 +38,41 @@ Properties out:
   <template>
     <template
       is="dom-if"
-      if="[[!_canCompareExperiments(_comparingExps)]]"
+      if="[[!_canCompareExperiments]]"
       restamp
     >
-      <tf-data-select-row no-experiment persistence-number="0">
-      </tf-data-select-row>
-    </template>
-    <template is="dom-repeat" items="[[_comparingExps]]" as="exp">
       <tf-data-select-row
-        checkbox-color="[[_getExperimentColor(exp)]]"
-        experiment="[[exp]]"
-        persistence-number="[[index]]"
+        no-experiment
+        should-color-runs
+        persistence-id="_default"
         on-selection-changed="_selectionChanged"
+      ></tf-data-select-row>
+    </template>
+    <template is="dom-repeat" items="[[_experiments]]" as="exp">
+      <tf-data-select-row
+        should-color-runs="[[_shouldColorRuns]]"
+        checkbox-color="[[_getExperimentColor(exp)]]"
+        enabled="[[_isExperimentEnabled(exp)]]"
+        experiment="[[exp]]"
+        on-checkbox-toggle="_experimentCheckboxToggled"
         on-remove="_removeExperiment"
+        on-selection-changed="_selectionChanged"
+        persistence-id="[[_getPersistenceId(exp)]]"
       ></tf-data-select-row>
     </template>
 
-    <experiment-selector
-      id="selector"
-      exclude-experiments="[[_comparingExps]]"
-      on-experiment-added="_addExperiments"
-    ></experiment-selector>
+    <template
+      is="dom-if"
+      if="[[_getAddComparisonVisible(_allExperiments, _experiments, _canCompareExperiments)]]"
+    >
+      <experiment-selector
+        id="selector"
+        always-expanded="[[_getAddComparisonAlwaysExpanded(_canCompareExperiments, _experiments)]]"
+        exclude-experiments="[[_experiments]]"
+        on-experiment-added="_addExperiments"
+      ></experiment-selector>
+    </template>
+
     <style>
       :host {
         align-items: flex-start;
@@ -90,5 +105,6 @@ Properties out:
     </style>
   </template>
   <script src="storage-utils.js"></script>
+  <script src="type.js"></script>
   <script src="tf-data-selector.js"></script>
 </dom-module>

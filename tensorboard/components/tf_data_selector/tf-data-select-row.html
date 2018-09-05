@@ -46,6 +46,7 @@ Event out:
         id="checkbox"
         checked="{{enabled}}"
         title="[[experiment.name]]"
+        on-change="_fireCheckboxToggled"
       >
         [[experiment.name]]
       </paper-checkbox>
@@ -53,7 +54,8 @@ Event out:
 
     <tf-filterable-checkbox-dropdown
       label="Run"
-      use-checkbox-colors="[[_getIsRunCheckboxesColored(noExperiment)]]"
+      use-checkbox-colors="[[shouldColorRuns]]"
+      coloring="[[_getColoring(shouldColorRuns)]]"
       items="[[_getRunOptions(_runs.*)]]"
       selected-items="{{_selectedRuns}}"
       selection-state="{{_getRunsSelectionState(_runSelectionStateString, _runs.*)}}"

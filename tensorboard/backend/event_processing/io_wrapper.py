@@ -86,13 +86,12 @@ def ListRecursivelyViaGlobbing(top):
   foo/*, foo/*/*, foo/*/*/* and so on until all files are listed. All file
   paths are absolute, and this method lists subdirectories too.
 
-  For certain file systems, Globbing via this method may prove
-  significantly faster than recursively walking a directory.
-  Specifically, file systems that implement analogs to TensorFlow's
-  FileSystem.GetMatchingPaths method could save costly disk reads by using
-  this method. However, for other file systems, this method might prove slower
-  because the file system performs a walk per call to glob (in which case it
-  might as well just perform 1 walk).
+  For certain file systems, globbing via this method may prove significantly
+  faster than recursively walking a directory. Specifically, TF file systems
+  that implement TensorFlow's FileSystem.GetMatchingPaths method could save
+  costly disk reads by using this method. However, for other file systems, this
+  method might prove slower because the file system performs a walk per call to
+  glob (in which case it might as well just perform 1 walk).
 
   Args:
     top: A path to a directory.

@@ -37,7 +37,7 @@ export const DataLoaderBehavior = {
      * A function that takes a datum as an input and returns a unique
      * identifiable string. Used for caching purposes.
      */
-    getDataLoadId: {
+    getDataLoadName: {
       type: Function,
       value: () => (datum) => String(datum),
     },
@@ -117,21 +117,23 @@ export const DataLoaderBehavior = {
 
   _loadDataImpl() {
     this.cancelAsync(this._loadDataAsync);
+
+    if (!this.isAttached) return;
     this._loadDataAsync = this.async(() => {
-      if (!this.isAttached) return;
       this.dataLoading = true;
 
       // Before updating, cancel any network-pending updates, to
       // prevent race conditions where older data stomps newer data.
       this._canceller.cancelAll();
-      const promises = this.dataToLoad.map(datum => {
-        const id = this.getDataLoadId(datum);
-        if (this._loadedData.has(id)) return Promise.resolve();
-
+      const promises = this.dataToLoad.filter(datum => {
+        const name = this.getDataLoadName(datum);
+        return !this._loadedData.has(name);
+      }).map(datum => {
+        const name = this.getDataLoadName(datum);
         const url = this.getDataLoadUrl(datum);
         const updateSeries = this._canceller.cancellable(result => {
           if (result.cancelled) return;
-          this._loadedData.add(id);
+          this._loadedData.add(name);
           this.loadDataCallback(this, datum, result.value);
         });
         return this.requestManager.request(url).then(updateSeries);

@@ -985,9 +985,9 @@ Polymer({
   _colorByChanged: function() {
     if (this.renderHierarchy != null) {
       // We iterate through each svg node and update its state.
-      _.each(this._nodeGroupIndex, function(nodeGroup, nodeName) {
+      _.each(this._nodeGroupIndex, (nodeGroup, nodeName) => {
         this._updateNodeState(nodeName);
-      }, this);
+      });
       // Notify also the minimap.
       this.minimap.update();
     }
@@ -1045,7 +1045,7 @@ Polymer({
     if (nodeGroup) {
       tf.graph.scene.node.stylize(nodeGroup, node, this);
     }
-    
+
     if (node.node.type === tf.graph.NodeType.META &&
         node.node.associatedFunction &&
         !node.isLibraryFunction) {
@@ -1062,10 +1062,10 @@ Polymer({
     }
 
     var annotationGroupIndex = this.getAnnotationGroupsIndex(n);
-    _.each(annotationGroupIndex, function(aGroup, hostName) {
+    _.each(annotationGroupIndex, (aGroup, hostName) => {
       tf.graph.scene.node.stylize(aGroup, node, this,
           tf.graph.scene.Class.Annotation.NODE);
-    }, this);
+    });
   },
 
   /**
@@ -1103,7 +1103,7 @@ Polymer({
     }
     // Ensure each parent metanode is built and expanded.
     var topParentNodeToBeExpanded;
-    _.forEachRight(nodeParents, function(parentName) {
+    _.forEachRight(nodeParents, (parentName)  => {
       this.renderHierarchy.buildSubhierarchy(parentName);
       var renderNode = this.renderHierarchy.getRenderNodeByName(parentName);
       if (renderNode.node.isGroupNode && !renderNode.expanded) {
@@ -1112,7 +1112,7 @@ Polymer({
           topParentNodeToBeExpanded = renderNode;
         }
       }
-    }, this);
+    });
     // If any expansion was needed to display this selected node, then
     // inform the scene of the top-most expansion.
     if (topParentNodeToBeExpanded) {

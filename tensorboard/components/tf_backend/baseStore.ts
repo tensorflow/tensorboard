@@ -28,6 +28,7 @@ export abstract class BaseStore {
   protected requestManager: RequestManager =
       new RequestManager(1 /* simultaneous request */);
   private _listeners: Set<ListenKey> = new Set<ListenKey>();
+  public initialized: boolean = false;
 
   /**
    * Asynchronously load or reload the runs data. Listeners will be
@@ -36,7 +37,13 @@ export abstract class BaseStore {
    * @see addListener
    * @return {Promise<void>} a promise that resolves when new data have loaded.
    */
-  abstract refresh(): Promise<void>;
+  protected abstract load(): Promise<void>;
+
+  refresh(): Promise<void> {
+    return this.load().then(() => {
+      this.initialized = true;
+    });
+  }
 
   /**
    * Register a listener (nullary function) to be called when new runs are

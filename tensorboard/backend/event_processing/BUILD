@@ -139,6 +139,7 @@ py_test(
 py_library(
     name = "event_multiplexer",
     srcs = [
+        "db_import_multiplexer.py",
         "event_multiplexer.py",
         "plugin_event_multiplexer.py",
     ],
