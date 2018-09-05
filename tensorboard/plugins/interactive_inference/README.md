@@ -45,10 +45,6 @@ Fine, here are some demos:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:agedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/age_demo.html`
 
-## How about a walkthrough video I can watch instead?
-
-[Check this out](https://youtube.com/???).
-
 ## What do I need to use it?
 
 To use the tool, only the following information needs to be provided:

@@ -65,11 +65,20 @@ limitations under the License.
   </template>
 
   <script>
-    "use strict";
-
     Polymer({
       is: "tf-confusion-matrix",
       properties: {
+        /**
+         * Counts is a dictionary of dictionaries of numbers, representing
+         * the counts for each cell in a confusion matrix. The outermost keys
+         * represent actual labels and the innermost keys represent predicted
+         * labels. A number in this inner dictionary represents the count of
+         * elements with the prediction of the inner key and the actual label
+         * of the outer key.
+         * Example: {'No': {'Yes': 2, 'No': 1}, 'Yes': {'Yes': 3, 'No': 4}}
+         * contains 1 true negative, 2 false positives, 3 true positives and
+         * 4 false negatives.
+         */
         counts: {type: Object, observer: 'drawMatrix'},
       },
 
@@ -105,22 +114,21 @@ limitations under the License.
         }
 
         const columnTotals = new Array(labelsList.length);
+        _.fill(columnTotals, 0);
 
         // Create the confusion matrix from the counts dict.
         const countMatrix = [];
         for (let i = 0; i < labelsList.length; i++) {
-          columnTotals[i] = 0;
-          countMatrix.push(new Array(labelsList.length).fill(0));
+          const arr = new Array(labelsList.length);
+          _.fill(arr, 0);
+          countMatrix.push(arr);
         }
         for (let i = 0; i < labelsList.length; i++) {
           for (let j = 0; j < labelsList.length; j++) {
             const actualLabel = labelsList[i];
             const predLabel = labelsList[j];
             if (actualLabel in counts && predLabel in counts[actualLabel]) {
-              const actualLabelIdx = labelsList.indexOf(actualLabel);
-              const predLabelIdx = labelsList.indexOf(predLabel);
-              countMatrix[actualLabelIdx][predLabelIdx] =
-                counts[actualLabel][predLabel];
+              countMatrix[i][j] = counts[actualLabel][predLabel];
             }
           }
         }
@@ -138,7 +146,7 @@ limitations under the License.
             total += countMatrix[i][j];
           }
         }
-        const indices = this.getInidices(countMatrix.length + 2);
+        const indices = this.getIndices(countMatrix.length + 2);
 
         // Create the table object.
         const table = d3.select(this.$.holder).append('table');
@@ -243,7 +251,7 @@ limitations under the License.
       /**
        * Returns an list of indices from 0 to tableDim.
        */
-      getInidices: function(tableDim) {
+      getIndices: function(tableDim) {
         return Array.apply(null, {length: tableDim}).map(Number.call, Number);
       },
 

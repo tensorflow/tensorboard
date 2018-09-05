@@ -27,7 +27,7 @@
       properties: {
         model: Object,
         data: Array,
-        indicesToInfer: {type: Object, value: {}},
+        indicesToInfer: {type: Object, value: () => ({})},
         means: Object,
         categories: Object,
         labelVocab: {type: Array, value: ["Not smiling", "Smiling"]},

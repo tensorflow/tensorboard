@@ -118,12 +118,11 @@ limitations under the License.
   </template>
 
   <script>
-    "use strict";
-
     Polymer({
       is: "tf-inference-viewer",
       properties: {
         inferences: Array,
+        // Possible modelType values currently 'regression and 'classification'.
         modelType: String,
         maxEntriesPerRun: {
           type: Number,

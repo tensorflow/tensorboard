@@ -56,7 +56,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   updated_example_indices = set()
   sprite = None
 
-  # The standard name for encoded image features, from go/tf-example.
+  # The standard name for encoded image features in TensorFlow.
   image_feature_name = 'image/encoded'
 
   # The width and height of the thumbnail for any images for Facets Dive.
@@ -159,6 +159,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     Returns:
       An empty response.
     """
+    if request.method != 'POST':
+      return http_util.Respond(request, {'error': 'invalid non-POST request'},
+                               'application/json')
     example_json = request.form['example']
     index = int(request.form['index'])
     if index >= len(self.examples):

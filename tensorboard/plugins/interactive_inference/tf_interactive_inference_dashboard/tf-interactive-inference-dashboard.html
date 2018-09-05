@@ -518,7 +518,7 @@ limitations under the License.
       }
 
       .optimize-selection-button {
-        margin-left: 0px;
+        margin-left: 0;
         margin-bottom: 5px;
       }
 
@@ -1447,8 +1447,6 @@ limitations under the License.
   </template>
 
   <script>
-    "use strict";
-
     const maxStringLengthToDecode = 100000;
     const inferenceLabelStr = ' Inference label';
     const inferenceValueStr = ' Inference value';
@@ -1510,12 +1508,12 @@ limitations under the License.
         inferences: {
           type: Object,
           observer: 'newInferences_',
-          value: {}
+          value: () => ({})
         },
         // Examples and their inferences merged into a single list.
         examplesAndInferences : {
           type: Array,
-          value: [],
+          value: () => ([]),
           observer: 'computeSelectedExampleAndInference',
         },
         // The currently selected item from the examplesAndInferences list,
@@ -1531,24 +1529,24 @@ limitations under the License.
         // The examples list in the format to provide to Facets Dive.
         visdata: {
           type: Array,
-          value: []
+          value: () => ([]),
         },
         // The selected items list provided by Facets Dive.
         selected: {
           type: Array,
-          value: [],
+          value: () => ([]),
           observer: 'computeSelectedExampleAndInference',
         },
         // The selected item to compare, provided to Facets Dive.
         comparedIndices: {
           type: Array,
-          value: [],
+          value: () => ([]),
         },
         // List of strings corresponding to inference numeric labels for
         // classification models, from file at labelVocabPath.
         labelVocab: {
           type: Array,
-          value: []
+          value: () => ([]),
         },
         // True if an example has been updated.
         updatedExample: {
@@ -1585,7 +1583,7 @@ limitations under the License.
         // Calculated statistics from the inference results.
         inferenceStats_: {
           type: Object,
-          value: {},
+          value: () => ({}),
         },
         // Array of feature values and their set classification thresholds, for
         // Polymer display purposes.
@@ -1621,15 +1619,15 @@ limitations under the License.
         // List of features for which we can make partial dep plots.
         partialDepPlotEligibleFeatures: {
           type: Array,
-          value: [], // [{name: 'a_numeric_feature', observedMin: -10,
-                     //   observedMax: 10},
-                     // {name: 'a_categorical_feature', samples: []}]
+          value: () => ([]), // [{name: 'a_numeric_feature', observedMin: -10,
+                             //   observedMax: 10},
+                             // {name: 'a_categorical_feature', samples: []}]
           observer: 'partialDepPlotEligibleFeaturesSet'
         },
         // Features that we are currently creating partial dep plots for.
         partialDepPlotPendingFeatures: {
           type: Array,
-          value: []
+          value: () => ([]),
         },
         // Mode of how individual examples are display in the side panel.
         exampleDisplayMode: {
@@ -1677,7 +1675,7 @@ limitations under the License.
         // examples.
         facetDistFeatureNames: {
           type: Array,
-          value: [],
+          value: () => ([]),
         },
         // What Facets Dive setting to use to show distance to selected
         // example.
