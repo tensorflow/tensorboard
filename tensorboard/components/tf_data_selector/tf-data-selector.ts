@@ -46,7 +46,7 @@ Polymer({
 
     _experiments: {
       type: Array,
-      computed: '_computeExperiments(_allExperiments.*, _experimentIds.*)',
+      value: (): Array<tf_backend.Experiment> => [],
     },
 
     _enabledExperimentIds: {
@@ -88,7 +88,12 @@ Polymer({
 
   },
 
+  behaviors: [
+    tf_dashboard_common.ArrayUpdateHelper,
+  ],
+
   observers: [
+    '_updateExperiments(_allExperiments, _experimentIds)',
     '_pruneSelections(_experimentIds.*)',
     '_pruneExperimentIds(_allExperiments.*)',
     '_pruneEnabledExperiments(_experimentIds.*)',
@@ -244,11 +249,13 @@ Polymer({
     this._selections = newSelections;
   },
 
-  _computeExperiments() {
+  _updateExperiments() {
     const lookup = new Map(this._allExperiments.map(e => [e.id, e]));
-    return this._experimentIds
+    const experiments = this._experimentIds
         .filter(id => lookup.has(id))
         .map(id => lookup.get(id));
+
+    this.updateArrayProp('_experiments', experiments, exp => exp.id);
   },
 
   _addExperiments(event) {
