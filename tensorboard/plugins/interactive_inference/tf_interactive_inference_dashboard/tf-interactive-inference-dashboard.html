@@ -1518,11 +1518,13 @@ limitations under the License.
         },
         // The currently selected item from the examplesAndInferences list,
         // selected through clicking in Facets Dive.
+        /** @type {?Object} */
         selectedExampleAndInference : {
           type: Object,
         },
         // The closest counterfatual example to the currently selected item,
         // if one is found through the counterfactual button.
+        /** @type {?Object} */
         counterfactualExampleAndInference : {
           type: Object,
         },
@@ -2128,7 +2130,7 @@ limitations under the License.
         }
         this.featureValueThresholds = thresholds;
         this.featureValueThresholdsMap = thresholdsMap;
-        this.refreshInferences_();
+        this.refreshInferences_(false);
       },
 
       labelFeatureSelected_: function(feature) {
@@ -2703,7 +2705,7 @@ limitations under the License.
 
       getRegressionCount: function(regressionStats, facetItem) {
         const count = this.getInferenceStat(regressionStats, facetItem,
-          stat => stat.errors.length);
+          stat => stat.errors.length, null);
         if (count == null) {
           return 0;
         } else {
@@ -2713,12 +2715,12 @@ limitations under the License.
 
       getBinaryClassificationCount: function(classificationStats, facetItem) {
         return this.getInferenceStat(classificationStats, facetItem,
-          stat => Object.values(stat[0]).reduce((a, b) => a + b));
+          stat => Object.values(stat[0]).reduce((a, b) => a + b), null);
       },
 
       getMulticlassClassificationCount: function(classificationStats, facetItem) {
         return this.getInferenceStat(classificationStats, facetItem,
-          stat => Object.values(stat).reduce((a, b) => a + b));
+          stat => Object.values(stat).reduce((a, b) => a + b), null);
       },
 
       getPrChartId: function(index) {
@@ -2992,7 +2994,7 @@ limitations under the License.
             this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
             this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
           };
-          this.makeAsyncRequest_(url, inferContents);
+          this.makeAsyncRequest_(url, inferContents, null);
         }
         this.fire('infer-examples', inferParams);
       },
@@ -3005,7 +3007,7 @@ limitations under the License.
         var index = this.selected.length == 0 ? id : this.selected[id];
         this.set('selectedExampleAndInference.changed', true);
         this.updateExample_(JSON.stringify(event.target.json), index);
-        const inferenceViewerIdStr = '#' + this.getInferenceHolderId_(id);
+        const inferenceViewerIdStr = '#' + this.getInferenceHolderId_();
         const inferenceViewer = this.$$(inferenceViewerIdStr);
         inferenceViewer.inference = null;
         this.visdata[index] =
@@ -3065,7 +3067,7 @@ limitations under the License.
       updateExample_: function(exampleJson, index){
         this.fire('update-example', {'example': exampleJson, 'index': index});
         if (!this.local) {
-          var url = this.makeUrl_('/data/plugin/whatif/update_example');
+          var url = this.makeUrl_('/data/plugin/whatif/update_example', null);
 
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
                                               'index': index});
@@ -3209,7 +3211,7 @@ limitations under the License.
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading examples...'
-        this.makeAsyncRequest_(url, updateExampleContents);
+        this.makeAsyncRequest_(url, updateExampleContents, null);
         this.$.spinner.hidden = false;
       },
 
@@ -3265,7 +3267,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate);
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null);
         } else {
           this.refreshDive_();
         }
@@ -3300,7 +3302,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/delete_example',
             {'index': deletedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDelete);
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null);
         } else {
           this.refreshDive_();
         }
@@ -3557,7 +3559,7 @@ limitations under the License.
             this.makeChartForFeature_(
               result.value.chartType, featureName, result.value.data);
           };
-          this.makeAsyncRequest_(url, chartMakerCallback.bind(this));
+          this.makeAsyncRequest_(url, chartMakerCallback.bind(this), null);
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -3711,7 +3713,7 @@ limitations under the License.
           const setEligibleFields = result => {
             this.set('partialDepPlotEligibleFeatures', result.value);
           };
-          this.makeAsyncRequest_(url, setEligibleFields);
+          this.makeAsyncRequest_(url, setEligibleFields, null);
         } else {
           this.fire('get-eligible-features');
         }

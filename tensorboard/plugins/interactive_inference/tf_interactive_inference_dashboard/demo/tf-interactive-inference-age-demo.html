@@ -108,7 +108,7 @@
             inferences.results = {regression: {regressions: []}};
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
-              const idx = indices[i];
+              const idx = +indices[i];
               tensors.push(this.convertExToTensor(this.data[idx]));
             }
             const input = tf.concat(tensors).reshape([tensors.length, 105])

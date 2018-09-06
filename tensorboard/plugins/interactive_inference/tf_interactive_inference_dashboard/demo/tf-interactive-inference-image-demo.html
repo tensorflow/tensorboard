@@ -92,7 +92,7 @@
               });
             } else {
               for (let i = 0; i < indices.length; i++) {
-                const idx = indices[i];
+                const idx = +indices[i];
                 const t = await this.convertExToTensor(this.data[idx]);
                 tensors.push(t);
               }
