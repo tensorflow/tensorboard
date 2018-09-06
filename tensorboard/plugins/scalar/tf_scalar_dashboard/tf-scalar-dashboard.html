@@ -142,18 +142,18 @@ limitations under the License.
                     <div class="layout horizontal wrap">
                       <template is="dom-repeat" items="[[page.items]]">
                         <tf-scalar-card
-                          x-type="[[_xType]]"
+                          active="[[page.active]]"
+                          data-to-load="[[item.series]]"
+                          ignore-y-outliers="[[_ignoreYOutliers]]"
+                          multi-experiments="[[_getMultiExperiments(dataSelection)]]"
+                          request-manager="[[_requestManager]]"
+                          show-download-links="[[_showDownloadLinks]]"
                           smoothing-enabled="[[_smoothingEnabled]]"
                           smoothing-weight="[[_smoothingWeight]]"
-                          tooltip-sorting-method="[[_tooltipSortingMethod]]"
-                          ignore-y-outliers="[[_ignoreYOutliers]]"
-                          show-download-links="[[_showDownloadLinks]]"
-                          request-manager="[[_requestManager]]"
-                          data-to-load="[[item.series]]"
-                          multi-experiments="[[_getMultiExperiments(dataSelection)]]"
-                          tag="[[item.tag]]"
                           tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
-                          active="[[page.active]]"
+                          tag="[[item.tag]]"
+                          tooltip-sorting-method="[[_tooltipSortingMethod]]"
+                          x-type="[[_xType]]"
                         ></tf-scalar-card>
                       </template>
                     </div>

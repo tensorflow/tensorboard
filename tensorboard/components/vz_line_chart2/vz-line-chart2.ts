@@ -215,17 +215,6 @@ Polymer({
     },
 
     /**
-     * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
-     * table element because Polymer does not support that. This seems like
-     * a bug in Polymer. Hence, we manually generate the HTML for creating a row
-     * of table headers.
-     */
-    _tooltipTableHeaderHtml: {
-      type: String,
-      computed: '_computeTooltipTableHeaderHtml(tooltipColumns)',
-    },
-
-    /**
      * Change how the tooltip is sorted. Allows:
      * - "default" - Sort the tooltip by input order.
      * - "ascending" - Sort the tooltip by ascending value.
@@ -235,11 +224,17 @@ Polymer({
     tooltipSortingMethod: {type: String, value: 'default'},
 
     /**
-     * Change how the tooltip is positioned. Allows:
+     * Changes how the tooltip is positioned. Allows:
      * - "bottom" - Position the tooltip on the bottom of the chart.
      * - "right" - Position the tooltip to the right of the chart.
+     * - "auto" - Position the tooltip to the bottom of the chart in most case.
+     *            Position the tooltip above the chart if there isn't sufficient
+     *            space below.
      */
-    tooltipPosition: {type: String, value: 'bottom'},
+    tooltipPosition: {
+      type: String,
+      value: vz_chart_helper.TooltipPosition.BOTTOM,
+    },
 
     _chart: Object,
     _visibleSeriesCache: {
@@ -262,12 +257,10 @@ Polymer({
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
-    '_tooltipPositionChanged(tooltipPosition, _chart)',
-    '_outliersChanged(ignoreYOutliers, _chart)'
+    '_outliersChanged(ignoreYOutliers, _chart)',
   ],
 
-  ready: function() {
-    this.scopeSubtree(this.$.tooltip, true);
+  ready() {
     this.scopeSubtree(this.$.chartdiv, true);
   },
 
@@ -412,7 +405,6 @@ Polymer({
           !this.tooltipColumns) {
         return;
       }
-      var tooltip = d3.select(this.$.tooltip);
       // We directly reference properties of `this` because this call is
       // asynchronous, and values may have changed in between the call being
       // initiated and actually being run.
@@ -421,7 +413,7 @@ Polymer({
           this.yValueAccessor,
           yScaleType,
           colorScale,
-          tooltip,
+          this.$.tooltip,
           this.tooltipColumns,
           this.fillArea,
           this.defaultXRange,
@@ -463,26 +455,9 @@ Polymer({
     this._chart.ignoreYOutliers(this.ignoreYOutliers);
   },
 
-  _computeTooltipTableHeaderHtml() {
-    // The first column contains the circle with the color of the run.
-    const titles = ['', ...this.tooltipColumns.map(c => c.title)];
-    return titles.map(title => `<th>${this._sanitize(title)}</th>`).join('');
-  },
-
   _tooltipSortingMethodChanged: function() {
     if (!this._chart) return;
     this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
-  },
-
-  _tooltipPositionChanged: function() {
-    if (!this._chart) return;
-    this._chart.setTooltipPosition(this.tooltipPosition);
-  },
-
-  _sanitize(value) {
-    return value.replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')  // for symmetry :-)
-                .replace(/&/g, '&amp;');
   },
 
 });
