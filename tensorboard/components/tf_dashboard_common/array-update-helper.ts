@@ -23,16 +23,24 @@ export const ArrayUpdateHelper = {
       value: Array<any>,
       getKey: (item: any, ind: number) => string) {
 
-    const orig = this[prop];
-    const newVal = value;
-    const lookup = new Set(newVal.map((item, i) => getKey(item, i)));
-
-    if (!Array.isArray(orig)) {
-      throw RangeError(`Expected '${prop}' to be an array.`);
+    if (this.isAttached && !Array.isArray(this[prop])) {
+      throw RangeError(
+          `Expected '${prop}' to be an array but is ${typeof this[prop]}.`);
     }
+
     if (!Array.isArray(value)) {
       throw RangeError(`Expected new value to '${prop}' to be an array.`);
     }
+
+    // In case using ComplexObserver, the method can be invoked before the prop
+    // had a chance to initialize properly.
+    if (!Array.isArray(this[prop])) {
+      this[prop] = [];
+    }
+
+    const orig = this[prop];
+    const newVal = value;
+    const lookup = new Set(newVal.map((item, i) => getKey(item, i)));
 
     let origInd = 0;
     let newValInd = 0;
