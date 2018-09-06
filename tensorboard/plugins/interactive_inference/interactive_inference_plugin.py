@@ -143,7 +143,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
            'sprite': True if self.sprite else False}, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
-                               'application/json')
+                               'application/json', code=400)
 
   @wrappers.Request.application
   def _serve_sprite(self, request):
@@ -161,12 +161,12 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """
     if request.method != 'POST':
       return http_util.Respond(request, {'error': 'invalid non-POST request'},
-                               'application/json')
+                               'application/json', code=405)
     example_json = request.form['example']
     index = int(request.form['index'])
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
-                               'application/json')
+                               'application/json', code=400)
     new_example = tf.train.Example()
     json_format.Parse(example_json, new_example)
     self.examples[index] = new_example
@@ -187,7 +187,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     index = int(request.args.get('index'))
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
-                               'application/json')
+                               'application/json', code=400)
     new_example = tf.train.Example()
     new_example.CopyFrom(self.examples[index])
     self.examples.append(new_example)
@@ -208,7 +208,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     index = int(request.args.get('index'))
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
-                               'application/json')
+                               'application/json', code=400)
     del self.examples[index]
     self.updated_example_indices = set([
         i if i < index else i - 1 for i in self.updated_example_indices])
@@ -240,7 +240,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     try:
       if request.method != 'GET':
         tf.logging.error('%s requests are forbidden.', request.method)
-        return wrappers.Response(status=405)
+        return http_util.Respond(request, {'error': 'invalid non-GET request'},
+                                 'application/json', code=405)
 
       serving_bundle = inference_utils.ServingBundle(
           request.args.get('inference_address'),
@@ -266,10 +267,10 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
                                'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
-                               'application/json')
+                               'application/json', code=400)
     except AbortionError as e:
       return http_util.Respond(request, {'error': e.details},
-                               'application/json')
+                               'application/json', code=400)
 
   def create_sprite_image(self, examples):
     """Returns an encoded sprite image for use in Facets Dive.
@@ -383,7 +384,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     try:
       if request.method != 'GET':
         tf.logging.error('%s requests are forbidden.', request.method)
-        return wrappers.Response(status=405)
+        return http_util.Respond(request, {'error': 'invalid non-GET request'},
+                                 'application/json', code=405)
 
       example_index = int(request.args.get('example_index', '0'))
       feature_name = request.args.get('feature_name')
@@ -402,4 +404,4 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, json_mapping, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
-                               'application/json')
+                               'application/json', code=400)

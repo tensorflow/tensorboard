@@ -32,7 +32,7 @@ def make_fake_example(single_int_val=0):
       [single_int_val])
   example.features.feature['single_float'].float_list.value.extend([24.5])
   example.features.feature['non_numeric'].bytes_list.value.extend(
-      ['cat', 'woof'])
+      ['cat', 'cat', 'woof'])
   return example
 
 

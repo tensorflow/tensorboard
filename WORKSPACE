@@ -54,21 +54,21 @@ http_archive(
 
 http_archive(
     name = "tf_serving",
-    sha256 = "c232e3ac72e42acd85b734c89fb0eed1fe8bfc9641b3953b2294c25fdf9976df",
-    strip_prefix = "serving-c99e6082db5bb8ac20d7653a36fdca7396a3ea73",
+    sha256 = "146c826dd42d0bebade5c1af2e02688f164c4775a08e1c52425001deaae7911c",
+    strip_prefix = "serving-1.10.1",
     urls = [
-        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/c99e6082db5bb8ac20d7653a36fdca7396a3ea73.tar.gz",
-        "https://github.com/tensorflow/serving/archive/c99e6082db5bb8ac20d7653a36fdca7396a3ea73.tar.gz",
+        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/1.10.1.tar.gz",
+        "https://github.com/tensorflow/serving/archive/1.10.1.tar.gz",
     ],
 )
 
 http_archive(
     name = "ai_google_pair_facets",
-    sha256 = "f2f019a916b413efa247697fe3483222197eea5b6b2dfbf7c88b84421c474f71",
-    strip_prefix = "facets-3d7ac5f929c3e5b3593217feb386c56763d5a2be",
+    sha256 = "024b5b0926387cfdacfe07a213348286a7aad312d8f1a4d51948e15c073b3695",
+    strip_prefix = "facets-0.2",
     urls = [
-        "http://mirror.bazel.build/github.com/pair-code/facets/archive/3d7ac5f929c3e5b3593217feb386c56763d5a2be.tar.gz",
-        "https://github.com/pair-code/facets/archive/3d7ac5f929c3e5b3593217feb386c56763d5a2be.tar.gz",
+        "http://mirror.bazel.build/github.com/pair-code/facets/archive/0.2.tar.gz",
+        "https://github.com/pair-code/facets/archive/0.2.tar.gz",
     ],
 )
 

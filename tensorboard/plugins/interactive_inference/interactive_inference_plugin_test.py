@@ -97,10 +97,9 @@ class InferencePluginTest(tf.test.TestCase):
   def test_update_example(self):
     self.plugin.examples = [tf.train.Example()]
     example = self.get_fake_example()
-    data = {'example': json_format.MessageToJson(example),
-            'index': '0'}
-    response = self.server.post('/data/plugin/whatif/update_example',
-                                data)
+    response = self.server.post(
+        '/data/plugin/whatif/update_example',
+        data=dict(example=json_format.MessageToJson(example), index='0'))
     self.assertEqual(200, response.status_code)
     self.assertEqual(example, self.plugin.examples[0])
     self.assertTrue(0 in self.plugin.updated_example_indices)
@@ -108,10 +107,9 @@ class InferencePluginTest(tf.test.TestCase):
   def test_update_example_invalid_index(self):
     self.plugin.examples = [tf.train.Example()]
     example = self.get_fake_example()
-    data = {'example': json_format.MessageToJson(example),
-            'index': '1'}
-    response = self.server.post('/data/plugin/whatif/update_example',
-                                data)
+    response = self.server.post(
+        '/data/plugin/whatif/update_example',
+        data=dict(example=json_format.MessageToJson(example), index='1'))
     error = json.loads(response.get_data())['error']
     self.assertTrue(error)
 
@@ -178,7 +176,7 @@ class InferencePluginTest(tf.test.TestCase):
 
     # Test that only non_numeric feature has samples.
     self.assertFalse(any(d.get('samples') for d in data[1:]))
-    self.assertEqual([['cat', 'woof']], data[0]['samples'])
+    self.assertEqual(['cat'], data[0]['samples'])
 
   @mock.patch.object(inference_utils, 'mutant_charts_for_feature')
   def test_infer_mutants_handler(self, mock_mutant_charts_for_feature):
