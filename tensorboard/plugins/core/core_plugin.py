@@ -295,7 +295,8 @@ commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
         type=int,
         default=6006,
         help='''\
-Port to serve TensorBoard on (default: %(default)s)\
+Port to serve TensorBoard on. Pass 0 to request an unused port selected
+by the operating system. (default: %(default)s)\
 ''')
 
     parser.add_argument(
