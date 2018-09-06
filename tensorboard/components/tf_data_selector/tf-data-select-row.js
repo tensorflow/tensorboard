@@ -81,10 +81,10 @@ var tf_data_selector;
             'dom-change': '_synchronizeColors',
         },
         observers: [
+            '_immutablePropInvarianceViolated(persistenceId.*)',
+            '_immutablePropInvarianceViolated(experiment.*)',
             '_synchronizeColors(checkboxColor)',
             '_persistSelectedRuns(_selectedRuns)',
-            '_initRunsAndTags(experiment)',
-            '_initFromStorage(persistenceId)',
             '_fireChange(_selectedRuns, _tagRegex)',
         ],
         _getPersistenceKey: function (type) {
@@ -137,6 +137,14 @@ var tf_data_selector;
                 .then(function () {
                 _this._isDataReady = true;
             });
+        },
+        _immutablePropInvarianceViolated: function (change) {
+            // We allow property to change many times before the component is attached
+            // to DOM.
+            if (this.isAttached) {
+                throw new Error("Invariance Violation: " +
+                    ("Expected property '" + change.path + "' not to change."));
+            }
         },
         _synchronizeColors: function () {
             var _this = this;

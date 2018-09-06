@@ -19,15 +19,20 @@ var tf_dashboard_common;
      */
     tf_dashboard_common.ArrayUpdateHelper = {
         updateArrayProp: function (prop, value, getKey) {
-            var orig = this[prop];
-            var newVal = value;
-            var lookup = new Set(newVal.map(function (item, i) { return getKey(item, i); }));
-            if (!Array.isArray(orig)) {
-                throw RangeError("Expected '" + prop + "' to be an array.");
+            if (this.isAttached && !Array.isArray(this[prop])) {
+                throw RangeError("Expected '" + prop + "' to be an array but is " + typeof this[prop] + ".");
             }
             if (!Array.isArray(value)) {
                 throw RangeError("Expected new value to '" + prop + "' to be an array.");
             }
+            // In case using ComplexObserver, the method can be invoked before the prop
+            // had a chance to initialize properly.
+            if (!Array.isArray(this[prop])) {
+                this[prop] = [];
+            }
+            var orig = this[prop];
+            var newVal = value;
+            var lookup = new Set(newVal.map(function (item, i) { return getKey(item, i); }));
             var origInd = 0;
             var newValInd = 0;
             while (origInd < orig.length && newValInd < newVal.length) {

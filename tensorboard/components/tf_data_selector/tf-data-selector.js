@@ -38,7 +38,7 @@ var tf_data_selector;
             },
             _experiments: {
                 type: Array,
-                computed: '_computeExperiments(_allExperiments.*, _experimentIds.*)',
+                value: function () { return []; },
             },
             _enabledExperimentIds: {
                 type: Array,
@@ -72,7 +72,11 @@ var tf_data_selector;
                 computed: '_computeShouldColorRuns(_experiments)',
             },
         },
+        behaviors: [
+            tf_dashboard_common.ArrayUpdateHelper,
+        ],
         observers: [
+            '_updateExperiments(_allExperiments, _experimentIds)',
             '_pruneSelections(_experimentIds.*)',
             '_pruneExperimentIds(_allExperiments.*)',
             '_pruneEnabledExperiments(_experimentIds.*)',
@@ -215,11 +219,12 @@ var tf_data_selector;
                 return;
             this._selections = newSelections;
         },
-        _computeExperiments: function () {
+        _updateExperiments: function () {
             var lookup = new Map(this._allExperiments.map(function (e) { return [e.id, e]; }));
-            return this._experimentIds
+            var experiments = this._experimentIds
                 .filter(function (id) { return lookup.has(id); })
                 .map(function (id) { return lookup.get(id); });
+            this.updateArrayProp('_experiments', experiments, function (exp) { return exp.id; });
         },
         _addExperiments: function (event) {
             var addedIds = event.detail.map(function (_a) {
