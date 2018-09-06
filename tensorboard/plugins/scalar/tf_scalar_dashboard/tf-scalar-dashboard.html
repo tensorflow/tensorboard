@@ -314,38 +314,35 @@ limitations under the License.
 
       _updateCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
+        let categories;
         const usesDataSelection = this.useDataSelector && this.dataSelection;
         if (usesDataSelection && this.dataSelection.selections.length == 0) {
-          return [];
+          categories = [];
         } else if (usesDataSelection &&
             this.dataSelection.type != SelectionType.WITHOUT_EXPERIMENT) {
-          const categories = tf_categorization_utils.categorizeSelection(
-              this.dataSelection.selections, PLUGIN_NAME);
-          return categories;
-        }
-
-        let query = tagFilter;
-        if (usesDataSelection) {
-          const selection = this.dataSelection.selections[0] || {};
-          const {runs = [], tagRegex = ''} = selection;
-          query = tagRegex;
-          selectedRuns = runs.map(({name}) => name);
-        }
-        const runToTag = _.mapValues(
-            _.pick(runToTagInfo, selectedRuns),
-            x => Object.keys(x));
-        const categories = tf_categorization_utils.categorizeTags(
-            runToTag, selectedRuns, query);
-        categories.forEach(category => {
-          category.items = category.items.map(item => ({
-            tag: item.tag,
-            series: item.runs.map(run => ({
-              run,
+          categories = tf_categorization_utils.categorizeSelection(
+              this.dataSelection.selections,
+              PLUGIN_NAME);
+        } else {
+          let query = tagFilter;
+          if (usesDataSelection) {
+            const selection = this.dataSelection.selections[0] || {};
+            const {runs = [], tagRegex = ''} = selection;
+            query = tagRegex;
+            selectedRuns = runs.map(({name}) => name);
+          }
+          const runToTag = _.mapValues(
+              _.pick(runToTagInfo, selectedRuns),
+              x => Object.keys(x));
+          categories = tf_categorization_utils.categorizeTags(
+              runToTag, selectedRuns, query);
+          categories.forEach(category => {
+            category.items = category.items.map(item => ({
               tag: item.tag,
-            })),
-          }));
-        });
-
+              series: item.runs.map(run => ({run, tag: item.tag})),
+           }));
+          });
+        }
         this.updateArrayProp('_categories', categories, (c) => c.name);
       },
 
