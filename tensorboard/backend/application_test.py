@@ -40,8 +40,6 @@ import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
-from tensorboard import default
-from tensorboard import program as tensorboard
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -115,9 +113,7 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
 
-class TensorboardServerTest(tf.test.TestCase):
-  _only_use_meta_graph = False  # Server data contains only a GraphDef
-
+class ApplicationTest(tf.test.TestCase):
   def setUp(self):
     plugins = [
         FakePlugin(
@@ -150,8 +146,7 @@ class TensorboardServerTest(tf.test.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class TensorboardServerBaseUrlTest(tf.test.TestCase):
-  _only_use_meta_graph = False  # Server data contains only a GraphDef
+class ApplicationBaseUrlTest(tf.test.TestCase):
   path_prefix = '/test'
   def setUp(self):
     plugins = [
@@ -191,7 +186,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class TensorboardServerPluginNameTest(tf.test.TestCase):
+class ApplicationPluginNameTest(tf.test.TestCase):
 
   def _test(self, name, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
@@ -233,8 +228,7 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
     self._test('Scalar-Dashboard_3000.1', True)
 
 
-
-class TensorboardServerPluginRouteTest(tf.test.TestCase):
+class ApplicationPluginRouteTest(tf.test.TestCase):
 
   def _test(self, route, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
@@ -265,11 +259,6 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
 
   def testSlashlessRoute(self):
     self._test('runaway', False)
-
-
-class TensorboardServerUsingMetagraphOnlyTest(TensorboardServerTest):
-  # Tests new ability to use only the MetaGraphDef
-  _only_use_meta_graph = True  # Server data contains only a MetaGraphDef
 
 
 class ParseEventFilesSpecTest(tf.test.TestCase):
@@ -397,6 +386,7 @@ class TensorBoardPluginsTest(tf.test.TestCase):
 
   def setUp(self):
     self.context = None
+    dummy_assets_zip_provider = lambda: None
     # The application should have added routes for both plugins.
     self.app = application.standard_tensorboard_wsgi(
         FakeFlags(logdir=self.get_temp_dir()),
@@ -414,7 +404,7 @@ class TensorBoardPluginsTest(tf.test.TestCase):
               routes_mapping={'/bar_route': self._bar_handler},
               construction_callback=self._construction_callback)),
         ],
-        default.get_assets_zip_provider())
+        dummy_assets_zip_provider)
 
   def _foo_handler(self):
     pass
@@ -441,50 +431,7 @@ class TensorBoardPluginsTest(tf.test.TestCase):
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
 
-class TensorboardSimpleServerConstructionTest(tf.test.TestCase):
-  """Tests that the default HTTP server is constructed without error.
-
-  Mostly useful for IPv4/IPv6 testing. This test should run with only IPv4, only
-  IPv6, and both IPv4 and IPv6 enabled.
-  """
-
-  class _StubApplication(object):
-    tag = ''
-
-  def testMakeServerBlankHost(self):
-    # Test that we can bind to all interfaces without throwing an error
-    server, url = tensorboard.make_simple_server(
-        self._StubApplication(),
-        host='',
-        port=0)  # Grab any available port
-    self.assertTrue(server)
-    self.assertTrue(url)
-
-  def testSpecifiedHost(self):
-    one_passed = False
-    try:
-      _, url = tensorboard.make_simple_server(
-          self._StubApplication(),
-          host='127.0.0.1',
-          port=0)
-      self.assertStartsWith(actual=url, expected_start='http://127.0.0.1:')
-      one_passed = True
-    except socket.error:
-      # IPv4 is not supported
-      pass
-    try:
-      _, url = tensorboard.make_simple_server(
-          self._StubApplication(),
-          host='::1',
-          port=0)
-      self.assertStartsWith(actual=url, expected_start='http://[::1]:')
-      one_passed = True
-    except socket.error:
-      # IPv6 is not supported
-      pass
-    self.assertTrue(one_passed)  # We expect either IPv4 or IPv6 to be supported
-
-class TensorBoardApplcationConstructionTest(tf.test.TestCase):
+class ApplicationConstructionTest(tf.test.TestCase):
 
   def testExceptions(self):
     logdir = '/fake/foo'
