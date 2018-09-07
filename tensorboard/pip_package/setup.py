@@ -23,7 +23,7 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
-    'mock >= 2.0.0',
+    'grpcio >= 1.6.3',
     'numpy >= 1.12.0',
     'six >= 1.10.0',
     'protobuf >= 3.4.0',

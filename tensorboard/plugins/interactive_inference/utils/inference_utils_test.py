@@ -19,7 +19,11 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import mock
+import sys
+if sys.version_info.major == 2:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+else:
+  from unittest import mock  # pylint: disable=g-import-not-at-top
 import numpy as np
 import tensorflow as tf
 
@@ -148,9 +152,9 @@ class InferenceUtilsTest(tf.test.TestCase):
     }, data)
 
   def test_get_categorical_features_to_sampling(self):
-    cat_woof_example = tf.train.Example()
-    cat_woof_example.features.feature['non_numeric'].bytes_list.value.extend(
-        [b'cat', b'woof'])
+    cat_example = tf.train.Example()
+    cat_example.features.feature['non_numeric'].bytes_list.value.extend(
+        [b'cat'])
 
     cow_example = tf.train.Example()
     cow_example.features.feature['non_numeric'].bytes_list.value.extend(
@@ -160,19 +164,19 @@ class InferenceUtilsTest(tf.test.TestCase):
     pony_example.features.feature['non_numeric'].bytes_list.value.extend(
         [b'pony'])
 
-    examples = [cat_woof_example] * 4 + [cow_example] * 5 + [pony_example] * 10
+    examples = [cat_example] * 4 + [cow_example] * 5 + [pony_example] * 10
 
     # If we stop sampling at the first 3 examples, the only example should be
-    # cat_woof example.
+    # cat example.
     data = inference_utils.get_categorical_features_to_sampling(
         examples[0: 3], top_k=1)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [b'woof']
+            'samples': [b'cat']
         }
     }, data)
 
-    # If we sample more examples, the top 3 examples should be cow and pony.
+    # If we sample more examples, the top 2 examples should be cow and pony.
     data = inference_utils.get_categorical_features_to_sampling(
         examples[0: 20], top_k=2)
     self.assertDictEqual({
