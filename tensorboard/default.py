@@ -65,7 +65,7 @@ _PLUGINS = [
     pr_curves_plugin.PrCurvesPlugin,
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    interactive_inference_plugin.InteractiveInferencePlugin
+    interactive_inference_plugin.InteractiveInferencePlugin,
     profile_plugin.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
 ]
