@@ -20,6 +20,11 @@ from __future__ import print_function
 
 import json
 import os
+import sys
+if sys.version_info.major == 2:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+else:
+  from unittest import mock  # pylint: disable=g-import-not-at-top
 import mock
 import numpy as np
 from six.moves import urllib_parse
