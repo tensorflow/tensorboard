@@ -68,11 +68,6 @@ py_library(
     ]
 )
 
-py_proto_library(
-    name = "test_hack",
-    srcs = []
-)
-
 py_test(
     name = "inference_utils_test",
     size = "small",
@@ -81,11 +76,11 @@ py_test(
     deps = [
         ":common_utils",
         ":inference_utils",
-        ":test_hack",
         ":test_utils",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_library",
         "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_library",
+        "//tensorboard/plugins/scalar:protos_all_py_pb2",
     ],
 )
