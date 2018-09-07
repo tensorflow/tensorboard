@@ -112,6 +112,12 @@ it can be shared with others for them to view the same data in the What-If Tool.
   * Similarity is calculated based on the distribution of feature values across
     all loaded examples and similarity can be calculated using either L1 or L2
     distance.
+    * Distance is normalized between features by:
+      * For numeric features, use the distance between values divided by the
+        standard deviation of the values across all examples.
+      * For categorical features, the distance is 0 if the values are the same,
+        otherwise the distance is the probability that any two examples have
+        the same value for that feature across all examples.
 
 * Edit a selected example in the browser and re-run inference and visualize the
   difference in the inference results.

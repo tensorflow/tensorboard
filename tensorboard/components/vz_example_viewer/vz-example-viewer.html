@@ -183,7 +183,7 @@ limitations under the License.
         word-wrap: break-word;
         color: grey;
         font-weight: 500;
-        font-size: 12px;
+        font-size: 16px;
       }
 
       .slider {
@@ -314,7 +314,7 @@ limitations under the License.
         width: 130px;
         color: grey;
         font-weight: 500;
-        font-size: 12px;
+        font-size: 16px;
       }
 
       paper-dialog {
@@ -335,6 +335,20 @@ limitations under the License.
       .control-button[disabled] {
         color: lightgray;
       }
+
+      .box {
+        width: 12px;
+        height: 12px;
+        margin: 4px 0 0 5px;
+      }
+
+      .yellow {
+        background: rgb(250, 212, 17);
+      }
+
+      .green {
+        background: rgb(22, 220, 251);
+      }
     </style>
     <div class="outer">
       <template is="dom-if" if="[[showSearchBox]]">
@@ -344,9 +358,15 @@ limitations under the License.
       </template>
       <div class="feature-name bold">
         <div class="feature-name-header-text">Feature name</div>
-        <div class="value-pills-holder flex-controls value-header-text">Value</div>
+        <div class="value-pills-holder flex-controls value-header-text">
+          <div>Value</div>
+          <div class="box yellow"></div>
+        </div>
         <template is="dom-if" if="[[compareMode]]">
-            <div class="value-pills-holder flex-controls value-header-text">[[compareTitle]]</div>
+          <div class="value-pills-holder flex-controls value-header-text">
+            <div>[[compareTitle]]</div>
+            <div class="box green"></div>
+          </div>
         </template>
         <div class="space-for-more-button"></div>
       </div>
