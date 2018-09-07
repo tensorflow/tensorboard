@@ -34,32 +34,25 @@ import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
-import logging
 import sys
 
 from tensorboard import default
 from tensorboard import program
 
-logger = logging.getLogger(__name__)
-
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
-  server = program.TensorBoard(default.PLUGIN_LOADERS,
-                               default.get_assets_zip_provider())
-  server.configure(sys.argv[1:])
+  tensorboard = program.TensorBoard(default.get_plugins(),
+                                    default.get_assets_zip_provider())
   try:
     from absl import app
-    app.run(server.main, sys.argv[:1] + server.unparsed_argv)
+    app.run(tensorboard.main, flags_parser=tensorboard.configure)
     raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:
     pass
-  if server.unparsed_argv:
-    sys.stderr.write('Unknown flags: %s\nPass --help for help.\n' %
-                     (server.unparsed_argv,))
-    sys.exit(1)
-  sys.exit(server.main())
+  tensorboard.configure(sys.argv)
+  sys.exit(tensorboard.main())
 
 
 if __name__ == '__main__':

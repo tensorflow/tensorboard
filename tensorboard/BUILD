@@ -57,6 +57,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "program_test",
+    size = "small",
+    srcs = ["program_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":program",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
 py_library(
     name = "default",
     srcs = ["default.py"],
@@ -116,7 +129,7 @@ py_library(
 py_library(
     name = "expect_futures_installed",
     # This is a dummy rule used as a futures dependency in open-source.
-    # We expect numpy to already be installed on the system, e.g. via
+    # We expect futures to already be installed on the system, e.g. via
     # `pip install futures`
     visibility = ["//visibility:public"],
 )
