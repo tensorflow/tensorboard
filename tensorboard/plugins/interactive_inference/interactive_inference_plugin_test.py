@@ -74,7 +74,7 @@ class InferencePluginTest(tf.test.TestCase):
             'max_examples': 2
         }))
     self.assertEqual(200, response.status_code)
-    example_strings = json.loads(response.get_data())['examples']
+    example_strings = json.loads(response.get_data().decode('utf-8'))['examples']
     received_examples = [json.loads(x) for x in example_strings]
     self.assertEqual(2, len(received_examples))
     self.assertEqual(0,
@@ -91,7 +91,7 @@ class InferencePluginTest(tf.test.TestCase):
             'examples_path': 'does_not_exist',
             'max_examples': 2
         }))
-    error = json.loads(response.get_data())['error']
+    error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
 
   def test_update_example(self):
@@ -110,7 +110,7 @@ class InferencePluginTest(tf.test.TestCase):
     response = self.server.post(
         '/data/plugin/whatif/update_example',
         data=dict(example=json_format.MessageToJson(example), index='1'))
-    error = json.loads(response.get_data())['error']
+    error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
 
   @mock.patch.object(oss_utils, 'call_servo')
@@ -138,7 +138,8 @@ class InferencePluginTest(tf.test.TestCase):
 
     self.assertEqual(200, response.status_code)
     self.assertEqual(0, len(self.plugin.updated_example_indices))
-    inferences = json.loads(json.loads(response.get_data())['inferences'])
+    inferences = json.loads(json.loads(response.get_data().decode('utf-8'))[
+        'inferences'])
     self.assertTrue(0 in inferences['indices'])
     self.assertFalse(1 in inferences['indices'])
     self.assertTrue(2 in inferences['indices'])

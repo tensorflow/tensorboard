@@ -17,6 +17,8 @@
 import collections
 import copy
 import numpy as np
+from six import iteritems
+from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
@@ -175,14 +177,14 @@ class ServingBundle(object):
   def __init__(self, inference_address, model_name, model_type, model_version,
                signature):
     """Inits ServingBundle."""
-    if not isinstance(inference_address, basestring):
+    if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
           type(inference_address)))
     # Clean the inference_address so that SmartStub likes it.
     self.inference_address = inference_address.replace('http://', '').replace(
         'https://', '')
 
-    if not isinstance(model_name, basestring):
+    if not isinstance(model_name, string_types):
       raise ValueError('Invalid model_name has type: {}'.format(
           type(model_name)))
     self.model_name = model_name
@@ -295,7 +297,7 @@ def get_numeric_features_to_observed_range(examples):
           'observedMin': min(feature_values),
           'observedMax': max(feature_values),
       }
-      for feature_name, feature_values in observed_features.iteritems()
+      for feature_name, feature_values in iteritems(observed_features)
   }
 
 
@@ -327,7 +329,7 @@ def get_categorical_features_to_sampling(examples, top_k):
       observed_features[feature_name].extend(original_feature.original_value)
 
   result = {}
-  for feature_name, feature_values in sorted(observed_features.iteritems()):
+  for feature_name, feature_values in sorted(iteritems(observed_features)):
     samples = [
         word
         for word, count in collections.Counter(feature_values).most_common(
@@ -453,7 +455,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
         'data': []
     }
 
-  indices_to_mutate = viz_params.feature_indices or xrange(
+  indices_to_mutate = viz_params.feature_indices or range(
       original_feature.length)
   chart_type = ('categorical' if original_feature.feature_type == 'bytes_list'
                 else 'numeric')

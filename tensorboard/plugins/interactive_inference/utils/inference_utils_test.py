@@ -150,14 +150,15 @@ class InferenceUtilsTest(tf.test.TestCase):
   def test_get_categorical_features_to_sampling(self):
     cat_woof_example = tf.train.Example()
     cat_woof_example.features.feature['non_numeric'].bytes_list.value.extend(
-        ['cat', 'woof'])
+        [b'cat', b'woof'])
 
     cow_example = tf.train.Example()
-    cow_example.features.feature['non_numeric'].bytes_list.value.extend(['cow'])
+    cow_example.features.feature['non_numeric'].bytes_list.value.extend(
+        [b'cow'])
 
     pony_example = tf.train.Example()
     pony_example.features.feature['non_numeric'].bytes_list.value.extend(
-        ['pony'])
+        [b'pony'])
 
     examples = [cat_woof_example] * 4 + [cow_example] * 5 + [pony_example] * 10
 
@@ -167,7 +168,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 3], top_k=1)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': ['woof']
+            'samples': [b'woof']
         }
     }, data)
 
@@ -176,7 +177,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 20], top_k=2)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': ['pony', 'cow']
+            'samples': [b'pony', b'cow']
         }
     }, data)
 
@@ -388,7 +389,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     jsonable = inference_utils.make_json_formatted_for_single_chart(
         [mutant_feature], inference_result_proto, 0)
 
-    self.assertEqual(['value'], jsonable.keys())
+    self.assertEqual(['value'], list(jsonable.keys()))
     self.assertEqual(1, len(jsonable['value']))
     self.assertEqual(20, jsonable['value'][0]['step'])
     self.assertAlmostEqual(0.45, jsonable['value'][0]['scalar'])
