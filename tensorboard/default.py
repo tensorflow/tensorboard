@@ -51,23 +51,34 @@ from tensorboard.plugins.text import text_plugin
 
 logger = logging.getLogger(__name__)
 
-PLUGIN_LOADERS = [
+_PLUGINS = [
     core_plugin.CorePluginLoader(),
-    base_plugin.BasicLoader(beholder_plugin.BeholderPlugin),
-    base_plugin.BasicLoader(scalars_plugin.ScalarsPlugin),
-    base_plugin.BasicLoader(custom_scalars_plugin.CustomScalarsPlugin),
-    base_plugin.BasicLoader(images_plugin.ImagesPlugin),
-    base_plugin.BasicLoader(audio_plugin.AudioPlugin),
-    base_plugin.BasicLoader(graphs_plugin.GraphsPlugin),
-    base_plugin.BasicLoader(distributions_plugin.DistributionsPlugin),
-    base_plugin.BasicLoader(histograms_plugin.HistogramsPlugin),
-    base_plugin.BasicLoader(pr_curves_plugin.PrCurvesPlugin),
-    base_plugin.BasicLoader(projector_plugin.ProjectorPlugin),
-    base_plugin.BasicLoader(text_plugin.TextPlugin),
+    beholder_plugin.BeholderPlugin,
+    scalars_plugin.ScalarsPlugin,
+    custom_scalars_plugin.CustomScalarsPlugin,
+    images_plugin.ImagesPlugin,
+    audio_plugin.AudioPlugin,
+    graphs_plugin.GraphsPlugin,
+    distributions_plugin.DistributionsPlugin,
+    histograms_plugin.HistogramsPlugin,
+    pr_curves_plugin.PrCurvesPlugin,
+    projector_plugin.ProjectorPlugin,
+    text_plugin.TextPlugin,
     profile_plugin.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
 ]
 
+def get_plugins():
+  """Returns a list specifying TensorBoard's default first-party plugins.
+
+  Plugins are specified in this list either via a TBLoader instance to load the
+  plugin, or the TBPlugin class itself which will be loaded using a BasicLoader.
+
+  This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+  :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
+  """
+  return _PLUGINS[:]
 
 def get_assets_zip_provider():
   """Opens stock TensorBoard web assets collection.
