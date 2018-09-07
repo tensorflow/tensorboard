@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 syntax = "proto3";
 
-import "tensorflow_serving/apis/classification.proto";
-import "tensorflow_serving/apis/regression.proto";
+import "tensorboard/plugins/interactive_inference/utils/serving/classification.proto";
+import "tensorboard/plugins/interactive_inference/utils/serving/regression.proto";
 
 package tensorboard.plugins.interactive_inference.utils;
 

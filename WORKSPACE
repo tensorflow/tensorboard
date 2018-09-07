@@ -53,16 +53,6 @@ http_archive(
 )
 
 http_archive(
-    name = "tf_serving",
-    sha256 = "146c826dd42d0bebade5c1af2e02688f164c4775a08e1c52425001deaae7911c",
-    strip_prefix = "serving-1.10.1",
-    urls = [
-        "http://mirror.bazel.build/github.com/tensorflow/serving/archive/1.10.1.tar.gz",
-        "https://github.com/tensorflow/serving/archive/1.10.1.tar.gz",
-    ],
-)
-
-http_archive(
     name = "ai_google_pair_facets",
     sha256 = "024b5b0926387cfdacfe07a213348286a7aad312d8f1a4d51948e15c073b3695",
     strip_prefix = "facets-0.2",
@@ -79,9 +69,9 @@ closure_repositories(
     omit_com_google_protobuf_js = True,
 )
 
-load("@tf_serving//tensorflow_serving:workspace.bzl", "tf_serving_workspace")
+load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
 
-tf_serving_workspace()
+tf_workspace()
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 

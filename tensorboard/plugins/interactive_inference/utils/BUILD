@@ -16,6 +16,9 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":common_utils",
+        "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_library",
+        "//tensorboard/plugins/interactive_inference/utils/serving:prediction_service_py_library",
+        "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_library",
     ],
 )
 py_library(
@@ -27,6 +30,8 @@ py_library(
         ":oss_utils",
         ":inference_py_library",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_library",
+        "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_library",
     ],
 )
 
@@ -45,9 +50,9 @@ py_proto_library(
     srcs = ["inference.proto"],
     srcs_version = "PY2AND3",
     deps = [
+      "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_pb2",
+      "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_pb2",
       "@protobuf_archive//:protobuf_python",
-      "@tf_serving//tensorflow_serving/apis:classification_proto_py_pb2",
-      "@tf_serving//tensorflow_serving/apis:regression_proto_py_pb2",
       ],
     protoc = "@protobuf_archive//:protoc",
     default_runtime = "@protobuf_archive//:protobuf_python",
@@ -57,6 +62,10 @@ py_library(
     name = "inference_py_library",
     srcs = ["inference_pb2.py"],
     srcs_version = "PY2AND3",
+    deps = [
+      "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_library",
+      "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_library",
+    ]
 )
 
 py_test(
