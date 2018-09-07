@@ -16,7 +16,7 @@
 
 from glob import glob
 from grpc.beta import implementations
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 import tensorflow as tf
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
