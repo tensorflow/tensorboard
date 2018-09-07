@@ -27,8 +27,8 @@ from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import oss_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
-from tensorflow_serving.apis import classification_pb2
-from tensorflow_serving.apis import regression_pb2
+from tensorboard.plugins.interactive_inference.utils.serving import classification_pb2
+from tensorboard.plugins.interactive_inference.utils.serving import regression_pb2
 
 
 class InferenceUtilsTest(tf.test.TestCase):

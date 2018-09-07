@@ -79,5 +79,7 @@ py_test(
         ":test_utils",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_library",
+        "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_library",
     ],
 )
