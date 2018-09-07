@@ -52,10 +52,10 @@ py_proto_library(
     deps = [
       "//tensorboard/plugins/interactive_inference/utils/serving:classification_py_pb2",
       "//tensorboard/plugins/interactive_inference/utils/serving:regression_py_pb2",
-      "@protobuf_archive//:protobuf_python",
+      "@com_google_protobuf//:protobuf_python",
       ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 py_library(
@@ -68,6 +68,11 @@ py_library(
     ]
 )
 
+py_proto_library(
+    name = "test_hack",
+    srcs = []
+)
+
 py_test(
     name = "inference_utils_test",
     size = "small",
@@ -76,6 +81,7 @@ py_test(
     deps = [
         ":common_utils",
         ":inference_utils",
+        ":test_hack",
         ":test_utils",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",

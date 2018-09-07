@@ -127,7 +127,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     example = test_utils.make_fake_example(single_int_val=2)
 
     data = inference_utils.get_numeric_features_to_observed_range(
-        [example], 1)
+        [example])
 
     # Returns a sorted list by feature_name.
     self.assertDictEqual({
@@ -169,7 +169,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 3], top_k=1)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [str(['cat', 'woof'])]
+            'samples': ['woof']
         }
     }, data)
 
@@ -178,7 +178,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 20], top_k=2)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [str(['pony']), str(['cow'])]
+            'samples': ['pony', 'cow']
         }
     }, data)
 
@@ -213,14 +213,13 @@ class InferenceUtilsTest(tf.test.TestCase):
   def test_mutant_charts_for_feature(self, mock_call_servo,
                                      mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
-    serving_bundle = inference_utils.ServingBundle('', '', 'classification')
+    serving_bundle = inference_utils.ServingBundle('', '', 'classification',
+                                                   '', '')
     num_mutants = 10
-    num_examples_to_scan = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
         x_max=10,
-        examples_path=self.examples_path,
-        num_examples_to_scan=num_examples_to_scan,
+        examples=[example],
         num_mutants=num_mutants,
         feature_index_pattern=None)
 
@@ -241,21 +240,20 @@ class InferenceUtilsTest(tf.test.TestCase):
     charts = inference_utils.mutant_charts_for_feature(
         example, 'non_numeric', serving_bundle, viz_params)
     self.assertEqual('categorical', charts['chartType'])
-    self.assertEqual(1, len(charts['data']))
+    self.assertEqual(3, len(charts['data']))
 
   @mock.patch.object(inference_utils, 'make_json_formatted_for_single_chart')
   @mock.patch.object(oss_utils, 'call_servo')
   def test_mutant_charts_for_feature_with_feature_index_pattern(
       self, mock_call_servo, mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
-    serving_bundle = inference_utils.ServingBundle('', '', 'classification')
+    serving_bundle = inference_utils.ServingBundle('', '', 'classification',
+                                                   '', '')
     num_mutants = 10
-    num_examples_to_scan = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
         x_max=10,
-        examples_path=self.examples_path,
-        num_examples_to_scan=num_examples_to_scan,
+        examples=[example],
         num_mutants=num_mutants,
         feature_index_pattern='0 , 2-3')
 
@@ -279,12 +277,10 @@ class InferenceUtilsTest(tf.test.TestCase):
     example = self.make_and_write_fake_example()
     index_to_mutate = 1
     num_mutants = 10
-    num_examples_to_scan = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
         x_max=10,
-        examples_path=self.examples_path,
-        num_examples_to_scan=num_examples_to_scan,
+        examples = [example],
         num_mutants=num_mutants,
         feature_index_pattern=None)
 
@@ -322,8 +318,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     viz_params = inference_utils.VizParams(
         x_min=1,
         x_max=10,
-        examples_path=self.examples_path,
-        num_examples_to_scan=num_examples_to_scan,
+        examples = [example],
         num_mutants=num_mutants,
         feature_index_pattern=None)
     original_feature = inference_utils.parse_original_feature_from_example(
@@ -370,7 +365,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         original_feature, index=0, mutant_value=20)
 
     jsonable = inference_utils.make_json_formatted_for_single_chart(
-        [mutant_feature], inference_result_proto)
+        [mutant_feature], inference_result_proto, 0)
 
     self.assertEqual(['class_a', 'class_b'], sorted(jsonable.keys()))
     self.assertEqual(1, len(jsonable['class_a']))
@@ -393,7 +388,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         original_feature, index=0, mutant_value=20)
 
     jsonable = inference_utils.make_json_formatted_for_single_chart(
-        [mutant_feature], inference_result_proto)
+        [mutant_feature], inference_result_proto, 0)
 
     self.assertEqual(['value'], jsonable.keys())
     self.assertEqual(1, len(jsonable['value']))

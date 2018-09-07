@@ -10,10 +10,10 @@ py_proto_library(
     srcs_version = "PY2AND3",
     deps = [
       "@org_tensorflow//tensorflow/core:protos_all_py",
-      "@protobuf_archive//:protobuf_python",
+      "@com_google_protobuf//:protobuf_python",
       ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
@@ -29,10 +29,10 @@ py_proto_library(
     srcs_version = "PY2AND3",
     deps = [
         "@org_tensorflow//tensorflow/core:protos_all_py",
-        "@protobuf_archive//:protobuf_python",
+        "@com_google_protobuf//:protobuf_python",
     ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
@@ -50,10 +50,10 @@ py_proto_library(
         ":input_py_pb2",
         ":model_py_pb2",
         "@org_tensorflow//tensorflow/core:protos_all_py",
-        "@protobuf_archive//:protobuf_python",
+        "@com_google_protobuf//:protobuf_python",
     ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
@@ -75,10 +75,10 @@ py_proto_library(
         ":input_py_pb2",
         ":model_py_pb2",
         "@org_tensorflow//tensorflow/core:protos_all_py",
-        "@protobuf_archive//:protobuf_python",
+        "@com_google_protobuf//:protobuf_python",
     ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
@@ -99,10 +99,10 @@ py_proto_library(
     deps = [
         ":model_py_pb2",
         "@org_tensorflow//tensorflow/core:protos_all_py",
-        "@protobuf_archive//:protobuf_python",
+        "@com_google_protobuf//:protobuf_python",
     ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
@@ -122,10 +122,10 @@ py_proto_library(
     deps = [
         ":model_py_pb2",
         "@org_tensorflow//tensorflow/core:protos_all_py",
-        "@protobuf_archive//:protobuf_python",
+        "@com_google_protobuf//:protobuf_python",
     ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
@@ -148,10 +148,10 @@ py_proto_library(
         ":model_py_pb2",
         ":regression_py_pb2",
         "@org_tensorflow//tensorflow/core:protos_all_py",
-        "@protobuf_archive//:protobuf_python",
+        "@com_google_protobuf//:protobuf_python",
     ],
-    protoc = "@protobuf_archive//:protoc",
-    default_runtime = "@protobuf_archive//:protobuf_python",
+    protoc = "@com_google_protobuf//:protoc",
+    default_runtime = "@com_google_protobuf//:protobuf_python",
 )
 
 
