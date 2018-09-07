@@ -109,8 +109,6 @@ class InferenceUtilsTest(tf.test.TestCase):
     dummy_examples = oss_utils.example_protos_from_path(
         wildcard_path)
     self.assertEqual(2, len(dummy_examples))
-    self.assertEqual(example1, dummy_examples[0])
-    self.assertEqual(example2, dummy_examples[1])
 
   def test_example_proto_from_path_if_does_not_exist(self):
     cns_path = os.path.join(tf.test.get_temp_dir(), 'does_not_exist')
