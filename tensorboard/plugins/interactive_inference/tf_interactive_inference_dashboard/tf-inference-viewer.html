@@ -1,0 +1,232 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- Displays the results of inferences in the what-if tool side panel. -->
+<dom-module id="tf-inference-viewer">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      .runs-holder {
+        padding: 0;
+        display: flex;
+        flex-direction: column-reverse;
+        overflow-y: auto;
+        max-height: 200px;
+      }
+      .row {
+        display: flex;
+      }
+      .header {
+        color: grey;
+        font-weight: 500;
+        font-size: 16px;
+        padding: 5px 0;
+      }
+      .dark-row {
+        background: #cbf0f8
+      }
+      .stripe-row {
+        background: #e4f7fb;
+      }
+      .white-row {
+        background: white;
+      }
+      .marker {
+        flex: 0.5;
+        margin-right: 5px;
+      }
+      .marker.mark {
+        background: #007B83;
+        padding-left: 1px;
+      }
+      .run {
+        flex: 10;
+      }
+      .label {
+        flex: 20;
+        display: flex;
+        overflow: hidden;
+      }
+      .no-label {
+        display: none;
+      }
+      .score {
+        flex: 10;
+      }
+      .arrow {
+        flex: 2;
+      }
+      .delta {
+        flex: 10;
+      }
+      .green {
+        color: green;
+      }
+      .red {
+        color: red;
+      }
+    </style>
+    <div class="row header">
+      <div class="marker"></div>
+      <div class="run">Run</div>
+      <div class$="[[getLabelClass(modelType)]]">Label</div>
+      <div class="score">[[getScoreLabel(modelType)]]</div>
+      <div class="arrow"></div>
+      <div class="delta">Delta</div>
+    </div>
+    <div class="runs-holder">
+      <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
+        <div class="rows-for-run">
+          <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
+            <div class$="[[getRowClass(runindex, inferences, index)]]">
+              <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
+              <div class="run">[[getRunNumber(runindex)]]</div>
+              <div class$="[[getLabelClass(modelType)]]">
+                <div>[[getLabel(item)]]</div>
+              </div>
+              <div class="score">[[getPrintableScore(item.score)]]</div>
+              <div class="arrow">
+                <iron-icon icon="[[getIcon(runindex, index)]]"
+                           class$="[[getIconClass(runindex, index)]]">
+                </iron-icon>
+              </div>
+              <div class="delta">[[getPrintableDelta(runindex, index)]]</div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "tf-inference-viewer",
+      properties: {
+        inferences: Array,
+        // Possible modelType values currently 'regression and 'classification'.
+        modelType: String,
+        maxEntriesPerRun: {
+          type: Number,
+          value: 5,
+        },
+      },
+
+      getLabel: function(item) {
+        let label = item.label;
+        if (item.vocabLabel) {
+          label += ' (' + item.vocabLabel + ')';
+        }
+        return label;
+      },
+
+      getLabelClass: function(modelType) {
+        return modelType == 'classification' ? 'label' : 'no-label';
+      },
+
+      getScoreLabel: function(modelType) {
+        return modelType == 'classification' ? 'Score' : 'Value';
+      },
+
+      getIconClass: function(runIndex, labelIndex) {
+        return this.getIconDecision(runIndex, labelIndex, 'green', 'red');
+      },
+
+      getIcon: function(runIndex, labelIndex) {
+        return this.getIconDecision(
+          runIndex, labelIndex, 'icons:arrow-upward', 'icons:arrow-downward');
+      },
+
+      /**
+       * Returns upVal or downVal depending on if value from latest inference
+       * is higher or lower than from previous inference.
+       */
+      getIconDecision: function(runIndex, labelIndex, upVal, downVal) {
+        // No up or down on first run.
+        if (runIndex == 0) {
+          return '';
+        }
+        const inferenceIndex = runIndex;
+        const label = this.inferences[inferenceIndex][labelIndex].label;
+        const score = this.inferences[inferenceIndex][labelIndex].score;
+        const previousInference = this.inferences[inferenceIndex - 1];
+        for (let i = 0; i < previousInference.length; i++) {
+          if (previousInference[i].label == label) {
+            if (previousInference[i].score > score) {
+              return downVal;
+            }
+            if (previousInference[i].score < score) {
+              return upVal;
+            }
+            return '';
+          }
+        }
+        return upVal;
+      },
+
+      getRunNumber: function(index) {
+        return index + 1;
+      },
+
+      getMarkerClass: function(index, inferences) {
+        return 'marker' + (index == (inferences.length - 1) ? ' mark' : '');
+      },
+
+      getRowClass: function(index, inferences, subindex) {
+        let str = 'row ';
+        if (index == (inferences.length - 1)) {
+          str += 'dark-row';
+        } else {
+          str += subindex % 2 == 0 ? 'white-row' : 'stripe-row';
+        }
+        return str;
+      },
+
+      getInference: function(inference, index) {
+        return inference;
+      },
+
+      getPrintableScore: function(score) {
+        return score.toFixed(3);
+      },
+
+      getPrintableDelta: function(runIndex, labelIndex) {
+        if (runIndex == 0) {
+          return '';
+        }
+        const inferenceIndex = runIndex;
+        const label = this.inferences[inferenceIndex][labelIndex].label;
+        const score = this.inferences[inferenceIndex][labelIndex].score;
+        const previousInference = this.inferences[inferenceIndex - 1];
+        for (let i = 0; i < previousInference.length; i++) {
+          if (previousInference[i].label == label) {
+            return (score - previousInference[i].score).toFixed(6);
+          }
+        }
+        return '';
+      },
+
+      getInferenceList: function(inferenceList, maxEntries) {
+        return inferenceList.slice(0, maxEntries);
+      },
+    });
+
+  </script>
+</dom-module>
