@@ -110,6 +110,13 @@ var vz_line_chart;
              */
             xAxisFormatter: Object,
             /**
+             * A formatter for values along the Y-axis. Optional. Defaults to a
+             * reasonable formatter.
+             *
+             * @type {function(number): string}
+             */
+            yAxisFormatter: Object,
+            /**
              * A method that implements the Plottable.IAccessor<number> interface. Used
              * for accessing the y value from a data point.
              *
@@ -336,7 +343,7 @@ var vz_line_chart;
                 // We directly reference properties of `this` because this call is
                 // asynchronous, and values may have changed in between the call being
                 // initiated and actually being run.
-                var chart = new LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
+                var chart = new LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter, this.yAxisFormatter);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
                 if (this._chart)
@@ -392,7 +399,7 @@ var vz_line_chart;
         },
     });
     var LineChart = /** @class */ (function () {
-        function LineChart(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter) {
+        function LineChart(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter, yAxisFormatter) {
             this.seriesNames = [];
             this.name2datasets = {};
             this.colorScale = colorScale;
@@ -413,10 +420,12 @@ var vz_line_chart;
             this._defaultXRange = defaultXRange;
             this._defaultYRange = defaultYRange;
             this.tooltipColumns = tooltipColumns;
-            this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter);
+            this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter);
         }
-        LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter) {
-            this.destroy();
+        LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter) {
+            if (this.outer) {
+                this.outer.destroy();
+            }
             var xComponents = xComponentsCreationMethod();
             this.xAccessor = xComponents.accessor;
             this.xScale = xComponents.scale;
@@ -427,8 +436,9 @@ var vz_line_chart;
             }
             this.yScale = LineChart.getYScaleFromType(yScaleType);
             this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-            var yFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
-            this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
+            this.yAxis.margin(0).tickLabelPadding(5);
+            this.yAxis.formatter(yAxisFormatter ? yAxisFormatter
+                : vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION));
             this.yAxis.usesTextWidthApproximation(true);
             this.fillArea = fillArea;
             this.dzl = new vz_line_chart.DragZoomLayer(this.xScale, this.yScale, this.resetYDomain.bind(this));

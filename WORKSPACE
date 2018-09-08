@@ -42,13 +42,6 @@ http_archive(
     ],
 )
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
-
-closure_repositories(
-    omit_com_google_protobuf = True,
-    omit_com_google_protobuf_js = True,
-)
-
 http_archive(
     name = "org_tensorflow",
     sha256 = "88324ad9379eae4fdb2aefb8e0d6c7cd0dc748b44daa5cc96ffd9415705c00c3",
@@ -57,6 +50,23 @@ http_archive(
         "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",  # 2018-04-16
         "https://github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",
     ],
+)
+
+http_archive(
+    name = "ai_google_pair_facets",
+    sha256 = "e3f7b7b3c194c1772d16bdc8b348716c0da59a51daa03ef4503cf06c073caafc",
+    strip_prefix = "facets-0.2.1",
+    urls = [
+        "http://mirror.bazel.build/github.com/pair-code/facets/archive/0.2.1.tar.gz",
+        "https://github.com/pair-code/facets/archive/0.2.1.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
+
+closure_repositories(
+    omit_com_google_protobuf = True,
+    omit_com_google_protobuf_js = True,
 )
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")

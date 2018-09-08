@@ -43,6 +43,7 @@ from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
+from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
@@ -64,6 +65,7 @@ _PLUGINS = [
     pr_curves_plugin.PrCurvesPlugin,
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
+    interactive_inference_plugin.InteractiveInferencePlugin,
     profile_plugin.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
 ]

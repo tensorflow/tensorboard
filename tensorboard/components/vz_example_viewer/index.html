@@ -17,7 +17,7 @@ limitations under the License.
 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>vz-line-chart demo</title>
+<title>vz-example-viewer demo</title>
 <link rel="import" href="vz-example-viewer.html">
 <link rel="import" href="../iron-demo-helpers/demo-snippet.html">
 <link rel="import" href="../paper-styles/typography.html">
@@ -27,7 +27,7 @@ limitations under the License.
   }
 
   vz-example-viewer {
-    height: 800px;
+    height: 300px;
   }
 </style>
 <h3>Simple example viewer</h3>
@@ -36,9 +36,12 @@ limitations under the License.
     <vz-example-viewer id="simple"></vz-example-viewer>
     <div id="changed"></div>
     <div id="jsonchanged"></div>
+    <vz-example-viewer id="seq"></vz-example-viewer>
     <script>
-      var elem = document.querySelector('#simple');
+      const elem = document.querySelector('#simple');
+      const seq = document.querySelector('#seq');
       const encodedStr = btoa('hello');
+      const encodedStr2 = btoa('bye');
       const json = {
         'features': {
           'feature': {
@@ -54,6 +57,21 @@ limitations under the License.
         document.querySelector('#changed').innerHTML = event.detail.example.toString();
         document.querySelector('#jsonchanged').innerHTML = JSON.stringify(elem.json);
       });
+      const seqjson = {
+        'context': {
+          'feature': {
+            'context': {'int64List': {'value': ['10', '20']}},
+          }
+        },
+        'featureLists': {
+          'featureList': {
+            'bytes': {'feature': [{'bytesList': {'value': [encodedStr]}}, {'bytesList': {'value': [encodedStr2]}}]},
+            'ints': {'feature':  [{'int64List': {'value': ['10', '20']}}, {'int64List': {'value': ['100', '200']}}]},
+            'float': {'feature': [{'floatList': {'value': ['3.14']}}, {'floatList': {'value': ['3.15']}}]}
+          }
+        }
+      };
+      seq.json = seqjson;
     </script>
   </template>
 </demo-snippet>

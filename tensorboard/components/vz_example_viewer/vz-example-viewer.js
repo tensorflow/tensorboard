@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-//goog.require('proto.tensorflow.BytesList');
 import BytesList from 'goog:proto.tensorflow.BytesList';
 import Example from 'goog:proto.tensorflow.Example';
 import Feature from 'goog:proto.tensorflow.Feature';
@@ -54,7 +53,7 @@ var vz_example_viewer;
     Polymer({
         is: 'vz-example-viewer',
         properties: {
-            example: Object,
+            example: { type: Object },
             serializedExample: { type: String, observer: 'updateExample' },
             serializedSeqExample: { type: String, observer: 'updateSeqExample' },
             json: { type: Object, observer: 'createExamplesFromJson' },
@@ -67,25 +66,56 @@ var vz_example_viewer;
             ignoreChange: Boolean,
             minSal: { type: Number, value: 0 },
             maxSal: { type: Number, value: 0 },
-            showSaliency: { type: Boolean, value: true },
+            showSaliency: { type: Boolean, value: false },
             imageInfo: { type: Object, value: {} },
             windowWidth: { type: Number, value: DEFAULT_WINDOW_WIDTH },
             windowCenter: { type: Number, value: DEFAULT_WINDOW_CENTER },
             saliencyCutoff: { type: Number, value: 0 },
             hasImage: { type: Boolean, value: true },
-            allowImageControls: { type: Boolean, value: true },
+            allowImageControls: { type: Boolean, value: false },
             imageScalePercentage: { type: Number, value: 100 },
             features: { type: Object, computed: 'getFeatures(example)' },
-            featuresList: { type: Object, computed: 'getFeaturesList(features)' },
+            featuresList: { type: Object, computed: 'getFeaturesList(features, compareFeatures)' },
             seqFeatures: { type: Object, computed: 'getSeqFeatures(example)' },
-            seqFeaturesList: { type: Object, computed: 'getSeqFeaturesList(features)' },
+            seqFeaturesList: { type: Object, computed: 'getFeaturesList(seqFeatures, compareSeqFeatures)' },
             maxSeqNumber: { type: Number, computed: 'getMaxSeqNumber(seqFeaturesList)' },
             colors: { type: Object, computed: 'getColors(saliency)', observer: 'createLegend' },
+            displayMode: { type: String, value: 'grid' },
+            featureSearchValue: { type: String, value: '', notify: true },
+            filteredFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue)' },
+            filteredSeqFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue)' },
+            focusedFeatureName: String,
+            focusedFeatureValueIndex: Number,
+            focusedSeqNumber: Number,
+            showDeleteValueButton: { type: Boolean, value: false },
+            expandedFeatures: { type: Object, value: {} },
+            expandPillClass: { type: String, value: 'expandPill' },
+            expandAllFeatures: { type: Boolean, value: false },
+            zeroIndex: { type: Number, value: 0 },
+            compareJson: { type: Object, observer: 'createCompareExamplesFromJson' },
+            compareExample: { type: Object },
+            compareFeatures: {
+                type: Object,
+                computed: 'getFeatures(compareExample)',
+                observer: 'updateCompareMode'
+            },
+            compareSeqFeatures: {
+                type: Object,
+                computed: 'getSeqFeatures(compareExample)',
+                observer: 'updateCompareMode'
+            },
+            compareMode: Boolean,
+            compareImageInfo: { type: Object, value: {} },
+            compareTitle: String,
         },
         observers: [
             'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
             'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
         ],
+        isExpanded: function (featName, expandAllFeatures) {
+            return this.expandAllFeatures ||
+                this.sanitizeFeature(featName) in this.expandedFeatures;
+        },
         updateExample: function () {
             this.deserializeExample(this.serializedExample, Example.deserializeBinary);
         },
@@ -107,67 +137,86 @@ var vz_example_viewer;
             this.example = deserializer(bytes);
         },
         /** A computed map of all standard features in an example. */
-        getFeatures: function () {
+        getFeatures: function (example) {
             // Reset our maps of image information when a new example is supplied.
             this.imageInfo = {};
             this.hasImage = false;
-            if (this.example instanceof Example) {
+            if (example == null) {
+                return new Map([]);
+            }
+            if (example instanceof Example) {
                 this.isSequence = false;
-                if (!this.example.hasFeatures()) {
-                    this.example.setFeatures(new Features());
+                if (!example.hasFeatures()) {
+                    example.setFeatures(new Features());
                 }
-                return this.example.getFeatures().getFeatureMap();
+                return example.getFeatures().getFeatureMap();
             }
             else {
                 this.isSequence = true;
-                if (!this.example.hasContext()) {
-                    this.example.setContext(new Features());
+                if (!example.hasContext()) {
+                    example.setContext(new Features());
                 }
-                return this.example.getContext().getFeatureMap();
+                return example.getContext().getFeatureMap();
             }
         },
         /**
          * A computed list of all standard features in an example, for driving the
          * display.
          */
-        getFeaturesList: function () {
-            var features = [];
-            var it = this.features.keys();
+        getFeaturesList: function (features, compareFeatures) {
+            var featuresList = [];
+            var featureSet = {};
+            var it = features.keys();
             if (it) {
                 var next = it.next();
                 while (!next.done) {
-                    features.push({ name: next.value, feature: this.features.get(next.value) });
+                    featuresList.push({ name: next.value, feature: features.get(next.value) });
+                    featureSet[next.value] = true;
                     next = it.next();
                 }
             }
-            return features;
+            it = compareFeatures.keys();
+            if (it) {
+                var next = it.next();
+                while (!next.done) {
+                    if (next.value in featureSet) {
+                        next = it.next();
+                        continue;
+                    }
+                    featuresList.push({ name: next.value, feature: compareFeatures.get(next.value) });
+                    featureSet[next.value] = true;
+                    next = it.next();
+                }
+            }
+            return featuresList;
         },
         /** A computed map of all sequence features in an example. */
-        getSeqFeatures: function () {
-            if (this.example instanceof Example) {
+        getSeqFeatures: function (example) {
+            if (example == null || example instanceof Example) {
                 return new Map([]);
             }
             return this.example
                 .getFeatureLists().getFeatureListMap();
         },
-        /**
-         * A computed list of all sequence features in an example, for driving the
-         * display.
-         */
-        getSeqFeaturesList: function () {
-            var features = [];
-            if (!this.seqFeatures) {
-                return features;
+        getFilteredFeaturesList: function (featureList, searchValue) {
+            var _this = this;
+            var filtered = featureList;
+            if (searchValue != '') {
+                var re_1 = new RegExp(searchValue, 'i');
+                filtered = featureList.filter(function (feature) { return re_1.test(feature.name); });
             }
-            var it = this.seqFeatures.keys();
-            if (it) {
-                var next = it.next();
-                while (!next.done) {
-                    features.push({ name: next.value, feature: this.seqFeatures.get(next.value) });
-                    next = it.next();
+            var sorted = filtered.sort(function (a, b) {
+                if (_this.isImage(a.name) && !_this.isImage(b.name)) {
+                    return -1;
                 }
-            }
-            return features;
+                else if (_this.isImage(b.name) && !_this.isImage(a.name)) {
+                    return 1;
+                }
+                else {
+                    return a.name.localeCompare(b.name);
+                }
+            });
+            return sorted;
         },
         /**
          * Returns the maximum sequence length in the sequence example, or -1 if
@@ -313,40 +362,68 @@ var vz_example_viewer;
             return [min, max];
         },
         /**
-         * Returns a list of the feature values for a string. If keepBytes is true
+         * Returns a list of the feature values for a feature. If keepBytes is true
          * then return the raw bytes. Otherwise convert them to a a readable string.
          */
-        getFeatureValues: function (feature, keepBytes, isImage) {
+        getFeatureValues: function (feature, keepBytes, isImage, compareValues) {
             var _this = this;
-            var feat = this.features.get(feature);
+            var feat = compareValues ?
+                this.compareFeatures.get(feature) :
+                this.features.get(feature);
             if (!feat) {
                 return [];
             }
             if (feat.getBytesList()) {
                 if (!keepBytes) {
-                    var vals = feat.getBytesList().getValueList().map(function (chars) { return _this.decodeBytesListString(
-                    // tslint:disable-next-line:no-any cast due to tf.Example typing
-                    new Uint8Array(chars), isImage); });
+                    var vals = feat.getBytesList().getValueList_asU8().map(function (u8array) { return _this.decodeBytesListString(u8array, isImage); });
                     return vals;
                 }
-                return feat.getBytesList().getValueList();
+                return feat.getBytesList().getValueList().slice();
             }
             else if (feat.getInt64List()) {
-                return feat.getInt64List().getValueList();
+                return feat.getInt64List().getValueList().slice();
             }
             else if (feat.getFloatList()) {
-                return feat.getFloatList().getValueList();
+                return feat.getFloatList().getValueList().slice();
             }
             return [];
         },
         /**
-         * Returns a list of the sequence feature values for a string for a given
+         * Returns a list of the feature values for a the compared example for
+         * a feature.
+         */
+        getCompareFeatureValues: function (feature, keepBytes, isImage) {
+            return this.getFeatureValues(feature, keepBytes, isImage, true);
+        },
+        /** Returns the first feature value for a feature. */
+        getFirstFeatureValue: function (feature) {
+            return this.getFeatureValues(feature)[0];
+        },
+        /** Returns the first feature value for a compared example for a feature. */
+        getFirstCompareFeatureValue: function (feature) {
+            return this.getCompareFeatureValues(feature)[0];
+        },
+        /** Returns if a feature has more than one feature value. */
+        featureHasMultipleValues: function (feature) {
+            return this.getFeatureValues(feature).length > 1;
+        },
+        /**
+         * Returns if a feature has more than one feature value in the compared
+         * example.
+         */
+        compareFeatureHasMultipleValues: function (feature) {
+            return this.getCompareFeatureValues(feature).length > 1;
+        },
+        /**
+         * Returns a list of the sequence feature values for a feature for a given
          * sequence number. If keepBytes is true then return the raw bytes. Otherwise
          * convert them to a a readable string.
          */
-        getSeqFeatureValues: function (feature, seqNum, keepBytes, isImage) {
+        getSeqFeatureValues: function (feature, seqNum, keepBytes, isImage, compareValues) {
             var _this = this;
-            var featlistholder = this.seqFeatures.get(feature);
+            var featlistholder = compareValues ?
+                this.compareSeqFeatures.get(feature) :
+                this.seqFeatures.get(feature);
             if (!featlistholder) {
                 return [];
             }
@@ -363,9 +440,7 @@ var vz_example_viewer;
             }
             if (feat.getBytesList()) {
                 if (!keepBytes) {
-                    return feat.getBytesList().getValueList().map(function (chars) { return _this.decodeBytesListString(
-                    // tslint:disable-next-line:no-any cast due to tf.Example typing
-                    new Uint8Array(chars), isImage); });
+                    return feat.getBytesList().getValueList_asU8().map(function (u8array) { return _this.decodeBytesListString(u8array, isImage); });
                 }
                 return feat.getBytesList().getValueList();
             }
@@ -376,6 +451,32 @@ var vz_example_viewer;
                 return feat.getFloatList().getValueList();
             }
             return [];
+        },
+        /**
+         * Returns a list of the sequence feature values for a feature for a given
+         * sequence number of the compared example.
+         */
+        getCompareSeqFeatureValues: function (feature, seqNum, keepBytes, isImage) {
+            return this.getSeqFeatureValues(feature, seqNum, keepBytes, isImage, true);
+        },
+        /** Returns the first feature value for a sequence feature. */
+        getFirstSeqFeatureValue: function (feature, seqNum) {
+            return this.getSeqFeatureValues(feature, seqNum)[0];
+        },
+        /** Returns the first feature value for the compared example for a feature. */
+        getFirstSeqCompareFeatureValue: function (feature, seqNum) {
+            return this.getCompareSeqFeatureValues(feature, seqNum)[0];
+        },
+        /** Returns if a sequence feature has more than one feature value. */
+        seqFeatureHasMultipleValues: function (feature, seqNum) {
+            return this.getSeqFeatureValues(feature, seqNum).length > 1;
+        },
+        /**
+         * Returns if a sequence feature has more than one feature value in the
+         * compared example.
+         */
+        compareSeqFeatureHasMultipleValues: function (feature, seqNum) {
+            return this.getCompareSeqFeatureValues(feature, seqNum).length > 1;
         },
         /**
          * Decodes a list of bytes into a readable string, treating the bytes as
@@ -407,29 +508,24 @@ var vz_example_viewer;
             return false;
         },
         /**
-         * Gets the allowed input pattern for a feature value, according to its
+         * Gets the allowed input type for a feature value, according to its
          * feature type.
          */
-        getInputPattern: function (feature) {
+        getInputType: function (feature) {
             var feat = this.features.get(feature);
             if (feat) {
-                if (feat.getInt64List()) {
-                    return '[-\\d]';
-                }
-                else if (feat.getFloatList()) {
-                    return '[-.\\d]';
+                if (feat.getInt64List() || feat.getFloatList()) {
+                    return 'number';
                 }
             }
             var seqfeat = this.seqFeatures.get(feature);
             if (seqfeat) {
-                if (seqfeat.getFeatureList()[0].getInt64List()) {
-                    return '[-\\d]';
-                }
-                else if (seqfeat.getFeatureList()[0].getFloatList()) {
-                    return '[-.\\d]';
+                if (seqfeat.getFeatureList()[0].getInt64List() ||
+                    seqfeat.getFeatureList()[0].getFloatList()) {
+                    return 'number';
                 }
             }
-            return '.';
+            return 'text';
         },
         /**
          * Returns the feature object from the provided json attribute for a given
@@ -569,10 +665,29 @@ var vz_example_viewer;
                 }
                 else {
                     values[data.valueIndex] = +inputControl.value;
+                    var jsonList = this.getJsonValueList(data.feature, data.seqNum);
+                    if (jsonList) {
+                        jsonList[data.valueIndex] = +inputControl.value;
+                    }
                 }
                 this.setFeatureValues(feat, values);
                 this.exampleChanged();
             }
+        },
+        onInputFocus: function (event) {
+            var inputControl = event.target;
+            var data = this.getDataFromEvent(event);
+            this.focusedFeatureName = data.feature;
+            this.focusedFeatureValueIndex = data.valueIndex;
+            this.focusedSeqNumber = data.seqNum;
+            this.$.deletevalue.style.top = (inputControl.getBoundingClientRect().top -
+                this.getBoundingClientRect().top - 25) + 'px';
+            this.$.deletevalue.style.right = (this.getBoundingClientRect().right -
+                inputControl.getBoundingClientRect().right + 30) + 'px';
+            this.showDeleteValueButton = true;
+        },
+        onInputBlur: function (event) {
+            this.showDeleteValueButton = false;
         },
         /**
          * When a feature is deleted, updates the example proto appropriately.
@@ -694,18 +809,11 @@ var vz_example_viewer;
             var values = this.getValueListFromData(data);
             if (feat) {
                 if (this.isBytesFeature(data.feature)) {
-                    // If the example was provided as json, update the byteslist in the
-                    // json. For non-bytes features we don't need this separate json update
-                    // as the proto value list is the same as the json value list for that
-                    // case (shallow copy). The byteslist case is different as the json
-                    // base64 encoded string is converted to a list of bytes, one per
-                    // character.
-                    var jsonList = this.getJsonValueList(data.feature, data.seqNum);
-                    if (jsonList) {
-                        jsonList.push(0);
-                    }
+                    values.push('');
                 }
-                values.push(0);
+                else {
+                    values.push(0);
+                }
                 this.setFeatureValues(feat, values);
                 this.exampleChanged();
                 this.refreshExampleViewer();
@@ -752,18 +860,52 @@ var vz_example_viewer;
             }
             this.ignoreChange = false;
         },
-        getInputClass: function (feat) {
-            return this.sanitizeFeature(feat) + ' value';
+        getInputPillClass: function (feat, displayMode) {
+            return this.sanitizeFeature(feat) + ' value-pill' +
+                (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
         },
-        getInputPillClass: function (feat) {
-            return this.sanitizeFeature(feat) + ' value-pill';
+        getCompareInputClass: function (feat, displayMode, index) {
+            var str = 'value-compare' +
+                (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
+            if (index != null) {
+                var values = this.getFeatureValues(feat, true);
+                var compValues = this.getCompareFeatureValues(feat, true);
+                if (index >= values.length || index >= compValues.length ||
+                    values[index] != compValues[index]) {
+                    str += ' value-different';
+                }
+                else {
+                    str += ' value-same';
+                }
+            }
+            return str;
+        },
+        getSeqCompareInputClass: function (feat, displayMode, seqNumber, index) {
+            var str = 'value-compare' +
+                (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
+            if (index != null) {
+                var values = this.getSeqFeatureValues(feat, seqNumber, true);
+                var compValues = this.getCompareSeqFeatureValues(feat, seqNumber, true);
+                if (index >= values.length || index >= compValues.length ||
+                    values[index] != compValues[index]) {
+                    str += ' value-different';
+                }
+                else {
+                    str += ' value-same';
+                }
+            }
+            return str;
         },
         /**
-         * Replaces slashes in feature names with underscores so they can be used
-         * in css classes/ids.
+         * Replaces non-standard chars in feature names with underscores so they can
+         * be used in css classes/ids.
          */
         sanitizeFeature: function (feat) {
-            return feat.replace(/\//g, '_');
+            var sanitized = feat;
+            if (!feat.match(/^[A-Za-z].*$/)) {
+                sanitized = '_' + feat;
+            }
+            return sanitized.replace(/[\/\.\#]/g, '_');
         },
         isSeqExample: function (maxSeqNumber) {
             return maxSeqNumber >= 0;
@@ -848,6 +990,14 @@ var vz_example_viewer;
             return this.getImageSrcForData(feat, this.getFeatureValues(feat, false, true)[0]);
         },
         /**
+         * Returns the data URI src for a feature value that is an encoded image, for
+         * the compared example.
+         */
+        getCompareImageSrc: function (feat) {
+            this.setupOnloadCallback(feat, true);
+            return this.getImageSrcForData(feat, this.getCompareFeatureValues(feat, false, true)[0], true);
+        },
+        /**
          * Returns the data URI src for a sequence feature value that is an encoded
          * image.
          */
@@ -856,23 +1006,37 @@ var vz_example_viewer;
             return this.getImageSrcForData(feat, this.getSeqFeatureValues(feat, seqNum, false, true)[0]);
         },
         /**
+         * Returns the data URI src for a sequence feature value that is an encoded
+         * image, for the compared example.
+         */
+        getCompareSeqImageSrc: function (feat, seqNum) {
+            this.setupOnloadCallback(feat, true);
+            return this.getImageSrcForData(feat, this.getCompareSeqFeatureValues(feat, seqNum, false, true)[0], true);
+        },
+        /**
          * On the next frame, sets the onload callback for the image for the given
          * feature. This is delayed until the next frame to ensure the img element
          * is rendered before setting up the onload function.
          */
-        setupOnloadCallback: function (feat) {
+        setupOnloadCallback: function (feat, compare) {
             var _this = this;
             requestAnimationFrame(function () {
-                var img = _this.$$('#' + _this.getImageId(feat));
-                img.onload = _this.getOnLoadForImage(feat, img);
+                var img = _this.$$('#' + _this.getImageId(feat, compare));
+                img.onload = _this.getOnLoadForImage(feat, img, compare);
             });
         },
         /** Helper method used by getImageSrc and getSeqImageSrc. */
-        getImageSrcForData: function (feat, imageData) {
+        getImageSrcForData: function (feat, imageData, compare) {
             // Get the format of the encoded image, according to the feature name
             // specified by go/tf-example. Defaults to jpeg as specified in the doc.
-            var featureMiddle = IMG_FEATURE_REGEX.exec(feat)[1] || '';
-            var formatVals = this.getFeatureValues('image' + featureMiddle + '/format', false);
+            var regExResult = IMG_FEATURE_REGEX.exec(feat);
+            if (regExResult == null) {
+                return null;
+            }
+            var featureMiddle = regExResult[1] || '';
+            var formatVals = compare ?
+                this.getCompareFeatureValues('image' + featureMiddle + '/format', false) :
+                this.getFeatureValues('image' + featureMiddle + '/format', false);
             var format = 'jpeg';
             if (formatVals.length > 0) {
                 format = formatVals[0].toLowerCase();
@@ -882,14 +1046,53 @@ var vz_example_viewer;
             src = src + btoa(decodeURIComponent(encodeURIComponent(imageData)));
             return src;
         },
+        /** Returns the length of an iterator. */
+        getIterLength: function (it) {
+            var len = 0;
+            if (it) {
+                var next = it.next();
+                while (!next.done) {
+                    len++;
+                    next = it.next();
+                }
+            }
+            return len;
+        },
         /**
-         * Creates tf.Example or tf.SequenceExample jspb object from json. Useful
-         * when this is embedded into a OnePlatform app that sends protos as json.
+         * Updates the compare mode based off of the compared example.
          */
-        createExamplesFromJson: function () {
-            var json = this.json;
+        updateCompareMode: function () {
+            var compareMode = false;
+            if ((this.compareFeatures &&
+                this.getIterLength(this.compareFeatures.keys()) > 0) ||
+                (this.compareSeqFeatures &&
+                    this.getIterLength(this.compareSeqFeatures.keys()) > 0)) {
+                compareMode = true;
+            }
+            this.compareMode = compareMode;
+        },
+        /**
+         * Creates tf.Example or tf.SequenceExample jspb object from json. Useful when
+         * this is embedded into a OnePlatform app that sends protos as json.
+         */
+        createExamplesFromJson: function (json) {
+            this.example = this.createExamplesFromJsonHelper(json);
+            this.compareJson = {};
+        },
+        /**
+         * Creates compared tf.Example or tf.SequenceExample jspb object from json.
+         * Useful when this is embedded into a OnePlatform app that sends protos as
+         * json.
+         */
+        createCompareExamplesFromJson: function (json) {
             if (!json) {
                 return;
+            }
+            this.compareExample = this.createExamplesFromJsonHelper(json);
+        },
+        createExamplesFromJsonHelper: function (json) {
+            if (!json) {
+                return null;
             }
             // If the provided json is a json string, parse it into an object.
             if (typeof this.json === 'string') {
@@ -898,17 +1101,20 @@ var vz_example_viewer;
             if (json.features) {
                 var ex = new Example();
                 ex.setFeatures(this.parseFeatures(json.features));
-                this.example = ex;
+                return ex;
             }
-            else {
-                var ex = new SequenceExample();
+            else if (json.context || json.featureLists) {
+                var seqex = new SequenceExample();
                 if (json.context) {
-                    ex.setContext(this.parseFeatures(json.context));
+                    seqex.setContext(this.parseFeatures(json.context));
                 }
                 if (json.featureLists) {
-                    ex.setFeatureLists(this.parseFeatureLists(json.featureLists));
+                    seqex.setFeatureLists(this.parseFeatureLists(json.featureLists));
                 }
-                this.example = ex;
+                return seqex;
+            }
+            else {
+                return new Example();
             }
         },
         // tslint:disable-next-line:no-any Parsing arbitary json.
@@ -944,7 +1150,6 @@ var vz_example_viewer;
         },
         // tslint:disable-next-line:no-any Parsing arbitary json.
         parseFeature: function (featentry, isImage) {
-            var _this = this;
             var feat = new Feature();
             if (featentry.floatList) {
                 var floats = new FloatList();
@@ -952,18 +1157,11 @@ var vz_example_viewer;
                 feat.setFloatList(floats);
             }
             else if (featentry.bytesList) {
-                // Json byteslist entries need to be converted into byte arrays of
-                // character codes from the base64 encoded string, in order to properly
-                // construct the proto Feature object from the json.
+                // Json byteslist entries are base64.  The JSPB generated Feature class
+                // will marshall this to U8 automatically.
                 var bytes = new BytesList();
                 if (featentry.bytesList.value) {
-                    bytes.setValueList(featentry.bytesList.value.map(function (val) {
-                        var decodedStr = atob(val);
-                        var cc = isImage ? _this.decodedStringToCharCodes(decodedStr) :
-                            _this.stringToUint8Array(decodedStr);
-                        // tslint:disable-next-line:no-any cast due to tf.Example typing.
-                        return cc;
-                    }));
+                    bytes.setValueList(featentry.bytesList.value);
                 }
                 feat.setBytesList(bytes);
             }
@@ -974,11 +1172,47 @@ var vz_example_viewer;
             }
             return feat;
         },
-        getImageId: function (feat) {
+        getImageId: function (feat, compare) {
+            if (compare) {
+                return this.getCompareImageId(feat);
+            }
             return this.sanitizeFeature(feat) + '_image';
         },
-        getCanvasId: function (feat) {
+        getCanvasId: function (feat, compare) {
+            if (compare) {
+                return this.getCompareCanvasId(feat);
+            }
             return this.sanitizeFeature(feat) + '_canvas';
+        },
+        getImageCardId: function (feat, compare) {
+            if (compare) {
+                return this.getCompareImageCardId(feat);
+            }
+            return this.sanitizeFeature(feat) + '_card';
+        },
+        getCompareImageId: function (feat) {
+            return this.sanitizeFeature(feat) + '_image_compare';
+        },
+        getCompareCanvasId: function (feat) {
+            return this.sanitizeFeature(feat) + '_canvas_compare';
+        },
+        getCompareImageCardId: function (feat) {
+            return this.sanitizeFeature(feat) + '_card_compare';
+        },
+        getFeatureDialogId: function (feat) {
+            return this.sanitizeFeature(feat) + '_dialog';
+        },
+        featureMoreClicked: function (event) {
+            var button = event.srcElement.parentElement;
+            var feature = button.dataFeature;
+            var dialog = this.$$('#' + this.sanitizeFeature(feature) + '_dialog');
+            dialog.positionTarget = button;
+            dialog.open();
+        },
+        expandFeature: function (event) {
+            var feature = event.srcElement.dataFeature;
+            this.set('expandedFeatures.' + this.sanitizeFeature(feature), true);
+            this.refreshExampleViewer();
         },
         decodedStringToCharCodes: function (str) {
             var cc = new Uint8Array(str.length);
@@ -986,6 +1220,88 @@ var vz_example_viewer;
                 cc[i] = str.charCodeAt(i);
             }
             return cc;
+        },
+        handleImageUpload: function (event) {
+            this.handleFileSelect(event, this);
+        },
+        // Handle upload image paper button click by delegating to appropriate
+        // paper-input file chooser.
+        uploadImageClicked: function (event) {
+            var data = this.getDataFromEvent(event);
+            var inputs = Polymer.dom(this.root).querySelectorAll('paper-input');
+            var inputElem = null;
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].dataFeature == data.feature) {
+                    inputElem = inputs[i];
+                    break;
+                }
+            }
+            if (inputElem) {
+                inputElem.querySelector('input').click();
+            }
+        },
+        // Handle file select for image replacement.
+        handleFileSelect: function (event, self) {
+            event.stopPropagation();
+            event.preventDefault();
+            var reader = new FileReader();
+            var eventAny = event;
+            var files = eventAny.dataTransfer ? eventAny.dataTransfer.files : eventAny.target.files;
+            if (files.length === 0) {
+                return;
+            }
+            reader.addEventListener('load', function () {
+                // Get the image data from the loaded image and convert to a char
+                // code array for use in the features value list.
+                var index = +reader.result.indexOf(BASE_64_IMAGE_ENCODING_PREFIX) +
+                    BASE_64_IMAGE_ENCODING_PREFIX.length;
+                var encodedImageData = reader.result.substring(index);
+                var cc = self.decodedStringToCharCodes(atob(encodedImageData));
+                var data = self.getDataFromEvent(event);
+                var feat = self.getFeatureFromData(data);
+                var values = self.getValueListFromData(data);
+                if (feat) {
+                    // Replace the old image data in the feature value list with the new
+                    // image data.
+                    // tslint:disable-next-line:no-any cast due to tf.Example typing.
+                    values[0] = cc;
+                    feat.getBytesList().setValueList(values);
+                    // If the example was provided as json, update the byteslist in the
+                    // json with the base64 encoded string.
+                    var jsonList = self.getJsonValueList(data.feature, data.seqNum);
+                    if (jsonList) {
+                        jsonList[0] = encodedImageData;
+                    }
+                    // Load the image data into an image element to begin the process
+                    // of rendering that image to a canvas for display.
+                    var img_1 = new Image();
+                    self.addImageElement(data.feature, img_1);
+                    img_1.addEventListener('load', function () {
+                        // Runs the apppriate onload processing for the new image.
+                        self.getOnLoadForImage(data.feature, img_1);
+                        // If the example contains appropriately-named features describing
+                        // the image width and height then update those feature values for
+                        // the new image width and height.
+                        var featureMiddle = IMG_FEATURE_REGEX.exec(data.feature)[1] || '';
+                        var widthFeature = 'image' + featureMiddle + '/width';
+                        var heightFeature = 'image' + featureMiddle + '/height';
+                        var widths = self.getFeatureValues(widthFeature, false);
+                        var heights = self.getFeatureValues(heightFeature, false);
+                        if (widths.length > 0) {
+                            widths[0] = +img_1.width;
+                            self.features.get(widthFeature).getInt64List().setValueList(widths);
+                        }
+                        if (heights.length > 0) {
+                            heights[0] = +img_1.height;
+                            self.features.get(heightFeature).getInt64List().setValueList(heights);
+                        }
+                        self.exampleChanged();
+                    });
+                    img_1.src = reader.result;
+                }
+            }, false);
+            // Read the image file as a data URL.
+            reader.readAsDataURL(files[0]);
         },
         // Add drag-and-drop image replacement behavior to the canvas.
         addDragDropBehaviorToCanvas: function (canvas) {
@@ -996,63 +1312,10 @@ var vz_example_viewer;
                 event.preventDefault();
                 event.dataTransfer.dropEffect = 'copy';
             }
-            // Handle drop event (file select) for drag-and-drop image replacement.
             function handleFileSelect(event) {
-                event.stopPropagation();
-                event.preventDefault();
-                var reader = new FileReader();
-                var files = event.dataTransfer.files;
-                if (files.length === 0) {
-                    return;
-                }
-                reader.addEventListener('load', function () {
-                    // Get the image data from the loaded image and convert to a char
-                    // code array for use in the features value list.
-                    var index = +reader.result.indexOf(BASE_64_IMAGE_ENCODING_PREFIX) +
-                        BASE_64_IMAGE_ENCODING_PREFIX.length;
-                    var encodedImageData = reader.result.substring(index);
-                    var cc = self.decodedStringToCharCodes(atob(encodedImageData));
-                    var data = self.getDataFromEvent(event);
-                    var feat = self.getFeatureFromData(data);
-                    var values = self.getValueListFromData(data);
-                    if (feat) {
-                        // Replace the old image data in the feature value list with the new
-                        // image data.
-                        // tslint:disable-next-line:no-any cast due to tf.Example typing.
-                        values[0] = cc;
-                        feat.getBytesList().setValueList(values);
-                        // Load the image data into an image element to begin the process
-                        // of rendering that image to a canvas for display.
-                        var img_1 = new Image();
-                        self.addImageElement(data.feature, img_1);
-                        img_1.addEventListener('load', function () {
-                            // Runs the apppriate onload processing for the new image.
-                            self.getOnLoadForImage(data.feature, img_1);
-                            // If the example contains appropriately-named features describing
-                            // the image width and height then update those feature values for
-                            // the new image width and height.
-                            var featureMiddle = IMG_FEATURE_REGEX.exec(data.feature)[1] || '';
-                            var widthFeature = 'image' + featureMiddle + '/width';
-                            var heightFeature = 'image' + featureMiddle + '/height';
-                            var widths = self.getFeatureValues(widthFeature, false);
-                            var heights = self.getFeatureValues(heightFeature, false);
-                            if (widths.length > 0) {
-                                widths[0] = +img_1.width;
-                                self.features.get(widthFeature).getInt64List().setValueList(widths);
-                            }
-                            if (heights.length > 0) {
-                                heights[0] = +img_1.height;
-                                self.features.get(heightFeature).getInt64List().setValueList(heights);
-                            }
-                            self.exampleChanged();
-                        });
-                        img_1.src = reader.result;
-                    }
-                }, false);
-                // Read the image file as a data URL.
-                reader.readAsDataURL(files[0]);
+                self.handleFileSelect(event, self);
             }
-            if (!self.readonly) {
+            if (!this.readonly && canvas) {
                 canvas.addEventListener('dragover', handleDragOver, false);
                 canvas.addEventListener('drop', handleFileSelect, false);
             }
@@ -1062,16 +1325,31 @@ var vz_example_viewer;
          * to the appropriate canvas element and adds the saliency information to the
          * canvas if it exists.
          */
-        getOnLoadForImage: function (feat, image) {
+        getOnLoadForImage: function (feat, image, compare) {
             var _this = this;
-            var f = function (feat, image) {
-                var canvas = _this.$$('#' + _this.getCanvasId(feat));
-                _this.addDragDropBehaviorToCanvas(canvas);
+            var f = function (feat, image, compare) {
+                var canvas = _this.$$('#' + _this.getCanvasId(feat, compare));
+                if (!compare) {
+                    _this.addDragDropBehaviorToCanvas(canvas);
+                }
                 if (image && canvas) {
                     // Draw the image to the canvas and size the canvas.
                     // Set d3.zoom on the canvas to enable zooming and scaling interactions.
                     var context_1 = canvas.getContext('2d');
                     var imageScaleFactor = _this.imageScalePercentage / 100;
+                    // If not using image controls then scale the image to match the
+                    // available width in the container, considering padding.
+                    if (!_this.allowImageControls) {
+                        var holder = _this.$$('#' +
+                            _this.getImageCardId(feat, compare)).parentElement;
+                        var cardWidthForScaling = holder.getBoundingClientRect().width / 2;
+                        if (cardWidthForScaling > 16) {
+                            cardWidthForScaling -= 16;
+                        }
+                        if (cardWidthForScaling < image.width) {
+                            imageScaleFactor = cardWidthForScaling / image.width;
+                        }
+                    }
                     canvas.width = image.width * imageScaleFactor;
                     canvas.height = image.height * imageScaleFactor;
                     var transformFn_1 = function (transform) {
@@ -1079,12 +1357,12 @@ var vz_example_viewer;
                         context_1.clearRect(0, 0, canvas.width, canvas.height);
                         context_1.translate(transform.x, transform.y);
                         context_1.scale(transform.k, transform.k);
-                        _this.renderImageOnCanvas(context_1, canvas.width, canvas.height, feat);
+                        _this.renderImageOnCanvas(context_1, canvas.width, canvas.height, feat, compare);
                         context_1.restore();
                     };
                     var zoom = function () {
                         var transform = d3.event.transform;
-                        _this.addImageTransform(feat, transform);
+                        _this.addImageTransform(feat, transform, compare);
                         transformFn_1(d3.event.transform);
                     };
                     var d3zoom_1 = d3.zoom().scaleExtent(ZOOM_EXTENT).on('zoom', zoom);
@@ -1093,40 +1371,71 @@ var vz_example_viewer;
                     context_1.scale(imageScaleFactor, imageScaleFactor);
                     context_1.drawImage(image, 0, 0);
                     context_1.restore();
-                    _this.setImageDatum(context_1, canvas.width, canvas.height, feat);
-                    _this.renderImageOnCanvas(context_1, canvas.width, canvas.height, feat);
-                    if (_this.imageInfo[feat].transform) {
-                        transformFn_1(_this.imageInfo[feat].transform);
+                    _this.setImageDatum(context_1, canvas.width, canvas.height, feat, compare);
+                    _this.renderImageOnCanvas(context_1, canvas.width, canvas.height, feat, compare);
+                    if (compare) {
+                        if (_this.compareImageInfo[feat].transform) {
+                            transformFn_1(_this.compareImageInfo[feat].transform);
+                        }
+                    }
+                    else {
+                        if (_this.imageInfo[feat].transform) {
+                            transformFn_1(_this.imageInfo[feat].transform);
+                        }
                     }
                 }
                 else {
                     // If the image and canvas are not yet rendered, wait to perform this
                     // processing.
-                    requestAnimationFrame(function () { return f(feat, image); });
+                    requestAnimationFrame(function () { return f(feat, image, compare); });
                 }
             };
-            this.addImageElement(feat, image);
-            this.addImageOnLoad(feat, f);
-            return f.apply(this, [feat, image]);
+            this.addImageElement(feat, image, compare);
+            this.addImageOnLoad(feat, f, compare);
+            return f.apply(this, [feat, image, compare]);
         },
-        addImageOnLoad: function (feat, onload) {
+        addImageOnLoad: function (feat, onload, compare) {
             this.hasImage = true;
-            if (!this.imageInfo[feat]) {
-                this.imageInfo[feat] = {};
+            if (compare) {
+                if (!this.compareImageInfo[feat]) {
+                    this.compareImageInfo[feat] = {};
+                }
+                this.compareImageInfo[feat].onload = onload;
             }
-            this.imageInfo[feat].onload = onload;
+            else {
+                if (!this.imageInfo[feat]) {
+                    this.imageInfo[feat] = {};
+                }
+                this.imageInfo[feat].onload = onload;
+            }
         },
-        addImageData: function (feat, imageData) {
-            if (!this.imageInfo[feat]) {
-                this.imageInfo[feat] = {};
+        addImageData: function (feat, imageData, compare) {
+            if (compare) {
+                if (!this.compareImageInfo[feat]) {
+                    this.compareImageInfo[feat] = {};
+                }
+                this.compareImageInfo[feat].imageData = imageData;
             }
-            this.imageInfo[feat].imageData = imageData;
+            else {
+                if (!this.imageInfo[feat]) {
+                    this.imageInfo[feat] = {};
+                }
+                this.imageInfo[feat].imageData = imageData;
+            }
         },
-        addImageElement: function (feat, image) {
-            if (!this.imageInfo[feat]) {
-                this.imageInfo[feat] = {};
+        addImageElement: function (feat, image, compare) {
+            if (compare) {
+                if (!this.compareImageInfo[feat]) {
+                    this.compareImageInfo[feat] = {};
+                }
+                this.compareImageInfo[feat].imageElement = image;
             }
-            this.imageInfo[feat].imageElement = image;
+            else {
+                if (!this.imageInfo[feat]) {
+                    this.imageInfo[feat] = {};
+                }
+                this.imageInfo[feat].imageElement = image;
+            }
         },
         addImageGrayscaleData: function (feat, imageGrayscaleData) {
             if (!this.imageInfo[feat]) {
@@ -1134,22 +1443,34 @@ var vz_example_viewer;
             }
             this.imageInfo[feat].imageGrayscaleData = imageGrayscaleData;
         },
-        addImageTransform: function (feat, transform) {
-            if (!this.imageInfo[feat]) {
-                this.imageInfo[feat] = {};
+        addImageTransform: function (feat, transform, compare) {
+            if (compare) {
+                if (!this.compareImageInfo[feat]) {
+                    this.compareImageInfo[feat] = {};
+                }
+                this.compareImageInfo[feat].transform = transform;
             }
-            this.imageInfo[feat].transform = transform;
+            else {
+                if (!this.imageInfo[feat]) {
+                    this.imageInfo[feat] = {};
+                }
+                this.imageInfo[feat].transform = transform;
+            }
         },
         /**
          * Saves the Uint8ClampedArray image data for an image feature, both for the
          * raw image, and for the image with an applied saliency mask if there is
          * saliency information for the image feature.
          */
-        setImageDatum: function (context, width, height, feat) {
+        setImageDatum: function (context, width, height, feat, compare) {
+            if (!width || !height) {
+                return;
+            }
             var contextData = context.getImageData(0, 0, width, height);
             var imageData = Uint8ClampedArray.from(contextData.data);
-            this.addImageData(feat, imageData);
-            if (!this.saliency || !this.showSaliency || !this.saliency[feat]) {
+            this.addImageData(feat, imageData, compare);
+            if (!this.saliency || !this.showSaliency || !this.saliency[feat] ||
+                compare) {
                 return;
             }
             // Grayscale the image for later use with a saliency mask.
@@ -1242,18 +1563,26 @@ var vz_example_viewer;
                 d[i + 2] = d[i + 2] * (1 - blendRatio) + b * blendRatio;
             }
         },
-        renderImageOnCanvas: function (context, width, height, feat) {
+        renderImageOnCanvas: function (context, width, height, feat, compare) {
+            if (!width || !height) {
+                return;
+            }
             // Set the correct image data array.
             var id = context.getImageData(0, 0, width, height);
-            id.data.set(this.saliency && this.showSaliency && this.saliency[feat] ?
-                this.imageInfo[feat].imageGrayscaleData :
-                this.imageInfo[feat].imageData);
+            if (compare) {
+                id.data.set(this.compareImageInfo[feat].imageData);
+            }
+            else {
+                id.data.set(this.saliency && this.showSaliency && this.saliency[feat] ?
+                    this.imageInfo[feat].imageGrayscaleData :
+                    this.imageInfo[feat].imageData);
+            }
             // Adjust the contrast and add saliency mask if neccessary.
             if (this.windowWidth !== DEFAULT_WINDOW_WIDTH ||
                 this.windowCenter !== DEFAULT_WINDOW_CENTER) {
                 this.contrastImage(id.data, this.windowWidth, this.windowCenter);
             }
-            if (this.saliency && this.showSaliency && this.saliency[feat]) {
+            if (!compare && this.saliency && this.showSaliency && this.saliency[feat]) {
                 this.addSaliencyToImage(id.data, this.saliency[feat]);
             }
             // Draw the image data to an in-memory canvas and then draw that to the
@@ -1291,8 +1620,8 @@ var vz_example_viewer;
         shouldEnableAddFeature: function (featureName) {
             return featureName.length > 0;
         },
-        getDeleteValueButtonClass: function (readonly) {
-            return readonly ? 'hide-controls' : 'delete-value-button';
+        getDeleteValueButtonClass: function (readonly, showDeleteValueButton) {
+            return readonly || !showDeleteValueButton ? 'delete-value-button delete-value-button-hidden' : 'delete-value-button';
         },
         getDeleteFeatureButtonClass: function (readonly) {
             return readonly ? 'hide-controls' : 'delete-feature-button';
@@ -1302,6 +1631,9 @@ var vz_example_viewer;
         },
         getAddFeatureButtonClass: function (readonly) {
             return readonly ? 'hide-controls' : 'add-feature-button';
+        },
+        getUploadImageClass: function (readonly) {
+            return readonly ? 'hide-controls' : 'upload-image-button';
         },
         /**
          * Decodes a list of bytes into a readable string, treating the bytes as

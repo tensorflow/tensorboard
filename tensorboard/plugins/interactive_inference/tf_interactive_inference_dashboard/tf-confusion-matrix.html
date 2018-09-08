@@ -1,0 +1,264 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- Displays a simple confusion matrix. -->
+<dom-module id="tf-confusion-matrix">
+  <template>
+    <style>
+      table {
+        display: inline-block;
+      }
+      td {
+        text-align: right;
+      }
+      th, td {
+        padding: 3px;
+        font-weight: normal;
+      }
+      .flex {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+      .pred-label {
+        text-align: left;
+        font-size: 10px;
+      }
+      .actual-label {
+        text-align: right;
+        font-size: 10px;
+      }
+      .n-label {
+        font-size: 10px;
+        vertical-align: bottom;
+      }
+      .correct {
+        border-left: 3px solid DarkSeaGreen;
+      }
+      .incorrect {
+        border-left: 3px solid lightcoral;
+      }
+      .blank {
+        background: darkgray;
+      }
+      .parenthetical {
+        padding-right: 5px;
+        color: gray;
+        width: 50px;
+      }
+    </style>
+    <div id="holder"></div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "tf-confusion-matrix",
+      properties: {
+        /**
+         * Counts is a dictionary of dictionaries of numbers, representing
+         * the counts for each cell in a confusion matrix. The outermost keys
+         * represent actual labels and the innermost keys represent predicted
+         * labels. A number in this inner dictionary represents the count of
+         * elements with the prediction of the inner key and the actual label
+         * of the outer key.
+         * Example: {'No': {'Yes': 2, 'No': 1}, 'Yes': {'Yes': 3, 'No': 4}}
+         * contains 1 true negative, 2 false positives, 3 true positives and
+         * 4 false negatives.
+         */
+        counts: {type: Object, observer: 'drawMatrix'},
+      },
+
+      ready: function() {
+        // Allows d3-created elements in this Polymer element to be styled by
+        // the css rules above.
+        this.scopeSubtree(this.$.holder, true);
+      },
+
+      drawMatrix: function(counts) {
+        this.$.holder.innerHTML = '';
+        if (!counts) {
+          return;
+        }
+
+        // Get all labels from the counts dict.
+        let allLabels = {};
+        const outerLabelList = Object.keys(counts);
+        for (let i = 0; i < outerLabelList.length; i++) {
+          allLabels[outerLabelList[i]] = true;
+          const innerLabelList = Object.keys(counts[outerLabelList[i]]);
+          for (let j = 0; j < innerLabelList.length; j++) {
+            allLabels[innerLabelList[j]] = true;
+          }
+        }
+        let labelsList = Object.keys(allLabels).sort();
+
+        // For binary classification confusion matrices, we want the 'Yes'
+        // column/row to appear before 'No', so we reverse this labels list.
+        if (labelsList.length == 2 && labelsList[0] == 'No'
+            && labelsList[1] == 'Yes') {
+          labelsList = labelsList.reverse();
+        }
+
+        const columnTotals = new Array(labelsList.length);
+        _.fill(columnTotals, 0);
+
+        // Create the confusion matrix from the counts dict.
+        const countMatrix = [];
+        for (let i = 0; i < labelsList.length; i++) {
+          const arr = new Array(labelsList.length);
+          _.fill(arr, 0);
+          countMatrix.push(arr);
+        }
+        for (let i = 0; i < labelsList.length; i++) {
+          for (let j = 0; j < labelsList.length; j++) {
+            const actualLabel = labelsList[i];
+            const predLabel = labelsList[j];
+            if (actualLabel in counts && predLabel in counts[actualLabel]) {
+              countMatrix[i][j] = counts[actualLabel][predLabel];
+            }
+          }
+        }
+
+        // Pad the counts out to have objects of the correct size for the
+        // displayed matrix which contains a header row, header column, and
+        // footer rows and columns for the total counts.
+        const paddedCounts = [];
+        let total = 0;
+        for (let i = 0; i < countMatrix.length; i++) {
+          const rowTotal = countMatrix[i].reduce((a, b) => a + b, 0);
+          paddedCounts.push([0].concat(countMatrix[i]).concat([rowTotal]));
+          for (let j = 0; j  < countMatrix.length; j++) {
+            columnTotals[j] += countMatrix[i][j];
+            total += countMatrix[i][j];
+          }
+        }
+        const indices = this.getIndices(countMatrix.length + 2);
+
+        // Create the table object.
+        const table = d3.select(this.$.holder).append('table');
+        const thead = table.append('thead');
+        const tbody = table.append('tbody');
+        const tfoot = table.append('tfoot');
+
+        // Set the header data.
+        thead.append('tr')
+          .selectAll('th')
+          .data(indices).enter()
+          .append('th')
+            .text(column => {
+              if (column == 0) {
+                return this.getNText(total);
+              } else if (column <= countMatrix.length) {
+                return 'Predicted ' + labelsList[column - 1];
+              } else {
+                return 'Total';
+              }
+            })
+            .attr('class', column => {
+              if (column == 0) {
+                return 'n-label';
+              } else {
+                return 'pred-label';
+              }
+            });
+
+        // Set the confusion matrix rows.
+        const rows = tbody.selectAll('tr')
+          .data(paddedCounts)
+          .enter()
+          .append('tr');
+        const cells = rows.selectAll('td')
+          .data((row, j) => {
+            return row.map((entry, i) => {
+              if (i == 0) {
+                return {value: 'Actual ' + labelsList[j]};
+              } else {
+                return {value: entry, row: j};
+              }
+            });
+          })
+          .enter()
+          .append('td').attr('class', (d, i) => {
+            if (i == 0) {
+              return 'actual-label';
+            } else if (d.value == 0) {
+              return '';
+            } else if (i - 1 == d.row) {
+              return 'correct';
+            } else if (i <= countMatrix.length) {
+              return 'incorrect';
+            } else {
+              return '';
+            }
+          }).style('background', (d, i) => {
+            if (i == 0 || i > countMatrix.length) {
+              return '#FFFFFF';
+            } else {
+              let c = d3.color('darkgrey');
+              c.opacity = d.value / total;
+              return c + '';
+            }
+          });
+        const cellDivs = cells.append('div').classed('flex', true);
+        cellDivs.append('div').classed('parenthetical', (d, i) => !!i)
+            .text(d =>
+              'row' in d ? '(' + d.value + ')' : '');
+        cellDivs.append('div').text(
+          (d, i) => i > 0 ? d3.format(",.1%")(d.value / total) : d.value);
+
+        // Set the footer row.
+        const footCells = tfoot.append('tr')
+          .selectAll('td')
+          .data(indices).enter()
+          .append('td');
+        footCells.classed('actual-label', (d, i) => i == 0);
+        const footCellDivs = footCells.append('div').classed('flex', true);
+        footCellDivs.append('div').classed('parenthetical', (d, i) => !!i).text(
+          column => {
+            if (column == 0) {
+              return 'Total';
+            } else if (column <= countMatrix.length) {
+              return '(' + columnTotals[column - 1] + ')';
+            } else {
+              return '';
+            }
+          });
+        footCellDivs.append('div').text(column => {
+          if (column == 0) {
+            return '';
+          } else if (column <= countMatrix.length) {
+            return d3.format(",.1%")(columnTotals[column - 1] / total);
+          } else {
+            return '';
+          }
+        });
+      },
+
+      /**
+       * Returns an list of indices from 0 to tableDim.
+       */
+      getIndices: function(tableDim) {
+        return Array.apply(null, {length: tableDim}).map(Number.call, Number);
+      },
+
+      getNText: function(total) {
+        return 'n=' + total;
+      },
+    });
+
+  </script>
+</dom-module>

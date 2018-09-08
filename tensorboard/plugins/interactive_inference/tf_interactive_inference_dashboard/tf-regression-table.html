@@ -1,0 +1,88 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- Displays a table of regression results. -->
+<dom-module id="tf-regression-table">
+  <template>
+    <style>
+      .table {
+        display: table;
+        border-collapse: collapse;
+      }
+      .total-row {
+        border-bottom: 1px solid grey;
+        display: table-row;
+        font-weight: 500;
+      }
+      .header-row {
+        display: table-row;
+      }
+      .row {
+        border-bottom: 1px solid grey;
+        display: table-row;
+      }
+      .header {
+        color: grey;
+        display: table-cell;
+        background: #e3ecfc;
+        font-weight: 400;
+        padding: 4px 10px;
+      }
+      .cell {
+        display: table-cell;
+        padding: 2px 10px;
+      }
+      .numeric {
+        text-align: right;
+      }
+    </style>
+    <div class="table">
+      <div class="header-row">
+        <div class="header">Name</div>
+        <div class="header">Count</div>
+        <div class="header">Mean Error</div>
+        <div class="header">Mean Absolute Error</div>
+        <div class="header">Mean Square Error</div>
+      </div>
+      <template is="dom-repeat" items="{{entries}}">
+        <div class$="[[getRowClass(index)]]">
+          <div class="cell">[[item.name]]</div>
+          <div class="cell numeric">[[item.count]]</div>
+          <div class="cell numeric">[[format(item.meanError)]]</div>
+          <div class="cell numeric">[[format(item.meanAbsError)]]</div>
+          <div class="cell numeric">[[format(item.meanSquaredError)]]</div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "tf-regression-table",
+      properties: {
+        entries: {type: Array},
+      },
+      format: function(num) {
+        return d3.format('.3f')(num);
+      },
+      getRowClass: function(index) {
+        return index ? 'row' : 'total-row';
+      },
+    });
+  </script>
+</dom-module>
