@@ -891,7 +891,7 @@ limitations under the License.
             </div>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
-                <div class="button-prefix-label">Show nearest different classification:</div>
+                <div class="button-prefix-label">Show nearest counterfactual:</div>
                 <div title="Select a datapoint to use this feature">
                   <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                     on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
@@ -909,7 +909,7 @@ limitations under the License.
                 <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                  <div class="dialog-title">Nearest neighbors of different classification</div>
+                  <div class="dialog-title">Nearest counterfactual (neighbor of different classification)</div>
                   <div>Compares the selected example with its nearest neighbor from a different classification using L1 or L2 distance,
                     which are two popular distance measures. Find out more
                     <a target="_blank" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">
@@ -1863,7 +1863,7 @@ limitations under the License.
           this.comparedIndices = [closest];
           this.counterfactualExampleAndInference =
             this.examplesAndInferences[closest];
-          this.compareTitle = (useL2Distance ? 'L2' : 'L1') + ' neighbor value'
+          this.compareTitle = (useL2Distance ? 'L2' : 'L1') + ' counterfactual'
         }
       },
 
