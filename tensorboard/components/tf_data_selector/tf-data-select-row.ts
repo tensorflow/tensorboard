@@ -95,10 +95,10 @@ Polymer({
   },
 
   observers: [
+    '_immutablePropInvarianceViolated(persistenceId.*)',
+    '_immutablePropInvarianceViolated(experiment.*)',
     '_synchronizeColors(checkboxColor)',
     '_persistSelectedRuns(_selectedRuns)',
-    '_initRunsAndTags(experiment)',
-    '_initFromStorage(persistenceId)',
     '_fireChange(_selectedRuns, _tagRegex)',
   ],
 
@@ -157,6 +157,15 @@ Polymer({
         .then(() => {
           this._isDataReady = true;
         });
+  },
+
+  _immutablePropInvarianceViolated(change) {
+    // We allow property to change many times before the component is attached
+    // to DOM.
+    if (this.isAttached) {
+      throw new Error(`Invariance Violation: ` +
+          `Expected property '${change.path}' not to change.`);
+    }
   },
 
   _synchronizeColors() {

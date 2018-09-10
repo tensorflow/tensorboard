@@ -130,6 +130,14 @@ Polymer({
     xAxisFormatter: Object,
 
     /**
+     * A formatter for values along the Y-axis. Optional. Defaults to a
+     * reasonable formatter.
+     *
+     * @type {function(number): string}
+     */
+    yAxisFormatter: Object,
+
+    /**
      * A method that implements the Plottable.IAccessor<number> interface. Used
      * for accessing the y value from a data point.
      *
@@ -398,7 +406,8 @@ Polymer({
           this.defaultXRange,
           this.defaultYRange,
           this.symbolFunction,
-          this.xAxisFormatter);
+          this.xAxisFormatter,
+          this.yAxisFormatter);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       if (this._chart) this._chart.destroy();
@@ -512,7 +521,8 @@ class LineChart {
       defaultXRange?: number[],
       defaultYRange?: number[],
       symbolFunction?: vz_chart_helpers.SymbolFn,
-      xAxisFormatter?: (number) => string) {
+      xAxisFormatter?: (number) => string,
+      yAxisFormatter?: (number) => string) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -542,7 +552,8 @@ class LineChart {
         yValueAccessor,
         yScaleType,
         fillArea,
-        xAxisFormatter);
+        xAxisFormatter,
+        yAxisFormatter);
   }
 
   private buildChart(
@@ -550,8 +561,11 @@ class LineChart {
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       fillArea: FillArea,
-      xAxisFormatter: (number) => string) {
-    this.destroy();
+      xAxisFormatter: (number) => string,
+      yAxisFormatter: (number) => string) {
+    if (this.outer) {
+      this.outer.destroy();
+    }
     const xComponents = xComponentsCreationMethod();
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
@@ -562,9 +576,10 @@ class LineChart {
     }
     this.yScale = LineChart.getYScaleFromType(yScaleType);
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = vz_chart_helpers.multiscaleFormatter(
-        vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
-    this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
+    this.yAxis.margin(0).tickLabelPadding(5);
+    this.yAxis.formatter(yAxisFormatter ? yAxisFormatter
+      : vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION));
     this.yAxis.usesTextWidthApproximation(true);
     this.fillArea = fillArea;
 
