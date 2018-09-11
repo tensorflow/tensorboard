@@ -186,6 +186,10 @@ limitations under the License.
         font-size: 16px;
       }
 
+      .feature-name.feature-name-header {
+        padding: 4px 0 4px 5px;
+      }
+
       .slider {
         --paper-slider-input: {
           width: 100px
@@ -337,17 +341,19 @@ limitations under the License.
       }
 
       .box {
-        width: 12px;
+        width: 22px;
         height: 12px;
-        margin: 4px 0 0 5px;
+        margin: 2px 0 0 5px;
       }
 
       .yellow {
         background: rgb(250, 212, 17);
+        border: 2px solid black;
       }
 
       .green {
         background: rgb(29, 107, 29);
+        border: 2px solid #44FF44;
       }
     </style>
     <div class="outer">
@@ -356,10 +362,10 @@ limitations under the License.
           <iron-icon icon="icons:search" prefix></iron-icon>
         </paper-input>
       </template>
-      <div class="feature-name bold">
+      <div class="feature-name bold feature-name-header">
         <div class="feature-name-header-text">Feature name</div>
         <div class="value-pills-holder flex-controls value-header-text">
-          <div>Value</div>
+          <div>Selected datapoint</div>
           <div class="box yellow"></div>
         </div>
         <template is="dom-if" if="[[compareMode]]">
