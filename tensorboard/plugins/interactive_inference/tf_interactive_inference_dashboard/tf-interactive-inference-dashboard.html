@@ -158,11 +158,6 @@ limitations under the License.
         padding-right: 5px;
       }
 
-      .datapoint-info-text {
-        color: #777;
-        margin: 20px 10px;
-      }
-
       .accept-button-holder {
         display: flex;
         flex-direction: row-reverse;
@@ -488,6 +483,10 @@ limitations under the License.
         display: flex;
       }
 
+      .space-between {
+        justify-content: space-between;
+      }
+
        .flex-wrap {
         display: flex;
         flex-wrap: wrap;
@@ -773,21 +772,19 @@ limitations under the License.
         margin-bottom: 15px;
       }
 
-      .datapoint-info-header.datapoint-info-header-more-margin {
-        margin-top: 15px;
-      }
-
       .datapoint-info-main {
         font-size: 18px;
         margin-bottom: 15px;
       }
 
       .datapoint-info-bullet {
-        display: list-item;
-        list-style-type: disc;
-        list-style-position: inside;
+        display: flex;
         font-size: 16px;
         margin-bottom: 5px;
+      }
+
+      .datapoint-info-block {
+        margin: 20px 0 0 10px;
       }
 
       .button-prefix-label {
@@ -814,6 +811,12 @@ limitations under the License.
 
       .main-button.run-button {
         padding: 5px;
+      }
+
+      .doc-image {
+        width: 128px;
+        height: 96px;
+        border: 1px solid lightgrey;
       }
 
     </style>
@@ -888,7 +891,7 @@ limitations under the License.
             </div>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
-                <div class="button-prefix-label">Show nearest different classification:</div>
+                <div class="button-prefix-label">Show nearest counterfactual:</div>
                 <div title="Select a datapoint to use this feature">
                   <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                     on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
@@ -906,7 +909,7 @@ limitations under the License.
                 <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                  <div class="dialog-title">Nearest neighbors of different classification</div>
+                  <div class="dialog-title">Nearest counterfactual (neighbor of different classification)</div>
                   <div>Compares the selected example with its nearest neighbor from a different classification using L1 or L2 distance,
                     which are two popular distance measures. Find out more
                     <a target="_blank" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">
@@ -929,11 +932,157 @@ limitations under the License.
           <div class="side-holder" id="side">
             <div class="side-content">
               <paper-tabs selected="{{sideTabSelected}}" on-iron-select="onTabSelect_" class="tabs">
-                <paper-tab>[[getPerformanceTabTitle(modelType, multiClass)]]</paper-tab>
                 <paper-tab>Datapoint Editor</paper-tab>
+                <paper-tab>[[getPerformanceTabTitle(modelType, multiClass)]]</paper-tab>
                 <paper-tab>Features</paper-tab>
               </paper-tabs>
               <iron-pages class="side-tabs" selected="{{sideTabSelected}}">
+              <div class="datapoint-tab">
+                <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
+                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
+                      <div class="datapoint-left-controls-holder">
+                        <paper-icon-button class="datapoint-control-button" icon="content-copy"
+                            on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
+                            on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
+                            disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="delete-forever"
+                            on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
+                        </paper-icon-button>
+                      </div>
+                      <div class="datapoint-right-controls-holder">
+                          <paper-icon-button class="datapoint-control-button" icon="view-headline"
+                            class$="[[getStackedButtonClass(exampleDisplayMode)]]"
+                            on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
+                          </paper-icon-button>
+                          <paper-icon-button class="datapoint-control-button" icon="view-module"
+                            class$="[[getGridButtonClass(exampleDisplayMode)]]"
+                            on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
+                          </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="line-weight"
+                            on-click="setExampleExpanded_" alt="expand all features" title="Expand all features"
+                            class="border-right">
+                        </paper-icon-button>
+                        <paper-icon-button class="datapoint-control-button" icon="list"
+                            on-click="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
+                        </paper-icon-button>
+                      </div>
+                    </div>
+                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
+                      <div class="datapoint-left-controls-holder">
+                        <paper-icon-button class="datapoint-control-button" icon="chevron-left"
+                            on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
+                        </paper-icon-button>
+                        <div class="example-id-label">Example ID:</div>
+                        <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
+                                    min="0" max="[[selectedExampleMax]]" no-label-float>
+                        </paper-input>
+                        <paper-icon-button class="datapoint-control-button" icon="chevron-right"
+                          on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
+                        </paper-icon-button>
+                        <div class="run-button-container" title="Edit the datapoint to use this feature">
+                          <paper-button on-click="inferClicked_" class="main-button run-button"
+                            disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+                            Run inference
+                          </paper-button>
+                        </div>
+                      </div>
+                      <div class="datapoint-right-controls-holder">
+                        <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input feature-search-input" no-label-float>
+                          <iron-icon icon="icons:search" prefix></iron-icon>
+                        </paper-input>
+                      </div>
+                    </div>
+                    <div class="examples-holder">
+                      <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
+                        <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]"
+                                           json="{{selectedExampleAndInference.example}}"
+                                           compare-json="{{counterfactualExampleAndInference.example}}"
+                                           on-example-change="exampleChange_" id="viewer"
+                                           display-mode="[[exampleDisplayMode]]"
+                                           feature-search-value="{{featureSearchValue}}"
+                                           compare-title="[[compareTitle]]">
+                        </vz-example-viewer>
+                        <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
+                          <div class="inference-section">
+                            <button class="inference-header heading" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
+                              <div class="right-side right-side-performance-tab">
+                                <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
+                              </div>
+                            </button>
+                            <iron-collapse class="no-padding-card" id="collapseinference" opened="{{openedInferenceResults}}">
+                              <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                                    id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                              </tf-inference-viewer>
+                            </iron-collapse>
+                          </div>
+                          <template is="dom-if" if="[[counterfactualExampleAndInference]]">
+                            <div class="inference-section">
+                              <button class="inference-header heading" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
+                                <div class="right-side right-side-performance-tab">
+                                  <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
+                                </div>
+                              </button>
+                              <iron-collapse class="no-padding-card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
+                                <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
+                                                    model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                                </tf-inference-viewer>
+                              </iron-collapse>
+                            </div>
+                          </template>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
+                    <div class="datapoint-info-holder">
+                      <div class="datapoint-info-content">
+                        <div class="flex space-between">
+                          <div class="datapoint-info-header">Select a datapoint to get started</div>
+                          <iron-icon icon="arrow-forward" class="arrow-icon"></iron-icon>
+                        </div>
+                        <div class="datapoint-info-main">Clicking on a datapoint in the visualization will load
+                          all the features and values associated with that example. Some of the things you can
+                          do in the datapoint editor are:</div>
+                        <div class="datapoint-info-bullet">
+                          <img class="doc-image" src="../tf-interactive-inference-dashboard/editedexample.png">
+                          <div class="datapoint-info-block">
+                            <div class="bold">Test inference on edited values</div>
+                            <div>Edit features and run inference to see how your model performs</div>
+                          </div>
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <img class="doc-image" src="../tf-interactive-inference-dashboard/distance.png">
+                          <div class="datapoint-info-block">
+                            <div class="bold">Compute distances from a selected datapoint</div>
+                            <div>Have the selected example be an anchor and create a new distance feature for all loaded examples</div>
+                          </div>
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <img class="doc-image" src="../tf-interactive-inference-dashboard/explorecounterfactuals.png">
+                          <div class="datapoint-info-block">
+                            <div class="bold">Find closest counterfactuals</div>
+                            <div>See the closest example with a different classification</div>
+                          </div>
+                        </div>
+                        <div class="datapoint-info-bullet">
+                          <img class="doc-image" src="../tf-interactive-inference-dashboard/pdplots.png">
+                          <div class="datapoint-info-block">
+                            <div class="bold">Partial Dependence Plots</div>
+                            <div>Explore plots for every feature that show the change in inference results across different valid values for that feature</div>
+                          </div>
+                        </div>
+                        <div class="datapoint-info-main">
+                          Investigate model performance across your dataset in the
+                          <span class="bold">[[getPerformanceTabTitle(modelType, multiClass)]]</span>
+                          tab, or review feature distributions and aggregate statistics in the <span class="bold">Features</span> tab
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
                 <div class="config-tab">
                   <div class="heading-and-card">
                     <button class="heading" on-click="toggleTrueLabelSetup">Set Ground Truth
@@ -1220,142 +1369,6 @@ limitations under the License.
                     </iron-collapse>
                   </div>
                 </div>
-                <div class="datapoint-tab">
-                  <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
-                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
-                      <div class="datapoint-left-controls-holder">
-                        <paper-icon-button class="datapoint-control-button" icon="content-copy"
-                            on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
-                            on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
-                            disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="delete-forever"
-                            on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
-                        </paper-icon-button>
-                      </div>
-                      <div class="datapoint-right-controls-holder">
-                          <paper-icon-button class="datapoint-control-button" icon="view-headline"
-                            class$="[[getStackedButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
-                          </paper-icon-button>
-                          <paper-icon-button class="datapoint-control-button" icon="view-module"
-                            class$="[[getGridButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
-                          </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="line-weight"
-                            on-click="setExampleExpanded_" alt="expand all features" title="Expand all features"
-                            class="border-right">
-                        </paper-icon-button>
-                        <paper-icon-button class="datapoint-control-button" icon="list"
-                            on-click="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
-                        </paper-icon-button>
-                      </div>
-                    </div>
-                    <div class="datapoint-controls-holder datapoint-control-buttons-holder">
-                      <div class="datapoint-left-controls-holder">
-                        <paper-icon-button class="datapoint-control-button" icon="chevron-left"
-                            on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
-                        </paper-icon-button>
-                        <div class="example-id-label">Example ID:</div>
-                        <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
-                                    min="0" max="[[selectedExampleMax]]" no-label-float>
-                        </paper-input>
-                        <paper-icon-button class="datapoint-control-button" icon="chevron-right"
-                          on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
-                        </paper-icon-button>
-                        <div class="run-button-container" title="Edit the datapoint to use this feature">
-                          <paper-button on-click="inferClicked_" class="main-button run-button"
-                            disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-                            Run inference
-                          </paper-button>
-                        </div>
-                      </div>
-                      <div class="datapoint-right-controls-holder">
-                        <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input feature-search-input" no-label-float>
-                          <iron-icon icon="icons:search" prefix></iron-icon>
-                        </paper-input>
-                      </div>
-                    </div>
-                    <div class="examples-holder">
-                      <div class$="[[getExampleAndInferenceHolderClass_(panelExpanded)]]">
-                        <vz-example-viewer class$="[[getExampleHolderClass_(panelExpanded)]]"
-                                           json="{{selectedExampleAndInference.example}}"
-                                           compare-json="{{counterfactualExampleAndInference.example}}"
-                                           on-example-change="exampleChange_" id="viewer"
-                                           display-mode="[[exampleDisplayMode]]"
-                                           feature-search-value="{{featureSearchValue}}"
-                                           compare-title="[[compareTitle]]">
-                        </vz-example-viewer>
-                        <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
-                          <div class="inference-section">
-                            <button class="inference-header heading" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
-                              <div class="right-side right-side-performance-tab">
-                                <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
-                              </div>
-                            </button>
-                            <iron-collapse class="no-padding-card" id="collapseinference" opened="{{openedInferenceResults}}">
-                              <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                                    id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                              </tf-inference-viewer>
-                            </iron-collapse>
-                          </div>
-                          <template is="dom-if" if="[[counterfactualExampleAndInference]]">
-                            <div class="inference-section">
-                              <button class="inference-header heading" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
-                                <div class="right-side right-side-performance-tab">
-                                  <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
-                                </div>
-                              </button>
-                              <iron-collapse class="no-padding-card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
-                                <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
-                                                    model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                                </tf-inference-viewer>
-                              </iron-collapse>
-                            </div>
-                          </template>
-                        </div>
-                      </div>
-                    </div>
-                  </template>
-                  <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
-                    <div class="datapoint-info-holder">
-                      <div class="datapoint-info-content">
-                        <div class="flex">
-                          <div class="datapoint-info-header">Select a datapoint to begin exploring features and values.</div>
-                          <iron-icon icon="arrow-forward" class="arrow-icon"></iron-icon>
-                        </div>
-                        <div class="datapoint-info-main">Clicking on a datapoint in the visualization will load
-                          all the features and values associated with that example. Here are some of the things you can do:</div>
-                        <div class="datapoint-info-bullet">
-                          <span class="bold">Edit features and values and rerun inference</span>
-                          to see how your model performs.
-                        </div>
-                        <div class="datapoint-info-bullet">
-                          <span class="bold">Compute Distance:</span>
-                          Select an example to be an anchor and create a new L1 or L2 distance feature for all loaded examples.
-                        </div>
-                        <div class="datapoint-info-bullet">
-                          <span class="bold">Closest Counterfactuals:</span>
-                          For classification models, find the closest example with a different classification using L1 or L2 distance.
-                        </div>
-                        <div class="datapoint-info-bullet">
-                          <span class="bold">Partial Dependence Plots:</span>
-                          For a selected example, explore plots for every feature that show the change in inference results across
-                          different valid values for that feature.
-                        </div>
-                        <div class="datapoint-info-header datapoint-info-header-more-margin">Use the
-                          <span>[[getPerformanceTabTitle(modelType, multiClass)]]</span>
-                          tab to investigate model performance across your dataset.
-                        </div>
-                        <div class="datapoint-info-header datapoint-info-header-more-margin">
-                          Use the Features tab to view statistics about your dataset.
-                        </div>
-                      </div>
-                    </div>
-                  </template>
-                </div>
                 <div class="stats-tab">
                   <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
                 </div>
@@ -1614,7 +1627,7 @@ limitations under the License.
         // Which side-tab is selected.
         sideTabSelected: {
           type: Number,
-          value: 1,
+          value: 0,
           observer: 'sideTabSelectedChanged_'
         },
         // Boolean for if running in "local" demo mode, meaning this isn't
@@ -1850,7 +1863,7 @@ limitations under the License.
           this.comparedIndices = [closest];
           this.counterfactualExampleAndInference =
             this.examplesAndInferences[closest];
-          this.compareTitle = (useL2Distance ? 'L2' : 'L1') + ' neighbor value'
+          this.compareTitle = (useL2Distance ? 'L2' : 'L1') + ' counterfactual'
         }
       },
 
@@ -1941,7 +1954,7 @@ limitations under the License.
         this.selectedDataUpdated_();
         // When a datapoint is selected, switch to the datapoint tab.
         if (this.selected.length > 0) {
-          this.sideTabSelected = 1;
+          this.sideTabSelected = 0;
         }
       },
 
@@ -2146,7 +2159,7 @@ limitations under the License.
       },
 
       sideTabSelectedChanged_: function(tab) {
-        if (tab == 0) {
+        if (tab == 1) {
           requestAnimationFrame(() => {
             this.updateInferenceStats_(true);
           });
