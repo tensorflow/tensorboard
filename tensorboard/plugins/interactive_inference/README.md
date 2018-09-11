@@ -18,27 +18,27 @@ with absolutely no code required.
 ## I don’t want to read this document. Can I just play with a demo?
 
 Fine, here are some demos:
-* [Binary classifier for UCI Census dataset salary prediction](https://pair-code.github.io/what-if-tool/demoserver.html)
+* [Binary classifier for UCI Census dataset salary prediction](https://pair-code.github.io/what-if-tool/uci.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict whether a person earns more or less than $50k based on their
     census information
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:demoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/demo.html`
-* [Binary classifier for smile detection in images](https://pair-code.github.io/what-if-tool/imagedemoserver.html)
+* [Binary classifier for smile detection in images](https://pair-code.github.io/what-if-tool/image.html)
   * Dataset: [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
   * Task: Predict whether the person in an image is smiling
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:imagedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/image_demo.html`
-* [Multiclass classifier for Iris dataset](https://pair-code.github.io/what-if-tool/irisdemoserver.html)
+* [Multiclass classifier for Iris dataset](https://pair-code.github.io/what-if-tool/iris.html)
   * Dataset: [UCI Iris](https://archive.ics.uci.edu/ml/datasets/iris)
   * Task: Predict which of three classes of iris flowers that a flower falls
     into based on 4 measurements of the flower
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:irisdemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/iris_demo.html`
-* [Regression model for UCI Census dataset age prediction](https://pair-code.github.io/what-if-tool/agedemoserver.html)
+* [Regression model for UCI Census dataset age prediction](https://pair-code.github.io/what-if-tool/age.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict the age of a person based on their census information
   * To build and run the demo from code:

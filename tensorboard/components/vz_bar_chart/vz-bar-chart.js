@@ -201,7 +201,7 @@ var vz_bar_chart;
             });
             // Remove the keys that map to an empty array, and unpack the array.
             // This generates {series0: { x: 'c', y: 3 }}
-            bars = _.pick(bars, function (val) { return val.length > 0; });
+            bars = _.pickBy(bars, function (val) { return val.length > 0; });
             var singleBars = _.mapValues(bars, function (val) { return val[0]; });
             // Rearrange the object for convenience.
             // This yields: [{key: 'series0', value: { x: 'c', y: 3 }}, ]
