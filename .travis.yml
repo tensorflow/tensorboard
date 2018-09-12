@@ -59,7 +59,7 @@ before_install:
   - echo "test --test_output=errors" >>~/.bazelrc
 
 install:
-  - pip install flake8
+  - pip install flake8==3.5.0
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
   - pip install mock==2.0.0
@@ -81,7 +81,8 @@ before_script:
   # fail the build if there are Python syntax errors or undefined names
   - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
-  - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  # a comment of '# noqa' or better yet '# noqa: <error code>' added to the code to silence flake8
+  - flake8 . --count --exit-zero --ignore=E111,E114 --max-complexity=10 --max-line-length=127 --statistics
 
 # Commands in this section should only fail if it's our fault. Travis will
 # categorize them as 'failed', rather than 'error' for other sections.
