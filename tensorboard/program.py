@@ -156,7 +156,7 @@ class TensorBoard(object):
       # which Abseil flags to include in the short helpstring.
       for flag in set(absl_flags.FLAGS.get_key_flags_for_module(arg0)):
         if hasattr(flags, flag.name):
-          raise ValueError('Conflicting Abseil flag: %s' % name)
+          raise ValueError('Conflicting Abseil flag: %s' % flag.name)
         setattr(flags, flag.name, flag.value)
     for k, v in kwargs.items():
       if hasattr(flags, k):
