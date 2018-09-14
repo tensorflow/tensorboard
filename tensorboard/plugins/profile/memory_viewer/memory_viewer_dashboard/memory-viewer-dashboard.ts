@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_dashboard {
 
 Polymer({
   is:'memory-viewer-dashboard',
@@ -47,11 +47,13 @@ Polymer({
     if (newData && newData.hloModule && newData.bufferAssignment) {
       this.hloModule_ = newData.hloModule;
       this.moduleName_ = this.hloModule_.name ? this.hloModule_.name : '';
-      this.usage = new MemoryUsage(newData);
-      this.peakHeapSizeMiB_ = memory_viewer.bytesToMiB(this.usage.peakHeapSizeBytes).toFixed(2);
-      this.unpaddedPeakHeapSizeMiB_ = memory_viewer.bytesToMiB(this.usage.unpaddedPeakHeapSizeBytes).toFixed(2);
+      this.usage = new memory_viewer_usage.MemoryUsage(newData);
+      this.peakHeapSizeMiB_ = memory_viewer_utils.bytesToMiB(
+        this.usage.peakHeapSizeBytes).toFixed(2);
+      this.unpaddedPeakHeapSizeMiB_ = memory_viewer_utils.bytesToMiB(
+        this.usage.unpaddedPeakHeapSizeBytes).toFixed(2);
     }
   }
 });
 
-} // namespace memory_viewer
+} // namespace memory_viewer_dashboard

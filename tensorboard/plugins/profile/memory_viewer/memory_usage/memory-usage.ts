@@ -10,17 +10,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_usage {
 
 /**
  * Provides calculation of memory usage from xla buffer assignment.
  * @final
  */
 export class MemoryUsage {
-  private buffers_: LogicalBuffer[] = [];
-  private idToBuffer_: {[key: number]: LogicalBuffer} = {};
-  private idToBufferAllocation_: {[key: number]: BufferAllocation} = {};
-  private nameToHlo_: {[key: string]: HloInstruction} = {};
+  private buffers_: memory_viewer_logical_buffer.LogicalBuffer[] = [];
+  private idToBuffer_: {
+    [key: number]: memory_viewer_logical_buffer.LogicalBuffer} = {};
+  private idToBufferAllocation_: {
+    [key: number]: memory_viewer_buffer_allocation.BufferAllocation} = {};
+  private nameToHlo_: {
+    [key: string]: memory_viewer_hlo_instructions.HloInstruction} = {};
   private unSeenLogicalBuffers_: Set<number>;
   private seenBufferAllocations_: Set<number>;
   private nColor_: number = 0;
@@ -70,7 +73,8 @@ export class MemoryUsage {
     for (const comp of hloModule.computations) {
       for (const inst of comp.instructions) {
         if (inst.name) {
-          this.nameToHlo_[inst.name] = new HloInstruction(inst);
+          this.nameToHlo_[inst.name] =
+            new memory_viewer_hlo_instructions.HloInstruction(inst);
         }
       }
     }
@@ -95,7 +99,7 @@ export class MemoryUsage {
    */
   private initBuffers_(bufferAssignment) {
     for (let jsonBuffer of bufferAssignment.logicalBuffers) {
-      const buffer = new LogicalBuffer(jsonBuffer);
+      const buffer = new memory_viewer_logical_buffer.LogicalBuffer(jsonBuffer);
       this.buffers_.push(buffer);
       this.idToBuffer_[buffer.id] = buffer;
       this.unSeenLogicalBuffers_.add(buffer.id);
@@ -108,7 +112,8 @@ export class MemoryUsage {
    */
   private initAllocations_(bufferAssignment) {
     for (const jsonAlloc of bufferAssignment.bufferAllocations) {
-      const alloc = new BufferAllocation(jsonAlloc);
+      const alloc = new memory_viewer_buffer_allocation.BufferAllocation(
+        jsonAlloc);
       for (const assigned of jsonAlloc.assigned) {
         if (assigned.logicalBufferId) {
           this.idToBufferAllocation_[assigned.logicalBufferId] = alloc;
@@ -122,17 +127,20 @@ export class MemoryUsage {
    * visualization.
    */
   private newHeapObject_(
-      color: number, buffer: LogicalBuffer, shape: Shape, inst: HloInstruction,
+      color: number, buffer: memory_viewer_logical_buffer.LogicalBuffer,
+      shape: memory_viewer_shape.Shape,
+      inst: memory_viewer_hlo_instructions.HloInstruction,
       groupName: string): {[key: string] : any} {
     const unpaddedSize =
-        shape ? memory_viewer.bytesToMiB(shape.unpaddedHeapSizeBytes()) : 0;
+        shape ? memory_viewer_utils.bytesToMiB(
+          shape.unpaddedHeapSizeBytes()) : 0;
     const dict = {
       'instructionName': buffer.instructionName,
       'logicalBufferId': buffer.id,
       'unpaddedSizeMiB': unpaddedSize,
       'tfOpName': inst.tfOpName,
       'opcode': inst.opcode,
-      'sizeMiB': memory_viewer.bytesToMiB(buffer.size),
+      'sizeMiB': memory_viewer_utils.bytesToMiB(buffer.size),
       'color': color,
       'shape': shape ? shape.humanStringWithLayout() : '',
       'groupName': groupName,
@@ -146,7 +154,8 @@ export class MemoryUsage {
    * small buffer size, return the size without adding into the maxHeap.
    * Otherwise, return 0.
    */
-  private addHeapObject_(parent: any, buffer: LogicalBuffer, groupName: string) {
+  private addHeapObject_(parent: any,
+      buffer: memory_viewer_logical_buffer.LogicalBuffer, groupName: string) {
     if (buffer.size <= parent.smallBufferSize) {
       parent.rest_ += buffer.size;
       return;
@@ -179,7 +188,7 @@ export class MemoryUsage {
       const small = 'small (<' + this.smallBufferSize / 1024 + ' KiB)';
       this.maxHeap.push({
         'instructionName': small,
-        'sizeMiB': memory_viewer.bytesToMiB(this.rest_),
+        'sizeMiB': memory_viewer_utils.bytesToMiB(this.rest_),
         'color': 0,
         'groupName': small
       });
@@ -216,8 +225,9 @@ export class MemoryUsage {
     let unpaddedPeakHeapSizeBytes = 0;
     let peakHeapSizePosition = 0;
     for (const event of bufferAssignment.heapSimulatorTraces[0].events) {
-      heapSizes.push(memory_viewer.bytesToMiB(heapSizeBytes));
-      unpaddedHeapSizes.push(memory_viewer.bytesToMiB(unpaddedHeapSizeBytes));
+      heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
+      unpaddedHeapSizes.push(memory_viewer_utils.bytesToMiB(
+        unpaddedHeapSizeBytes));
       const eventId = parseInt(event.bufferId, 10);
       const buffer = this.idToBuffer_[eventId];
       this.unSeenLogicalBuffers_.delete(eventId);
@@ -273,7 +283,7 @@ export class MemoryUsage {
       }
     }
 
-    heapSizes.push(memory_viewer.bytesToMiB(heapSizeBytes));
+    heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
     const indefiniteMemoryUsageBytes =
         this.findIndefiniteMemoryUsage_(this.unSeenLogicalBuffers_);
     this.peakHeapSizeBytes = peakHeapSizeBytes + indefiniteMemoryUsageBytes;
@@ -281,7 +291,7 @@ export class MemoryUsage {
         unpaddedPeakHeapSizeBytes + indefiniteMemoryUsageBytes;
     this.peakLogicalBuffers = peakLogicalBuffers;
     this.peakHeapSizePosition = peakHeapSizePosition;
-    const addend = memory_viewer.bytesToMiB(indefiniteMemoryUsageBytes);
+    const addend = memory_viewer_utils.bytesToMiB(indefiniteMemoryUsageBytes);
     this.heapSizes = heapSizes.map((item) => {
       return item + addend;
     });
@@ -315,4 +325,4 @@ export class MemoryUsage {
   }
 }
 
-} // namespace memory_viewer
+} // namespace memory_viewer_usage

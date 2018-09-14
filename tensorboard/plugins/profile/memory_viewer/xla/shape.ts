@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_shape {
 
 /**
  * A shape describes the number of dimensions in the array, the size of each
@@ -60,11 +60,11 @@ export class Shape {
       const allocatedElementCount =
           this.dimensions.reduce((count, item) => count * item, 1);
       byteSize += allocatedElementCount *
-          memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+          memory_viewer_utils.byteSizeOfPrimitiveType(this.elementType);
     }else if (this.layout.format == 'SPARSE') {
       const maxElements = parseInt(this.layout.maxSparseElements, 10);
       byteSize = maxElements *
-          memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+          memory_viewer_utils.byteSizeOfPrimitiveType(this.elementType);
 
       // Add byte size of sparse indices, assume each indice is int64 type.
       byteSize += maxElements * this.dimensions.length * INT64_BYTES;
@@ -114,4 +114,4 @@ export class Shape {
   }
 }
 
-} // namespace memory_viewer
+} // namespace memory_viewer_shape

@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer { 
+namespace memory_viewer_assigned {
 
 /**
  * HLO assigned buffer allocation representation.
@@ -28,4 +28,4 @@ export class BufferAllocationAssigned {
   }
 }
 
-} // namespace memory_viewer
+} // namespace memory_viewer_assigned
