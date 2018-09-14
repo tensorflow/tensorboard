@@ -38,6 +38,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":lazy",
+        ":program",
         ":summary",
     ],
 )
@@ -50,9 +51,21 @@ py_library(
     deps = [
         ":util",
         ":version",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_test(
+    name = "program_test",
+    size = "small",
+    srcs = ["program_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":program",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -65,6 +78,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin",
         "//tensorboard/plugins/core:core_plugin",
@@ -74,6 +88,7 @@ py_library(
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
         "//tensorboard/plugins/image:images_plugin",
+        "//tensorboard/plugins/interactive_inference:interactive_inference_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
@@ -82,7 +97,7 @@ py_library(
     ],
 )
 
-py_binary(
+py_library(
     name = "version",
     srcs = ["version.py"],
     srcs_version = "PY2AND3",
@@ -101,7 +116,10 @@ tf_web_library(
         "//tensorboard/components:trace_viewer_index.html",
     ],
     path = "/",
-    deps = ["@com_google_fonts_roboto"],
+    deps = [
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_assets",
+        "@com_google_fonts_roboto",
+    ],
 )
 
 py_library(
@@ -115,7 +133,7 @@ py_library(
 py_library(
     name = "expect_futures_installed",
     # This is a dummy rule used as a futures dependency in open-source.
-    # We expect numpy to already be installed on the system, e.g. via
+    # We expect futures to already be installed on the system, e.g. via
     # `pip install futures`
     visibility = ["//visibility:public"],
 )

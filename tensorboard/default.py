@@ -14,7 +14,7 @@
 # ==============================================================================
 """Collection of first-party plugins.
 
-This module exists to isolate tensorboard.server from the potentially
+This module exists to isolate tensorboard.program from the potentially
 heavyweight build dependencies for first-party plugins. This way people
 doing custom builds of TensorBoard have the option to only pay for the
 dependencies they want.
@@ -28,10 +28,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import logging
 import os
 
 import tensorflow as tf
 
+from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
@@ -41,42 +43,44 @@ from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
+from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 
+logger = logging.getLogger(__name__)
+
+_PLUGINS = [
+    core_plugin.CorePluginLoader(),
+    beholder_plugin.BeholderPlugin,
+    scalars_plugin.ScalarsPlugin,
+    custom_scalars_plugin.CustomScalarsPlugin,
+    images_plugin.ImagesPlugin,
+    audio_plugin.AudioPlugin,
+    graphs_plugin.GraphsPlugin,
+    distributions_plugin.DistributionsPlugin,
+    histograms_plugin.HistogramsPlugin,
+    pr_curves_plugin.PrCurvesPlugin,
+    projector_plugin.ProjectorPlugin,
+    text_plugin.TextPlugin,
+    interactive_inference_plugin.InteractiveInferencePlugin,
+    profile_plugin.ProfilePluginLoader(),
+    debugger_plugin_loader.DebuggerPluginLoader(),
+]
 
 def get_plugins():
-  """Returns list of TensorBoard's first-party TBPlugin classes.
+  """Returns a list specifying TensorBoard's default first-party plugins.
 
-  This list can then be passed to functions in `tensorboard.server` or
-  `tensorboard.backend.application`.
+  Plugins are specified in this list either via a TBLoader instance to load the
+  plugin, or the TBPlugin class itself which will be loaded using a BasicLoader.
 
-  :rtype: list[:class:`base_plugin.TBPlugin`]
+  This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+  :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
-  plugins = [
-      beholder_plugin.BeholderPlugin,
-      core_plugin.CorePlugin,
-      scalars_plugin.ScalarsPlugin,
-      custom_scalars_plugin.CustomScalarsPlugin,
-      images_plugin.ImagesPlugin,
-      audio_plugin.AudioPlugin,
-      graphs_plugin.GraphsPlugin,
-      distributions_plugin.DistributionsPlugin,
-      histograms_plugin.HistogramsPlugin,
-      pr_curves_plugin.PrCurvesPlugin,
-      projector_plugin.ProjectorPlugin,
-      text_plugin.TextPlugin,
-      profile_plugin.ProfilePlugin,
-  ]
-  # The debugger plugin is only activated if its flag is set.
-  debugger = debugger_plugin_loader.get_debugger_plugin()
-  if debugger is not None:
-    plugins.append(debugger)
-  return plugins
-
+  return _PLUGINS[:]
 
 def get_assets_zip_provider():
   """Opens stock TensorBoard web assets collection.
@@ -89,6 +93,6 @@ def get_assets_zip_provider():
   """
   path = os.path.join(tf.resource_loader.get_data_files_path(), 'webfiles.zip')
   if not os.path.exists(path):
-    tf.logging.warning('webfiles.zip static assets not found: %s', path)
+    logger.warning('webfiles.zip static assets not found: %s', path)
     return None
   return lambda: open(path, 'rb')

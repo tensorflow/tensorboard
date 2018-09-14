@@ -29,29 +29,43 @@ limitations under the License.
 
 <dom-module id="tf-beholder-dashboard">
   <template>
-    <paper-dialog with-backdrop id="actual-image-size-dialog"></paper-dialog>
     <tf-dashboard-layout>
       <div class="sidebar">
-
+        <template is="dom-if" if="[[_controls_disabled]]">
+          <div class="sidebar-section">
+            <p class="controls-disabled-message">
+              Controls disabled: directory is not writeable.
+            </p>
+            <p class="disclaimer">
+              Beholder requires write access to the log directory in order
+              to communicate visualization changes to the <code>Beholder</code>
+              instance in your model.
+            </p>
+          </div>
+        </template>
         <div class="sidebar-section">
-          <div class="title">Values</div>
+          <h3>Values</h3>
           <paper-radio-group
             id="valuesSelector"
             selected="{{_values}}">
-            <paper-radio-button name="trainable_variables">
+            <paper-radio-button name="trainable_variables"
+                                disabled="[[_controls_disabled]]">
               <pre>tf.trainable_variables()</pre>
             </paper-radio-button>
-            <paper-radio-button id="option-arrays" name="arrays">
-              <pre>b.update(arrays=[2D_ARRAYS])</pre>
+            <paper-radio-button id="option-arrays" name="arrays"
+                                disabled="[[_controls_disabled]]">
+              <pre>b.update(arrays=[NP_ARRAYS])</pre>
             </paper-radio-button>
-            <paper-radio-button id="option-frames" name="frames">
-              <pre>b.update(frame=2D_ARRAY)</pre>
+            <paper-radio-button id="option-frames" name="frames"
+                                disabled="[[_controls_disabled]]">
+              <pre>b.update(frame=NP_ARRAY)</pre>
             </paper-radio-button>
           </paper-radio-group>
 
           <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
             <paper-checkbox
               checked="{{_showAll}}"
+              disabled="[[_controls_disabled]]"
             >Show all data <i>(can be resource intensive)</i></paper-checkbox>
           </template>
         </div>
@@ -59,17 +73,19 @@ limitations under the License.
         <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
 
           <div class="sidebar-section">
-            <div class="title">Mode</div>
+            <h3>Mode</h3>
             <paper-radio-group id="modeSelector" selected="{{_mode}}">
-              <paper-radio-button name="current">
+              <paper-radio-button name="current"
+                                  disabled="[[_controls_disabled]]">
                 current values
               </paper-radio-button>
-              <paper-radio-button name="variance">
+              <paper-radio-button name="variance"
+                                  disabled="[[_controls_disabled]]">
                 variance over train steps
               </paper-radio-button>
             </paper-radio-group>
             <template is="dom-if" if="[[_varianceSelected(_mode)]]">
-              <div class="title">Variance timesteps: {{_windowSize}}</div>
+              <h4>Variance timesteps: {{_windowSize}}</h4>
               <paper-slider
                 id="windowSlider"
                 value="{{_windowSize}}"
@@ -77,23 +93,26 @@ limitations under the License.
                 step="1"
                 min="2"
                 max="20"
-                pin="true">
+                pin="true"
+                disabled="[[_controls_disabled]]">
               </paper-slider>
             </template>
           </div>
 
           <div class="sidebar-section">
-            <div class="title">Image scaling</div>
+            <h3>Image scaling</h3>
             <paper-radio-group id="scalingSelector" selected="{{_scaling}}">
 
-              <paper-radio-button id="option-layer" name="layer">
+              <paper-radio-button id="option-layer" name="layer"
+                                  disabled="[[_controls_disabled]]">
                 per section
               </paper-radio-button>
               <paper-tooltip for="option-layer" position="right">
                 Black is the lowest value in that section, white is that largest value in that section.
               </paper-tooltip>
 
-              <paper-radio-button id="option-network" name="network">
+              <paper-radio-button id="option-network" name="network"
+                                  disabled="[[_controls_disabled]]">
                 all sections
               </paper-radio-button>
               <paper-tooltip for="option-network" position="right">
@@ -106,6 +125,7 @@ limitations under the License.
               <paper-dropdown-menu
                 no-label-float
                 selected-item-label="{{_colormap}}"
+                disabled="[[_controls_disabled]]"
               >
                 <paper-menu class="dropdown-content" selected="0">
                   <paper-item>magma</paper-item>
@@ -121,7 +141,7 @@ limitations under the License.
         </template>
 
         <div class="sidebar-section">
-          <div class="title">Updates per second: {{_FPS}}</div>
+          <h3>Updates per second: {{_FPS}}</h3>
           <paper-slider
             id="FPSSlider"
             value="{{_FPS}}"
@@ -129,21 +149,25 @@ limitations under the License.
             step="1"
             min="0"
             max="30"
-            pin="true">
+            pin="true"
+            disabled="[[_controls_disabled]]">
           </paper-slider>
         </div>
 
         <div class="sidebar-section">
-          <paper-button
-            class="x-button"
-            id="record_button"
-            on-tap="_toggleRecord">
-            [[_recordText]]
-          </paper-button>
+          <div>
+            <paper-button
+              class="x-button"
+              id="record_button"
+              on-tap="_toggleRecord"
+              disabled="[[_controls_disabled]]">
+              [[_recordText]]
+            </paper-button>
+          </div>
         </div>
 
         <div class="sidebar-section">
-          <p class="disclaimer"><i>Note: Beholder currently only works well on local file systems.</i></p>
+          <p class="disclaimer">Note: Beholder currently only works well on local file systems.</p>
         </div>
 
       </div>
@@ -153,37 +177,45 @@ limitations under the License.
           <div class="no-data-warning">
             <h3>No Beholder data was found.</h3>
 
-            <p>Probable causes:</p>
+            <p>Probable causes:
             <ul>
               <li>Your script isn't running.</li>
-              <li>You aren't calling the <pre>update</pre> function.</li>
+              <li>You aren't calling <code>beholder.update()</code>.</li>
             </ul>
 
-            <p>To use Beholder, import and instantiate the Beholder class:</p>
+            <p>To use Beholder, import and instantiate the <code>Beholder</code>
+            class, and call its <code>update</code> method with a
+            <code>Session</code> argument after every train step:</p>
 
             <pre>
-from beholder.beholder import Beholder
-visualizer = Beholder(logdir=LOG_DIRECTORY)</pre>
+from tensorboard.plugins.beholder import Beholder
+beholder = Beholder(LOG_DIRECTORY)
 
-            <p>And call the update function after every train step (both arguments are optional):</p>
-
-            <pre>
-visualizer.update(
+# inside train loop
+beholder.update(
   session=sess,
-  arrays=list_of_np_arrays,
-  frame=two_dimensional_np_array,
+  arrays=list_of_np_arrays,  # optional argument
+  frame=two_dimensional_np_array,  # optional argument
 )</pre>
+            <p>If using <code>tf.train.MonitoredSession</code>, you can use
+            <code>BeholderHook</code>:
+
+            <pre>
+from tensorboard.plugins.beholder import BeholderHook
+beholder_hook = BeholderHook(LOG_DIRECTORY)
+with MonitoredSession(..., hooks=[beholder_hook]) as sess:
+  sess.run(train_op)</pre>
 
             <p>If you think everything is set up properly, please see
-            <a href="https://github.com/chrisranderson/beholder/">the README</a>
-            for more information and consider <a href="https://github.com/chrisranderson/beholder/issues/new">filing an issue on GitHub</a>.</p>
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/beholder/README.md">the README</a>
+            for more information and consider filing an issue on GitHub.
 
-            <p class="disclaimer"><i>Note: Beholder currently only works well on local file systems.</i></p>
+            <p class="disclaimer">Note: Beholder currently only works well on local file systems.</p>
           </div>
         </template>
 
         <template is="dom-if" if="[[_is_active]]">
-          <tf-beholder-video id="video"></tf-beholder-video>
+          <tf-beholder-video id="video" fps="[[_FPS]]"></tf-beholder-video>
 
           <template is="dom-if" if="[[_valuesNotFrame(_values)]]">
             <tf-beholder-info
@@ -205,17 +237,7 @@ visualizer.update(
 
       .no-data-warning {
         max-width: 540px;
-        margin: 80px auto 0 auto;
-      }
-
-      .title {
-        font-size: 16px;
-        margin: 8px 5px 8px 0;
-        color: black;
-      }
-
-      .title small {
-        font-weight: normal;
+        margin: 80px auto 0;
       }
 
       paper-checkbox {
@@ -224,18 +246,34 @@ visualizer.update(
       }
 
       paper-radio-button {
-        display: block;
+        display: flex;
         padding: 5px;
+
+        --paper-radio-button-radio-container: {
+          flex-grow: 0;
+          flex-shrink: 0;
+        }
+
+        --paper-radio-button-label: {
+          font-size: 13px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
 
       paper-radio-group {
         margin-top: 5px;
+        width: 100%;
       }
 
       paper-slider {
-        margin-left: 12px;
-        --paper-slider-knob-color: var(--tb-orange-strong);
         --paper-slider-active-color: var(--tb-orange-strong);
+        --paper-slider-knob-color: var(--tb-orange-strong);
+        --paper-slider-knob-start-border-color: var(--tb-orange-strong);
+        --paper-slider-knob-start-color: var(--tb-orange-strong);
+        --paper-slider-markers-color: var(--tb-orange-strong);
+        --paper-slider-pin-color: var(--tb-orange-strong);
+        --paper-slider-pin-start-color: var(--tb-orange-strong);
         flex-grow: 2;
       }
 
@@ -271,14 +309,25 @@ visualizer.update(
         width: 105px;
       }
 
-      .sidebar {
-        max-width: 350px;
+      h4 {
+        font-size: 14px;
+        font-weight: normal;
+        margin: 5px 0;
       }
 
       p.disclaimer {
         color: #999;
+        font-style: italic;
       }
 
+      p.controls-disabled-message {
+        color: #C00;
+        font-weight: bold;
+      }
+
+      .sidebar {
+        font-size: 14px;
+      }
     </style>
   </template>
   <script>
@@ -296,8 +345,6 @@ visualizer.update(
           type: Object,
           value: () => new tf_backend.RequestManager(10, 0),
         },
-
-        ////
 
         _values: {
           type: String,
@@ -360,6 +407,13 @@ visualizer.update(
         _is_active: {
           type: Boolean,
           value: false,
+          observer: '_configChanged',
+        },
+
+        _controls_disabled: {
+          type: Boolean,
+          value: false,
+          observer: '_configChanged',
         },
       },
 
@@ -372,6 +426,11 @@ visualizer.update(
       },
 
       _configChanged() {
+        // Skip recording config unless we're active and controls are enabled.
+        if (!this._is_active || this._controls_disabled) {
+          return;
+        }
+
         // In case we aren't finished initializing yet.
         const properties = [
           this._values,
@@ -425,7 +484,8 @@ visualizer.update(
         const url = tf_backend.getRouter().pluginRoute(PLUGIN_NAME, '/is-active');
 
         this._requestManager.request(url).then(response => {
-          this.set('_is_active', response['is_active'])
+          this.set('_is_active', response['is_active']);
+          this.set('_controls_disabled', !response['is_config_writable']);
         })
       },
     });
@@ -434,6 +494,7 @@ visualizer.update(
     tf_tensorboard.registerDashboard({
       plugin: 'beholder',
       elementName: 'tf-beholder-dashboard',
+      shouldRemoveDom: true,
     });
   </script>
 </dom-module>

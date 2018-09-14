@@ -491,4 +491,3 @@ genrule(
     outs = ["d3-transition.d.ts"],
     cmd = "sed '/^declare module/d' $< | awk '/^}$$/ && !p {p++;next}1' >$@",
 )
-

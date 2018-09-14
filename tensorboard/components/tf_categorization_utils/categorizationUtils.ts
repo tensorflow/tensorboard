@@ -28,10 +28,11 @@ export enum CategoryType {
   PREFIX_GROUP,
 }
 export interface PrefixGroupMetadata {
-  type: CategoryType.PREFIX_GROUP;
+  type: CategoryType;
 }
 export interface SearchResultsMetadata {
-  type: CategoryType.SEARCH_RESULTS;
+  type: CategoryType;
+  compositeSearch?: boolean;
   validRegex: boolean;
   universalRegex: boolean;  // is the search query ".*"? ("(?:)" doesn't count)
 }
@@ -44,6 +45,21 @@ export interface Category<T> {
 };
 export type TagCategory = Category<{tag: string, runs: string[]}>;
 export type RunTagCategory = Category<{tag: string, run: string}>;
+
+export type Series = {
+  experiment: tf_backend.Experiment,
+  run: string,
+  tag: string,
+};
+
+/**
+ * Organize data by tagPrefix, tag, then list of series which is comprised of
+ * an experiment and a run.
+ */
+export type SeriesCategory = Category<{
+  tag: string,
+  series: Series[],
+}>;
 
 export type RawCategory = Category<string>;  // Intermediate structure.
 
@@ -108,25 +124,123 @@ export function categorizeTags(
     runToTag: RunToTag,
     selectedRuns: string[],
     query?: string): TagCategory[] {
+  runToTag = _.pick(runToTag, selectedRuns);
   const tags = tf_backend.getTags(runToTag);
   const categories = categorize(tags, query);
-  const tagToRuns: {[tag: string]: string[]} = {};
-  tags.forEach(tag => {
-    tagToRuns[tag] = [];
-  });
-  selectedRuns.forEach(run => {
-    (runToTag[run] || []).forEach(tag => {
-      tagToRuns[tag].push(run);
-    });
-  });
+  const tagToRuns = createTagToRuns(runToTag);
+
   return categories.map(({name, metadata, items}) => ({
     name,
     metadata,
     items: items.map(tag => ({
       tag,
-      runs: tagToRuns[tag].slice(),
+      runs: tagToRuns.get(tag).slice(),
     })),
   }));
+}
+
+/**
+ * Creates grouping of the data based on selection from tf-data-selector. It
+ * groups data by prefixes of tag names and by tag names. Each group contains
+ * series, a tuple of experiment name and run name.
+ */
+export function categorizeSelection(
+    selection: tf_data_selector.Selection[], pluginName: string):
+    SeriesCategory[] {
+  const tagToSeries = new Map<string, Series[]>();
+  // `tagToSearchSeries` contains subset of `tagToSeries`. tagRegex in each
+  // selection can omit series from a tag category.
+  const tagToSearchSeries = new Map<string, Series[]>();
+  const searchCategories = [];
+
+  selection.forEach(({experiment, runs, tagRegex}) => {
+    const runNames = runs.map(({name}) => name);
+    const selectedRunToTag = createRunToTagForPlugin(runs, pluginName);
+    const tagToSelectedRuns = createTagToRuns(selectedRunToTag);
+    const tags = tf_backend.getTags(selectedRunToTag);
+    // list of all tags that has selected runs.
+    tags.forEach(tag => {
+      const series = tagToSeries.get(tag) || [];
+      series.push(...tagToSelectedRuns.get(tag)
+          .map(run => ({experiment, run, tag})));
+      tagToSeries.set(tag, series);
+    });
+
+    const searchCategory = categorizeBySearchQuery(tags, tagRegex);
+    searchCategories.push(searchCategory);
+    // list of tags matching tagRegex in the selection.
+    searchCategory.items.forEach(tag => {
+      const series = tagToSearchSeries.get(tag) || [];
+      series.push(...tagToSelectedRuns.get(tag)
+          .map(run => ({experiment, run, tag})));
+      tagToSearchSeries.set(tag, series);
+    });
+  });
+
+  const searchCategory: RawCategory = searchCategories.length == 1 ?
+      searchCategories[0] :
+      {
+        name: searchCategories.every(c => !c.name) ? '' : 'multi',
+        metadata: {
+          type: CategoryType.SEARCH_RESULTS,
+          compositeSearch: true,
+          validRegex: searchCategories.every(c => c.metadata.validRegex),
+          universalRegex: false,
+        },
+        items: Array.from(tagToSearchSeries.keys())
+            .sort(vz_sorting.compareTagNames),
+      };
+
+  const searchSeriesCategory: SeriesCategory = Object.assign(
+    {},
+    searchCategory,
+    {
+      items: searchCategory.items.map(tag => ({
+        tag,
+        series: tagToSearchSeries.get(tag),
+      })),
+    },
+  );
+
+  // Organize the tag to items by prefix.
+  const prefixCategories: SeriesCategory[] = categorizeByPrefix(
+      Array.from(tagToSeries.keys()))
+          .map(({name, metadata, items}) => ({
+            name,
+            metadata,
+            items: items.map(tag => ({
+              tag,
+              series: tagToSeries.get(tag),
+            })),
+          }));
+
+  return [
+    searchSeriesCategory,
+    ...prefixCategories,
+  ];
+}
+
+function createTagToRuns(runToTag: RunToTag): Map<string, string[]> {
+  const tagToRun = new Map();
+  Object.keys(runToTag).forEach(run => {
+    runToTag[run].forEach(tag => {
+      const runs = tagToRun.get(tag) || [];
+      runs.push(run);
+      tagToRun.set(tag, runs);
+    });
+  });
+  return tagToRun;
+}
+
+function createRunToTagForPlugin(runs: tf_backend.Run[], pluginName: string):
+    RunToTag {
+  const runToTag = {};
+  runs.forEach((run) => {
+    runToTag[run.name] = run.tags
+        .filter(tag => tag.pluginName == pluginName)
+        .map(({name}) => name);
+  })
+  return runToTag;
 }
 
 function compareTagRun(a, b: {tag: string, run: string}): number {
@@ -156,4 +270,4 @@ export function categorizeRunTagCombinations(
   return tagCategories.map(explodeCategory);
 }
 
-}  // namespace tf_categorization_utils
+}  // namespace wtf_categorization_utils

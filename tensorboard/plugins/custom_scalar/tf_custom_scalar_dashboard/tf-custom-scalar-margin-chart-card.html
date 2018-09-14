@@ -29,6 +29,7 @@ limitations under the License.
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="tf-custom-scalar-card-style.html">
+<link rel="import" href="tf-custom-scalar-helpers.html">
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
@@ -39,21 +40,22 @@ limitations under the License.
   <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
-      x-type="[[xType]]"
-      tooltip-sorting-method="[[tooltipSortingMethod]]"
-      ignore-y-outliers="[[ignoreYOutliers]]"
-      request-manager="[[requestManager]]"
-      runs="[[runs]]"
-      tag="[[_tagFilter]]"
+      id="loader"
       active="[[active]]"
-      data-url="[[_dataUrl]]"
-      log-scale-active="[[_logScaleActive]]"
-      process-data="[[_createProcessDataFunction(marginChartSeries)]]"
       color-scale="[[_colorScale]]"
-      data-series="[[_dataSeriesStrings]]"
+      data-series="[[_filteredSeriesNames]]"
+      get-data-load-url="[[_dataUrl]]"
+      fill-area="[[_fillArea]]"
+      ignore-y-outliers="[[ignoreYOutliers]]"
+      load-key="[[_tagFilter]]"
+      data-to-load="[[runs]]"
+      log-scale-active="[[_logScaleActive]]"
+      load-data-callback="[[_createProcessDataFunction(marginChartSeries)]]"
+      request-manager="[[requestManager]]"
       symbol-function="[[_createSymbolFunction()]]"
       tooltip-columns="[[_tooltipColumns]]"
-      fill-area="[[_fillArea]]"
+      tooltip-sorting-method="[[tooltipSortingMethod]]"
+      x-type="[[xType]]"
     >
     </tf-line-chart-data-loader>
   </div>
@@ -83,17 +85,17 @@ limitations under the License.
           selected-item-label="{{_dataSeriesNameToDownload}}"
         >
           <paper-menu class="dropdown-content" slot="dropdown-content">
-            <template is="dom-repeat" items="[[_dataSeriesStrings]]" as="dataSeriesName">
+            <template is="dom-repeat" items="[[_filteredSeriesNames]]" as="dataSeriesName">
               <paper-item no-label-float=true>[[dataSeriesName]]</paper-item>
             </template>
           </paper-menu>
         </paper-dropdown-menu>
         <a
           download="[[_dataSeriesNameToDownload]].csv"
-          href="[[_csvUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
+          href="[[_csvUrl(_filteredNameToSeries, _dataSeriesNameToDownload)]]"
         >CSV</a> <a
           download="[[_dataSeriesNameToDownload]].json"
-          href="[[_jsonUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
+          href="[[_jsonUrl(_filteredNameToSeries, _dataSeriesNameToDownload)]]"
         >JSON</a>
       </div>
     </template>
@@ -161,7 +163,7 @@ limitations under the License.
 
   <div id="matches-container">
     <div class="collapsible-list-title">
-      <template is="dom-if" if="[[_dataSeriesStrings.length]]">
+      <template is="dom-if" if="[[_filteredSeriesNames.length]]">
         <paper-icon-button
           icon="[[_getToggleCollapsibleIcon(_matchesListOpened)]]"
           on-click="_toggleMatchesOpen"
@@ -170,19 +172,19 @@ limitations under the License.
       </template>
 
       <span class="collapsible-title-text">
-        Matches ([[_dataSeriesStrings.length]])
+        Matches ([[_filteredSeriesNames.length]])
       </span>
     </div>
-    <template is="dom-if" if="[[_dataSeriesStrings.length]]">
+    <template is="dom-if" if="[[_filteredSeriesNames.length]]">
       <iron-collapse opened="[[_matchesListOpened]]">
         <div id="matches-list">
           <template is="dom-repeat"
-                    items="[[_dataSeriesStrings]]"
+                    items="[[_filteredSeriesNames]]"
                     as="seriesName">
               <div class="match-list-entry"
                    style="color: [[_determineColor(_colorScale, seriesName)]];">
                 <span class="match-entry-symbol">
-                  [[_determineSymbol(_nameToDataSeries, seriesName)]]
+                  [[_determineSymbol(_filteredNameToSeries, seriesName)]]
                 </span>
                 [[seriesName]]
               </div>
@@ -250,7 +252,6 @@ limitations under the License.
     }
   </style>
 </template>
-<script src='tf-custom-scalar-helpers.js'></script>
 <script>
   Polymer({
       is: 'tf-custom-scalar-margin-chart-card',
@@ -302,27 +303,16 @@ limitations under the License.
         /**
          * Maps from the name of the data series to the DataSeries object.
          */
-        _nameToDataSeries: {
+        _filteredNameToSeries: {
           type: Object,
           value: {},
         },
 
-        /**
-         * A mapping between selected runs (strings) to the value 1. This is
-         * effectively a set of strings.
-         */
-        _selectedRunsSet: {
+        _filteredSeriesNames: {
           type: Object,
-          computed: '_computeSelectedRunsSet(runs)',
+          computed: '_computeFilteredSeriesNames(_filteredNameToSeries)',
         },
-        _dataSeriesStrings: {
-          type: Array,
-          computed: '_computeDataSeriesStrings(_selectedRunsSet, _nameToDataSeries)',
-        },
-        _dataSeriesObjects: {
-          type: Array,
-          computed: '_computeDataSeriesObjects(_nameToDataSeries, _dataSeriesStrings)',
-        },
+
         _expanded: {
           type: Boolean,
           value: false,
@@ -331,9 +321,14 @@ limitations under the License.
         _logScaleActive: Boolean,
         _dataUrl: {
           type: Function,
-          value: () => (tag, run) => tf_backend.addParams(
-              tf_backend.getRouter().pluginRoute(
-                  'custom_scalars', '/scalars'), {tag, run}),
+          value: function() {
+            return (run) => {
+              const tag = this._tagFilter;
+              return tf_backend.addParams(
+                  tf_backend.getRouter().pluginRoute(
+                      'custom_scalars', '/scalars'), {tag, run});
+            };
+          },
         },
         /**
          * A mapping from run to the next available symbol for that run. We use
@@ -431,15 +426,15 @@ limitations under the License.
         _stepsMismatch: Object,
       },
       observers: [
-        '_updateChart(_nameToDataSeries)',
+        '_updateChart(_filteredNameToSeries)',
         // Clear the data series when the tag filter changes.
         '_refreshDataSeries(_tagFilter)',
       ],
       reload() {
-        this.$$('tf-line-chart-data-loader').reload();
+        this.$.loader.reload();
       },
       redraw() {
-        this.$$('tf-line-chart-data-loader').redraw();
+        this.$.loader.redraw();
       },
       _toggleExpanded(e) {
         this.set('_expanded', !this._expanded);
@@ -449,21 +444,21 @@ limitations under the License.
         this.set('_logScaleActive', !this._logScaleActive);
       },
       _resetDomain() {
-        const chart = this.$$('tf-line-chart-data-loader');
+        const chart = this.$.loader;
         if (chart) {
           chart.resetDomain();
         }
       },
-      _csvUrl(nameToDataSeries, dataSeriesName) {
-        const baseUrl = this._downloadDataUrl(nameToDataSeries, dataSeriesName);
+      _csvUrl(_filteredNameToSeries, dataSeriesName) {
+        const baseUrl = this._downloadDataUrl(_filteredNameToSeries, dataSeriesName);
         return tf_backend.addParams(baseUrl, {format: 'csv'});
       },
-      _jsonUrl(nameToDataSeries, dataSeriesName) {
-        const baseUrl = this._downloadDataUrl(nameToDataSeries, dataSeriesName);
+      _jsonUrl(_filteredNameToSeries, dataSeriesName) {
+        const baseUrl = this._downloadDataUrl(_filteredNameToSeries, dataSeriesName);
         return tf_backend.addParams(baseUrl, {format: 'json'});
       },
-      _downloadDataUrl(nameToDataSeries, dataSeriesName) {
-        const dataSeries = nameToDataSeries[dataSeriesName];
+      _downloadDataUrl(_filteredNameToSeries, dataSeriesName) {
+        const dataSeries = _filteredNameToSeries[dataSeriesName];
         const getVars = {
             tag: dataSeries.getTag(),
             run: dataSeries.getRun(),
@@ -485,7 +480,7 @@ limitations under the License.
 
           // The user's regular expression was valid.
           // Incorporate these newly loaded values.
-          const newMapping = _.clone(this._nameToDataSeries);
+          const newMapping = _.clone(this._filteredNameToSeries);
           const tagsNotFound = [];
           _.forEach(marginChartSeries, tagsObject => {
             let tagNotFound = false;
@@ -552,7 +547,7 @@ limitations under the License.
                   run, tagsObject.value, seriesName, dataPoints);
             }
           });
-          this.set('_nameToDataSeries', newMapping);
+          this.set('_filteredNameToSeries', newMapping);
 
           const entryIndex = _.findIndex(this._missingTags, (entry) => {
             return entry.run === run;
@@ -599,7 +594,7 @@ limitations under the License.
             this._runToNextAvailableSymbolIndex[run]];
 
         // Create a series with this name.
-        series = new tf_custom_scalar_dashboard.DataSeries(
+        const series = new tf_custom_scalar_dashboard.DataSeries(
             run, tag, seriesName, dataPoints, lineChartSymbol);
 
         // Loop back to the beginning if we are out of symbols.
@@ -608,41 +603,28 @@ limitations under the License.
             (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
         return series;
       },
-      _updateChart(nameToDataSeries) {
+      _updateChart(_filteredNameToSeries) {
         // Add new data series.
-        _.forOwn(nameToDataSeries, dataSeries => {
-          this.$$('tf-line-chart-data-loader').setSeriesData(
+        _.forOwn(_filteredNameToSeries, dataSeries => {
+          this.$.loader.setSeriesData(
               dataSeries.getName(), dataSeries.getData());
         });
       },
-      _computeSelectedRunsSet(runs) {
-        const mapping = {};
-        _.forEach(runs, run => {
-          mapping[run] = 1;
-        });
-        return mapping;
-      },
-      _computeDataSeriesStrings(selectedRunsSet, nameToDataSeries) {
-        return _.values(nameToDataSeries)
-            .filter(series => selectedRunsSet[series.getRun()])
-            .map(series => series.getName());
-      },
-      _computeDataSeriesObjects(nameToDataSeries, dataSeriesStrings) {
-        return dataSeriesStrings.map(
-            seriesName => nameToDataSeries[seriesName]);
+      _computeFilteredSeriesNames(_) {
+        return Object.keys(this._filteredNameToSeries);
       },
       _determineColor(colorScale, seriesName) {
         return colorScale.scale(seriesName);
       },
       _refreshDataSeries(_tagFilter) {
-        this.set('_nameToDataSeries', {});
+        this.set('_filteredNameToSeries', {});
       },
       _createSymbolFunction() {
         return seriesName => (
-            this._nameToDataSeries[seriesName].getSymbol().method());
+            this._filteredNameToSeries[seriesName].getSymbol().method());
       },
-      _determineSymbol(nameToDataSeries, seriesName) {
-        return nameToDataSeries[seriesName].getSymbol().character;
+      _determineSymbol(_filteredNameToSeries, seriesName) {
+        return _filteredNameToSeries[seriesName].getSymbol().character;
       },
       _computeTagFilter(marginChartSeries) {
         const tags = _.flatten(

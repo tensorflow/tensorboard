@@ -19,12 +19,64 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
+import binascii
 
 import numpy as np
+import six
 import tensorflow as tf
 
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.debugger import tensor_helper
+
+
+class TranslateDTypeTest(tf.test.TestCase):
+
+  def testTranslateNumericDTypes(self):
+    x = np.zeros([2, 2], dtype=np.float32)
+    self.assertEqual('float32', tensor_helper.translate_dtype(x.dtype))
+    x = np.zeros([2], dtype=np.int16)
+    self.assertEqual('int16', tensor_helper.translate_dtype(x.dtype))
+    x = np.zeros([], dtype=np.uint8)
+    self.assertEqual('uint8', tensor_helper.translate_dtype(x.dtype))
+
+  def testTranslateBooleanDType(self):
+    x = np.zeros([2, 2], dtype=np.bool)
+    self.assertEqual('bool', tensor_helper.translate_dtype(x.dtype))
+
+  def testTranslateStringDType(self):
+    x = np.array(['abc'], dtype=np.object)
+    self.assertEqual('string', tensor_helper.translate_dtype(x.dtype))
+
+
+class ProcessBuffersForDisplayTest(tf.test.TestCase):
+
+  def testBinaryScalarBelowLimit(self):
+    x = b'\x01\x02\x03'
+    self.assertEqual(binascii.b2a_qp(x),
+                     tensor_helper.process_buffers_for_display(x, 10))
+
+  def testAsciiScalarBelowLimit(self):
+    x = b'foo_bar'
+    self.assertEqual(b'foo_bar',
+                     tensor_helper.process_buffers_for_display(x, 10))
+
+  def testBinaryScalarAboveLimit(self):
+    x = b'\x01\x02\x03'
+    self.assertEqual(
+        binascii.b2a_qp(x[:2]) + b' (length-3 truncated at 2 bytes)',
+        tensor_helper.process_buffers_for_display(x, 2))
+
+  def testAsciiScalarAboveLimit(self):
+    x = b'foo_bar'
+    self.assertEqual(b'foo_ (length-7 truncated at 4 bytes)',
+                     tensor_helper.process_buffers_for_display(x, 4))
+
+  def testNestedArrayMixed(self):
+    x = [[b'\x01\x02\x03', b'foo_bar'], [b'\x01', b'f']]
+    self.assertEqual(
+        [[b'=01=02 (length-3 truncated at 2 bytes)',
+          b'fo (length-7 truncated at 2 bytes)'],
+         [b'=01', b'f']], tensor_helper.process_buffers_for_display(x, 2))
 
 
 class TensorHelperTest(tf.test.TestCase):
@@ -100,6 +152,42 @@ class TensorHelperTest(tf.test.TestCase):
     self.assertAllClose([255, 255, 255], decoded_x[1, 1, :])  # 3.3.
     self.assertAllClose(tensor_helper.NAN_RGB, decoded_x[1, 2, :])  # nan.
 
+  def testArrayViewSlicingDownNumericTensorToOneElement(self):
+    x = np.array([[1.1, 2.2, np.inf], [-np.inf, 3.3, np.nan]], dtype=np.float32)
+    dtype, shape, data = tensor_helper.array_view(x, slicing='[0,0]')
+    self.assertEqual('float32', dtype)
+    self.assertEqual(tuple(), shape)
+    self.assertTrue(np.allclose(1.1, data))
+
+  def testArrayViewSlicingStringTensorToNonScalarSubArray(self):
+    # Construct a numpy array that corresponds to a TensorFlow string tensor
+    # value.
+    x = np.array([['foo', 'bar', 'qux'], ['baz', 'corge', 'grault']],
+                 dtype=np.object)
+    dtype, shape, data = tensor_helper.array_view(x, slicing='[:2, :2]')
+    self.assertEqual('string', dtype)
+    self.assertEqual((2, 2), shape)
+    self.assertEqual([['foo', 'bar'], ['baz', 'corge']], data)
+
+  def testArrayViewSlicingStringTensorToScalar(self):
+    # Construct a numpy array that corresponds to a TensorFlow string tensor
+    # value.
+    x = np.array([['foo', 'bar', 'qux'], ['baz', 'corge', 'grault']],
+                 dtype=np.object)
+    dtype, shape, data = tensor_helper.array_view(x, slicing='[1, 1]')
+    self.assertEqual('string', dtype)
+    self.assertEqual((1, 1), shape)
+    self.assertEqual([['corge']], data)
+
+  def testArrayViewOnScalarString(self):
+    # Construct a numpy scalar that corresponds to a TensorFlow string tensor
+    # value.
+    x = np.array('foo', dtype=np.object)
+    dtype, shape, data = tensor_helper.array_view(x)
+    self.assertEqual('string', dtype)
+    self.assertEqual(tuple(), shape)
+    self.assertEqual('foo', data)
+
   def testImagePngMappingWorksForArrayWithOnlyInfAndNaN(self):
     x = np.array([[np.nan, -np.inf], [np.inf, np.nan]], dtype=np.float32)
     dtype, shape, data = tensor_helper.array_view(x, mapping="image/png")
@@ -117,14 +205,14 @@ class TensorHelperTest(tf.test.TestCase):
 
   def testImagePngMappingRaisesExceptionForEmptyArray(self):
     x = np.zeros([0, 0])
-    with self.assertRaisesRegexp(
-        ValueError, r"Cannot encode an empty array .* \(0, 0\)"):
+    with six.assertRaisesRegex(
+        self, ValueError, r"Cannot encode an empty array .* \(0, 0\)"):
       tensor_helper.array_view(x, mapping="image/png")
 
   def testImagePngMappingRaisesExceptionForNonRank2Array(self):
     x = np.ones([2, 2, 2])
-    with self.assertRaisesRegexp(
-        ValueError, r"Expected rank-2 array; received rank-3 array"):
+    with six.assertRaisesRegex(
+        self, ValueError, r"Expected rank-2 array; received rank-3 array"):
       tensor_helper.array_to_base64_png(x)
 
 

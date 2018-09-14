@@ -220,7 +220,7 @@ export class DataPanel extends DataPanelPolymer {
       }
       return stats.name;
     });
-    
+
     if (this.selectedLabelOption == null || this.labelOptions.filter(name =>
         name === this.selectedLabelOption).length === 0) {
       this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
@@ -301,7 +301,7 @@ export class DataPanel extends DataPanelPolymer {
   private metadataEditorInputChange() {
     let col = this.metadataEditorColumn;
     let value = this.metadataEditorInput;
-    let selectionSize = this.selectedPointIndices.length + 
+    let selectionSize = this.selectedPointIndices.length +
         this.neighborsOfFirstPoint.length;
     if (selectionSize > 0) {
       if (value != null && value.trim() !== '') {
@@ -369,7 +369,7 @@ export class DataPanel extends DataPanelPolymer {
         && this.projector.dataSet.spriteAndMetadataInfo) {
       let tsvFile = this.projector.dataSet.spriteAndMetadataInfo.stats.map(s =>
           s.name).join('\t');
-      
+
       this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(p => {
         let vals = [];
 
@@ -425,14 +425,14 @@ export class DataPanel extends DataPanelPolymer {
     if (this.projector && this.projector.dataSet) {
       let numMatches = this.projector.dataSet.points.filter(p =>
           p.metadata[this.superviseColumn].toString().trim() === value).length;
-      
+
       if (numMatches === 0) {
-        this.superviseInputLabel = 
+        this.superviseInputLabel =
             `Supervising without '${this.superviseInputSelected}'`;
       }
       else {
         this.superviseInputSelected = value;
-        this.superviseInputLabel = 
+        this.superviseInputLabel =
             `Supervising without '${value}' [${numMatches} points]`;
         this.setSupervision(this.superviseColumn, value);
       }

@@ -1,0 +1,91 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="utils.html">
+
+<!--
+  tf-mv-bar shows a small % utilization bar, colored using flameColor.
+-->
+<dom-module id="tf-mv-bar">
+  <style>
+:host {
+  display: inline-block;
+  height: 1.5em;
+  line-height: 1.5em;
+}
+  </style>
+</dom-module>
+
+<!--
+  buffer-details is a card that describes a buffer allocation.
+-->
+<dom-module id="buffer-details">
+  <style>
+paper-card {
+  --paper-card-header-color: white;
+  width: 100%;
+}
+tf-mv-bar {
+  width: 100%;
+}
+#subheader {
+  padding: 0 16px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  top: -10px;
+}
+.card-content > div {
+  margin-bottom: 1em;
+}
+.expression {
+  display: block;
+  word-wrap: break-word;
+}
+  </style>
+  <template>
+    <paper-card id="card" heading="[[node.instructionName]]" hidden="[[!node]]"
+      elevation="2">
+      <div id="subheader">[[_subheader(node)]]</div>
+      <div class="card-content">
+        <div hidden="[[!size]]">
+          <h4>Size: <span>[[size]]</span><b> MiB</b></h4>
+        </div>
+        <div hidden="[[!unpaddedSize]]">
+          <b>Unpadded Size: </b><span>[[unpaddedSize]]</span><b> MiB</b>
+        </div>
+        <div hidden="[[!padding]]">
+          <b>Extra memory due to padding: </b><span>[[padding]]</span><b> MiB</b>
+        </div>
+        <div hidden="[[!expansion]]">
+          <b>Expansion: </b><span>[[expansion]]</span><b>X</b>
+          <tf-mv-bar value="[[utilization]]"></tf-mv-bar>
+        </div>
+        <div hidden="[[!node.shape]]">
+          <b>Shape (and minor-to-major order): </b>
+          <code class="expression">[[node.shape]]</code>
+        </div>
+        <div hidden="[[!node.tfOpName]]">
+          <b>Tf Op Name: </b>
+          <code class="expression">[[node.tfOpName]]</code>
+        </div>
+        <div hidden="[[!node.groupName]]">
+          <b>Allocation Type: </b><span>[[node.groupName]]</span>
+        </div>
+      </div>
+    </paper-card>
+  </template>
+  <script src="buffer-details.js"></script>
+</dom-module>

@@ -54,9 +54,9 @@ class LoaderTestCase(test_util.TestCase):
     :rtype: str
     """
     path = os.path.join(self.get_temp_dir(), name)
-    with RecordWriter(path) as writer:
+    with tf.python_io.TFRecordWriter(tf.compat.as_bytes(path)) as writer:
       for record in records:
-        writer.write(record)
+        writer.write(tf.compat.as_bytes(record))
     return path
 
 
@@ -221,7 +221,7 @@ class ProgressTest(LoaderTestCase):
     self.assertIn('[stalled]', self.logs[1])
 
   def testBigNumberInAmerica_showsCommas(self):
-    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     self.progress.set_progress(0, 1000000)
     self.clock.advance(1.0)
     self.progress.set_progress(1024, 1000000)
@@ -444,26 +444,6 @@ class RunReaderTest(LoaderTestCase):
         with loader.RunReader(id_, 'doodle') as run:
           run.add_event_log(db_conn, log)
           self.assertEqual(event2, run.get_next_event())
-
-
-@util.closeable
-class RecordWriter(object):
-  def __init__(self, path):
-    self.path = tf.compat.as_bytes(path)
-    self._writer = self._make_writer()
-
-  def write(self, record):
-    if not self._writer.WriteRecord(tf.compat.as_bytes(record)):
-      raise IOError('Failed to write record to ' + self.path)
-
-  def close(self):
-    with tf.errors.raise_exception_on_not_ok_status() as status:
-      self._writer.Close(status)
-
-  def _make_writer(self):
-    with tf.errors.raise_exception_on_not_ok_status() as status:
-      return tf.pywrap_tensorflow.PyRecordWriter_New(
-          self.path, tf.compat.as_bytes(''), status)
 
 
 if __name__ == '__main__':

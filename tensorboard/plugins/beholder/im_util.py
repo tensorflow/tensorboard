@@ -17,12 +17,12 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import threading
 
 import numpy as np
 import tensorflow as tf
 
-from tensorboard.plugins.beholder.file_system_tools import resources_path
+from tensorboard import util
+from tensorboard.plugins.beholder import colormaps
 
 
 # pylint: disable=not-context-manager
@@ -78,113 +78,15 @@ def pad_to_shape(array, shape, constant=245):
 
   return np.pad(array, padding, mode='constant', constant_values=constant)
 
-# New matplotlib colormaps by Nathaniel J. Smith, Stefan van der Walt,
-# and (in the case of viridis) Eric Firing.
-#
-# This file and the colormaps in it are released under the CC0 license /
-# public domain dedication. We would appreciate credit if you use or
-# redistribute these colormaps, but do not impose any legal restrictions.
-#
-# To the extent possible under law, the persons who associated CC0 with
-# mpl-colormaps have waived all copyright and related or neighboring rights
-# to mpl-colormaps.
-#
-# You should have received a copy of the CC0 legalcode along with this
-# work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-colormaps = np.load('{}/colormaps.npy'.format(resources_path()))
-magma_data, inferno_data, plasma_data, viridis_data = colormaps
-
 
 def apply_colormap(image, colormap='magma'):
   if colormap == 'grayscale':
     return image
-
-  data_map = {
-      'magma': magma_data,
-      'inferno': inferno_data,
-      'plasma': plasma_data,
-      'viridis': viridis_data,
-  }
-
-  colormap_data = data_map[colormap]
-  return (colormap_data[image]*255).astype(np.uint8)
-
-# Taken from https://github.com/tensorflow/tensorboard/blob/
-#            /28f58888ebb22e2db0f4f1f60cd96138ef72b2ef/tensorboard/util.py
-
-# Modified by Chris Anderson to not use the GPU.
-class PersistentOpEvaluator(object):
-  """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
-  Extend this class to create a particular kind of op evaluator, like an
-  image encoder. In `initialize_graph`, create an appropriate TensorFlow
-  graph with placeholder inputs. In `run`, evaluate this graph and
-  return its result. This class will manage a singleton graph and
-  session to preserve memory usage, and will ensure that this graph and
-  session do not interfere with other concurrent sessions.
-  A subclass of this class offers a threadsafe, highly parallel Python
-  entry point for evaluating a particular TensorFlow graph.
-  Example usage:
-      class FluxCapacitanceEvaluator(PersistentOpEvaluator):
-        \"\"\"Compute the flux capacitance required for a system.
-        Arguments:
-          x: Available power input, as a `float`, in jigawatts.
-        Returns:
-          A `float`, in nanofarads.
-        \"\"\"
-        def initialize_graph(self):
-          self._placeholder = tf.placeholder(some_dtype)
-          self._op = some_op(self._placeholder)
-        def run(self, x):
-          return self._op.eval(feed_dict: {self._placeholder: x})
-      evaluate_flux_capacitance = FluxCapacitanceEvaluator()
-      for x in xs:
-        evaluate_flux_capacitance(x)
-  """
-
-  def __init__(self):
-    super(PersistentOpEvaluator, self).__init__()
-    self._session = None
-    self._initialization_lock = threading.Lock()
+  cm = getattr(colormaps, colormap)
+  return image if cm is None else cm[image]
 
 
-  def _lazily_initialize(self):
-    """Initialize the graph and session, if this has not yet been done."""
-    with self._initialization_lock:
-      if self._session:
-        return
-      graph = tf.Graph()
-      with graph.as_default():
-        self.initialize_graph()
-
-      config = tf.ConfigProto(device_count={'GPU': 0})
-      self._session = tf.Session(graph=graph, config=config)
-
-
-  def initialize_graph(self):
-    """Create the TensorFlow graph needed to compute this operation.
-    This should write ops to the default graph and return `None`.
-    """
-    raise NotImplementedError('Subclasses must implement "initialize_graph".')
-
-
-  def run(self, *args, **kwargs):
-    """Evaluate the ops with the given input.
-    When this function is called, the default session will have the
-    graph defined by a previous call to `initialize_graph`. This
-    function should evaluate any ops necessary to compute the result of
-    the query for the given *args and **kwargs, likely returning the
-    result of a call to `some_op.eval(...)`.
-    """
-    raise NotImplementedError('Subclasses must implement "run".')
-
-
-  def __call__(self, *args, **kwargs):
-    self._lazily_initialize()
-    with self._session.as_default():
-      return self.run(*args, **kwargs)
-
-
-class PNGDecoder(PersistentOpEvaluator):
+class PNGDecoder(util.PersistentOpEvaluator):
 
   def __init__(self):
     super(PNGDecoder, self).__init__()
@@ -204,30 +106,7 @@ class PNGDecoder(PersistentOpEvaluator):
     })
 
 
-class PNGEncoder(PersistentOpEvaluator):
-
-  def __init__(self):
-    super(PNGEncoder, self).__init__()
-    self._image_placeholder = None
-    self._encode_op = None
-
-
-  def initialize_graph(self):
-    self._image_placeholder = tf.placeholder(dtype=tf.uint8)
-    self._encode_op = tf.image.encode_png(self._image_placeholder)
-
-
-  # pylint: disable=arguments-differ
-  def run(self, image):
-    if len(image.shape) == 2:
-      image = image.reshape([image.shape[0], image.shape[1], 1])
-
-    return self._encode_op.eval(feed_dict={
-        self._image_placeholder: image,
-    })
-
-
-class Resizer(PersistentOpEvaluator):
+class Resizer(util.PersistentOpEvaluator):
 
   def __init__(self):
     super(Resizer, self).__init__()
@@ -256,9 +135,7 @@ class Resizer(PersistentOpEvaluator):
 
 
 decode_png = PNGDecoder()
-encode_png = PNGEncoder()
 resize = Resizer()
-
 
 def read_image(filename):
   with tf.gfile.Open(filename, 'rb') as image_file:
@@ -267,7 +144,7 @@ def read_image(filename):
 
 def write_image(array, filename):
   with tf.gfile.Open(filename, 'w') as image_file:
-    image_file.write(encode_png(array))
+    image_file.write(util.encode_png(array))
 
 
 def get_image_relative_to_script(filename):

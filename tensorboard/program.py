@@ -22,140 +22,50 @@ by swapping out `tensorboard.main` with the custom definition that
 modifies the set of plugins and static assets.
 
 This module does not depend on first-party plugins or the default web
-server assets. Those are defined in `tensorboard.default_plugins`.
+server assets. Those are defined in `tensorboard.default`.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from abc import ABCMeta
+from abc import abstractmethod
+import argparse
 import errno
+import logging
 import os
 import socket
 import sys
-import types  # pylint: disable=unused-import
+import threading
 
-import tensorflow as tf
 from werkzeug import serving
 
 from tensorboard import util
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
+from tensorboard.plugins import base_plugin
 
-tf.flags.DEFINE_string('logdir', '', """logdir specifies the directory where
-TensorBoard will look to find TensorFlow event files that it can display.
-TensorBoard will recursively walk the directory structure rooted at logdir,
-looking for .*tfevents.* files.
+try:
+  from absl import flags as absl_flags
+  from absl.flags import argparse_flags
+except ImportError:
+  # Fall back to argparse with no absl flags integration.
+  absl_flags = None
+  argparse_flags = argparse
 
-You may also pass a comma separated list of log directories, and TensorBoard
-will watch each directory. You can also assign names to individual log
-directories by putting a colon between the name and the path, as in
-
-tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
-""")
-
-tf.flags.DEFINE_string(
-    'host', '', 'What host to listen to. Defaults to '
-    'serving on all interfaces, set to 127.0.0.1 (localhost) to '
-    'disable remote access (also quiets security warnings).')
-
-tf.flags.DEFINE_integer('port', 6006, 'What port to serve TensorBoard on.')
-
-tf.flags.DEFINE_boolean(
-    'purge_orphaned_data', True, 'Whether to purge data that '
-    'may have been orphaned due to TensorBoard restarts. '
-    'Disabling purge_orphaned_data can be used to debug data '
-    'disappearance.')
-
-tf.flags.DEFINE_integer(
-    'reload_interval', 5,
-    'How often the backend should load more data, in seconds. Set to 0 to load '
-    'just once at startup and a negative number to never reload at all.')
-
-tf.flags.DEFINE_string('db', "", """\
-[Experimental] Sets SQL database URI.
-
-This mode causes TensorBoard to persist experiments to a SQL database. The
-following databases are supported:
-
-- sqlite: Use SQLite built in to Python. URI must specify the path of the
-  database file, which will be created if it doesn't exist. For example:
-  --db sqlite:~/.tensorboard.db
-
-Warning: This feature is a work in progress and only has limited support.
-""")
-
-tf.flags.DEFINE_boolean('inspect', False, """Use this flag to print out a digest
-of your event files to the command line, when no data is shown on TensorBoard or
-the data shown looks weird.
-
-Example usages:
-tensorboard --inspect --event_file myevents.out
-tensorboard --inspect --event_file myevents.out --tag loss
-tensorboard --inspect --logdir mylogdir
-tensorboard --inspect --logdir mylogdir --tag loss
-
-See tensorflow/python/summary/event_file_inspector.py for more info and
-detailed usage.
-""")
-
-tf.flags.DEFINE_string(
-    'tag', '',
-    'The particular tag to query for. Only used if --inspect is present')
-
-tf.flags.DEFINE_string(
-    'event_file', '',
-    'The particular event file to query for. Only used if --inspect is present '
-    'and --logdir is not specified.')
-
-tf.flags.DEFINE_string(
-    'path_prefix', '',
-    'An optional, relative prefix to the path, e.g. "/path/to/tensorboard". '
-    'resulting in the new base url being located at '
-    'localhost:6006/path/to/tensorboard under default settings. A leading '
-    'slash is required when specifying the path_prefix, however trailing '
-    'slashes can be omitted. The path_prefix can be leveraged for path '
-    'based routing of an elb when the website base_url is not available '
-    'e.g. "example.site.com/path/to/tensorboard/"')
-
-tf.flags.DEFINE_string(
-    'window_title', '',
-    'The title of the browser window.')
-
-FLAGS = tf.flags.FLAGS
+logger = logging.getLogger(__name__)
 
 
-def main(plugins, assets_zip_provider=None):
-  """Main function for TensorBoard.
+def setup_environment():
+  """Makes recommended modifications to the environment.
 
-  This function makes some global changes to the Python environment and
-  then delegates to other functions in this module.
-
-  Since this function will generally run forever, it should only be
-  called if the Python process is only meant to be a TensorBoard
-  server.
-
-  Args:
-    plugins: A list of constructor functions for TBPlugin subclasses.
-    assets_zip_provider: Delegates to TBContext or uses default if None.
-
-  Returns:
-    Process exit code, i.e. 0 if successful or non-zero on failure. In
-    practice, an exception will most likely be raised instead of
-    returning non-zero.
-
-  :type plugins: list[:class:`base_plugin.TBPlugin`]
-  :type assets_zip_provider: () -> file
-  :rtype: int
+  This functions changes global state in the Python process. Calling
+  this function is a good idea, but it can't appropriately be called
+  from library routines.
   """
   util.setup_logging()
-
-  if FLAGS.inspect:
-    tf.logging.info('Not bringing up TensorBoard, but inspecting event files.')
-    event_file = os.path.expanduser(FLAGS.event_file)
-    efi.inspect(FLAGS.logdir, event_file, FLAGS.tag)
-    return 0
 
   # The default is HTTP/1.0 for some strange reason. If we don't use
   # HTTP/1.1 then a new TCP socket and Python thread is created for
@@ -163,123 +73,245 @@ def main(plugins, assets_zip_provider=None):
   # Content-Length header, or do chunked encoding for streaming.
   serving.WSGIRequestHandler.protocol_version = 'HTTP/1.1'
 
-  tb = create_tb_app(plugins, assets_zip_provider)
-  run_simple_server(tb)
 
-  return 0
+class TensorBoard(object):
+  """Class for running TensorBoard.
 
-
-def create_tb_app(plugins, assets_zip_provider=None):
-  """Read the flags, and create a TensorBoard WSGI application.
-
-  Args:
-    plugins: A list of constructor functions for TBPlugin subclasses.
-    assets_zip_provider: Delegates to TBContext or uses default if None.
-
-  Raises:
-    ValueError: if a logdir is not specified.
-
-  Returns:
-    A new TensorBoard WSGI application.
-
-  :type plugins: list[:class:`base_plugin.TBPlugin`]
-  :type assets_zip_provider: () -> file
-  :rtype: types.FunctionType
+  Fields:
+    plugin_loaders: Set from plugins passed to constructor.
+    assets_zip_provider: Set by constructor.
+    server_class: Set by constructor.
+    flags: An argparse.Namespace set by the configure() method.
   """
-  if not FLAGS.db and not FLAGS.logdir:
-    raise ValueError('A logdir must be specified when db is not specified. '
-                     'Run `tensorboard --help` for details and examples.')
-  return application.standard_tensorboard_wsgi(
-      assets_zip_provider=assets_zip_provider,
-      db_uri=FLAGS.db,
-      logdir=os.path.expanduser(FLAGS.logdir),
-      purge_orphaned_data=FLAGS.purge_orphaned_data,
-      reload_interval=FLAGS.reload_interval,
-      plugins=plugins,
-      path_prefix=FLAGS.path_prefix,
-      window_title=FLAGS.window_title,
-      flags=FLAGS)
+
+  def __init__(self,
+               plugins=None,
+               assets_zip_provider=None,
+               server_class=None):
+    """Creates new instance.
+
+    Args:
+      plugins: A list of TensorBoard plugins to load, as TBLoader instances or
+        TBPlugin classes. If not specified, defaults to first-party plugins.
+      assets_zip_provider: Delegates to TBContext or uses default if None.
+      server_class: An optional subclass of TensorBoardServer to use for serving
+        the TensorBoard WSGI app.
+
+    :type plugins: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
+    :type assets_zip_provider: () -> file
+    :type server_class: class
+    """
+    if plugins is None:
+      from tensorboard import default
+      plugins = default.get_plugins()
+    if assets_zip_provider is None:
+      from tensorboard import default
+      assets_zip_provider = default.get_assets_zip_provider()
+    if server_class is None:
+      server_class = WerkzeugServer
+    def make_loader(plugin):
+      if isinstance(plugin, base_plugin.TBLoader):
+        return plugin
+      if issubclass(plugin, base_plugin.TBPlugin):
+        return base_plugin.BasicLoader(plugin)
+      raise ValueError("Not a TBLoader or TBPlugin subclass: %s" % plugin)
+    self.plugin_loaders = [make_loader(p) for p in plugins]
+    self.assets_zip_provider = assets_zip_provider
+    self.server_class = server_class
+    self.flags = None
+
+  def configure(self, argv=('',), **kwargs):
+    """Configures TensorBoard behavior via flags.
+
+    This method will populate the "flags" property with an argparse.Namespace
+    representing flag values parsed from the provided argv list, overriden by
+    explicit flags from remaining keyword arguments.
+
+    Args:
+      argv: Can be set to CLI args equivalent to sys.argv; the first arg is
+        taken to be the name of the path being executed.
+      kwargs: Additional arguments will override what was parsed from
+        argv. They must be passed as Python data structures, e.g.
+        `foo=1` rather than `foo="1"`.
+
+    Returns:
+      Either argv[:1] if argv was non-empty, or [''] otherwise, as a mechanism
+      for absl.app.run() compatiblity.
+
+    Raises:
+      ValueError: If flag values are invalid.
+    """
+    parser = argparse_flags.ArgumentParser(
+        prog='tensorboard',
+        description=('TensorBoard is a suite of web applications for '
+                     'inspecting and understanding your TensorFlow runs '
+                     'and graphs. https://github.com/tensorflow/tensorboard '))
+    for loader in self.plugin_loaders:
+      loader.define_flags(parser)
+    arg0 = argv[0] if argv else ''
+    flags = parser.parse_args(argv[1:])  # Strip binary name from argv.
+    if absl_flags and arg0:
+      # Only expose main module Abseil flags as TensorBoard native flags.
+      # This is the same logic Abseil's ArgumentParser uses for determining
+      # which Abseil flags to include in the short helpstring.
+      for flag in set(absl_flags.FLAGS.get_key_flags_for_module(arg0)):
+        if hasattr(flags, flag.name):
+          raise ValueError('Conflicting Abseil flag: %s' % flag.name)
+        setattr(flags, flag.name, flag.value)
+    for k, v in kwargs.items():
+      if hasattr(flags, k):
+        raise ValueError('Unknown TensorBoard flag: %s' % k)
+      setattr(flags, k, v)
+    for loader in self.plugin_loaders:
+      loader.fix_flags(flags)
+    self.flags = flags
+    return [arg0]
+
+  def main(self, ignored_argv=('',)):
+    """Blocking main function for TensorBoard.
+
+    This method is called by `tensorboard.main.run_main`, which is the
+    standard entrypoint for the tensorboard command line program. The
+    configure() method must be called first.
+
+    Args:
+      ignored_argv: Do not pass. Required for Abseil compatibility.
+
+    Returns:
+      Process exit code, i.e. 0 if successful or non-zero on failure. In
+      practice, an exception will most likely be raised instead of
+      returning non-zero.
+
+    :rtype: int
+    """
+    if self.flags.inspect:
+      logger.info('Not bringing up TensorBoard, but inspecting event files.')
+      event_file = os.path.expanduser(self.flags.event_file)
+      efi.inspect(self.flags.logdir,
+                  self.flags.event_file,
+                  self.flags.tag)
+      return 0
+    try:
+      server = self._make_server()
+      sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
+                       (version.VERSION, server.get_url()))
+      sys.stderr.flush()
+      server.serve_forever()
+      return 0
+    except TensorBoardServerException as e:
+      logger.error(e.msg)
+      sys.stderr.write('ERROR: %s\n' % e.msg)
+      sys.stderr.flush()
+      return -1
+
+  def launch(self):
+    """Python API for launching TensorBoard.
+
+    This method is the same as main() except it launches TensorBoard in
+    a separate permanent thread. The configure() method must be called
+    first.
+
+    Returns:
+      The URL of the TensorBoard web server.
+
+    :rtype: str
+    """
+    # Make it easy to run TensorBoard inside other programs, e.g. Colab.
+    server = self._make_server()
+    thread = threading.Thread(target=server.serve_forever, name='TensorBoard')
+    thread.daemon = True
+    thread.start()
+    return server.get_url()
+
+  def _make_server(self):
+    """Constructs the TensorBoard WSGI app and instantiates the server."""
+    app = application.standard_tensorboard_wsgi(self.flags,
+                                                self.plugin_loaders,
+                                                self.assets_zip_provider)
+    return self.server_class(app, self.flags)
 
 
-def make_simple_server(tb_app, host=None, port=None, path_prefix=None):
-  """Create an HTTP server for TensorBoard.
+class TensorBoardServer(object):
+  """Class for customizing TensorBoard WSGI app serving."""
+  __metaclass__ = ABCMeta
 
-  Args:
-    tb_app: The TensorBoard WSGI application to create a server for.
-    host: Indicates the interfaces to bind to ('::' or '0.0.0.0' for all
-        interfaces, '::1' or '127.0.0.1' for localhost). A blank value ('')
-        indicates protocol-agnostic all interfaces. If not specified, will
-        default to the flag value.
-    port: The port to bind to (0 indicates an unused port selected by the
-        operating system). If not specified, will default to the flag value.
-    path_prefix: Optional relative prefix to the path, e.g. "/service/tf"
+  @abstractmethod
+  def __init__(self, wsgi_app, flags):
+    """Create a flag-configured HTTP server for TensorBoard's WSGI app.
 
-  Returns:
-    A tuple of (server, url):
-      server: An HTTP server object configured to host TensorBoard.
-      url: A best guess at a URL where TensorBoard will be accessible once the
-        server has been started.
+    Args:
+      wsgi_app: The TensorBoard WSGI application to create a server for.
+      flags: argparse.Namespace instance of TensorBoard flags.
+    """
+    raise NotImplementedError()
 
-  Raises:
-    socket.error: If a server could not be constructed with the host and port
-      specified. Also logs an error message.
+  @abstractmethod
+  def serve_forever(self):
+    """Blocking call to start serving the TensorBoard server."""
+    raise NotImplementedError()
+
+  @abstractmethod
+  def get_url(self):
+    """Returns a URL at which this server should be reachable."""
+    raise NotImplementedError()
+
+
+class TensorBoardServerException(Exception):
+  """Exception raised by TensorBoardServer for user-friendly errors.
+
+  Subclasses of TensorBoardServer can raise this exception in order to
+  generate a clean error message for the user rather than a stacktrace.
   """
-  if host is None:
-    host = FLAGS.host
-  if port is None:
-    port = FLAGS.port
-  if path_prefix is None:
-    path_prefix = FLAGS.path_prefix
-  try:
-    if host:
-      # The user gave us an explicit host
-      server = serving.make_server(host, port, tb_app, threaded=True)
-      if ':' in host and not host.startswith('['):
-        # Display IPv6 addresses as [::1]:80 rather than ::1:80
-        final_host = '[{}]'.format(host)
+  def __init__(self, msg):
+    self.msg = msg
+
+
+class WerkzeugServer(TensorBoardServer):
+  """Implementation of TensorBoardServer using the Werkzeug dev server."""
+
+  def __init__(self, wsgi_app, flags):
+    host = flags.host
+    port = flags.port
+    try:
+      if host:
+        # The user gave us an explicit host
+        server = serving.make_server(host, port, wsgi_app, threaded=True)
+        if ':' in host and not host.startswith('['):
+          # Display IPv6 addresses as [::1]:80 rather than ::1:80
+          final_host = '[{}]'.format(host)
+        else:
+          final_host = host
       else:
-        final_host = host
-    else:
-      # We've promised to bind to all interfaces on this host. However, we're
-      # not sure whether that means IPv4 or IPv6 interfaces.
-      try:
-        # First try passing in a blank host (meaning all interfaces). This,
-        # unfortunately, defaults to IPv4 even if no IPv4 interface is available
-        # (yielding a socket.error).
-        server = serving.make_server(host, port, tb_app, threaded=True)
-      except socket.error:
-        # If a blank host didn't work, we explicitly request IPv6 interfaces.
-        server = serving.make_server('::', port, tb_app, threaded=True)
-      final_host = socket.gethostname()
-    server.daemon_threads = True
-  except socket.error:
-    if port == 0:
-      msg = 'TensorBoard unable to find any open port'
-    else:
-      msg = (
-          'TensorBoard attempted to bind to port %d, but it was already in use'
-          % port)
-    tf.logging.error(msg)
-    print(msg)
-    raise
-  server.handle_error = _handle_error
-  final_port = server.socket.getsockname()[1]
-  tensorboard_url = 'http://%s:%d%s' % (final_host, final_port, path_prefix)
-  return server, tensorboard_url
+        # We've promised to bind to all interfaces on this host. However, we're
+        # not sure whether that means IPv4 or IPv6 interfaces.
+        try:
+          # First try passing in a blank host (meaning all interfaces). This,
+          # unfortunately, defaults to IPv4 even if no IPv4 interface is available
+          # (yielding a socket.error).
+          server = serving.make_server(host, port, wsgi_app, threaded=True)
+        except socket.error:
+          # If a blank host didn't work, we explicitly request IPv6 interfaces.
+          server = serving.make_server('::', port, wsgi_app, threaded=True)
+        final_host = socket.gethostname()
+      server.daemon_threads = True
+    except socket.error:
+      if port == 0:
+        msg = 'TensorBoard unable to find any open port'
+      else:
+        msg = (
+            'TensorBoard attempted to bind to port %d, but it was already in use'
+            % port)
+      raise TensorBoardServerException(msg)
+    server.handle_error = _handle_error
+    final_port = server.socket.getsockname()[1]
+    self._server = server
+    self._url = 'http://%s:%d%s' % (final_host, final_port, flags.path_prefix)
 
+  def serve_forever(self):
+    self._server.serve_forever()
 
-def run_simple_server(tb_app):
-  """Run a TensorBoard HTTP server, and print some messages to the console."""
-  try:
-    server, url = make_simple_server(tb_app)
-  except socket.error:
-    # An error message was already logged
-    # TODO(@jart): Remove log and throw anti-pattern.
-    sys.exit(-1)
-  sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
-                   (version.VERSION, url))
-  sys.stderr.flush()
-  server.serve_forever()
+  def get_url(self):
+    return self._url
 
 
 # Kludge to override a SocketServer.py method so we can get rid of noisy
@@ -289,6 +321,6 @@ def _handle_error(unused_request, client_address):
   exc_info = sys.exc_info()
   e = exc_info[1]
   if isinstance(e, IOError) and e.errno == errno.EPIPE:
-    tf.logging.warn('EPIPE caused by %s:%d in HTTP serving' % client_address)
+    logger.warn('EPIPE caused by %s in HTTP serving' % client_address)
   else:
-    tf.logging.error('HTTP serving error', exc_info=exc_info)
+    logger.error('HTTP serving error', exc_info=exc_info)

@@ -49,39 +49,89 @@ limitations under the License.
     "use strict";
     (function() {
 
-    const INFO_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/section-info')
+    const INFO_ROUTE = tf_backend.getRouter().pluginRoute('beholder', '/section-info');
 
     Polymer({
       is: "tf-beholder-info",
       properties: {
-        _requestManager: {
-          type: Object,
-          value: () => new tf_backend.RequestManager(),
+        fps: {  // Not actually FPS!
+          type: Number,
+          value: 10,
+          observer: '_fpsChanged',
+        },
+
+        xhrTimeout: {
+          type: Number,
+          value: 10000,
         },
 
         items: {
           type: Array,
           value: [{name:'Loading...'}],
         },
+
+        _xhr: Object,
+        _timer: Object,
       },
 
-      _reloaditems() {
-        window.setTimeout(function(){
-          this._requestManager.request(INFO_ROUTE).then(function(response){
-            this.splice('items', 0)
-
-            for (var item of response) {
-             this.push('items', item)
-            }
-          }.bind(this))
-
-          this._reloaditems()
-        }.bind(this), 1000/(this.fps === 0 ? 1 : this.fps))
+      attached() {
+        this._load();
       },
 
-      ready() {
-        this._reloaditems()
-      }
+      detached() {
+        this._clear();
+      },
+
+      _load() {
+        this._clear();
+        this._xhr = new XMLHttpRequest();
+        this._xhr.open('GET', INFO_ROUTE, true);
+        this._xhr.timeout = this.xhrTimeout;
+        this._xhr.onload = this._onLoad.bind(this);
+        this._xhr.onerror = this._retry.bind(this, this._getSleep());
+        this._xhr.ontimeout = this._retry.bind(this, 1);
+        this._xhr.send(null);
+      },
+
+      _onLoad() {
+        if (this._xhr.status == 200) {
+          const response = JSON.parse(this._xhr.responseText);
+          this.splice('items', 0);
+          for (var item of response) {
+            this.push('items', item);
+          }
+        }
+        this._retry(this._getSleep());
+      },
+
+      _retry(delay) {
+        this._timer = window.setTimeout(this._load.bind(this), delay);
+      },
+
+      _getSleep() {
+        return 1000 / (this.fps === 0 ? 1 : this.fps);
+      },
+
+      _clear() {
+        if (this._timer) {
+          window.clearTimeout(this._timer);
+          this._timer = null;
+        }
+        if (this._xhr) {
+          if (this._xhr.readyState < 4 /* DONE */) {
+            this._xhr.abort();
+          }
+          this._xhr = null;
+        }
+      },
+
+      _fpsChanged(newValue, oldValue) {
+        if (newValue == 0) {
+          this._clear();
+        } else if (oldValue == 0) {
+          this._load();
+        }
+      },
     });
     })();
   </script>

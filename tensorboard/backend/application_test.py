@@ -40,10 +40,32 @@ import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
-from tensorboard import main as tensorboard
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
+
+
+class FakeFlags(object):
+  def __init__(
+      self,
+      logdir,
+      purge_orphaned_data=True,
+      reload_interval=60,
+      samples_per_plugin='',
+      max_reload_threads=1,
+      db='',
+      db_import=False,
+      window_title='',
+      path_prefix=''):
+    self.logdir = logdir
+    self.purge_orphaned_data = purge_orphaned_data
+    self.reload_interval = reload_interval
+    self.samples_per_plugin = samples_per_plugin
+    self.max_reload_threads = max_reload_threads
+    self.db = db
+    self.db_import = db_import
+    self.window_title = window_title
+    self.path_prefix = path_prefix
 
 
 class FakePlugin(base_plugin.TBPlugin):
@@ -91,9 +113,7 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
 
-class TensorboardServerTest(tf.test.TestCase):
-  _only_use_meta_graph = False  # Server data contains only a GraphDef
-
+class ApplicationTest(tf.test.TestCase):
   def setUp(self):
     plugins = [
         FakePlugin(
@@ -126,8 +146,7 @@ class TensorboardServerTest(tf.test.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class TensorboardServerBaseUrlTest(tf.test.TestCase):
-  _only_use_meta_graph = False  # Server data contains only a GraphDef
+class ApplicationBaseUrlTest(tf.test.TestCase):
   path_prefix = '/test'
   def setUp(self):
     plugins = [
@@ -167,7 +186,7 @@ class TensorboardServerBaseUrlTest(tf.test.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class TensorboardServerPluginNameTest(tf.test.TestCase):
+class ApplicationPluginNameTest(tf.test.TestCase):
 
   def _test(self, name, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
@@ -209,8 +228,7 @@ class TensorboardServerPluginNameTest(tf.test.TestCase):
     self._test('Scalar-Dashboard_3000.1', True)
 
 
-
-class TensorboardServerPluginRouteTest(tf.test.TestCase):
+class ApplicationPluginRouteTest(tf.test.TestCase):
 
   def _test(self, route, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
@@ -243,11 +261,6 @@ class TensorboardServerPluginRouteTest(tf.test.TestCase):
     self._test('runaway', False)
 
 
-class TensorboardServerUsingMetagraphOnlyTest(TensorboardServerTest):
-  # Tests new ability to use only the MetaGraphDef
-  _only_use_meta_graph = True  # Server data contains only a MetaGraphDef
-
-
 class ParseEventFilesSpecTest(tf.test.TestCase):
 
   def assertPlatformSpecificLogdirParsing(self, pathObj, logdir, expected):
@@ -268,7 +281,11 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
     with mock.patch('os.path', pathObj):
       self.assertEqual(application.parse_event_files_spec(logdir), expected)
 
-
+  def testBasic(self):
+    self.assertPlatformSpecificLogdirParsing(
+        posixpath, '/lol/cat', {'/lol/cat': None})
+    self.assertPlatformSpecificLogdirParsing(
+        ntpath, 'C:\\lol\cat', {'C:\\lol\cat': None})
 
   def testRunName(self):
     self.assertPlatformSpecificLogdirParsing(
@@ -279,6 +296,34 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
   def testPathWithColonThatComesAfterASlash_isNotConsideredARunName(self):
     self.assertPlatformSpecificLogdirParsing(
         posixpath, '/lol:/cat', {'/lol:/cat': None})
+
+  def testExpandsUser(self):
+    oldhome = os.environ.get('HOME', None)
+    try:
+      os.environ['HOME'] = '/usr/eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          posixpath, '~/lol/cat~dog', {'/usr/eliza/lol/cat~dog': None})
+      os.environ['HOME'] = 'C:\\Users\eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          ntpath, '~\lol\cat~dog', {'C:\\Users\eliza\lol\cat~dog': None})
+    finally:
+      if oldhome is not None:
+        os.environ['HOME'] = oldhome
+
+  def testExpandsUserForMultipleDirectories(self):
+    oldhome = os.environ.get('HOME', None)
+    try:
+      os.environ['HOME'] = '/usr/eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          posixpath, 'a:~/lol,b:~/cat',
+          {'/usr/eliza/lol': 'a', '/usr/eliza/cat': 'b'})
+      os.environ['HOME'] = 'C:\\Users\eliza'
+      self.assertPlatformSpecificLogdirParsing(
+          ntpath, 'aa:~\lol,bb:~\cat',
+          {'C:\\Users\eliza\lol': 'aa', 'C:\\Users\eliza\cat': 'bb'})
+    finally:
+      if oldhome is not None:
+        os.environ['HOME'] = oldhome
 
   def testMultipleDirectories(self):
     self.assertPlatformSpecificLogdirParsing(
@@ -341,25 +386,25 @@ class TensorBoardPluginsTest(tf.test.TestCase):
 
   def setUp(self):
     self.context = None
-    plugins = [
-        functools.partial(
-            FakePlugin,
-            plugin_name='foo',
-            is_active_value=True,
-            routes_mapping={'/foo_route': self._foo_handler},
-            construction_callback=self._construction_callback),
-        functools.partial(
-            FakePlugin,
-            plugin_name='bar',
-            is_active_value=True,
-            routes_mapping={'/bar_route': self._bar_handler},
-            construction_callback=self._construction_callback),
-    ]
-
+    dummy_assets_zip_provider = lambda: None
     # The application should have added routes for both plugins.
-    self.logdir = self.get_temp_dir()
     self.app = application.standard_tensorboard_wsgi(
-        self.logdir, True, 60, plugins)
+        FakeFlags(logdir=self.get_temp_dir()),
+        [
+          base_plugin.BasicLoader(functools.partial(
+              FakePlugin,
+              plugin_name='foo',
+              is_active_value=True,
+              routes_mapping={'/foo_route': self._foo_handler},
+              construction_callback=self._construction_callback)),
+          base_plugin.BasicLoader(functools.partial(
+              FakePlugin,
+              plugin_name='bar',
+              is_active_value=True,
+              routes_mapping={'/bar_route': self._bar_handler},
+              construction_callback=self._construction_callback)),
+        ],
+        dummy_assets_zip_provider)
 
   def _foo_handler(self):
     pass
@@ -386,50 +431,7 @@ class TensorBoardPluginsTest(tf.test.TestCase):
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
 
-class TensorboardSimpleServerConstructionTest(tf.test.TestCase):
-  """Tests that the default HTTP server is constructed without error.
-
-  Mostly useful for IPv4/IPv6 testing. This test should run with only IPv4, only
-  IPv6, and both IPv4 and IPv6 enabled.
-  """
-
-  class _StubApplication(object):
-    tag = ''
-
-  def testMakeServerBlankHost(self):
-    # Test that we can bind to all interfaces without throwing an error
-    server, url = tensorboard.make_simple_server(
-        self._StubApplication(),
-        host='',
-        port=0)  # Grab any available port
-    self.assertTrue(server)
-    self.assertTrue(url)
-
-  def testSpecifiedHost(self):
-    one_passed = False
-    try:
-      _, url = tensorboard.make_simple_server(
-          self._StubApplication(),
-          host='127.0.0.1',
-          port=0)
-      self.assertStartsWith(actual=url, expected_start='http://127.0.0.1:')
-      one_passed = True
-    except socket.error:
-      # IPv4 is not supported
-      pass
-    try:
-      _, url = tensorboard.make_simple_server(
-          self._StubApplication(),
-          host='::1',
-          port=0)
-      self.assertStartsWith(actual=url, expected_start='http://[::1]:')
-      one_passed = True
-    except socket.error:
-      # IPv6 is not supported
-      pass
-    self.assertTrue(one_passed)  # We expect either IPv4 or IPv6 to be supported
-
-class TensorBoardApplcationConstructionTest(tf.test.TestCase):
+class ApplicationConstructionTest(tf.test.TestCase):
 
   def testExceptions(self):
     logdir = '/fake/foo'

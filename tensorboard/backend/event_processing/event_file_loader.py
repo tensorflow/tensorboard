@@ -18,11 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import inspect
+
 import tensorflow as tf
 
 
-class EventFileLoader(object):
-  """An EventLoader is an iterator that yields Event protos."""
+class RawEventFileLoader(object):
+  """An iterator that yields Event protos as serialized bytestrings."""
 
   def __init__(self, file_path):
     if file_path is None:
@@ -38,28 +40,47 @@ class EventFileLoader(object):
       raise IOError('Failed to open a record reader pointing to %s' % file_path)
 
   def Load(self):
-    """Loads all new values from disk.
+    """Loads all new events from disk as raw serialized proto bytestrings.
 
     Calling Load multiple times in a row will not 'drop' events as long as the
     return value is not iterated over.
 
     Yields:
-      All values that were written to disk that have not been yielded yet.
+      All event proto bytestrings in the file that have not been yielded yet.
     """
     tf.logging.debug('Loading events from %s', self._file_path)
     while True:
       try:
-        with tf.errors.raise_exception_on_not_ok_status() as status:
-          self._reader.GetNext(status)
-      except (tf.errors.DataLossError, tf.errors.OutOfRangeError):
+        if not inspect.getargspec(self._reader.GetNext).args[1:]: # pylint: disable=deprecated-method
+          self._reader.GetNext()
+        else:
+          # GetNext() expects a status argument on TF <= 1.7
+          with tf.errors.raise_exception_on_not_ok_status() as status:
+            self._reader.GetNext(status)
+      except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
+        tf.logging.debug('Cannot read more events: %s', e)
         # We ignore partial read exceptions, because a record may be truncated.
         # PyRecordReader holds the offset prior to the failed read, so retrying
         # will succeed.
         break
-      event = tf.Event()
-      event.ParseFromString(self._reader.record())
-      yield event
+      yield self._reader.record()
     tf.logging.debug('No more events in %s', self._file_path)
+
+
+class EventFileLoader(RawEventFileLoader):
+  """An iterator that yields parsed Event protos."""
+
+  def Load(self):
+    """Loads all new events from disk.
+
+    Calling Load multiple times in a row will not 'drop' events as long as the
+    return value is not iterated over.
+
+    Yields:
+      All events in the file that have not been yielded yet.
+    """
+    for record in super(EventFileLoader, self).Load():
+      yield tf.Event.FromString(record)
 
 
 def main(argv):

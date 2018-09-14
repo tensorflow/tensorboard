@@ -1,0 +1,150 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="./tf-filterable-checkbox-list.html">
+
+<!--
+tf-filterable-checkbox-dropdown creates a dropdown whose content is a list of
+checkboxes with a filter input at the top. The list is primarily used for
+multiple selection of items.
+
+Properties in:
+  - label: label for the dropdown trigger button.
+  - placeholder: placeholder in the dropdown trigger button.
+  - colorsCheckbox: whether to color the check boxes.
+  - coloring: an object that contains method, getColor. Used only when
+              colorsCheckbox is true,
+  - items: items of {id: string, title: string, subtitle: ?string}.
+  - maxItemsToEnableByDefault: maximum number of items to automatically enable.
+  - selectionState: object of checkbox selections.
+
+Properties out:
+  - selectedItems: Array of items that are selected and not filterd out.
+
+-->
+<dom-module id="tf-filterable-checkbox-dropdown">
+  <template>
+    <paper-menu-button
+      vertical-align="top"
+      horizontal-align="left"
+      no-overlap="true"
+      opened="{{_opened}}"
+    >
+      <div class="dropdown-trigger" slot="dropdown-trigger">
+        <paper-ripple></paper-ripple>
+        <!-- paper-input has type="text" for a11y, do not remove -->
+        <paper-input
+          label="[[label]]"
+          no-label-float
+          placeholder="[[placeholder]]"
+          readonly
+          type="text"
+          value="[[_getValueLabel(selectedItems.*)]]"
+        >
+          <iron-icon icon="arrow-drop-down" suffix slot="suffix"></iron-icon>
+        </paper-input>
+      </div>
+      <div class="dropdown-content">
+        <tf-filterable-checkbox-list
+          coloring="[[_coloring]]"
+          items="[[items]]"
+          label="[[label]]"
+          max-items-to-enable-by-default="[[maxItemsToEnableByDefault]]"
+          selected-items="{{selectedItems}}"
+          selection-state="[[selectionState]]"
+          uses-checkbox-colors="[[useCheckboxColors]]"
+        >
+        </tf-filterable-checkbox-list>
+      </div>
+    </paper-menu-button>
+    <style>
+    :host {
+      padding: 8px;
+    }
+
+    paper-input {
+      --paper-input-container-focus-color: var(--tb-orange-strong);
+      --paper-input-container: {
+        padding: 4px;
+
+        @apply --tf-filterable-checkbox-dropdown-input-container;
+      };
+      --paper-input-container-input: {
+        font-size: 14px;
+      };
+      --paper-input-container-label: {
+        font-size: 14px;
+      };
+    }
+
+    paper-checkbox {
+      --paper-checkbox-ink-size: 40px;
+    }
+
+    paper-menu-button {
+      padding: 0;
+    }
+
+    .dropdown-content {
+      padding: 10px 0;
+    }
+
+    .input {
+      width: 100%;
+    }
+
+    .item {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 24px;
+      margin: 3px 0;
+      padding: 0 16px;
+      width: 300px;
+    }
+
+    .matches {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 5px 0;
+    }
+
+    .checkbox {
+      width: 100%;
+      display: flex;
+      padding: 7px 0;
+      align-items: center;
+    }
+
+    .empty-match {
+      color: var(--paper-grey-600);
+      font-size: 14px;
+    }
+
+    .x-button {
+      width: 100%;
+    }
+    </style>
+  </template>
+  <script src="tf-filterable-checkbox-dropdown.js"></script>
+</dom-module>

@@ -14,6 +14,18 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
+
+/*==============================================================================
+
+  Please do not use RequestManager for new code.
+
+  We've generally found code that uses XMLHttpRequest without promises is
+  easier to understand and maintain. This API also makes it difficult to use
+  the HTTP protocol in an idiomatic RESTful manner.
+
+==============================================================================*/
+
+
 interface ResolveReject {
   resolve: Function;
   reject: Function;

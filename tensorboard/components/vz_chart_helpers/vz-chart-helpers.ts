@@ -30,7 +30,7 @@ export type DataFn = (run: string, tag: string) => Promise<Array<Datum>>;
 
 export interface LineChartSymbol {
   // A single unicode character string representing the symbol. Maybe a diamond
-  // unicode character for instance. 
+  // unicode character for instance.
   character: string;
   // A special method used by Plottable to draw the symbol in the line chart.
   method: (() => Plottable.SymbolFactories.SymbolFactory);
@@ -100,6 +100,7 @@ export interface TooltipColumnState {
 
 export interface TooltipColumn {
   title: string;
+  static: boolean;
   evaluate: ((p: Point, status?: TooltipColumnState) => string);
 }
 
@@ -195,6 +196,7 @@ export let stepFormatter =
     Plottable.Formatters.siSuffix(STEP_FORMATTER_PRECISION);
 export function stepX(): XComponents {
   let scale = new Plottable.Scales.Linear();
+  scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());
   let axis = new Plottable.Axes.Numeric(scale, 'bottom');
   axis.formatter(stepFormatter);
   return {

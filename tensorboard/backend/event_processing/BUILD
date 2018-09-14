@@ -13,6 +13,19 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "io_wrapper_test",
+    size = "small",
+    srcs = ["io_wrapper_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":io_wrapper",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -83,6 +96,7 @@ py_library(
     deps = [
         ":directory_watcher",
         ":event_file_loader",
+        ":io_wrapper",
         ":plugin_asset_util",
         ":reservoir",
         "//tensorboard:data_compat",
@@ -118,12 +132,14 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "@org_pythonhosted_six",
     ],
 )
 
 py_library(
     name = "event_multiplexer",
     srcs = [
+        "db_import_multiplexer.py",
         "event_multiplexer.py",
         "plugin_event_multiplexer.py",
     ],
@@ -177,7 +193,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
-        ":event_multiplexer",
+        ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

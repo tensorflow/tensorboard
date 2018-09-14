@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-suite('util', () => {
+describe('util', () => {
   let assert = chai.assert;
 
-  test('remove common prefix', () => {
+  it('remove common prefix', () => {
 
     // Empty array.
     let result = tf.graph.util.removeCommonPrefix([]);
@@ -44,7 +44,7 @@ suite('util', () => {
     assert.deepEqual(result, ['q/w/', 'q/w/b', 'q/w/c/f']);
   });
 
-  test('query params', () => {
+  it('query params', () => {
     // Starts with question mark.
     let queryParams = tf.graph.util.getQueryParams('?foo=1&bar=2');
     assert.deepEqual(queryParams, {'foo': '1', 'bar': '2'});

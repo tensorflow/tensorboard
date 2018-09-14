@@ -23,13 +23,12 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
+    'grpcio >= 1.6.3',
     'numpy >= 1.12.0',
     'six >= 1.10.0',
     'protobuf >= 3.4.0',
     'werkzeug >= 0.11.10',
-    'html5lib == 0.9999999',  # identical to 1.0b8
     'markdown >= 2.6.8',
-    'bleach == 1.5.0',
 
     # futures is a backport of the python 3.2+ concurrent.futures module
     'futures >= 3.1.1; python_version < "3"',
@@ -44,7 +43,7 @@ CONSOLE_SCRIPTS = [
 ]
 
 def get_readme():
-  with open('tensorboard/pip_package/README.rst') as f:
+  with open('README.rst') as f:
     return f.read()
 
 setup(

@@ -26,9 +26,12 @@ limitations under the License.
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
+<link rel="import" href="../tf-dashboard-common/array-update-helper.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-data-selector/tf-data-selector.html">
+<link rel="import" href="../tf-globals/tf-globals.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
@@ -60,7 +63,7 @@ limitations under the License.
             >Ignore outliers in chart scaling</paper-checkbox>
           </div>
           <div id="tooltip-sorting">
-            <div id="tooltip-sorting-label">Tooltip sorting method:</div>
+            <div>Tooltip sorting method:</div>
             <paper-dropdown-menu
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
@@ -93,10 +96,12 @@ limitations under the License.
             --><paper-button id="wall_time">wall</paper-button>
           </tf-option-selector>
         </div>
-        <div class="sidebar-section">
-          <tf-runs-selector selected-runs="{{_selectedRuns}}">
-          </tf-runs-selector>
-        </div>
+        <template is="dom-if" if="[[!useDataSelector]]">
+          <div class="sidebar-section">
+            <tf-runs-selector selected-runs="{{_selectedRuns}}">
+            </tf-runs-selector>
+          </div>
+        </template>
       </div>
       <div class="center">
         <template is="dom-if" if="[[_dataNotFound]]">
@@ -119,7 +124,9 @@ limitations under the License.
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
-          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
+          <template is="dom-if" if="[[!useDataSelector]]">
+            <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
+          </template>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
               <tf-paginated-view
@@ -138,9 +145,10 @@ limitations under the License.
                           ignore-y-outliers="[[_ignoreYOutliers]]"
                           show-download-links="[[_showDownloadLinks]]"
                           request-manager="[[_requestManager]]"
-                          runs="[[item.runs]]"
+                          data-to-load="[[item.series]]"
+                          multi-experiments="[[_getMultiExperiments(dataSelection)]]"
                           tag="[[item.tag]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
+                          tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
                           active="[[page.active]]"
                         ></tf-scalar-card>
                       </template>
@@ -157,20 +165,15 @@ limitations under the License.
     <style include="dashboard-style"></style>
     <style>
       #tooltip-sorting {
+        align-items: center;
         display: flex;
         font-size: 14px;
-        margin-top: 5px;
-      }
-      #tooltip-sorting-label {
-        margin-top: 13px;
+        margin-top: 15px;
       }
       #tooltip-sorting paper-dropdown-menu {
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
-      }
-      #x-type-selector paper-button {
-        margin: 5px 3px;
       }
       .line-item {
         display: block;
@@ -180,13 +183,25 @@ limitations under the License.
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
+      .center {
+        overflow-x: hidden;
+      }
     </style>
   </template>
 
   <script>
+    const PLUGIN_NAME = 'scalars';
+    const USE_DATA_SELECTOR = tf_globals.getEnableDataSelector();
+    const SelectionType = tf_data_selector.Type;
+
     Polymer({
       is: 'tf-scalar-dashboard',
       properties: {
+        /** @type {?tf_data_selector.DataSelection} */
+        dataSelection: {
+          type: Object,
+          value: () => null,
+        },
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
@@ -216,25 +231,42 @@ limitations under the License.
           value: vz_chart_helpers.XType.STEP,
         },
 
-        _selectedRuns: Array,
+        _selectedRuns: {
+          type: Array,
+          value: () => [],
+        },
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
-        _tagFilter: String,
+        _tagFilter: {
+          type: String,
+          value: '',
+        },
         // Categories must only be computed after _dataNotFound is found to be
         // true and then polymer DOM templating responds to that finding. We
         // thus use this property to guard when categories are computed.
         _categoriesDomReady: Boolean,
+
         _categories: {
           type: Array,
-          computed:
-            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
+          value: () => [],
         },
 
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(50),
         },
+
+        useDataSelector: {
+          type: Boolean,
+          value: USE_DATA_SELECTOR,
+        },
       },
+      behaviors: [
+        tf_dashboard_common.ArrayUpdateHelper,
+      ],
+      observers: [
+        '_updateCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
+      ],
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
       _smoothingWeightObserver: tf_storage.getNumberObserver(
@@ -280,26 +312,74 @@ limitations under the License.
         });
       },
 
-      _makeCategories(
+      _updateCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
-        const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-        return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
+        let categories;
+        const usesDataSelection = this.useDataSelector && this.dataSelection;
+        if (usesDataSelection && this.dataSelection.selections.length == 0) {
+          categories = [];
+        } else if (usesDataSelection &&
+            this.dataSelection.type != SelectionType.WITHOUT_EXPERIMENT) {
+          categories = tf_categorization_utils.categorizeSelection(
+              this.dataSelection.selections,
+              PLUGIN_NAME);
+        } else {
+          let query = tagFilter;
+          if (usesDataSelection) {
+            const selection = this.dataSelection.selections[0] || {};
+            const {runs = [], tagRegex = ''} = selection;
+            query = tagRegex;
+            selectedRuns = runs.map(({name}) => name);
+          }
+          const runToTag = _.mapValues(
+              _.pick(runToTagInfo, selectedRuns),
+              x => Object.keys(x));
+          categories = tf_categorization_utils.categorizeTags(
+              runToTag, selectedRuns, query);
+          categories.forEach(category => {
+            category.items = category.items.map(item => ({
+              tag: item.tag,
+              series: item.runs.map(run => ({run, tag: item.tag})),
+           }));
+          });
+        }
+        this.updateArrayProp('_categories', categories, (c) => c.name);
       },
-      _tagMetadata(runToTagsInfo, runs, tag) {
+
+      _tagMetadata(category, runToTagsInfo, item) {
+        const tag = item.tag;
         const runToTagInfo = {};
-        runs.forEach(run => {
+        item.series.forEach(({run}) => {
             runToTagInfo[run] = runToTagsInfo[run][tag];
         });
         // All new-style scalar tags include the `/scalar_summary`
         // suffix. We can trim that from the display name.
         const defaultDisplayName = tag.replace(/\/scalar_summary$/, '');
-        return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
+        let {description, displayName} = tf_utils.aggregateTagInfo(
+            runToTagInfo,
+            defaultDisplayName);
+
+        // If category name is a prefix group, strip the prefix from the name
+        // of the scalar-card if name != prefix.
+        if (category.metadata.type ==
+            tf_categorization_utils.CategoryType.PREFIX_GROUP &&
+            displayName.startsWith(category.name + '/')) {
+          // + 1 to strip off the separator.
+          displayName = displayName.slice(category.name.length + 1);
+        }
+        return {description, displayName};
+      },
+
+      _getMultiExperiments() {
+        return Boolean(this.dataSelection) &&
+            this.dataSelection.type == SelectionType.COMPARISON;
       },
     });
 
     tf_tensorboard.registerDashboard({
-      plugin: 'scalars',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-scalar-dashboard',
+      useDataSelector: USE_DATA_SELECTOR,
     });
 
   </script>

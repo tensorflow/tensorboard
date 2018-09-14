@@ -130,6 +130,14 @@ Polymer({
     xAxisFormatter: Object,
 
     /**
+     * A formatter for values along the Y-axis. Optional. Defaults to a
+     * reasonable formatter.
+     *
+     * @type {function(number): string}
+     */
+    yAxisFormatter: Object,
+
+    /**
      * A method that implements the Plottable.IAccessor<number> interface. Used
      * for accessing the y value from a data point.
      *
@@ -335,12 +343,16 @@ Polymer({
       this._chart.redraw();
     }
   },
+
   attached: function() {
     this._attached = true;
   },
+
   detached: function() {
+    if (this._chart) this._chart.destroy();
     this._attached = false;
   },
+
   ready: function() {
     this.scopeSubtree(this.$.tooltip, true);
     this.scopeSubtree(this.$.chartdiv, true);
@@ -379,7 +391,6 @@ Polymer({
           !this.tooltipColumns) {
         return;
       }
-      if (this._chart) this._chart.destroy();
       var tooltip = d3.select(this.$.tooltip);
       // We directly reference properties of `this` because this call is
       // asynchronous, and values may have changed in between the call being
@@ -395,12 +406,15 @@ Polymer({
           this.defaultXRange,
           this.defaultYRange,
           this.symbolFunction,
-          this.xAxisFormatter);
+          this.xAxisFormatter,
+          this.yAxisFormatter);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
+      if (this._chart) this._chart.destroy();
       this._chart = chart;
     }, 350);
   },
+
   _reloadFromCache: function() {
     if (this._chart) {
       this._chart.setVisibleSeries(this._visibleSeriesCache);
@@ -461,7 +475,12 @@ class LineChart {
   private outer: Plottable.Components.Table;
   private colorScale: Plottable.Scales.Color;
   private symbolFunction: vz_chart_helpers.SymbolFn;
+
+  private tooltipColumns: vz_chart_helpers.TooltipColumn[];
   private tooltip: d3.Selection<any, any, any, any>;
+  private tooltipInteraction: Plottable.Interactions.Pointer;
+  private tooltipPointsComponent: Plottable.Component;
+
   private dzl: DragZoomLayer;
 
   private linePlot: Plottable.Plots.Line<number|Date>;
@@ -502,7 +521,8 @@ class LineChart {
       defaultXRange?: number[],
       defaultYRange?: number[],
       symbolFunction?: vz_chart_helpers.SymbolFn,
-      xAxisFormatter?: (number) => string) {
+      xAxisFormatter?: (number) => string,
+      yAxisFormatter?: (number) => string) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -525,23 +545,24 @@ class LineChart {
 
     this._defaultXRange = defaultXRange;
     this._defaultYRange = defaultYRange;
+    this.tooltipColumns = tooltipColumns;
 
     this.buildChart(
         xComponentsCreationMethod,
         yValueAccessor,
         yScaleType,
-        tooltipColumns,
         fillArea,
-        xAxisFormatter);
+        xAxisFormatter,
+        yAxisFormatter);
   }
 
   private buildChart(
       xComponentsCreationMethod: () => vz_chart_helpers.XComponents,
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
-      tooltipColumns: vz_chart_helpers.TooltipColumn[],
       fillArea: FillArea,
-      xAxisFormatter: (number) => string) {
+      xAxisFormatter: (number) => string,
+      yAxisFormatter: (number) => string) {
     if (this.outer) {
       this.outer.destroy();
     }
@@ -555,19 +576,22 @@ class LineChart {
     }
     this.yScale = LineChart.getYScaleFromType(yScaleType);
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = vz_chart_helpers.multiscaleFormatter(
-        vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
-    this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
+    this.yAxis.margin(0).tickLabelPadding(5);
+    this.yAxis.formatter(yAxisFormatter ? yAxisFormatter
+      : vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION));
     this.yAxis.usesTextWidthApproximation(true);
     this.fillArea = fillArea;
 
     this.dzl = new DragZoomLayer(
         this.xScale, this.yScale, this.resetYDomain.bind(this));
 
-    let center = this.buildPlot(
+    this.tooltipInteraction = this.createTooltipInteraction(this.dzl);
+    this.tooltipPointsComponent = new Plottable.Component();
+
+    const plot = this.buildPlot(
         this.xScale,
         this.yScale,
-        tooltipColumns,
         fillArea);
 
     this.gridlines =
@@ -578,13 +602,14 @@ class LineChart {
     let yZeroLine = new Plottable.Components.GuideLineLayer('vertical');
     yZeroLine.scale(this.xScale).value(0);
 
-    this.center = new Plottable.Components.Group(
-        [this.gridlines, xZeroLine, yZeroLine, center, this.dzl]);
+    this.center = new Plottable.Components.Group([
+        this.gridlines, xZeroLine, yZeroLine, plot,
+        this.dzl, this.tooltipPointsComponent]);
     this.outer = new Plottable.Components.Table(
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
 
-  private buildPlot(xScale, yScale, tooltipColumns, fillArea):
+  private buildPlot(xScale, yScale, fillArea):
       Plottable.Component {
     if (fillArea) {
       this.marginAreaPlot = new Plottable.Plots.Area<number|Date>();
@@ -608,7 +633,7 @@ class LineChart {
         (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) =>
             this.colorScale.scale(dataset.metadata().name));
     this.linePlot = linePlot;
-    const group = this.setupTooltips(linePlot, tooltipColumns);
+    this.setupTooltips(linePlot);
 
     let smoothLinePlot = new Plottable.Plots.Line<number|Date>();
     smoothLinePlot.x(this.xAccessor, xScale);
@@ -660,7 +685,7 @@ class LineChart {
     nanDisplay.symbol(Plottable.SymbolFactories.triangle);
     this.nanDisplay = nanDisplay;
 
-    const groups = [nanDisplay, scatterPlot, smoothLinePlot, group];
+    const groups = [nanDisplay, scatterPlot, smoothLinePlot, linePlot];
     if (this.marginAreaPlot) {
       groups.push(this.marginAreaPlot);
     }
@@ -805,53 +830,30 @@ class LineChart {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
-  private setupTooltips(
-      plot: Plottable.XYPlot<number|Date, number>,
-      tooltipColumns: vz_chart_helpers.TooltipColumn[]):
-      Plottable.Components.Group {
-    let pi = new Plottable.Interactions.Pointer();
-    pi.attachTo(plot);
-    // vz_chart_helpers.PointsComponent is a Plottable Component that will
-    // hold the little circles we draw over the closest data points
-    let pointsComponent = new Plottable.Component();
-    let group = new Plottable.Components.Group([plot, pointsComponent]);
-
-    let hideTooltips = () => {
-      this.tooltip.style('opacity', 0);
-      this.scatterPlot.attr('opacity', 1);
-      pointsComponent.content().selectAll('.point').remove();
-    };
-
-    let enabled = true;
-    let disableTooltips = () => {
-      enabled = false;
-      hideTooltips();
-    };
-    let enableTooltips = () => {
-      enabled = true;
-    };
-
-    this.dzl.interactionStart(disableTooltips);
-    this.dzl.interactionEnd(enableTooltips);
+  private createTooltipInteraction(dzl: DragZoomLayer):
+      Plottable.Interactions.Pointer {
+    const pi = new Plottable.Interactions.Pointer();
+    // Disable interaction while drag zooming.
+    dzl.interactionStart(() => {
+      pi.enabled(false);
+      this.hideTooltips();
+    });
+    dzl.interactionEnd(() => pi.enabled(true));
 
     pi.onPointerMove((p: Plottable.Point) => {
-      if (!enabled) {
-        return;
-      }
+      // Line plot must be initialized to draw.
+      if (!this.linePlot) return;
       let target: vz_chart_helpers.Point = {
         x: p.x,
         y: p.y,
         datum: null,
         dataset: null,
       };
-
-
       let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
-
       // pts is the closets point to the tooltip for each dataset
-      let pts = plot.datasets()
+      let pts = this.linePlot.datasets()
                     .map((dataset) => this.findClosestPoint(target, dataset))
-                    .filter(x => x != null);
+                    .filter(Boolean);
       let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
       // We draw tooltips for points that are NaN, or are currently visible
       let ptsForTooltips = pts.filter(
@@ -862,7 +864,7 @@ class LineChart {
           (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
 
       let ptsSelection: any =
-          pointsComponent.content().selectAll('.point').data(
+          this.tooltipPointsComponent.content().selectAll('.point').data(
               ptsToCircle,
               (p: vz_chart_helpers.Point) => p.dataset.metadata().name);
       if (pts.length !== 0) {
@@ -875,15 +877,30 @@ class LineChart {
                 'fill',
                 (p) => this.colorScale.scale(p.dataset.metadata().name));
         ptsSelection.exit().remove();
-        this.drawTooltips(ptsForTooltips, target, tooltipColumns);
+        this.drawTooltips(ptsForTooltips, target, this.tooltipColumns);
       } else {
-        hideTooltips();
+        this.hideTooltips();
       }
     });
+    pi.onPointerExit(() => this.hideTooltips());
+    return pi;
+  }
 
-    pi.onPointerExit(hideTooltips);
+  private hideTooltips(): void {
+    this.tooltip.style('opacity', 0);
+    this.scatterPlot.attr('opacity', 1);
+    this.tooltipPointsComponent.content().selectAll('.point').remove();
+  }
 
-    return group;
+  private setupTooltips(plot: Plottable.XYPlot<number|Date, number>): void {
+    plot.onDetach(() => {
+      this.tooltipInteraction.detachFrom(plot);
+      this.tooltipInteraction.enabled(false);
+    });
+    plot.onAnchor(() => {
+      this.tooltipInteraction.attachTo(plot);
+      this.tooltipInteraction.enabled(true);
+    });
   }
 
   private drawTooltips(
@@ -993,7 +1010,7 @@ class LineChart {
       };
     });
     let idx: number =
-        _.sortedIndex(points, target, (p: vz_chart_helpers.Point) => p.x);
+        sortedIndexBy(points, target, (p: vz_chart_helpers.Point) => p.x);
     if (idx === points.length) {
       return points[points.length - 1];
     } else if (idx === 0) {
@@ -1173,8 +1190,35 @@ class LineChart {
   }
 
   public destroy() {
-    this.outer.destroy();
+    // Destroying outer destroys all subcomponents recursively.
+    if (this.outer) this.outer.destroy();
   }
+}
+
+/**
+ * Binary searches and finds "closest" index of a value in an array. As the name
+ * indicates, `array` must be sorted. When there is no exact match, it returns
+ * index of a first item that is larger than the value.
+ * API Signature and method inspired by lodash#sortedIndexBy.
+ * TODO(stephanwlee): Use _.sortedIndexBy when types are migrated to v4.
+ */
+function sortedIndexBy<T>(array: T[], value: T, iteratee: (val: T) => number):
+    number {
+  const query = iteratee(value);
+
+  let low = 0;
+  let high = array.length;
+
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    const midVal = iteratee(array[mid]);
+    if (midVal < query) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  return high;
 }
 
 }  // namespace vz_line_chart

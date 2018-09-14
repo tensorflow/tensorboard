@@ -24,8 +24,11 @@ CLUTZ_ATTRIBUTES = {
         default=Label("@io_angular_clutz//:clutz"),
         executable=True,
         cfg="host"),
-    "_clutz_externs": attr.label(
-        default=Label("@com_google_javascript_closure_compiler_externs"),
+    "_clutz_externs": attr.label_list(
+        default=[
+            Label("//third_party:jspbfix"),
+            Label("@com_google_javascript_closure_compiler_externs"),
+        ],
         allow_files=True),
 }
 
@@ -43,7 +46,7 @@ def extract_dts_from_closure_libraries(ctx):
       The generated Clutz typings file, or None if there were no JS deps.
   """
   deps = unfurl(ctx.attr.deps, provider="closure_js_library")
-  js = collect_js(ctx, deps)
+  js = collect_js(deps, ctx.files._closure_library_base)
   if not js.srcs:
     return None
   js_typings = ctx.new_file(ctx.bin_dir, "%s-js-typings.d.ts" % ctx.label.name)

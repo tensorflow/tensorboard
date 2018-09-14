@@ -1,0 +1,127 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-list.html">
+<link rel="import" href="./tf-data-select-row.html">
+
+<!--
+experiment-selector creates a widget for creating a group of data, a filtered data
+by experiment, runs, and tags. It allows user to add more groups too.
+
+Properties in: none.
+Properties out: none.
+
+-->
+<dom-module id="experiment-selector">
+  <template>
+    <template is="dom-if" if="[[_expanded]]">
+      <div class="exp-selector">
+        <h4>Select data for comparison</h4>
+        <tf-filterable-checkbox-list
+          all-toggle-disabled
+          coloring="[[_experimentColoring]]"
+          items="[[_getExperimentOptions(_allExperiments.*, excludeExperiments.*)]]"
+          label="Experiment"
+          max-items-to-enable-by-default="1"
+          selected-items="{{_selectedExpOptions}}"
+        ></tf-filterable-checkbox-list>
+      </div>
+    </template>
+    <div class="buttons">
+      <template is="dom-if" if="[[!_expanded]]">
+        <paper-button class="add-comparison" on-tap="_toggle">
+          <iron-icon class="add-icon" icon="add-circle-outline"></iron-icon>
+          &nbsp;Add comparison
+        </paper-buutton>
+      </template>
+      <template is="dom-if" if="[[_expanded]]">
+        <span>
+          <template is="dom-if" if="[[!alwaysExpanded]]">
+              <paper-button on-tap="_toggle">
+                Cancel
+              </paper-buutton>
+          </template>
+        </span>
+        <span>
+          <paper-button
+            id="add-button"
+            on-tap="_addExperiments"
+            disabled$="[[!_selectedExpOptions.length]]"
+          >
+            [[_getAddLabel(_selectedExpOptions.*)]]
+          </paper-button>
+        </span>
+      </template>
+    </div>
+    <style>
+      :host {
+        align-items: stretch;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+      }
+
+      h4 {
+        font-weight: 400;
+        margin: 20px 16px 5px;
+      }
+
+      .exp-selector {
+        background: #fff;
+        border-radius: 4px;
+        border: 1px solid var(--google-grey-500);
+        margin-bottom: 10px;
+        min-width: 300px;
+        padding: 5px 0;
+      }
+
+      tf-filterable-checkbox-list {
+        --tf-filterable-checkbox-list-content-max-width: 600px;
+      }
+
+      #add-button {
+        background-color: var(--google-blue-500);
+        color: #fff;
+      }
+
+      #add-button[disabled] {
+        background-color: var(--google-grey-300);
+        color: var(--google-grey-700);
+      }
+
+      paper-button {
+        font-size: 12px;
+      }
+
+      .add-comparison {
+        border: 1px solid var(--google-grey-500);
+        color: var(--paper-grey-800);
+      }
+
+      .add-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+      }
+    </style>
+  </template>
+  <script src="experiment-selector.js"></script>
+</dom-module>

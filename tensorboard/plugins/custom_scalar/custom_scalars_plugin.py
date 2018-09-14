@@ -142,7 +142,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
                         'The scalars plugin is oddly not registered.'))
 
     body, mime_type = scalars_plugin_instance.scalars_impl(
-        tag, run, response_format)
+        tag, run, None, response_format)
     return body, mime_type
 
   @wrappers.Request.application
@@ -226,9 +226,11 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
                           'The scalars plugin is oddly not registered.'))
 
       form = scalars_plugin.OutputFormat.JSON
-      payload = {tag: scalars_plugin_instance.scalars_impl(tag, run, form)[0]
-                 for tag in tag_to_data.keys()
-                 if regex.match(tag)}
+      payload = {
+        tag: scalars_plugin_instance.scalars_impl(tag, run, None, form)[0]
+            for tag in tag_to_data.keys()
+            if regex.match(tag)
+      }
 
     return {
         _REGEX_VALID_PROPERTY: True,
@@ -275,8 +277,11 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         for category in layout_proto.category:
           if category.title in title_to_category:
             # A category with this name has been seen before. Do not create a
-            # new one. Merge their charts.
-            title_to_category[category.title].chart.extend(category.chart)
+            # new one. Merge their charts, skipping any duplicates.
+            title_to_category[category.title].chart.extend([
+                c for c in category.chart
+                if c not in title_to_category[category.title].chart
+            ])
           else:
             # This category has not been seen before.
             merged_layout.category.add().MergeFrom(category)

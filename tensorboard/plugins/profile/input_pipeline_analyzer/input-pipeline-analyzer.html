@@ -37,17 +37,7 @@ You may obtain a copy of the License at
         font-size: 150%;
       }
       #summary-host {
-        font-weight: bold; 
-      }
-      .summary-conclusion {
         font-weight: bold;
-        font-style: italic;
-        color: var(--summary-color, black);
-      }
-      .host-conclusion {
-        font-weight: bold;
-        font-style: italic;
-        color: green;
       }
       .highlighted-text {
         text-decoration: underline;
@@ -90,25 +80,31 @@ You may obtain a copy of the License at
         color: #ff33cc;
         text-decoration: underline;
       }
+      #summary_conclusion{
+        font-weight:bolder;
+        font-style:italic;
+        color: var(--summary-color, green);
+      }
+      #summary_nextstep{
+        font-weight:bolder;
+        font-style:italic;
+        color:green;
+      }
+      #recommendation_title{
+        font-weight:bolder;
+        font-style:normal;
+        color:black;
+      }
     </style>
     <div>
       <div id="section_summary">
         <div id="title_summary">
           <p class="section-header"> Section 1: Summary of input-pipeline analysis</p>
         </div>
-        <p id="summary">
-          <span>The overall performance is </span>
-          <span class="summary-conclusion">[[_summary_text]]</span>
-          <span>input-bounded because on average (over all steps) the device has spent </span>
-          <span><span class="summary-conclusion">[[_infeed_percent_average]]%</span> of time </span>
-          <span>(standard deviation = [[_infeed_percent_stddev]]) waiting for input data </span>
-          <span>[see Section 2 below for details].</span>
-        </p>
-        <p id="summary-host">
-          Recommendation for next step: <span class="host-conclusion">[[_host_conclusion]]</span>
-        </p>
+        <p><span id="summary_conclusion">[[_summary_conclusion]]</span></p>
+        <p><span id="recommendation_title">Recommendation for next step: </span><span id="summary_nextstep">[[_summary_nextstep]]</span></p>
       </div>
-      <div id="section_device_side_analysis">
+      <div id="section_device_side_analysis" hidden="[[!_show_device_side_analysis]]">
         <div id="title_device_side_analysis">
           <p class="section-header"> Section 2: Device-side analysis details</p>
         </div>
@@ -208,18 +204,14 @@ You may obtain a copy of the License at
   Polymer({
     is: 'input-pipeline-analyzer',
     properties: {
-      _requestManager: {
-        type: Object,
-        readOnly: true,
-        value: () => new tf_backend.RequestManager(),
-      },
-      run: {
-        type: String,
-        observer: '_reloadToolData',
-      },
       _data: {
         type: Object,
         observer: '_updateView',
+      },
+      _show_device_side_analysis: {
+        type: Boolean,
+        value: true,
+        notify: true,
       },
       _show_host_side_chart: {
         type: Boolean,
@@ -235,63 +227,93 @@ You may obtain a copy of the License at
         type: String,
         computed: '_getToggleButtonText(_show_host_side_table)'
       },
+      _deviceJson: {
+        type: String,
+        notify: true,
+      },
+      _hostJson: {
+        type: String,
+        notify: true,
+      },
+      _recommendationJson: {
+        type: String,
+        notify: true,
+      },
+      _active: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: '_onActiveChanged',
+      },
+      _summary_conclusion: { type: String, notify: true, },
+      _summary_nextstep: { type: String, notify: true, },
+      _infeed_percent_average: { type: String, notify: true, },
+      _infeed_percent_stddev: { type: String, notify: true, },
+      _infeed_percent_minimum: { type: String, notify: true, },
+      _infeed_percent_maximum: { type: String, notify: true, },
+      _steptime_ms_average: { type: String, notify: true, },
+      _steptime_ms_stddev: { type: String, notify: true, },
+      _steptime_ms_minimum: { type: String, notify: true, },
+      _steptime_ms_maximum: { type: String, notify: true, },
     },
-    _summary_text: String,
-    _infeed_percent_average: String,
-    _infeed_percent_stddev: String,
-    _infeed_percent_minimum: String,
-    _infeed_percent_maximum: String,
-    _steptime_ms_average: String,
-    _steptime_ms_stddev: String,
-    _steptime_ms_minimum: String,
-    _steptime_ms_maximum: String,
-    _host_conclusion: String,
+    observers: [
+      '_showDeviceStepChart(_deviceJson)',
+      '_showDeviceInfeedChart(_deviceJson)',
+      '_showHostChart(_hostJson)',
+      '_showHostTable(_hostJson)',
+      '_makeRecommendations(_recommendationJson)',
+    ],
     onClick: function(e) {
       this.set('_show_host_side_table', !this._show_host_side_table);
     },
-    _reloadToolData: function(run) {
-      if (!run) return;
-      this._requestManager.request(tf_backend.addParams(
-        tf_backend.getRouter().pluginRoute('profile', '/data'),
-        {tag: 'input_pipeline_analyzer', run})
-      ).catch(error => {
-        console.error(error);
-      }).then((data) => {
-        if (data) {
-          this.set('_data', data);
-        }
-      });
+    _onActiveChanged: function(active) {
+      if (!active) {
+        this._show_device_side_analysis = false;
+        this._show_host_side_chart = false;
+        this._show_host_side_table = false;
+      }
     },
     _getToggleButtonText: function(show_host_side_table) {
       return (show_host_side_table ? 'Hide' : 'Show') + ' Input Op Statistics';
     },
-
+    _usToMs: function(str) {
+      return Math.abs(Number(str))/1000.0;
+    },
     /* Update view according to new data */
     _updateView: function() {
-      var deviceJson = this._data[0];
-      var hostJson = this._data[1];
-      var recommendationJson = this._data[2];
-      this.set('_summary_text', deviceJson.p['summary_text']);
-      this.set('_infeed_percent_average', deviceJson.p['infeed_percent_average']);
-      this.set('_infeed_percent_stddev', deviceJson.p['infeed_percent_standard_deviation']);
-      this.set('_infeed_percent_minimum', deviceJson.p['infeed_percent_minimum']);
-      this.set('_infeed_percent_maximum', deviceJson.p['infeed_percent_maximum']);
-      this.set('_steptime_ms_average', deviceJson.p['steptime_ms_average']);
-      this.set('_steptime_ms_stddev', deviceJson.p['steptime_ms_standard_deviation']);
-      this.set('_steptime_ms_minimum', deviceJson.p['steptime_ms_minimum']);
-      this.set('_steptime_ms_maximum', deviceJson.p['steptime_ms_maximum']);
-      this.set('_host_conclusion', recommendationJson.p['overall']);
-      this.customStyle['--summary-color'] =  deviceJson.p['summary_color'];
+      if (!this._data || !this._active) {
+        return;
+      }
+      const deviceJson = this._data[0];
+      this._deviceJson = deviceJson;
+      this._hostJson = this._data[2];
+      this._recommendationJson = this._data[3];
+      this._summary_conclusion = deviceJson.p['summary_conclusion'];
+      this._summary_nextstep = deviceJson.p['summary_nextstep'];
+      this._infeed_percent_average = deviceJson.p['infeed_percent_average'];
+      this._infeed_percent_stddev =
+          deviceJson.p['infeed_percent_standard_deviation'];
+      this._infeed_percent_minimum = deviceJson.p['infeed_percent_minimum'];
+      this._infeed_percent_maximum = deviceJson.p['infeed_percent_maximum'];
+      this._steptime_ms_average = deviceJson.p['steptime_ms_average'];
+      this._steptime_ms_stddev = deviceJson.p['steptime_ms_standard_deviation'];
+      this._steptime_ms_minimum = deviceJson.p['steptime_ms_minimum'];
+      this._steptime_ms_maximum = deviceJson.p['steptime_ms_maximum'];
+      if (this._summary_conclusion.includes('HIGHLY')) {
+        this.customStyle['--summary-color'] =  'red';
+      } else if (this._summary_conclusion.includes('MODERATE')) {
+        this.customStyle['--summary-color'] =  'orange';
+      }
       this.updateStyles();
-      this._showDeviceStepChart(deviceJson);
-      this._showDeviceInfeedChart(deviceJson);
-      this._showHostChart(hostJson);
-      this._showHostTable(hostJson);
-      this._makeRecommendations(recommendationJson);
     },
 
     /* Plots a graph of step time (in ms) against step number */
     _showDeviceStepChart : function(deviceJson) {
+      if (!deviceJson || deviceJson.rows.length == 0 || !this._active) {
+        this._show_device_side_analysis = false;
+        return;
+      }
+      this._show_device_side_analysis = true;
       var deviceStepSeries = [];
       var hostStepSeries = [];
       var maxStepTime = 0;
@@ -326,8 +348,13 @@ You may obtain a copy of the License at
       }
     },
 
-    /* Plots a graph of infeed dequeue time (in % of the step time) against step number */
+    /* Plots a graph of infeed dequeue time (in % of the step time) against
+       step number */
     _showDeviceInfeedChart: function (deviceJson) {
+      if (!deviceJson || deviceJson.rows.length == 0) {
+        this._show_device_side_analysis = false;
+        return;
+      }
       var deviceInfeedSeries = [];
       var step = -1;
       deviceJson.rows.forEach(function(row, index) {
@@ -345,7 +372,8 @@ You may obtain a copy of the License at
         chart.tooltipColumns = [
           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
           { title: 'Step', evaluate: (d) => d.datum.tpu_step },
-          { title: 'Average(%)', evaluate: (d) => (d.datum.scalar).toFixed(4) + '%' },
+          { title: 'Average(%)',
+              evaluate: (d) => (d.datum.scalar).toFixed(4) + '%' },
           { title: 'Min(%)', evaluate: (d) => (d.datum.min).toFixed(4) + '%' },
           { title: 'Max(%)', evaluate: (d) => (d.datum.max).toFixed(4) + '%' }];
         chart.fillArea = {
@@ -356,53 +384,63 @@ You may obtain a copy of the License at
       }
     },
 
-    /* Plots a stacked bar chart for the breakdown of input processing time on the host. */
+    /* Plots a stacked bar chart for the breakdown of input processing time on
+       the host. */
     _showHostChart: function(hostJson) {
-      const kUsPerMs = 1000.0;
-      var unclassifiedNonEnqueueMs = Number(hostJson.p['unclassified_nonequeue_us']) / kUsPerMs;
-      var demandedFileReadMs = Number(hostJson.p['demanded_file_read_us']) / kUsPerMs;
-      var advancedFileReadMs = Number(hostJson.p['advanced_file_read_us']) / kUsPerMs;
-      var preprocessingMs = Number(hostJson.p['preprocessing_us']) / kUsPerMs;
-      var enqueueMs = Number(hostJson.p['enqueue_us']) / kUsPerMs;
-      var totalInputTimeMs = unclassifiedNonEnqueueMs + demandedFileReadMs +
-			     advancedFileReadMs + preprocessingMs + enqueueMs;
-      this.set('_show_host_side_chart', totalInputTimeMs > 0);
+      if (!hostJson) return;
+      const unclassifiedNonEnqueueMs =
+          this._usToMs(hostJson.p['unclassified_nonequeue_us']);
+      const demandedFileReadMs =
+          this._usToMs(hostJson.p['demanded_file_read_us']);
+      const advancedFileReadMs =
+          this._usToMs(hostJson.p['advanced_file_read_us']);
+      const preprocessingMs = this._usToMs(hostJson.p['preprocessing_us']);
+      const enqueueMs = this._usToMs(hostJson.p['enqueue_us']);
+      const totalInputTimeMs = unclassifiedNonEnqueueMs + demandedFileReadMs +
+                               advancedFileReadMs + preprocessingMs + enqueueMs;
+      this._show_host_side_chart = totalInputTimeMs > 0;
       if (totalInputTimeMs > 0) {
-	var pie_data = [{ Name:"Other data reading or processing",
-			  Total:unclassifiedNonEnqueueMs / totalInputTimeMs * 100 },
-			{ Name:"Reading data from files on demand",
-			  Total:demandedFileReadMs / totalInputTimeMs * 100 },
-			{ Name:"Reading data from files in advance [including caching, prefetching, interleaving]",
-			  Total:advancedFileReadMs /totalInputTimeMs * 100 },
-			{ Name:"Data preprocessing",
-			  Total:preprocessingMs/totalInputTimeMs * 100 },
-			{ Name:"Enqueuing data to be transferred to device",
-			  Total:enqueueMs/totalInputTimeMs * 100 }];
+          let pie_data = [{ Name:"Other data reading or processing",
+                            Total:unclassifiedNonEnqueueMs /
+                                      totalInputTimeMs * 100 },
+                          { Name:"Reading data from files on demand",
+                            Total:demandedFileReadMs / totalInputTimeMs * 100 },
+                          { Name:"Reading data from files in advance "
+                            + "[including caching, prefetching, interleaving]",
+                            Total:advancedFileReadMs / totalInputTimeMs * 100 },
+                          { Name:"Data preprocessing",
+                            Total:preprocessingMs / totalInputTimeMs * 100 },
+                          { Name:"Enqueuing data to be transferred to device",
+                            Total:enqueueMs / totalInputTimeMs * 100 }];
 
-        var colorScale = new Plottable.Scales.Color();
-        var legend = new Plottable.Components.Legend(colorScale);
+        let colorScale = new Plottable.Scales.Color();
+        let legend = new Plottable.Components.Legend(colorScale);
 
-        var div = d3.select(this.$.host_side_chart);
-        var pie = new Plottable.Plots.Pie()
-          .attr("fill", function(d){ return d.Name; }, colorScale)
-          .addDataset(new Plottable.Dataset(pie_data))
-          .sectorValue(function(d){ return d.Total; } )
-          .labelsEnabled(true)
-          .labelFormatter(function(n){ return Number(n).toFixed(2) + "%" ;});
-        var plot = new Plottable.Components.Table([[pie, legend]]);
+        let div = d3.select(this.$.host_side_chart);
+        let pie = new Plottable.Plots.Pie()
+                  .attr("fill", function(d){ return d.Name; }, colorScale)
+                  .addDataset(new Plottable.Dataset(pie_data))
+                  .sectorValue(function(d){ return d.Total; } )
+                  .labelsEnabled(true)
+                  .labelFormatter(function(n){
+                                  return Number(n).toFixed(2) + "%" ;});
+        let plot = new Plottable.Components.Table([[pie, legend]]);
         plot.renderTo(div);
       }
     },
 
     /* Draws a table of Dataset Op statistics */
     _showHostTable: function(hostJson) {
-      var inputOpsTableBody = this.$.host_side_table_content;
+      if (!hostJson) return;
+      let inputOpsTableBody = this.$.host_side_table_content;
       inputOpsTableBody.innerHTML = '';
+      this._show_host_side_table = false;
+      if (hostJson.rows.length == 0) return;
       hostJson.rows.forEach(function(rowJson, index) {
-        var row = document.createElement('tr');
+        let row = document.createElement('tr');
         Polymer.dom(inputOpsTableBody).appendChild(row);
         /* formatting the cell */
-        var cellTexts = [];
+        let cellTexts = [];
         cellTexts.push(rowJson.c[0].v);
         cellTexts.push(rowJson.c[1].v);
         cellTexts.push((rowJson.c[2].v).toFixed(2));
@@ -411,23 +449,32 @@ You may obtain a copy of the License at
         cellTexts.push((rowJson.c[5].v * 100).toFixed(2) + '%');
         cellTexts.push(rowJson.c[6].v);
         cellTexts.forEach(function(cellText, index) {
-          var td = document.createElement('td');
+          let td = document.createElement('td');
           Polymer.dom(row).appendChild(td);
           Polymer.dom(td).appendChild(document.createTextNode(cellText));
         });
       });
-      this.set('_show_host_side_table', false);
     },
 
     /* Makes a list of detailed recommendations */
     _makeRecommendations: function(recommendationJson) {
+      if (!recommendationJson) return;
       var content = '';
       recommendationJson.rows.forEach(function(rowJson, index) {
-	content += '<li>' + rowJson.c[0].v + '</li>';
+        content += '<li>' + rowJson.c[0].v + '</li>';
       });
       var detailsBody = this.$.recommendation_details;
       detailsBody.innerHTML = content;
     },
+
+    attached: function() {
+      this._active = true;
+      this._updateView();
+    },
+
+    detached: function() {
+      this._active = false;
+    }
   });
   </script>
 </dom-module>

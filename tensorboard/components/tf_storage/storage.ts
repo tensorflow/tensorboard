@@ -15,19 +15,18 @@ limitations under the License.
 namespace tf_storage {
 
 /**
- * The Storage Module provides storage for URL parameters, and an API for
- * getting and setting TensorBoard's stateful URI.
+ * The Storage Module provides storage for persisting state in URI or
+ * localStorage.
  *
- * It generates URI components like: events&runPrefix=train*
- * which TensorBoard uses after like localhost:8000/#events&runPrefix=train*
- * to store state in the URI.
- *
- * It also allows saving the values to localStorage for long-term persistence.
+ * When using URI as the storage mechanism, it generates URI components like:
+ * #events&runPrefix=train*.
+ * It also allows saving the values to localStorage for non-noisy and larger
+ * data persistence.
  */
 type StringDict = {[key: string]: string};
 
 /**
- * A key that users cannot use, since TensorBoard uses this to store info
+ * A keyword that users cannot use, since TensorBoard uses this to store info
  * about the active tab.
  */
 export const TAB = '__tab__';
@@ -85,35 +84,67 @@ export const {
   o => btoa(JSON.stringify(o)));
 
 export interface StorageOptions<T> {
-  defaultValue: T;
-  polymerProperty?: string;
+  defaultValue?: T;
   useLocalStorage?: boolean;
 }
 
-function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
-    get: (key: string, useLocalStorage?: boolean) => T,
-    set: (key: string, value: T, useLocalStorage?: boolean) => void,
-    getInitializer: (key: string, options: StorageOptions<T>) => Function,
-    getObserver: (key: string, options: StorageOptions<T>) => Function,
+export interface AutoStorageOptions<T> extends StorageOptions<T> {
+  polymerProperty?: string,
+}
+
+export interface SetterOptions<T> extends StorageOptions<T> {
+  defaultValue?: T;
+  useLocalStorage?: boolean;
+  useLocationReplace?: boolean;
+}
+
+export function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
+    get: (key: string, option?: StorageOptions<T>) => T,
+    set: (key: string, value: T, option?: SetterOptions<T>) => void,
+    getInitializer: (key: string, options: AutoStorageOptions<T>) => Function,
+    getObserver: (key: string, options: AutoStorageOptions<T>) => Function,
+    disposeBinding: () => void,
 } {
-  function get(key: string, useLocalStorage = false): T {
+  const hashListeners = [];
+  const storageListeners = [];
+
+  function get(key: string, options: StorageOptions<T> = {}): T {
+    const {
+      defaultValue,
+      useLocalStorage = false,
+    } = options;
     const value = useLocalStorage ?
       window.localStorage.getItem(key) :
       componentToDict(readComponent())[key];
-    return value == undefined ? undefined : fromString(value);
+    return value == undefined ? _.cloneDeep(defaultValue) : fromString(value);
   }
 
-  function set(key: string, value: T, useLocalStorage = false, useLocationReplace = false): void {
+  function set(key: string, value: T, options: SetterOptions<T> = {}): void {
+    const {
+      defaultValue,
+      useLocalStorage = false,
+      useLocationReplace = false,
+    } = options;
     const stringValue = toString(value);
     if (useLocalStorage) {
       window.localStorage.setItem(key, stringValue);
-    } else {
-      const items = componentToDict(readComponent());
-      items[key] = stringValue;
-      writeComponent(dictToComponent(items), useLocationReplace);
+    } else if (!_.isEqual(value, get(key, {useLocalStorage}))) {
+      if (_.isEqual(value, defaultValue)) {
+        unsetFromURI(key);
+      } else {
+        const items = componentToDict(readComponent());
+        items[key] = stringValue;
+        writeComponent(dictToComponent(items), useLocationReplace);
+      }
     }
   }
 
+  /**
+   * Returns a function that can be used on a `value` declaration to a Polymer
+   * property. It updates the `polymerProperty` when storage changes -- i.e.,
+   * when `useLocalStorage`, it listens to storage change from another tab and
+   * when `useLocalStorage=false`, it listens to hashchange.
+   */
   function getInitializer(key: string, options: StorageOptions<T>): Function {
     const fullOptions = {
       defaultValue: options.defaultValue,
@@ -123,52 +154,41 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
     };
     return function() {
       const uriStorageName = getURIStorageName(this, key);
-      // setComponentValue will be called every time the hash changes,
-      // and is responsible for ensuring that new state in the hash will
-      // be propagated to the component with that property. It is
-      // important that this function does not re-assign needlessly,
-      // to avoid Polymer observer churn.
+      // setComponentValue will be called every time the underlying storage
+      // changes and is responsible for ensuring that new state will propagate
+      // to the component with specified property. It is important that this
+      // function does not re-assign needlessly, to avoid Polymer observer
+      // churn.
       const setComponentValue = () => {
-        const uriValue = get(uriStorageName, false);
+        const storedValue = get(uriStorageName, fullOptions);
         const currentValue = this[fullOptions.polymerProperty];
-        // if uriValue is undefined, we will ensure that the property has the
-        // default value
-        if (uriValue === undefined) {
-          let valueToSet: T;
-          // if we are using localStorage, we will set the value to the value
-          // from localStorage. Then, the corresponding observer will proxy
-          // the localStorage value into URI storage.
-          // in this way, localStorage takes precedence over the default val
-          // but not over the URI value.
-          if (fullOptions.useLocalStorage) {
-            const useLocalStorageValue = get(uriStorageName, true);
-            valueToSet = useLocalStorageValue === undefined ?
-              fullOptions.defaultValue :
-              useLocalStorageValue;
-          } else {
-            valueToSet = fullOptions.defaultValue;
-          }
-          if (!_.isEqual(currentValue, valueToSet)) {
-            // If we don't have an explicit URI value, then we need to ensure
-            // the property value is equal to the default value.
-            // We will assign a clone rather than the canonical default, because
-            // the component receiving this property may mutate it, and we need
-            // to keep a pristine copy of the default.
-            this[fullOptions.polymerProperty] = _.cloneDeep(valueToSet);
-          }
-          // In this case, we have an explicit URI value, so we will ensure that
-          // the component has an equivalent value.
-        } else {
-          if (!_.isEqual(uriValue, currentValue)) {
-            this[fullOptions.polymerProperty] = uriValue;
-          }
+        if (!_.isEqual(storedValue, currentValue)) {
+          this[fullOptions.polymerProperty] = storedValue;
         }
       };
+
+      const addListener = fullOptions.useLocalStorage ?
+          addStorageListener :
+          addHashListener;
+
+      // TODO(stephanwlee): When using fakeHash, it _should not_ listen to the
+      //                    window.hashchange.
+      const listenKey = addListener(() => setComponentValue());
+      if (fullOptions.useLocalStorage) {
+        storageListeners.push(listenKey);
+      } else {
+        hashListeners.push(listenKey);
+      }
+
       // Set the value on the property.
       setComponentValue();
-      // Update it when the hashchanges.
-      window.addEventListener('hashchange', setComponentValue);
+      return this[fullOptions.polymerProperty];
     };
+  }
+
+  function disposeBinding() {
+    hashListeners.forEach(key => removeHashListenerByKey(key));
+    storageListeners.forEach(key => removeStorageListenerByKey(key));
   }
 
   function getObserver(key: string, options: StorageOptions<T>): Function {
@@ -181,22 +201,11 @@ function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
     return function() {
       const uriStorageName = getURIStorageName(this, key);
       const newVal = this[fullOptions.polymerProperty];
-      // if this is a localStorage property, we always synchronize the value
-      // in localStorage to match the one currently in the URI.
-      if (fullOptions.useLocalStorage) {
-        set(uriStorageName, newVal, true);
-      }
-      if (!_.isEqual(newVal, get(uriStorageName, false))) {
-        if (_.isEqual(newVal, fullOptions.defaultValue)) {
-          unsetFromURI(uriStorageName);
-        } else {
-          set(uriStorageName, newVal, false);
-        }
-      }
+      set(uriStorageName, newVal, fullOptions);
     };
   }
 
-  return {get, set, getInitializer, getObserver};
+  return {get, set, getInitializer, getObserver, disposeBinding};
 }
 
 /**
@@ -225,11 +234,11 @@ function readComponent(): string {
  */
 function writeComponent(component: string, useLocationReplace = false) {
   if (tf_globals.useHash()) {
-      if (useLocationReplace) {
-          window.location.replace('#' + component);
-      } else {
-          window.location.hash = component;
-      }
+    if (useLocationReplace) {
+      window.location.replace('#' + component);
+    } else {
+      window.location.hash = component;
+    }
   } else {
     tf_globals.setFakeHash(component);
   }
@@ -252,13 +261,14 @@ function dictToComponent(items: StringDict): string {
   }
 
   // Join other strings with &key=value notation
-  const nonTab = _.pairs(items)
-                   .filter((pair) =>  pair[0] !== TAB)
-                   .map((pair) => {
-                     return encodeURIComponent(pair[0]) + '=' +
-                         encodeURIComponent(pair[1]);
-                   })
-                   .join('&');
+  const nonTab = Object.keys(items)
+      .map(key => [key, items[key]])
+      .filter((pair) =>  pair[0] !== TAB)
+      .map((pair) => {
+       return encodeURIComponent(pair[0]) + '=' +
+           encodeURIComponent(pair[1]);
+      })
+      .join('&');
 
   return nonTab.length > 0 ? (component + '&' + nonTab) : component;
 }

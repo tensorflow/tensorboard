@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vz-example-viewer demo</title>
+<link rel="import" href="vz-example-viewer.html">
+<link rel="import" href="../iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../paper-styles/typography.html">
+<style type="text/css">
+  body {
+    font-family: "Roboto";
+  }
+
+  vz-example-viewer {
+    height: 300px;
+  }
+</style>
+<h3>Simple example viewer</h3>
+<demo-snippet>
+  <template>
+    <vz-example-viewer id="simple"></vz-example-viewer>
+    <div id="changed"></div>
+    <div id="jsonchanged"></div>
+    <vz-example-viewer id="seq"></vz-example-viewer>
+    <script>
+      const elem = document.querySelector('#simple');
+      const seq = document.querySelector('#seq');
+      const encodedStr = btoa('hello');
+      const encodedStr2 = btoa('bye');
+      const json = {
+        'features': {
+          'feature': {
+            'bytes': {'bytesList': {'value': [encodedStr]}},
+            'ints': {'int64List': {'value': ['10', '20']}},
+            'float': {'floatList': {'value': ['3.14']}}
+          }
+        }
+      };
+      elem.json = json;
+      elem.saliency = {'ints': [.5, .2], 'bytes': 0, 'float': [-.4]};
+      elem.addEventListener('example-change', event => {
+        document.querySelector('#changed').innerHTML = event.detail.example.toString();
+        document.querySelector('#jsonchanged').innerHTML = JSON.stringify(elem.json);
+      });
+      const seqjson = {
+        'context': {
+          'feature': {
+            'context': {'int64List': {'value': ['10', '20']}},
+          }
+        },
+        'featureLists': {
+          'featureList': {
+            'bytes': {'feature': [{'bytesList': {'value': [encodedStr]}}, {'bytesList': {'value': [encodedStr2]}}]},
+            'ints': {'feature':  [{'int64List': {'value': ['10', '20']}}, {'int64List': {'value': ['100', '200']}}]},
+            'float': {'feature': [{'floatList': {'value': ['3.14']}}, {'floatList': {'value': ['3.15']}}]}
+          }
+        }
+      };
+      seq.json = seqjson;
+    </script>
+  </template>
+</demo-snippet>

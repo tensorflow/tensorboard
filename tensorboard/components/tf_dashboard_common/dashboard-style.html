@@ -24,10 +24,14 @@ limitations under the License.
     <style include="iron-flex"></style>
     <style>
       .sidebar {
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         height: 100%;
         margin-right: 20px;
+        overflow-x: hidden;
+        padding: 5px 0;
+        text-overflow: ellipsis;
       }
 
       tf-runs-selector {
@@ -40,23 +44,54 @@ limitations under the License.
       }
 
       .sidebar-section {
-        border-top: solid 1px rgba(0, 0, 0, 0.12);
-        padding: 15px 0px 15px 30px;
+        border-top: solid 1px rgba(0, 0, 0, .12);
+        padding: 15px 0 15px 30px;
       }
 
-      .sidebar-section:first-child {
+      .sidebar-section:first-of-type {
         border: none;
       }
 
-      .sidebar-section:last-child {
+      .sidebar-section:last-of-type {
         flex-grow: 1;
         display: flex;
+      }
+
+      .sidebar-section paper-button {
+        margin: 5px;
+      }
+
+      .sidebar-section paper-button:first-of-type {
+        margin-left: 0 !important;
+      }
+
+      .sidebar-section paper-button:last-of-type {
+        margin-right: 0 !important;
+      }
+
+      .sidebar-section > :first-child {
+        margin-top: 0;
+        padding-top: 0;
+      }
+
+      .sidebar-section > :last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .sidebar-section h3 {
+        color: var(--paper-grey-800);
+        display: block;
+        font-size: 14px;
+        font-weight: normal;
+        margin: 10px 0 5px;
+        pointer-events: none;
       }
 
       paper-checkbox {
         --paper-checkbox-checked-color: var(--tb-ui-dark-accent);
         --paper-checkbox-unchecked-color: var(--tb-ui-dark-accent);
-        font-size: 14px;
+        font-size: 15px;
         margin-top: 5px;
       }
     </style>

@@ -108,7 +108,7 @@ from tensorboard import summary
 from tensorboard.plugins.custom_scalar import layout_pb2
 ...
 # This action does not have to be performed at every step, so the action is not
-# taken care of by an op in the graph. We only need to specify the layout once. 
+# taken care of by an op in the graph. We only need to specify the layout once.
 # We only need to specify the layout once (instead of per step).
 layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
   category=[
@@ -129,7 +129,7 @@ layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
                     lower='baz_lower/baz/scalar_summary',
                     upper='baz_upper/baz/scalar_summary'),
                 ],
-              )), 
+              )),
       ]),
     layout_pb2.Category(
       title='trig functions',
@@ -204,27 +204,16 @@ writer.add_summary(layout_summary)
 
     <style include="dashboard-style"></style>
     <style>
-      .center {
-        font-size: 14px;
-        height: 100%;
-        padding: 10px 20px;
-        box-sizing: border-box;
-      }
       #tooltip-sorting {
+        align-items: center;
         display: flex;
         font-size: 14px;
-        margin-top: 5px;
-      }
-      #tooltip-sorting-label {
-        margin-top: 13px;
+        margin-top: 15px;
       }
       #tooltip-sorting paper-dropdown-menu {
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
-      }
-      #x-type-selector paper-button {
-        margin: 5px 3px;
       }
       .line-item {
         display: block;

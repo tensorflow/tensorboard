@@ -26,7 +26,7 @@ from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder.file_system_tools import read_pickle,\
   write_pickle, write_file
 from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME, TAG_NAME,\
-  SUMMARY_FILENAME, DEFAULT_CONFIG, CONFIG_FILENAME
+  SUMMARY_FILENAME, DEFAULT_CONFIG, CONFIG_FILENAME, SUMMARY_COLLECTION_KEY_NAME
 from tensorboard.plugins.beholder import video_writing
 from tensorboard.plugins.beholder.visualizer import Visualizer
 
@@ -45,7 +45,10 @@ class Beholder(object):
 
     self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
     self.summary_op = tf.summary.tensor_summary(TAG_NAME,
-                                                self.frame_placeholder)
+                                                self.frame_placeholder,
+                                                collections=[
+                                                    SUMMARY_COLLECTION_KEY_NAME
+                                                ])
 
     self.last_image_shape = []
     self.last_update_time = time.time()
@@ -190,22 +193,20 @@ class Beholder(object):
 
 
 class BeholderHook(tf.train.SessionRunHook):
-  """SessionRunHook implementation that run Beholder every step.
+  """SessionRunHook implementation that runs Beholder every step.
 
-  Convinient when using tf.train.MonitoredSession:
+  Convenient when using tf.train.MonitoredSession:
   ```python
-  beholder_hook = BeholderHook('MY_LOG_DIR')
-  with MonitoredSession(session_creator=ChiefSessionCreator(...),
-                        hooks=[beholder_hook]) as sess:
-    while not sess.should_stop():
-      sess.run(train_op)
+  beholder_hook = BeholderHook(LOG_DIRECTORY)
+  with MonitoredSession(..., hooks=[beholder_hook]) as sess:
+    sess.run(train_op)
   ```
   """
   def __init__(self, logdir):
     """Creates new Hook instance
 
     Args:
-      logdir: Directory where Beholder is to write data.
+      logdir: Directory where Beholder should write data.
     """
     self._logdir = logdir
     self.beholder = None

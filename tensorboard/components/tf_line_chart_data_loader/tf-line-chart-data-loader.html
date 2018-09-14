@@ -19,7 +19,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
+<script src="data-loader-behavior.js"></script>
 
 <!--
   A component that fetches data from the TensorBoard server and renders it into
@@ -28,7 +29,8 @@ limitations under the License.
 <dom-module id="tf-line-chart-data-loader">
   <template>
     <div id="chart-and-spinner-container">
-      <vz-line-chart
+      <vz-line-chart2
+        id="chart"
         x-components-creation-method="[[xComponentsCreationMethod]]"
         x-type="[[xType]]"
         y-value-accessor="[[yValueAccessor]]"
@@ -38,13 +40,14 @@ limitations under the License.
         smoothing-weight="[[smoothingWeight]]"
         tooltip-sorting-method="[[tooltipSortingMethod]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
-        style="[[_computeLineChartStyle(_loading)]]"
+        style="[[_computeLineChartStyle(dataLoading)]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
         fill-area="[[fillArea]]"
         symbol-function="[[symbolFunction]]"
-      ></vz-line-chart>
-      <template is="dom-if" if="[[_loading]]">
+        on-chart-attached="_onChartAttached"
+      ></vz-line-chart2>
+      <template is="dom-if" if="[[dataLoading]]">
         <div id="loading-spinner-container">
           <paper-spinner-lite active></paper-spinner-lite>
         </div>
@@ -97,30 +100,38 @@ limitations under the License.
     // We use a cascading queue becuase we don't want to block the UI / make the
     // ripples very slow while everything synchronously redraws.
     const redrawQueue = [];
-    const cascadingRedraw = _.throttle(function internalRedraw() {
-      if (redrawQueue.length > 0) {
+    const cascadingRedraw = (function() {
+      let redrawRaf = 0;
+      return _.throttle(function internalRedraw() {
+        if (redrawQueue.length == 0) return;
         const x = redrawQueue.shift();
         if (x.active) {
-          x.redraw();
+          // When incorrectly drawn, Plottable, more specifically, Typesettable,
+          // can have incorrect values in its measurement cache. For correct
+          // axis layout, we must bust the cache.
+          x.redraw(true /* clearCache */);
           x._maybeRenderedInBadState = false;
         }
-        window.setTimeout(internalRedraw, 32);
-      }
-    }, 100);
+        window.cancelAnimationFrame(redrawRaf);
+        window.requestAnimationFrame(internalRedraw);
+      }, 100);
+    })();
 
     Polymer({
       is: 'tf-line-chart-data-loader',
       properties: {
-        // An array of selected runs (strings).
-        runs: Array,
-        tag: String,
+        active: {
+          type: Boolean,
+          observer: '_fixBadStateWhenActive',
+        },
 
-        // An optional list of data series. Each data series is a string that
-        // corresponds to a line in the chart. If this property is not provided,
-        // the list of data series consists of the list of runs.
-        dataSeries: {
-          type: Array,
-          value: [],
+        dataSeries: Array,
+
+        requestManager: Object,
+
+        logScaleActive: {
+          type: Boolean,
+          observer: '_logScaleChanged',
         },
 
         xComponentsCreationMethod: Object,
@@ -140,72 +151,17 @@ limitations under the License.
         symbolFunction: Object,
 
         /**
-         * A function that takes as inputs:
-         * 1. This tf-line-chart-data-loader component.
-         * 2. The run (string) the response is relevant to.
-         * 3. The response received from the data URL.
-         * This function will be called when a response from a request to that
-         * data URL is successfully received.
-         * @type {Function}
-         */
-        processData: Object,
-
-        active: {
-          type: Boolean,
-          observer: '_fixBadStateWhenActive',
-        },
-
-        requestManager: Object,
-
-        // A function that takes 2 string arguments (tag and run) and returns a
-        // string URL for fetching data.
-        dataUrl: Function,
-
-        logScaleActive: {
-          type: Boolean,
-          observer: '_logScaleChanged',
-        },
-
-        /**
-         * An object with a scale method that maps from data series to color.
+         * An object with a scale method that maps from name of a data series to
+         * a color.
          */
         colorScale: {
           type: Object,
           value: () => ({scale: tf_color_scale.runsColorScale}),
         },
 
-        _loading: {
-          type: Boolean,
-          value: false,
-        },
-
         _resetDomainOnNextLoad: {
           type: Boolean,
           value: true,
-        },
-
-        _canceller: {
-          type: Object,
-          value: () => new tf_backend.Canceller(),
-        },
-
-        /*
-         * A map such that `_loadedRuns[run] === true` iff we've loaded
-         * `run` already, or are in the process of loading it. This
-         * exists so that when there are 100 runs selected and the user
-         * selects an additional run, we only fetch 1 more run instead
-         * of 101.
-         *
-         * `reload` clears this cache.
-         *
-         * Equivalently, this is the set of runs for which, after
-         * callbacks in-flight resolve, the most recent call to
-         * `setSeriesData(run, data)` on the chart object (a) exists
-         * and (b) occurred after all reloads so far.
-         */
-        _loadedRuns: {
-          type: Object,
-          value: () => ({}),
         },
 
         _maybeRenderedInBadState: {
@@ -214,123 +170,74 @@ limitations under the License.
           reflectToAttribute: true,
         },
       },
+
+      behaviors: [tf_line_chart_data_loader.DataLoaderBehavior],
+
       observers: [
-        '_tagChanged(_attached, tag)',
-        '_dataChanged(_attached, dataSeries, runs.*)'
+        '_dataSeriesChanged(dataSeries.*)',
+        '_loadKeyChanged(loadKey)',
       ],
-      created() {
-        this._loadData = _.debounce(
-          this._loadData, 100, {leading: true, trailing: true});
-      },
-      attached() {
-        this._attached = true;
-        this._changeSeries();
-      },
-      reload() {
-        this._loadedRuns = {};
-        this._loadData();
-      },
-      resetDomain() {
-        const chart = this.$$('vz-line-chart');
-        if (chart) {
-          chart.resetDomain();
-        }
-      },
-      setSeriesData(run, data) {
-        this.$$('vz-line-chart').setSeriesData(run, data);
-      },
-      redraw() {
-        this.$$('vz-line-chart').redraw();
-      },
-      _tagChanged(attached, tagUpdateRecord) {
-        this._loadedRuns = {};
-        this._resetDomainOnNextLoad = true;
-        this._loadData();
-      },
-      _dataChanged(attached, dataSeries, runsUpdateRecord) {
-        if (!attached) {
-          return;
+
+      onLoadFinish() {
+        if (this.dataToLoad.length > 0 && this._resetDomainOnNextLoad) {
+          // (Don't unset _resetDomainOnNextLoad when we didn't
+          // load any runs: this has the effect that if all our
+          // runs are deselected, then we toggle them all on, we
+          // properly size the domain once all the data is loaded
+          // instead of just when we're first rendered.)
+          this._resetDomainOnNextLoad = false;
+          this.$.chart.resetDomain();
         }
 
-        let visibleSeries = dataSeries;
-        if (visibleSeries.length === 0) {
-          // The data series is not explicitly set. Default to using runs.
-          visibleSeries = runsUpdateRecord.base;
-        }
-        this.$$('vz-line-chart').setVisibleSeries(visibleSeries);
-        this._loadData();
+        this.redraw();
       },
-      _loadData() {
-        this.async(() => {
-          if (!this._attached) {
-            return;
+
+      detached() {
+        cancelAnimationFrame(this._redrawRaf);
+      },
+
+      resetDomain() {
+        const chart = this.$.chart;
+        chart.resetDomain();
+      },
+
+      setSeriesData(name, data) {
+        this._resetDomainOnNextLoad = true;
+        this.$.chart.setSeriesData(name, data);
+      },
+
+      setSeriesMetadata(name, metadata) {
+        this.$.chart.setSeriesMetadata(name, metadata);
+      },
+
+      redraw(clearCache) {
+        cancelAnimationFrame(this._redrawRaf);
+        this._redrawRaf = window.requestAnimationFrame(() => {
+          if (this.active) {
+            this.$.chart.redraw(clearCache);
+          } else {
+            // If we reached a point where we should render while the page
+            // is not active, we've gotten into a bad state.
+            this._maybeRenderedInBadState = true;
           }
-          this._loading = true;
-          //
-          // Before updating, cancel any network-pending updates, to
-          // prevent race conditions where older data stomps newer data.
-          this._canceller.cancelAll();
-          const tag = this.tag;
-          const runPromises = this.runs.map(run => {
-            if (this._loadedRuns[run]) {
-              return Promise.resolve();
-            }
-            const url = this.dataUrl(tag, run);
-            const updateSeries = this._canceller.cancellable(result => {
-              if (result.cancelled) {
-                return;
-              }
-              if (tag === this.tag) {
-                // Only update the runs cache for the current tag. If we
-                // load data for Tag A, then the tag changes to Tag B
-                // while requests are still in flight, these requests
-                // should not poison the cache.
-                this._loadedRuns[run] = true;
-              }
-              this.processData(this, run, result.value);
-            });
-            return this.requestManager.request(url).then(updateSeries);
-          });
-          const finish = this._canceller.cancellable(result => {
-            if (!result.cancelled) {
-              this._loading = false;
-              const chart = this.$$('vz-line-chart');
-              if (runPromises.length > 0 && this._resetDomainOnNextLoad) {
-                // (Don't unset _resetDomainOnNextLoad when we didn't
-                // load any runs: this has the effect that if all our
-                // runs are deselected, then we toggle them all on, we
-                // properly size the domain once all the data is loaded
-                // instead of just when we're first rendered.)
-                this._resetDomainOnNextLoad = false;
-                chart.resetDomain();
-              }
-              if (!this.active) {
-                // If we reached a point where we should render while the page
-                // is not active, we've gotten into a bad state.
-                this._maybeRenderedInBadState = true;
-              } else {
-                this.redraw();
-              }
-            }
-          });
-          return Promise.all(runPromises).then(finish);
         });
       },
-      _changeSeries() {
-        let visibleSeries = this.dataSeries;
-        if (this.dataSeries.length === 0) {
-          // The data series is not explicitly set. Default to using runs.
-          visibleSeries = this.runs;
-        }
 
-        this.$$('vz-line-chart').setVisibleSeries(visibleSeries);
-        this._loadData();
+      _loadKeyChanged(_) {
+        this._resetDomainOnNextLoad = true;
       },
+
+      _dataSeriesChanged(_) {
+        // Setting visible series redraws the chart.
+        this.$.chart.setVisibleSeries(this.dataSeries);
+      },
+
       _logScaleChanged(logScaleActive) {
-        var chart = this.$$('vz-line-chart');
+        const chart = this.$.chart;
         chart.yScaleType = logScaleActive ? 'log' : 'linear';
         this.redraw();
       },
+
       _computeLineChartStyle(loading) {
         return loading ? 'opacity: 0.3;' : '';
       },
@@ -345,7 +252,15 @@ limitations under the License.
           cascadingRedraw();
         }
       },
+
+      _onChartAttached() {
+        if (!this.active) {
+          this._maybeRenderedInBadState = true;
+        }
+      },
+
     });
+
     })();
   </script>
 </dom-module>

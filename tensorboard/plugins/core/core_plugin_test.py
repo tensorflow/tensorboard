@@ -79,6 +79,17 @@ class CorePluginTest(tf.test.TestCase):
         self.logdir_based_server, '/data/environment')
     self.assertEqual(parsed_object['data_location'], self.logdir)
 
+  def testEnvironmentForModeForDbServer(self):
+    """Tests environment route that returns the mode for db based server."""
+    parsed_object = self._get_json(self.db_based_server, '/data/environment')
+    self.assertEqual(parsed_object['mode'], 'db')
+
+  def testEnvironmentForModeForLogServer(self):
+    """Tests environment route that returns the mode for logdir based server."""
+    parsed_object = self._get_json(
+        self.logdir_based_server, '/data/environment')
+    self.assertEqual(parsed_object['mode'], 'logdir')
+
   def testEnvironmentForWindowTitle(self):
     """Test that the environment route correctly returns the window title."""
     parsed_object_db = self._get_json(
@@ -101,6 +112,48 @@ class CorePluginTest(tf.test.TestCase):
     self.assertEqual(run_json, ['run1'])
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
+
+  def testExperiments(self):
+    """Test the format of the /data/experiments endpoint."""
+    self._add_run('run1', experiment_name = 'exp1')
+    self._add_run('run2', experiment_name = 'exp1')
+    self._add_run('run3', experiment_name = 'exp2')
+
+    [exp1, exp2] = self._get_json(self.db_based_server, '/data/experiments')
+    self.assertEqual(exp1.get('name'), 'exp1')
+    self.assertEqual(exp2.get('name'), 'exp2')
+
+    exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
+    self.assertEqual(exp_json, [])
+
+  def testExperimentRuns(self):
+    """Test the format of the /data/experiment_runs endpoint."""
+    self._add_run('run1', experiment_name = 'exp1')
+    self._add_run('run2', experiment_name = 'exp1')
+    self._add_run('run3', experiment_name = 'exp2')
+
+    [exp1, exp2] = self._get_json(self.db_based_server, '/data/experiments')
+
+    exp1_runs = self._get_json(self.db_based_server,
+        '/data/experiment_runs?experiment=%s' % exp1.get('id'))
+    self.assertEqual(len(exp1_runs), 2);
+    self.assertEqual(exp1_runs[0].get('name'), 'run1');
+    self.assertEqual(exp1_runs[1].get('name'), 'run2');
+    self.assertEqual(len(exp1_runs[0].get('tags')), 1);
+    self.assertEqual(exp1_runs[0].get('tags')[0].get('name'), 'mytag');
+    self.assertEqual(len(exp1_runs[1].get('tags')), 1);
+    self.assertEqual(exp1_runs[1].get('tags')[0].get('name'), 'mytag');
+
+    exp2_runs = self._get_json(self.db_based_server,
+        '/data/experiment_runs?experiment=%s' % exp2.get('id'))
+    self.assertEqual(len(exp2_runs), 1);
+    self.assertEqual(exp2_runs[0].get('name'), 'run3');
+
+    # TODO(stephanwlee): Write test on runs that do not have any tag.
+
+    exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
+    self.assertEqual(exp_json, [])
+
 
   def testRunsAppendOnly(self):
     """Test that new runs appear after old ones in /data/runs."""
@@ -211,8 +264,8 @@ class CorePluginTest(tf.test.TestCase):
     app = application.TensorBoardWSGI([self.db_based_plugin])
     self.db_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
-  def _add_run(self, run_name):
-    self._generate_test_data(run_name)
+  def _add_run(self, run_name, experiment_name='experiment'):
+    self._generate_test_data(run_name, experiment_name)
     self.multiplexer.AddRunsFromDirectory(self.logdir)
     self.multiplexer.Reload()
 
@@ -226,7 +279,7 @@ class CorePluginTest(tf.test.TestCase):
                           'application/json')
     return json.loads(response.get_data().decode('utf-8'))
 
-  def _generate_test_data(self, run_name):
+  def _generate_test_data(self, run_name, experiment_name):
     """Generates the test data directory.
 
     The test data has a single run of the given name, containing:
@@ -260,13 +313,18 @@ class CorePluginTest(tf.test.TestCase):
     # Write data for the run to the database.
     # TODO(nickfelt): Figure out why reseting the graph is necessary.
     tf.reset_default_graph()
-    with tf.Session():
-      with tf.contrib.summary.create_db_writer(
-          db_uri=self.db_path,
-          experiment_name='experiment',
-          run_name=run_name,
-          user_name='user').as_default():
-        tf.contrib.summary.initialize(graph_def)
+    db_writer = tf.contrib.summary.create_db_writer(
+        db_uri=self.db_path,
+        experiment_name=experiment_name,
+        run_name=run_name,
+        user_name='user')
+    with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
+      tf.contrib.summary.scalar('mytag', 1)
+
+    with tf.Session() as sess:
+      sess.run(tf.global_variables_initializer())
+      sess.run(tf.contrib.summary.summary_writer_initializer_op())
+      sess.run(tf.contrib.summary.all_summary_ops())
 
 
 class CorePluginUsingMetagraphOnlyTest(CorePluginTest):

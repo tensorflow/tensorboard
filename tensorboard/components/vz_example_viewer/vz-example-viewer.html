@@ -1,0 +1,724 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+
+<dom-module id='vz-example-viewer'>
+  <template>
+    <style id="linter-paper-button-style">
+      /**
+       * This style preserves the styling previous to
+       * https://github.com/PolymerElements/paper-button/pull/115
+       * This change can break the layout of paper-button content.
+       * Remove this style to apply the change, more details at b/70528356.
+       */
+      paper-button {
+        display: inline-block;
+        text-align: center;
+        font-family: inherit;
+      }
+    </style>
+    <style>
+      :host {
+        display: flex;
+        position: relative;
+      }
+
+      .seq-feat {
+        margin-left: 16px;
+      }
+
+      .value-list {
+        width:100%;
+      }
+
+      .slider-holder {
+        display: flex;
+      }
+
+      .slider-label {
+        margin-right: 10px;
+        margin-top: 16px;
+      }
+
+      #saliencyLegend {
+        width: 300px;
+        height: 50px;
+        margin-left: 8px;
+        margin-right: 8px;
+      }
+
+      .saliency-controls-holder {
+        display: block;
+        padding: 8px;
+        width: fit-content;
+      }
+
+      .hide-saliency-controls {
+        display: none;
+      }
+
+      .outer {
+        width: 100%;
+        overflow: auto;
+        margin: 5px;
+        border-top: 1px solid lightgrey;
+      }
+
+      .image {
+        /* <img> elements are used to load to a canvas so they aren't displayed. */
+        display: none;
+      }
+
+      .flex-controls {
+        display: flex;
+        flex-wrap: wrap;
+        overflow: auto;
+      }
+
+      .value-pills-holder {
+        flex-grow: 1;
+      }
+
+      .value-pill {
+        text-align: left;
+        border-radius: 18px;
+        margin: 0 8px 8px 0;
+        text-overflow: ellipsis;
+        padding: 0 8px 4px;
+        border: 1px solid lightgray;
+        background: #e8eaed;
+      }
+
+      .value-pill:hover {
+        border: 1px solid rgba(224,145,31,0.8);
+      }
+
+      .value-pill:focus {
+        background: white;
+        border: 1px solid rgba(224,145,31,0.8);
+        outline: none;
+      }
+
+      .value-compare {
+        text-align: left;
+        margin: 0 8px 8px 0;
+        text-overflow: ellipsis;
+        padding: 0 8px 4px;
+        border: none;
+      }
+
+      .value-different {
+        color: #e17500;
+      }
+
+      .value-same {
+        color: #1b4ca6;
+      }
+
+      input[type=number]::-webkit-inner-spin-button,
+      input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .value-pill-stacked {
+        width: 100%;
+        margin: 4px 4px 4px 0;
+      }
+
+      .value-pill-grid {
+        width: 120px;
+        margin: 4px 8px 4px 0;
+      }
+
+      .feature-name {
+        display: flex;
+        padding-left: 5px;
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
+        border-bottom: 1px solid lightgrey;
+        justify-content: space-between;
+      }
+
+      .feature-name-text {
+        margin-top: 3px;
+        width: 300px;
+        max-width: 300px;
+        min-width: 300px;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .feature-name-header-text {
+        width: 300px;
+        max-width: 300px;
+        min-width: 300px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        color: grey;
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      .feature-name.feature-name-header {
+        padding: 4px 0 4px 5px;
+      }
+
+      .slider {
+        --paper-slider-input: {
+          width: 100px
+        }
+      }
+
+      .hide-controls {
+        display: none;
+      }
+
+      .indent {
+        margin-left: 16px;
+      }
+
+      .scale-label {
+        margin-top: 10px;
+        margin-right: 10px;
+      }
+
+      .windowing-label {
+        width: 110px;
+      }
+
+      .control-toggle-button {
+        float: left;
+        max-height: 20px;
+        max-width: 20px;
+        padding: 0;
+      }
+
+      .expand-button-holder {
+        margin-bottom: 10px;
+      }
+
+      .delete-value-button {
+        position: absolute;
+        background: #DA7421;
+        color: white;
+        border-radius: 10px;
+        max-width: 20px;
+        max-height: 20px;
+        padding: 0;
+        margin-top: 2px;
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 200ms;
+      }
+
+      .delete-value-button.delete-value-button-hidden {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 200ms, visibility 200ms;
+      }
+
+      .delete-feature-button {
+        max-height: 15px;
+        max-width: 15px;
+        padding: 0;
+        margin-left: 5px;
+        margin-top: 1px;
+      }
+
+      .add-value-button {
+        margin-top: 2px;
+        max-height: 20px;
+        max-width: 20px;
+        min-height: 20px;
+        min-width: 20px;
+        padding: 0;
+      }
+
+      .add-feature-button {
+        margin-left: 0;
+        margin-bottom: 10px;
+      }
+
+      .upload-image-button {
+        margin: 0 0 0 5px;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        color: white;
+      }
+
+      .imagecard {
+        margin: 5px 2px;
+      }
+
+      .image-scale-button {
+        margin-bottom: 5px;
+      }
+
+      .saliency-legend-label {
+        margin-bottom: 5px;
+      }
+
+      .feature-dialog {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .feature-dialog-button {
+        text-transform: none;
+        text-align: left;
+      }
+
+      .image-bottom-bar {
+        width: 100%;
+        background: gray;
+      }
+
+      .image-upload-input {
+        display: none;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .space-for-more-button {
+        width: 20px;
+      }
+
+      .value-header-text {
+        min-width: 130px;
+        width: 130px;
+        color: grey;
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      paper-dialog {
+        border-radius: 10px;
+      }
+
+      .control-button {
+        background-color: white;
+        border: 1px solid lightgray;
+        color: var(--tb-orange-dark);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 12px;
+        text-transform: none;
+        margin: 5px;
+      }
+
+      .control-button[disabled] {
+        color: lightgray;
+      }
+
+      .box {
+        width: 22px;
+        height: 12px;
+        margin: 2px 0 0 5px;
+      }
+
+      .yellow {
+        background: rgb(250, 212, 17);
+        border: 2px solid black;
+      }
+
+      .green {
+        background: rgb(29, 107, 29);
+        border: 2px solid #44FF44;
+      }
+    </style>
+    <div class="outer">
+      <template is="dom-if" if="[[showSearchBox]]">
+        <paper-input value="{{featureSearchValue}}" label="Search" class="filter-input" no-label-float>
+          <iron-icon icon="icons:search" prefix></iron-icon>
+        </paper-input>
+      </template>
+      <div class="feature-name bold feature-name-header">
+        <div class="feature-name-header-text">Feature name</div>
+        <div class="value-pills-holder flex-controls value-header-text">
+          <div>Selected datapoint</div>
+          <div class="box yellow"></div>
+        </div>
+        <template is="dom-if" if="[[compareMode]]">
+          <div class="value-pills-holder flex-controls value-header-text">
+            <div>[[compareTitle]]</div>
+            <div class="box green"></div>
+          </div>
+        </template>
+        <div class="space-for-more-button"></div>
+      </div>
+      <template is="dom-repeat" items="[[filteredFeaturesList]]" as="feat">
+        <template is="dom-if" if="[[isImage(feat.name)]]">
+          <div class="feature-name">
+            <div class="feature-name-text">[[feat.name]]</div>
+            <div class="value-pills-holder">
+              <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
+                <img class="image" src="[[getImageSrc(feat.name)]]"
+                      id="[[getImageId(feat.name)]]"></img>
+                <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
+                <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+                  <div>Image windowing (contrast)</div>
+                  <div class="slider-holder indent">
+                    <div class="slider-label windowing-label">Window center:</div>
+                    <paper-slider class="slider" editable=true  max="255"
+                                  immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                    </paper-slider>
+                  </div>
+                  <div class="slider-holder indent">
+                    <div class="slider-label windowing-label">Window width:</div>
+                    <paper-slider class="slider" editable=true  max="512" min="1"
+                                  immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                    </paper-slider>
+                  </div>
+                  <div class="flex-controls">
+                    <div class="scale-label">Image scale percentage:</div>
+                    <paper-input no-label-float type="number" min="10" max="500"
+                                  value="{{imageScalePercentage}}">
+                    </paper-input>
+                    <paper-button class="control-button" on-click="updateImages" class="image-scale-button">
+                      set
+                    </paper-button>
+                  </div>
+                </template>
+                <div class="image-bottom-bar">
+                  <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
+                      icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]" title="Upload image">
+                  </paper-icon-button>
+                  <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
+                      data-feature="[[feat.name]]"
+                      data-index="[[index]]">
+                  </paper-input>
+                </div>
+              </paper-card>
+            </div>
+            <template is="dom-if" if="[[compareMode]]">
+              <div class="value-pills-holder">
+                <paper-card id="[[getCompareImageCardId(feat.name)]]" class="imagecard">
+                  <img class="image" src="[[getCompareImageSrc(feat.name)]]"
+                        id="[[getCompareImageId(feat.name)]]"></img>
+                  <canvas id="[[getCompareCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
+                  <div class="image-bottom-bar">
+                  </div>
+                </paper-card>
+              </div>
+            </template>
+            <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
+                              on-click="featureMoreClicked"
+                              data-feature="[[feat.name]]"></paper-icon-button>
+            <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
+                          horizontal-align="right" vertical-align="bottom">
+              <div class="feature-dialog">
+                <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
+                  Delete feature
+                </paper-button>
+              </div>
+            </paper-dialog>
+          </div>
+        </template>
+        <template is="dom-if" if="[[!isImage(feat.name)]]">
+          <div class="feature-name">
+            <div class="feature-name-text">[[feat.name]]</div>
+            <div class="flex-controls value-pills-holder">
+              <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
+                <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
+                  <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                        readonly$="[[readonly]]"
+                        on-input="onValueChanged"
+                        on-focus="onInputFocus"
+                        on-blur="onInputBlur"
+                        data-feature="[[feat.name]]"
+                        data-index="[[index]]"
+                        type="[[getInputType(feat.name)]]"
+                        value="[[value]]">
+                  </input>
+                </template>
+              </template>
+              <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
+                <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                  readonly$="[[readonly]]"
+                  on-input="onValueChanged"
+                  on-focus="onInputFocus"
+                  on-blur="onInputBlur"
+                  data-feature="[[feat.name]]"
+                  data-index="[[zeroIndex]]"
+                  type="[[getInputType(feat.name)]]"
+                  value="[[getFirstFeatureValue(feat.name)]]">
+                </input>
+                <template is="dom-if" if="[[featureHasMultipleValues(feat.name)]]">
+                  <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                    ...
+                  </paper-button>
+                </template>
+              </template>
+            </div>
+            <template is="dom-if" if="[[compareMode]]">
+              <div class="flex-controls value-pills-holder">
+                <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
+                  <template is="dom-repeat" items="[[getCompareFeatureValues(feat.name)]]" as="value">
+                    <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
+                          readonly
+                          type="[[getInputType(feat.name)]]"
+                          value="[[value]]">
+                    </input>
+                  </template>
+                </template>
+                <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
+                  <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
+                    readonly
+                    type="[[getInputType(feat.name)]]"
+                    value="[[getFirstCompareFeatureValue(feat.name)]]">
+                  </input>
+                  <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
+                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getCompareInputClass(expandPillClass, displayMode)]]">
+                      ...
+                    </paper-button>
+                  </template>
+                </template>
+              </div>
+            </template>
+
+            <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
+                              on-click="featureMoreClicked"
+                              data-feature="[[feat.name]]"></paper-icon-button>
+            <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
+                          horizontal-align="right" vertical-align="bottom">
+              <div class="feature-dialog">
+                <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
+                  Delete feature
+                </paper-button>
+                <paper-button data-feature="[[feat.name]]" on-click="addValue" class="feature-dialog-button">
+                  Add feature value
+                </paper-button>
+              </div>
+            </paper-dialog>
+          </div>
+        </template>
+      </template>
+      <template is="dom-if" if="[[isSeqExample(maxSeqNumber)]]">
+        <div class="slider-holder">
+          <div class="slider-label">Sequence Number:</div>
+          <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
+          </paper-slider>
+        </div>
+        <template is="dom-repeat" items="[[filteredSeqFeaturesList]]" as="seqfeat">
+          <div class="seqfeat">
+            <template is="dom-if" if="[[isImage(seqfeat.name)]]">
+              <div class="feature-name">
+                <div class="feature-name-text">[[seqfeat.name]]</div>
+                <div class="value-pills-holder">
+                  <paper-card id="[[getImageCardId(seqfeat.name)]]" class="imagecard">
+                    <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                        id="[[getImageId(seqfeat.name)]]"></img>
+                    <canvas id="[[getCanvasId(seqfeat.name)]]"
+                        data-feature="[[seqfeat.name]]"
+                        data-seq-num="[[seqNumber]]"></canvas>
+                    <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+                      <div class="image-controls">
+                        <div>Image windowing (contrast)</div>
+                        <div class="slider-holder indent">
+                          <div class="slider-label windowing-label">Window center:</div>
+                          <paper-slider class="slider" editable=true  max="255"
+                                        immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                          </paper-slider>
+                        </div>
+                        <div class="slider-holder indent">
+                          <div class="slider-label windowing-label">Window width:</div>
+                          <paper-slider class="slider" editable=true  max="512" min="1"
+                                        immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                          </paper-slider>
+                        </div>
+                        <div class="flex-controls">
+                          <div class="scale-label">Image scale percentage:</div>
+                          <paper-input no-label-float type="number" min="10" max="500"
+                                        value="{{imageScalePercentage}}">
+                          </paper-input>
+                          <paper-button class="control-button" on-click="updateImages" class="image-scale-button">
+                            set
+                          </paper-button>
+                        </div>
+                      </div>
+                    </template>
+                    <div class="image-bottom-bar">
+                      <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
+                          icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]" title="Upload image">
+                      </paper-icon-button>
+                      <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
+                          data-feature="[[seqfeat.name]]"
+                          data-index="[[index]]"
+                          data-seq-num="[[seqNumber]]">
+                      </paper-input>
+                    </div>
+                  </paper-card>
+                </div>
+                <template is="dom-if" if="[[compareMode]]">
+                  <div class="value-pills-holder">
+                    <paper-card id="[[getCompareImageCardId(seqfeat.name)]]" class="imagecard">
+                      <img class="image" src="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
+                          id="[[getCompareImageId(seqfeat.name)]]"></img>
+                      <canvas id="[[getCompareCanvasId(seqfeat.name)]]"
+                          data-feature="[[seqfeat.name]]"
+                          data-seq-num="[[seqNumber]]"></canvas>
+                      <div class="image-bottom-bar">
+                      </div>
+                    </paper-card>
+                  </div>
+                </template>
+                <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
+                <paper-dialog>
+                  <paper-button data-feature="[[seqfeat.name]]"
+                                on-click="deleteFeature">
+                    Delete feature
+                  </paper-button>
+                </paper-dialog>
+              </div>
+            </template>
+            <template is="dom-if" if="[[!isImage(seqfeat.name)]]">
+              <div class="feature-name">
+                <div class="feature-name-text">[[seqfeat.name]]</div>
+                <div class="flex-controls value-pills-holder">
+                  <template is="dom-if" if="[[isExpanded(seqfeat.name, expandAllFeatures)]]">
+                    <template is="dom-repeat"
+                              items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                              as="seqvalue">
+                      <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                          readonly$="[[readonly]]"
+                          on-input="onValueChanged"
+                          on-focus="onInputFocus"
+                          on-blur="onInputBlur"
+                          data-feature="[[seqfeat.name]]"
+                          data-index="[[index]]"
+                          data-seq-num="[[seqNumber]]"
+                          type="[[getInputType(seqfeat.name)]]"
+                          value="[[seqvalue]]">
+                      </input>
+                    </template>
+                  </template>
+                  <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
+                    <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                      readonly$="[[readonly]]"
+                      on-input="onValueChanged"
+                      on-focus="onInputFocus"
+                      on-blur="onInputBlur"
+                      data-feature="[[seqfeat.name]]"
+                      data-index="[[zeroIndex]]"
+                      data-seq-num="[[seqNumber]]"
+                      type="[[getInputType(seqfeat.name)]]"
+                      value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]">
+                    </input>
+                    <template is="dom-if" if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
+                      <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                        ...
+                      </paper-button>
+                    </template>
+                  </template>
+                </div>
+                <template is="dom-if" if="[[compareMode]]">
+                  <div class="flex-controls value-pills-holder">
+                    <template is="dom-if" if="[[isExpanded(seqfeat.name, expandAllFeatures)]]">
+                      <template is="dom-repeat"
+                                items="[[getCompareSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                                as="seqvalue">
+                        <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
+                            readonly
+                            type="[[getInputType(seqfeat.name)]]"
+                            value="[[seqvalue]]">
+                        </input>
+                      </template>
+                    </template>
+                    <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
+                      <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
+                        readonly
+                        type="[[getInputType(seqfeat.name)]]"
+                        value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
+                      </input>
+                      <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
+                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getSeqCompareInputClass(expandPillClass, displayMode, seqNumber)]]">
+                          ...
+                        </paper-button>
+                      </template>
+                    </template>
+                  </div>
+                </template>
+                <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
+                <paper-dialog>
+                  <paper-button data-feature="[[seqfeat.name]]"
+                                on-click="deleteFeature">
+                    Delete feature
+                  </paper-button>
+                  <paper-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]" on-click="addValue" class="feature-dialog-button">
+                    Add feature value
+                  </paper-button>
+                </paper-dialog>
+              </div>
+            </template>
+          </div>
+        </template>
+      </template>
+      <paper-icon-button on-click="openAddFeatureDialog" icon="add" title="Add feature"
+                    class$="[[getAddValueButtonClass(readonly)]]">
+      </paper-icon button>
+      <paper-card class$="[[getSaliencyControlsHolderClass(saliency)]]">
+        <div class="saliency-legend-label">Saliency legend</div>
+        <div class="flex-controls">
+          <svg id="saliencyLegend"></svg>
+          <paper-checkbox id="salCheckbox" checked on-change="showSalCheckboxChange">
+            Show saliency
+          </paper-checkbox>
+        </div>
+        <div class="flex-controls">
+          <div class="slider-label">Saliency cutoff %</div>
+          <paper-slider class="slider" editable=true immediate-value="{{saliencyCutoff}}"
+                        value="[[saliencyCutoff]]">
+          </paper-slider>
+        </div>
+      </paper-card>
+    </div>
+    <paper-icon-button id="deletevalue" icon="delete" class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"
+        data-feature="[[focusedFeatureName]]" data-index="[[focusedFeatureValueIndex]]"
+        data-seq-num="[[focusedSeqNumber]]" on-click="deleteValue" title="Delete value">
+    </paper-icon-button>
+    <paper-dialog id="addFeatureDialog">
+      <h2>Add Feature</h2>
+      <paper-input label="Feature name" value="{{newFeatureName}}"></paper-input>
+      <paper-radio-group selected="{{newFeatureType}}">
+        <paper-radio-button name="int">Int</paper-radio-button>
+        <paper-radio-button name="float">Float</paper-radio-button>
+        <paper-radio-button name="bytes">Bytes</paper-radio-button>
+      </paper-radio-group>
+      <paper-button dialog-dismiss class="control-button" on-click="addFeature"
+                    disabled="[[!shouldEnableAddFeature(newFeatureName)]]">
+        Create
+      </paper-button>
+    </paper-dialog>
+  </template>
+  <script src="vz-example-viewer.js"></script>
+</dom-module>

@@ -44,7 +44,7 @@ py_library(
     deps = [
         ":health_pill_calc",
         "//tensorboard:util",
-        "//tensorboard:expect_numpy_installed"
+        "//tensorboard:expect_numpy_installed",
     ],
 )
 
@@ -58,6 +58,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/beholder:im_util",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -193,7 +194,6 @@ py_test(
     ],
 )
 
-
 py_library(
     name = "debugger_server_lib",
     srcs = ["debugger_server_lib.py"],
@@ -316,7 +316,7 @@ py_library(
     deps = [
         ":debugger_plugin",
         ":interactive_debugger_plugin",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins:base_plugin",
         "@org_pythonhosted_six",
     ],
 )

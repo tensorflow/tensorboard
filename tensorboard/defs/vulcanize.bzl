@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tensorboard/defs:defs.bzl", "legacy_js")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "unfurl", "long_path")
-load("//tensorboard/defs:web.bzl", "web_aspect")
 
 def _tensorboard_html_binary(ctx):
   deps = unfurl(ctx.attr.deps, provider="webfiles")
-  manifests = depset(order="topological")
+  manifests = depset(order="postorder")
   files = depset()
   webpaths = depset()
   for dep in deps:
@@ -27,7 +26,7 @@ def _tensorboard_html_binary(ctx):
     files += dep.data_runfiles.files
   webpaths += [ctx.attr.output_path]
   closure_js_library=collect_js(
-      ctx, unfurl(ctx.attr.deps, provider="closure_js_library"))
+      unfurl(ctx.attr.deps, provider="closure_js_library"))
 
   # vulcanize
   jslibs = depset(ctx.files._jslibs) + closure_js_library.srcs
@@ -108,13 +107,8 @@ tensorboard_html_binary = rule(
         "input_path": attr.string(mandatory=True),
         "output_path": attr.string(mandatory=True),
         "compile": attr.bool(),
-        "data": attr.label_list(cfg="data", allow_files=True),
-        "deps": attr.label_list(
-            aspects=[
-                web_aspect,
-                legacy_js,
-            ],
-            mandatory=True),
+        "data": attr.label_list(allow_files=True),
+        "deps": attr.label_list(aspects=[closure_js_aspect], mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),
         "path_regexs_for_noinline": attr.label(allow_single_file=True),
         "_jslibs": attr.label(

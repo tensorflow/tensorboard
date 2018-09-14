@@ -23,6 +23,10 @@ def tensorboard_fonts_workspace():
       name = "com_google_fonts_roboto",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
+          "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/google/roboto/ba03b84b90b50afd99f9688059447bc545e5c0e1/LICENSE",
+              "https://raw.githubusercontent.com/google/roboto/ba03b84b90b50afd99f9688059447bc545e5c0e1/LICENSE",
+          ],
           # Roboto (cyrillic)
           "41720926981ffb6dc229f06fc0bbf0f43e45ba032d126726ebee481c2a6559e2": [
               "https://mirror.bazel.build/fonts.gstatic.com/s/roboto/v18/uYECMKoHcO9x1wdmbyHIm3-_kf6ByYO6CLYdB4HQE-Y.woff2",
@@ -377,6 +381,10 @@ def tensorboard_fonts_workspace():
       generated_rule_name = "files",
       extra_build_file_content = "\n".join([
           'load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")',
+          '',
+          'licenses(["notice"])  # Apache 2.0',
+          '',
+          'exports_files(["LICENSE"])  # Apache 2.0',
           '',
           'web_library(',
           '    name = "com_google_fonts_roboto",',

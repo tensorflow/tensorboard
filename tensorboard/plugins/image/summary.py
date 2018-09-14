@@ -42,9 +42,9 @@ def op(name,
 
   Arguments:
     name: A unique name for the generated summary node.
-    images: A `Tensor` representing pixel data with shape `[k, w, h, c]`,
-      where `k` is the number of images, `w` and `h` are the width and
-      height of the images, and `c` is the number of channels, which
+    images: A `Tensor` representing pixel data with shape `[k, h, w, c]`,
+      where `k` is the number of images, `h` and `w` are the height and
+      width of the images, and `c` is the number of channels, which
       should be 1, 3, or 4. Any of the dimensions may be statically
       unknown (i.e., `None`).
     max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
@@ -75,8 +75,8 @@ def op(name,
                                dtype=tf.string,
                                name='encode_each_image')
     image_shape = tf.shape(images)
-    dimensions = tf.stack([tf.as_string(image_shape[1], name='width'),
-                           tf.as_string(image_shape[2], name='height')],
+    dimensions = tf.stack([tf.as_string(image_shape[2], name='width'),
+                           tf.as_string(image_shape[1], name='height')],
                           name='dimensions')
     tensor = tf.concat([dimensions, encoded_images], axis=0)
     return tf.summary.tensor_summary(name='image_summary',
@@ -96,7 +96,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
     name: A unique name for the generated summary, including any desired
       name scopes.
     images: An `np.array` representing pixel data with shape
-      `[k, w, h, c]`, where `k` is the number of images, `w` and `h` are
+      `[k, h, w, c]`, where `k` is the number of images, `w` and `h` are
       the width and height of the images, and `c` is the number of
       channels, which should be 1, 3, or 4.
     max_outputs: Optional `int`. At most this many images will be
@@ -117,7 +117,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
 
   limited_images = images[:max_outputs]
   encoded_images = [util.encode_png(image) for image in limited_images]
-  (width, height) = (images.shape[1], images.shape[2])
+  (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
   tensor = tf.make_tensor_proto(content, dtype=tf.string)
 

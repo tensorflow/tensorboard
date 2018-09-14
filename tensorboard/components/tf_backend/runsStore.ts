@@ -14,55 +14,29 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
-let runs: string[] = [];
+export class RunsStore extends BaseStore {
+  private _runs: string[] = [];
 
-export type Listener = () => void;
-const listeners = new Set<Listener>();
+  load() {
+    const url = getRouter().runs();
+    return this.requestManager.request(url).then(newRuns => {
+      if (!_.isEqual(this._runs, newRuns)) {
+        this._runs = newRuns;
+        this.emitChange();
+      }
+    });
+  }
 
-const requestManager = new RequestManager(1 /* simultaneous request */);
-
-/**
- * Register a listener (nullary function) to be called when new runs are
- * available.
- */
-export function addListener(listener: Listener): void {
-  listeners.add(listener);
+  /**
+   * Get the current list of runs. If no data is available, this will be
+   * an empty array (i.e., there is no distinction between "no runs" and
+   * "no runs yet").
+   */
+  getRuns(): string[] {
+    return this._runs.slice();
+  }
 }
 
-/**
- * Remove a listener registered with `addListener`.
- */
-export function removeListener(listener: Listener): void {
-  listeners.delete(listener);
-}
-
-/**
- * Asynchronously load or reload the runs data. Listeners will be
- * invoked if this causes the runs data to change.
- *
- * @see addListener
- * @return {Promise<void>} a promise that resolves when the runs have
- * loaded
- */
-export function fetchRuns(): Promise<void> {
-  const url = getRouter().runs();
-  return requestManager.request(url).then(newRuns => {
-    if (!_.isEqual(runs, newRuns)) {
-      runs = newRuns;
-      listeners.forEach(listener => {
-        listener();
-      });
-    }
-  });
-}
-
-/**
- * Get the current list of runs. If no data is available, this will be
- * an empty array (i.e., there is no distinction between "no runs" and
- * "no runs yet").
- */
-export function getRuns(): string[] {
-  return runs.slice();
-}
+export const runsStore = new RunsStore();
 
 }  // namespace tf_backend

@@ -53,6 +53,20 @@ export interface Dashboard {
    * reload() method to be called every few seconds will be disabled.
    */
   isReloadDisabled: boolean;
+
+  /**
+   * Whether or not plugin DOM should be removed when navigated away.
+   *
+   * This allows the Polymer 'detached' event to happen.
+   */
+  shouldRemoveDom: boolean;
+
+  /**
+   * Whether to show a system data selector above the plugin. The data selector
+   * will allow user to select experiments, runs, and tags. The selection is
+   * injected as `dataSelection` property to the plugin.
+   */
+  useDataSelector: boolean;
 }
 
 /** Typedef mapping plugin names to Dashboard registrations. */
