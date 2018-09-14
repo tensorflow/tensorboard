@@ -96,6 +96,7 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     flags: An argparse.Namespace containing TensorBoard CLI flags.
     plugin_loaders: A list of TBLoader instances.
     assets_zip_provider: See TBContext documentation for more information.
+
   Returns:
     The new TensorBoard WSGI application.
 
