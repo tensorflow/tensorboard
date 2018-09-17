@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_usage;
+(function (memory_viewer_usage) {
     /**
      * Provides calculation of memory usage from xla buffer assignment.
      * @final
@@ -59,7 +59,8 @@ var memory_viewer;
                 for (var _b = 0, _c = comp.instructions; _b < _c.length; _b++) {
                     var inst = _c[_b];
                     if (inst.name) {
-                        this.nameToHlo_[inst.name] = new memory_viewer.HloInstruction(inst);
+                        this.nameToHlo_[inst.name] =
+                            new memory_viewer_xla.HloInstruction(inst);
                     }
                 }
             }
@@ -83,7 +84,7 @@ var memory_viewer;
         MemoryUsage.prototype.initBuffers_ = function (bufferAssignment) {
             for (var _i = 0, _a = bufferAssignment.logicalBuffers; _i < _a.length; _i++) {
                 var jsonBuffer = _a[_i];
-                var buffer = new memory_viewer.LogicalBuffer(jsonBuffer);
+                var buffer = new memory_viewer_xla.LogicalBuffer(jsonBuffer);
                 this.buffers_.push(buffer);
                 this.idToBuffer_[buffer.id] = buffer;
                 this.unSeenLogicalBuffers_.add(buffer.id);
@@ -96,7 +97,7 @@ var memory_viewer;
         MemoryUsage.prototype.initAllocations_ = function (bufferAssignment) {
             for (var _i = 0, _a = bufferAssignment.bufferAllocations; _i < _a.length; _i++) {
                 var jsonAlloc = _a[_i];
-                var alloc = new memory_viewer.BufferAllocation(jsonAlloc);
+                var alloc = new memory_viewer_xla.BufferAllocation(jsonAlloc);
                 for (var _b = 0, _c = jsonAlloc.assigned; _b < _c.length; _b++) {
                     var assigned = _c[_b];
                     if (assigned.logicalBufferId) {
@@ -110,14 +111,14 @@ var memory_viewer;
          * visualization.
          */
         MemoryUsage.prototype.newHeapObject_ = function (color, buffer, shape, inst, groupName) {
-            var unpaddedSize = shape ? memory_viewer.bytesToMiB(shape.unpaddedHeapSizeBytes()) : 0;
+            var unpaddedSize = shape ? memory_viewer_utils.bytesToMiB(shape.unpaddedHeapSizeBytes()) : 0;
             var dict = {
                 'instructionName': buffer.instructionName,
                 'logicalBufferId': buffer.id,
                 'unpaddedSizeMiB': unpaddedSize,
                 'tfOpName': inst.tfOpName,
                 'opcode': inst.opcode,
-                'sizeMiB': memory_viewer.bytesToMiB(buffer.size),
+                'sizeMiB': memory_viewer_utils.bytesToMiB(buffer.size),
                 'color': color,
                 'shape': shape ? shape.humanStringWithLayout() : '',
                 'groupName': groupName,
@@ -162,7 +163,7 @@ var memory_viewer;
                 var small = 'small (<' + this.smallBufferSize / 1024 + ' KiB)';
                 this.maxHeap.push({
                     'instructionName': small,
-                    'sizeMiB': memory_viewer.bytesToMiB(this.rest_),
+                    'sizeMiB': memory_viewer_utils.bytesToMiB(this.rest_),
                     'color': 0,
                     'groupName': small
                 });
@@ -197,8 +198,8 @@ var memory_viewer;
             var unpaddedPeakHeapSizeBytes = 0;
             var peakHeapSizePosition = 0;
             var _loop_1 = function (event_1) {
-                heapSizes.push(memory_viewer.bytesToMiB(heapSizeBytes));
-                unpaddedHeapSizes.push(memory_viewer.bytesToMiB(unpaddedHeapSizeBytes));
+                heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
+                unpaddedHeapSizes.push(memory_viewer_utils.bytesToMiB(unpaddedHeapSizeBytes));
                 var eventId = parseInt(event_1.bufferId, 10);
                 var buffer = this_1.idToBuffer_[eventId];
                 this_1.unSeenLogicalBuffers_.delete(eventId);
@@ -254,14 +255,14 @@ var memory_viewer;
                 var event_1 = _a[_i];
                 _loop_1(event_1);
             }
-            heapSizes.push(memory_viewer.bytesToMiB(heapSizeBytes));
+            heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
             var indefiniteMemoryUsageBytes = this.findIndefiniteMemoryUsage_(this.unSeenLogicalBuffers_);
             this.peakHeapSizeBytes = peakHeapSizeBytes + indefiniteMemoryUsageBytes;
             this.unpaddedPeakHeapSizeBytes =
                 unpaddedPeakHeapSizeBytes + indefiniteMemoryUsageBytes;
             this.peakLogicalBuffers = peakLogicalBuffers;
             this.peakHeapSizePosition = peakHeapSizePosition;
-            var addend = memory_viewer.bytesToMiB(indefiniteMemoryUsageBytes);
+            var addend = memory_viewer_utils.bytesToMiB(indefiniteMemoryUsageBytes);
             this.heapSizes = heapSizes.map(function (item) {
                 return item + addend;
             });
@@ -294,5 +295,5 @@ var memory_viewer;
         };
         return MemoryUsage;
     }());
-    memory_viewer.MemoryUsage = MemoryUsage;
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+    memory_viewer_usage.MemoryUsage = MemoryUsage;
+})(memory_viewer_usage || (memory_viewer_usage = {})); // namespace memory_viewer_usage

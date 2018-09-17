@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_xla;
+(function (memory_viewer_xla) {
     /**
      * A shape describes the number of dimensions in the array, the size of each
      * dimension, and the primitive component type. Tuples are a special case in
@@ -50,12 +50,12 @@ var memory_viewer;
             if (!this.layout || this.layout.format == 'DENSE') {
                 var allocatedElementCount = this.dimensions.reduce(function (count, item) { return count * item; }, 1);
                 byteSize += allocatedElementCount *
-                    memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+                    memory_viewer_utils.byteSizeOfPrimitiveType(this.elementType);
             }
             else if (this.layout.format == 'SPARSE') {
                 var maxElements = parseInt(this.layout.maxSparseElements, 10);
                 byteSize = maxElements *
-                    memory_viewer.byteSizeOfPrimitiveType(this.elementType);
+                    memory_viewer_utils.byteSizeOfPrimitiveType(this.elementType);
                 // Add byte size of sparse indices, assume each indice is int64 type.
                 byteSize += maxElements * this.dimensions.length * INT64_BYTES;
             }
@@ -105,5 +105,5 @@ var memory_viewer;
         };
         return Shape;
     }());
-    memory_viewer.Shape = Shape;
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+    memory_viewer_xla.Shape = Shape;
+})(memory_viewer_xla || (memory_viewer_xla = {})); // namespace memory_viewer_xla

@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_line_chart;
+(function (memory_viewer_line_chart) {
     Polymer({
         is: 'mv-line-chart',
         properties: {
@@ -265,4 +265,4 @@ var memory_viewer;
             this._redraw();
         },
     });
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+})(memory_viewer_line_chart || (memory_viewer_line_chart = {})); // namespace memory_viewer_line_chart

@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_xla;
+(function (memory_viewer_xla) {
     /**
      * HLO logical buffer representation.
      * @final
@@ -38,5 +38,5 @@ var memory_viewer;
         };
         return LogicalBuffer;
     }());
-    memory_viewer.LogicalBuffer = LogicalBuffer;
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+    memory_viewer_xla.LogicalBuffer = LogicalBuffer;
+})(memory_viewer_xla || (memory_viewer_xla = {})); // namespace memory_viewer_xla

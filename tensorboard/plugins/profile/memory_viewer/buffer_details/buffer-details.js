@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_buffer_details;
+(function (memory_viewer_buffer_details) {
     Polymer({
         is: 'tf-mv-bar',
         properties: {
@@ -27,8 +27,8 @@ var memory_viewer;
          * Updates the utilization bar.
          */
         _updateValue: function (value) {
-            var color = memory_viewer.flameColor(value);
-            var length = memory_viewer.percent(value);
+            var color = memory_viewer_utils.flameColor(value);
+            var length = memory_viewer_utils.percent(value);
             this.style.background =
                 "linear-gradient(to right, " + color + " " + length + ", #ccc " + length + ")";
         }
@@ -76,7 +76,7 @@ var memory_viewer;
                 this.padding = (node.sizeMiB - node.unpaddedSizeMiB).toFixed(1);
                 this.utilization = node.unpaddedSizeMiB / node.sizeMiB;
                 this.expansion = (1 / this.utilization).toFixed(1);
-                color = memory_viewer.flameColor(this.utilization, 0.7);
+                color = memory_viewer_utils.flameColor(this.utilization, 0.7);
             }
             this.$.card.updateStyles({ '--paper-card-header': 'background-color:' + color });
             this.$.subheader.style.backgroundColor = color;
@@ -94,4 +94,4 @@ var memory_viewer;
             return '';
         },
     });
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+})(memory_viewer_buffer_details || (memory_viewer_buffer_details = {})); // namespace memory_viewer_buffer_details

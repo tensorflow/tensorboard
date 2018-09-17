@@ -9,15 +9,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_utils;
+(function (memory_viewer_utils) {
     /**
      * Converts from number of bytes to MiB.
      */
     function bytesToMiB(numBytes) {
         return numBytes / 1048576;
     }
-    memory_viewer.bytesToMiB = bytesToMiB;
+    memory_viewer_utils.bytesToMiB = bytesToMiB;
     /**
      * Returns the number of bytes of the primitive type.
      */
@@ -58,7 +58,7 @@ var memory_viewer;
                 return 0;
         }
     }
-    memory_viewer.byteSizeOfPrimitiveType = byteSizeOfPrimitiveType;
+    memory_viewer_utils.byteSizeOfPrimitiveType = byteSizeOfPrimitiveType;
     /**
      * Returns a rgba string.
      * @return An RGBA color.
@@ -91,7 +91,7 @@ var memory_viewer;
             rgba(brightness, 2 * fraction * brightness, 0, opacity) :
             rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
     }
-    memory_viewer.flameColor = flameColor;
+    memory_viewer_utils.flameColor = flameColor;
     /**
      * Returns a percentage string.
      */
@@ -103,5 +103,5 @@ var memory_viewer;
             '100%' :
             fraction < 1E-5 ? '0.00%' : (fraction * 100).toPrecision(2) + '%';
     }
-    memory_viewer.percent = percent;
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+    memory_viewer_utils.percent = percent;
+})(memory_viewer_utils || (memory_viewer_utils = {})); // namespace memory_viewer_utils

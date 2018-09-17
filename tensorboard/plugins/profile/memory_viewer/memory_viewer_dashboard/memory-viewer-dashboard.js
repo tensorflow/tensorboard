@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer;
-(function (memory_viewer) {
+var memory_viewer_dashboard;
+(function (memory_viewer_dashboard) {
     Polymer({
         is: 'memory-viewer-dashboard',
         properties: {
@@ -46,10 +46,10 @@ var memory_viewer;
             if (newData && newData.hloModule && newData.bufferAssignment) {
                 this.hloModule_ = newData.hloModule;
                 this.moduleName_ = this.hloModule_.name ? this.hloModule_.name : '';
-                this.usage = new memory_viewer.MemoryUsage(newData);
-                this.peakHeapSizeMiB_ = memory_viewer.bytesToMiB(this.usage.peakHeapSizeBytes).toFixed(2);
-                this.unpaddedPeakHeapSizeMiB_ = memory_viewer.bytesToMiB(this.usage.unpaddedPeakHeapSizeBytes).toFixed(2);
+                this.usage = new memory_viewer_usage.MemoryUsage(newData);
+                this.peakHeapSizeMiB_ = memory_viewer_utils.bytesToMiB(this.usage.peakHeapSizeBytes).toFixed(2);
+                this.unpaddedPeakHeapSizeMiB_ = memory_viewer_utils.bytesToMiB(this.usage.unpaddedPeakHeapSizeBytes).toFixed(2);
             }
         }
     });
-})(memory_viewer || (memory_viewer = {})); // namespace memory_viewer
+})(memory_viewer_dashboard || (memory_viewer_dashboard = {})); // namespace memory_viewer_dashboard
