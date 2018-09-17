@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_buffer_details {
 
 Polymer({
   is:'tf-mv-bar',
@@ -28,8 +28,8 @@ Polymer({
    * Updates the utilization bar.
    */
   _updateValue:function(value: number) {
-    const color = memory_viewer.flameColor(value);
-    const length = memory_viewer.percent(value);
+    const color = memory_viewer_utils.flameColor(value);
+    const length = memory_viewer_utils.percent(value);
     this.style.background =
         `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
   }
@@ -78,7 +78,7 @@ Polymer({
       this.padding = (node.sizeMiB - node.unpaddedSizeMiB).toFixed(1);
       this.utilization = node.unpaddedSizeMiB / node.sizeMiB;
       this.expansion = (1 / this.utilization).toFixed(1);
-      color = memory_viewer.flameColor(this.utilization, 0.7);
+      color = memory_viewer_utils.flameColor(this.utilization, 0.7);
     }
     this.$.card.updateStyles({'--paper-card-header':'background-color:' + color});
     this.$.subheader.style.backgroundColor = color;
@@ -97,4 +97,4 @@ Polymer({
   },
 });
 
-} // namespace memory_viewer
+} // namespace memory_viewer_buffer_details
