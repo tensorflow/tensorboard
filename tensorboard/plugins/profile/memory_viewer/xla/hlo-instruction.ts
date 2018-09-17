@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer_hlo_instructions {
+namespace memory_viewer_xla {
 
 /**
  * HLO instructions are the IR used by the high-level XLA compiler.
@@ -19,17 +19,17 @@ namespace memory_viewer_hlo_instructions {
 export class HloInstruction {
   name: string;
   opcode: string;
-  shape: memory_viewer_shape.Shape|null;
+  shape: memory_viewer_xla.Shape|null;
   tfOpName: string;
 
   constructor(inst) {
     this.name = inst.name ? inst.name : '';
     this.opcode = inst.opcode ? inst.opcode : '';
-    this.shape = inst.shape ? new memory_viewer_shape.Shape(inst.shape) : null;
+    this.shape = inst.shape ? new memory_viewer_xla.Shape(inst.shape) : null;
     if (inst.metadata) {
       this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
     }
   }
 }
 
-} // namespace memory_viewer_hlo_instructions
+} // namespace memory_viewer_xla

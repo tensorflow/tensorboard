@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer_logical_buffer {
+namespace memory_viewer_xla {
 
 /**
  * HLO logical buffer representation.
@@ -43,4 +43,4 @@ export class LogicalBuffer {
   }
 }
 
-} // namespace memory_viewer_logical_buffer
+} // namespace memory_viewer_xla
