@@ -9,6 +9,7 @@ tf_web_library(
     srcs = [
         "experiment-selector.html",
         "experiment-selector.ts",
+        "storage-utils.html",
         "storage-utils.ts",
         "tf-collapsible-data-selector.html",
         "tf-collapsible-data-selector.ts",

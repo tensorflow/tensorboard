@@ -47,6 +47,8 @@ def run_main():
                                     default.get_assets_zip_provider())
   try:
     from absl import app
+    # Import this to check that app.run() will accept the flags_parser argument.
+    from absl.flags import argparse_flags
     app.run(tensorboard.main, flags_parser=tensorboard.configure)
     raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:

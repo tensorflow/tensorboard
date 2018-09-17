@@ -116,8 +116,10 @@ tf_web_library(
         "//tensorboard/components:trace_viewer_index.html",
     ],
     path = "/",
-    deps = ["@com_google_fonts_roboto"],
-    suppress= ["strictDependencies"],
+    deps = [
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_assets",
+        "@com_google_fonts_roboto",
+    ],
 )
 
 py_library(

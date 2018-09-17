@@ -318,6 +318,7 @@ public final class Vulcanize {
     } else {
       path = me().lookup(Webpath.get(node.attr("src")));
       script = new String(Files.readAllBytes(getWebfile(path)), UTF_8);
+      script = INLINE_SOURCE_MAP_PATTERN.matcher(script).replaceAll("");
     }
     boolean wantsMinify = getAttrTransitive(node, "jscomp-minify").isPresent();
     if (node.attr("src").endsWith(".min.js")

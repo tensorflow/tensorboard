@@ -249,7 +249,7 @@ class BarChart {
 
     // Remove the keys that map to an empty array, and unpack the array.
     // This generates {series0: { x: 'c', y: 3 }}
-    bars = _.pick(bars, val => val.length > 0);
+    bars = (_ as any).pickBy(bars, val => val.length > 0);
     const singleBars = _.mapValues(bars, val => val[0]);
 
     // Rearrange the object for convenience.
