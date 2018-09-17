@@ -52,6 +52,10 @@ To use the tool, only the following information needs to be provided:
 * The model server host and port, served using
   [TensorFlow Serving](https://github.com/tensorflow/serving). The model must
   use the TensorFlow Serving Classification or Regression APIs.
+    * Information on how to create a saved model with the `Estimator` API that
+      will use thse appropriate TensorFlow Serving Classification or Regression
+      APIs can be found in the [saved model documentation](https://www.tensorflow.org/guide/saved_model#using_savedmodel_with_estimators)
+      and in this [helpful tutorial](http://shzhangji.com/blog/2018/05/14/serve-tensorflow-estimator-with-savedmodel/).
     * The What-If Tool queries the served model using the gRPC API, not the
       RESTful API. See the TensorFlow Serving
       [docker documentation](https://www.tensorflow.org/serving/docker) for
