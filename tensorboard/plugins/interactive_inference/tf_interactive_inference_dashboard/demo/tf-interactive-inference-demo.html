@@ -105,7 +105,7 @@
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-              inferences.results = {classification: {classifications: []}};
+            inferences.results ={classificationResult: {classifications: []}};
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
               const idx = +indices[i];
@@ -116,7 +116,7 @@
             const predValues = await res.data();
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
-              inferences.results.classification.classifications[i] =
+              inferences.results.classificationResult.classifications[i] =
                 {classes: [{label: '0', score: predValues[i * PRED_SIZE + 1]},
                            {label: '1', score: predValues[i * PRED_SIZE]}]};
             }
