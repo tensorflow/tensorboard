@@ -237,9 +237,10 @@ def wrap_inference_results(inference_result_proto):
   inference_proto = inference_pb2.InferenceResult()
   if isinstance(inference_result_proto,
                 classification_pb2.ClassificationResponse):
-    inference_proto.classification.CopyFrom(inference_result_proto.result)
+    inference_proto.classification_result.CopyFrom(
+        inference_result_proto.result)
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
-    inference_proto.regression.CopyFrom(inference_result_proto.result)
+    inference_proto.regression_result.CopyFrom(inference_result_proto.result)
   return inference_proto
 
 
