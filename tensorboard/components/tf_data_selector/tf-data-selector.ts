@@ -182,28 +182,20 @@ Polymer({
 
   _computeSelection() {
     if (this._canCompareExperiments) {
-      const enabledExperiments = new Set(this._enabledExperimentIds);
-
-      // Make a copy of the all selections.
-      const enabledSelections = new Map(this._selections);
-
-      // Filter out disabled experiments from the `_selections`.
-      enabledSelections.forEach((_, id) => {
-        if (!enabledExperiments.has(id)) enabledSelections.delete(id);
-      });
-
       const activePluginNames = new Set(this.activePlugins);
-      enabledSelections.forEach((sel, id) => {
-        const selection = sel as Selection;
-        const updatedSelection = Object.assign({}, selection);
-        updatedSelection.runs = selection.runs.map(run => {
-          return Object.assign({}, run, {
-            tags: run.tags.filter(tag => activePluginNames.has(tag.pluginName)),
+      const selections = this._enabledExperimentIds
+          .filter(id => this._selections.has(id))
+          .map(id => this._selections.get(id) as Selection)
+          .map(selection => {
+            const updatedSelection = Object.assign({}, selection);
+            updatedSelection.runs = selection.runs.map(run => {
+              return Object.assign({}, run, {
+                tags: run.tags
+                    .filter(tag => activePluginNames.has(tag.pluginName)),
+              });
+            }).filter(run => run.tags.length);
+            return updatedSelection;
           });
-        }).filter(run => run.tags.length);
-
-        enabledSelections.set(id, updatedSelection);
-      });
 
       // Single selection: one experimentful selection whether it is enabled or
       // not.
@@ -215,7 +207,7 @@ Polymer({
       return {
         type: isSingleSelection ?
             tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
-        selections: Array.from(enabledSelections.values()),
+        selections,
       };
     }
     return {
@@ -226,6 +218,7 @@ Polymer({
 
   _selectionChanged(event) {
     event.stopPropagation();
+    if (!this.isAttached || !event.target.isAttached) return;
     const {runs, tagRegex} = event.detail;
     const experiment = event.target.experiment;
     const expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
