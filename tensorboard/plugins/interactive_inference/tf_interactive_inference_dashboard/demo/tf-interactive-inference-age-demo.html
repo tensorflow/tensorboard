@@ -105,7 +105,7 @@
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-            inferences.results = {regression: {regressions: []}};
+            inferences.results = {regressionResult: {regressions: []}};
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
               const idx = +indices[i];
@@ -117,7 +117,7 @@
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
               const adjustedScore = 2 * this.means['age'] * predValues[i];
-              inferences.results.regression.regressions[i] =
+              inferences.results.regressionResult.regressions[i] =
               {value: adjustedScore};
             }
             this.$.dash.inferences = inferences;

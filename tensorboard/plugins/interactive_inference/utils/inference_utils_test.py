@@ -197,8 +197,9 @@ class InferenceUtilsTest(tf.test.TestCase):
     inference_class.score = 0.7
 
     wrapped = inference_utils.wrap_inference_results(inference_result_proto)
-    self.assertEqual(1, len(wrapped.classification.classifications))
-    self.assertEqual(2, len(wrapped.classification.classifications[0].classes))
+    self.assertEqual(1, len(wrapped.classification_result.classifications))
+    self.assertEqual(
+        2, len(wrapped.classification_result.classifications[0].classes))
 
   def test_wrap_inference_results_regression(self):
     """Test wrapping a regression result."""
@@ -209,7 +210,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     regression.value = 0.55
 
     wrapped = inference_utils.wrap_inference_results(inference_result_proto)
-    self.assertEqual(2, len(wrapped.regression.regressions))
+    self.assertEqual(2, len(wrapped.regression_result.regressions))
 
   @mock.patch.object(inference_utils, 'make_json_formatted_for_single_chart')
   @mock.patch.object(oss_utils, 'call_servo')
