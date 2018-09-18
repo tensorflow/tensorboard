@@ -30,7 +30,6 @@ REQUIRED_PACKAGES = [
     'numpy >= 1.12.0',
     'protobuf >= 3.4.0',
     'six >= 1.10.0',
-    'tensorflow-serving-api >= 1.10',
     'werkzeug >= 0.11.10',
     # python3 specifically requires wheel 0.26
     'wheel; python_version < "3"',
