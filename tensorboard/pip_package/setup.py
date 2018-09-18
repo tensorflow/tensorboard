@@ -23,16 +23,15 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
-    'grpcio >= 1.6.3',
-    'numpy >= 1.12.0',
-    'six >= 1.10.0',
-    'protobuf >= 3.4.0',
-    'werkzeug >= 0.11.10',
-    'markdown >= 2.6.8',
-
     # futures is a backport of the python 3.2+ concurrent.futures module
     'futures >= 3.1.1; python_version < "3"',
-
+    'grpcio >= 1.6.3',
+    'markdown >= 2.6.8',
+    'numpy >= 1.12.0',
+    'protobuf >= 3.4.0',
+    'six >= 1.10.0',
+    'tensorflow-serving-api >= 1.10',
+    'werkzeug >= 0.11.10',
     # python3 specifically requires wheel 0.26
     'wheel; python_version < "3"',
     'wheel >= 0.26; python_version >= "3"',
