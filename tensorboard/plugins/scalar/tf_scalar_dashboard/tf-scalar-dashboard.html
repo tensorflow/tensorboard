@@ -128,7 +128,11 @@ limitations under the License.
             <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           </template>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
+            <tf-category-pane
+              category="[[category]]"
+              opened="[[_getPaneOpened(category)]]"
+              on-opened-changed="_onPaneOpenChanged"
+            >
               <tf-paginated-view
                 items="[[category.items]]"
                 pages="{{category._pages}}"
@@ -225,6 +229,12 @@ limitations under the License.
               {defaultValue: true, useLocalStorage: true}),
           observer: '_ignoreYOutliersObserver',
         },
+
+        _paneOpened: {
+          type: Object,
+          value: () => ({}),
+        },
+
         /** @type {vz_chart_helpers.XType} */
         _xType: {
           type: String,
@@ -266,6 +276,7 @@ limitations under the License.
       ],
       observers: [
         '_updateCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
+        '_updatePaneOpened(_categories.*)',
       ],
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
@@ -277,8 +288,43 @@ limitations under the License.
         return _smoothingWeight > 0;
       },
 
-      _shouldOpen(index) {
-        return index <= 2;
+      _getCategoryKey(category) {
+        return category.metadata.type ==
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS ?
+                'search' : category.name;
+      },
+
+      _updatePaneOpened() {
+        const paneOpen = this._paneOpened;
+        const nextPaneOpen = {};
+
+        // Copy over the relevant values from the old pane state.
+        this._categories
+            .map(this._getCategoryKey)
+            .filter(name => paneOpen[name] != null)
+            .forEach(name => nextPaneOpen[name] = paneOpen[name]);
+
+        if (Object.keys(nextPaneOpen).length == 0) {
+          this._categories.slice(0, 2)
+              .map(this._getCategoryKey)
+              .forEach(name => {
+                nextPaneOpen[name] = nextPaneOpen[name] != null ?
+                    nextPaneOpen[name] : true;
+              });
+        }
+
+        this._paneOpened = nextPaneOpen;
+      },
+
+      _getPaneOpened(category) {
+        return this._paneOpened[this._getCategoryKey(category)];
+      },
+
+      _onPaneOpenChanged(event) {
+        // The event can be triggered without the pane being mounted.
+        if (!this.isAttached || !event.target.isAttached) return;
+        const name = this._getCategoryKey(event.target.category);
+        this._paneOpened[name] = event.detail.value;
       },
 
       ready() {
@@ -343,7 +389,7 @@ limitations under the License.
            }));
           });
         }
-        this.updateArrayProp('_categories', categories, (c) => c.name);
+        this.updateArrayProp('_categories', categories, this._getCategoryKey);
       },
 
       _tagMetadata(category, runToTagsInfo, item) {
