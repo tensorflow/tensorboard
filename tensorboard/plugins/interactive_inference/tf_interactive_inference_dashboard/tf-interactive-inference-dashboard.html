@@ -2838,18 +2838,16 @@ limitations under the License.
         }
         // Create map of example indicies to inference results.
         const inferenceMap = {}
-        const isClassification = !!this.inferences.results.classification;
+        const isClassification = !!this.inferences.results.classificationResult;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
-            const classes =
-              this.inferences.results.classification.classifications[i].classes;
+            const result = this.inferences.results.classificationResult;
             inferenceMap[this.inferences.indices[i]] =
-              classes.sort((a, b) => b.score - a.score);
+                result.classifications[i].classes.sort((a, b) => b.score - a.score);
           } else {
+            const result = this.inferences.results.regressionResult;
             inferenceMap[this.inferences.indices[i]] =
-                [{label: '',
-                  score: this.inferences.results.regression.regressions[
-                    i].value}];
+                [{label: '', score: result.regressions[i].value}];
           }
         }
         // Set the inferences in the examplesAndInferences structure, updating

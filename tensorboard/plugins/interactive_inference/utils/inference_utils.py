@@ -22,10 +22,10 @@ from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
-from tensorboard.plugins.interactive_inference.utils import inference_pb2
 from tensorboard.plugins.interactive_inference.utils import oss_utils
-from tensorboard.plugins.interactive_inference.utils.serving import classification_pb2
-from tensorboard.plugins.interactive_inference.utils.serving import regression_pb2
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import inference_pb2
+from tensorflow_serving.apis import regression_pb2
 
 
 class VizParams(object):
@@ -237,9 +237,10 @@ def wrap_inference_results(inference_result_proto):
   inference_proto = inference_pb2.InferenceResult()
   if isinstance(inference_result_proto,
                 classification_pb2.ClassificationResponse):
-    inference_proto.classification.CopyFrom(inference_result_proto.result)
+    inference_proto.classification_result.CopyFrom(
+        inference_result_proto.result)
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
-    inference_proto.regression.CopyFrom(inference_result_proto.result)
+    inference_proto.regression_result.CopyFrom(inference_result_proto.result)
   return inference_proto
 
 
