@@ -314,6 +314,10 @@ class ImagesPlugin(base_plugin.TBPlugin):
     data = self._get_individual_image(run, tag, index, sample)
     image_type = imghdr.what(None, data)
     content_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
+    if content_type == _DEFAULT_IMAGE_MIMETYPE:
+      # Assume XML documents attached to image tag to be SVG.
+      if data.startswith(b'<?xml ') or data.startswith(b'<svg '):
+        content_type = 'image/svg+xml'
     return http_util.Respond(request, data, content_type)
 
   @wrappers.Request.application
