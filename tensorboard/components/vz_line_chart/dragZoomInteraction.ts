@@ -72,6 +72,14 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
     this.onEnd = cb;
   }
 
+  /**
+   * Returns backing drag interaction. Useful for customization to the
+   * interaction.
+   */
+  public dragInteraction(): Plottable.Interactions.Drag {
+    return this._dragInteraction;
+  }
+
   private setupCallbacks() {
     let dragging = false;
     this._dragInteraction.onDragStart((startPoint: Plottable.Point) => {
