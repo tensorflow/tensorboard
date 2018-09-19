@@ -195,6 +195,7 @@ export class LineChart {
     this.center = new Plottable.Components.Group([
         this.gridlines, xZeroLine, yZeroLine, plot,
         panZoomLayer, this.tooltipPointsComponent]);
+    this.center.addClass('main');
     this.outer = new Plottable.Components.Table(
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
