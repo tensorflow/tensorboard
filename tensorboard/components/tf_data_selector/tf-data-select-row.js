@@ -242,7 +242,7 @@ var tf_data_selector;
             if (selectedIds.length == 0)
                 return STORAGE_NONE_VALUE;
             return this.noExperiment ?
-                selectedIds.join(',') :
+                JSON.stringify(selectedIds) :
                 tf_data_selector.encodeIdArray(selectedIds);
         },
         _deserializeValue: function (allValues, str) {
@@ -250,9 +250,16 @@ var tf_data_selector;
                 return allValues;
             if (str == STORAGE_NONE_VALUE)
                 return [];
-            return this.noExperiment ?
-                str.split(',') :
-                tf_data_selector.decodeIdArray(str);
+            if (!this.noExperiment)
+                return tf_data_selector.decodeIdArray(str);
+            var parsed = [];
+            try {
+                parsed = JSON.parse(str);
+            }
+            catch (e) {
+                /* noop */
+            }
+            return Array.isArray(parsed) ? parsed : [];
         },
         _getColoring: function () {
             return {
