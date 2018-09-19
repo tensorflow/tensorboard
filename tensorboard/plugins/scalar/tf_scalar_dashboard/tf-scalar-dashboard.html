@@ -197,6 +197,7 @@ limitations under the License.
     const PLUGIN_NAME = 'scalars';
     const USE_DATA_SELECTOR = tf_globals.getEnableDataSelector();
     const SelectionType = tf_data_selector.Type;
+    const NUM_DEFAULT_OPENED_PANE = 2;
 
     Polymer({
       is: 'tf-scalar-dashboard',
@@ -291,29 +292,28 @@ limitations under the License.
       _getCategoryKey(category) {
         return category.metadata.type ==
             tf_categorization_utils.CategoryType.SEARCH_RESULTS ?
-                'search' : category.name;
+                '' : category.name;
       },
 
       _updatePaneOpened() {
         const paneOpen = this._paneOpened;
-        const nextPaneOpen = {};
+        const newPaneOpened = {};
 
         // Copy over the relevant values from the old pane state.
         this._categories
             .map(this._getCategoryKey)
             .filter(name => paneOpen[name] != null)
-            .forEach(name => nextPaneOpen[name] = paneOpen[name]);
+            .forEach(name => newPaneOpened[name] = paneOpen[name]);
 
-        if (Object.keys(nextPaneOpen).length == 0) {
-          this._categories.slice(0, 2)
+        if (Object.keys(newPaneOpened).length == 0) {
+          this._categories.slice(0, NUM_DEFAULT_OPENED_PANE)
               .map(this._getCategoryKey)
               .forEach(name => {
-                nextPaneOpen[name] = nextPaneOpen[name] != null ?
-                    nextPaneOpen[name] : true;
+                newPaneOpened[name] = true;
               });
         }
 
-        this._paneOpened = nextPaneOpen;
+        this._paneOpened = newPaneOpened;
       },
 
       _getPaneOpened(category) {
