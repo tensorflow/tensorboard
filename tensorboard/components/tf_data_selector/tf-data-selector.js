@@ -69,7 +69,7 @@ var tf_data_selector;
             },
             _shouldColorRuns: {
                 type: Boolean,
-                computed: '_computeShouldColorRuns(_experiments)',
+                computed: '_computeShouldColorRuns(_experiments.*)',
             },
         },
         behaviors: [
