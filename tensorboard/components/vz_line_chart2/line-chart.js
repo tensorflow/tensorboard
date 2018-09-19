@@ -49,6 +49,7 @@ var vz_line_chart2;
             this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter);
         }
         LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter) {
+            var _this = this;
             this.destroy();
             var xComponents = xComponentsCreationMethod();
             this.xAccessor = xComponents.accessor;
@@ -64,8 +65,8 @@ var vz_line_chart2;
             this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
             this.yAxis.usesTextWidthApproximation(true);
             this.fillArea = fillArea;
-            this.dzl = new vz_line_chart.DragZoomLayer(this.xScale, this.yScale, this.resetYDomain.bind(this));
-            this.tooltipInteraction = this.createTooltipInteraction(this.dzl);
+            var panZoomLayer = new vz_line_chart2.PanZoomDragLayer(this.xScale, this.yScale, function () { return _this.resetDomain(); });
+            this.tooltipInteraction = this.createTooltipInteraction(panZoomLayer);
             this.tooltipPointsComponent = new Plottable.Component();
             var plot = this.buildPlot(this.xScale, this.yScale, fillArea);
             this.gridlines =
@@ -76,7 +77,7 @@ var vz_line_chart2;
             yZeroLine.scale(this.xScale).value(0);
             this.center = new Plottable.Components.Group([
                 this.gridlines, xZeroLine, yZeroLine, plot,
-                this.dzl, this.tooltipPointsComponent
+                panZoomLayer, this.tooltipPointsComponent
             ]);
             this.outer = new Plottable.Components.Table([[this.yAxis, this.center], [null, this.xAxis]]);
         };
@@ -280,11 +281,11 @@ var vz_line_chart2;
             var _this = this;
             var pi = new Plottable.Interactions.Pointer();
             // Disable interaction while drag zooming.
-            dzl.interactionStart(function () {
+            dzl.onDragStart(function () {
                 pi.enabled(false);
                 _this.hideTooltips();
             });
-            dzl.interactionEnd(function () { return pi.enabled(true); });
+            dzl.onDragEnd(function () { return pi.enabled(true); });
             pi.onPointerMove(function (p) {
                 // Line plot must be initialized to draw.
                 if (!_this.linePlot)

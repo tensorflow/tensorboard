@@ -9,6 +9,8 @@ tf_web_library(
     name = "vz_line_chart2",
     srcs = [
         "line-chart.js",
+        "panZoomDragLayer.html",
+        "panZoomDragLayer.js",
         "vz-line-chart2.html",
         "vz-line-chart2.js",
     ],

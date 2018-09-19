@@ -71,6 +71,13 @@ var vz_line_chart;
         DragZoomLayer.prototype.interactionEnd = function (cb) {
             this.onEnd = cb;
         };
+        /**
+         * Returns backing drag interaction. Useful for customization to the
+         * interaction.
+         */
+        DragZoomLayer.prototype.dragInteraction = function () {
+            return this._dragInteraction;
+        };
         DragZoomLayer.prototype.setupCallbacks = function () {
             var _this = this;
             var dragging = false;
