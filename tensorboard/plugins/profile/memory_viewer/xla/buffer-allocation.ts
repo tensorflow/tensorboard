@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_xla {
 /**
  * HLO buffer allocation representation.
  * @final
@@ -19,7 +19,7 @@ export class BufferAllocation {
   index: number;
   size: number;
   isThreadLocal: boolean;
-  assigned: BufferAllocationAssigned[];
+  assigned: memory_viewer_xla.BufferAllocationAssigned[];
   groupName: string;
 
   constructor(alloc) {
@@ -27,7 +27,8 @@ export class BufferAllocation {
     this.size = parseInt(alloc.size, 10);
     this.isThreadLocal = alloc.isThreadLocal || false;
     this.assigned = alloc.assigned.map(
-        (assigned) => new BufferAllocationAssigned(assigned));
+        (assigned) => new memory_viewer_xla.BufferAllocationAssigned(
+          assigned));
     this.groupName = this.getGroupName(alloc);
   }
 
@@ -48,4 +49,4 @@ export class BufferAllocation {
   }
 }
 
-} // namespace memory_viewer
+} // namespace memory_viewer_xla
