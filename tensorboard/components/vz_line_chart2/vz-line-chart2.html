@@ -124,14 +124,14 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         cursor: crosshair;
       }
 
-      :host.altdown #chartdiv .main {
-        cursor: default;
+      :host.altdown #chartdiv :not(.drag-zooming) .main {
         cursor: -webkit-grab;
+        cursor: grab;
       }
 
-      :host.mousedown.altdown #chartdiv .main {
-        cursor: default;
+      :host.mousedown #chartdiv .panning .main {
         cursor: -webkit-grabbing;
+        cursor: grabbing;
       }
 
       #chartdiv line.guide-line {

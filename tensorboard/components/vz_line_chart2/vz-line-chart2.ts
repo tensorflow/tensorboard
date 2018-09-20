@@ -272,6 +272,9 @@ Polymer({
   },
 
   attached() {
+    // `capture` ensures that no handler can stop propagation and break the
+    // handler. `passive` ensures that browser does not wait renderer thread
+    // on JS handler (which can prevent default and impact rendering).
     const option = {capture: true, passive: true};
     this._listen(this, 'mousedown', this._onMouseDown.bind(this), option);
     this._listen(this, 'mouseup', this._onMouseUp.bind(this), option);
@@ -296,17 +299,16 @@ Polymer({
     node.addEventListener(eventName, func, option);
   },
 
-
   _onKeyDown(event) {
     this.toggleClass('altdown', event.altKey);
   },
 
   _onKeyUp(event) {
-    this.toggleClass('altdown', false);
+    this.toggleClass('altdown', event.altKey);
   },
 
   _onMouseDown(event) {
-    this.toggleClass('mousedown', event.altKey);
+    this.toggleClass('mousedown', true);
   },
 
   _onMouseUp(event) {
