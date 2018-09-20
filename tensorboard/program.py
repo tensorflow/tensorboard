@@ -187,9 +187,7 @@ class TensorBoard(object):
     if self.flags.inspect:
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
       event_file = os.path.expanduser(self.flags.event_file)
-      efi.inspect(self.flags.logdir,
-                  self.flags.event_file,
-                  self.flags.tag)
+      efi.inspect(self.flags.logdir, event_file, self.flags.tag)
       return 0
     try:
       server = self._make_server()
