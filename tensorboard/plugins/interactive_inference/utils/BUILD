@@ -2,8 +2,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
-
 py_library(
     name = "common_utils",
     srcs = ["common_utils.py"],
