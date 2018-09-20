@@ -177,7 +177,7 @@ def run(logdir, session_id, hparams, group_name):
     writer.add_summary(s, global_step=step)
   writer.add_summary(summary.session_end_pb(api_pb2.STATUS_SUCCESS))
   writer.close()
-
+  sess.close()
 
 def run_all(logdir, verbose=False):
   """Run simulations on a reasonable set of parameters.
