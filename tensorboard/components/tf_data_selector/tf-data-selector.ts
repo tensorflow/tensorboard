@@ -83,7 +83,7 @@ Polymer({
 
     _shouldColorRuns: {
       type: Boolean,
-      computed: '_computeShouldColorRuns(_experiments)',
+      computed: '_computeShouldColorRuns(_experiments.*)',
     },
 
   },

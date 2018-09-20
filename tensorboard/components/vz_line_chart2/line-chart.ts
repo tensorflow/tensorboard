@@ -74,8 +74,6 @@ export class LineChart {
   private tooltipInteraction: Plottable.Interactions.Pointer;
   private tooltipPointsComponent: Plottable.Component;
 
-  private dzl: vz_line_chart.DragZoomLayer;
-
   private linePlot: Plottable.Plots.Line<number|Date>;
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
   private marginAreaPlot?: Plottable.Plots.Area<number|Date>;
@@ -173,10 +171,12 @@ export class LineChart {
     this.yAxis.usesTextWidthApproximation(true);
     this.fillArea = fillArea;
 
-    this.dzl = new vz_line_chart.DragZoomLayer(
-        this.xScale, this.yScale, this.resetYDomain.bind(this));
+    const panZoomLayer = new PanZoomDragLayer(
+        this.xScale,
+        this.yScale,
+        () => this.resetDomain());
 
-    this.tooltipInteraction = this.createTooltipInteraction(this.dzl);
+    this.tooltipInteraction = this.createTooltipInteraction(panZoomLayer);
     this.tooltipPointsComponent = new Plottable.Component();
 
     const plot = this.buildPlot(
@@ -194,7 +194,7 @@ export class LineChart {
 
     this.center = new Plottable.Components.Group([
         this.gridlines, xZeroLine, yZeroLine, plot,
-        this.dzl, this.tooltipPointsComponent]);
+        panZoomLayer, this.tooltipPointsComponent]);
     this.outer = new Plottable.Components.Table(
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
@@ -420,15 +420,15 @@ export class LineChart {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
-  private createTooltipInteraction(dzl: vz_line_chart.DragZoomLayer):
+  private createTooltipInteraction(dzl: PanZoomDragLayer):
       Plottable.Interactions.Pointer {
     const pi = new Plottable.Interactions.Pointer();
     // Disable interaction while drag zooming.
-    dzl.interactionStart(() => {
+    dzl.onDragStart(() => {
       pi.enabled(false);
       this.hideTooltips();
     });
-    dzl.interactionEnd(() => pi.enabled(true));
+    dzl.onDragEnd(() => pi.enabled(true));
 
     pi.onPointerMove((p: Plottable.Point) => {
       // Line plot must be initialized to draw.
