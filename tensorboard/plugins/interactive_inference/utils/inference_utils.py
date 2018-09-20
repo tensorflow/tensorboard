@@ -22,7 +22,7 @@ from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
-from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import inference_pb2
 from tensorflow_serving.apis import regression_pb2
@@ -441,7 +441,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
     mutant_features, mutant_examples = make_mutant_tuples(
         example_proto, original_feature, index_to_mutate, viz_params)
 
-    inference_result_proto = oss_utils.call_servo(
+    inference_result_proto = platform_utils.call_servo(
         mutant_examples, serving_bundle)
     return make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto,
