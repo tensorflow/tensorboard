@@ -9,8 +9,8 @@ py_library(
 )
 
 py_library(
-    name = "oss_utils",
-    srcs = ["oss_utils.py"],
+    name = "platform_utils",
+    srcs = ["platform_utils.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":common_utils",
@@ -24,7 +24,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":common_utils",
-        ":oss_utils",
+        ":platform_utils",
         "//tensorboard:expect_tensorflow_installed",
         "@org_tensorflow_serving_api",
     ],
