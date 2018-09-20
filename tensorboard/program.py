@@ -299,7 +299,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     """Returns a wildcard address for the port in question.
 
     This will attempt to follow the best practice of calling getaddrinfo() with
-    a null host and AI_PASSIVE to request a server-side socket wilcard address.
+    a null host and AI_PASSIVE to request a server-side socket wildcard address.
     If that succeeds, this returns the first IPv6 address found, or if none,
     then returns the first IPv4 address. If that fails, then this returns the
     hardcoded address "::" if socket.has_ipv6 is True, else "0.0.0.0".
