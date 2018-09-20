@@ -160,25 +160,21 @@ var tf_data_selector;
                 .filter(function (id) { return expIds.has(id); });
         },
         _computeSelection: function () {
+            var _this = this;
             if (this._canCompareExperiments) {
-                var enabledExperiments_1 = new Set(this._enabledExperimentIds);
-                // Make a copy of the all selections.
-                var enabledSelections_1 = new Map(this._selections);
-                // Filter out disabled experiments from the `_selections`.
-                enabledSelections_1.forEach(function (_, id) {
-                    if (!enabledExperiments_1.has(id))
-                        enabledSelections_1.delete(id);
-                });
                 var activePluginNames_1 = new Set(this.activePlugins);
-                enabledSelections_1.forEach(function (sel, id) {
-                    var selection = sel;
+                var selections = this._enabledExperimentIds
+                    .filter(function (id) { return _this._selections.has(id); })
+                    .map(function (id) { return _this._selections.get(id); })
+                    .map(function (selection) {
                     var updatedSelection = Object.assign({}, selection);
                     updatedSelection.runs = selection.runs.map(function (run) {
                         return Object.assign({}, run, {
-                            tags: run.tags.filter(function (tag) { return activePluginNames_1.has(tag.pluginName); }),
+                            tags: run.tags
+                                .filter(function (tag) { return activePluginNames_1.has(tag.pluginName); }),
                         });
                     }).filter(function (run) { return run.tags.length; });
-                    enabledSelections_1.set(id, updatedSelection);
+                    return updatedSelection;
                 });
                 // Single selection: one experimentful selection whether it is enabled or
                 // not.
@@ -190,7 +186,7 @@ var tf_data_selector;
                 return {
                     type: isSingleSelection ?
                         tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
-                    selections: Array.from(enabledSelections_1.values()),
+                    selections: selections,
                 };
             }
             return {
@@ -200,6 +196,8 @@ var tf_data_selector;
         },
         _selectionChanged: function (event) {
             event.stopPropagation();
+            if (!this.isAttached || !event.target.isAttached)
+                return;
             var _a = event.detail, runs = _a.runs, tagRegex = _a.tagRegex;
             var experiment = event.target.experiment;
             var expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
