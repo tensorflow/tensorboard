@@ -460,6 +460,10 @@ Polymer({
     this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
   },
 
+  getExporter() {
+    return new LineChartExporter(this.$.chartdiv);
+  },
+
 });
 
 }  // namespace vz_line_chart2
