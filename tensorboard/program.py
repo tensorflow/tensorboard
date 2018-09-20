@@ -32,6 +32,7 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 import argparse
+from collections import defaultdict
 import errno
 import logging
 import os
@@ -264,61 +265,101 @@ class TensorBoardServerException(Exception):
     self.msg = msg
 
 
-class WerkzeugServer(TensorBoardServer):
+class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
   """Implementation of TensorBoardServer using the Werkzeug dev server."""
+  # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
+  daemon_threads = True
 
   def __init__(self, wsgi_app, flags):
+    self._flags = flags
     host = flags.host
-    port = flags.port
+    self._auto_wildcard = False
+    if not host:
+      # Without an explicit host, we default to serving on all interfaces,
+      # and will attempt to serve both IPv4 and IPv6 traffic through one socket.
+      host = self._get_wildcard_address(flags.port)
+      self._auto_wildcard = True
     try:
-      if host:
-        # The user gave us an explicit host
-        server = serving.make_server(host, port, wsgi_app, threaded=True)
-        if ':' in host and not host.startswith('['):
-          # Display IPv6 addresses as [::1]:80 rather than ::1:80
-          final_host = '[{}]'.format(host)
+      super(WerkzeugServer, self).__init__(host, flags.port, wsgi_app)
+    except socket.error as e:
+      if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
+        msg = ('TensorBoard must be run as superuser to bind to port %d'
+               % flags.port)
+      elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
+        if flags.port == 0:
+          msg = 'TensorBoard unable to find any open port'
         else:
-          final_host = host
+          msg = ('TensorBoard could not bind to port %d, it was already in use'
+                 % flags.port)
       else:
-        # We've promised to bind to all interfaces on this host. However, we're
-        # not sure whether that means IPv4 or IPv6 interfaces.
-        try:
-          # First try passing in a blank host (meaning all interfaces). This,
-          # unfortunately, defaults to IPv4 even if no IPv4 interface is available
-          # (yielding a socket.error).
-          server = serving.make_server(host, port, wsgi_app, threaded=True)
-        except socket.error:
-          # If a blank host didn't work, we explicitly request IPv6 interfaces.
-          server = serving.make_server('::', port, wsgi_app, threaded=True)
-        final_host = socket.gethostname()
-      server.daemon_threads = True
-    except socket.error:
-      if port == 0:
-        msg = 'TensorBoard unable to find any open port'
-      else:
-        msg = (
-            'TensorBoard attempted to bind to port %d, but it was already in use'
-            % port)
+        raise
       raise TensorBoardServerException(msg)
-    server.handle_error = _handle_error
-    final_port = server.socket.getsockname()[1]
-    self._server = server
-    self._url = 'http://%s:%d%s' % (final_host, final_port, flags.path_prefix)
 
-  def serve_forever(self):
-    self._server.serve_forever()
+  def _get_wildcard_address(self, port):
+    """Returns a wildcard address for the port in question.
+
+    This will attempt to follow the best practice of calling getaddrinfo() with
+    a null host and AI_PASSIVE to request a server-side socket wilcard address.
+    If that succeeds, this returns the first IPv6 address found, or if none,
+    then returns the first IPv4 address. If that fails, then this returns the
+    hardcoded address "::" if socket.has_ipv6 is True, else "0.0.0.0".
+    """
+    fallback_address = '::' if socket.has_ipv6 else '0.0.0.0'
+    if hasattr(socket, 'AI_PASSIVE'):
+      try:
+        wildcard_addrs = socket.getaddrinfo(
+            None, port, socket.AF_UNSPEC, socket.SOCK_STREAM,
+            socket.IPPROTO_TCP, socket.AI_PASSIVE)
+      except socket.gaierror as e:
+        logger.warn('Failed to auto-detect wildcard address, assuming %s: %s',
+                    fallback_address, str(e))
+        return fallback_address
+      addrs_by_family = defaultdict(list)
+      for family, _, _, _, sockaddr in wildcard_addrs:
+        # Format of sockaddr varies by family, but [0] is always the address.
+        addrs_by_family[family].append(sockaddr[0])
+      if hasattr(socket, 'AF_INET6') and addrs_by_family[socket.AF_INET6]:
+        return addrs_by_family[socket.AF_INET6][0]
+      if hasattr(socket, 'AF_INET') and addrs_by_family[socket.AF_INET]:
+        return addrs_by_family[socket.AF_INET][0]
+    logger.warn('Failed to auto-detect wildcard address, assuming %s',
+                fallback_address)
+    return fallback_address
+
+  def server_bind(self):
+    """Override to enable IPV4 mapping for IPV6 sockets when desired.
+
+    The main use case for this is so that when no host is specified, TensorBoard
+    can listen on all interfaces for both IPv4 and IPv6 connections, rather than
+    having to choose v4 or v6 and hope the browser didn't choose the other one.
+    """
+    socket_is_v6 = (
+        hasattr(socket, 'AF_INET6') and self.socket.family == socket.AF_INET6)
+    has_v6only_option = (
+        hasattr(socket, 'IPPROTO_IPV6') and hasattr(socket, 'IPV6_V6ONLY'))
+    if self._auto_wildcard and socket_is_v6 and has_v6only_option:
+      self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+    super(WerkzeugServer, self).server_bind()
+
+  def handle_error(self, request, client_address):
+    """Override to get rid of noisy EPIPE errors."""
+    del request  # unused
+    # Kludge to override a SocketServer.py method so we can get rid of noisy
+    # EPIPE errors. They're kind of a red herring as far as errors go. For
+    # example, `curl -N http://localhost:6006/ | head` will cause an EPIPE.
+    exc_info = sys.exc_info()
+    e = exc_info[1]
+    if isinstance(e, IOError) and e.errno == errno.EPIPE:
+      logger.warn('EPIPE caused by %s in HTTP serving' % str(client_address))
+    else:
+      logger.error('HTTP serving error', exc_info=exc_info)
 
   def get_url(self):
-    return self._url
-
-
-# Kludge to override a SocketServer.py method so we can get rid of noisy
-# EPIPE errors. They're kind of a red herring as far as errors go. For
-# example, `curl -N http://localhost:6006/ | head` will cause an EPIPE.
-def _handle_error(unused_request, client_address):
-  exc_info = sys.exc_info()
-  e = exc_info[1]
-  if isinstance(e, IOError) and e.errno == errno.EPIPE:
-    logger.warn('EPIPE caused by %s in HTTP serving' % client_address)
-  else:
-    logger.error('HTTP serving error', exc_info=exc_info)
+    if self._auto_wildcard:
+      display_host = socket.gethostname()
+    else:
+      host = self._flags.host
+      display_host = (
+          '[%s]' % host if ':' in host and not host.startswith('[') else host)
+    return 'http://%s:%d%s' % (display_host, self.server_port,
+                               self._flags.path_prefix)
