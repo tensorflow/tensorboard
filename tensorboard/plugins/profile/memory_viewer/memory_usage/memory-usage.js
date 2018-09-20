@@ -60,7 +60,7 @@ var memory_viewer_usage;
                     var inst = _c[_b];
                     if (inst.name) {
                         this.nameToHlo_[inst.name] =
-                            new memory_viewer_xla.HloInstruction(inst);
+                            new memory_viewer_xla_hi.HloInstruction(inst);
                     }
                 }
             }
@@ -84,7 +84,7 @@ var memory_viewer_usage;
         MemoryUsage.prototype.initBuffers_ = function (bufferAssignment) {
             for (var _i = 0, _a = bufferAssignment.logicalBuffers; _i < _a.length; _i++) {
                 var jsonBuffer = _a[_i];
-                var buffer = new memory_viewer_xla.LogicalBuffer(jsonBuffer);
+                var buffer = new memory_viewer_xla_lb.LogicalBuffer(jsonBuffer);
                 this.buffers_.push(buffer);
                 this.idToBuffer_[buffer.id] = buffer;
                 this.unSeenLogicalBuffers_.add(buffer.id);
@@ -97,7 +97,7 @@ var memory_viewer_usage;
         MemoryUsage.prototype.initAllocations_ = function (bufferAssignment) {
             for (var _i = 0, _a = bufferAssignment.bufferAllocations; _i < _a.length; _i++) {
                 var jsonAlloc = _a[_i];
-                var alloc = new memory_viewer_xla.BufferAllocation(jsonAlloc);
+                var alloc = new memory_viewer_xla_ba.BufferAllocation(jsonAlloc);
                 for (var _b = 0, _c = jsonAlloc.assigned; _b < _c.length; _b++) {
                     var assigned = _c[_b];
                     if (assigned.logicalBufferId) {

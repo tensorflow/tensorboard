@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer_xla;
-(function (memory_viewer_xla) {
+var memory_viewer_xla_baa;
+(function (memory_viewer_xla_baa) {
     /**
      * HLO assigned buffer allocation representation.
      * @final
@@ -23,5 +23,5 @@ var memory_viewer_xla;
         }
         return BufferAllocationAssigned;
     }());
-    memory_viewer_xla.BufferAllocationAssigned = BufferAllocationAssigned;
-})(memory_viewer_xla || (memory_viewer_xla = {})); // namespace memory_viewer_xla
+    memory_viewer_xla_baa.BufferAllocationAssigned = BufferAllocationAssigned;
+})(memory_viewer_xla_baa || (memory_viewer_xla_baa = {})); // namespace memory_viewer_xla_baa

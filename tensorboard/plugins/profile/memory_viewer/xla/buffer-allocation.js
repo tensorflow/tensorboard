@@ -9,8 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer_xla;
-(function (memory_viewer_xla) {
+var memory_viewer_xla_ba;
+(function (memory_viewer_xla_ba) {
     /**
      * HLO buffer allocation representation.
      * @final
@@ -20,7 +20,7 @@ var memory_viewer_xla;
             this.index = parseInt(alloc.index, 10);
             this.size = parseInt(alloc.size, 10);
             this.isThreadLocal = alloc.isThreadLocal || false;
-            this.assigned = alloc.assigned.map(function (assigned) { return new memory_viewer_xla.BufferAllocationAssigned(assigned); });
+            this.assigned = alloc.assigned.map(function (assigned) { return new memory_viewer_xla_baa.BufferAllocationAssigned(assigned); });
             this.groupName = this.getGroupName(alloc);
         }
         BufferAllocation.prototype.getGroupName = function (alloc) {
@@ -43,5 +43,5 @@ var memory_viewer_xla;
         };
         return BufferAllocation;
     }());
-    memory_viewer_xla.BufferAllocation = BufferAllocation;
-})(memory_viewer_xla || (memory_viewer_xla = {})); // namespace memory_viewer_xla
+    memory_viewer_xla_ba.BufferAllocation = BufferAllocation;
+})(memory_viewer_xla_ba || (memory_viewer_xla_ba = {})); // namespace memory_viewer_xla_ba
