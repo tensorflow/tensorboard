@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Shared utils among inference plugins that are OSS-specific."""
+"""Shared utils among inference plugins that are platform-specific."""
 
 from glob import glob
 from grpc.beta import implementations
