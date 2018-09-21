@@ -309,16 +309,17 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     fallback_address = '::' if socket.has_ipv6 else '0.0.0.0'
     if hasattr(socket, 'AI_PASSIVE'):
       try:
-        wildcard_addrs = socket.getaddrinfo(
-            None, port, socket.AF_UNSPEC, socket.SOCK_STREAM,
-            socket.IPPROTO_TCP, socket.AI_PASSIVE)
+        addrinfos = socket.getaddrinfo(None, port, socket.AF_UNSPEC,
+                                       socket.SOCK_STREAM, socket.IPPROTO_TCP,
+                                       socket.AI_PASSIVE)
       except socket.gaierror as e:
         logger.warn('Failed to auto-detect wildcard address, assuming %s: %s',
                     fallback_address, str(e))
         return fallback_address
       addrs_by_family = defaultdict(list)
-      for family, _, _, _, sockaddr in wildcard_addrs:
-        # Format of sockaddr varies by family, but [0] is always the address.
+      for family, _, _, _, sockaddr in addrinfos:
+        # Format of the "sockaddr" socket address varies by address family,
+        # but [0] is always the IP address portion.
         addrs_by_family[family].append(sockaddr[0])
       if hasattr(socket, 'AF_INET6') and addrs_by_family[socket.AF_INET6]:
         return addrs_by_family[socket.AF_INET6][0]
