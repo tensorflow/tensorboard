@@ -199,16 +199,6 @@ var vz_line_chart2;
                 value: false,
             },
             /**
-             * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
-             * table element because Polymer does not support that. This seems like
-             * a bug in Polymer. Hence, we manually generate the HTML for creating a row
-             * of table headers.
-             */
-            _tooltipTableHeaderHtml: {
-                type: String,
-                computed: '_computeTooltipTableHeaderHtml(tooltipColumns)',
-            },
-            /**
              * Change how the tooltip is sorted. Allows:
              * - "default" - Sort the tooltip by input order.
              * - "ascending" - Sort the tooltip by ascending value.
@@ -217,11 +207,17 @@ var vz_line_chart2;
              */
             tooltipSortingMethod: { type: String, value: 'default' },
             /**
-             * Change how the tooltip is positioned. Allows:
+             * Changes how the tooltip is positioned. Allows:
              * - "bottom" - Position the tooltip on the bottom of the chart.
              * - "right" - Position the tooltip to the right of the chart.
+             * - "auto" - Position the tooltip to the bottom of the chart in most case.
+             *            Position the tooltip above the chart if there isn't sufficient
+             *            space below.
              */
-            tooltipPosition: { type: String, value: 'bottom' },
+            tooltipPosition: {
+                type: String,
+                value: vz_chart_helper.TooltipPosition.BOTTOM,
+            },
             _chart: Object,
             _visibleSeriesCache: {
                 type: Array,
@@ -242,11 +238,9 @@ var vz_line_chart2;
             '_reloadFromCache(_chart)',
             '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
             '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
-            '_tooltipPositionChanged(tooltipPosition, _chart)',
-            '_outliersChanged(ignoreYOutliers, _chart)'
+            '_outliersChanged(ignoreYOutliers, _chart)',
         ],
         ready: function () {
-            this.scopeSubtree(this.$.tooltip, true);
             this.scopeSubtree(this.$.chartdiv, true);
         },
         attached: function () {
@@ -378,11 +372,10 @@ var vz_line_chart2;
                     !this.tooltipColumns) {
                     return;
                 }
-                var tooltip = d3.select(this.$.tooltip);
                 // We directly reference properties of `this` because this call is
                 // asynchronous, and values may have changed in between the call being
                 // initiated and actually being run.
-                var chart = new vz_line_chart2.LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
+                var chart = new vz_line_chart2.LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, this.$.tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
                 if (this._chart)
@@ -420,26 +413,10 @@ var vz_line_chart2;
                 return;
             this._chart.ignoreYOutliers(this.ignoreYOutliers);
         },
-        _computeTooltipTableHeaderHtml: function () {
-            var _this = this;
-            // The first column contains the circle with the color of the run.
-            var titles = [''].concat(this.tooltipColumns.map(function (c) { return c.title; }));
-            return titles.map(function (title) { return "<th>" + _this._sanitize(title) + "</th>"; }).join('');
-        },
         _tooltipSortingMethodChanged: function () {
             if (!this._chart)
                 return;
             this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
-        },
-        _tooltipPositionChanged: function () {
-            if (!this._chart)
-                return;
-            this._chart.setTooltipPosition(this.tooltipPosition);
-        },
-        _sanitize: function (value) {
-            return value.replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;') // for symmetry :-)
-                .replace(/&/g, '&amp;');
         },
     });
 })(vz_line_chart2 || (vz_line_chart2 = {})); // namespace vz_line_chart2

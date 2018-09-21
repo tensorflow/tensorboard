@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-imports/plottable.html">
 <link rel="import" href="../vz-chart-helpers/vz-chart-helpers.html">
+<link rel="import" href="../vz-chart-helpers/vz-chart-tooltip.html">
 <link rel="import" href="panZoomDragLayer.html">
 
 <!--
@@ -34,19 +35,9 @@ such as different X scales (linear and temporal), tooltips and smoothing.
 -->
 <dom-module id="vz-line-chart2">
   <template>
-    <div id="tooltip">
-      <table>
-        <thead>
-          <!-- We inject the HTML instead of using dom-repeat because polymer
-               does not support dom-repeat templates within table elements. -->
-          <tr id="tooltip-table-header-row"
-              inner-h-t-m-l="[[_tooltipTableHeaderHtml]]"></tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </div>
     <div id="chartdiv"></div>
+    <vz-chart-tooltip id="tooltip" position="[[tooltipPosition]]">
+    </vz-chart-tooltip>
     <style>
       :host {
         -moz-user-select: none;
@@ -64,60 +55,6 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         -moz-user-select: none;
         flex-grow: 1;
         flex-shrink: 1;
-      }
-      tr:empty {
-        margin: 0;
-        padding: 0;
-      }
-      td {
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: 13px;
-        line-height: 21px;
-        opacity: 1;
-      }
-      #tooltip {
-        background: rgba(0, 0, 0, .8);
-        border-radius: 4px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
-        color: #fff;
-        cursor: none;
-        font-size: 14px;
-        line-height: 1.4em;
-        margin-top: 10px;
-        opacity: 0;
-        padding: 8px;
-        pointer-events: none;
-        position: absolute;
-        will-change: transform;
-        z-index: 5;
-      }
-      .swatch {
-        border-radius: 50%;
-        width: 14px;
-        height: 14px;
-        display: block;
-        border: 2px solid rgba(0, 0, 0, 0);
-      }
-      .closest .swatch {
-        border: 2px solid #fff;
-      }
-      th {
-        padding-left: 5px;
-        padding-right: 5px;
-        text-align: left;
-      }
-      .distant td {
-        opacity: .8;
-      }
-
-      .distant td.swatch {
-        opacity: 1;
-      }
-
-      .ghost {
-        opacity: .2;
-        stroke-width: 1px;
       }
 
       #chartdiv .main {

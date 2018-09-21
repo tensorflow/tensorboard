@@ -9,12 +9,15 @@ tf_web_library(
     srcs = [
         "vz-chart-helpers.html",
         "vz-chart-helpers.js",
+        "vz-chart-tooltip.html",
+        "vz-chart-tooltip.js",
     ],
     path = "/vz-chart-helpers",
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
 )

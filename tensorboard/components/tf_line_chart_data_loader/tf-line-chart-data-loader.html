@@ -31,21 +31,22 @@ limitations under the License.
     <div id="chart-and-spinner-container">
       <vz-line-chart2
         id="chart"
-        x-components-creation-method="[[xComponentsCreationMethod]]"
-        x-type="[[xType]]"
-        y-value-accessor="[[yValueAccessor]]"
         color-scale="[[colorScale]]"
-        tooltip-columns="[[tooltipColumns]]"
-        smoothing-enabled="[[smoothingEnabled]]"
-        smoothing-weight="[[smoothingWeight]]"
-        tooltip-sorting-method="[[tooltipSortingMethod]]"
-        ignore-y-outliers="[[ignoreYOutliers]]"
-        style="[[_computeLineChartStyle(dataLoading)]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
         fill-area="[[fillArea]]"
-        symbol-function="[[symbolFunction]]"
+        ignore-y-outliers="[[ignoreYOutliers]]"
         on-chart-attached="_onChartAttached"
+        smoothing-enabled="[[smoothingEnabled]]"
+        smoothing-weight="[[smoothingWeight]]"
+        style="[[_computeLineChartStyle(dataLoading)]]"
+        symbol-function="[[symbolFunction]]"
+        tooltip-columns="[[tooltipColumns]]"
+        tooltip-position="[[tooltipPosition]]"
+        tooltip-sorting-method="[[tooltipSortingMethod]]"
+        x-components-creation-method="[[xComponentsCreationMethod]]"
+        x-type="[[xType]]"
+        y-value-accessor="[[yValueAccessor]]"
       ></vz-line-chart2>
       <template is="dom-if" if="[[dataLoading]]">
         <div id="loading-spinner-container">
@@ -137,12 +138,15 @@ limitations under the License.
         xComponentsCreationMethod: Object,
         xType: String,
         yValueAccessor: Object,
-        tooltipColumns: Array,
         fillArea: Object,
 
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
+
+        tooltipColumns: Array,
         tooltipSortingMethod: String,
+        tooltipPosition: String,
+
         ignoreYOutliers: Boolean,
 
         defaultXRange: Array,

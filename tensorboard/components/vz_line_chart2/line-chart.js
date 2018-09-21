@@ -344,8 +344,7 @@ var vz_line_chart2;
         };
         LineChart.prototype.hideTooltips = function () {
             window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
-            window.cancelAnimationFrame(this._tooltipPositionAnimationFrame);
-            this.tooltip.style('opacity', 0);
+            this.tooltip.hide();
             this.scatterPlot.attr('display', 'block');
             this.tooltipPointsComponent.content().selectAll('.point').remove();
         };
@@ -363,9 +362,28 @@ var vz_line_chart2;
         LineChart.prototype.drawTooltips = function (points, target, tooltipColumns) {
             var _this = this;
             if (!points.length) {
-                this.tooltip.style('opacity', 0);
+                this.tooltip.hide();
                 return;
             }
+            var colorScale = this.colorScale;
+            var swatchCol = {
+                title: '',
+                static: false,
+                evalType: TooltipColumnEvalType.DOM,
+                evaluate: function (d) {
+                    d3.select(this)
+                        .select('span')
+                        .style('background-color', function () { return colorScale.scale(d.dataset.metadata().name); });
+                    return '';
+                },
+                enter: function (d) {
+                    d3.select(this)
+                        .append('span')
+                        .classed('swatch', true)
+                        .style('background-color', function () { return colorScale.scale(d.dataset.metadata().name); });
+                },
+            };
+            tooltipColumns = [swatchCol].concat(tooltipColumns);
             // Formatters for value, step, and wall_time
             var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
             var dist = function (p) {
@@ -391,7 +409,18 @@ var vz_line_chart2;
                 points = points.slice(0).reverse();
             }
             var self = this;
-            var rows = this.tooltip.select('tbody')
+            var table = d3.select(this.tooltip.content()).select('table');
+            var header = table.select('thead')
+                .selectAll('th')
+                .data(tooltipColumns, function (column, _, __) {
+                return column.title;
+            });
+            var newHeaderNodes = header.enter()
+                .append('th')
+                .text(function (col) { return col.title; })
+                .nodes();
+            header.exit().remove();
+            var rows = table.select('tbody')
                 .selectAll('tr')
                 .data(points, function (pt, _, __) {
                 return pt.dataset.metadata().name;
@@ -415,36 +444,18 @@ var vz_line_chart2;
                 // reorders DOM to match the ordering of the `data`.
                 .order();
             rows.exit().remove();
-            rows.enter().append('tr').each(function (point) {
+            var newRowNodes = rows.enter()
+                .append('tr')
+                .each(function (point) {
                 self.drawTooltipRow(this, tooltipColumns, point);
-            });
-            // Because a tooltip content update is a DOM _mutation_, after an animation
-            // frame, we update the position which is another read and mutation.
-            window.cancelAnimationFrame(this._tooltipPositionAnimationFrame);
-            this._tooltipPositionAnimationFrame = window.requestAnimationFrame(function () {
-                _this.repositionTooltip();
-            });
+            })
+                .nodes();
+            var newNodes = newHeaderNodes.concat(newRowNodes);
+            this.tooltip.updateAndPosition(this.targetSVG.node(), newNodes);
         };
         LineChart.prototype.drawTooltipRow = function (row, tooltipColumns, point) {
-            var _a = this, smoothingEnabled = _a.smoothingEnabled, colorScale = _a.colorScale;
             var self = this;
-            var swatchCol = {
-                name: 'Swatch',
-                evalType: TooltipColumnEvalType.DOM,
-                evaluate: function (d) {
-                    d3.select(this)
-                        .select('span')
-                        .style('background-color', function () { return colorScale.scale(d.dataset.metadata().name); });
-                },
-                enter: function (d) {
-                    d3.select(this)
-                        .append('span')
-                        .classed('swatch', true)
-                        .style('background-color', function () { return colorScale.scale(d.dataset.metadata().name); });
-                },
-            };
-            var columns = d3.select(row).selectAll('td')
-                .data([swatchCol].concat(tooltipColumns));
+            var columns = d3.select(row).selectAll('td').data(tooltipColumns);
             columns.each(function (col) {
                 // Skip column value update when the column is static.
                 if (col.static)
@@ -468,28 +479,6 @@ var vz_line_chart2;
                 d3.select(column)
                     .text(tooltipCol.evaluate.call(column, point, { smoothingEnabled: smoothingEnabled }));
             }
-        };
-        /**
-         * Repositions the tooltip based on new width and height of the bounding box.
-         * In order to update the position, it _read_ the DOM, then _mutate_ the DOM.
-         */
-        LineChart.prototype.repositionTooltip = function () {
-            // compute left position
-            var documentWidth = document.body.clientWidth;
-            var node = this.tooltip.node();
-            var parentRect = node.parentElement.getBoundingClientRect();
-            var nodeRect = node.getBoundingClientRect();
-            // prevent it from falling off the right side of the screen
-            var left = documentWidth - parentRect.left - nodeRect.width - 60, top = 0;
-            if (this.tooltipPosition === 'right') {
-                left = Math.min(parentRect.width, left);
-            }
-            else { // 'bottom'
-                left = Math.min(0, left);
-                top = parentRect.height + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
-            }
-            this.tooltip.style('transform', "translate(" + left + "px, " + top + "px)");
-            this.tooltip.style('opacity', 1);
         };
         LineChart.prototype.findClosestPoint = function (target, dataset) {
             var _this = this;
@@ -655,9 +644,6 @@ var vz_line_chart2;
         };
         LineChart.prototype.setTooltipSortingMethod = function (method) {
             this.tooltipSortingMethod = method;
-        };
-        LineChart.prototype.setTooltipPosition = function (position) {
-            this.tooltipPosition = position;
         };
         LineChart.prototype.renderTo = function (targetSVG) {
             this.targetSVG = targetSVG;
