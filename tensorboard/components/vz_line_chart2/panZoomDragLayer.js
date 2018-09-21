@@ -24,6 +24,12 @@ limitations under the License.
 ==============================================================================*/
 var vz_line_chart2;
 (function (vz_line_chart2) {
+    var State;
+    (function (State) {
+        State[State["NONE"] = 0] = "NONE";
+        State[State["DRAG_ZOOMING"] = 1] = "DRAG_ZOOMING";
+        State[State["PANNING"] = 2] = "PANNING";
+    })(State || (State = {}));
     var PanZoomDragLayer = /** @class */ (function (_super) {
         __extends(PanZoomDragLayer, _super);
         /**
@@ -35,6 +41,9 @@ var vz_line_chart2;
          */
         function PanZoomDragLayer(xScale, yScale, unzoomMethod) {
             var _this = _super.call(this) || this;
+            _this.state = State.NONE;
+            _this.panStartCallback = new Plottable.Utils.CallbackSet();
+            _this.panEndCallback = new Plottable.Utils.CallbackSet();
             _this.panZoom = new Plottable.Interactions.PanZoom(xScale, yScale);
             _this.panZoom.dragInteraction().mouseFilter(function (event) {
                 return Boolean(event.altKey) && event.button === 0;
@@ -51,14 +60,62 @@ var vz_line_chart2;
             _this.onDetach(function () {
                 _this.panZoom.detachFrom(_this);
             });
+            _this.panZoom.dragInteraction().onDragStart(function () {
+                if (_this.state == State.NONE)
+                    _this.setState(State.PANNING);
+            });
+            _this.panZoom.dragInteraction().onDragEnd(function () {
+                if (_this.state == State.PANNING)
+                    _this.setState(State.NONE);
+            });
+            _this.dragZoomLayer.dragInteraction().onDragStart(function () {
+                if (_this.state == State.NONE)
+                    _this.setState(State.DRAG_ZOOMING);
+            });
+            _this.dragZoomLayer.dragInteraction().onDragEnd(function () {
+                if (_this.state == State.DRAG_ZOOMING)
+                    _this.setState(State.NONE);
+            });
             return _this;
         }
-        PanZoomDragLayer.prototype.onDragStart = function (cb) {
-            this.dragZoomLayer.dragInteraction().onDragStart(cb);
+        PanZoomDragLayer.prototype.setState = function (nextState) {
+            if (this.state == nextState)
+                return;
+            var prevState = this.state;
+            this.state = nextState;
+            this.root().removeClass(this.stateClassName(prevState));
+            this.root().addClass(this.stateClassName(nextState));
+            if (prevState == State.PANNING) {
+                this.panEndCallback.callCallbacks();
+            }
+            if (nextState == State.PANNING) {
+                this.panStartCallback.callCallbacks();
+            }
+        };
+        PanZoomDragLayer.prototype.stateClassName = function (state) {
+            switch (state) {
+                case State.PANNING:
+                    return 'panning';
+                case State.DRAG_ZOOMING:
+                    return 'drag-zooming';
+                case State.NONE:
+                default:
+                    return '';
+            }
+        };
+        PanZoomDragLayer.prototype.onPanStart = function (cb) {
+            this.panStartCallback.add(cb);
+        };
+        PanZoomDragLayer.prototype.onPanEnd = function (cb) {
+            this.panEndCallback.add(cb);
+        };
+        PanZoomDragLayer.prototype.onScrollZoom = function (cb) {
+            this.panZoom.onZoomEnd(cb);
+        };
+        PanZoomDragLayer.prototype.onDragZoomStart = function (cb) {
             this.dragZoomLayer.interactionStart(cb);
         };
-        PanZoomDragLayer.prototype.onDragEnd = function (cb) {
-            this.dragZoomLayer.dragInteraction().onDragEnd(cb);
+        PanZoomDragLayer.prototype.onDragZoomEnd = function (cb) {
             this.dragZoomLayer.interactionEnd(cb);
         };
         return PanZoomDragLayer;

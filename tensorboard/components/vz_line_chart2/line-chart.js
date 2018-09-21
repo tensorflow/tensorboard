@@ -79,6 +79,7 @@ var vz_line_chart2;
                 this.gridlines, xZeroLine, yZeroLine, plot,
                 panZoomLayer, this.tooltipPointsComponent
             ]);
+            this.center.addClass('main');
             this.outer = new Plottable.Components.Table([[this.yAxis, this.center], [null, this.xAxis]]);
         };
         LineChart.prototype.buildPlot = function (xScale, yScale, fillArea) {
@@ -277,57 +278,69 @@ var vz_line_chart2;
         LineChart.prototype.getYAxisAccessor = function () {
             return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
         };
-        LineChart.prototype.createTooltipInteraction = function (dzl) {
+        LineChart.prototype.createTooltipInteraction = function (pzdl) {
             var _this = this;
             var pi = new Plottable.Interactions.Pointer();
             // Disable interaction while drag zooming.
-            dzl.onDragStart(function () {
+            var disableTooltipUpdate = function () {
                 pi.enabled(false);
                 _this.hideTooltips();
-            });
-            dzl.onDragEnd(function () { return pi.enabled(true); });
+            };
+            var enableTooltipUpdate = function () { return pi.enabled(true); };
+            pzdl.onPanStart(disableTooltipUpdate);
+            pzdl.onDragZoomStart(disableTooltipUpdate);
+            pzdl.onPanEnd(enableTooltipUpdate);
+            pzdl.onDragZoomEnd(enableTooltipUpdate);
+            // When using wheel, cursor position does not change. Redraw the tooltip
+            // using the last known mouse position.
+            pzdl.onScrollZoom(function () { return _this.updateTooltipContent(_this._lastMousePosition); });
             pi.onPointerMove(function (p) {
-                // Line plot must be initialized to draw.
-                if (!_this.linePlot)
-                    return;
-                window.cancelAnimationFrame(_this._tooltipUpdateAnimationFrame);
-                _this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(function () {
-                    var target = {
-                        x: p.x,
-                        y: p.y,
-                        datum: null,
-                        dataset: null,
-                    };
-                    var bbox = _this.gridlines.content().node().getBBox();
-                    // pts is the closets point to the tooltip for each dataset
-                    var pts = _this.linePlot.datasets()
-                        .map(function (dataset) { return _this.findClosestPoint(target, dataset); })
-                        .filter(Boolean);
-                    var intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
-                    // We draw tooltips for points that are NaN, or are currently visible
-                    var ptsForTooltips = pts.filter(function (p) { return intersectsBBox(p.x, p.y, bbox) ||
-                        isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
-                    // Only draw little indicator circles for the non-NaN points
-                    var ptsToCircle = ptsForTooltips.filter(function (p) { return !isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
-                    if (pts.length !== 0) {
-                        _this.scatterPlot.attr('display', 'none');
-                        var ptsSelection = _this.tooltipPointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
-                        ptsSelection.enter().append('circle').classed('point', true);
-                        ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
-                            .attr('cx', function (p) { return p.x; })
-                            .attr('cy', function (p) { return p.y; })
-                            .style('stroke', 'none')
-                            .attr('fill', function (p) { return _this.colorScale.scale(p.dataset.metadata().name); });
-                        ptsSelection.exit().remove();
-                        _this.drawTooltips(ptsForTooltips, target, _this.tooltipColumns);
-                    }
-                    else {
-                        _this.hideTooltips();
-                    }
-                });
+                _this._lastMousePosition = p;
+                _this.updateTooltipContent(p);
             });
             pi.onPointerExit(function () { return _this.hideTooltips(); });
             return pi;
+        };
+        LineChart.prototype.updateTooltipContent = function (p) {
+            var _this = this;
+            // Line plot must be initialized to draw.
+            if (!this.linePlot)
+                return;
+            window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
+            this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(function () {
+                var target = {
+                    x: p.x,
+                    y: p.y,
+                    datum: null,
+                    dataset: null,
+                };
+                var bbox = _this.gridlines.content().node().getBBox();
+                // pts is the closets point to the tooltip for each dataset
+                var pts = _this.linePlot.datasets()
+                    .map(function (dataset) { return _this.findClosestPoint(target, dataset); })
+                    .filter(Boolean);
+                var intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
+                // We draw tooltips for points that are NaN, or are currently visible
+                var ptsForTooltips = pts.filter(function (p) { return intersectsBBox(p.x, p.y, bbox) ||
+                    isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
+                // Only draw little indicator circles for the non-NaN points
+                var ptsToCircle = ptsForTooltips.filter(function (p) { return !isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
+                if (pts.length !== 0) {
+                    _this.scatterPlot.attr('display', 'none');
+                    var ptsSelection = _this.tooltipPointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
+                    ptsSelection.enter().append('circle').classed('point', true);
+                    ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
+                        .attr('cx', function (p) { return p.x; })
+                        .attr('cy', function (p) { return p.y; })
+                        .style('stroke', 'none')
+                        .attr('fill', function (p) { return _this.colorScale.scale(p.dataset.metadata().name); });
+                    ptsSelection.exit().remove();
+                    _this.drawTooltips(ptsForTooltips, target, _this.tooltipColumns);
+                }
+                else {
+                    _this.hideTooltips();
+                }
+            });
         };
         LineChart.prototype.hideTooltips = function () {
             window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);

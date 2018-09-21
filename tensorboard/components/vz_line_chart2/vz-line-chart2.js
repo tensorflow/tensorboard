@@ -245,6 +245,51 @@ var vz_line_chart2;
             '_tooltipPositionChanged(tooltipPosition, _chart)',
             '_outliersChanged(ignoreYOutliers, _chart)'
         ],
+        ready: function () {
+            this.scopeSubtree(this.$.tooltip, true);
+            this.scopeSubtree(this.$.chartdiv, true);
+        },
+        attached: function () {
+            // `capture` ensures that no handler can stop propagation and break the
+            // handler. `passive` ensures that browser does not wait renderer thread
+            // on JS handler (which can prevent default and impact rendering).
+            var option = { capture: true, passive: true };
+            this._listen(this, 'mousedown', this._onMouseDown.bind(this), option);
+            this._listen(this, 'mouseup', this._onMouseUp.bind(this), option);
+            this._listen(window, 'keydown', this._onKeyDown.bind(this), option);
+            this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
+        },
+        detached: function () {
+            this.cancelAsync(this._makeChartAsyncCallbackId);
+            if (this._chart)
+                this._chart.destroy();
+            if (this._listeners) {
+                this._listeners.forEach(function (_a) {
+                    var node = _a.node, eventName = _a.eventName, func = _a.func, option = _a.option;
+                    node.removeEventListener(eventName, func, option);
+                });
+                this._listeners.clear();
+            }
+        },
+        _listen: function (node, eventName, func, option) {
+            if (option === void 0) { option = {}; }
+            if (!this._listeners)
+                this._listeners = new Set();
+            this._listeners.add({ node: node, eventName: eventName, func: func, option: option });
+            node.addEventListener(eventName, func, option);
+        },
+        _onKeyDown: function (event) {
+            this.toggleClass('altdown', event.altKey);
+        },
+        _onKeyUp: function (event) {
+            this.toggleClass('altdown', event.altKey);
+        },
+        _onMouseDown: function (event) {
+            this.toggleClass('mousedown', true);
+        },
+        _onMouseUp: function (event) {
+            this.toggleClass('mousedown', false);
+        },
         /**
          * Sets the series that the chart displays. Series with other names will
          * not be displayed.
@@ -306,15 +351,6 @@ var vz_line_chart2;
             if (this._chart) {
                 this._chart.redraw(clearCache);
             }
-        },
-        detached: function () {
-            this.cancelAsync(this._makeChartAsyncCallbackId);
-            if (this._chart)
-                this._chart.destroy();
-        },
-        ready: function () {
-            this.scopeSubtree(this.$.tooltip, true);
-            this.scopeSubtree(this.$.chartdiv, true);
         },
         /**
          * Creates a chart, and asynchronously renders it. Fires a chart-rendered
