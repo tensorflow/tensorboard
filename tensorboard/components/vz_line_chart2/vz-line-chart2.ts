@@ -293,11 +293,11 @@ Polymer({
   },
 
   _onKeyDown(event) {
-    this.toggleClass('altdown', event.altKey);
+    this.toggleClass('pankey', PanZoomDragLayer.isPanKey(event));
   },
 
   _onKeyUp(event) {
-    this.toggleClass('altdown', event.altKey);
+    this.toggleClass('pankey', PanZoomDragLayer.isPanKey(event));
   },
 
   _onMouseDown(event) {

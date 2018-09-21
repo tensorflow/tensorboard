@@ -44,7 +44,7 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
 
     this.panZoom = new Plottable.Interactions.PanZoom(xScale, yScale);
     this.panZoom.dragInteraction().mouseFilter((event: MouseEvent) => {
-      return Boolean(event.altKey) && event.button === 0;
+      return PanZoomDragLayer.isPanKey(event) && event.button === 0;
     });
     this.panZoom.attachTo(this);
 
@@ -53,7 +53,7 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
         yScale,
         unzoomMethod);
     this.dragZoomLayer.dragInteraction().mouseFilter((event: MouseEvent) => {
-      return !Boolean(event.altKey) && event.button === 0;
+      return !PanZoomDragLayer.isPanKey(event) && event.button === 0;
     });
     this.append(this.dragZoomLayer);
 
@@ -76,6 +76,10 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
     this.dragZoomLayer.dragInteraction().onDragEnd(() => {
       if (this.state == State.DRAG_ZOOMING) this.setState(State.NONE);
     });
+  }
+
+  static isPanKey(event: MouseEvent): boolean {
+    return Boolean(event.shiftKey);
   }
 
   setState(nextState: State): void {
