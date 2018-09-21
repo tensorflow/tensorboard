@@ -294,6 +294,13 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
           raise TensorBoardServerException(
               'TensorBoard could not bind to port %d, it was already in use' %
               flags.port)
+      elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
+        raise TensorBoardServerException(
+            'TensorBoard could not bind to unavailable address %s' % host)
+      elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
+        raise TensorBoardServerException(
+            'Tensorboard could not bind to unsupported address family %s' %
+            host)
       # Raise the raw exception if it wasn't identifiable as a user error.
       raise
 
@@ -341,7 +348,13 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     has_v6only_option = (
         hasattr(socket, 'IPPROTO_IPV6') and hasattr(socket, 'IPV6_V6ONLY'))
     if self._auto_wildcard and socket_is_v6 and has_v6only_option:
-      self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+      try:
+        self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+      except socket.error as e:
+        # Log a warning on failure to dual-bind, except for EAFNOSUPPORT
+        # since that's expected if IPv4 isn't supported at all (IPv6-only).
+        if hasattr(errno, 'EAFNOSUPPORT') and e.errno != errno.EAFNOSUPPORT:
+          logging.warn('Failed to dual-bind to IPv4 wildcard: %s', str(e))
     super(WerkzeugServer, self).server_bind()
 
   def handle_error(self, request, client_address):
