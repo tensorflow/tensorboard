@@ -214,7 +214,7 @@ limitations under the License.
         this.$.chart.setSeriesMetadata(name, metadata);
       },
 
-      redraw(clearCache) {
+      redraw(clearCache = false) {
         cancelAnimationFrame(this._redrawRaf);
         this._redrawRaf = window.requestAnimationFrame(() => {
           if (this.active) {

@@ -162,8 +162,8 @@ Polymer({
   _hasMemoryUtilization: function(node) {
     return !node || !node.metrics || !node.metrics.memoryBandwidth;
   },
-  _updateCard: function(node){
-    if (node == null) return;
+  _updateCard: function(node) {
+    if (!node) return;
     var color = tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
     this.$.subheader.style.backgroundColor = color;
@@ -174,7 +174,9 @@ Polymer({
     if (node.category) return "Operation category";
     return "Unknown";
   },
-  _fused: function(node){ return node && node.xla && !node.metrics; },
+  _fused: function(node) {
+    return node && node.xla && !node.metrics;
+  },
   _dimensionColor: function(dim) {
     if (!dim || !dim.alignment) return null;
     var ratio = dim.size / dim.alignment;
