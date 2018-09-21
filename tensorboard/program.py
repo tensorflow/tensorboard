@@ -283,17 +283,19 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
       super(WerkzeugServer, self).__init__(host, flags.port, wsgi_app)
     except socket.error as e:
       if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
-        msg = ('TensorBoard must be run as superuser to bind to port %d'
-               % flags.port)
+        raise TensorBoardServerException(
+            'TensorBoard must be run as superuser to bind to port %d' %
+            flags.port)
       elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
         if flags.port == 0:
-          msg = 'TensorBoard unable to find any open port'
+          raise TensorBoardServerException(
+              'TensorBoard unable to find any open port')
         else:
-          msg = ('TensorBoard could not bind to port %d, it was already in use'
-                 % flags.port)
-      else:
-        raise
-      raise TensorBoardServerException(msg)
+          raise TensorBoardServerException(
+              'TensorBoard could not bind to port %d, it was already in use' %
+              flags.port)
+      # Raise the raw exception if it wasn't identifiable as a user error.
+      raise
 
   def _get_wildcard_address(self, port):
     """Returns a wildcard address for the port in question.
