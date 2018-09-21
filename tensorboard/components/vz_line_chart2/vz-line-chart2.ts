@@ -266,6 +266,55 @@ Polymer({
     '_outliersChanged(ignoreYOutliers, _chart)'
   ],
 
+  ready: function() {
+    this.scopeSubtree(this.$.tooltip, true);
+    this.scopeSubtree(this.$.chartdiv, true);
+  },
+
+  attached() {
+    // `capture` ensures that no handler can stop propagation and break the
+    // handler. `passive` ensures that browser does not wait renderer thread
+    // on JS handler (which can prevent default and impact rendering).
+    const option = {capture: true, passive: true};
+    this._listen(this, 'mousedown', this._onMouseDown.bind(this), option);
+    this._listen(this, 'mouseup', this._onMouseUp.bind(this), option);
+    this._listen(window, 'keydown', this._onKeyDown.bind(this), option);
+    this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
+  },
+
+  detached() {
+    this.cancelAsync(this._makeChartAsyncCallbackId);
+    if (this._chart) this._chart.destroy();
+    if (this._listeners) {
+      this._listeners.forEach(({node, eventName, func, option}) => {
+        node.removeEventListener(eventName, func, option);
+      });
+      this._listeners.clear();
+    }
+  },
+
+  _listen(node: Node, eventName: string, func: (event) => void, option = {}) {
+    if (!this._listeners) this._listeners = new Set();
+    this._listeners.add({node, eventName, func, option});
+    node.addEventListener(eventName, func, option);
+  },
+
+  _onKeyDown(event) {
+    this.toggleClass('altdown', event.altKey);
+  },
+
+  _onKeyUp(event) {
+    this.toggleClass('altdown', event.altKey);
+  },
+
+  _onMouseDown(event) {
+    this.toggleClass('mousedown', true);
+  },
+
+  _onMouseUp(event) {
+    this.toggleClass('mousedown', false);
+  },
+
   /**
    * Sets the series that the chart displays. Series with other names will
    * not be displayed.
@@ -330,16 +379,6 @@ Polymer({
     if (this._chart) {
       this._chart.redraw(clearCache);
     }
-  },
-
-  detached: function() {
-    this.cancelAsync(this._makeChartAsyncCallbackId);
-    if (this._chart) this._chart.destroy();
-  },
-
-  ready: function() {
-    this.scopeSubtree(this.$.tooltip, true);
-    this.scopeSubtree(this.$.chartdiv, true);
   },
 
   /**

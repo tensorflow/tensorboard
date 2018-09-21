@@ -93,6 +93,7 @@ export class LineChart {
   private tooltipSortingMethod: string;
   private tooltipPosition: string;
   private _ignoreYOutliers: boolean;
+  private _lastMousePosition: Plottable.Point;
 
   // An optional list of 2 numbers.
   private _defaultXRange: number[];
@@ -195,6 +196,7 @@ export class LineChart {
     this.center = new Plottable.Components.Group([
         this.gridlines, xZeroLine, yZeroLine, plot,
         panZoomLayer, this.tooltipPointsComponent]);
+    this.center.addClass('main');
     this.outer = new Plottable.Components.Table(
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
@@ -420,63 +422,74 @@ export class LineChart {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
-  private createTooltipInteraction(dzl: PanZoomDragLayer):
+  private createTooltipInteraction(pzdl: PanZoomDragLayer):
       Plottable.Interactions.Pointer {
     const pi = new Plottable.Interactions.Pointer();
     // Disable interaction while drag zooming.
-    dzl.onDragStart(() => {
+    const disableTooltipUpdate = () => {
       pi.enabled(false);
       this.hideTooltips();
-    });
-    dzl.onDragEnd(() => pi.enabled(true));
-
+    };
+    const enableTooltipUpdate = () => pi.enabled(true);
+    pzdl.onPanStart(disableTooltipUpdate);
+    pzdl.onDragZoomStart(disableTooltipUpdate);
+    pzdl.onPanEnd(enableTooltipUpdate);
+    pzdl.onDragZoomEnd(enableTooltipUpdate);
+    // When using wheel, cursor position does not change. Redraw the tooltip
+    // using the last known mouse position.
+    pzdl.onScrollZoom(() => this.updateTooltipContent(this._lastMousePosition));
     pi.onPointerMove((p: Plottable.Point) => {
-      // Line plot must be initialized to draw.
-      if (!this.linePlot) return;
-      window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
-      this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(() => {
-        let target: vz_chart_helpers.Point = {
-          x: p.x,
-          y: p.y,
-          datum: null,
-          dataset: null,
-        };
-        let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
-        // pts is the closets point to the tooltip for each dataset
-        let pts = this.linePlot.datasets()
-            .map((dataset) => this.findClosestPoint(target, dataset))
-            .filter(Boolean);
-        let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
-        // We draw tooltips for points that are NaN, or are currently visible
-        let ptsForTooltips = pts.filter(
-            (p) => intersectsBBox(p.x, p.y, bbox) ||
-                isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
-        // Only draw little indicator circles for the non-NaN points
-        let ptsToCircle = ptsForTooltips.filter(
-            (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
-        if (pts.length !== 0) {
-          this.scatterPlot.attr('display', 'none');
-          const ptsSelection: any =
-              this.tooltipPointsComponent.content().selectAll('.point').data(
-                  ptsToCircle,
-                  (p: vz_chart_helpers.Point) => p.dataset.metadata().name);
-          ptsSelection.enter().append('circle').classed('point', true);
-          ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
-              .attr('cx', (p) => p.x)
-              .attr('cy', (p) => p.y)
-              .style('stroke', 'none')
-              .attr(
-                  'fill',
-                  (p) => this.colorScale.scale(p.dataset.metadata().name));
-          ptsSelection.exit().remove();
-          this.drawTooltips(ptsForTooltips, target, this.tooltipColumns);
-        } else {
-          this.hideTooltips();
-        }
-      });
+      this._lastMousePosition = p;
+      this.updateTooltipContent(p);
     });
     pi.onPointerExit(() => this.hideTooltips());
     return pi;
+  }
+
+  private updateTooltipContent(p: Plottable.Point): void {
+    // Line plot must be initialized to draw.
+    if (!this.linePlot) return;
+    window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
+    this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(() => {
+      let target: vz_chart_helpers.Point = {
+        x: p.x,
+        y: p.y,
+        datum: null,
+        dataset: null,
+      };
+      let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
+      // pts is the closets point to the tooltip for each dataset
+      let pts = this.linePlot.datasets()
+          .map((dataset) => this.findClosestPoint(target, dataset))
+          .filter(Boolean);
+      let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
+      // We draw tooltips for points that are NaN, or are currently visible
+      let ptsForTooltips = pts.filter(
+          (p) => intersectsBBox(p.x, p.y, bbox) ||
+              isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+      // Only draw little indicator circles for the non-NaN points
+      let ptsToCircle = ptsForTooltips.filter(
+          (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+      if (pts.length !== 0) {
+        this.scatterPlot.attr('display', 'none');
+        const ptsSelection: any =
+            this.tooltipPointsComponent.content().selectAll('.point').data(
+                ptsToCircle,
+                (p: vz_chart_helpers.Point) => p.dataset.metadata().name);
+        ptsSelection.enter().append('circle').classed('point', true);
+        ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
+            .attr('cx', (p) => p.x)
+            .attr('cy', (p) => p.y)
+            .style('stroke', 'none')
+            .attr(
+                'fill',
+                (p) => this.colorScale.scale(p.dataset.metadata().name));
+        ptsSelection.exit().remove();
+        this.drawTooltips(ptsForTooltips, target, this.tooltipColumns);
+      } else {
+        this.hideTooltips();
+      }
+    });
   }
 
   private hideTooltips(): void {

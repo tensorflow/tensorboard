@@ -120,6 +120,20 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         stroke-width: 1px;
       }
 
+      #chartdiv .main {
+        cursor: crosshair;
+      }
+
+      :host.altdown #chartdiv :not(.drag-zooming) .main {
+        cursor: -webkit-grab;
+        cursor: grab;
+      }
+
+      :host.mousedown #chartdiv .panning .main {
+        cursor: -webkit-grabbing;
+        cursor: grabbing;
+      }
+
       #chartdiv line.guide-line {
         stroke: #999;
         stroke-width: 1.5px;
