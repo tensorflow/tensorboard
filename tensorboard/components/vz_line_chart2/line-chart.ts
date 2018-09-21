@@ -70,7 +70,7 @@ export class LineChart {
   private symbolFunction: vz_chart_helpers.SymbolFn;
 
   private tooltipColumns: vz_chart_helpers.TooltipColumn[];
-  private tooltip: d3.Selection<any, any, any, any>;
+  private tooltip: vz_chart_helper.VzChartTooltip;
   private tooltipInteraction: Plottable.Interactions.Pointer;
   private tooltipPointsComponent: Plottable.Component;
 
@@ -91,7 +91,6 @@ export class LineChart {
   private smoothingWeight: number;
   private smoothingEnabled: boolean;
   private tooltipSortingMethod: string;
-  private tooltipPosition: string;
   private _ignoreYOutliers: boolean;
   private _lastMousePosition: Plottable.Point;
 
@@ -101,7 +100,6 @@ export class LineChart {
   private _defaultYRange: number[];
 
   private _tooltipUpdateAnimationFrame: number;
-  private _tooltipPositionAnimationFrame: number;
 
   private targetSVG: d3.Selection<any, any, any, any>;
 
@@ -110,7 +108,7 @@ export class LineChart {
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
-      tooltip: d3.Selection<any, any, any, any>,
+      tooltip: vz_chart_helper.VzChartTooltip,
       tooltipColumns: vz_chart_helpers.TooltipColumn[],
       fillArea: FillArea,
       defaultXRange?: number[],
@@ -494,8 +492,7 @@ export class LineChart {
 
   private hideTooltips(): void {
     window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
-    window.cancelAnimationFrame(this._tooltipPositionAnimationFrame);
-    this.tooltip.style('opacity', 0);
+    this.tooltip.hide();
     this.scatterPlot.attr('display', 'block');
     this.tooltipPointsComponent.content().selectAll('.point').remove();
   }
@@ -516,9 +513,33 @@ export class LineChart {
       target: vz_chart_helpers.Point,
       tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
     if (!points.length) {
-      this.tooltip.style('opacity', 0);
+      this.tooltip.hide();
       return;
     }
+
+    const {colorScale} = this;
+    const swatchCol = {
+      title: '',
+      static: false,
+      evalType: TooltipColumnEvalType.DOM,
+      evaluate(d: vz_chart_helpers.Point) {
+        d3.select(this)
+            .select('span')
+            .style(
+                'background-color',
+                () => colorScale.scale(d.dataset.metadata().name));
+        return '';
+      },
+      enter(d: vz_chart_helpers.Point) {
+        d3.select(this)
+            .append('span')
+            .classed('swatch', true)
+            .style(
+                'background-color',
+                () => colorScale.scale(d.dataset.metadata().name));
+      },
+    };
+    tooltipColumns = [swatchCol, ...tooltipColumns];
 
     // Formatters for value, step, and wall_time
     let valueFormatter = vz_chart_helpers.multiscaleFormatter(
@@ -546,7 +567,21 @@ export class LineChart {
     }
 
     const self = this;
-    const rows = this.tooltip.select('tbody')
+    const table = d3.select(this.tooltip.content()).select('table');
+    const header = table.select('thead')
+        .selectAll('th')
+        .data(
+            tooltipColumns,
+            (column: vz_chart_helpers.TooltipColumn, _, __) => {
+              return column.title
+            });
+    const newHeaderNodes = header.enter()
+        .append('th')
+        .text(col => col.title)
+        .nodes();
+    header.exit().remove();
+
+    const rows = table.select('tbody')
         .selectAll('tr')
         .data(points, (pt: vz_chart_helpers.Point, _, __) => {
           return pt.dataset.metadata().name;
@@ -571,45 +606,22 @@ export class LineChart {
         .order();
 
     rows.exit().remove();
-    rows.enter().append('tr').each(function(point) {
-      self.drawTooltipRow(this, tooltipColumns, point);
-    });
-
-    // Because a tooltip content update is a DOM _mutation_, after an animation
-    // frame, we update the position which is another read and mutation.
-    window.cancelAnimationFrame(this._tooltipPositionAnimationFrame);
-    this._tooltipPositionAnimationFrame = window.requestAnimationFrame(() => {
-      this.repositionTooltip();
-    });
+    const newRowNodes = rows.enter()
+        .append('tr')
+        .each(function(point) {
+          self.drawTooltipRow(this, tooltipColumns, point);
+        })
+        .nodes();
+    const newNodes = [...newHeaderNodes, ...newRowNodes] as Element[];
+    this.tooltip.updateAndPosition(this.targetSVG.node(), newNodes);
   }
 
   private drawTooltipRow(
       row: d3.BaseType,
       tooltipColumns: vz_chart_helpers.TooltipColumn[],
       point: vz_chart_helpers.Point) {
-    const {smoothingEnabled, colorScale} = this;
     const self = this;
-    const swatchCol = {
-      name: 'Swatch',
-      evalType: TooltipColumnEvalType.DOM,
-      evaluate(d: vz_chart_helpers.Point) {
-        d3.select(this)
-            .select('span')
-            .style(
-                'background-color',
-                () => colorScale.scale(d.dataset.metadata().name));
-      },
-      enter(d: vz_chart_helpers.Point) {
-        d3.select(this)
-            .append('span')
-            .classed('swatch', true)
-            .style(
-                'background-color',
-                () => colorScale.scale(d.dataset.metadata().name));
-      },
-    };
-    const columns = d3.select(row).selectAll('td')
-        .data([swatchCol, ...tooltipColumns]);
+    const columns = d3.select(row).selectAll('td').data(tooltipColumns);
 
     columns.each(function(col: TooltipColumn) {
       // Skip column value update when the column is static.
@@ -635,30 +647,6 @@ export class LineChart {
       d3.select(column)
           .text(tooltipCol.evaluate.call(column, point, {smoothingEnabled}));
     }
-  }
-
-  /**
-   * Repositions the tooltip based on new width and height of the bounding box.
-   * In order to update the position, it _read_ the DOM, then _mutate_ the DOM.
-   */
-  private repositionTooltip() {
-    // compute left position
-    let documentWidth = document.body.clientWidth;
-    let node: any = this.tooltip.node();
-    let parentRect = node.parentElement.getBoundingClientRect();
-    let nodeRect = node.getBoundingClientRect();
-    // prevent it from falling off the right side of the screen
-    let left = documentWidth - parentRect.left - nodeRect.width - 60, top = 0;
-
-    if (this.tooltipPosition === 'right') {
-      left = Math.min(parentRect.width, left);
-    } else {  // 'bottom'
-      left = Math.min(0, left);
-      top = parentRect.height + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
-    }
-
-    this.tooltip.style('transform', `translate(${left}px, ${top}px)`);
-    this.tooltip.style('opacity', 1);
   }
 
   private findClosestPoint(
@@ -839,10 +827,6 @@ export class LineChart {
 
   public setTooltipSortingMethod(method: string) {
     this.tooltipSortingMethod = method;
-  }
-
-  public setTooltipPosition(position: string) {
-    this.tooltipPosition = position;
   }
 
   public renderTo(targetSVG: d3.Selection<any, any, any, any>) {
