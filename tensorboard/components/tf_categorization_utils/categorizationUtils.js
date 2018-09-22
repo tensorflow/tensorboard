@@ -86,10 +86,9 @@ var tf_categorization_utils;
     }
     tf_categorization_utils.categorize = categorize;
     function categorizeTags(runToTag, selectedRuns, query) {
-        runToTag = _.pick(runToTag, selectedRuns);
         var tags = tf_backend.getTags(runToTag);
         var categories = categorize(tags, query);
-        var tagToRuns = createTagToRuns(runToTag);
+        var tagToRuns = createTagToRuns(_.pick(runToTag, selectedRuns));
         return categories.map(function (_a) {
             var name = _a.name, metadata = _a.metadata, items = _a.items;
             return ({
@@ -97,7 +96,7 @@ var tf_categorization_utils;
                 metadata: metadata,
                 items: items.map(function (tag) { return ({
                     tag: tag,
-                    runs: tagToRuns.get(tag).slice(),
+                    runs: (tagToRuns.get(tag) || []).slice(),
                 }); }),
             });
         });
