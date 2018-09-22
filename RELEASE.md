@@ -1,3 +1,33 @@
+# Release 1.11.0
+
+The 1.11 minor series tracks TensorFlow 1.11.
+
+## Highlights
+- New What-If Tool dashboard, which provides a simple, intuitive, and powerful
+  visual interface to play with a trained ML model on a set of data with
+  absolutely no code required. See for details:
+  https://github.com/tensorflow/tensorboard/tree/1.11/tensorboard/plugins/interactive_inference
+
+## Features
+- Graph dashboard now supports coloring nodes by XLA cluster (PR #1336)
+- Last updated time appears in tooltip for refresh button (PR #1362)
+- Line charts support pan w/ shift key, zoom w/ scroll wheel (PR #1429, #1456)
+
+## Performance improvements
+- Better UI animation/scrolling performance (#1311, #1357)
+- Reduced Plottable MouseInteraction overhead on hover (#1333/#1329)
+- Optimized line chart tooltip redraw behavior (#1355)
+
+## Bug fixes
+- #982  - Fix spurious 404s for /[[_dataImageSrc]] or /[[_imageURL]] (PR #1315)
+- #1320 - Fix port binding to disallow confusing IPv4/IPv6 port reuse (PR #1449)
+- #1397 - Fix multi-part logdirs to correct expand ~ for user homedir
+- #1396 - Fix "step" chart axis to show only integer ticks
+- #1389 - Fix scalar card titles to omit common prefix (PR #1399)
+- #1403 - Fix scalar chart shrinking problem on fast page changes
+- #1406 - Fix scalar chart tooltip display to better avoid clipping
+
+
 # Release 1.10.0
 
 The 1.10 minor series tracks TensorFlow 1.10.
