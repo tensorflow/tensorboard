@@ -273,10 +273,10 @@ var vz_line_chart2;
             node.addEventListener(eventName, func, option);
         },
         _onKeyDown: function (event) {
-            this.toggleClass('altdown', event.altKey);
+            this.toggleClass('pankey', vz_line_chart2.PanZoomDragLayer.isPanKey(event));
         },
         _onKeyUp: function (event) {
-            this.toggleClass('altdown', event.altKey);
+            this.toggleClass('pankey', vz_line_chart2.PanZoomDragLayer.isPanKey(event));
         },
         _onMouseDown: function (event) {
             this.toggleClass('mousedown', true);

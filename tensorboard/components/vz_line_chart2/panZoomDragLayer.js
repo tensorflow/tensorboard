@@ -46,12 +46,12 @@ var vz_line_chart2;
             _this.panEndCallback = new Plottable.Utils.CallbackSet();
             _this.panZoom = new Plottable.Interactions.PanZoom(xScale, yScale);
             _this.panZoom.dragInteraction().mouseFilter(function (event) {
-                return Boolean(event.altKey) && event.button === 0;
+                return PanZoomDragLayer.isPanKey(event) && event.button === 0;
             });
             _this.panZoom.attachTo(_this);
             _this.dragZoomLayer = new vz_line_chart.DragZoomLayer(xScale, yScale, unzoomMethod);
             _this.dragZoomLayer.dragInteraction().mouseFilter(function (event) {
-                return !Boolean(event.altKey) && event.button === 0;
+                return !PanZoomDragLayer.isPanKey(event) && event.button === 0;
             });
             _this.append(_this.dragZoomLayer);
             _this.onAnchor(function () {
@@ -78,6 +78,9 @@ var vz_line_chart2;
             });
             return _this;
         }
+        PanZoomDragLayer.isPanKey = function (event) {
+            return Boolean(event.shiftKey);
+        };
         PanZoomDragLayer.prototype.setState = function (nextState) {
             if (this.state == nextState)
                 return;
