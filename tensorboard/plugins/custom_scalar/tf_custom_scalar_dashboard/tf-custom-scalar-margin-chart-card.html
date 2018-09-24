@@ -43,7 +43,7 @@ limitations under the License.
       id="loader"
       active="[[active]]"
       color-scale="[[_colorScale]]"
-      data-series="[[_filteredSeriesNames]]"
+      data-series="[[_seriesNames]]"
       get-data-load-url="[[_dataUrl]]"
       fill-area="[[_fillArea]]"
       ignore-y-outliers="[[ignoreYOutliers]]"
@@ -85,17 +85,17 @@ limitations under the License.
           selected-item-label="{{_dataSeriesNameToDownload}}"
         >
           <paper-menu class="dropdown-content" slot="dropdown-content">
-            <template is="dom-repeat" items="[[_filteredSeriesNames]]" as="dataSeriesName">
+            <template is="dom-repeat" items="[[_seriesNames]]" as="dataSeriesName">
               <paper-item no-label-float=true>[[dataSeriesName]]</paper-item>
             </template>
           </paper-menu>
         </paper-dropdown-menu>
         <a
           download="[[_dataSeriesNameToDownload]].csv"
-          href="[[_csvUrl(_filteredNameToSeries, _dataSeriesNameToDownload)]]"
+          href="[[_csvUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
         >CSV</a> <a
           download="[[_dataSeriesNameToDownload]].json"
-          href="[[_jsonUrl(_filteredNameToSeries, _dataSeriesNameToDownload)]]"
+          href="[[_jsonUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
         >JSON</a>
       </div>
     </template>
@@ -163,7 +163,7 @@ limitations under the License.
 
   <div id="matches-container">
     <div class="collapsible-list-title">
-      <template is="dom-if" if="[[_filteredSeriesNames.length]]">
+      <template is="dom-if" if="[[_seriesNames.length]]">
         <paper-icon-button
           icon="[[_getToggleCollapsibleIcon(_matchesListOpened)]]"
           on-click="_toggleMatchesOpen"
@@ -172,19 +172,19 @@ limitations under the License.
       </template>
 
       <span class="collapsible-title-text">
-        Matches ([[_filteredSeriesNames.length]])
+        Matches ([[_seriesNames.length]])
       </span>
     </div>
-    <template is="dom-if" if="[[_filteredSeriesNames.length]]">
+    <template is="dom-if" if="[[_seriesNames.length]]">
       <iron-collapse opened="[[_matchesListOpened]]">
         <div id="matches-list">
           <template is="dom-repeat"
-                    items="[[_filteredSeriesNames]]"
+                    items="[[_seriesNames]]"
                     as="seriesName">
               <div class="match-list-entry"
                    style="color: [[_determineColor(_colorScale, seriesName)]];">
                 <span class="match-entry-symbol">
-                  [[_determineSymbol(_filteredNameToSeries, seriesName)]]
+                  [[_determineSymbol(_nameToDataSeries, seriesName)]]
                 </span>
                 [[seriesName]]
               </div>
@@ -303,14 +303,14 @@ limitations under the License.
         /**
          * Maps from the name of the data series to the DataSeries object.
          */
-        _filteredNameToSeries: {
+        _nameToDataSeries: {
           type: Object,
-          value: {},
+          value: () => ({}),
         },
 
-        _filteredSeriesNames: {
+        _seriesNames: {
           type: Object,
-          computed: '_computeFilteredSeriesNames(_filteredNameToSeries)',
+          computed: '_computeSeriesNames(_nameToDataSeries, runs)',
         },
 
         _expanded: {
@@ -426,7 +426,7 @@ limitations under the License.
         _stepsMismatch: Object,
       },
       observers: [
-        '_updateChart(_filteredNameToSeries)',
+        '_updateChart(_nameToDataSeries)',
         // Clear the data series when the tag filter changes.
         '_refreshDataSeries(_tagFilter)',
       ],
@@ -449,16 +449,18 @@ limitations under the License.
           chart.resetDomain();
         }
       },
-      _csvUrl(_filteredNameToSeries, dataSeriesName) {
-        const baseUrl = this._downloadDataUrl(_filteredNameToSeries, dataSeriesName);
+      _csvUrl(_nameToDataSeries, dataSeriesName) {
+        if (!dataSeriesName) return '';
+        const baseUrl = this._downloadDataUrl(_nameToDataSeries, dataSeriesName);
         return tf_backend.addParams(baseUrl, {format: 'csv'});
       },
-      _jsonUrl(_filteredNameToSeries, dataSeriesName) {
-        const baseUrl = this._downloadDataUrl(_filteredNameToSeries, dataSeriesName);
+      _jsonUrl(_nameToDataSeries, dataSeriesName) {
+        if (!dataSeriesName) return '';
+        const baseUrl = this._downloadDataUrl(_nameToDataSeries, dataSeriesName);
         return tf_backend.addParams(baseUrl, {format: 'json'});
       },
-      _downloadDataUrl(_filteredNameToSeries, dataSeriesName) {
-        const dataSeries = _filteredNameToSeries[dataSeriesName];
+      _downloadDataUrl(_nameToDataSeries, dataSeriesName) {
+        const dataSeries = _nameToDataSeries[dataSeriesName];
         const getVars = {
             tag: dataSeries.getTag(),
             run: dataSeries.getRun(),
@@ -480,7 +482,7 @@ limitations under the License.
 
           // The user's regular expression was valid.
           // Incorporate these newly loaded values.
-          const newMapping = _.clone(this._filteredNameToSeries);
+          const newMapping = _.clone(this._nameToDataSeries);
           const tagsNotFound = [];
           _.forEach(marginChartSeries, tagsObject => {
             let tagNotFound = false;
@@ -537,17 +539,18 @@ limitations under the License.
             const seriesName =
                 tf_custom_scalar_dashboard.generateDataSeriesName(
                     run, tagsObject.value);
-            let series = newMapping[seriesName];
+            const series = newMapping[seriesName];
 
             if (series) {
               // This series already exists.
               series.setData(dataPoints);
             } else {
-              newMapping[seriesName] = this._createNewDataSeries(
+              const series = this._createNewDataSeries(
                   run, tagsObject.value, seriesName, dataPoints);
+              newMapping[seriesName] = series;
             }
           });
-          this.set('_filteredNameToSeries', newMapping);
+          this.set('_nameToDataSeries', newMapping);
 
           const entryIndex = _.findIndex(this._missingTags, (entry) => {
             return entry.run === run;
@@ -603,28 +606,31 @@ limitations under the License.
             (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
         return series;
       },
-      _updateChart(_filteredNameToSeries) {
+      _updateChart(_nameToDataSeries) {
         // Add new data series.
-        _.forOwn(_filteredNameToSeries, dataSeries => {
+        _.forOwn(_nameToDataSeries, dataSeries => {
           this.$.loader.setSeriesData(
               dataSeries.getName(), dataSeries.getData());
         });
       },
-      _computeFilteredSeriesNames(_) {
-        return Object.keys(this._filteredNameToSeries);
+      _computeSeriesNames() {
+        const runLookup = new Set(this.runs);
+        return Object.entries(this._nameToDataSeries)
+            .filter(([_, series]) => runLookup.has(series.run))
+            .map(([name]) => name);
       },
       _determineColor(colorScale, seriesName) {
         return colorScale.scale(seriesName);
       },
       _refreshDataSeries(_tagFilter) {
-        this.set('_filteredNameToSeries', {});
+        this.set('_nameToDataSeries', {});
       },
       _createSymbolFunction() {
-        return seriesName => (
-            this._filteredNameToSeries[seriesName].getSymbol().method());
+        return seriesName =>
+            this._nameToDataSeries[seriesName].getSymbol().method();
       },
-      _determineSymbol(_filteredNameToSeries, seriesName) {
-        return _filteredNameToSeries[seriesName].getSymbol().character;
+      _determineSymbol(_nameToDataSeries, seriesName) {
+        return _nameToDataSeries[seriesName].getSymbol().character;
       },
       _computeTagFilter(marginChartSeries) {
         const tags = _.flatten(
