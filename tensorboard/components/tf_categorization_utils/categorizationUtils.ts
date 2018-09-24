@@ -124,17 +124,16 @@ export function categorizeTags(
     runToTag: RunToTag,
     selectedRuns: string[],
     query?: string): TagCategory[] {
-  runToTag = _.pick(runToTag, selectedRuns);
   const tags = tf_backend.getTags(runToTag);
   const categories = categorize(tags, query);
-  const tagToRuns = createTagToRuns(runToTag);
+  const tagToRuns = createTagToRuns(_.pick(runToTag, selectedRuns));
 
   return categories.map(({name, metadata, items}) => ({
     name,
     metadata,
     items: items.map(tag => ({
       tag,
-      runs: tagToRuns.get(tag).slice(),
+      runs: (tagToRuns.get(tag) || []).slice(),
     })),
   }));
 }

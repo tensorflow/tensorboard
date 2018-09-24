@@ -29,7 +29,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
-from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
 from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import regression_pb2
@@ -81,7 +81,7 @@ class InferenceUtilsTest(tf.test.TestCase):
                             'dummy_example')
     example = test_utils.make_fake_example()
     test_utils.write_out_examples([example], cns_path)
-    dummy_examples = oss_utils.example_protos_from_path(cns_path)
+    dummy_examples = platform_utils.example_protos_from_path(cns_path)
     self.assertEqual(1, len(dummy_examples))
     self.assertEqual(example, dummy_examples[0])
 
@@ -93,7 +93,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     example_three = test_utils.make_fake_example(3)
     test_utils.write_out_examples([example_one, example_two, example_three],
                                   cns_path)
-    dummy_examples = oss_utils.example_protos_from_path(cns_path, 2)
+    dummy_examples = platform_utils.example_protos_from_path(cns_path, 2)
     self.assertEqual(2, len(dummy_examples))
     self.assertEqual(example_one, dummy_examples[0])
     self.assertEqual(example_two, dummy_examples[1])
@@ -110,14 +110,14 @@ class InferenceUtilsTest(tf.test.TestCase):
 
     wildcard_path = os.path.join(tf.test.get_temp_dir(),
                                 'wildcard_example*')
-    dummy_examples = oss_utils.example_protos_from_path(
+    dummy_examples = platform_utils.example_protos_from_path(
         wildcard_path)
     self.assertEqual(2, len(dummy_examples))
 
   def test_example_proto_from_path_if_does_not_exist(self):
     cns_path = os.path.join(tf.test.get_temp_dir(), 'does_not_exist')
     with self.assertRaises(common_utils.InvalidUserInputError):
-      oss_utils.example_protos_from_path(cns_path)
+      platform_utils.example_protos_from_path(cns_path)
 
   def test_get_numeric_features(self):
     example = test_utils.make_fake_example(single_int_val=2)
@@ -213,7 +213,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(2, len(wrapped.regression_result.regressions))
 
   @mock.patch.object(inference_utils, 'make_json_formatted_for_single_chart')
-  @mock.patch.object(oss_utils, 'call_servo')
+  @mock.patch.object(platform_utils, 'call_servo')
   def test_mutant_charts_for_feature(self, mock_call_servo,
                                      mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
@@ -247,7 +247,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(3, len(charts['data']))
 
   @mock.patch.object(inference_utils, 'make_json_formatted_for_single_chart')
-  @mock.patch.object(oss_utils, 'call_servo')
+  @mock.patch.object(platform_utils, 'call_servo')
   def test_mutant_charts_for_feature_with_feature_index_pattern(
       self, mock_call_servo, mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()

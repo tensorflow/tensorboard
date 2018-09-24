@@ -32,7 +32,7 @@ from tensorboard.plugins import base_plugin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
-from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -125,10 +125,10 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     examples_count = int(request.args.get('max_examples'))
     examples_path = request.args.get('examples_path')
     try:
-      oss_utils.throw_if_file_access_not_allowed(examples_path,
-                                                 self._logdir,
-                                                 self._has_auth_group)
-      example_strings = oss_utils.example_protos_from_path(
+      platform_utils.throw_if_file_access_not_allowed(examples_path,
+                                                      self._logdir,
+                                                      self._has_auth_group)
+      example_strings = platform_utils.example_protos_from_path(
           examples_path, examples_count, parse_examples=False)
       self.examples = [
         tf.train.Example.FromString(ex) for ex in example_strings]
@@ -253,7 +253,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
       # Get inference results proto and combine with indices of inferred
       # examples and respond with this data as json.
-      inference_result_proto = oss_utils.call_servo(
+      inference_result_proto = platform_utils.call_servo(
           examples_to_infer, serving_bundle)
       new_inferences = inference_utils.wrap_inference_results(
           inference_result_proto)

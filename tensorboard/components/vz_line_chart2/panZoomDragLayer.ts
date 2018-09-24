@@ -14,9 +14,20 @@ limitations under the License.
 ==============================================================================*/
 namespace vz_line_chart2 {
 
+enum State {
+  NONE,
+  DRAG_ZOOMING,
+  PANNING,
+}
+
+export type PanCallback = () => void;
+
 export class PanZoomDragLayer extends Plottable.Components.Group {
   private panZoom: Plottable.Interactions.PanZoom;
   private dragZoomLayer: vz_line_chart.DragZoomLayer;
+  private state: State = State.NONE;
+  private panStartCallback = new Plottable.Utils.CallbackSet<PanCallback>();
+  private panEndCallback = new Plottable.Utils.CallbackSet<PanCallback>();
 
   /**
    * A Plottable component/layer with a complex interaction for the line chart.
@@ -33,7 +44,7 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
 
     this.panZoom = new Plottable.Interactions.PanZoom(xScale, yScale);
     this.panZoom.dragInteraction().mouseFilter((event: MouseEvent) => {
-      return Boolean(event.altKey) && event.button === 0;
+      return PanZoomDragLayer.isPanKey(event) && event.button === 0;
     });
     this.panZoom.attachTo(this);
 
@@ -42,7 +53,7 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
         yScale,
         unzoomMethod);
     this.dragZoomLayer.dragInteraction().mouseFilter((event: MouseEvent) => {
-      return !Boolean(event.altKey) && event.button === 0;
+      return !PanZoomDragLayer.isPanKey(event) && event.button === 0;
     });
     this.append(this.dragZoomLayer);
 
@@ -52,17 +63,71 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
     this.onDetach(() => {
       this.panZoom.detachFrom(this);
     });
+
+    this.panZoom.dragInteraction().onDragStart(() => {
+      if (this.state == State.NONE) this.setState(State.PANNING);
+    });
+    this.panZoom.dragInteraction().onDragEnd(() => {
+      if (this.state == State.PANNING) this.setState(State.NONE);
+    });
+    this.dragZoomLayer.dragInteraction().onDragStart(() => {
+      if (this.state == State.NONE) this.setState(State.DRAG_ZOOMING);
+    });
+    this.dragZoomLayer.dragInteraction().onDragEnd(() => {
+      if (this.state == State.DRAG_ZOOMING) this.setState(State.NONE);
+    });
   }
 
-  onDragStart(cb) {
-    this.dragZoomLayer.dragInteraction().onDragStart(cb);
+  static isPanKey(event: MouseEvent): boolean {
+    return Boolean(event.shiftKey);
+  }
+
+  setState(nextState: State): void {
+    if (this.state == nextState) return;
+    const prevState = this.state;
+    this.state = nextState;
+    this.root().removeClass(this.stateClassName(prevState));
+    this.root().addClass(this.stateClassName(nextState));
+    if (prevState == State.PANNING) {
+      this.panEndCallback.callCallbacks();
+    }
+    if (nextState == State.PANNING) {
+      this.panStartCallback.callCallbacks();
+    }
+  }
+
+  stateClassName(state: State): string {
+    switch (state) {
+      case State.PANNING:
+        return 'panning';
+      case State.DRAG_ZOOMING:
+        return 'drag-zooming';
+      case State.NONE:
+      default:
+        return '';
+    }
+  }
+
+  onPanStart(cb: PanCallback) {
+    this.panStartCallback.add(cb);
+  }
+
+  onPanEnd(cb: PanCallback) {
+    this.panEndCallback.add(cb);
+  }
+
+  onScrollZoom(cb) {
+    this.panZoom.onZoomEnd(cb);
+  }
+
+  onDragZoomStart(cb) {
     this.dragZoomLayer.interactionStart(cb);
   }
 
-  onDragEnd(cb) {
-    this.dragZoomLayer.dragInteraction().onDragEnd(cb);
+  onDragZoomEnd(cb) {
     this.dragZoomLayer.interactionEnd(cb);
   }
+
 }
 
 }  // namespace vz_line_chart

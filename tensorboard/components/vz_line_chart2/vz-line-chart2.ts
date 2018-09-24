@@ -215,17 +215,6 @@ Polymer({
     },
 
     /**
-     * Tooltip header innerHTML text. We cannot use a dom-repeat inside of a
-     * table element because Polymer does not support that. This seems like
-     * a bug in Polymer. Hence, we manually generate the HTML for creating a row
-     * of table headers.
-     */
-    _tooltipTableHeaderHtml: {
-      type: String,
-      computed: '_computeTooltipTableHeaderHtml(tooltipColumns)',
-    },
-
-    /**
      * Change how the tooltip is sorted. Allows:
      * - "default" - Sort the tooltip by input order.
      * - "ascending" - Sort the tooltip by ascending value.
@@ -235,11 +224,17 @@ Polymer({
     tooltipSortingMethod: {type: String, value: 'default'},
 
     /**
-     * Change how the tooltip is positioned. Allows:
+     * Changes how the tooltip is positioned. Allows:
      * - "bottom" - Position the tooltip on the bottom of the chart.
      * - "right" - Position the tooltip to the right of the chart.
+     * - "auto" - Position the tooltip to the bottom of the chart in most case.
+     *            Position the tooltip above the chart if there isn't sufficient
+     *            space below.
      */
-    tooltipPosition: {type: String, value: 'bottom'},
+    tooltipPosition: {
+      type: String,
+      value: vz_chart_helper.TooltipPosition.BOTTOM,
+    },
 
     _chart: Object,
     _visibleSeriesCache: {
@@ -262,9 +257,56 @@ Polymer({
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
-    '_tooltipPositionChanged(tooltipPosition, _chart)',
-    '_outliersChanged(ignoreYOutliers, _chart)'
+    '_outliersChanged(ignoreYOutliers, _chart)',
   ],
+
+  ready() {
+    this.scopeSubtree(this.$.chartdiv, true);
+  },
+
+  attached() {
+    // `capture` ensures that no handler can stop propagation and break the
+    // handler. `passive` ensures that browser does not wait renderer thread
+    // on JS handler (which can prevent default and impact rendering).
+    const option = {capture: true, passive: true};
+    this._listen(this, 'mousedown', this._onMouseDown.bind(this), option);
+    this._listen(this, 'mouseup', this._onMouseUp.bind(this), option);
+    this._listen(window, 'keydown', this._onKeyDown.bind(this), option);
+    this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
+  },
+
+  detached() {
+    this.cancelAsync(this._makeChartAsyncCallbackId);
+    if (this._chart) this._chart.destroy();
+    if (this._listeners) {
+      this._listeners.forEach(({node, eventName, func, option}) => {
+        node.removeEventListener(eventName, func, option);
+      });
+      this._listeners.clear();
+    }
+  },
+
+  _listen(node: Node, eventName: string, func: (event) => void, option = {}) {
+    if (!this._listeners) this._listeners = new Set();
+    this._listeners.add({node, eventName, func, option});
+    node.addEventListener(eventName, func, option);
+  },
+
+  _onKeyDown(event) {
+    this.toggleClass('pankey', PanZoomDragLayer.isPanKey(event));
+  },
+
+  _onKeyUp(event) {
+    this.toggleClass('pankey', PanZoomDragLayer.isPanKey(event));
+  },
+
+  _onMouseDown(event) {
+    this.toggleClass('mousedown', true);
+  },
+
+  _onMouseUp(event) {
+    this.toggleClass('mousedown', false);
+  },
 
   /**
    * Sets the series that the chart displays. Series with other names will
@@ -332,16 +374,6 @@ Polymer({
     }
   },
 
-  detached: function() {
-    this.cancelAsync(this._makeChartAsyncCallbackId);
-    if (this._chart) this._chart.destroy();
-  },
-
-  ready: function() {
-    this.scopeSubtree(this.$.tooltip, true);
-    this.scopeSubtree(this.$.chartdiv, true);
-  },
-
   /**
    * Creates a chart, and asynchronously renders it. Fires a chart-rendered
    * event after the chart is rendered.
@@ -373,7 +405,6 @@ Polymer({
           !this.tooltipColumns) {
         return;
       }
-      var tooltip = d3.select(this.$.tooltip);
       // We directly reference properties of `this` because this call is
       // asynchronous, and values may have changed in between the call being
       // initiated and actually being run.
@@ -382,7 +413,7 @@ Polymer({
           this.yValueAccessor,
           yScaleType,
           colorScale,
-          tooltip,
+          this.$.tooltip,
           this.tooltipColumns,
           this.fillArea,
           this.defaultXRange,
@@ -424,26 +455,9 @@ Polymer({
     this._chart.ignoreYOutliers(this.ignoreYOutliers);
   },
 
-  _computeTooltipTableHeaderHtml() {
-    // The first column contains the circle with the color of the run.
-    const titles = ['', ...this.tooltipColumns.map(c => c.title)];
-    return titles.map(title => `<th>${this._sanitize(title)}</th>`).join('');
-  },
-
   _tooltipSortingMethodChanged: function() {
     if (!this._chart) return;
     this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
-  },
-
-  _tooltipPositionChanged: function() {
-    if (!this._chart) return;
-    this._chart.setTooltipPosition(this.tooltipPosition);
-  },
-
-  _sanitize(value) {
-    return value.replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')  // for symmetry :-)
-                .replace(/&/g, '&amp;');
   },
 
 });
