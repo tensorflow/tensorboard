@@ -20,7 +20,7 @@ limitations under the License.
 
 <dom-module id="tf-beholder-info">
   <template>
-  
+
     <template id="repeater" is="dom-repeat" items="{{items}}">
       <div class="section-info" style$="height: [[item.height]]px">
         <ul>
@@ -71,7 +71,7 @@ limitations under the License.
         },
 
         _xhr: Object,
-        _timer: Object,
+        _timer: Number,
       },
 
       attached() {
@@ -96,7 +96,6 @@ limitations under the License.
       _onLoad() {
         if (this._xhr.status == 200) {
           const response = JSON.parse(this._xhr.responseText);
-          this.splice('items', 0);
           for (var item of response) {
             this.push('items', item);
           }
@@ -118,7 +117,7 @@ limitations under the License.
           this._timer = null;
         }
         if (this._xhr) {
-          if (this._xhr.readyState < 4 /* DONE */) {
+          if (this._xhr.readyState < XMLHttpRequest.DONE) {
             this._xhr.abort();
           }
           this._xhr = null;

@@ -66,9 +66,8 @@ var memory_viewer_buffer_details;
          * Updates the details card.
          */
         _updateCard: function (node) {
-            if (node == null) {
+            if (!node)
                 return;
-            }
             this.size = node.sizeMiB.toFixed(1);
             var color = 'rgb(192,192,192)';
             if (node.unpaddedSizeMiB) {
@@ -85,13 +84,7 @@ var memory_viewer_buffer_details;
          * Returns the sub header of the buffer details card.
          */
         _subheader: function (node) {
-            if (!node) {
-                return null;
-            }
-            if (node.opcode) {
-                return node.opcode + ' operation';
-            }
-            return '';
+            return node && node.opcode ? node.opcode + ' operation' : '';
         },
     });
 })(memory_viewer_buffer_details || (memory_viewer_buffer_details = {})); // namespace memory_viewer_buffer_details
