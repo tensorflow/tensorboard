@@ -26,6 +26,7 @@ from tensorboard.plugins.custom_scalar import summary as _custom_scalar_summary
 from tensorboard.plugins.histogram import summary as _histogram_summary
 from tensorboard.plugins.image import summary as _image_summary
 from tensorboard.plugins.pr_curve import summary as _pr_curve_summary
+from tensorboard.plugins.toco_command import summary as _toco_command_summary
 from tensorboard.plugins.scalar import summary as _scalar_summary
 from tensorboard.plugins.text import summary as _text_summary
 
@@ -47,6 +48,12 @@ pr_curve_pb = _pr_curve_summary.pb
 pr_curve_streaming_op = _pr_curve_summary.streaming_op
 pr_curve_raw_data_op = _pr_curve_summary.raw_data_op
 pr_curve_raw_data_pb = _pr_curve_summary.raw_data_pb
+
+toco_command = _toco_command_summary.op
+toco_command_pb = _toco_command_summary.pb
+toco_command_streaming_op = _toco_command_summary.streaming_op
+toco_command_raw_data_op = _toco_command_summary.raw_data_op
+toco_command_raw_data_pb = _toco_command_summary.raw_data_pb
 
 scalar = _scalar_summary.op
 scalar_pb = _scalar_summary.pb

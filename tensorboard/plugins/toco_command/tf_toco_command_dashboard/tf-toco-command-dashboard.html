@@ -1,0 +1,271 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
+<link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../tf-utils/tf-utils.html">
+<link rel="import" href="tf-toco-command-card.html">
+<link rel="import" href="tf-toco-command-steps-selector.html">
+
+<!--
+  A frontend that displays a set of precision–recall curves. Each PR curve is
+  associated with a tag (which is in turn associated with 1 class).
+-->
+<dom-module id="tf-toco-command-dashboard">
+  <template>
+    <tf-dashboard-layout>
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <tf-option-selector
+            id="time-type-selector"
+            name="Time Display Type"
+            selected-id="{{_timeDisplayType}}"
+          >
+            <paper-button id="step">step</paper-button><!--
+            --><paper-button id="relative">relative</paper-button><!--
+            --><paper-button id="wall_time">wall</paper-button>
+          </tf-option-selector>
+        </div>
+        <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
+          <div class="sidebar-section" id="steps-selector-container">
+            <tf-toco-command-steps-selector
+                  runs="[[_relevantSelectedRuns]]"
+                  run-to-step="{{_runToStep}}"
+                  run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
+                  time-display-type="[[_timeDisplayType]]"></tf-toco-command-steps-selector>
+          </div>
+        </template>
+        <div class="sidebar-section">
+          <tf-runs-selector selected-runs="{{_selectedRuns}}">
+          </tf-runs-selector>
+        </div>
+       </div>
+      </div>
+      <div class="center">
+        <template is="dom-if" if="[[_dataNotFound]]">
+          <div class="no-data-warning">
+            <h3>No precision–recall curve data was found.</h3>
+            <p>Probable causes:</p>
+            <ul>
+              <li>
+                You haven’t written any precision–recall data to your event
+                files.
+              </li>
+              <li>
+                TensorBoard can’t find your event files.
+              </li>
+            </ul>
+            <p>
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            <p>
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
+          </div>
+        </template>
+        <template is="dom-if" if="[[!_dataNotFound]]">
+          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
+          <template is="dom-repeat" items="[[_categories]]" as="category">
+            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
+              <tf-paginated-view
+                items="[[category.items]]"
+                pages="{{category._pages}}"
+              >
+                <template is="dom-repeat" items="[[category._pages]]" as="page">
+                  <template is="dom-if" if="[[page.active]]">
+                    <div class="layout horizontal wrap">
+                      <template is="dom-repeat" items="[[page.items]]">
+                        <tf-toco-command-card
+                          runs="[[item.runs]]"
+                          tag="[[item.tag]]"
+                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
+                          request-manager="[[_requestManager]]"
+                          run-to-step-cap="[[_runToStep]]"
+                          active="[[page.active]]"
+                        ></tf-toco-command-card>
+                      </template>
+                    </div>
+                  </template>
+                </template>
+              </tf-paginated-view>
+            </tf-category-pane>
+          </template>
+        </template>
+      </div>
+    </tf-dashboard-layout>
+
+    <style include="dashboard-style"></style>
+    <style>
+      .no-data-warning {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+      /** Do not let the steps selector occlude the run selector. */
+      #steps-selector-container {
+        max-height: 40%;
+        overflow-y: auto;
+      }
+    </style>
+  </template>
+
+  <script>
+
+  Polymer({
+    is: 'tf-toco-command-dashboard',
+    properties: {
+      // Determines how the time entry is shown. One of step, relative, or
+      // wall_time.
+      _timeDisplayType : {
+        type: String,
+        value: 'step',
+      },
+      _selectedRuns: Array,
+      _runToTagInfo: Object,
+      // The steps that the step slider for each run should use.
+      _runToAvailableTimeEntries: {
+        type: Object, // map<run: string, steps: number[]>
+        value: {},
+      },
+      // A list of runs that are both selected and have PR curve data.
+      _relevantSelectedRuns: {
+        type: Array,
+        computed: "_computeRelevantSelectedRuns(_selectedRuns, _runToTagInfo)",
+      },
+      _runsWithPrCurveData: Array,  // string[]
+      // The desired step value that each run should use. If a run + tag lacks a
+      // PR curve at this exact step value, the greatest step value less than
+      // this value will be used.
+      _runToStep: {
+        type: Object,  // map<run: string, step: number>
+        notify: true,
+      },
+      _dataNotFound: Boolean,
+      _tagFilter: String,
+      // Categories must only be computed after _dataNotFound is found to be
+      // true and then polymer DOM templating responds to that finding. We
+      // thus use this property to guard when categories are computed.
+      _categoriesDomReady: Boolean,
+      _categories: {
+        type: Array,
+        computed: '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
+      },
+      _requestManager: {
+        type: Object,
+        value: () => new tf_backend.RequestManager(),
+      },
+      _step: {
+        type: Number,
+        value: 0,
+        notify: true,
+      },
+    },
+    ready() {
+      this.reload();
+    },
+    reload() {
+      Promise.all(
+          [this._fetchTags(), this._fetchTimeEntriesPerRun()]).then(() => {
+        this._reloadCards();
+      });
+    },
+    _shouldOpen(index) {
+      return index <= 2;
+    },
+    _fetchTags() {
+      const url = tf_backend.getRouter().pluginRoute('toco_command', '/tags');
+      return this._requestManager.request(url).then(runToTagInfo => {
+        if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+          // No need to update anything if there are no changes.
+          return;
+        }
+        const runToTag = _.mapValues(runToTagInfo, o => _.keys(o));
+        const tags = tf_backend.getTags(runToTag);
+        this.set('_dataNotFound', tags.length === 0);
+        this.set('_runToTagInfo', runToTagInfo);
+        this.async(() => {
+          // See the comment above `_categoriesDomReady`.
+          this.set('_categoriesDomReady', true);
+        });
+      });
+    },
+    _fetchTimeEntriesPerRun() {
+      const url = tf_backend.getRouter().pluginRoute(
+          'toco_command', '/available_time_entries');
+      return this._requestManager.request(url).then(timeEntriesPerRun => {
+        // Compute the relative field for each time entry. For each step, the
+        // relative field is the number of seconds (float) since the first step.
+        _.forOwn(timeEntriesPerRun, (entries, run) => {
+          _.forEach(entries, entry => {
+            entry['relative'] = entry.wall_time - entries[0].wall_time;
+          });
+        });
+
+        this.set('_runToAvailableTimeEntries', timeEntriesPerRun);
+
+        const listOfRuns = _.keys(timeEntriesPerRun).slice().sort();
+        if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
+          this.set('_runsWithPrCurveData', listOfRuns);
+        }
+      });
+    },
+    _reloadCards() {
+      _.forEach(this.querySelectorAll('tf-toco-command-card'), card => {
+        card.reload();
+      });
+    },
+    _makeCategories(runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
+      const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
+      return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
+    },
+    _computeColorForRun(run) {
+      return tf_color_scale.runsColorScale(run);
+    },
+    _computeRelevantSelectedRuns(selectedRuns, runToTagInfo) {
+      return selectedRuns.filter(run => runToTagInfo[run]);
+    },
+    _tagMetadata(runToTagsInfo, runs, tag) {
+      const runToTagInfo = {};
+      runs.forEach(run => {
+          runToTagInfo[run] = runToTagsInfo[run][tag];
+      });
+      // All PR curve tags include the `/toco_command` suffix. We can trim
+      // that from the display name.
+      const defaultDisplayName = tag.replace(/\/toco_command$/, '');
+      return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
+    },
+  });
+
+  tf_tensorboard.registerDashboard({
+    plugin: 'toco_command',
+    elementName: 'tf-toco-command-dashboard',
+    tabName: 'Toco Command',
+  });
+
+  </script>
+</dom-module>
