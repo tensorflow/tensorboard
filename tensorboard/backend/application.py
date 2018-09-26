@@ -48,6 +48,7 @@ from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
+from tensorboard.plugins.toco_command import metadata as toco_command_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
 
@@ -64,6 +65,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
     audio_metadata.PLUGIN_NAME: 10,
     histogram_metadata.PLUGIN_NAME: 500,
     pr_curve_metadata.PLUGIN_NAME: 100,
+    toco_command_metadata.PLUGIN_NAME: 200,
 }
 
 DATA_PREFIX = '/data'
