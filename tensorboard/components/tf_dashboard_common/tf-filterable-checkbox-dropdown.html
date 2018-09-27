@@ -53,7 +53,7 @@ Properties out:
         <!-- paper-input has type="text" for a11y, do not remove -->
         <paper-input
           label="[[label]]"
-          no-label-float
+          no-label-float="[[!labelFloat]]"
           placeholder="[[placeholder]]"
           readonly
           type="text"
@@ -70,7 +70,7 @@ Properties out:
           max-items-to-enable-by-default="[[maxItemsToEnableByDefault]]"
           selected-items="{{selectedItems}}"
           selection-state="[[selectionState]]"
-          uses-checkbox-colors="[[useCheckboxColors]]"
+          use-checkbox-colors="[[useCheckboxColors]]"
         >
         </tf-filterable-checkbox-list>
       </div>
