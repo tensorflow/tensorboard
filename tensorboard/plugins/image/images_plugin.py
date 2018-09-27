@@ -35,10 +35,21 @@ _IMGHDR_TO_MIMETYPE = {
     'bmp': 'image/bmp',
     'gif': 'image/gif',
     'jpeg': 'image/jpeg',
-    'png': 'image/png'
+    'png': 'image/png',
+    'svg': 'image/svg+xml'
 }
 
 _DEFAULT_IMAGE_MIMETYPE = 'application/octet-stream'
+
+
+# Extend imghdr.tests to include svg.
+def detect_svg(data, f):
+  del f  # Unused.
+  # Assume XML documents attached to image tag to be SVG.
+  if data.startswith(b'<?xml ') or data.startswith(b'<svg '):
+    return 'svg'
+
+imghdr.tests.append(detect_svg)
 
 
 class ImagesPlugin(base_plugin.TBPlugin):
@@ -314,10 +325,6 @@ class ImagesPlugin(base_plugin.TBPlugin):
     data = self._get_individual_image(run, tag, index, sample)
     image_type = imghdr.what(None, data)
     content_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
-    if content_type == _DEFAULT_IMAGE_MIMETYPE:
-      # Assume XML documents attached to image tag to be SVG.
-      if data.startswith(b'<?xml ') or data.startswith(b'<svg '):
-        content_type = 'image/svg+xml'
     return http_util.Respond(request, data, content_type)
 
   @wrappers.Request.application
