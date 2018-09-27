@@ -300,7 +300,7 @@ limitations under the License.
         }
       },
       _updateDownloadLink() {
-        const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvg();
+        const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
         this.$.svgLink.href = `data:image/svg+xml,${svgStr}`;
       },
       _csvUrl(tag, run) {

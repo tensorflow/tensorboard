@@ -29,7 +29,7 @@ export class PlottableExporter {
     this.root = rootEl;
   }
 
-  public asString(): string {
+  public exportAsString(): string {
     const convertedNodes = this.convert(this.root);
     if (!convertedNodes) return '';
     const svg = this.createRootSvg();

@@ -201,9 +201,9 @@ limitations under the License.
         cancelAnimationFrame(this._redrawRaf);
       },
 
-      exportAsSvg() {
+      exportAsSvgString() {
         const exporter = this.$.chart.getExporter();
-        return exporter.asString();
+        return exporter.exportAsString();
       },
 
       resetDomain() {
