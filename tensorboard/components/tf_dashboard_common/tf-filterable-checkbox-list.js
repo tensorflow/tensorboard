@@ -121,11 +121,12 @@ var tf_dashboard_common;
         },
         _synchronizeColors: function (e) {
             var _this = this;
-            if (!this.useCheckboxColors)
-                return;
             var checkboxes = this.querySelectorAll('paper-checkbox');
             checkboxes.forEach(function (cb) {
-                var color = _this.coloring.getColor(cb.name);
+                // Setting the null value will clear previously set color.
+                var color = _this.useCheckboxColors ?
+                    _this.coloring.getColor(cb.name) :
+                    null;
                 cb.customStyle['--paper-checkbox-checked-color'] = color;
                 cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
                 cb.customStyle['--paper-checkbox-unchecked-color'] = color;

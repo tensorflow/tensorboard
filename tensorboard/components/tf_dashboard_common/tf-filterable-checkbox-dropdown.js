@@ -19,6 +19,10 @@ var tf_dashboard_common;
         properties: {
             label: { type: String },
             placeholder: { type: String },
+            labelFloat: {
+                type: Boolean,
+                value: false,
+            },
             // ====== Pass through properties ======
             useCheckboxColors: {
                 type: Boolean,
