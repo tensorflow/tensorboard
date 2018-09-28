@@ -53,6 +53,7 @@ class FakeFlags(object):
       reload_interval=60,
       samples_per_plugin='',
       max_reload_threads=1,
+      reload_task='auto',
       db='',
       db_import=False,
       window_title='',
@@ -62,6 +63,7 @@ class FakeFlags(object):
     self.reload_interval = reload_interval
     self.samples_per_plugin = samples_per_plugin
     self.max_reload_threads = max_reload_threads
+    self.reload_task = reload_task
     self.db = db
     self.db_import = db_import
     self.window_title = window_title
