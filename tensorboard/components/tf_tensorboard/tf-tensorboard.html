@@ -93,7 +93,6 @@ limitations under the License.
                 label="Inactive"
                 no-label-float
                 noink
-                style="margin-left: 12px"
               >
                 <paper-menu
                   id="inactive-dashboards-menu"
@@ -132,7 +131,7 @@ limitations under the License.
               on-tap="openSettings"
               id="settings-button"
             ></paper-icon-button>
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md" tabindex="-1">
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md" tabindex="-1" class="help">
               <paper-icon-button icon="help-outline"></paper-icon-button>
             </a>
           </div>
@@ -276,6 +275,8 @@ limitations under the License.
           font-weight: 500;
           text-transform: uppercase;
         }
+
+        margin-left: 12px;
       }
 
       #inactive-dashboards-menu {
@@ -376,6 +377,42 @@ limitations under the License.
         }
         100% {
           transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 480px) {
+        :host {
+          font-size: 12px;
+          overflow-x: hidden;
+        }
+
+        .help,
+        .toolbar-title {
+          display: none;
+        }
+
+        paper-dropdown-menu {
+          margin-left: 5px;
+        }
+
+        paper-icon-button {
+          height: 28px;
+          margin: 4px;
+          padding: 4px;
+          width: 28px;
+        }
+
+        paper-toolbar {
+          margin: 0 -16px;
+          padding: 0;
+        }
+
+        paper-tabs {
+          margin: 0 -12px;
+        }
+
+        paper-tab {
+          font-size: 12px;
         }
       }
     </style>

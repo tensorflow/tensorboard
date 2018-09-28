@@ -52,8 +52,11 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
         xScale,
         yScale,
         unzoomMethod);
-    this.dragZoomLayer.dragInteraction().mouseFilter((event: MouseEvent) => {
-      return !PanZoomDragLayer.isPanKey(event) && event.button === 0;
+    this.dragZoomLayer.dragInteraction().eventFilter((event: UIEvent) => {
+      if (event instanceof MouseEvent) {
+        return !PanZoomDragLayer.isPanKey(event) && event.button === 0;
+      }
+      return false;
     });
     this.append(this.dragZoomLayer);
 

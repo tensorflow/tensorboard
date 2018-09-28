@@ -110,6 +110,12 @@ Properties out:
         margin: 5px 0 0 0;
         max-width: 288px;
       }
+      @media (max-width: 480px) {
+        tf-multi-checkbox {
+          flex-shrink: 0;
+          height: unset;
+        }
+      }
     </style>
   </template>
   <script>

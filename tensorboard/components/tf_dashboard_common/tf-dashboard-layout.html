@@ -66,6 +66,25 @@ Generic layout for a dashboard.
       .tf-graph-dashboard #center {
         background: #fff;
       }
+
+      @media (max-width: 480px) {
+        :host {
+          flex-direction: column;
+          overflow-y: auto;
+        }
+
+        #sidebar {
+          height: unset;
+          max-width: unset;
+          min-width: unset;
+          overflow-y: visible;
+        }
+
+        #center {
+          height: unset;
+          overflow: unset;
+        }
+      }
     </style>
   </template>
   <script>

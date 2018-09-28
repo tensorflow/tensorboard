@@ -15,7 +15,7 @@ limitations under the License.
 namespace vz_line_chart {
 
 export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
-  private _dragInteraction: Plottable.Interactions.Drag;
+  private _dragInteraction: Drag;
   private _doubleClickInteraction: Plottable.Interactions.Click;
   private easeFn: (t: number) => number = d3.easeCubicInOut;
   private _animationTime = 750;
@@ -42,7 +42,7 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
     super();
     this.xScale(xScale);
     this.yScale(yScale);
-    this._dragInteraction = new Plottable.Interactions.Drag();
+    this._dragInteraction = new Drag();
     this._doubleClickInteraction = new Plottable.Interactions.Click();
     this.setupCallbacks();
     this.unzoomMethod = unzoomMethod;
@@ -76,7 +76,7 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
    * Returns backing drag interaction. Useful for customization to the
    * interaction.
    */
-  public dragInteraction(): Plottable.Interactions.Drag {
+  public dragInteraction(): Drag {
     return this._dragInteraction;
   }
 
