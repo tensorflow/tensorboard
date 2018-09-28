@@ -372,7 +372,7 @@ def reload_multiplexer(multiplexer, path_to_run):
 
 
 def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
-                                use_process=False):
+                                use_process):
   """Asynchronously starts automatically reloading the given multiplexer.
 
   If `load_interval` is positive, the thread will reload the multiplexer
