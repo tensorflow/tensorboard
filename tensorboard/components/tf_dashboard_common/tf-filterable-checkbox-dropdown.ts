@@ -21,6 +21,11 @@ Polymer({
 
     placeholder: {type: String},
 
+    labelFloat: {
+      type: Boolean,
+      value: false,
+    },
+
     // ====== Pass through properties ======
 
     useCheckboxColors: {

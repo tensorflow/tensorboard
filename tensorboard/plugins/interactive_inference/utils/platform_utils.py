@@ -89,21 +89,35 @@ def example_protos_from_path(cns_path,
 
   filenames = filepath_to_filepath_list(cns_path)
   examples = []
-  try:
-    for filename in filenames:
-      record_iterator = tf.python_io.tf_record_iterator(path=filename)
+  compression_types = [
+    tf.python_io.TFRecordCompressionType.NONE,
+    tf.python_io.TFRecordCompressionType.GZIP,
+    tf.python_io.TFRecordCompressionType.ZLIB,
+  ]
+  current_compression_idx = 0
+  current_file_index = 0
+  while (current_file_index < len(filenames) and
+         current_compression_idx < len(compression_types)):
+    try:
+      record_iterator = tf.python_io.tf_record_iterator(
+        path=filenames[current_file_index],
+        options=tf.python_io.TFRecordOptions(
+          compression_types[current_compression_idx]))
       append_examples_from_iterable(record_iterator, examples)
+      current_file_index += 1
       if len(examples) >= num_examples:
         break
-  except (IOError, tf.errors.NotFoundError) as e:
-    raise common_utils.InvalidUserInputError(e)
+    except tf.errors.DataLossError:
+      current_compression_idx += 1
+    except (IOError, tf.errors.NotFoundError) as e:
+      raise common_utils.InvalidUserInputError(e)
 
   if examples:
     return examples
   else:
     raise common_utils.InvalidUserInputError(
         'No tf.train.Examples found at ' + cns_path +
-        '. Valid formats are SSTable and RecordIO.')
+        '. Valid formats are TFRecord files.')
 
 def call_servo(examples, serving_bundle):
   """Send an RPC request to the Servomatic prediction service.

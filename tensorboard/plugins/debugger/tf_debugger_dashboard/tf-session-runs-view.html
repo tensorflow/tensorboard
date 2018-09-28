@@ -119,7 +119,7 @@ limitations under the License.
         value: {},
       },
       // Stores the current active session run object.
-      _activeRunKey: Object,
+      _activeRunKey: String,
     },
     observers: [
       "renderLatest(latestSessionRun)",
@@ -136,7 +136,7 @@ limitations under the License.
       if (this._runKey2NumDevices[runKey] === undefined) {
         this._runKey2NumDevices[runKey] = 0;
       }
-      this.set('_activeRunKey', runKey);
+      this._activeRunKey = runKey;
       this._renderSessionRunTable();
     },
 

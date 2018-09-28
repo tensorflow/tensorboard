@@ -287,7 +287,7 @@ limitations under the License.
       },
       // name is a stable identifier for a series.
       _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
-        return `${experiment.name}/${run}`;
+        return JSON.stringify([experiment.name, run]);
       },
       // title is a visible string of a series for the UI.
       _getSeriesDisplayNameFromDatum(datum) {
@@ -298,9 +298,7 @@ limitations under the License.
       _getColorScale() {
         return {
           scale: (name) => {
-            const splitIndex = name.indexOf('/');
-            const exp = name.slice(0, splitIndex);
-            const run = name.slice(splitIndex + 1);
+            const [exp, run] = JSON.parse(name);
             return this.multiExperiments ?
                 tf_color_scale.experimentsColorScale(exp) :
                 tf_color_scale.runsColorScale(run);
