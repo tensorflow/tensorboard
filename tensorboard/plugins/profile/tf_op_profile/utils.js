@@ -42,7 +42,7 @@ var tf_op_profile;
         // NaN indicates undefined utilization for fused operations (we can't measure
         // performance inside a fusion). It could also indicate operations with zero
         // time, but they currently don't appear in the profile.
-        if (!node || !node.metrics)
+        if (!node || !node.metrics || !node.metrics.time)
             return 0 / 0;
         return node.metrics.flops / node.metrics.time;
     }
@@ -55,6 +55,14 @@ var tf_op_profile;
         return node.metrics.memoryBandwidth;
     }
     tf_op_profile.memoryUtilization = memoryUtilization;
+    function hasMemoryUtilization(node) {
+        return node && node.metrics && node.metrics.memoryBandwidth;
+    }
+    tf_op_profile.hasMemoryUtilization = hasMemoryUtilization;
+    function hasFlops(node) {
+        return node && node.metrics && node.metrics.time;
+    }
+    tf_op_profile.hasFlops = hasFlops;
     function percent(fraction) {
         if (isNaN(fraction))
             return "-";
