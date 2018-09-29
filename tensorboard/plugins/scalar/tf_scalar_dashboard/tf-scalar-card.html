@@ -77,20 +77,22 @@ limitations under the License.
       on-tap="_resetDomain"
       title="Fit domain to data"
     ></paper-icon-button>
-    <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
-      <paper-icon-button
-        class="dropdown-trigger"
-        slot="dropdown-trigger"
-        icon="more-vert"
-      ></paper-icon-button>
-      <paper-listbox class="dropdown-content" slot="dropdown-content">
-        <paper-item>
-          <a id="svgLink" download="[[tag]].svg">
-            Download Current Graph as SVG
-          </a>
-        </paper-item>
-      </paper-listbox>
-    </paper-menu-button>
+    <template is="dom-if" if="[[showDownloadLinks]]">
+      <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
+        <paper-icon-button
+          class="dropdown-trigger"
+          slot="dropdown-trigger"
+          icon="file-download"
+        ></paper-icon-button>
+        <paper-listbox class="dropdown-content" slot="dropdown-content">
+          <paper-item>
+            <a id="svgLink" download="[[tag]].svg">
+              Download Current Graph as SVG
+            </a>
+          </paper-item>
+        </paper-listbox>
+      </paper-menu-button>
+    </template>
     <span style="flex-grow: 1"></span>
     <template is="dom-if" if="[[showDownloadLinks]]">
       <div class="download-links">
@@ -301,7 +303,7 @@ limitations under the License.
       },
       _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
-        this.$.svgLink.href = `data:image/svg+xml,${svgStr}`;
+        this.$$('#svgLink').href = `data:image/svg+xml,${svgStr}`;
       },
       _csvUrl(tag, run) {
         return tf_backend.addParams(
