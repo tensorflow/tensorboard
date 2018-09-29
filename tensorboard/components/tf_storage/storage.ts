@@ -54,6 +54,7 @@ export const {
   set: setString,
   getInitializer: getStringInitializer,
   getObserver: getStringObserver,
+  disposeBinding: disposeStringBinding,
 } = makeBindings(x => x, x => x);
 
 export const {
@@ -70,6 +71,7 @@ export const {
   set: setNumber,
   getInitializer: getNumberInitializer,
   getObserver: getNumberObserver,
+  disposeBinding: disposeNumberBinding,
 } = makeBindings(
   s => +s,
   n => n.toString());

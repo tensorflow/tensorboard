@@ -27,12 +27,14 @@ function getHash(): string {
 
 
 /* tslint:disable:no-namespace */
-describe('URIStorage', () => {
+describe('Storage', () => {
   const option = {useLocalStorage: false};
 
   afterEach(() => {
     setHash('');
     window.localStorage.clear();
+    disposeStringBinding();
+    disposeNumberBinding();
   });
 
   it('get/setString', () => {
@@ -80,7 +82,6 @@ describe('URIStorage', () => {
   });
 
   describe('getInitializer', () => {
-
     [
       {useLocalStorage: true, name: 'local storage', eventName: 'storage'},
       {useLocalStorage: false, name: 'hash storage', eventName: 'hashchange'}
@@ -112,7 +113,7 @@ describe('URIStorage', () => {
           assert.equal(fakeScope.prop, 'baz');
         });
 
-        it(`reacts to '${eventName}' and sets the new value`, () => {
+        it(`reacts to '${eventName}' and sets the new value (simulated)`, () => {
           setValue('foo', '');
 
           const initializer = getStringInitializer('foo', options);
@@ -125,6 +126,25 @@ describe('URIStorage', () => {
 
           assert.equal(fakeScope.prop, 'changed');
         });
+
+        // It is hard to test against real URL hash and we use fakeHash for
+        // testing and fakeHash does not emit any event for a change.
+        if (useLocalStorage) {
+          it(`reacts to change and sets the new value (real)`, () => {
+            setString('foo', '', options);
+
+            const initializer = getStringInitializer('foo', options);
+            const fakeScope1 = {prop: null};
+            initializer.call(fakeScope1);
+            const fakeScope2 = {prop: 'bar'};
+            initializer.call(fakeScope2);
+
+            setString('foo', 'changed', options);
+
+            assert.equal(fakeScope1.prop, 'changed');
+            assert.equal(fakeScope2.prop, 'changed');
+          });
+        }
       });
     });
   });
