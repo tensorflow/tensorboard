@@ -30,6 +30,9 @@ const storageListeners = new Set<ListenKey>();
 window.addEventListener('hashchange', () => {
   hashListeners.forEach(listenKey => listenKey.listener());
 });
+
+// [1]: The event only triggers when another tab edits the storage. Changing a
+// value in current browser tab will NOT trigger below event.
 window.addEventListener('storage', () => {
   storageListeners.forEach(listenKey => listenKey.listener());
 });
@@ -44,6 +47,10 @@ export function addStorageListener(fn: Function): ListenKey {
   const key = new ListenKey(fn);
   storageListeners.add(key);
   return key;
+}
+
+export function fireStorageChanged() {
+  storageListeners.forEach(listenKey => listenKey.listener());
 }
 
 export function removeHashListenerByKey(key: ListenKey) {

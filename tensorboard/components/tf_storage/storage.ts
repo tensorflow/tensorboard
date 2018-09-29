@@ -128,6 +128,9 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     const stringValue = toString(value);
     if (useLocalStorage) {
       window.localStorage.setItem(key, stringValue);
+      // Because of listeners.ts:[1], we need to manually notify all UI elements
+      // listening to storage within the tab of a change.
+      fireStorageChanged();
     } else if (!_.isEqual(value, get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
         unsetFromURI(key);
