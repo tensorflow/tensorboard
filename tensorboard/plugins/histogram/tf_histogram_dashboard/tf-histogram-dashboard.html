@@ -170,7 +170,7 @@ limitations under the License.
         _getItemKey: {
           type: Function,
           value: function() {
-            return item => item.run + '/' + item.tag;
+            return item => JSON.stringify([item.run, item.tag]);
           },
         },
       },

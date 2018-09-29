@@ -23,33 +23,19 @@ limitations under the License.
 <link rel="import" href="tf-paginated-view-store.html">
 
 <!--
-  tf-paginated-view2 takes an input list and outputs the input broken
-  into pages. Clients can `dom-repeat` over the pages, and conditionally
-  render each page if it is the active page. When there are multiple
-  pages, this component renders pagination controls.
+  tf-paginated-view2 takes a list of items and renders subset of them using
+  template passed. Depending on global pagination setting, list of items is
+  broken down into discrete "pages" and when there are multiple pages, this
+  component renders pagination controls.
 
-  We expose a list of pages instead of just a single active page so that
-  you can have a separate, persistent view associated with each page. By
-  conditionally stamping a view for each page, the state for each page's
-  view can be preserved across page changes.
-
-  Properties in:
-    - `items`: a list of elements, treated opaquely.
-  Properties out:
-    - `pages`: an array of pages, each with a property `items` (a
-      sublist of the input items) and `active` (a boolean indicating
-      whether this page is the currently active page).
+  The API signature of the component is similar to that of dom-repeat: it takes
+  `items` and `as` and it feeds an item to the template passed as `as`.
 
   Example usage:
 
-      <tf-paginated-view2 items="[[items]]" pages="{{_pages}}">
-        <template is="dom-repeat" items="[[_pages]]" as="page">
-          <template is="dom-if" if="[[page.active]]">
-            Do something with the items. Probably render them all:
-            <template is="dom-repeat" items="[[page.items]]">
-              <x-my-component item="[[item]]"></x-my-component>
-            </template>
-          </template>
+      <tf-paginated-view2 items="[[items]]" as="meow">
+        <template>
+          <div>[[meow.nyan]]</div>
         </template>
       </tf-paginated-view2>
 -->
@@ -140,18 +126,23 @@ limitations under the License.
     </style>
   </template>
   <script>
+
+  const MAX_DOM_CACHE_SIZE = 10;
+
   Polymer({
     is: "tf-paginated-view2",
     properties: {
       /**
-       * An arbitrary list of items. Items are opaque and will not be
-       * inspected or modified.
+       * An arbitrary list of items to render
        */
       items: {
         type: Array,
         value: () => [],
       },
 
+      /**
+       * Callback that returns a stable string key for an item
+       */
       getItemKey: {
         type: Function,
         value: () => (item, index) => index,
@@ -163,21 +154,16 @@ limitations under the License.
       },
 
       /**
-       * A list of all pages, exactly one of which will be active
-       * (unless the list of pages is empty). We guarantee that if
-       *
-       *     const contents = flatten(pages.map(p => p.items));
-       *
-       * then `contents` will represent the same array as `items`: viz.,
-       * `contents.length === items.length` and for each index `i` we
-       * have `Object.is(contents[i], items[i])`.
-       *
-       * Every page except for the last will include exactly `_limit`
-       * items. Every page will include at most `_limit` items.
+       * A list of rendered and mounted items.
        */
       _renderedItems: {
         type: Array,
         value: () => [],
+      },
+
+      _cachedItems: {
+        type: Object,
+        value: () => new Map(),
       },
 
       /**
@@ -291,6 +277,8 @@ limitations under the License.
     _bootstrapDom() {
       Array.from(this.$.items.children)
           .forEach(child => Polymer.dom(this.$.items).removeChild(child));
+      this._cachedItems.clear();
+
       this._renderedItems
           .forEach((item, index) => this._insertItem(item, index));
     },
@@ -300,21 +288,39 @@ limitations under the License.
       if (event.path !== '_renderedItems.splices') return;
       event.value.indexSplices.forEach(splice => {
         const {index, addedCount, object, removed} = splice;
-        removed.forEach(() => {
-          Polymer.dom(this.$.items).removeChild(this.$.items.children[index]);
+        removed.forEach(item => {
+          this._removeItem(item, this.$.items.children[index]);
         });
         object.slice(index, index + addedCount)
             .forEach((item, ind) => this._insertItem(item, index + ind));
       });
     },
 
+    _removeItem(item, node) {
+      while (this._cachedItems.size > MAX_DOM_CACHE_SIZE) {
+        const [firstKey] = this._cachedItems.keys();
+        this._cachedItems.delete(firstKey);
+      }
+      node.parentNode.removeChild(node);
+      this._cachedItems.set(this.getItemKey(item), node);
+    },
+
     _insertItem(item, atIndex) {
-      const inst = this.stamp({[this.as]: item});
+      let el;
+      const key = this.getItemKey(item);
+      if (this._cachedItems.has(key)) {
+        el = this._cachedItems.get(key);
+        this._cachedItems.delete(key);
+      } else {
+        const inst = this.stamp({[this.as]: item});
+        el = inst.root;
+      }
+
       if (this.$.items.children[atIndex]) {
         Polymer.dom(this.$.items)
-            .insertBefore(inst.root, this.$.items.children[atIndex]);
+            .insertBefore(el, this.$.items.children[atIndex]);
       } else {
-        Polymer.dom(this.$.items).appendChild(inst.root);
+        Polymer.dom(this.$.items).appendChild(el);
       }
     },
 
