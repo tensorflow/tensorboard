@@ -506,7 +506,11 @@ def make_json_formatted_for_single_chart(mutant_features,
         inference_result_proto.result.classifications)
     for mutant_feature, classification in zip(
         mutant_features, inference_result_proto.result.classifications):
-      for classification_class in classification.classes:
+      for class_index, classification_class in enumerate(
+        classification.classes):
+        # Fill in class index when labels are missing
+        if classification_class.label == '':
+          classification_class.label = str(class_index)
         # Special case to not include the "0" class in binary classification.
         # Since that just results in a chart that is symmetric around 0.5.
         if len(
