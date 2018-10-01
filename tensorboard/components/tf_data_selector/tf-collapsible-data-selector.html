@@ -21,7 +21,8 @@ limitations under the License.
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="./tf-data-selector.html">
+<link rel="import" href="./tf-data-selector-advanced.html">
+<link rel="import" href="./tf-data-selector-simple.html">
 
 <!--
 tf-collapsible-data-selector creates a minimizeable data selection widget -
@@ -37,13 +38,33 @@ Properties out:
 <dom-module id="tf-collapsible-data-selector">
   <template>
     <iron-collapse id="collapse" opened="[[opened]]" no-animation>
-      <tf-data-selector
-        selection="{{selection}}"
-        active-plugins="[[activePlugins]]"
-      ></tf-data-selector>
+      <template is="dom-if" if="[[_isSimpleMode(_mode)]]">
+        <tf-data-selector-simple
+          selection="{{_simpleSelection}}"
+          active-plugins="[[activePlugins]]"
+        ></tf-data-selector>
+      </template>
+      <template is="dom-if" if="[[!_isSimpleMode(_mode)]]">
+        <tf-data-selector-advanced
+          selection="{{_advancedSelection}}"
+          active-plugins="[[activePlugins]]"
+        ></tf-data-selector>
+      </template>
+      <paper-button on-tap="_toggleMode" class="toggle-mode">
+        <template is="dom-if" if="[[_isSimpleMode(_mode)]]">
+          Use advanced mode
+        </template>
+        <template is="dom-if" if="[[!_isSimpleMode(_mode)]]">
+          Use simple mode
+        </template>
+      </paper-button>
     </iron-collapse>
     <span>
-      <paper-button on-tap="_toggleSelector" title="Toggle Data Selector">
+      <paper-button
+        on-tap="_toggleOpened"
+        title="Toggle Data Selector"
+        class="selector"
+      >
         <template is="dom-if" if="[[opened]]">
           <iron-icon icon="expand-less"></iron-icon>
         </template>
@@ -79,10 +100,10 @@ Properties out:
         flex-direction: column;
         flex-wrap: wrap;
         min-height: 32px;
-        width 100%;
+        width: 100%;
       }
 
-      :host:not([opened]) paper-button {
+      :host:not([opened]) .selector {
         border-color: var(--paper-grey-500);
         position: absolute;
         top: 0;
@@ -95,7 +116,7 @@ Properties out:
         width: 100%;
       }
 
-      paper-button {
+      .selector {
         border-radius: 0;
         border: 0 solid var(--tb-ui-dark-accent);
         border-width: 0 1px 1px;
@@ -103,6 +124,13 @@ Properties out:
         font-size: 12px;
         margin: 0;
         padding: 3px;
+      }
+
+      .toggle-mode {
+        color: var(--paper-blue-600);
+        font-size: 14px;
+        margin: 5px 0;
+        text-transform: none;
       }
 
       .experiment {

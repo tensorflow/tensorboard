@@ -25,10 +25,12 @@ limitations under the License.
 <link rel="import" href="./experiment-selector.html">
 <link rel="import" href="./storage-utils.html">
 <link rel="import" href="./tf-data-select-row.html">
+<link rel="import" href="./type.html">
 
 <!--
-tf-data-selector creates a widget for creating a group of data, a filtered data
-by experiment, runs, and tags. It allows user to add more groups too.
+tf-data-selector-advanced creates a widget for creating a group of data, a
+filtered data by experiment, runs, and tags. It allows user to add more groups
+too.
 
 Properties in: none.
 Properties out:
@@ -36,7 +38,7 @@ Properties out:
     tf_data_selector.Selection for its data type.
 
 -->
-<dom-module id="tf-data-selector">
+<dom-module id="tf-data-selector-advanced">
   <template>
     <template
       is="dom-if"
@@ -105,6 +107,6 @@ Properties out:
       }
     </style>
   </template>
-  <script src="type.js"></script>
-  <script src="tf-data-selector.js"></script>
+
+  <script src="tf-data-selector-advanced.js"></script>
 </dom-module>
