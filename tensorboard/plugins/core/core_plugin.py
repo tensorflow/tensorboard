@@ -407,6 +407,19 @@ relevant for db read-only mode. Each thread reloads one run at a time.
 ''')
 
     parser.add_argument(
+        '--reload_task',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['auto', 'thread', 'process'],
+        help='''\
+[experimental] The mechanism to use for the background data reload task.
+The default "auto" option will conditionally use threads for legacy reloading
+and a child process for DB import reloading. The "process" option is only
+useful with DB import mode. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--samples_per_plugin',
         type=str,
         default='',
