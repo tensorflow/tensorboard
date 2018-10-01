@@ -406,7 +406,7 @@ paper-dropdown-menu {
                           disabled="[[!_xlaClustersProvided(renderHierarchy)]]">
         XLA Cluster
       </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="xla-cluster-radio-button" position="right">
+      <paper-tooltip animation-delay="0" for="xla-cluster-radio-button" position="right" offset="0">
         Coloring by XLA cluster is only enabled if at least 1 op specifies an XLA cluster.
       </paper-tooltip>
 
@@ -415,7 +415,7 @@ paper-dropdown-menu {
                           disabled="[[!stats]]">
         Compute time
       </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="compute-time-radio-button" position="right">
+      <paper-tooltip animation-delay="0" for="compute-time-radio-button" position="right" offset="0">
         Coloring by compute time is only enabled if the RunMetadata proto is passed to the
         FileWriter when a specific session is run.
       </paper-tooltip>
@@ -425,7 +425,7 @@ paper-dropdown-menu {
                           disabled="[[!stats]]">
         Memory
       </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="memory-radio-button" position="right">
+      <paper-tooltip animation-delay="0" for="memory-radio-button" position="right" offset="0">
         Coloring by memory is only enabled if the RunMetadata proto is passed to the
         FileWriter when a specific session is run.
       </paper-tooltip>
@@ -434,7 +434,7 @@ paper-dropdown-menu {
                           name="op_compatibility">
         TPU Compatibility
       </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right">
+      <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right" offset="0">
         Coloring by whether an operation is compatible for the TPU device.
       </paper-tooltip>
 
@@ -468,7 +468,7 @@ paper-dropdown-menu {
             <span>[[item.suffix]]</span>
             <template is="dom-if" if="[[item.ignoredMsg]]">
               <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-              <paper-tooltip position="right" animation-delay="0">[[item.ignoredMsg]]</paper-tooltip>
+              <paper-tooltip position="right" offset="0" animation-delay="0">[[item.ignoredMsg]]</paper-tooltip>
             </template>
           </div>
         </template>
@@ -589,7 +589,7 @@ paper-dropdown-menu {
             Namespace<span class="gray">*</span>
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Encapsulates a set of nodes. Namespace is hierarchical and based on scope.
               </paper-tooltip>
             </div>
@@ -607,7 +607,7 @@ paper-dropdown-menu {
             OpNode
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Node that performs an operation. These nodes cannot expand.
               </paper-tooltip>
             </div>
@@ -625,7 +625,7 @@ paper-dropdown-menu {
             Unconnected series<span class="gray">*</span>
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Sequence of numbered nodes that are not connected to each other.
               </paper-tooltip>
             </div>
@@ -643,7 +643,7 @@ paper-dropdown-menu {
             Connected series<span class="gray">*</span>
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Sequence of numbered nodes that are connected to each other.
               </paper-tooltip>
             </div>
@@ -659,7 +659,7 @@ paper-dropdown-menu {
             Constant
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Node that outputs a constant value.
               </paper-tooltip>
             </div>
@@ -675,7 +675,7 @@ paper-dropdown-menu {
             Summary
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Node that collects data for visualization within TensorBoard.
               </paper-tooltip>
             </div>
@@ -700,7 +700,7 @@ paper-dropdown-menu {
             Dataflow edge
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Edge showing the data flow between operations. Edges flow upwards unless arrowheads specify otherwise.
               </paper-tooltip>
             </div>
@@ -718,7 +718,7 @@ paper-dropdown-menu {
             Control dependency edge
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Edge showing the control dependency between operations.
               </paper-tooltip>
             </div>
@@ -743,7 +743,7 @@ paper-dropdown-menu {
             Reference edge
             <div class="legend-clarifier">
               <span>?</span>
-              <paper-tooltip animation-delay="0" position="right">
+              <paper-tooltip animation-delay="0" position="right" offset="0">
                 Edge showing that the outgoing operation node can mutate the incoming tensor.
               </paper-tooltip>
             </div>
