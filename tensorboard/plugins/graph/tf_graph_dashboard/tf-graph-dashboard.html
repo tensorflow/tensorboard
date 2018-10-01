@@ -62,8 +62,9 @@ by default. The user can select a different run from a dropdown menu.
 </template>
 <template is="dom-if" if="[[!_datasetsEmpty(_datasets)]]">
 <tf-dashboard-layout>
-<div class="sidebar">
-  <tf-graph-controls id="controls"
+  <tf-graph-controls
+        id="controls"
+        class="sidebar"
         devices-for-stats="{{_devicesForStats}}"
         color-by-params="[[_colorByParams]]"
         stats="[[_stats]]"
@@ -77,19 +78,18 @@ by default. The user can select a different run from a dropdown menu.
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
-  <tf-graph-loader id="loader"
-        datasets="[[_datasets]]"
-        selected-dataset="[[_selectedDataset]]"
-        selected-metadata-tag="[[_selectedMetadataTag]]"
-        selected-file="[[_selectedFile]]"
-        out-graph-hierarchy="{{_graphHierarchy}}"
-        out-graph="{{_graph}}"
-        out-stats="{{_stats}}"
-        progress="{{_progress}}"
-        out-hierarchy-params="{{_hierarchyParams}}"
-  ></tf-graph-loader>
-</div>
-<div class="center">
+  <div class="center">
+    <tf-graph-loader id="loader"
+          datasets="[[_datasets]]"
+          selected-dataset="[[_selectedDataset]]"
+          selected-metadata-tag="[[_selectedMetadataTag]]"
+          selected-file="[[_selectedFile]]"
+          out-graph-hierarchy="{{_graphHierarchy}}"
+          out-graph="{{_graph}}"
+          out-stats="{{_stats}}"
+          progress="{{_progress}}"
+          out-hierarchy-params="{{_hierarchyParams}}"
+    ></tf-graph-loader>
     <tf-graph-board id="graphboard"
         devices-for-stats="[[_devicesForStats]]"
         color-by="[[_colorBy]]"
@@ -109,13 +109,18 @@ by default. The user can select a different run from a dropdown menu.
         selected-node="{{_selectedNode}}"
         stats="[[_stats]]"
     ></tf-graph-board>
-</div>
+  </div>
 </tf-dashboard-layout>
 </template>
 <style>
 
 :host /deep/ {
   font-family: 'Roboto', sans-serif;
+}
+
+.sidebar {
+  display: flex;
+  height: 100%;
 }
 
 .center {
