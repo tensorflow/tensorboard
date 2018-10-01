@@ -2842,6 +2842,13 @@ limitations under the License.
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
             const result = this.inferences.results.classificationResult;
+            // For models that don't return any labels for the classes, fill
+            // them out with class indicies.
+            for (let j = 0; j < result.classifications[i].classes.length; j++) {
+              if (result.classifications[i].classes[j].label == '') {
+                result.classifications[i].classes[j].label = j.toString();
+              }
+            }
             inferenceMap[this.inferences.indices[i]] =
                 result.classifications[i].classes.sort((a, b) => b.score - a.score);
           } else {
