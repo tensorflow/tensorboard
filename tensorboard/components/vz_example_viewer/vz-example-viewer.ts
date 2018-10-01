@@ -370,9 +370,8 @@ Polymer({
       return;
     }
 
-    // Reset all text to black
-    this.selectAll('.value-pill')
-        .style('background', '#e8eaed');
+    // Reset all backgrounds to the neutral color.
+    this.selectAll('.value-pill').style('background', neutralSaliencyColor);
     // Color the text of each input element of each feature according to the
     // provided saliency information.
     for (const feat of this.filteredFeaturesList) {
@@ -386,7 +385,8 @@ Polymer({
           () => this.getColorForSaliency(val);
       this.selectAll(
             `input.${this.sanitizeFeature(feat.name)}.value-pill`)
-          .style('background', this.showSaliency ? colorFn : () => '#e8eaed');
+          .style('background',
+              this.showSaliency ? colorFn : () => neutralSaliencyColor);
 
       // Color the "more feature values" button with the most extreme saliency
       // of any of the feature values hidden behind the button.
@@ -401,7 +401,8 @@ Polymer({
           }
         }
         moreButton.style('background', this.showSaliency ?
-            () => this.getColorForSaliency(mostExtremeSal) : () => '#e8eaed');
+            () => this.getColorForSaliency(mostExtremeSal) :
+            () => neutralSaliencyColor);
       }
     }
   },
