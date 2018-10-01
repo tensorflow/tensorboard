@@ -33,7 +33,7 @@ var vz_example_viewer;
     // Colors for the saliency color scale.
     var posSaliencyColor = '#0f0';
     var negSaliencyColor = '#f00';
-    var neutralSaliencyColor = '#d3d3d3';
+    var neutralSaliencyColor = '#e8eaed';
     var COLOR_INTERPOLATOR = d3.interpolateRgb;
     // Regex to find bytes features that are encoded images. Follows the guide at
     // go/tf-example.
@@ -66,7 +66,7 @@ var vz_example_viewer;
             ignoreChange: Boolean,
             minSal: { type: Number, value: 0 },
             maxSal: { type: Number, value: 0 },
-            showSaliency: { type: Boolean, value: false },
+            showSaliency: { type: Boolean, value: true },
             imageInfo: { type: Object, value: {} },
             windowWidth: { type: Number, value: DEFAULT_WINDOW_WIDTH },
             windowCenter: { type: Number, value: DEFAULT_WINDOW_CENTER },
@@ -82,14 +82,13 @@ var vz_example_viewer;
             colors: { type: Object, computed: 'getColors(saliency)', observer: 'createLegend' },
             displayMode: { type: String, value: 'grid' },
             featureSearchValue: { type: String, value: '', notify: true },
-            filteredFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue)' },
-            filteredSeqFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue)' },
+            filteredFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue, saliency)' },
+            filteredSeqFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue, saliency)' },
             focusedFeatureName: String,
             focusedFeatureValueIndex: Number,
             focusedSeqNumber: Number,
             showDeleteValueButton: { type: Boolean, value: false },
             expandedFeatures: { type: Object, value: {} },
-            expandPillClass: { type: String, value: 'expandPill' },
             expandAllFeatures: { type: Boolean, value: false },
             zeroIndex: { type: Number, value: 0 },
             compareJson: { type: Object, observer: 'createCompareExamplesFromJson' },
@@ -109,7 +108,7 @@ var vz_example_viewer;
             compareTitle: String,
         },
         observers: [
-            'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
+            'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
             'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
         ],
         isExpanded: function (featName, expandAllFeatures) {
@@ -198,9 +197,22 @@ var vz_example_viewer;
             return this.example
                 .getFeatureLists().getFeatureListMap();
         },
-        getFilteredFeaturesList: function (featureList, searchValue) {
+        getFilteredFeaturesList: function (featureList, searchValue, saliency) {
             var _this = this;
             var filtered = featureList;
+            var checkSal = saliency && Object.keys(saliency).length > 0;
+            // Create a dict of feature names to the total absolute saliency of all
+            // its feature values, to sort features with the most salienct features at
+            // the top.
+            var saliencyTotals = checkSal ? Object.assign.apply(Object, [{}].concat(Object.keys(saliency).map(function (name) {
+                var _a;
+                return (_a = {}, _a[name] = typeof saliency[name] == 'number' ?
+                    Math.abs(saliency[name]) :
+                    saliency[name].reduce(function (total, cur) {
+                        return Math.abs(total) + Math.abs(cur);
+                    }, 0), _a);
+            }))) :
+                {};
             if (searchValue != '') {
                 var re_1 = new RegExp(searchValue, 'i');
                 filtered = featureList.filter(function (feature) { return re_1.test(feature.name); });
@@ -213,6 +225,20 @@ var vz_example_viewer;
                     return 1;
                 }
                 else {
+                    if (checkSal) {
+                        if (a.name in saliency && !(b.name in saliency)) {
+                            return -1;
+                        }
+                        else if (b.name in saliency && !(a.name in saliency)) {
+                            return 1;
+                        }
+                        else {
+                            var diff = saliencyTotals[b.name] - saliencyTotals[a.name];
+                            if (diff != 0) {
+                                return diff;
+                            }
+                        }
+                    }
                     return a.name.localeCompare(b.name);
                 }
             });
@@ -248,24 +274,26 @@ var vz_example_viewer;
                 posSaliencyColor
             ]);
         },
+        selectAll: function (query) {
+            return d3.selectAll(Polymer.dom(this.root).querySelectorAll(query));
+        },
         haveSaliency: function () {
             var _this = this;
-            if (!this.featuresList || !this.saliency ||
+            if (!this.filteredFeaturesList || !this.saliency ||
                 Object.keys(this.saliency).length === 0 || !this.colors) {
                 return;
             }
             // TODO(jwexler): Find a way to do this without requestAnimationFrame.
-            // If the paper-inputs for the features have yet to be rendered, wait to
-            // perform this processing. There should be paper-inputs for all non-image
+            // If the inputs for the features have yet to be rendered, wait to
+            // perform this processing. There should be inputs for all non-image
             // features.
-            if (d3.selectAll('.value input').size() <
-                (this.featuresList.length - Object.keys(this.imageInfo).length)) {
+            if (this.selectAll('input.value-pill').size() <
+                (this.filteredFeaturesList.length - Object.keys(this.imageInfo).length)) {
                 requestAnimationFrame(function () { return _this.haveSaliency(); });
                 return;
             }
-            // Reset all text to black
-            d3.selectAll('.value-pill')
-                .style('background', 'lightgrey');
+            // Reset all backgrounds to the neutral color.
+            this.selectAll('.value-pill').style('background', neutralSaliencyColor);
             var _loop_1 = function (feat) {
                 var val = this_1.saliency[feat.name];
                 // If there is no saliency information for the feature, do not color it.
@@ -275,18 +303,31 @@ var vz_example_viewer;
                 var colorFn = Array.isArray(val) ?
                     function (d, i) { return _this.getColorForSaliency(val[i]); } :
                     function () { return _this.getColorForSaliency(val); };
-                d3.selectAll("." + this_1.sanitizeFeature(feat.name) + ".value-pill")
-                    .style('background', this_1.showSaliency ? colorFn : function () { return 'lightgrey'; });
+                this_1.selectAll("input." + this_1.sanitizeFeature(feat.name) + ".value-pill")
+                    .style('background', this_1.showSaliency ? colorFn : function () { return neutralSaliencyColor; });
+                // Color the "more feature values" button with the most extreme saliency
+                // of any of the feature values hidden behind the button.
+                if (Array.isArray(val)) {
+                    var valArray = val;
+                    var moreButton = this_1.selectAll("paper-button." + this_1.sanitizeFeature(feat.name) + ".value-pill");
+                    var mostExtremeSal_1 = 0;
+                    for (var i = 1; i < valArray.length; i++) {
+                        if (Math.abs(valArray[i]) > Math.abs(mostExtremeSal_1)) {
+                            mostExtremeSal_1 = valArray[i];
+                        }
+                    }
+                    moreButton.style('background', this_1.showSaliency ?
+                        function () { return _this.getColorForSaliency(mostExtremeSal_1); } :
+                        function () { return neutralSaliencyColor; });
+                }
             };
             var this_1 = this;
             // Color the text of each input element of each feature according to the
             // provided saliency information.
-            for (var _i = 0, _a = this.featuresList; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.filteredFeaturesList; _i < _a.length; _i++) {
                 var feat = _a[_i];
                 _loop_1(feat);
             }
-            // TODO(jwexler): Determine how to set non-fixed widths to input boxes
-            // inside of grid iron-list.
         },
         /**
          * Updates the saliency coloring of the sequential features when the current
@@ -304,7 +345,7 @@ var vz_example_viewer;
             // TODO(jwexler): Find a way to do this without requestAnimationFrame.
             // If the paper-inputs for the features have yet to be rendered, wait to
             // perform this processing.
-            if (d3.selectAll('.value input').size() < this.seqFeaturesList.length) {
+            if (this.selectAll('.value input').size() < this.seqFeaturesList.length) {
                 requestAnimationFrame(function () { return _this.seqSaliency(); });
                 return;
             }
@@ -318,7 +359,7 @@ var vz_example_viewer;
                 var colorFn = Array.isArray(val) ?
                     function (d, i) { return _this.getColorForSaliency(val[i]); } :
                     function () { return _this.getColorForSaliency(val); };
-                d3.selectAll("." + this_2.sanitizeFeature(feat.name) + " input")
+                this_2.selectAll("." + this_2.sanitizeFeature(feat.name) + " input")
                     .style('color', this_2.showSaliency ? colorFn : function () { return 'black'; });
             };
             var this_2 = this;
@@ -835,6 +876,7 @@ var vz_example_viewer;
             this.ignoreChange = false;
             setTimeout(function () {
                 _this.example = temp;
+                _this.haveSaliency();
             }, 0);
         },
         exampleChanged: function () {
@@ -925,7 +967,7 @@ var vz_example_viewer;
             var legendSvg = d3.select(this.$.saliencyLegend).append('g');
             var gradient = legendSvg.append('defs')
                 .append('linearGradient')
-                .attr('id', 'gradient')
+                .attr('id', 'vzexampleviewergradient')
                 .attr("x1", "0%")
                 .attr("y1", "0%")
                 .attr("x2", "100%")
@@ -969,7 +1011,7 @@ var vz_example_viewer;
                 .attr('y1', 0)
                 .attr('width', LEGEND_WIDTH_PX)
                 .attr('height', LEGEND_HEIGHT_PX)
-                .style('fill', 'url(#gradient)');
+                .style('fill', 'url(#vzexampleviewergradient)');
             var legendScale = d3.scaleLinear().domain([this.minSal, this.maxSal]).range([
                 0, LEGEND_WIDTH_PX
             ]);
