@@ -52,7 +52,8 @@ limitations under the License.
       </button>
       <iron-collapse opened="[[opened]]">
         <div class="content">
-          <template is="dom-if" if="[[opened]]" id="ifOpened">
+          <template is="dom-if" if="[[opened]]" restamp="[[restamp]]"
+                    id="ifOpened">
             <slot></slot>
           </template>
         </div>
