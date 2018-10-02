@@ -261,14 +261,18 @@ export class DataSet {
       if (dim > PCA_SAMPLE_DIM) {
         vectors = vector.projectRandom(vectors, PCA_SAMPLE_DIM);
       }
-      let sampledVectors = vectors.slice(0, PCA_SAMPLE_SIZE);
+      const sampledVectors = vectors.slice(0, PCA_SAMPLE_SIZE);
+      const {dot, transpose, svd: numericSvd} = numeric;
+      // numeric dynamically generates `numeric.div` and Closure compiler has
+      // incorrectly compiles `numeric.div` property accessor. We use below
+      // signature to prevent Closure from mangling and guessing.
+      const div = numeric['div'];
 
-      let sigma = numeric.div(
-          numeric.dot(numeric.transpose(sampledVectors), sampledVectors),
-          sampledVectors.length);
-      let svd = numeric.svd(sigma);
+      const scalar = dot(transpose(sampledVectors), sampledVectors);
+      const sigma = div(scalar, sampledVectors.length);
+      const svd = numericSvd(sigma);
 
-      let variances: number[] = svd.S;
+      const variances: number[] = svd.S;
       let totalVariance = 0;
       for (let i = 0; i < variances.length; ++i) {
         totalVariance += variances[i];
@@ -277,7 +281,6 @@ export class DataSet {
         variances[i] /= totalVariance;
       }
       this.fracVariancesExplained = variances;
-
       let U: number[][] = svd.U;
       let pcaVectors = vectors.map(vector => {
         let newV = new Float32Array(NUM_PCA_COMPONENTS);
@@ -392,7 +395,7 @@ export class DataSet {
       let sampledIndices =
           this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
       let labels = new Array(sampledIndices.length);
-      sampledIndices.forEach((index, i) => 
+      sampledIndices.forEach((index, i) =>
           labels[i] = this.points[index].metadata[superviseColumn].toString());
       this.superviseLabels = labels;
     }
