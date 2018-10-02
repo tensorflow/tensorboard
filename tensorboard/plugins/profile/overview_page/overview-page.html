@@ -175,12 +175,10 @@ You may obtain a copy of the License at
        _show_top_ops_table: {
          type: Boolean,
          value: false,
-         notify: true,
        },
        _show_step_time_graph: {
          type: Boolean,
          computed: '_shouldShowStepTimeGraph(_data, _active)',
-         notify: true,
        },
        _top_ops_button_text: {
          type: String,
@@ -188,24 +186,19 @@ You may obtain a copy of the License at
        },
        _generalAnalysisJson: {
          type: String,
-         notify: true,
        },
        _inputAnalysisJson: {
          type: String,
-         notify: true,
        },
        _runEnvironmentJson: {
          type: String,
-         notify: true,
        },
        _recommendationJson: {
          type: String,
-         notify: true,
        },
        _active: {
          type: Boolean,
          value: false,
-         notify: true,
          observer: '_onActiveChanged',
        },
        _host_idle_time_percent: { type: String },
