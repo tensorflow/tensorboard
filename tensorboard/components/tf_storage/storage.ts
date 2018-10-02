@@ -54,6 +54,7 @@ export const {
   set: setString,
   getInitializer: getStringInitializer,
   getObserver: getStringObserver,
+  disposeBinding: disposeStringBinding,
 } = makeBindings(x => x, x => x);
 
 export const {
@@ -61,6 +62,7 @@ export const {
   set: setBoolean,
   getInitializer: getBooleanInitializer,
   getObserver: getBooleanObserver,
+  disposeBinding: disposeBooleanBinding,
 } = makeBindings(
   s => (s === 'true' ? true: s === 'false' ? false : undefined),
   b => b.toString());
@@ -70,6 +72,7 @@ export const {
   set: setNumber,
   getInitializer: getNumberInitializer,
   getObserver: getNumberObserver,
+  disposeBinding: disposeNumberBinding,
 } = makeBindings(
   s => +s,
   n => n.toString());
@@ -79,6 +82,7 @@ export const {
   set: setObject,
   getInitializer: getObjectInitializer,
   getObserver: getObjectObserver,
+  disposeBinding: disposeObjectBinding,
 } = makeBindings(
   s => JSON.parse(atob(s)),
   o => btoa(JSON.stringify(o)));
@@ -128,6 +132,9 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     const stringValue = toString(value);
     if (useLocalStorage) {
       window.localStorage.setItem(key, stringValue);
+      // Because of listeners.ts:[1], we need to manually notify all UI elements
+      // listening to storage within the tab of a change.
+      fireStorageChanged();
     } else if (!_.isEqual(value, get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
         unsetFromURI(key);
