@@ -418,5 +418,8 @@ var vz_line_chart2;
                 return;
             this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
         },
+        getExporter: function () {
+            return new vz_line_chart2.LineChartExporter(this.$.chartdiv);
+        },
     });
 })(vz_line_chart2 || (vz_line_chart2 = {})); // namespace vz_line_chart2
