@@ -62,6 +62,7 @@ export const {
   set: setBoolean,
   getInitializer: getBooleanInitializer,
   getObserver: getBooleanObserver,
+  disposeBinding: disposeBooleanBinding,
 } = makeBindings(
   s => (s === 'true' ? true: s === 'false' ? false : undefined),
   b => b.toString());
@@ -81,6 +82,7 @@ export const {
   set: setObject,
   getInitializer: getObjectInitializer,
   getObserver: getObjectObserver,
+  disposeBinding: disposeObjectBinding,
 } = makeBindings(
   s => JSON.parse(atob(s)),
   o => btoa(JSON.stringify(o)));

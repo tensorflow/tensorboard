@@ -35,6 +35,8 @@ describe('Storage', () => {
     window.localStorage.clear();
     disposeStringBinding();
     disposeNumberBinding();
+    disposeBooleanBinding();
+    disposeObjectBinding()
   });
 
   it('get/setString', () => {
