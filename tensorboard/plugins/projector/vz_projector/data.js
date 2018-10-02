@@ -184,8 +184,14 @@ var vz_projector;
                     vectors = vz_projector.vector.projectRandom(vectors, vz_projector.PCA_SAMPLE_DIM);
                 }
                 var sampledVectors = vectors.slice(0, vz_projector.PCA_SAMPLE_SIZE);
-                var sigma = numeric.div(numeric.dot(numeric.transpose(sampledVectors), sampledVectors), sampledVectors.length);
-                var svd = numeric.svd(sigma);
+                var dot = numeric.dot, transpose = numeric.transpose, numericSvd = numeric.svd;
+                // numeric dynamically generates `numeric.div` and Closure compiler has
+                // incorrectly compiles `numeric.div` property accessor. We use below
+                // signature to prevent Closure from mangling and guessing.
+                var div = numeric['div'];
+                var scalar = dot(transpose(sampledVectors), sampledVectors);
+                var sigma = div(scalar, sampledVectors.length);
+                var svd = numericSvd(sigma);
                 var variances = svd.S;
                 var totalVariance = 0;
                 for (var i = 0; i < variances.length; ++i) {
@@ -199,11 +205,11 @@ var vz_projector;
                 var pcaVectors = vectors.map(function (vector) {
                     var newV = new Float32Array(NUM_PCA_COMPONENTS);
                     for (var newDim = 0; newDim < NUM_PCA_COMPONENTS; newDim++) {
-                        var dot = 0;
+                        var dot_1 = 0;
                         for (var oldDim = 0; oldDim < vector.length; oldDim++) {
-                            dot += vector[oldDim] * U[oldDim][newDim];
+                            dot_1 += vector[oldDim] * U[oldDim][newDim];
                         }
-                        newV[newDim] = dot;
+                        newV[newDim] = dot_1;
                     }
                     return newV;
                 });
