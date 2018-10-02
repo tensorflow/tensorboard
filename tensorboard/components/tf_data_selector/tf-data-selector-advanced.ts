@@ -23,7 +23,7 @@ export const {
     (ids: number[]): string => tf_data_selector.encodeIdArray(ids));
 
 Polymer({
-  is: 'tf-data-selector',
+  is: 'tf-data-selector-advanced',
   properties: {
     _allExperimentsFetched: {
       type: Boolean,

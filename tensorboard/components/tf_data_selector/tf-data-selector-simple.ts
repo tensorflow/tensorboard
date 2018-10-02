@@ -17,7 +17,7 @@ namespace tf_data_selector {
 const NO_EXPERIMENT_ID = null;
 
 Polymer({
-  is: 'tf-data-selector-alt',
+  is: 'tf-data-selector-simple',
   properties: {
     _allExperiments: {
       type: Array,
