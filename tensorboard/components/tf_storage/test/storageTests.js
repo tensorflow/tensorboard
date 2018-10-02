@@ -22,11 +22,15 @@ var tf_storage;
         return tf_globals.getFakeHash();
     }
     /* tslint:disable:no-namespace */
-    describe('URIStorage', function () {
+    describe('Storage', function () {
         var option = { useLocalStorage: false };
         afterEach(function () {
             setHash('');
             window.localStorage.clear();
+            tf_storage.disposeStringBinding();
+            tf_storage.disposeNumberBinding();
+            tf_storage.disposeBooleanBinding();
+            tf_storage.disposeObjectBinding();
         });
         it('get/setString', function () {
             tf_storage.setString('key_a', 'hello', option);
@@ -94,7 +98,7 @@ var tf_storage;
                         initializer.call(fakeScope);
                         assert.equal(fakeScope.prop, 'baz');
                     });
-                    it("reacts to '" + eventName + "' and sets the new value", function () {
+                    it("reacts to '" + eventName + "' and sets the new value (simulated)", function () {
                         setValue('foo', '');
                         var initializer = tf_storage.getStringInitializer('foo', options);
                         var fakeScope = { prop: null };
@@ -104,6 +108,21 @@ var tf_storage;
                         window.dispatchEvent(new Event(eventName));
                         assert.equal(fakeScope.prop, 'changed');
                     });
+                    // It is hard to test against real URL hash and we use fakeHash for
+                    // testing and fakeHash does not emit any event for a change.
+                    if (useLocalStorage) {
+                        it("reacts to change and sets the new value (real)", function () {
+                            tf_storage.setString('foo', '', options);
+                            var initializer = tf_storage.getStringInitializer('foo', options);
+                            var fakeScope1 = { prop: null };
+                            initializer.call(fakeScope1);
+                            var fakeScope2 = { prop: 'bar' };
+                            initializer.call(fakeScope2);
+                            tf_storage.setString('foo', 'changed', options);
+                            assert.equal(fakeScope1.prop, 'changed');
+                            assert.equal(fakeScope2.prop, 'changed');
+                        });
+                    }
                 });
             });
         });

@@ -29,6 +29,8 @@ var tf_storage;
     window.addEventListener('hashchange', function () {
         hashListeners.forEach(function (listenKey) { return listenKey.listener(); });
     });
+    // [1]: The event only triggers when another tab edits the storage. Changing a
+    // value in current browser tab will NOT trigger below event.
     window.addEventListener('storage', function () {
         storageListeners.forEach(function (listenKey) { return listenKey.listener(); });
     });
@@ -44,6 +46,10 @@ var tf_storage;
         return key;
     }
     tf_storage.addStorageListener = addStorageListener;
+    function fireStorageChanged() {
+        storageListeners.forEach(function (listenKey) { return listenKey.listener(); });
+    }
+    tf_storage.fireStorageChanged = fireStorageChanged;
     function removeHashListenerByKey(key) {
         hashListeners.delete(key);
     }

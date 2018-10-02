@@ -45,10 +45,10 @@ var tf_storage;
      * across the codebase.
      */
     tf_storage.DISAMBIGUATOR = 'disambiguator';
-    _a = makeBindings(function (x) { return x; }, function (x) { return x; }), tf_storage.getString = _a.get, tf_storage.setString = _a.set, tf_storage.getStringInitializer = _a.getInitializer, tf_storage.getStringObserver = _a.getObserver;
-    _b = makeBindings(function (s) { return (s === 'true' ? true : s === 'false' ? false : undefined); }, function (b) { return b.toString(); }), tf_storage.getBoolean = _b.get, tf_storage.setBoolean = _b.set, tf_storage.getBooleanInitializer = _b.getInitializer, tf_storage.getBooleanObserver = _b.getObserver;
-    _c = makeBindings(function (s) { return +s; }, function (n) { return n.toString(); }), tf_storage.getNumber = _c.get, tf_storage.setNumber = _c.set, tf_storage.getNumberInitializer = _c.getInitializer, tf_storage.getNumberObserver = _c.getObserver;
-    _d = makeBindings(function (s) { return JSON.parse(atob(s)); }, function (o) { return btoa(JSON.stringify(o)); }), tf_storage.getObject = _d.get, tf_storage.setObject = _d.set, tf_storage.getObjectInitializer = _d.getInitializer, tf_storage.getObjectObserver = _d.getObserver;
+    _a = makeBindings(function (x) { return x; }, function (x) { return x; }), tf_storage.getString = _a.get, tf_storage.setString = _a.set, tf_storage.getStringInitializer = _a.getInitializer, tf_storage.getStringObserver = _a.getObserver, tf_storage.disposeStringBinding = _a.disposeBinding;
+    _b = makeBindings(function (s) { return (s === 'true' ? true : s === 'false' ? false : undefined); }, function (b) { return b.toString(); }), tf_storage.getBoolean = _b.get, tf_storage.setBoolean = _b.set, tf_storage.getBooleanInitializer = _b.getInitializer, tf_storage.getBooleanObserver = _b.getObserver, tf_storage.disposeBooleanBinding = _b.disposeBinding;
+    _c = makeBindings(function (s) { return +s; }, function (n) { return n.toString(); }), tf_storage.getNumber = _c.get, tf_storage.setNumber = _c.set, tf_storage.getNumberInitializer = _c.getInitializer, tf_storage.getNumberObserver = _c.getObserver, tf_storage.disposeNumberBinding = _c.disposeBinding;
+    _d = makeBindings(function (s) { return JSON.parse(atob(s)); }, function (o) { return btoa(JSON.stringify(o)); }), tf_storage.getObject = _d.get, tf_storage.setObject = _d.set, tf_storage.getObjectInitializer = _d.getInitializer, tf_storage.getObjectObserver = _d.getObserver, tf_storage.disposeObjectBinding = _d.disposeBinding;
     function makeBindings(fromString, toString) {
         var hashListeners = [];
         var storageListeners = [];
@@ -66,6 +66,9 @@ var tf_storage;
             var stringValue = toString(value);
             if (useLocalStorage) {
                 window.localStorage.setItem(key, stringValue);
+                // Because of listeners.ts:[1], we need to manually notify all UI elements
+                // listening to storage within the tab of a change.
+                tf_storage.fireStorageChanged();
             }
             else if (!_.isEqual(value, get(key, { useLocalStorage: useLocalStorage }))) {
                 if (_.isEqual(value, defaultValue)) {
