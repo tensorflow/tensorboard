@@ -97,9 +97,10 @@ You may obtain a copy of the License at
        text-decoration: underline;
      }
     </style>
-    <div class="errorMessage" hidden=[[!_show_error_message]]>
-      <span>[[_error_message]]</span></div>
-    <div hidden=[[_show_error_message]]>
+    <div class="errorMessage" hidden=[[!_error_message]]>
+      <span>[[_error_message]]</span>
+    </div>
+    <div hidden=[[_error_message]]>
       <div class="container flex-horizontal">
         <paper-card heading="Performance Summary">
           <div class="card-content">
@@ -178,12 +179,12 @@ You may obtain a copy of the License at
        },
        _show_step_time_graph: {
          type: Boolean,
-         value: false,
+         computed: '_shouldShowStepTimeGraph(_data, _active)',
          notify: true,
        },
        _top_ops_button_text: {
          type: String,
-         computed: '_getTopOpsButtonText(_show_top_ops_table)'
+         computed: '_getTopOpsButtonText(_show_top_ops_table)',
        },
        _generalAnalysisJson: {
          type: String,
@@ -201,32 +202,27 @@ You may obtain a copy of the License at
          type: String,
          notify: true,
        },
-       _show_error_message: {
-         type: Boolean,
-         value: false,
-         notify: true,
-       },
        _active: {
          type: Boolean,
          value: false,
          notify: true,
          observer: '_onActiveChanged',
        },
-       _host_idle_time_percent: { type: String, notify: true, },
-       _device_idle_time_percent: { type: String, notify: true, },
-       _mxu_utilization_percent: { type: String, notify: true, },
-       _steptime_ms_average: { type: String, notify: true, },
-       _steptime_ms_stddev: { type: String, notify: true, },
-       _top_ops_heading: { type: String, notify: true, },
-       _error_message: { type: String, notify: true, },
-       _host_count: { type: String, notify: true, },
-       _tpu_type: { type: String, notify: true, },
-       _tpu_core_count: { type: String, notify: true, },
-       _batch_size: { type: String, notify: true, },
-       _change_list: { type: String, notify: true, },
-       _build_time: { type: String, notify: true, },
-       _build_target: { type: String, notify: true, },
-       _statement: { type: String, nofify: true, },
+       _host_idle_time_percent: { type: String },
+       _device_idle_time_percent: { type: String },
+       _mxu_utilization_percent: { type: String },
+       _steptime_ms_average: { type: String },
+       _steptime_ms_stddev: { type: String },
+       _top_ops_heading: { type: String },
+       _error_message: { type: String },
+       _host_count: { type: String },
+       _tpu_type: { type: String },
+       _tpu_core_count: { type: String },
+       _batch_size: { type: String },
+       _change_list: { type: String },
+       _build_time: { type: String },
+       _build_target: { type: String },
+       _statement: { type: String },
      },
      observers: [
        '_showSummary(_inputAnalysisJson, _generalAnalysisJson)',
@@ -234,7 +230,6 @@ You may obtain a copy of the License at
        '_showDeviceStepChart(_inputAnalysisJson)',
        '_showTopOpsTable(_generalAnalysisJson)',
        '_showRecommendation(_recommendationJson)',
-       '_showErrorMessage(_error_message)',
      ],
 
      /* Toggles _show_top_ops_table */
@@ -262,6 +257,8 @@ You may obtain a copy of the License at
          this.customStyle['--summary-color'] = 'red';
        } else if (this._statement.includes('MODERATE')) {
          this.customStyle['--summary-color'] = 'orange';
+       } else {
+         this.customStyle['--summary-color'] = 'green';
        }
        this.updateStyles();
      },
@@ -299,12 +296,9 @@ You may obtain a copy of the License at
 
      /* Plots a graph of step time (in ms) against step number */
      _showDeviceStepChart : function(deviceJson) {
-        if (!deviceJson || !deviceJson.rows ||
-               !deviceJson.rows.length || !this._active) {
-         this._show_step_time_graph = false;
+       if (!this._show_step_time_graph) {
          return;
        }
-       this._show_step_time_graph = true;
        var computeTimeSeries = [];
        var stepTimeSeries = [];
        var maxStepTime = 0;
@@ -425,9 +419,6 @@ You may obtain a copy of the License at
                  'Other useful resources');
        }
      },
-     _showErrorMessage: function(msg) {
-         this._show_error_message = (msg != '');
-     },
      _onActiveChanged: function(active) {
        if (!active) {
           this._show_step_time_graph = false;
@@ -435,6 +426,9 @@ You may obtain a copy of the License at
           return;
        }
        this._updateView();
+     },
+     _shouldShowStepTimeGraph: function(data, active) {
+      return active && data && data[1] && data[1].rows && data[1].rows.length;
      },
      attached: function() {
        this._active = true;
