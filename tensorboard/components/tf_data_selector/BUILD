@@ -15,10 +15,10 @@ tf_web_library(
         "tf-collapsible-data-selector.js",
         "tf-data-select-row.html",
         "tf-data-select-row.js",
-        "tf-data-selector-alt.html",
-        "tf-data-selector-alt.js",
-        "tf-data-selector.html",
-        "tf-data-selector.js",
+        "tf-data-selector-advanced.html",
+        "tf-data-selector-advanced.js",
+        "tf-data-selector-simple.html",
+        "tf-data-selector-simple.js",
     ],
     path = "/tf-data-selector",
     visibility = ["//visibility:public"],
@@ -43,6 +43,7 @@ tf_web_library(
 tf_web_library(
     name = "type",
     srcs = [
+        "type.html",
         "type.js",
     ],
     path = "/tf-data-selector",

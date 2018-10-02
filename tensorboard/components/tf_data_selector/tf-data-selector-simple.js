@@ -16,7 +16,7 @@ var tf_data_selector;
 (function (tf_data_selector) {
     var NO_EXPERIMENT_ID = null;
     Polymer({
-        is: 'tf-data-selector-alt',
+        is: 'tf-data-selector-simple',
         properties: {
             _allExperiments: {
                 type: Array,

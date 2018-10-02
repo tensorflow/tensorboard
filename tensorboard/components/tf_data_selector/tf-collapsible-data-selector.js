@@ -14,11 +14,25 @@ limitations under the License.
 ==============================================================================*/
 var tf_data_selector;
 (function (tf_data_selector) {
+    var Mode;
+    (function (Mode) {
+        Mode[Mode["SIMPLE"] = 0] = "SIMPLE";
+        Mode[Mode["ADVANCED"] = 1] = "ADVANCED";
+    })(Mode || (Mode = {}));
     Polymer({
         is: 'tf-collapsible-data-selector',
         properties: {
+            _simpleSelection: {
+                type: Object,
+                value: function () { return ({}); },
+            },
+            _advancedSelection: {
+                type: Object,
+                value: function () { return ({}); },
+            },
             selection: {
                 type: Object,
+                computed: '_computeSelection(_simpleSelection, _advancedSelection, _mode)',
                 notify: true,
             },
             activePlugins: Array,
@@ -27,8 +41,17 @@ var tf_data_selector;
                 reflectToAttribute: true,
                 value: true,
             },
+            _mode: {
+                type: Number,
+                value: Mode.SIMPLE,
+            },
         },
-        _toggleSelector: function () {
+        _computeSelection: function () {
+            if (this._mode == Mode.SIMPLE)
+                return this._simpleSelection;
+            return this._advancedSelection;
+        },
+        _toggleOpened: function () {
             this.opened = !this.opened;
         },
         _getExperimentStyle: function (experiment) {
@@ -36,6 +59,14 @@ var tf_data_selector;
                 return '';
             var color = tf_color_scale.experimentsColorScale(experiment.name);
             return "background-color: " + color + ";";
+        },
+        _isSimpleMode: function (mode) {
+            return mode == Mode.SIMPLE;
+        },
+        _toggleMode: function () {
+            var curMode = this._mode;
+            var nextMode = curMode == Mode.SIMPLE ? Mode.ADVANCED : Mode.SIMPLE;
+            this._mode = nextMode;
         },
     });
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

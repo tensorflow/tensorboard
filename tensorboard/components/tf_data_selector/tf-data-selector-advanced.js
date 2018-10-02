@@ -18,7 +18,7 @@ var tf_data_selector;
     var NO_EXPERIMENT_ID = null;
     _a = tf_storage.makeBindings(function (str) { return tf_data_selector.decodeIdArray(str); }, function (ids) { return tf_data_selector.encodeIdArray(ids); }), tf_data_selector.getIdInitializer = _a.getInitializer, tf_data_selector.getIdObserver = _a.getObserver;
     Polymer({
-        is: 'tf-data-selector',
+        is: 'tf-data-selector-advanced',
         properties: {
             _allExperimentsFetched: {
                 type: Boolean,
