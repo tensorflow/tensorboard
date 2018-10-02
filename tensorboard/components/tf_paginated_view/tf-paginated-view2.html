@@ -127,10 +127,8 @@ limitations under the License.
   </template>
   <script>
 
-  const MAX_DOM_CACHE_SIZE = 10;
-
   Polymer({
-    is: "tf-paginated-view2",
+    is: 'tf-paginated-view2',
     properties: {
       /**
        * An arbitrary list of items to render
@@ -161,7 +159,11 @@ limitations under the License.
         value: () => [],
       },
 
-      _cachedItems: {
+      /**
+       * When item is removed, it is placed in a cache and the oldest item gets
+       * removed when LRU grows more than size of the 2x_limit.
+       */
+      _lruCachedItems: {
         type: Object,
         value: () => new Map(),
       },
@@ -241,6 +243,7 @@ limitations under the License.
       '_clampActiveIndex(items)',
       '_updateRenderedItems(items, _limit, _activeIndex, _pageCount)',
       '_updateDom(_renderedItems.*)',
+      '_trimCache(_limit)',
     ],
 
     behaviors: [
@@ -277,7 +280,7 @@ limitations under the License.
     _bootstrapDom() {
       Array.from(this.$.items.children)
           .forEach(child => Polymer.dom(this.$.items).removeChild(child));
-      this._cachedItems.clear();
+      this._lruCachedItems.clear();
 
       this._renderedItems
           .forEach((item, index) => this._insertItem(item, index));
@@ -293,24 +296,28 @@ limitations under the License.
         });
         object.slice(index, index + addedCount)
             .forEach((item, ind) => this._insertItem(item, index + ind));
+        this._trimCache();
       });
     },
 
-    _removeItem(item, node) {
-      while (this._cachedItems.size > MAX_DOM_CACHE_SIZE) {
-        const [firstKey] = this._cachedItems.keys();
-        this._cachedItems.delete(firstKey);
+    _trimCache() {
+      while (this._lruCachedItems.size > this._limit * 2) {
+        const [firstKey] = this._lruCachedItems.keys();
+        this._lruCachedItems.delete(firstKey);
       }
+    },
+
+    _removeItem(item, node) {
       node.parentNode.removeChild(node);
-      this._cachedItems.set(this.getItemKey(item), node);
+      this._lruCachedItems.set(this.getItemKey(item), node);
     },
 
     _insertItem(item, atIndex) {
       let el;
       const key = this.getItemKey(item);
-      if (this._cachedItems.has(key)) {
-        el = this._cachedItems.get(key);
-        this._cachedItems.delete(key);
+      if (this._lruCachedItems.has(key)) {
+        el = this._lruCachedItems.get(key);
+        this._lruCachedItems.delete(key);
       } else {
         const inst = this.stamp({[this.as]: item});
         el = inst.root;
