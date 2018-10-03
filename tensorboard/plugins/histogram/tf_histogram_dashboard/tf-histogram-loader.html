@@ -126,20 +126,19 @@ limitations under the License.
         },
       },
 
-      observers: ['reload(run, tag)'],
+      observers: [
+        'reload(run, tag, requestManager)',
+      ],
 
       _computeRunColor(run) {
         return this._colorScaleFunction(run);
       },
 
       attached() {
-        this._attached = true;
-        this.reload();
+        this.redraw();
       },
+
       reload() {
-        if (!this._attached) {
-          return;
-        }
         this._canceller.cancelAll();
         const router = tf_backend.getRouter();
         const url = tf_backend.addParams(router.pluginRoute("histograms", "/histograms"), {
