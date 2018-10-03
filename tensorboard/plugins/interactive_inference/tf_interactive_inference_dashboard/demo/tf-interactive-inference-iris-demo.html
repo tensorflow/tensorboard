@@ -33,7 +33,7 @@
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/iris/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/iris/iris.json";
-        const testData = d3.json(DATA_PATH, (error, data) => {
+        const testData = d3.json(DATA_PATH).then(data => {
           this.data = data;
           for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
