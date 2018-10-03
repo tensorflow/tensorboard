@@ -1472,7 +1472,8 @@ limitations under the License.
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
-    const exampleIdKey = ' Example ID'
+    const inferenceScoreStr2 = ' Inference score 2';
+    const exampleIdKey = ' Example ID';
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -2086,7 +2087,8 @@ limitations under the License.
       isComputedKeyStr_: function(feature) {
         return feature == inferenceValueStr || feature == inferenceLabelStr
             || feature == inferenceCorrectStr || feature == inferenceErrorStr
-            || feature == inferenceScoreStr || feature == inferenceAbsErrorStr
+            || feature == inferenceScoreStr || feature == inferenceScoreStr2 
+            || feature == inferenceAbsErrorStr
             || feature == inferenceSquaredErrorStr || feature == exampleIdKey
             || this.facetDistFeatureNames.indexOf(feature) != -1
       },
@@ -2836,16 +2838,23 @@ limitations under the License.
             this.inferences.indices.length == 0) {
           return;
         }
-        // Create map of example indicies to inference results.
+        // Create map of example indices to inference results.
         const inferenceMap = {}
         const isClassification = !!this.inferences.results.classification;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
+            inferenceMap[this.inferences.indices[i]] = []
+            for (let model_num=0; model_num <
+             this.inferences.results.classification.classifications.length;
+             model_num++){
+            // TODO is the usage of const within for loop correct here?
             const classes =
-              this.inferences.results.classification.classifications[i].classes;
-            inferenceMap[this.inferences.indices[i]] =
+              this.inferences.results.classification.classifications[model_num][i].classes;
+            inferenceMap[this.inferences.indices[i]][model_num] =
               classes.sort((a, b) => b.score - a.score);
+            }
           } else {
+            // TODO edit inferencemap for regression with new indices
             inferenceMap[this.inferences.indices[i]] =
                 [{label: '',
                   score: this.inferences.results.regression.regressions[
@@ -2888,10 +2897,10 @@ limitations under the License.
                    labelIndex < self.examplesAndInferences[index].inferences[
                      inferenceIndex].length;
                    labelIndex++) {
-                self.examplesAndInferences[index].inferences[inferenceIndex][
+                self.examplesAndInferences[index].inferences[inferenceIndex][0][
                   labelIndex].vocabLabel = self.labelVocab[
                     self.examplesAndInferences[index].inferences[
-                      inferenceIndex][labelIndex].label];
+                      inferenceIndex][0][labelIndex].label];
               }
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
@@ -2919,7 +2928,7 @@ limitations under the License.
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
           item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][0].label;
+            this.examplesAndInferences[index].inferences[inferenceIdx][0][0].label;
           return;
         }
 
@@ -2938,22 +2947,25 @@ limitations under the License.
         let indexForNonZeroLabel = 0;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIdx].length;
+               inferenceIdx][0].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-            inferenceIdx][i].label !== 0) {
+            inferenceIdx][0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
-
+        // console.log(this.examplesAndInferences[index].inferences)
+        item[inferenceScoreStr2] = this.examplesAndInferences[
+        index].inferences[inferenceIdx][1][indexForNonZeroLabel].score;
+        
         item[inferenceScoreStr] =
-          this.examplesAndInferences[index].inferences[inferenceIdx][
+          this.examplesAndInferences[index].inferences[inferenceIdx][0][
             indexForNonZeroLabel].score;
-        if (this.examplesAndInferences[index].inferences[inferenceIdx][
+        if (this.examplesAndInferences[index].inferences[inferenceIdx][0][
           indexForNonZeroLabel].score >= threshold) {
           item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][
+            this.examplesAndInferences[index].inferences[inferenceIdx][0][
               indexForNonZeroLabel].label;
         } else {
           item[inferenceValueStr] = this.defaultInferenceLabel.toString();
