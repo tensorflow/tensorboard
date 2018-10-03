@@ -48,6 +48,7 @@ Regex search input UI at tops of dashboards.
         tagFilter: {
           type: String,
           notify: true,
+          readOnly: true,
           value: tf_storage.getStringInitializer('tagFilter',
               {defaultValue: '', useLocalStorage: false}),
           observer: '_tagFilterObserver',
