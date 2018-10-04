@@ -354,24 +354,6 @@ def parse_event_files_spec(logdir):
   return files
 
 
-def reload_multiplexer(multiplexer, path_to_run):
-  """Loads all runs into the multiplexer.
-
-  Args:
-    multiplexer: The `EventMultiplexer` to add runs to and reload.
-    path_to_run: A dict mapping from paths to run names, where `None` as the run
-      name is interpreted as a run name equal to the path.
-  """
-  start = time.time()
-  tf.logging.info('TensorBoard reload process beginning')
-  for (path, name) in six.iteritems(path_to_run):
-    multiplexer.AddRunsFromDirectory(path, name)
-  tf.logging.info('TensorBoard reload process: Reload the whole Multiplexer')
-  multiplexer.Reload()
-  duration = time.time() - start
-  tf.logging.info('TensorBoard done reloading. Load took %0.3f secs', duration)
-
-
 def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
                                 reload_task):
   """Starts automatically reloading the given multiplexer.
@@ -395,11 +377,16 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
   if load_interval < 0:
     raise ValueError('load_interval is negative: %d' % load_interval)
 
-  # We don't call multiplexer.Reload() here because that would make
-  # AddRunsFromDirectory block until the runs have all loaded.
   def _reload():
     while True:
-      reload_multiplexer(multiplexer, path_to_run)
+      start = time.time()
+      tf.logging.info('TensorBoard reload process beginning')
+      for path, name in six.iteritems(path_to_run):
+        multiplexer.AddRunsFromDirectory(path, name)
+      tf.logging.info('TensorBoard reload process: Reload the whole Multiplexer')
+      multiplexer.Reload()
+      duration = time.time() - start
+      tf.logging.info('TensorBoard done reloading. Load took %0.3f secs', duration)
       if load_interval == 0:
         # Only load the multiplexer once. Do not continuously reload.
         break
