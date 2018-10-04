@@ -47,7 +47,7 @@ class SqliteWriter(object):
     """Helper to ensure SQLite treats the given data as a BLOB."""
     # Special-case python 2 pysqlite which uses buffers for BLOB.
     if sys.version_info[0] == 2:
-      return buffer(bytestring)
+      return buffer(bytestring)  # noqa: F821 (undefined name)
     return bytestring
 
   def _create_id(self):

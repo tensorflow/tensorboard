@@ -182,7 +182,7 @@ class _RunLoader(object):
   """Loads a single run directory in batches."""
 
   _BATCH_COUNT = 5000
-  _BATCH_BYTES = 2**20  # 1 MB
+  _BATCH_BYTES = 2**20  # 1 MiB
 
   def __init__(self, subdir, experiment_name, run_name):
     """Constructs a `_RunLoader`.
@@ -217,7 +217,8 @@ class _RunLoader(object):
         if len(events) >= self._BATCH_COUNT or event_bytes >= self._BATCH_BYTES:
           break
       elapsed = time.time() - start
-      tf.logging.debug('RunLoader.load_batch() yielded in %0.3f sec', elapsed)
+      tf.logging.debug('RunLoader.load_batch() yielded in %0.3f sec for %s',
+                       elapsed, self._subdir)
       if not events:
         return
       yield _EventBatch(
