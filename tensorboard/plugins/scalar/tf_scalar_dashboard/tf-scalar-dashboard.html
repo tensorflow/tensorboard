@@ -33,7 +33,7 @@ limitations under the License.
 <link rel="import" href="../tf-data-selector/type.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
 <link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-paginated-view/tf-paginated-view2.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
@@ -132,34 +132,32 @@ limitations under the License.
               category="[[category]]"
               opened="[[_getPaneOpened(category)]]"
               on-opened-changed="_onPaneOpenChanged"
+              restamp="[[_restamp]]"
             >
-              <tf-paginated-view
+              <tf-paginated-view2
                 items="[[category.items]]"
-                pages="{{category._pages}}"
+                get-item-key="[[_getItemKey]]"
               >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-scalar-card
-                          active="[[page.active]]"
-                          data-to-load="[[item.series]]"
-                          ignore-y-outliers="[[_ignoreYOutliers]]"
-                          multi-experiments="[[_getMultiExperiments(dataSelection)]]"
-                          request-manager="[[_requestManager]]"
-                          show-download-links="[[_showDownloadLinks]]"
-                          smoothing-enabled="[[_smoothingEnabled]]"
-                          smoothing-weight="[[_smoothingWeight]]"
-                          tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
-                          tag="[[item.tag]]"
-                          tooltip-sorting-method="[[_tooltipSortingMethod]]"
-                          x-type="[[_xType]]"
-                        ></tf-scalar-card>
-                      </template>
-                    </div>
-                  </template>
+                <template>
+                  <!-- TODO(stephanwlee): Remove `active` when all usages of
+                    tf-scalar-card and tf-line-chart-data-loader uses the
+                    tf-paginated-view2. -->
+                  <tf-scalar-card
+                    active
+                    data-to-load="[[item.series]]"
+                    ignore-y-outliers="[[_ignoreYOutliers]]"
+                    multi-experiments="[[_getMultiExperiments(dataSelection)]]"
+                    request-manager="[[_requestManager]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    smoothing-enabled="[[_smoothingEnabled]]"
+                    smoothing-weight="[[_smoothingWeight]]"
+                    tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
+                    tag="[[item.tag]]"
+                    tooltip-sorting-method="[[_tooltipSortingMethod]]"
+                    x-type="[[_xType]]"
+                  ></tf-scalar-card>
                 </template>
-              </tf-paginated-view>
+              </tf-paginated-view2>
             </tf-category-pane>
           </template>
         </template>
@@ -271,6 +269,18 @@ limitations under the License.
           type: Boolean,
           value: USE_DATA_SELECTOR,
         },
+
+        _getItemKey: {
+          type: Function,
+          value() {
+            return item => item.tag;
+          },
+        },
+
+        _restamp: {
+          type: Boolean,
+          value: false,
+        },
       },
       behaviors: [
         tf_dashboard_common.ArrayUpdateHelper,
@@ -279,6 +289,16 @@ limitations under the License.
         '_updateCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
         '_updatePaneOpened(_categories.*)',
       ],
+      listeners: {
+        'content-visibility-changed': '_redrawCategoryPane',
+      },
+
+      _redrawCategoryPane(event, val) {
+        if (!val) return;
+        event.target.querySelectorAll('tf-scalar-card')
+            .forEach(histogram => histogram.redraw());
+      },
+
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
           '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
       _smoothingWeightObserver: tf_storage.getNumberObserver(

@@ -126,8 +126,6 @@ limitations under the License.
 
         dataSeries: Array,
 
-        requestManager: Object,
-
         logScaleActive: {
           type: Boolean,
           observer: '_logScaleChanged',
@@ -178,6 +176,7 @@ limitations under the License.
       observers: [
         '_dataSeriesChanged(dataSeries.*)',
         '_loadKeyChanged(loadKey)',
+        'redraw(active, isAttached)',
       ],
 
       onLoadFinish() {
@@ -192,10 +191,6 @@ limitations under the License.
         }
 
         this.redraw();
-      },
-
-      detached() {
-        cancelAnimationFrame(this._redrawRaf);
       },
 
       exportAsSvgString() {
@@ -217,16 +212,13 @@ limitations under the License.
       },
 
       redraw() {
-        cancelAnimationFrame(this._redrawRaf);
-        this._redrawRaf = window.requestAnimationFrame(() => {
-          if (this.active) {
-            this.$.chart.redraw();
-          } else {
-            // If we reached a point where we should render while the page
-            // is not active, we've gotten into a bad state.
-            this._maybeRenderedInBadState = true;
-          }
-        });
+        if (this.active) {
+          this.$.chart.redraw();
+        } else {
+          // If we reached a point where we should render while the page
+          // is not active, we've gotten into a bad state.
+          this._maybeRenderedInBadState = true;
+        }
       },
 
       _loadKeyChanged(_) {

@@ -57,13 +57,21 @@ export const DataLoaderBehavior = {
 
     // A function that takes a datum and returns a string URL for fetching
     // data.
-    getDataLoadUrl: Function,
+    getDataLoadUrl: {
+      type: Function,
+      value: () => '',
+    },
 
     dataLoading: {
       type: Boolean,
       readOnly: true,
       reflectToAttribute: true,
       value: false,
+    },
+
+    requestManager: {
+      type: Object,
+      value: () => null,
     },
 
     /*
@@ -84,7 +92,7 @@ export const DataLoaderBehavior = {
   },
 
   observers: [
-    '_dataToLoadChanged(isAttached, dataToLoad.*)',
+    '_dataToLoadChanged(dataToLoad.*, _canceller, getDataLoadName, getDataLoadUrl, requestManager, isAttached)',
   ],
 
   onLoadFinish() {
