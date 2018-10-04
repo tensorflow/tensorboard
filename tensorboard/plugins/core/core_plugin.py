@@ -420,12 +420,13 @@ relevant for db read-only mode. Each thread reloads one run at a time.
         metavar='TYPE',
         type=str,
         default='auto',
-        choices=['auto', 'thread', 'process'],
+        choices=['auto', 'thread', 'process', 'blocking'],
         help='''\
 [experimental] The mechanism to use for the background data reload task.
 The default "auto" option will conditionally use threads for legacy reloading
 and a child process for DB import reloading. The "process" option is only
-useful with DB import mode. (default: %(default)s)\
+useful with DB import mode. The "blocking" option will block startup until
+reload finishes, and requires --load_interval=0. (default: %(default)s)\
 ''')
 
     parser.add_argument(
