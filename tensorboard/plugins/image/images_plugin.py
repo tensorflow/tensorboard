@@ -74,7 +74,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
     }
 
   def is_active(self):
-    """The images plugin is active iff any run has at least one relevant tag."""
+    """The images plugin is active if any run has at least one relevant tag."""
     if self._db_connection_provider:
       # The plugin is active if one relevant tag can be found in the database.
       db = self._db_connection_provider()
