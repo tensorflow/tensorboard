@@ -112,8 +112,9 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   reload_interval = flags.reload_interval
   # For db import mode, prefer reloading in a child process. See
   # https://github.com/tensorflow/tensorboard/issues/1467
-  reload_use_process = (flags.reload_task == 'process' or
-                        (flags.reload_task == 'auto' and flags.db_import))
+  reload_task = flags.reload_task
+  if reload_task == 'auto' and flags.db_import:
+    reload_task == 'process'
   db_uri = flags.db
   # For DB import mode, create a DB file if we weren't given one.
   if flags.db_import and not flags.db:
@@ -153,11 +154,11 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     plugin_name_to_instance[plugin.plugin_name] = plugin
   return TensorBoardWSGIApp(flags.logdir, plugins, loading_multiplexer,
                             reload_interval, flags.path_prefix,
-                            reload_use_process)
+                            reload_task)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-                       path_prefix='', reload_use_process=False):
+                       path_prefix='', reload_task='auto'):
   """Constructs the TensorBoard application.
 
   Args:
@@ -169,7 +170,7 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     reload_interval: How often (in seconds) to reload the Multiplexer.
       Zero means reload just once at startup; negative means never load.
     path_prefix: A prefix of the path when app isn't served from root.
-    reload_use_process: If true, reload in a child process; otherwise, a thread.
+    reload_task: Indicates the type of background task to reload with.
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
@@ -185,7 +186,7 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     # We either reload the multiplexer once when TensorBoard starts up, or we
     # continuously reload the multiplexer.
     start_reloading_multiplexer(multiplexer, path_to_run, reload_interval,
-                                reload_use_process)
+                                reload_task)
   return TensorBoardWSGI(plugins, path_prefix)
 
 
@@ -372,8 +373,8 @@ def reload_multiplexer(multiplexer, path_to_run):
 
 
 def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
-                                use_process):
-  """Asynchronously starts automatically reloading the given multiplexer.
+                                reload_task):
+  """Starts automatically reloading the given multiplexer.
 
   If `load_interval` is positive, the thread will reload the multiplexer
   by calling `ReloadMultiplexer` every `load_interval` seconds, starting
@@ -386,7 +387,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
     load_interval: An integer greater than or equal to 0. If positive, how many
       seconds to wait after one load before starting the next load. Otherwise,
       reloads the multiplexer once and never again (no continuous reloading).
-    use_process: If true, reload in a child process; otherwise use a thread.
+    reload_task: Indicates the type of background task to reload with.
 
   Raises:
     ValueError: If `load_interval` is negative.
@@ -404,7 +405,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
         break
       time.sleep(load_interval)
 
-  if use_process:
+  if reload_task == 'process':
     tf.logging.info('Launching reload in a child process')
     import multiprocessing
     process = multiprocessing.Process(target=_reload, name='Reloader')
@@ -412,12 +413,18 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
     # kill all its daemonic children.
     process.daemon = True
     process.start()
-  else:
+  elif reload_task in ('thread', 'auto'):
     tf.logging.info('Launching reload in a daemon thread')
     thread = threading.Thread(target=_reload, name='Reloader')
     # Make this a daemon thread, which won't block TB from exiting.
     thread.daemon = True
     thread.start()
+  elif reload_task == 'blocking':
+    if load_interval != 0:
+      raise ValueError('blocking reload only allowed with load_interval=0')
+    _reload()
+  else:
+    raise ValueError('unrecognized reload_task: %s' % reload_task)
 
 
 def get_database_info(db_uri):
