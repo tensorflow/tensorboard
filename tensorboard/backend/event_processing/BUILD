@@ -139,7 +139,6 @@ py_test(
 py_library(
     name = "event_multiplexer",
     srcs = [
-        "db_import_multiplexer.py",
         "event_multiplexer.py",
         "plugin_event_multiplexer.py",
     ],
@@ -175,6 +174,22 @@ py_test(
         ":event_accumulator",
         ":event_multiplexer",
         "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "db_import_multiplexer",
+    srcs = [
+        "db_import_multiplexer.py",
+    ],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":directory_watcher",
+        ":event_file_loader",
+        ":io_wrapper",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
     ],
 )
 
