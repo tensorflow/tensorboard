@@ -342,6 +342,15 @@ temporary unless --db is also passed to specify a DB path to use.\
 ''')
 
     parser.add_argument(
+        '--db_import_use_op',
+        action='store_true',
+        help='''\
+[experimental] in combination with --db_import, if passed, use TensorFlow's
+import_event() op for importing event data, otherwise use TensorBoard's own
+sqlite ingestion logic.\
+''')
+
+    parser.add_argument(
         '--inspect',
         action='store_true',
         help='''\

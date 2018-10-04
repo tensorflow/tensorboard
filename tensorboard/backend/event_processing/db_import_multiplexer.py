@@ -28,9 +28,11 @@ import six
 from six.moves import queue, xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.backend.event_processing import sqlite_writer
 
 
 class DbImportMultiplexer(object):
@@ -41,8 +43,9 @@ class DbImportMultiplexer(object):
 
   def __init__(self,
                db_connection_provider,
-               purge_orphaned_data=True,
-               max_reload_threads=1):
+               purge_orphaned_data,
+               max_reload_threads,
+               use_import_op):
     """Constructor for `DbImportMultiplexer`.
 
     Args:
@@ -52,26 +55,38 @@ class DbImportMultiplexer(object):
       max_reload_threads: The max number of threads that TensorBoard can use
         to reload runs. Each thread reloads one run at a time. If not provided,
         reloads runs serially (one after another).
+      use_import_op: If True, use TensorFlow's import_event() op for imports,
+        otherwise use TensorBoard's own sqlite ingestion logic.
     """
     tf.logging.info('DbImportMultiplexer initializing');
-    conn = db_connection_provider()
+    self._db_connection_provider = db_connection_provider
+    self._purge_orphaned_data = purge_orphaned_data
+    self._max_reload_threads = max_reload_threads
+    self._use_import_op = use_import_op
+    self._event_sink = None
+    self._run_loaders = {}
+
+    if self._purge_orphaned_data:
+      tf.logging.warning(
+          '--db_import does not yet support purging orphaned data')
+
+    conn = self._db_connection_provider()
     # Extract the file path of the DB from the DB connection.
-    rows = conn.execute('PRAGMA database_list;').fetchall()
+    rows = conn.execute('PRAGMA database_list').fetchall()
     db_name_to_path = {row[1]: row[2] for row in rows}
     self._db_path = db_name_to_path['main']
     tf.logging.info('DbImportMultiplexer using db_path %s', self._db_path)
     # Set the DB in WAL mode so reads don't block writes.
-    # TODO(nickfelt): investigate weird errors in rollback journal mode
-    conn.execute('PRAGMA journal_mode=WAL;')
-    conn.execute('PRAGMA synchronous=NORMAL;')  # Recommended for WAL mode
-    self._run_loaders = {}
-    self._event_sink = _ImportOpEventSink(self._db_path)
-    self.purge_orphaned_data = purge_orphaned_data
-    if self.purge_orphaned_data:
-      tf.logging.warning(
-          '--db_import does not yet support purging orphaned data')
-    self._max_reload_threads = max_reload_threads
+    conn.execute('PRAGMA journal_mode=wal')
+    conn.execute('PRAGMA synchronous=normal')  # Recommended for WAL mode
+    sqlite_writer.initialize_schema(conn)
     tf.logging.info('DbImportMultiplexer done initializing')
+
+  def _CreateEventSink(self):
+    if self._use_import_op:
+      return _ImportOpEventSink(self._db_path)
+    else:
+      return _SqliteWriterEventSink(self._db_connection_provider)
 
   def AddRunsFromDirectory(self, path, name=None):
     """Load runs from a directory; recursively walks subdirectories.
@@ -102,6 +117,10 @@ class DbImportMultiplexer(object):
   def Reload(self):
     """Load events from every detected run."""
     tf.logging.info('Beginning DbImportMultiplexer.Reload()')
+    # Defer event sink creation until needed; this ensures it will only exist in
+    # the thread that calls Reload(), since DB connections must be thread-local.
+    if not self._event_sink:
+      self._event_sink = self._CreateEventSink()
     # Use collections.deque() for speed when we don't need blocking since it
     # also has thread-safe appends/pops.
     loader_queue = collections.deque(six.itervalues(self._run_loaders))
@@ -263,3 +282,54 @@ class _ImportOpEventSink(_EventSink):
     tf.logging.debug(
         'ImportOpEventSink.WriteBatch() took %0.3f sec for %s events', elapsed,
         len(event_batch.events))
+
+
+class _SqliteWriterEventSink(_EventSink):
+  """Implementation of EventSink using SqliteWriter."""
+
+  def __init__(self, db_connection_provider):
+    """Constructs a SqliteWriterEventSink.
+
+    Args:
+      db_connection_provider: Provider function for creating a DB connection.
+    """
+    self._writer = sqlite_writer.SqliteWriter(db_connection_provider)
+
+  def write_batch(self, event_batch):
+    start = time.time()
+    tagged_data = {}
+    for event_proto in event_batch.events:
+      event = tf.Event.FromString(event_proto)
+      self._process_event(event, tagged_data)
+    if tagged_data:
+      self._writer.write_summaries(
+          tagged_data,
+          experiment_name=event_batch.experiment_name,
+          run_name=event_batch.run_name)
+    elapsed = time.time() - start
+    tf.logging.debug(
+        'SqliteWriterEventSink.WriteBatch() took %0.3f sec for %s events',
+        elapsed, len(event_batch.events))
+
+  def _process_event(self, event, tagged_data):
+    """Processes a single tf.Event and records it in tagged_data."""
+    event_type = event.WhichOneof('what')
+    # Handle the most common case first.
+    if event_type == 'summary':
+      for value in event.summary.value:
+        value = data_compat.migrate_value(value)
+        tag, metadata, values = tagged_data.get(value.tag, (None, None, []))
+        values.append((event.step, event.wall_time, value.tensor))
+        if tag is None:
+          # Store metadata only from the first event.
+          tagged_data[value.tag] = sqlite_writer.TagData(
+              value.tag, value.metadata, values)
+    elif event_type == 'file_version':
+      pass  # TODO: reject file version < 2 (at loader level)
+    elif event_type == 'session_log':
+      if event.session_log.status == tf.SessionLog.START:
+        pass  # TODO: implement purging via sqlite writer truncation method
+    elif event_type in ('graph_def', 'meta_graph_def'):
+      pass  # TODO: support graphs
+    elif event_type == 'tagged_run_metadata':
+      pass  # TODO: support run metadata

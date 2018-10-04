@@ -112,8 +112,10 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   reload_interval = flags.reload_interval
   # For db import mode, prefer reloading in a child process. See
   # https://github.com/tensorflow/tensorboard/issues/1467
-  reload_use_process = (flags.reload_task == 'process' or
-                        (flags.reload_task == 'auto' and flags.db_import))
+  reload_use_process = (
+      flags.reload_task == 'process' or
+      (flags.reload_task == 'auto' and flags.db_import and
+       flags.db_import_use_op))
   db_uri = flags.db
   # For DB import mode, create a DB file if we weren't given one.
   if flags.db_import and not flags.db:
@@ -124,12 +126,13 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   if flags.db_import:
     # DB import mode.
     if db_module != sqlite3:
-        raise ValueError('--db_import is only compatible with sqlite DBs')
+      raise ValueError('--db_import is only compatible with sqlite DBs')
     tf.logging.info('Importing logdir into DB at %s', db_uri)
     loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
-        max_reload_threads=flags.max_reload_threads)
+        max_reload_threads=flags.max_reload_threads,
+        use_import_op=flags.db_import_use_op)
   elif flags.db:
     # DB read-only mode, never load event logs.
     reload_interval = -1
