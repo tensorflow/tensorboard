@@ -56,6 +56,7 @@ class FakeFlags(object):
       reload_task='auto',
       db='',
       db_import=False,
+      db_import_use_op=False,
       window_title='',
       path_prefix=''):
     self.logdir = logdir
@@ -66,6 +67,7 @@ class FakeFlags(object):
     self.reload_task = reload_task
     self.db = db
     self.db_import = db_import
+    self.db_import_use_op = db_import_use_op
     self.window_title = window_title
     self.path_prefix = path_prefix
 

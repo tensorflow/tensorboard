@@ -64,6 +64,7 @@ py_library(
         "//tensorboard:db",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:db_import_multiplexer",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins/core:core_plugin",
