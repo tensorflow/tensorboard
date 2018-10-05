@@ -58,7 +58,6 @@ export const DataLoaderBehavior = {
 
     dataLoading: {
       type: Boolean,
-      readOnly: true,
       value: false,
     },
 
@@ -120,7 +119,8 @@ export const DataLoaderBehavior = {
 
     if (!this.isAttached) return;
     this._loadDataAsync = this.async(() => {
-      this.dataLoading = true;
+      // Using a setter does not notify the impl observers.
+      this.set('dataLoading', true);
 
       // Before updating, cancel any network-pending updates, to
       // prevent race conditions where older data stomps newer data.
@@ -140,7 +140,7 @@ export const DataLoaderBehavior = {
       });
 
       return Promise.all(promises).then(this._canceller.cancellable(result => {
-        this.dataLoading = false;
+        this.set('dataLoading', false);
         if (result.cancelled) return;
         this.onLoadFinish();
       }));
