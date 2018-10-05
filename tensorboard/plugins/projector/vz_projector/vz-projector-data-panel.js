@@ -208,8 +208,9 @@ var vz_projector;
                 var items;
                 var thresholds;
                 var isCategorical = _this.forceCategoricalColoring || !stats.tooManyUniqueValues;
+                var desc;
                 if (isCategorical) {
-                    var scale = d3.scaleOrdinal(d3.schemeCategory20);
+                    var scale = d3.scaleOrdinal(d3.schemeCategory10);
                     var range_1 = scale.range();
                     // Re-order the range.
                     var newRange = range_1.map(function (color, i) {
@@ -219,27 +220,27 @@ var vz_projector;
                     items = stats.uniqueEntries;
                     scale.range(newRange).domain(items.map(function (x) { return x.label; }));
                     map = scale;
+                    var len = stats.uniqueEntries.length;
+                    desc = len + " " + (len > range_1.length ? ' non-unique' : '') + " " +
+                        "colors";
                 }
                 else {
                     thresholds = [
                         { color: '#ffffdd', value: stats.min },
-                        { color: '#1f2d86', value: stats.max }
+                        { color: '#1f2d86', value: stats.max },
                     ];
                     map = d3.scaleLinear()
                         .domain(thresholds.map(function (t) { return t.value; }))
                         .range(thresholds.map(function (t) { return t.color; }));
+                    desc = 'gradient';
                 }
-                var desc = !isCategorical ? 'gradient' :
-                    stats.uniqueEntries.length +
-                        ((stats.uniqueEntries.length > 20) ? ' non-unique' : '') +
-                        ' colors';
                 return {
                     name: stats.name,
                     desc: desc,
                     map: map,
                     items: items,
                     thresholds: thresholds,
-                    tooManyUniqueValues: stats.tooManyUniqueValues
+                    tooManyUniqueValues: stats.tooManyUniqueValues,
                 };
             });
             if (metadataColorOption.length > 0) {
