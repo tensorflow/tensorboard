@@ -70,7 +70,7 @@
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/age_uci/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/age_uci/uci_test_examples.json";
-        const testData = d3.json(DATA_PATH, (error, data) => {
+        const testData = d3.json(DATA_PATH).then(data => {
           data = data.slice(0, 500);
           this.data = data;
           for (let i = 0; i < data.length; i++) {

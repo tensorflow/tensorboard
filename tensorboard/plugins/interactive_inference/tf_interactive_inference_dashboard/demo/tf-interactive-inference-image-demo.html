@@ -41,7 +41,7 @@
           'data/images/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/images/smile_examples.json";
         const RESULTS_PATH = "data/images/smile_examples_inference.json";
-        const testData = d3.json(DATA_PATH, (error, data) => {
+        const testData = d3.json(DATA_PATH).then(data => {
           this.data = data;
           this.updateSprite();
           for (let i = 0; i < this.data.length; i++) {
@@ -83,7 +83,7 @@
             const tensors = [];
             const BATCH_SIZE = 256;
             if (indices.length == 250) {
-              const testData = d3.json(RESULTS_PATH, (error, inferences) => {
+              const testData = d3.json(RESULTS_PATH).then(inferences => {
                 setTimeout(() => {
                   this.$.dash.inferences = inferences;
                   this.indicesToInfer = {};
