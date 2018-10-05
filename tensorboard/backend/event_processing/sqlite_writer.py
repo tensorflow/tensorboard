@@ -193,7 +193,7 @@ class SqliteWriter(object):
         tag_id = tag_to_id[tag]
         for step, wall_time, tensor_proto in tagdata.values:
           dtype = tensor_proto.dtype
-          shape = ','.join(dim.size for dim in tensor_proto.tensor_shape.dim)
+          shape = ','.join(str(d.size) for d in tensor_proto.tensor_shape.dim)
           # Use tensor_proto.tensor_content if it's set, to skip relatively
           # expensive extraction into intermediate ndarray.
           data = self._make_blob(
