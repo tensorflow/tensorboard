@@ -342,6 +342,15 @@ temporary unless --db is also passed to specify a DB path to use.\
 ''')
 
     parser.add_argument(
+        '--db_import_use_op',
+        action='store_true',
+        help='''\
+[experimental] in combination with --db_import, if passed, use TensorFlow's
+import_event() op for importing event data, otherwise use TensorBoard's own
+sqlite ingestion logic.\
+''')
+
+    parser.add_argument(
         '--inspect',
         action='store_true',
         help='''\
@@ -404,6 +413,20 @@ routing of an elb when the website base_url is not available e.g.
 The max number of threads that TensorBoard can use to reload runs. Not
 relevant for db read-only mode. Each thread reloads one run at a time.
 (default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_task',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['auto', 'thread', 'process', 'blocking'],
+        help='''\
+[experimental] The mechanism to use for the background data reload task.
+The default "auto" option will conditionally use threads for legacy reloading
+and a child process for DB import reloading. The "process" option is only
+useful with DB import mode. The "blocking" option will block startup until
+reload finishes, and requires --load_interval=0. (default: %(default)s)\
 ''')
 
     parser.add_argument(

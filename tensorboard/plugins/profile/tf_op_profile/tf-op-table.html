@@ -15,8 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="utils.html">
 
 <!-- tf-op-table-styles contains shared styles used in this file -->
@@ -64,41 +62,6 @@ limitations under the License.
   display: block;
   background-color: white;
 }
-#control {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-
-  overflow:auto;
-  text-transform:uppercase;
-  padding: 0.5em;
-  vertical-align: bottom;
-  text-align: bottom;
-}
-
-.controlRowLeft {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  line-height: 50px;
-  text-align: bottom;
-  justify-content: flex-start;
-}
-
-.controlRowRight{
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  line-height: 50px;
-  text-align: bottom;
-  justify-content: flex-end;
-}
-
-paper-slider {
-  --paper-slider-input: {width: 100px}
-  --paper-slider-height: 3px;
-}
-
 #header {
   font-size: smaller;
   font-weight: bold;
@@ -111,20 +74,6 @@ paper-slider {
 /* Match indented names */
 #header > #name { padding-left: 2em; }
     </style>
-    <div id="control">
-    <!--
-      paper-slider sets how many child nodes to show for each category.
-      If paper-toggle-button is checked, then only children in top 90th
-      percentile of time spent are listed.
-    -->
-    <span class="controlRowLeft">Show top
-      <paper-slider min="10" max="100" snaps step="10"
-        value="{{childrenCount}}" editable>
-      </paper-slider>ops</span>
-    <span class="controlRowRight">off&nbsp;
-    <paper-toggle-button checked={{showP90}}>
-    </paper-toggle-button>Top 90%</span>
-    </div>
     <div id="header">
       <span id="time">Time</span>
       <span id="name">Name</span>
@@ -271,7 +220,7 @@ Polymer({
         </span>{{node.name}}
       </span>
       <span id="provenance">{{_provenance(node)}}&nbsp;</span>
-      <span id="utilization" hidden="[[!node.metrics]]"
+      <span id="utilization" hidden="[[!_hasFlops(node)]]"
         style$="background-color:{{_flameColor(node)}}">
         {{_utilization(node)}}</span>
     </div>
@@ -286,6 +235,12 @@ Polymer({
           header-hover="{{headerHover}}"
           header-click="{{headerClick}}">
         </tf-op-table-entry>
+      </template>
+      <template is="dom-if" if="[[_hasLeftout(node, childrenCount, level)]]">
+        <span id="name" style$="padding-left:[[_getPaddingLeft(level)]]em;">
+          [[_numLeftout(node, childrenCount)]] categories or ops
+          have been left out.
+        </span>
       </template>
     </template>
   </template>
@@ -345,6 +300,7 @@ Polymer({
   _utilization: function(node) {
     return tf_op_profile.percent(tf_op_profile.utilization(node));
   },
+  _hasFlops: tf_op_profile.hasFlops,
   _flameColor: function(node) {
     return tf_op_profile.flameColor(tf_op_profile.utilization(node), 1, 0.2);
   },
@@ -355,7 +311,7 @@ Polymer({
   _selectedChanged: function(v) { this.classList.toggle('selected', v); },
   /*
     Returns top K children for the node. If p90 is true, then only children
-    fallen in the top 90th percentile in time are returned. 
+    fallen in the top 90th percentile in time are returned.
   */
   _getKChildren: function(node, k, p90, level) {
     if (p90 && node.children.length > 0 && node.children[0].metrics) {
@@ -367,6 +323,16 @@ Polymer({
       k = i;
     }
     return level ? node.children.slice(0, k) : node.children;
+  },
+  _hasLeftout: function(node, k, level) {
+   if (!level) return false;
+   return node.numChildren > Math.min(k, node.children.length);
+  },
+  _numLeftout: function(node, k) {
+   return node.numChildren - Math.min(k, node.children.length);
+  },
+  _getPaddingLeft: function(level) {
+   return level + 5;
   },
 });
   </script>

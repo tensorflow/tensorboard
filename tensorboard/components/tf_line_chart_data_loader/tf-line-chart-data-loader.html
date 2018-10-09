@@ -91,6 +91,7 @@ limitations under the License.
       }
     </style>
   </template>
+  <script src="../vz-line-chart2/line-chart-exporter.js"></script>
   <script>
     (function() {
 
@@ -198,6 +199,11 @@ limitations under the License.
 
       detached() {
         cancelAnimationFrame(this._redrawRaf);
+      },
+
+      exportAsSvgString() {
+        const exporter = this.$.chart.getExporter();
+        return exporter.exportAsString();
       },
 
       resetDomain() {

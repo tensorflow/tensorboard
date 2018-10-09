@@ -14,6 +14,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_node_search",
+        "@org_polymer_iron_icon",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_icon_button",

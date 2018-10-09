@@ -48,14 +48,15 @@ Regex search input UI at tops of dashboards.
         tagFilter: {
           type: String,
           notify: true,
+          readOnly: true,
           value: tf_storage.getStringInitializer('tagFilter',
-              {defaultValue: '', useLocalStorage: true}),
+              {defaultValue: '', useLocalStorage: false}),
           observer: '_tagFilterObserver',
         },
       },
 
       _tagFilterObserver: tf_storage.getStringObserver(
-          'tagFilter', {defaultValue: '', useLocalStorage: true}),
+          'tagFilter', {defaultValue: '', useLocalStorage: false}),
     });
   </script>
 </dom-module>

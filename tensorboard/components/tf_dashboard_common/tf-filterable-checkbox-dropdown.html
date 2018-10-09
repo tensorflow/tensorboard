@@ -14,11 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="./tf-dropdown-trigger.html">
 <link rel="import" href="./tf-filterable-checkbox-list.html">
 
 <!--
@@ -48,20 +46,13 @@ Properties out:
       no-overlap="true"
       opened="{{_opened}}"
     >
-      <div class="dropdown-trigger" slot="dropdown-trigger">
-        <paper-ripple></paper-ripple>
-        <!-- paper-input has type="text" for a11y, do not remove -->
-        <paper-input
-          label="[[label]]"
-          no-label-float="[[!labelFloat]]"
-          placeholder="[[placeholder]]"
-          readonly
-          type="text"
-          value="[[_getValueLabel(selectedItems.*)]]"
-        >
-          <iron-icon icon="arrow-drop-down" suffix slot="suffix"></iron-icon>
-        </paper-input>
-      </div>
+      <tf-dropdown-trigger
+        class="dropdown-trigger"
+        slot="dropdown-trigger"
+        label="[[label]]"
+        label-float="[[labelFloat]]"
+        name="[[_getValueLabel(selectedItems, items)]]"
+      ></tf-dropdown-trigger>
       <div class="dropdown-content">
         <tf-filterable-checkbox-list
           coloring="[[_coloring]]"
@@ -80,23 +71,12 @@ Properties out:
       padding: 8px;
     }
 
-    paper-input {
-      --paper-input-container-focus-color: var(--tb-orange-strong);
-      --paper-input-container: {
-        padding: 4px;
-
-        @apply --tf-filterable-checkbox-dropdown-input-container;
-      };
-      --paper-input-container-input: {
+    tf-dropdown-trigger {
+      --tf-dropdown-trigger-content: {
         font-size: 14px;
       };
-      --paper-input-container-label: {
-        font-size: 14px;
-      };
-    }
 
-    paper-checkbox {
-      --paper-checkbox-ink-size: 40px;
+      @apply --tf-filterable-checkbox-dropdown-trigger;
     }
 
     paper-menu-button {
@@ -105,44 +85,6 @@ Properties out:
 
     .dropdown-content {
       padding: 10px 0;
-    }
-
-    .input {
-      width: 100%;
-    }
-
-    .item {
-      align-items: center;
-      display: flex;
-      flex-direction: row;
-      font-family: inherit;
-      font-size: 14px;
-      line-height: 24px;
-      margin: 3px 0;
-      padding: 0 16px;
-      width: 300px;
-    }
-
-    .matches {
-      max-height: 300px;
-      overflow-y: auto;
-      padding: 5px 0;
-    }
-
-    .checkbox {
-      width: 100%;
-      display: flex;
-      padding: 7px 0;
-      align-items: center;
-    }
-
-    .empty-match {
-      color: var(--paper-grey-600);
-      font-size: 14px;
-    }
-
-    .x-button {
-      width: 100%;
     }
     </style>
   </template>

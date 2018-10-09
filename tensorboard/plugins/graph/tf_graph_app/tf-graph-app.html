@@ -53,12 +53,18 @@ The pbtxt format is the stringified version of the graphdef.
 }
 
 .side {
-  position: absolute;
-  left: 0;
-  width: 250px;
-  height: 100%;
   border: 1px solid black;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 250px;
+}
+
+tf-graph-controls {
+  flex-grow: 1;
 }
 
 .all {
