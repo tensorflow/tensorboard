@@ -231,7 +231,7 @@ var tf_data_selector;
             });
         },
         _removeRow: function () {
-            // Clear persistance when being removed.
+            // Clear persistence when being removed.
             this._storageBinding.set(this._getPersistenceKey(Type.RUN), '', { defaultValue: '' });
             this._storageBinding.set(this._getPersistenceKey(Type.TAG), '', { defaultValue: '' });
             this.fire('remove');

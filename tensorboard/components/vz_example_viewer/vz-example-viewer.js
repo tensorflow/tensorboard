@@ -404,7 +404,7 @@ var vz_example_viewer;
         },
         /**
          * Returns a list of the feature values for a feature. If keepBytes is true
-         * then return the raw bytes. Otherwise convert them to a a readable string.
+         * then return the raw bytes. Otherwise convert them to a readable string.
          */
         getFeatureValues: function (feature, keepBytes, isImage, compareValues) {
             var _this = this;
@@ -458,7 +458,7 @@ var vz_example_viewer;
         /**
          * Returns a list of the sequence feature values for a feature for a given
          * sequence number. If keepBytes is true then return the raw bytes. Otherwise
-         * convert them to a a readable string.
+         * convert them to a readable string.
          */
         getSeqFeatureValues: function (feature, seqNum, keepBytes, isImage, compareValues) {
             var _this = this;
