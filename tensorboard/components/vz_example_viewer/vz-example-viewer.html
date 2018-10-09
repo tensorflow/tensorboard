@@ -383,7 +383,7 @@ limitations under the License.
             <div class="feature-name-text">[[feat.name]]</div>
             <div class="value-pills-holder">
               <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
-                <img class="image" src="[[getImageSrc(feat.name)]]"
+                <img class="image" src$="[[getImageSrc(feat.name)]]"
                       id="[[getImageId(feat.name)]]"></img>
                 <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
                 <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
@@ -424,7 +424,7 @@ limitations under the License.
             <template is="dom-if" if="[[compareMode]]">
               <div class="value-pills-holder">
                 <paper-card id="[[getCompareImageCardId(feat.name)]]" class="imagecard">
-                  <img class="image" src="[[getCompareImageSrc(feat.name)]]"
+                  <img class="image" src$="[[getCompareImageSrc(feat.name)]]"
                         id="[[getCompareImageId(feat.name)]]"></img>
                   <canvas id="[[getCompareCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
                   <div class="image-bottom-bar">
@@ -537,7 +537,7 @@ limitations under the License.
                 <div class="feature-name-text">[[seqfeat.name]]</div>
                 <div class="value-pills-holder">
                   <paper-card id="[[getImageCardId(seqfeat.name)]]" class="imagecard">
-                    <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                    <img class="image" src$="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
                         id="[[getImageId(seqfeat.name)]]"></img>
                     <canvas id="[[getCanvasId(seqfeat.name)]]"
                         data-feature="[[seqfeat.name]]"
@@ -583,7 +583,7 @@ limitations under the License.
                 <template is="dom-if" if="[[compareMode]]">
                   <div class="value-pills-holder">
                     <paper-card id="[[getCompareImageCardId(seqfeat.name)]]" class="imagecard">
-                      <img class="image" src="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
+                      <img class="image" src$="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
                           id="[[getCompareImageId(seqfeat.name)]]"></img>
                       <canvas id="[[getCompareCanvasId(seqfeat.name)]]"
                           data-feature="[[seqfeat.name]]"
