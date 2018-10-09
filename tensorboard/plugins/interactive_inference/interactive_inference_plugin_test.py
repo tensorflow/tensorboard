@@ -76,7 +76,8 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/examples_from_path?' +
         urllib_parse.urlencode({
             'examples_path': examples_path,
-            'max_examples': 2
+            'max_examples': 2,
+            'sampling_odds': 1,
         }))
     self.assertEqual(200, response.status_code)
     example_strings = json.loads(response.get_data().decode('utf-8'))['examples']
@@ -94,7 +95,8 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/examples_from_path?' +
         urllib_parse.urlencode({
             'examples_path': 'does_not_exist',
-            'max_examples': 2
+            'max_examples': 2,
+            'sampling_odds': 1,
         }))
     error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
