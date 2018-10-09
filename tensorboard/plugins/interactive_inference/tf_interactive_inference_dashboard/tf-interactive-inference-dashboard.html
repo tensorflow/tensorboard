@@ -831,6 +831,7 @@ limitations under the License.
           max-examples="{{maxExamples}}"
           label-vocab-path="{{labelVocabPath}}"
           multi-class="{{multiClass}}"
+          sampling-odds="{{samplingOdds}}"
           max-classes-to-display="{{maxInferenceEntriesPerRun}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
@@ -1669,7 +1670,10 @@ limitations under the License.
         // If the classification model is a multi-class model.
         multiClass: {
           type: Boolean,
-          value: false,
+        },
+        // Sampling odds (1: load all examples, .2: sample 20% of examples)
+        samplingOdds: {
+          type: Number,
         },
         // Precision on charts for performance measuring.
         axisPrecision: {
@@ -3226,7 +3230,8 @@ limitations under the License.
       getExamples_: function(){
         var url = this.makeUrl_('/data/plugin/whatif/examples_from_path',
                                 {'examples_path': this.examplesPath,
-                                 'max_examples': this.maxExamples});
+                                 'max_examples': this.maxExamples,
+                                 'sampling_odds': this.samplingOdds});
 
         const updateExampleContents = result => {
           this.updateExampleContents_(

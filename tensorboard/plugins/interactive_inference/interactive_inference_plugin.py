@@ -124,14 +124,16 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """
     examples_count = int(request.args.get('max_examples'))
     examples_path = request.args.get('examples_path')
+    sampling_odds = float(request.args.get('sampling_odds'))
     try:
       platform_utils.throw_if_file_access_not_allowed(examples_path,
                                                       self._logdir,
                                                       self._has_auth_group)
       example_strings = platform_utils.example_protos_from_path(
-          examples_path, examples_count, parse_examples=False)
+          examples_path, examples_count, parse_examples=False,
+          sampling_odds=sampling_odds)
       self.examples = [
-        tf.train.Example.FromString(ex) for ex in example_strings]
+          tf.train.Example.FromString(ex) for ex in example_strings]
       self.generate_sprite(example_strings)
       json_examples = [
           json_format.MessageToJson(example) for example in self.examples
