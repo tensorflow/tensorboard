@@ -133,7 +133,7 @@ class TBContext(object):
           plugin may be absent from this mapping until it is registered. Plugin
           logic should handle cases in which a plugin is absent from this
           mapping, lest a KeyError is raised.
-      window_title: A string specifying the the window title.
+      window_title: A string specifying the window title.
     """
     self.assets_zip_provider = assets_zip_provider
     self.db_connection_provider = db_connection_provider

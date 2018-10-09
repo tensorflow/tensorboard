@@ -141,7 +141,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
-          /* For backwards compatiblity, ignore the experiment id
+          /* For backwards compatibility, ignore the experiment id
              for matching purposes if it is empty. */
           (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
           AND Runs.run_name = :run

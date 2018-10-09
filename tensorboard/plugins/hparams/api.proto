@@ -20,7 +20,7 @@ limitations under the License.
 // transmitted using proto3 native JSON encoding. See http_api.md for a
 // description of the actual HTTP API.
 
-// General note: in what follows we use the the field 'name' of a message to
+// General note: in what follows we use the field 'name' of a message to
 // stores its id. We avoid calling this field 'id' since it is a reserved word
 // in Python, as well as to be more compliant with the API style guide
 // detailed in https://cloud.google.com/apis/design/.
@@ -246,7 +246,7 @@ enum Status {
 message ListSessionGroupsRequest {
   // A list of ColParams messages--one for each "column" of a session group. A
   // session group column contains either a metric evaluated at the current
-  // reported computation step or a hyperparameter value. In additon to
+  // reported computation step or a hyperparameter value. In addition to
   // 'regular' values, a column may take on a special 'missing-value' which
   // denotes that the hyperparameter or metric is not available
   // for the session group (for example, if the metric is not used in the
