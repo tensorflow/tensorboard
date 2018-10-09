@@ -254,7 +254,7 @@ Polymer({
   },
 
   _removeRow(): void {
-    // Clear persistance when being removed.
+    // Clear persistence when being removed.
     this._storageBinding.set(
         this._getPersistenceKey(Type.RUN), '', {defaultValue: ''});
     this._storageBinding.set(

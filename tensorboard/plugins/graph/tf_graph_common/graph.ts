@@ -168,7 +168,7 @@ export interface OpNode extends Node {
   // Whether op is compatible with its assigned device.  Currently, if an op
   // is not specified a device, the device is defaulted to the TPU.
   // Furthermore, all ops are considered compatible for CPU and GPU devices,
-  // while a whitelist of compatible ops are specifed for the TPU.
+  // while a whitelist of compatible ops are specified for the TPU.
   // Reference: opValid func in op.ts.
   compatible: boolean;
 

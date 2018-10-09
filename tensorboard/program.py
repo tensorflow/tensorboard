@@ -137,7 +137,7 @@ class TensorBoard(object):
 
     Returns:
       Either argv[:1] if argv was non-empty, or [''] otherwise, as a mechanism
-      for absl.app.run() compatiblity.
+      for absl.app.run() compatibility.
 
     Raises:
       ValueError: If flag values are invalid.
