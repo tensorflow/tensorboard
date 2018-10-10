@@ -302,8 +302,9 @@ by the operating system. (default: %(default)s)\
     parser.add_argument(
         '--purge_orphaned_data',
         metavar='BOOL',
-        type=bool,
-        nargs=1,
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
         default=True,
         help='''\
 Whether to purge data that may have been orphaned due to TensorBoard
