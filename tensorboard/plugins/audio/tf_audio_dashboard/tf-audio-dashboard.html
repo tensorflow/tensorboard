@@ -108,8 +108,10 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         _selectedRuns: Array,
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
-
-        _tagFilter: String,
+        _tagFilter: {
+          type: String,
+          value: '',
+        },
         _categories: {
           type: Array,
           computed:
