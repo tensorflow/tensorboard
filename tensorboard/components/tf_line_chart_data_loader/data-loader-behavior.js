@@ -23,7 +23,10 @@ var tf_line_chart_data_loader;
              * An unique identifiable string. When changes, it expunges the data
              * cache.
              */
-            loadKey: String,
+            loadKey: {
+                type: String,
+                value: '',
+            },
             // List of data to be loaded. A datum is passed to `getDataLoadUrl` to ge
             // URL of an API endpoint and, when request resolves, invokes
             // `loadDataCallback` with the datum and its response.
@@ -71,7 +74,6 @@ var tf_line_chart_data_loader;
             },
         },
         observers: [
-            '_loadKeyChanged(loadKey)',
             '_dataToLoadChanged(isAttached, dataToLoad.*)',
         ],
         onLoadFinish: function () {
@@ -81,10 +83,15 @@ var tf_line_chart_data_loader;
             this._loadedData.clear();
             this._loadData();
         },
-        _loadKeyChanged: function (_) {
-            // When `key` changes, cancel all handlers from the previous requests.
-            this._canceller.cancelAll();
-            this._loadedData.clear();
+        reset: function () {
+            // https://github.com/tensorflow/tensorboard/issues/1499
+            // Cannot use the observer to observe `loadKey` changes directly.
+            if (this._canceller)
+                this._canceller.cancelAll();
+            if (this._loadedData)
+                this._loadedData.clear();
+            if (this.isAttached)
+                this._loadData();
         },
         _dataToLoadChanged: function () {
             if (this.isAttached)
