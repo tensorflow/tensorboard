@@ -20,8 +20,6 @@ enum Type {
 }
 
 const MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
-const STORAGE_ALL_VALUE = '$all';
-const STORAGE_NONE_VALUE = '$none';
 
 Polymer({
   is: 'tf-data-select-row',
