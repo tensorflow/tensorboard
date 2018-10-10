@@ -21,6 +21,7 @@ limitations under the License.
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -292,15 +293,16 @@ Polymer({
   },
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
     const demoMode = tf_backend.getRouter().isDemoMode();
-    const base = tf_backend.getRouter().pluginRoute('graphs', '/graph');
     const optional = (p) => (p != null && !demoMode || undefined) && p;
-    const parameters = {
-      'run': run,
-      'limit_attr_size': optional(limitAttrSize),
-      'large_attrs_key': optional(largeAttrsKey),
-    };
-    const extension = demoMode ? '.pbtxt' : '';
-    return tf_backend.addParams(base, parameters) + extension;
+    return tf_backend.getRouter().pluginRoute(
+        'graphs',
+        '/graph',
+        {
+          'run': run,
+          'limit_attr_size': optional(limitAttrSize),
+          'large_attrs_key': optional(largeAttrsKey),
+        },
+        demoMode ? '.pbtxt' : '');
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,

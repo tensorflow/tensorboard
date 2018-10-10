@@ -21,6 +21,8 @@ namespace tf_backend {
  */
 export type QueryValue = string | string[];
 
+export type QueryParams = {[key: string]: QueryValue};
+
 /**
  * Add query parameters to a URL. Values will be URL-encoded. The URL
  * may or may not already have query parameters. For convenience,
@@ -31,10 +33,11 @@ export type QueryValue = string | string[];
  *     addParams("http://foo", {a: "1", b: ["2", "3+4"], c: "5"})
  *     addParams("http://foo?a=1", {b: ["2", "3+4"], c: "5", d: undefined})
  *     "http://foo?a=1&b=2&b=3%2B4&c=5"
+ *
+ * @deprecated If used with `router.pluginRoute`, please use the queryParams
+ * argument.
  */
-export function addParams(
-    baseURL: string,
-    params: {[param: string]: QueryValue}): string {
+export function addParams(baseURL: string, params: QueryParams): string {
   const keys = Object.keys(params).sort().filter(k => params[k] !== undefined);
   if (!keys.length) {
     return baseURL;  // no need to change '/foo' to '/foo?'

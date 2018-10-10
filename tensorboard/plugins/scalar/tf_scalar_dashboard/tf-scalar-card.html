@@ -240,8 +240,9 @@ limitations under the License.
           type: Function,
           value: function() {
             return ({tag, run, experiment}) => {
-              return tf_backend.addParams(
-                  tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
+              return tf_backend.getRouter().pluginRoute(
+                  'scalars',
+                  '/scalars',
                   {
                     tag,
                     run,

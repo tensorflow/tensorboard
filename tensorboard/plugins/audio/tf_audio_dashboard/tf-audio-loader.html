@@ -205,7 +205,7 @@ backend.
         }
         this._metadataCanceller.cancelAll();
         const router = tf_backend.getRouter();
-        const url = tf_backend.addParams(router.pluginRoute('audio', '/audio'), {
+        const url = router.pluginRoute('audio', '/audio', {
             tag: this.tag,
             run: this.run,
             sample: this.sample,
@@ -222,12 +222,31 @@ backend.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(audioMetadata) {
-        let url = tf_backend.getRouter().pluginRoute('audio', '/individualAudio');
+        const isDemoMode = tf_backend.getRouter().isDemoMode();
+        const searchParam = new URLSearchParams(audioMetadata.query);
         // Include wall_time just to disambiguate the URL and force
         // the browser to reload the audio when the URL changes. The
         // backend doesn't care about the value.
-        url = tf_backend.addParams(url, {ts: audioMetadata.wall_time});
-        url += '&' + audioMetadata.query;
+        searchParam.append('ts', audioMetadata.wall_time);
+        const queryParam = Array.from(searchParam.entries())
+            .reduce((reduced, [key, value]) => {
+              if (reduced[key]) {
+                if (!Array.isArray(reduced[key])) {
+                  reduced[key] = [reduced[key]];
+                }
+                reduced[key].push(value);
+              } else {
+                reduced[key] = value;
+              }
+              return reduced;
+            }, {});
+        const url = tf_backend.getRouter().pluginRoute(
+            'audio',
+            '/individualAudio',
+            queryParam,
+            // customExt is used in demo mode where all routes are all
+            // automatically appended with .json. We need '.wav' for audio.
+            isDemoMode ? '.wav' : '');
 
         return {
           wall_time: tf_card_heading.formatDate(new Date(audioMetadata.wall_time * 1000)),

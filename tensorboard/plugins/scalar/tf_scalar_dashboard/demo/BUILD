@@ -14,9 +14,9 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
+        "//tensorboard/plugins/scalar/tf_scalar_dashboard/demo/data",
         "//tensorboard/demo:demo_data",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],
 )
-
