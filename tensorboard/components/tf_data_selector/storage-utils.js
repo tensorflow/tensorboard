@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_data_selector;
 (function (tf_data_selector) {
+    var _a;
     function decodeIdArray(str) {
         return str.split(',').map(function (idStr) { return parseInt(idStr, 36); }).filter(Boolean);
     }
@@ -26,4 +27,8 @@ var tf_data_selector;
         return id.toString(36);
     }
     tf_data_selector.encodeId = encodeId;
+    tf_data_selector.NO_EXPERIMENT_ID = null;
+    tf_data_selector.STORAGE_ALL_VALUE = '$all';
+    tf_data_selector.STORAGE_NONE_VALUE = '$none';
+    _a = tf_storage.makeBindings(function (str) { return tf_data_selector.decodeIdArray(str); }, function (ids) { return tf_data_selector.encodeIdArray(ids); }), tf_data_selector.getIdInitializer = _a.getInitializer, tf_data_selector.getIdObserver = _a.getObserver, tf_data_selector.setId = _a.set;
 })(tf_data_selector || (tf_data_selector = {})); // namespace tf_data_selector

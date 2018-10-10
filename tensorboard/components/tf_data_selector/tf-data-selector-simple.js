@@ -26,17 +26,27 @@ var tf_data_selector;
                 type: Array,
                 value: function () { return []; },
             },
-            _experimentIds: {
+            _selectedExperimentIds: {
                 type: Array,
-                value: function () { return []; },
+                value: tf_data_selector.getIdInitializer('e', {
+                    defaultValue: [],
+                    polymerProperty: '_selectedExperimentIds',
+                }),
             },
             _selectedExperiments: {
                 type: Array,
-                value: function () { return []; },
+                observer: '_persistExperimentIds',
+            },
+            _selectedRunNames: {
+                type: Array,
+                value: tf_storage.getObjectInitializer('runs', {
+                    defaultValue: [],
+                    polymerProperty: '_selectedRunNames',
+                }),
             },
             _selectedRuns: {
                 type: Array,
-                value: function () { return []; },
+                observer: '_persistRunNames',
             },
             _expToRunsAndTags: {
                 type: Object,
@@ -44,7 +54,8 @@ var tf_data_selector;
             },
             _tagRegex: {
                 type: String,
-                value: '',
+                value: tf_storage.getStringInitializer('tagFilter', { defaultValue: '', polymerProperty: '_tagRegex' }),
+                observer: '_persistTagFilter',
             },
             _requestManager: {
                 type: Object,
@@ -60,6 +71,21 @@ var tf_data_selector;
         observers: [
             '_fetchNewRunsAndTags(_selectedExperiments)',
         ],
+        _persistExperimentIds: function () {
+            var value = this._selectedExperiments.map(function (_a) {
+                var id = _a.id;
+                return id;
+            });
+            tf_data_selector.setId('e', value, { defaultValue: [] });
+        },
+        _persistRunNames: function () {
+            var value = this._selectedRuns.map(function (_a) {
+                var id = _a.id;
+                return id;
+            });
+            tf_storage.setObject('runs', value, { defaultValue: [] });
+        },
+        _persistTagFilter: tf_storage.getStringObserver('tagFilter', { defaultValue: '', polymerProperty: '_tagRegex' }),
         attached: function () {
             var _this = this;
             this._updateExpKey = tf_backend.experimentsStore.addListener(function () {
@@ -102,6 +128,23 @@ var tf_data_selector;
         },
         _getRunOptions: function () {
             return this._allRuns.map(function (run) { return ({ id: run, title: run }); });
+        },
+        _getExperimentsSelectionState: function () {
+            var allIds = this._allExperiments.map(function (_a) {
+                var id = _a.id;
+                return id;
+            });
+            var selectedIds = new Set(this._selectedExperimentIds);
+            var state = {};
+            allIds.forEach(function (id) { return state[id] = selectedIds.has(id); });
+            return state;
+        },
+        _getRunsSelectionState: function () {
+            var allIds = this._allRuns;
+            var selectedIds = new Set(this._selectedRunNames);
+            var state = {};
+            allIds.forEach(function (id) { return state[id] = selectedIds.has(id); });
+            return state;
         },
         _computeSelection: function () {
             var _this = this;

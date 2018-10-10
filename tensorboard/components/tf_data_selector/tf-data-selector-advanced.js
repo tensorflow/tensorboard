@@ -14,9 +14,6 @@ limitations under the License.
 ==============================================================================*/
 var tf_data_selector;
 (function (tf_data_selector) {
-    var _a;
-    var NO_EXPERIMENT_ID = null;
-    _a = tf_storage.makeBindings(function (str) { return tf_data_selector.decodeIdArray(str); }, function (ids) { return tf_data_selector.encodeIdArray(ids); }), tf_data_selector.getIdInitializer = _a.getInitializer, tf_data_selector.getIdObserver = _a.getObserver;
     Polymer({
         is: 'tf-data-selector-advanced',
         properties: {
@@ -134,7 +131,7 @@ var tf_data_selector;
             var newSelections = new Map(this._selections);
             newSelections.forEach(function (_, id) {
                 // No experiment selection is still a valid selection. Do not prune.
-                if (id == NO_EXPERIMENT_ID)
+                if (id == tf_data_selector.NO_EXPERIMENT_ID)
                     return;
                 if (!experimentIds.has(id))
                     newSelections.delete(id);
@@ -182,7 +179,7 @@ var tf_data_selector;
                 // diffing but also one for no-experiment mode. If it contains one,
                 // "remove" the size by one.
                 var isSingleSelection = this._selections.size ==
-                    1 + Number(this._selections.has(NO_EXPERIMENT_ID));
+                    1 + Number(this._selections.has(tf_data_selector.NO_EXPERIMENT_ID));
                 return {
                     type: isSingleSelection ?
                         tf_data_selector.Type.SINGLE : tf_data_selector.Type.COMPARISON,
@@ -191,7 +188,7 @@ var tf_data_selector;
             }
             return {
                 type: tf_data_selector.Type.WITHOUT_EXPERIMENT,
-                selections: [this._selections.get(NO_EXPERIMENT_ID)],
+                selections: [this._selections.get(tf_data_selector.NO_EXPERIMENT_ID)],
             };
         },
         _selectionChanged: function (event) {
@@ -200,13 +197,13 @@ var tf_data_selector;
                 return;
             var _a = event.detail, runs = _a.runs, tagRegex = _a.tagRegex;
             var experiment = event.target.experiment;
-            var expId = experiment.id != null ? experiment.id : NO_EXPERIMENT_ID;
+            var expId = experiment.id != null ? experiment.id : tf_data_selector.NO_EXPERIMENT_ID;
             // Check if selction change event was triggered from a removed row. Removal
             // triggers change in persistence (clears the value) and this causes
             // property to change which in turn triggers an event. If there is any
             // asynchronity in propagating the change from the row, below condition is
             // truthy.
-            if (expId != NO_EXPERIMENT_ID && !this._experimentIds.includes(expId)) {
+            if (expId != tf_data_selector.NO_EXPERIMENT_ID && !this._experimentIds.includes(expId)) {
                 return;
             }
             var newSelections = new Map(this._selections);

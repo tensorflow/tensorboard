@@ -20,8 +20,6 @@ var tf_data_selector;
         Type[Type["TAG"] = 2] = "TAG";
     })(Type || (Type = {}));
     var MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
-    var STORAGE_ALL_VALUE = '$all';
-    var STORAGE_NONE_VALUE = '$none';
     Polymer({
         is: 'tf-data-select-row',
         properties: {
@@ -108,7 +106,7 @@ var tf_data_selector;
                 if (_this._runSelectionStateString)
                     return;
                 var val = _this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
-                    STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+                    tf_data_selector.STORAGE_ALL_VALUE : tf_data_selector.STORAGE_NONE_VALUE;
                 _this._storageBinding.set(_this._getPersistenceKey(Type.RUN), val, { defaultValue: '' });
                 _this._runSelectionStateString = val;
             });
@@ -238,17 +236,17 @@ var tf_data_selector;
         },
         _serializeValue: function (source, selectedIds) {
             if (selectedIds.length == source.length)
-                return STORAGE_ALL_VALUE;
+                return tf_data_selector.STORAGE_ALL_VALUE;
             if (selectedIds.length == 0)
-                return STORAGE_NONE_VALUE;
+                return tf_data_selector.STORAGE_NONE_VALUE;
             return this.noExperiment ?
                 JSON.stringify(selectedIds) :
                 tf_data_selector.encodeIdArray(selectedIds);
         },
         _deserializeValue: function (allValues, str) {
-            if (str == STORAGE_ALL_VALUE)
+            if (str == tf_data_selector.STORAGE_ALL_VALUE)
                 return allValues;
-            if (str == STORAGE_NONE_VALUE)
+            if (str == tf_data_selector.STORAGE_NONE_VALUE)
                 return [];
             if (!this.noExperiment)
                 return tf_data_selector.decodeIdArray(str);

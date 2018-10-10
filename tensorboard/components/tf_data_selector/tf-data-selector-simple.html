@@ -43,6 +43,7 @@ Properties out:
       max-items-to-enable-by-default="1"
       label-float
       selected-items="{{_selectedExperiments}}"
+      selection-state="{{_getExperimentsSelectionState(_selectedExperimentIds, _allExperiments)}}"
     ></tf-filterable-checkbox-dropdown>
     <tf-filterable-checkbox-dropdown
       coloring="[[_getRunColor()]]"
@@ -51,6 +52,7 @@ Properties out:
       label-float
       selected-items="{{_selectedRuns}}"
       use-checkbox-colors="[[_getRunsUsesCheckboxColors(_selectedExperiments)]]"
+      selection-state="{{_getRunsSelectionState(_selectedRunNames, _allRuns)}}"
     ></tf-filterable-checkbox-dropdown>
     <paper-input
       label="Tag Regex"
