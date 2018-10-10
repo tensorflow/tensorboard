@@ -29,7 +29,7 @@ Regex search input UI at tops of dashboards.
   <template>
     <paper-input no-label-float
                  label="Filter tags (regular expressions supported)"
-                 value="{{tagFilter}}"
+                 value="{{_tagFilter}}"
                  class="search-input">
       <iron-icon prefix icon="search" slot="prefix"></iron-icon>
     </paper-input>
@@ -48,15 +48,28 @@ Regex search input UI at tops of dashboards.
         tagFilter: {
           type: String,
           notify: true,
-          readOnly: true,
-          value: tf_storage.getStringInitializer('tagFilter',
-              {defaultValue: '', useLocalStorage: false}),
+          computed: '_computeTagFilter(_tagFilter)',
+        },
+        _tagFilter: {
+          type: String,
+          value: tf_storage.getStringInitializer('tagFilter', {
+            defaultValue: '',
+            useLocalStorage: false,
+            polymerProperty: '_tagFilter',
+          }),
           observer: '_tagFilterObserver',
         },
       },
 
-      _tagFilterObserver: tf_storage.getStringObserver(
-          'tagFilter', {defaultValue: '', useLocalStorage: false}),
+      _tagFilterObserver: tf_storage.getStringObserver('tagFilter', {
+        defaultValue: '',
+        useLocalStorage: false,
+        polymerProperty: '_tagFilter',
+      }),
+
+      _computeTagFilter() {
+        return this._tagFilter;
+      },
     });
   </script>
 </dom-module>
