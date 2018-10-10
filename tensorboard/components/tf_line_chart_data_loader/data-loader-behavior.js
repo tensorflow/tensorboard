@@ -110,7 +110,8 @@ var tf_line_chart_data_loader;
             if (!this.isAttached)
                 return;
             this._loadDataAsync = this.async(function () {
-                _this.dataLoading = true;
+                // Read-only property have a special setter.
+                _this._setDataLoading(true);
                 // Before updating, cancel any network-pending updates, to
                 // prevent race conditions where older data stomps newer data.
                 _this._canceller.cancelAll();
@@ -129,7 +130,8 @@ var tf_line_chart_data_loader;
                     return _this.requestManager.request(url).then(updateSeries);
                 });
                 return Promise.all(promises).then(_this._canceller.cancellable(function (result) {
-                    _this.dataLoading = false;
+                    // Read-only property have a special setter.
+                    _this._setDataLoading(false);
                     if (result.cancelled)
                         return;
                     _this.onLoadFinish();
