@@ -23,7 +23,10 @@ export const DataLoaderBehavior = {
      * An unique identifiable string. When changes, it expunges the data
      * cache.
      */
-    loadKey: String,
+    loadKey: {
+      type: String,
+      value: '',
+    },
 
     // List of data to be loaded. A datum is passed to `getDataLoadUrl` to ge
     // URL of an API endpoint and, when request resolves, invokes
@@ -80,7 +83,6 @@ export const DataLoaderBehavior = {
   },
 
   observers: [
-    '_loadKeyChanged(loadKey)',
     '_dataToLoadChanged(isAttached, dataToLoad.*)',
   ],
 
@@ -93,10 +95,12 @@ export const DataLoaderBehavior = {
     this._loadData();
   },
 
-  _loadKeyChanged(_) {
-    // When `key` changes, cancel all handlers from the previous requests.
-    this._canceller.cancelAll();
-    this._loadedData.clear();
+  reset() {
+    // https://github.com/tensorflow/tensorboard/issues/1499
+    // Cannot use the observer to observe `loadKey` changes directly.
+    if (this._canceller) this._canceller.cancelAll();
+    if (this._loadedData) this._loadedData.clear();
+    if (this.isAttached) this._loadData();
   },
 
   _dataToLoadChanged() {
