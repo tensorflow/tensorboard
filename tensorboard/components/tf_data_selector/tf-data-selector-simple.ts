@@ -29,19 +29,30 @@ Polymer({
       value: (): string[] => [],
     },
 
-    _experimentIds: {
+    _selectedExperimentIds: {
       type: Array,
-      value: () => [],
+      value: getIdInitializer('e', {
+        defaultValue: [],
+        polymerProperty: '_selectedExperimentIds',
+      }),
     },
 
     _selectedExperiments: {
       type: Array,
-      value: (): tf_dashboard_common.FilterableCheckboxListItem[] => [],
+      observer: '_persistExperimentIds',
+    },
+
+    _selectedRunNames: {
+      type: Array,
+      value: tf_storage.getObjectInitializer('runs', {
+        defaultValue: [],
+        polymerProperty: '_selectedRunNames',
+      }),
     },
 
     _selectedRuns: {
       type: Array,
-      value: (): tf_dashboard_common.FilterableCheckboxListItem[] => [],
+      observer: '_persistRunNames',
     },
 
     _expToRunsAndTags: {
@@ -51,7 +62,9 @@ Polymer({
 
     _tagRegex: {
       type: String,
-      value: '',
+      value: tf_storage.getStringInitializer(
+          'tagFilter', {defaultValue: '', polymerProperty: '_tagRegex'}),
+      observer: '_persistTagFilter',
     },
 
     _requestManager: {
@@ -70,6 +83,19 @@ Polymer({
   observers: [
     '_fetchNewRunsAndTags(_selectedExperiments)',
   ],
+
+  _persistExperimentIds() {
+    const value = this._selectedExperiments.map(({id}) => id);
+    setId('e', value, {defaultValue: []});
+  },
+
+  _persistRunNames() {
+    const value = this._selectedRuns.map(({id}) => id);
+    tf_storage.setObject('runs', value, {defaultValue: []});
+  },
+
+  _persistTagFilter: tf_storage.getStringObserver(
+      'tagFilter', {defaultValue: '', polymerProperty: '_tagRegex'}),
 
   attached() {
     this._updateExpKey = tf_backend.experimentsStore.addListener(() => {
@@ -119,6 +145,22 @@ Polymer({
 
   _getRunOptions(): tf_dashboard_common.FilterableCheckboxListItem[] {
     return this._allRuns.map(run => ({id: run, title: run}));
+  },
+
+  _getExperimentsSelectionState() {
+    const allIds = this._allExperiments.map(({id}) => id);
+    const selectedIds = new Set(this._selectedExperimentIds);
+    const state = {};
+    allIds.forEach(id => state[id] = selectedIds.has(id));
+    return state;
+  },
+
+  _getRunsSelectionState() {
+    const allIds = this._allRuns;
+    const selectedIds = new Set(this._selectedRunNames);
+    const state = {};
+    allIds.forEach(id => state[id] = selectedIds.has(id));
+    return state;
   },
 
   _computeSelection() {

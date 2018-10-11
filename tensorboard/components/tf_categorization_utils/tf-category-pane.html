@@ -50,7 +50,11 @@ limitations under the License.
         </span>
         <span class="count"><span>[[_count]]</span></span>
       </button>
-      <iron-collapse opened="[[opened]]">
+      <!-- TODO(stephanwlee): investigate further. For some reason,
+        transitionend that the iron-collapse relies on sometimes does not
+        trigger when rendering a chart with a spinner. A toy example cannot
+        reproduce this bug. -->
+      <iron-collapse opened="[[opened]]" no-animation>
         <div class="content">
           <template is="dom-if" if="[[opened]]" restamp="[[restamp]]"
                     id="ifOpened">

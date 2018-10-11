@@ -67,7 +67,7 @@ enabling users to examine node outputs.
 
 ## The Node List
 
-Nodes can be selected via the the node list on the top left:
+Nodes can be selected via the node list on the top left:
 
 ![Node list](images/node_list.png)
 

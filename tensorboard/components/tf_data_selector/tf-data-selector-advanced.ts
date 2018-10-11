@@ -14,14 +14,6 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_data_selector {
 
-const NO_EXPERIMENT_ID = null;
-export const {
-  getInitializer: getIdInitializer,
-  getObserver: getIdObserver,
-} = tf_storage.makeBindings(
-    (str: string): number[] => tf_data_selector.decodeIdArray(str),
-    (ids: number[]): string => tf_data_selector.encodeIdArray(ids));
-
 Polymer({
   is: 'tf-data-selector-advanced',
   properties: {

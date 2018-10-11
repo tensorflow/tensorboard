@@ -16,6 +16,7 @@
 
 from glob import glob
 from grpc.beta import implementations
+import random
 from six.moves.urllib.parse import urlparse
 import tensorflow as tf
 
@@ -62,15 +63,17 @@ def throw_if_file_access_not_allowed(file_path, logdir, has_auth_group):
 def example_protos_from_path(cns_path,
                              num_examples=10,
                              start_index=0,
-                             parse_examples=True):
+                             parse_examples=True,
+                             sampling_odds=1):
   """Returns a number of tf.train.Examples from the CNS path.
 
   Args:
     cns_path: A string CNS path.
     num_examples: The maximum number of examples to return from the path.
-    start_index: The index of the first example to return.
     parse_examples: If true then parses the serialized proto from the path into
         proto objects. Defaults to True.
+    sampling_odds: Odds of loading an example, used for sampling. When >= 1
+        (the default), then all examples are loaded.
 
   Returns:
     A list of Example protos or serialized proto strings at the CNS path.
@@ -80,8 +83,8 @@ def example_protos_from_path(cns_path,
   """
 
   def append_examples_from_iterable(iterable, examples):
-    for i, value in enumerate(iterable):
-      if i >= start_index:
+    for value in iterable:
+      if sampling_odds >= 1 or random.random() < sampling_odds:
         examples.append(
             tf.train.Example.FromString(value) if parse_examples else value)
         if len(examples) >= num_examples:
@@ -90,9 +93,9 @@ def example_protos_from_path(cns_path,
   filenames = filepath_to_filepath_list(cns_path)
   examples = []
   compression_types = [
-    tf.python_io.TFRecordCompressionType.NONE,
-    tf.python_io.TFRecordCompressionType.GZIP,
-    tf.python_io.TFRecordCompressionType.ZLIB,
+      tf.python_io.TFRecordCompressionType.NONE,
+      tf.python_io.TFRecordCompressionType.GZIP,
+      tf.python_io.TFRecordCompressionType.ZLIB,
   ]
   current_compression_idx = 0
   current_file_index = 0
@@ -100,9 +103,9 @@ def example_protos_from_path(cns_path,
          current_compression_idx < len(compression_types)):
     try:
       record_iterator = tf.python_io.tf_record_iterator(
-        path=filenames[current_file_index],
-        options=tf.python_io.TFRecordOptions(
-          compression_types[current_compression_idx]))
+          path=filenames[current_file_index],
+          options=tf.python_io.TFRecordOptions(
+              compression_types[current_compression_idx]))
       append_examples_from_iterable(record_iterator, examples)
       current_file_index += 1
       if len(examples) >= num_examples:
