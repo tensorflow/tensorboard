@@ -226,13 +226,17 @@ limitations under the License.
         },
         multiClass: {
           type: Boolean,
-          value: false,
           notify: true,
+          value: tf_storage.getBooleanInitializer('multiClass',
+              {defaultValue: false}),
+          observer: 'multiClassChanged_',
         },
         sequenceExamples: {
           type: Boolean,
-          value: false,
           notify: true,
+          value: tf_storage.getBooleanInitializer('sequenceExamples',
+              {defaultValue: false}),
+          observer: 'sequenceExamplesChanged_',
         },
         maxClassesToDisplay: {
           type: Number,
@@ -279,6 +283,12 @@ limitations under the License.
 
       samplingOddsChanged_: tf_storage.getStringObserver(
         'samplingOdds', {defaultValue: defaultSamplingOdds}),
+
+      multiClassChanged_: tf_storage.getBooleanObserver(
+        'multiClass', {defaultValue: false}),
+
+      sequenceExamplesChanged_: tf_storage.getBooleanObserver(
+        'sequenceExamples', {defaultValue: false}),
 
       shouldDisableClassificationControls_: function(modelType) {
         return modelType == 'regression';
