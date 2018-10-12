@@ -60,37 +60,40 @@ def throw_if_file_access_not_allowed(file_path, logdir, has_auth_group):
   return
 
 
-def example_protos_from_path(cns_path,
+def example_protos_from_path(path,
                              num_examples=10,
                              start_index=0,
                              parse_examples=True,
-                             sampling_odds=1):
-  """Returns a number of tf.train.Examples from the CNS path.
+                             sampling_odds=1,
+                             example_class=tf.train.Example):
+  """Returns a number of examples from the provided path.
 
   Args:
-    cns_path: A string CNS path.
+    path: A string path to the examples.
     num_examples: The maximum number of examples to return from the path.
     parse_examples: If true then parses the serialized proto from the path into
         proto objects. Defaults to True.
     sampling_odds: Odds of loading an example, used for sampling. When >= 1
         (the default), then all examples are loaded.
+    example_class: tf.train.Example or tf.train.SequenceExample class to load.
+        Defaults to tf.train.Example.
 
   Returns:
-    A list of Example protos or serialized proto strings at the CNS path.
+    A list of Example protos or serialized proto strings at the path.
 
   Raises:
-    InvalidUserInputError: If examples cannot be procured from cns_path.
+    InvalidUserInputError: If examples cannot be procured from the path.
   """
 
   def append_examples_from_iterable(iterable, examples):
     for value in iterable:
       if sampling_odds >= 1 or random.random() < sampling_odds:
         examples.append(
-            tf.train.Example.FromString(value) if parse_examples else value)
+            example_class.FromString(value) if parse_examples else value)
         if len(examples) >= num_examples:
           return
 
-  filenames = filepath_to_filepath_list(cns_path)
+  filenames = filepath_to_filepath_list(path)
   examples = []
   compression_types = [
       tf.python_io.TFRecordCompressionType.NONE,
@@ -119,14 +122,14 @@ def example_protos_from_path(cns_path,
     return examples
   else:
     raise common_utils.InvalidUserInputError(
-        'No tf.train.Examples found at ' + cns_path +
+        'No examples found at ' + path +
         '. Valid formats are TFRecord files.')
 
 def call_servo(examples, serving_bundle):
   """Send an RPC request to the Servomatic prediction service.
 
   Args:
-    examples: A list of tf.train.Examples that matches the model spec.
+    examples: A list of examples that matches the model spec.
     serving_bundle: A `ServingBundle` object that contains the information to
       make the serving request.
 

@@ -832,6 +832,7 @@ limitations under the License.
           label-vocab-path="{{labelVocabPath}}"
           multi-class="{{multiClass}}"
           sampling-odds="{{samplingOdds}}"
+          sequence-examples="{{sequenceExamples}}"
           max-classes-to-display="{{maxInferenceEntriesPerRun}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
@@ -1671,6 +1672,10 @@ limitations under the License.
         multiClass: {
           type: Boolean,
         },
+        // If the examples loaded are SequenceExamples.
+        sequenceExamples: {
+          type: Boolean,
+        },
         // Sampling odds (1: load all examples, .2: sample 20% of examples)
         samplingOdds: {
           type: Number,
@@ -2229,7 +2234,8 @@ limitations under the License.
                 }
               }
               for (; thresh <= 100; thresh++) {
-                if (+item[this.selectedLabelFeature] == 0) {
+                if (item[this.selectedLabelFeature] == null ||
+                    +item[this.selectedLabelFeature] == 0) {
                   inferenceStats.thresholds[thresh]['TN'] += 1;
                   if (facetedStats) {
                     facetedStats[thresh]['TN'] += 1;
@@ -3126,7 +3132,7 @@ limitations under the License.
 
       makeAsyncRequest_: function(url, thenDoFn, postData){
         var self = this;
-        const wrapperFn = this._canceller.cancellable(function(result){
+        const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
@@ -3138,17 +3144,65 @@ limitations under the License.
             thenDoFn(result);
           }
         });
-        this.requestManager.request(url, postData).then(wrapperFn);
+        this.requestManager.request(url, postData).then(wrapperFn)
+            .catch(reason => {
+              this.exampleStatusStr = 'Request failed'
+              self.showToast_('Request failed: ' + reason);
+              self.$.spinner.hidden = true;
+            });
       },
 
       /**
-       * Converts a single TF examples into an item dict for display in Facets
-       * Dive.
+       * Extract the data point feature value from an example feature. If
+       * squeeze is true then convert length 1 arrays into single objects.
+       */
+      dataPointValueFromFeature_: function(feature, squeeze) {
+        let v = null;
+        if (feature.int64List) {
+          v = feature.int64List.value;
+        } else if (feature.floatList) {
+          v = feature.floatList.value;
+        } else if (feature.bytesList && feature.bytesList.value) {
+          v = feature.bytesList.value.map(val => {
+            // Strings above a max length are most likely binary encoded data
+            // and not strings and therefore shouldn't be decoded for display
+            // in Facets Dive.
+            if (val.length > maxStringLengthToDecode) {
+              return 'ERROR: string not decoded due to length';
+            }
+            try {
+              return atob(val);
+            } catch (err) {
+              console.error('Error decoding string: ' + err);
+              return 'ERROR: error decoding string';
+            }
+          });
+        }
+        if (v) {
+          // For value lists that are of length 1, treat the feature value
+          // as just the item and not the list of length 1.
+          if (squeeze && v.length == 1) {
+            v = v[0];
+            // For numeric feature values, convert the string to a number.
+            if (!isNaN(v)) {
+              v = Number(v);
+            }
+          }
+        }
+        return v;
+      },
+
+      /**
+       * Converts a single TF Example or SequenceExample into an item dict for
+       * display in Facets Dive.
        */
       exampleToDataPoint_: function(example, index) {
         const d = {};
+        // Extract the standard features from examples or context features from
+        // sequence examples.
+        const featureRoot = example.features || example.context;
         const features = 'features' in example ?
-            Object.keys(example.features.feature) : [];
+            Object.keys(featureRoot.feature) : [];
         for (const index in features) {
           const fname = features[+index];
           // Ignore encoded image feature when creating data for Facets Dive.
@@ -3157,40 +3211,29 @@ limitations under the License.
           if (fname == this.imageFeatureName) {
             continue;
           }
-          let v = null;
-          if (example.features.feature[fname].int64List) {
-            v = example.features.feature[fname].int64List.value;
-          } else if (example.features.feature[fname].floatList) {
-            v = example.features.feature[fname].floatList.value;
-          } else if (example.features.feature[fname].bytesList &&
-                     example.features.feature[fname].bytesList.value) {
-            v = example.features.feature[fname].bytesList.value.map(val => {
-              // Strings above a max length are most likely binary encoded data
-              // and not strings and therefore shouldn't be decoded for display
-              // in Facets Dive.
-              if (val.length > maxStringLengthToDecode) {
-                return 'ERROR: string not decoded due to length';
-              }
-              try {
-                return atob(val);
-              } catch (err) {
-                console.error('Error decoding string: ' + err);
-                return 'ERROR: error decoding string';
-              }
-            });
-          }
+          let v = this.dataPointValueFromFeature_(
+            featureRoot.feature[fname], true);
           if (v) {
-            // For value lists that are of length 1, treat the feature value
-            // as just the item and not the list of length 1.
-            if (v.length == 1) {
-              v = v[0];
-              // For numeric feature values, convert the string to a number.
-              if (!isNaN(v)) {
-                v = Number(v);
-              }
-            }
             d[fname] = v;
           }
+        }
+
+        // For sequence examples, extract the sequence feature values.
+        const featureLists = 'featureLists' in example ?
+            Object.keys(example.featureLists.featureList) : [];
+        for (const index in featureLists) {
+          const fname = featureLists[+index];
+          const fList = example.featureLists.featureList[fname].feature;
+          let v = [];
+          // Concatenate feature values from all values in the sequence for
+          // each feature.
+          for (let i = 0; i < fList.length; i++) {
+            const newV = this.dataPointValueFromFeature_(fList[i], false);
+            if (newV) {
+              v = v.concat(newV)
+            }
+          }
+          d[fname] = v;
         }
         d[exampleIdKey] = index;
         return d;
@@ -3231,7 +3274,8 @@ limitations under the License.
         var url = this.makeUrl_('/data/plugin/whatif/examples_from_path',
                                 {'examples_path': this.examplesPath,
                                  'max_examples': this.maxExamples,
-                                 'sampling_odds': this.samplingOdds});
+                                 'sampling_odds': this.samplingOdds,
+                                 'sequence_examples': this.sequenceExamples});
 
         const updateExampleContents = result => {
           this.updateExampleContents_(
