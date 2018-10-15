@@ -86,15 +86,15 @@ describe('backend tests', () => {
         this.router = createRouter(base, /*demoMode=*/false);
       });
 
-      it('returns correcrt value for #environment', function() {
+      it('returns correct value for #environment', function() {
         assert.equal(this.router.environment(), '/data/environment');
       });
 
-      it('returns correcrt value for #experiments', function() {
+      it('returns correct value for #experiments', function() {
         assert.equal(this.router.experiments(), '/data/experiments');
       });
 
-      it('returns correcrt value for #isDemoMode', function() {
+      it('returns correct value for #isDemoMode', function() {
         assert.equal(this.router.isDemoMode(), false);
       });
 
@@ -107,41 +107,51 @@ describe('backend tests', () => {
 
         it('encodes query param correctly', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {b: 'c', d: ['1', '2']}),
+              this.router.pluginRoute(
+                  'scalars',
+                  '/a',
+                  createSearchParam({b: 'c', d: ['1', '2']})),
               '/data/plugin/scalars/a?b=c&d=1&d=2');
         });
 
         it('encodes parenthesis correctly', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {foo: '()'}),
+              this.router.pluginRoute('scalars', '/a',
+              createSearchParam({foo: '()'})),
               '/data/plugin/scalars/a?foo=%28%29');
         });
 
         it('encodes query param the same as #addParams', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {b: 'c', d: ['1', '2']}),
-              addParams('/data/plugin/scalars/a', {b: 'c', d: ['1', '2']}));
+              this.router.pluginRoute(
+                  'scalars',
+                  '/a',
+                  createSearchParam({b: 'c', d: ['1']})),
+              addParams('/data/plugin/scalars/a', {b: 'c', d: ['1']}));
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {foo: '()'}),
+              this.router.pluginRoute(
+                  'scalars',
+                  '/a',
+                  createSearchParam({foo: '()'})),
               addParams('/data/plugin/scalars/a', {foo: '()'}));
         });
 
         it('ignores custom extension', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {}, 'meow'),
+              this.router.pluginRoute('scalars', '/a', undefined, 'meow'),
               '/data/plugin/scalars/a');
         });
       });
 
-      it('returns correcrt value for #pluginsListing', function() {
+      it('returns correct value for #pluginsListing', function() {
         assert.equal(this.router.pluginsListing(), '/data/plugins_listing');
       });
 
-      it('returns correcrt value for #runs', function() {
+      it('returns correct value for #runs', function() {
         assert.equal(this.router.runs(), '/data/runs');
       });
 
-      it('returns correcrt value for #runsForExperiment', function() {
+      it('returns correct value for #runsForExperiment', function() {
         // No experiment id is passed.
         assert.equal(
             this.router.runsForExperiment(''),
@@ -160,15 +170,15 @@ describe('backend tests', () => {
         this.router = createRouter(base, /*demoMode=*/true);
       });
 
-      it('returns correcrt value for #environment', function() {
+      it('returns correct value for #environment', function() {
         assert.equal(this.router.environment(), '/data/environment.json');
       });
 
-      it('returns correcrt value for #experiments', function() {
+      it('returns correct value for #experiments', function() {
         assert.equal(this.router.experiments(), '/data/experiments.json');
       });
 
-      it('returns correcrt value for #isDemoMode', function() {
+      it('returns correct value for #isDemoMode', function() {
         assert.equal(this.router.isDemoMode(), true);
       });
 
@@ -181,40 +191,46 @@ describe('backend tests', () => {
 
         it('encodes query param correctly', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {b: 'c', d: ['1', '2']}),
+              this.router.pluginRoute(
+                  'scalars',
+                  '/a',
+                  createSearchParam({b: 'c', d: ['1', '2']})),
               '/data/scalars_a_b_c_d_1_d_2.json');
         });
 
         it('encodes parenthesis correctly', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {foo: '()'}),
+              this.router.pluginRoute(
+                  'scalars',
+                  '/a',
+                  createSearchParam({foo: '()'})),
               '/data/scalars_a_foo__28_29.json');
         });
 
         it('uses custom extension if provided', function() {
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {}, ''),
+              this.router.pluginRoute('scalars', '/a', undefined, ''),
               '/data/scalars_a');
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {}, '.meow'),
+              this.router.pluginRoute('scalars', '/a', undefined, '.meow'),
               '/data/scalars_a.meow');
           assert.equal(
-              this.router.pluginRoute('scalars', '/a', {}, undefined),
+              this.router.pluginRoute('scalars', '/a'),
               '/data/scalars_a.json');
         });
       });
 
-      it('returns correcrt value for #pluginsListing', function() {
+      it('returns correct value for #pluginsListing', function() {
         assert.equal(
             this.router.pluginsListing(),
             '/data/plugins_listing.json');
       });
 
-      it('returns correcrt value for #runs', function() {
+      it('returns correct value for #runs', function() {
         assert.equal(this.router.runs(), '/data/runs.json');
       });
 
-      it('returns correcrt value for #runsForExperiment', function() {
+      it('returns correct value for #runsForExperiment', function() {
         // No experiment id is passed.
         assert.equal(
             this.router.runsForExperiment(''),

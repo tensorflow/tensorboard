@@ -42,13 +42,13 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
     experiments: () => createPath(dataDir, '/experiments', ext),
     isDemoMode: () => demoMode,
     pluginRoute: (pluginName: string, route: string,
-        queryParams?: QueryParams, customExt = ext): string => {
+        params?: URLSearchParams, demoCustomExt = ext): string => {
 
       return createPath(
           demoMode ? dataDir : dataDir + '/plugin',
           `/${pluginName}${route}`,
-          customExt,
-          queryParams);
+          demoCustomExt,
+          params);
     },
     pluginsListing: () => createPath(dataDir, '/plugins_listing', ext),
     runs: () => createPath(dataDir, '/runs', ext),
@@ -57,7 +57,7 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
           dataDir,
           '/experiment_runs',
           ext,
-          {experiment: String(id)});
+          createSearchParam({experiment: String(id)}));
     },
   };
 };
@@ -86,33 +86,11 @@ export function setRouter(router: Router): void {
   _router = router;
 }
 
-function addQueryParams(urlString: string, params?: QueryParams): string {
-  if (urlString.startsWith('/')) {
-    urlString = window.location.origin + urlString;
-  }
-  const url = new URL(urlString);
-  const searchParams = createSearchParam(params);
-  url.search = searchParams.toString();
-  return url.toString();
-}
-
-function createSearchParam(params: QueryParams = {}): URLSearchParams {
-  const keys = Object.keys(params).sort().filter(k => params[k]);
-  const searchParams = new URLSearchParams();
-  keys.forEach(key => {
-    const values = params[key];
-    const array = Array.isArray(values) ? values : [values];
-    array.forEach(val => searchParams.append(key, val));
-  });
-  return searchParams;
-}
-
 function createProdPath(pathPrefix: string, path: string,
-    ext: string, params?: QueryParams): string {
+    ext: string, params?: URLSearchParams): string {
 
   const url = new URL(`${window.location.origin}/${pathPrefix}${path}`);
-  const searchParams = createSearchParam(params);
-  url.search = searchParams.toString();
+  if (params) url.search = params.toString();
   return url.pathname + url.search;
 }
 
@@ -123,14 +101,14 @@ function createProdPath(pathPrefix: string, path: string,
  * < '/a/b_a_1.json'
  */
 function createDemoPath(pathPrefix: string, path: string,
-    ext: string, params?: QueryParams): string {
+    ext: string, params?: URLSearchParams): string {
 
   // First, parse the path in a safe manner by constructing a URL. We don't
   // trust the path supplied by consumer.
   const prefixLessUrl = new URL(`${window.location.origin}/${path}`);
   let {pathname: normalizedPath} = prefixLessUrl;
-  const searchParams = createSearchParam(params);
-  const encodedQueryParam = searchParams.toString().replace(/[&=%]/g, '_');
+  const encodedQueryParam = params ?
+      params.toString().replace(/[&=%]/g, '_') : '';
 
   // Strip leading slashes.
   normalizedPath = normalizedPath.replace(/^\/+/g, '');
@@ -143,6 +121,17 @@ function createDemoPath(pathPrefix: string, path: string,
   // All demo data are serialized in JSON format.
   url.pathname = `${pathPrefix}/${normalizedPath}${ext}`;
   return url.pathname + url.search;
+}
+
+export function createSearchParam(params: QueryParams = {}): URLSearchParams {
+  const keys = Object.keys(params).sort().filter(k => params[k]);
+  const searchParams = new URLSearchParams();
+  keys.forEach(key => {
+    const values = params[key];
+    const array = Array.isArray(values) ? values : [values];
+    array.forEach(val => searchParams.append(key, val));
+  });
+  return searchParams;
 }
 
 }  // namespace tf_backend

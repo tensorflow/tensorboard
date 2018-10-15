@@ -297,12 +297,12 @@ Polymer({
     return tf_backend.getRouter().pluginRoute(
         'graphs',
         '/graph',
-        {
+        new URLSearchParams({
           'run': run,
           'limit_attr_size': optional(limitAttrSize),
           'large_attrs_key': optional(largeAttrsKey),
-        },
-        demoMode ? '.pbtxt' : '');
+        }),
+        /* demoCustomExt */ '.pbtxt');
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
