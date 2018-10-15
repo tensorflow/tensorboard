@@ -105,7 +105,7 @@ class OriginalFeatureList(object):
 
   Attributes:
     feature_name: String name of the feature.
-    original_value: The value of the feature in the original tf.train.Example.
+    original_value: The value of the feature in the original example.
     feature_type: One of ['int64_list', 'float_list'].
 
   Raises:
@@ -212,7 +212,7 @@ def parse_original_feature_from_example(example, feature_name):
   """Returns an `OriginalFeatureList` for the specified feature_name.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
     feature_name: A string feature name.
 
   Returns:
@@ -248,7 +248,7 @@ def get_numeric_feature_names(example):
   """Returns a list of feature names for float and int64 type features.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
 
   Returns:
     A list of string feature names.
@@ -265,7 +265,7 @@ def get_categorical_feature_names(example):
   """Returns a list of feature names for byte type features.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
 
   Returns:
     A list of categorical feature names (e.g. ['education', 'marital_status'] )
@@ -383,14 +383,14 @@ def make_mutant_tuples(example_proto, original_feature, index_to_mutate,
   """Return a list of `MutantFeatureValue`s and a list of mutant Examples.
 
   Args:
-    example_proto: The tf.train.Example to mutate.
+    example_proto: The example to mutate.
     original_feature: A `OriginalFeatureList` that encapsulates the feature to
       mutate.
     index_to_mutate: The index of the int64_list or float_list to mutate.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
   Returns:
-    A list of `MutantFeatureValue`s and a list of mutant `tf.train.Examples`.
+    A list of `MutantFeatureValue`s and a list of mutant examples.
   """
   mutant_features = make_mutant_features(original_feature, index_to_mutate,
                                          viz_params)
@@ -418,7 +418,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
   """Returns JSON formatted for rendering all charts for a feature.
 
   Args:
-    example_proto: The tf.train.Example proto to mutate.
+    example_proto: The example proto to mutate.
     feature_name: The string feature name to mutate.
     serving_bundle: A `ServingBundle` object that contains the information to
       make the serving request.
