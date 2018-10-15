@@ -3131,24 +3131,23 @@ limitations under the License.
       },
 
       makeAsyncRequest_: function(url, thenDoFn, postData){
-        var self = this;
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
           if (result.value && result.value.error){
             // show toast with the error
-            self.showToast_(result.value.error);
-            self.$.spinner.hidden = true;
+            this.showToast_(result.value.error);
+            this.$.spinner.hidden = true;
           } else if (thenDoFn) {
             thenDoFn(result);
           }
         });
         this.requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
-              this.exampleStatusStr = 'Request failed'
-              self.showToast_('Request failed: ' + reason);
-              self.$.spinner.hidden = true;
+              this.exampleStatusStr = 'Request failed';
+              this.showToast_('Request failed: ' + reason);
+              this.$.spinner.hidden = true;
             });
       },
 
@@ -3157,13 +3156,13 @@ limitations under the License.
        * squeeze is true then convert length 1 arrays into single objects.
        */
       dataPointValueFromFeature_: function(feature, squeeze) {
-        let v = null;
+        let valueList = null;
         if (feature.int64List) {
-          v = feature.int64List.value;
+          valueList = feature.int64List.value;
         } else if (feature.floatList) {
-          v = feature.floatList.value;
+          valueList = feature.floatList.value;
         } else if (feature.bytesList && feature.bytesList.value) {
-          v = feature.bytesList.value.map(val => {
+          valueList = feature.bytesList.value.map(val => {
             // Strings above a max length are most likely binary encoded data
             // and not strings and therefore shouldn't be decoded for display
             // in Facets Dive.
@@ -3178,18 +3177,18 @@ limitations under the License.
             }
           });
         }
-        if (v) {
-          // For value lists that are of length 1, treat the feature value
-          // as just the item and not the list of length 1.
-          if (squeeze && v.length == 1) {
-            v = v[0];
-            // For numeric feature values, convert the string to a number.
-            if (!isNaN(v)) {
-              v = Number(v);
-            }
+        // For value lists that are of length 1, treat the feature value
+        // as just the item and not the list of length 1.
+        if (squeeze && valueList && valueList.length == 1) {
+          let singleValue = valueList[0];
+          // For numeric feature values, convert the string to a number.
+          if (!isNaN(singleValue)) {
+            return Number(singleValue);
+          } else {
+            return singleValue;
           }
         }
-        return v;
+        return valueList;
       },
 
       /**
@@ -3201,7 +3200,7 @@ limitations under the License.
         // Extract the standard features from examples or context features from
         // sequence examples.
         const featureRoot = example.features || example.context;
-        const features = 'features' in example ?
+        const features = featureRoot && 'feature' in featureRoot ?
             Object.keys(featureRoot.feature) : [];
         for (const index in features) {
           const fname = features[+index];
