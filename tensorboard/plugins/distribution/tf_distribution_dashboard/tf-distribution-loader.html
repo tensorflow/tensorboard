@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html">
 <link rel="import" href="../vz-distribution-chart/vz-distribution-chart.html">
 
 <!--
@@ -40,6 +41,7 @@ limitations under the License.
       `setSeriesData`, not with a bound property.
     -->
     <vz-distribution-chart
+      id="chart"
       x-type="[[xType]]"
       color-scale="[[_colorScale]]"
     ></vz-distribution-chart>
@@ -96,6 +98,41 @@ limitations under the License.
         tagMetadata: Object,
         xType: String,
 
+        dataToLoad: {
+          type: Array,
+          computed: '_computeDataToLoad(run, tag)',
+        },
+        getDataLoadName: {
+          type: Function,
+          value: () => ({run}) => run,
+        },
+        getDataLoadUrl: {
+          type: Function,
+          value: () => ({tag, run}) => {
+            const router = tf_backend.getRouter();
+            return tf_backend.addParams(
+                router.pluginRoute('distributions', '/distributions'),
+                {tag, run});
+          },
+        },
+        loadDataCallback: {
+          type: Function,
+          value: function() {
+            return (_, datum, backendData) => {
+              const data = backendData.map(datum => {
+                // `vz-distribution-chart` wants each datum as an array with
+                // extra `wall_time` and `step` properties.
+                const [wall_time, step, bins] = datum;
+                bins.wall_time = new Date(wall_time * 1000);
+                bins.step = step;
+                return bins;
+              });
+              const name = this.getDataLoadName(datum);
+              this.$.chart.setSeriesData(name, data);
+              this.$.chart.setVisibleSeries([name]);
+            };
+          },
+        },
         _colorScale: {
           type: Object,
           value: () => ({scale: tf_color_scale.runsColorScale}),
@@ -120,45 +157,14 @@ limitations under the License.
 
       observers: ['reload(run, tag)'],
 
+      behaviors: [tf_dashboard_common.DataLoaderBehavior],
+
+      _computeDataToLoad(run, tag) {
+        return [{run, tag}];
+      },
+
       _computeRunColor(run) {
         return this._colorScale.scale(run);
-      },
-
-      attached() {
-        this._attached = true;
-        this.reload();
-      },
-
-      /**
-       * Reload data from the backend, updating the distribution chart's
-       * series when the response resolves.
-       */
-      reload() {
-        if (!this._attached) {
-          return;
-        }
-        this._canceller.cancelAll();
-        const router = tf_backend.getRouter();
-        const url = tf_backend.addParams(
-          router.pluginRoute("distributions", "/distributions"),
-          {tag: this.tag, run: this.run});
-        const updateData = this._canceller.cancellable(result => {
-          if (result.cancelled) {
-            return;
-          }
-          const backendData = result.value;
-          const data = backendData.map(datum => {
-            // `vz-distribution-chart` wants each datum as an array with
-            // extra `wall_time` and `step` properties.
-            const [wall_time, step, bins] = datum;
-            bins.wall_time = new Date(wall_time * 1000);
-            bins.step = step;
-            return bins;
-          });
-          this.$$('vz-distribution-chart').setVisibleSeries([this.run]);
-          this.$$('vz-distribution-chart').setSeriesData(this.run, data);
-        });
-        this.requestManager.request(url).then(updateData);
       },
 
       /**
@@ -168,7 +174,7 @@ limitations under the License.
        * recalculate its layout.
        */
       redraw() {
-        this.$$('vz-distribution-chart').redraw();
+        this.$.chart.redraw();
       },
 
       _toggleExpanded(e) {

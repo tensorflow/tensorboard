@@ -19,8 +19,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html">
 <link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
-<script src="data-loader-behavior.js"></script>
 
 <!--
   A component that fetches data from the TensorBoard server and renders it into
@@ -176,7 +176,7 @@ limitations under the License.
         },
       },
 
-      behaviors: [tf_line_chart_data_loader.DataLoaderBehavior],
+      behaviors: [tf_dashboard_common.DataLoaderBehavior],
 
       observers: [
         '_dataSeriesChanged(dataSeries.*)',
