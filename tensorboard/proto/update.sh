@@ -20,6 +20,7 @@ git clean -fdx
 # Replace paths internally
 find tensorboard/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/framework|tensorboard/proto|g' {} +
 find tensorboard/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/protobuf|tensorboard/proto|g' {} +
+find tensorboard/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/profiler|tensorboard/proto|g' {} +
 find tensorboard/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/python/framework|tensorboard/proto|g' {} +
 find tensorboard/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/util|tensorboard/proto|g' {} +
 find tensorboard/proto/ -type f  -name '*.proto' -exec sed -i '' 's|package tensorflow;|package tensorboard;|g' {} +
