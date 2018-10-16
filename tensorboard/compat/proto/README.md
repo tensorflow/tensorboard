@@ -8,8 +8,8 @@ Copy the proto files from TensorFlow to TensorBoard using the following process:
 
 * git clone tensorflow/tensorboard and tensorflow/tensorboard in ~
 * cd ~/tensorboard
-* ./tensorboard/proto/update.sh
+* ./tensorboard/compat/proto/update.sh
 * git add .
 * git commit -m "Update TensorFlow protos to xxxx"
 
-These were taken from TensorFlow version 1.21.0-dev20181012
+These were taken from TensorFlow version 1.12.0-dev20181012

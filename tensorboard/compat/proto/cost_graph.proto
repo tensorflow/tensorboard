@@ -6,8 +6,8 @@ option java_outer_classname = "CostGraphProtos";
 option java_multiple_files = true;
 option java_package = "org.tensorflow.framework";
 option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/framework";
-import "tensorboard/proto/tensor_shape.proto";
-import "tensorboard/proto/types.proto";
+import "tensorboard/compat/proto/tensor_shape.proto";
+import "tensorboard/compat/proto/types.proto";
 
 message CostGraphDef {
   message Node {

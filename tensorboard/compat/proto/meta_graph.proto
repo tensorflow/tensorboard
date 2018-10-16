@@ -8,11 +8,11 @@ option java_package = "org.tensorflow.framework";
 option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/protobuf";
 import "google/protobuf/any.proto";
 
-import "tensorboard/proto/graph.proto";
-import "tensorboard/proto/op_def.proto";
-import "tensorboard/proto/tensor_shape.proto";
-import "tensorboard/proto/types.proto";
-import "tensorboard/proto/saver.proto";
+import "tensorboard/compat/proto/graph.proto";
+import "tensorboard/compat/proto/op_def.proto";
+import "tensorboard/compat/proto/tensor_shape.proto";
+import "tensorboard/compat/proto/types.proto";
+import "tensorboard/compat/proto/saver.proto";
 
 // NOTE: This protocol buffer is evolving, and will go through revisions in the
 // coming months.

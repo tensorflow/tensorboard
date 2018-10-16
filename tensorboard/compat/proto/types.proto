@@ -68,8 +68,8 @@ enum DataType {
 // LINT.ThenChange(
 //    https://www.tensorflow.org/code/tensorflow/c/c_api.h,
 //    https://www.tensorflow.org/code/tensorflow/go/tensor.go,
-//    https://www.tensorflow.org/code/tensorboard/proto/tensor.cc,
-//    https://www.tensorflow.org/code/tensorboard/proto/types.h,
-//    https://www.tensorflow.org/code/tensorboard/proto/types.cc,
-//    https://www.tensorflow.org/code/tensorboard/proto/dtypes.py,
-//    https://www.tensorflow.org/code/tensorboard/proto/function.py)
+//    https://www.tensorflow.org/code/tensorboard/compat/proto/tensor.cc,
+//    https://www.tensorflow.org/code/tensorboard/compat/proto/types.h,
+//    https://www.tensorflow.org/code/tensorboard/compat/proto/types.cc,
+//    https://www.tensorflow.org/code/tensorboard/compat/proto/dtypes.py,
+//    https://www.tensorflow.org/code/tensorboard/compat/proto/function.py)

@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package tensorboard;
 
-import "tensorboard/proto/attr_value.proto";
-import "tensorboard/proto/step_stats.proto";
+import "tensorboard/compat/proto/attr_value.proto";
+import "tensorboard/compat/proto/step_stats.proto";
 
 // It specifies the Python callstack that creates an op.
 message CodeDef {

@@ -6,12 +6,12 @@ option java_outer_classname = "ConfigProtos";
 option java_multiple_files = true;
 option java_package = "org.tensorflow.framework";
 option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/protobuf";
-import "tensorboard/proto/cost_graph.proto";
-import "tensorboard/proto/graph.proto";
-import "tensorboard/proto/step_stats.proto";
-import "tensorboard/proto/debug.proto";
-import "tensorboard/proto/cluster.proto";
-import "tensorboard/proto/rewriter_config.proto";
+import "tensorboard/compat/proto/cost_graph.proto";
+import "tensorboard/compat/proto/graph.proto";
+import "tensorboard/compat/proto/step_stats.proto";
+import "tensorboard/compat/proto/debug.proto";
+import "tensorboard/compat/proto/cluster.proto";
+import "tensorboard/compat/proto/rewriter_config.proto";
 
 message GPUOptions {
   // Fraction of the available GPU memory to allocate for each process.

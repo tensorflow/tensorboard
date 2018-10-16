@@ -3,7 +3,6 @@
 
 package(default_visibility = [":internal"])
 
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
@@ -14,13 +13,6 @@ exports_files(["LICENSE"])  # Needed for internal repo.
 package_group(
     name = "internal",
     packages = ["//tensorboard/..."],
-)
-
-# The standard protos used in TensorBoard.
-tb_proto_library(
-    name = "protos_all",
-    srcs = glob(["proto/*.proto"]),
-    visibility = ["//visibility:public"],
 )
 
 # The standard TensorBoard binary that serves the webapp.
@@ -365,18 +357,6 @@ py_library(
         ":util",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
-    ],
-)
-
-py_test(
-    name = "proto_test",
-    size = "small",
-    srcs = ["proto_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
     ],
 )
 

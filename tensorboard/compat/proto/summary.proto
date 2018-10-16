@@ -6,7 +6,7 @@ option java_outer_classname = "SummaryProtos";
 option java_multiple_files = true;
 option java_package = "org.tensorflow.framework";
 option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/framework";
-import "tensorboard/proto/tensor.proto";
+import "tensorboard/compat/proto/tensor.proto";
 
 // Metadata associated with a series of Summary data
 message SummaryDescription {

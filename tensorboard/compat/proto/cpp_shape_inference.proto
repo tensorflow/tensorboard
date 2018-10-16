@@ -3,8 +3,8 @@ syntax = "proto3";
 package tensorboard;
 option cc_enable_arenas = true;
 
-import "tensorboard/proto/types.proto";
-import "tensorboard/proto/tensor_shape.proto";
+import "tensorboard/compat/proto/types.proto";
+import "tensorboard/compat/proto/tensor_shape.proto";
 
 message CppShapeInferenceResult {
   message HandleShapeAndType {
