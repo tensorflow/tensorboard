@@ -19,6 +19,9 @@ var tf_tensorboard;
         var val = window.localStorage.getItem(tf_tensorboard.AUTORELOAD_LOCALSTORAGE_KEY);
         return val === 'true' || val == null; // defaults to true
     };
+    function forceDisableAutoReload() {
+        return new URLSearchParams(window.location.search).has('_DisableAutoReload');
+    }
     /**
      * @polymerBehavior
      */
@@ -41,21 +44,22 @@ var tf_tensorboard;
             window.clearTimeout(this._autoReloadId);
         },
         _autoReloadObserver: function (autoReload) {
+            var _this = this;
             window.localStorage.setItem(tf_tensorboard.AUTORELOAD_LOCALSTORAGE_KEY, autoReload);
-            if (autoReload) {
-                var _this = this;
-                this._autoReloadId = window.setTimeout(this._doAutoReload.bind(this), this.autoReloadIntervalSecs * 1000);
+            if (autoReload && !forceDisableAutoReload()) {
+                this._autoReloadId = window.setTimeout(function () { return _this._doAutoReload(); }, this.autoReloadIntervalSecs * 1000);
             }
             else {
                 window.clearTimeout(this._autoReloadId);
             }
         },
         _doAutoReload: function () {
+            var _this = this;
             if (this.reload == null) {
                 throw new Error('AutoReloadBehavior requires a reload method');
             }
             this.reload();
-            this._autoReloadId = window.setTimeout(this._doAutoReload.bind(this), this.autoReloadIntervalSecs * 1000);
+            this._autoReloadId = window.setTimeout(function () { return _this._doAutoReload(); }, this.autoReloadIntervalSecs * 1000);
         }
     };
 })(tf_tensorboard || (tf_tensorboard = {})); // namespace tf_tensorboard
