@@ -51,7 +51,7 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":vz_line_chart"],
-    visibility = ["//learning/vis/vz_elements/catalog:__pkg__"],
+    visibility = ["//visibility:public"],
     destdir = "vz-line-chart",
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
