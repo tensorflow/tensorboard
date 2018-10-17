@@ -24,6 +24,9 @@ var tf_backend;
      *     addParams("http://foo", {a: "1", b: ["2", "3+4"], c: "5"})
      *     addParams("http://foo?a=1", {b: ["2", "3+4"], c: "5", d: undefined})
      *     "http://foo?a=1&b=2&b=3%2B4&c=5"
+     *
+     * @deprecated If used with `router.pluginRoute`, please use the queryParams
+     * argument.
      */
     function addParams(baseURL, params) {
         var keys = Object.keys(params).sort().filter(function (k) { return params[k] !== undefined; });

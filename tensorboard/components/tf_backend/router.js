@@ -28,23 +28,21 @@ var tf_backend;
         if (dataDir[dataDir.length - 1] === '/') {
             dataDir = dataDir.slice(0, dataDir.length - 1);
         }
-        function standardRoute(route, demoExtension) {
-            if (demoExtension === void 0) { demoExtension = '.json'; }
-            return function (tag, run) {
-                return dataDir + '/' + tf_backend.addParams(route, { tag: tag, run: run });
-            };
-        }
-        function pluginRoute(pluginName, route) {
-            return dataDir + "/plugin/" + pluginName + route;
-        }
+        var createPath = demoMode ? createDemoPath : createProdPath;
+        var ext = demoMode ? '.json' : '';
         return {
-            environment: function () { return dataDir + '/environment'; },
-            experiments: function () { return dataDir + '/experiments'; },
+            environment: function () { return createPath(dataDir, '/environment', ext); },
+            experiments: function () { return createPath(dataDir, '/experiments', ext); },
             isDemoMode: function () { return demoMode; },
-            pluginRoute: pluginRoute,
-            pluginsListing: function () { return dataDir + '/plugins_listing'; },
-            runs: function () { return dataDir + '/runs' + (demoMode ? '.json' : ''); },
-            runsForExperiment: function (id) { return dataDir + "/experiment_runs?experiment=" + id; },
+            pluginRoute: function (pluginName, route, params, demoCustomExt) {
+                if (demoCustomExt === void 0) { demoCustomExt = ext; }
+                return createPath(demoMode ? dataDir : dataDir + '/plugin', "/" + pluginName + route, demoCustomExt, params);
+            },
+            pluginsListing: function () { return createPath(dataDir, '/plugins_listing', ext); },
+            runs: function () { return createPath(dataDir, '/runs', ext); },
+            runsForExperiment: function (id) {
+                return createPath(dataDir, '/experiment_runs', ext, createSearchParam({ experiment: String(id) }));
+            },
         };
     }
     tf_backend.createRouter = createRouter;
@@ -72,4 +70,47 @@ var tf_backend;
         _router = router;
     }
     tf_backend.setRouter = setRouter;
+    function createProdPath(pathPrefix, path, ext, params) {
+        var url = new URL(window.location.origin + "/" + pathPrefix + path);
+        if (params)
+            url.search = params.toString();
+        return url.pathname + url.search;
+    }
+    /**
+     * Creates a URL for demo.
+     * e.g.,
+     * > createDemoPath('a', '/b', '.json', {a: 1})
+     * < '/a/b_a_1.json'
+     */
+    function createDemoPath(pathPrefix, path, ext, params) {
+        // First, parse the path in a safe manner by constructing a URL. We don't
+        // trust the path supplied by consumer.
+        var prefixLessUrl = new URL(window.location.origin + "/" + path);
+        var normalizedPath = prefixLessUrl.pathname;
+        var encodedQueryParam = params ?
+            params.toString().replace(/[&=%]/g, '_') : '';
+        // Strip leading slashes.
+        normalizedPath = normalizedPath.replace(/^\/+/g, '');
+        // Convert slashes to underscores.
+        normalizedPath = normalizedPath.replace(/\//g, '_');
+        // Add query parameter as path if it is present.
+        if (encodedQueryParam)
+            normalizedPath += "_" + encodedQueryParam;
+        var url = new URL("" + window.location.origin);
+        // All demo data are serialized in JSON format.
+        url.pathname = pathPrefix + "/" + normalizedPath + ext;
+        return url.pathname + url.search;
+    }
+    function createSearchParam(params) {
+        if (params === void 0) { params = {}; }
+        var keys = Object.keys(params).sort().filter(function (k) { return params[k]; });
+        var searchParams = new URLSearchParams();
+        keys.forEach(function (key) {
+            var values = params[key];
+            var array = Array.isArray(values) ? values : [values];
+            array.forEach(function (val) { return searchParams.append(key, val); });
+        });
+        return searchParams;
+    }
+    tf_backend.createSearchParam = createSearchParam;
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

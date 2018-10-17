@@ -50,13 +50,13 @@ var tf_backend;
             });
         };
         EnvironmentStore.prototype.getDataLocation = function () {
-            return this.environment.dataLocation;
+            return this.environment ? this.environment.dataLocation : '';
         };
         EnvironmentStore.prototype.getMode = function () {
-            return this.environment.mode;
+            return this.environment ? this.environment.mode : null;
         };
         EnvironmentStore.prototype.getWindowTitle = function () {
-            return this.environment.windowTitle;
+            return this.environment ? this.environment.windowTitle : '';
         };
         return EnvironmentStore;
     }(tf_backend.BaseStore));

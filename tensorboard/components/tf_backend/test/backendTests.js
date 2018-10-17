@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
+    var assert = chai.assert;
     describe('urlPathHelpers', function () {
         it('addParams leaves input untouched when there are no parameters', function () {
             var actual = tf_backend.addParams('http://foo', { a: undefined, b: undefined });
@@ -43,10 +44,6 @@ var tf_backend;
             tf_backend.setRouter(demoRouter);
             rm = new tf_backend.RequestManager();
         });
-        it('trailing slash removed from base route', function () {
-            var r = tf_backend.createRouter('foo/');
-            chai.assert.equal(r.runs(), 'foo/runs');
-        });
         it('runToTag helpers work', function () {
             var r2t = {
                 run1: ['foo', 'bar', 'zod'],
@@ -64,6 +61,98 @@ var tf_backend;
             chai.assert.deepEqual(tf_backend.getTags(empty1), []);
             chai.assert.deepEqual(tf_backend.getRunsNamed(empty2), ['run1', 'run2']);
             chai.assert.deepEqual(tf_backend.getTags(empty2), []);
+        });
+        describe('router', function () {
+            it('removes trailing slash from base route', function () {
+                var r = tf_backend.createRouter('foo/');
+                assert.equal(r.runs(), '/foo/runs');
+            });
+            describe('prod mode', function () {
+                beforeEach(function () {
+                    this.router = tf_backend.createRouter(base, /*demoMode=*/ false);
+                });
+                it('returns correct value for #environment', function () {
+                    assert.equal(this.router.environment(), '/data/environment');
+                });
+                it('returns correct value for #experiments', function () {
+                    assert.equal(this.router.experiments(), '/data/experiments');
+                });
+                it('returns correct value for #isDemoMode', function () {
+                    assert.equal(this.router.isDemoMode(), false);
+                });
+                describe('#pluginRoute', function () {
+                    it('encodes slash correctly', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/scalar'), '/data/plugin/scalars/scalar');
+                    });
+                    it('encodes query param correctly', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ b: 'c', d: ['1', '2'] })), '/data/plugin/scalars/a?b=c&d=1&d=2');
+                    });
+                    it('encodes parenthesis correctly', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ foo: '()' })), '/data/plugin/scalars/a?foo=%28%29');
+                    });
+                    it('encodes query param the same as #addParams', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ b: 'c', d: ['1'] })), tf_backend.addParams('/data/plugin/scalars/a', { b: 'c', d: ['1'] }));
+                        assert.equal(this.router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ foo: '()' })), tf_backend.addParams('/data/plugin/scalars/a', { foo: '()' }));
+                    });
+                    it('ignores custom extension', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', undefined, 'meow'), '/data/plugin/scalars/a');
+                    });
+                });
+                it('returns correct value for #pluginsListing', function () {
+                    assert.equal(this.router.pluginsListing(), '/data/plugins_listing');
+                });
+                it('returns correct value for #runs', function () {
+                    assert.equal(this.router.runs(), '/data/runs');
+                });
+                it('returns correct value for #runsForExperiment', function () {
+                    // No experiment id is passed.
+                    assert.equal(this.router.runsForExperiment(''), '/data/experiment_runs');
+                    assert.equal(this.router.runsForExperiment('1'), '/data/experiment_runs?experiment=1');
+                    assert.equal(this.router.runsForExperiment('1&foo=false'), '/data/experiment_runs?experiment=1%26foo%3Dfalse');
+                });
+            });
+            describe('demoMode', function () {
+                beforeEach(function () {
+                    this.router = tf_backend.createRouter(base, /*demoMode=*/ true);
+                });
+                it('returns correct value for #environment', function () {
+                    assert.equal(this.router.environment(), '/data/environment.json');
+                });
+                it('returns correct value for #experiments', function () {
+                    assert.equal(this.router.experiments(), '/data/experiments.json');
+                });
+                it('returns correct value for #isDemoMode', function () {
+                    assert.equal(this.router.isDemoMode(), true);
+                });
+                describe('#pluginRoute', function () {
+                    it('encodes slash correctly', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/scalar'), '/data/scalars_scalar.json');
+                    });
+                    it('encodes query param correctly', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ b: 'c', d: ['1', '2'] })), '/data/scalars_a_b_c_d_1_d_2.json');
+                    });
+                    it('encodes parenthesis correctly', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ foo: '()' })), '/data/scalars_a_foo__28_29.json');
+                    });
+                    it('uses custom extension if provided', function () {
+                        assert.equal(this.router.pluginRoute('scalars', '/a', undefined, ''), '/data/scalars_a');
+                        assert.equal(this.router.pluginRoute('scalars', '/a', undefined, '.meow'), '/data/scalars_a.meow');
+                        assert.equal(this.router.pluginRoute('scalars', '/a'), '/data/scalars_a.json');
+                    });
+                });
+                it('returns correct value for #pluginsListing', function () {
+                    assert.equal(this.router.pluginsListing(), '/data/plugins_listing.json');
+                });
+                it('returns correct value for #runs', function () {
+                    assert.equal(this.router.runs(), '/data/runs.json');
+                });
+                it('returns correct value for #runsForExperiment', function () {
+                    // No experiment id is passed.
+                    assert.equal(this.router.runsForExperiment(''), '/data/experiment_runs.json');
+                    assert.equal(this.router.runsForExperiment('1'), '/data/experiment_runs_experiment_1.json');
+                    assert.equal(this.router.runsForExperiment('1&foo=false'), '/data/experiment_runs_experiment_1_26foo_3Dfalse.json');
+                });
+            });
         });
     });
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

@@ -43,15 +43,19 @@ limitations under the License.
   <template>
     <dom-module id="scalar-dash-demo">
       <template>
-        <tf-scalar-dashboard id="demo" backend="[[backend]]"></tf-scalar-dashboard>
+        <tf-scalar-dashboard id="demo"></tf-scalar-dashboard>
       </template>
       <script>
-
         Polymer({
-          is: "scalar-dash-demo",
+          is: 'scalar-dash-demo',
           created: function() {
-            var router = tf_backend.createRouter("/data", true);
+            const router = tf_backend.createRouter(
+                '/data',
+                true /* demoMode */);
             tf_backend.setRouter(router);
+            tf_backend.environmentStore.refresh();
+            tf_backend.runsStore.refresh();
+            tf_backend.experimentsStore.refresh();
           },
         });
       </script>
