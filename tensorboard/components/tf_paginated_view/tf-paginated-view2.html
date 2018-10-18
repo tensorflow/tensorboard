@@ -260,6 +260,11 @@ limitations under the License.
     ],
 
     ready() {
+      // Template instance props that should be excluded from forwarding
+     this._instanceProps = {
+       [this.as]: true,
+     };
+
       this.templatize(this.$.template.querySelector('template'));
     },
 
@@ -451,6 +456,27 @@ limitations under the License.
         pageInput.value = newValue;
       }
     },
+
+    // Implements extension point from Templatizer.
+    // Called as side-effect of a host path change, responsible for notifying
+    // parent path change on each inst. Note that changes for props defined on
+    // `this._instanceProps` are omitted from forwarding.
+    _forwardParentProp(prop, value) {
+      this._renderedTemplateInst.forEach(inst => {
+        inst.notifyPath(prop, value, true /* fromAbove */);
+      });
+    },
+
+    // Implements extension point from Templatizer.
+    // Called as side-effect of a host path change, responsible for notifying
+    // parent path change on each inst. Note that changes for props defined on
+    // `this._instanceProps` are omitted from forwarding.
+    _forwardParentPath(path, value) {
+      this._renderedTemplateInst.forEach(inst => {
+        inst.notifyPath(path, value, true /* fromAbove */);
+      });
+    },
+
   });
   </script>
 </dom-module>

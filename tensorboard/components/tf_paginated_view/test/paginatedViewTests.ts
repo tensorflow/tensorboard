@@ -49,6 +49,7 @@ describe('tf-paginated-view tests', () => {
     view._limit = 2;
     view.getItemKey = ({id}) => id;
     view.items = createItems(5);
+    view.randomNumber = 42;
 
     // allow dom-if to be flushed.
     await flushAllP();
@@ -60,6 +61,13 @@ describe('tf-paginated-view tests', () => {
 
     // 2-4 should be in another page.
     expect(view.querySelector('#id2')).to.be.null;
+  });
+
+  it('responds to ancestor prop change that is bound on template', () => {
+    expect(view.querySelector('#id0').getAttribute('number')).to.equal('42');
+
+    view.randomNumber = 7;
+    expect(view.querySelector('#id0').getAttribute('number')).to.equal('7');
   });
 
   it('navigates to next page when clicked on a button', async () => {

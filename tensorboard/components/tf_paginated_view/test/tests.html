@@ -21,13 +21,39 @@ limitations under the License.
 <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
 
 <body>
+<dom-module id="testable-wrapper">
+<template>
+  <tf-paginated-view2
+    id="paginedView"
+    _limit="[[_limit]]"
+    get-item-key="[[getItemKey]]"
+    items="[[items]]"
+  >
+    <template>
+      <span id$="[[item.id]]" number$="[[randomNumber]]">
+        [[item.content]]
+      </span>
+    </template>
+  </tf-paginated-view2>
+</template>
+<script>
+  Polymer({
+    is: 'testable-wrapper',
+    properties: {
+      randomNumber: {
+        type: Number,
+        value: 0,
+      },
+      _limit: Number,
+      getItemKey: Function,
+      items: Array,
+    },
+  })
+</script>
+</dom-module>
 <test-fixture id="paginatedViewFixture">
   <template>
-    <tf-paginated-view2>
-      <template>
-        <span id$="[[item.id]]">[[item.content]]</span>
-      </template>
-    </tf-paginated-view2>
+    <testable-wrapper></testable-wrapper>
   </template>
 </test-fixture>
 
