@@ -26,7 +26,7 @@ tf_web_library(
 
 tensorboard_webcomponent_library(
     name = "legacy",
-    srcs = [":tf_scalar_card"],
+    srcs = [":tf_card_heading"],
     visibility = ["//visibility:public"],
     destdir = "tf-card-heading",
     deps = [

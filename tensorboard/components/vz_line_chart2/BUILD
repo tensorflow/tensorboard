@@ -35,7 +35,7 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_chart_helpers:legacy",
-        "//tensorboard/components/vz_line_chart:legacy",
+        "//tensorboard/components/vz_line_chart:dragZoomInteraction_legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
