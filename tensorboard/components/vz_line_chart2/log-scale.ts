@@ -17,7 +17,7 @@ namespace vz_line_chart2 {
 const MIN_VALUE = 1e-15;
 
 function log(x: number): number {
-  return Math.log(x) / Math.log(10);
+  return Math.log10(x);
 }
 
 function pow(x: number): number {

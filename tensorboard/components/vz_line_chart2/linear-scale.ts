@@ -30,10 +30,12 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
 
   /**
    * Adds some padding to a given domain. Specifically, it:
-   * - returns about [-0.1a, 2.1a] when a = b and a >= 0.
-   * - returns about [-2.1a, 0.1a] when a = b and a < 0.
+   * - returns about [-0.1a - c, 2.1a + c] when a = b and a >= 0.
+   * - returns about [-2.1|a| - c, -0.1|a| + c] when a = b and a < 0.
    * - returns [-0.1b, b + padProportion * (b-a)] if b > 2a and a > 0
    * - else, pads by `padProportion`
+   * Note that `c` is a constant offset which specifically is 1.1. Please refer
+   * to [1] for its rationale.
    * @override
    */
   protected _niceDomain(domain: number[], count?: number): number[] {
@@ -51,10 +53,10 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
 
     let lower: number;
     if (a >= 0 && a < span) {
-      // We include the intercept (y = 0) if doing so less than doubles the span
-      // of the y-axis. (We actually select a lower bound that's slightly less
-      // than 0 so that 0.00 will clearly be written on the lower edge of the
-      // chart. The label on the lowest tick is often filtered out.)
+      // [1]: We include the intercept (y = 0) if doing so less than doubles the
+      // span of the y-axis. (We actually select a lower bound that's slightly
+      // less than 0 so that 0.00 will clearly be written on the lower edge of
+      // the chart. The label on the lowest tick is often filtered out.)
       lower = -0.1 * b;
     } else {
       lower = a - padding;

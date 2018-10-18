@@ -18,10 +18,7 @@ export type ValueProviderForDomain = () => number[];
 
 /**
  * Plottable.Scale is a class that wraps the d3.scale that adds many utility
- * methods that work with the Plottable's `dataset` concept. Here, we will
- * attempt to explain few basic concepts in plain English.
- * - domain: [f(min(x)), f(max(x))]
- * - range: pixel values of the chart
+ * methods that work with the Plottable's `dataset` concept.
  *
  * Plottable.Scale provides some cool feature where a scale is bound to set of
  * plots (i.e., line, scatter, smooth line chart, etc...) and, when a dataset
@@ -72,7 +69,8 @@ export abstract class TfScale extends Plottable.QuantitativeScale<number> implem
   /**
    * Returns possible `extent`s for a dataset. Note that a dataset can contain
    * multiple series.
-   * Unlike the method name suggests, it uses `values` to return `extent`s.
+   * Unlike the method name suggests, it uses values from each series to
+   * return `extent`s.
    * @override
    */
   protected _getAllIncludedValues(ignoreAttachState = false): number[] {
