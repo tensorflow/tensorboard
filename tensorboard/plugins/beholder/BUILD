@@ -22,7 +22,7 @@ py_library(
         ":video_writing",
         ":visualizer",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -36,7 +36,7 @@ py_library(
         ":im_util",
         ":shared_config",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard:util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
@@ -51,7 +51,7 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         ":beholder",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -75,7 +75,7 @@ py_library(
     data = ["resources"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -87,7 +87,7 @@ py_library(
     deps = [
         ":colormaps",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard:util",
     ],
 )
@@ -101,7 +101,7 @@ py_library(
         ":im_util",
         ":shared_config",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
