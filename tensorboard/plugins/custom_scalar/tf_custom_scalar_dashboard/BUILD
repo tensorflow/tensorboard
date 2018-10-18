@@ -30,6 +30,7 @@ tf_web_library(
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/tf_utils",
+        "//tensorboard/components/vz_chart_helpers",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icon",

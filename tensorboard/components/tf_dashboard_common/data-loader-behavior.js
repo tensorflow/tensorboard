@@ -12,12 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var tf_line_chart_data_loader;
-(function (tf_line_chart_data_loader) {
+var tf_dashboard_common;
+(function (tf_dashboard_common) {
     /**
      * @polymerBehavior
      */
-    tf_line_chart_data_loader.DataLoaderBehavior = {
+    tf_dashboard_common.DataLoaderBehavior = {
         properties: {
             /**
              * An unique identifiable string. When changes, it expunges the data
@@ -57,6 +57,7 @@ var tf_line_chart_data_loader;
             dataLoading: {
                 type: Boolean,
                 readOnly: true,
+                reflectToAttribute: true,
                 value: false,
             },
             /*
@@ -139,4 +140,4 @@ var tf_line_chart_data_loader;
             });
         },
     };
-})(tf_line_chart_data_loader || (tf_line_chart_data_loader = {})); // namespace tf_line_chart_data_loader
+})(tf_dashboard_common || (tf_dashboard_common = {})); // namespace tf_line_chart_data_loader
