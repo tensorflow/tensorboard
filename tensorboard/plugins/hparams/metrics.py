@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
 from tensorboard.plugins.hparams import api_pb2
+from tensorboard.compat import tf
+
 
 def last_metric_eval(multiplexer, session_name, metric_name):
   """Returns the last evaluations of the given metric at the given session.

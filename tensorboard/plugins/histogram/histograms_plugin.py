@@ -27,13 +27,13 @@ import random
 
 import numpy as np
 import six
-import tensorflow as tf
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
+from tensorboard.compat import tf
 
 
 class HistogramsPlugin(base_plugin.TBPlugin):

@@ -23,9 +23,23 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/compat:tensorflow",
         ":default",
         ":program",
-        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+# The TensorBoard binary that serves the webapp without TensorFlow.
+py_binary(
+    name = "tensorboard-notf",
+    srcs = ["main_notf.py"],
+    main = "main_notf.py",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/compat:no_tensorflow",
+        ":default_notf",
+        ":program",
     ],
 )
 
@@ -94,6 +108,29 @@ py_library(
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin",
         "//tensorboard/plugins/projector:projector_plugin",
+        "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/plugins/text:text_plugin",
+    ],
+)
+
+py_library(
+    name = "default_notf",
+    srcs = ["default_notf.py"],
+    data = ["webfiles.zip"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
+        "//tensorboard/plugins/distribution:distributions_plugin",
+        "//tensorboard/plugins/graph:graphs_plugin",
+        "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/image:images_plugin",
+        "//tensorboard/plugins/interactive_inference:interactive_inference_plugin",
+        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
     ],
@@ -180,6 +217,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":util",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
@@ -251,6 +289,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":util",
         "@org_mozilla_bleach",
         "@org_pythonhosted_markdown",
         "@org_pythonhosted_six",
@@ -264,7 +303,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":plugin_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -276,7 +315,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard:tf_contrib_ffmpeg",
         "@org_pythonhosted_six",
     ],

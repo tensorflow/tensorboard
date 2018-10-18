@@ -13,6 +13,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
         "@org_pythonhosted_six",
     ],
 )
@@ -36,6 +37,7 @@ py_library(
     deps = [
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
     ],
 )
 
@@ -54,6 +56,9 @@ py_library(
     name = "reservoir",
     srcs = ["reservoir.py"],
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:util",
+    ],
 )
 
 py_test(
@@ -71,7 +76,10 @@ py_library(
     name = "event_file_loader",
     srcs = ["event_file_loader.py"],
     srcs_version = "PY2AND3",
-    deps = ["//tensorboard:expect_tensorflow_installed"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
+    ],
 )
 
 py_test(
@@ -102,6 +110,7 @@ py_library(
         "//tensorboard:data_compat",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard:util",
     ],
 )
 
@@ -149,6 +158,7 @@ py_library(
         ":event_accumulator",
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
         "@org_pythonhosted_six",
     ],
 )
@@ -214,6 +224,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
     ],
 )
 
@@ -225,6 +236,7 @@ py_library(
         ":event_accumulator",
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:util",
     ],
 )
 

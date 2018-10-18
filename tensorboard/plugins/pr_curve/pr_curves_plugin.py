@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
 import six
 from werkzeug import wrappers
 
@@ -26,6 +25,7 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import plugin_data_pb2
+from tensorboard.compat import tf
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):

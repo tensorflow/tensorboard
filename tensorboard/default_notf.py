@@ -12,16 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Collection of first-party plugins.
+"""Collection of non-TensorFlow plugins.
 
-This module exists to isolate tensorboard.program from the potentially
-heavyweight build dependencies for first-party plugins. This way people
-doing custom builds of TensorBoard have the option to only pay for the
-dependencies they want.
-
-This module also grants the flexibility to those doing custom builds, to
-automatically inherit the centrally-maintained list of standard plugins,
-for less repetition.
+This module exists to isolate down to only plugins that should be loaded
+by default for non-TensorFlow builds.
 """
 
 from __future__ import absolute_import
@@ -33,18 +27,13 @@ import os
 
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
-from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
-from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
-from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
-from tensorboard.plugins.profile import profile_plugin
-from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.compat import tf
@@ -52,9 +41,8 @@ from tensorboard.compat import tf
 
 logger = logging.getLogger(__name__)
 
-_PLUGINS = [
+_NOTF_PLUGINS = [
     core_plugin.CorePluginLoader(),
-    beholder_plugin.BeholderPlugin,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
@@ -63,11 +51,7 @@ _PLUGINS = [
     distributions_plugin.DistributionsPlugin,
     histograms_plugin.HistogramsPlugin,
     pr_curves_plugin.PrCurvesPlugin,
-    projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    interactive_inference_plugin.InteractiveInferencePlugin,
-    profile_plugin.ProfilePluginLoader(),
-    debugger_plugin_loader.DebuggerPluginLoader(),
 ]
 
 def get_plugins():
@@ -80,7 +64,7 @@ def get_plugins():
 
   :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
-  return _PLUGINS[:]
+  return _NOTF_PLUGINS[:]
 
 def get_assets_zip_provider():
   """Opens stock TensorBoard web assets collection.
