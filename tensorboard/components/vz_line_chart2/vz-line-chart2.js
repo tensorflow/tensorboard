@@ -341,9 +341,9 @@ var vz_line_chart2;
         /**
          * Re-renders the chart. Useful if e.g. the container size changed.
          */
-        redraw: function (clearCache) {
+        redraw: function () {
             if (this._chart) {
-                this._chart.redraw(clearCache);
+                this._chart.redraw();
             }
         },
         /**

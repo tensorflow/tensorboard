@@ -604,6 +604,7 @@ var vz_line_chart2;
          */
         LineChart.prototype.setSeriesData = function (name, data) {
             this.getDataset(name).data(data);
+            this.measureBBoxAndMaybeInvalidateLayoutInRaf();
         };
         /**
          * Sets the metadata of a series on the chart.
@@ -658,16 +659,43 @@ var vz_line_chart2;
                 // Start with that range.
                 this.resetYDomain();
             }
+            this.measureBBoxAndMaybeInvalidateLayoutInRaf();
         };
-        LineChart.prototype.redraw = function (clearCache) {
-            if (clearCache === void 0) { clearCache = false; }
-            if (clearCache) {
-                this.outer.invalidateCache();
+        LineChart.prototype.redraw = function () {
+            var _this = this;
+            window.cancelAnimationFrame(this._redrawRaf);
+            this._redrawRaf = window.requestAnimationFrame(function () {
+                _this.measureBBoxAndMaybeInvalidateLayout();
+                _this.outer.redraw();
+            });
+        };
+        LineChart.prototype.measureBBoxAndMaybeInvalidateLayoutInRaf = function () {
+            var _this = this;
+            window.cancelAnimationFrame(this._invalidateLayoutRaf);
+            this._invalidateLayoutRaf = window.requestAnimationFrame(function () {
+                _this.measureBBoxAndMaybeInvalidateLayout();
+            });
+        };
+        /**
+         * Measures bounding box of the anchor node and determines whether the layout
+         * needs to be re-done with measurement cache invalidated. Plottable improved
+         * performance of rendering by caching expensive DOM measurement but this
+         * cache can be poisoned in case the anchor node is in a wrong state -- namely
+         * `display: none` where all dimensions are 0.
+         */
+        LineChart.prototype.measureBBoxAndMaybeInvalidateLayout = function () {
+            if (this._lastDrawBBox) {
+                var prevWidth = this._lastDrawBBox.width;
+                var width = this.targetSVG.node().getBoundingClientRect().width;
+                if (prevWidth == 0 && prevWidth < width)
+                    this.outer.invalidateCache();
             }
-            this.outer.redraw();
+            this._lastDrawBBox = this.targetSVG.node().getBoundingClientRect();
         };
         LineChart.prototype.destroy = function () {
             // Destroying outer destroys all subcomponents recursively.
+            window.cancelAnimationFrame(this._redrawRaf);
+            window.cancelAnimationFrame(this._invalidateLayoutRaf);
             if (this.outer)
                 this.outer.destroy();
         };
