@@ -11,4 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+
+"""Compat module.
+
+Provides a compat later for TensorFlow methods so we can build without
+TensorFlow in some cases.
+"""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+try:
+  from . import notf
+  USING_TF = notf.use_tf()
+except ImportError:
+  try:
+    import tensorflow as tf
+    USING_TF = True
+  except ImportError:
+    USING_TF = False
+
+if USING_TF:
+  from tensorflow.python import debug as tf_debug  # noqa
+  from tensorflow.python.debug.cli import command_parser  # noqa
+  from tensorflow.python.debug.lib import debug_data  # noqa
+  from tensorflow.python.debug.lib import debug_graphs  # noqa
+else:
+  from . import tensorflow_stub as tf  # noqa
+  from .tensorflow_stub import debug_graphs as tf_debug  # noqa
+  from .tensorflow_stub import command_parser  # noqa
+  from .tensorflow_stub import debug_data  # noqa
+  from .tensorflow_stub import debug_graphs  # noqa
