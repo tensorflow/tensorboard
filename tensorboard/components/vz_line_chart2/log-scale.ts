@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 namespace vz_line_chart2 {
 
-const MIN_VALUE = 1e-15;
+// Smallest positive non-zero value represented by IEEE 754 binary (64 bit)
+// floating-point number.
+// https://www.ecma-international.org/ecma-262/5.1/#sec-8.5
+const MIN_POSITIVE_VALUE = Math.pow(2, -1074);
 
 function log(x: number): number {
   return Math.log10(x);
@@ -62,21 +65,21 @@ export class LogScale extends TfScale {
   protected _setDomain(values: number[]) {
     this._untransformedDomain = values;
     const [min, max] = values;
-    super._setDomain([Math.max(MIN_VALUE, min), max]);
+    super._setDomain([Math.max(MIN_POSITIVE_VALUE, min), max]);
   }
 
   /**
-   * Given a domain, pad it and clip the lower bound to MIN_VALUE.
+   * Given a domain, pad it and clip the lower bound to MIN_POSITIVE_VALUE.
    */
   protected _niceDomain(domain: number[], count?: number): number[] {
     const [low, high] = domain;
-    const adjustedLogLow = Math.max(log(MIN_VALUE), log(low));
+    const adjustedLogLow = Math.max(log(MIN_POSITIVE_VALUE), log(low));
     const logHigh = log(high);
     const pad = (logHigh - adjustedLogLow) * this.padProportion();
     const logLowFloor = Math.floor(adjustedLogLow);
     const logHighCeil = Math.ceil(logHigh);
     return [
-      pow(Math.max(log(MIN_VALUE), adjustedLogLow - pad, logLowFloor)),
+      pow(Math.max(log(MIN_POSITIVE_VALUE), adjustedLogLow - pad, logLowFloor)),
       pow(Math.min(logHigh + pad, logHighCeil)),
     ];
   }
@@ -104,7 +107,7 @@ export class LogScale extends TfScale {
     const values = super._getAllIncludedValues();
     // For log scale, the value cannot be smaller or equal to 0. They are
     // negative infinity.
-    return values.map(x => x > 0 ? x : MIN_VALUE);
+    return values.map(x => x > 0 ? x : MIN_POSITIVE_VALUE);
   }
 
   protected _defaultExtent(): number[] {

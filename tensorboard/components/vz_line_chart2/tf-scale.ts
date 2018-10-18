@@ -68,9 +68,8 @@ export abstract class TfScale extends Plottable.QuantitativeScale<number> implem
 
   /**
    * Returns possible `extent`s for a dataset. Note that a dataset can contain
-   * multiple series.
-   * Unlike the method name suggests, it uses values from each series to
-   * return `extent`s.
+   * multiple series. Unlike the method name suggests, it uses values from each
+   * series to return `extent`s.
    * @override
    */
   protected _getAllIncludedValues(ignoreAttachState = false): number[] {
