@@ -91,6 +91,7 @@ var tf_paginated_view;
                             return id;
                         };
                         view.items = createItems(5);
+                        view.randomNumber = 42;
                         // allow dom-if to be flushed.
                         return [4 /*yield*/, flushAllP()];
                     case 1:
@@ -105,6 +106,11 @@ var tf_paginated_view;
             expect(view.querySelector('#id1')).to.be.not.null;
             // 2-4 should be in another page.
             expect(view.querySelector('#id2')).to.be.null;
+        });
+        it('responds to ancestor prop change that is bound on template', function () {
+            expect(view.querySelector('#id0').getAttribute('number')).to.equal('42');
+            view.randomNumber = 7;
+            expect(view.querySelector('#id0').getAttribute('number')).to.equal('7');
         });
         it('navigates to next page when clicked on a button', function () { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
