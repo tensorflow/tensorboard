@@ -19,10 +19,8 @@ from . import error_codes  # noqa
 from . import errors  # noqa
 from . import flags  # noqa
 from . import gfile  # noqa
-from . import image  # noqa
 from . import logging  # noqa
 from . import pywrap_tensorflow  # noqa
-from . import registry  # noqa
 from . import resource_loader  # noqa
 from . import tensor_manip  # noqa
 from . import tensor_shape  # noqa
