@@ -22,7 +22,7 @@ import time
 
 import six
 import numpy as np
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import test_util
 from tensorboard import util

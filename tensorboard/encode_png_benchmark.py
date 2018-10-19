@@ -52,7 +52,7 @@ import time
 from six.moves import xrange
 
 import numpy as np
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import util
 

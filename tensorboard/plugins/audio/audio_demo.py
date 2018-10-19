@@ -23,7 +23,7 @@ import math
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+from tensorboard.compat import tf
 from tensorboard.plugins.audio import summary
 
 FLAGS = tf.flags.FLAGS

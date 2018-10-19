@@ -21,7 +21,7 @@ import os
 import tempfile
 
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard.backend.event_processing import io_wrapper
 

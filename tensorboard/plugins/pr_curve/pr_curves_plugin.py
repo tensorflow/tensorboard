@@ -22,10 +22,10 @@ from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import plugin_data_pb2
-from tensorboard.compat import tf
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):

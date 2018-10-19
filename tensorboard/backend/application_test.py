@@ -36,7 +36,7 @@ import posixpath
 import ntpath
 
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 

@@ -34,6 +34,7 @@ from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
+from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.compat import tf
@@ -51,6 +52,7 @@ _NOTF_PLUGINS = [
     distributions_plugin.DistributionsPlugin,
     histograms_plugin.HistogramsPlugin,
     pr_curves_plugin.PrCurvesPlugin,
+    projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
 ]
 

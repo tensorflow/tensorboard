@@ -25,12 +25,12 @@ import os
 import threading
 
 import numpy as np
-import tensorflow as tf
 from werkzeug import wrappers
 
 from google.protobuf import json_format
 from google.protobuf import text_format
 from tensorboard.backend.http_util import Respond
+from tensorboard.compat import tf, USING_TF
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 
@@ -397,7 +397,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
           config.model_checkpoint_path = ckpt_path
 
       # Sanity check for the checkpoint file.
-      if (config.model_checkpoint_path and
+      if (config.model_checkpoint_path and USING_TF and
           not tf.train.checkpoint_exists(config.model_checkpoint_path)):
         tf.logging.warning('Checkpoint file "%s" not found',
                            config.model_checkpoint_path)
@@ -412,7 +412,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     config = self._configs[run]
     reader = None
-    if config.model_checkpoint_path:
+    if config.model_checkpoint_path and USING_TF:
       try:
         reader = tf.pywrap_tensorflow.NewCheckpointReader(
             config.model_checkpoint_path)
@@ -645,6 +645,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
 
 def _find_latest_checkpoint(dir_path):
+  if not USING_TF:
+    return None
   try:
     ckpt_path = tf.train.latest_checkpoint(dir_path)
     if not ckpt_path:
@@ -688,4 +690,7 @@ def _make_sprite_image(thumbnails, thumbnail_dim):
       top_end = top_start + thumb_height
       master[top_start:top_end, left_start:left_end, :] = image
 
-    return tf.image.encode_png(master).eval(session=s)
+    if USING_TF:
+      return tf.image.encode_png(master).eval(session=s)
+    else:
+      return master.tobytes()

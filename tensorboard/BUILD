@@ -130,6 +130,7 @@ py_library(
         "//tensorboard/plugins/histogram:histograms_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
+        "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
     ],

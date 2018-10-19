@@ -16,8 +16,8 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
     ],
@@ -56,9 +56,9 @@ py_test(
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
     ],
