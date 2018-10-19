@@ -3212,7 +3212,7 @@ limitations under the License.
           }
           let v = this.dataPointValueFromFeature_(
             featureRoot.feature[fname], true);
-          if (v) {
+          if (v != null) {
             d[fname] = v;
           }
         }
