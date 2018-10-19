@@ -226,7 +226,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     self._handlers = None
     self.readers = {}
     self.run_paths = None
-    self._configs = {}
+    self._configs = None
     self.old_num_run_paths = None
     self.config_fpaths = None
     self.tensor_cache = LRUCache(_TENSOR_CACHE_CAPACITY)
