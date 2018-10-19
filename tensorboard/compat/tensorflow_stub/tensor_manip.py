@@ -355,7 +355,7 @@ _TF_TO_IS_OK = {
 }
 #
 #
-def _Assertconvertible(value, dtype):
+def _Assertconvertible(values, dtype):
     # If dtype is None or not recognized, assume it's convertible.
     if dtype is None or dtype not in _TF_TO_IS_OK:
         return
