@@ -25,8 +25,6 @@ import sys as _sys
 from absl.flags import *  # pylint: disable=wildcard-import
 import six as _six
 
-from . import tf_decorator
-
 
 # Since we wrap absl.flags DEFINE functions, we need to declare this module
 # does not affect key flags.
@@ -58,7 +56,7 @@ def _wrap_define_function(original_function):
             )
         return original_function(*args, **kwargs)
 
-    return tf_decorator.make_decorator(original_function, wrapper)
+    return wrapper
 
 
 class _FlagValuesWrapper(object):

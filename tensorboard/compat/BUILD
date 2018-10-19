@@ -15,7 +15,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/compat/tensorflow_stub:all",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 

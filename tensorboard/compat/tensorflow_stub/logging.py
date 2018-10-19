@@ -34,8 +34,6 @@ from logging import FATAL
 from logging import INFO
 from logging import WARN
 
-from . import tf_export
-
 
 # Don't use this directly. Use _get_logger() instead.
 _logger = None

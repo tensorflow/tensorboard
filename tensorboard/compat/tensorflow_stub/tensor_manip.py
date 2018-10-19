@@ -20,8 +20,8 @@ from __future__ import print_function
 import numpy as np
 import six
 
-from . import compat, dtypes, ops, tensor_shape, tf_export
-from tensorboard.compat.proto import tensor_pb2, tensor_shape_pb2
+from . import compat, dtypes, tensor_shape
+from tensorboard.compat.proto import tensor_pb2
 
 # try:
 #   from tensorflow.python.framework import fast_tensor_util
@@ -269,10 +269,7 @@ class _Message(object):
 def _FirstNotNone(l):
     for x in l:
         if x is not None:
-            if isinstance(x, ops.Tensor):
-                return _Message("list containing Tensors")
-            else:
-                return x
+            return x
     return None
 
 
@@ -336,14 +333,6 @@ def _FilterBool(v):
 
 #
 #
-def _FilterNotTensor(v):
-    if isinstance(v, (list, tuple)):
-        return _FirstNotNone([_FilterNotTensor(x) for x in v])
-    return str(v) if isinstance(v, ops.Tensor) else None
-
-
-#
-#
 _TF_TO_IS_OK = {
     dtypes.bool: [_FilterBool],
     dtypes.complex128: [_FilterComplex],
@@ -366,17 +355,17 @@ _TF_TO_IS_OK = {
 }
 #
 #
-def _Assertconvertible(values, dtype):
-    fn_list = _TF_TO_IS_OK.get(dtype, [_FilterNotTensor])
+def _Assertconvertible(value, dtype):
+    # If dtype is None or not recognized, assume it's convertible.
+    if dtype is None or dtype not in _TF_TO_IS_OK:
+        return
+    fn_list = _TF_TO_IS_OK.get(dtype)
     mismatch = _FirstNotNone([fn(values) for fn in fn_list])
     if mismatch is not None:
-        if dtype is None:
-            raise TypeError("List of Tensors when single Tensor expected")
-        else:
-            raise TypeError(
-                "Expected %s, got %s of type '%s' instead."
-                % (dtype.name, repr(mismatch), type(mismatch).__name__)
-            )
+        raise TypeError(
+            "Expected %s, got %s of type '%s' instead."
+            % (dtype.name, repr(mismatch), type(mismatch).__name__)
+        )
 
 
 # @tf_export("make_tensor_proto")

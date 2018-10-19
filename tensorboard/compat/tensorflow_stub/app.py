@@ -21,7 +21,7 @@ from __future__ import print_function
 import errno as _errno
 import sys as _sys
 
-from . import flags, tf_export
+from . import flags
 
 
 def _usage(shorthelp):

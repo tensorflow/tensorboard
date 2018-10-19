@@ -14,7 +14,7 @@
 
 """Compat module.
 
-Provides a compat later for TensorFlow methods so we can build without
+Provides a compat layer for TensorFlow methods so we can build without
 TensorFlow in some cases.
 """
 
@@ -32,14 +32,5 @@ except ImportError:
   except ImportError:
     USING_TF = False
 
-if USING_TF:
-  from tensorflow.python import debug as tf_debug  # noqa
-  from tensorflow.python.debug.cli import command_parser  # noqa
-  from tensorflow.python.debug.lib import debug_data  # noqa
-  from tensorflow.python.debug.lib import debug_graphs  # noqa
-else:
+if not USING_TF:
   from . import tensorflow_stub as tf  # noqa
-  from .tensorflow_stub import debug_graphs as tf_debug  # noqa
-  from .tensorflow_stub import command_parser  # noqa
-  from .tensorflow_stub import debug_data  # noqa
-  from .tensorflow_stub import debug_graphs  # noqa

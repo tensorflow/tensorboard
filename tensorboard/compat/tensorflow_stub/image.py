@@ -20,18 +20,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import binascii
-import collections
-import glob
-import os
-import shutil
-import six
-import uuid
-
 import numpy as np
 import scipy as sp
-
-from . import compat, errors
 
 
 class ResizeImagesResponse(object):

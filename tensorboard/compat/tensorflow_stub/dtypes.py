@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import numpy as np
 
-from . import pywrap_tensorflow, tf_export
+from . import pywrap_tensorflow
 from tensorboard.compat.proto import types_pb2
 
 _np_bfloat16 = pywrap_tensorflow.TF_bfloat16_type()

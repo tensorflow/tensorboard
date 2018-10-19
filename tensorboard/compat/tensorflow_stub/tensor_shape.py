@@ -17,7 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from . import compat, dtypes, tf_export
+from . import compat, dtypes
 from tensorboard.compat.proto import tensor_shape_pb2
 
 

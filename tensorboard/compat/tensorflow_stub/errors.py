@@ -21,7 +21,7 @@ from __future__ import print_function
 import traceback
 import warnings
 
-from . import error_codes, tf_export
+from . import error_codes
 
 
 # @tf_export("OpError", "errors.OpError")

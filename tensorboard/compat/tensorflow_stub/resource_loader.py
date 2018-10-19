@@ -17,11 +17,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import inspect as _inspect
 import os as _os
 import sys as _sys
-
-from . import tf_inspect as _inspect
-from . import tf_export
 
 
 # @tf_export('resource_loader.load_resource')
