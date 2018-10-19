@@ -1,0 +1,5 @@
+{
+  "data_location": "demo_dir",
+  "mode": "logdir",
+  "window_title": "TensorBoard demo"
+}

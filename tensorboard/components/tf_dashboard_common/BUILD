@@ -11,6 +11,8 @@ tf_web_library(
         "array-update-helper.html",
         "array-update-helper.ts",
         "dashboard-style.html",
+        "data-loader-behavior.html",
+        "data-loader-behavior.ts",
         "run-color-style.html",
         "scrollbar-style.html",
         "tensorboard-color.html",

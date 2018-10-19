@@ -55,6 +55,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   examples = []
   updated_example_indices = set()
   sprite = None
+  example_class = tf.train.Example
 
   # The standard name for encoded image features in TensorFlow.
   image_feature_name = 'image/encoded'
@@ -106,10 +107,12 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   def generate_sprite(self, example_strings):
     # Generate a sprite image for the examples if the examples contain the
     # standard encoded image feature.
+    feature_list = (self.examples[0].features.feature
+        if self.example_class == tf.train.Example
+        else self.examples[0].context.feature)
     self.sprite = (
         self.create_sprite_image(example_strings)
-        if (len(self.examples) and
-            self.image_feature_name in self.examples[0].features.feature) else
+        if (len(self.examples) and self.image_feature_name in feature_list) else
         None)
 
   @wrappers.Request.application
@@ -120,20 +123,23 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       request: A request that should contain 'examples_path' and 'max_examples'.
 
     Returns:
-      JSON of up to max_examlpes of the tf.train.Examples in the path.
+      JSON of up to max_examlpes of the examples in the path.
     """
     examples_count = int(request.args.get('max_examples'))
     examples_path = request.args.get('examples_path')
     sampling_odds = float(request.args.get('sampling_odds'))
+    self.example_class = (tf.train.SequenceExample
+        if request.args.get('sequence_examples') == 'true'
+        else tf.train.Example)
     try:
       platform_utils.throw_if_file_access_not_allowed(examples_path,
                                                       self._logdir,
                                                       self._has_auth_group)
       example_strings = platform_utils.example_protos_from_path(
           examples_path, examples_count, parse_examples=False,
-          sampling_odds=sampling_odds)
+          sampling_odds=sampling_odds, example_class=self.example_class)
       self.examples = [
-          tf.train.Example.FromString(ex) for ex in example_strings]
+          self.example_class.FromString(ex) for ex in example_strings]
       self.generate_sprite(example_strings)
       json_examples = [
           json_format.MessageToJson(example) for example in self.examples
@@ -153,7 +159,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _update_example(self, request):
-    """Updates the specified tf.train.Example.
+    """Updates the specified example.
 
     Args:
       request: A request that should contain 'index' and 'example'.
@@ -169,7 +175,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
                                'application/json', code=400)
-    new_example = tf.train.Example()
+    new_example = self.example_class()
     json_format.Parse(example_json, new_example)
     self.examples[index] = new_example
     self.updated_example_indices.add(index)
@@ -178,7 +184,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _duplicate_example(self, request):
-    """Duplicates the specified tf.train.Example.
+    """Duplicates the specified example.
 
     Args:
       request: A request that should contain 'index'.
@@ -190,7 +196,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
                                'application/json', code=400)
-    new_example = tf.train.Example()
+    new_example = self.example_class()
     new_example.CopyFrom(self.examples[index])
     self.examples.append(new_example)
     self.updated_example_indices.add(len(self.examples) - 1)
@@ -199,7 +205,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _delete_example(self, request):
-    """Deletes the specified tf.train.Example.
+    """Deletes the specified example.
 
     Args:
       request: A request that should contain 'index'.

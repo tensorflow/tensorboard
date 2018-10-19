@@ -81,6 +81,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
                           tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                           request-manager="[[_requestManager]]"
                         ></tf-audio-loader>
+                      </template>
                     </div>
                   </template>
                 </template>
@@ -99,8 +100,6 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
     </style>
   </template>
   <script>
-    "use strict";
-
 
     Polymer({
       is: 'tf-audio-dashboard',

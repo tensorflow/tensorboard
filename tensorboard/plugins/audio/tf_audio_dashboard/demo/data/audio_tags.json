@@ -1,0 +1,16 @@
+{
+  "run1": {
+    "foo/sine": {
+      "description": "",
+      "displayName": "foo_sine",
+      "samples": 1
+    }
+  },
+  "run2": {
+    "bar/square": {
+      "description": "",
+      "displayName": "bar_square",
+      "samples": 1
+    }
+  }
+}

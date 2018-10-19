@@ -368,9 +368,9 @@ Polymer({
   /**
    * Re-renders the chart. Useful if e.g. the container size changed.
    */
-  redraw: function(clearCache: boolean) {
+  redraw: function() {
     if (this._chart) {
-      this._chart.redraw(clearCache);
+      this._chart.redraw();
     }
   },
 

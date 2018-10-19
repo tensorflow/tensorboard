@@ -160,6 +160,14 @@ limitations under the License.
       },
 
       /**
+       * A map of stamped child components.
+       */
+      _renderedTemplateInst: {
+        type: Object,
+        value: () => new Map(),
+      },
+
+      /**
        * When item is removed, it is placed in a cache and the oldest item gets
        * removed when LRU grows more than size of the 2x_limit.
        */
@@ -252,6 +260,11 @@ limitations under the License.
     ],
 
     ready() {
+      // Template instance props that should be excluded from forwarding
+     this._instanceProps = {
+       [this.as]: true,
+     };
+
       this.templatize(this.$.template.querySelector('template'));
     },
 
@@ -288,46 +301,67 @@ limitations under the License.
 
     _updateDom(event) {
       if (!this._bootstrapped) return;
-      if (event.path !== '_renderedItems.splices') return;
-      event.value.indexSplices.forEach(splice => {
-        const {index, addedCount, object, removed} = splice;
-        removed.forEach(item => {
-          this._removeItem(item, this.$.items.children[index]);
+      // These are uninteresting.
+      if (event.path == '_renderedItems' ||
+          event.path == '_renderedItems.length') {
+        return;
+      }
+
+      if (event.path === '_renderedItems.splices') {
+        event.value.indexSplices.forEach(splice => {
+          const {index, addedCount, object, removed} = splice;
+          removed.forEach(item => {
+            this._removeItem(item, this.$.items.children[index]);
+          });
+          object.slice(index, index + addedCount)
+              .forEach((item, ind) => this._insertItem(item, index + ind));
+          this._trimCache();
         });
-        object.slice(index, index + addedCount)
-            .forEach((item, ind) => this._insertItem(item, index + ind));
-        this._trimCache();
-      });
+      } else {
+        // Update the stamped and mounted DOM model by notifying.
+        const key = this.getItemKey(event.value);
+        if (this._renderedTemplateInst.has(key)) {
+          this._renderedTemplateInst.get(key).notifyPath(
+              this.as,
+              event.value,
+              true /* fromAbove */);
+        } else {
+          console.warn(`Expected '${key}' to exist in the DOM but ` +
+              `could not find one.`);
+        }
+      }
     },
 
     _trimCache() {
       while (this._lruCachedItems.size > this._limit * 2) {
         const [firstKey] = this._lruCachedItems.keys();
         this._lruCachedItems.delete(firstKey);
+        this._renderedTemplateInst.delete(firstKey);
       }
     },
 
     _removeItem(item, node) {
-      node.parentNode.removeChild(node);
+      Polymer.dom(node.parentNode).removeChild(node);
       this._lruCachedItems.set(this.getItemKey(item), node);
     },
 
     _insertItem(item, atIndex) {
-      let el;
+      let fragOrEl;
       const key = this.getItemKey(item);
       if (this._lruCachedItems.has(key)) {
-        el = this._lruCachedItems.get(key);
+        fragOrEl = this._lruCachedItems.get(key);
         this._lruCachedItems.delete(key);
       } else {
         const inst = this.stamp({[this.as]: item});
-        el = inst.root;
+        fragOrEl = inst.root;
+        this._renderedTemplateInst.set(key, inst);
       }
 
       if (this.$.items.children[atIndex]) {
         Polymer.dom(this.$.items)
-            .insertBefore(el, this.$.items.children[atIndex]);
+            .insertBefore(fragOrEl, this.$.items.children[atIndex]);
       } else {
-        Polymer.dom(this.$.items).appendChild(el);
+        Polymer.dom(this.$.items).appendChild(fragOrEl);
       }
     },
 
@@ -422,6 +456,27 @@ limitations under the License.
         pageInput.value = newValue;
       }
     },
+
+    // Implements extension point from Templatizer.
+    // Called as side-effect of a host path change, responsible for notifying
+    // parent path change on each inst. Note that changes for props defined on
+    // `this._instanceProps` are omitted from forwarding.
+    _forwardParentProp(prop, value) {
+      this._renderedTemplateInst.forEach(inst => {
+        inst.notifyPath(prop, value, true /* fromAbove */);
+      });
+    },
+
+    // Implements extension point from Templatizer.
+    // Called as side-effect of a host path change, responsible for notifying
+    // parent path change on each inst. Note that changes for props defined on
+    // `this._instanceProps` are omitted from forwarding.
+    _forwardParentPath(path, value) {
+      this._renderedTemplateInst.forEach(inst => {
+        inst.notifyPath(path, value, true /* fromAbove */);
+      });
+    },
+
   });
   </script>
 </dom-module>

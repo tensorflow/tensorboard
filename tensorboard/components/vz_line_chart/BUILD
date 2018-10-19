@@ -37,6 +37,16 @@ tf_web_library(
     ],
 )
 
+tensorboard_webcomponent_library(
+    name = "dragZoomInteraction_legacy",
+    srcs = [":dragZoomInteraction"],
+    visibility = ["//visibility:public"],
+    destdir = "vz-line-chart",
+    deps = [
+        "//tensorboard/components/tf_imports_google:lib",
+    ],
+)
+
 tf_web_library(
     name = "demo",
     srcs = ["index.html"],
@@ -51,11 +61,11 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":vz_line_chart"],
-    visibility = ["//learning/vis/vz_elements/catalog:__pkg__"],
+    visibility = ["//visibility:public"],
     destdir = "vz-line-chart",
     deps = [
+        ":dragZoomInteraction_legacy",
         "//tensorboard/components/tf_imports_google:lib",
-        "//tensorboard/components/vz_sorting:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

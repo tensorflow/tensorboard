@@ -14,59 +14,123 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_paginated_view {
 
+const {expect} = chai;
+
 declare function fixture(id: string): void;
+type Item = {
+  id: String,
+  content: String,
+};
+
+function createItems(num: Number): Item[] {
+  return Array.from(Array(num))
+      .map((_, i) => ({id: `id${i}`, content: `content_${i}`}));
+}
+function flushP(): Promise<void> {
+  return new Promise(resolve => window.flush(resolve));
+}
+function flushAnimationFrameP(): Promise<void> {
+  return new Promise(resolve => window.animationFrameFlush(resolve));
+}
+function flushAllP(): Promise<[void, void]> {
+  return Promise.all([flushP(), flushAnimationFrameP()]);
+}
 
 describe('tf-paginated-view tests', () => {
-  window.HTMLImports.whenReady(() => {
-    let view: any;
-    beforeEach(() => {
-      view = fixture('paginatedViewFixture');
-      view.limit = 5;
-      view.items = _.range(13);
-    });
+  let view: any;
 
-    it('renders its subcomponents', () => {
-      const child = view.querySelector('#child');
-      chai.assert.isNotNull(child);
-      chai.assert.equal(child.innerHTML, 'Content within the paginated view.');
-    });
+  async function goNext() {
+    view.querySelector('.big-page-buttons paper-button:last-of-type').click();
+    await flushAllP();
+  }
 
-    it('emits a list of pages', () => {
-      chai.assert.deepEqual(view.pages, [
-        {active: true, items: [0, 1, 2, 3, 4]},
-        {active: false, items: [5, 6, 7, 8, 9]},
-        {active: false, items: [10, 11, 12]},
-      ]);
-    });
+  beforeEach(async () => {
+    view = fixture('paginatedViewFixture');
+    view._limit = 2;
+    view.getItemKey = ({id}) => id;
+    view.items = createItems(5);
+    view.randomNumber = 42;
 
-    it('changes its pages when the items change', () => {
-      view.items = view.items.slice().reverse();
-      chai.assert.deepEqual(view.pages, [
-        {active: true, items: [12, 11, 10, 9, 8]},
-        {active: false, items: [7, 6, 5, 4, 3]},
-        {active: false, items: [2, 1, 0]},
-      ]);
-    });
-
-    it('handles shrinking the number of pages', () => {
-      view.items = _.range(7).map(x => 10 * x);
-      chai.assert.deepEqual(view.pages, [
-        {active: true, items: [0, 10, 20, 30, 40]},
-        {active: false, items: [50, 60]},
-      ]);
-    });
-
-    it('handles enlarging the number of pages', () => {
-      view.items = _.range(22).map(x => 10 * x);
-      chai.assert.deepEqual(view.pages, [
-        {active: true, items: [0, 10, 20, 30, 40]},
-        {active: false, items: [50, 60, 70, 80, 90]},
-        {active: false, items: [100, 110, 120, 130, 140]},
-        {active: false, items: [150, 160, 170, 180, 190]},
-        {active: false, items: [200, 210]},
-      ]);
-    });
+    // allow dom-if to be flushed.
+    await flushAllP();
   });
+
+  it('renders a page', () => {
+    expect(view.querySelector('#id0')).to.be.not.null;
+    expect(view.querySelector('#id1')).to.be.not.null;
+
+    // 2-4 should be in another page.
+    expect(view.querySelector('#id2')).to.be.null;
+  });
+
+  it('responds to ancestor prop change that is bound on template', () => {
+    expect(view.querySelector('#id0').getAttribute('number')).to.equal('42');
+
+    view.randomNumber = 7;
+    expect(view.querySelector('#id0').getAttribute('number')).to.equal('7');
+  });
+
+  it('navigates to next page when clicked on a button', async () => {
+    // Sanity check
+    expect(view.querySelector('#id2')).to.be.null;
+    expect(view.querySelector('#id4')).to.be.null;
+    expect(view.querySelector('paper-input')).to.have.property('value', '1');
+
+    await goNext();
+
+    expect(view.querySelector('#id1')).to.be.null;
+    expect(view.querySelector('#id2')).to.be.not.null;
+    expect(view.querySelector('#id3')).to.be.not.null;
+    expect(view.querySelector('#id4')).to.be.null;
+    expect(view.querySelector('paper-input')).to.have.property('value', '2');
+
+    await goNext();
+
+    expect(view.querySelector('#id3')).to.be.null;
+    expect(view.querySelector('#id4')).to.be.not.null;
+    expect(view.querySelector('paper-input')).to.have.property('value', '3');
+  });
+
+  it('reacts to limit change', () => {
+    // 2-4 should be in another page, initially.
+    expect(view.querySelector('#id2')).to.be.null;
+
+    view._limit = 4;
+    expect(view.querySelector('#id2')).to.be.not.null;
+    expect(view.querySelector('#id3')).to.be.not.null;
+    expect(view.querySelector('#id4')).to.be.null;
+  });
+
+  it('reacts to items update', () => {
+    view.items = view.items.slice().reverse();
+    expect(view.querySelector('#id4')).to.be.not.null;
+    expect(view.querySelector('#id3')).to.be.not.null;
+  });
+
+  it('handles shrinking the number of pages', async () => {
+    view.items = createItems(1);
+    await flushAllP();
+
+    expect(view.querySelector('#id0')).to.be.not.null;
+    expect(view.querySelector('#id1')).to.be.null;
+    expect(_getPageCount()).to.equal(1);
+  });
+
+  it('handles growing the number of pages', async () => {
+    expect(_getPageCount()).to.equal(3);
+
+    view.items = createItems(10);
+
+    await flushAllP();
+    expect(_getPageCount()).to.equal(5);
+  });
+
+  function _getPageCount(): number {
+    // str = `Page <some gibbersh from paper-input> of [pageCount]`
+    const str = view.querySelector('#controls-container').innerText.trim();
+    return parseInt(str.match(/\d+$/)[0], 10);
+  }
+
 });
 
 }  // namespace tf_paginated_view

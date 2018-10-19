@@ -73,7 +73,7 @@ limitations under the License.
       .model-type-label {
         padding-top: 10px;
       }
-      .multi-class-checkbox {
+      .checkbox {
         margin-top: 30px;
         margin-left: 10px;
       }
@@ -105,9 +105,14 @@ limitations under the License.
       <paper-radio-button name="classification">Classification</paper-radio-button>
       <paper-radio-button name="regression">Regression</paper-radio-button>
     </paper-radio-group>
-    <paper-input always-float-label label="Path to examples"
-                 value="{{examplesPath}}">
-    </paper-input>
+    <div class="flex-holder">
+      <paper-input always-float-label label="Path to examples"
+                  value="{{examplesPath}}" class="flex-grow">
+      </paper-input>
+      <paper-checkbox checked="{{sequenceExamples}}" class="checkbox">
+        SequenceExamples
+      </paper-checkbox>
+    </div>
     <div class="flex-holder">
       <paper-input always-float-label type="number" class="input-in-row flex-grow"
                    label="Maximum number of examples to load"
@@ -141,7 +146,7 @@ limitations under the License.
       </paper-input>
       <paper-checkbox disabled="[[shouldDisableClassificationControls_(modelType)]]"
                       checked="{{multiClass}}"
-                      class="multi-class-checkbox">
+                      class="checkbox">
         Multi-class classification model
       </paper-checkbox>
     </div>
@@ -221,8 +226,17 @@ limitations under the License.
         },
         multiClass: {
           type: Boolean,
-          value: false,
           notify: true,
+          value: tf_storage.getBooleanInitializer('multiClass',
+              {defaultValue: false}),
+          observer: 'multiClassChanged_',
+        },
+        sequenceExamples: {
+          type: Boolean,
+          notify: true,
+          value: tf_storage.getBooleanInitializer('sequenceExamples',
+              {defaultValue: false}),
+          observer: 'sequenceExamplesChanged_',
         },
         maxClassesToDisplay: {
           type: Number,
@@ -269,6 +283,12 @@ limitations under the License.
 
       samplingOddsChanged_: tf_storage.getStringObserver(
         'samplingOdds', {defaultValue: defaultSamplingOdds}),
+
+      multiClassChanged_: tf_storage.getBooleanObserver(
+        'multiClass', {defaultValue: false}),
+
+      sequenceExamplesChanged_: tf_storage.getBooleanObserver(
+        'sequenceExamples', {defaultValue: false}),
 
       shouldDisableClassificationControls_: function(modelType) {
         return modelType == 'regression';

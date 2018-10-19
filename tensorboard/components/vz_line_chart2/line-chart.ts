@@ -93,6 +93,9 @@ export class LineChart {
   private tooltipSortingMethod: string;
   private _ignoreYOutliers: boolean;
   private _lastMousePosition: Plottable.Point;
+  private _lastDrawBBox: DOMRect;
+  private _redrawRaf: number;
+  private _invalidateLayoutRaf: number;
 
   // An optional list of 2 numbers.
   private _defaultXRange: number[];
@@ -781,6 +784,7 @@ export class LineChart {
    */
   public setSeriesData(name: string, data: vz_chart_helpers.ScalarDatum[]) {
     this.getDataset(name).data(data);
+    this.measureBBoxAndMaybeInvalidateLayoutInRaf();
   }
 
   /**
@@ -844,17 +848,45 @@ export class LineChart {
       // Start with that range.
       this.resetYDomain();
     }
+
+    this.measureBBoxAndMaybeInvalidateLayoutInRaf();
   }
 
-  public redraw(clearCache: boolean = false) {
-    if (clearCache) {
-      this.outer.invalidateCache();
+  public redraw() {
+    window.cancelAnimationFrame(this._redrawRaf);
+    this._redrawRaf = window.requestAnimationFrame(() => {
+      this.measureBBoxAndMaybeInvalidateLayout();
+      this.outer.redraw();
+    });
+  }
+
+  private measureBBoxAndMaybeInvalidateLayoutInRaf() {
+    window.cancelAnimationFrame(this._invalidateLayoutRaf);
+    this._invalidateLayoutRaf = window.requestAnimationFrame(() => {
+      this.measureBBoxAndMaybeInvalidateLayout();
+    });
+  }
+
+  /**
+   * Measures bounding box of the anchor node and determines whether the layout
+   * needs to be re-done with measurement cache invalidated. Plottable improved
+   * performance of rendering by caching expensive DOM measurement but this
+   * cache can be poisoned in case the anchor node is in a wrong state -- namely
+   * `display: none` where all dimensions are 0.
+   */
+  private measureBBoxAndMaybeInvalidateLayout() {
+    if (this._lastDrawBBox) {
+      const {width: prevWidth} = this._lastDrawBBox;
+      const {width} = this.targetSVG.node().getBoundingClientRect();
+      if (prevWidth == 0 && prevWidth < width) this.outer.invalidateCache();
     }
-    this.outer.redraw();
+    this._lastDrawBBox = this.targetSVG.node().getBoundingClientRect();
   }
 
   public destroy() {
     // Destroying outer destroys all subcomponents recursively.
+    window.cancelAnimationFrame(this._redrawRaf);
+    window.cancelAnimationFrame(this._invalidateLayoutRaf);
     if (this.outer) this.outer.destroy();
   }
 

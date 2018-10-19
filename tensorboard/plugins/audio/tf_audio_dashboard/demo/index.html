@@ -17,15 +17,18 @@ limitations under the License.
 -->
 
 <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+
 <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
 <link rel="import" href="../../paper-styles/typography.html">
+<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-audio-dashboard.html">
 
 <title>Audio Dashboard Demo</title>
 <style>
   #container {
-    height: 300px;
+    display: block;
+    height: 85vh;
     width: 100%;
   }
 
@@ -43,12 +46,14 @@ limitations under the License.
         <tf-audio-dashboard id="demo"></tf-audio-dashboard>
       </template>
       <script>
-
         Polymer({
-          is: "audio-dash-demo",
+          is: 'audio-dash-demo',
           created: function() {
-            var router = tf_backend.createRouter("/data", true);
+            var router = tf_backend.createRouter('/data', true);
             tf_backend.setRouter(router);
+            tf_backend.environmentStore.refresh();
+            tf_backend.runsStore.refresh();
+            tf_backend.experimentsStore.refresh();
           },
         });
       </script>
