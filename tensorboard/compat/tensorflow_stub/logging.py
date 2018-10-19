@@ -55,10 +55,10 @@ def _get_logger():
         if _logger:
             return _logger
 
-        # Scope the TensorFlow logger to not conflict with users' loggers.
-        logger = _logging.getLogger("tensorflow")
+        # Scope the TensorBoard logger to not conflict with users' loggers.
+        logger = _logging.getLogger("tensorboard")
 
-        # Don't further configure the TensorFlow logger if the root logger is
+        # Don't further configure the logger if the root logger is
         # already configured. This prevents double logging in those cases.
         if not _logging.getLogger().handlers:
             # Determine whether we are in an interactive environment

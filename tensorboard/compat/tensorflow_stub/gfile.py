@@ -38,11 +38,40 @@ _DEFAULT_BLOCK_SIZE = 16 * 1024 * 1024
 
 
 class FileIO(object):
-    # Some of the methods in this class used tf.pywrap_tensorflow. Due to the
-    # fact that this class isn't used in Tensorboard and the difficulty in
-    # reimplementing those parts of pywrap_tensorflow in pure Python, this is
-    # stubbed.
-    pass
+    # Only methods needed for TensorBoard are implemented.
+
+    def __init__(self, filename, mode):
+        self.filename = compat.as_bytes(filename)
+        self.mode = compat.as_bytes(mode)
+        self.f = open(self.filename, self.mode)
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.f.close()
+
+    def __iter__(self):
+        return self.f
+
+    def size(self):
+        return os.stat(self.filename).st_size
+
+    def read(self):
+        return self.f.read()
+
+    def close(self):
+        self.f.close()
+
+
+class GFile(FileIO):
+    # Same interface as FileIO but through GFile class
+
+    def __init__(self, filename, mode):
+        super(GFile, self).__init__(filename, mode)
 
 
 # @tf_export("gfile.Exists")
