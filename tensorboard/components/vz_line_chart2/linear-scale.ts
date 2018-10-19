@@ -29,6 +29,7 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
   }
 
   /**
+   * TODO(nickfelt): Examine whether we truly require `c`.
    * Adds some padding to a given domain. Specifically, it:
    * - returns about [-0.1a - c, 2.1a + c] when a = b and a >= 0.
    * - returns about [-2.1|a| - c, -0.1|a| + c] when a = b and a < 0.
