@@ -23,8 +23,9 @@ from __future__ import division
 from __future__ import print_function
 
 try:
-  from . import notf
-  USING_TF = notf.use_tf()
+  # Check if non-TensorFlow forcoed by build rules based on this import
+  from . import notf  # noqa
+  USING_TF = False
 except ImportError:
   try:
     import tensorflow as tf
