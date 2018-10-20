@@ -1,3 +1,30 @@
+# Release 1.12.0
+
+The 1.12 minor series tracks TensorFlow 1.12.
+
+## Features
+- New download-as-SVG option for scalar dashboard charts (#1446)
+- Image dashboard should now detect and render SVG images (#1440)
+- What-If Tool example viewer/loader improvements:
+  - Support for sampling examples to load (#1504)
+  - Support for viewing SequenceExamples (#1513)
+  - Improvements to saliency viewing/sorting (#1472)
+- Profile tool shows per-program breakdown, idle time, and ops left out (#1470)
+
+## Bug fixes
+- #1463 - What-If tool now handles classes with blank labels (PR #1471)
+- #1468 - Reduce clipping in graph plugin sidebar
+- #1475 - Restore tag filter persistence to URL param and across dashboards
+- #1477 - Fix bug rendering TPU profile dashboard overview page
+- #1480 - Fix projector hanging due to infinite loop (PR #1481)
+- #1491 - Restore spinner on line charts when loading data
+- #1499 - Fix stale/incorrect line charts when filtering by tag (PR #1500)
+- #1505 - Fix 404 console errors in Firefox - thanks @wdirons
+- #1506 - Fix --purge_orphaned_data to allow passing false (PR #1511)
+- #1508 - Make custom scalars chart ignore outliers functionality work
+- #1524 - Preserve line chart zoom level when data refreshes
+
+
 # Release 1.11.0
 
 The 1.11 minor series tracks TensorFlow 1.11.
