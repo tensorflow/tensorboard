@@ -833,7 +833,9 @@ limitations under the License.
           multi-class="{{multiClass}}"
           sampling-odds="{{samplingOdds}}"
           sequence-examples="{{sequenceExamples}}"
-          max-classes-to-display="{{maxInferenceEntriesPerRun}}">
+          max-classes-to-display="{{maxInferenceEntriesPerRun}}"
+          use-predict-api="{{usePredictApi}}"
+          predict-output-tensor="{{predictOutputTensor}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
         <paper-button on-click="getExamplesAndCloseSettings_" class="main-button"
@@ -1679,6 +1681,14 @@ limitations under the License.
         // Sampling odds (1: load all examples, .2: sample 20% of examples)
         samplingOdds: {
           type: Number,
+        },
+        // Whether to use the TF Serving Predict API or not.
+        usePredictApi: {
+          type: Boolean,
+        },
+        // Name of the output tensor to parse when using the Predict API.
+        predictOutputTensor: {
+          type: String,
         },
         // Precision on charts for performance measuring.
         axisPrecision: {
@@ -3016,7 +3026,9 @@ limitations under the License.
                              'model_type': this.modelType,
                              'model_version': this.modelVersion,
                              'model_signature': this.modelSignature,
-                             'label_vocab_path': this.labelVocabPath};
+                             'label_vocab_path': this.labelVocabPath,
+                             'use_predict': this.usePredictApi,
+                             'predict_output_tensor': this.predictOutputTensor};
         this.$.spinner.hidden = false;
         if (!this.local) {
           const url = this.makeUrl_('/data/plugin/whatif/infer',
@@ -3212,7 +3224,7 @@ limitations under the License.
           }
           let v = this.dataPointValueFromFeature_(
             featureRoot.feature[fname], true);
-          if (v != null) {
+          if (v) {
             d[fname] = v;
           }
         }
@@ -3618,7 +3630,9 @@ limitations under the License.
           'x_min': xMin,
           'x_max': xMax,
           'feature_index_pattern': featureIndexPattern,
-          'example_index': this.selected[0]
+          'example_index': this.selected[0],
+          'use_predict': this.usePredictApi,
+          'predict_output_tensor': this.predictOutputTensor,
         };
 
         // Call into backend.

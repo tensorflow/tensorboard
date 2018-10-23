@@ -77,6 +77,14 @@ limitations under the License.
         margin-top: 30px;
         margin-left: 10px;
       }
+      .predict-checkbox {
+        margin-top: 43px;
+        margin-left: 10px;
+      }
+      .tensor-name-input {
+        margin-top: 9px;
+        margin-left: 10px;
+      }
       paper-input {
         --paper-input-container-focus-color: #f57c00;
       }
@@ -100,11 +108,23 @@ limitations under the License.
                   value="{{modelSignature}}" class="input-in-row">
       </paper-input>
     </div>
-    <div class="model-type-label">Model Type</div>
-    <paper-radio-group selected="{{modelType}}">
-      <paper-radio-button name="classification">Classification</paper-radio-button>
-      <paper-radio-button name="regression">Regression</paper-radio-button>
-    </paper-radio-group>
+    <div class="flex-holder">
+      <div>
+        <div class="model-type-label">Model Type</div>
+        <paper-radio-group selected="{{modelType}}">
+          <paper-radio-button name="classification">Classification</paper-radio-button>
+          <paper-radio-button name="regression">Regression</paper-radio-button>
+        </paper-radio-group>
+      </div>
+      <paper-checkbox checked="{{usePredictApi}}" class="predict-checkbox">
+        Uses Predict API
+      </paper-checkbox>
+      <paper-input always-float-label label="Output tensor name"
+                  placeholder="[[predictOutputTensor]]" value="{{predictOutputTensor}}"
+                  class="input-in-row tensor-name-input"
+                  disabled="[[shouldDisablePredictTensorControls_(usePredictApi)]]">
+      </paper-input>
+    </div>
     <div class="flex-holder">
       <paper-input always-float-label label="Path to examples"
                   value="{{examplesPath}}" class="flex-grow">
@@ -163,6 +183,7 @@ limitations under the License.
     const defaultLabelVocabPath = '';
     const defaultMaxClassesToDisplay = '5';
     const defaultSamplingOdds = '1';
+    const defaultPredictOutputTensor = 'probabilities'
 
     Polymer({
       is: "tf-inference-panel",
@@ -252,6 +273,20 @@ limitations under the License.
           observer: 'samplingOddsChanged_',
           notify: true,
         },
+        usePredictApi: {
+          type: Boolean,
+          notify: true,
+          value: tf_storage.getBooleanInitializer('usePredictApi',
+              {defaultValue: false}),
+          observer: 'usePredictApiChanged_',
+        },
+        predictOutputTensor: {
+          type: String,
+          value: tf_storage.getStringInitializer(
+            'predictOutputTensor', {defaultValue: defaultPredictOutputTensor}),
+          observer: 'predictOutputTensorChanged_',
+          notify: true,
+        },
       },
 
       examplesPathChanged_: tf_storage.getStringObserver(
@@ -290,12 +325,22 @@ limitations under the License.
       sequenceExamplesChanged_: tf_storage.getBooleanObserver(
         'sequenceExamples', {defaultValue: false}),
 
+      usePredictApiChanged_: tf_storage.getBooleanObserver(
+        'usePredictApi', {defaultValue: false}),
+
+      predictOutputTensorChanged_: tf_storage.getStringObserver(
+        'predictOutputTensor', {defaultValue: defaultPredictOutputTensor}),
+
       shouldDisableClassificationControls_: function(modelType) {
         return modelType == 'regression';
       },
 
       shouldDisableMultiClassControls_: function(multiClass) {
         return !multiClass;
+      },
+
+      shouldDisablePredictTensorControls_: function(usePredictApi) {
+        return !usePredictApi;
       }
     });
 

@@ -21,8 +21,9 @@ from six.moves.urllib.parse import urlparse
 import tensorflow as tf
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
-
+from tensorflow.core.framework import types_pb2
 from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2
 from tensorflow_serving.apis import regression_pb2
 
@@ -141,7 +142,9 @@ def call_servo(examples, serving_bundle):
                                              parsed_url.port)
   stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
 
-  if serving_bundle.model_type == 'classification':
+  if serving_bundle.use_predict:
+    request = predict_pb2.PredictRequest()
+  elif serving_bundle.model_type == 'classification':
     request = classification_pb2.ClassificationRequest()
   else:
     request = regression_pb2.RegressionRequest()
@@ -150,9 +153,19 @@ def call_servo(examples, serving_bundle):
     request.model_spec.version.value = serving_bundle.model_version
   if serving_bundle.signature is not None:
     request.model_spec.signature_name = serving_bundle.signature
-  request.input.example_list.examples.extend(examples)
 
-  if serving_bundle.model_type == 'classification':
+  if serving_bundle.use_predict:
+    request.inputs['examples'].CopyFrom(
+        tf.make_tensor_proto(
+            values=[ex.SerializeToString() for ex in examples],
+            dtype=types_pb2.DT_STRING))
+  else:
+    request.input.example_list.examples.extend(examples)
+
+  if serving_bundle.use_predict:
+    return common_utils.convert_predict_response(
+      stub.Predict(request, 30.0), serving_bundle) # 30 secs timeout
+  elif serving_bundle.model_type == 'classification':
     return stub.Classify(request, 30.0)  # 30 secs timeout
   else:
     return stub.Regress(request, 30.0)  # 30 secs timeout
