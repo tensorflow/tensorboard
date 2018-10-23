@@ -34,6 +34,20 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 
 
+class FakeFlags(object):
+  def __init__(
+      self,
+      inspect,
+      logdir='',
+      event_file='',
+      db=''):
+    self.inspect = inspect
+    self.logdir = logdir
+    self.event_file = event_file
+    self.db = db
+    self.path_prefix = ''
+
+
 class CorePluginTest(tf.test.TestCase):
   _only_use_meta_graph = False  # Server data contains only a GraphDef
 
@@ -52,6 +66,19 @@ class CorePluginTest(tf.test.TestCase):
     routes = self.logdir_based_plugin.get_plugin_apps()
     self.assertIsInstance(routes['/data/logdir'], collections.Callable)
     self.assertIsInstance(routes['/data/runs'], collections.Callable)
+
+  def testFlag(self):
+    loader = core_plugin.CorePluginLoader()
+    loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp'))
+    loader.fix_flags(FakeFlags(inspect=True, event_file='/tmp/event.out'))
+
+    with self.assertRaises(ValueError):
+      loader.fix_flags(FakeFlags(inspect=True))
+    with self.assertRaises(ValueError):
+      loader.fix_flags(FakeFlags(inspect=True, db='sqlite:~/db.sqlite'))
+    with self.assertRaises(ValueError):
+      loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp',
+                                 event_file='/tmp/event.out'))
 
   def testIndex_returnsActualHtml(self):
     """Test the format of the /data/runs endpoint."""
