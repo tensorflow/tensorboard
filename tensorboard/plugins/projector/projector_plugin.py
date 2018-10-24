@@ -30,7 +30,8 @@ from werkzeug import wrappers
 from google.protobuf import json_format
 from google.protobuf import text_format
 from tensorboard.backend.http_util import Respond
-from tensorboard.compat import tf, USING_TF
+from tensorboard.compat import tf
+from tensorboard.compat import USING_TF
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 

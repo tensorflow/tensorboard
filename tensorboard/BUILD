@@ -23,9 +23,9 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/compat:tensorflow",
         ":default",
         ":program",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -33,12 +33,24 @@ py_binary(
 py_binary(
     name = "tensorboard-notf",
     srcs = ["main_notf.py"],
+    data = ["webfiles.zip"],
     main = "main_notf.py",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:no_tensorflow",
-        ":default_notf",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
+        "//tensorboard/plugins/distribution:distributions_plugin",
+        "//tensorboard/plugins/graph:graphs_plugin",
+        "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/image:images_plugin",
+        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
+        "//tensorboard/plugins/projector:projector_plugin",
+        "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/plugins/text:text_plugin",
         ":program",
     ],
 )
@@ -114,29 +126,6 @@ py_library(
 )
 
 py_library(
-    name = "default_notf",
-    srcs = ["default_notf.py"],
-    data = ["webfiles.zip"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/compat:no_tensorflow",
-        "//tensorboard/plugins:base_plugin",
-        "//tensorboard/plugins/audio:audio_plugin",
-        "//tensorboard/plugins/core:core_plugin",
-        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
-        "//tensorboard/plugins/distribution:distributions_plugin",
-        "//tensorboard/plugins/graph:graphs_plugin",
-        "//tensorboard/plugins/histogram:histograms_plugin",
-        "//tensorboard/plugins/image:images_plugin",
-        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/projector:projector_plugin",
-        "//tensorboard/plugins/scalar:scalars_plugin",
-        "//tensorboard/plugins/text:text_plugin",
-    ],
-)
-
-py_library(
     name = "version",
     srcs = ["version.py"],
     srcs_version = "PY2AND3",
@@ -182,6 +171,14 @@ py_library(
     # This is a dummy rule used as a sqlite3 dependency in open-source.
     # We expect sqlite3 to already be present, as it is part of the standard
     # library.
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_tensorflow_installed",
+    # This is a dummy rule used as a TensorFlow dependency in open-source.
+    # We expect TensorFlow to already be installed on the system, e.g. via
+    # `pip install tensorflow`
     visibility = ["//visibility:public"],
 )
 

@@ -54,9 +54,6 @@ py_library(
     name = "reservoir",
     srcs = ["reservoir.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard:util",
-    ],
 )
 
 py_test(

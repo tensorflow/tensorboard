@@ -34,17 +34,75 @@ import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
+import logging
 import sys
 
-from tensorboard import default_notf
 from tensorboard import program
+from tensorboard.plugins import base_plugin
+from tensorboard.plugins.audio import audio_plugin
+from tensorboard.plugins.core import core_plugin
+from tensorboard.plugins.custom_scalar import custom_scalars_plugin
+from tensorboard.plugins.distribution import distributions_plugin
+from tensorboard.plugins.graph import graphs_plugin
+from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.image import images_plugin
+from tensorboard.plugins.pr_curve import pr_curves_plugin
+from tensorboard.plugins.projector import projector_plugin
+from tensorboard.plugins.scalar import scalars_plugin
+from tensorboard.plugins.text import text_plugin
+from tensorboard.compat import tf
+
+
+logger = logging.getLogger(__name__)
+
+_NOTF_PLUGINS = [
+    core_plugin.CorePluginLoader(),
+    scalars_plugin.ScalarsPlugin,
+    custom_scalars_plugin.CustomScalarsPlugin,
+    images_plugin.ImagesPlugin,
+    audio_plugin.AudioPlugin,
+    graphs_plugin.GraphsPlugin,
+    distributions_plugin.DistributionsPlugin,
+    histograms_plugin.HistogramsPlugin,
+    pr_curves_plugin.PrCurvesPlugin,
+    projector_plugin.ProjectorPlugin,
+    text_plugin.TextPlugin,
+]
+
+def get_notf_plugins():
+  """Returns a list specifying TensorBoard's default first-party plugins.
+
+  Plugins are specified in this list either via a TBLoader instance to load the
+  plugin, or the TBPlugin class itself which will be loaded using a BasicLoader.
+
+  This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+  :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
+  """
+  return _NOTF_PLUGINS[:]
+
+
+def get_assets_zip_provider():
+  """Opens stock TensorBoard web assets collection.
+
+  Returns:
+    Returns function that returns a newly opened file handle to zip file
+    containing static assets for stock TensorBoard, or None if webfiles.zip
+    could not be found. The value the callback returns must be closed. The
+    paths inside the zip file are considered absolute paths on the web server.
+  """
+  path = os.path.join(tf.resource_loader.get_data_files_path(), 'webfiles.zip')
+  if not os.path.exists(path):
+    logger.warning('webfiles.zip static assets not found: %s', path)
+    return None
+  return lambda: open(path, 'rb')
 
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
-  tensorboard = program.TensorBoard(default_notf.get_plugins(),
-                                    default_notf.get_assets_zip_provider())
+  tensorboard = program.TensorBoard(get_notf_plugins(),
+                                    get_assets_zip_provider())
   try:
     from absl import app
     # Import this to check that app.run() will accept the flags_parser argument.

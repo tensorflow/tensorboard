@@ -35,7 +35,7 @@ import time
 import numpy as np
 import six
 
-from tensorboard.compat import tf, USING_TF
+from tensorboard.compat import tf
 
 
 def setup_logging(streams=(sys.stderr,)):
@@ -426,10 +426,7 @@ class PersistentOpEvaluator(object):
         self.initialize_graph()
       # Don't reserve GPU because libpng can't run on GPU.
       config = tf.ConfigProto(device_count={'GPU': 0})
-      if USING_TF:
-          self._session = tf.Session(graph=graph, config=config)
-      else:
-          self._session = None
+      self._session = tf.Session(graph=graph, config=config)
 
   def initialize_graph(self):
     """Create the TensorFlow graph needed to compute this operation.
@@ -475,13 +472,9 @@ class _TensorFlowPngEncoder(PersistentOpEvaluator):
     self._encode_op = None
 
   def initialize_graph(self):
-    if USING_TF:
-      self._image_placeholder = tf.placeholder(
+    self._image_placeholder = tf.placeholder(
         dtype=tf.uint8, name='image_to_encode')
-      self._encode_op = tf.image.encode_png(self._image_placeholder)
-    else:
-      self._image_placeholder = None
-      self._encode_op = None
+    self._encode_op = tf.image.encode_png(self._image_placeholder)
 
   def run(self, image):  # pylint: disable=arguments-differ
     if not isinstance(image, np.ndarray):
@@ -514,19 +507,14 @@ class _TensorFlowWavEncoder(PersistentOpEvaluator):
     self._encode_op = None
 
   def initialize_graph(self):
-    if USING_TF:
-        self._audio_placeholder = tf.placeholder(
-            dtype=tf.float32, name='image_to_encode')
-        self._samples_per_second_placeholder = tf.placeholder(
-            dtype=tf.int32, name='samples_per_second')
-        self._encode_op = tf.contrib.ffmpeg.encode_audio(
-            self._audio_placeholder,
-            file_format='wav',
-            samples_per_second=self._samples_per_second_placeholder)
-    else:
-        self._audio_placeholder = None
-        self._samples_per_second_placeholder = None
-        self._encode_op = None
+    self._audio_placeholder = tf.placeholder(
+        dtype=tf.float32, name='image_to_encode')
+    self._samples_per_second_placeholder = tf.placeholder(
+        dtype=tf.int32, name='samples_per_second')
+    self._encode_op = tf.contrib.ffmpeg.encode_audio(
+        self._audio_placeholder,
+        file_format='wav',
+        samples_per_second=self._samples_per_second_placeholder)
 
   def run(self, audio, samples_per_second):  # pylint: disable=arguments-differ
     if not isinstance(audio, np.ndarray):

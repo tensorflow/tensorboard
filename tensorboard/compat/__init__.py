@@ -27,11 +27,8 @@ try:
   from . import notf  # noqa
   USING_TF = False
 except ImportError:
-  try:
-    import tensorflow as tf
-    USING_TF = True
-  except ImportError:
-    USING_TF = False
+  import tensorflow as tf
+  USING_TF = True
 
 if not USING_TF:
   from . import tensorflow_stub as tf  # noqa
