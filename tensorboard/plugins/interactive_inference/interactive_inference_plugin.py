@@ -268,7 +268,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       infer_json = json_format.MessageToJson(
           new_inferences, including_default_value_fields=True)
       infer_obj = json.loads(infer_json)
-      resp = {'indices': indices_to_infer, 'results': infer_obj}
+      resp = {'indices': indices_to_infer, 'results': [infer_obj]}
       self.updated_example_indices = set()
       return http_util.Respond(request, {'inferences': json.dumps(resp),
                                          'vocab': json.dumps(label_vocab)},
