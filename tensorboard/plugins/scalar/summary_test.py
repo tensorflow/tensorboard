@@ -77,6 +77,8 @@ class SummaryBaseTest(object):
     self.assertEqual(1.0, value)
 
   def test_string_value(self):
+    # Use str.* in regex because PY3 numpy refers to string arrays using
+    # length-dependent type names in the format "str%d" % (32 * len(str)).
     with six.assertRaisesRegex(self, Exception, r'Cast str.*float'):
       self.scalar('a', np.array("113"))
 
