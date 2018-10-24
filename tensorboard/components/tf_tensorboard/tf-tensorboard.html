@@ -59,7 +59,7 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header">
         <div id="toolbar-content" slot="top">
-          <div class="toolbar-title">[[brand]]</div>
+          <a class="toolbar-title" href="/">[[brand]]</a>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
               Loading active dashboards&hellip;
@@ -237,6 +237,8 @@ limitations under the License.
         letter-spacing: -0.025em;
         font-weight: 500;
         display: var(--tb-toolbar-title-display, block);
+        color: unset;
+        text-decoration: none;
       }
 
       .toolbar-message {
