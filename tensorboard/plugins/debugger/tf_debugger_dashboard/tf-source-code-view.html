@@ -222,7 +222,7 @@ limitations under the License.
         value: [],
       },
 
-      _filePathSelected: String,
+      _filePathSelected: Number,
 
       // Full paths to the source files.
       _fullFilePaths: {
@@ -310,7 +310,6 @@ limitations under the License.
         });
         this.set('_shortFilePaths', shortFilePaths);
         if (shortFilePaths.length > 0) {
-          this.set('_filePathSelected', null);
           this.set('_filePathSelected', 0);
         }
       });
@@ -324,9 +323,7 @@ limitations under the License.
     },
 
     _renderFile(selectedId) {
-      if (selectedId == null) {
-        return;
-      }
+      if (selectedId == null) return;
       const filePathSelected = this._shortFilePaths[selectedId].id;
       this._querySourceCodeEndPoint(
           {'mode': 'content', 'file_path': filePathSelected}).then(response => {
@@ -452,7 +449,7 @@ limitations under the License.
             const toggleNodesElement = self.$$('#source-line-node-toggle-' + lineno);
             if (toggleNodesElement.getAttribute('tapCallbackSet') == null) {
               toggleNodesElement.addEventListener('tap', () => {
-                self._toggleLineNodes(lineno);
+                self._toggleLineNodes(Number(lineno));
               });
               toggleNodesElement.setAttribute('tapCallbackSet', true);
             }
@@ -470,14 +467,16 @@ limitations under the License.
       });
     },
 
-    // Toggle the expand / collapse state of the nodes of a given source line.
-    // Args:
-    //   lineno: 1-based line number.
-    //   expansionState: (Optional) desired expansion state: a Boolean, `true`
-    //     for expanded and `false` for collapsed.
-    _toggleLineNodes(lineno, expansionState) {
+    /**
+     * Toggles the expand / collapse state of the nodes of a given source line.
+     * @param {number} lineno 1-based line number.
+     * @param {boolean=} expansionState desired expansion state: `true` for
+     *     expanded and `false` for collapsed. Default is false.
+     */
+    _toggleLineNodes(lineno, expansionState = false) {
       const nodesElement = this.$$('#source-line-nodes-' + lineno);
-      if (nodesElement.getAttribute('hidden') == null && expansionState !== true) {
+      if (nodesElement.getAttribute('hidden') == null &&
+          expansionState !== true) {
         nodesElement.setAttribute('hidden', true);
       } else {
         nodesElement.removeAttribute('hidden');

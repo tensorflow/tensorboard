@@ -302,8 +302,9 @@ by the operating system. (default: %(default)s)\
     parser.add_argument(
         '--purge_orphaned_data',
         metavar='BOOL',
-        type=bool,
-        nargs=1,
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
         default=True,
         help='''\
 Whether to purge data that may have been orphaned due to TensorBoard
@@ -339,6 +340,15 @@ read-only unless --db_import is also passed.\
 [experimental] enables DB read-and-import mode, which in combination with
 --logdir imports event files into a DB backend on the fly. The backing DB is
 temporary unless --db is also passed to specify a DB path to use.\
+''')
+
+    parser.add_argument(
+        '--db_import_use_op',
+        action='store_true',
+        help='''\
+[experimental] in combination with --db_import, if passed, use TensorFlow's
+import_event() op for importing event data, otherwise use TensorBoard's own
+sqlite ingestion logic.\
 ''')
 
     parser.add_argument(
@@ -404,6 +414,20 @@ routing of an elb when the website base_url is not available e.g.
 The max number of threads that TensorBoard can use to reload runs. Not
 relevant for db read-only mode. Each thread reloads one run at a time.
 (default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_task',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['auto', 'thread', 'process', 'blocking'],
+        help='''\
+[experimental] The mechanism to use for the background data reload task.
+The default "auto" option will conditionally use threads for legacy reloading
+and a child process for DB import reloading. The "process" option is only
+useful with DB import mode. The "blocking" option will block startup until
+reload finishes, and requires --load_interval=0. (default: %(default)s)\
 ''')
 
     parser.add_argument(

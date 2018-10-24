@@ -97,9 +97,10 @@ You may obtain a copy of the License at
        text-decoration: underline;
      }
     </style>
-    <template is="dom-if" if="[[_show_error_message]]" restamp=true>
-      <div class="errorMessage"><span>[[_error_message]]</span></div></template>
-    <template is="dom-if" if="[[!_show_error_message]]" restamp=true>
+    <div class="errorMessage" hidden=[[!_error_message]]>
+      <span>[[_error_message]]</span>
+    </div>
+    <div hidden=[[_error_message]]>
       <div class="container flex-horizontal">
         <paper-card heading="Performance Summary">
           <div class="card-content">
@@ -110,7 +111,7 @@ You may obtain a copy of the License at
           </div>
         </paper-card>
         <paper-card heading="Step-time Graph">
-          <div class="card-content">
+          <div class="card-content" hidden="[[!_show_step_time_graph]]">
             <table class="table-style">
               <tr>
                 <td><div class="y-axis-title">milliseconds</div></td>
@@ -159,8 +160,8 @@ You may obtain a copy of the License at
             <div id="documentation_tips"></div>
           </div>
         </paper-card>
-      </div>
-   </template>
+     </div>
+    </div>
   </template>
 
   <script>
@@ -174,39 +175,55 @@ You may obtain a copy of the License at
        _show_top_ops_table: {
          type: Boolean,
          value: false,
-         notify: true,
+       },
+       _show_step_time_graph: {
+         type: Boolean,
+         computed: '_shouldShowStepTimeGraph(_data, _active)',
        },
        _top_ops_button_text: {
          type: String,
-         computed: '_getTopOpsButtonText(_show_top_ops_table)'
+         computed: '_getTopOpsButtonText(_show_top_ops_table)',
        },
-       _show_error_message: {
-         type: Boolean,
-         computed: '_shouldShowErrorMessage(_data)',
-         notify: true,
-         observer: '_onErrorChanged',
+       _generalAnalysisJson: {
+         type: String,
+       },
+       _inputAnalysisJson: {
+         type: String,
+       },
+       _runEnvironmentJson: {
+         type: String,
+       },
+       _recommendationJson: {
+         type: String,
        },
        _active: {
          type: Boolean,
          value: false,
-         notify: true,
+         observer: '_onActiveChanged',
        },
-       _host_idle_time_percent: { type: String, },
-       _device_idle_time_percent: { type: String, },
-       _mxu_utilization_percent: { type: String, },
-       _steptime_ms_average: { type: String, },
-       _steptime_ms_stddev: { type: String, },
-       _top_ops_heading: { type: String, },
-       _error_message: { type: String, },
-       _host_count: { type: String, },
-       _tpu_type: { type: String, },
-       _tpu_core_count: { type: String, },
-       _batch_size: { type: String, },
-       _change_list: { type: String, },
-       _build_time: { type: String, },
-       _build_target: { type: String, },
-       _statement: { type: String, },
+       _host_idle_time_percent: { type: String },
+       _device_idle_time_percent: { type: String },
+       _mxu_utilization_percent: { type: String },
+       _steptime_ms_average: { type: String },
+       _steptime_ms_stddev: { type: String },
+       _top_ops_heading: { type: String },
+       _error_message: { type: String },
+       _host_count: { type: String },
+       _tpu_type: { type: String },
+       _tpu_core_count: { type: String },
+       _batch_size: { type: String },
+       _change_list: { type: String },
+       _build_time: { type: String },
+       _build_target: { type: String },
+       _statement: { type: String },
      },
+     observers: [
+       '_showSummary(_inputAnalysisJson, _generalAnalysisJson)',
+       '_showRunEnvironment(_runEnvironmentJson)',
+       '_showDeviceStepChart(_inputAnalysisJson)',
+       '_showTopOpsTable(_generalAnalysisJson)',
+       '_showRecommendation(_recommendationJson)',
+     ],
 
      /* Toggles _show_top_ops_table */
      onClickTopOps: function(e) {
@@ -218,20 +235,32 @@ You may obtain a copy of the License at
        return (show_top_ops_table ? 'Hide' : 'Show') + ' table';
      },
 
-     _shouldShowErrorMessage: function(data) {
-       if (!data) return true;
-       return data[2].p['error_message'] != '';
-     },
-
      /* Updates view according to new data */
      _updateView: function() {
-       if (!this._data || !this._active) return;
-       var generalAnalysisJson = this._data[0];
-       var inputAnalysisJson = this._data[1];
-       var runEnvironmentJson = this._data[2];
-       var recommendationJson = this._data[3];
+       if (!this._data || !this._active) {
+         return;
+       }
+       this._generalAnalysisJson = this._data[0];
+       this._inputAnalysisJson = this._data[1];
+       this._runEnvironmentJson = this._data[2];
+       const recommendationJson = this._data[3];
+       this._recommendationJson = recommendationJson;
+       this._statement = recommendationJson.p['statement'];
+       if (this._statement.includes('HIGHLY')) {
+         this.customStyle['--summary-color'] = 'red';
+       } else if (this._statement.includes('MODERATE')) {
+         this.customStyle['--summary-color'] = 'orange';
+       } else {
+         this.customStyle['--summary-color'] = 'green';
+       }
+       this.updateStyles();
+     },
 
-       var statement = recommendationJson.p['statement'];
+     /* Displays performance summary for the profile run */
+     _showSummary : function(inputAnalysisJson, generalAnalysisJson) {
+       if (!inputAnalysisJson || !generalAnalysisJson) {
+         return;
+       }
        this._host_idle_time_percent =
            generalAnalysisJson.p['host_idle_time_percent'];
        this._device_idle_time_percent =
@@ -242,6 +271,12 @@ You may obtain a copy of the License at
            inputAnalysisJson.p['steptime_ms_average'];
        this._steptime_ms_stddev =
            inputAnalysisJson.p['steptime_ms_standard_deviation'];
+     },
+     /* Displays run time information */
+     _showRunEnvironment : function(runEnvironmentJson) {
+       if (!runEnvironmentJson) {
+         return;
+       }
        this._error_message = runEnvironmentJson.p['error_message'];
        this._host_count = runEnvironmentJson.p['host_count'];
        this._tpu_type = runEnvironmentJson.p['tpu_type'];
@@ -250,26 +285,11 @@ You may obtain a copy of the License at
        this._change_list = runEnvironmentJson.p['change_list'];
        this._build_time = runEnvironmentJson.p['build_time'];
        this._build_target = runEnvironmentJson.p['build_target'];
-       this._statement = recommendationJson.p['statement'];
-
-       if (statement.includes('HIGHLY')) {
-         this.customStyle['--summary-color'] = 'red';
-       } else if (statement.includes('MODERATE')) {
-         this.customStype['--summary-color'] = 'orange';
-       }
-
-       this.updateStyles();
-
-       this._showDeviceStepChart(inputAnalysisJson);
-       this._showTopOpsTable(generalAnalysisJson);
-       this._showRecommendation(recommendationJson);
      },
 
      /* Plots a graph of step time (in ms) against step number */
      _showDeviceStepChart : function(deviceJson) {
-       var chart = this.$$('#device_step_chart');
-       if (!deviceJson || !deviceJson.rows ||
-               !deviceJson.rows.length || !this._active) {
+       if (!this._show_step_time_graph) {
          return;
        }
        var computeTimeSeries = [];
@@ -287,11 +307,13 @@ You may obtain a copy of the License at
                               "low_watermark": row.c[1].v})
          maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
        })
+       var chart = this.$$('#device_step_chart');
        if (chart) {
          chart.setVisibleSeries(['compute-time',
              'step-time = input-time + compute-time']);
          chart.setSeriesData('compute-time', computeTimeSeries);
-         chart.setSeriesData('step-time = input-time + compute-time', stepTimeSeries);
+         chart.setSeriesData('step-time = input-time + compute-time',
+                              stepTimeSeries);
          chart.defaultYRange = [0, maxStepTime * 1.1]
          chart.smoothingEnabled = false;
          chart.tooltipColumns = [
@@ -309,7 +331,7 @@ You may obtain a copy of the License at
      /* Draws a table of TensorFlow Op statistics */
      _showTopOpsTable: function(opsTableJson) {
        if (!opsTableJson || !opsTableJson.rows ||
-               !opsTableJson.rows.length || !this._active) {
+           !opsTableJson.rows.length || !this._active) {
          return;
        }
        var numRows = 0;
@@ -390,21 +412,21 @@ You may obtain a copy of the License at
                  'Other useful resources');
        }
      },
-
-     _onErrorChanged: function() {
+     _onActiveChanged: function(active) {
+       if (!active) {
+          this._show_step_time_graph = false;
+          this._show_top_ops_table = false;
+          return;
+       }
        this._updateView();
      },
-
-     ready: function() {
-       this._active = true;
-       this._updateView();
+     _shouldShowStepTimeGraph: function(data, active) {
+      return active && data && data[1] && data[1].rows && data[1].rows.length;
      },
-
      attached: function() {
        this._active = true;
        this._updateView();
      },
-
      detached: function() {
        this._active = false;
      },

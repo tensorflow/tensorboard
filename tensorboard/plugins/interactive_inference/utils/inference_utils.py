@@ -22,10 +22,10 @@ from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
-from tensorboard.plugins.interactive_inference.utils import inference_pb2
-from tensorboard.plugins.interactive_inference.utils import oss_utils
-from tensorboard.plugins.interactive_inference.utils.serving import classification_pb2
-from tensorboard.plugins.interactive_inference.utils.serving import regression_pb2
+from tensorboard.plugins.interactive_inference.utils import platform_utils
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import inference_pb2
+from tensorflow_serving.apis import regression_pb2
 
 
 class VizParams(object):
@@ -105,7 +105,7 @@ class OriginalFeatureList(object):
 
   Attributes:
     feature_name: String name of the feature.
-    original_value: The value of the feature in the original tf.train.Example.
+    original_value: The value of the feature in the original example.
     feature_type: One of ['int64_list', 'float_list'].
 
   Raises:
@@ -212,7 +212,7 @@ def parse_original_feature_from_example(example, feature_name):
   """Returns an `OriginalFeatureList` for the specified feature_name.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
     feature_name: A string feature name.
 
   Returns:
@@ -237,9 +237,10 @@ def wrap_inference_results(inference_result_proto):
   inference_proto = inference_pb2.InferenceResult()
   if isinstance(inference_result_proto,
                 classification_pb2.ClassificationResponse):
-    inference_proto.classification.CopyFrom(inference_result_proto.result)
+    inference_proto.classification_result.CopyFrom(
+        inference_result_proto.result)
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
-    inference_proto.regression.CopyFrom(inference_result_proto.result)
+    inference_proto.regression_result.CopyFrom(inference_result_proto.result)
   return inference_proto
 
 
@@ -247,7 +248,7 @@ def get_numeric_feature_names(example):
   """Returns a list of feature names for float and int64 type features.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
 
   Returns:
     A list of string feature names.
@@ -264,7 +265,7 @@ def get_categorical_feature_names(example):
   """Returns a list of feature names for byte type features.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
 
   Returns:
     A list of categorical feature names (e.g. ['education', 'marital_status'] )
@@ -382,14 +383,14 @@ def make_mutant_tuples(example_proto, original_feature, index_to_mutate,
   """Return a list of `MutantFeatureValue`s and a list of mutant Examples.
 
   Args:
-    example_proto: The tf.train.Example to mutate.
+    example_proto: The example to mutate.
     original_feature: A `OriginalFeatureList` that encapsulates the feature to
       mutate.
     index_to_mutate: The index of the int64_list or float_list to mutate.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
   Returns:
-    A list of `MutantFeatureValue`s and a list of mutant `tf.train.Examples`.
+    A list of `MutantFeatureValue`s and a list of mutant examples.
   """
   mutant_features = make_mutant_features(original_feature, index_to_mutate,
                                          viz_params)
@@ -417,7 +418,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
   """Returns JSON formatted for rendering all charts for a feature.
 
   Args:
-    example_proto: The tf.train.Example proto to mutate.
+    example_proto: The example proto to mutate.
     feature_name: The string feature name to mutate.
     serving_bundle: A `ServingBundle` object that contains the information to
       make the serving request.
@@ -440,7 +441,7 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
     mutant_features, mutant_examples = make_mutant_tuples(
         example_proto, original_feature, index_to_mutate, viz_params)
 
-    inference_result_proto = oss_utils.call_servo(
+    inference_result_proto = platform_utils.call_servo(
         mutant_examples, serving_bundle)
     return make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto,
@@ -505,7 +506,11 @@ def make_json_formatted_for_single_chart(mutant_features,
         inference_result_proto.result.classifications)
     for mutant_feature, classification in zip(
         mutant_features, inference_result_proto.result.classifications):
-      for classification_class in classification.classes:
+      for class_index, classification_class in enumerate(
+        classification.classes):
+        # Fill in class index when labels are missing
+        if classification_class.label == '':
+          classification_class.label = str(class_index)
         # Special case to not include the "0" class in binary classification.
         # Since that just results in a chart that is symmetric around 0.5.
         if len(

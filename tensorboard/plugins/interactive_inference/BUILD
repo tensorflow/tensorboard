@@ -9,7 +9,7 @@ py_library(
     deps = [
         "//tensorboard/plugins/interactive_inference/utils:common_utils",
         "//tensorboard/plugins/interactive_inference/utils:inference_utils",
-        "//tensorboard/plugins/interactive_inference/utils:oss_utils",
+        "//tensorboard/plugins/interactive_inference/utils:platform_utils",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
@@ -25,7 +25,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins/interactive_inference/utils:inference_utils",
-        "//tensorboard/plugins/interactive_inference/utils:oss_utils",
+        "//tensorboard/plugins/interactive_inference/utils:platform_utils",
         "//tensorboard/plugins/interactive_inference/utils:test_utils",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",

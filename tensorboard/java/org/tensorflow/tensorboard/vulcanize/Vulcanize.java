@@ -441,7 +441,16 @@ public final class Vulcanize {
     // Dependency management.
     options.setClosurePass(true);
     options.setManageClosureDependencies(true);
-    options.getDependencyOptions().setDependencyPruning(true);
+    // TODO turn dependency pruning back on. ES6 modules are currently (incorrectly) considered moochers.
+    // Once the compiler no longer considers them moochers the dependencies will be in an incorrect order.
+    // The compiler will put moochers first, then other explicit entry points (if something is an entry
+    // point and a moocher it goes first). vz-example-viewer.ts generates an ES6 module JS, and it will
+    // soon no longer be considered a moocher and be moved after its use in some moochers. The TS 
+    // generation should not generate an ES6 module (a file with just goog.requires is a moocher!), or
+    // vz-example-viewer should be imported by the code that uses it rather than rely on the input order 
+    // to the compiler. Or we should verify that the input order to the compiler is 100% correct and turn
+    // off dependency sorting.
+    options.getDependencyOptions().setDependencyPruning(false);
     options.getDependencyOptions().setDependencySorting(true);
     options.getDependencyOptions().setMoocherDropping(false);
     options.getDependencyOptions()

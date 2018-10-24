@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer_xla {
+namespace memory_viewer_xla_s {
 
 /**
  * A shape describes the number of dimensions in the array, the size of each
@@ -114,4 +114,4 @@ export class Shape {
   }
 }
 
-} // namespace memory_viewer_xla
+} // namespace memory_viewer_xla_s

@@ -110,6 +110,11 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       max_reload_threads=flags.max_reload_threads)
   loading_multiplexer = multiplexer
   reload_interval = flags.reload_interval
+  # For db import op mode, prefer reloading in a child process. See
+  # https://github.com/tensorflow/tensorboard/issues/1467
+  reload_task = flags.reload_task
+  if reload_task == 'auto' and flags.db_import and flags.db_import_use_op:
+    reload_task == 'process'
   db_uri = flags.db
   # For DB import mode, create a DB file if we weren't given one.
   if flags.db_import and not flags.db:
@@ -120,12 +125,13 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   if flags.db_import:
     # DB import mode.
     if db_module != sqlite3:
-        raise ValueError('--db_import is only compatible with sqlite DBs')
+      raise ValueError('--db_import is only compatible with sqlite DBs')
     tf.logging.info('Importing logdir into DB at %s', db_uri)
     loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
-        max_reload_threads=flags.max_reload_threads)
+        max_reload_threads=flags.max_reload_threads,
+        use_import_op=flags.db_import_use_op)
   elif flags.db:
     # DB read-only mode, never load event logs.
     reload_interval = -1
@@ -148,11 +154,12 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     plugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
   return TensorBoardWSGIApp(flags.logdir, plugins, loading_multiplexer,
-                            reload_interval, flags.path_prefix)
+                            reload_interval, flags.path_prefix,
+                            reload_task)
 
 
 def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-                       path_prefix=''):
+                       path_prefix='', reload_task='auto'):
   """Constructs the TensorBoard application.
 
   Args:
@@ -164,6 +171,7 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
     reload_interval: How often (in seconds) to reload the Multiplexer.
       Zero means reload just once at startup; negative means never load.
     path_prefix: A prefix of the path when app isn't served from root.
+    reload_task: Indicates the type of background task to reload with.
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
@@ -178,7 +186,8 @@ def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
   if reload_interval >= 0:
     # We either reload the multiplexer once when TensorBoard starts up, or we
     # continuously reload the multiplexer.
-    start_reloading_multiplexer(multiplexer, path_to_run, reload_interval)
+    start_reloading_multiplexer(multiplexer, path_to_run, reload_interval,
+                                reload_task)
   return TensorBoardWSGI(plugins, path_prefix)
 
 
@@ -346,26 +355,9 @@ def parse_event_files_spec(logdir):
   return files
 
 
-def reload_multiplexer(multiplexer, path_to_run):
-  """Loads all runs into the multiplexer.
-
-  Args:
-    multiplexer: The `EventMultiplexer` to add runs to and reload.
-    path_to_run: A dict mapping from paths to run names, where `None` as the run
-      name is interpreted as a run name equal to the path.
-  """
-  start = time.time()
-  tf.logging.info('TensorBoard reload process beginning')
-  for (path, name) in six.iteritems(path_to_run):
-    multiplexer.AddRunsFromDirectory(path, name)
-  tf.logging.info('TensorBoard reload process: Reload the whole Multiplexer')
-  multiplexer.Reload()
-  duration = time.time() - start
-  tf.logging.info('TensorBoard done reloading. Load took %0.3f secs', duration)
-
-
-def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
-  """Starts a thread to automatically reload the given multiplexer.
+def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
+                                reload_task):
+  """Starts automatically reloading the given multiplexer.
 
   If `load_interval` is positive, the thread will reload the multiplexer
   by calling `ReloadMultiplexer` every `load_interval` seconds, starting
@@ -378,9 +370,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
     load_interval: An integer greater than or equal to 0. If positive, how many
       seconds to wait after one load before starting the next load. Otherwise,
       reloads the multiplexer once and never again (no continuous reloading).
-
-  Returns:
-    A started `threading.Thread` that reloads the multiplexer.
+    reload_task: Indicates the type of background task to reload with.
 
   Raises:
     ValueError: If `load_interval` is negative.
@@ -388,20 +378,41 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval):
   if load_interval < 0:
     raise ValueError('load_interval is negative: %d' % load_interval)
 
-  # We don't call multiplexer.Reload() here because that would make
-  # AddRunsFromDirectory block until the runs have all loaded.
   def _reload():
     while True:
-      reload_multiplexer(multiplexer, path_to_run)
+      start = time.time()
+      tf.logging.info('TensorBoard reload process beginning')
+      for path, name in six.iteritems(path_to_run):
+        multiplexer.AddRunsFromDirectory(path, name)
+      tf.logging.info('TensorBoard reload process: Reload the whole Multiplexer')
+      multiplexer.Reload()
+      duration = time.time() - start
+      tf.logging.info('TensorBoard done reloading. Load took %0.3f secs', duration)
       if load_interval == 0:
         # Only load the multiplexer once. Do not continuously reload.
         break
       time.sleep(load_interval)
 
-  thread = threading.Thread(target=_reload, name='Reloader')
-  thread.daemon = True
-  thread.start()
-  return thread
+  if reload_task == 'process':
+    tf.logging.info('Launching reload in a child process')
+    import multiprocessing
+    process = multiprocessing.Process(target=_reload, name='Reloader')
+    # Best-effort cleanup; on exit, the main TB parent process will attempt to
+    # kill all its daemonic children.
+    process.daemon = True
+    process.start()
+  elif reload_task in ('thread', 'auto'):
+    tf.logging.info('Launching reload in a daemon thread')
+    thread = threading.Thread(target=_reload, name='Reloader')
+    # Make this a daemon thread, which won't block TB from exiting.
+    thread.daemon = True
+    thread.start()
+  elif reload_task == 'blocking':
+    if load_interval != 0:
+      raise ValueError('blocking reload only allowed with load_interval=0')
+    _reload()
+  else:
+    raise ValueError('unrecognized reload_task: %s' % reload_task)
 
 
 def get_database_info(db_uri):

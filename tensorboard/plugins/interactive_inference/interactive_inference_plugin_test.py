@@ -40,11 +40,11 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 
 from tensorboard.plugins.interactive_inference.utils import inference_utils
-from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
-from tensorboard.plugins.interactive_inference.utils.serving import regression_pb2
 from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 
+from tensorflow_serving.apis import regression_pb2
 
 class InferencePluginTest(tf.test.TestCase):
 
@@ -76,7 +76,8 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/examples_from_path?' +
         urllib_parse.urlencode({
             'examples_path': examples_path,
-            'max_examples': 2
+            'max_examples': 2,
+            'sampling_odds': 1,
         }))
     self.assertEqual(200, response.status_code)
     example_strings = json.loads(response.get_data().decode('utf-8'))['examples']
@@ -94,7 +95,8 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/examples_from_path?' +
         urllib_parse.urlencode({
             'examples_path': 'does_not_exist',
-            'max_examples': 2
+            'max_examples': 2,
+            'sampling_odds': 1,
         }))
     error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
@@ -118,7 +120,7 @@ class InferencePluginTest(tf.test.TestCase):
     error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
 
-  @mock.patch.object(oss_utils, 'call_servo')
+  @mock.patch.object(platform_utils, 'call_servo')
   def test_infer(self, mock_call_servo):
     self.plugin.examples = [
         self.get_fake_example(0),

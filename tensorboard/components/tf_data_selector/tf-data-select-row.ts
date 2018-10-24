@@ -20,8 +20,6 @@ enum Type {
 }
 
 const MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
-const STORAGE_ALL_VALUE = '$all';
-const STORAGE_NONE_VALUE = '$none';
 
 Polymer({
   is: 'tf-data-select-row',
@@ -254,7 +252,7 @@ Polymer({
   },
 
   _removeRow(): void {
-    // Clear persistance when being removed.
+    // Clear persistence when being removed.
     this._storageBinding.set(
         this._getPersistenceKey(Type.RUN), '', {defaultValue: ''});
     this._storageBinding.set(
@@ -268,16 +266,21 @@ Polymer({
     if (selectedIds.length == 0) return STORAGE_NONE_VALUE;
 
     return this.noExperiment ?
-        selectedIds.join(',') :
+        JSON.stringify(selectedIds) :
         tf_data_selector.encodeIdArray((selectedIds as Array<number>));
   },
 
   _deserializeValue(allValues: Array<number|string>, str: string) {
     if (str == STORAGE_ALL_VALUE) return allValues;
     if (str == STORAGE_NONE_VALUE) return [];
-    return this.noExperiment ?
-        str.split(',') :
-        tf_data_selector.decodeIdArray(str);
+    if (!this.noExperiment) return tf_data_selector.decodeIdArray(str);
+    let parsed = [];
+    try {
+      parsed = JSON.parse(str);
+    } catch (e) {
+      /* noop */
+    }
+    return Array.isArray(parsed) ? parsed : [];
   },
 
   _getColoring() {

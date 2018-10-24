@@ -88,8 +88,19 @@ Event out:
       }
 
       #checkbox {
-        flex: 1 0;
-        max-width: 200px;
+        --paper-checkbox-label: {
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          display: -webkit-box;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          word-break: break-word;
+        };
+
+        align-items: center;
+        display: flex;
+        flex: 1;
+        min-width: 150px;
       }
 
       paper-input {
@@ -107,7 +118,8 @@ Event out:
         --paper-input-container-label: {
           font-size: 14px;
         };
-        width: 200px;
+
+        flex: 0 0 auto;
         margin: 0 5px;
       }
 
@@ -119,12 +131,14 @@ Event out:
       }
 
       tf-filterable-checkbox-dropdown {
-        --tf-filterable-checkbox-dropdown-input-container: {
+        --tf-filterable-checkbox-dropdown-trigger: {
           padding: 5px;
         };
 
-        padding: 0 5px;
+        flex: 0 0 auto;
+        font-size: 0;
         margin: 0 5px;
+        padding: 0 5px;
       }
 
       paper-icon-button {

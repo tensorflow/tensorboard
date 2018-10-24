@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
@@ -52,6 +54,7 @@ limitations under the License.
       smoothing-weight="[[smoothingWeight]]"
       tag-metadata="[[tagMetadata]]"
       tooltip-columns="[[_tooltipColumns]]"
+      tooltip-position="auto"
       tooltip-sorting-method="[[tooltipSortingMethod]]"
       x-type="[[xType]]"
     >
@@ -74,6 +77,22 @@ limitations under the License.
       on-tap="_resetDomain"
       title="Fit domain to data"
     ></paper-icon-button>
+    <template is="dom-if" if="[[showDownloadLinks]]">
+      <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
+        <paper-icon-button
+          class="dropdown-trigger"
+          slot="dropdown-trigger"
+          icon="file-download"
+        ></paper-icon-button>
+        <paper-listbox class="dropdown-content" slot="dropdown-content">
+          <paper-item>
+            <a id="svgLink" download="[[tag]].svg">
+              Download Current Graph as SVG
+            </a>
+          </paper-item>
+        </paper-listbox>
+      </paper-menu-button>
+    </template>
     <span style="flex-grow: 1"></span>
     <template is="dom-if" if="[[showDownloadLinks]]">
       <div class="download-links">
@@ -147,8 +166,8 @@ limitations under the License.
     }
 
     .download-links a {
-      font-size: 10px;
       align-self: center;
+      font-size: 10px;
       margin: 2px;
     }
 
@@ -160,6 +179,15 @@ limitations under the License.
       --paper-input-container-input: {
         font-size: 10px;
       }
+    }
+
+    paper-menu-button {
+      padding: 0;
+    }
+    paper-item a {
+      color: inherit;
+      text-decoration: none;
+      white-space: nowrap;
     }
   </style>
 </template>
@@ -212,13 +240,14 @@ limitations under the License.
           type: Function,
           value: function() {
             return ({tag, run, experiment}) => {
-              return tf_backend.addParams(
-                  tf_backend.getRouter().pluginRoute('scalars', '/scalars'),
-                  {
+              return tf_backend.getRouter().pluginRoute(
+                  'scalars',
+                  '/scalars',
+                  new URLSearchParams({
                     tag,
                     run,
                     experiment: experiment ? experiment.id : '',
-                  });
+                  }));
             }
           },
         },
@@ -273,6 +302,10 @@ limitations under the License.
           chart.resetDomain();
         }
       },
+      _updateDownloadLink() {
+        const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
+        this.$$('#svgLink').href = `data:image/svg+xml,${svgStr}`;
+      },
       _csvUrl(tag, run) {
         return tf_backend.addParams(
             this.getDataLoadUrl({tag, run}),
@@ -286,7 +319,7 @@ limitations under the License.
       },
       // name is a stable identifier for a series.
       _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
-        return `${experiment.name}/${run}`;
+        return JSON.stringify([experiment.name, run]);
       },
       // title is a visible string of a series for the UI.
       _getSeriesDisplayNameFromDatum(datum) {
@@ -297,9 +330,7 @@ limitations under the License.
       _getColorScale() {
         return {
           scale: (name) => {
-            const splitIndex = name.indexOf('/');
-            const exp = name.slice(0, splitIndex);
-            const run = name.slice(splitIndex + 1);
+            const [exp, run] = JSON.parse(name);
             return this.multiExperiments ?
                 tf_color_scale.experimentsColorScale(exp) :
                 tf_color_scale.runsColorScale(run);

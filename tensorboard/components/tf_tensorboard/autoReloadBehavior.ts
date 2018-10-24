@@ -21,6 +21,10 @@ var getAutoReloadFromLocalStorage: () => boolean = () => {
   return val === 'true' || val == null;  // defaults to true
 };
 
+function forceDisableAutoReload(): boolean {
+  return new URLSearchParams(window.location.search).has('_DisableAutoReload');
+}
+
 /**
  * @polymerBehavior
  */
@@ -44,10 +48,9 @@ export var AutoReloadBehavior = {
   },
   _autoReloadObserver: function(autoReload) {
     window.localStorage.setItem(AUTORELOAD_LOCALSTORAGE_KEY, autoReload);
-    if (autoReload) {
-      var _this = this;
+    if (autoReload && !forceDisableAutoReload()) {
       this._autoReloadId = window.setTimeout(
-          this._doAutoReload.bind(this), this.autoReloadIntervalSecs * 1000);
+          () => this._doAutoReload(), this.autoReloadIntervalSecs * 1000);
     } else {
       window.clearTimeout(this._autoReloadId);
     }
@@ -58,7 +61,7 @@ export var AutoReloadBehavior = {
     }
     this.reload();
     this._autoReloadId = window.setTimeout(
-        this._doAutoReload.bind(this), this.autoReloadIntervalSecs * 1000);
+        () => this._doAutoReload(), this.autoReloadIntervalSecs * 1000);
   }
 };
 

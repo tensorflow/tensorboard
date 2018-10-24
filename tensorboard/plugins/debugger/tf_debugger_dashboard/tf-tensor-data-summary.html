@@ -130,7 +130,7 @@ limitations under the License.
       // Callback for clicking of the expand button.
       expandHandler: Object,
 
-      continueToCallback: Object,
+      continueToCallback: Function,
 
       // For externally ordered highlighting of a tensor row.
       highlightedNodeName: {
@@ -230,7 +230,7 @@ limitations under the License.
       this._renderAll();
     },
 
-    _renderAll(sortBy) {
+    _renderAll() {
       this._clearTensorDataTable();
       for (const watchKey of this._watchKeys) {
         const tensorData = this._watchKey2Data[watchKey];

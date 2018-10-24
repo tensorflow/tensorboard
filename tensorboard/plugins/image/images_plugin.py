@@ -35,10 +35,21 @@ _IMGHDR_TO_MIMETYPE = {
     'bmp': 'image/bmp',
     'gif': 'image/gif',
     'jpeg': 'image/jpeg',
-    'png': 'image/png'
+    'png': 'image/png',
+    'svg': 'image/svg+xml'
 }
 
 _DEFAULT_IMAGE_MIMETYPE = 'application/octet-stream'
+
+
+# Extend imghdr.tests to include svg.
+def detect_svg(data, f):
+  del f  # Unused.
+  # Assume XML documents attached to image tag to be SVG.
+  if data.startswith(b'<?xml ') or data.startswith(b'<svg '):
+    return 'svg'
+
+imghdr.tests.append(detect_svg)
 
 
 class ImagesPlugin(base_plugin.TBPlugin):
@@ -94,8 +105,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
             MAX(CAST (Tensors.shape AS INT)) - 2 AS samples
           FROM Tags
           JOIN Runs USING (run_id)
-          JOIN Descriptions ON Tags.tag_id = Descriptions.id
           JOIN Tensors ON Tags.tag_id = Tensors.series
+          LEFT JOIN Descriptions ON Tags.tag_id = Descriptions.id
           WHERE Tags.plugin_name = :plugin
             /* Shape should correspond to a rank-1 tensor. */
             AND NOT INSTR(Tensors.shape, ',')
@@ -108,6 +119,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
       result = collections.defaultdict(dict)
       for row in cursor:
         run_name, tag_name, display_name, description, samples = row
+        description = description or ''  # Handle missing descriptions.
         result[run_name][tag_name] = {
             'displayName': display_name,
             'description': plugin_util.markdown_to_safe_html(description),

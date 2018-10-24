@@ -76,6 +76,7 @@ limitations under the License.
         display: block;
         padding: 8px;
         width: fit-content;
+        border: 1px solid lightgrey;
       }
 
       .hide-saliency-controls {
@@ -382,7 +383,7 @@ limitations under the License.
             <div class="feature-name-text">[[feat.name]]</div>
             <div class="value-pills-holder">
               <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
-                <img class="image" src="[[getImageSrc(feat.name)]]"
+                <img class="image" src$="[[getImageSrc(feat.name)]]"
                       id="[[getImageId(feat.name)]]"></img>
                 <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
                 <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
@@ -423,7 +424,7 @@ limitations under the License.
             <template is="dom-if" if="[[compareMode]]">
               <div class="value-pills-holder">
                 <paper-card id="[[getCompareImageCardId(feat.name)]]" class="imagecard">
-                  <img class="image" src="[[getCompareImageSrc(feat.name)]]"
+                  <img class="image" src$="[[getCompareImageSrc(feat.name)]]"
                         id="[[getCompareImageId(feat.name)]]"></img>
                   <canvas id="[[getCompareCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
                   <div class="image-bottom-bar">
@@ -474,7 +475,7 @@ limitations under the License.
                   value="[[getFirstFeatureValue(feat.name)]]">
                 </input>
                 <template is="dom-if" if="[[featureHasMultipleValues(feat.name)]]">
-                  <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                  <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(feat.name, displayMode)]]">
                     ...
                   </paper-button>
                 </template>
@@ -498,7 +499,7 @@ limitations under the License.
                     value="[[getFirstCompareFeatureValue(feat.name)]]">
                   </input>
                   <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
-                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getCompareInputClass(expandPillClass, displayMode)]]">
+                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getCompareInputClass(feat.name, displayMode)]]">
                       ...
                     </paper-button>
                   </template>
@@ -536,7 +537,7 @@ limitations under the License.
                 <div class="feature-name-text">[[seqfeat.name]]</div>
                 <div class="value-pills-holder">
                   <paper-card id="[[getImageCardId(seqfeat.name)]]" class="imagecard">
-                    <img class="image" src="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                    <img class="image" src$="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
                         id="[[getImageId(seqfeat.name)]]"></img>
                     <canvas id="[[getCanvasId(seqfeat.name)]]"
                         data-feature="[[seqfeat.name]]"
@@ -582,7 +583,7 @@ limitations under the License.
                 <template is="dom-if" if="[[compareMode]]">
                   <div class="value-pills-holder">
                     <paper-card id="[[getCompareImageCardId(seqfeat.name)]]" class="imagecard">
-                      <img class="image" src="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
+                      <img class="image" src$="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
                           id="[[getCompareImageId(seqfeat.name)]]"></img>
                       <canvas id="[[getCompareCanvasId(seqfeat.name)]]"
                           data-feature="[[seqfeat.name]]"
@@ -635,7 +636,7 @@ limitations under the License.
                       value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]">
                     </input>
                     <template is="dom-if" if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
-                      <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(expandPillClass, displayMode)]]">
+                      <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(seqfeat.name, displayMode)]]">
                         ...
                       </paper-button>
                     </template>
@@ -661,7 +662,7 @@ limitations under the License.
                         value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
                       </input>
                       <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
-                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getSeqCompareInputClass(expandPillClass, displayMode, seqNumber)]]">
+                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber)]]">
                           ...
                         </paper-button>
                       </template>
@@ -685,8 +686,8 @@ limitations under the License.
       </template>
       <paper-icon-button on-click="openAddFeatureDialog" icon="add" title="Add feature"
                     class$="[[getAddValueButtonClass(readonly)]]">
-      </paper-icon button>
-      <paper-card class$="[[getSaliencyControlsHolderClass(saliency)]]">
+      </paper-icon-button>
+      <div class$="[[getSaliencyControlsHolderClass(saliency)]]">
         <div class="saliency-legend-label">Saliency legend</div>
         <div class="flex-controls">
           <svg id="saliencyLegend"></svg>
@@ -700,7 +701,7 @@ limitations under the License.
                         value="[[saliencyCutoff]]">
           </paper-slider>
         </div>
-      </paper-card>
+      </div>
     </div>
     <paper-icon-button id="deletevalue" icon="delete" class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"
         data-feature="[[focusedFeatureName]]" data-index="[[focusedFeatureValueIndex]]"

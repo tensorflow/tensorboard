@@ -112,11 +112,11 @@ tf-op-bar {
     <paper-card id="card" heading="[[node.name]]" elevation="2">
       <div id="subheader">[[_subheader(node)]]</div>
       <div class="card-content">
-        <div hidden="[[!node.metrics]]">
+        <div hidden="[[!_hasFlops(node)]]">
           <b>FLOPS utilization: </b>
           <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
         </div>
-        <div hidden="[[_hasMemoryUtilization(node)]]">
+        <div hidden="[[!_hasMemoryUtilization(node)]]">
           <b>Memory utilization: </b>
           <tf-op-bar value="[[_memoryUtilization(node)]]"></tf-op-bar>
         </div>
@@ -159,11 +159,10 @@ Polymer({
   },
   _utilization: tf_op_profile.utilization,
   _memoryUtilization: tf_op_profile.memoryUtilization,
-  _hasMemoryUtilization: function(node) {
-    return !node || !node.metrics || !node.metrics.memoryBandwidth;
-  },
-  _updateCard: function(node){
-    if (node == null) return;
+  _hasFlops: tf_op_profile.hasFlops,
+  _hasMemoryUtilization: tf_op_profile.hasMemoryUtilization,
+  _updateCard: function(node) {
+    if (!node) return;
     var color = tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);
     this.$.card.updateStyles({"--paper-card-header": "background-color:" + color});
     this.$.subheader.style.backgroundColor = color;
@@ -174,7 +173,9 @@ Polymer({
     if (node.category) return "Operation category";
     return "Unknown";
   },
-  _fused: function(node){ return node && node.xla && !node.metrics; },
+  _fused: function(node) {
+    return node && node.xla && !node.metrics;
+  },
   _dimensionColor: function(dim) {
     if (!dim || !dim.alignment) return null;
     var ratio = dim.size / dim.alignment;

@@ -21,7 +21,7 @@ export interface Router {
   pluginRoute: (pluginName: string, route: string) => string;
   pluginsListing: () => string;
   runs: () => string;
-  runsForExperiment: (id: string) => string;
+  runsForExperiment: (id: tf_backend.ExperimentId) => string;
 };
 
 /**
@@ -35,23 +35,30 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   if (dataDir[dataDir.length - 1] === '/') {
     dataDir = dataDir.slice(0, dataDir.length - 1);
   }
-  function standardRoute(route: string, demoExtension = '.json'):
-      ((tag: string, run: string) => string) {
-    return function(tag: string, run: string): string {
-      return dataDir + '/' + addParams(route, {tag, run});
-    };
-  }
-  function pluginRoute(pluginName: string, route: string): string {
-    return `${dataDir}/plugin/${pluginName}${route}`;
-  }
+  const createPath = demoMode ? createDemoPath : createProdPath;
+  const ext = demoMode ? '.json' : '';
   return {
-    environment: () => dataDir + '/environment',
-    experiments: () => dataDir + '/experiments',
+    environment: () => createPath(dataDir, '/environment', ext),
+    experiments: () => createPath(dataDir, '/experiments', ext),
     isDemoMode: () => demoMode,
-    pluginRoute,
-    pluginsListing: () => dataDir + '/plugins_listing',
-    runs: () => dataDir + '/runs' + (demoMode ? '.json' : ''),
-    runsForExperiment: (id) => dataDir + `/experiment_runs?experiment=${id}`,
+    pluginRoute: (pluginName: string, route: string,
+        params?: URLSearchParams, demoCustomExt = ext): string => {
+
+      return createPath(
+          demoMode ? dataDir : dataDir + '/plugin',
+          `/${pluginName}${route}`,
+          demoCustomExt,
+          params);
+    },
+    pluginsListing: () => createPath(dataDir, '/plugins_listing', ext),
+    runs: () => createPath(dataDir, '/runs', ext),
+    runsForExperiment: id => {
+      return createPath(
+          dataDir,
+          '/experiment_runs',
+          ext,
+          createSearchParam({experiment: String(id)}));
+    },
   };
 };
 
@@ -77,6 +84,54 @@ export function setRouter(router: Router): void {
     throw new Error('Router required, but got: ' + router);
   }
   _router = router;
+}
+
+function createProdPath(pathPrefix: string, path: string,
+    ext: string, params?: URLSearchParams): string {
+
+  const url = new URL(`${window.location.origin}/${pathPrefix}${path}`);
+  if (params) url.search = params.toString();
+  return url.pathname + url.search;
+}
+
+/**
+ * Creates a URL for demo.
+ * e.g.,
+ * > createDemoPath('a', '/b', '.json', {a: 1})
+ * < '/a/b_a_1.json'
+ */
+function createDemoPath(pathPrefix: string, path: string,
+    ext: string, params?: URLSearchParams): string {
+
+  // First, parse the path in a safe manner by constructing a URL. We don't
+  // trust the path supplied by consumer.
+  const prefixLessUrl = new URL(`${window.location.origin}/${path}`);
+  let {pathname: normalizedPath} = prefixLessUrl;
+  const encodedQueryParam = params ?
+      params.toString().replace(/[&=%]/g, '_') : '';
+
+  // Strip leading slashes.
+  normalizedPath = normalizedPath.replace(/^\/+/g, '');
+  // Convert slashes to underscores.
+  normalizedPath = normalizedPath.replace(/\//g, '_');
+  // Add query parameter as path if it is present.
+  if (encodedQueryParam) normalizedPath += `_${encodedQueryParam}`;
+  const url = new URL(`${window.location.origin}`);
+
+  // All demo data are serialized in JSON format.
+  url.pathname = `${pathPrefix}/${normalizedPath}${ext}`;
+  return url.pathname + url.search;
+}
+
+export function createSearchParam(params: QueryParams = {}): URLSearchParams {
+  const keys = Object.keys(params).sort().filter(k => params[k]);
+  const searchParams = new URLSearchParams();
+  keys.forEach(key => {
+    const values = params[key];
+    const array = Array.isArray(values) ? values : [values];
+    array.forEach(val => searchParams.append(key, val));
+  });
+  return searchParams;
 }
 
 }  // namespace tf_backend

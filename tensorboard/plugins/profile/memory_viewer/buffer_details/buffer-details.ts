@@ -23,7 +23,7 @@ Polymer({
       notify:true,
       observer:'_updateValue',
     },
-  }, 
+  },
   /**
    * Updates the utilization bar.
    */
@@ -68,9 +68,7 @@ Polymer({
    * Updates the details card.
    */
   _updateCard:function(node) {
-    if (node == null) {
-      return;
-    }
+    if (!node) return;
     this.size = node.sizeMiB.toFixed(1);
     let color = 'rgb(192,192,192)';
     if (node.unpaddedSizeMiB) {
@@ -87,13 +85,7 @@ Polymer({
    * Returns the sub header of the buffer details card.
    */
   _subheader:function(node): string {
-    if (!node) {
-      return null;
-    }
-    if (node.opcode) {
-      return node.opcode + ' operation';
-    }
-    return '';
+    return node && node.opcode ? node.opcode + ' operation' : '';
   },
 });
 
