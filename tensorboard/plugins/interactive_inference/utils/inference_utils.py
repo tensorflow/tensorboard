@@ -561,5 +561,6 @@ def make_json_formatted_for_single_chart(mutant_features,
 
 
 def get_example_features(example):
+  """Returns the non-sequence features from the provided example."""
   return (example.features.feature if isinstance(example, tf.train.Example)
           else example.context.feature)
