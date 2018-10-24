@@ -781,6 +781,7 @@ export class MetaedgeImpl implements Metaedge {
     h.hasShapeInfo = true;
 
     // Sum the sizes of all output tensors.
+    // TODO(stephanwlee): Use Object.values after es2017.
     const values = Object.keys(opNode.outputShapes)
         .map(k => opNode.outputShapes[k])
         .map((shape: number[]) => {
