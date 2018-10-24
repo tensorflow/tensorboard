@@ -19,6 +19,11 @@ var vz_line_chart2;
         TooltipColumnEvalType[TooltipColumnEvalType["TEXT"] = 0] = "TEXT";
         TooltipColumnEvalType[TooltipColumnEvalType["DOM"] = 1] = "DOM";
     })(TooltipColumnEvalType || (TooltipColumnEvalType = {}));
+    var YScaleType;
+    (function (YScaleType) {
+        YScaleType["LOG"] = "log";
+        YScaleType["LINEAR"] = "linear";
+    })(YScaleType || (YScaleType = {}));
     /**
      * The maximum number of marker symbols within any line for a data series. Too
      * many markers clutter the chart.
@@ -60,6 +65,7 @@ var vz_line_chart2;
                 this.xAxis.formatter(xAxisFormatter);
             }
             this.yScale = LineChart.getYScaleFromType(yScaleType);
+            this.yScale.setValueProviderForDomain(function () { return _this.getValuesForYAxisDomainCompute(); });
             this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
             var yFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
             this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
@@ -71,8 +77,11 @@ var vz_line_chart2;
             var plot = this.buildPlot(this.xScale, this.yScale, fillArea);
             this.gridlines =
                 new Plottable.Components.Gridlines(this.xScale, this.yScale);
-            var xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
-            xZeroLine.scale(this.yScale).value(0);
+            var xZeroLine = null;
+            if (yScaleType !== YScaleType.LOG) {
+                xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
+                xZeroLine.scale(this.yScale).value(0);
+            }
             var yZeroLine = new Plottable.Components.GuideLineLayer('vertical');
             yZeroLine.scale(this.xScale).value(0);
             this.center = new Plottable.Components.Group([
@@ -169,8 +178,17 @@ var vz_line_chart2;
             if (ignoreYOutliers !== this._ignoreYOutliers) {
                 this._ignoreYOutliers = ignoreYOutliers;
                 this.updateSpecialDatasets();
+                this.yScale.ignoreOutlier(ignoreYOutliers);
                 this.resetYDomain();
             }
+        };
+        LineChart.prototype.getValuesForYAxisDomainCompute = function () {
+            var accessors = this.getAccessorsForComputingYRange();
+            var datasetToValues = function (d) {
+                return accessors.map(function (accessor) { return d.data().map(function (x) { return accessor(x, -1, d); }); });
+            };
+            return _.flattenDeep(this.datasets.map(datasetToValues))
+                .filter(isFinite);
         };
         /** Constructs special datasets. Each special dataset contains exceptional
          * values from all of the regular datasets, e.g. last points in series, or
@@ -250,22 +268,20 @@ var vz_line_chart2;
             this.xScale.domain(xDomain);
         };
         LineChart.prototype.resetYDomain = function () {
-            var yDomain;
             if (this._defaultYRange != null) {
                 // Use the range specified by the caller.
-                yDomain = this._defaultYRange;
+                this.yScale.domain(this._defaultYRange);
             }
             else {
-                // Generate a reasonable range.
-                var accessors_1 = this.getAccessorsForComputingYRange();
-                var datasetToValues = function (d) {
-                    return accessors_1.map(function (accessor) { return d.data().map(function (x) { return accessor(x, -1, d); }); });
-                };
-                var vals = _.flattenDeep(this.datasets.map(datasetToValues))
-                    .filter(isFinite);
-                yDomain = vz_chart_helpers.computeDomain(vals, this._ignoreYOutliers);
+                // TfScale has all the logics for scaling and we manually trigger it with
+                // `autoDomain`. However, this enables the autoDomain mode which updates
+                // the domain on any dataset change and this is not desirably especially
+                // when a run is not finished yet; we don't want the graph to change in
+                // scale while user is inspecting the graph. By setting the `domain`
+                // explicitly, we can turn the feature off.
+                this.yScale.autoDomain();
+                this.yScale.domain(this.yScale.domain());
             }
-            this.yScale.domain(yDomain);
         };
         LineChart.prototype.getAccessorsForComputingYRange = function () {
             var accessors = [this.getYAxisAccessor()];
@@ -550,11 +566,11 @@ var vz_line_chart2;
             return this.name2datasets[name];
         };
         LineChart.getYScaleFromType = function (yScaleType) {
-            if (yScaleType === 'log') {
-                return new Plottable.Scales.ModifiedLog();
+            if (yScaleType === YScaleType.LOG) {
+                return new vz_line_chart2.LogScale();
             }
-            else if (yScaleType === 'linear') {
-                return new Plottable.Scales.Linear();
+            else if (yScaleType === YScaleType.LINEAR) {
+                return new vz_line_chart2.LinearScale();
             }
             else {
                 throw new Error('Unrecognized yScale type ' + yScaleType);
