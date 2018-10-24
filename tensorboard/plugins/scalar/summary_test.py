@@ -77,7 +77,7 @@ class SummaryBaseTest(object):
     self.assertEqual(1.0, value)
 
   def test_string_value(self):
-    with six.assertRaisesRegex(self, Exception, r'Cast string.*float'):
+    with six.assertRaisesRegex(self, Exception, r'Cast str.*float'):
       self.scalar('a', np.array("113"))
 
   def test_requires_rank_0(self):
