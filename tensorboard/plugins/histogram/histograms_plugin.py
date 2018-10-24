@@ -193,12 +193,13 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
         raise ValueError('No histogram tag %r for run %r' % (tag, run))
+      if downsample_to is not None and len(tensor_events) > downsample_to:
+        rand_indices = random.Random(0).sample(
+            six.moves.xrange(len(tensor_events)), downsample_to)
+        indices = sorted(rand_indices)
+        tensor_events = [tensor_events[i] for i in indices]
       events = [[e.wall_time, e.step, tf.make_ndarray(e.tensor_proto).tolist()]
                 for e in tensor_events]
-      if downsample_to is not None and len(events) > downsample_to:
-        indices = sorted(random.Random(0).sample(list(range(len(events))),
-                                                 downsample_to))
-        events = [events[i] for i in indices]
     return (events, 'application/json')
 
   def _get_values(self, data_blob, dtype_enum, shape_string):
