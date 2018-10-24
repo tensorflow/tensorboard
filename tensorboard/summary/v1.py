@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Central API entry point for summary operations.
+"""Central API entry point for v1 versions of summary operations.
 
 This module simply offers a shorter way to access the members of modules
 like `tensorboard.plugins.scalar.summary`.
