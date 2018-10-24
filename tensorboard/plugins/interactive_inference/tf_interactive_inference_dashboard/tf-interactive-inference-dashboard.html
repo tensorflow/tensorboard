@@ -835,7 +835,8 @@ limitations under the License.
           sequence-examples="{{sequenceExamples}}"
           max-classes-to-display="{{maxInferenceEntriesPerRun}}"
           use-predict-api="{{usePredictApi}}"
-          predict-output-tensor="{{predictOutputTensor}}">
+          predict-output-tensor="{{predictOutputTensor}}"
+          predict-input-tensor="{{predictInputTensor}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
         <paper-button on-click="getExamplesAndCloseSettings_" class="main-button"
@@ -1688,6 +1689,10 @@ limitations under the License.
         },
         // Name of the output tensor to parse when using the Predict API.
         predictOutputTensor: {
+          type: String,
+        },
+        // Name of the intput tensor to parse when using the Predict API.
+        predictInputTensor: {
           type: String,
         },
         // Precision on charts for performance measuring.
@@ -3028,7 +3033,8 @@ limitations under the License.
                              'model_signature': this.modelSignature,
                              'label_vocab_path': this.labelVocabPath,
                              'use_predict': this.usePredictApi,
-                             'predict_output_tensor': this.predictOutputTensor};
+                             'predict_output_tensor': this.predictOutputTensor,
+                             'predict_input_tensor': this.predictInputTensor};
         this.$.spinner.hidden = false;
         if (!this.local) {
           const url = this.makeUrl_('/data/plugin/whatif/infer',
@@ -3633,6 +3639,7 @@ limitations under the License.
           'example_index': this.selected[0],
           'use_predict': this.usePredictApi,
           'predict_output_tensor': this.predictOutputTensor,
+          'predict_input_tensor': this.predictInputTensor,
         };
 
         // Call into backend.

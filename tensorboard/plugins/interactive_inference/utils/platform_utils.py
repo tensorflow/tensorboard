@@ -155,7 +155,7 @@ def call_servo(examples, serving_bundle):
     request.model_spec.signature_name = serving_bundle.signature
 
   if serving_bundle.use_predict:
-    request.inputs['examples'].CopyFrom(
+    request.inputs[serving_bundle.predict_input_tensor].CopyFrom(
         tf.make_tensor_proto(
             values=[ex.SerializeToString() for ex in examples],
             dtype=types_pb2.DT_STRING))

@@ -257,6 +257,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
           request.args.get('model_version'),
           request.args.get('model_signature'),
           request.args.get('use_predict') == 'true',
+          request.args.get('predict_input_tensor'),
           request.args.get('predict_output_tensor'))
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
@@ -406,6 +407,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
           request.args.get('model_version'),
           request.args.get('model_signature'),
           request.args.get('use_predict') == 'true',
+          request.args.get('predict_input_tensor'),
           request.args.get('predict_output_tensor'))
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),

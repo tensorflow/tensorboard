@@ -172,6 +172,8 @@ class ServingBundle(object):
       the default signuature will be used.
     use_predict: If true then use the servo Predict API as opposed to
       Classification or Regression.
+    predict_input_tensor: The name of the input tensor to parse when using the
+      Predict API.
     predict_output_tensor: The name of the output tensor to parse when using the
       Predict API.
 
@@ -180,7 +182,8 @@ class ServingBundle(object):
   """
 
   def __init__(self, inference_address, model_name, model_type, model_version,
-               signature, use_predict, predict_output_tensor):
+               signature, use_predict, predict_input_tensor,
+               predict_output_tensor):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -203,6 +206,7 @@ class ServingBundle(object):
     self.signature = signature if signature else None
 
     self.use_predict = use_predict
+    self.predict_input_tensor = predict_input_tensor
     self.predict_output_tensor = predict_output_tensor
 
 

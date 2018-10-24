@@ -81,10 +81,6 @@ limitations under the License.
         margin-top: 43px;
         margin-left: 10px;
       }
-      .tensor-name-input {
-        margin-top: 9px;
-        margin-left: 10px;
-      }
       paper-input {
         --paper-input-container-focus-color: #f57c00;
       }
@@ -119,10 +115,17 @@ limitations under the License.
       <paper-checkbox checked="{{usePredictApi}}" class="predict-checkbox">
         Uses Predict API
       </paper-checkbox>
+    </div>
+    <div class="flex-holder">
+      <paper-input always-float-label label="Input tensor name"
+                  placeholder="[[predictInputTensor]]" value="{{predictInputTensor}}"
+                  class="input-in-row"
+                  hidden$="[[shouldDisablePredictTensorControls_(usePredictApi)]]">
+      </paper-input>
       <paper-input always-float-label label="Output tensor name"
                   placeholder="[[predictOutputTensor]]" value="{{predictOutputTensor}}"
-                  class="input-in-row tensor-name-input"
-                  disabled="[[shouldDisablePredictTensorControls_(usePredictApi)]]">
+                  class="input-in-row"
+                  hidden$="[[shouldDisablePredictTensorControls_(usePredictApi)]]">
       </paper-input>
     </div>
     <div class="flex-holder">
@@ -184,6 +187,7 @@ limitations under the License.
     const defaultMaxClassesToDisplay = '5';
     const defaultSamplingOdds = '1';
     const defaultPredictOutputTensor = 'probabilities'
+    const defaultPredictInputTensor = 'examples'
 
     Polymer({
       is: "tf-inference-panel",
@@ -280,6 +284,13 @@ limitations under the License.
               {defaultValue: false}),
           observer: 'usePredictApiChanged_',
         },
+        predictInputTensor: {
+          type: String,
+          value: tf_storage.getStringInitializer(
+            'predictInputTensor', {defaultValue: defaultPredictInputTensor}),
+          observer: 'predictInputTensorChanged_',
+          notify: true,
+        },
         predictOutputTensor: {
           type: String,
           value: tf_storage.getStringInitializer(
@@ -330,6 +341,9 @@ limitations under the License.
 
       predictOutputTensorChanged_: tf_storage.getStringObserver(
         'predictOutputTensor', {defaultValue: defaultPredictOutputTensor}),
+
+      predictInputTensorChanged_: tf_storage.getStringObserver(
+        'predictInputTensor', {defaultValue: defaultPredictInputTensor}),
 
       shouldDisableClassificationControls_: function(modelType) {
         return modelType == 'regression';
