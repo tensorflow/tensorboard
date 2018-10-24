@@ -39,7 +39,7 @@ py_library(
     deps = [
         ":lazy",
         ":program",
-        ":summary",
+        "//tensorboard/summary",
     ],
 )
 
@@ -320,31 +320,9 @@ py_test(
     ],
 )
 
-py_library(
+alias(
     name = "summary",
-    srcs = ["summary.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/plugins/audio:summary",
-        "//tensorboard/plugins/custom_scalar:summary",
-        "//tensorboard/plugins/histogram:summary",
-        "//tensorboard/plugins/image:summary",
-        "//tensorboard/plugins/pr_curve:summary",
-        "//tensorboard/plugins/scalar:summary",
-        "//tensorboard/plugins/text:summary",
-    ],
-)
-
-py_test(
-    name = "summary_test",
-    size = "small",
-    srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":lib",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
+    actual = "//tensorboard/summary",
 )
 
 py_library(
