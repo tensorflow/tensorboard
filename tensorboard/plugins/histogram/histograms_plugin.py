@@ -194,8 +194,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       except KeyError:
         raise ValueError('No histogram tag %r for run %r' % (tag, run))
       if downsample_to is not None and len(tensor_events) > downsample_to:
-        rand_indices = random.Random(0).sample(list(range(len(tensor_events))),
-            downsample_to)
+        rand_indices = random.Random(0).sample(
+            six.moves.xrange(len(tensor_events)), downsample_to)
         indices = sorted(rand_indices)
         tensor_events = [tensor_events[i] for i in indices]
       events = [[e.wall_time, e.step, tf.make_ndarray(e.tensor_proto).tolist()]
