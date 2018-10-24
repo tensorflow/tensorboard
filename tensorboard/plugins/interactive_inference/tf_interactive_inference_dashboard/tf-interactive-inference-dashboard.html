@@ -1471,8 +1471,7 @@ limitations under the License.
     const inferenceErrorStr = ' Inference error';
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
-    const inferenceScoreStr = ' Inference score';
-    const inferenceScoreStr2 = ' Inference score 2';
+    const inferenceScoreStr = ' Inference score ';
     const exampleIdKey = ' Example ID';
 
     function deleteElement(elt){
@@ -2087,7 +2086,7 @@ limitations under the License.
       isComputedKeyStr_: function(feature) {
         return feature == inferenceValueStr || feature == inferenceLabelStr
             || feature == inferenceCorrectStr || feature == inferenceErrorStr
-            || feature == inferenceScoreStr || feature == inferenceScoreStr2 
+            || feature.lastIndexOf(inferenceScoreStr, 0) == 0 
             || feature == inferenceAbsErrorStr
             || feature == inferenceSquaredErrorStr || feature == exampleIdKey
             || this.facetDistFeatureNames.indexOf(feature) != -1
@@ -2847,11 +2846,11 @@ limitations under the License.
             for (let model_num=0; model_num <
              this.inferences.results.classification.classifications.length;
              model_num++){
-            // TODO is the usage of const within for loop correct here?
-            const classes =
-              this.inferences.results.classification.classifications[model_num][i].classes;
-            inferenceMap[this.inferences.indices[i]][model_num] =
-              classes.sort((a, b) => b.score - a.score);
+              // TODO is the usage of const within for loop correct here?
+              const classes =
+                this.inferences.results.classification.classifications[model_num][i].classes;
+              inferenceMap[this.inferences.indices[i]][model_num] =
+                classes.sort((a, b) => b.score - a.score);
             }
           } else {
             // TODO edit inferencemap for regression with new indices
@@ -2895,7 +2894,7 @@ limitations under the License.
                  inferenceIndex++) {
               for (let labelIndex = 0;
                    labelIndex < self.examplesAndInferences[index].inferences[
-                     inferenceIndex].length;
+                     inferenceIndex][0].length;
                    labelIndex++) {
                 self.examplesAndInferences[index].inferences[inferenceIndex][0][
                   labelIndex].vocabLabel = self.labelVocab[
@@ -2956,7 +2955,7 @@ limitations under the License.
           }
         }
         // console.log(this.examplesAndInferences[index].inferences)
-        item[inferenceScoreStr2] = this.examplesAndInferences[
+        item[inferenceScoreStr+1] = this.examplesAndInferences[
         index].inferences[inferenceIdx][1][indexForNonZeroLabel].score;
         
         item[inferenceScoreStr] =
