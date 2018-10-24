@@ -3,7 +3,7 @@
 ![What-If Tool Screenshot](/tensorboard/plugins/interactive_inference/img/wit-smile-intro.png "What-If Tool Screenshot")
 
 The [What-If Tool](https://pair-code.github.io/what-if-tool) (WIT) provides an easy-to-use interface for expanding
-understanding of a black-box ML model.
+understanding of a black-box classification or regression ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
 Additionally, examples can be edited manually or programatically and re-run
@@ -50,20 +50,29 @@ Fine, here are some demos:
 To use the tool, only the following information needs to be provided:
 
 * The model server host and port, served using
-  [TensorFlow Serving](https://github.com/tensorflow/serving). The model must
-  use the TensorFlow Serving Classification or Regression APIs.
+  [TensorFlow Serving](https://github.com/tensorflow/serving). The model can
+  use the TensorFlow Serving Classification, Regression, or Predict API.
     * Information on how to create a saved model with the `Estimator` API that
       will use thse appropriate TensorFlow Serving Classification or Regression
       APIs can be found in the [saved model documentation](https://www.tensorflow.org/guide/saved_model#using_savedmodel_with_estimators)
       and in this [helpful tutorial](http://shzhangji.com/blog/2018/05/14/serve-tensorflow-estimator-with-savedmodel/).
+      Models that use these APIs are the simplest to use with the What-If Tool
+      as they require no set-up in the tool beyond setting the model type.
+    * If the model uses the Predict API, the input must be serialized tf.Example
+      or tf.SequenceExample protos and the output must be following:
+        * For classification models, the output must include a 2D float tensor
+          containing a list of class probabilities for all possible class
+          indices for each inferred example.
+        * For regression models, the output must include a float tensor
+          containing a single regression score for each inferred example.
     * The What-If Tool queries the served model using the gRPC API, not the
       RESTful API. See the TensorFlow Serving
       [docker documentation](https://www.tensorflow.org/serving/docker) for
       more information on the two APIs. The docker image uses port 8500 for the
       gRPC API, so if using the docker approach, the port to specify in the
       What-If Tool will be 8500.
-* A TFRecord file of tf.Examples to perform inference on and the
-  number of examples to load from the file.
+* A TFRecord file of tf.Examples or tf.SequenceExamples to perform inference on
+  and the number of examples to load from the file.
     * Can handle up to tens of thousands of examples. The exact amount depends
       on the size of each example (how many features there are and how large the
       feature values are).
