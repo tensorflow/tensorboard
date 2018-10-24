@@ -24,6 +24,7 @@ import os
 import shutil
 import sqlite3
 
+import six
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -40,12 +41,13 @@ class FakeFlags(object):
       inspect,
       logdir='',
       event_file='',
-      db=''):
+      db='',
+      path_prefix=''):
     self.inspect = inspect
     self.logdir = logdir
     self.event_file = event_file
     self.db = db
-    self.path_prefix = ''
+    self.path_prefix = path_prefix
 
 
 class CorePluginTest(tf.test.TestCase):
@@ -71,14 +73,30 @@ class CorePluginTest(tf.test.TestCase):
     loader = core_plugin.CorePluginLoader()
     loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp'))
     loader.fix_flags(FakeFlags(inspect=True, event_file='/tmp/event.out'))
+    loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp'))
+    loader.fix_flags(FakeFlags(inspect=False, db='sqlite:foo'))
+    # User can pass both, although the behavior is not clearly defined.
+    loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp', db="sqlite:foo"))
 
-    with self.assertRaises(ValueError):
+    logdir_or_db_req = r'A logdir or db must be specified'
+    one_of_event_or_logdir_req = r'Must specify either --logdir.*but not both.$'
+    event_or_logdir_req = r'Must specify either --logdir or --event_file.$'
+
+    with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
       loader.fix_flags(FakeFlags(inspect=True))
-    with self.assertRaises(ValueError):
+    with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
       loader.fix_flags(FakeFlags(inspect=True, db='sqlite:~/db.sqlite'))
-    with self.assertRaises(ValueError):
+    with six.assertRaisesRegex(self, ValueError, one_of_event_or_logdir_req):
       loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp',
                                  event_file='/tmp/event.out'))
+    with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
+      loader.fix_flags(FakeFlags(inspect=False))
+    with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
+      loader.fix_flags(FakeFlags(inspect=False, event_file='/tmp/event.out'))
+
+    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='hello/')
+    loader.fix_flags(flag)
+    self.assertEqual(flag.path_prefix, 'hello')
 
   def testIndex_returnsActualHtml(self):
     """Test the format of the /data/runs endpoint."""
