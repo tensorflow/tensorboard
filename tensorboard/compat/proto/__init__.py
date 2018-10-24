@@ -12,7 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
-"""Contains the version string."""
-
-VERSION = '1.13.0a0'

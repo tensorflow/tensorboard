@@ -40,13 +40,13 @@ handle these situations gracefully.
   <style include="run-color-style"></style>
 
   <template>
-      <paper-input
-        id="names-regex"
-        no-label-float
-        label="Write a regex to filter runs"
-        value="[[regex]]"
-        on-bind-value-changed="_debouncedRegexChange"
-      ></paper-input>
+    <paper-input
+      id="names-regex"
+      no-label-float
+      label="Write a regex to filter runs"
+      value="[[regex]]"
+      on-bind-value-changed="_debouncedRegexChange"
+    ></paper-input>
     <div id="outer-container" class="scrollbar">
       <template
         is="dom-repeat"
@@ -58,6 +58,7 @@ handle these situations gracefully.
           <div class="icon-container checkbox-container vertical-align-container">
             <paper-checkbox
               class="checkbox vertical-align-center"
+              id$="checkbox-[[item]]"
               name="[[item]]"
               checked$="[[_isChecked(item, selectionState.*)]]"
               on-change="_checkboxChange"
