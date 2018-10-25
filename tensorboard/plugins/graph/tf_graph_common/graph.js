@@ -396,7 +396,10 @@ var tf;
                 }
                 h.hasShapeInfo = true;
                 // Sum the sizes of all output tensors.
-                return _(opNode.outputShapes).mapValues(function (shape) {
+                // TODO(stephanwlee): Use Object.values after es2017.
+                var values = Object.keys(opNode.outputShapes)
+                    .map(function (k) { return opNode.outputShapes[k]; })
+                    .map(function (shape) {
                     // If the shape is unknown, treat it as 1 when computing
                     // total size. This gives a lower bound for the total size.
                     if (shape == null) {
@@ -404,7 +407,7 @@ var tf;
                     }
                     // Multiply all shapes to get the total size of the tensor.
                     // E.g. The total size of [4, 2, 1] is 4 * 2 * 1.
-                    return _(shape).reduce(function (accumulated, currSize) {
+                    return shape.reduce(function (accumulated, currSize) {
                         // If this particular dimension is unknown, treat
                         // it as 1 when computing total size. This gives a lower bound
                         // for the total size.
@@ -413,7 +416,8 @@ var tf;
                         }
                         return accumulated * currSize;
                     }, 1);
-                }).sum();
+                });
+                return _.sum(values);
             };
             return MetaedgeImpl;
         }());

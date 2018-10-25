@@ -78,20 +78,22 @@ var tf;
              */
             function clusterSimilarSubgraphs(h) {
                 /** a dict from metanode.signature() => Array of tf.graph.Groups */
-                var hashDict = _(h.getNodeMap()).reduce(function (hash, node, name) {
+                var map = h.getNodeMap();
+                var hashDict = Object.keys(map).reduce(function (reduced, name) {
+                    var node = map[name];
                     if (node.type !== graph_1.NodeType.META) {
-                        return hash;
+                        return reduced;
                     }
                     var levelOfMetaNode = name.split('/').length - 1;
                     var signature = getSignature(node);
-                    var templateInfo = hash[signature] ||
+                    var templateInfo = reduced[signature] ||
                         { nodes: [], level: levelOfMetaNode };
-                    hash[signature] = templateInfo;
+                    reduced[signature] = templateInfo;
                     templateInfo.nodes.push(node);
                     if (templateInfo.level > levelOfMetaNode) {
                         templateInfo.level = levelOfMetaNode;
                     }
-                    return hash;
+                    return reduced;
                 }, {});
                 return Object.keys(hashDict)
                     .map(function (key) { return [key, hashDict[key]]; })

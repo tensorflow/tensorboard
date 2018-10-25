@@ -265,24 +265,6 @@ var tf;
             }
             util.removeCommonPrefix = removeCommonPrefix;
             /**
-             * Given a queryString, aka ?foo=1&bar=2, return the object representation.
-             */
-            function getQueryParams(queryString) {
-                if (queryString.charAt(0) === '?') {
-                    queryString = queryString.slice(1);
-                }
-                var queryParams = _.chain(queryString.split('&'))
-                    .map(function (item) {
-                    if (item) {
-                        return item.split('=');
-                    }
-                })
-                    .compact()
-                    .value();
-                return _.object(queryParams);
-            }
-            util.getQueryParams = getQueryParams;
-            /**
              * Given a timestamp in microseconds, return a human-friendly string denoting
              * how long ago the timestamp was.
              */
