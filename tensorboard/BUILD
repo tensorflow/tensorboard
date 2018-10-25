@@ -63,9 +63,11 @@ py_test(
     srcs = ["program_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":default",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
     ],
 )
