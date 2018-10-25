@@ -385,7 +385,7 @@ def get_test_assets_zip_provider():
   memfile = six.BytesIO()
   with zipfile.ZipFile(memfile, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
     zf.writestr('index.html', FAKE_INDEX_HTML)
-  return lambda: six.BytesIO(memfile.getbuffer())
+  return lambda: six.BytesIO(memfile.getvalue())
 
 
 if __name__ == '__main__':
