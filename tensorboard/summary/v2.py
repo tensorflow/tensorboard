@@ -20,6 +20,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard.plugins.scalar.summary import scalar
+from tensorboard.plugins.scalar.summary import scalar_pb
+
 def _not_implemented_yet():
   raise NotImplementedError()
 
@@ -40,9 +43,6 @@ pr_curve_pb = _not_implemented_yet
 pr_curve_streaming_op = _not_implemented_yet
 pr_curve_raw_data_op = _not_implemented_yet
 pr_curve_raw_data_pb = _not_implemented_yet
-
-scalar = _not_implemented_yet
-scalar_pb = _not_implemented_yet
 
 text = _not_implemented_yet
 text_pb = _not_implemented_yet
