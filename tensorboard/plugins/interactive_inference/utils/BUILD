@@ -6,6 +6,9 @@ py_library(
     name = "common_utils",
     srcs = ["common_utils.py"],
     srcs_version = "PY2AND3",
+    deps = [
+        "@org_tensorflow_serving_api",
+    ],
 )
 
 py_library(
