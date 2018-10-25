@@ -516,7 +516,7 @@ limitations under the License.
         linenoToNodeNameAndStackPos[lineno] =
             linenoToNodeNameAndStackPos[lineno].filter(line => {
               const nodeName = line[0];
-              return _.contains(watchedNodeNames, nodeName);
+              return _.includes(watchedNodeNames, nodeName);
             });
       }
     },
@@ -623,7 +623,7 @@ limitations under the License.
           const fullFilePath = stackFrame[0];
           const lineno = Number(stackFrame[1]);
           frameElement.textContent = fullFilePath + ': ' + String(lineno);
-          if (_.contains(this._fullFilePaths, fullFilePath)) {
+          if (_.includes(this._fullFilePaths, fullFilePath)) {
             frameElement.classList.add('stack-frame-clickable');
             // TODO(cais): Make class CSS work.
             frameElement.style['color'] = 'blue';
