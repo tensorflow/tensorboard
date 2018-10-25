@@ -43,14 +43,4 @@ describe('util', () => {
     result = tf.graph.util.removeCommonPrefix(['q/w/', 'q/w/b', 'q/w/c/f']);
     assert.deepEqual(result, ['q/w/', 'q/w/b', 'q/w/c/f']);
   });
-
-  it('query params', () => {
-    // Starts with question mark.
-    let queryParams = tf.graph.util.getQueryParams('?foo=1&bar=2');
-    assert.deepEqual(queryParams, {'foo': '1', 'bar': '2'});
-
-    // No question mark.
-    queryParams = tf.graph.util.getQueryParams('foo=1&bar=2');
-    assert.deepEqual(queryParams, {'foo': '1', 'bar': '2'});
-  });
 });
