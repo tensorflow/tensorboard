@@ -93,6 +93,13 @@ The information can also be provided directly through URL parameters.
 Changing the settings through the controls automatically updates the URL so that
 it can be shared with others for them to view the same data in the What-If Tool.
 
+## All I have is a dataset. Where do I start?
+
+Check out the [WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb)
+which shows how to install TensorFlow, TensorBoard, and TensorFlow Serving,
+train a very simple model to predict a column from a CSV file, serve that model
+and load it up in the What-If Tool.
+
 ## What can it do?
 * Visualize a dataset of TensorFlow Example protos.
   * The main panel shows the dataset using [Facets Dive](https://pair-code.github.io/facets),
