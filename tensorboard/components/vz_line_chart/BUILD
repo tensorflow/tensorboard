@@ -28,7 +28,8 @@ tf_web_library(
     srcs = [
         "dragZoomInteraction.html",
         "dragZoomInteraction.ts",
-        "plottable-drag.ts",
+        "drag-interaction.js",
+        "drag-interaction.d.ts",
     ],
     path = "/vz-line-chart",
     visibility = ["//visibility:public"],

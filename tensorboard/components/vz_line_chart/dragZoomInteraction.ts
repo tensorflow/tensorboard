@@ -42,7 +42,7 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
     super();
     this.xScale(xScale);
     this.yScale(yScale);
-    this._dragInteraction = new Drag();
+    this._dragInteraction = new Drag({enableTouch: false});
     this._doubleClickInteraction = new Plottable.Interactions.Click();
     this.setupCallbacks();
     this.unzoomMethod = unzoomMethod;
