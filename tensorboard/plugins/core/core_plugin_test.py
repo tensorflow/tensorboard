@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import contextlib
 import json
 import os
 import shutil
@@ -385,7 +386,7 @@ def get_test_assets_zip_provider():
   memfile = six.BytesIO()
   with zipfile.ZipFile(memfile, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
     zf.writestr('index.html', FAKE_INDEX_HTML)
-  return lambda: six.BytesIO(memfile.getvalue())
+  return lambda: contextlib.closing(six.BytesIO(memfile.getvalue()))
 
 
 if __name__ == '__main__':
