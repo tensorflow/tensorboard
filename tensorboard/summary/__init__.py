@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Central API entry point for summary operations.
 
-"""Contains the version string."""
+This module exposes summary ops for the standard TensorBoard plugins.
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-VERSION = '1.13.0a0'
+from tensorboard.summary.v1 import *

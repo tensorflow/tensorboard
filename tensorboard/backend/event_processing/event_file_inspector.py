@@ -397,12 +397,6 @@ def inspect(logdir='', event_file='', tag=''):
   Raises:
     ValueError: If neither logdir and event_file are given, or both are given.
   """
-  if logdir and event_file:
-    raise ValueError(
-        'Must specify either --logdir or --event_file, but not both.')
-  if not (logdir or event_file):
-    raise ValueError('Must specify either --logdir or --event_file.')
-
   print(PRINT_SEPARATOR +
         'Processing event files... (this can take a few minutes)\n' +
         PRINT_SEPARATOR)

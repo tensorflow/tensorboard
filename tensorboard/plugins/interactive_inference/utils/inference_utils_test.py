@@ -32,6 +32,7 @@ from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
 from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import regression_pb2
 
 
@@ -218,7 +219,7 @@ class InferenceUtilsTest(tf.test.TestCase):
                                      mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
     serving_bundle = inference_utils.ServingBundle('', '', 'classification',
-                                                   '', '')
+                                                   '', '', False, '', '')
     num_mutants = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
@@ -252,7 +253,7 @@ class InferenceUtilsTest(tf.test.TestCase):
       self, mock_call_servo, mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
     serving_bundle = inference_utils.ServingBundle('', '', 'classification',
-                                                   '', '')
+                                                   '', '', False, '', '')
     num_mutants = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
@@ -398,6 +399,56 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(1, len(jsonable['value']))
     self.assertEqual(20, jsonable['value'][0]['step'])
     self.assertAlmostEqual(0.45, jsonable['value'][0]['scalar'])
+
+  def test_convert_predict_response_regression(self):
+    """Test converting a PredictResponse to a RegressionResponse."""
+    predict = predict_pb2.PredictResponse()
+    output = predict.outputs['scores']
+    dim = output.tensor_shape.dim.add()
+    dim.size = 2
+    output.float_val.extend([0.1, 0.2])
+
+    bundle = inference_utils.ServingBundle(
+        '', '', 'regression', '', '', True, '', 'scores')
+    converted = common_utils.convert_predict_response(predict, bundle)
+
+    self.assertAlmostEqual(0.1, converted.result.regressions[0].value)
+    self.assertAlmostEqual(0.2, converted.result.regressions[1].value)
+
+  def test_convert_predict_response_classification(self):
+    """Test converting a PredictResponse to a ClassificationResponse."""
+    predict = predict_pb2.PredictResponse()
+    output = predict.outputs['probabilities']
+    dim = output.tensor_shape.dim.add()
+    dim.size = 3
+    dim = output.tensor_shape.dim.add()
+    dim.size = 2
+    output.float_val.extend([1., 0., .9, .1, .8, .2])
+
+    bundle = inference_utils.ServingBundle(
+        '', '', 'classification', '', '', True, '', 'probabilities')
+    converted = common_utils.convert_predict_response(predict, bundle)
+
+    self.assertEqual("0", converted.result.classifications[0].classes[0].label)
+    self.assertAlmostEqual(
+        1, converted.result.classifications[0].classes[0].score)
+    self.assertEqual("1", converted.result.classifications[0].classes[1].label)
+    self.assertAlmostEqual(
+        0, converted.result.classifications[0].classes[1].score)
+
+    self.assertEqual("0", converted.result.classifications[1].classes[0].label)
+    self.assertAlmostEqual(
+        .9, converted.result.classifications[1].classes[0].score)
+    self.assertEqual("1", converted.result.classifications[1].classes[1].label)
+    self.assertAlmostEqual(
+        .1, converted.result.classifications[1].classes[1].score)
+
+    self.assertEqual("0", converted.result.classifications[2].classes[0].label)
+    self.assertAlmostEqual(
+        .8, converted.result.classifications[2].classes[0].score)
+    self.assertEqual("1", converted.result.classifications[2].classes[1].label)
+    self.assertAlmostEqual(
+        .2, converted.result.classifications[2].classes[1].score)
 
 
 if __name__ == '__main__':
