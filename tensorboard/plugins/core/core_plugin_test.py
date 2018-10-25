@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import contextlib
 import json
 import os
 import shutil
 import sqlite3
+import zipfile
 
 import six
 import tensorflow as tf
@@ -33,6 +35,9 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+
+
+FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
 
 
 class FakeFlags(object):
@@ -104,7 +109,7 @@ class CorePluginTest(tf.test.TestCase):
     self.assertEqual(200, response.status_code)
     self.assertStartsWith(response.headers.get('Content-Type'), 'text/html')
     html = response.get_data()
-    self.assertStartsWith(html, b'<!doctype html>')
+    self.assertEqual(html, FAKE_INDEX_HTML)
 
   def testDataPaths_disableAllCaching(self):
     """Test the format of the /data/runs endpoint."""
@@ -378,12 +383,10 @@ class CorePluginUsingMetagraphOnlyTest(CorePluginTest):
 
 
 def get_test_assets_zip_provider():
-  path = os.path.join(tf.resource_loader.get_data_files_path(),
-                      'test_webfiles.zip')
-  if not os.path.exists(path):
-    tf.logging.warning('test_webfiles.zip static assets not found: %s', path)
-    return None
-  return lambda: open(path, 'rb')
+  memfile = six.BytesIO()
+  with zipfile.ZipFile(memfile, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+    zf.writestr('index.html', FAKE_INDEX_HTML)
+  return lambda: contextlib.closing(six.BytesIO(memfile.getvalue()))
 
 
 if __name__ == '__main__':
