@@ -2849,22 +2849,24 @@ limitations under the License.
         }
         // Create map of example indices to inference results.
         const inferenceMap = {}
-        const isClassification = !!this.inferences.results.classificationResult;
+        const isClassification = !!this.inferences.results[0].classificationResult;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
             inferenceMap[this.inferences.indices[i]] = [];
-            const result = this.inferences.results.classificationResult;
-            for (let model_num=0; model_num < result.classifications.length;
+            console.log(this.inferences.results.length);
+            for (let model_num=0; model_num < this.inferences.results.length;
              model_num++){
+              const result = this.inferences.results[model_num].classificationResult;
+              console.log(result);
               // For models that don't return any labels for the classes, fill
               // them out with class indicies.
-              for (let j = 0; j < result.classifications[model_num][i].classes.length; j++) {
-                if (result.classifications[model_num][i].classes[j].label == '') {
-                  result.classifications[model_num][i].classes[j].label = j.toString();
+              for (let j = 0; j < result.classifications[i].classes.length; j++) {
+                if (result.classifications[i].classes[j].label == '') {
+                  result.classifications[i].classes[j].label = j.toString();
                 }
               }
               inferenceMap[this.inferences.indices[i]][model_num] =
-                  result.classifications[model_num][i].classes.sort((a, b) => b.score - a.score);
+                  result.classifications[i].classes.sort((a, b) => b.score - a.score);
             }
           } else {
             // TODO edit inferencemap for regression with new indices
@@ -2967,9 +2969,10 @@ limitations under the License.
             break;
           }
         }
+        // TODO make this a for loop over models
         // console.log(this.examplesAndInferences[index].inferences)
-        item[inferenceScoreStr+1] = this.examplesAndInferences[
-        index].inferences[inferenceIdx][1][indexForNonZeroLabel].score;
+        // item[inferenceScoreStr+1] = this.examplesAndInferences[
+        // index].inferences[inferenceIdx][1][indexForNonZeroLabel].score;
 
         item[inferenceScoreStr] =
           this.examplesAndInferences[index].inferences[inferenceIdx][0][
@@ -3019,7 +3022,10 @@ limitations under the License.
       /**
        * Handler for when running inference, calls the backend.
        */
+
+       // TODO change model name etc to list
       inferClicked_: function() {
+        // TODO make these fields comma separated
         const inferParams = {'inference_address': this.inferenceAddress,
                              'model_name': this.modelName,
                              'model_type': this.modelType,

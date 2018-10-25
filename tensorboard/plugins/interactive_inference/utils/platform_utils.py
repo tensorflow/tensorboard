@@ -151,7 +151,6 @@ def call_servo(examples, serving_bundle):
   if serving_bundle.signature is not None:
     request.model_spec.signature_name = serving_bundle.signature
   request.input.example_list.examples.extend(examples)
-  print(request)
   if serving_bundle.model_type == 'classification':
     return stub.Classify(request, 30.0)  # 30 secs timeout
   else:

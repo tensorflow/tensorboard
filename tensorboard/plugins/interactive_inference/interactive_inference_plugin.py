@@ -249,26 +249,36 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       if request.method != 'GET':
         tf.logging.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
-                                 'application/json', code=405)
+                                    'application/json', code=405)
 
-      serving_bundle = inference_utils.ServingBundle(
-          request.args.get('inference_address'),
-          request.args.get('model_name'), request.args.get('model_type'),
-          request.args.get('model_version'),
-          request.args.get('model_signature'))
+      inference_addresses = request.args.get('inference_address').split(',')
+      model_types = request.args.get('model_type').split(',')
+      model_names = request.args.get('model_name').split(',')
+      model_versions = request.args.get('model_version').split(',')
+      model_signatures = request.args.get('model_signature').split(',')
+
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
+      print(inference_addresses)
+      infer_objs = []
+      for model_num in xrange(len(inference_addresses)):
+        serving_bundle = inference_utils.ServingBundle(
+            inference_addresses[model_num],
+            model_names[model_num], model_types[model_num],
+            model_versions[model_num],
+            model_signatures[model_num])
 
-      # Get inference results proto and combine with indices of inferred
-      # examples and respond with this data as json.
-      inference_result_proto = platform_utils.call_servo(
-          examples_to_infer, serving_bundle)
-      new_inferences = inference_utils.wrap_inference_results(
-          inference_result_proto)
-      infer_json = json_format.MessageToJson(
-          new_inferences, including_default_value_fields=True)
-      infer_obj = json.loads(infer_json)
-      resp = {'indices': indices_to_infer, 'results': [infer_obj]}
+        # Get inference results proto and combine with indices of inferred
+        # examples and respond with this data as json.
+        inference_result_proto = platform_utils.call_servo(
+            examples_to_infer, serving_bundle)
+        new_inferences = inference_utils.wrap_inference_results(
+            inference_result_proto)
+        infer_json = json_format.MessageToJson(
+            new_inferences, including_default_value_fields=True)
+        infer_objs.append(json.loads(infer_json))
+
+      resp = {'indices': indices_to_infer, 'results': infer_objs}
       self.updated_example_indices = set()
       return http_util.Respond(request, {'inferences': json.dumps(resp),
                                          'vocab': json.dumps(label_vocab)},
