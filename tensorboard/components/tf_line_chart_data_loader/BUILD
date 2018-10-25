@@ -31,6 +31,7 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_color_scale:legacy",
+        "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_line_chart2:legacy",
         "//third_party/javascript/polymer/v1/paper-spinner:lib",
