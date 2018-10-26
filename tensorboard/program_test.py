@@ -24,6 +24,20 @@ import six
 import tensorflow as tf
 
 from tensorboard import program
+from tensorboard.plugins.core import core_plugin
+
+
+class TensorBoardTest(tf.test.TestCase):
+  """Tests the TensorBoard program."""
+
+  def testConfigure(self):
+    # Many useful flags are defined under the core plugin.
+    tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader()])
+    tb.configure(logdir='foo')
+    self.assertStartsWith(tb.flags.logdir, 'foo')
+
+    with six.assertRaisesRegex(self, ValueError, 'Unknown TensorBoard flag'):
+      tb.configure(foo='bar')
 
 
 class WerkzeugServerTest(tf.test.TestCase):
