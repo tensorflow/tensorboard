@@ -2969,21 +2969,21 @@ limitations under the License.
             break;
           }
         }
-        // TODO make this a for loop over models
-        // console.log(this.examplesAndInferences[index].inferences)
-        // item[inferenceScoreStr+1] = this.examplesAndInferences[
-        // index].inferences[inferenceIdx][1][indexForNonZeroLabel].score;
 
-        item[inferenceScoreStr] =
-          this.examplesAndInferences[index].inferences[inferenceIdx][0][
-            indexForNonZeroLabel].score;
-        if (this.examplesAndInferences[index].inferences[inferenceIdx][0][
-          indexForNonZeroLabel].score >= threshold) {
-          item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][0][
-              indexForNonZeroLabel].label;
-        } else {
-          item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+        let n_models = this.examplesAndInferences[index].inferences[
+          inferenceIdx].length;
+        for (let model_num = 0; model_num < n_models; model_num++){
+          item[inferenceScoreStr + (model_num + 1)] =
+            this.examplesAndInferences[index].inferences[inferenceIdx][
+              model_num][indexForNonZeroLabel].score;
+          if (this.examplesAndInferences[index].inferences[inferenceIdx][
+            model_num][indexForNonZeroLabel].score >= threshold) {
+            item[inferenceValueStr] =
+              this.examplesAndInferences[index].inferences[inferenceIdx][0][
+                indexForNonZeroLabel].label;
+          } else {
+            item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+          }
         }
       },
 
@@ -3262,6 +3262,7 @@ limitations under the License.
        * Callback for when new examples are received from the backend.
        */
       updateExampleContents_: function(examples, hasSprite) {
+        console.log('I am here',examples)
         this.exampleStatusStr = examples.length + ' examples loaded';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;

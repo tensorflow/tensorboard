@@ -252,7 +252,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
                                     'application/json', code=405)
 
       inference_addresses = request.args.get('inference_address').split(',')
-      model_types = request.args.get('model_type').split(',')
+      model_type = request.args.get('model_type')
       model_names = request.args.get('model_name').split(',')
       model_versions = request.args.get('model_version').split(',')
       model_signatures = request.args.get('model_signature').split(',')
@@ -264,7 +264,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       for model_num in xrange(len(inference_addresses)):
         serving_bundle = inference_utils.ServingBundle(
             inference_addresses[model_num],
-            model_names[model_num], model_types[model_num],
+            model_names[model_num], model_type,
             model_versions[model_num],
             model_signatures[model_num])
 
