@@ -83,6 +83,8 @@ before_script:
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   # a comment of '# noqa' or better yet '# noqa: <error code>' added to the code to silence flake8
   - flake8 . --count --exit-zero --ignore=E111,E114 --max-complexity=10 --max-line-length=127 --statistics
+  # Make sure all necessary files have the license information.
+  - tensorboard/tools/license_test.sh
 
 # Commands in this section should only fail if it's our fault. Travis will
 # categorize them as 'failed', rather than 'error' for other sections.

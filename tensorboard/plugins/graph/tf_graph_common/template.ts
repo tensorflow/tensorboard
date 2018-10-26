@@ -81,21 +81,23 @@ function getSignature(metanode) {
  */
 function clusterSimilarSubgraphs(h: hierarchy.Hierarchy) {
   /** a dict from metanode.signature() => Array of tf.graph.Groups */
-  let hashDict = _(h.getNodeMap()).reduce(
-      (hash, node: OpNode|Metanode, name) => {
+  const map = h.getNodeMap();
+  let hashDict = Object.keys(map).reduce(
+      (reduced: Object, name: string) => {
+    const node: OpNode|GroupNode = map[name];
     if (node.type !== NodeType.META) {
-      return hash;
+      return reduced;
     }
     let levelOfMetaNode = name.split('/').length - 1;
     let signature = getSignature(node);
-    let templateInfo = hash[signature] ||
+    let templateInfo = reduced[signature] ||
       {nodes: [], level: levelOfMetaNode};
-    hash[signature] = templateInfo;
+    reduced[signature] = templateInfo;
     templateInfo.nodes.push(node);
     if (templateInfo.level > levelOfMetaNode) {
       templateInfo.level = levelOfMetaNode;
     }
-    return hash;
+    return reduced;
   }, {});
 
   return Object.keys(hashDict)

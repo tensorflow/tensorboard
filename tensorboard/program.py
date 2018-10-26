@@ -160,7 +160,7 @@ class TensorBoard(object):
           raise ValueError('Conflicting Abseil flag: %s' % flag.name)
         setattr(flags, flag.name, flag.value)
     for k, v in kwargs.items():
-      if hasattr(flags, k):
+      if not hasattr(flags, k):
         raise ValueError('Unknown TensorBoard flag: %s' % k)
       setattr(flags, k, v)
     for loader in self.plugin_loaders:

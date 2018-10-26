@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,4 +14,18 @@
 # limitations under the License.
 # ==============================================================================
 
-# This module is included by build rules to force non-TensorFlow builds
+# tf_imports/*.html define their respective OSS license.
+# tensorboard/plugins/beholder/colormaps.py has a different license.
+files=$(grep -rL "Copyright 20[0-9][0-9] The TensorFlow" \
+    --include=*.* \
+    --exclude=*.{pyc,json,png,wav,pbtxt,md,in,rst,cfg,ipynb} \
+    tensorboard | \
+    grep -v "tensorboard/components/tf_imports/.*.html\|tensorboard/plugins/beholder/colormaps.py" )
+
+count=$(echo "$files" | wc -l | awk '{print $1}')
+
+if [[ ! -z $files && $count -gt 0 ]]; then
+  echo "Requires license information in below file(s):"
+  echo -e "$files"
+  exit $count
+fi
