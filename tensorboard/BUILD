@@ -325,6 +325,7 @@ py_test(
 alias(
     name = "summary",
     actual = "//tensorboard/summary",
+    visibility = ["//visibility:public"],
 )
 
 py_library(

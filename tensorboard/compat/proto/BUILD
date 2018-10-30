@@ -50,6 +50,7 @@ py_test(
     srcs_version = "PY2AND3",
     tags = [
         "manual",
+        "notap",
     ],
     deps = [
         ":protos_all_py_pb2",

@@ -26,9 +26,9 @@ from __future__ import print_function
 import collections
 
 import tensorflow as tf
-import tensorboard.summary
-import tensorboard.summary.v1
-import tensorboard.summary.v2
+import tensorboard.summary as tb_summary
+import tensorboard.summary.v1 as tb_summary_v1
+import tensorboard.summary.v2 as tb_summary_v2
 
 
 STANDARD_PLUGINS = frozenset([
@@ -75,15 +75,15 @@ class SummaryExportsBaseTest(object):
 
 
 class SummaryExportsTest(SummaryExportsBaseTest, tf.test.TestCase):
-  module = tensorboard.summary
+  module = tb_summary
 
 
 class SummaryExportsV1Test(SummaryExportsBaseTest, tf.test.TestCase):
-  module = tensorboard.summary.v1
+  module = tb_summary_v1
 
 
 class SummaryExportsV2Test(SummaryExportsBaseTest, tf.test.TestCase):
-  module = tensorboard.summary.v2
+  module = tb_summary_v2
 
 
 if __name__ == '__main__':
