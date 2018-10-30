@@ -216,20 +216,17 @@
             }
             const input = tf.concat(tensors).reshape([tensors.length, 104])
             const res = this.model.predict(input, {batchSize: 128});
-            const res2 = this.model2.predict(input, {batchSize: 128});
             const predValues = await res.data();
-            const predValues2 = await res2.data();
             const PRED_SIZE = 2;
             const results = [];
             for (let i = 0; i < examples.length; i++) {
               const ex = examples[i];
               const score = predValues[i * PRED_SIZE];
-              const score2 = predValues2[i * PRED_SIZE];
               const step = isNum ? ex.features.feature[
                 e.detail.feature_name].floatList.value[0]
                     : [atob(ex.features.feature[
                         e.detail.feature_name].bytesList.value[0])];
-              results.push({step: step, scalar: score, scalar2: score2});
+              results.push({step: step, scalar: score});
             }
             this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
                 e.detail.feature_name, [{'1': results}]);

@@ -2903,18 +2903,38 @@ limitations under the License.
           // inferred label for each example.
           // TODO index to more than one model
           if (isClassification && self.labelVocab.length > 0) {
+            // for (let inferenceIndex = 0;
+            //      inferenceIndex <
+            //     self.examplesAndInferences[index].inferences.length;
+            //      inferenceIndex++) {
+            //   for (let labelIndex = 0;
+            //        labelIndex < self.examplesAndInferences[index].inferences[
+            //          inferenceIndex][0].length;
+            //        labelIndex++) {
+            //     self.examplesAndInferences[index].inferences[inferenceIndex][0][
+            //       labelIndex].vocabLabel = self.labelVocab[
+            //         self.examplesAndInferences[index].inferences[
+            //           inferenceIndex][0][labelIndex].label];
+            //   }
+            // }
             for (let inferenceIndex = 0;
                  inferenceIndex <
-                self.examplesAndInferences[index].inferences.length;
+                 self.examplesAndInferences[index].inferences.length;
                  inferenceIndex++) {
-              for (let labelIndex = 0;
-                   labelIndex < self.examplesAndInferences[index].inferences[
-                     inferenceIndex][0].length;
-                   labelIndex++) {
-                self.examplesAndInferences[index].inferences[inferenceIndex][0][
-                  labelIndex].vocabLabel = self.labelVocab[
-                    self.examplesAndInferences[index].inferences[
-                      inferenceIndex][0][labelIndex].label];
+              for (let model_num=0;
+                   model_num < self.examplesAndInferences[index].inferences[
+                    inferenceIndex].length;
+                   model_num++) {
+                for (let labelIndex = 0;
+                    labelIndex < self.examplesAndInferences[index].inferences[
+                      inferenceIndex][model_num].length;
+                    labelIndex++) {
+                  self.examplesAndInferences[index].inferences[
+                    inferenceIndex][model_num][
+                      labelIndex].vocabLabel = self.labelVocab[
+                      self.examplesAndInferences[index].inferences[
+                        inferenceIndex][model_num][labelIndex].label];
+                }
               }
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];

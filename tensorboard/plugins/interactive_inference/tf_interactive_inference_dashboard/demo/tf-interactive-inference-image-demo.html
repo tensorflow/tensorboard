@@ -79,12 +79,14 @@
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-            inferences.results = {classificationResult: {classifications: []}};
+            inferences.results = [{classificationResult: {classifications: []}}];
             const tensors = [];
             const BATCH_SIZE = 256;
             if (indices.length == 250) {
               const testData = d3.json(RESULTS_PATH).then(inferences => {
                 setTimeout(() => {
+                  // for compatibility with inferences.json
+                  inferences.results = [inferences.results];
                   this.$.dash.inferences = inferences;
                   this.indicesToInfer = {};
                   this.$.dash.selectedLabelFeature = "Smiling"
@@ -104,7 +106,7 @@
               const predValues = await res.data();
               const PRED_SIZE = 2;
               for (let i = 0; i < indices.length; i++) {
-                inferences.results.classificationResult.classifications[i] =
+                inferences.results[0].classificationResult.classifications[i] =
                   {classes: [{label: '0', score: predValues[i * PRED_SIZE]},
                   {label: '1', score: predValues[i * PRED_SIZE + 1]}]};
               }

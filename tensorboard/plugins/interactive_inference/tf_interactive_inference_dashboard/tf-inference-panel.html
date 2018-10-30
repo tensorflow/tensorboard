@@ -347,26 +347,22 @@ limitations under the License.
         this.modelName = modelName1 + ',' + modelName2
         // Strip trailing and leading commas in case one model is missing
         this.modelName = this.modelName.replace(/(^,)|(,$)/g, '')
-        // console.log('updateModelName', modelName1, modelName2, this.modelName)
       },
 
       updateInferenceAddress: function (inferenceAddress1, inferenceAddress2) {
         this.inferenceAddress = inferenceAddress1 + ',' + inferenceAddress2
         // Strip trailing and leading commas in case one model is missing
         this.inferenceAddress = this.inferenceAddress.replace(/(^,)|(,$)/g, '')
-        // console.log('updateInferenceAddress', inferenceAddress1, inferenceAddress2, this.inferenceAddress)
       },
 
       updateModelVersion: function (modelVersion1, modelVersion2) {
         this.modelVersion = modelVersion1 + ',' + modelVersion2
         // Always have comma for optional fields
-        // console.log('updateModelVersion', modelVersion1, modelVersion2, this.modelVersion)
       },
 
       updateModelSignature: function (modelSignature1, modelSignature2) {
         this.modelSignature = modelSignature1 + ',' + modelSignature2
         // Always have comma for optional fields
-        // console.log('updateModelSignature', modelSignature1, modelSignature2, this.modelSignature)
       },
 
       addModelClicked_: function() {
