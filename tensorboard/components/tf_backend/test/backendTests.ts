@@ -105,6 +105,20 @@ describe('backend tests', () => {
               '/data/plugin/scalars/scalar');
         });
 
+        it('ignores leading slash in dataDir', function() {
+          this.router = createRouter('/data/', /*demoMode=*/false);
+          assert.equal(
+              this.router.pluginRoute('scalars', '/scalar'),
+              '/data/plugin/scalars/scalar');
+        });
+
+        it('does not strip leading slash if dataDir has more than one', () => {
+          const router = createRouter('////data/', /*demoMode=*/false);
+          assert.equal(
+              router.pluginRoute('scalars', '/scalar'),
+              '////data/plugin/scalars/scalar');
+        });
+
         it('encodes query param correctly', function() {
           assert.equal(
               this.router.pluginRoute(
@@ -168,6 +182,20 @@ describe('backend tests', () => {
     describe('demoMode', () => {
       beforeEach( function() {
         this.router = createRouter(base, /*demoMode=*/true);
+      });
+
+      it('ignores leading slash in dataDir', () => {
+        const router = createRouter('/data/', /*demoMode=*/false);
+        assert.equal(
+            router.pluginRoute('scalars', '/scalar'),
+            '/data/plugin/scalars/scalar');
+      });
+
+      it('does not strip leading slash if dataDir has more than one', () => {
+        const router = createRouter('////data/', /*demoMode=*/false);
+        assert.equal(
+            router.pluginRoute('scalars', '/scalar'),
+            '////data/plugin/scalars/scalar');
       });
 
       it('returns correct value for #environment', function() {

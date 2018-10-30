@@ -88,8 +88,8 @@ export function setRouter(router: Router): void {
 
 function createProdPath(pathPrefix: string, path: string,
     ext: string, params?: URLSearchParams): string {
-
-  const url = new URL(`${window.location.origin}/${pathPrefix}${path}`);
+  const url = new URL(`${window.location.origin}`);
+  url.pathname = pathPrefix + path;
   if (params) url.search = params.toString();
   return url.pathname + url.search;
 }
