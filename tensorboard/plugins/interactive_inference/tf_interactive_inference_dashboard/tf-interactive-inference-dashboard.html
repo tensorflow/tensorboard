@@ -2623,19 +2623,20 @@ limitations under the License.
        * non-zero.
        */
       getClassificationBestNonZero: function(index) {
+        // TODO generalize to more than 1 model
         let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIndex].length;
+               inferenceIndex][0].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-              inferenceIndex][i].label !== 0) {
+              inferenceIndex][0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
-        return this.examplesAndInferences[index].inferences[inferenceIndex][
+        return this.examplesAndInferences[index].inferences[inferenceIndex][0][
           indexForNonZeroLabel];
       },
 
@@ -2853,11 +2854,9 @@ limitations under the License.
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
             inferenceMap[this.inferences.indices[i]] = [];
-            console.log(this.inferences.results.length);
             for (let model_num=0; model_num < this.inferences.results.length;
              model_num++){
               const result = this.inferences.results[model_num].classificationResult;
-              console.log(result);
               // For models that don't return any labels for the classes, fill
               // them out with class indicies.
               for (let j = 0; j < result.classifications[i].classes.length; j++) {
@@ -2902,6 +2901,7 @@ limitations under the License.
 
           // If there is a label vocab for classification, set the string
           // inferred label for each example.
+          // TODO index to more than one model
           if (isClassification && self.labelVocab.length > 0) {
             for (let inferenceIndex = 0;
                  inferenceIndex <
@@ -2977,7 +2977,7 @@ limitations under the License.
             this.examplesAndInferences[index].inferences[inferenceIdx][
               model_num][indexForNonZeroLabel].score;
           if (this.examplesAndInferences[index].inferences[inferenceIdx][
-            model_num][indexForNonZeroLabel].score >= threshold) {
+            0][indexForNonZeroLabel].score >= threshold) {
             item[inferenceValueStr] =
               this.examplesAndInferences[index].inferences[inferenceIdx][0][
                 indexForNonZeroLabel].label;
@@ -3262,7 +3262,6 @@ limitations under the License.
        * Callback for when new examples are received from the backend.
        */
       updateExampleContents_: function(examples, hasSprite) {
-        console.log('I am here',examples)
         this.exampleStatusStr = examples.length + ' examples loaded';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;

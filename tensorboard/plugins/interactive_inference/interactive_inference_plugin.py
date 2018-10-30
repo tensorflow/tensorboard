@@ -259,7 +259,6 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
-      print(inference_addresses)
       infer_objs = []
       for model_num in xrange(len(inference_addresses)):
         serving_bundle = inference_utils.ServingBundle(
@@ -408,11 +407,21 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       example_index = int(request.args.get('example_index', '0'))
       feature_name = request.args.get('feature_name')
       example = self.examples[example_index]
+
+      inference_addresses = request.args.get('inference_address').split(',')
+      model_type = request.args.get('model_type')
+      model_names = request.args.get('model_name').split(',')
+      model_versions = request.args.get('model_version').split(',')
+      model_signatures = request.args.get('model_signature').split(',')
+
+      # TODO generalize to multiple models
+      # for model_num in xrange(len(inference_addresses)):
+      model_num = 0
       serving_bundle = inference_utils.ServingBundle(
-          request.args.get('inference_address'), request.args.get('model_name'),
-          request.args.get('model_type'),
-          request.args.get('model_version'),
-          request.args.get('model_signature'))
+          inference_addresses[model_num],
+          model_names[model_num], model_type,
+          model_versions[model_num],
+          model_signatures[model_num])
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
