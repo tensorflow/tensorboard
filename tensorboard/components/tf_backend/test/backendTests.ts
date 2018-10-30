@@ -86,6 +86,21 @@ describe('backend tests', () => {
         this.router = createRouter(base, /*demoMode=*/false);
       });
 
+      it('ignores leading slash in pathPrefix', () => {
+        const router = createRouter('/data/', /*demoMode=*/false);
+        assert.equal(router.runs(), '/data/runs');
+      });
+
+      it('returns leading slash when pathPrefix omits one', () => {
+        const router = createRouter('data/', /*demoMode=*/false);
+        assert.equal(router.runs(), '/data/runs');
+      });
+
+      it('does not strip leading slash if pathPrefix has more than one', () => {
+        const router = createRouter('///data/', /*demoMode=*/false);
+        assert.equal(router.runs(), '///data/runs');
+      });
+
       it('returns correct value for #environment', function() {
         assert.equal(this.router.environment(), '/data/environment');
       });
@@ -168,6 +183,21 @@ describe('backend tests', () => {
     describe('demoMode', () => {
       beforeEach( function() {
         this.router = createRouter(base, /*demoMode=*/true);
+      });
+
+      it('ignores leading slash in pathPrefix', () => {
+        const router = createRouter('/data/', /*demoMode=*/true);
+        assert.equal(router.runs(), '/data/runs.json');
+      });
+
+      it('returns leading slash when pathPrefix omits one', () => {
+        const router = createRouter('data/', /*demoMode=*/true);
+        assert.equal(router.runs(), '/data/runs.json');
+      });
+
+      it('does not strip leading slash if pathPrefix has more than one', () => {
+        const router = createRouter('///data/', /*demoMode=*/true);
+        assert.equal(router.runs(), '///data/runs.json');
       });
 
       it('returns correct value for #environment', function() {
