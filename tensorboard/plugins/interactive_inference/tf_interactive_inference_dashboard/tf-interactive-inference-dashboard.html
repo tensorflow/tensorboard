@@ -2868,9 +2868,10 @@ limitations under the License.
                   result.classifications[i].classes.sort((a, b) => b.score - a.score);
             }
           } else {
-            // TODO edit inferencemap for regression with new indices
-            const result = this.inferences.results.regressionResult;
-            inferenceMap[this.inferences.indices[i]] =
+            inferenceMap[this.inferences.indices[i]] = [];
+            // TODO edit inferencemap for regression with multiple models
+            const result = this.inferences.results[0].regressionResult;
+            inferenceMap[this.inferences.indices[i]][0] =
                 [{label: '', score: result.regressions[i].value}];
           }
         }
@@ -2895,7 +2896,7 @@ limitations under the License.
           } else {
             item[inferenceValueStr] =
               self.examplesAndInferences[index].inferences[
-                self.examplesAndInferences[index].inferences.length - 1][
+                self.examplesAndInferences[index].inferences.length - 1][0][
                   0].score;
           }
 
@@ -2903,20 +2904,6 @@ limitations under the License.
           // inferred label for each example.
           // TODO index to more than one model
           if (isClassification && self.labelVocab.length > 0) {
-            // for (let inferenceIndex = 0;
-            //      inferenceIndex <
-            //     self.examplesAndInferences[index].inferences.length;
-            //      inferenceIndex++) {
-            //   for (let labelIndex = 0;
-            //        labelIndex < self.examplesAndInferences[index].inferences[
-            //          inferenceIndex][0].length;
-            //        labelIndex++) {
-            //     self.examplesAndInferences[index].inferences[inferenceIndex][0][
-            //       labelIndex].vocabLabel = self.labelVocab[
-            //         self.examplesAndInferences[index].inferences[
-            //           inferenceIndex][0][labelIndex].label];
-            //   }
-            // }
             for (let inferenceIndex = 0;
                  inferenceIndex <
                  self.examplesAndInferences[index].inferences.length;
