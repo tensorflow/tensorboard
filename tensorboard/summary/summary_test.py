@@ -26,7 +26,9 @@ from __future__ import print_function
 import collections
 
 import tensorflow as tf
-import tensorboard as tb
+import tensorboard.summary as tb_summary
+import tensorboard.summary.v1 as tb_summary_v1
+import tensorboard.summary.v2 as tb_summary_v2
 
 
 STANDARD_PLUGINS = frozenset([
@@ -40,23 +42,25 @@ STANDARD_PLUGINS = frozenset([
 ])
 
 
-class SummaryExportsTest(tf.test.TestCase):
+class SummaryExportsBaseTest(object):
+  module = None
 
   def test_each_plugin_has_an_export(self):
     for plugin in STANDARD_PLUGINS:
-      self.assertIsInstance(getattr(tb.summary, plugin), collections.Callable)
+      self.assertIsInstance(getattr(self.module, plugin), collections.Callable)
 
   def test_plugins_export_pb_functions(self):
     for plugin in STANDARD_PLUGINS:
       self.assertIsInstance(
-          getattr(tb.summary, '%s_pb' % plugin), collections.Callable)
+          getattr(self.module, '%s_pb' % plugin), collections.Callable)
 
   def test_all_exports_correspond_to_plugins(self):
-    exports = [name for name in dir(tb.summary) if not name.startswith('_')]
-    futures = frozenset(('absolute_import', 'division', 'print_function'))
+    exports = [name for name in dir(self.module) if not name.startswith('_')]
+    allowed = frozenset(
+        ('absolute_import', 'division', 'print_function', 'v1', 'v2'))
     bad_exports = [
         name for name in exports
-        if name not in futures and not any(
+        if name not in allowed and not any(
             name == plugin or name.startswith('%s_' % plugin)
             for plugin in STANDARD_PLUGINS)
     ]
@@ -68,6 +72,18 @@ class SummaryExportsTest(tf.test.TestCase):
           'plugin that you are certain should be part of the public API '
           'forever, add that plugin to the STANDARD_PLUGINS set in this '
           'module.' % bad_exports)
+
+
+class SummaryExportsTest(SummaryExportsBaseTest, tf.test.TestCase):
+  module = tb_summary
+
+
+class SummaryExportsV1Test(SummaryExportsBaseTest, tf.test.TestCase):
+  module = tb_summary_v1
+
+
+class SummaryExportsV2Test(SummaryExportsBaseTest, tf.test.TestCase):
+  module = tb_summary_v2
 
 
 if __name__ == '__main__':

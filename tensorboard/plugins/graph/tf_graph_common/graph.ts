@@ -322,7 +322,7 @@ export interface Metanode extends GroupNode {
 
   // The name of the function this metanode is associated with if any.
   associatedFunction: string;
-  
+
   getFirstChild(): GroupNode|OpNode;
   getRootOp(): OpNode;
   /** Return name of all leaves inside a metanode. */
@@ -396,7 +396,7 @@ export class OpNodeImpl implements OpNode {
   // This field is only defined if the op node represents an input_arg to a
   // library function. It is the index of the input_arg.
   functionInputIndex: number;
-  
+
   // This field is only defined if the op node represents an output_arg of a
   // library function. It is the index of the output_arg.
   functionOutputIndex: number;
@@ -781,24 +781,28 @@ export class MetaedgeImpl implements Metaedge {
     h.hasShapeInfo = true;
 
     // Sum the sizes of all output tensors.
-    return _(opNode.outputShapes).mapValues((shape: number[]) => {
-      // If the shape is unknown, treat it as 1 when computing
-      // total size. This gives a lower bound for the total size.
-      if (shape == null) {
-        return 1;
-      }
-      // Multiply all shapes to get the total size of the tensor.
-      // E.g. The total size of [4, 2, 1] is 4 * 2 * 1.
-      return _(shape).reduce((accumulated, currSize) => {
-        // If this particular dimension is unknown, treat
-        // it as 1 when computing total size. This gives a lower bound
-        // for the total size.
-        if (currSize === -1) {
-          currSize = 1;
-        }
-        return accumulated * currSize;
-      }, 1);
-    }).sum();
+    // TODO(stephanwlee): Use Object.values after es2017.
+    const values = Object.keys(opNode.outputShapes)
+        .map(k => opNode.outputShapes[k])
+        .map((shape: number[]) => {
+          // If the shape is unknown, treat it as 1 when computing
+          // total size. This gives a lower bound for the total size.
+          if (shape == null) {
+            return 1;
+          }
+          // Multiply all shapes to get the total size of the tensor.
+          // E.g. The total size of [4, 2, 1] is 4 * 2 * 1.
+          return shape.reduce((accumulated, currSize) => {
+            // If this particular dimension is unknown, treat
+            // it as 1 when computing total size. This gives a lower bound
+            // for the total size.
+            if (currSize === -1) {
+              currSize = 1;
+            }
+            return accumulated * currSize;
+          }, 1);
+        });
+    return _.sum(values);
   }
 }
 

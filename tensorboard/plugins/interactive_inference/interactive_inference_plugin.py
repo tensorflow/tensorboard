@@ -265,7 +265,10 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
             inference_addresses[model_num],
             model_names[model_num], model_type,
             model_versions[model_num],
-            model_signatures[model_num])
+            model_signatures[model_num],
+            request.args.get('use_predict') == 'true',
+            request.args.get('predict_input_tensor'),
+            request.args.get('predict_output_tensor'))
 
         # Get inference results proto and combine with indices of inferred
         # examples and respond with this data as json.
@@ -421,7 +424,11 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
           inference_addresses[model_num],
           model_names[model_num], model_type,
           model_versions[model_num],
-          model_signatures[model_num])
+          model_signatures[model_num],
+          request.args.get('use_predict') == 'true',
+          request.args.get('predict_input_tensor'),
+          request.args.get('predict_output_tensor'))
+
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,

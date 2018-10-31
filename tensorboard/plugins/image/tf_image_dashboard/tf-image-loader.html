@@ -77,9 +77,13 @@ future for loading older images.
       </template>
     </tf-card-heading>
 
-    <button aria-label="Toggle actual size"
-            id="main-image-container"
-            on-tap="_handleTap"></button>
+    <!-- Semantically a button but <img> inside a <button> disallows user to do
+    an interesting operation like "Copy Image" in non-Chromium browsers. -->
+    <a id="main-image-container"
+        role="button"
+        aria-label="Toggle actual size"
+        aria-expanded$="[[_getAriaExpanded(actualSize)]]"
+        on-tap="_handleTap"></a>
 
     <style include="tf-card-heading-style">
       /** Make button a div. */
@@ -307,7 +311,9 @@ future for loading older images.
       _computeHasMultipleSamples(ofSamples) {
         return ofSamples > 1;
       },
-
+      _getAriaExpanded() {
+        return this.actualSize ? 'true' : 'false';
+      },
       attached() {
         this._attached = true;
         this.reload();

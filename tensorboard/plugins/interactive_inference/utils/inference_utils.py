@@ -17,6 +17,7 @@
 import collections
 import copy
 import numpy as np
+import tensorflow as tf
 from six import iteritems
 from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
@@ -169,13 +170,20 @@ class ServingBundle(object):
       empty string, the latest model will be used.
     signature: The signature of the model to infer. If set to an empty string,
       the default signuature will be used.
+    use_predict: If true then use the servo Predict API as opposed to
+      Classification or Regression.
+    predict_input_tensor: The name of the input tensor to parse when using the
+      Predict API.
+    predict_output_tensor: The name of the output tensor to parse when using the
+      Predict API.
 
   Raises:
     ValueError: If ServingBundle fails init validation.
   """
 
   def __init__(self, inference_address, model_name, model_type, model_version,
-               signature):
+               signature, use_predict, predict_input_tensor,
+               predict_output_tensor):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -197,10 +205,14 @@ class ServingBundle(object):
 
     self.signature = signature if signature else None
 
+    self.use_predict = use_predict
+    self.predict_input_tensor = predict_input_tensor
+    self.predict_output_tensor = predict_output_tensor
+
 
 def proto_value_for_feature(example, feature_name):
   """Get the value of a feature from Example regardless of feature type."""
-  feature = example.features.feature[feature_name]
+  feature = get_example_features(example)[feature_name]
   feature_type = feature.WhichOneof('kind')
   if feature_type is None:
     raise ValueError('Feature {} on example proto has no declared type.'.format(
@@ -218,7 +230,7 @@ def parse_original_feature_from_example(example, feature_name):
   Returns:
     A filled in `OriginalFeatureList` object representing the feature.
   """
-  feature = example.features.feature[feature_name]
+  feature = get_example_features(example)[feature_name]
   feature_type = feature.WhichOneof('kind')
   original_value = proto_value_for_feature(example, feature_name)
 
@@ -254,7 +266,7 @@ def get_numeric_feature_names(example):
     A list of string feature names.
   """
   numeric_features = ('float_list', 'int64_list')
-  features = example.features.feature
+  features = get_example_features(example)
   return sorted([
       feature_name for feature_name in features
       if features[feature_name].WhichOneof('kind') in numeric_features
@@ -270,7 +282,7 @@ def get_categorical_feature_names(example):
   Returns:
     A list of categorical feature names (e.g. ['education', 'marital_status'] )
   """
-  features = example.features.feature
+  features = get_example_features(example)
   return sorted([
       feature_name for feature_name in features
       if features[feature_name].WhichOneof('kind') == 'bytes_list'
@@ -546,3 +558,9 @@ def make_json_formatted_for_single_chart(mutant_features,
 
   else:
     raise NotImplementedError('Only classification and regression implemented.')
+
+
+def get_example_features(example):
+  """Returns the non-sequence features from the provided example."""
+  return (example.features.feature if isinstance(example, tf.train.Example)
+          else example.context.feature)

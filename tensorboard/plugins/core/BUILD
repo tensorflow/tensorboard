@@ -28,7 +28,6 @@ py_test(
     name = "core_plugin_test",
     size = "small",
     srcs = ["core_plugin_test.py"],
-    data = ["test_webfiles.zip"],
     srcs_version = "PY2AND3",
     deps = [
         ":core_plugin",
@@ -39,17 +38,4 @@ py_test(
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
-)
-
-tf_web_library(
-    name = "test_assets",
-    testonly = 1,
-    srcs = ["index.html"],
-    path = "/",
-)
-
-tensorboard_zip_file(
-    name = "test_webfiles",
-    testonly = 1,
-    deps = [":test_assets"],
 )

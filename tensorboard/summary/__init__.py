@@ -12,5 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Central API entry point for summary operations.
 
-# This module is included by build rules to force non-TensorFlow builds
+This module exposes summary ops for the standard TensorBoard plugins.
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+from tensorboard.summary.v1 import *
