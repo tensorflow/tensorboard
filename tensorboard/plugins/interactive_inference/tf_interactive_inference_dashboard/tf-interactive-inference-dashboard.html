@@ -1008,7 +1008,10 @@ limitations under the License.
                                            on-example-change="exampleChange_" id="viewer"
                                            display-mode="[[exampleDisplayMode]]"
                                            feature-search-value="{{featureSearchValue}}"
-                                           compare-title="[[compareTitle]]">
+                                           compare-title="[[compareTitle]]"
+                                           saliency="[[attribution]]"
+                                           show-saliency="true"
+                                           readonly="[[!areExamplesEditable_(modelName, inferenceAddress)]]">
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
                           <div class="inference-section">
@@ -1477,7 +1480,12 @@ limitations under the License.
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
-    const exampleIdKey = ' Example ID'
+    const exampleIdKey = ' Example ID';
+    const classificationResultsKey = 'probabilities';
+    const regressionResultsKey = 'score';
+    const attributionPrefix = 'pig_';
+    const attributionSparseKeyPrefix = 'pig_keys_';
+    const attributionSparseValuePrefix = 'pig_vals_';
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -1765,6 +1773,13 @@ limitations under the License.
           value: false
         },
         compareTitle: String,
+        // Dictionary of features to feature value attributions for display
+        // in the example viewer. Filled in if the selected example contains
+        // attribution information.
+        attribution: {
+          type: Object,
+          value: () => ({}),
+        },
       },
 
       observers: [
@@ -2825,6 +2840,70 @@ limitations under the License.
         this.selectedExampleAndInference =
           this.selected.length > 0
           ? this.examplesAndInferences[this.selected[0]] : null;
+        requestAnimationFrame(()=> this.setAttributions());
+      },
+
+      /**
+       * Finds attribution features and sets the attribution object for the
+       * selected example.
+       */
+      setAttributions: function() {
+        const attrib = {};
+        const selectedData = this.visdata[this.selected[0]];
+        const attributionFinder = new RegExp(attributionPrefix + '(.*)');
+        const sparseAttributionFinder =
+            new RegExp(attributionSparseKeyPrefix + '(.*)');
+        for (let key in selectedData) {
+          let featureWithAttribution = attributionFinder.exec(key);
+          // If this feature represents an attribution, set the attribution
+          // value for the appropriate example feature.
+          // Attribution is represented by features with the format
+          // "{attributionPrefix}{featureName}".
+          if (featureWithAttribution) {
+            const featFinder = new RegExp(
+              '^' + featureWithAttribution[1] + '$');
+            for (let featToTest in selectedData) {
+              if (featFinder.test(featToTest)) {
+                attrib[featToTest] = selectedData[key];
+                break;
+              }
+            }
+          }
+          featureWithAttribution = sparseAttributionFinder.exec(key);
+          // If this feature represents a sparse attribution, set the
+          // attribution values for the appropriate example feature.
+          // Sparse attribution is represented by features with the format
+          // "{attributionSparseKeyPrefix}{featureName}" containing a list of
+          // feature values for which we have attribution values and
+          // "{attributionSparseValuePrefix}{featureName}" containing a
+          // same-sized list of attribution amounts for those feature values.
+          if (featureWithAttribution) {
+            const featFinder = new RegExp(
+              '^' + featureWithAttribution[1] + '$');
+            for (let featToTest in selectedData) {
+              if (featFinder.test(featToTest)) {
+                const attribKeys = selectedData[key];
+                const attribVals = selectedData[key.replace(
+                  attributionSparseKeyPrefix, attributionSparseValuePrefix)];
+                const len = Array.isArray(selectedData[featToTest]) ?
+                      selectedData[featToTest].length : 1;
+                const attribList = Array.apply(null, Array(len)).map(
+                  Number.prototype.valueOf, 0);
+                for (let attribIdx = 0; attribIdx < attribKeys.length;
+                     attribIdx++) {
+                  let valIndex = selectedData[featToTest].indexOf(
+                    attribKeys[attribIdx]);
+                  if (valIndex != -1) {
+                    attribList[valIndex] = attribVals[attribIdx];
+                  }
+                }
+                attrib[featToTest] = attribList;
+                break;
+              }
+            }
+          }
+        }
+        this.attribution = attrib;
       },
 
       shouldDisableGetExamplesButton_: function(examplesPath) {
@@ -2835,6 +2914,10 @@ limitations under the License.
           updatedExample) {
         return examples.length == 0 || modelName.length == 0 ||
           inferenceAddress.length == 0 || !updatedExample;
+      },
+
+      areExamplesEditable_: function(modelName, inferenceAddress) {
+        return modelName.length != 0 && inferenceAddress.length != 0;
       },
 
       newInferences_: function() {
@@ -3284,6 +3367,46 @@ limitations under the License.
             this.examplesAndInferences, this.modelName, this.inferenceAddress,
             this.updatedExample)) {
           this.inferClicked_();
+        }
+        this.setInferenceFromExampleData();
+      },
+
+      /**
+       * If the example data contains inference results, as in the case with
+       * pre-computed model results, then set the appropriate inference results.
+       */
+      setInferenceFromExampleData: function() {
+        // If the examples contain the classification results or regression
+        // results keys, then set the classification results from the
+        // information in the examples.
+        if (this.visdata.length > 0) {
+          if (this.visdata[0][classificationResultsKey] != null) {
+            const inferences = {};
+            const indices = Array.apply(
+              null, {length: this.visdata.length}).map(Number.call, Number);
+            inferences.indices = indices;
+            inferences.results ={classificationResult: {classifications: []}};
+            for (let i = 0; i < indices.length; i++) {
+              inferences.results.classificationResult.classifications[i] =
+                {classes: [
+                  {label: '0',
+                   score: this.visdata[i][classificationResultsKey][0]},
+                  {label: '1',
+                   score: this.visdata[i][classificationResultsKey][1]}]};
+            }
+            this.inferences = inferences;
+          } else if (this.visdata[0][regressionResultsKey] != null) {
+            const inferences = {};
+            const indices = Array.apply(
+              null, {length: this.visdata.length}).map(Number.call, Number);
+            inferences.indices = indices;
+            inferences.results ={regressionResult: {regressions: []}};
+            for (let i = 0; i < indices.length; i++) {
+              inferences.results.regressionResult.regressions[i] =
+                {value: this.visdata[i][regressionResultsKey]};
+            }
+            this.inferences = inferences;
+          }
         }
       },
 

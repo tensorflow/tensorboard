@@ -17,6 +17,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":common_utils",
+        "//tensorboard:expect_numpy_installed",
         "@org_tensorflow_serving_api",
     ],
 )
