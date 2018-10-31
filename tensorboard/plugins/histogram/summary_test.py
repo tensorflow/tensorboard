@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary

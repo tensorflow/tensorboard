@@ -22,7 +22,9 @@ import os
 import re
 
 import six
-import tensorflow as tf
+
+from tensorboard.compat import tf
+
 
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile('([*?[])')
 

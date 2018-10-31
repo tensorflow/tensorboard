@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import inspect
 
-import tensorflow as tf
+from tensorboard.compat import tf
 
 
 class RawEventFileLoader(object):

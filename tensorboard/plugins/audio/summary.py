@@ -31,7 +31,7 @@ from __future__ import print_function
 import functools
 
 import numpy as np
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import util
 from tensorboard.plugins.audio import metadata

@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import tempfile
 
-import tensorflow as tf
+from tensorboard.compat import tf
 
 
 from tensorboard.backend.event_processing import event_file_loader

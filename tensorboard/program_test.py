@@ -21,7 +21,7 @@ from __future__ import print_function
 import argparse
 
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import program
 from tensorboard.plugins.core import core_plugin

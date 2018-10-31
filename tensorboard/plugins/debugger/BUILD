@@ -32,7 +32,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":debug_graphs_helper",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -56,7 +56,7 @@ py_test(
     deps = [
         ":tensor_helper",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/beholder:im_util",
         "@org_pythonhosted_six",
     ],
@@ -69,7 +69,7 @@ py_library(
     deps = [
         ":tensor_helper",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -81,7 +81,7 @@ py_test(
     deps = [
         ":tensor_store",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/beholder:im_util",
     ],
 )
@@ -102,7 +102,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":comm_channel",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -114,7 +114,7 @@ py_library(
     srcs = ["events_writer_manager.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -126,7 +126,7 @@ py_library(
         ":constants",
         ":debugger_plugin",
         ":debugger_server_lib",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug",
@@ -143,7 +143,7 @@ py_test(
         ":debugger_plugin_testlib",
         ":events_writer_manager",
         ":numerics_alert",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_python_pypi_portpicker",
     ],
@@ -156,7 +156,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":constants",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -168,7 +168,7 @@ py_test(
     deps = [
         ":constants",
         ":numerics_alert",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -190,7 +190,7 @@ py_test(
     deps = [
         ":health_pill_calc",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -202,7 +202,7 @@ py_library(
         ":constants",
         ":events_writer_manager",
         ":numerics_alert",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -217,7 +217,7 @@ py_library(
         ":numerics_alert",
         ":tensor_helper",
         ":tensor_store",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -235,7 +235,7 @@ py_test(
         ":numerics_alert",
         ":tensor_store",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -248,7 +248,7 @@ py_test(
         ":constants",
         ":debugger_server_lib",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -261,7 +261,7 @@ py_test(
     deps = [
         ":interactive_debugger_plugin",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
@@ -281,7 +281,7 @@ py_library(
         ":constants",
         ":debugger_server_lib",
         "//tensorboard:expect_futures_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/plugins:base_plugin",
@@ -300,7 +300,7 @@ py_library(
         ":debug_graphs_helper",
         ":interactive_debugger_server_lib",
         "//tensorboard:expect_futures_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/plugins:base_plugin",
@@ -331,7 +331,7 @@ py_test(
         ":debugger_plugin",
         ":debugger_plugin_testlib",
         ":numerics_alert",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_python_pypi_portpicker",

@@ -22,7 +22,7 @@ import os
 import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
