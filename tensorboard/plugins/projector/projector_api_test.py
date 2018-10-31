@@ -21,7 +21,7 @@ from __future__ import print_function
 import os
 import shutil
 
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from google.protobuf import text_format
 

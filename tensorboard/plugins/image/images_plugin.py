@@ -23,13 +23,14 @@ import imghdr
 
 import six
 from six.moves import urllib
-import tensorflow as tf
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
+from tensorboard.compat import tf
+
 
 _IMGHDR_TO_MIMETYPE = {
     'bmp': 'image/bmp',

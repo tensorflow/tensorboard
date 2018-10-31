@@ -27,11 +27,11 @@ import os
 import zipfile
 
 import six
-import tensorflow as tf
 from werkzeug import utils
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 
 

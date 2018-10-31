@@ -28,7 +28,7 @@ py_library(
     deps = [
         ":common_utils",
         ":platform_utils",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_tensorflow_serving_api",
     ],
 )
@@ -39,7 +39,7 @@ py_library(
     srcs = ["test_utils.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -53,7 +53,7 @@ py_test(
         ":inference_utils",
         ":test_utils",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_tensorflow_serving_api",
     ],
 )

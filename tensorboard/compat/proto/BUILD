@@ -54,7 +54,7 @@ py_test(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
