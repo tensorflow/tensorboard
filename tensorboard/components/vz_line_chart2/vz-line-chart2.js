@@ -235,7 +235,8 @@ var vz_line_chart2;
         },
         observers: [
             '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, isAttached)',
-            '_reloadFromCache(_chart)',
+            // Refer to the cache and, if available, load data of a new visible series.
+            '_reloadFromCache(_chart, _visibleSeriesCache)',
             '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
             '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
             '_outliersChanged(ignoreYOutliers, _chart)',
@@ -295,10 +296,6 @@ var vz_line_chart2;
             if (_.isEqual(this._visibleSeriesCache, names))
                 return;
             this._visibleSeriesCache = names;
-            if (this._chart) {
-                this._chart.setVisibleSeries(names);
-                this.redraw();
-            }
         },
         /**
          * Sets the data of one of the series. Note that to display this series
