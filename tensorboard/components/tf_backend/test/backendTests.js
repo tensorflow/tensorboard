@@ -71,6 +71,18 @@ var tf_backend;
                 beforeEach(function () {
                     this.router = tf_backend.createRouter(base, /*demoMode=*/ false);
                 });
+                it('ignores leading slash in pathPrefix', function () {
+                    var router = tf_backend.createRouter('/data/', /*demoMode=*/ false);
+                    assert.equal(router.runs(), '/data/runs');
+                });
+                it('returns leading slash when pathPrefix omits one', function () {
+                    var router = tf_backend.createRouter('data/', /*demoMode=*/ false);
+                    assert.equal(router.runs(), '/data/runs');
+                });
+                it('does not strip leading slash if pathPrefix has more than one', function () {
+                    var router = tf_backend.createRouter('///data/', /*demoMode=*/ false);
+                    assert.equal(router.runs(), '///data/runs');
+                });
                 it('returns correct value for #environment', function () {
                     assert.equal(this.router.environment(), '/data/environment');
                 });
@@ -114,6 +126,18 @@ var tf_backend;
             describe('demoMode', function () {
                 beforeEach(function () {
                     this.router = tf_backend.createRouter(base, /*demoMode=*/ true);
+                });
+                it('ignores leading slash in pathPrefix', function () {
+                    var router = tf_backend.createRouter('/data/', /*demoMode=*/ true);
+                    assert.equal(router.runs(), '/data/runs.json');
+                });
+                it('returns leading slash when pathPrefix omits one', function () {
+                    var router = tf_backend.createRouter('data/', /*demoMode=*/ true);
+                    assert.equal(router.runs(), '/data/runs.json');
+                });
+                it('does not strip leading slash if pathPrefix has more than one', function () {
+                    var router = tf_backend.createRouter('///data/', /*demoMode=*/ true);
+                    assert.equal(router.runs(), '///data/runs.json');
                 });
                 it('returns correct value for #environment', function () {
                     assert.equal(this.router.environment(), '/data/environment.json');

@@ -19,29 +19,29 @@ var tf_backend;
      * Create a router for communicating with the TensorBoard backend. You
      * can pass this to `setRouter` to make it the global router.
      *
-     * @param dataDir {string} The base prefix for finding data on server.
-     * @param demoMode {boolean} Whether to modify urls for filesystem demo usage.
+     * @param pathPrefix {string=} The base prefix for data endpoints.
+     * @param demoMode {boolean=} Whether to modify urls for filesystem demo usage.
      */
-    function createRouter(dataDir, demoMode) {
-        if (dataDir === void 0) { dataDir = 'data'; }
+    function createRouter(pathPrefix, demoMode) {
+        if (pathPrefix === void 0) { pathPrefix = 'data'; }
         if (demoMode === void 0) { demoMode = false; }
-        if (dataDir[dataDir.length - 1] === '/') {
-            dataDir = dataDir.slice(0, dataDir.length - 1);
+        if (pathPrefix[pathPrefix.length - 1] === '/') {
+            pathPrefix = pathPrefix.slice(0, pathPrefix.length - 1);
         }
         var createPath = demoMode ? createDemoPath : createProdPath;
         var ext = demoMode ? '.json' : '';
         return {
-            environment: function () { return createPath(dataDir, '/environment', ext); },
-            experiments: function () { return createPath(dataDir, '/experiments', ext); },
+            environment: function () { return createPath(pathPrefix, '/environment', ext); },
+            experiments: function () { return createPath(pathPrefix, '/experiments', ext); },
             isDemoMode: function () { return demoMode; },
             pluginRoute: function (pluginName, route, params, demoCustomExt) {
                 if (demoCustomExt === void 0) { demoCustomExt = ext; }
-                return createPath(demoMode ? dataDir : dataDir + '/plugin', "/" + pluginName + route, demoCustomExt, params);
+                return createPath(demoMode ? pathPrefix : pathPrefix + '/plugin', "/" + pluginName + route, demoCustomExt, params);
             },
-            pluginsListing: function () { return createPath(dataDir, '/plugins_listing', ext); },
-            runs: function () { return createPath(dataDir, '/runs', ext); },
+            pluginsListing: function () { return createPath(pathPrefix, '/plugins_listing', ext); },
+            runs: function () { return createPath(pathPrefix, '/runs', ext); },
             runsForExperiment: function (id) {
-                return createPath(dataDir, '/experiment_runs', ext, createSearchParam({ experiment: String(id) }));
+                return createPath(pathPrefix, '/experiment_runs', ext, createSearchParam({ experiment: String(id) }));
             },
         };
     }
@@ -71,7 +71,9 @@ var tf_backend;
     }
     tf_backend.setRouter = setRouter;
     function createProdPath(pathPrefix, path, ext, params) {
-        var url = new URL(window.location.origin + "/" + pathPrefix + path);
+        var url = new URL(window.location.origin);
+        // Use URL to normalize pathPrefix with leading slash and without.
+        url.pathname = pathPrefix + path;
         if (params)
             url.search = params.toString();
         return url.pathname + url.search;
@@ -96,7 +98,7 @@ var tf_backend;
         // Add query parameter as path if it is present.
         if (encodedQueryParam)
             normalizedPath += "_" + encodedQueryParam;
-        var url = new URL("" + window.location.origin);
+        var url = new URL(window.location.origin);
         // All demo data are serialized in JSON format.
         url.pathname = pathPrefix + "/" + normalizedPath + ext;
         return url.pathname + url.search;
