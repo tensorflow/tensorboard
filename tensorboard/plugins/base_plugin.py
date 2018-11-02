@@ -183,27 +183,6 @@ class TBLoader(object):
     """
     pass
 
-  def load(self, context):
-    """Loads TBPlugin subclass.
-
-    Expensive operations may be performed by this method. It's
-    recommended plugins prefer doing expensive initialization lazily
-    instead, when its first HTTP request is received.
-
-    Args:
-      flags: The parsed command-line arguments object.
-
-    Returns:
-      A TBPlugin subclass, or None to ignore this plugin.
-
-    Raises:
-      ValueError: On user error in CLI flags.
-
-    :type context: TBContext
-    :rtype: TBPlugin
-    """
-    raise NotImplementedError()
-
 
 class BasicLoader(TBLoader):
   """Simple TBLoader that's sufficient for most plugins."""
