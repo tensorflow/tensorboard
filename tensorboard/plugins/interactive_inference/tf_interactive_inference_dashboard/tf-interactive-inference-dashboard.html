@@ -881,7 +881,7 @@ limitations under the License.
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
             <div title="Select a datapoint to use this feature">
-              <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+              <paper-button class="control-button" disabled$="[[!enablePartialDependencePlots_(selectedExampleAndInference, modelName, inferenceAddress)]]"
                   on-click="showPartialDependencePlots_" alt="show partial dependence plots"
                   title="Select a datapoint to use this feature">
                   Partial dependence plots
@@ -2106,6 +2106,11 @@ limitations under the License.
           multiClass) {
         return selectedLabelFeature != '' &&
           this.isBinaryClassification_(modelType, multiClass);
+      },
+
+      enablePartialDependencePlots_: function(selectedExampleAndInference, modelName, inferenceAddress) {
+        return this.hasSelected(selectedExampleAndInference) &&
+          this.areExamplesEditable_(modelName, inferenceAddress);
       },
 
       hasSelected: function(selectedExampleAndInference) {
