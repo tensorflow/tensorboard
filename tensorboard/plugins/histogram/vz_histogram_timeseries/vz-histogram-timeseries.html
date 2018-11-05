@@ -36,8 +36,11 @@ visualization.
           <g class="axis x"></g>
           <g class="axis y"></g>
           <g class="axis y slice"></g>
-          <g class="stage">
+          <g class="stage" clip-path$="url(#[[_instId]])">
             <rect class="background"></rect>
+            <clipPath id="[[_instId]]">
+              <rect class="frame"></rect>
+            </clipPath>
           </g>
           <g class="x-axis-hover"></g>
           <g class="y-axis-hover"></g>
@@ -51,6 +54,7 @@ visualization.
           flex-direction: column;
           flex-grow: 1;
           flex-shrink: 1;
+          overflow: hidden;
           position: relative;
         }
 
@@ -189,6 +193,15 @@ visualization.
     </template>
 
     <script>
+    // Generate a unique id per chart to generate a unique id for each clipPath
+    // that `.stage` references using url(#id). Unclear whether a real
+    // WebComponent clearly sandboxes SVG references.
+    let instanceId = 0;
+    const Mode = {
+      OFFSET: 'offset',
+      OVERLAY: 'overlay',
+    };
+
     Polymer({
       is: "vz-histogram-timeseries",
       properties: {
@@ -201,7 +214,7 @@ visualization.
          */
         mode: {
           type: String,
-          value: "offset"
+          value: Mode.OFFSET,
         },
 
         /*
@@ -215,7 +228,7 @@ visualization.
          */
         timeProperty: {
           type: String,
-          value: "step"
+          value: "step",
         },
 
         /**
@@ -223,7 +236,7 @@ visualization.
          */
         bins: {
           type: String,
-          value: "bins"
+          value: "bins",
         },
 
         /**
@@ -231,7 +244,7 @@ visualization.
          */
         x: {
           type: String,
-          value: "x"
+          value: "x",
         },
 
         /**
@@ -239,7 +252,7 @@ visualization.
          */
         dx: {
           type: String,
-          value: "dx"
+          value: "dx",
         },
 
         /**
@@ -247,7 +260,7 @@ visualization.
          */
         y: {
           type: String,
-          value: "y"
+          value: "y",
         },
 
         /**
@@ -261,7 +274,7 @@ visualization.
           type: Object,
           value: function() {
             return d3.scaleOrdinal(d3.schemeCategory10);
-          }
+          },
         },
 
         /**
@@ -269,18 +282,42 @@ visualization.
          */
         modeTransitionDuration: {
           type: Number,
-          value: 500
+          value: 500,
+        },
+
+        /**
+         * Duration of the transition between zoom changes.
+         */
+        zoomTransitionDuration: {
+          type: Number,
+          value: 333,
+        },
+
+        _domainBound: {
+          type: Object,
+          value: () => null,
+        },
+
+        _accessors: {
+          type: Object,
+          computed: '_computeAccesor(x, y, dx, timeProperty)',
         },
 
         _attached: Boolean,
         _name: { type: String, value: null },
         _data: { type: Array, value: null },
+        _instId: {
+          type: String,
+          value: '',
+        },
       },
       observers: [
-        'redraw(timeProperty, _attached)',
-        '_modeRedraw(mode)'
+        'redraw(timeProperty, _attached, _accessors)',
+        '_modeRedraw(mode)',
+        '_zoomRedraw(_domainBound)',
       ],
       ready: function() {
+        this._instId = `histogram-${instanceId++}`;
         // Polymer's way of scoping styles on nodes that d3 created
         this.scopeSubtree(this.$.svg, true);
       },
@@ -308,8 +345,59 @@ visualization.
         this._draw(this.modeTransitionDuration);
       },
 
+      _zoomRedraw() {
+        this._draw(this.zoomTransitionDuration);
+      },
+
+      _getYDomain() {
+        const {timeAccessor} = this._accessors;
+        const vals = this._data.map(timeAccessor).sort((a, b) => a - b);
+        let filterdVals = vals;
+
+        if (this.mode == Mode.OFFSET && this._domainBound) {
+          const [low, high] = this._domainBound;
+          filterdVals = vals.filter(y => low <= y && y <= high);
+          // When a domain is [x, x], the chart becomes degenerate. Imagine
+          // drawing a tick or maping x + 1 to a range -- does it become
+          // Infinity or some value? d3 seems to not send it to an Infinity
+          // but instead collapse all values to a midpoint in range. To prevent
+          // all plots from appearing at the range, we need to put some padding.
+          if (filterdVals.length == 1) {
+            const [val] = filterdVals;
+            const ind = vals.indexOf(val);
+            // Take 15% of distance from the closest neighbor. We take only 15%
+            // because, due to the structure of the histogram: some portion of
+            // range outside of yScale range appear on the screen (note that
+            // yScale only covers the subset of the SVG and content is not
+            // clipped to the yScale).
+            const min = Math.min(
+                ind == 0 ? Infinity : val - vals[ind - 1],
+                ind == vals.length - 1 ? Infinity : vals[ind + 1] - val);
+            const padding = Math.abs(min * .15);
+            filterdVals = [
+              val - padding,
+              val + padding
+            ];
+          }
+        }
+        return d3.extent(filterdVals);
+      },
+
+      _computeAccesor() {
+        return {
+          idAccessor: d => `${d.step},${d.wall_time}`,
+          xAccessor: d => d[this.x],
+          yAccessor: d => d[this.y],
+          dxAccessor: d => d[this.dx],
+          xRightAccessor: d => d[this.x] + d[this.dx],
+          timeAccessor: this.timeProp === "relative" ?
+              d => d.wall_time - this._data[0].wall_time :
+              d => d[this.timeProperty],
+        };
+      },
+
       _draw: function(duration) {
-        if (!this._attached || !this._data) {
+        if (!this._attached || !this._data || !this._accessors) {
           return;
         }
 
@@ -327,27 +415,31 @@ visualization.
         //
         // Initialization
         //
-        var timeProp = this.timeProperty;
-        var xProp = this.x;
-        var binsProp = this.bins;
-        var dxProp = this.dx;
-        var yProp = this.y;
+        const timeProp = this.timeProperty;
+        const xProp = this.x;
+        const binsProp = this.bins;
+        const dxProp = this.dx;
+        const yProp = this.y;
+        const data = this._data;
+        const name = this._name;
+        const mode = this.mode;
+        const {
+          idAccessor,
+          xAccessor,
+          yAccessor,
+          dxAccessor,
+          xRightAccessor,
+          timeAccessor,
+        } = this._accessors;
 
-        var data = this._data;
-        var name = this._name;
-        var mode = this.mode;
-        var color = d3.hcl(this.colorScale(name));
-        var tooltip = d3.select(this.$.tooltip);
+        const color = d3.hcl(this.colorScale(name));
+        const zoomOutlineColor = d3.hcl(color);
+        // Rotate the hue 5 degrees, increase saturation, and darken using d3.
+        zoomOutlineColor.h = (zoomOutlineColor.h - 5) % 360;
+        zoomOutlineColor.s = Math.min(zoomOutlineColor.s + .2, 1);
+        const zoomOutlineColorHex = zoomOutlineColor.darker().hex();
 
-        var xAccessor = function(d) { return d[xProp] };
-        var yAccessor = function(d) { return d[yProp] };
-        var dxAccessor = function(d) { return d[dxProp] };
-        var xRightAccessor = function(d) { return d[xProp] + d[dxProp] };
-        var timeAccessor = function(d) { return d[timeProp] };
-
-        if (timeProp === "relative") {
-          timeAccessor = function(d) { return d.wall_time - data[0].wall_time };
-        }
+        const tooltip = d3.select(this.$.tooltip);
 
         var brect = this.$.svg.getBoundingClientRect();
         var outerWidth = brect.width,
@@ -356,7 +448,7 @@ visualization.
         var sliceHeight,
             margin = {top: 5, right: 60, bottom: 20, left: 24};
 
-        if (mode === "offset") {
+        if (mode == Mode.OFFSET) {
           sliceHeight = outerHeight / 2.5;
           margin.top = sliceHeight + 5;
         } else {
@@ -401,11 +493,9 @@ visualization.
         //
         var outlineCanvasSize = 500;
 
-        var extent = d3.extent(data, timeAccessor);
-
         var yScale = (timeProp === "wall_time" ? d3.scaleTime() : d3.scaleLinear())
-            .domain(extent)
-            .range([0, (mode === "offset" ? height : 0)]);
+            .domain(this._getYDomain())
+            .range([0, (mode == Mode.OFFSET ? height : 0)]);
 
         var ySliceScale = d3.scaleLinear()
             .domain([0, d3.max(data, function(d, i) { return yExtents[i][1]; })])
@@ -427,18 +517,20 @@ visualization.
             .domain(xScale.domain())
             .range([0, outlineCanvasSize]);
 
-        var outlineColor = d3.scaleLinear()
+        const outlineColor = d3.scaleLinear()
             .domain(d3.extent(data, timeAccessor))
             .range([color.darker(), color.brighter()])
             .interpolate(d3.interpolateHcl);
+
+        function getOutlineStrokeColor(d) {
+          return mode == Mode.OFFSET ? 'white' : outlineColor(timeAccessor(d));
+        }
 
         var xAxis = d3.axisBottom(xScale).ticks(Math.max(2, width / 20));
 
         var yAxis = d3.axisRight(yScale)
             .ticks(Math.max(2, height / 15))
             .tickFormat(yAxisFormat);
-
-
 
         var ySliceAxis = d3.axisRight(ySliceScale)
             .ticks(Math.max(2, height / 15))
@@ -478,44 +570,31 @@ visualization.
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         var bisect = d3.bisector(xRightAccessor).left;
-        var stage = g.select(".stage")
-            .on("mouseover", function() {
-              hoverUpdate.style("opacity", 1);
-              xAxisHoverUpdate.style("opacity", 1);
-              yAxisHoverUpdate.style("opacity", 1);
-              ySliceAxisHoverUpdate.style("opacity", 1);
-              tooltip.style("opacity", 1);
-            })
-            .on("mouseout", function() {
-              hoverUpdate.style("opacity", 0);
-              xAxisHoverUpdate.style("opacity", 0);
-              yAxisHoverUpdate.style("opacity", 0);
-              ySliceAxisHoverUpdate.style("opacity", 0);
-              hoverUpdate.classed("hover-closest", false);
-              outlineUpdate.classed("outline-hover", false);
-              tooltip.style("opacity", 0);
-            })
-            .on("mousemove", onMouseMove);
-
+        var stage = g.select(".stage");
         var background = stage.select(".background")
             .attr("transform", "translate(" + -margin.left + "," + -margin.top + ")")
             .attr("width", outerWidth)
             .attr("height", outerHeight);
 
-        var histogram = stage.selectAll(".histogram").data(data),
-            histogramExit = histogram.exit().remove(),
-            histogramEnter = histogram.enter().append("g").attr("class", "histogram"),
-            histogramUpdate = histogramEnter.merge(histogram)
-                .sort(function(a, b) { return timeAccessor(a) - timeAccessor(b); }),
-            histogramTransition = gTransition.selectAll(".histogram")
-                .attr("transform", function(d) {
-                  return "translate(0, " +
-                    (mode === "offset" ? (yScale(timeAccessor(d)) - sliceHeight) : 0) + ")";
-                });
+        stage.select('.frame')
+            .attr('transform', `translate(${-margin.left},${-margin.top})`)
+            .attr('width', outerWidth - margin.right)
+            .attr('height', outerHeight - margin.bottom);
+
+        const histogram = stage.selectAll(".histogram").data(data, idAccessor);
+        const histogramExit = histogram.exit().remove();
+        const histogramEnter = histogram.enter().append("g").attr("class", "histogram");
+        const histogramUpdate = histogramEnter.merge(histogram)
+            .sort((a, b) => timeAccessor(a) - timeAccessor(b));
+        const histogramTransition = gTransition.selectAll(".histogram")
+            .attr("transform", function(d) {
+              return "translate(0, " +
+                (mode == Mode.OFFSET ? (yScale(timeAccessor(d)) - sliceHeight) : 0) + ")";
+            });
 
         var baselineEnter = histogramEnter.append("line").attr("class", "baseline"),
             baselineUpdate = histogramTransition.select(".baseline")
-                .style("stroke-opacity", function(d) { return (mode === "offset" ? 0.1 : 0); })
+                .style("stroke-opacity", function(d) { return (mode == Mode.OFFSET ? 0.1 : 0); })
                 .attr("y1", sliceHeight)
                 .attr("y2", sliceHeight)
                 .attr("x2", width);
@@ -528,16 +607,15 @@ visualization.
             outlineTransition = histogramTransition.select(".outline")
                 .attr("transform", "scale(" + width / outlineCanvasSize + ", " +
                       sliceHeight / outlineCanvasSize + ")")
-                .style("stroke", function(d) {
-                  return (mode === "offset" ? "white" : outlineColor(timeAccessor(d)));
-                })
-                .style("fill-opacity", function(d) { return (mode === "offset" ? 1 : 0); })
+                .style("stroke", getOutlineStrokeColor)
+                .style("fill-opacity", function(d) { return (mode == Mode.OFFSET ? 1 : 0); })
                 .style("fill", function(d) { return outlineColor(timeAccessor(d)); });
 
         var hoverEnter = histogramEnter.append("g")
                 .attr("class", "hover")
                 .style("fill", function(d) { return outlineColor(timeAccessor(d)); }),
-            hoverUpdate = histogramUpdate.select(".hover");
+            hoverUpdate = histogramUpdate.select(".hover")
+                .style('opacity', null);
 
         hoverEnter.append("circle")
             .attr("r", 2);
@@ -606,8 +684,8 @@ visualization.
             .attr("dy", 4);
 
         gTransition.select(".y.axis.slice")
-            .style("opacity", mode === "offset" ? 0 : 1)
-            .attr("transform", "translate(0, " + (mode === "offset" ? -sliceHeight : 0) + ")")
+            .style("opacity", mode == Mode.OFFSET ? 0 : 1)
+            .attr("transform", "translate(0, " + (mode == Mode.OFFSET ? -sliceHeight : 0) + ")")
             .call(ySliceAxis);
 
         gTransition.select(".x.axis")
@@ -615,14 +693,76 @@ visualization.
             .call(xAxis);
 
         gTransition.select(".y.axis")
-            .style("opacity", mode === "offset" ? 1 : 0)
-            .attr("transform", "translate(" + width + ", " + (mode === "offset" ? 0 : height) + ")")
+            .style("opacity", mode == Mode.OFFSET ? 1 : 0)
+            .attr("transform", "translate(" + width + ", " + (mode == Mode.OFFSET ? 0 : height) + ")")
             .call(yAxis);
 
         gTransition.selectAll(".tick text")
             .attr("fill", "#aaa");
         gTransition.selectAll(".axis path.domain").attr("stroke", "none");
 
+        function hideTooltip() {
+          hoverUpdate.style('opacity', 0);
+          xAxisHoverUpdate.style('opacity', 0);
+          yAxisHoverUpdate.style('opacity', 0);
+          ySliceAxisHoverUpdate.style('opacity', 0);
+          hoverUpdate.classed('hover-closest', false);
+          outlineUpdate.classed('outline-hover', false);
+          tooltip.style('opacity', 0);
+        }
+
+        let dragStartY = 0;
+        const dragZoom = d3.drag()
+            .on('start', () => {
+              // Set the starting point of the drag.
+              dragStartY = d3.event.y;
+              hideTooltip();
+            })
+            .on('drag', () => {
+              // Paint the outlines of histogram that is within the drag range.
+              const {y} = d3.event;
+              const [timeStart, timeEnd] =
+                  [yScale.invert(dragStartY), yScale.invert(y)]
+                      .sort((a, b) => a - b);
+
+              outlineUpdate.style('stroke', (d) => {
+                const dy = timeAccessor(d);
+                if (timeStart <= dy && dy <= timeEnd) {
+                  return zoomOutlineColorHex;
+                }
+                return getOutlineStrokeColor(d);
+              });
+            })
+            .on('end', () => {
+              outlineUpdate.style('stroke', getOutlineStrokeColor)
+              const {y} = d3.event;
+              const [low, high] = [
+                yScale.invert(dragStartY),
+                yScale.invert(y),
+              ].sort((a, b) => a - b);
+              // Disallow zoom to a domain where less than 2 histograms are
+              // visible.
+              const dataInBound = data.map(timeAccessor)
+                .filter(y => low <= y && y <= high);
+              const canZoom = dataInBound.length >= 1;
+              if (canZoom) this._domainBound = [low, high];
+            });
+
+        stage.call(dragZoom);
+        stage.on('dblclick', () => {
+          this._domainBound = null;
+        });
+
+        stage.on('mouseout', function() {
+          hoverUpdate.style('opacity', 0);
+          xAxisHoverUpdate.style('opacity', 0);
+          yAxisHoverUpdate.style('opacity', 0);
+          ySliceAxisHoverUpdate.style('opacity', 0);
+          hoverUpdate.classed('hover-closest', false);
+          outlineUpdate.classed('outline-hover', false);
+          tooltip.style('opacity', 0);
+        })
+        .on('mousemove', onMouseMove);
 
         function onMouseMove() {
           var m = d3.mouse(this),
@@ -635,13 +775,20 @@ visualization.
           var closestSliceData;
           var closestSliceDistance = Infinity;
           var lastSliceData;
+
+          hoverUpdate.style("opacity", 1);
+          xAxisHoverUpdate.style("opacity", 1);
+          yAxisHoverUpdate.style("opacity", 1);
+          ySliceAxisHoverUpdate.style("opacity", 1);
+          tooltip.style("opacity", 1);
+
           hoverUpdate
             .attr("transform", function(d, i) {
               var index = hoverXIndex(d);
               lastSliceData = d;
               var x = xScale(d[binsProp][index][xProp] + d[binsProp][index][dxProp] / 2);
               var y = ySliceScale(d[binsProp][index][yProp]);
-              var globalY = (mode === "offset" ? yScale(timeAccessor(d)) - (sliceHeight - y) : y);
+              var globalY = (mode == Mode.OFFSET ? yScale(timeAccessor(d)) - (sliceHeight - y) : y);
               var dist = Math.abs(m[1] - globalY);
               if (dist < closestSliceDistance) {
                 closestSliceDistance = dist;
@@ -673,9 +820,9 @@ visualization.
           yAxisHoverUpdate
               .attr("transform", function(d) {
                 return "translate(" + width + ", " +
-                  (mode === "offset" ? yScale(timeAccessor(closestSliceData)) : 0) + ")";
+                  (mode == Mode.OFFSET ? yScale(timeAccessor(closestSliceData)) : 0) + ")";
               })
-              .style("display", mode === "offset" ? "" : "none")
+              .style("display", mode == Mode.OFFSET ? "" : "none")
             .select("text")
               .text(function(d) { return fy(timeAccessor(closestSliceData));});
 
@@ -683,10 +830,10 @@ visualization.
           ySliceAxisHoverUpdate
               .attr("transform", function(d) {
                 return "translate(" + width + ", " +
-                  (mode === "offset" ? 0 : ySliceScale(closestSliceData[binsProp][index][yProp])) +
+                  (mode == Mode.OFFSET ? 0 : ySliceScale(closestSliceData[binsProp][index][yProp])) +
                   ")";
               })
-              .style("display", mode === "offset" ? "none" : "")
+              .style("display", mode == Mode.OFFSET ? "none" : "")
             .select("text")
               .text(function(d) { return fsy(closestSliceData[binsProp][index][yProp]); });
 
@@ -694,7 +841,7 @@ visualization.
           tooltip.style("transform", "translate(" + (svgMouse[0] + 15) + "px," +
               (svgMouse[1] - 15) + "px)")
             .select('span')
-            .text(mode === "offset" ?
+            .text(mode == Mode.OFFSET ?
                 fsy(closestSliceData[binsProp][index][yProp]) :
                 (timeProp === "step" ? "step " : "") +
                 fy(timeAccessor(closestSliceData)));
