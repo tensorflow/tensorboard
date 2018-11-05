@@ -537,16 +537,13 @@ def make_json_formatted_for_single_chart(mutant_features,
           key += ' (index %d)' % index_to_mutate
         if not key in series:
           series[key] = {}
-        else:
-          if not mutant_feature.mutant_value in series[key]:
-            series[key][mutant_feature.mutant_value] = []
-          series[key][mutant_feature.mutant_value].append(classification_class.score)
+        if not mutant_feature.mutant_value in series[key]:
+          series[key][mutant_feature.mutant_value] = []
+        series[key][mutant_feature.mutant_value].append(classification_class.score)
 
     # Post-process points to have separate list for each class
     return_series = collections.defaultdict(list)
     for key, mutant_values in series.iteritems():
-      print key
-      print mutant_values
       for value, y_list in mutant_values.iteritems():
         return_series[key].append({
           x_label: value,

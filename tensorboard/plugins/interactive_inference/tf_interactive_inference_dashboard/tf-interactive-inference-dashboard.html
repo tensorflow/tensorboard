@@ -819,6 +819,11 @@ limitations under the License.
         border: 1px solid lightgrey;
       }
 
+      .control-divider {
+        margin: 5px 0 5px 5px;
+        width: 5px;
+        border-left: 1px solid lightgrey;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -880,27 +885,29 @@ limitations under the License.
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <div class="flex">
-              <div class="button-prefix-label">Partial Depdependence Plots:</div>
+            <div class="button-prefix-label">Partial Depdependence Plots:</div>
+            <div>
               <paper-button class="control-button" disabled$="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
                   on-click="showGlobalPartialDependencePlots_" alt="show global partial dependence plots">
                   Global
               </paper-button>
-              <div title="Select a datapoint to use this feature">
-                <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                    on-click="showPartialDependencePlots_" alt="show partial dependence plots"
-                    title="Select a datapoint to use this feature">
-                    For selected datapoint
-                </paper-button>
-              </div>
-              <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
-                </paper-icon-button>
-                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                  <div class="dialog-title">Partial Dependence Plots</div>
-                  <div>Global partial dependence plots show the average effect of changing a single feature across all datapoints.</div>
-                  <div>Partial dependence plots for a selected datapoint show the effect of a changing single feature on that one datapoint.</div>
-                </paper-dialog>
             </div>
+            <div title="Select a datapoint to use this feature">
+              <paper-button class="control-button" disabled$="[[!enablePartialDependencePlots_(selectedExampleAndInference, modelName, inferenceAddress)]]"
+                  on-click="showPartialDependencePlots_" alt="show partial dependence plots"
+                  title="Select a datapoint to use this feature">
+                  Selected datapoint
+              </paper-button>
+            </div>
+            <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
+              </paper-icon-button>
+              <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                <div class="dialog-title">Partial Dependence Plots</div>
+                <div>Global: show the average effect of repeatedly changing a single feature across all datapoints.</div>
+                <div>Selected datapoint: show the effect of a repeatedly changing a single feature on the selected datapoint.</div>
+              </paper-dialog>
+            </paper-icon-button>
+            <div class="control-divider"></div>
             <div title="Select a datapoint to use this feature">
               <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                   on-click="showDistanceClicked_" alt="create distance feature"
@@ -908,6 +915,7 @@ limitations under the License.
                   Compute distance
               </paper-button>
             </div>
+            <div class="control-divider"></div>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
                 <div class="button-prefix-label">Show nearest counterfactual:</div>
@@ -2130,6 +2138,11 @@ limitations under the License.
           multiClass) {
         return selectedLabelFeature != '' &&
           this.isBinaryClassification_(modelType, multiClass);
+      },
+
+      enablePartialDependencePlots_: function(selectedExampleAndInference, modelName, inferenceAddress) {
+        return this.hasSelected(selectedExampleAndInference) &&
+          this.areExamplesEditable_(modelName, inferenceAddress);
       },
 
       hasSelected: function(selectedExampleAndInference) {
@@ -3615,7 +3628,7 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        if (this.globalPdPlots) {
+        if (!this.globalPdPlots) {
           const origValEntry =
             this.createPdEntryForCurrentValue(featureName, data);
           if (origValEntry) {
