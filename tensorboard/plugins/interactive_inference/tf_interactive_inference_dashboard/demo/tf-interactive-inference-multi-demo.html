@@ -70,7 +70,7 @@
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/uci/model.json', {credentials: 'include'}));
         this.model2 = await tf.loadModel(tf.io.browserHTTPRequest(
-          'data/uci/model.json', {credentials: 'include'}));
+          'data/uci/model_comparison/model.json', {credentials: 'include'}));
 
         const DATA_PATH = "data/uci/uci_test_examples.json";
         const testData = d3.json(DATA_PATH).then(data => {
@@ -126,10 +126,9 @@
                 {classes: [{label: '0', score: predValues[i * PRED_SIZE + 1]},
                            {label: '1', score: predValues[i * PRED_SIZE]}]};
               inferences.results[1].classificationResult.classifications[i] =
-                {classes: [{label: '0', score: (1-predValues2[i * PRED_SIZE + 1])/2},
-                           {label: '1', score: (1-predValues2[i * PRED_SIZE])/2}]};
+                {classes: [{label: '0', score: (predValues2[i * PRED_SIZE + 1])},
+                           {label: '1', score: (predValues2[i * PRED_SIZE])}]};
             }
-            // todo remove 1- /2 this is only to test with single model
             this.$.dash.inferences = inferences;
             this.indicesToInfer = {};
           });
