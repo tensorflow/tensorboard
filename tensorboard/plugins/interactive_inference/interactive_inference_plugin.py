@@ -21,6 +21,7 @@ from __future__ import print_function
 import json
 import math
 import numpy as np
+from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from google.protobuf import json_format
@@ -417,8 +418,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       model_versions = request.args.get('model_version').split(',')
       model_signatures = request.args.get('model_signature').split(',')
 
-      # TODO generalize to multiple models
-      # for model_num in xrange(len(inference_addresses)):
+      # TODO(tolgab) Generalize this to multiple models
       model_num = 0
       serving_bundle = inference_utils.ServingBundle(
           inference_addresses[model_num],
