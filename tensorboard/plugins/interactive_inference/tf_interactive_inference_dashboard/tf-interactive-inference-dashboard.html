@@ -2198,7 +2198,9 @@ limitations under the License.
        */
       updateInferenceStats_: function(regenInferenceStats) {
         if (!this.inferenceStats_ || !this.visdata ||
-            this.selectedLabelFeature == '') {
+            this.selectedLabelFeature == '' ||
+            this.examplesAndInferences.length == 0 ||
+            this.examplesAndInferences[0].inferences == null) {
           return;
         }
         if (regenInferenceStats) {
