@@ -263,7 +263,7 @@ def get_numeric_feature_names(example):
     example: An example.
 
   Returns:
-    A list of string feature names.
+    A list of strings of the names of numeric features.
   """
   numeric_features = ('float_list', 'int64_list')
   features = get_example_features(example)
@@ -495,7 +495,7 @@ def make_json_formatted_for_single_chart(mutant_features,
       X-axis.
     inference_result_proto: A ClassificationResponse or RegressionResponse
       returned by Servo, representing the Y-axis.
-      It contains one 'classification' or 'regression' for everyExample that
+      It contains one 'classification' or 'regression' for every Example that
       was sent for inference. The length of that field should be the same length
       of mutant_features.
     index_to_mutate: The index of the feature being mutated for this chart.
