@@ -263,7 +263,7 @@ def get_numeric_feature_names(example):
     example: An example.
 
   Returns:
-    A list of numeric feature names.
+    A list of strings of the names of numeric features.
   """
   numeric_features = ('float_list', 'int64_list')
   features = get_example_features(example)
