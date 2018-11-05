@@ -73,9 +73,6 @@ limitations under the License.
       .model-type-label {
         padding-top: 10px;
       }
-      .model-number-label {
-        padding-top: 10px;
-      }
       .add-model-button-holder {
         display: flex;
       }
@@ -96,7 +93,6 @@ limitations under the License.
       }
     </style>
     <div class="title">Set up your data and model</div>
-    <div class="model-number-label">Model 1</div>
     <paper-input always-float-label label="Inference address (blade address or host:port)"
                  placeholder="[[inferenceAddress1]]" value="{{inferenceAddress1}}">
     </paper-input>
@@ -111,24 +107,25 @@ limitations under the License.
                   value="{{modelSignature1}}" class="input-in-row">
       </paper-input>
     </div>
-    <div class="model-number-label" hidden$={{hideModelPane2}}>Model 2 (optional)</div>
-    <paper-input always-float-label label="Inference address (blade address or host:port)"
-    placeholder="[[inferenceAddress2]]" value="{{inferenceAddress2}}" hidden$={{hideModelPane2}}>
-    </paper-input>
-    <div class="flex-holder" hidden$={{hideModelPane2}}>
-      <paper-input always-float-label label="Model name" placeholder="[[modelName2]]"
-                  value="{{modelName2}}" class="input-in-row">
+    <div hidden$={{hideModelPane2}}>
+      <paper-input always-float-label label="Inference address (blade address or host:port)"
+      placeholder="[[inferenceAddress2]]" value="{{inferenceAddress2}}">
       </paper-input>
-      <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion2]]"
-                  value="{{modelVersion2}}" class="input-in-row">
-      </paper-input>
-      <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature2]]"
-                  value="{{modelSignature2}}" class="input-in-row">
-      </paper-input>
+      <div class="flex-holder">
+        <paper-input always-float-label label="Model name" placeholder="[[modelName2]]"
+                    value="{{modelName2}}" class="input-in-row">
+        </paper-input>
+        <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion2]]"
+                    value="{{modelVersion2}}" class="input-in-row">
+        </paper-input>
+        <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature2]]"
+                    value="{{modelSignature2}}" class="input-in-row">
+        </paper-input>
+      </div>
     </div>
     <div class="add-model-button-holder" hidden$={{!hideModelPane2}}>
       <paper-button on-click="addModelClicked_" class="main-button">
-        Add Model
+        Add another model for comparison
       </paper-button>
     </div>
     <div class="flex-holder">

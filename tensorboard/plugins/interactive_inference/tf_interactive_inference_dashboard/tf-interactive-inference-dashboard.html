@@ -2638,7 +2638,7 @@ limitations under the License.
        * non-zero.
        */
       getClassificationBestNonZero: function(index) {
-        // TODO generalize to more than 1 model
+        // TODO(tolgab) Generalize this to multiple models
         let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
@@ -2869,9 +2869,9 @@ limitations under the License.
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
             inferenceMap[this.inferences.indices[i]] = [];
-            for (let model_num=0; model_num < this.inferences.results.length;
-             model_num++){
-              const result = this.inferences.results[model_num].classificationResult;
+            for (let modelNum = 0; modelNum < this.inferences.results.length;
+                 modelNum++){
+              const result = this.inferences.results[modelNum].classificationResult;
               // For models that don't return any labels for the classes, fill
               // them out with class indicies.
               for (let j = 0; j < result.classifications[i].classes.length; j++) {
@@ -2879,12 +2879,12 @@ limitations under the License.
                   result.classifications[i].classes[j].label = j.toString();
                 }
               }
-              inferenceMap[this.inferences.indices[i]][model_num] =
+              inferenceMap[this.inferences.indices[i]][modelNum] =
                   result.classifications[i].classes.sort((a, b) => b.score - a.score);
             }
           } else {
             inferenceMap[this.inferences.indices[i]] = [];
-            // TODO edit inferencemap for regression with multiple models
+            // TODO(tolgab) Generalize regression to multiple models
             const result = this.inferences.results[0].regressionResult;
             inferenceMap[this.inferences.indices[i]][0] =
                 [{label: '', score: result.regressions[i].value}];
@@ -2917,25 +2917,24 @@ limitations under the License.
 
           // If there is a label vocab for classification, set the string
           // inferred label for each example.
-          // TODO index to more than one model
           if (isClassification && self.labelVocab.length > 0) {
             for (let inferenceIndex = 0;
                  inferenceIndex <
                  self.examplesAndInferences[index].inferences.length;
                  inferenceIndex++) {
-              for (let model_num=0;
-                   model_num < self.examplesAndInferences[index].inferences[
+              for (let modelNum = 0;
+                   modelNum < self.examplesAndInferences[index].inferences[
                     inferenceIndex].length;
-                   model_num++) {
+                   modelNum++) {
                 for (let labelIndex = 0;
                     labelIndex < self.examplesAndInferences[index].inferences[
-                      inferenceIndex][model_num].length;
+                      inferenceIndex][modelNum].length;
                     labelIndex++) {
                   self.examplesAndInferences[index].inferences[
-                    inferenceIndex][model_num][
+                    inferenceIndex][modelNum][
                       labelIndex].vocabLabel = self.labelVocab[
                       self.examplesAndInferences[index].inferences[
-                        inferenceIndex][model_num][labelIndex].label];
+                        inferenceIndex][modelNum][labelIndex].label];
                 }
               }
             }
@@ -2994,10 +2993,10 @@ limitations under the License.
 
         let n_models = this.examplesAndInferences[index].inferences[
           inferenceIdx].length;
-        for (let model_num = 0; model_num < n_models; model_num++){
-          item[inferenceScoreStr + (model_num + 1)] =
+        for (let modelNum = 0; modelNum < n_models; modelNum++){
+          item[inferenceScoreStr + (modelNum + 1)] =
             this.examplesAndInferences[index].inferences[inferenceIdx][
-              model_num][indexForNonZeroLabel].score;
+              modelNum][indexForNonZeroLabel].score;
           if (this.examplesAndInferences[index].inferences[inferenceIdx][
             0][indexForNonZeroLabel].score >= threshold) {
             item[inferenceValueStr] =
@@ -3044,10 +3043,7 @@ limitations under the License.
       /**
        * Handler for when running inference, calls the backend.
        */
-
-       // TODO change model name etc to list
       inferClicked_: function() {
-        // TODO make these fields comma separated
         const inferParams = {'inference_address': this.inferenceAddress,
                              'model_name': this.modelName,
                              'model_type': this.modelType,
@@ -3598,8 +3594,9 @@ limitations under the License.
           origValue = origValue[indexForValue];
         }
 
+        // TODO(tolgab) Generalize this to multiple models
         const inferences = this.selectedExampleAndInference.inferences[
-          this.selectedExampleAndInference.inferences.length - 1];
+          this.selectedExampleAndInference.inferences.length - 1][0];
         let origInferenceScore = -1;
         for (let i = 0; i < inferences.length; i++) {
           if (inferences[i].label == classToChart.toString() ||
