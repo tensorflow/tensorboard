@@ -27,13 +27,20 @@ var vz_line_chart2;
     // Smallest positive non-zero value represented by IEEE 754 binary (64 bit)
     // floating-point number.
     // https://www.ecma-international.org/ecma-262/5.1/#sec-8.5
-    var MIN_POSITIVE_VALUE = Math.pow(2, -1074);
+    vz_line_chart2.MIN_POSITIVE_VALUE = Math.pow(2, -1074);
     function log(x) {
         return Math.log10(x);
     }
     function pow(x) {
         return Math.pow(10, x);
     }
+    /**
+     * A logarithmic scale that returns NaN for all non-positive values as it
+     * mathematically is supposed to be -Infinity. Also, due to the floating point
+     * precision issue, it treats all values smaller than MIN_POSITIVE_VALUE as
+     * non-positive. Lastly, if using autoDomain feature and if all values are the
+     * same value, it pads 10% of the value.
+     */
     var LogScale = /** @class */ (function (_super) {
         __extends(LogScale, _super);
         function LogScale() {
@@ -66,21 +73,20 @@ var vz_line_chart2;
         LogScale.prototype._setDomain = function (values) {
             this._untransformedDomain = values;
             var min = values[0], max = values[1];
-            _super.prototype._setDomain.call(this, [Math.max(MIN_POSITIVE_VALUE, min), max]);
+            _super.prototype._setDomain.call(this, [Math.max(vz_line_chart2.MIN_POSITIVE_VALUE, min), max]);
         };
         /**
          * Given a domain, pad it and clip the lower bound to MIN_POSITIVE_VALUE.
          */
         LogScale.prototype._niceDomain = function (domain, count) {
             var low = domain[0], high = domain[1];
-            var adjustedLogLow = Math.max(log(MIN_POSITIVE_VALUE), log(low));
+            var adjustedLogLow = Math.max(log(vz_line_chart2.MIN_POSITIVE_VALUE), log(low));
             var logHigh = log(high);
-            var pad = (logHigh - adjustedLogLow) * this.padProportion();
-            var logLowFloor = Math.floor(adjustedLogLow);
-            var logHighCeil = Math.ceil(logHigh);
+            var spread = logHigh - adjustedLogLow;
+            var pad = spread ? spread * this.padProportion() : 1;
             return [
-                pow(Math.max(log(MIN_POSITIVE_VALUE), adjustedLogLow - pad, logLowFloor)),
-                pow(Math.min(logHigh + pad, logHighCeil)),
+                pow(Math.max(log(vz_line_chart2.MIN_POSITIVE_VALUE), adjustedLogLow - pad)),
+                pow(logHigh + pad),
             ];
         };
         /**
@@ -106,7 +112,7 @@ var vz_line_chart2;
             var values = _super.prototype._getAllIncludedValues.call(this);
             // For log scale, the value cannot be smaller or equal to 0. They are
             // negative infinity.
-            return values.map(function (x) { return x > 0 ? x : MIN_POSITIVE_VALUE; });
+            return values.map(function (x) { return x > 0 ? x : vz_line_chart2.MIN_POSITIVE_VALUE; });
         };
         LogScale.prototype._defaultExtent = function () {
             return [1, 10];
