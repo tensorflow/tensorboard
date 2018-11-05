@@ -880,12 +880,26 @@ limitations under the License.
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <div title="Select a datapoint to use this feature">
-              <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="showPartialDependencePlots_" alt="show partial dependence plots"
-                  title="Select a datapoint to use this feature">
-                  Partial dependence plots
+            <div class="flex">
+              <div class="button-prefix-label">Partial Depdependence Plots:</div>
+              <paper-button class="control-button" disabled$="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
+                  on-click="showGlobalPartialDependencePlots_" alt="show global partial dependence plots">
+                  Global
               </paper-button>
+              <div title="Select a datapoint to use this feature">
+                <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                    on-click="showPartialDependencePlots_" alt="show partial dependence plots"
+                    title="Select a datapoint to use this feature">
+                    For selected datapoint
+                </paper-button>
+              </div>
+              <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
+                </paper-icon-button>
+                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                  <div class="dialog-title">Partial Dependence Plots</div>
+                  <div>Global partial dependence plots show the average effect of changing a single feature across all datapoints.</div>
+                  <div>Partial dependence plots for a selected datapoint show the effect of a changing single feature on that one datapoint.</div>
+                </paper-dialog>
             </div>
             <div title="Select a datapoint to use this feature">
               <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
@@ -1780,6 +1794,9 @@ limitations under the License.
           type: Object,
           value: () => ({}),
         },
+        // True if showing global PD plots. False if showing individual PD
+        // plots.
+        globalPdPlots: Boolean,
       },
 
       observers: [
@@ -1982,7 +1999,14 @@ limitations under the License.
         this.$.partialplotholder.style.display = 'none';
       },
 
+      showGlobalPartialDependencePlots_: function() {
+        this.globalPdPlots = true;
+        this.$.partialplotholder.style.display = 'block';
+        requestAnimationFrame(() => this.populatePdTabs());
+      },
+
       showPartialDependencePlots_: function() {
+        this.globalPdPlots = false;
         this.$.partialplotholder.style.display = 'block';
         requestAnimationFrame(() => this.populatePdTabs());
       },
@@ -3591,22 +3615,24 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        const origValEntry =
-          this.createPdEntryForCurrentValue(featureName, data);
-        if (origValEntry) {
-          let indexOfOrigValInData = -1;
-          const origKey = _.keys(data)[0];
-          const origData = data[origKey];
-          for (let i = 0; i < origData.length; i++) {
-            if (origData[i].step == origValEntry.step) {
-              indexOfOrigValInData = i;
-              break;
+        if (this.globalPdPlots) {
+          const origValEntry =
+            this.createPdEntryForCurrentValue(featureName, data);
+          if (origValEntry) {
+            let indexOfOrigValInData = -1;
+            const origKey = _.keys(data)[0];
+            const origData = data[origKey];
+            for (let i = 0; i < origData.length; i++) {
+              if (origData[i].step == origValEntry.step) {
+                indexOfOrigValInData = i;
+                break;
+              }
             }
+            if (indexOfOrigValInData != -1) {
+              origData.splice(indexOfOrigValInData, 1);
+            }
+            data[origKey + ' - original value'] = [origValEntry];
           }
-          if (indexOfOrigValInData != -1) {
-            origData.splice(indexOfOrigValInData, 1);
-          }
-          data[origKey + ' - original value'] = [origValEntry];
         }
 
         // Convert the data into the format expected by vz-bar-chart.
@@ -3662,11 +3688,13 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        const origValEntry =
-          this.createPdEntryForCurrentValue(featureName, data);
-        if (origValEntry) {
-          const origKey = _.keys(data)[0];
-          data[origKey + ' - original value'] = [origValEntry];
+        if (!this.globalPdPlots) {
+          const origValEntry =
+            this.createPdEntryForCurrentValue(featureName, data);
+          if (origValEntry) {
+            const origKey = _.keys(data)[0];
+            data[origKey + ' - original value'] = [origValEntry];
+          }
         }
 
         const series = _.keys(data);
@@ -3759,7 +3787,7 @@ limitations under the License.
           'x_min': xMin,
           'x_max': xMax,
           'feature_index_pattern': featureIndexPattern,
-          'example_index': this.selected[0],
+          'example_index': this.globalPdPlots ? -1 : this.selected[0],
           'use_predict': this.usePredictApi,
           'predict_output_tensor': this.predictOutputTensor,
           'predict_input_tensor': this.predictInputTensor,
