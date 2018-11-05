@@ -47,8 +47,10 @@ HEAT_COEFFICIENT_LIST = [0.001, 0.005]
 def fingerprint(string):
   m = hashlib.md5()
   # in python3 we must update our hash from a bytes, not a str
-  try: string = string.encode('utf-8')
-  except: pass
+  try:
+    string = string.encode('utf-8')
+  except:
+    pass
   m.update(string)
   return m.hexdigest()
 
