@@ -158,6 +158,12 @@ limitations under the License.
         padding-right: 5px;
       }
 
+      .pd-no-features-text {
+        font-size: 18px;
+        color: #777;
+        padding: 12px 40px;
+      }
+
       .accept-button-holder {
         display: flex;
         flex-direction: row-reverse;
@@ -1445,6 +1451,9 @@ limitations under the License.
                   </div>
                 </paper-dialog>
               </div>
+              <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
+                <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
+              </template>
               <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                 <div class="feature-container" data-feature-name$="[[item.name]]">
                   <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
@@ -2017,6 +2026,11 @@ limitations under the License.
         this.globalPdPlots = false;
         this.$.partialplotholder.style.display = 'block';
         requestAnimationFrame(() => this.populatePdTabs());
+      },
+
+      areTherePdPlotFeatures_: function(partialDepPlotEligibleFeatures) {
+        return partialDepPlotEligibleFeatures &&
+          partialDepPlotEligibleFeatures.length > 0;
       },
 
       selectedIndicesChanged_: function(event) {
