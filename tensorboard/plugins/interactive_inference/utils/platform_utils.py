@@ -99,12 +99,13 @@ def example_protos_from_path(path,
   examples = []
 
   if path.endswith('.csv'):
-    def isfloat(value):
-      try:
-        float(value.strip())
-        return True
-      except ValueError:
-        return False
+    def are_floats(values):
+      for value in values:
+        try:
+          float(value)
+        except ValueError:
+          return False
+      return True
     csv.register_dialect('CsvDialect', skipinitialspace=True)
     rows = csv.DictReader(open(path), dialect='CsvDialect')
     for row in rows:
@@ -112,17 +113,14 @@ def example_protos_from_path(path,
         continue
       example = tf.train.Example()
       for col in row.keys():
-          # Parse out individual probability values from the special key
-          # 'probabilities' which contains a space-delimited list of numbers.
-          if col == 'probabilities':
+          # Parse out individual values from vertical-bar-delimited lists
+          values = [val.strip() for val in row[col].split('|')]
+          if are_floats(values):
             example.features.feature[col].float_list.value.extend(
-              [float(prob) for prob in row[col].split()])
-          elif isfloat(row[col]):
-            example.features.feature[col].float_list.value.append(
-              float(row[col]))
+              [float(val) for val in values])
           else:
-            example.features.feature[col].bytes_list.value.append(
-              row[col].strip().encode('utf-8'))
+            example.features.feature[col].bytes_list.value.extend(
+              [val.encode('utf-8') for val in values])
       examples.append(
         example if parse_examples else example.SerializeToString())
       if len(examples) >= num_examples:

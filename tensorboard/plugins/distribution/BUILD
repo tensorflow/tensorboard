@@ -31,7 +31,7 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -57,6 +57,6 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":compressor",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )

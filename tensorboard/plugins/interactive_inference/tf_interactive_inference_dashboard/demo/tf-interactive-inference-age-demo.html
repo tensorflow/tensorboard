@@ -122,7 +122,7 @@ limitations under the License.
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-            inferences.results = {regressionResult: {regressions: []}};
+            inferences.results = [{regressionResult: {regressions: []}}];
             let tensors = null;
             for (let i = 0; i < indices.length; i++) {
               const idx = +indices[i];
@@ -140,10 +140,11 @@ limitations under the License.
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             tensors.dispose();
+            res.dispose();
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
               const adjustedScore = 2 * this.means['age'] * predValues[i];
-              inferences.results.regressionResult.regressions[i] =
+              inferences.results[0].regressionResult.regressions[i] =
               {value: adjustedScore};
             }
             this.$.dash.inferences = inferences;
@@ -243,7 +244,9 @@ limitations under the License.
             const input = tensors.reshape([examples.length, 105]);
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
+            input.dispose();
             tensors.dispose();
+            res.dispose();
             const results = [];
             for (let trialIdx = 0; trialIdx < numTrials; trialIdx++) {
               const startingPredIdx =

@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import error
+from tensorboard.compat import tf
+
 
 PLUGIN_NAME = 'hparams'
 PLUGIN_DATA_VERSION = 0

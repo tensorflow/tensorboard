@@ -116,11 +116,10 @@ import collections
 import itertools
 import os
 
-import tensorflow as tf
-
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat import tf
 
 
 # Map of field names within summary.proto to the user-facing names that this

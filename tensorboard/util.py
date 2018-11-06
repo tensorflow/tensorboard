@@ -15,7 +15,9 @@
 """TensorBoard helper routine module.
 
 This module is a trove of succinct generic helper routines that don't
-pull in any heavyweight dependencies aside from TensorFlow.
+pull in any heavyweight dependencies.
+
+Only pulls in TensorFlow as a dependency if requested per build rules.
 """
 
 from __future__ import absolute_import
@@ -32,7 +34,8 @@ import time
 
 import numpy as np
 import six
-import tensorflow as tf
+
+from tensorboard.compat import tf
 
 
 def setup_logging(streams=(sys.stderr,)):

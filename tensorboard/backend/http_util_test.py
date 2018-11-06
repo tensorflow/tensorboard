@@ -24,7 +24,7 @@ import gzip
 import struct
 
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 from werkzeug import test as wtest
 from werkzeug import wrappers
 from tensorboard.backend import http_util

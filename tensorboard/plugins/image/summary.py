@@ -26,7 +26,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import util
 from tensorboard.plugins.image import metadata

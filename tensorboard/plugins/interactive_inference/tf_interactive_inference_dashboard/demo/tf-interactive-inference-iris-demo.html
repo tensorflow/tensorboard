@@ -84,7 +84,8 @@ limitations under the License.
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-            inferences.results = {classificationResult: {classifications: []}};
+            inferences.results = [
+              {classificationResult: {classifications: []}}];
             let tensors = null;
             for (let i = 0; i < indices.length; i++) {
               const idx = +indices[i];
@@ -103,9 +104,10 @@ limitations under the License.
             const predValues = await res.data();
             input.dispose();
             tensors.dispose();
+            res.dispose();
             const PRED_SIZE = 3;
             for (let i = 0; i < indices.length; i++) {
-              inferences.results.classificationResult.classifications[i] =
+              inferences.results[0].classificationResult.classifications[i] =
                 {classes: [{label: '0', score: predValues[i * PRED_SIZE]},
                           {label: '1', score: predValues[i * PRED_SIZE + 1]},
                            {label: '2', score: predValues[i * PRED_SIZE + 2]}]};
@@ -170,6 +172,7 @@ limitations under the License.
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             input.dispose();
+            tensors.dispose();
             res.dispose();
             const PRED_SIZE = 3;
             const results = [[], [], []];

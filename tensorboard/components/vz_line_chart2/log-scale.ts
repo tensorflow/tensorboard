@@ -17,7 +17,7 @@ namespace vz_line_chart2 {
 // Smallest positive non-zero value represented by IEEE 754 binary (64 bit)
 // floating-point number.
 // https://www.ecma-international.org/ecma-262/5.1/#sec-8.5
-const MIN_POSITIVE_VALUE = Math.pow(2, -1074);
+export const MIN_POSITIVE_VALUE = Math.pow(2, -1074);
 
 function log(x: number): number {
   return Math.log10(x);
@@ -27,6 +27,13 @@ function pow(x: number): number {
   return Math.pow(10, x);
 }
 
+/**
+ * A logarithmic scale that returns NaN for all non-positive values as it
+ * mathematically is supposed to be -Infinity. Also, due to the floating point
+ * precision issue, it treats all values smaller than MIN_POSITIVE_VALUE as
+ * non-positive. Lastly, if using autoDomain feature and if all values are the
+ * same value, it pads 10% of the value.
+ */
 export class LogScale extends TfScale {
   private _d3LogScale = d3.scaleLog();
   private _untransformedDomain: number[];
@@ -75,12 +82,11 @@ export class LogScale extends TfScale {
     const [low, high] = domain;
     const adjustedLogLow = Math.max(log(MIN_POSITIVE_VALUE), log(low));
     const logHigh = log(high);
-    const pad = (logHigh - adjustedLogLow) * this.padProportion();
-    const logLowFloor = Math.floor(adjustedLogLow);
-    const logHighCeil = Math.ceil(logHigh);
+    const spread = logHigh - adjustedLogLow;
+    const pad = spread ? spread * this.padProportion() : 1;
     return [
-      pow(Math.max(log(MIN_POSITIVE_VALUE), adjustedLogLow - pad, logLowFloor)),
-      pow(Math.min(logHigh + pad, logHighCeil)),
+      pow(Math.max(log(MIN_POSITIVE_VALUE), adjustedLogLow - pad)),
+      pow(logHigh + pad),
     ];
   }
 

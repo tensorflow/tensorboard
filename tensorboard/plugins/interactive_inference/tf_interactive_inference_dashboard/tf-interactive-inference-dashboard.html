@@ -2176,7 +2176,8 @@ limitations under the License.
       isComputedKeyStr_: function(feature) {
         return feature == inferenceValueStr || feature == inferenceLabelStr
             || feature == inferenceCorrectStr || feature == inferenceErrorStr
-            || feature == inferenceScoreStr || feature == inferenceAbsErrorStr
+            || feature.lastIndexOf(inferenceScoreStr, 0) == 0
+            || feature == inferenceAbsErrorStr
             || feature == inferenceSquaredErrorStr || feature == exampleIdKey
             || this.facetDistFeatureNames.indexOf(feature) != -1
       },
@@ -2263,7 +2264,9 @@ limitations under the License.
        */
       updateInferenceStats_: function(regenInferenceStats) {
         if (!this.inferenceStats_ || !this.visdata ||
-            this.selectedLabelFeature == '') {
+            this.selectedLabelFeature == '' ||
+            this.examplesAndInferences.length == 0 ||
+            this.examplesAndInferences[0].inferences == null) {
           return;
         }
         if (regenInferenceStats) {
@@ -2703,19 +2706,20 @@ limitations under the License.
        * non-zero.
        */
       getClassificationBestNonZero: function(index) {
+        // TODO(tolgab) Generalize this to multiple models
         let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIndex].length;
+               inferenceIndex][0].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-              inferenceIndex][i].label !== 0) {
+              inferenceIndex][0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
-        return this.examplesAndInferences[index].inferences[inferenceIndex][
+        return this.examplesAndInferences[index].inferences[inferenceIndex][0][
           indexForNonZeroLabel];
       },
 
@@ -2995,24 +2999,30 @@ limitations under the License.
             this.inferences.indices.length == 0) {
           return;
         }
-        // Create map of example indicies to inference results.
+        // Create map of example indices to inference results.
         const inferenceMap = {}
-        const isClassification = !!this.inferences.results.classificationResult;
+        const isClassification = !!this.inferences.results[0].classificationResult;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
-            const result = this.inferences.results.classificationResult;
-            // For models that don't return any labels for the classes, fill
-            // them out with class indicies.
-            for (let j = 0; j < result.classifications[i].classes.length; j++) {
-              if (result.classifications[i].classes[j].label == '') {
-                result.classifications[i].classes[j].label = j.toString();
+            inferenceMap[this.inferences.indices[i]] = [];
+            for (let modelNum = 0; modelNum < this.inferences.results.length;
+                 modelNum++){
+              const result = this.inferences.results[modelNum].classificationResult;
+              // For models that don't return any labels for the classes, fill
+              // them out with class indicies.
+              for (let j = 0; j < result.classifications[i].classes.length; j++) {
+                if (result.classifications[i].classes[j].label == '') {
+                  result.classifications[i].classes[j].label = j.toString();
+                }
               }
+              inferenceMap[this.inferences.indices[i]][modelNum] =
+                  result.classifications[i].classes.sort((a, b) => b.score - a.score);
             }
-            inferenceMap[this.inferences.indices[i]] =
-                result.classifications[i].classes.sort((a, b) => b.score - a.score);
           } else {
-            const result = this.inferences.results.regressionResult;
-            inferenceMap[this.inferences.indices[i]] =
+            inferenceMap[this.inferences.indices[i]] = [];
+            // TODO(tolgab) Generalize regression to multiple models
+            const result = this.inferences.results[0].regressionResult;
+            inferenceMap[this.inferences.indices[i]][0] =
                 [{label: '', score: result.regressions[i].value}];
           }
         }
@@ -3037,7 +3047,7 @@ limitations under the License.
           } else {
             item[inferenceValueStr] =
               self.examplesAndInferences[index].inferences[
-                self.examplesAndInferences[index].inferences.length - 1][
+                self.examplesAndInferences[index].inferences.length - 1][0][
                   0].score;
           }
 
@@ -3046,16 +3056,22 @@ limitations under the License.
           if (isClassification && self.labelVocab.length > 0) {
             for (let inferenceIndex = 0;
                  inferenceIndex <
-                self.examplesAndInferences[index].inferences.length;
+                 self.examplesAndInferences[index].inferences.length;
                  inferenceIndex++) {
-              for (let labelIndex = 0;
-                   labelIndex < self.examplesAndInferences[index].inferences[
-                     inferenceIndex].length;
-                   labelIndex++) {
-                self.examplesAndInferences[index].inferences[inferenceIndex][
-                  labelIndex].vocabLabel = self.labelVocab[
-                    self.examplesAndInferences[index].inferences[
-                      inferenceIndex][labelIndex].label];
+              for (let modelNum = 0;
+                   modelNum < self.examplesAndInferences[index].inferences[
+                    inferenceIndex].length;
+                   modelNum++) {
+                for (let labelIndex = 0;
+                    labelIndex < self.examplesAndInferences[index].inferences[
+                      inferenceIndex][modelNum].length;
+                    labelIndex++) {
+                  self.examplesAndInferences[index].inferences[
+                    inferenceIndex][modelNum][
+                      labelIndex].vocabLabel = self.labelVocab[
+                      self.examplesAndInferences[index].inferences[
+                        inferenceIndex][modelNum][labelIndex].label];
+                }
               }
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
@@ -3083,7 +3099,7 @@ limitations under the License.
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
           item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][0].label;
+            this.examplesAndInferences[index].inferences[inferenceIdx][0][0].label;
           return;
         }
 
@@ -3102,25 +3118,29 @@ limitations under the License.
         let indexForNonZeroLabel = 0;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIdx].length;
+               inferenceIdx][0].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-            inferenceIdx][i].label !== 0) {
+            inferenceIdx][0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
 
-        item[inferenceScoreStr] =
-          this.examplesAndInferences[index].inferences[inferenceIdx][
-            indexForNonZeroLabel].score;
-        if (this.examplesAndInferences[index].inferences[inferenceIdx][
-          indexForNonZeroLabel].score >= threshold) {
-          item[inferenceValueStr] =
+        let n_models = this.examplesAndInferences[index].inferences[
+          inferenceIdx].length;
+        for (let modelNum = 0; modelNum < n_models; modelNum++){
+          item[inferenceScoreStr + (modelNum + 1)] =
             this.examplesAndInferences[index].inferences[inferenceIdx][
-              indexForNonZeroLabel].label;
-        } else {
-          item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+              modelNum][indexForNonZeroLabel].score;
+          if (this.examplesAndInferences[index].inferences[inferenceIdx][
+            0][indexForNonZeroLabel].score >= threshold) {
+            item[inferenceValueStr] =
+              this.examplesAndInferences[index].inferences[inferenceIdx][0][
+                indexForNonZeroLabel].label;
+          } else {
+            item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+          }
         }
       },
 
@@ -3436,9 +3456,10 @@ limitations under the License.
             const indices = Array.apply(
               null, {length: this.visdata.length}).map(Number.call, Number);
             inferences.indices = indices;
-            inferences.results ={classificationResult: {classifications: []}};
+            inferences.results = [
+              {classificationResult: {classifications: []}}];
             for (let i = 0; i < indices.length; i++) {
-              inferences.results.classificationResult.classifications[i] =
+              inferences.results[0].classificationResult.classifications[i] =
                 {classes: [
                   {label: '0',
                    score: this.visdata[i][classificationResultsKey][0]},
@@ -3451,9 +3472,9 @@ limitations under the License.
             const indices = Array.apply(
               null, {length: this.visdata.length}).map(Number.call, Number);
             inferences.indices = indices;
-            inferences.results ={regressionResult: {regressions: []}};
+            inferences.results = [{regressionResult: {regressions: []}}];
             for (let i = 0; i < indices.length; i++) {
-              inferences.results.regressionResult.regressions[i] =
+              inferences.results[0].regressionResult.regressions[i] =
                 {value: this.visdata[i][regressionResultsKey]};
             }
             this.inferences = inferences;
@@ -3754,8 +3775,9 @@ limitations under the License.
           origValue = origValue[indexForValue];
         }
 
+        // TODO(tolgab) Generalize this to multiple models
         const inferences = this.selectedExampleAndInference.inferences[
-          this.selectedExampleAndInference.inferences.length - 1];
+          this.selectedExampleAndInference.inferences.length - 1][0];
         let origInferenceScore = -1;
         for (let i = 0; i < inferences.length; i++) {
           if (inferences[i].label == classToChart.toString() ||

@@ -162,7 +162,9 @@ export class RequestManager {
     return new Promise((resolve, reject) => {
       let req = new XMLHttpRequest();
       req.open(postData ? 'POST' : 'GET', url);
-
+      // In case this is a cross-site request, send our credentials
+      // to support any defined CORS policy. 
+      req.withCredentials = true;
       let formData;
       if (postData) {
         // We are to make a POST request.

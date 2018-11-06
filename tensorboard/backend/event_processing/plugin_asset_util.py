@@ -19,8 +19,7 @@ from __future__ import print_function
 
 import os.path
 
-
-import tensorflow as tf
+from tensorboard.compat import tf
 
 
 _PLUGINS_DIR = "plugins"

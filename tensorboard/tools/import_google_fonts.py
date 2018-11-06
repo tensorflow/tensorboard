@@ -32,7 +32,7 @@ import re
 import sys
 import urlparse
 
-import tensorflow as tf
+from tensorboard.compat import tf
 
 ROBOTO_URLS = [
     'https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic',

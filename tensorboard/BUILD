@@ -29,6 +29,32 @@ py_binary(
     ],
 )
 
+# The TensorBoard binary that serves the webapp without TensorFlow.
+py_binary(
+    name = "tensorboard-notf",
+    srcs = ["main_notf.py"],
+    data = ["webfiles.zip"],
+    main = "main_notf.py",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/plugins/audio:audio_plugin",
+        "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
+        "//tensorboard/plugins/distribution:distributions_plugin",
+        "//tensorboard/plugins/graph:graphs_plugin",
+        "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/image:images_plugin",
+        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
+        "//tensorboard/plugins/projector:projector_plugin",
+        "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/plugins/text:text_plugin",
+        ":program",
+    ],
+)
+
 # The public TensorBoard python library, bundled with the pip package and
 # available via 'import tensorboard as tb' once installed.
 py_library(
@@ -65,8 +91,8 @@ py_test(
     deps = [
         ":default",
         ":program",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
     ],
@@ -79,7 +105,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin",
@@ -180,7 +206,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
@@ -196,7 +222,7 @@ py_test(
     deps = [
         ":data_compat",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/histogram:metadata",
@@ -228,7 +254,7 @@ py_test(
     deps = [
         ":db",
         ":test_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -240,7 +266,7 @@ py_binary(
     deps = [
         ":util",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -264,7 +290,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":plugin_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -276,8 +302,8 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:tf_contrib_ffmpeg",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -291,7 +317,7 @@ py_test(
         ":test_util",
         ":util",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -303,7 +329,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -317,7 +343,7 @@ py_test(
         ":loader",
         ":test_util",
         ":util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
     ],
 )
@@ -337,7 +363,7 @@ py_library(
         ":db",
         ":util",
         "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 

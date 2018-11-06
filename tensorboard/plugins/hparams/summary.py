@@ -37,7 +37,7 @@ from __future__ import print_function
 import time
 
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 from google.protobuf import struct_pb2
 
 from tensorboard.plugins.hparams import api_pb2
