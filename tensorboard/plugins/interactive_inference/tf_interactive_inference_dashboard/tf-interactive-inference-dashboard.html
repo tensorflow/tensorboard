@@ -3410,9 +3410,10 @@ limitations under the License.
             const indices = Array.apply(
               null, {length: this.visdata.length}).map(Number.call, Number);
             inferences.indices = indices;
-            inferences.results ={classificationResult: {classifications: []}};
+            inferences.results = [
+              {classificationResult: {classifications: []}}];
             for (let i = 0; i < indices.length; i++) {
-              inferences.results.classificationResult.classifications[i] =
+              inferences.results[0].classificationResult.classifications[i] =
                 {classes: [
                   {label: '0',
                    score: this.visdata[i][classificationResultsKey][0]},
@@ -3425,9 +3426,9 @@ limitations under the License.
             const indices = Array.apply(
               null, {length: this.visdata.length}).map(Number.call, Number);
             inferences.indices = indices;
-            inferences.results ={regressionResult: {regressions: []}};
+            inferences.results = [{regressionResult: {regressions: []}}];
             for (let i = 0; i < indices.length; i++) {
-              inferences.results.regressionResult.regressions[i] =
+              inferences.results[0].regressionResult.regressions[i] =
                 {value: this.visdata[i][regressionResultsKey]};
             }
             this.inferences = inferences;
