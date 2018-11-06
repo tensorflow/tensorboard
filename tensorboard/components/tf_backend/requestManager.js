@@ -156,6 +156,9 @@ var tf_backend;
             return new Promise(function (resolve, reject) {
                 var req = new XMLHttpRequest();
                 req.open(postData ? 'POST' : 'GET', url);
+                // In case this is a cross-site request, send our credentials
+                // to support any defined CORS policy. 
+                req.withCredentials = true;
                 var formData;
                 if (postData) {
                     // We are to make a POST request.
