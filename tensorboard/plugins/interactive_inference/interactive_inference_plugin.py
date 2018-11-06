@@ -271,8 +271,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                     'application/json', code=405)
 
-      (inference_addresses, model_names,
-      model_versions, model_signatures) = self._parse_request_arguments(request)
+      (inference_addresses, model_names, model_versions,
+          model_signatures) = self._parse_request_arguments(request)
 
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
@@ -429,8 +429,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       feature_name = request.args.get('feature_name')
       example = self.examples[example_index]
 
-      (inference_addresses, model_names,
-      model_versions, model_signatures) = self._parse_request_arguments(request)
+      (inference_addresses, model_names, model_versions,
+          model_signatures) = self._parse_request_arguments(request)
 
       # TODO(tolgab) Generalize this to multiple models
       model_num = 0
