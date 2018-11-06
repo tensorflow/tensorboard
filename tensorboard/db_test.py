@@ -19,7 +19,7 @@ from __future__ import print_function
 import contextlib
 import itertools
 
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import db
 from tensorboard import test_util

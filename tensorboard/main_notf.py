@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,38 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Collection of first-party plugins.
+"""TensorBoard main_notf module.
 
-This module exists to isolate tensorboard.program from the potentially
-heavyweight build dependencies for first-party plugins. This way people
-doing custom builds of TensorBoard have the option to only pay for the
-dependencies they want.
-
-This module also grants the flexibility to those doing custom builds, to
-automatically inherit the centrally-maintained list of standard plugins,
-for less repetition.
+This module ties together `tensorboard.program` and plugins that don't require
+TensorFlow to provide TensorBoard without a TensorFlow dependency. It's
+meant to be tiny and act as little other than a config file. Those
+wishing to customize the set of plugins or static assets that
+TensorBoard uses can swap out this file with their own.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
+# pylint: disable=g-import-not-at-top
+# Disable the TF GCS filesystem cache which interacts pathologically with the
+# pattern of reads used by TensorBoard for logdirs. See for details:
+#   https://github.com/tensorflow/tensorboard/issues/1225
+# This must be set before the first import of tensorflow.
 import os
+os.environ['GCS_READ_CACHE_DISABLED'] = '1'
+# pylint: enable=g-import-not-at-top
 
+import logging
+import sys
+
+from tensorboard import program
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
-from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
-from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.image import images_plugin
-from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
-from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
@@ -52,9 +55,8 @@ from tensorboard.compat import tf
 
 logger = logging.getLogger(__name__)
 
-_PLUGINS = [
+_NOTF_PLUGINS = [
     core_plugin.CorePluginLoader(),
-    beholder_plugin.BeholderPlugin,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
@@ -65,12 +67,9 @@ _PLUGINS = [
     pr_curves_plugin.PrCurvesPlugin,
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    interactive_inference_plugin.InteractiveInferencePlugin,
-    profile_plugin.ProfilePluginLoader(),
-    debugger_plugin_loader.DebuggerPluginLoader(),
 ]
 
-def get_plugins():
+def get_notf_plugins():
   """Returns a list specifying TensorBoard's default first-party plugins.
 
   Plugins are specified in this list either via a TBLoader instance to load the
@@ -80,7 +79,8 @@ def get_plugins():
 
   :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
-  return _PLUGINS[:]
+  return _NOTF_PLUGINS[:]
+
 
 def get_assets_zip_provider():
   """Opens stock TensorBoard web assets collection.
@@ -96,3 +96,24 @@ def get_assets_zip_provider():
     logger.warning('webfiles.zip static assets not found: %s', path)
     return None
   return lambda: open(path, 'rb')
+
+
+def run_main():
+  """Initializes flags and calls main()."""
+  program.setup_environment()
+  tensorboard = program.TensorBoard(get_notf_plugins(),
+                                    get_assets_zip_provider())
+  try:
+    from absl import app
+    # Import this to check that app.run() will accept the flags_parser argument.
+    from absl.flags import argparse_flags
+    app.run(tensorboard.main, flags_parser=tensorboard.configure)
+    raise AssertionError("absl.app.run() shouldn't return")
+  except ImportError:
+    pass
+  tensorboard.configure(sys.argv)
+  sys.exit(tensorboard.main())
+
+
+if __name__ == '__main__':
+  run_main()

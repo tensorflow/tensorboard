@@ -22,11 +22,11 @@ import os
 import threading
 
 import six
-import tensorflow as tf
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat import tf
 
 
 class EventMultiplexer(object):

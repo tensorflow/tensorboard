@@ -20,14 +20,13 @@ from __future__ import print_function
 import collections
 import threading
 
-import tensorflow as tf
-
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
 from tensorboard.plugins.distribution import compressor
+from tensorboard.compat import tf
 
 namedtuple = collections.namedtuple
 ScalarEvent = namedtuple('ScalarEvent', ['wall_time', 'step', 'value'])

@@ -25,7 +25,7 @@ import sys
 
 import numpy as np
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 
 tf.enable_eager_execution()
 

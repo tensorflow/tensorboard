@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import numpy as np
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard.plugins.image import metadata
 from tensorboard.plugins.image import summary

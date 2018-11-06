@@ -29,7 +29,7 @@ import hashlib
 import shutil
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+from tensorboard.compat import tf
 from google.protobuf import struct_pb2
 
 from tensorboard.plugins.hparams import api_pb2

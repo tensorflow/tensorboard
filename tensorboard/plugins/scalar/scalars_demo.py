@@ -21,7 +21,7 @@ from __future__ import print_function
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+from tensorboard.compat import tf
 from tensorboard.plugins.scalar import summary
 
 # Directory into which to write tensorboard data.
