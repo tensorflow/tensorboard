@@ -73,6 +73,9 @@ limitations under the License.
       .model-type-label {
         padding-top: 10px;
       }
+      .add-model-button-holder {
+        display: flex;
+      }
       .checkbox {
         margin-top: 30px;
         margin-left: 10px;
@@ -91,18 +94,39 @@ limitations under the License.
     </style>
     <div class="title">Set up your data and model</div>
     <paper-input always-float-label label="Inference address (blade address or host:port)"
-                 placeholder="[[inferenceAddress]]" value="{{inferenceAddress}}">
+                 placeholder="[[inferenceAddress1]]" value="{{inferenceAddress1}}">
     </paper-input>
     <div class="flex-holder">
-      <paper-input always-float-label label="Model name" placeholder="[[modelName]]"
-                  value="{{modelName}}" class="input-in-row">
+      <paper-input always-float-label label="Model name" placeholder="[[modelName1]]"
+                  value="{{modelName1}}" class="input-in-row">
       </paper-input>
-      <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion]]"
-                  value="{{modelVersion}}" class="input-in-row">
+      <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion1]]"
+                  value="{{modelVersion1}}" class="input-in-row">
       </paper-input>
-      <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature]]"
-                  value="{{modelSignature}}" class="input-in-row">
+      <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature1]]"
+                  value="{{modelSignature1}}" class="input-in-row">
       </paper-input>
+    </div>
+    <div hidden$={{hideModelPane2}}>
+      <paper-input always-float-label label="Inference address (blade address or host:port)"
+      placeholder="[[inferenceAddress2]]" value="{{inferenceAddress2}}">
+      </paper-input>
+      <div class="flex-holder">
+        <paper-input always-float-label label="Model name" placeholder="[[modelName2]]"
+                    value="{{modelName2}}" class="input-in-row">
+        </paper-input>
+        <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion2]]"
+                    value="{{modelVersion2}}" class="input-in-row">
+        </paper-input>
+        <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature2]]"
+                    value="{{modelSignature2}}" class="input-in-row">
+        </paper-input>
+      </div>
+    </div>
+    <div class="add-model-button-holder" hidden$={{!hideModelPane2}}>
+      <paper-button on-click="addModelClicked_" class="main-button">
+        Add another model for comparison
+      </paper-button>
     </div>
     <div class="flex-holder">
       <div>
@@ -186,6 +210,7 @@ limitations under the License.
     const defaultLabelVocabPath = '';
     const defaultMaxClassesToDisplay = '5';
     const defaultSamplingOdds = '1';
+    const defaultHideModelPane2 = true;
     const defaultPredictOutputTensor = 'probabilities';
     const defaultPredictInputTensor = 'examples';
 
@@ -200,18 +225,48 @@ limitations under the License.
           observer: 'examplesPathChanged_',
           notify: true,
         },
+        hideModelPane2: {
+          type: Boolean,
+          value: tf_storage.getBooleanInitializer('hideModelPane2',
+              {defaultValue: defaultHideModelPane2}),
+          observer: 'hideModelPane2Changed_',
+        },
         modelName: {
           type: String,
+          value: '',
+          notify: true,
+        },
+        modelName1: {
+          type: String,
           value: tf_storage.getStringInitializer(
-            'modelName', {defaultValue: defaultModelName}),
-          observer: 'modelNameChanged_',
+            'modelName1', {defaultValue: defaultModelName}),
+          observer: 'modelName1Changed_',
+          notify: true,
+        },
+        modelName2: {
+          type: String,
+          value: tf_storage.getStringInitializer(
+            'modelName2', {defaultValue: defaultModelName}),
+          observer: 'modelName2Changed_',
           notify: true,
         },
         inferenceAddress: {
           type: String,
+          value: '',
+          notify: true,
+        },
+        inferenceAddress1: {
+          type: String,
           value: tf_storage.getStringInitializer(
-            'inferenceAddress', {defaultValue: defaultInferenceAddress}),
-          observer: 'inferenceAddressChanged_',
+            'inferenceAddress1', {defaultValue: defaultInferenceAddress}),
+          observer: 'inferenceAddress1Changed_',
+          notify: true,
+        },
+        inferenceAddress2: {
+          type: String,
+          value: tf_storage.getStringInitializer(
+            'inferenceAddress2', {defaultValue: defaultInferenceAddress}),
+          observer: 'inferenceAddress2Changed_',
           notify: true,
         },
         modelType: {
@@ -223,16 +278,40 @@ limitations under the License.
         },
         modelVersion: {
           type: String,
+          value: '',
+          notify: true,
+        },
+        modelVersion1: {
+          type: String,
           value: tf_storage.getStringInitializer(
-            'modelVersion', {defaultValue: defaultModelVersion}),
-          observer: 'modelVersionChanged_',
+            'modelVersion1', {defaultValue: defaultModelVersion}),
+          observer: 'modelVersion1Changed_',
+          notify: true,
+        },
+        modelVersion2: {
+          type: String,
+          value: tf_storage.getStringInitializer(
+            'modelVersion2', {defaultValue: defaultModelVersion}),
+          observer: 'modelVersion2Changed_',
           notify: true,
         },
         modelSignature: {
           type: String,
+          value: '',
+          notify: true,
+        },
+        modelSignature1: {
+          type: String,
           value: tf_storage.getStringInitializer(
-            'modelSignature', {defaultValue: defaultModelSignature}),
-          observer: 'modelSignatureChanged_',
+            'modelSignature1', {defaultValue: defaultModelSignature}),
+          observer: 'modelSignature1Changed_',
+          notify: true,
+        },
+        modelSignature2: {
+          type: String,
+          value: tf_storage.getStringInitializer(
+            'modelSignature2', {defaultValue: defaultModelSignature}),
+          observer: 'modelSignature2Changed_',
           notify: true,
         },
         maxExamples: {
@@ -300,23 +379,68 @@ limitations under the License.
         },
       },
 
+      observers: [
+        'updateModelName(modelName1, modelName2)',
+        'updateInferenceAddress(inferenceAddress1, inferenceAddress2)',
+        'updateModelVersion(modelVersion1, modelVersion2)',
+        'updateModelSignature(modelSignature1, modelSignature2)',
+      ],
+
+      updateModelName: function (modelName1, modelName2) {
+        this.modelName = modelName1 + ',' + modelName2
+        // Strip trailing and leading commas in case one model is missing
+        this.modelName = this.modelName.replace(/(^,)|(,$)/g, '')
+      },
+
+      updateInferenceAddress: function (inferenceAddress1, inferenceAddress2) {
+        this.inferenceAddress = inferenceAddress1 + ',' + inferenceAddress2
+        // Strip trailing and leading commas in case one model is missing
+        this.inferenceAddress = this.inferenceAddress.replace(/(^,)|(,$)/g, '')
+      },
+
+      updateModelVersion: function (modelVersion1, modelVersion2) {
+        // Always have comma for optional fields
+        this.modelVersion = modelVersion1 + ',' + modelVersion2
+      },
+
+      updateModelSignature: function (modelSignature1, modelSignature2) {
+        // Always have comma for optional fields
+        this.modelSignature = modelSignature1 + ',' + modelSignature2
+      },
+
+      addModelClicked_: function() {
+        this.hideModelPane2 = !this.hideModelPane2;
+      },
+
       examplesPathChanged_: tf_storage.getStringObserver(
         'examplesPath', {defaultValue: defaultExamplesPath}),
 
-      modelNameChanged_: tf_storage.getStringObserver(
-        'modelName', {defaultValue: defaultModelName}),
+      modelName1Changed_: tf_storage.getStringObserver(
+        'modelName1', {defaultValue: defaultModelName}),
 
-      inferenceAddressChanged_: tf_storage.getStringObserver(
-        'inferenceAddress',  {defaultValue: defaultInferenceAddress}),
+      modelName2Changed_: tf_storage.getStringObserver(
+        'modelName2', {defaultValue: defaultModelName}),
+
+      inferenceAddress1Changed_: tf_storage.getStringObserver(
+        'inferenceAddress1',  {defaultValue: defaultInferenceAddress}),
+
+      inferenceAddress2Changed_: tf_storage.getStringObserver(
+        'inferenceAddress2',  {defaultValue: defaultInferenceAddress}),
 
       modelTypeChanged_: tf_storage.getStringObserver(
         'modelType', {defaultValue: defaultModelType}),
 
-      modelVersionChanged_: tf_storage.getStringObserver(
-        'modelVersion', {defaultValue: defaultModelVersion}),
+      modelVersion1Changed_: tf_storage.getStringObserver(
+        'modelVersion1', {defaultValue: defaultModelVersion}),
 
-      modelSignatureChanged_: tf_storage.getStringObserver(
-        'modelSignature', {defaultValue: defaultModelSignature}),
+      modelVersion2Changed_: tf_storage.getStringObserver(
+        'modelVersion2', {defaultValue: defaultModelVersion}),
+
+      modelSignature1Changed_: tf_storage.getStringObserver(
+        'modelSignature1', {defaultValue: defaultModelSignature}),
+
+      modelSignature2Changed_: tf_storage.getStringObserver(
+        'modelSignature2', {defaultValue: defaultModelSignature}),
 
       maxExamplesChanged_: tf_storage.getStringObserver(
         'maxExamples', {defaultValue: defaultMaxExamples}),
@@ -335,6 +459,9 @@ limitations under the License.
 
       sequenceExamplesChanged_: tf_storage.getBooleanObserver(
         'sequenceExamples', {defaultValue: false}),
+
+      hideModelPane2Changed_: tf_storage.getBooleanObserver(
+        'hideModelPane2', {defaultValue: defaultHideModelPane2}),
 
       usePredictApiChanged_: tf_storage.getBooleanObserver(
         'usePredictApi', {defaultValue: false}),
