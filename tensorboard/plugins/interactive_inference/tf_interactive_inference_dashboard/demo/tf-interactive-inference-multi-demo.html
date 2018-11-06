@@ -86,6 +86,9 @@ limitations under the License.
 
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/uci/model.json', {credentials: 'include'}));
+        this.model2 = await tf.loadModel(tf.io.browserHTTPRequest(
+          'data/uci/model_comparison/model.json', {credentials: 'include'}));
+
         const DATA_PATH = "data/uci/uci_test_examples.json";
         const testData = d3.json(DATA_PATH).then(data => {
           data = data.slice(0, 500);
@@ -122,7 +125,8 @@ limitations under the License.
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-            inferences.results = [{classificationResult: {classifications: []}}];
+            inferences.results = [{classificationResult: {classifications: []}},
+               {classificationResult: {classifications: []}}];
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
               const idx = +indices[i];
@@ -130,12 +134,17 @@ limitations under the License.
             }
             const input = tf.concat(tensors).reshape([tensors.length, 104])
             const res = this.model.predict(input, {batchSize: 128});
+            const res2 = this.model2.predict(input, {batchSize: 128});
             const predValues = await res.data();
+            const predValues2 = await res2.data();
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
               inferences.results[0].classificationResult.classifications[i] =
                 {classes: [{label: '0', score: predValues[i * PRED_SIZE + 1]},
                            {label: '1', score: predValues[i * PRED_SIZE]}]};
+              inferences.results[1].classificationResult.classifications[i] =
+                {classes: [{label: '0', score: (predValues2[i * PRED_SIZE + 1])},
+                           {label: '1', score: (predValues2[i * PRED_SIZE])}]};
             }
             this.$.dash.inferences = inferences;
             this.indicesToInfer = {};
