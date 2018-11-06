@@ -224,6 +224,25 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     self.generate_sprite([ex.SerializeToString() for ex in self.examples])
     return http_util.Respond(request, {}, 'application/json')
 
+  def _parse_request_arguments(self, request):
+    """Parses comma separated request arguments
+
+    Args:
+      request: A request that should contain 'inference_address', 'model_name',
+        'model_version', 'model_signature'.
+
+    Returns:
+      A tuple of lists for model parameters
+    """
+    inference_addresses = request.args.get('inference_address').split(',')
+    model_names = request.args.get('model_name').split(',')
+    model_versions = request.args.get('model_version').split(',')
+    model_signatures = request.args.get('model_signature').split(',')
+    if len(model_names) != len(inference_addresses):
+      raise common_utils.InvalidUserInputError('Every model should have a ' +
+                                                'name and address.')
+    return inference_addresses, model_names, model_versions, model_signatures
+
   @wrappers.Request.application
   def _infer(self, request):
     """Returns JSON for the `vz-line-chart`s for a feature.
@@ -252,11 +271,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                     'application/json', code=405)
 
-      inference_addresses = request.args.get('inference_address').split(',')
-      model_type = request.args.get('model_type')
-      model_names = request.args.get('model_name').split(',')
-      model_versions = request.args.get('model_version').split(',')
-      model_signatures = request.args.get('model_signature').split(',')
+      (inference_addresses, model_names,
+      model_versions, model_signatures) = self._parse_request_arguments(request)
 
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
@@ -264,7 +280,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       for model_num in xrange(len(inference_addresses)):
         serving_bundle = inference_utils.ServingBundle(
             inference_addresses[model_num],
-            model_names[model_num], model_type,
+            model_names[model_num],
+            request.args.get('model_type'),
             model_versions[model_num],
             model_signatures[model_num],
             request.args.get('use_predict') == 'true',
@@ -412,17 +429,15 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       feature_name = request.args.get('feature_name')
       example = self.examples[example_index]
 
-      inference_addresses = request.args.get('inference_address').split(',')
-      model_type = request.args.get('model_type')
-      model_names = request.args.get('model_name').split(',')
-      model_versions = request.args.get('model_version').split(',')
-      model_signatures = request.args.get('model_signature').split(',')
+      (inference_addresses, model_names,
+      model_versions, model_signatures) = self._parse_request_arguments(request)
 
       # TODO(tolgab) Generalize this to multiple models
       model_num = 0
       serving_bundle = inference_utils.ServingBundle(
           inference_addresses[model_num],
-          model_names[model_num], model_type,
+          model_names[model_num],
+          request.args.get('model_type'),
           model_versions[model_num],
           model_signatures[model_num],
           request.args.get('use_predict') == 'true',
