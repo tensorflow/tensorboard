@@ -1,10 +1,13 @@
 <!--
 @license
-Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,254 +15,438 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
-<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="../tf-utils/tf-utils.html">
-<link rel="import" href="tf-toco-command-card.html">
-<link rel="import" href="tf-toco-command-steps-selector.html">
+<link rel="import" href="../tf-toco-command-controls/tf-toco-command-controls.html">
 
 <!--
-  A frontend that displays a set of precision–recall curves. Each PR curve is
-  associated with a tag (which is in turn associated with 1 class).
+tf-graph-dashboard displays a graph from a TensorFlow run.
+
+It has simple behavior: Creates a url-generator and run-generator
+to talk to the backend, and then passes the runsWithGraph (list of runs with
+associated graphs) along with the url generator into tf-graph-board for display.
+
+If there are multiple runs with graphs, the first run's graph is shown
+by default. The user can select a different run from a dropdown menu.
 -->
 <dom-module id="tf-toco-command-dashboard">
-  <template>
-    <tf-dashboard-layout>
-      <div class="sidebar">
-        <div class="sidebar-section">
-          <tf-option-selector
-            id="time-type-selector"
-            name="Time Display Type"
-            selected-id="{{_timeDisplayType}}"
-          >
-            <paper-button id="step">step</paper-button><!--
-            --><paper-button id="relative">relative</paper-button><!--
-            --><paper-button id="wall_time">wall</paper-button>
-          </tf-option-selector>
-        </div>
-        <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
-          <div class="sidebar-section" id="steps-selector-container">
-            <tf-toco-command-steps-selector
-                  runs="[[_relevantSelectedRuns]]"
-                  run-to-step="{{_runToStep}}"
-                  run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
-                  time-display-type="[[_timeDisplayType]]"></tf-toco-command-steps-selector>
-          </div>
-        </template>
-        <div class="sidebar-section">
-          <tf-runs-selector selected-runs="{{_selectedRuns}}">
-          </tf-runs-selector>
-        </div>
-       </div>
-      </div>
-      <div class="center">
-        <template is="dom-if" if="[[_dataNotFound]]">
-          <div class="no-data-warning">
-            <h3>No precision–recall curve data was found.</h3>
-            <p>Probable causes:</p>
-            <ul>
-              <li>
-                You haven’t written any precision–recall data to your event
-                files.
-              </li>
-              <li>
-                TensorBoard can’t find your event files.
-              </li>
-            </ul>
-            <p>
-            If you’re new to using TensorBoard, and want to find out how
-            to add data and set up your event files, check out the
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
-            <p>
-            If you think TensorBoard is configured properly, please see
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
-            and consider filing an issue on GitHub.
-          </div>
-        </template>
-        <template is="dom-if" if="[[!_dataNotFound]]">
-          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
-          <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-toco-command-card
-                          runs="[[item.runs]]"
-                          tag="[[item.tag]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
-                          request-manager="[[_requestManager]]"
-                          run-to-step-cap="[[_runToStep]]"
-                          active="[[page.active]]"
-                        ></tf-toco-command-card>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
-          </template>
-        </template>
-      </div>
-    </tf-dashboard-layout>
+<template>
+<paper-dialog id="error-dialog" with-backdrop></paper-dialog>
+<template is="dom-if" if="[[_datasetsEmpty(_datasets)]]">
+  <div style="max-width: 540px; margin: 80px auto 0 auto;">
+    <h3>No graph definition files were found.</h3>
+    <p>
+    To store a graph, create a
+    <code>tf.summary.FileWriter</code>
+    and pass the graph either via the constructor, or by calling its
+    <code>add_graph()</code> method.
+    You may want to check out the
+    <a
+      href="https://www.tensorflow.org/get_started/graph_viz"
+    >graph visualizer tutorial</a>.
+    <p>
+    If you’re new to using TensorBoard, and want to find out how
+    to add data and set up your event files, check out the
+    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+    and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+    <p>
+    If you think TensorBoard is configured properly, please see
+    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+    and consider filing an issue on GitHub.
+  </div>
+</template>
+<template is="dom-if" if="[[!_datasetsEmpty(_datasets)]]">
+<tf-dashboard-layout>
+<div class="sidebar">
+  <tf-toco-command-controls id="controls"
+        devices-for-stats="{{_devicesForStats}}"
+        color-by-params="[[_colorByParams]]"
+        stats="[[_stats]]"
+        color-by="{{_colorBy}}"
+        datasets="[[_datasets]]"
+        render-hierarchy="[[_renderHierarchy]]"
+        selected-dataset="{{_selectedDataset}}"
+        selected-file="{{_selectedFile}}"
+        selected-metadata-tag="{{_selectedMetadataTag}}"
+        selected-node="{{_selectedNode}}"
+        health-pills-feature-enabled="[[_debuggerDataEnabled]]"
+        health-pills-toggled-on="{{healthPillsToggledOn}}"
+  ></tf-toco-command-controls>
+  <tf-graph-loader id="loader"
+        datasets="[[_datasets]]"
+        selected-dataset="[[_selectedDataset]]"
+        selected-metadata-tag="[[_selectedMetadataTag]]"
+        selected-file="[[_selectedFile]]"
+        out-graph-hierarchy="{{_graphHierarchy}}"
+        out-graph="{{_graph}}"
+        out-stats="{{_stats}}"
+        progress="{{_progress}}"
+        out-hierarchy-params="{{_hierarchyParams}}"
+  ></tf-graph-loader>
+</div>
+<div class="center">
+    <tf-graph-board id="graphboard"
+        devices-for-stats="[[_devicesForStats]]"
+        color-by="[[_colorBy]]"
+        color-by-params="{{_colorByParams}}"
+        graph-hierarchy="[[_graphHierarchy]]"
+        graph="[[_graph]]"
+        hierarchy-params="[[_hierarchyParams]]"
+        progress="[[_progress]]"
+        debugger-data-enabled="[[_debuggerDataEnabled]]"
+        are-health-pills-loading="[[_areHealthPillsLoading]]"
+        debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
+        node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
+        all-steps-mode-enabled="{{allStepsModeEnabled}}"
+        specific-health-pill-step="{{specificHealthPillStep}}"
+        health-pill-step-index="[[_healthPillStepIndex]]"
+        render-hierarchy="{{_renderHierarchy}}"
+        selected-node="{{_selectedNode}}"
+        stats="[[_stats]]"
+    ></tf-graph-board>
+</div>
+</tf-dashboard-layout>
+</template>
+<style>
 
-    <style include="dashboard-style"></style>
-    <style>
-      .no-data-warning {
-        max-width: 540px;
-        margin: 80px auto 0 auto;
-      }
-      /** Do not let the steps selector occlude the run selector. */
-      #steps-selector-container {
-        max-height: 40%;
-        overflow-y: auto;
-      }
-    </style>
-  </template>
+:host /deep/ {
+  font-family: 'Roboto', sans-serif;
+}
 
-  <script>
+.center {
+  position: relative;
+  height: 100%;
+}
 
-  Polymer({
-    is: 'tf-toco-command-dashboard',
-    properties: {
-      // Determines how the time entry is shown. One of step, relative, or
-      // wall_time.
-      _timeDisplayType : {
-        type: String,
-        value: 'step',
-      },
-      _selectedRuns: Array,
-      _runToTagInfo: Object,
-      // The steps that the step slider for each run should use.
-      _runToAvailableTimeEntries: {
-        type: Object, // map<run: string, steps: number[]>
-        value: {},
-      },
-      // A list of runs that are both selected and have PR curve data.
-      _relevantSelectedRuns: {
-        type: Array,
-        computed: "_computeRelevantSelectedRuns(_selectedRuns, _runToTagInfo)",
-      },
-      _runsWithPrCurveData: Array,  // string[]
-      // The desired step value that each run should use. If a run + tag lacks a
-      // PR curve at this exact step value, the greatest step value less than
-      // this value will be used.
-      _runToStep: {
-        type: Object,  // map<run: string, step: number>
-        notify: true,
-      },
-      _dataNotFound: Boolean,
-      _tagFilter: String,
-      // Categories must only be computed after _dataNotFound is found to be
-      // true and then polymer DOM templating responds to that finding. We
-      // thus use this property to guard when categories are computed.
-      _categoriesDomReady: Boolean,
-      _categories: {
-        type: Array,
-        computed: '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
-      },
-      _requestManager: {
-        type: Object,
-        value: () => new tf_backend.RequestManager(),
-      },
-      _step: {
-        type: Number,
-        value: 0,
-        notify: true,
-      },
+paper-dialog {
+  padding: 20px;
+}
+
+</style>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'tf-toco-command-dashboard',
+  properties: {
+    _datasets: Array,
+    _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
+    _requestManager: {
+      type: Object,
+      value: () => new tf_backend.RequestManager(),
     },
-    ready() {
+    _canceller: {
+      type: Object,
+      value: () => new tf_backend.Canceller(),
+    },
+    _debuggerDataEnabled: Boolean,
+    allStepsModeEnabled: Boolean,
+    specificHealthPillStep: {type: Number, value: 0},
+    healthPillsToggledOn: {type: Boolean, value: true, observer: '_healthPillsToggledOnChanged'},
+    selectedNode: {
+      type: String,
+      notify: true,
+    },
+    _isAttached: Boolean,
+    // Whether this dashboard is initialized. This dashboard should only be initialized once.
+    _initialized: Boolean,
+    // Whether health pills are currently being loaded, in which case we may want to say show a
+    // spinner.
+    _areHealthPillsLoading: Boolean,
+    // An array of alerts (in chronological order) provided by debugging libraries on when bad
+    // values (NaN, +/- Inf) appear.
+    _debuggerNumericAlerts: {
+      type: Array,
+      value: [],
+      notify: true,
+    },
+    // Maps the names of nodes to an array of health pills (HealthPillDatums).
+    _nodeNamesToHealthPills: {
+      type: Object,
+      value: {},
+    },
+    _healthPillStepIndex: Number,
+    // A strictly increasing ID. Each request for health pills has a unique ID. This helps us
+    // identify stale requests.
+    _healthPillRequestId: {type: Number, value: 1},
+    /**
+     * The setTimeout ID for the pending request for health pills at a
+     * specific step.
+     *
+     * @type {number?}
+     */
+    _healthPillStepRequestTimerId: Number,
+    // The request for health pills at a specific step (as opposed to all sampled health pills) may
+    // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.
+    _healthPillStepRequestTimerDelay: {
+      type: Number,
+      value: 500,
+      readOnly: true,
+    },
+    runs: Array,
+    run: {
+      type: String,
+      notify: true,
+      value: tf_storage.getStringInitializer(
+          RUN_STORAGE_KEY, {
+            defaultValue: '',
+            useLocalStorage: false,
+          }),
+      observer: '_runObserver',
+    },
+    _selectedDataset: {
+      type: Number,
+      notify: true,
+    },
+  },
+  listeners: {
+    'node-toggle-expand': '_handleNodeToggleExpand',
+  },
+  observers: [
+    '_maybeFetchHealthPills(_debuggerDataEnabled, allStepsModeEnabled, ' +
+        'specificHealthPillStep, _selectedNode)',
+    '_maybeInitializeDashboard(_isAttached)',
+    '_determineSelectedDataset(_datasets, run)',
+    '_updateSelectedDatasetName(_datasets, _selectedDataset)',
+  ],
+  attached: function() {
+    this.set('_isAttached', true);
+  },
+  detached: function() {
+    this.set('_isAttached', false);
+  },
+  reload: function() {
+    if (!this._debuggerDataEnabled) {
+      // Check if the debugger plugin is enabled now.
+      this._requestManager
+          .request(tf_backend.getRouter().pluginsListing())
+          .then(this._canceller.cancellable(result => {
+            if (result.cancelled) {
+              return;
+            }
+
+            if (result.value['debugger']) {
+              // The debugger plugin is enabled. Request debugger-related
+              // data. Perhaps the debugger plugin had been disabled
+              // beforehand because no bad values (NaN, -/+ Inf) had been
+              // found and muted_if_healthy had been on.
+              this.set('_debuggerDataEnabled', true);
+            }
+          }));
+    }
+
+    this._maybeFetchHealthPills();
+  },
+  _runObserver: tf_storage.getStringObserver(
+      RUN_STORAGE_KEY, {
+        defaultValue: '',
+        polymerProperty: 'run',
+        useLocalStorage: false,
+      }),
+  _fetchGraphRuns() {
+    return this._requestManager.request(
+        tf_backend.getRouter().pluginRoute('graphs', '/runs'));
+  },
+  _fetchRunMetadataTags() {
+    return this._requestManager.request(
+        tf_backend.getRouter().pluginRoute('graphs', '/run_metadata_tags'));
+  },
+  /*
+   * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.
+   * This function returns a promise with the raw health pill data.
+   */
+  _fetchHealthPills(nodeNames, step) {
+    const postData = {
+      'node_names': JSON.stringify(nodeNames),
+
+      // Events files with debugger data fall under this special run.
+      'run': '__debugger_data__',
+    };
+    if (step !== undefined) {
+      // The user requested health pills for a specific step. This request
+      // might be slow since the backend reads events sequentially from disk.
+      postData['step'] = step;
+    }
+    const url = tf_backend.getRouter().pluginRoute('debugger', '/health_pills');
+    return this._requestManager.request(url, postData);
+  },
+  _fetchDebuggerNumericsAlerts() {
+    return this._requestManager.request(
+        tf_backend.getRouter().pluginRoute('debugger', '/numerics_alert_report'));
+  },
+  _graphUrl(run, limitAttrSize, largeAttrsKey) {
+    const demoMode = tf_backend.getRouter().isDemoMode();
+    const base = tf_backend.getRouter().pluginRoute('graphs', '/graph');
+    const optional = (p) => (p != null && !demoMode || undefined) && p;
+    const parameters = {
+      'run': run,
+      'limit_attr_size': optional(limitAttrSize),
+      'large_attrs_key': optional(largeAttrsKey),
+    };
+    const extension = demoMode ? '.pbtxt' : '';
+    return tf_backend.addParams(base, parameters) + extension;
+  },
+  _shouldRequestHealthPills: function() {
+    // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
+    // or if the graph itself has not loaded yet. We need the graph to load so that we know which
+    // nodes to request health pills for.
+    return this._debuggerDataEnabled &&
+        this.healthPillsToggledOn &&
+        this._renderHierarchy &&
+        !this._datasetsEmpty(this._datasets);
+  },
+  _maybeInitializeDashboard: function(isAttached) {
+    if (this._initialized || !isAttached) {
+      // Either this dashboard is already initialized ... or we are not yet ready to initialize.
+      return;
+    }
+    // Set this to true so we only initialize once.
+    this._initialized = true;
+    Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])
+      .then(result => {
+        const runsWithGraph = result[0].sort(vz_sorting.compareTagNames);
+        const runToMetadata = result[1];
+        const datasets = _.map(runsWithGraph, runName => ({
+          name: runName,
+          path: this._graphUrl(
+              runName, tf.graph.LIMIT_ATTR_SIZE, tf.graph.LARGE_ATTRS_KEY),
+          runMetadata: _.map(
+            (runToMetadata[runName] || []).sort(vz_sorting.compareTagNames),
+            tag => ({
+              tag: tag,
+              path: tf_backend.addParams(
+                tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
+                {tag: tag, run: runName}),
+            })),
+        }));
+        this.set('_datasets', datasets);
+      });
+  },
+  _determineSelectedDataset(datasets, run) {
+    // By default, load the first dataset.
+    if (!run) {
+      // By default, load the first dataset.
+      this.set('_selectedDataset', 0);
+      return;
+    }
+
+    // If the URL specifies a dataset, load it.
+    const dataset = datasets.findIndex(d => d.name === run);
+    if (dataset === -1) {
+      // Tell the user if the dataset cannot be found to avoid misleading
+      // the user.
+      const dialog = this.$$('#error-dialog');
+      dialog.textContent =
+          `No dataset named "${run}" could be found.`;
+      dialog.open();
+      return;
+    }
+
+    this.set('_selectedDataset', dataset);
+  },
+  _updateSelectedDatasetName(datasets, selectedDataset) {
+    this.set('run', datasets[selectedDataset].name);
+  },
+  _requestHealthPills: function() {
+    this.set('_areHealthPillsLoading', true);
+    var requestId = ++this._healthPillRequestId;
+
+    if (this._healthPillStepRequestTimerId !== null) {
+      // A request for health pills is already scheduled to be initiated. Clear it, and schedule a
+      // new request.
+      window.clearTimeout(this._healthPillStepRequestTimerId);
+      this._healthPillStepRequestTimerId = null;
+    }
+
+    if (this.allStepsModeEnabled) {
+      // This path may be slow. Schedule network requests to start some time later. If another
+      // request is scheduled in the mean time, drop this current request.
+      this._healthPillStepRequestTimerId = setTimeout(function() {
+        this._healthPillStepRequestTimerId = null;
+        this._initiateNetworkRequestForHealthPills(requestId);
+      }.bind(this), this._healthPillStepRequestTimerDelay);
+    } else {
+      // The user is fetching sampled steps. This path is fast, so no need to throttle. Directly
+      // fetch the health pills across the network.
+      this._initiateNetworkRequestForHealthPills(requestId);
+    }
+  },
+  // Initiates the network request for health pills. Do not directly call this method - network
+  // requests may be throttled. Instead, call _requestHealthPills, which uses this method.
+  _initiateNetworkRequestForHealthPills: function(requestId) {
+    if (this._healthPillRequestId !== requestId) {
+      // This possibly scheduled request was outdated before it was even sent across the network. Do
+      // not bother initiating it.
+      return;
+    }
+
+    const specificStep =
+      this.allStepsModeEnabled ? this.specificHealthPillStep : undefined;
+
+    const healthPillsPromise = this._fetchHealthPills(
+        this._renderHierarchy.getNamesOfRenderedOps(), specificStep);
+    const alertsPromise = this._fetchDebuggerNumericsAlerts();
+
+    Promise.all([healthPillsPromise, alertsPromise]).then(
+        function(result) {
+      var healthPillsResult = result[0];
+      var alertsResult = result[1];
+
+      if (!this.healthPillsToggledOn) {
+        // The user has opted to hide health pills via the toggle button.
+        return;
+      }
+
+      if (requestId !== this._healthPillRequestId) {
+        // This response is no longer relevant.
+        return;
+      }
+
+      // Set the index for which step to show for the health pills. By default, show the last step.
+      // A precondition we assume (that Tensorboard's reservoir sampling guarantees) is that all
+      // node names should be mapped to the same number of steps.
+      for (var nodeName in healthPillsResult) {
+        this.set('_healthPillStepIndex', healthPillsResult[nodeName].length - 1);
+        break;
+      }
+
+      this.set('_debuggerNumericAlerts', alertsResult);
+      this.set('_nodeNamesToHealthPills', healthPillsResult);
+      this.set('_areHealthPillsLoading', false);
+      this.set('_healthPillStepRequestTimerId', null);
+    }.bind(this));
+  },
+  _datasetsEmpty: function(datasets) {
+    return !datasets || !datasets.length;
+  },
+  _renderHierarchyChanged: function(renderHierarchy) {
+    // Reload any data on the graph when the render hierarchy (which determines which nodes are
+    // rendered) changes.
+    this.reload();
+  },
+  _handleNodeToggleExpand: function() {
+    // Nodes were toggled. We may need to request health pills for more nodes.
+    this._maybeFetchHealthPills();
+  },
+  _healthPillsToggledOnChanged: function(healthPillsToggledOn) {
+    if (healthPillsToggledOn) {
+      // Load health pills.
       this.reload();
-    },
-    reload() {
-      Promise.all(
-          [this._fetchTags(), this._fetchTimeEntriesPerRun()]).then(() => {
-        this._reloadCards();
-      });
-    },
-    _shouldOpen(index) {
-      return index <= 2;
-    },
-    _fetchTags() {
-      const url = tf_backend.getRouter().pluginRoute('toco_command', '/tags');
-      return this._requestManager.request(url).then(runToTagInfo => {
-        if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
-          // No need to update anything if there are no changes.
-          return;
-        }
-        const runToTag = _.mapValues(runToTagInfo, o => _.keys(o));
-        const tags = tf_backend.getTags(runToTag);
-        this.set('_dataNotFound', tags.length === 0);
-        this.set('_runToTagInfo', runToTagInfo);
-        this.async(() => {
-          // See the comment above `_categoriesDomReady`.
-          this.set('_categoriesDomReady', true);
-        });
-      });
-    },
-    _fetchTimeEntriesPerRun() {
-      const url = tf_backend.getRouter().pluginRoute(
-          'toco_command', '/available_time_entries');
-      return this._requestManager.request(url).then(timeEntriesPerRun => {
-        // Compute the relative field for each time entry. For each step, the
-        // relative field is the number of seconds (float) since the first step.
-        _.forOwn(timeEntriesPerRun, (entries, run) => {
-          _.forEach(entries, entry => {
-            entry['relative'] = entry.wall_time - entries[0].wall_time;
-          });
-        });
+    } else {
+      // Remove all health pills by setting an empty mapping.
+      this.set('_nodeNamesToHealthPills', {});
+    }
+  },
+  // Fetch health pills for a specific step if applicable.
+  _maybeFetchHealthPills: function() {
+    if (!this._shouldRequestHealthPills()) {
+      return;
+    }
 
-        this.set('_runToAvailableTimeEntries', timeEntriesPerRun);
-
-        const listOfRuns = _.keys(timeEntriesPerRun).slice().sort();
-        if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
-          this.set('_runsWithPrCurveData', listOfRuns);
-        }
-      });
-    },
-    _reloadCards() {
-      _.forEach(this.querySelectorAll('tf-toco-command-card'), card => {
-        card.reload();
-      });
-    },
-    _makeCategories(runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
-      const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-      return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
-    },
-    _computeColorForRun(run) {
-      return tf_color_scale.runsColorScale(run);
-    },
-    _computeRelevantSelectedRuns(selectedRuns, runToTagInfo) {
-      return selectedRuns.filter(run => runToTagInfo[run]);
-    },
-    _tagMetadata(runToTagsInfo, runs, tag) {
-      const runToTagInfo = {};
-      runs.forEach(run => {
-          runToTagInfo[run] = runToTagsInfo[run][tag];
-      });
-      // All PR curve tags include the `/toco_command` suffix. We can trim
-      // that from the display name.
-      const defaultDisplayName = tag.replace(/\/toco_command$/, '');
-      return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
-    },
-  });
+    this._requestHealthPills();
+  },
+});
 
   tf_tensorboard.registerDashboard({
     plugin: 'toco_command',

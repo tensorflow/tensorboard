@@ -93,6 +93,7 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-dialog:lib",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
         "//third_party/javascript/polymer/v1/paper-icon-button:lib",
+        "//third_party/javascript/polymer/v1/paper-tags-input:lib",
         "//third_party/javascript/polymer/v1/paper-input:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
         "//third_party/javascript/polymer/v1/paper-menu:lib",
