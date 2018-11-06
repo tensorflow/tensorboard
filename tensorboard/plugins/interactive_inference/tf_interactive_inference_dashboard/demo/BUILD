@@ -6,6 +6,31 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
+    name = "multidemo",
+    testonly = True,
+    srcs = [
+        "multi_index.html",
+        "tf-interactive-inference-multi-demo.html",
+        "@org_tensorflow_tfjs//:tf.min.js",
+    ] + glob(["data/**"]),
+    path = "/tf-interactive-inference-dashboard",
+    deps = [
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_imports:webcomponentsjs",
+    ],
+)
+
+tensorboard_html_binary(
+    name = "multidemoserver",
+    testonly = True,  # Keeps JavaScript somewhat readable
+    compile = True,  # Run Closure Compiler
+    input_path = "/tf-interactive-inference-dashboard/multi_index.html",
+    output_path = "/tf-interactive-inference-dashboard/multi_demo.html",
+    deps = [":multidemo"],
+)
+
+tf_web_library(
     name = "demo",
     testonly = True,
     srcs = [

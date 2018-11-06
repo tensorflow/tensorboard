@@ -60,6 +60,12 @@ limitations under the License.
       .run {
         flex: 10;
       }
+      .multi-model {
+        flex: 10;
+      }
+      .one-model {
+        display: none;
+      }
       .label {
         flex: 20;
         display: flex;
@@ -87,30 +93,35 @@ limitations under the License.
     <div class="row header">
       <div class="marker"></div>
       <div class="run">Run</div>
+      <div class$="[[getModelClass(inferences)]]">Model</div>
       <div class$="[[getLabelClass(modelType)]]">Label</div>
       <div class="score">[[getScoreLabel(modelType)]]</div>
       <div class="arrow"></div>
       <div class="delta">Delta</div>
     </div>
     <div class="runs-holder">
-      <template is="dom-repeat" items="[[inferences]]" as="inference" index-as="runindex">
+      <template is="dom-repeat" items="[[inferences]]" as="modelsInference" index-as="runindex">
         <div class="rows-for-run">
-          <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
-            <div class$="[[getRowClass(runindex, inferences, index)]]">
-              <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
-              <div class="run">[[getRunNumber(runindex)]]</div>
-              <div class$="[[getLabelClass(modelType)]]">
-                <div>[[getLabel(item)]]</div>
+          <template is="dom-repeat" items="[[modelsInference]]" as="inference" index-as="modelindex">
+            <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
+              <div class$="[[getRowClass(runindex, inferences, index)]]">
+                <div class$="[[getMarkerClass(runindex, inferences)]]"></div>
+                <div class="run">[[getRunNumber(runindex)]]</div>
+                <div class$="[[getModelClass(inferences)]]">
+                  <div>[[getModelNumber(modelindex)]]</div>
+                </div>
+                <div class$="[[getLabelClass(modelType)]]">
+                  <div>[[getLabel(item)]]</div>
+                </div>
+                <div class="score">[[getPrintableScore(item.score)]]</div>
+                <div class="arrow">
+                  <iron-icon icon="[[getIcon(runindex, index, modelindex)]]"
+                             class$="[[getIconClass(runindex, index, modelindex)]]">
+                  </iron-icon>
+                </div>
+                <div class="delta">[[getPrintableDelta(runindex, index, modelindex)]]</div>
               </div>
-              <div class="score">[[getPrintableScore(item.score)]]</div>
-              <div class="arrow">
-                <iron-icon icon="[[getIcon(runindex, index)]]"
-                           class$="[[getIconClass(runindex, index)]]">
-                </iron-icon>
-              </div>
-              <div class="delta">[[getPrintableDelta(runindex, index)]]</div>
-            </div>
-          </template>
+            </template>
         </div>
       </template>
     </div>
@@ -141,32 +152,38 @@ limitations under the License.
         return modelType == 'classification' ? 'label' : 'no-label';
       },
 
+      getModelClass: function(inferences) {
+        return (inferences[0].length > 1) ? 'multi-model' : 'one-model';
+      },
+
       getScoreLabel: function(modelType) {
         return modelType == 'classification' ? 'Score' : 'Value';
       },
 
-      getIconClass: function(runIndex, labelIndex) {
-        return this.getIconDecision(runIndex, labelIndex, 'green', 'red');
+      getIconClass: function(runIndex, labelIndex, modelIndex ) {
+        return this.getIconDecision(runIndex, labelIndex, modelIndex, 'green',
+          'red');
       },
 
-      getIcon: function(runIndex, labelIndex) {
+      getIcon: function(runIndex, labelIndex, modelIndex) {
         return this.getIconDecision(
-          runIndex, labelIndex, 'icons:arrow-upward', 'icons:arrow-downward');
+          runIndex, labelIndex, modelIndex, 'icons:arrow-upward',
+          'icons:arrow-downward');
       },
 
       /**
        * Returns upVal or downVal depending on if value from latest inference
        * is higher or lower than from previous inference.
        */
-      getIconDecision: function(runIndex, labelIndex, upVal, downVal) {
+      getIconDecision: function(runIndex, labelIndex, modelIndex, upVal, downVal) {
         // No up or down on first run.
         if (runIndex == 0) {
           return '';
         }
         const inferenceIndex = runIndex;
-        const label = this.inferences[inferenceIndex][labelIndex].label;
-        const score = this.inferences[inferenceIndex][labelIndex].score;
-        const previousInference = this.inferences[inferenceIndex - 1];
+        const label = this.inferences[inferenceIndex][modelIndex][labelIndex].label;
+        const score = this.inferences[inferenceIndex][modelIndex][labelIndex].score;
+        const previousInference = this.inferences[inferenceIndex - 1][modelIndex];
         for (let i = 0; i < previousInference.length; i++) {
           if (previousInference[i].label == label) {
             if (previousInference[i].score > score) {
@@ -182,6 +199,10 @@ limitations under the License.
       },
 
       getRunNumber: function(index) {
+        return index + 1;
+      },
+
+      getModelNumber: function(index) {
         return index + 1;
       },
 
@@ -207,14 +228,14 @@ limitations under the License.
         return score.toFixed(3);
       },
 
-      getPrintableDelta: function(runIndex, labelIndex) {
+      getPrintableDelta: function(runIndex, labelIndex, modelIndex) {
         if (runIndex == 0) {
           return '';
         }
         const inferenceIndex = runIndex;
-        const label = this.inferences[inferenceIndex][labelIndex].label;
-        const score = this.inferences[inferenceIndex][labelIndex].score;
-        const previousInference = this.inferences[inferenceIndex - 1];
+        const label = this.inferences[inferenceIndex][modelIndex][labelIndex].label;
+        const score = this.inferences[inferenceIndex][modelIndex][labelIndex].score;
+        const previousInference = this.inferences[inferenceIndex - 1][modelIndex];
         for (let i = 0; i < previousInference.length; i++) {
           if (previousInference[i].label == label) {
             return (score - previousInference[i].score).toFixed(6);

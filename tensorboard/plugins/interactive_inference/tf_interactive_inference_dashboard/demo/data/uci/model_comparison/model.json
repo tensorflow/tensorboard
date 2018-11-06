@@ -31,7 +31,7 @@
                 "mode": "fan_avg"
               }
             },
-            "name": "dense_1",
+            "name": "dense_4",
             "kernel_constraint": null,
             "bias_regularizer": null,
             "bias_constraint": null,
@@ -64,7 +64,7 @@
                 "mode": "fan_avg"
               }
             },
-            "name": "dense_2",
+            "name": "dense_5",
             "kernel_constraint": null,
             "bias_regularizer": null,
             "bias_constraint": null,
@@ -97,7 +97,7 @@
                 "mode": "fan_avg"
               }
             },
-            "name": "dense_3",
+            "name": "dense_6",
             "kernel_constraint": null,
             "bias_regularizer": null,
             "bias_constraint": null,
@@ -134,58 +134,44 @@
             104,
             36
           ],
-          "name": "dense_1/kernel"
+          "name": "dense_4/kernel"
         },
         {
           "dtype": "float32",
           "shape": [
             36
           ],
-          "name": "dense_1/bias"
-        }
-      ]
-    },
-    {
-      "paths": [
-        "group2-shard1of1"
-      ],
-      "weights": [
+          "name": "dense_4/bias"
+        },
         {
           "dtype": "float32",
           "shape": [
             36,
             12
           ],
-          "name": "dense_2/kernel"
+          "name": "dense_5/kernel"
         },
         {
           "dtype": "float32",
           "shape": [
             12
           ],
-          "name": "dense_2/bias"
-        }
-      ]
-    },
-    {
-      "paths": [
-        "group3-shard1of1"
-      ],
-      "weights": [
+          "name": "dense_5/bias"
+        },
         {
           "dtype": "float32",
           "shape": [
             12,
             2
           ],
-          "name": "dense_3/kernel"
+          "name": "dense_6/kernel"
         },
         {
           "dtype": "float32",
           "shape": [
             2
           ],
-          "name": "dense_3/bias"
+          "name": "dense_6/bias"
         }
       ]
     }
