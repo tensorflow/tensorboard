@@ -23,7 +23,7 @@ import collections
 import math
 import os.path
 
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long

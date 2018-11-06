@@ -24,7 +24,7 @@ import io
 import json
 import os
 import numpy as np
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers

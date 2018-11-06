@@ -30,11 +30,11 @@ from six import StringIO
 from werkzeug import wrappers
 
 import numpy as np
-import tensorflow as tf
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
+from tensorboard.compat import tf
 
 
 class OutputFormat(object):

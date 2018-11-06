@@ -25,7 +25,7 @@ from __future__ import print_function
 
 import collections
 
-import tensorflow as tf
+from tensorboard.compat import tf
 import tensorboard.summary as tb_summary
 import tensorboard.summary.v1 as tb_summary_v1
 import tensorboard.summary.v2 as tb_summary_v2

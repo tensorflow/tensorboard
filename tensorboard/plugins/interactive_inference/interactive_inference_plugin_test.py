@@ -140,7 +140,9 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/infer?' + urllib_parse.urlencode({
             'inference_address': 'addr',
             'model_name': 'name',
-            'model_type': 'regression'
+            'model_type': 'regression',
+            'model_version': ',',
+            'model_signature': ',',
         }))
 
     self.assertEqual(200, response.status_code)
@@ -199,7 +201,7 @@ class InferencePluginTest(tf.test.TestCase):
           'serving_bundle': {
               'inference_address': serving_bundle.inference_address,
               'model_name': serving_bundle.model_name,
-              'model_type': serving_bundle.model_type
+              'model_type': serving_bundle.model_type,
           },
           'viz_params': {
               'x_min': viz_params.x_min,
@@ -218,6 +220,8 @@ class InferencePluginTest(tf.test.TestCase):
             'model_name': '/ml/cassandrax/iris_classification',
             'inference_address': 'ml-serving-temp.prediction',
             'model_type': 'classification',
+            'model_version': ',',
+            'model_signature': ',',
             'x_min': '-10',
             'x_max': '10',
         }))

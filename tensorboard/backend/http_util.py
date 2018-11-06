@@ -27,10 +27,11 @@ import time
 import wsgiref.handlers
 
 import six
-import tensorflow as tf
+
 import werkzeug
 
 from tensorboard.backend import json_util
+from tensorboard.compat import tf
 
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')

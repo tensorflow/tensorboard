@@ -34,7 +34,7 @@ import time
 
 import six
 from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-order
-import tensorflow as tf
+
 from werkzeug import wrappers
 
 from tensorboard import db
@@ -49,6 +49,7 @@ from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.compat import tf
 
 
 DEFAULT_SIZE_GUIDANCE = {

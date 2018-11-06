@@ -122,7 +122,7 @@ limitations under the License.
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
-            inferences.results = {regressionResult: {regressions: []}};
+            inferences.results = [{regressionResult: {regressions: []}}];
             const tensors = [];
             for (let i = 0; i < indices.length; i++) {
               const idx = +indices[i];
@@ -134,7 +134,7 @@ limitations under the License.
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
               const adjustedScore = 2 * this.means['age'] * predValues[i];
-              inferences.results.regressionResult.regressions[i] =
+              inferences.results[0].regressionResult.regressions[i] =
               {value: adjustedScore};
             }
             this.$.dash.inferences = inferences;

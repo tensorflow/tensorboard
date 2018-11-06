@@ -24,7 +24,8 @@ import sys
 import time
 
 import six
-import tensorflow as tf
+
+from tensorboard.compat import tf
 
 
 # Struct bundling a tag with its SummaryMetadata and a list of values, each of

@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from google.protobuf import text_format
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import event_accumulator

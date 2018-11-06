@@ -21,7 +21,7 @@ import locale
 import os
 
 import six
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard import db
 from tensorboard import loader

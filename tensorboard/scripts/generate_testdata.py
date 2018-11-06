@@ -28,7 +28,7 @@ import shutil
 
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+from tensorboard.compat import tf
 
 
 tf.flags.DEFINE_string("target", None, """The directory where serialized data

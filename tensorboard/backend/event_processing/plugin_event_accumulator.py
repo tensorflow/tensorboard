@@ -21,7 +21,6 @@ import collections
 import threading
 
 import six
-import tensorflow as tf
 
 from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_watcher
@@ -29,6 +28,8 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
+from tensorboard.compat import tf
+
 
 namedtuple = collections.namedtuple
 

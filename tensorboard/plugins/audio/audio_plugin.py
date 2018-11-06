@@ -22,12 +22,12 @@ import six
 from six.moves import urllib
 from werkzeug import wrappers
 
-import tensorflow as tf
-
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import metadata
+from tensorboard.compat import tf
+
 
 _DEFAULT_MIME_TYPE = 'application/octet-stream'
 _MIME_TYPES = {
