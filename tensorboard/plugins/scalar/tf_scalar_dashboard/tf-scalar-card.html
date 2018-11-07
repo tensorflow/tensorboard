@@ -45,6 +45,7 @@ limitations under the License.
       data-to-load="[[dataToLoad]]"
       get-data-load-name="[[_getDataLoadName]]"
       get-data-load-url="[[getDataLoadUrl]]"
+      request-data="[[requestData]]"
       ignore-y-outliers="[[ignoreYOutliers]]"
       load-data-callback="[[_loadDataCallback]]"
       load-key="[[tag]]"
@@ -251,6 +252,14 @@ limitations under the License.
             }
           },
         },
+
+        // A function called to fetch the scalars data from the backend.
+        // Should receive a {tag, run, experiment} object and return
+        // a promise resolving with the fetched scalars. The default
+        // implementation of this function executes:
+        // this.requestManager.request(
+        //      this.getDataLoadUrl(tag, run, experiment})
+        requestData: Function,
 
         _getDataLoadName: {
           type: Function,
