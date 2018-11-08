@@ -192,6 +192,14 @@ export class Minimap {
     let zoomTransform = $zoomG.attr('transform');
     $zoomG.attr('transform', null);
 
+    // https://github.com/tensorflow/tensorboard/issues/1598
+    // Account for SVG content shift. SVGGraphicsElement.getBBox().width returns
+    // width in pixel value of very tight bounding box of non-empty content.
+    // Since we want to measure the sceneSize from the origin to the right most
+    // edge of the right most node, we need to account for distance from the
+    // origin to the left edge of the bounding box.
+    sceneSize.height += sceneSize.y;
+    sceneSize.width += sceneSize.x;
     // Since we add padding, account for that here.
     sceneSize.height += this.labelPadding * 2;
     sceneSize.width += this.labelPadding * 2;
