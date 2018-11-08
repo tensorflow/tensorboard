@@ -43,6 +43,7 @@ Polymer({
     datasets: Array,
     selectedDataset: Number,
     selectedFile: Object,
+    compatibilityProvider: Object,
     /**
      * If this optional object is provided, graph logic will override
      * the HierarchyParams it uses to build the graph with properties within
@@ -79,7 +80,7 @@ Polymer({
   observers: [
     '_selectedDatasetChanged(selectedDataset, datasets, overridingHierarchyParams)',
     '_selectedFileChanged(selectedFile, overridingHierarchyParams)',
-    '_readAndParseMetadata(selectedMetadataTag, overridingHierarchyParams)',
+    '_readAndParseMetadata(selectedMetadataTag, overridingHierarchyParams)'
   ],
   _readAndParseMetadata: function(metadataIndex) {
     if (metadataIndex == -1 || this.datasets[this.selectedDataset] == null ||
@@ -166,7 +167,7 @@ Polymer({
     })
     .then(function(graph) {
       // Populate compatibile field of OpNode based on whitelist
-      tf.graph.op.checkOpsForCompatibility(graph);
+      tf.graph.op.checkOpsForCompatibility(graph, this.compatibilityProvider);
 
       this._setOutGraph(graph);
       var hierarchyTracker = tf.graph.util.getSubtaskTracker(tracker, 50,
