@@ -493,6 +493,9 @@ Polymer({
     }
     min = Math.min(0, min) * clipSaliencyRatio;
     max = Math.max(0, max) * clipSaliencyRatio;
+    // Make min/max symmetric around 0 so that attribution visualization scales
+    // for negative and positive attributions are the same, for visual
+    // consistency.
     if (min < 0 && max > Math.abs(min)) {
       min = -1 *  max;
     } else if (max > 0 && Math.abs(min) > max) {
