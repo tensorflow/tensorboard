@@ -304,7 +304,10 @@ limitations under the License.
       },
       _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
-        this.$$('#svgLink').href = `data:image/svg+xml,${svgStr}`;
+        // https://github.com/tensorflow/tensorboard/pull/1446#issuecomment-436915402
+        // Firefox truncates href to some length for some reason. Using base64
+        // is okay.
+        this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
       _csvUrl(tag, run) {
         return tf_backend.addParams(
