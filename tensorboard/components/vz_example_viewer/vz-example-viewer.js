@@ -82,8 +82,8 @@ var vz_example_viewer;
             colors: { type: Object, computed: 'getColors(saliency)', observer: 'createLegend' },
             displayMode: { type: String, value: 'grid' },
             featureSearchValue: { type: String, value: '', notify: true },
-            filteredFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue, saliency)' },
-            filteredSeqFeaturesList: { type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue, saliency)' },
+            filteredFeaturesList: { type: Object },
+            filteredSeqFeaturesList: { type: Object },
             focusedFeatureName: String,
             focusedFeatureValueIndex: Number,
             focusedSeqNumber: Number,
@@ -110,6 +110,8 @@ var vz_example_viewer;
         observers: [
             'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
             'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
+            'setFilteredFeaturesList(featuresList, featureSearchValue, saliency)',
+            'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency)',
         ],
         isExpanded: function (featName, expandAllFeatures) {
             return this.expandAllFeatures ||
@@ -196,6 +198,14 @@ var vz_example_viewer;
             }
             return this.example
                 .getFeatureLists().getFeatureListMap();
+        },
+        setFilteredFeaturesList: function (featureList, searchValue, saliency) {
+            this.filteredFeaturesList = [];
+            this.filteredFeaturesList = this.getFilteredFeaturesList(featureList, searchValue, saliency);
+        },
+        setFilteredSeqFeaturesList: function (seqFeatureList, searchValue, saliency) {
+            this.filteredSeqFeaturesList = [];
+            this.filteredSeqFeaturesList = this.getFilteredFeaturesList(seqFeatureList, searchValue, saliency);
         },
         getFilteredFeaturesList: function (featureList, searchValue, saliency) {
             var _this = this;
@@ -400,6 +410,15 @@ var vz_example_viewer;
             }
             min = Math.min(0, min) * clipSaliencyRatio;
             max = Math.max(0, max) * clipSaliencyRatio;
+            // Make min/max symmetric around 0 so that attribution visualization scales
+            // for negative and positive attributions are the same, for visual
+            // consistency.
+            if (min < 0 && max > Math.abs(min)) {
+                min = -1 * max;
+            }
+            else if (max > 0 && Math.abs(min) > max) {
+                max = -1 * min;
+            }
             return [min, max];
         },
         /**
@@ -547,26 +566,6 @@ var vz_example_viewer;
                 }
             }
             return false;
-        },
-        /**
-         * Gets the allowed input type for a feature value, according to its
-         * feature type.
-         */
-        getInputType: function (feature) {
-            var feat = this.features.get(feature);
-            if (feat) {
-                if (feat.getInt64List() || feat.getFloatList()) {
-                    return 'number';
-                }
-            }
-            var seqfeat = this.seqFeatures.get(feature);
-            if (seqfeat) {
-                if (seqfeat.getFeatureList()[0].getInt64List() ||
-                    seqfeat.getFeatureList()[0].getFloatList()) {
-                    return 'number';
-                }
-            }
-            return 'text';
         },
         /**
          * Returns the feature object from the provided json attribute for a given
@@ -943,9 +942,9 @@ var vz_example_viewer;
          * be used in css classes/ids.
          */
         sanitizeFeature: function (feat) {
-            var sanitized = feat;
-            if (!feat.match(/^[A-Za-z].*$/)) {
-                sanitized = '_' + feat;
+            var sanitized = feat.trim();
+            if (!sanitized.match(/^[A-Za-z].*$/)) {
+                sanitized = '_' + sanitized;
             }
             return sanitized.replace(/[\/\.\#]/g, '_');
         },
@@ -1015,7 +1014,7 @@ var vz_example_viewer;
             var legendScale = d3.scaleLinear().domain([this.minSal, this.maxSal]).range([
                 0, LEGEND_WIDTH_PX
             ]);
-            var legendAxis = d3.axisBottom(legendScale);
+            var legendAxis = d3.axisBottom(legendScale).ticks(5);
             legendSvg.append('g')
                 .attr('class', 'legend axis')
                 .attr('transform', "translate(0," + LEGEND_HEIGHT_PX + ")")
