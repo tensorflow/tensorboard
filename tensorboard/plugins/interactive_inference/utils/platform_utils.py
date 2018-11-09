@@ -14,6 +14,7 @@
 # ==============================================================================
 """Shared utils among inference plugins that are platform-specific."""
 
+import csv
 from glob import glob
 from grpc.beta import implementations
 import random
@@ -94,8 +95,38 @@ def example_protos_from_path(path,
         if len(examples) >= num_examples:
           return
 
-  filenames = filepath_to_filepath_list(path)
   examples = []
+
+  if path.endswith('.csv'):
+    def are_floats(values):
+      for value in values:
+        try:
+          float(value)
+        except ValueError:
+          return False
+      return True
+    csv.register_dialect('CsvDialect', skipinitialspace=True)
+    rows = csv.DictReader(open(path), dialect='CsvDialect')
+    for row in rows:
+      if sampling_odds < 1 and random.random() > sampling_odds:
+        continue
+      example = tf.train.Example()
+      for col in row.keys():
+          # Parse out individual values from vertical-bar-delimited lists
+          values = [val.strip() for val in row[col].split('|')]
+          if are_floats(values):
+            example.features.feature[col].float_list.value.extend(
+              [float(val) for val in values])
+          else:
+            example.features.feature[col].bytes_list.value.extend(
+              [val.encode('utf-8') for val in values])
+      examples.append(
+        example if parse_examples else example.SerializeToString())
+      if len(examples) >= num_examples:
+        break
+    return examples
+
+  filenames = filepath_to_filepath_list(path)
   compression_types = [
       tf.python_io.TFRecordCompressionType.NONE,
       tf.python_io.TFRecordCompressionType.GZIP,

@@ -458,7 +458,6 @@ limitations under the License.
                         on-blur="onInputBlur"
                         data-feature="[[feat.name]]"
                         data-index="[[index]]"
-                        type="[[getInputType(feat.name)]]"
                         value="[[value]]">
                   </input>
                 </template>
@@ -471,7 +470,6 @@ limitations under the License.
                   on-blur="onInputBlur"
                   data-feature="[[feat.name]]"
                   data-index="[[zeroIndex]]"
-                  type="[[getInputType(feat.name)]]"
                   value="[[getFirstFeatureValue(feat.name)]]">
                 </input>
                 <template is="dom-if" if="[[featureHasMultipleValues(feat.name)]]">
@@ -487,7 +485,6 @@ limitations under the License.
                   <template is="dom-repeat" items="[[getCompareFeatureValues(feat.name)]]" as="value">
                     <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
                           readonly
-                          type="[[getInputType(feat.name)]]"
                           value="[[value]]">
                     </input>
                   </template>
@@ -495,7 +492,6 @@ limitations under the License.
                 <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
                   <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
                     readonly
-                    type="[[getInputType(feat.name)]]"
                     value="[[getFirstCompareFeatureValue(feat.name)]]">
                   </input>
                   <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
@@ -618,7 +614,6 @@ limitations under the License.
                           data-feature="[[seqfeat.name]]"
                           data-index="[[index]]"
                           data-seq-num="[[seqNumber]]"
-                          type="[[getInputType(seqfeat.name)]]"
                           value="[[seqvalue]]">
                       </input>
                     </template>
@@ -632,7 +627,6 @@ limitations under the License.
                       data-feature="[[seqfeat.name]]"
                       data-index="[[zeroIndex]]"
                       data-seq-num="[[seqNumber]]"
-                      type="[[getInputType(seqfeat.name)]]"
                       value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]">
                     </input>
                     <template is="dom-if" if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
@@ -650,7 +644,6 @@ limitations under the License.
                                 as="seqvalue">
                         <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
                             readonly
-                            type="[[getInputType(seqfeat.name)]]"
                             value="[[seqvalue]]">
                         </input>
                       </template>
@@ -658,7 +651,6 @@ limitations under the License.
                     <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
                       <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
                         readonly
-                        type="[[getInputType(seqfeat.name)]]"
                         value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
                       </input>
                       <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">

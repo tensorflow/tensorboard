@@ -145,8 +145,8 @@ Polymer({
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
     displayMode: {type: String, value: 'grid'},
     featureSearchValue: {type: String, value: '', notify: true},
-    filteredFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue, saliency)'},
-    filteredSeqFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue, saliency)'},
+    filteredFeaturesList: {type: Object},
+    filteredSeqFeaturesList: {type: Object},
     focusedFeatureName: String,
     focusedFeatureValueIndex: Number,
     focusedSeqNumber: Number,
@@ -173,6 +173,8 @@ Polymer({
   observers: [
     'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
     'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
+    'setFilteredFeaturesList(featuresList, featureSearchValue, saliency)',
+    'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency)',
   ],
 
   isExpanded: function(featName: string, expandAllFeatures: boolean) {
@@ -272,6 +274,20 @@ Polymer({
     }
     return (this.example as SequenceExample)
         .getFeatureLists()!.getFeatureListMap();
+  },
+
+  setFilteredFeaturesList: function(featureList: NameAndFeature[],
+      searchValue: string, saliency: SaliencyMap) {
+    this.filteredFeaturesList = [];
+    this.filteredFeaturesList = this.getFilteredFeaturesList(
+      featureList, searchValue, saliency);
+  },
+
+  setFilteredSeqFeaturesList: function(seqFeatureList: NameAndFeature[],
+      searchValue: string, saliency: SaliencyMap) {
+    this.filteredSeqFeaturesList = [];
+    this.filteredSeqFeaturesList = this.getFilteredFeaturesList(
+      seqFeatureList, searchValue, saliency);
   },
 
   getFilteredFeaturesList: function(featureList: NameAndFeature[],
@@ -477,6 +493,14 @@ Polymer({
     }
     min = Math.min(0, min) * clipSaliencyRatio;
     max = Math.max(0, max) * clipSaliencyRatio;
+    // Make min/max symmetric around 0 so that attribution visualization scales
+    // for negative and positive attributions are the same, for visual
+    // consistency.
+    if (min < 0 && max > Math.abs(min)) {
+      min = -1 * max;
+    } else if (max > 0 && Math.abs(min) > max) {
+      max = -1 * min;
+    }
     return [min, max];
   },
 
@@ -644,27 +668,6 @@ Polymer({
       }
     }
     return false;
-  },
-
-  /**
-   * Gets the allowed input type for a feature value, according to its
-   * feature type.
-   */
-  getInputType: function(feature: string) {
-    const feat = this.features.get(feature);
-    if (feat) {
-      if (feat.getInt64List() || feat.getFloatList()) {
-        return 'number'
-      }
-    }
-    const seqfeat = this.seqFeatures.get(feature);
-    if (seqfeat) {
-      if (seqfeat.getFeatureList()[0].getInt64List() ||
-          seqfeat.getFeatureList()[0].getFloatList()) {
-        return 'number';
-      }
-    }
-    return 'text';
   },
 
   /**
@@ -1071,9 +1074,9 @@ Polymer({
    * be used in css classes/ids.
    */
   sanitizeFeature: function(feat: string) {
-   let sanitized = feat;
-    if (!feat.match(/^[A-Za-z].*$/)) {
-      sanitized = '_' + feat;
+    let sanitized = feat.trim();
+    if (!sanitized.match(/^[A-Za-z].*$/)) {
+      sanitized = '_' + sanitized;
     }
     return sanitized.replace(/[\/\.\#]/g, '_');
   },
@@ -1155,7 +1158,7 @@ Polymer({
           0, LEGEND_WIDTH_PX
         ]);
 
-    const legendAxis = d3.axisBottom(legendScale);
+    const legendAxis = d3.axisBottom(legendScale).ticks(5);
 
     legendSvg.append('g')
         .attr('class', 'legend axis')

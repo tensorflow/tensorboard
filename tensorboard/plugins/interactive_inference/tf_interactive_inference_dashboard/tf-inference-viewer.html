@@ -153,7 +153,8 @@ limitations under the License.
       },
 
       getModelClass: function(inferences) {
-        return (inferences[0].length > 1) ? 'multi-model' : 'one-model';
+        return (inferences && inferences[0].length > 1) ? 'multi-model'
+          : 'one-model';
       },
 
       getScoreLabel: function(modelType) {

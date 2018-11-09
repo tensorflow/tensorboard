@@ -86,6 +86,9 @@ To use the tool, only the following information needs to be provided:
       labels for a classification model. If not, it will show the predicted
       class indices.
 
+Alternatively, the What-If Tool can be used to explore a dataset directly from
+a CSV file. See the next section for details.
+
 The information can be provided in the settings dialog screen, which pops up
 automatically upon opening this tool and is accessible through the settings
 icon button in the top-right of the tool.
@@ -93,12 +96,34 @@ The information can also be provided directly through URL parameters.
 Changing the settings through the controls automatically updates the URL so that
 it can be shared with others for them to view the same data in the What-If Tool.
 
-## All I have is a dataset. Where do I start?
+## All I have is a dataset. What can I do? Where do I start?
 
-Check out the [WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb)
+If you want to explore a dataset directly, you have two options:
+
+If you want to train an ML model from the dataset and explore the dataset and
+model, check out the [WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb)
 which shows how to install TensorFlow, TensorBoard, and TensorFlow Serving,
 train a very simple model to predict a column from a CSV file, serve that model
 and load it up in the What-If Tool.
+
+If instead you just want to explore the information in the CSV, just set the
+path to the examples to the file (with a ".csv" extension) and leave the
+inference address and model name fields blank. The first line of the CSV file
+must contain column names. Each line after that contains one example from the
+dataset, with values for each of the columns defined on the first line. The pipe
+character ("|") deliminates separate feature values in a list of feature values
+for a given feature.
+
+In order to make use of the model understanding features of the tool, you can
+have columns in your dataset that contain the output from an ML model. If your
+file has a column named "probabilities" with a pipe-delimited ("|") list of
+probability scores (between 0 and 1), then the tool will treat those as the
+output scores of a classification model. If your file has a numeric column named
+"score" then the tool will treat those as the output of a regression model. In
+this way, the tool can be used to analyze any dataset and the results of any
+model run offline against the dataset. Note that in this mode, the examples
+aren't editable as there is no way to get new inference results when an example
+changes.
 
 ## What can it do?
 * Visualize a dataset of TensorFlow Example protos.
