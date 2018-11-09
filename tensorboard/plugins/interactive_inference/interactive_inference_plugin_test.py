@@ -226,7 +226,7 @@ class InferencePluginTest(tf.test.TestCase):
             'x_max': '10',
         }))
     result = self._DeserializeResponse(response.get_data())
-    self.assertEqual(str(example), result['example'])
+    self.assertEqual(str([example]), result['example'])
     self.assertEqual('single_int', result['feature_name'])
     self.assertEqual('ml-serving-temp.prediction',
                      result['serving_bundle']['inference_address'])
