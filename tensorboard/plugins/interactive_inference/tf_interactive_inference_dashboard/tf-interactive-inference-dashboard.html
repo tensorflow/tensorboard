@@ -881,7 +881,7 @@ limitations under the License.
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
             <div title="Select a datapoint to use this feature">
-              <paper-button class="control-button" disabled$="[[!enablePartialDependencePlots_(selectedExampleAndInference, modelName, inferenceAddress)]]"
+              <paper-button class="control-button" disabled$="[[!arePartialDependencePlotsEnabled_(selectedExampleAndInference, modelName, inferenceAddress)]]"
                   on-click="showPartialDependencePlots_" alt="show partial dependence plots"
                   title="Select a datapoint to use this feature">
                   Partial dependence plots
@@ -1010,7 +1010,7 @@ limitations under the License.
                                            feature-search-value="{{featureSearchValue}}"
                                            compare-title="[[compareTitle]]"
                                            saliency="[[attribution]]"
-                                           show-saliency="true"
+                                           show-saliency
                                            readonly="[[!areExamplesEditable_(modelName, inferenceAddress)]]">
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
@@ -1559,11 +1559,18 @@ limitations under the License.
           type: Object,
         },
         // The examples list in the format to provide to Facets Dive.
+        // Each element in the list represents a datapoint and is a dictionary
+        // with keys being the features and values being the value of a feature,
+        // or a list of values for those features that contain more than one
+        // feature value.
         visdata: {
           type: Array,
           value: () => ([]),
         },
-        // The selected items list provided by Facets Dive.
+        // The selected items list provided by Facets Dive. The What-If Tool
+        // only makes use of the first selected item, but Facets Dive itself
+        // maintains a list of all selected items and this is bound to that
+        // list provided by Facets Dive.
         selected: {
           type: Array,
           value: () => ([]),
@@ -2108,7 +2115,8 @@ limitations under the License.
           this.isBinaryClassification_(modelType, multiClass);
       },
 
-      enablePartialDependencePlots_: function(selectedExampleAndInference, modelName, inferenceAddress) {
+      arePartialDependencePlotsEnabled_: function(
+          selectedExampleAndInference, modelName, inferenceAddress) {
         return this.hasSelected(selectedExampleAndInference) &&
           this.areExamplesEditable_(modelName, inferenceAddress);
       },
@@ -2849,7 +2857,7 @@ limitations under the License.
         this.selectedExampleAndInference =
           this.selected.length > 0
           ? this.examplesAndInferences[this.selected[0]] : null;
-        requestAnimationFrame(()=> this.setAttributions());
+        requestAnimationFrame(() => this.setAttributions());
       },
 
       /**

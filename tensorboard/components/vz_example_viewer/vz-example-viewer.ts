@@ -277,17 +277,17 @@ Polymer({
   },
 
   setFilteredFeaturesList: function(featureList: NameAndFeature[],
-    searchValue: string, saliency: SaliencyMap) {
-      this.filteredFeaturesList = [];
-      this.filteredFeaturesList = this.getFilteredFeaturesList(
-        featureList, searchValue, saliency);
+      searchValue: string, saliency: SaliencyMap) {
+    this.filteredFeaturesList = [];
+    this.filteredFeaturesList = this.getFilteredFeaturesList(
+      featureList, searchValue, saliency);
   },
 
   setFilteredSeqFeaturesList: function(seqFeatureList: NameAndFeature[],
-    searchValue: string, saliency: SaliencyMap) {
-      this.filteredSeqFeaturesList = [];
-      this.filteredSeqFeaturesList = this.getFilteredFeaturesList(
-        seqFeatureList, searchValue, saliency);
+      searchValue: string, saliency: SaliencyMap) {
+    this.filteredSeqFeaturesList = [];
+    this.filteredSeqFeaturesList = this.getFilteredFeaturesList(
+      seqFeatureList, searchValue, saliency);
   },
 
   getFilteredFeaturesList: function(featureList: NameAndFeature[],
@@ -497,7 +497,7 @@ Polymer({
     // for negative and positive attributions are the same, for visual
     // consistency.
     if (min < 0 && max > Math.abs(min)) {
-      min = -1 *  max;
+      min = -1 * max;
     } else if (max > 0 && Math.abs(min) > max) {
       max = -1 * min;
     }
@@ -1074,9 +1074,9 @@ Polymer({
    * be used in css classes/ids.
    */
   sanitizeFeature: function(feat: string) {
-   let sanitized = feat.trim();
-    if (!feat.match(/^[A-Za-z].*$/)) {
-      sanitized = '_' + feat;
+    let sanitized = feat.trim();
+    if (!sanitized.match(/^[A-Za-z].*$/)) {
+      sanitized = '_' + sanitized;
     }
     return sanitized.replace(/[\/\.\#]/g, '_');
   },
