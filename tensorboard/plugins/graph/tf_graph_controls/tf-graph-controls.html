@@ -373,11 +373,18 @@ paper-dropdown-menu {
   <template is="dom-if" if="[[showUploadButton]]">
     <div class="control-holder">
       <div class="title">Upload</div>
-      <paper-button raised class="upload-button" on-click="_getFile">
+      <paper-button raised class="upload-button"
+          on-click="_getFile"
+          title="Upload a graph pbtxt file to view the graph">
         Choose File
       </paper-button>
       <div class="hidden-input">
-        <input type="file" id="file" name="file" on-change="_updateFileInput" />
+        <input
+            type="file"
+            id="file"
+            name="file"
+            on-change="_updateFileInput"
+            accept=".pbtxt" />
       </div>
     </div>
   </template>
