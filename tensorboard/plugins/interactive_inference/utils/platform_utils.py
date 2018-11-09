@@ -18,7 +18,6 @@ import csv
 from glob import glob
 from grpc.beta import implementations
 import random
-import numpy as np
 from six.moves.urllib.parse import urlparse
 import tensorflow as tf
 
