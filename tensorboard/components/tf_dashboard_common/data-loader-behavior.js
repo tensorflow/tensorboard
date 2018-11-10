@@ -20,15 +20,15 @@ var tf_dashboard_common;
     tf_dashboard_common.DataLoaderBehavior = {
         properties: {
             /**
-             * An unique identifiable string. When changes, it expunges the data
+             * A unique identifiable string. When changes, it expunges the data
              * cache.
              */
             loadKey: {
                 type: String,
                 value: '',
             },
-            // List of data to be loaded. A datum is passed to `getDataLoadUrl` to ge
-            // URL of an API endpoint and, when request resolves, invokes
+            // List of data to be loaded. By default, a datum is passed to
+            // `requestData` to fetch data. When the request resolves, invokes
             // `loadDataCallback` with the datum and its response.
             dataToLoad: {
                 type: Array,
@@ -51,6 +51,24 @@ var tf_dashboard_common;
              * data URL is successfully received.
              */
             loadDataCallback: Function,
+            // A function that takes a datum as argument and makes the HTTP
+            // request to fetch the data associated with the datum. It should return
+            // a promise that either fullfills with the data or rejects with an error.
+            // If the function doesn't bind 'this', then it will reference the element
+            // that includes this behavior.
+            // The default implementation calls this.requestManager.request with
+            // the value returned by this.getDataLoadUrl(datum) (see below).
+            // The only place getDataLoadUrl() is called is in the default
+            // implementation of this method. So if you override this method with
+            // an implementation that doesn't call getDataLoadUrl, it need not be
+            // provided.
+            requestData: {
+                type: Function,
+                value: function () {
+                    var _this = this;
+                    return function (datum) { return _this.requestManager.request(_this.getDataLoadUrl(datum)); };
+                },
+            },
             // A function that takes a datum and returns a string URL for fetching
             // data.
             getDataLoadUrl: Function,
@@ -121,14 +139,13 @@ var tf_dashboard_common;
                     return !_this._loadedData.has(name);
                 }).map(function (datum) {
                     var name = _this.getDataLoadName(datum);
-                    var url = _this.getDataLoadUrl(datum);
                     var updateSeries = _this._canceller.cancellable(function (result) {
                         if (result.cancelled)
                             return;
                         _this._loadedData.add(name);
                         _this.loadDataCallback(_this, datum, result.value);
                     });
-                    return _this.requestManager.request(url).then(updateSeries);
+                    return _this.requestData(datum).then(updateSeries);
                 });
                 return Promise.all(promises).then(_this._canceller.cancellable(function (result) {
                     // Read-only property have a special setter.
@@ -140,4 +157,4 @@ var tf_dashboard_common;
             });
         },
     };
-})(tf_dashboard_common || (tf_dashboard_common = {})); // namespace tf_line_chart_data_loader
+})(tf_dashboard_common || (tf_dashboard_common = {})); // namespace tf_dashboard_common
