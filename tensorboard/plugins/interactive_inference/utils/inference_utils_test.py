@@ -269,14 +269,17 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
-    # These should error out because they don't have 4 fields.
-    with self.assertRaises(common_utils.InvalidUserInputError):
-      charts = inference_utils.mutant_charts_for_feature(
-          [example], 'repeated_int', serving_bundle, viz_params)
+    # These should return 3 charts even though all fields from the index
+    # pattern don't exist for the example.
+    charts = inference_utils.mutant_charts_for_feature(
+        [example], 'repeated_int', serving_bundle, viz_params)
+    self.assertEqual('numeric', charts['chartType'])
+    self.assertEqual(3, len(charts['data']))
 
-    with self.assertRaises(common_utils.InvalidUserInputError):
-      charts = inference_utils.mutant_charts_for_feature(
-          [example], 'single_int', serving_bundle, viz_params)
+    charts = inference_utils.mutant_charts_for_feature(
+        [example], 'single_int', serving_bundle, viz_params)
+    self.assertEqual('numeric', charts['chartType'])
+    self.assertEqual(3, len(charts['data']))
 
   def test_make_mutant_tuples_float_list(self):
     example = self.make_and_write_fake_example()
