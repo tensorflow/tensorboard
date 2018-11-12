@@ -543,8 +543,8 @@ def make_json_formatted_for_single_chart(mutant_features,
 
     # Post-process points to have separate list for each class
     return_series = collections.defaultdict(list)
-    for key, mutant_values in series.iteritems():
-      for value, y_list in mutant_values.iteritems():
+    for key, mutant_values in iteritems(series):
+      for value, y_list in iteritems(mutant_values):
         return_series[key].append({
           x_label: value,
           y_label: sum(y_list) / float(len(y_list))
@@ -564,7 +564,7 @@ def make_json_formatted_for_single_chart(mutant_features,
     if (index_to_mutate != 0):
       key += ' (index %d)' % index_to_mutate
     list_of_points = []
-    for value, y_list in points.iteritems():
+    for value, y_list in iteritems(points):
       list_of_points.append({
         x_label: value,
         y_label: sum(y_list) / float(len(y_list))
