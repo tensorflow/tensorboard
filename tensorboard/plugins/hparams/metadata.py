@@ -20,7 +20,7 @@ from __future__ import print_function
 
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import error
-from tensorboard.compat import tf
+import tensorflow as tf
 
 
 PLUGIN_NAME = 'hparams'

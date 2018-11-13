@@ -35,7 +35,7 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -67,7 +67,7 @@ py_library(
     ],
     deps = [
         ":metadata",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -79,7 +79,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -90,7 +90,7 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )

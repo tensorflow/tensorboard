@@ -26,10 +26,10 @@ py_library(
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -46,7 +46,7 @@ py_test(
         ":pr_curve_demo",
         ":pr_curves_plugin",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
@@ -62,7 +62,7 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -74,7 +74,7 @@ py_test(
     deps = [
         ":summary",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -93,7 +93,7 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )

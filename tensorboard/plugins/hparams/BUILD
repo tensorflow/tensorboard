@@ -24,7 +24,7 @@ py_library(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
@@ -41,7 +41,7 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
     ],
@@ -54,7 +54,7 @@ py_binary(
     deps = [
         ":protos_all_py_pb2",
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/scalar:summary",
         "@org_pythonhosted_six",
     ],
@@ -70,7 +70,7 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -81,7 +81,7 @@ py_test(
     deps = [
         ":protos_all_py_pb2",
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@com_google_protobuf//:protobuf_python",
     ],
 )
@@ -92,7 +92,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":error",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -100,9 +100,7 @@ py_library(
     name = "error",
     srcs = ["error.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard/compat:tensorflow",
-    ],
+    deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
 tb_proto_library(

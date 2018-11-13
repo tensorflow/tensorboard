@@ -29,7 +29,7 @@ import os
 import sqlite3
 import threading
 
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard import db
 from tensorboard import util

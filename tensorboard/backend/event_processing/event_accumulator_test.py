@@ -22,7 +22,7 @@ import os
 import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
 from tensorboard.plugins.distribution import compressor

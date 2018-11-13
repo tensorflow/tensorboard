@@ -24,7 +24,7 @@ import textwrap
 
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.plugins.image import summary as image_summary
 

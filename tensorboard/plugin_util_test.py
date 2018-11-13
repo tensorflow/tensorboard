@@ -19,7 +19,7 @@ from __future__ import print_function
 import textwrap
 
 import six
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard import plugin_util
 

@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard import data_compat
 from tensorboard.plugins.audio import summary as audio_summary
