@@ -21,22 +21,22 @@ from __future__ import print_function
 import contextlib
 import functools
 import json
+import ntpath
 import os
+import posixpath
 import shutil
 import socket
 import tempfile
 
-try:
-  # python version >= 3.3
-  from unittest import mock
-except ImportError:
-  import mock
-
-import posixpath
-import ntpath
-
 import six
 import tensorflow as tf
+
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 

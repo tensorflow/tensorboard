@@ -21,30 +21,30 @@ from __future__ import print_function
 import json
 import os
 import sys
-if sys.version_info.major == 2:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
-else:
-  from unittest import mock  # pylint: disable=g-import-not-at-top
-import mock
-import numpy as np
-from six.moves import urllib_parse
 
+import numpy as np
 import tensorflow as tf
 
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
+from six.moves import urllib_parse
 from google.protobuf import json_format
+from tensorflow_serving.apis import regression_pb2
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
 from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 
-from tensorflow_serving.apis import regression_pb2
 
 class InferencePluginTest(tf.test.TestCase):
 
