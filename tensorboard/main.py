@@ -42,6 +42,10 @@ os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION'] = '2'
 
 import sys
 
+# Import TensorFlow here to fail immediately if it's not present, even though we
+# don't actually use it yet, which results in a clearer error.
+import tensorflow as tf  # pylint: disable=unused-import
+
 from tensorboard import default
 from tensorboard import program
 
