@@ -155,7 +155,24 @@ export class Minimap {
     let $download = d3.select('#graphdownload');
     this.download = <HTMLLinkElement>$download.node();
     $download.on('click', d => {
-      this.download.href = this.downloadCanvas.toDataURL('image/png');
+      // Revoke the old URL, if any. Then, generate a new URL.
+      URL.revokeObjectURL(this.download.href);
+      // We can't use the `HTMLCanvasElement.toBlob` API because it does
+      // not have a synchronous variant, and we need to update this href
+      // synchronously. Instead, we create a blob manually from the data
+      // URL.
+      const dataUrl = this.downloadCanvas.toDataURL("image/png");
+      const prefix = dataUrl.slice(0, dataUrl.indexOf(","));
+      if (!prefix.endsWith(";base64")) {
+        console.warn(`non-base64 data URL (${prefix}); cannot use blob download`);
+        this.download.href = dataUrl;
+        return;
+      }
+      const data = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+      const bytes =
+        new Uint8Array(data.length).map((_, i) => data.charCodeAt(i));
+      const blob = new Blob([bytes], {type: "image/png"});
+      this.download.href = URL.createObjectURL(blob);
     });
 
     let $svg = d3.select(this.svg);
