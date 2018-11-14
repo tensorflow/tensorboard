@@ -113,7 +113,23 @@ var tf;
                 var $download = d3.select('#graphdownload');
                 this.download = $download.node();
                 $download.on('click', function (d) {
-                    _this.download.href = _this.downloadCanvas.toDataURL('image/png');
+                    // Revoke the old URL, if any. Then, generate a new URL.
+                    URL.revokeObjectURL(_this.download.href);
+                    // We can't use the `HTMLCanvasElement.toBlob` API because it does
+                    // not have a synchronous variant, and we need to update this href
+                    // synchronously. Instead, we create a blob manually from the data
+                    // URL.
+                    var dataUrl = _this.downloadCanvas.toDataURL("image/png");
+                    var prefix = dataUrl.slice(0, dataUrl.indexOf(","));
+                    if (!prefix.endsWith(";base64")) {
+                        console.warn("non-base64 data URL (" + prefix + "); cannot use blob download");
+                        _this.download.href = dataUrl;
+                        return;
+                    }
+                    var data = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+                    var bytes = new Uint8Array(data.length).map(function (_, i) { return data.charCodeAt(i); });
+                    var blob = new Blob([bytes], { type: "image/png" });
+                    _this.download.href = URL.createObjectURL(blob);
                 });
                 var $svg = d3.select(this.svg);
                 // Read all the style rules in the document and embed them into the svg.
