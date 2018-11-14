@@ -27,7 +27,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":http_util",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -50,7 +50,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":json_util",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -63,10 +63,10 @@ py_library(
         ":http_util",
         "//tensorboard:db",
         "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/backend/event_processing:db_import_multiplexer",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
@@ -84,7 +84,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":application",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",

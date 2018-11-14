@@ -21,7 +21,7 @@ import os
 import os.path
 import shutil
 
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long

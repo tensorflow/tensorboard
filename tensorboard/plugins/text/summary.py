@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
 

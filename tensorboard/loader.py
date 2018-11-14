@@ -38,7 +38,7 @@ import six
 
 from tensorboard import db
 from tensorboard import util
-from tensorboard.compat import tf
+import tensorflow as tf
 
 
 class Record(collections.namedtuple('Record', ('record', 'offset'))):
