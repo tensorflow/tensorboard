@@ -47,7 +47,7 @@ from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
-from tensorboard.compat import tf
+import tensorflow as tf
 
 
 logger = logging.getLogger(__name__)

@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.compat import tf
+import tensorflow as tf
 
 
 def last_metric_eval(multiplexer, session_name, metric_name):

@@ -24,7 +24,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":io_wrapper",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -46,7 +46,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":directory_watcher",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -63,7 +63,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":reservoir",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -83,7 +83,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_file_loader",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -114,7 +114,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
@@ -129,7 +129,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
@@ -163,7 +163,7 @@ py_test(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -175,7 +175,7 @@ py_test(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -237,6 +237,6 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_file_inspector",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )

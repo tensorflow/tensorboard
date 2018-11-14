@@ -21,7 +21,7 @@ import os
 import os.path
 import shutil
 
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_multiplexer

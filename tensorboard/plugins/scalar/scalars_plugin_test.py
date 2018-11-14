@@ -25,7 +25,7 @@ import os.path
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long

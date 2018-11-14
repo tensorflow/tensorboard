@@ -24,7 +24,7 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         ":trace_events_json",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
@@ -39,7 +39,7 @@ py_test(
     deps = [
         ":profile_plugin",
         ":protos_all_py_pb2",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
     ],
@@ -63,7 +63,7 @@ py_test(
     deps = [
         ":protos_all_py_pb2",
         ":trace_events_json",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -82,7 +82,7 @@ py_binary(
     deps = [
         ":profile_plugin",
         ":protos_all_py_pb2",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:plugin_asset_util",
     ],
 )

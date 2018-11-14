@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 
 import numpy as np
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from google.protobuf import json_format
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long

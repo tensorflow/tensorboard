@@ -24,7 +24,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat import tf
+import tensorflow as tf
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata

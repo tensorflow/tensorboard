@@ -20,20 +20,24 @@ from __future__ import print_function
 
 import os
 import sys
-if sys.version_info.major == 2:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
-else:
-  from unittest import mock  # pylint: disable=g-import-not-at-top
+
 import numpy as np
 import tensorflow as tf
+
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import predict_pb2
+from tensorflow_serving.apis import regression_pb2
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
-from tensorflow_serving.apis import classification_pb2
-from tensorflow_serving.apis import predict_pb2
-from tensorflow_serving.apis import regression_pb2
 
 
 class InferenceUtilsTest(tf.test.TestCase):
