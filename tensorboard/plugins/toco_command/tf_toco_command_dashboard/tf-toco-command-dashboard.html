@@ -17,6 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-toco-command-common/tf-toco-command-common.html">
 <link rel="import" href="../tf-toco-command-controls/tf-toco-command-controls.html">
 
 <!--
@@ -77,6 +78,7 @@ by default. The user can select a different run from a dropdown menu.
         selected-dataset="[[_selectedDataset]]"
         selected-metadata-tag="[[_selectedMetadataTag]]"
         selected-file="[[_selectedFile]]"
+        compatibility-provider="[[_compatibilityProvider]]"
         out-graph-hierarchy="{{_graphHierarchy}}"
         out-graph="{{_graph}}"
         out-stats="{{_stats}}"
@@ -140,6 +142,7 @@ Polymer({
       type: Object,
       value: () => new tf_backend.Canceller(),
     },
+    _colorBy: String,
     _debuggerDataEnabled: Boolean,
     allStepsModeEnabled: Boolean,
     specificHealthPillStep: {type: Number, value: 0},
@@ -301,8 +304,113 @@ Polymer({
       // Either this dashboard is already initialized ... or we are not yet ready to initialize.
       return;
     }
+    this._colorBy = 'op_compatibility';
     // Set this to true so we only initialize once.
     this._initialized = true;
+    this.set('_compatibilityProvider', new tf.toco_command.op.TfLiteCompatibilityProvider([
+    "TopK",
+  "Tanh",
+  "Switch",
+  "Sub",
+  "Square",
+  "Split",
+  "Sigmoid",
+  "Softmax",
+  "Relu6",
+  "Relu",
+  "RealDiv",
+  "Prod",
+  "PlaceholderWithDefault",
+  "ParallelDynamicStitch",
+  "Pad",
+  "NoOp",
+  "Neg",
+  "NotEqual",
+  "Mul",
+  "NextIteration",
+  "Min",
+  "Mean",
+  "Merge",
+  "Maximum",
+  "SparseToDense",
+  "MaxPool",
+  "LogicalNot",
+  "Max",
+  "LogicalAnd",
+  "PadV2",
+  "LogSoftmax",
+  "Log",
+  "LessEqual",
+  "Less",
+  "StopGradient",
+  "SpaceToBatchND",
+  "LegacyFedInput",
+  "LRN",
+  "Identity",
+  "Greater",
+  "FloorDiv",
+  "GreaterEqual",
+  "Floor",
+  "Fill",
+  "Minimum",
+  "FakeQuantWithMinMaxVars",
+  "Slice",
+  "Rsqrt",
+  "FusedBatchNorm",
+  "FakeQuantWithMinMaxArgs",
+  "Transpose",
+  "Exp",
+  "Equal",
+  "TopKV2",
+  "RandomUniform",
+  "DynamicStitch",
+  "DynamicPartition",
+  "Div",
+  "Sum",
+  "DepthwiseConv2dNative",
+  "Conv2DBackpropInput",
+  "Svdf",
+  "Conv2D",
+  "GatherV2",
+  "Const",
+  "SpaceToDepth",
+  "Pow",
+  "ExpandDims",
+  "ConcatV2",
+  "Concat",
+  "Shape",
+  "CheckNumerics",
+  "Squeeze",
+  "Sqrt",
+  "Gather",
+  "Cast",
+  "FloorMod",
+  "BiasAdd",
+  "Placeholder",
+  "BatchToSpaceND",
+  "BatchNormWithGlobalNormalization",
+  "Tile",
+  "StridedSlice",
+  "Pack",
+  "BatchMatMul",
+  "ResizeBilinear",
+  "AvgPool",
+  "Assert",
+  "Select",
+  "Reshape",
+  "Rank",
+  "ArgMin",
+  "MatMul",
+  "ArgMax",
+  "All",
+  "Sin",
+  "Range",
+  "DepthToSpace",
+  "AddN",
+  "Any",
+  "Add"
+    ]));
+
     Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])
       .then(result => {
         const runsWithGraph = result[0].sort(vz_sorting.compareTagNames);
