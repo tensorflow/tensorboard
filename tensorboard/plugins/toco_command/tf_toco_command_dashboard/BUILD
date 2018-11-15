@@ -43,6 +43,7 @@ tf_web_library(
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_loader",
+        "//tensorboard/plugins/toco_command/tf_toco_command_common",
         "//tensorboard/plugins/toco_command/tf_toco_command_controls",
         "@org_polymer_iron_icon",
         "@org_polymer_paper_button",
