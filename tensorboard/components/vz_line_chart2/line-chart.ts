@@ -674,26 +674,37 @@ export class LineChart {
   private findClosestPoint(
       target: vz_chart_helpers.Point,
       dataset: Plottable.Dataset): vz_chart_helpers.Point | null {
-    const xPoints: number[] = dataset.data()
-        .map((d, i) => this.xScale.scale(this.xAccessor(d, i, dataset)));
+    // TODO(stephanwlee): Consider place precondition on data to be sorted on x.
+    // Make sure there is no case when data can legitmately be out of order (
+    // whatever the x-axis represents which often is some form of time but can
+    // be something else like `recall` in pr-curve).
+    const sortedData = dataset.data()
+        .map((data, origInd) => {
+          return {
+            data,
+            origInd,
+            x: this.xScale.scale(this.xAccessor(data, origInd, dataset)),
+          };
+        })
+        .sort((a, b) => a.x - b.x);
 
-    let idx: number = _.sortedIndex(xPoints, target.x);
+    let idx: number = _.sortedIndex(sortedData.map(({x}) => x), target.x);
 
-    if (xPoints.length == 0) return null;
-    if (idx === xPoints.length) {
+    if (sortedData.length == 0) return null;
+    if (idx === sortedData.length) {
       idx = idx - 1;
     } else if (idx !== 0) {
-      const prevDist = Math.abs(xPoints[idx - 1] - target.x);
-      const nextDist = Math.abs(xPoints[idx] - target.x);
+      const prevDist = Math.abs(sortedData[idx - 1].x - target.x);
+      const nextDist = Math.abs(sortedData[idx].x - target.x);
       idx  = prevDist < nextDist ? idx - 1 : idx;
     }
 
-    const datum = dataset.data()[idx];
+    const {data: datum, origInd: ind, x} = sortedData[idx];
     const y = this.smoothingEnabled ?
-        this.smoothedAccessor(datum, idx, dataset) :
-        this.yValueAccessor(datum, idx, dataset);
+        this.smoothedAccessor(datum, ind, dataset) :
+        this.yValueAccessor(datum, ind, dataset);
     return {
-      x: xPoints[idx],
+      x,
       y: this.yScale.scale(y),
       datum,
       dataset,
@@ -799,6 +810,10 @@ export class LineChart {
 
   /**
    * Sets the data of a series on the chart.
+   * TODO(stephanwlee): Lax the type on `data` since it takes `xAccessor` and
+   * `yAccessor` that takes an arbitrary datum and provides correct scalar value
+   * for drawing. The `data` does not have to be in certain format. For
+   * instance, tf-pr-curve-card.html violates this type.
    */
   public setSeriesData(name: string, data: vz_chart_helpers.ScalarDatum[]) {
     this.getDataset(name).data(data);
