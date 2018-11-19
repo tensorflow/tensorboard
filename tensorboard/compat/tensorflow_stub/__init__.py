@@ -36,6 +36,5 @@ from . import flags  # noqa
 from . import gfile  # noqa
 from . import logging  # noqa
 from . import pywrap_tensorflow  # noqa
-from . import resource_loader  # noqa
 from . import tensor_manip  # noqa
 from . import tensor_shape  # noqa

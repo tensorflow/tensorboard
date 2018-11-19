@@ -54,7 +54,7 @@ def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
   tensorboard = program.TensorBoard(default.get_plugins(),
-                                    default.get_assets_zip_provider())
+                                    program.get_default_assets_zip_provider())
   try:
     from absl import app
     # Import this to check that app.run() will accept the flags_parser argument.

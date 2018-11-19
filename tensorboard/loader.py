@@ -40,7 +40,6 @@ from tensorboard import db
 from tensorboard.util import util
 import tensorflow as tf
 
-
 class Record(collections.namedtuple('Record', ('record', 'offset'))):
   """Value class for a record returned by RecordReader.
 
@@ -145,7 +144,7 @@ class RecordReader(object):
   def _open(self):
     with tf.errors.raise_exception_on_not_ok_status() as status:
       return tf.pywrap_tensorflow.PyRecordReader_New(
-          tf.resource_loader.readahead_file_path(tf.compat.as_bytes(self.path)),
+          tf.compat.as_bytes(self.path),
           self._offset, tf.compat.as_bytes(''), status)
 
   def __str__(self):

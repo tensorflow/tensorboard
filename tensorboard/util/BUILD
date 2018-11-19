@@ -73,7 +73,6 @@ py_test(
     ],
 )
 
-
 py_library(
     name = "test_util",
     testonly = 1,
