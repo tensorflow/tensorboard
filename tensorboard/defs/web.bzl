@@ -89,7 +89,7 @@ def _tf_web_library(ctx):
         fail("Relative src path not start with '%s': %s" % (strip, suffix))
       suffix = suffix[len(strip):]
     webpath = "%s/%s" % ("" if path == "/" else path, suffix)
-    _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs)
+    _add_webpath(ctx, src, webpath, webpaths.to_list(), new_webpaths, manifest_srcs)
     if suffix.endswith(".d.ts"):
       web_srcs.append(src)
       entry = (webpath[1:], src.path)
@@ -105,8 +105,8 @@ def _tf_web_library(ctx):
       dts = ctx.new_file(ctx.genfiles_dir, "%s.d.ts" % noext)
       webpath_js = webpath[:-3] + ".js"
       webpath_dts = webpath[:-3] + ".d.ts"
-      _add_webpath(ctx, js, webpath_js, webpaths, new_webpaths, manifest_srcs)
-      _add_webpath(ctx, dts, webpath_dts, webpaths, new_webpaths, manifest_srcs)
+      _add_webpath(ctx, js, webpath_js, webpaths.to_list(), new_webpaths, manifest_srcs)
+      _add_webpath(ctx, dts, webpath_dts, webpaths.to_list(), new_webpaths, manifest_srcs)
       ts_inputs += [src]
       ts_outputs.append(js)
       ts_outputs.append(dts)
@@ -267,13 +267,13 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
     direct_manifests = depset()
     for dep in deps:
       inputs.append(dep.webfiles.dummy)
-      for f in dep.files:
+      for f in dep.files.to_list():
         inputs.append(f)
       direct_manifests += [dep.webfiles.manifest]
       inputs.append(dep.webfiles.manifest)
       args.append("--direct_dep")
       args.append(dep.webfiles.manifest.path)
-    for man in difference(manifests, direct_manifests):
+    for man in difference(manifests.to_list(), direct_manifests.to_list()):
       inputs.append(man)
       args.append("--transitive_dep")
       args.append(man.path)
