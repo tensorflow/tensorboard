@@ -19,6 +19,9 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 import six
+import json
+import subprocess
+from os import listdir, path, mkdir
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
@@ -26,6 +29,8 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.toco_command import metadata
 from tensorboard.plugins.toco_command import plugin_data_pb2
+from tensorboard.plugins.toco_command import run_toco_impl
+from tensorboard.plugins.toco_command import suggestion
 
 
 class TocoCommandPlugin(base_plugin.TBPlugin):
@@ -41,6 +46,7 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
     """
     self._db_connection_provider = context.db_connection_provider
     self._multiplexer = context.multiplexer
+    self._logdir = context.logdir
 
   @wrappers.Request.application
   def toco_command_route(self, request):
@@ -307,7 +313,9 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
     return {
         '/tags': self.tags_route,
         '/toco_command': self.toco_command_route,
-        '/available_time_entries': self.available_time_entries_route,
+        '/tflite_supported_ops': self.tflite_supported_ops,
+        '/checkpoints': self.list_checkpoints,
+        '/run_toco': self.run_toco
     }
 
   def is_active(self):
@@ -396,3 +404,79 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
              data_array[metadata.FALSE_NEGATIVES_INDEX][:end_index]],
         'thresholds': thresholds[:end_index],
     }
+
+  @wrappers.Request.application
+  def run_toco(self, request):
+    graph_def_file = path.join(self._logdir, "graph.pbtxt")
+    try:
+      mkdir(path.join(self._logdir, "tflite_output"))
+    except:
+      pass
+
+    tflite_file = path.join(self._logdir, "tflite_output", "model.tflite")
+
+    options = {
+        "input_nodes": ["dnn/input_from_feature_columns/input_layer/concat"],
+        "output_nodes": ["dnn/head/predictions/probabilities"],
+        "batch_size": 1,
+        "checkpoint": ""
+    }
+
+
+    options = json.loads(request.form['data'])
+
+    options['checkpoint'] = path.join(self._logdir, options['checkpoint'])
+
+    result = {}
+
+    try:
+      run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
+      result['success'] = ('Convert successfully. TFLite model path is',
+        '<a href="file://{tflite_file}">here</a>'.format(tflite_file=tflite_file))
+    except suggestion.Suggestion as e:
+      if 'errors' not in result:
+        result['errors'] = []
+      message = {'type': e.type,  'content': {'message': e.error}}
+
+      if e.suggestion is not None:
+        message['content']['suggestion'] = e.suggestion
+
+      if e.stack_trace is not None:
+        message['content']['stack_trace'] = e.stack_trace
+
+      result['errors'].append(message)
+
+    print("result: " + json.dumps(result))
+
+    return http_util.Respond(request, json.dumps(result), 'application/json')
+
+  @wrappers.Request.application
+  def list_checkpoints(self, request):
+    checkpoints = [path.splitext(f)[0] for f in listdir(self._logdir) if '.ckpt' in f and '.meta' in f]
+    print("checkpoints:" + json.dumps(checkpoints))
+    return http_util.Respond(request, json.dumps(checkpoints), 'application/json')
+
+  @wrappers.Request.application
+  def tflite_supported_ops(self, request):
+    # supported_ops = tf.contrib.lite.TocoConverter.list_supported_ops()
+    supported_ops = [
+      "TopK", "Tanh", "Switch", "Sub", "Square", "Split", "Sigmoid", "Softmax",
+      "Relu6", "Relu", "RealDiv", "Prod",  "PlaceholderWithDefault",
+      "ParallelDynamicStitch", "Pad", "NoOp", "Neg", "NotEqual", "Mul",
+      "NextIteration", "Min", "Mean", "Merge", "Maximum", "SparseToDense",
+      "MaxPool", "LogicalNot", "Max", "LogicalAnd", "PadV2", "LogSoftmax",
+      "Log", "LessEqual", "Less", "StopGradient", "SpaceToBatchND",
+      "LegacyFedInput", "LRN", "Identity", "Greater", "FloorDiv", "GreaterEqual",
+      "Floor", "Fill", "Minimum", "FakeQuantWithMinMaxVars", "Slice", "Rsqrt",
+      "FusedBatchNorm", "FakeQuantWithMinMaxArgs", "Transpose", "Exp", "Equal",
+      "TopKV2", "RandomUniform", "DynamicStitch", "DynamicPartition", "Div",
+      "Sum", "DepthwiseConv2dNative", "Conv2DBackpropInput", "Svdf", "Conv2D",
+      "GatherV2", "Const", "SpaceToDepth", "Pow", "ExpandDims", "ConcatV2",
+      "Concat", "Shape", "CheckNumerics", "Squeeze", "Sqrt", "Gather", "Cast",
+      "FloorMod", "BiasAdd", "Placeholder", "BatchToSpaceND", "Tile",
+      "BatchNormWithGlobalNormalization", "StridedSlice", "Pack", "BatchMatMul",
+      "ResizeBilinear", "AvgPool", "Assert", "Select", "Reshape", "Rank",
+      "ArgMin", "MatMul", "ArgMax", "All", "Sin", "Range", "DepthToSpace",
+      "AddN", "Any", "Add"
+    ]
+    return http_util.Respond(request, supported_ops, 'application/json')

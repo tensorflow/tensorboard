@@ -10,7 +10,7 @@ module tf.toco_command.op {
     }
 
     opValid(opNode: OpNode): boolean {
-      return !this._whitelist || this._whitelist.indexOf(opNode.op) != -1;
+      return this._whitelist && this._whitelist.indexOf(opNode.op) != -1;
     }
   }
 }
