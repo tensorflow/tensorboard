@@ -73,7 +73,7 @@ def tensorboard_typescript_bundle(
   cmd.append(") >$@")
   native.genrule(
       name = name,
-      srcs = list(inputs),
+      srcs = inputs.to_list(),
       outs = [out],
       cmd = "\n".join(cmd),
       **kwargs

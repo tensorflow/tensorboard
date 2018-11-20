@@ -37,7 +37,7 @@ def _tensorboard_html_binary(ctx):
     ignore_regexs_file_set = depset([ctx.file.path_regexs_for_noinline])
     ignore_regexs_file_path = ctx.file.path_regexs_for_noinline.path
   ctx.action(
-      inputs=list(manifests | files | jslibs | ignore_regexs_file_set),
+      inputs=(manifests | files | jslibs | ignore_regexs_file_set).to_list(),
       outputs=[ctx.outputs.html],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
@@ -47,8 +47,8 @@ def _tensorboard_html_binary(ctx):
                   ctx.attr.output_path,
                   ctx.outputs.html.path,
                   ignore_regexs_file_path] +
-                 [f.path for f in jslibs] +
-                 [f.path for f in manifests]),
+                 [f.path for f in jslibs.to_list()] +
+                 [f.path for f in manifests.to_list()]),
       progress_message="Vulcanizing %s" % ctx.attr.input_path)
 
   # webfiles manifest
@@ -68,7 +68,7 @@ def _tensorboard_html_binary(ctx):
   params = struct(
       label=str(ctx.label),
       bind="[::]:6006",
-      manifest=[long_path(ctx, man) for man in manifests],
+      manifest=[long_path(ctx, man) for man in manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = ctx.new_file(ctx.configuration.bin_dir,

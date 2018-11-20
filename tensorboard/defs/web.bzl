@@ -71,7 +71,7 @@ def _tf_web_library(ctx):
   new_webpaths = []
   ts_inputs = depset()
   ts_outputs = []
-  ts_files = list(ts_typings_paths)
+  ts_files = ts_typings_paths.to_list()
   new_typings = []
   new_typings_paths = []
   new_typings_execroot = struct(inputs=[])
@@ -158,10 +158,11 @@ def _tf_web_library(ctx):
     ts_inputs += ts_typings_execroots
     ts_inputs += [ts_config, er_config]
     ctx.action(
-        inputs=list(ts_inputs),
+        inputs=ts_inputs.to_list(),
         outputs=ts_outputs,
         executable=ctx.executable._execrooter,
-        arguments=[er_config.path] + [f.path for f in ts_typings_execroots],
+        arguments=[er_config.path] +
+            [f.path for f in ts_typings_execroots.to_list()],
         progress_message="Compiling %d TypeScript files %s" % (
             len(ts_files), ctx.label))
 
@@ -187,7 +188,7 @@ def _tf_web_library(ctx):
   params = struct(
       label=str(ctx.label),
       bind="[::]:6006",
-      manifest=[long_path(ctx, man) for man in devserver_manifests],
+      manifest=[long_path(ctx, man) for man in devserver_manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = _new_file(ctx, "-params.pbtxt")
