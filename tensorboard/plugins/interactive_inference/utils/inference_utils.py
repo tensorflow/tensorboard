@@ -525,6 +525,11 @@ def make_json_formatted_for_single_chart(mutant_features,
     # ClassificationResponse has a separate probability for each label
     for idx, classification in enumerate(
         inference_result_proto.result.classifications):
+      # For each example to use for mutant inference, we create a copied example
+      # with the feature in question changed to each possible mutant value. So
+      # when we get the inferences back, we get num_examples*num_mutants
+      # results. So, modding by len(mutant_features) allows us to correctly
+      # lookup the mutant value for each inference.
       mutant_feature = mutant_features[idx % len(mutant_features)]
       for class_index, classification_class in enumerate(
         classification.classes):
@@ -543,7 +548,8 @@ def make_json_formatted_for_single_chart(mutant_features,
           series[key] = {}
         if not mutant_feature.mutant_value in series[key]:
           series[key][mutant_feature.mutant_value] = []
-        series[key][mutant_feature.mutant_value].append(classification_class.score)
+        series[key][mutant_feature.mutant_value].append(
+          classification_class.score)
 
     # Post-process points to have separate list for each class
     return_series = collections.defaultdict(list)
@@ -560,6 +566,11 @@ def make_json_formatted_for_single_chart(mutant_features,
     points = {}
 
     for idx, regression in enumerate(inference_result_proto.result.regressions):
+      # For each example to use for mutant inference, we create a copied example
+      # with the feature in question changed to each possible mutant value. So
+      # when we get the inferences back, we get num_examples*num_mutants
+      # results. So, modding by len(mutant_features) allows us to correctly
+      # lookup the mutant value for each inference.
       mutant_feature = mutant_features[idx % len(mutant_features)]
       if not mutant_feature.mutant_value in points:
         points[mutant_feature.mutant_value] = []
