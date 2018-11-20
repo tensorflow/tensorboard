@@ -108,10 +108,11 @@ class DbImportMultiplexer(object):
       tf.logging.info('Processing directory %s', subdir)
       if subdir not in self._run_loaders:
         tf.logging.info('Creating DB loader for directory %s', subdir)
+        exp_name, run_name = self._get_exp_and_run_names(path, subdir, name)
         self._run_loaders[subdir] = _RunLoader(
             subdir=subdir,
-            experiment_name=(name or path),
-            run_name=os.path.relpath(subdir, path))
+            experiment_name=exp_name,
+            run_name=run_name)
     tf.logging.info('Done with AddRunsFromDirectory: %s', path)
 
   def Reload(self):
@@ -171,6 +172,13 @@ class DbImportMultiplexer(object):
       del self._run_loaders[loader.subdir]
     tf.logging.info('Finished with DbImportMultiplexer.Reload()')
 
+  def _get_exp_and_run_names(self, path, subdir, exp_name_override=None):
+    if exp_name_override is not None:
+      return (exp_name_override, os.path.relpath(subdir, path))
+    path_parts = os.path.normpath(os.path.relpath(subdir, path)).split(os.sep)
+    exp_name = path_parts[0]
+    run_name = os.sep.join(path_parts[1:]) or '.'
+    return (exp_name, run_name)
 
 # Struct holding a list of tf.Event serialized protos along with metadata about
 # the associated experiment and run.
