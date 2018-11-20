@@ -431,7 +431,6 @@ def make_mutant_tuples(example_protos, original_feature, index_to_mutate,
         # allow for computation of global PD plots when not all examples have
         # the same number of feature values for a feature.
         mutant_examples.append(copied_example)
-        pass
 
   return mutant_features, mutant_examples
 
