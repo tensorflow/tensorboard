@@ -397,7 +397,7 @@ def make_mutant_tuples(example_protos, original_feature, index_to_mutate,
   """Return a list of `MutantFeatureValue`s and a list of mutant Examples.
 
   Args:
-    example_proto: The examples to mutate.
+    example_protos: The examples to mutate.
     original_feature: A `OriginalFeatureList` that encapsulates the feature to
       mutate.
     index_to_mutate: The index of the int64_list or float_list to mutate.

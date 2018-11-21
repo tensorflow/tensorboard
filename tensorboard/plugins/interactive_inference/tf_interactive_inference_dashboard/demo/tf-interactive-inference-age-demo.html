@@ -136,10 +136,12 @@ limitations under the License.
                 tensor.dispose();
               }
             }
-            const input = tensors.reshape([indices.length, 105])
+            const input = tensors.reshape([indices.length, 105]);
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
-            tensors.dispose();
+            if (tensors) {
+              tensors.dispose();
+            }
             res.dispose();
             const PRED_SIZE = 2;
             for (let i = 0; i < indices.length; i++) {
@@ -238,7 +240,6 @@ limitations under the License.
                 for (let idx = i;
                      idx < Math.min(i + BATCH_SIZE, examples.length);
                      idx++) {
-                  const tensor =
                   tlist.push(this.convertExToTensor(examples[idx]));
                 }
                 const tconcat = tf.concat(tlist);

@@ -254,7 +254,6 @@ limitations under the License.
                 for (let idx = i;
                      idx < Math.min(i + BATCH_SIZE, examples.length);
                      idx++) {
-                  const tensor =
                   tlist.push(this.convertExToTensor(examples[idx]));
                 }
                 const tconcat = tf.concat(tlist);
