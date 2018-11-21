@@ -486,6 +486,10 @@ def _clean_path(path, path_prefix=""):
     The route to use to serve the request (with the path prefix stripped if
     applicable).
   """
-  if path != path_prefix + '/' and path.endswith('/'):
-    return path[:-1]
-  return path
+  if path == path_prefix:
+    return path + '/'
+  if path == path_prefix + '/':
+    return path
+  if path.endswith('/'):
+    path = path[:-1]
+  return path_prefix+path
