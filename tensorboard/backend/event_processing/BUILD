@@ -204,8 +204,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":db_import_multiplexer",
-        "//tensorboard/backend:application",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 

@@ -23,20 +23,30 @@ import shutil
 
 from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend import application
+from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import tensor_pb2
+from tensorboard.compat.proto import types_pb2
 import tensorflow as tf
 
 
-# A simple event with a summary that contains a single TensorProto of int32.
-RECORD = (b'\x0b\x00\x00\x00\x00\x00\x00\x00\x86\x15\xf5\x04*\t\n\x07B'
-          b'\x05\x08\x03:\x01\x01\x85\xb2\x08\x9c')
-
 def _AddEvents(path):
-  if not tf.gfile.IsDirectory(path):
-    tf.gfile.MakeDirs(path)
-  fpath = os.path.join(path, 'hypothetical.tfevents.out')
-  with tf.gfile.GFile(fpath, 'w') as f:
-    f.write(RECORD)
-    return fpath
+  with tf.summary.FileWriter(path) as writer:
+    event = event_pb2.Event(
+      summary=summary_pb2.Summary(
+        value=[
+          summary_pb2.Summary.Value(
+            tensor=tensor_pb2.TensorProto(
+              dtype=types_pb2.DT_INT32,
+              int_val=[1],
+            )
+          )
+        ]
+      )
+    )
+    native_event = tf.Event()
+    native_event.ParseFromString(event.SerializeToString())
+    writer.add_event(native_event)
 
 
 class DbImportMultiplexerTest(tf.test.TestCase):
@@ -108,9 +118,9 @@ class DbImportMultiplexerTest(tf.test.TestCase):
 
   def testAddRunsFromDirectory_double_level(self):
     path = self.get_temp_dir()
-    _AddEvents(os.path.join(path, 'exp1/test'))
-    _AddEvents(os.path.join(path, 'exp1/train'))
-    _AddEvents(os.path.join(path, 'exp2/test'))
+    _AddEvents(os.path.join(path, 'exp1', 'test'))
+    _AddEvents(os.path.join(path, 'exp1', 'train'))
+    _AddEvents(os.path.join(path, 'exp2', 'test'))
     self.multiplexer.AddRunsFromDirectory(path)
     self.multiplexer.Reload()
     self.assertEqual(self._getExperiments(), [u'exp1', u'exp2'])
@@ -119,19 +129,19 @@ class DbImportMultiplexerTest(tf.test.TestCase):
 
   def testAddRunsFromDirectory_deep(self):
     path = self.get_temp_dir()
-    _AddEvents(os.path.join(path, 'exp1/run1/foo/bar/train'))
-    _AddEvents(os.path.join(path, 'exp2/run1/foo/baz/train'))
+    _AddEvents(os.path.join(path, 'exp1', 'run1', 'bar', 'train'))
+    _AddEvents(os.path.join(path, 'exp2', 'run1', 'baz', 'train'))
     self.multiplexer.AddRunsFromDirectory(path)
     self.multiplexer.Reload()
     self.assertEqual(self._getExperiments(), [u'exp1', u'exp2'])
-    self.assertEqual(self._getRuns(), [u'run1/foo/bar/train',
-                                       u'run1/foo/baz/train'])
+    self.assertEqual(self._getRuns(), [os.path.join('run1', 'bar', 'train'),
+                                       os.path.join('run1', 'baz', 'train')])
 
   def testAddRunsFromDirectory_manual_name(self):
     path1 = os.path.join(self.get_temp_dir(), 'foo')
     path2 = os.path.join(self.get_temp_dir(), 'bar')
-    _AddEvents(os.path.join(path1, 'some/nested/name'))
-    _AddEvents(os.path.join(path2, 'some/nested/name'))
+    _AddEvents(os.path.join(path1, 'some', 'nested', 'name'))
+    _AddEvents(os.path.join(path2, 'some', 'nested', 'name'))
     self.multiplexer.AddRunsFromDirectory(path1, 'name1')
     self.multiplexer.AddRunsFromDirectory(path2, 'name2')
     self.multiplexer.Reload()
@@ -139,8 +149,8 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     # Run name ignored 'foo' and 'bar' on 'foo/some/nested/name' and
     # 'bar/some/nested/name', respectively.
     # There are two items with the same name but with different ids.
-    self.assertEqual(self._getRuns(), [u'some/nested/name',
-                                       u'some/nested/name'])
+    self.assertEqual(self._getRuns(), [os.path.join('some', 'nested', 'name'),
+                                       os.path.join('some', 'nested', 'name')])
 
 
 if __name__ == '__main__':
