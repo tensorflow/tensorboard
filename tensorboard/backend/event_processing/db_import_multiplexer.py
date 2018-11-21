@@ -58,7 +58,7 @@ class DbImportMultiplexer(object):
       use_import_op: If True, use TensorFlow's import_event() op for imports,
         otherwise use TensorBoard's own sqlite ingestion logic.
     """
-    tf.logging.info('DbImportMultiplexer initializing');
+    tf.logging.info('DbImportMultiplexer initializing')
     self._db_connection_provider = db_connection_provider
     self._purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads

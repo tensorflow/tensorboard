@@ -19,10 +19,9 @@ from __future__ import print_function
 
 import os
 import os.path
-import shutil
 
-from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import tensor_pb2
@@ -33,16 +32,16 @@ import tensorflow as tf
 def _AddEvents(path):
   with tf.summary.FileWriter(path) as writer:
     event = event_pb2.Event(
-      summary=summary_pb2.Summary(
-        value=[
-          summary_pb2.Summary.Value(
-            tensor=tensor_pb2.TensorProto(
-              dtype=types_pb2.DT_INT32,
-              int_val=[1],
-            )
-          )
-        ]
-      )
+        summary=summary_pb2.Summary(
+            value=[
+                summary_pb2.Summary.Value(
+                    tensor=tensor_pb2.TensorProto(
+                        dtype=types_pb2.DT_INT32,
+                        int_val=[1],
+                    )
+                )
+            ]
+        )
     )
     native_event = tf.Event()
     native_event.ParseFromString(event.SerializeToString())
