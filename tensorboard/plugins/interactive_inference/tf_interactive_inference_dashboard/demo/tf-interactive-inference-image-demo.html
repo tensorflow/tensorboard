@@ -109,19 +109,13 @@ limitations under the License.
                 }, 1000);
               });
             } else {
-              let tensors = null;
+              const tensorArr = [];
               for (let i = 0; i < indices.length; i++) {
                 const idx = +indices[i];
-                let tensor = await this.convertExToTensor(this.data[idx]);
-                if (tensors == null) {
-                  tensors = tensor;
-                } else {
-                  let oldTensors = tensors;
-                  tensors = oldTensors.concat(tensor);
-                  oldTensors.dispose();
-                  tensor.dispose();
-                }
+                const tensor = await this.convertExToTensor(this.data[idx]);
+                tensorArr.push(tensor);
               }
+              const tensors = tf.concat(tensorArr);
               let input = tensors.reshape([indices.length, 78, 64, 3]);
               const d = tf.div;
               input = d(input, tf.scalar(255));
@@ -129,6 +123,7 @@ limitations under the License.
               const predValues = await res.data();
               input.dispose();
               tensors.dispose();
+              tensorArr.forEach(tensor => tensor.dispose());
               res.dispose();
               const PRED_SIZE = 2;
               for (let i = 0; i < indices.length; i++) {

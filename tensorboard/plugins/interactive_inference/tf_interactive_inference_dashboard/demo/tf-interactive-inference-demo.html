@@ -124,23 +124,14 @@ limitations under the License.
             inferences.indices = indices;
             inferences.results = [
               {classificationResult: {classifications: []}}];
-            let tensors = null;
-            for (let i = 0; i < indices.length; i++) {
-              const idx = +indices[i];
-              let tensor = this.convertExToTensor(this.data[idx]);
-              if (tensors == null) {
-                tensors = tensor;
-              } else {
-                let oldTensors = tensors;
-                tensors = oldTensors.concat(tensor);
-                oldTensors.dispose();
-                tensor.dispose();
-              }
-            }
+            const tensorArr = indices.map(
+              idx => this.convertExToTensor(this.data[idx]));
+            const tensors = tf.concat(tensorArr);
             const input = tensors.reshape([indices.length, 104]);
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             tensors.dispose();
+            tensorArr.forEach(tensor => tensor.dispose());
             input.dispose();
             res.dispose();
             const PRED_SIZE = 2;
@@ -248,9 +239,7 @@ limitations under the License.
                   tlist.push(this.convertExToTensor(examples[idx]));
                 }
                 const tconcat = tf.concat(tlist);
-                for (let idx = 0; idx < tlist.length; idx++) {
-                  tlist[idx].dispose();
-                }
+                tlist.forEach(tensor => tensor.dispose());
                 const input = tconcat.reshape([tlist.length, 104]);
                 const res = this.model.predict(input, {batchSize: BATCH_SIZE});
                 const vals = await res.data();
