@@ -186,7 +186,7 @@ def _tf_web_library(ctx):
     devserver_manifests = manifests + devserver_manifests
   params = struct(
       label=str(ctx.label),
-      bind="[::]:6006",
+      bind="localhost:6006",
       manifest=[long_path(ctx, man) for man in devserver_manifests],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
