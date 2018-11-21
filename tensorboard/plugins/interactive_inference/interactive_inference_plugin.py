@@ -427,7 +427,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
       example_index = int(request.args.get('example_index', '0'))
       feature_name = request.args.get('feature_name')
-      example = self.examples[example_index]
+      examples = (self.examples if example_index == -1
+          else [self.examples[example_index]])
 
       (inference_addresses, model_names, model_versions,
           model_signatures) = self._parse_request_arguments(request)
@@ -449,7 +450,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
           request.args.get('feature_index_pattern'))
       json_mapping = inference_utils.mutant_charts_for_feature(
-          example, feature_name, serving_bundle, viz_params)
+          examples, feature_name, serving_bundle, viz_params)
       return http_util.Respond(request, json_mapping, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
