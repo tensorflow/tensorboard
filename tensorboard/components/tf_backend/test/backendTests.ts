@@ -81,6 +81,23 @@ describe('backend tests', () => {
       assert.equal(r.runs(), '/foo/runs');
     });
 
+    describe('default router', () => {
+      beforeEach(function() {
+        this.router = getDefaultRouter();
+      });
+
+      it('makes sure test is not degenerate', function() {
+        // Test becomes degenerate if location.pathname is empty.
+        assert.notEqual('/', window.location.pathname);
+      });
+
+      it('creates a URL including the pathname', function() {
+        assert.equal(
+            this.router.runs(),
+            `${window.location.pathname}/data/runs`);
+      });
+    });
+
     describe('prod mode', () => {
       beforeEach(function() {
         this.router = createRouter(base, /*demoMode=*/false);
