@@ -19,7 +19,6 @@ tf_web_library(
         "vz-line-chart2.ts",
     ],
     path = "/vz-line-chart2",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
@@ -33,7 +32,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":vz_line_chart2"],
-    visibility = ["//visibility:public"],
     destdir = "vz-line-chart2",
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
