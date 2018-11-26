@@ -54,7 +54,7 @@ py_library(
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:tf_contrib_ffmpeg",
-        "//tensorboard:util",
+        "//tensorboard/util:encoder",
     ],
 )
 
