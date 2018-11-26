@@ -19,33 +19,17 @@ from __future__ import print_function
 
 import os
 import os.path
+import sqlite3
 
-from tensorboard.backend import application
 from tensorboard.backend.event_processing import db_import_multiplexer
-from tensorboard.compat.proto import event_pb2
-from tensorboard.compat.proto import summary_pb2
-from tensorboard.compat.proto import tensor_pb2
-from tensorboard.compat.proto import types_pb2
 import tensorflow as tf
 
 
-def _AddEvents(path):
+def add_event(path):
   with tf.summary.FileWriter(path) as writer:
-    event = event_pb2.Event(
-        summary=summary_pb2.Summary(
-            value=[
-                summary_pb2.Summary.Value(
-                    tensor=tensor_pb2.TensorProto(
-                        dtype=types_pb2.DT_INT32,
-                        int_val=[1],
-                    )
-                )
-            ]
-        )
-    )
-    native_event = tf.Event()
-    native_event.ParseFromString(event.SerializeToString())
-    writer.add_event(native_event)
+    event = tf.Event()
+    event.summary.value.add(tag='tag', tensor=tf.make_tensor_proto(1))
+    writer.add_event(event)
 
 
 class DbImportMultiplexerTest(tf.test.TestCase):
@@ -54,14 +38,15 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     super(DbImportMultiplexerTest, self).setUp()
 
     db_uri = 'sqlite:%s/db' % (self.get_temp_dir())
-    _, self.db_connection_provider = application.get_database_info(db_uri)
+    self.db_connection_provider = lambda: sqlite3.connect(
+        os.path.join(self.get_temp_dir(), 'db'))
     self.multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=self.db_connection_provider,
         purge_orphaned_data=False,
         max_reload_threads=1,
         use_import_op=False)
 
-  def _getRuns(self):
+  def _get_runs(self):
     db = self.db_connection_provider()
     cursor = db.execute('''
       SELECT
@@ -71,7 +56,7 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     ''')
     return [row[0] for row in cursor]
 
-  def _getExperiments(self):
+  def _get_experiments(self):
     db = self.db_connection_provider()
     cursor = db.execute('''
       SELECT
@@ -84,71 +69,82 @@ class DbImportMultiplexerTest(tf.test.TestCase):
   def test_init(self):
     """Tests that DB schema is created when creating DbImportMultiplexer."""
     # Reading DB before schema initialization raises.
-    self.assertEqual(self._getExperiments(), [])
-    self.assertEqual(self._getRuns(), [])
+    self.assertEqual(self._get_experiments(), [])
+    self.assertEqual(self._get_runs(), [])
 
-  def testAddRunsFromDirectory_empty_folder(self):
+  def test_empty_folder(self):
     fake_dir = os.path.join(self.get_temp_dir(), 'fake_dir')
     self.multiplexer.AddRunsFromDirectory(fake_dir)
-    self.assertEqual(self._getExperiments(), [])
-    self.assertEqual(self._getRuns(), [])
+    self.assertEqual(self._get_experiments(), [])
+    self.assertEqual(self._get_runs(), [])
 
-  def testAddRunsFromDirectory_flat(self):
+  def test_flat(self):
     path = self.get_temp_dir()
-    _AddEvents(path)
+    add_event(path)
     self.multiplexer.AddRunsFromDirectory(path)
     self.multiplexer.Reload()
     # Because we added runs from `path`, there is no folder to infer experiment
     # and run names from.
-    self.assertEqual(self._getExperiments(), [u'.'])
-    self.assertEqual(self._getRuns(), [u'.'])
+    self.assertEqual(self._get_experiments(), [u'.'])
+    self.assertEqual(self._get_runs(), [u'.'])
 
-  def testAddRunsFromDirectory_single_level(self):
+  def test_single_level(self):
     path = self.get_temp_dir()
-    _AddEvents(os.path.join(path, 'exp1'))
-    _AddEvents(os.path.join(path, 'exp2'))
+    add_event(os.path.join(path, 'exp1'))
+    add_event(os.path.join(path, 'exp2'))
     self.multiplexer.AddRunsFromDirectory(path)
     self.multiplexer.Reload()
-    self.assertEqual(self._getExperiments(), [u'exp1', u'exp2'])
+    self.assertEqual(self._get_experiments(), [u'exp1', u'exp2'])
     # Run names are '.'. because we already used the directory name for
     # inferring experiment name. There are two items with the same name but
     # with different ids.
-    self.assertEqual(self._getRuns(), [u'.', u'.'])
+    self.assertEqual(self._get_runs(), [u'.', u'.'])
 
-  def testAddRunsFromDirectory_double_level(self):
+  def test_double_level(self):
     path = self.get_temp_dir()
-    _AddEvents(os.path.join(path, 'exp1', 'test'))
-    _AddEvents(os.path.join(path, 'exp1', 'train'))
-    _AddEvents(os.path.join(path, 'exp2', 'test'))
+    add_event(os.path.join(path, 'exp1', 'test'))
+    add_event(os.path.join(path, 'exp1', 'train'))
+    add_event(os.path.join(path, 'exp2', 'test'))
     self.multiplexer.AddRunsFromDirectory(path)
     self.multiplexer.Reload()
-    self.assertEqual(self._getExperiments(), [u'exp1', u'exp2'])
+    self.assertEqual(self._get_experiments(), [u'exp1', u'exp2'])
     # There are two items with the same name but with different ids.
-    self.assertEqual(self._getRuns(), [u'test', u'test', u'train'])
+    self.assertEqual(self._get_runs(), [u'test', u'test', u'train'])
 
-  def testAddRunsFromDirectory_deep(self):
+  def test_mixed_levels(self):
+    # Mixture of root and single levels.
     path = self.get_temp_dir()
-    _AddEvents(os.path.join(path, 'exp1', 'run1', 'bar', 'train'))
-    _AddEvents(os.path.join(path, 'exp2', 'run1', 'baz', 'train'))
+    # Train is in the root directory.
+    add_event(os.path.join(path))
+    add_event(os.path.join(path, 'eval'))
     self.multiplexer.AddRunsFromDirectory(path)
     self.multiplexer.Reload()
-    self.assertEqual(self._getExperiments(), [u'exp1', u'exp2'])
-    self.assertEqual(self._getRuns(), [os.path.join('run1', 'bar', 'train'),
+    self.assertEqual(self._get_experiments(), [u'.', u'eval'])
+    self.assertEqual(self._get_runs(), [u'.', u'.'])
+
+  def test_deep(self):
+    path = self.get_temp_dir()
+    add_event(os.path.join(path, 'exp1', 'run1', 'bar', 'train'))
+    add_event(os.path.join(path, 'exp2', 'run1', 'baz', 'train'))
+    self.multiplexer.AddRunsFromDirectory(path)
+    self.multiplexer.Reload()
+    self.assertEqual(self._get_experiments(), [u'exp1', u'exp2'])
+    self.assertEqual(self._get_runs(), [os.path.join('run1', 'bar', 'train'),
                                        os.path.join('run1', 'baz', 'train')])
 
-  def testAddRunsFromDirectory_manual_name(self):
+  def test_manual_name(self):
     path1 = os.path.join(self.get_temp_dir(), 'foo')
     path2 = os.path.join(self.get_temp_dir(), 'bar')
-    _AddEvents(os.path.join(path1, 'some', 'nested', 'name'))
-    _AddEvents(os.path.join(path2, 'some', 'nested', 'name'))
+    add_event(os.path.join(path1, 'some', 'nested', 'name'))
+    add_event(os.path.join(path2, 'some', 'nested', 'name'))
     self.multiplexer.AddRunsFromDirectory(path1, 'name1')
     self.multiplexer.AddRunsFromDirectory(path2, 'name2')
     self.multiplexer.Reload()
-    self.assertEqual(self._getExperiments(), [u'name1', u'name2'])
+    self.assertEqual(self._get_experiments(), [u'name1', u'name2'])
     # Run name ignored 'foo' and 'bar' on 'foo/some/nested/name' and
     # 'bar/some/nested/name', respectively.
     # There are two items with the same name but with different ids.
-    self.assertEqual(self._getRuns(), [os.path.join('some', 'nested', 'name'),
+    self.assertEqual(self._get_runs(), [os.path.join('some', 'nested', 'name'),
                                        os.path.join('some', 'nested', 'name')])
 
 

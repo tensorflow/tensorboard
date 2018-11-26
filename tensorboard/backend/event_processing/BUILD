@@ -205,8 +205,6 @@ py_test(
     deps = [
         ":db_import_multiplexer",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
