@@ -37,9 +37,8 @@ class DbImportMultiplexerTest(tf.test.TestCase):
   def setUp(self):
     super(DbImportMultiplexerTest, self).setUp()
 
-    db_uri = 'sqlite:%s/db' % (self.get_temp_dir())
-    self.db_connection_provider = lambda: sqlite3.connect(
-        os.path.join(self.get_temp_dir(), 'db'))
+    db_file_name = os.path.join(self.get_temp_dir(), 'db')
+    self.db_connection_provider = lambda: sqlite3.connect(db_file_name)
     self.multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=self.db_connection_provider,
         purge_orphaned_data=False,
@@ -130,7 +129,7 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     self.multiplexer.Reload()
     self.assertEqual(self._get_experiments(), [u'exp1', u'exp2'])
     self.assertEqual(self._get_runs(), [os.path.join('run1', 'bar', 'train'),
-                                       os.path.join('run1', 'baz', 'train')])
+                                        os.path.join('run1', 'baz', 'train')])
 
   def test_manual_name(self):
     path1 = os.path.join(self.get_temp_dir(), 'foo')
@@ -145,7 +144,7 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     # 'bar/some/nested/name', respectively.
     # There are two items with the same name but with different ids.
     self.assertEqual(self._get_runs(), [os.path.join('some', 'nested', 'name'),
-                                       os.path.join('some', 'nested', 'name')])
+                                        os.path.join('some', 'nested', 'name')])
 
 
 if __name__ == '__main__':
