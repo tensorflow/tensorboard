@@ -36,8 +36,8 @@ var tf_color_scale;
         it('Throws an error if string is not in the domain', function () {
             ccs.setDomain(['red', 'yellow', 'green']);
             assert.throws(function () {
-                ccs.getColor('not in domain');
-            }, 'String was not in the domain.');
+                ccs.getColor('WAT');
+            }, 'String WAT was not in the domain.');
         });
     });
 })(tf_color_scale || (tf_color_scale = {})); // namespace tf_color_scale
