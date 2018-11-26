@@ -13,7 +13,7 @@ tf_web_library(
         "tests.html",
         "storage-utils-test.ts",
     ],
-    path = "/tf_data_selector/test",
+    path = "/tf-data-selector/test",
     deps = [
         "//tensorboard/components/tf_data_selector",
         "//tensorboard/components/tf_imports:polymer",
