@@ -123,11 +123,11 @@ function createDemoPath(dataDir: string, route: string,
   normalizedPath = normalizedPath.replace(/\//g, '_');
   // Add query parameter as path if it is present.
   if (encodedQueryParam) normalizedPath += `_${encodedQueryParam}`;
-  const url = new URL(window.location.href);
+  const url = new URL(window.location.origin);
 
   // All demo data are serialized in JSON format.
   url.pathname = `${dataDir}/${normalizedPath}${ext}`;
-  return url.pathname + url.search;
+  return url.pathname;
 }
 
 export function createSearchParam(params: QueryParams = {}): URLSearchParams {
