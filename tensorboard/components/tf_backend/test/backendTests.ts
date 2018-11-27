@@ -82,12 +82,6 @@ describe('backend tests', () => {
         router = createRouter(base, /*demoMode=*/false);
       });
 
-      function assertRelativePath(actual, expectedRelativePath) {
-        // Path prefix is /tf-backend/test should match path of the
-        // test_web_library in the test build target.
-        assert.equal(actual, `/tf-backend/test/${expectedRelativePath}`);
-      }
-
       it('leading slash in pathPrefix is an absolute path', () => {
         const router = createRouter('/data/', /*demoMode=*/false);
         assert.equal(router.runs(), '/data/runs');
@@ -95,21 +89,21 @@ describe('backend tests', () => {
 
       it('returns complete pathname when pathPrefix omits slash', () => {
         const router = createRouter('data/', /*demoMode=*/false);
-        assertRelativePath(router.runs(), 'data/runs');
+        assert.equal(router.runs(), 'data/runs');
       });
 
-      it('treats more than two slashes as absolute url', () => {
+      it('does not prune many leading slashes that forms full url', () => {
         const router = createRouter('///data/hello', /*demoMode=*/false);
         // This becomes 'http://data/hello/runs'
-        assert.equal(router.runs(), '/hello/runs');
+        assert.equal(router.runs(), '///data/hello/runs');
       });
 
       it('returns correct value for #environment', () => {
-        assertRelativePath(router.environment(), 'data/environment');
+        assert.equal(router.environment(), 'data/environment');
       });
 
       it('returns correct value for #experiments', () => {
-        assertRelativePath(router.experiments(), 'data/experiments');
+        assert.equal(router.experiments(), 'data/experiments');
       });
 
       it('returns correct value for #isDemoMode', () => {
@@ -118,13 +112,13 @@ describe('backend tests', () => {
 
       describe('#pluginRoute', () => {
         it('encodes slash correctly', () => {
-          assertRelativePath(
+          assert.equal(
               router.pluginRoute('scalars', '/scalar'),
               'data/plugin/scalars/scalar');
         });
 
         it('encodes query param correctly', () => {
-          assertRelativePath(
+          assert.equal(
               router.pluginRoute(
                   'scalars',
                   '/a',
@@ -133,20 +127,27 @@ describe('backend tests', () => {
         });
 
         it('encodes parenthesis correctly', () => {
-          assertRelativePath(
+          assert.equal(
               router.pluginRoute('scalars', '/a',
-              createSearchParam({foo: '()'})),
+                  createSearchParam({foo: '()'})),
               'data/plugin/scalars/a?foo=%28%29');
         });
 
+        it('deals with existing query param correctly', () => {
+          assert.equal(
+              router.pluginRoute('scalars', '/a?foo=bar',
+                  createSearchParam({hello: 'world'})),
+              'data/plugin/scalars/a?foo=bar&hello=world');
+        });
+
         it('encodes query param the same as #addParams', () => {
-          assertRelativePath(
+          assert.equal(
               router.pluginRoute(
                   'scalars',
                   '/a',
                   createSearchParam({b: 'c', d: ['1']})),
               addParams('data/plugin/scalars/a', {b: 'c', d: ['1']}));
-          assertRelativePath(
+          assert.equal(
               router.pluginRoute(
                   'scalars',
                   '/a',
@@ -155,23 +156,23 @@ describe('backend tests', () => {
         });
 
         it('ignores custom extension', () => {
-          assertRelativePath(
+          assert.equal(
               router.pluginRoute('scalars', '/a', undefined, 'meow'),
               'data/plugin/scalars/a');
         });
       });
 
       it('returns correct value for #pluginsListing', () => {
-        assertRelativePath(
+        assert.equal(
             router.pluginsListing(), 'data/plugins_listing');
       });
 
       it('returns correct value for #runs', () => {
-        assertRelativePath(router.runs(), 'data/runs');
+        assert.equal(router.runs(), 'data/runs');
       });
 
       it('returns correct value for #runsForExperiment', () => {
-        assertRelativePath(
+        assert.equal(
             router.runsForExperiment(1),
             'data/experiment_runs?experiment=1');
       });
@@ -226,6 +227,13 @@ describe('backend tests', () => {
                   '/a',
                   createSearchParam({b: 'c', d: ['1', '2']})),
               '/data/scalars_a_b_c_d_1_d_2.json');
+        });
+
+        it('deals with existing query param correctly', () => {
+          assert.equal(
+              router.pluginRoute('scalars', '/a?foo=bar',
+                  createSearchParam({hello: 'world'})),
+              '/data/scalars_a_foo_bar_hello_world.json');
         });
 
         it('encodes parenthesis correctly', () => {
