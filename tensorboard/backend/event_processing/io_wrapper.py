@@ -37,6 +37,8 @@ def IsGCSPath(path):
 def IsCnsPath(path):
   return path.startswith("/cns/")
 
+def PathSeparator(path):
+  return '/' if IsGCSPath(path) or IsCnsPath(path) else os.sep
 
 def IsTensorFlowEventsFile(path):
   """Check the path name to see if it is probably a TF Events file.

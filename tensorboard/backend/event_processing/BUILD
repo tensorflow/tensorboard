@@ -197,6 +197,17 @@ py_library(
     ],
 )
 
+py_test(
+    name = "db_import_multiplexer_test",
+    size = "small",
+    srcs = ["db_import_multiplexer_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":db_import_multiplexer",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "sqlite_writer",
     srcs = [
