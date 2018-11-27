@@ -18,7 +18,8 @@ export interface Router {
   environment: () => string;
   experiments: () => string;
   isDemoMode: () => boolean;
-  pluginRoute: (pluginName: string, route: string) => string;
+  pluginRoute: (pluginName: string, route: string,
+      params?: URLSearchParams, demoCustomExt?: string) => string;
   pluginsListing: () => string;
   runs: () => string;
   runsForExperiment: (id: tf_backend.ExperimentId) => string;
