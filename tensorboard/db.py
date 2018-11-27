@@ -34,7 +34,7 @@ import sqlite3
 import threading
 import types  # pylint: disable=unused-import
 
-from tensorboard import util
+from tensorboard.util import util
 
 TESTING_MODE = False
 

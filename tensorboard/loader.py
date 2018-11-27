@@ -37,7 +37,7 @@ import types  # pylint: disable=unused-import
 import six
 
 from tensorboard import db
-from tensorboard import util
+from tensorboard.util import util
 import tensorflow as tf
 
 

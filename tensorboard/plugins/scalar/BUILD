@@ -65,7 +65,6 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:util",
     ],
 )
 
