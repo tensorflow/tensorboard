@@ -104,26 +104,26 @@ describe('backend tests', () => {
         assert.equal(router.runs(), '/hello/runs');
       });
 
-      it('returns correct value for #environment', function() {
+      it('returns correct value for #environment', () => {
         assertRelativePath(router.environment(), 'data/environment');
       });
 
-      it('returns correct value for #experiments', function() {
+      it('returns correct value for #experiments', () => {
         assertRelativePath(router.experiments(), 'data/experiments');
       });
 
-      it('returns correct value for #isDemoMode', function() {
+      it('returns correct value for #isDemoMode', () => {
         assert.equal(router.isDemoMode(), false);
       });
 
       describe('#pluginRoute', () => {
-        it('encodes slash correctly', function() {
+        it('encodes slash correctly', () => {
           assertRelativePath(
               router.pluginRoute('scalars', '/scalar'),
               'data/plugin/scalars/scalar');
         });
 
-        it('encodes query param correctly', function() {
+        it('encodes query param correctly', () => {
           assertRelativePath(
               router.pluginRoute(
                   'scalars',
@@ -132,14 +132,14 @@ describe('backend tests', () => {
               'data/plugin/scalars/a?b=c&d=1&d=2');
         });
 
-        it('encodes parenthesis correctly', function() {
+        it('encodes parenthesis correctly', () => {
           assertRelativePath(
               router.pluginRoute('scalars', '/a',
               createSearchParam({foo: '()'})),
               'data/plugin/scalars/a?foo=%28%29');
         });
 
-        it('encodes query param the same as #addParams', function() {
+        it('encodes query param the same as #addParams', () => {
           assertRelativePath(
               router.pluginRoute(
                   'scalars',
@@ -154,23 +154,23 @@ describe('backend tests', () => {
               addParams('data/plugin/scalars/a', {foo: '()'}));
         });
 
-        it('ignores custom extension', function() {
+        it('ignores custom extension', () => {
           assertRelativePath(
               router.pluginRoute('scalars', '/a', undefined, 'meow'),
               'data/plugin/scalars/a');
         });
       });
 
-      it('returns correct value for #pluginsListing', function() {
+      it('returns correct value for #pluginsListing', () => {
         assertRelativePath(
             router.pluginsListing(), 'data/plugins_listing');
       });
 
-      it('returns correct value for #runs', function() {
+      it('returns correct value for #runs', () => {
         assertRelativePath(router.runs(), 'data/runs');
       });
 
-      it('returns correct value for #runsForExperiment', function() {
+      it('returns correct value for #runsForExperiment', () => {
         assertRelativePath(
             router.runsForExperiment(1),
             'data/experiment_runs?experiment=1');
@@ -200,26 +200,26 @@ describe('backend tests', () => {
         assert.equal(router.runs(), '///data/runs.json');
       });
 
-      it('returns correct value for #environment', function() {
+      it('returns correct value for #environment', () => {
         assert.equal(router.environment(), '/data/environment.json');
       });
 
-      it('returns correct value for #experiments', function() {
+      it('returns correct value for #experiments', () => {
         assert.equal(router.experiments(), '/data/experiments.json');
       });
 
-      it('returns correct value for #isDemoMode', function() {
+      it('returns correct value for #isDemoMode', () => {
         assert.equal(router.isDemoMode(), true);
       });
 
       describe('#pluginRoute', () => {
-        it('encodes slash correctly', function() {
+        it('encodes slash correctly', () => {
           assert.equal(
               router.pluginRoute('scalars', '/scalar'),
               '/data/scalars_scalar.json');
         });
 
-        it('encodes query param correctly', function() {
+        it('encodes query param correctly', () => {
           assert.equal(
               router.pluginRoute(
                   'scalars',
@@ -228,7 +228,7 @@ describe('backend tests', () => {
               '/data/scalars_a_b_c_d_1_d_2.json');
         });
 
-        it('encodes parenthesis correctly', function() {
+        it('encodes parenthesis correctly', () => {
           assert.equal(
               router.pluginRoute(
                   'scalars',
@@ -237,7 +237,7 @@ describe('backend tests', () => {
               '/data/scalars_a_foo__28_29.json');
         });
 
-        it('uses custom extension if provided', function() {
+        it('uses custom extension if provided', () => {
           assert.equal(
               router.pluginRoute('scalars', '/a', undefined, ''),
               '/data/scalars_a');
@@ -250,17 +250,17 @@ describe('backend tests', () => {
         });
       });
 
-      it('returns correct value for #pluginsListing', function() {
+      it('returns correct value for #pluginsListing', () => {
         assert.equal(
             router.pluginsListing(),
             '/data/plugins_listing.json');
       });
 
-      it('returns correct value for #runs', function() {
+      it('returns correct value for #runs', () => {
         assert.equal(router.runs(), '/data/runs.json');
       });
 
-      it('returns correct value for #runsForExperiment', function() {
+      it('returns correct value for #runsForExperiment', () => {
         assert.equal(
             router.runsForExperiment(1),
             '/data/experiment_runs_experiment_1.json');
