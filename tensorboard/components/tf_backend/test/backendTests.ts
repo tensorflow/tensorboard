@@ -76,54 +76,39 @@ describe('backend tests', () => {
   });
 
   describe('router', () => {
-    it('removes trailing slash from base route', () => {
-      const r = createRouter('foo/');
-      assert.equal(r.runs(), '/foo/runs');
-    });
-
-    describe('default router', () => {
-      beforeEach(function() {
-        this.router = getDefaultRouter();
-      });
-
-      it('makes sure test is not degenerate', function() {
-        // Test becomes degenerate if location.pathname is empty.
-        assert.notEqual('/', window.location.pathname);
-      });
-
-      it('creates a URL including the pathname', function() {
-        assert.equal(
-            this.router.runs(),
-            `${window.location.pathname}/data/runs`);
-      });
-    });
-
     describe('prod mode', () => {
       beforeEach(function() {
         this.router = createRouter(base, /*demoMode=*/false);
       });
 
-      it('ignores leading slash in pathPrefix', () => {
+      function assertRelativePath(actual, expectedRelativePath) {
+        // Path prefix is /tf-backend/test should match path of the
+        // test_web_library in the test build target.
+        assert.equal(actual, `/tf-backend/test/${expectedRelativePath}`);
+      }
+
+      it('leading slash in pathPrefix is an absolute path', () => {
         const router = createRouter('/data/', /*demoMode=*/false);
         assert.equal(router.runs(), '/data/runs');
       });
 
-      it('returns leading slash when pathPrefix omits one', () => {
+      it('returns complete pathname when pathPrefix omits slash', () => {
         const router = createRouter('data/', /*demoMode=*/false);
-        assert.equal(router.runs(), '/data/runs');
+        assertRelativePath(router.runs(), 'data/runs');
       });
 
-      it('does not strip leading slash if pathPrefix has more than one', () => {
-        const router = createRouter('///data/', /*demoMode=*/false);
-        assert.equal(router.runs(), '///data/runs');
+      it('treats more than two slashes as absolute url', () => {
+        const router = createRouter('///data/hello', /*demoMode=*/false);
+        // This becomes 'http://data/hello/runs'
+        assert.equal(router.runs(), '/hello/runs');
       });
 
       it('returns correct value for #environment', function() {
-        assert.equal(this.router.environment(), '/data/environment');
+        assertRelativePath(this.router.environment(), 'data/environment');
       });
 
       it('returns correct value for #experiments', function() {
-        assert.equal(this.router.experiments(), '/data/experiments');
+        assertRelativePath(this.router.experiments(), 'data/experiments');
       });
 
       it('returns correct value for #isDemoMode', function() {
@@ -132,68 +117,69 @@ describe('backend tests', () => {
 
       describe('#pluginRoute', () => {
         it('encodes slash correctly', function() {
-          assert.equal(
+          assertRelativePath(
               this.router.pluginRoute('scalars', '/scalar'),
-              '/data/plugin/scalars/scalar');
+              'data/plugin/scalars/scalar');
         });
 
         it('encodes query param correctly', function() {
-          assert.equal(
+          assertRelativePath(
               this.router.pluginRoute(
                   'scalars',
                   '/a',
                   createSearchParam({b: 'c', d: ['1', '2']})),
-              '/data/plugin/scalars/a?b=c&d=1&d=2');
+              'data/plugin/scalars/a?b=c&d=1&d=2');
         });
 
         it('encodes parenthesis correctly', function() {
-          assert.equal(
+          assertRelativePath(
               this.router.pluginRoute('scalars', '/a',
               createSearchParam({foo: '()'})),
-              '/data/plugin/scalars/a?foo=%28%29');
+              'data/plugin/scalars/a?foo=%28%29');
         });
 
         it('encodes query param the same as #addParams', function() {
-          assert.equal(
+          assertRelativePath(
               this.router.pluginRoute(
                   'scalars',
                   '/a',
                   createSearchParam({b: 'c', d: ['1']})),
-              addParams('/data/plugin/scalars/a', {b: 'c', d: ['1']}));
-          assert.equal(
+              addParams('data/plugin/scalars/a', {b: 'c', d: ['1']}));
+          assertRelativePath(
               this.router.pluginRoute(
                   'scalars',
                   '/a',
                   createSearchParam({foo: '()'})),
-              addParams('/data/plugin/scalars/a', {foo: '()'}));
+              addParams('data/plugin/scalars/a', {foo: '()'}));
         });
 
         it('ignores custom extension', function() {
-          assert.equal(
+          assertRelativePath(
               this.router.pluginRoute('scalars', '/a', undefined, 'meow'),
-              '/data/plugin/scalars/a');
+              'data/plugin/scalars/a');
         });
       });
 
       it('returns correct value for #pluginsListing', function() {
-        assert.equal(this.router.pluginsListing(), '/data/plugins_listing');
+        assertRelativePath(
+            this.router.pluginsListing(), 'data/plugins_listing');
       });
 
       it('returns correct value for #runs', function() {
-        assert.equal(this.router.runs(), '/data/runs');
+        assertRelativePath(this.router.runs(), 'data/runs');
       });
 
       it('returns correct value for #runsForExperiment', function() {
         // No experiment id is passed.
-        assert.equal(
+        assertRelativePath(
             this.router.runsForExperiment(''),
-            '/data/experiment_runs');
-        assert.equal(
+            'data/experiment_runs');
+        assertRelativePath(
             this.router.runsForExperiment('1'),
-            '/data/experiment_runs?experiment=1');
-        assert.equal(
+            'data/experiment_runs?experiment=1');
+        assertRelativePath(
             this.router.runsForExperiment('1&foo=false'),
-            '/data/experiment_runs?experiment=1%26foo%3Dfalse');
+            'data/experiment_runs?experiment=1%26foo%3Dfalse');
       });
     });
 
@@ -202,18 +188,19 @@ describe('backend tests', () => {
         this.router = createRouter(base, /*demoMode=*/true);
       });
 
-      it('ignores leading slash in pathPrefix', () => {
+      it('treats pathPrefix with leading slash as absolute path', () => {
         const router = createRouter('/data/', /*demoMode=*/true);
         assert.equal(router.runs(), '/data/runs.json');
       });
 
-      it('returns leading slash when pathPrefix omits one', () => {
+      it('treats pathPrefix without leading slash as absolute path', () => {
         const router = createRouter('data/', /*demoMode=*/true);
         assert.equal(router.runs(), '/data/runs.json');
       });
 
-      it('does not strip leading slash if pathPrefix has more than one', () => {
+      it('does not form absolute url with multiple leading slashes', () => {
         const router = createRouter('///data/', /*demoMode=*/true);
+        // For prod url, this would be http://data/runs
         assert.equal(router.runs(), '///data/runs.json');
       });
 

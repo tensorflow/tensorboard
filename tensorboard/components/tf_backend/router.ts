@@ -28,10 +28,10 @@ export interface Router {
  * Create a router for communicating with the TensorBoard backend. You
  * can pass this to `setRouter` to make it the global router.
  *
- * @param pathPrefix {string} The base prefix for data endpoints.
+ * @param pathPrefix {string=} The base prefix for data endpoints.
  * @param demoMode {boolean=} Whether to modify urls for filesystem demo usage.
  */
-export function createRouter(pathPrefix, demoMode = false): Router {
+export function createRouter(pathPrefix = 'data', demoMode = false): Router {
   if (pathPrefix[pathPrefix.length - 1] === '/') {
     pathPrefix = pathPrefix.slice(0, pathPrefix.length - 1);
   }
@@ -62,13 +62,7 @@ export function createRouter(pathPrefix, demoMode = false): Router {
   };
 };
 
-export function getDefaultRouter(): Router {
-  const sep = window.location.pathname.endsWith('/') ? '' : '/';
-  const pathPrefix = window.location.pathname + sep + 'data';
-  return createRouter(pathPrefix);
-}
-
-let _router: Router = getDefaultRouter();
+let _router: Router = createRouter();
 
 /**
  * @return {Router} the global router
@@ -94,9 +88,9 @@ export function setRouter(router: Router): void {
 
 function createProdPath(pathPrefix: string, path: string,
     ext: string, params?: URLSearchParams): string {
-  const url = new URL(window.location.origin);
   // Use URL to normalize pathPrefix with leading slash and without.
-  url.pathname = pathPrefix + path;
+  const maybeRelativePath = pathPrefix + path;
+  const url = new URL(maybeRelativePath, window.location.href);
   if (params) url.search = params.toString();
   return url.pathname + url.search;
 }
