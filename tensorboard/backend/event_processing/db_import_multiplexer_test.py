@@ -26,7 +26,7 @@ import tensorflow as tf
 
 
 def add_event(path):
-  with tf.summary.FileWriter(path) as writer:
+  with tf.summary.FileWriterCache.get(path) as writer:
     event = tf.Event()
     event.summary.value.add(tag='tag', tensor=tf.make_tensor_proto(1))
     writer.add_event(event)
