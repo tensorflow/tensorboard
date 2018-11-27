@@ -46,8 +46,8 @@ class IoWrapperTest(tf.test.TestCase):
     self.assertFalse(io_wrapper.IsCnsPath('/tmp/foo'))
 
   def testPathSeparator(self):
-    # In Nix systems, it would be the same as CNS/GCS path separator making it
-    # hard to tell.
+    # In nix systems, path separator would be the same as that of CNS/GCS
+    # making it hard to tell if something went wrong.
     self.stubs.Set(os, 'sep', '#')
 
     self.assertEqual(io_wrapper.PathSeparator('/tmp/foo'), '#')
