@@ -32,7 +32,7 @@ import threading
 import tensorflow as tf
 
 from tensorboard import db
-from tensorboard import util
+from tensorboard.util import util
 
 
 class TestCase(tf.test.TestCase):

@@ -42,11 +42,11 @@ import threading
 
 from werkzeug import serving
 
-from tensorboard import util
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.util import util
 
 try:
   from absl import flags as absl_flags

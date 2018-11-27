@@ -44,7 +44,7 @@ py_library(
     deps = [
         ":health_pill_calc",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:util",
+        "//tensorboard/util:encoder",
     ],
 )
 

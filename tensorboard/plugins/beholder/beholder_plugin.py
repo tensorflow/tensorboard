@@ -24,7 +24,7 @@ import tensorflow as tf
 from google.protobuf import message
 from werkzeug import wrappers
 
-from tensorboard import util
+from tensorboard.util import encoder
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util as pau
 from tensorboard.plugins import base_plugin
@@ -159,7 +159,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
 
       start_time = time.time()
       array = self._fetch_current_frame()
-      image_bytes = util.encode_png(array)
+      image_bytes = encoder.encode_png(array)
 
       frame_text = b'--frame\r\n'
       content_type = b'Content-Type: image/png\r\n\r\n'

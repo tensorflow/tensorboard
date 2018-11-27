@@ -22,7 +22,7 @@ import itertools
 import tensorflow as tf
 
 from tensorboard import db
-from tensorboard import test_util
+from tensorboard.util import test_util
 
 
 class PluginsTest(test_util.TestCase):
