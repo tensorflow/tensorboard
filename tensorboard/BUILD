@@ -75,10 +75,10 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/util",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/util",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -240,8 +240,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/util",
         "//tensorboard:expect_sqlite3_installed",
+        "//tensorboard/util",
     ],
 )
 
@@ -253,8 +253,8 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":db",
-        "//tensorboard/util:test_util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -264,9 +264,9 @@ py_binary(
     srcs = ["encode_png_benchmark.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard/util",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util",
         "@org_pythonhosted_six",
     ],
 )
@@ -301,8 +301,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util",
         "@org_pythonhosted_six",
     ],
 )
@@ -314,9 +314,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":loader",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
         "//tensorboard/util",
-        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
