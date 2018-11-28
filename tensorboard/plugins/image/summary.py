@@ -26,9 +26,9 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from tensorboard.compat import tf
+import tensorflow as tf
 
-from tensorboard import util
+from tensorboard.util import encoder
 from tensorboard.plugins.image import metadata
 
 
@@ -116,7 +116,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
     raise ValueError('Shape %r must have rank 4' % (images.shape, ))
 
   limited_images = images[:max_outputs]
-  encoded_images = [util.encode_png(image) for image in limited_images]
+  encoded_images = [encoder.encode_png(image) for image in limited_images]
   (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
   tensor = tf.make_tensor_proto(content, dtype=tf.string)

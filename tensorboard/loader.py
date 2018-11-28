@@ -37,8 +37,8 @@ import types  # pylint: disable=unused-import
 import six
 
 from tensorboard import db
-from tensorboard import util
-from tensorboard.compat import tf
+from tensorboard.util import util
+import tensorflow as tf
 
 
 class Record(collections.namedtuple('Record', ('record', 'offset'))):

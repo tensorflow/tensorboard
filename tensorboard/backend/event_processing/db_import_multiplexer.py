@@ -58,7 +58,7 @@ class DbImportMultiplexer(object):
       use_import_op: If True, use TensorFlow's import_event() op for imports,
         otherwise use TensorBoard's own sqlite ingestion logic.
     """
-    tf.logging.info('DbImportMultiplexer initializing');
+    tf.logging.info('DbImportMultiplexer initializing')
     self._db_connection_provider = db_connection_provider
     self._purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads
@@ -108,10 +108,12 @@ class DbImportMultiplexer(object):
       tf.logging.info('Processing directory %s', subdir)
       if subdir not in self._run_loaders:
         tf.logging.info('Creating DB loader for directory %s', subdir)
+        names = self._get_exp_and_run_names(path, subdir, name)
+        experiment_name, run_name = names
         self._run_loaders[subdir] = _RunLoader(
             subdir=subdir,
-            experiment_name=(name or path),
-            run_name=os.path.relpath(subdir, path))
+            experiment_name=experiment_name,
+            run_name=run_name)
     tf.logging.info('Done with AddRunsFromDirectory: %s', path)
 
   def Reload(self):
@@ -171,6 +173,14 @@ class DbImportMultiplexer(object):
       del self._run_loaders[loader.subdir]
     tf.logging.info('Finished with DbImportMultiplexer.Reload()')
 
+  def _get_exp_and_run_names(self, path, subdir, experiment_name_override=None):
+    if experiment_name_override is not None:
+      return (experiment_name_override, os.path.relpath(subdir, path))
+    sep = io_wrapper.PathSeparator(path)
+    path_parts = os.path.relpath(subdir, path).split(sep, 1)
+    experiment_name = path_parts[0]
+    run_name = path_parts[1] if len(path_parts) == 2 else '.'
+    return (experiment_name, run_name)
 
 # Struct holding a list of tf.Event serialized protos along with metadata about
 # the associated experiment and run.

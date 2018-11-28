@@ -21,12 +21,12 @@ import locale
 import os
 
 import six
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard import db
 from tensorboard import loader
-from tensorboard import test_util
-from tensorboard import util
+from tensorboard.util import test_util
+from tensorboard.util import util
 
 
 class LoaderTestCase(test_util.TestCase):

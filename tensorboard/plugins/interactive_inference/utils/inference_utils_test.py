@@ -20,20 +20,24 @@ from __future__ import print_function
 
 import os
 import sys
-if sys.version_info.major == 2:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
-else:
-  from unittest import mock  # pylint: disable=g-import-not-at-top
+
 import numpy as np
 import tensorflow as tf
+
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import predict_pb2
+from tensorflow_serving.apis import regression_pb2
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
-from tensorflow_serving.apis import classification_pb2
-from tensorflow_serving.apis import predict_pb2
-from tensorflow_serving.apis import regression_pb2
 
 
 class InferenceUtilsTest(tf.test.TestCase):
@@ -231,19 +235,19 @@ class InferenceUtilsTest(tf.test.TestCase):
     mock_call_servo = lambda _, __: None
     mock_make_json_formatted_for_single_chart = lambda _, __: {}
     charts = inference_utils.mutant_charts_for_feature(
-        example, 'repeated_float', serving_bundle, viz_params)
+        [example], 'repeated_float', serving_bundle, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(4, len(charts['data']))
     charts = inference_utils.mutant_charts_for_feature(
-        example, 'repeated_int', serving_bundle, viz_params)
+        [example], 'repeated_int', serving_bundle, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(2, len(charts['data']))
     charts = inference_utils.mutant_charts_for_feature(
-        example, 'single_int', serving_bundle, viz_params)
+        [example], 'single_int', serving_bundle, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(1, len(charts['data']))
     charts = inference_utils.mutant_charts_for_feature(
-        example, 'non_numeric', serving_bundle, viz_params)
+        [example], 'non_numeric', serving_bundle, viz_params)
     self.assertEqual('categorical', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
@@ -265,18 +269,21 @@ class InferenceUtilsTest(tf.test.TestCase):
     mock_call_servo = lambda _, __: None
     mock_make_json_formatted_for_single_chart = lambda _, __: {}
     charts = inference_utils.mutant_charts_for_feature(
-        example, 'repeated_float', serving_bundle, viz_params)
+        [example], 'repeated_float', serving_bundle, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
-    # These should error out because they don't have 4 fields.
-    with self.assertRaises(common_utils.InvalidUserInputError):
-      charts = inference_utils.mutant_charts_for_feature(
-          example, 'repeated_int', serving_bundle, viz_params)
+    # These should return 3 charts even though all fields from the index
+    # pattern don't exist for the example.
+    charts = inference_utils.mutant_charts_for_feature(
+        [example], 'repeated_int', serving_bundle, viz_params)
+    self.assertEqual('numeric', charts['chartType'])
+    self.assertEqual(3, len(charts['data']))
 
-    with self.assertRaises(common_utils.InvalidUserInputError):
-      charts = inference_utils.mutant_charts_for_feature(
-          example, 'single_int', serving_bundle, viz_params)
+    charts = inference_utils.mutant_charts_for_feature(
+        [example], 'single_int', serving_bundle, viz_params)
+    self.assertEqual('numeric', charts['chartType'])
+    self.assertEqual(3, len(charts['data']))
 
   def test_make_mutant_tuples_float_list(self):
     example = self.make_and_write_fake_example()
@@ -292,7 +299,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     original_feature = inference_utils.parse_original_feature_from_example(
         example, 'repeated_float')
     mutant_features, mutant_examples = inference_utils.make_mutant_tuples(
-        example,
+        [example],
         original_feature,
         index_to_mutate=index_to_mutate,
         viz_params=viz_params)
@@ -319,7 +326,6 @@ class InferenceUtilsTest(tf.test.TestCase):
     example = self.make_and_write_fake_example()
     index_to_mutate = 1
     num_mutants = 10
-    num_examples_to_scan = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
         x_max=10,
@@ -329,7 +335,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     original_feature = inference_utils.parse_original_feature_from_example(
         example, 'repeated_int')
     mutant_features, mutant_examples = inference_utils.make_mutant_tuples(
-        example,
+        [example],
         original_feature,
         index_to_mutate=index_to_mutate,
         viz_params=viz_params)

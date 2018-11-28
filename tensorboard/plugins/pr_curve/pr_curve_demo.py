@@ -33,7 +33,7 @@ from __future__ import print_function
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import summary
 

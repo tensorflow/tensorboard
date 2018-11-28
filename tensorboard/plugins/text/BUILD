@@ -17,9 +17,9 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_mozilla_bleach",
         "@org_pocoo_werkzeug",
@@ -36,7 +36,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -51,7 +51,7 @@ py_binary(
     srcs = ["text_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -65,8 +65,7 @@ py_library(
     ],
     deps = [
         ":metadata",
-        "//tensorboard/compat:tensorflow",
-        "//tensorboard:util",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -79,7 +78,7 @@ py_test(
         ":metadata",
         ":summary",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )

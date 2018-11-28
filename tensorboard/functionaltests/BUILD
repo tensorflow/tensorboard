@@ -21,3 +21,11 @@ py_web_test_suite(
         "@io_bazel_rules_webtesting//testing/web",
     ],
 )
+
+py_library(
+    name = "wct_test_driver",
+    srcs = ["wct_test_driver.py"],
+    srcs_version = "PY2AND3",
+    deps = ["@io_bazel_rules_webtesting//testing/web"],
+    testonly = True,
+)

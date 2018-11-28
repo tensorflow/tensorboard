@@ -11,6 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 
-# This module is included by build rules to force non-TensorFlow builds
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import unittest
+from tensorboard.functionaltests import wct_test_driver
+
+
+Test = wct_test_driver.create_test_class(
+    "tensorboard/components/vz_sorting/test/test_web_library",
+    "/vz-sorting/test/tests.html")
+
+
+if __name__ == "__main__":
+  unittest.main()

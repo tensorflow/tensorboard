@@ -158,6 +158,12 @@ limitations under the License.
         padding-right: 5px;
       }
 
+      .pd-no-features-text {
+        font-size: 18px;
+        color: #777;
+        padding: 12px 40px;
+      }
+
       .accept-button-holder {
         display: flex;
         flex-direction: row-reverse;
@@ -819,6 +825,11 @@ limitations under the License.
         border: 1px solid lightgrey;
       }
 
+      .control-divider {
+        margin: 5px 0 5px 5px;
+        width: 5px;
+        border-left: 1px solid lightgrey;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -839,7 +850,7 @@ limitations under the License.
           predict-input-tensor="{{predictInputTensor}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
-        <paper-button on-click="getExamplesAndCloseSettings_" class="main-button"
+        <paper-button on-tap="getExamplesAndCloseSettings_" class="main-button"
                       disabled$="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
           Accept
         </paper-button>
@@ -850,7 +861,7 @@ limitations under the License.
       <p>Are you sure you want to delete the selected example?</p>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
-        <paper-button dialog-confirm autofocus on-click="deleteDatapoint_" class="main-button">Delete</paper-button>
+        <paper-button dialog-confirm autofocus on-tap="deleteDatapoint_" class="main-button">Delete</paper-button>
       </div>
     </paper-dialog>
     <paper-dialog id="distancedialog" modal>
@@ -873,45 +884,62 @@ limitations under the License.
       </paper-dropdown-menu>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
-        <paper-button dialog-confirm autofocus on-click="addDistanceMetric" class="main-button">Apply</paper-button>
+        <paper-button dialog-confirm autofocus on-tap="addDistanceMetric" class="main-button">Apply</paper-button>
       </div>
     </paper-dialog>
     <div class="dashboard-layout">
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <div title="Select a datapoint to use this feature">
-              <paper-button class="control-button" disabled$="[[!arePartialDependencePlotsEnabled_(selectedExampleAndInference, modelName, inferenceAddress)]]"
-                  on-click="showPartialDependencePlots_" alt="show partial dependence plots"
-                  title="Select a datapoint to use this feature">
-                  Partial dependence plots
+            <div class="button-prefix-label">Partial Dependence Plots:</div>
+            <div>
+              <paper-button class="control-button" disabled$="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
+                  on-tap="showGlobalPartialDependencePlots_" alt="show global partial dependence plots">
+                  Global
               </paper-button>
             </div>
             <div title="Select a datapoint to use this feature">
+              <paper-button class="control-button" disabled$="[[!arePartialDependencePlotsEnabled_(selectedExampleAndInference, modelName, inferenceAddress)]]"
+                  on-tap="showPartialDependencePlots_" alt="show partial dependence plots"
+                  title="Select a datapoint to use this feature">
+                  Selected datapoint
+              </paper-button>
+            </div>
+            <paper-icon-button icon="info-outline" class="info-icon no-padding" on-tap="openDialog">
+              </paper-icon-button>
+              <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                <div class="dialog-title">Partial Dependence Plots</div>
+                <div>Global: show the average effect of repeatedly changing a single feature across all datapoints.</div>
+                <div>Selected datapoint: show the effect of a repeatedly changing a single feature on the selected datapoint.</div>
+              </paper-dialog>
+            </paper-icon-button>
+            <div class="control-divider"></div>
+            <div title="Select a datapoint to use this feature">
               <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="showDistanceClicked_" alt="create distance feature"
+                  on-tap="showDistanceClicked_" alt="create distance feature"
                   title="Select a datapoint to use this feature">
                   Compute distance
               </paper-button>
             </div>
+            <div class="control-divider"></div>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
                 <div class="button-prefix-label">Show nearest counterfactual:</div>
                 <div title="Select a datapoint to use this feature">
                   <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                    on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
+                    on-tap="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
                     title="Select a datapoint to use this feature">
                     L1
                   </paper-button>
                 </div>
                 <div title="Select a datapoint to use this feature">
                   <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                    on-click="findClosestCounterfactualL2_" alt="closest L2 counterfactual"
+                    on-tap="findClosestCounterfactualL2_" alt="closest L2 counterfactual"
                     title="Select a datapoint to use this feature">
                     L2
                   </paper-button>
                 </div>
-                <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
+                <paper-icon-button icon="info-outline" class="info-icon no-padding" on-tap="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                   <div class="dialog-title">Nearest counterfactual (neighbor of different classification)</div>
@@ -929,7 +957,7 @@ limitations under the License.
             <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
               <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
             </a>
-            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
+            <paper-icon-button icon="settings" on-tap="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
             <div class="example-status">[[exampleStatusStr]]</div>
           </div>
         </div>
@@ -947,48 +975,48 @@ limitations under the License.
                     <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                       <div class="datapoint-left-controls-holder">
                         <paper-icon-button class="datapoint-control-button" icon="content-copy"
-                            on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
+                            on-tap="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
                         </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
-                            on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
+                            on-tap="resetDatapoint_" alt="undo changes" title="Undo changes"
                             disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
                         </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="delete-forever"
-                            on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
+                            on-tap="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
                         </paper-icon-button>
                       </div>
                       <div class="datapoint-right-controls-holder">
                           <paper-icon-button class="datapoint-control-button" icon="view-headline"
                             class$="[[getStackedButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
+                            on-tap="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
                           </paper-icon-button>
                           <paper-icon-button class="datapoint-control-button" icon="view-module"
                             class$="[[getGridButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
+                            on-tap="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
                           </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="line-weight"
-                            on-click="setExampleExpanded_" alt="expand all features" title="Expand all features"
+                            on-tap="setExampleExpanded_" alt="expand all features" title="Expand all features"
                             class="border-right">
                         </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="list"
-                            on-click="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
+                            on-tap="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
                         </paper-icon-button>
                       </div>
                     </div>
                     <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                       <div class="datapoint-left-controls-holder">
                         <paper-icon-button class="datapoint-control-button" icon="chevron-left"
-                            on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
+                            on-tap="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
                         </paper-icon-button>
                         <div class="example-id-label">Example ID:</div>
                         <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
                                     min="0" max="[[selectedExampleMax]]" no-label-float>
                         </paper-input>
                         <paper-icon-button class="datapoint-control-button" icon="chevron-right"
-                          on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
+                          on-tap="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
                         </paper-icon-button>
                         <div class="run-button-container" title="Edit the datapoint to use this feature">
-                          <paper-button on-click="inferClicked_" class="main-button run-button"
+                          <paper-button on-tap="inferClicked_" class="main-button run-button"
                             disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
                             Run inference
                           </paper-button>
@@ -1015,7 +1043,7 @@ limitations under the License.
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
                           <div class="inference-section">
-                            <button class="inference-header heading" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
+                            <button class="inference-header heading" on-tap="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
                               <div class="right-side right-side-performance-tab">
                                 <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                               </div>
@@ -1028,7 +1056,7 @@ limitations under the License.
                           </div>
                           <template is="dom-if" if="[[counterfactualExampleAndInference]]">
                             <div class="inference-section">
-                              <button class="inference-header heading" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
+                              <button class="inference-header heading" on-tap="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
                                 <div class="right-side right-side-performance-tab">
                                   <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                                 </div>
@@ -1093,7 +1121,7 @@ limitations under the License.
                 </div>
                 <div class="config-tab">
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleTrueLabelSetup">Set Ground Truth
+                    <button class="heading" on-tap="toggleTrueLabelSetup">Set Ground Truth
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1113,7 +1141,7 @@ limitations under the License.
                             <div class="help-text">
                               <div>Select the feature to set as a ground true label for all loaded examples</div>
                               <div>in order to in order to investigate model performance.
-                                <span class="dialog-link" on-click="openDialog">More.
+                                <span class="dialog-link" on-tap="openDialog">More.
                                   <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">Ground Truth Feature</div>
                                     <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
@@ -1139,7 +1167,7 @@ limitations under the License.
                                 <div>1.00 = false positives and false negatives are equally as costly</div>
                                 <div>4.00 = false positives are 4 times more costly than false negatives</div>
                                 <div>0.25 = false negatives are 4 times more costly than false positives.
-                                  <span class="dialog-link" on-click="openDialog">More.
+                                  <span class="dialog-link" on-tap="openDialog">More.
                                     <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                       <div class="dialog-title">Why do I need a cost ratio?</div>
                                       <div>Click
@@ -1155,7 +1183,7 @@ limitations under the License.
                           </div>
                           <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="flex">
-                              <paper-button class="control-button optimize-threshold-button" on-click="optimizeThresholdClicked_">
+                              <paper-button class="control-button optimize-threshold-button" on-tap="optimizeThresholdClicked_">
                                   Optimize threshold
                               </paper-button>
                               <div>
@@ -1171,7 +1199,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleExplorerSetup">[[getCompareSlicesTitle(modelType, multiClass)]]
+                    <button class="heading" on-tap="toggleExplorerSetup">[[getCompareSlicesTitle(modelType, multiClass)]]
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1211,7 +1239,7 @@ limitations under the License.
                             <div class="flex">
                               <div class="optimize-text title-width">Optimize sliced thresholds for:</div>
                               <div class="help-title help-title-margin-title">What am I optimizing for?
-                                <span class="help-text dialog-link" on-click="openDialog">More.
+                                <span class="help-text dialog-link" on-tap="openDialog">More.
                                   <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">Classification Threshold Optimization Options</div>
                                     <div><span class="bold">Group unaware</span> - Optimize a single threshold across all slices</div>
@@ -1234,19 +1262,19 @@ limitations under the License.
                               </div>
                             </div>
                             <div class="flex-wrap">
-                              <paper-button class="control-button optimize-selection-button" on-click="optimizeThresholdClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="optimizeThresholdClicked_">
                                   Group unaware
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="demoParityClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="demoParityClicked_">
                                   Demographic parity
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="equalOppoClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="equalOppoClicked_">
                                   Equal opportunity
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="equalAccClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="equalAccClicked_">
                                   Equal accuracy
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="optimizeFacetedThresholdsClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="optimizeFacetedThresholdsClicked_">
                                   Group thresholds
                               </paper-button>
                             </div>
@@ -1257,7 +1285,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="togglePerformance">Explore Performance
+                    <button class="heading" on-tap="togglePerformance">Explore Performance
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedPerformance)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1273,7 +1301,7 @@ limitations under the License.
                                             on-value-changed="refreshInferencesNoRegen_">
                               </paper-slider>
                               <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Exploring Classification Performance</div>
@@ -1316,7 +1344,7 @@ limitations under the License.
                                             immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
                               </paper-slider>
                               <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Exploring Classification Performance</div>
@@ -1403,9 +1431,9 @@ limitations under the License.
             <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
             <div class="feature-container-holder" id="partialplotholder">
               <div class="flex">
-                <paper-icon-button icon="arrow-back" on-click="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
+                <paper-icon-button icon="arrow-back" on-tap="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
                 <div class="pd-info-text">Partial Dependence Plots</div>
-                <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-click="openDialog">
+                <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                   <div class="dialog-title">Partial Dependence Plots</div>
@@ -1423,6 +1451,9 @@ limitations under the License.
                   </div>
                 </paper-dialog>
               </div>
+              <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
+                <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
+              </template>
               <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                 <div class="feature-container" data-feature-name$="[[item.name]]">
                   <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
@@ -1787,6 +1818,12 @@ limitations under the License.
           type: Object,
           value: () => ({}),
         },
+        // True if showing global PD plots. False if showing individual PD
+        // plots.
+        globalPdPlots: {
+          type: Boolean,
+          readOnly: true,
+        },
       },
 
       observers: [
@@ -1989,9 +2026,21 @@ limitations under the License.
         this.$.partialplotholder.style.display = 'none';
       },
 
-      showPartialDependencePlots_: function() {
+      showGlobalPartialDependencePlots_: function() {
+        this._setGlobalPdPlots(true);
         this.$.partialplotholder.style.display = 'block';
         requestAnimationFrame(() => this.populatePdTabs());
+      },
+
+      showPartialDependencePlots_: function() {
+        this._setGlobalPdPlots(false);
+        this.$.partialplotholder.style.display = 'block';
+        requestAnimationFrame(() => this.populatePdTabs());
+      },
+
+      areTherePdPlotFeatures_: function(partialDepPlotEligibleFeatures) {
+        return partialDepPlotEligibleFeatures &&
+          partialDepPlotEligibleFeatures.length > 0;
       },
 
       selectedIndicesChanged_: function(event) {
@@ -3625,22 +3674,24 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        const origValEntry =
-          this.createPdEntryForCurrentValue(featureName, data);
-        if (origValEntry) {
-          let indexOfOrigValInData = -1;
-          const origKey = _.keys(data)[0];
-          const origData = data[origKey];
-          for (let i = 0; i < origData.length; i++) {
-            if (origData[i].step == origValEntry.step) {
-              indexOfOrigValInData = i;
-              break;
+        if (!this.globalPdPlots) {
+          const origValEntry =
+            this.createPdEntryForCurrentValue(featureName, data);
+          if (origValEntry) {
+            let indexOfOrigValInData = -1;
+            const origKey = _.keys(data)[0];
+            const origData = data[origKey];
+            for (let i = 0; i < origData.length; i++) {
+              if (origData[i].step == origValEntry.step) {
+                indexOfOrigValInData = i;
+                break;
+              }
             }
+            if (indexOfOrigValInData != -1) {
+              origData.splice(indexOfOrigValInData, 1);
+            }
+            data[origKey + ' - original value'] = [origValEntry];
           }
-          if (indexOfOrigValInData != -1) {
-            origData.splice(indexOfOrigValInData, 1);
-          }
-          data[origKey + ' - original value'] = [origValEntry];
         }
 
         // Convert the data into the format expected by vz-bar-chart.
@@ -3696,11 +3747,13 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        const origValEntry =
-          this.createPdEntryForCurrentValue(featureName, data);
-        if (origValEntry) {
-          const origKey = _.keys(data)[0];
-          data[origKey + ' - original value'] = [origValEntry];
+        if (!this.globalPdPlots) {
+          const origValEntry =
+            this.createPdEntryForCurrentValue(featureName, data);
+          if (origValEntry) {
+            const origKey = _.keys(data)[0];
+            data[origKey + ' - original value'] = [origValEntry];
+          }
         }
 
         const series = _.keys(data);
@@ -3794,7 +3847,7 @@ limitations under the License.
           'x_min': xMin,
           'x_max': xMax,
           'feature_index_pattern': featureIndexPattern,
-          'example_index': this.selected[0],
+          'example_index': this.globalPdPlots ? -1 : this.selected[0],
           'use_predict': this.usePredictApi,
           'predict_output_tensor': this.predictOutputTensor,
           'predict_input_tensor': this.predictInputTensor,

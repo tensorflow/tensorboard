@@ -20,7 +20,7 @@ namespace tf_dashboard_common {
 export const DataLoaderBehavior = {
   properties: {
     /**
-     * An unique identifiable string. When changes, it expunges the data
+     * A unique identifiable string. When changes, it expunges the data
      * cache.
      */
     loadKey: {
@@ -28,8 +28,8 @@ export const DataLoaderBehavior = {
       value: '',
     },
 
-    // List of data to be loaded. A datum is passed to `getDataLoadUrl` to ge
-    // URL of an API endpoint and, when request resolves, invokes
+    // List of data to be loaded. By default, a datum is passed to
+    // `requestData` to fetch data. When the request resolves, invokes
     // `loadDataCallback` with the datum and its response.
     dataToLoad: {
       type: Array,
@@ -54,6 +54,25 @@ export const DataLoaderBehavior = {
      * data URL is successfully received.
      */
     loadDataCallback: Function,
+
+    // A function that takes a datum as argument and makes the HTTP
+    // request to fetch the data associated with the datum. It should return
+    // a promise that either fullfills with the data or rejects with an error.
+    // If the function doesn't bind 'this', then it will reference the element
+    // that includes this behavior.
+    // The default implementation calls this.requestManager.request with
+    // the value returned by this.getDataLoadUrl(datum) (see below).
+    // The only place getDataLoadUrl() is called is in the default
+    // implementation of this method. So if you override this method with
+    // an implementation that doesn't call getDataLoadUrl, it need not be
+    // provided.
+    requestData: {
+      type: Function,
+      value: function() {
+        return (datum) => this.requestManager.request(
+          this.getDataLoadUrl(datum));
+      },
+    },
 
     // A function that takes a datum and returns a string URL for fetching
     // data.
@@ -136,13 +155,12 @@ export const DataLoaderBehavior = {
         return !this._loadedData.has(name);
       }).map(datum => {
         const name = this.getDataLoadName(datum);
-        const url = this.getDataLoadUrl(datum);
         const updateSeries = this._canceller.cancellable(result => {
           if (result.cancelled) return;
           this._loadedData.add(name);
           this.loadDataCallback(this, datum, result.value);
         });
-        return this.requestManager.request(url).then(updateSeries);
+        return this.requestData(datum).then(updateSeries);
       });
 
       return Promise.all(promises).then(this._canceller.cancellable(result => {
@@ -153,7 +171,6 @@ export const DataLoaderBehavior = {
       }));
     });
   },
-
 };
 
-}  // namespace tf_line_chart_data_loader
+}  // namespace tf_dashboard_common

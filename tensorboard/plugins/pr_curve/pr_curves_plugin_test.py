@@ -24,7 +24,7 @@ import os.path
 
 import numpy as np
 import six
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin

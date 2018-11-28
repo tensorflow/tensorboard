@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import shutil
 
-from tensorboard.compat import tf
+import tensorflow as tf
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import io_wrapper

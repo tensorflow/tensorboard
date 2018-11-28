@@ -31,9 +31,9 @@ from __future__ import print_function
 import functools
 
 import numpy as np
-from tensorboard.compat import tf
+import tensorflow as tf
 
-from tensorboard import util
+from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
 
 
@@ -177,7 +177,7 @@ def pb(name,
 
   if encoding == 'wav':
     encoding = metadata.Encoding.Value('WAV')
-    encoder = functools.partial(util.encode_wav,
+    encoder = functools.partial(encoder_util.encode_wav,
                                 samples_per_second=sample_rate)
   else:
     raise ValueError('Unknown encoding: %r' % encoding)
