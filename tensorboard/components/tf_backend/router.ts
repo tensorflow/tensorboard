@@ -36,25 +36,25 @@ export function createRouter(dataDir = 'data', demoMode = false): Router {
   if (dataDir[dataDir.length - 1] === '/') {
     dataDir = dataDir.slice(0, dataDir.length - 1);
   }
-  const createPath = demoMode ? createDemoPath : createProdPath;
+  const createDataPath = demoMode ? createDemoDataPath : createProdDataPath;
   const ext = demoMode ? '.json' : '';
   return {
-    environment: () => createPath(dataDir, '/environment', ext),
-    experiments: () => createPath(dataDir, '/experiments', ext),
+    environment: () => createDataPath(dataDir, '/environment', ext),
+    experiments: () => createDataPath(dataDir, '/experiments', ext),
     isDemoMode: () => demoMode,
     pluginRoute: (pluginName: string, route: string,
         params?: URLSearchParams, demoCustomExt = ext): string => {
 
-      return createPath(
+      return createDataPath(
           demoMode ? dataDir : dataDir + '/plugin',
           `/${pluginName}${route}`,
           demoCustomExt,
           params);
     },
-    pluginsListing: () => createPath(dataDir, '/plugins_listing', ext),
-    runs: () => createPath(dataDir, '/runs', ext),
+    pluginsListing: () => createDataPath(dataDir, '/plugins_listing', ext),
+    runs: () => createDataPath(dataDir, '/runs', ext),
     runsForExperiment: id => {
-      return createPath(
+      return createDataPath(
           dataDir,
           '/experiment_runs',
           ext,
@@ -87,7 +87,7 @@ export function setRouter(router: Router): void {
   _router = router;
 }
 
-function createProdPath(dataDir: string, route: string,
+function createProdDataPath(dataDir: string, route: string,
     ext: string, params?: URLSearchParams): string {
   let relativePath = dataDir + route;
   if (params) {
@@ -98,12 +98,20 @@ function createProdPath(dataDir: string, route: string,
 }
 
 /**
- * Creates a URL for demo.
+ * Creates a URL for demo apps.
+ *
+ * [1]: Demo pages are served as files and data routes are served as JSON files.
+ * For shareability and ease of use, the data files are served at root[2], "/",
+ * thus, the demo data path should return the absolute path regardless of
+ * current pathname.
+ *
+ * [2]: See the path property of tensorboard/demo/BUILD:demo_data.
+ *
  * e.g.,
- * > createDemoPath('a', '/b', '.json', {a: 1})
+ * > createDemoDataPath('a', '/b', '.json', {a: 1})
  * < '/a/b_a_1.json'
  */
-function createDemoPath(dataDir: string, route: string,
+function createDemoDataPath(dataDir: string, route: string,
     ext: string, params: URLSearchParams = new URLSearchParams()): string {
 
   // First, parse the path in a safe manner by constructing a URL. We don't
@@ -123,11 +131,11 @@ function createDemoPath(dataDir: string, route: string,
   normalizedPath = normalizedPath.replace(/\//g, '_');
   // Add query parameter as path if it is present.
   if (encodedQueryParam) normalizedPath += `_${encodedQueryParam}`;
-  const url = new URL(window.location.origin);
 
-  // All demo data are serialized in JSON format.
-  url.pathname = `${dataDir}/${normalizedPath}${ext}`;
-  return url.pathname;
+  const pathname = `${dataDir}/${normalizedPath}${ext}`;
+  // See [1] for the reason why we are forming an absolute path here.
+  const absPathname = pathname.startsWith('/') ? pathname : '/' + pathname;
+  return absPathname;
 }
 
 export function createSearchParam(params: QueryParams = {}): URLSearchParams {
