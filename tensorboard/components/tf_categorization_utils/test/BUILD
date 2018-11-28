@@ -12,6 +12,8 @@ py_web_test_suite(
     name = "test",
     srcs = ["test.py"],
     browsers = ["//tensorboard/functionaltests/browsers:chromium"],
+    timeout = "short",
+    flaky = True,
     data = [
         ":test_web_library",
     ],
