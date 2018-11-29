@@ -15,39 +15,32 @@ limitations under the License.
 var tf_backend;
 (function (tf_backend) {
     ;
+    var _router = createRouter();
     /**
      * Create a router for communicating with the TensorBoard backend. You
      * can pass this to `setRouter` to make it the global router.
      *
      * @param dataDir {string=} The base prefix for data endpoints.
-     * @param demoMode {boolean=} Whether to modify urls for filesystem demo usage.
      */
-    function createRouter(dataDir, demoMode) {
-        if (dataDir === void 0) { dataDir = 'data'; }
-        if (demoMode === void 0) { demoMode = false; }
-        if (dataDir[dataDir.length - 1] === '/') {
+    function createRouter(dataDir) {
+        if (dataDir === void 0) { dataDir = "data"; }
+        if (dataDir[dataDir.length - 1] === "/") {
             dataDir = dataDir.slice(0, dataDir.length - 1);
         }
-        var createDataPath = demoMode ? createDemoDataPath : createProdDataPath;
-        var ext = demoMode ? '.json' : '';
         return {
-            environment: function () { return createDataPath(dataDir, '/environment', ext); },
-            experiments: function () { return createDataPath(dataDir, '/experiments', ext); },
-            isDemoMode: function () { return demoMode; },
-            pluginRoute: function (pluginName, route, params, demoCustomExt) {
-                if (demoCustomExt === void 0) { demoCustomExt = ext; }
-                return createDataPath(demoMode ? dataDir : dataDir + '/plugin', "/" + pluginName + route, demoCustomExt, params);
+            environment: function () { return createDataPath(dataDir, "/environment"); },
+            experiments: function () { return createDataPath(dataDir, "/experiments"); },
+            pluginRoute: function (pluginName, route, params) {
+                return createDataPath(dataDir + "/plugin", "/" + pluginName + route, params);
             },
-            pluginsListing: function () { return createDataPath(dataDir, '/plugins_listing', ext); },
-            runs: function () { return createDataPath(dataDir, '/runs', ext); },
+            pluginsListing: function () { return createDataPath(dataDir, "/plugins_listing"); },
+            runs: function () { return createDataPath(dataDir, "/runs"); },
             runsForExperiment: function (id) {
-                return createDataPath(dataDir, '/experiment_runs', ext, createSearchParam({ experiment: String(id) }));
+                return createDataPath(dataDir, "/experiment_runs", createSearchParam({ experiment: String(id) }));
             },
         };
     }
     tf_backend.createRouter = createRouter;
-    ;
-    var _router = createRouter();
     /**
      * @return {Router} the global router
      */
@@ -70,52 +63,14 @@ var tf_backend;
         _router = router;
     }
     tf_backend.setRouter = setRouter;
-    function createProdDataPath(dataDir, route, ext, params) {
+    function createDataPath(dataDir, route, params) {
         if (params === void 0) { params = new URLSearchParams(); }
         var relativePath = dataDir + route;
         if (String(params)) {
-            var delimiter = route.includes('?') ? '&' : '?';
+            var delimiter = route.includes("?") ? "&" : "?";
             relativePath += delimiter + String(params);
         }
         return relativePath;
-    }
-    /**
-     * Creates a URL for demo apps.
-     *
-     * [1]: Demo pages are served as files and data routes are served as JSON files.
-     * For shareability and ease of use, the data files are served at root[2], "/",
-     * thus, the demo data path should return the absolute path regardless of
-     * current pathname.
-     *
-     * [2]: See the path property of tensorboard/demo/BUILD:demo_data.
-     *
-     * e.g.,
-     * > createDemoDataPath('a', '/b', '.json', {a: 1})
-     * < '/a/b_a_1.json'
-     */
-    function createDemoDataPath(dataDir, route, ext, params) {
-        if (params === void 0) { params = new URLSearchParams(); }
-        // First, parse the path in a safe manner by constructing a URL. We don't
-        // trust the path supplied by consumer.
-        var absRoute = route.startsWith('/') ? route : '/' + route;
-        var absUrl = new URL(route, window.location.href);
-        var normalizedPath = absUrl.pathname, normalizedSearchParams = absUrl.searchParams;
-        var queryParam = [normalizedSearchParams, params]
-            .map(function (p) { return String(p); })
-            .filter(Boolean)
-            .join('&');
-        var encodedQueryParam = queryParam.replace(/[&=%]/g, '_');
-        // Strip leading slashes.
-        normalizedPath = normalizedPath.replace(/^\/+/g, '');
-        // Convert slashes to underscores.
-        normalizedPath = normalizedPath.replace(/\//g, '_');
-        // Add query parameter as path if it is present.
-        if (encodedQueryParam)
-            normalizedPath += "_" + encodedQueryParam;
-        var pathname = dataDir + "/" + normalizedPath + ext;
-        // See [1] for the reason why we are forming an absolute path here.
-        var absPathname = pathname.startsWith('/') ? pathname : '/' + pathname;
-        return absPathname;
     }
     function createSearchParam(params) {
         if (params === void 0) { params = {}; }
