@@ -34,7 +34,10 @@ from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import sqlite_writer
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 class DbImportMultiplexer(object):
   """A loading-only `EventMultiplexer` that populates a SQLite DB.
@@ -59,7 +62,7 @@ class DbImportMultiplexer(object):
       use_import_op: If True, use TensorFlow's import_event() op for imports,
         otherwise use TensorBoard's own sqlite ingestion logic.
     """
-    tf.logging.info('DbImportMultiplexer initializing')
+    logger.info('DbImportMultiplexer initializing')
     self._db_connection_provider = db_connection_provider
     self._purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads
@@ -68,7 +71,7 @@ class DbImportMultiplexer(object):
     self._run_loaders = {}
 
     if self._purge_orphaned_data:
-      tf.logging.warning(
+      logger.warn(
           '--db_import does not yet support purging orphaned data')
 
     conn = self._db_connection_provider()
@@ -76,12 +79,12 @@ class DbImportMultiplexer(object):
     rows = conn.execute('PRAGMA database_list').fetchall()
     db_name_to_path = {row[1]: row[2] for row in rows}
     self._db_path = db_name_to_path['main']
-    tf.logging.info('DbImportMultiplexer using db_path %s', self._db_path)
+    logger.info('DbImportMultiplexer using db_path %s', self._db_path)
     # Set the DB in WAL mode so reads don't block writes.
     conn.execute('PRAGMA journal_mode=wal')
     conn.execute('PRAGMA synchronous=normal')  # Recommended for WAL mode
     sqlite_writer.initialize_schema(conn)
-    tf.logging.info('DbImportMultiplexer done initializing')
+    logger.info('DbImportMultiplexer done initializing')
 
   def _CreateEventSink(self):
     if self._use_import_op:
@@ -104,22 +107,22 @@ class DbImportMultiplexer(object):
     Raises:
       ValueError: If the path exists and isn't a directory.
     """
-    tf.logging.info('Starting AddRunsFromDirectory: %s (as %s)', path, name)
+    logger.info('Starting AddRunsFromDirectory: %s (as %s)', path, name)
     for subdir in io_wrapper.GetLogdirSubdirectories(path):
-      tf.logging.info('Processing directory %s', subdir)
+      logger.info('Processing directory %s', subdir)
       if subdir not in self._run_loaders:
-        tf.logging.info('Creating DB loader for directory %s', subdir)
+        logger.info('Creating DB loader for directory %s', subdir)
         names = self._get_exp_and_run_names(path, subdir, name)
         experiment_name, run_name = names
         self._run_loaders[subdir] = _RunLoader(
             subdir=subdir,
             experiment_name=experiment_name,
             run_name=run_name)
-    tf.logging.info('Done with AddRunsFromDirectory: %s', path)
+    logger.info('Done with AddRunsFromDirectory: %s', path)
 
   def Reload(self):
     """Load events from every detected run."""
-    tf.logging.info('Beginning DbImportMultiplexer.Reload()')
+    logger.info('Beginning DbImportMultiplexer.Reload()')
     # Defer event sink creation until needed; this ensures it will only exist in
     # the thread that calls Reload(), since DB connections must be thread-local.
     if not self._event_sink:
@@ -141,11 +144,11 @@ class DbImportMultiplexer(object):
         except directory_watcher.DirectoryDeletedError:
           loader_delete_queue.append(loader)
         except (OSError, IOError) as e:
-          tf.logging.error('Unable to load run %r: %s', loader.subdir, e)
+          logger.error('Unable to load run %r: %s', loader.subdir, e)
 
     num_threads = min(self._max_reload_threads, len(self._run_loaders))
     if num_threads <= 1:
-      tf.logging.info('Importing runs serially on a single thread')
+      logger.info('Importing runs serially on a single thread')
       for batch in batch_generator():
         self._event_sink.write_batch(batch)
     else:
@@ -157,7 +160,7 @@ class DbImportMultiplexer(object):
             output_queue.put(batch)
         finally:
           output_queue.put(sentinel)
-      tf.logging.info('Starting %d threads to import runs', num_threads)
+      logger.info('Starting %d threads to import runs', num_threads)
       for i in xrange(num_threads):
         thread = threading.Thread(target=producer, name='Loader %d' % i)
         thread.daemon = True
@@ -170,9 +173,9 @@ class DbImportMultiplexer(object):
           continue
         self._event_sink.write_batch(output)
     for loader in loader_delete_queue:
-      tf.logging.warning('Deleting loader %r', loader.subdir)
+      logger.warn('Deleting loader %r', loader.subdir)
       del self._run_loaders[loader.subdir]
-    tf.logging.info('Finished with DbImportMultiplexer.Reload()')
+    logger.info('Finished with DbImportMultiplexer.Reload()')
 
   def _get_exp_and_run_names(self, path, subdir, experiment_name_override=None):
     if experiment_name_override is not None:
@@ -228,7 +231,7 @@ class _RunLoader(object):
         if len(events) >= self._BATCH_COUNT or event_bytes >= self._BATCH_BYTES:
           break
       elapsed = time.time() - start
-      tf.logging.debug('RunLoader.load_batch() yielded in %0.3f sec for %s',
+      logger.debug('RunLoader.load_batch() yielded in %0.3f sec for %s',
                        elapsed, self._subdir)
       if not events:
         return
@@ -291,7 +294,7 @@ class _ImportOpEventSink(_EventSink):
     for event_proto in event_batch.events:
       writer_fn(event_proto)
     elapsed = time.time() - start
-    tf.logging.debug(
+    logger.debug(
         'ImportOpEventSink.WriteBatch() took %0.3f sec for %s events', elapsed,
         len(event_batch.events))
 
@@ -319,7 +322,7 @@ class _SqliteWriterEventSink(_EventSink):
           experiment_name=event_batch.experiment_name,
           run_name=event_batch.run_name)
     elapsed = time.time() - start
-    tf.logging.debug(
+    logger.debug(
         'SqliteWriterEventSink.WriteBatch() took %0.3f sec for %s events',
         elapsed, len(event_batch.events))
 

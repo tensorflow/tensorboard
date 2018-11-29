@@ -67,6 +67,8 @@ py_library(
     srcs = ["util.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":tb_logging",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:tf_contrib_ffmpeg",
         "//tensorboard/compat:tensorflow",
         "@org_pythonhosted_six",
@@ -93,6 +95,15 @@ py_library(
 )
 
 py_library(
+    name = "tb_logging",
+    srcs = ["tb_logging.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_absl_logging_installed",
+    ],
+)
+
+py_library(
     name = "tensor_util",
     srcs = ["tensor_util.py"],
     srcs_version = "PY2AND3",
@@ -109,8 +120,10 @@ py_library(
     srcs = ["test_util.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":tb_logging",
         ":util",
         "//tensorboard:db",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",

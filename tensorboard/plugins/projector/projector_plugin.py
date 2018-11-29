@@ -29,11 +29,15 @@ from werkzeug import wrappers
 
 from google.protobuf import json_format
 from google.protobuf import text_format
+
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
 from tensorboard.compat import USING_TF
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 # The prefix of routes provided by this plugin.
 _PLUGIN_PREFIX_ROUTE = 'projector'
@@ -400,7 +404,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
       # Sanity check for the checkpoint file.
       if (config.model_checkpoint_path and USING_TF and
           not tf.train.checkpoint_exists(config.model_checkpoint_path)):
-        tf.logging.warning('Checkpoint file "%s" not found',
+        logger.warn('Checkpoint file "%s" not found',
                            config.model_checkpoint_path)
         continue
       configs[run_name] = config
@@ -418,7 +422,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         reader = tf.compat.v1.pywrap_tensorflow.NewCheckpointReader(
             config.model_checkpoint_path)
       except Exception:  # pylint: disable=broad-except
-        tf.logging.warning('Failed reading "%s"', config.model_checkpoint_path)
+        logger.warn('Failed reading "%s"', config.model_checkpoint_path)
     self.readers[run] = reader
     return reader
 

@@ -369,7 +369,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         # Log a warning on failure to dual-bind, except for EAFNOSUPPORT
         # since that's expected if IPv4 isn't supported at all (IPv6-only).
         if hasattr(errno, 'EAFNOSUPPORT') and e.errno != errno.EAFNOSUPPORT:
-          logging.warn('Failed to dual-bind to IPv4 wildcard: %s', str(e))
+          logger.warn('Failed to dual-bind to IPv4 wildcard: %s', str(e))
     super(WerkzeugServer, self).server_bind()
 
   def handle_error(self, request, client_address):

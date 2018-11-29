@@ -30,6 +30,9 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.distribution import compressor
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 class _EventGenerator(object):
@@ -488,7 +491,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     discard events based on the step value of SessionLog.START.
     """
     warnings = []
-    self.stubs.Set(tf.logging, 'warn', warnings.append)
+    self.stubs.Set(logger, 'warn', warnings.append)
 
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
@@ -543,7 +546,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     discard events based on the step value of SessionLog.START.
     """
     warnings = []
-    self.stubs.Set(tf.logging, 'warn', warnings.append)
+    self.stubs.Set(logger, 'warn', warnings.append)
 
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)

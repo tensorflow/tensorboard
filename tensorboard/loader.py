@@ -38,9 +38,13 @@ import six
 
 from tensorboard import db
 from tensorboard.compat.proto import event_pb2
+from tensorboard.util import tb_logging as tb_logging
 from tensorboard.util import platform_util
 from tensorboard.util import util
 import tensorflow as tf
+
+
+logger = tb_logging.get_logger()
 
 
 class Record(collections.namedtuple('Record', ('record', 'offset'))):
@@ -361,7 +365,7 @@ class BufferedRecordReader(object):
       self._size = self._reader.get_size()
       self._last_stat = now
     except Exception as e:  # pylint: disable=broad-except
-      tf.logging.debug('Stat failed: %s', e)
+      logger.debug('Stat failed: %s', e)
       self._read_exception = sys.exc_info()
 
   def _run(self):
@@ -372,15 +376,15 @@ class BufferedRecordReader(object):
         if self._is_closed:
           try:
             self._reader.close()
-            tf.logging.debug('Closed')
+            logger.debug('Closed')
           except Exception as e:  # pylint: disable=broad-except
             self._close_exception = sys.exc_info()
-            tf.logging.debug('Close failed: %s', e)
+            logger.debug('Close failed: %s', e)
           self._reader = None
           self._wake_up_consumers.notify_all()
           return
         if self._buffered >= self._read_ahead:
-          tf.logging.debug('Waking up to stat')
+          logger.debug('Waking up to stat')
           self._stat()
           continue
         # Calculate a good amount of data to read outside the lock.
@@ -395,7 +399,7 @@ class BufferedRecordReader(object):
       self._rebuffer(want)
 
   def _rebuffer(self, want):
-    tf.logging.debug('Waking up to read %s bytes', _localize_int(want))
+    logger.debug('Waking up to read %s bytes', _localize_int(want))
     records = []
     read_exception = self._read_exception
     if read_exception is None:
@@ -408,7 +412,7 @@ class BufferedRecordReader(object):
           records.append(record)
           want -= len(record.record)
       except Exception as e:  # pylint: disable=broad-except
-        tf.logging.debug('Read failed: %s', e)
+        logger.debug('Read failed: %s', e)
         read_exception = sys.exc_info()
     with self._lock:
       self._read_exception = read_exception
@@ -534,7 +538,7 @@ class Progress(object):
   """
 
   BAR_INTERVAL_SECONDS = 0.25
-  BAR_LOGGER = logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
+  BAR_LOGGER = logging.getLogger('tensorboard.ephemeral')
   BAR_WIDTH = 45
   BLOCK_DARK = u'\u2593'
   BLOCK_LIGHT = u'\u2591'
@@ -545,7 +549,7 @@ class Progress(object):
 
   def __init__(self, clock=time.time,
                sleep=time.sleep,
-               log_callback=tf.logging.info,
+               log_callback=logging.info,
                bar_callback=BAR_LOGGER.info,
                rate_counter_factory=RateCounter):
     """Creates new instance.
@@ -624,7 +628,6 @@ class Progress(object):
     """
     self._show_log(can_stall=False)
     self._show_bar(can_stall=False)
-    # Instructs util.LogHandler to clear the ephemeral logging state.
     self._bar_callback('')
 
   def sleep(self, seconds):
@@ -885,7 +888,7 @@ class RunReader(object):
             ('INSERT INTO EventLogs (rowid, run_id, path, offset)'
              ' VALUES (?, ?, ?, 0)'),
             (log.rowid, self.run_id, log.path))
-    tf.logging.debug('Adding %s', log)
+    logger.debug('Adding %s', log)
     self._logs.append(log)
     # Skip over event logs we've already read.
     if log.get_offset() > 0 and not self._prepended_events:

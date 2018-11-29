@@ -22,18 +22,21 @@ import json
 import math
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
 
 from google.protobuf import json_format
 from grpc.framework.interfaces.face.face import AbortionError
 from werkzeug import wrappers
 
+import tensorflow as tf
+
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
-
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -260,14 +263,14 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         with tf.gfile.GFile(vocab_path, 'r') as f:
           label_vocab = [line.rstrip('\n') for line in f]
       except tf.errors.NotFoundError as err:
-        tf.logging.error('error reading vocab file: %s', err)
+        logger.error('error reading vocab file: %s', err)
         label_vocab = []
     else:
       label_vocab = []
 
     try:
       if request.method != 'GET':
-        tf.logging.error('%s requests are forbidden.', request.method)
+        logger.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                     'application/json', code=405)
 
@@ -421,7 +424,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """
     try:
       if request.method != 'GET':
-        tf.logging.error('%s requests are forbidden.', request.method)
+        logger.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                  'application/json', code=405)
 

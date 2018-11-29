@@ -12,7 +12,9 @@ py_library(
     srcs = ["io_wrapper.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -35,7 +37,9 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":io_wrapper",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -72,9 +76,11 @@ py_library(
     srcs = ["event_file_loader.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:platform_util",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -104,8 +110,10 @@ py_library(
         ":plugin_asset_util",
         ":reservoir",
         "//tensorboard:data_compat",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -158,7 +166,8 @@ py_library(
         ":directory_watcher",
         ":event_accumulator",
         ":io_wrapper",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -200,8 +209,10 @@ py_library(
         ":io_wrapper",
         ":sqlite_writer",
         "//tensorboard:data_compat",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -229,7 +240,9 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],

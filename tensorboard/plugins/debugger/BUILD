@@ -32,7 +32,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":debug_graphs_helper",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -68,8 +70,10 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":tensor_helper",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -113,7 +117,11 @@ py_library(
     name = "events_writer_manager",
     srcs = ["events_writer_manager.py"],
     srcs_version = "PY2AND3",
-    deps = ["//tensorboard:expect_tensorflow_installed"],
+    deps = [
+        "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
+    ],
 )
 
 py_library(
@@ -201,7 +209,9 @@ py_library(
         ":constants",
         ":events_writer_manager",
         ":numerics_alert",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
     ],
 )
@@ -217,7 +227,9 @@ py_library(
         ":numerics_alert",
         ":tensor_helper",
         ":tensor_store",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -282,11 +294,13 @@ py_library(
     deps = [
         ":constants",
         ":debugger_server_lib",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
     ],
@@ -302,11 +316,13 @@ py_library(
         ":constants",
         ":debug_graphs_helper",
         ":interactive_debugger_server_lib",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -320,6 +336,7 @@ py_library(
         ":debugger_plugin",
         ":interactive_debugger_plugin",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
