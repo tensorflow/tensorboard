@@ -65,20 +65,21 @@ def tensorboard_workspace():
       generated_rule_name = "archive",
   )
 
-  # Roughly corresponds to Chrome 55
+  # Last Updated: 2018-11-29
+  # Roughly corresponds to Chrome 70
   filegroup_external(
       name = "org_chromium_chromium",
       licenses = ["restricted"],  # So many licenses
       sha256_urls = {
-          "e3c99954d6acce013174053534b72f47f67f18a0d75f79c794daaa8dd2ae8aaf": [
-              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/423768/chrome-linux.zip",
-              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/423768/chrome-linux.zip",
+          "ac11a4b8c901622cdd6cebbdac7a0dfe20c32f4d287a44ed19368444a2cd159e": [
+              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/582301/chrome-linux.zip",
+              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/582301/chrome-linux.zip",
           ],
       },
       sha256_urls_macos = {
-          "62aeb7a5c6b8a1b7b31400105bf01295bbd45b0627920b8f99f0cc4ca76927ca": [
-              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/423758/chrome-mac.zip",
-              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/423758/chrome-mac.zip",
+          "4ffd70a5d3ce02637550fc0d41d15e4e9de053d5bc55621442652b253fc61665": [
+              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/582236/chrome-mac.zip",
+              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/582236/chrome-mac.zip",
           ],
       },
       generated_rule_name = "archive",
