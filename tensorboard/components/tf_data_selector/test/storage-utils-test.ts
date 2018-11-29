@@ -19,7 +19,7 @@ const {assert} = chai;
 describe('storageUtils', () => {
   describe('decodeIdArray', () => {
     it('decodes list of ids from a string', () => {
-      const actual = tf_data_selector.decodeIdArray('1,2,3,2s');
+      const actual = tf_data_selector.decodeIdArray('1,2,3,100');
       assert.deepEqual(actual, [1, 2, 3, 100]);
     });
 
@@ -28,26 +28,21 @@ describe('storageUtils', () => {
       assert.deepEqual(actual, [1]);
     });
 
-    // TODO(@stephanwlee): This test fails:
-    // expected [ 1, 2, 1461559270678 ] to deeply equal [ NaN, 1, 2, NaN, Infinity ]
-    it.skip('decodes with unexpected string', () => {
+    it('filters non-number (including inf) from decoded ids', () => {
       const actual = tf_data_selector.decodeIdArray(',1, 2,!a,Infinity');
-      assert.deepEqual(actual, [NaN, 1, 2, NaN, Infinity]);
+      assert.deepEqual(actual, [1, 2]);
     });
   });
 
-  // TODO(#1625): This behavior is implementation-defined. The expected
-  // values are accurate for some versions of Chrome/Chromium, but not
-  // all.
-  describe.skip('encodeIdArray', () => {
+  describe('encodeIdArray', () => {
     it('encodes list of ids', () => {
       const actual = tf_data_selector.encodeIdArray([1, 2, 3, 100]);
-      assert.equal(actual, '1,2,3,2s');
+      assert.deepEqual(actual, '1,2,3,100');
     });
 
     it('behaves ok for floats', () => {
       const actual = tf_data_selector.encodeIdArray([1, 1.9]);
-      assert.equal(actual, '1,1.weeeeeeeee');
+      assert.equal(actual, '1,1.9');
     });
 
     it('behaves ok with large numbers', () => {
