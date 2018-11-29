@@ -126,6 +126,13 @@ describe('backend tests', () => {
               'data/plugin/scalars/a?b=c&d=1&d=2');
         });
 
+        it('does not put ? when passed an empty URLSearchParams', () => {
+          assert.equal(
+              router.pluginRoute('scalars', '/a',
+                  new URLSearchParams()),
+              'data/plugin/scalars/a');
+        });
+
         it('encodes parenthesis correctly', () => {
           assert.equal(
               router.pluginRoute('scalars', '/a',
