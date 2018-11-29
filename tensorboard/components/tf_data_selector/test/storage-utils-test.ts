@@ -29,8 +29,8 @@ describe('storageUtils', () => {
     });
 
     it('filters non-number (including inf) from decoded ids', () => {
-      const actual = tf_data_selector.decodeIdArray(',1, 2,!a,Infinity');
-      assert.deepEqual(actual, [1, 2]);
+      const actual = tf_data_selector.decodeIdArray(',1, 2,0,!a,Infinity');
+      assert.deepEqual(actual, [1, 2, 0]);
     });
   });
 

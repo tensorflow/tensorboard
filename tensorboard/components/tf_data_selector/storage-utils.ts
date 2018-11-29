@@ -15,7 +15,9 @@ limitations under the License.
 namespace tf_data_selector {
 
 export function decodeIdArray(str: string): Array<number> {
-  return str.split(',').map(idStr => parseInt(idStr, 10)).filter(Boolean);
+  return str.split(',')
+      .map(idStr => parseInt(idStr, 10))
+      .filter(n => !isNaN(n));
 }
 
 export function encodeIdArray(arr: Array<number>): string {
