@@ -3,7 +3,7 @@
 ![What-If Tool Screenshot](/tensorboard/plugins/interactive_inference/img/wit-smile-intro.png "What-If Tool Screenshot")
 
 The [What-If Tool](https://pair-code.github.io/what-if-tool) (WIT) provides an easy-to-use interface for expanding
-understanding of a black-box ML model.
+understanding of a black-box classification or regression ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
 Additionally, examples can be edited manually or programatically and re-run
@@ -50,10 +50,29 @@ Fine, here are some demos:
 To use the tool, only the following information needs to be provided:
 
 * The model server host and port, served using
-  [TensorFlow Serving](https://github.com/tensorflow/serving). The model must
-  use the TensorFlow Serving Classification or Regression APIs.
-* A TFRecord file of tf.Examples to perform inference on and the
-  number of examples to load from the file.
+  [TensorFlow Serving](https://github.com/tensorflow/serving). The model can
+  use the TensorFlow Serving Classification, Regression, or Predict API.
+    * Information on how to create a saved model with the `Estimator` API that
+      will use thse appropriate TensorFlow Serving Classification or Regression
+      APIs can be found in the [saved model documentation](https://www.tensorflow.org/guide/saved_model#using_savedmodel_with_estimators)
+      and in this [helpful tutorial](http://shzhangji.com/blog/2018/05/14/serve-tensorflow-estimator-with-savedmodel/).
+      Models that use these APIs are the simplest to use with the What-If Tool
+      as they require no set-up in the tool beyond setting the model type.
+    * If the model uses the Predict API, the input must be serialized tf.Example
+      or tf.SequenceExample protos and the output must be following:
+        * For classification models, the output must include a 2D float tensor
+          containing a list of class probabilities for all possible class
+          indices for each inferred example.
+        * For regression models, the output must include a float tensor
+          containing a single regression score for each inferred example.
+    * The What-If Tool queries the served model using the gRPC API, not the
+      RESTful API. See the TensorFlow Serving
+      [docker documentation](https://www.tensorflow.org/serving/docker) for
+      more information on the two APIs. The docker image uses port 8500 for the
+      gRPC API, so if using the docker approach, the port to specify in the
+      What-If Tool will be 8500.
+* A TFRecord file of tf.Examples or tf.SequenceExamples to perform inference on
+  and the number of examples to load from the file.
     * Can handle up to tens of thousands of examples. The exact amount depends
       on the size of each example (how many features there are and how large the
       feature values are).
@@ -67,12 +86,44 @@ To use the tool, only the following information needs to be provided:
       labels for a classification model. If not, it will show the predicted
       class indices.
 
+Alternatively, the What-If Tool can be used to explore a dataset directly from
+a CSV file. See the next section for details.
+
 The information can be provided in the settings dialog screen, which pops up
 automatically upon opening this tool and is accessible through the settings
 icon button in the top-right of the tool.
 The information can also be provided directly through URL parameters.
 Changing the settings through the controls automatically updates the URL so that
 it can be shared with others for them to view the same data in the What-If Tool.
+
+## All I have is a dataset. What can I do? Where do I start?
+
+If you want to explore a dataset directly, you have two options:
+
+If you want to train an ML model from the dataset and explore the dataset and
+model, check out the [WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb)
+which shows how to install TensorFlow, TensorBoard, and TensorFlow Serving,
+train a very simple model to predict a column from a CSV file, serve that model
+and load it up in the What-If Tool.
+
+If instead you just want to explore the information in the CSV, just set the
+path to the examples to the file (with a ".csv" extension) and leave the
+inference address and model name fields blank. The first line of the CSV file
+must contain column names. Each line after that contains one example from the
+dataset, with values for each of the columns defined on the first line. The pipe
+character ("|") deliminates separate feature values in a list of feature values
+for a given feature.
+
+In order to make use of the model understanding features of the tool, you can
+have columns in your dataset that contain the output from an ML model. If your
+file has a column named "probabilities" with a pipe-delimited ("|") list of
+probability scores (between 0 and 1), then the tool will treat those as the
+output scores of a classification model. If your file has a numeric column named
+"score" then the tool will treat those as the output of a regression model. In
+this way, the tool can be used to analyze any dataset and the results of any
+model run offline against the dataset. Note that in this mode, the examples
+aren't editable as there is no way to get new inference results when an example
+changes.
 
 ## What can it do?
 * Visualize a dataset of TensorFlow Example protos.
@@ -152,7 +203,7 @@ it can be shared with others for them to view the same data in the What-If Tool.
     such as the cost of a false positive vs a false negative and satisfying
     fairness measures such as equality of opportunity or demographic parity.
 
-![ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on on the equal opporitunity fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on on the equal opporitunity fairness criteria button")
+![ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button")
 
 * If using a multi-class classification model and your examples include a
   feature that describes the true label, you can do the following:

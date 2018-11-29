@@ -17,9 +17,9 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -65,7 +65,6 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:util",
     ],
 )
 
@@ -91,7 +90,7 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 

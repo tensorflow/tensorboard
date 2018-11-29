@@ -130,6 +130,8 @@ tf_web_library(
     name = "web_component_tester",
     testonly = 1,
     visibility = ["//visibility:public"],
+    srcs = ["web-component-tester.d.ts"],
+    path = "/web_component_tester",
     exports = [
         ":chai_typings",
         ":mocha_typings",

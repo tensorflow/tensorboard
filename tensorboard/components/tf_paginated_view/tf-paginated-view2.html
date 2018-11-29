@@ -1,0 +1,482 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-dashboard-common/array-update-helper.html">
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
+<link rel="import" href="tf-paginated-view-store.html">
+
+<!--
+  tf-paginated-view2 takes a list of items and renders subset of them using
+  template passed. Depending on global pagination setting, list of items is
+  broken down into discrete "pages" and when there are multiple pages, this
+  component renders pagination controls.
+
+  The API signature of the component is similar to that of dom-repeat: it takes
+  `items` and `as` and it feeds an item to the template passed as `as`.
+
+  Example usage:
+
+      <tf-paginated-view2 items="[[items]]" as="meow">
+        <template>
+          <div>[[meow.nyan]]</div>
+        </template>
+      </tf-paginated-view2>
+-->
+<dom-module id="tf-paginated-view2">
+  <template>
+    <span id="top-of-container"></span>
+    <template is="dom-if" if="[[_multiplePagesExist]]">
+      <div class="big-page-buttons" style="margin-bottom: 10px;">
+        <paper-button
+          on-tap="_performPreviousPage"
+          disabled$="[[!_hasPreviousPage]]"
+        >Previous page</paper-button><!--
+        --><paper-button
+          on-tap="_performNextPage"
+          disabled$="[[!_hasNextPage]]"
+        >Next page</paper-button>
+      </div>
+    </template>
+    <div id="template"><slot></slot></div>
+    <div id="items"></div>
+    <template is="dom-if" if="[[_multiplePagesExist]]">
+      <div id="controls-container">
+        <div style="display: inline-block; padding: 0 5px">
+          Page
+          <paper-input
+            id="page-input"
+            type="number"
+            no-label-float
+            min="1"
+            max="[[_pageCount]]"
+            value="[[_pageInputValue]]"
+            style="display: inline-block; width: [[_inputWidth]];"
+            on-input="_handlePageInputEvent"
+            on-change="_handlePageChangeEvent"
+            on-focus="_handlePageFocusEvent"
+            on-blur="_handlePageBlurEvent"
+          ></paper-input>
+          of [[_pageCount]]
+        </div>
+      </div>
+      <div class="big-page-buttons" style="margin-top: 10px;">
+        <paper-button
+          on-tap="_performPreviousPage"
+          disabled$="[[!_hasPreviousPage]]"
+        >Previous page</paper-button><!--
+        --><paper-button
+          on-tap="_performNextPageAndJumpToTop"
+          disabled$="[[!_hasNextPage]]"
+        >Next page</paper-button>
+      </div>
+    </template>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+      }
+      #controls-container {
+        justify-content: center;
+        display: flex;
+        flex-direction: row;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 100%;
+      }
+      #controls-container paper-button {
+        display: inline-block;
+      }
+      .big-page-buttons {
+        display: flex;
+      }
+      .big-page-buttons paper-button {
+        background-color: var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+        display: inline-block;
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 1;
+        font-size: 13px;
+      }
+      .big-page-buttons paper-button[disabled] {
+        background: none;
+      }
+      #items {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    </style>
+  </template>
+  <script>
+
+  Polymer({
+    is: 'tf-paginated-view2',
+    properties: {
+      /**
+       * An arbitrary list of items to render
+       */
+      items: {
+        type: Array,
+        value: () => [],
+      },
+
+      /**
+       * Callback that returns a stable string key for an item
+       */
+      getItemKey: {
+        type: Function,
+        value: () => (item, index) => index,
+      },
+
+      as: {
+        type: String,
+        value: 'item'
+      },
+
+      /**
+       * A list of rendered and mounted items.
+       */
+      _renderedItems: {
+        type: Array,
+        value: () => [],
+      },
+
+      /**
+       * A map of stamped child components.
+       */
+      _renderedTemplateInst: {
+        type: Object,
+        value: () => new Map(),
+      },
+
+      /**
+       * When item is removed, it is placed in a cache and the oldest item gets
+       * removed when LRU grows more than size of the 2x_limit.
+       */
+      _lruCachedItems: {
+        type: Object,
+        value: () => new Map(),
+      },
+
+      /**
+       * The maximum number of items to include on each page.
+       */
+      _limit: {
+        type: Number,
+        value: 12,  // reasonably small and has lots of factors
+      },
+
+      // At any time we'll mark one particular item('s index) as
+      // "active," and we'll always render the page containing that
+      // item. Clicking the next/previous page buttons will adjust this
+      // index by `_limit`.
+      //
+      // We track an active index instead of an active page so that any
+      // changes to the `_limit` will keep roughly the same set of items
+      // displayed. (Cf.: in a browser, when you zoom to adjust the text
+      // size, your reading position stays in about the same place.)
+      // (This decision incurs hardly any additional complexity, which
+      // is good because otherwise it wouldn't really be worth it.)
+      //
+      // Range invariant: let `count = items.length`. If `count > 0`
+      // then `0 <= _activeIndex && _activeIndex < count`; otherwise,
+      // if `count === 0` then `_activeIndex === 0`.
+      _activeIndex: {
+        type: Number,
+        value: 0,
+      },
+
+      _currentPage: {
+        type: Number,  // 1-indexed
+        computed: '_computeCurrentPage(_limit, _activeIndex)',
+      },
+      _pageCount: {
+        type: Number,
+        computed: '_computePageCount(items, _limit)',
+      },
+      _multiplePagesExist: {
+        type: Boolean,
+        computed: '_computeMultiplePagesExist(_pageCount)',
+      },
+      _hasPreviousPage: {
+        type: Boolean,
+        computed: '_computeHasPreviousPage(_currentPage)',
+      },
+      _hasNextPage: {
+        type: Boolean,
+        computed: '_computeHasNextPage(_currentPage, _pageCount)',
+      },
+      _inputWidth: {
+        type: String,
+        computed: '_computeInputWidth(_pageCount)',
+      },
+
+      _pageInputValue: {
+        type: String,  // value displayed in the input field at any time
+        computed: '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
+        observer: '_updatePageInputValue',
+      },
+      _pageInputRawValue: {
+        type: String,  // updated live as the user types
+        value: '',
+      },
+      _pageInputFocused: {
+        type: Boolean,
+        value: false,
+      },
+      _bootstrapped: {
+        type: Boolean,
+        value: false,
+      },
+    },
+    observers: [
+      '_clampActiveIndex(items)',
+      '_updateRenderedItems(items, _limit, _activeIndex, _pageCount)',
+      '_updateDom(_renderedItems.*)',
+      '_trimCache(_limit)',
+    ],
+
+    behaviors: [
+      tf_dashboard_common.ArrayUpdateHelper,
+      Polymer.Templatizer,
+    ],
+
+    ready() {
+      // Template instance props that should be excluded from forwarding
+     this._instanceProps = {
+       [this.as]: true,
+     };
+
+      this.templatize(this.$.template.querySelector('template'));
+    },
+
+    attached() {
+      this._limitListener = () => {
+        this.set('_limit', tf_paginated_view.getLimit());
+      };
+      tf_paginated_view.addLimitListener(this._limitListener);
+      this._limitListener();
+      this._bootstrapDom();
+      this._bootstrapped = true;
+    },
+
+    detached() {
+      tf_paginated_view.removeLimitListener(this._limitListener);
+      this._bootstrapped = false;
+    },
+
+    _updateRenderedItems(items, limit, activeIndex, pageCount) {
+      const activePageIndex = Math.floor(activeIndex / limit);
+      const domItems = (items || [])
+          .slice(activePageIndex * limit, (activePageIndex + 1) * limit);
+      this.updateArrayProp('_renderedItems', domItems, this.getItemKey);
+    },
+
+    _bootstrapDom() {
+      Array.from(this.$.items.children)
+          .forEach(child => Polymer.dom(this.$.items).removeChild(child));
+      this._lruCachedItems.clear();
+
+      this._renderedItems
+          .forEach((item, index) => this._insertItem(item, index));
+    },
+
+    _updateDom(event) {
+      if (!this._bootstrapped) return;
+      // These are uninteresting.
+      if (event.path == '_renderedItems' ||
+          event.path == '_renderedItems.length') {
+        return;
+      }
+
+      if (event.path === '_renderedItems.splices') {
+        event.value.indexSplices.forEach(splice => {
+          const {index, addedCount, object, removed} = splice;
+          removed.forEach(item => {
+            this._removeItem(item, this.$.items.children[index]);
+          });
+          object.slice(index, index + addedCount)
+              .forEach((item, ind) => this._insertItem(item, index + ind));
+          this._trimCache();
+        });
+      } else {
+        // Update the stamped and mounted DOM model by notifying.
+        const key = this.getItemKey(event.value);
+        if (this._renderedTemplateInst.has(key)) {
+          this._renderedTemplateInst.get(key).notifyPath(
+              this.as,
+              event.value,
+              true /* fromAbove */);
+        } else {
+          console.warn(`Expected '${key}' to exist in the DOM but ` +
+              `could not find one.`);
+        }
+      }
+    },
+
+    _trimCache() {
+      while (this._lruCachedItems.size > this._limit * 2) {
+        const [firstKey] = this._lruCachedItems.keys();
+        this._lruCachedItems.delete(firstKey);
+        this._renderedTemplateInst.delete(firstKey);
+      }
+    },
+
+    _removeItem(item, node) {
+      Polymer.dom(node.parentNode).removeChild(node);
+      this._lruCachedItems.set(this.getItemKey(item), node);
+    },
+
+    _insertItem(item, atIndex) {
+      let fragOrEl;
+      const key = this.getItemKey(item);
+      if (this._lruCachedItems.has(key)) {
+        fragOrEl = this._lruCachedItems.get(key);
+        this._lruCachedItems.delete(key);
+      } else {
+        const inst = this.stamp({[this.as]: item});
+        fragOrEl = inst.root;
+        this._renderedTemplateInst.set(key, inst);
+      }
+
+      if (this.$.items.children[atIndex]) {
+        Polymer.dom(this.$.items)
+            .insertBefore(fragOrEl, this.$.items.children[atIndex]);
+      } else {
+        Polymer.dom(this.$.items).appendChild(fragOrEl);
+      }
+    },
+
+    _computeCurrentPage(limit, activeIndex) {
+      return Math.floor(activeIndex / limit) + 1;
+    },
+    _computePageCount(items, limit) {
+      return Math.ceil((items || []).length / limit);
+    },
+    _computeMultiplePagesExist(pageCount) {
+      return pageCount > 1;
+    },
+    _computeHasPreviousPage(currentPage) {
+      return currentPage > 1;
+    },
+    _computeHasNextPage(currentPage, pageCount) {
+      return currentPage < pageCount;
+    },
+    _computeInputWidth(pageCount) {
+      // Add 20px for the +/- arrows added by browsers.
+      return `calc(${pageCount.toString().length}em + 20px)`;
+    },
+
+    /**
+     * Update _activeIndex, maintaining its range invariant.
+     */
+    _setActiveIndex(index) {
+      const maxIndex = (this.items || []).length - 1;
+      if (index > maxIndex) {
+        index = maxIndex;
+      }
+      if (index < 0) {
+        index = 0;
+      }
+      this.set('_activeIndex', index);
+    },
+
+    _clampActiveIndex(items) {
+      this._setActiveIndex(this._activeIndex);
+    },
+    _performPreviousPage() {
+      this._setActiveIndex(this._activeIndex - this._limit);
+    },
+    _performNextPage() {
+      this._setActiveIndex(this._activeIndex + this._limit);
+    },
+    _performNextPageAndJumpToTop() {
+      const topMarker = this.$$('#top-of-container');
+      const offsetFromTop = topMarker.getBoundingClientRect().top;
+      // NOTE: `offsetFromTop` does not take into account the fact that
+      // the "TensorBoard" tab bar occludes the main content pane, so
+      // we're off by order-of-50 pixels. IM(@wchargin)O, this isn't
+      // really a big problem: it turns out that only the collapsable
+      // card title and the top navigation buttons will be hidden (and
+      // this also means that it will be rare for this to happen at
+      // all). If we wanted, we could get proper metrics here, but doing
+      // so is tricky. Cf. https://stackoverflow.com/q/123999.
+      if (offsetFromTop < 0) {
+        // We're below the top of the page.
+        topMarker.scrollIntoView();
+      }
+      this._performNextPage();
+    },
+
+    _computePageInputValue(focused, rawValue, currentPage) {
+      return focused ? rawValue : currentPage.toString();
+    },
+    _handlePageInputEvent(e) {
+      this.set('_pageInputRawValue', e.target.value);
+      const oneIndexedPage = e.target.valueAsNumber;
+      if (isNaN(oneIndexedPage)) return;
+      const page =
+        Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
+      this._setActiveIndex(this._limit * page);
+    },
+    _handlePageChangeEvent() {
+      // Occurs on Enter, etc. Commit the true state.
+      this.set('_pageInputRawValue', this._currentPage.toString());
+    },
+    _handlePageFocusEvent() {
+      // Discard any old (or uninitialized) state before we grant focus.
+      this.set('_pageInputRawValue', this._pageInputValue);
+      this.set('_pageInputFocused', true);
+    },
+    _handlePageBlurEvent() {
+      this.set('_pageInputFocused', false);
+    },
+    _updatePageInputValue(newValue) {
+      // Force two-way binding.
+      const pageInput = this.$$('#page-input input');
+      if (pageInput) {
+        pageInput.value = newValue;
+      }
+    },
+
+    // Implements extension point from Templatizer.
+    // Called as side-effect of a host path change, responsible for notifying
+    // parent path change on each inst. Note that changes for props defined on
+    // `this._instanceProps` are omitted from forwarding.
+    _forwardParentProp(prop, value) {
+      this._renderedTemplateInst.forEach(inst => {
+        inst.notifyPath(prop, value, true /* fromAbove */);
+      });
+    },
+
+    // Implements extension point from Templatizer.
+    // Called as side-effect of a host path change, responsible for notifying
+    // parent path change on each inst. Note that changes for props defined on
+    // `this._instanceProps` are omitted from forwarding.
+    _forwardParentPath(path, value) {
+      this._renderedTemplateInst.forEach(inst => {
+        inst.notifyPath(path, value, true /* fromAbove */);
+      });
+    },
+
+  });
+  </script>
+</dom-module>

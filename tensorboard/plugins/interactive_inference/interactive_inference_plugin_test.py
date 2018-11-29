@@ -21,28 +21,28 @@ from __future__ import print_function
 import json
 import os
 import sys
-if sys.version_info.major == 2:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
-else:
-  from unittest import mock  # pylint: disable=g-import-not-at-top
-import mock
-import numpy as np
-from six.moves import urllib_parse
 
+import numpy as np
 import tensorflow as tf
 
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
+from six.moves import urllib_parse
 from google.protobuf import json_format
+from tensorflow_serving.apis import regression_pb2
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-
 from tensorboard.plugins.interactive_inference.utils import inference_utils
-from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
-from tensorboard.plugins.interactive_inference.utils.serving import regression_pb2
 from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 
 
@@ -76,7 +76,8 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/examples_from_path?' +
         urllib_parse.urlencode({
             'examples_path': examples_path,
-            'max_examples': 2
+            'max_examples': 2,
+            'sampling_odds': 1,
         }))
     self.assertEqual(200, response.status_code)
     example_strings = json.loads(response.get_data().decode('utf-8'))['examples']
@@ -94,7 +95,8 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/examples_from_path?' +
         urllib_parse.urlencode({
             'examples_path': 'does_not_exist',
-            'max_examples': 2
+            'max_examples': 2,
+            'sampling_odds': 1,
         }))
     error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
@@ -118,7 +120,7 @@ class InferencePluginTest(tf.test.TestCase):
     error = json.loads(response.get_data().decode('utf-8'))['error']
     self.assertTrue(error)
 
-  @mock.patch.object(oss_utils, 'call_servo')
+  @mock.patch.object(platform_utils, 'call_servo')
   def test_infer(self, mock_call_servo):
     self.plugin.examples = [
         self.get_fake_example(0),
@@ -138,7 +140,9 @@ class InferencePluginTest(tf.test.TestCase):
         '/data/plugin/whatif/infer?' + urllib_parse.urlencode({
             'inference_address': 'addr',
             'model_name': 'name',
-            'model_type': 'regression'
+            'model_type': 'regression',
+            'model_version': ',',
+            'model_signature': ',',
         }))
 
     self.assertEqual(200, response.status_code)
@@ -197,7 +201,7 @@ class InferencePluginTest(tf.test.TestCase):
           'serving_bundle': {
               'inference_address': serving_bundle.inference_address,
               'model_name': serving_bundle.model_name,
-              'model_type': serving_bundle.model_type
+              'model_type': serving_bundle.model_type,
           },
           'viz_params': {
               'x_min': viz_params.x_min,
@@ -216,11 +220,13 @@ class InferencePluginTest(tf.test.TestCase):
             'model_name': '/ml/cassandrax/iris_classification',
             'inference_address': 'ml-serving-temp.prediction',
             'model_type': 'classification',
+            'model_version': ',',
+            'model_signature': ',',
             'x_min': '-10',
             'x_max': '10',
         }))
     result = self._DeserializeResponse(response.get_data())
-    self.assertEqual(str(example), result['example'])
+    self.assertEqual(str([example]), result['example'])
     self.assertEqual('single_int', result['feature_name'])
     self.assertEqual('ml-serving-temp.prediction',
                      result['serving_bundle']['inference_address'])

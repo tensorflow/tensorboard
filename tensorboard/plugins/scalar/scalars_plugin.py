@@ -30,11 +30,11 @@ from six import StringIO
 from werkzeug import wrappers
 
 import numpy as np
-import tensorflow as tf
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
+from tensorboard.compat import tf
 
 
 class OutputFormat(object):
@@ -141,7 +141,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
-          /* For backwards compatiblity, ignore the experiment id
+          /* For backwards compatibility, ignore the experiment id
              for matching purposes if it is empty. */
           (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
           AND Runs.run_name = :run

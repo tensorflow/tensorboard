@@ -51,7 +51,7 @@ future for loading older images.
           <div class="heading-label">
             step <span style="font-weight: bold">[[_toLocaleString(_stepValue)]]</span>
           </div>
-          <div class="heading-label heading-right">
+          <div class="heading-label heading-right datetime">
             <template is="dom-if" if="[[_currentWallTime]]">
               [[_currentWallTime]]
             </template>
@@ -77,9 +77,13 @@ future for loading older images.
       </template>
     </tf-card-heading>
 
-    <button aria-label="Toggle actual size"
-            id="main-image-container"
-            on-tap="_handleTap"></button>
+    <!-- Semantically a button but <img> inside a <button> disallows user to do
+    an interesting operation like "Copy Image" in non-Chromium browsers. -->
+    <a id="main-image-container"
+        role="button"
+        aria-label="Toggle actual size"
+        aria-expanded$="[[_getAriaExpanded(actualSize)]]"
+        on-tap="_handleTap"></a>
 
     <style include="tf-card-heading-style">
       /** Make button a div. */
@@ -236,6 +240,10 @@ future for loading older images.
           type: Number,
           notify: true,
         },
+        _currentStep: {
+          type: Object,
+          computed: "_computeCurrentStep(_steps, _stepIndex)",
+        },
         _hasAtLeastOneStep: {
           type: Boolean,
           computed: "_computeHasAtLeastOneStep(_steps)",
@@ -246,11 +254,11 @@ future for loading older images.
         },
         _stepValue: {
           type: Number,
-          computed: "_computeStepValue(_steps, _stepIndex)",
+          computed: "_computeStepValue(_currentStep)",
         },
         _currentWallTime: {
-          type: Number,
-          computed: "_computeCurrentWallTime(_steps, _stepIndex)",
+          type: String,
+          computed: "_computeCurrentWallTime(_currentStep)",
         },
         _maxStepIndex: {
           type: Number,
@@ -271,7 +279,7 @@ future for loading older images.
       },
       observers: [
         "reload(run, tag)",
-        "_updateImageUrl(_steps, _stepIndex, brightnessAdjustment, contrastPercentage)",
+        "_updateImageUrl(_currentStep, brightnessAdjustment, contrastPercentage)",
       ],
 
       _computeRunColor(run) {
@@ -283,11 +291,16 @@ future for loading older images.
       _computeHasMultipleSteps(steps) {
         return !!steps && steps.length > 1;
       },
-      _computeStepValue(steps, stepIndex) {
-        return steps[stepIndex].step;
+      _computeCurrentStep(steps, stepIndex) {
+        return steps[stepIndex] || null;
       },
-      _computeCurrentWallTime(steps, stepIndex) {
-        return tf_card_heading.formatDate(steps[stepIndex].wall_time);
+      _computeStepValue(currentStep) {
+        if (!currentStep) return 0;
+        return currentStep.step;
+      },
+      _computeCurrentWallTime(currentStep) {
+        if (!currentStep) return '';
+        return tf_card_heading.formatDate(currentStep.wall_time);
       },
       _computeMaxStepIndex(steps) {
         return steps.length - 1;
@@ -298,7 +311,9 @@ future for loading older images.
       _computeHasMultipleSamples(ofSamples) {
         return ofSamples > 1;
       },
-
+      _getAriaExpanded() {
+        return this.actualSize ? 'true' : 'false';
+      },
       attached() {
         this._attached = true;
         this.reload();
@@ -343,13 +358,11 @@ future for loading older images.
           url,
         };
       },
-      _updateImageUrl(steps, stepIndex, brightnessAdjustment, contrastPercentage) {
+      _updateImageUrl(currentStep, brightnessAdjustment, contrastPercentage) {
         // We manually change the image URL (instead of binding to the
         // image's src attribute) because we would like to manage what
         // happens when the image starts and stops loading.
-        if (!steps.length) {
-          return;
-        }
+        if (!currentStep) return;
 
         const img = new Image();
         this._imageCanceller.cancelAll();
@@ -368,7 +381,7 @@ future for loading older images.
 
         // Load the new image.
         this.set("_isImageLoading", true);
-        img.src = steps[stepIndex].url;
+        img.src = currentStep.url;
       },
       _handleTap(e) {
         this.set('actualSize', !this.actualSize);

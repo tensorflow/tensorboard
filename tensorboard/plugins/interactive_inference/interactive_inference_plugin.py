@@ -21,6 +21,7 @@ from __future__ import print_function
 import json
 import math
 import numpy as np
+from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from google.protobuf import json_format
@@ -32,7 +33,7 @@ from tensorboard.plugins import base_plugin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
-from tensorboard.plugins.interactive_inference.utils import oss_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -55,6 +56,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   examples = []
   updated_example_indices = set()
   sprite = None
+  example_class = tf.train.Example
 
   # The standard name for encoded image features in TensorFlow.
   image_feature_name = 'image/encoded'
@@ -106,10 +108,12 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   def generate_sprite(self, example_strings):
     # Generate a sprite image for the examples if the examples contain the
     # standard encoded image feature.
+    feature_list = (self.examples[0].features.feature
+        if self.example_class == tf.train.Example
+        else self.examples[0].context.feature)
     self.sprite = (
         self.create_sprite_image(example_strings)
-        if (len(self.examples) and
-            self.image_feature_name in self.examples[0].features.feature) else
+        if (len(self.examples) and self.image_feature_name in feature_list) else
         None)
 
   @wrappers.Request.application
@@ -120,18 +124,23 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       request: A request that should contain 'examples_path' and 'max_examples'.
 
     Returns:
-      JSON of up to max_examlpes of the tf.train.Examples in the path.
+      JSON of up to max_examlpes of the examples in the path.
     """
     examples_count = int(request.args.get('max_examples'))
     examples_path = request.args.get('examples_path')
+    sampling_odds = float(request.args.get('sampling_odds'))
+    self.example_class = (tf.train.SequenceExample
+        if request.args.get('sequence_examples') == 'true'
+        else tf.train.Example)
     try:
-      oss_utils.throw_if_file_access_not_allowed(examples_path,
-                                                 self._logdir,
-                                                 self._has_auth_group)
-      example_strings = oss_utils.example_protos_from_path(
-          examples_path, examples_count, parse_examples=False)
+      platform_utils.throw_if_file_access_not_allowed(examples_path,
+                                                      self._logdir,
+                                                      self._has_auth_group)
+      example_strings = platform_utils.example_protos_from_path(
+          examples_path, examples_count, parse_examples=False,
+          sampling_odds=sampling_odds, example_class=self.example_class)
       self.examples = [
-        tf.train.Example.FromString(ex) for ex in example_strings]
+          self.example_class.FromString(ex) for ex in example_strings]
       self.generate_sprite(example_strings)
       json_examples = [
           json_format.MessageToJson(example) for example in self.examples
@@ -151,7 +160,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _update_example(self, request):
-    """Updates the specified tf.train.Example.
+    """Updates the specified example.
 
     Args:
       request: A request that should contain 'index' and 'example'.
@@ -167,7 +176,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
                                'application/json', code=400)
-    new_example = tf.train.Example()
+    new_example = self.example_class()
     json_format.Parse(example_json, new_example)
     self.examples[index] = new_example
     self.updated_example_indices.add(index)
@@ -176,7 +185,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _duplicate_example(self, request):
-    """Duplicates the specified tf.train.Example.
+    """Duplicates the specified example.
 
     Args:
       request: A request that should contain 'index'.
@@ -188,7 +197,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     if index >= len(self.examples):
       return http_util.Respond(request, {'error': 'invalid index provided'},
                                'application/json', code=400)
-    new_example = tf.train.Example()
+    new_example = self.example_class()
     new_example.CopyFrom(self.examples[index])
     self.examples.append(new_example)
     self.updated_example_indices.add(len(self.examples) - 1)
@@ -197,7 +206,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _delete_example(self, request):
-    """Deletes the specified tf.train.Example.
+    """Deletes the specified example.
 
     Args:
       request: A request that should contain 'index'.
@@ -214,6 +223,25 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         i if i < index else i - 1 for i in self.updated_example_indices])
     self.generate_sprite([ex.SerializeToString() for ex in self.examples])
     return http_util.Respond(request, {}, 'application/json')
+
+  def _parse_request_arguments(self, request):
+    """Parses comma separated request arguments
+
+    Args:
+      request: A request that should contain 'inference_address', 'model_name',
+        'model_version', 'model_signature'.
+
+    Returns:
+      A tuple of lists for model parameters
+    """
+    inference_addresses = request.args.get('inference_address').split(',')
+    model_names = request.args.get('model_name').split(',')
+    model_versions = request.args.get('model_version').split(',')
+    model_signatures = request.args.get('model_signature').split(',')
+    if len(model_names) != len(inference_addresses):
+      raise common_utils.InvalidUserInputError('Every model should have a ' +
+                                                'name and address.')
+    return inference_addresses, model_names, model_versions, model_signatures
 
   @wrappers.Request.application
   def _infer(self, request):
@@ -241,26 +269,36 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       if request.method != 'GET':
         tf.logging.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
-                                 'application/json', code=405)
+                                    'application/json', code=405)
 
-      serving_bundle = inference_utils.ServingBundle(
-          request.args.get('inference_address'),
-          request.args.get('model_name'), request.args.get('model_type'),
-          request.args.get('model_version'),
-          request.args.get('model_signature'))
+      (inference_addresses, model_names, model_versions,
+          model_signatures) = self._parse_request_arguments(request)
+
       indices_to_infer = sorted(self.updated_example_indices)
       examples_to_infer = [self.examples[index] for index in indices_to_infer]
+      infer_objs = []
+      for model_num in xrange(len(inference_addresses)):
+        serving_bundle = inference_utils.ServingBundle(
+            inference_addresses[model_num],
+            model_names[model_num],
+            request.args.get('model_type'),
+            model_versions[model_num],
+            model_signatures[model_num],
+            request.args.get('use_predict') == 'true',
+            request.args.get('predict_input_tensor'),
+            request.args.get('predict_output_tensor'))
 
-      # Get inference results proto and combine with indices of inferred
-      # examples and respond with this data as json.
-      inference_result_proto = oss_utils.call_servo(
-          examples_to_infer, serving_bundle)
-      new_inferences = inference_utils.wrap_inference_results(
-          inference_result_proto)
-      infer_json = json_format.MessageToJson(
-          new_inferences, including_default_value_fields=True)
-      infer_obj = json.loads(infer_json)
-      resp = {'indices': indices_to_infer, 'results': infer_obj}
+        # Get inference results proto and combine with indices of inferred
+        # examples and respond with this data as json.
+        inference_result_proto = platform_utils.call_servo(
+            examples_to_infer, serving_bundle)
+        new_inferences = inference_utils.wrap_inference_results(
+            inference_result_proto)
+        infer_json = json_format.MessageToJson(
+            new_inferences, including_default_value_fields=True)
+        infer_objs.append(json.loads(infer_json))
+
+      resp = {'indices': indices_to_infer, 'results': infer_objs}
       self.updated_example_indices = set()
       return http_util.Respond(request, {'inferences': json.dumps(resp),
                                          'vocab': json.dumps(label_vocab)},
@@ -389,18 +427,30 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
       example_index = int(request.args.get('example_index', '0'))
       feature_name = request.args.get('feature_name')
-      example = self.examples[example_index]
+      examples = (self.examples if example_index == -1
+          else [self.examples[example_index]])
+
+      (inference_addresses, model_names, model_versions,
+          model_signatures) = self._parse_request_arguments(request)
+
+      # TODO(tolgab) Generalize this to multiple models
+      model_num = 0
       serving_bundle = inference_utils.ServingBundle(
-          request.args.get('inference_address'), request.args.get('model_name'),
+          inference_addresses[model_num],
+          model_names[model_num],
           request.args.get('model_type'),
-          request.args.get('model_version'),
-          request.args.get('model_signature'))
+          model_versions[model_num],
+          model_signatures[model_num],
+          request.args.get('use_predict') == 'true',
+          request.args.get('predict_input_tensor'),
+          request.args.get('predict_output_tensor'))
+
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
           request.args.get('feature_index_pattern'))
       json_mapping = inference_utils.mutant_charts_for_feature(
-          example, feature_name, serving_bundle, viz_params)
+          examples, feature_name, serving_bundle, viz_params)
       return http_util.Respond(request, json_mapping, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},

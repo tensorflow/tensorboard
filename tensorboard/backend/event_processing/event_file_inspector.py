@@ -116,11 +116,10 @@ import collections
 import itertools
 import os
 
-import tensorflow as tf
-
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat import tf
 
 
 # Map of field names within summary.proto to the user-facing names that this
@@ -397,12 +396,6 @@ def inspect(logdir='', event_file='', tag=''):
   Raises:
     ValueError: If neither logdir and event_file are given, or both are given.
   """
-  if logdir and event_file:
-    raise ValueError(
-        'Must specify either --logdir or --event_file, but not both.')
-  if not (logdir or event_file):
-    raise ValueError('Must specify either --logdir or --event_file.')
-
   print(PRINT_SEPARATOR +
         'Processing event files... (this can take a few minutes)\n' +
         PRINT_SEPARATOR)

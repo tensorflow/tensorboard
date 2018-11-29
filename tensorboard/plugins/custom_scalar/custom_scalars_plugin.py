@@ -29,7 +29,7 @@ import re
 
 from google.protobuf import json_format
 import numpy as np
-import tensorflow as tf
+
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -38,6 +38,8 @@ from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import scalars_plugin
+from tensorboard.compat import tf
+
 
 # The name of the property in the response for whether the regex is valid.
 _REGEX_VALID_PROPERTY = 'regex_valid'

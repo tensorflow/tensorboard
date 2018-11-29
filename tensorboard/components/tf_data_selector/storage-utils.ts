@@ -26,4 +26,17 @@ export function encodeId(id: number): string {
   return id.toString(36);
 }
 
+export const NO_EXPERIMENT_ID = null;
+
+export const STORAGE_ALL_VALUE = '$all';
+export const STORAGE_NONE_VALUE = '$none';
+
+export const {
+  getInitializer: getIdInitializer,
+  getObserver: getIdObserver,
+  set: setId,
+} = tf_storage.makeBindings(
+    (str: string): number[] => tf_data_selector.decodeIdArray(str),
+    (ids: number[]): string => tf_data_selector.encodeIdArray(ids));
+
 }  // namespace tf_data_selector

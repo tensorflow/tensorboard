@@ -27,11 +27,11 @@ import os
 import zipfile
 
 import six
-import tensorflow as tf
 from werkzeug import utils
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 
 
@@ -302,8 +302,9 @@ by the operating system. (default: %(default)s)\
     parser.add_argument(
         '--purge_orphaned_data',
         metavar='BOOL',
-        type=bool,
-        nargs=1,
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
         default=True,
         help='''\
 Whether to purge data that may have been orphaned due to TensorBoard
@@ -342,6 +343,15 @@ temporary unless --db is also passed to specify a DB path to use.\
 ''')
 
     parser.add_argument(
+        '--db_import_use_op',
+        action='store_true',
+        help='''\
+[experimental] in combination with --db_import, if passed, use TensorFlow's
+import_event() op for importing event data, otherwise use TensorBoard's own
+sqlite ingestion logic.\
+''')
+
+    parser.add_argument(
         '--inspect',
         action='store_true',
         help='''\
@@ -350,10 +360,12 @@ Prints digests of event files to command line.
 This is useful when no data is shown on TensorBoard, or the data shown
 looks weird.
 
+Must specify one of `logdir` or `event_file` flag.
+
 Example usage:
   `tensorboard --inspect --logdir mylogdir --tag loss`
 
-See tensorflow/python/summary/event_file_inspector.py for more info.\
+See tensorboard/backend/event_processing/event_file_inspector.py for more info.\
 ''')
 
     parser.add_argument(
@@ -407,6 +419,20 @@ relevant for db read-only mode. Each thread reloads one run at a time.
 ''')
 
     parser.add_argument(
+        '--reload_task',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['auto', 'thread', 'process', 'blocking'],
+        help='''\
+[experimental] The mechanism to use for the background data reload task.
+The default "auto" option will conditionally use threads for legacy reloading
+and a child process for DB import reloading. The "process" option is only
+useful with DB import mode. The "blocking" option will block startup until
+reload finishes, and requires --load_interval=0. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--samples_per_plugin',
         type=str,
         default='',
@@ -423,11 +449,18 @@ flag.\
 
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
-    if not flags.db and not flags.logdir:
+    if flags.inspect:
+      if flags.logdir and flags.event_file:
+        raise ValueError(
+            'Must specify either --logdir or --event_file, but not both.')
+      if not (flags.logdir or flags.event_file):
+        raise ValueError('Must specify either --logdir or --event_file.')
+    elif not flags.db and not flags.logdir:
       raise ValueError('A logdir or db must be specified. '
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
+
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]
 

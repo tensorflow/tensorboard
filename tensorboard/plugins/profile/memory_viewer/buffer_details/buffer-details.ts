@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_buffer_details {
 
 Polymer({
   is:'tf-mv-bar',
@@ -23,13 +23,13 @@ Polymer({
       notify:true,
       observer:'_updateValue',
     },
-  }, 
+  },
   /**
    * Updates the utilization bar.
    */
   _updateValue:function(value: number) {
-    const color = memory_viewer.flameColor(value);
-    const length = memory_viewer.percent(value);
+    const color = memory_viewer_utils.flameColor(value);
+    const length = memory_viewer_utils.percent(value);
     this.style.background =
         `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
   }
@@ -68,9 +68,7 @@ Polymer({
    * Updates the details card.
    */
   _updateCard:function(node) {
-    if (node == null) {
-      return;
-    }
+    if (!node) return;
     this.size = node.sizeMiB.toFixed(1);
     let color = 'rgb(192,192,192)';
     if (node.unpaddedSizeMiB) {
@@ -78,7 +76,7 @@ Polymer({
       this.padding = (node.sizeMiB - node.unpaddedSizeMiB).toFixed(1);
       this.utilization = node.unpaddedSizeMiB / node.sizeMiB;
       this.expansion = (1 / this.utilization).toFixed(1);
-      color = memory_viewer.flameColor(this.utilization, 0.7);
+      color = memory_viewer_utils.flameColor(this.utilization, 0.7);
     }
     this.$.card.updateStyles({'--paper-card-header':'background-color:' + color});
     this.$.subheader.style.backgroundColor = color;
@@ -87,14 +85,8 @@ Polymer({
    * Returns the sub header of the buffer details card.
    */
   _subheader:function(node): string {
-    if (!node) {
-      return null;
-    }
-    if (node.opcode) {
-      return node.opcode + ' operation';
-    }
-    return '';
+    return node && node.opcode ? node.opcode + ' operation' : '';
   },
 });
 
-} // namespace memory_viewer
+} // namespace memory_viewer_buffer_details

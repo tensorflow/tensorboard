@@ -4,16 +4,33 @@ package(
 )
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("@io_bazel_rules_webtesting//web:py.bzl", "py_web_test_suite")
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+py_web_test_suite(
     name = "test",
+    srcs = ["test.py"],
+    browsers = ["//tensorboard/functionaltests/browsers:chromium"],
+    timeout = "short",
+    flaky = True,
+    data = [
+        ":test_web_library",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        "@io_bazel_rules_webtesting//testing/web",
+        "//tensorboard/functionaltests:wct_test_driver",
+    ],
+)
+
+tf_web_library(
+    name = "test_web_library",
     srcs = [
         "tests.html",
         "storage-utils-test.ts",
     ],
-    path = "/tf_data_selector/test",
+    path = "/tf-data-selector/test",
     deps = [
         "//tensorboard/components/tf_data_selector",
         "//tensorboard/components/tf_imports:polymer",

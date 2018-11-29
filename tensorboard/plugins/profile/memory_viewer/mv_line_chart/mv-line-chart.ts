@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_line_chart {
 
 Polymer({
   is:'mv-line-chart',
@@ -272,4 +272,4 @@ Polymer({
   },
 });
 
-} // namespace memory_viewer
+} // namespace memory_viewer_line_chart

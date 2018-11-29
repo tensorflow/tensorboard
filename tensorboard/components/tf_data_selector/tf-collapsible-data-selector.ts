@@ -14,12 +14,27 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_data_selector {
 
+enum Mode {
+  SIMPLE,
+  ADVANCED,
+}
+
 Polymer({
   is: 'tf-collapsible-data-selector',
   properties: {
+    _simpleSelection: {
+      type: Object,
+      value: () => ({}),
+    },
+
+    _advancedSelection: {
+      type: Object,
+      value: () => ({}),
+    },
 
     selection: {
       type: Object,
+      computed: '_computeSelection(_simpleSelection, _advancedSelection, _mode)',
       notify: true,
     },
 
@@ -30,9 +45,19 @@ Polymer({
       reflectToAttribute: true,
       value: true,
     },
+
+    _mode: {
+      type: Number,
+      value: Mode.SIMPLE,
+    },
   },
 
-  _toggleSelector() {
+  _computeSelection() {
+    if (this._mode == Mode.SIMPLE) return this._simpleSelection;
+    return this._advancedSelection;
+  },
+
+  _toggleOpened() {
     this.opened = !this.opened;
   },
 
@@ -41,6 +66,16 @@ Polymer({
 
     const color = tf_color_scale.experimentsColorScale(experiment.name);
     return `background-color: ${color};`;
+  },
+
+  _isSimpleMode(mode) {
+    return mode == Mode.SIMPLE;
+  },
+
+  _toggleMode() {
+    const curMode = this._mode;
+    const nextMode = curMode == Mode.SIMPLE ? Mode.ADVANCED : Mode.SIMPLE;
+    this._mode = nextMode;
   },
 
 });

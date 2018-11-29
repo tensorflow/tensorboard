@@ -1,0 +1,92 @@
+<!--
+@license
+Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-dropdown.html">
+<link rel="import" href="./experiment-selector.html">
+<link rel="import" href="./tf-data-select-row.html">
+<link rel="import" href="./type.html">
+
+<!--
+tf-data-selector-simple creates a widget for selecting experiments, runs, and
+tag filter for data comparison.
+
+Properties in: none.
+Properties out:
+  - selection: array of data selection. Please refer to
+    tf_data_selector.Selection for its data type.
+
+-->
+<dom-module id="tf-data-selector-simple">
+  <template>
+    <tf-filterable-checkbox-dropdown
+      coloring="[[_getExperimentColor()]]"
+      items="[[_getExperimentOptions(_allExperiments)]]"
+      label="Experiment"
+      max-items-to-enable-by-default="1"
+      label-float
+      selected-items="{{_selectedExperiments}}"
+      selection-state="{{_getExperimentsSelectionState(_selectedExperimentIds, _allExperiments)}}"
+    ></tf-filterable-checkbox-dropdown>
+    <tf-filterable-checkbox-dropdown
+      coloring="[[_getRunColor()]]"
+      items="[[_getRunOptions(_allRuns)]]"
+      label="Run"
+      label-float
+      selected-items="{{_selectedRuns}}"
+      use-checkbox-colors="[[_getRunsUsesCheckboxColors(_selectedExperiments)]]"
+      selection-state="{{_getRunsSelectionState(_selectedRunNames, _allRuns)}}"
+    ></tf-filterable-checkbox-dropdown>
+    <paper-input
+      label="Tag Regex"
+      type="text"
+      value="{{_tagRegex}}"
+    ></paper-input>
+    <style>
+      :host {
+        align-items: flex-start;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      tf-filterable-checkbox-dropdown {
+        padding: 0;
+        margin: 0 4px;
+      }
+
+      paper-input {
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        --paper-input-container: {
+          padding: 4px;
+        }
+        --paper-input-container-input: {
+          font-size: 14px;
+        };
+        --paper-input-container-label: {
+          font-size: 14px;
+        };
+      }
+    </style>
+  </template>
+  <script src="tf-data-selector-simple.js"></script>
+</dom-module>

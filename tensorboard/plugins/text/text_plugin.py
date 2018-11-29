@@ -29,13 +29,14 @@ import numpy as np
 # pylint: enable=g-bad-import-order
 
 import six
-import tensorflow as tf
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
+from tensorboard.compat import tf
+
 
 # HTTP routes
 TAGS_ROUTE = '/tags'

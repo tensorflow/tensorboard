@@ -82,3 +82,14 @@ def tensorboard_python_workspace():
       strip_prefix = "portpicker-1.1.1/src",
       build_file = str(Label("//third_party:portpicker.BUILD")),
   )
+
+  native.new_http_archive(
+      name = "org_tensorflow_serving_api",
+      urls = [
+          "https://mirror.bazel.build/files.pythonhosted.org/packages/b5/da/bd60d7b245dbe93f35aded752679124a61bb90154d4698f6f3dba30d75c6/tensorflow_serving_api-1.10.1-py2.py3-none-any.whl",
+          "https://files.pythonhosted.org/packages/b5/da/bd60d7b245dbe93f35aded752679124a61bb90154d4698f6f3dba30d75c6/tensorflow_serving_api-1.10.1-py2.py3-none-any.whl",
+      ],
+      type = "zip",
+      sha256 = "77bc67484c3d7ce58de24b68b9f4ba26f9f7c459361a257e970350105cae4838",
+      build_file = str(Label("//third_party:tf_serving.BUILD")),
+  )

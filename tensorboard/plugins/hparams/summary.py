@@ -120,7 +120,7 @@ def session_start_pb(hparams,
 
 def _to_google_protobuf_value(value):
   """Converts 'value' to a google.protobuf.Value.
-  We use ListValue converstion logic to do this to avoid depending on Value's
+  We use ListValue conversion logic to do this to avoid depending on Value's
   internal structure.
   """
   lv = struct_pb2.ListValue()

@@ -19,12 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
 
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.compat import tf
 
 
 def migrate_value(value):
@@ -57,20 +57,25 @@ def migrate_value(value):
   return handler(value) if handler else value
 
 
+def make_summary(tag, metadata, data):
+    tensor_proto = tf.make_tensor_proto(data)
+    return tf.Summary.Value(tag=tag,
+                            metadata=metadata,
+                            tensor=tensor_proto)
+
+
 def _migrate_histogram_value(value):
   histogram_value = value.histo
   bucket_lefts = [histogram_value.min] + histogram_value.bucket_limit[:-1]
   bucket_rights = histogram_value.bucket_limit[:-1] + [histogram_value.max]
   bucket_counts = histogram_value.bucket
-  buckets = np.array([bucket_lefts, bucket_rights, bucket_counts]).transpose()
+  buckets = np.array([bucket_lefts, bucket_rights, bucket_counts], dtype=np.float32).transpose()
 
-  tensor_proto = tf.make_tensor_proto(buckets)
   summary_metadata = histogram_metadata.create_summary_metadata(
       display_name=value.metadata.display_name or value.tag,
       description=value.metadata.summary_description)
-  return tf.Summary.Value(tag=value.tag,
-                          metadata=summary_metadata,
-                          tensor=tensor_proto)
+
+  return make_summary(value.tag, summary_metadata, buckets)
 
 
 def _migrate_image_value(value):
@@ -79,34 +84,25 @@ def _migrate_image_value(value):
           tf.compat.as_bytes(str(image_value.height)),
           tf.compat.as_bytes(image_value.encoded_image_string)]
 
-  tensor_proto = tf.make_tensor_proto(data)
   summary_metadata = image_metadata.create_summary_metadata(
       display_name=value.metadata.display_name or value.tag,
       description=value.metadata.summary_description)
-  return tf.Summary.Value(tag=value.tag,
-                          metadata=summary_metadata,
-                          tensor=tensor_proto)
+  return make_summary(value.tag, summary_metadata, data)
 
 
 def _migrate_audio_value(value):
   audio_value = value.audio
   data = [[audio_value.encoded_audio_string, b'']]  # empty label
-  tensor_proto = tf.make_tensor_proto(data)
   summary_metadata = audio_metadata.create_summary_metadata(
       display_name=value.metadata.display_name or value.tag,
       description=value.metadata.summary_description,
       encoding=audio_metadata.Encoding.Value('WAV'))
-  return tf.Summary.Value(tag=value.tag,
-                          metadata=summary_metadata,
-                          tensor=tensor_proto)
+  return make_summary(value.tag, summary_metadata, data)
 
 
 def _migrate_scalar_value(value):
   scalar_value = value.simple_value
-  tensor_proto = tf.make_tensor_proto(scalar_value)
   summary_metadata = scalar_metadata.create_summary_metadata(
       display_name=value.metadata.display_name or value.tag,
       description=value.metadata.summary_description)
-  return tf.Summary.Value(tag=value.tag,
-                          metadata=summary_metadata,
-                          tensor=tensor_proto)
+  return make_summary(value.tag, summary_metadata, scalar_value)

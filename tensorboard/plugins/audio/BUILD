@@ -15,10 +15,10 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -54,7 +54,7 @@ py_library(
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:tf_contrib_ffmpeg",
-        "//tensorboard:util",
+        "//tensorboard/util:encoder",
     ],
 )
 
@@ -91,7 +91,7 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 

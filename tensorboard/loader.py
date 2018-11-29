@@ -35,10 +35,10 @@ import time
 import types  # pylint: disable=unused-import
 
 import six
-import tensorflow as tf
 
 from tensorboard import db
-from tensorboard import util
+from tensorboard.util import util
+import tensorflow as tf
 
 
 class Record(collections.namedtuple('Record', ('record', 'offset'))):

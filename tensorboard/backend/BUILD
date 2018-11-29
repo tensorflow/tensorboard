@@ -14,7 +14,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":json_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -39,7 +39,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -63,9 +63,10 @@ py_library(
         ":http_util",
         "//tensorboard:db",
         "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:db_import_multiplexer",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
@@ -96,6 +97,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )

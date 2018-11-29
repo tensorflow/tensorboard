@@ -43,8 +43,8 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":health_pill_calc",
-        "//tensorboard:util",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard/util:encoder",
     ],
 )
 
@@ -113,9 +113,7 @@ py_library(
     name = "events_writer_manager",
     srcs = ["events_writer_manager.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard:expect_tensorflow_installed",
-    ],
+    deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
 py_library(

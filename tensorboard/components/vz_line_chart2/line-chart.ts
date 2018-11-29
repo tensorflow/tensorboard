@@ -31,6 +31,11 @@ enum TooltipColumnEvalType {
   DOM,
 }
 
+enum YScaleType {
+  LOG = 'log',
+  LINEAR = 'linear',
+}
+
 export type LineChartStatus = {
   smoothingEnabled: boolean
 };
@@ -60,7 +65,7 @@ export class LineChart {
 
   private xAccessor: Plottable.IAccessor<number|Date>;
   private xScale: Plottable.QuantitativeScale<number|Date>;
-  private yScale: Plottable.QuantitativeScale<number>;
+  private yScale: ITfScale;
   private gridlines: Plottable.Components.Gridlines;
   private center: Plottable.Components.Group;
   private xAxis: Plottable.Axes.Numeric|Plottable.Axes.Time;
@@ -70,11 +75,9 @@ export class LineChart {
   private symbolFunction: vz_chart_helpers.SymbolFn;
 
   private tooltipColumns: vz_chart_helpers.TooltipColumn[];
-  private tooltip: d3.Selection<any, any, any, any>;
+  private tooltip: vz_chart_helper.VzChartTooltip;
   private tooltipInteraction: Plottable.Interactions.Pointer;
   private tooltipPointsComponent: Plottable.Component;
-
-  private dzl: vz_line_chart.DragZoomLayer;
 
   private linePlot: Plottable.Plots.Line<number|Date>;
   private smoothLinePlot: Plottable.Plots.Line<number|Date>;
@@ -93,8 +96,11 @@ export class LineChart {
   private smoothingWeight: number;
   private smoothingEnabled: boolean;
   private tooltipSortingMethod: string;
-  private tooltipPosition: string;
   private _ignoreYOutliers: boolean;
+  private _lastMousePosition: Plottable.Point;
+  private _lastDrawBBox: DOMRect;
+  private _redrawRaf: number;
+  private _invalidateLayoutRaf: number;
 
   // An optional list of 2 numbers.
   private _defaultXRange: number[];
@@ -102,7 +108,6 @@ export class LineChart {
   private _defaultYRange: number[];
 
   private _tooltipUpdateAnimationFrame: number;
-  private _tooltipPositionAnimationFrame: number;
 
   private targetSVG: d3.Selection<any, any, any, any>;
 
@@ -111,7 +116,7 @@ export class LineChart {
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       colorScale: Plottable.Scales.Color,
-      tooltip: d3.Selection<any, any, any, any>,
+      tooltip: vz_chart_helper.VzChartTooltip,
       tooltipColumns: vz_chart_helpers.TooltipColumn[],
       fillArea: FillArea,
       defaultXRange?: number[],
@@ -166,6 +171,9 @@ export class LineChart {
       this.xAxis.formatter(xAxisFormatter);
     }
     this.yScale = LineChart.getYScaleFromType(yScaleType);
+    this.yScale.setValueProviderForDomain(
+        () => this.getValuesForYAxisDomainCompute());
+
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
     let yFormatter = vz_chart_helpers.multiscaleFormatter(
         vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
@@ -173,10 +181,12 @@ export class LineChart {
     this.yAxis.usesTextWidthApproximation(true);
     this.fillArea = fillArea;
 
-    this.dzl = new vz_line_chart.DragZoomLayer(
-        this.xScale, this.yScale, this.resetYDomain.bind(this));
+    const panZoomLayer = new PanZoomDragLayer(
+        this.xScale,
+        this.yScale,
+        () => this.resetDomain());
 
-    this.tooltipInteraction = this.createTooltipInteraction(this.dzl);
+    this.tooltipInteraction = this.createTooltipInteraction(panZoomLayer);
     this.tooltipPointsComponent = new Plottable.Component();
 
     const plot = this.buildPlot(
@@ -187,14 +197,18 @@ export class LineChart {
     this.gridlines =
         new Plottable.Components.Gridlines(this.xScale, this.yScale);
 
-    let xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
-    xZeroLine.scale(this.yScale).value(0);
+    let xZeroLine = null;
+    if (yScaleType !== YScaleType.LOG) {
+      xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
+      xZeroLine.scale(this.yScale).value(0);
+    }
     let yZeroLine = new Plottable.Components.GuideLineLayer('vertical');
     yZeroLine.scale(this.xScale).value(0);
 
     this.center = new Plottable.Components.Group([
         this.gridlines, xZeroLine, yZeroLine, plot,
-        this.dzl, this.tooltipPointsComponent]);
+        panZoomLayer, this.tooltipPointsComponent]);
+    this.center.addClass('main');
     this.outer = new Plottable.Components.Table(
         [[this.yAxis, this.center], [null, this.xAxis]]);
   }
@@ -299,8 +313,18 @@ export class LineChart {
     if (ignoreYOutliers !== this._ignoreYOutliers) {
       this._ignoreYOutliers = ignoreYOutliers;
       this.updateSpecialDatasets();
+      this.yScale.ignoreOutlier(ignoreYOutliers);
       this.resetYDomain();
     }
+  }
+
+  private getValuesForYAxisDomainCompute(): number[] {
+    const accessors = this.getAccessorsForComputingYRange();
+    let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
+      return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
+    };
+    return _.flattenDeep<number>(this.datasets.map(datasetToValues))
+        .filter(isFinite);
   }
 
   /** Constructs special datasets. Each special dataset contains exceptional
@@ -388,21 +412,19 @@ export class LineChart {
   }
 
   private resetYDomain() {
-    let yDomain;
     if (this._defaultYRange != null) {
       // Use the range specified by the caller.
-      yDomain = this._defaultYRange;
+      this.yScale.domain(this._defaultYRange);
     } else {
-      // Generate a reasonable range.
-      const accessors = this.getAccessorsForComputingYRange();
-      let datasetToValues: (d: Plottable.Dataset) => number[][] = (d) => {
-        return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
-      };
-      const vals = _.flattenDeep<number>(this.datasets.map(datasetToValues))
-          .filter(isFinite);
-      yDomain = vz_chart_helpers.computeDomain(vals, this._ignoreYOutliers);
+      // TfScale has all the logics for scaling and we manually trigger it with
+      // `autoDomain`. However, this enables the autoDomain mode which updates
+      // the domain on any dataset change and this is not desirably especially
+      // when a run is not finished yet; we don't want the graph to change in
+      // scale while user is inspecting the graph. By setting the `domain`
+      // explicitly, we can turn the feature off.
+      this.yScale.autoDomain();
+      this.yScale.domain(this.yScale.domain());
     }
-    this.yScale.domain(yDomain);
   }
 
   private getAccessorsForComputingYRange(): Plottable.IAccessor<number>[] {
@@ -420,69 +442,79 @@ export class LineChart {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
 
-  private createTooltipInteraction(dzl: vz_line_chart.DragZoomLayer):
+  private createTooltipInteraction(pzdl: PanZoomDragLayer):
       Plottable.Interactions.Pointer {
     const pi = new Plottable.Interactions.Pointer();
     // Disable interaction while drag zooming.
-    dzl.interactionStart(() => {
+    const disableTooltipUpdate = () => {
       pi.enabled(false);
       this.hideTooltips();
-    });
-    dzl.interactionEnd(() => pi.enabled(true));
-
+    };
+    const enableTooltipUpdate = () => pi.enabled(true);
+    pzdl.onPanStart(disableTooltipUpdate);
+    pzdl.onDragZoomStart(disableTooltipUpdate);
+    pzdl.onPanEnd(enableTooltipUpdate);
+    pzdl.onDragZoomEnd(enableTooltipUpdate);
+    // When using wheel, cursor position does not change. Redraw the tooltip
+    // using the last known mouse position.
+    pzdl.onScrollZoom(() => this.updateTooltipContent(this._lastMousePosition));
     pi.onPointerMove((p: Plottable.Point) => {
-      // Line plot must be initialized to draw.
-      if (!this.linePlot) return;
-      window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
-      this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(() => {
-        let target: vz_chart_helpers.Point = {
-          x: p.x,
-          y: p.y,
-          datum: null,
-          dataset: null,
-        };
-        let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
-        // pts is the closets point to the tooltip for each dataset
-        let pts = this.linePlot.datasets()
-            .map((dataset) => this.findClosestPoint(target, dataset))
-            .filter(Boolean);
-        let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
-        // We draw tooltips for points that are NaN, or are currently visible
-        let ptsForTooltips = pts.filter(
-            (p) => intersectsBBox(p.x, p.y, bbox) ||
-                isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
-        // Only draw little indicator circles for the non-NaN points
-        let ptsToCircle = ptsForTooltips.filter(
-            (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
-        if (pts.length !== 0) {
-          this.scatterPlot.attr('display', 'none');
-          const ptsSelection: any =
-              this.tooltipPointsComponent.content().selectAll('.point').data(
-                  ptsToCircle,
-                  (p: vz_chart_helpers.Point) => p.dataset.metadata().name);
-          ptsSelection.enter().append('circle').classed('point', true);
-          ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
-              .attr('cx', (p) => p.x)
-              .attr('cy', (p) => p.y)
-              .style('stroke', 'none')
-              .attr(
-                  'fill',
-                  (p) => this.colorScale.scale(p.dataset.metadata().name));
-          ptsSelection.exit().remove();
-          this.drawTooltips(ptsForTooltips, target, this.tooltipColumns);
-        } else {
-          this.hideTooltips();
-        }
-      });
+      this._lastMousePosition = p;
+      this.updateTooltipContent(p);
     });
     pi.onPointerExit(() => this.hideTooltips());
     return pi;
   }
 
+  private updateTooltipContent(p: Plottable.Point): void {
+    // Line plot must be initialized to draw.
+    if (!this.linePlot) return;
+    window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
+    this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(() => {
+      let target: vz_chart_helpers.Point = {
+        x: p.x,
+        y: p.y,
+        datum: null,
+        dataset: null,
+      };
+      let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
+      // pts is the closets point to the tooltip for each dataset
+      let pts = this.linePlot.datasets()
+          .map((dataset) => this.findClosestPoint(target, dataset))
+          .filter(Boolean);
+      let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
+      // We draw tooltips for points that are NaN, or are currently visible
+      let ptsForTooltips = pts.filter(
+          (p) => intersectsBBox(p.x, p.y, bbox) ||
+              isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+      // Only draw little indicator circles for the non-NaN points
+      let ptsToCircle = ptsForTooltips.filter(
+          (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+      if (pts.length !== 0) {
+        this.scatterPlot.attr('display', 'none');
+        const ptsSelection: any =
+            this.tooltipPointsComponent.content().selectAll('.point').data(
+                ptsToCircle,
+                (p: vz_chart_helpers.Point) => p.dataset.metadata().name);
+        ptsSelection.enter().append('circle').classed('point', true);
+        ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
+            .attr('cx', (p) => p.x)
+            .attr('cy', (p) => p.y)
+            .style('stroke', 'none')
+            .attr(
+                'fill',
+                (p) => this.colorScale.scale(p.dataset.metadata().name));
+        ptsSelection.exit().remove();
+        this.drawTooltips(ptsForTooltips, target, this.tooltipColumns);
+      } else {
+        this.hideTooltips();
+      }
+    });
+  }
+
   private hideTooltips(): void {
     window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
-    window.cancelAnimationFrame(this._tooltipPositionAnimationFrame);
-    this.tooltip.style('opacity', 0);
+    this.tooltip.hide();
     this.scatterPlot.attr('display', 'block');
     this.tooltipPointsComponent.content().selectAll('.point').remove();
   }
@@ -503,9 +535,33 @@ export class LineChart {
       target: vz_chart_helpers.Point,
       tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
     if (!points.length) {
-      this.tooltip.style('opacity', 0);
+      this.tooltip.hide();
       return;
     }
+
+    const {colorScale} = this;
+    const swatchCol = {
+      title: '',
+      static: false,
+      evalType: TooltipColumnEvalType.DOM,
+      evaluate(d: vz_chart_helpers.Point) {
+        d3.select(this)
+            .select('span')
+            .style(
+                'background-color',
+                () => colorScale.scale(d.dataset.metadata().name));
+        return '';
+      },
+      enter(d: vz_chart_helpers.Point) {
+        d3.select(this)
+            .append('span')
+            .classed('swatch', true)
+            .style(
+                'background-color',
+                () => colorScale.scale(d.dataset.metadata().name));
+      },
+    };
+    tooltipColumns = [swatchCol, ...tooltipColumns];
 
     // Formatters for value, step, and wall_time
     let valueFormatter = vz_chart_helpers.multiscaleFormatter(
@@ -533,7 +589,21 @@ export class LineChart {
     }
 
     const self = this;
-    const rows = this.tooltip.select('tbody')
+    const table = d3.select(this.tooltip.content()).select('table');
+    const header = table.select('thead')
+        .selectAll('th')
+        .data(
+            tooltipColumns,
+            (column: vz_chart_helpers.TooltipColumn, _, __) => {
+              return column.title
+            });
+    const newHeaderNodes = header.enter()
+        .append('th')
+        .text(col => col.title)
+        .nodes();
+    header.exit().remove();
+
+    const rows = table.select('tbody')
         .selectAll('tr')
         .data(points, (pt: vz_chart_helpers.Point, _, __) => {
           return pt.dataset.metadata().name;
@@ -558,45 +628,22 @@ export class LineChart {
         .order();
 
     rows.exit().remove();
-    rows.enter().append('tr').each(function(point) {
-      self.drawTooltipRow(this, tooltipColumns, point);
-    });
-
-    // Because a tooltip content update is a DOM _mutation_, after an animation
-    // frame, we update the position which is another read and mutation.
-    window.cancelAnimationFrame(this._tooltipPositionAnimationFrame);
-    this._tooltipPositionAnimationFrame = window.requestAnimationFrame(() => {
-      this.repositionTooltip();
-    });
+    const newRowNodes = rows.enter()
+        .append('tr')
+        .each(function(point) {
+          self.drawTooltipRow(this, tooltipColumns, point);
+        })
+        .nodes();
+    const newNodes = [...newHeaderNodes, ...newRowNodes] as Element[];
+    this.tooltip.updateAndPosition(this.targetSVG.node(), newNodes);
   }
 
   private drawTooltipRow(
       row: d3.BaseType,
       tooltipColumns: vz_chart_helpers.TooltipColumn[],
       point: vz_chart_helpers.Point) {
-    const {smoothingEnabled, colorScale} = this;
     const self = this;
-    const swatchCol = {
-      name: 'Swatch',
-      evalType: TooltipColumnEvalType.DOM,
-      evaluate(d: vz_chart_helpers.Point) {
-        d3.select(this)
-            .select('span')
-            .style(
-                'background-color',
-                () => colorScale.scale(d.dataset.metadata().name));
-      },
-      enter(d: vz_chart_helpers.Point) {
-        d3.select(this)
-            .append('span')
-            .classed('swatch', true)
-            .style(
-                'background-color',
-                () => colorScale.scale(d.dataset.metadata().name));
-      },
-    };
-    const columns = d3.select(row).selectAll('td')
-        .data([swatchCol, ...tooltipColumns]);
+    const columns = d3.select(row).selectAll('td').data(tooltipColumns);
 
     columns.each(function(col: TooltipColumn) {
       // Skip column value update when the column is static.
@@ -622,30 +669,6 @@ export class LineChart {
       d3.select(column)
           .text(tooltipCol.evaluate.call(column, point, {smoothingEnabled}));
     }
-  }
-
-  /**
-   * Repositions the tooltip based on new width and height of the bounding box.
-   * In order to update the position, it _read_ the DOM, then _mutate_ the DOM.
-   */
-  private repositionTooltip() {
-    // compute left position
-    let documentWidth = document.body.clientWidth;
-    let node: any = this.tooltip.node();
-    let parentRect = node.parentElement.getBoundingClientRect();
-    let nodeRect = node.getBoundingClientRect();
-    // prevent it from falling off the right side of the screen
-    let left = documentWidth - parentRect.left - nodeRect.width - 60, top = 0;
-
-    if (this.tooltipPosition === 'right') {
-      left = Math.min(parentRect.width, left);
-    } else {  // 'bottom'
-      left = Math.min(0, left);
-      top = parentRect.height + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
-    }
-
-    this.tooltip.style('transform', `translate(${left}px, ${top}px)`);
-    this.tooltip.style('opacity', 1);
   }
 
   private findClosestPoint(
@@ -720,12 +743,11 @@ export class LineChart {
     return this.name2datasets[name];
   }
 
-  static getYScaleFromType(yScaleType: string):
-      Plottable.QuantitativeScale<number> {
-    if (yScaleType === 'log') {
-      return new Plottable.Scales.ModifiedLog();
-    } else if (yScaleType === 'linear') {
-      return new Plottable.Scales.Linear();
+  static getYScaleFromType(yScaleType: string): ITfScale {
+    if (yScaleType === YScaleType.LOG) {
+      return new LogScale();
+    } else if (yScaleType === YScaleType.LINEAR) {
+      return new LinearScale();
     } else {
       throw new Error('Unrecognized yScale type ' + yScaleType);
     }
@@ -780,6 +802,7 @@ export class LineChart {
    */
   public setSeriesData(name: string, data: vz_chart_helpers.ScalarDatum[]) {
     this.getDataset(name).data(data);
+    this.measureBBoxAndMaybeInvalidateLayoutInRaf();
   }
 
   /**
@@ -828,10 +851,6 @@ export class LineChart {
     this.tooltipSortingMethod = method;
   }
 
-  public setTooltipPosition(position: string) {
-    this.tooltipPosition = position;
-  }
-
   public renderTo(targetSVG: d3.Selection<any, any, any, any>) {
     this.targetSVG = targetSVG;
     this.outer.renderTo(targetSVG);
@@ -847,17 +866,45 @@ export class LineChart {
       // Start with that range.
       this.resetYDomain();
     }
+
+    this.measureBBoxAndMaybeInvalidateLayoutInRaf();
   }
 
-  public redraw(clearCache: boolean = false) {
-    if (clearCache) {
-      this.outer.invalidateCache();
+  public redraw() {
+    window.cancelAnimationFrame(this._redrawRaf);
+    this._redrawRaf = window.requestAnimationFrame(() => {
+      this.measureBBoxAndMaybeInvalidateLayout();
+      this.outer.redraw();
+    });
+  }
+
+  private measureBBoxAndMaybeInvalidateLayoutInRaf() {
+    window.cancelAnimationFrame(this._invalidateLayoutRaf);
+    this._invalidateLayoutRaf = window.requestAnimationFrame(() => {
+      this.measureBBoxAndMaybeInvalidateLayout();
+    });
+  }
+
+  /**
+   * Measures bounding box of the anchor node and determines whether the layout
+   * needs to be re-done with measurement cache invalidated. Plottable improved
+   * performance of rendering by caching expensive DOM measurement but this
+   * cache can be poisoned in case the anchor node is in a wrong state -- namely
+   * `display: none` where all dimensions are 0.
+   */
+  private measureBBoxAndMaybeInvalidateLayout() {
+    if (this._lastDrawBBox) {
+      const {width: prevWidth} = this._lastDrawBBox;
+      const {width} = this.targetSVG.node().getBoundingClientRect();
+      if (prevWidth == 0 && prevWidth < width) this.outer.invalidateCache();
     }
-    this.outer.redraw();
+    this._lastDrawBBox = this.targetSVG.node().getBoundingClientRect();
   }
 
   public destroy() {
     // Destroying outer destroys all subcomponents recursively.
+    window.cancelAnimationFrame(this._redrawRaf);
+    window.cancelAnimationFrame(this._invalidateLayoutRaf);
     if (this.outer) this.outer.destroy();
   }
 

@@ -158,6 +158,12 @@ limitations under the License.
         padding-right: 5px;
       }
 
+      .pd-no-features-text {
+        font-size: 18px;
+        color: #777;
+        padding: 12px 40px;
+      }
+
       .accept-button-holder {
         display: flex;
         flex-direction: row-reverse;
@@ -819,6 +825,11 @@ limitations under the License.
         border: 1px solid lightgrey;
       }
 
+      .control-divider {
+        margin: 5px 0 5px 5px;
+        width: 5px;
+        border-left: 1px solid lightgrey;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
       <tf-inference-panel
@@ -831,10 +842,15 @@ limitations under the License.
           max-examples="{{maxExamples}}"
           label-vocab-path="{{labelVocabPath}}"
           multi-class="{{multiClass}}"
-          max-classes-to-display="{{maxInferenceEntriesPerRun}}">
+          sampling-odds="{{samplingOdds}}"
+          sequence-examples="{{sequenceExamples}}"
+          max-classes-to-display="{{maxInferenceEntriesPerRun}}"
+          use-predict-api="{{usePredictApi}}"
+          predict-output-tensor="{{predictOutputTensor}}"
+          predict-input-tensor="{{predictInputTensor}}">
       </tf-inference-panel>
       <div class="accept-button-holder">
-        <paper-button on-click="getExamplesAndCloseSettings_" class="main-button"
+        <paper-button on-tap="getExamplesAndCloseSettings_" class="main-button"
                       disabled$="[[shouldDisableGetExamplesButton_(examplesPath, maxExamples)]]">
           Accept
         </paper-button>
@@ -845,7 +861,7 @@ limitations under the License.
       <p>Are you sure you want to delete the selected example?</p>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
-        <paper-button dialog-confirm autofocus on-click="deleteDatapoint_" class="main-button">Delete</paper-button>
+        <paper-button dialog-confirm autofocus on-tap="deleteDatapoint_" class="main-button">Delete</paper-button>
       </div>
     </paper-dialog>
     <paper-dialog id="distancedialog" modal>
@@ -868,45 +884,62 @@ limitations under the License.
       </paper-dropdown-menu>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
-        <paper-button dialog-confirm autofocus on-click="addDistanceMetric" class="main-button">Apply</paper-button>
+        <paper-button dialog-confirm autofocus on-tap="addDistanceMetric" class="main-button">Apply</paper-button>
       </div>
     </paper-dialog>
     <div class="dashboard-layout">
       <div class="main-vertical">
         <div class="main-bottom-bar">
           <div class="datapoint-left-controls-holder">
-            <div title="Select a datapoint to use this feature">
-              <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="showPartialDependencePlots_" alt="show partial dependence plots"
-                  title="Select a datapoint to use this feature">
-                  Partial dependence plots
+            <div class="button-prefix-label">Partial Dependence Plots:</div>
+            <div>
+              <paper-button class="control-button" disabled$="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
+                  on-tap="showGlobalPartialDependencePlots_" alt="show global partial dependence plots">
+                  Global
               </paper-button>
             </div>
             <div title="Select a datapoint to use this feature">
+              <paper-button class="control-button" disabled$="[[!arePartialDependencePlotsEnabled_(selectedExampleAndInference, modelName, inferenceAddress)]]"
+                  on-tap="showPartialDependencePlots_" alt="show partial dependence plots"
+                  title="Select a datapoint to use this feature">
+                  Selected datapoint
+              </paper-button>
+            </div>
+            <paper-icon-button icon="info-outline" class="info-icon no-padding" on-tap="openDialog">
+              </paper-icon-button>
+              <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                <div class="dialog-title">Partial Dependence Plots</div>
+                <div>Global: show the average effect of repeatedly changing a single feature across all datapoints.</div>
+                <div>Selected datapoint: show the effect of a repeatedly changing a single feature on the selected datapoint.</div>
+              </paper-dialog>
+            </paper-icon-button>
+            <div class="control-divider"></div>
+            <div title="Select a datapoint to use this feature">
               <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                  on-click="showDistanceClicked_" alt="create distance feature"
+                  on-tap="showDistanceClicked_" alt="create distance feature"
                   title="Select a datapoint to use this feature">
                   Compute distance
               </paper-button>
             </div>
+            <div class="control-divider"></div>
             <template is="dom-if" if="[[!isRegression_(modelType)]]">
               <div class="flex">
                 <div class="button-prefix-label">Show nearest counterfactual:</div>
                 <div title="Select a datapoint to use this feature">
                   <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                    on-click="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
+                    on-tap="findClosestCounterfactualL1_" alt="closest L1 counterfactual"
                     title="Select a datapoint to use this feature">
                     L1
                   </paper-button>
                 </div>
                 <div title="Select a datapoint to use this feature">
                   <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                    on-click="findClosestCounterfactualL2_" alt="closest L2 counterfactual"
+                    on-tap="findClosestCounterfactualL2_" alt="closest L2 counterfactual"
                     title="Select a datapoint to use this feature">
                     L2
                   </paper-button>
                 </div>
-                <paper-icon-button icon="info-outline" class="info-icon no-padding" on-click="openDialog">
+                <paper-icon-button icon="info-outline" class="info-icon no-padding" on-tap="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                   <div class="dialog-title">Nearest counterfactual (neighbor of different classification)</div>
@@ -924,7 +957,7 @@ limitations under the License.
             <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
               <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
             </a>
-            <paper-icon-button icon="settings" on-click="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
+            <paper-icon-button icon="settings" on-tap="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
             <div class="example-status">[[exampleStatusStr]]</div>
           </div>
         </div>
@@ -942,48 +975,48 @@ limitations under the License.
                     <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                       <div class="datapoint-left-controls-holder">
                         <paper-icon-button class="datapoint-control-button" icon="content-copy"
-                            on-click="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
+                            on-tap="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
                         </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
-                            on-click="resetDatapoint_" alt="undo changes" title="Undo changes"
+                            on-tap="resetDatapoint_" alt="undo changes" title="Undo changes"
                             disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
                         </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="delete-forever"
-                            on-click="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
+                            on-tap="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
                         </paper-icon-button>
                       </div>
                       <div class="datapoint-right-controls-holder">
                           <paper-icon-button class="datapoint-control-button" icon="view-headline"
                             class$="[[getStackedButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
+                            on-tap="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
                           </paper-icon-button>
                           <paper-icon-button class="datapoint-control-button" icon="view-module"
                             class$="[[getGridButtonClass(exampleDisplayMode)]]"
-                            on-click="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
+                            on-tap="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
                           </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="line-weight"
-                            on-click="setExampleExpanded_" alt="expand all features" title="Expand all features"
+                            on-tap="setExampleExpanded_" alt="expand all features" title="Expand all features"
                             class="border-right">
                         </paper-icon-button>
                         <paper-icon-button class="datapoint-control-button" icon="list"
-                            on-click="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
+                            on-tap="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
                         </paper-icon-button>
                       </div>
                     </div>
                     <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                       <div class="datapoint-left-controls-holder">
                         <paper-icon-button class="datapoint-control-button" icon="chevron-left"
-                            on-click="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
+                            on-tap="selectPrevDatapoint_" alt="select previous datapoint" title="Select previous datapoint">
                         </paper-icon-button>
                         <div class="example-id-label">Example ID:</div>
                         <paper-input value="{{selectedExampleNum}}" type="number" class="datapoint-control-filter-input example-id-input"
                                     min="0" max="[[selectedExampleMax]]" no-label-float>
                         </paper-input>
                         <paper-icon-button class="datapoint-control-button" icon="chevron-right"
-                          on-click="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
+                          on-tap="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
                         </paper-icon-button>
                         <div class="run-button-container" title="Edit the datapoint to use this feature">
-                          <paper-button on-click="inferClicked_" class="main-button run-button"
+                          <paper-button on-tap="inferClicked_" class="main-button run-button"
                             disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
                             Run inference
                           </paper-button>
@@ -1003,11 +1036,14 @@ limitations under the License.
                                            on-example-change="exampleChange_" id="viewer"
                                            display-mode="[[exampleDisplayMode]]"
                                            feature-search-value="{{featureSearchValue}}"
-                                           compare-title="[[compareTitle]]">
+                                           compare-title="[[compareTitle]]"
+                                           saliency="[[attribution]]"
+                                           show-saliency
+                                           readonly="[[!areExamplesEditable_(modelName, inferenceAddress)]]">
                         </vz-example-viewer>
                         <div class$="[[getInferenceSectionHolderClass_(panelExpanded)]]">
                           <div class="inference-section">
-                            <button class="inference-header heading" on-click="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
+                            <button class="inference-header heading" on-tap="toggleInferenceResults">[[getInferenceResultsHeaderText(selected)]]
                               <div class="right-side right-side-performance-tab">
                                 <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                               </div>
@@ -1020,7 +1056,7 @@ limitations under the License.
                           </div>
                           <template is="dom-if" if="[[counterfactualExampleAndInference]]">
                             <div class="inference-section">
-                              <button class="inference-header heading" on-click="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
+                              <button class="inference-header heading" on-tap="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
                                 <div class="right-side right-side-performance-tab">
                                   <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                                 </div>
@@ -1085,7 +1121,7 @@ limitations under the License.
                 </div>
                 <div class="config-tab">
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleTrueLabelSetup">Set Ground Truth
+                    <button class="heading" on-tap="toggleTrueLabelSetup">Set Ground Truth
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1105,7 +1141,7 @@ limitations under the License.
                             <div class="help-text">
                               <div>Select the feature to set as a ground true label for all loaded examples</div>
                               <div>in order to in order to investigate model performance.
-                                <span class="dialog-link" on-click="openDialog">More.
+                                <span class="dialog-link" on-tap="openDialog">More.
                                   <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">Ground Truth Feature</div>
                                     <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
@@ -1131,7 +1167,7 @@ limitations under the License.
                                 <div>1.00 = false positives and false negatives are equally as costly</div>
                                 <div>4.00 = false positives are 4 times more costly than false negatives</div>
                                 <div>0.25 = false negatives are 4 times more costly than false positives.
-                                  <span class="dialog-link" on-click="openDialog">More.
+                                  <span class="dialog-link" on-tap="openDialog">More.
                                     <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                       <div class="dialog-title">Why do I need a cost ratio?</div>
                                       <div>Click
@@ -1147,7 +1183,7 @@ limitations under the License.
                           </div>
                           <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="flex">
-                              <paper-button class="control-button optimize-threshold-button" on-click="optimizeThresholdClicked_">
+                              <paper-button class="control-button optimize-threshold-button" on-tap="optimizeThresholdClicked_">
                                   Optimize threshold
                               </paper-button>
                               <div>
@@ -1163,7 +1199,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="toggleExplorerSetup">[[getCompareSlicesTitle(modelType, multiClass)]]
+                    <button class="heading" on-tap="toggleExplorerSetup">[[getCompareSlicesTitle(modelType, multiClass)]]
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1203,7 +1239,7 @@ limitations under the License.
                             <div class="flex">
                               <div class="optimize-text title-width">Optimize sliced thresholds for:</div>
                               <div class="help-title help-title-margin-title">What am I optimizing for?
-                                <span class="help-text dialog-link" on-click="openDialog">More.
+                                <span class="help-text dialog-link" on-tap="openDialog">More.
                                   <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">Classification Threshold Optimization Options</div>
                                     <div><span class="bold">Group unaware</span> - Optimize a single threshold across all slices</div>
@@ -1226,19 +1262,19 @@ limitations under the License.
                               </div>
                             </div>
                             <div class="flex-wrap">
-                              <paper-button class="control-button optimize-selection-button" on-click="optimizeThresholdClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="optimizeThresholdClicked_">
                                   Group unaware
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="demoParityClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="demoParityClicked_">
                                   Demographic parity
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="equalOppoClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="equalOppoClicked_">
                                   Equal opportunity
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="equalAccClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="equalAccClicked_">
                                   Equal accuracy
                               </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-click="optimizeFacetedThresholdsClicked_">
+                              <paper-button class="control-button optimize-selection-button" on-tap="optimizeFacetedThresholdsClicked_">
                                   Group thresholds
                               </paper-button>
                             </div>
@@ -1249,7 +1285,7 @@ limitations under the License.
                   </div>
 
                   <div class="heading-and-card">
-                    <button class="heading" on-click="togglePerformance">Explore Performance
+                    <button class="heading" on-tap="togglePerformance">Explore Performance
                       <div class="right-side right-side-performance-tab">
                         <iron-icon icon="[[getExpandCollapseIcon(openedPerformance)]]" class="expand-collapse-button"></iron-icon>
                       </div>
@@ -1265,7 +1301,7 @@ limitations under the License.
                                             on-value-changed="refreshInferencesNoRegen_">
                               </paper-slider>
                               <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Exploring Classification Performance</div>
@@ -1308,7 +1344,7 @@ limitations under the License.
                                             immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
                               </paper-slider>
                               <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-click="openDialog">
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">Exploring Classification Performance</div>
@@ -1395,9 +1431,9 @@ limitations under the License.
             <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
             <div class="feature-container-holder" id="partialplotholder">
               <div class="flex">
-                <paper-icon-button icon="arrow-back" on-click="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
+                <paper-icon-button icon="arrow-back" on-tap="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
                 <div class="pd-info-text">Partial Dependence Plots</div>
-                <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-click="openDialog">
+                <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
                 </paper-icon-button>
                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                   <div class="dialog-title">Partial Dependence Plots</div>
@@ -1415,6 +1451,9 @@ limitations under the License.
                   </div>
                 </paper-dialog>
               </div>
+              <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
+                <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
+              </template>
               <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                 <div class="feature-container" data-feature-name$="[[item.name]]">
                   <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
@@ -1471,8 +1510,13 @@ limitations under the License.
     const inferenceErrorStr = ' Inference error';
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
-    const inferenceScoreStr = ' Inference score';
-    const exampleIdKey = ' Example ID'
+    const inferenceScoreStr = ' Inference score ';
+    const exampleIdKey = ' Example ID';
+    const classificationResultsKey = 'probabilities';
+    const regressionResultsKey = 'score';
+    const attributionPrefix = 'pig_';
+    const attributionSparseKeyPrefix = 'pig_keys_';
+    const attributionSparseValuePrefix = 'pig_vals_';
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -1546,11 +1590,18 @@ limitations under the License.
           type: Object,
         },
         // The examples list in the format to provide to Facets Dive.
+        // Each element in the list represents a datapoint and is a dictionary
+        // with keys being the features and values being the value of a feature,
+        // or a list of values for those features that contain more than one
+        // feature value.
         visdata: {
           type: Array,
           value: () => ([]),
         },
-        // The selected items list provided by Facets Dive.
+        // The selected items list provided by Facets Dive. The What-If Tool
+        // only makes use of the first selected item, but Facets Dive itself
+        // maintains a list of all selected items and this is bound to that
+        // list provided by Facets Dive.
         selected: {
           type: Array,
           value: () => ([]),
@@ -1669,7 +1720,26 @@ limitations under the License.
         // If the classification model is a multi-class model.
         multiClass: {
           type: Boolean,
-          value: false,
+        },
+        // If the examples loaded are SequenceExamples.
+        sequenceExamples: {
+          type: Boolean,
+        },
+        // Sampling odds (1: load all examples, .2: sample 20% of examples)
+        samplingOdds: {
+          type: Number,
+        },
+        // Whether to use the TF Serving Predict API or not.
+        usePredictApi: {
+          type: Boolean,
+        },
+        // Name of the output tensor to parse when using the Predict API.
+        predictOutputTensor: {
+          type: String,
+        },
+        // Name of the intput tensor to parse when using the Predict API.
+        predictInputTensor: {
+          type: String,
         },
         // Precision on charts for performance measuring.
         axisPrecision: {
@@ -1741,6 +1811,19 @@ limitations under the License.
           value: false
         },
         compareTitle: String,
+        // Dictionary of features to feature value attributions for display
+        // in the example viewer. Filled in if the selected example contains
+        // attribution information.
+        attribution: {
+          type: Object,
+          value: () => ({}),
+        },
+        // True if showing global PD plots. False if showing individual PD
+        // plots.
+        globalPdPlots: {
+          type: Boolean,
+          readOnly: true,
+        },
       },
 
       observers: [
@@ -1943,9 +2026,21 @@ limitations under the License.
         this.$.partialplotholder.style.display = 'none';
       },
 
-      showPartialDependencePlots_: function() {
+      showGlobalPartialDependencePlots_: function() {
+        this._setGlobalPdPlots(true);
         this.$.partialplotholder.style.display = 'block';
         requestAnimationFrame(() => this.populatePdTabs());
+      },
+
+      showPartialDependencePlots_: function() {
+        this._setGlobalPdPlots(false);
+        this.$.partialplotholder.style.display = 'block';
+        requestAnimationFrame(() => this.populatePdTabs());
+      },
+
+      areTherePdPlotFeatures_: function(partialDepPlotEligibleFeatures) {
+        return partialDepPlotEligibleFeatures &&
+          partialDepPlotEligibleFeatures.length > 0;
       },
 
       selectedIndicesChanged_: function(event) {
@@ -2069,6 +2164,12 @@ limitations under the License.
           this.isBinaryClassification_(modelType, multiClass);
       },
 
+      arePartialDependencePlotsEnabled_: function(
+          selectedExampleAndInference, modelName, inferenceAddress) {
+        return this.hasSelected(selectedExampleAndInference) &&
+          this.areExamplesEditable_(modelName, inferenceAddress);
+      },
+
       hasSelected: function(selectedExampleAndInference) {
         return selectedExampleAndInference != null;
       },
@@ -2086,7 +2187,8 @@ limitations under the License.
       isComputedKeyStr_: function(feature) {
         return feature == inferenceValueStr || feature == inferenceLabelStr
             || feature == inferenceCorrectStr || feature == inferenceErrorStr
-            || feature == inferenceScoreStr || feature == inferenceAbsErrorStr
+            || feature.lastIndexOf(inferenceScoreStr, 0) == 0
+            || feature == inferenceAbsErrorStr
             || feature == inferenceSquaredErrorStr || feature == exampleIdKey
             || this.facetDistFeatureNames.indexOf(feature) != -1
       },
@@ -2173,7 +2275,9 @@ limitations under the License.
        */
       updateInferenceStats_: function(regenInferenceStats) {
         if (!this.inferenceStats_ || !this.visdata ||
-            this.selectedLabelFeature == '') {
+            this.selectedLabelFeature == '' ||
+            this.examplesAndInferences.length == 0 ||
+            this.examplesAndInferences[0].inferences == null) {
           return;
         }
         if (regenInferenceStats) {
@@ -2225,7 +2329,8 @@ limitations under the License.
                 }
               }
               for (; thresh <= 100; thresh++) {
-                if (+item[this.selectedLabelFeature] == 0) {
+                if (item[this.selectedLabelFeature] == null ||
+                    +item[this.selectedLabelFeature] == 0) {
                   inferenceStats.thresholds[thresh]['TN'] += 1;
                   if (facetedStats) {
                     facetedStats[thresh]['TN'] += 1;
@@ -2612,19 +2717,20 @@ limitations under the License.
        * non-zero.
        */
       getClassificationBestNonZero: function(index) {
+        // TODO(tolgab) Generalize this to multiple models
         let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIndex].length;
+               inferenceIndex][0].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-              inferenceIndex][i].label !== 0) {
+              inferenceIndex][0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
-        return this.examplesAndInferences[index].inferences[inferenceIndex][
+        return this.examplesAndInferences[index].inferences[inferenceIndex][0][
           indexForNonZeroLabel];
       },
 
@@ -2800,6 +2906,70 @@ limitations under the License.
         this.selectedExampleAndInference =
           this.selected.length > 0
           ? this.examplesAndInferences[this.selected[0]] : null;
+        requestAnimationFrame(() => this.setAttributions());
+      },
+
+      /**
+       * Finds attribution features and sets the attribution object for the
+       * selected example.
+       */
+      setAttributions: function() {
+        const attrib = {};
+        const selectedData = this.visdata[this.selected[0]];
+        const attributionFinder = new RegExp(attributionPrefix + '(.*)');
+        const sparseAttributionFinder =
+            new RegExp(attributionSparseKeyPrefix + '(.*)');
+        for (let key in selectedData) {
+          let featureWithAttribution = attributionFinder.exec(key);
+          // If this feature represents an attribution, set the attribution
+          // value for the appropriate example feature.
+          // Attribution is represented by features with the format
+          // "{attributionPrefix}{featureName}".
+          if (featureWithAttribution) {
+            const featFinder = new RegExp(
+              '^' + featureWithAttribution[1] + '$');
+            for (let featToTest in selectedData) {
+              if (featFinder.test(featToTest)) {
+                attrib[featToTest] = selectedData[key];
+                break;
+              }
+            }
+          }
+          featureWithAttribution = sparseAttributionFinder.exec(key);
+          // If this feature represents a sparse attribution, set the
+          // attribution values for the appropriate example feature.
+          // Sparse attribution is represented by features with the format
+          // "{attributionSparseKeyPrefix}{featureName}" containing a list of
+          // feature values for which we have attribution values and
+          // "{attributionSparseValuePrefix}{featureName}" containing a
+          // same-sized list of attribution amounts for those feature values.
+          if (featureWithAttribution) {
+            const featFinder = new RegExp(
+              '^' + featureWithAttribution[1] + '$');
+            for (let featToTest in selectedData) {
+              if (featFinder.test(featToTest)) {
+                const attribKeys = selectedData[key];
+                const attribVals = selectedData[key.replace(
+                  attributionSparseKeyPrefix, attributionSparseValuePrefix)];
+                const len = Array.isArray(selectedData[featToTest]) ?
+                      selectedData[featToTest].length : 1;
+                const attribList = Array.apply(null, Array(len)).map(
+                  Number.prototype.valueOf, 0);
+                for (let attribIdx = 0; attribIdx < attribKeys.length;
+                     attribIdx++) {
+                  let valIndex = selectedData[featToTest].indexOf(
+                    attribKeys[attribIdx]);
+                  if (valIndex != -1) {
+                    attribList[valIndex] = attribVals[attribIdx];
+                  }
+                }
+                attrib[featToTest] = attribList;
+                break;
+              }
+            }
+          }
+        }
+        this.attribution = attrib;
       },
 
       shouldDisableGetExamplesButton_: function(examplesPath) {
@@ -2810,6 +2980,10 @@ limitations under the License.
           updatedExample) {
         return examples.length == 0 || modelName.length == 0 ||
           inferenceAddress.length == 0 || !updatedExample;
+      },
+
+      areExamplesEditable_: function(modelName, inferenceAddress) {
+        return modelName.length != 0 && inferenceAddress.length != 0;
       },
 
       newInferences_: function() {
@@ -2836,20 +3010,31 @@ limitations under the License.
             this.inferences.indices.length == 0) {
           return;
         }
-        // Create map of example indicies to inference results.
+        // Create map of example indices to inference results.
         const inferenceMap = {}
-        const isClassification = !!this.inferences.results.classification;
+        const isClassification = !!this.inferences.results[0].classificationResult;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
-            const classes =
-              this.inferences.results.classification.classifications[i].classes;
-            inferenceMap[this.inferences.indices[i]] =
-              classes.sort((a, b) => b.score - a.score);
+            inferenceMap[this.inferences.indices[i]] = [];
+            for (let modelNum = 0; modelNum < this.inferences.results.length;
+                 modelNum++){
+              const result = this.inferences.results[modelNum].classificationResult;
+              // For models that don't return any labels for the classes, fill
+              // them out with class indicies.
+              for (let j = 0; j < result.classifications[i].classes.length; j++) {
+                if (result.classifications[i].classes[j].label == '') {
+                  result.classifications[i].classes[j].label = j.toString();
+                }
+              }
+              inferenceMap[this.inferences.indices[i]][modelNum] =
+                  result.classifications[i].classes.sort((a, b) => b.score - a.score);
+            }
           } else {
-            inferenceMap[this.inferences.indices[i]] =
-                [{label: '',
-                  score: this.inferences.results.regression.regressions[
-                    i].value}];
+            inferenceMap[this.inferences.indices[i]] = [];
+            // TODO(tolgab) Generalize regression to multiple models
+            const result = this.inferences.results[0].regressionResult;
+            inferenceMap[this.inferences.indices[i]][0] =
+                [{label: '', score: result.regressions[i].value}];
           }
         }
         // Set the inferences in the examplesAndInferences structure, updating
@@ -2873,7 +3058,7 @@ limitations under the License.
           } else {
             item[inferenceValueStr] =
               self.examplesAndInferences[index].inferences[
-                self.examplesAndInferences[index].inferences.length - 1][
+                self.examplesAndInferences[index].inferences.length - 1][0][
                   0].score;
           }
 
@@ -2882,16 +3067,22 @@ limitations under the License.
           if (isClassification && self.labelVocab.length > 0) {
             for (let inferenceIndex = 0;
                  inferenceIndex <
-                self.examplesAndInferences[index].inferences.length;
+                 self.examplesAndInferences[index].inferences.length;
                  inferenceIndex++) {
-              for (let labelIndex = 0;
-                   labelIndex < self.examplesAndInferences[index].inferences[
-                     inferenceIndex].length;
-                   labelIndex++) {
-                self.examplesAndInferences[index].inferences[inferenceIndex][
-                  labelIndex].vocabLabel = self.labelVocab[
-                    self.examplesAndInferences[index].inferences[
-                      inferenceIndex][labelIndex].label];
+              for (let modelNum = 0;
+                   modelNum < self.examplesAndInferences[index].inferences[
+                    inferenceIndex].length;
+                   modelNum++) {
+                for (let labelIndex = 0;
+                    labelIndex < self.examplesAndInferences[index].inferences[
+                      inferenceIndex][modelNum].length;
+                    labelIndex++) {
+                  self.examplesAndInferences[index].inferences[
+                    inferenceIndex][modelNum][
+                      labelIndex].vocabLabel = self.labelVocab[
+                      self.examplesAndInferences[index].inferences[
+                        inferenceIndex][modelNum][labelIndex].label];
+                }
               }
             }
             item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
@@ -2919,7 +3110,7 @@ limitations under the License.
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
           item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][0].label;
+            this.examplesAndInferences[index].inferences[inferenceIdx][0][0].label;
           return;
         }
 
@@ -2938,25 +3129,29 @@ limitations under the License.
         let indexForNonZeroLabel = 0;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIdx].length;
+               inferenceIdx][0].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-            inferenceIdx][i].label !== 0) {
+            inferenceIdx][0][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
 
-        item[inferenceScoreStr] =
-          this.examplesAndInferences[index].inferences[inferenceIdx][
-            indexForNonZeroLabel].score;
-        if (this.examplesAndInferences[index].inferences[inferenceIdx][
-          indexForNonZeroLabel].score >= threshold) {
-          item[inferenceValueStr] =
+        let n_models = this.examplesAndInferences[index].inferences[
+          inferenceIdx].length;
+        for (let modelNum = 0; modelNum < n_models; modelNum++){
+          item[inferenceScoreStr + (modelNum + 1)] =
             this.examplesAndInferences[index].inferences[inferenceIdx][
-              indexForNonZeroLabel].label;
-        } else {
-          item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+              modelNum][indexForNonZeroLabel].score;
+          if (this.examplesAndInferences[index].inferences[inferenceIdx][
+            0][indexForNonZeroLabel].score >= threshold) {
+            item[inferenceValueStr] =
+              this.examplesAndInferences[index].inferences[inferenceIdx][0][
+                indexForNonZeroLabel].label;
+          } else {
+            item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+          }
         }
       },
 
@@ -3001,7 +3196,10 @@ limitations under the License.
                              'model_type': this.modelType,
                              'model_version': this.modelVersion,
                              'model_signature': this.modelSignature,
-                             'label_vocab_path': this.labelVocabPath};
+                             'label_vocab_path': this.labelVocabPath,
+                             'use_predict': this.usePredictApi,
+                             'predict_output_tensor': this.predictOutputTensor,
+                             'predict_input_tensor': this.predictInputTensor};
         this.$.spinner.hidden = false;
         if (!this.local) {
           const url = this.makeUrl_('/data/plugin/whatif/infer',
@@ -3116,30 +3314,77 @@ limitations under the License.
       },
 
       makeAsyncRequest_: function(url, thenDoFn, postData){
-        var self = this;
-        const wrapperFn = this._canceller.cancellable(function(result){
+        const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
           if (result.value && result.value.error){
             // show toast with the error
-            self.showToast_(result.value.error);
-            self.$.spinner.hidden = true;
+            this.showToast_(result.value.error);
+            this.$.spinner.hidden = true;
           } else if (thenDoFn) {
             thenDoFn(result);
           }
         });
-        this.requestManager.request(url, postData).then(wrapperFn);
+        this.requestManager.request(url, postData).then(wrapperFn)
+            .catch(reason => {
+              this.exampleStatusStr = 'Request failed';
+              this.showToast_('Request failed: ' + reason);
+              this.$.spinner.hidden = true;
+            });
       },
 
       /**
-       * Converts a single TF examples into an item dict for display in Facets
-       * Dive.
+       * Extract the data point feature value from an example feature. If
+       * squeeze is true then convert length 1 arrays into single objects.
+       */
+      dataPointValueFromFeature_: function(feature, squeeze) {
+        let valueList = null;
+        if (feature.int64List) {
+          valueList = feature.int64List.value;
+        } else if (feature.floatList) {
+          valueList = feature.floatList.value;
+        } else if (feature.bytesList && feature.bytesList.value) {
+          valueList = feature.bytesList.value.map(val => {
+            // Strings above a max length are most likely binary encoded data
+            // and not strings and therefore shouldn't be decoded for display
+            // in Facets Dive.
+            if (val.length > maxStringLengthToDecode) {
+              return 'ERROR: string not decoded due to length';
+            }
+            try {
+              return atob(val);
+            } catch (err) {
+              console.error('Error decoding string: ' + err);
+              return 'ERROR: error decoding string';
+            }
+          });
+        }
+        // For value lists that are of length 1, treat the feature value
+        // as just the item and not the list of length 1.
+        if (squeeze && valueList && valueList.length == 1) {
+          let singleValue = valueList[0];
+          // For numeric feature values, convert the string to a number.
+          if (!isNaN(singleValue)) {
+            return Number(singleValue);
+          } else {
+            return singleValue;
+          }
+        }
+        return valueList;
+      },
+
+      /**
+       * Converts a single TF Example or SequenceExample into an item dict for
+       * display in Facets Dive.
        */
       exampleToDataPoint_: function(example, index) {
         const d = {};
-        const features = 'features' in example ?
-            Object.keys(example.features.feature) : [];
+        // Extract the standard features from examples or context features from
+        // sequence examples.
+        const featureRoot = example.features || example.context;
+        const features = featureRoot && 'feature' in featureRoot ?
+            Object.keys(featureRoot.feature) : [];
         for (const index in features) {
           const fname = features[+index];
           // Ignore encoded image feature when creating data for Facets Dive.
@@ -3148,40 +3393,29 @@ limitations under the License.
           if (fname == this.imageFeatureName) {
             continue;
           }
-          let v = null;
-          if (example.features.feature[fname].int64List) {
-            v = example.features.feature[fname].int64List.value;
-          } else if (example.features.feature[fname].floatList) {
-            v = example.features.feature[fname].floatList.value;
-          } else if (example.features.feature[fname].bytesList &&
-                     example.features.feature[fname].bytesList.value) {
-            v = example.features.feature[fname].bytesList.value.map(val => {
-              // Strings above a max length are most likely binary encoded data
-              // and not strings and therefore shouldn't be decoded for display
-              // in Facets Dive.
-              if (val.length > maxStringLengthToDecode) {
-                return 'ERROR: string not decoded due to length';
-              }
-              try {
-                return atob(val);
-              } catch (err) {
-                console.error('Error decoding string: ' + err);
-                return 'ERROR: error decoding string';
-              }
-            });
-          }
-          if (v) {
-            // For value lists that are of length 1, treat the feature value
-            // as just the item and not the list of length 1.
-            if (v.length == 1) {
-              v = v[0];
-              // For numeric feature values, convert the string to a number.
-              if (!isNaN(v)) {
-                v = Number(v);
-              }
-            }
+          let v = this.dataPointValueFromFeature_(
+            featureRoot.feature[fname], true);
+          if (v != null) {
             d[fname] = v;
           }
+        }
+
+        // For sequence examples, extract the sequence feature values.
+        const featureLists = 'featureLists' in example ?
+            Object.keys(example.featureLists.featureList) : [];
+        for (const index in featureLists) {
+          const fname = featureLists[+index];
+          const fList = example.featureLists.featureList[fname].feature;
+          let v = [];
+          // Concatenate feature values from all values in the sequence for
+          // each feature.
+          for (let i = 0; i < fList.length; i++) {
+            const newV = this.dataPointValueFromFeature_(fList[i], false);
+            if (newV) {
+              v = v.concat(newV)
+            }
+          }
+          d[fname] = v;
         }
         d[exampleIdKey] = index;
         return d;
@@ -3216,12 +3450,55 @@ limitations under the License.
             this.updatedExample)) {
           this.inferClicked_();
         }
+        this.setInferenceFromExampleData();
+      },
+
+      /**
+       * If the example data contains inference results, as in the case with
+       * pre-computed model results, then set the appropriate inference results.
+       */
+      setInferenceFromExampleData: function() {
+        // If the examples contain the classification results or regression
+        // results keys, then set the classification results from the
+        // information in the examples.
+        if (this.visdata.length > 0) {
+          if (this.visdata[0][classificationResultsKey] != null) {
+            const inferences = {};
+            const indices = Array.apply(
+              null, {length: this.visdata.length}).map(Number.call, Number);
+            inferences.indices = indices;
+            inferences.results = [
+              {classificationResult: {classifications: []}}];
+            for (let i = 0; i < indices.length; i++) {
+              inferences.results[0].classificationResult.classifications[i] =
+                {classes: [
+                  {label: '0',
+                   score: this.visdata[i][classificationResultsKey][0]},
+                  {label: '1',
+                   score: this.visdata[i][classificationResultsKey][1]}]};
+            }
+            this.inferences = inferences;
+          } else if (this.visdata[0][regressionResultsKey] != null) {
+            const inferences = {};
+            const indices = Array.apply(
+              null, {length: this.visdata.length}).map(Number.call, Number);
+            inferences.indices = indices;
+            inferences.results = [{regressionResult: {regressions: []}}];
+            for (let i = 0; i < indices.length; i++) {
+              inferences.results[0].regressionResult.regressions[i] =
+                {value: this.visdata[i][regressionResultsKey]};
+            }
+            this.inferences = inferences;
+          }
+        }
       },
 
       getExamples_: function(){
         var url = this.makeUrl_('/data/plugin/whatif/examples_from_path',
                                 {'examples_path': this.examplesPath,
-                                 'max_examples': this.maxExamples});
+                                 'max_examples': this.maxExamples,
+                                 'sampling_odds': this.samplingOdds,
+                                 'sequence_examples': this.sequenceExamples});
 
         const updateExampleContents = result => {
           this.updateExampleContents_(
@@ -3397,22 +3674,24 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        const origValEntry =
-          this.createPdEntryForCurrentValue(featureName, data);
-        if (origValEntry) {
-          let indexOfOrigValInData = -1;
-          const origKey = _.keys(data)[0];
-          const origData = data[origKey];
-          for (let i = 0; i < origData.length; i++) {
-            if (origData[i].step == origValEntry.step) {
-              indexOfOrigValInData = i;
-              break;
+        if (!this.globalPdPlots) {
+          const origValEntry =
+            this.createPdEntryForCurrentValue(featureName, data);
+          if (origValEntry) {
+            let indexOfOrigValInData = -1;
+            const origKey = _.keys(data)[0];
+            const origData = data[origKey];
+            for (let i = 0; i < origData.length; i++) {
+              if (origData[i].step == origValEntry.step) {
+                indexOfOrigValInData = i;
+                break;
+              }
             }
+            if (indexOfOrigValInData != -1) {
+              origData.splice(indexOfOrigValInData, 1);
+            }
+            data[origKey + ' - original value'] = [origValEntry];
           }
-          if (indexOfOrigValInData != -1) {
-            origData.splice(indexOfOrigValInData, 1);
-          }
-          data[origKey + ' - original value'] = [origValEntry];
         }
 
         // Convert the data into the format expected by vz-bar-chart.
@@ -3468,11 +3747,13 @@ limitations under the License.
 
         // Make a series for the current value of the feature to show in the
         // plot.
-        const origValEntry =
-          this.createPdEntryForCurrentValue(featureName, data);
-        if (origValEntry) {
-          const origKey = _.keys(data)[0];
-          data[origKey + ' - original value'] = [origValEntry];
+        if (!this.globalPdPlots) {
+          const origValEntry =
+            this.createPdEntryForCurrentValue(featureName, data);
+          if (origValEntry) {
+            const origKey = _.keys(data)[0];
+            data[origKey + ' - original value'] = [origValEntry];
+          }
         }
 
         const series = _.keys(data);
@@ -3505,8 +3786,9 @@ limitations under the License.
           origValue = origValue[indexForValue];
         }
 
+        // TODO(tolgab) Generalize this to multiple models
         const inferences = this.selectedExampleAndInference.inferences[
-          this.selectedExampleAndInference.inferences.length - 1];
+          this.selectedExampleAndInference.inferences.length - 1][0];
         let origInferenceScore = -1;
         for (let i = 0; i < inferences.length; i++) {
           if (inferences[i].label == classToChart.toString() ||
@@ -3565,7 +3847,10 @@ limitations under the License.
           'x_min': xMin,
           'x_max': xMax,
           'feature_index_pattern': featureIndexPattern,
-          'example_index': this.selected[0]
+          'example_index': this.globalPdPlots ? -1 : this.selected[0],
+          'use_predict': this.usePredictApi,
+          'predict_output_tensor': this.predictOutputTensor,
+          'predict_input_tensor': this.predictInputTensor,
         };
 
         // Call into backend.

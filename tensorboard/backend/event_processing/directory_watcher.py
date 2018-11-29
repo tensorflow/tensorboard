@@ -20,10 +20,8 @@ from __future__ import print_function
 
 import bisect
 
-import tensorflow as tf
-
-
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat import tf
 
 
 class DirectoryWatcher(object):

@@ -37,10 +37,10 @@ py_library(
         ":shared_config",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:encoder",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -74,9 +74,7 @@ py_library(
     srcs = ["file_system_tools.py"],
     data = ["resources"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard:expect_tensorflow_installed",
-    ],
+    deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
 py_library(
@@ -88,7 +86,8 @@ py_library(
         ":colormaps",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:util",
+        "//tensorboard/util:encoder",
+        "//tensorboard/util:op_evaluator",
     ],
 )
 

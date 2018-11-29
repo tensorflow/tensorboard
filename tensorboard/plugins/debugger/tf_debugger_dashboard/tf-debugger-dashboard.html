@@ -604,6 +604,26 @@ limitations under the License.
 
         _windowWidth: Number,
         _windowHeight: Number,
+
+        /**
+         * Array of {
+         *   device_name: string,
+         *   node_name: string,
+         *   op_type: ?,
+         *   output_slot: ?,
+         *   debug_op: ?,
+         * }
+         */
+        _debugWatches: Array,
+
+        /**
+         * {
+         *   feeds: Array<string>,
+         *   fetches: Array<string>,
+         *   targets: Array<string>,
+         * }
+         */
+        _latestSessionRun: Object,
       },
 
       observers: [
@@ -1265,7 +1285,12 @@ limitations under the License.
         };
       },
 
-      _setContinueTo(type, target, counterTarget) {
+      /**
+       * @param {string} type
+       * @param {string} target
+       * @param {number=} counterTarget
+       */
+      _setContinueTo(type, target, counterTarget = -1) {
         this._continueToType = type;
         this._continueToTarget = target;
         this._continueToCounterTarget = counterTarget;

@@ -100,9 +100,7 @@ py_library(
     name = "error",
     srcs = ["error.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard:expect_tensorflow_installed",
-    ],
+    deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
 tb_proto_library(

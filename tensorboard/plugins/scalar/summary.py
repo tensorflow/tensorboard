@@ -30,12 +30,68 @@ import numpy as np
 from tensorboard.plugins.scalar import metadata
 
 
+def scalar(name, tensor, tag=None, description=None, step=None):
+  """Create a scalar summary op.
+
+  Arguments:
+    name: A name for the generated summary node.
+    tensor: A real numeric rank-0 `Tensor`. Must have `dtype` castable
+      to `float32`.
+    tag: Optional rank-0 string `Tensor` to identify this summary in
+      TensorBoard.  Defaults to the generated name of this op.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
+    step: Optional `int64` monotonic step variable, which defaults
+      to `tf.train.get_global_step`.
+
+  Returns:
+    A TensorFlow summary op.
+  """
+  # TODO(nickfelt): make tag param work
+  summary_metadata = metadata.create_summary_metadata(
+      display_name=None, description=description)
+  with tf.name_scope(name, values=[tensor, tag, step]) as scope:
+    with tf.control_dependencies([tf.assert_scalar(tensor)]):
+      return tf.contrib.summary.generic(name=scope,
+                                        tensor=tf.cast(tensor, tf.float32),
+                                        metadata=summary_metadata,
+                                        step=step)
+
+
+def scalar_pb(tag, tensor, description=None):
+  """Create a scalar tf.Summary protobuf.
+
+  Arguments:
+    tag: String tag for the summary.
+    tensor: A rank-0 `np.array` or a compatible python number type.
+    description: Optional long-form description for this summary, as a
+      `str`. Markdown is supported. Defaults to empty.
+
+  Returns:
+    A `tf.Summary` protobuf object.
+  """
+  arr = np.array(tensor)
+  if arr.shape != ():
+    raise ValueError('Expected scalar shape for tensor, got shape: %s.'
+                     % arr.shape)
+  if arr.dtype.kind not in ('b', 'i', 'u', 'f'):  # bool, int, uint, float
+    raise ValueError('Cast %s to float is not supported' % arr.dtype.name)
+  tensor_proto = tf.make_tensor_proto(arr.astype(np.float32))
+  summary_metadata = metadata.create_summary_metadata(
+      display_name=None, description=description)
+  summary = tf.Summary()
+  summary.value.add(tag=tag,
+                    metadata=summary_metadata,
+                    tensor=tensor_proto)
+  return summary
+
+
 def op(name,
        data,
        display_name=None,
        description=None,
        collections=None):
-  """Create a scalar summary op.
+  """Create a legacy scalar summary op.
 
   Arguments:
     name: A unique name for the generated summary node.
@@ -65,7 +121,7 @@ def op(name,
 
 
 def pb(name, data, display_name=None, description=None):
-  """Create a scalar summary protobuf.
+  """Create a legacy scalar summary protobuf.
 
   Arguments:
     name: A unique name for the generated summary, including any desired

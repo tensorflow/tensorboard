@@ -272,9 +272,9 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # BSD-3-Clause
       sha256_urls_extract = {
-          "29288a2be82014ffa03f8ee1f8519bd43b71f09790409dcfa300ee3bb77fd81b": [
-              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v4.13.0/d3.zip",
-              "https://github.com/d3/d3/releases/download/v4.13.0/d3.zip",
+          "05a9c2b9c206447be0e26b3a705e7f8df4943df2d063ddc5bf0274f50ec44727": [
+              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v5.7.0/d3.zip",
+              "https://github.com/d3/d3/releases/download/v5.7.0/d3.zip",
           ],
       },
       # TODO(jart): Use srcs=["d3.js"] instead of this once supported.
@@ -363,7 +363,7 @@ def tensorboard_js_workspace():
           "https://mirror.bazel.build/registry.npmjs.org/sinon/-/sinon-1.17.4.tgz",
           "https://registry.npmjs.org/sinon/-/sinon-1.17.4.tgz",
       ],
-      strip_prefix = "package/lib",
+      strip_prefix = "package/pkg",
       path = "/sinonjs",
   )
 

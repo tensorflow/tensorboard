@@ -22,7 +22,9 @@ import os
 import re
 
 import six
-import tensorflow as tf
+
+from tensorboard.compat import tf
+
 
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile('([*?[])')
 
@@ -35,6 +37,8 @@ def IsGCSPath(path):
 def IsCnsPath(path):
   return path.startswith("/cns/")
 
+def PathSeparator(path):
+  return '/' if IsGCSPath(path) or IsCnsPath(path) else os.sep
 
 def IsTensorFlowEventsFile(path):
   """Check the path name to see if it is probably a TF Events file.

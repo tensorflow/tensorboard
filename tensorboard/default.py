@@ -31,8 +31,6 @@ from __future__ import print_function
 import logging
 import os
 
-import tensorflow as tf
-
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.beholder import beholder_plugin
@@ -49,6 +47,8 @@ from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+import tensorflow as tf
+
 
 logger = logging.getLogger(__name__)
 
