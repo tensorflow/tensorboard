@@ -222,7 +222,6 @@ backend.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(audioMetadata) {
-        const isDemoMode = tf_backend.getRouter().isDemoMode();
         const searchParam = new URLSearchParams(audioMetadata.query);
         // Include wall_time just to disambiguate the URL and force
         // the browser to reload the audio when the URL changes. The
@@ -231,8 +230,8 @@ backend.
         const url = tf_backend.getRouter().pluginRoute(
             'audio',
             '/individualAudio',
-            searchParam,
-            /* demoCustomExt */ '.wav');
+            searchParam
+        );
 
         return {
           wall_time: tf_card_heading.formatDate(new Date(audioMetadata.wall_time * 1000)),

@@ -340,8 +340,7 @@ profile run can have multiple tools that present the performance profile as diff
       // Set this to true so we only initialize once.
       this._initialized = true;
       const profileTagsURL =
-        tf_backend.getRouter().pluginRoute('profile', '/tools') +
-        (tf_backend.getRouter().isDemoMode() ? '.json' : '');
+        tf_backend.getRouter().pluginRoute('profile', '/tools');
       // Reset the progress bar to 0.
       this.set('progress', {
         value: 0,
