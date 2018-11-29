@@ -16,7 +16,7 @@ var tf_data_selector;
 (function (tf_data_selector) {
     var _a;
     function decodeIdArray(str) {
-        return str.split(',').map(function (idStr) { return parseInt(idStr, 36); }).filter(Boolean);
+        return str.split(',').map(function (idStr) { return parseInt(idStr, 10); }).filter(Boolean);
     }
     tf_data_selector.decodeIdArray = decodeIdArray;
     function encodeIdArray(arr) {
@@ -24,7 +24,7 @@ var tf_data_selector;
     }
     tf_data_selector.encodeIdArray = encodeIdArray;
     function encodeId(id) {
-        return id.toString(36);
+        return String(id);
     }
     tf_data_selector.encodeId = encodeId;
     tf_data_selector.NO_EXPERIMENT_ID = null;
