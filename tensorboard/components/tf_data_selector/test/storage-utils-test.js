@@ -26,8 +26,8 @@ var tf_data_selector;
                 assert.deepEqual(actual, [1]);
             });
             it('filters non-number (including inf) from decoded ids', function () {
-                var actual = tf_data_selector.decodeIdArray(',1, 2,!a,Infinity');
-                assert.deepEqual(actual, [1, 2]);
+                var actual = tf_data_selector.decodeIdArray(',1, 2,0,!a,Infinity');
+                assert.deepEqual(actual, [1, 2, 0]);
             });
         });
         describe('encodeIdArray', function () {

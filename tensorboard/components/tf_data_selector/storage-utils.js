@@ -16,7 +16,9 @@ var tf_data_selector;
 (function (tf_data_selector) {
     var _a;
     function decodeIdArray(str) {
-        return str.split(',').map(function (idStr) { return parseInt(idStr, 10); }).filter(Boolean);
+        return str.split(',')
+            .map(function (idStr) { return parseInt(idStr, 10); })
+            .filter(function (n) { return !isNaN(n); });
     }
     tf_data_selector.decodeIdArray = decodeIdArray;
     function encodeIdArray(arr) {
