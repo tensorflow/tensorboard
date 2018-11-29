@@ -88,9 +88,9 @@ export function setRouter(router: Router): void {
 }
 
 function createProdDataPath(dataDir: string, route: string,
-    ext: string, params?: URLSearchParams): string {
+    ext: string, params: URLSearchParams = new URLSearchParams()): string {
   let relativePath = dataDir + route;
-  if (params && String(params)) {
+  if (String(params)) {
     const delimiter = route.includes('?') ? '&' : '?';
     relativePath += delimiter + String(params);
   }
