@@ -74,6 +74,12 @@ py_test(
 )
 
 py_library(
+    name = "platform_util",
+    srcs = ["platform_util.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["test_util.py"],

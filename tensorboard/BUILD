@@ -302,6 +302,7 @@ py_library(
     deps = [
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util",
+        "//tensorboard/util:platform_util",
         "@org_pythonhosted_six",
     ],
 )

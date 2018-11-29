@@ -21,6 +21,7 @@ from __future__ import print_function
 import inspect
 
 from tensorboard.compat import tf
+from tensorboard.util import platform_util
 
 
 class RawEventFileLoader(object):
@@ -29,6 +30,7 @@ class RawEventFileLoader(object):
   def __init__(self, file_path):
     if file_path is None:
       raise ValueError('A file path is required')
+    file_path = platform_util.readahead_file_path(file_path)
     tf.logging.debug('Opening a record reader pointing at %s', file_path)
     with tf.errors.raise_exception_on_not_ok_status() as status:
       self._reader = tf.pywrap_tensorflow.PyRecordReader_New(

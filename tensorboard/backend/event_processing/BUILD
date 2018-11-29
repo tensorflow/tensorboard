@@ -73,6 +73,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:platform_util",
     ],
 )
 
