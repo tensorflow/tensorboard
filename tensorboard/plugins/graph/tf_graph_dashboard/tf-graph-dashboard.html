@@ -292,17 +292,15 @@ Polymer({
         tf_backend.getRouter().pluginRoute('debugger', '/numerics_alert_report'));
   },
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
-    const demoMode = tf_backend.getRouter().isDemoMode();
-    const optional = (p) => (p != null && !demoMode || undefined) && p;
     return tf_backend.getRouter().pluginRoute(
         'graphs',
         '/graph',
         new URLSearchParams({
           'run': run,
-          'limit_attr_size': optional(limitAttrSize),
-          'large_attrs_key': optional(largeAttrsKey),
+          'limit_attr_size': limitAttrSize,
+          'large_attrs_key': largeAttrsKey,
         }),
-        /* demoCustomExt */ '.pbtxt');
+    );
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
