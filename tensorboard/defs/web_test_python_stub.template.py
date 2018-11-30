@@ -21,8 +21,8 @@ from tensorboard.functionaltests import wct_test_driver
 
 
 Test = wct_test_driver.create_test_class(
-    "tensorboard/components/vz_sorting/test/test_web_library",
-    "/vz-sorting/test/tests.html")
+    "{BINARY_PATH}",
+    "{WEB_PATH}")
 
 
 if __name__ == "__main__":
