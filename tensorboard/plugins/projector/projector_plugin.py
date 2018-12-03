@@ -311,7 +311,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     if not run_path_pairs:
       run_path_pairs.append(('.', self.logdir))
     if (self._run_paths_changed() or
-        _latest_checkpoints_changed(self._configs, run_path_pairs, self.logidr)):
+        _latest_checkpoints_changed(self._configs, run_path_pairs)):
       self.readers = {}
       self._configs, self.config_fpaths = self._read_latest_config_files(
           run_path_pairs)
