@@ -31,6 +31,7 @@ tf.enable_eager_execution()
 
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
+from tensorboard.util import tensor_manip
 
 class SummaryBaseTest(object):
 
@@ -58,21 +59,21 @@ class SummaryBaseTest(object):
 
   def test_float_value(self):
     pb = self.scalar('a', 1.13)
-    value = tf.make_ndarray(pb.value[0].tensor).item()
+    value = tensor_manip.make_ndarray(pb.value[0].tensor).item()
     self.assertEqual(float, type(value))
     self.assertNear(1.13, value, 1e-6)
 
   def test_int_value(self):
     # ints should be valid, but converted to floats.
     pb = self.scalar('a', 113)
-    value = tf.make_ndarray(pb.value[0].tensor).item()
+    value = tensor_manip.make_ndarray(pb.value[0].tensor).item()
     self.assertEqual(float, type(value))
     self.assertNear(113.0, value, 1e-6)
 
   def test_bool_value(self):
     # bools should be valid, but converted to floats.
     pb = self.scalar('a', True)
-    value = tf.make_ndarray(pb.value[0].tensor).item()
+    value = tensor_manip.make_ndarray(pb.value[0].tensor).item()
     self.assertEqual(float, type(value))
     self.assertEqual(1.0, value)
 

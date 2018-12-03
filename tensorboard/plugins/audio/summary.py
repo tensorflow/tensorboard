@@ -35,6 +35,7 @@ import tensorflow as tf
 
 from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
+from tensorboard.util import tensor_manip
 
 
 def op(name,
@@ -191,7 +192,7 @@ def pb(name,
 
   encoded_audio = [encoder(a) for a in limited_audio]
   content = np.array([encoded_audio, limited_labels]).transpose()
-  tensor = tf.make_tensor_proto(content, dtype=tf.string)
+  tensor = tensor_manip.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

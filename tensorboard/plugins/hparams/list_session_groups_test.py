@@ -29,6 +29,7 @@ from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
+from tensorboard.util import tensor_manip
 
 DATA_TYPE_EXPERIMENT = 'experiment'
 DATA_TYPE_SESSION_START_INFO = 'session_start_info'
@@ -169,68 +170,68 @@ class ListSessionGroupsTest(tf.test.TestCase):
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(10.0))
+                    tensor_proto=tensor_manip.make_tensor_proto(10.0))
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(20.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(20.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(15.0))
+                    tensor_proto=tensor_manip.make_tensor_proto(15.0))
             ],
             'optional_metric' : [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(20.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(20.0)),
                 TensorEvent(
                     wall_time=2, step=20,
-                    tensor_proto=tf.make_tensor_proto(33.0))
+                    tensor_proto=tensor_manip.make_tensor_proto(33.0))
             ]
         },
         'session_2': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(100.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(100.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(200.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(200.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(150.0))
+                    tensor_proto=tensor_manip.make_tensor_proto(150.0))
             ]
         },
         'session_3': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(1.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(1.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(2.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(2.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(1.5))
+                    tensor_proto=tensor_manip.make_tensor_proto(1.5))
             ]
         },
         'session_4': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(101.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(101.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(201.0)),
+                    tensor_proto=tensor_manip.make_tensor_proto(201.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(-151.0))
+                    tensor_proto=tensor_manip.make_tensor_proto(-151.0))
             ]
         },
     }

@@ -66,6 +66,7 @@ py_library(
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:encoder",
+        "//tensorboard/util:tensor_manip",
     ],
 )
 

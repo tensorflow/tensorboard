@@ -210,6 +210,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/util:tensor_manip",
     ],
 )
 
@@ -230,6 +231,7 @@ py_test(
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_manip",
     ],
 )
 
@@ -315,8 +317,8 @@ py_test(
     deps = [
         ":loader",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
         "//tensorboard/util",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )

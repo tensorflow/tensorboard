@@ -127,6 +127,7 @@ py_library(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/util:tensor_manip",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -201,6 +202,7 @@ py_library(
         ":events_writer_manager",
         ":numerics_alert",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_manip",
     ],
 )
 
@@ -234,6 +236,7 @@ py_test(
         ":tensor_store",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_manip",
     ],
 )
 
@@ -283,6 +286,7 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_manip",
         "@org_pocoo_werkzeug",
     ],
 )

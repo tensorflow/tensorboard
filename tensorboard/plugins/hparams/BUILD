@@ -28,6 +28,7 @@ py_library(
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_manip",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -44,6 +45,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/util:tensor_manip",
     ],
 )
 

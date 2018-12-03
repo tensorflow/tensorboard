@@ -17,6 +17,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":common_utils",
+        "//tensorboard/util:tensor_manip",
         "@org_tensorflow_serving_api",
     ],
 )

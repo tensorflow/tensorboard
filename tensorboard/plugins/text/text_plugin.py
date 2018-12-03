@@ -33,9 +33,10 @@ from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
-from tensorboard.compat import tf
+from tensorboard.util import tensor_manip
 
 
 # HTTP routes
@@ -183,7 +184,7 @@ def text_array_to_html(text_arr):
 
 def process_string_tensor_event(event):
   """Convert a TensorEvent into a JSON-compatible response."""
-  string_arr = tf.make_ndarray(event.tensor_proto)
+  string_arr = tensor_manip.make_ndarray(event.tensor_proto)
   html = text_array_to_html(string_arr)
   return {
       'wall_time': event.wall_time,

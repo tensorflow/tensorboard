@@ -26,6 +26,7 @@ from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import plugin_data_pb2
+from tensorboard.util import tensor_manip
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
@@ -353,7 +354,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return self._make_pr_entry(
         event.step,
         event.wall_time,
-        tf.make_ndarray(event.tensor_proto),
+        tensor_manip.make_ndarray(event.tensor_proto),
         thresholds)
 
   def _make_pr_entry(self, step, wall_time, data_array, thresholds):

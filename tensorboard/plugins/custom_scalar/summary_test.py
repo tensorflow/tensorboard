@@ -23,9 +23,10 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
-from tensorboard.plugins.custom_scalar import summary
-from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.custom_scalar import layout_pb2
+from tensorboard.plugins.custom_scalar import metadata
+from tensorboard.plugins.custom_scalar import summary
+from tensorboard.util import tensor_manip
 
 
 class LayoutTest(tf.test.TestCase):
@@ -94,7 +95,7 @@ class LayoutTest(tf.test.TestCase):
     self.assertEqual(1, len(tensor_events))
 
     # Parse the data.
-    string_array = tf.make_ndarray(tensor_events[0].tensor_proto)
+    string_array = tensor_manip.make_ndarray(tensor_events[0].tensor_proto)
     content = np.asscalar(string_array)
     layout_proto_from_disk = layout_pb2.Layout()
     layout_proto_from_disk.ParseFromString(tf.compat.as_bytes(content))

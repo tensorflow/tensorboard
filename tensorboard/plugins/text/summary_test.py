@@ -25,6 +25,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
+from tensorboard.util import tensor_manip
 
 
 class SummaryTest(tf.test.TestCase):
@@ -49,7 +50,7 @@ class SummaryTest(tf.test.TestCase):
     result.MergeFrom(pb)
     for value in result.value:
       if value.HasField('tensor'):
-        new_tensor = tf.make_tensor_proto(tf.make_ndarray(value.tensor))
+        new_tensor = tensor_manip.make_tensor_proto(tensor_manip.make_ndarray(value.tensor))
         value.ClearField('tensor')
         value.tensor.MergeFrom(new_tensor)
     return result
@@ -102,13 +103,13 @@ class SummaryTest(tf.test.TestCase):
   def test_bytes_value(self):
     pb = self.compute_and_check_summary_pb(
         'mi', b'A name\xe2\x80\xa6I call myself')
-    value = tf.make_ndarray(pb.value[0].tensor).item()
+    value = tensor_manip.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual(b'A name\xe2\x80\xa6I call myself', value)
 
   def test_unicode_value(self):
     pb = self.compute_and_check_summary_pb('mi', u'A name\u2026I call myself')
-    value = tf.make_ndarray(pb.value[0].tensor).item()
+    value = tensor_manip.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual(b'A name\xe2\x80\xa6I call myself', value)
 
@@ -117,7 +118,7 @@ class SummaryTest(tf.test.TestCase):
         'fa',
         np.array(
             [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']]))
-    values = tf.make_ndarray(pb.value[0].tensor).tolist()
+    values = tensor_manip.make_ndarray(pb.value[0].tensor).tolist()
     self.assertEqual(
         [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']],
         values)
@@ -131,7 +132,7 @@ class SummaryTest(tf.test.TestCase):
         'fa',
         np.array(
             [[u'A', u'long', u'long'], [u'way', u'to', u'run \u203C']]))
-    values = tf.make_ndarray(pb.value[0].tensor).tolist()
+    values = tensor_manip.make_ndarray(pb.value[0].tensor).tolist()
     self.assertEqual(
         [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']],
         values)
