@@ -48,7 +48,7 @@ limitations under the License.
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="../facets-overview/components/facets-overview/facets-overview.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
-
+<!-- TODO (tolgab) fix all syntax line wrapping etc. -->
 <!--
   A frontend that displays a set of editable examples and enables inference of those examples,
   visualizing the results.
@@ -1340,9 +1340,12 @@ limitations under the License.
                           <div class="feature-breakdown">
                             <div class="slider-label">Threshold for positive classification</div>
                             <div class="flex">
-                              <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                            immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
-                              </paper-slider>
+                              <template is="dom-repeat" items="[[overallThresholds]]" as="overallThreshold">
+                                <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
+                                              immediate-value="{{overallThreshold.threshold}}" value="[[overallThreshold.threshold]]"
+                                              on-value-changed="refreshInferencesNoRegen_">
+                                </paper-slider>
+                              </template>
                               <div>
                                 <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
@@ -1373,9 +1376,13 @@ limitations under the License.
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                                 </vz-line-chart>
                               </div>
-                              <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, overallThreshold)]]"
-                                                  class="conf-matrix"></tf-confusion-matrix>
-                              </tf-confusion-matrix>
+                              <div>
+                                <template is="dom-repeat" items="[[inferenceStats_]]" index-as="modelInd">
+                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, modelInd)]]"
+                                                      class="conf-matrix"></tf-confusion-matrix>
+                                  </tf-confusion-matrix>
+                                </template>
+                              </div>
                             </div>
                           </template>
                         </template>
@@ -1510,7 +1517,7 @@ limitations under the License.
     const inferenceErrorStr = ' Inference error';
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
-    const inferenceScoreStr = ' Inference score ';
+    const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Example ID';
     const classificationResultsKey = 'probabilities';
     const regressionResultsKey = 'score';
@@ -1652,8 +1659,8 @@ limitations under the License.
         },
         // Calculated statistics from the inference results.
         inferenceStats_: {
-          type: Object,
-          value: () => ({}),
+          type: Array,
+          value: () => ([]),
         },
         // Array of feature values and their set classification thresholds, for
         // Polymer display purposes.
@@ -1669,10 +1676,10 @@ limitations under the License.
           observer: 'refreshInferences_',
         },
         // The classification threshold when it isn't being set on a
-        // per-feature-value basis.
-        overallThreshold: {
-          type: Number,
-          value: 0.5,
+        // per-feature-value basis. One per model.
+        overallThresholds: {
+          type: Array,
+          value: () => ([]),
           observer: 'refreshInferencesNoRegen_',
         },
         // Which side-tab is selected.
@@ -1870,6 +1877,14 @@ limitations under the License.
         });
 
         resizer.call(dragResize);
+
+        // Initialize default overall thresholds
+        const overallThresholds = []
+        for (let modelInd = 0; modelInd < this.getNumberOfModels_();
+            modelInd++) {
+          overallThresholds.push({threshold: 0.5})
+        }
+        this.overallThresholds = overallThresholds;
       },
 
       settingsClicked_: function() {
@@ -1922,16 +1937,19 @@ limitations under the License.
         this.findClosestCounterfactual_(true);
       },
 
+      // TODO (tolgab) update for model comparison
       findClosestCounterfactual_: function(useL2Distance) {
         this.neighborByL2 = useL2Distance;
         const selected = this.selected[0];
+        const modelInferenceValueStr =
+            this.strWithModelIndex_(inferenceValueStr, 0);
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
         for (let i = 0; i < this.visdata.length; i++) {
           // Skip examples with the same inference class as the selected
           // examples.
-          if (this.visdata[selected][inferenceValueStr] ==
-              this.visdata[i][inferenceValueStr]) {
+          if (this.visdata[selected][modelInferenceValueStr] ==
+              this.visdata[i][modelInferenceValueStr]) {
             continue;
           }
           let dist = this.getDist(
@@ -1948,6 +1966,10 @@ limitations under the License.
             this.examplesAndInferences[closest];
           this.compareTitle = (useL2Distance ? 'L2' : 'L1') + ' counterfactual'
         }
+      },
+
+      getElementFromArray: function(index, arr) {
+        return arr[parseInt(index,10)];
       },
 
       /**
@@ -2184,13 +2206,32 @@ limitations under the License.
         return features;
       },
 
+      strStartsWith_: function(inStr, prefixStr){
+        return inStr.lastIndexOf(prefixStr, 0) == 0;
+      },
+
+      strWithModelIndex_: function(inStr, modelNumber){
+        if (this.getNumberOfModels_() > 1){
+          return inStr + ' ' + (modelNumber + 1);
+        } else {
+          return inStr
+        }
+      },
+
+      getNumberOfModels_: function(){
+        return this.modelName.split(',').length;
+      },
+
       isComputedKeyStr_: function(feature) {
-        return feature == inferenceValueStr || feature == inferenceLabelStr
-            || feature == inferenceCorrectStr || feature == inferenceErrorStr
-            || feature.lastIndexOf(inferenceScoreStr, 0) == 0
-            || feature == inferenceAbsErrorStr
-            || feature == inferenceSquaredErrorStr || feature == exampleIdKey
-            || this.facetDistFeatureNames.indexOf(feature) != -1
+        return this.strStartsWith_(feature, inferenceValueStr)
+            || this.strStartsWith_(feature, inferenceLabelStr)
+            || this.strStartsWith_(feature, inferenceCorrectStr)
+            || this.strStartsWith_(feature, inferenceErrorStr)
+            || this.strStartsWith_(feature, inferenceScoreStr)
+            || this.strStartsWith_(feature, inferenceAbsErrorStr)
+            || this.strStartsWith_(feature, inferenceSquaredErrorStr)
+            || feature == exampleIdKey
+            || this.facetDistFeatureNames.indexOf(feature) != -1;
       },
 
       /**
@@ -2237,7 +2278,7 @@ limitations under the License.
                   const feature2Value = key2 == 'undefined'
                     ? undefined : this.stats[feature2].valueHash[key2].value;
                   const thresh = {value: feature1Value, value2: feature2Value,
-                                  threshold: this.overallThreshold};
+                                  threshold: this.overallThresholds};
                   thresholds.push(thresh);
                   const mapKey = this.createCombinedValueString_(
                     feature1Value, feature2Value);
@@ -2281,190 +2322,224 @@ limitations under the License.
           return;
         }
         if (regenInferenceStats) {
-          let inferenceStats = {};
-          if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
-            // For binary classifiers, update the confusion matrices values for
-            // all possible classification thresholds.
-            inferenceStats.thresholds = [];
-            for (let i = 0; i < 101; i++) {
-              inferenceStats.thresholds.push(
-                {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
-            }
-            inferenceStats.faceted = {};
-            for (let i = 0; i < this.examplesAndInferences.length; i++) {
-              const item = this.visdata[i];
-              let facetedStats = null;
-              if (this.selectedBreakdownFeature != '') {
-                const facetKey = this.createCombinedValueString_(
-                  item[this.selectedBreakdownFeature],
-                  item[this.selectedSecondBreakdownFeature]);
-                facetedStats = inferenceStats.faceted[facetKey];
-                if (!facetedStats) {
-                  inferenceStats.faceted[facetKey] = []
-                  for (let i = 0; i < 101; i++) {
-                    inferenceStats.faceted[facetKey].push(
-                        {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
-                  }
+          // TODO (tolgab) all inferenceStats are now Array of Objects
+          const inferenceStatsArray = [];
+          for (let modelInd = 0; modelInd < this.getNumberOfModels_();
+              modelInd++) {
+            let inferenceStats = {};
+            if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+              // For binary classifiers, update the confusion matrices values
+              // for all possible classification thresholds.
+              inferenceStats.thresholds = [];
+              for (let i = 0; i < 101; i++) {
+                inferenceStats.thresholds.push(
+                  {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+              }
+              inferenceStats.faceted = {};
+              for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                const item = this.visdata[i];
+                let facetedStats = null;
+                if (this.selectedBreakdownFeature != '') {
+                  const facetKey = this.createCombinedValueString_(
+                    item[this.selectedBreakdownFeature],
+                    item[this.selectedSecondBreakdownFeature]);
                   facetedStats = inferenceStats.faceted[facetKey];
-                }
-              }
-              const nonZeroClassification =
-                this.getClassificationBestNonZero(i);
-              let thresh = 0;
-              for (; thresh <= 100; thresh++) {
-                if (thresh > nonZeroClassification.score * 100) {
-                  break;
-                }
-                if (+item[this.selectedLabelFeature] ==
-                    +nonZeroClassification.label) {
-                  inferenceStats.thresholds[thresh]['TP'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['TP'] += 1;
-                  }
-                } else {
-                  inferenceStats.thresholds[thresh]['FP'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['FP'] += 1;
+                  if (!facetedStats) {
+                    inferenceStats.faceted[facetKey] = []
+                    for (let i = 0; i < 101; i++) {
+                      inferenceStats.faceted[facetKey].push(
+                          {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+                    }
+                    facetedStats = inferenceStats.faceted[facetKey];
                   }
                 }
-              }
-              for (; thresh <= 100; thresh++) {
-                if (item[this.selectedLabelFeature] == null ||
-                    +item[this.selectedLabelFeature] == 0) {
-                  inferenceStats.thresholds[thresh]['TN'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['TN'] += 1;
+                const nonZeroClassification =
+                  this.getClassificationBestNonZero(i, modelInd);
+                let thresh = 0;
+                for (; thresh <= 100; thresh++) {
+                  if (thresh > nonZeroClassification.score * 100) {
+                    break;
                   }
-                } else {
-                  inferenceStats.thresholds[thresh]['FN'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['FN'] += 1;
+                  if (+item[this.selectedLabelFeature] ==
+                      +nonZeroClassification.label) {
+                    inferenceStats.thresholds[thresh]['TP'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['TP'] += 1;
+                    }
+                  } else {
+                    inferenceStats.thresholds[thresh]['FP'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['FP'] += 1;
+                    }
+                  }
+                }
+                for (; thresh <= 100; thresh++) {
+                  if (item[this.selectedLabelFeature] == null ||
+                      +item[this.selectedLabelFeature] == 0) {
+                    inferenceStats.thresholds[thresh]['TN'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['TN'] += 1;
+                    }
+                  } else {
+                    inferenceStats.thresholds[thresh]['FN'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['FN'] += 1;
+                    }
                   }
                 }
               }
-            }
-            this.calcThresholdStats(inferenceStats.thresholds);
-            for(let key in inferenceStats.faceted) {
-              if (inferenceStats.faceted.hasOwnProperty(key)) {
-                this.calcThresholdStats(inferenceStats.faceted[key]);
+              this.calcThresholdStats(inferenceStats.thresholds);
+              for(let key in inferenceStats.faceted) {
+                if (inferenceStats.faceted.hasOwnProperty(key)) {
+                  this.calcThresholdStats(inferenceStats.faceted[key]);
+                }
               }
-            }
-          } else if (this.isMultiClass_(this.modelType, this.multiClass)) {
-            // For multi-class classifiers, update the confusion matrices.
-            inferenceStats.results = {};
-            inferenceStats.faceted = {};
-            for (let i = 0; i < this.examplesAndInferences.length; i++) {
-              const item = this.visdata[i];
-              let facetedStats = null;
-              if (this.selectedBreakdownFeature != '') {
-                const facetKey = this.createCombinedValueString_(
-                  item[this.selectedBreakdownFeature],
-                  item[this.selectedSecondBreakdownFeature]);
-                facetedStats = inferenceStats.faceted[facetKey];
-                if (!facetedStats) {
-                  inferenceStats.faceted[facetKey] = {};
+            } else if (this.isMultiClass_(this.modelType, this.multiClass)) {
+              // For multi-class classifiers, update the confusion matrices.
+              inferenceStats.results = {};
+              inferenceStats.faceted = {};
+              for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                const item = this.visdata[i];
+                let facetedStats = null;
+                if (this.selectedBreakdownFeature != '') {
+                  const facetKey = this.createCombinedValueString_(
+                    item[this.selectedBreakdownFeature],
+                    item[this.selectedSecondBreakdownFeature]);
                   facetedStats = inferenceStats.faceted[facetKey];
+                  if (!facetedStats) {
+                    inferenceStats.faceted[facetKey] = {};
+                    facetedStats = inferenceStats.faceted[facetKey];
+                  }
                 }
-              }
-              let statsActual =
-                inferenceStats.results[item[this.selectedLabelFeature]];
-              if (!statsActual) {
-                inferenceStats.results[item[this.selectedLabelFeature]] = {};
-                statsActual =
+                let statsActual =
                   inferenceStats.results[item[this.selectedLabelFeature]];
-              }
-              let count = statsActual[item[inferenceValueStr]];
-              if (count == null) {
-                statsActual[item[inferenceValueStr]] = 1;
-              } else {
-                statsActual[item[inferenceValueStr]] += 1;
-              }
-              if (facetedStats) {
-                let statsActual = facetedStats[item[this.selectedLabelFeature]];
                 if (!statsActual) {
-                  facetedStats[item[this.selectedLabelFeature]] = {};
-                  statsActual = facetedStats[item[this.selectedLabelFeature]];
+                  inferenceStats.results[item[this.selectedLabelFeature]] = {};
+                  statsActual =
+                    inferenceStats.results[item[this.selectedLabelFeature]];
                 }
-                let count = statsActual[item[inferenceValueStr]];
+                const modelInferenceValueStr =
+                  this.strWithModelIndex_(inferenceValueStr, modelInd);
+                let count = statsActual[item[modelInferenceValueStr]];
                 if (count == null) {
-                  statsActual[item[inferenceValueStr]] = 1;
+                  statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
-                  statsActual[item[inferenceValueStr]] += 1;
+                  statsActual[item[modelInferenceValueStr]] += 1;
+                }
+                if (facetedStats) {
+                  let statsActual =
+                    facetedStats[item[this.selectedLabelFeature]];
+                  if (!statsActual) {
+                    facetedStats[item[this.selectedLabelFeature]] = {};
+                    statsActual = facetedStats[item[this.selectedLabelFeature]];
+                  }
+                  let count = statsActual[item[modelInferenceValueStr]];
+                  if (count == null) {
+                    statsActual[item[modelInferenceValueStr]] = 1;
+                  } else {
+                    statsActual[item[modelInferenceValueStr]] += 1;
+                  }
                 }
               }
-            }
-          } else {
-            // For regression models, calculate inference error.
-            inferenceStats.results = {errors: []};
-            inferenceStats.faceted = {};
-            for (let i = 0; i < this.examplesAndInferences.length; i++) {
-              const item = this.visdata[i];
-              let facetedStats = null;
-              if (this.selectedBreakdownFeature != '') {
-                const facetKey = this.createCombinedValueString_(
-                  item[this.selectedBreakdownFeature],
-                  item[this.selectedSecondBreakdownFeature]);
-                facetedStats = inferenceStats.faceted[facetKey];
-                if (!facetedStats) {
-                  inferenceStats.faceted[facetKey] = {errors: []};
+            } else {
+              // For regression models, calculate inference error.
+              inferenceStats.results = {errors: []};
+              inferenceStats.faceted = {};
+              for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                const item = this.visdata[i];
+                let facetedStats = null;
+                if (this.selectedBreakdownFeature != '') {
+                  const facetKey = this.createCombinedValueString_(
+                    item[this.selectedBreakdownFeature],
+                    item[this.selectedSecondBreakdownFeature]);
                   facetedStats = inferenceStats.faceted[facetKey];
+                  if (!facetedStats) {
+                    inferenceStats.faceted[facetKey] = {errors: []};
+                    facetedStats = inferenceStats.faceted[facetKey];
+                  }
+                }
+                const inferenceError =
+                  item[this.strWithModelIndex_(inferenceValueStr, modelInd)] -
+                   item[this.selectedLabelFeature];
+                inferenceStats.results.errors.push(inferenceError);
+                if (facetedStats) {
+                  facetedStats.errors.push(inferenceError);
                 }
               }
-              const inferenceError =
-                item[inferenceValueStr] - item[this.selectedLabelFeature];
-              inferenceStats.results.errors.push(inferenceError);
-              if (facetedStats) {
-                facetedStats.errors.push(inferenceError);
-              }
-            }
 
-            const regressionEntries = [];
-            regressionEntries.push(
-              this.fillInRegressionStats(inferenceStats.results, 'Total'));
-            for (let key in inferenceStats.faceted) {
+              const regressionEntries = [];
               regressionEntries.push(
-                this.fillInRegressionStats(inferenceStats.faceted[key], key));
+                this.fillInRegressionStats(inferenceStats.results, 'Total'));
+              for (let key in inferenceStats.faceted) {
+                regressionEntries.push(
+                  this.fillInRegressionStats(inferenceStats.faceted[key], key));
+              }
+              regressionEntries.sort((a, b) => b.count - a.count);
+              this.regressionEntries_ = [];
+              this.regressionEntries_ = regressionEntries;
             }
-            regressionEntries.sort((a, b) => b.count - a.count);
-            this.regressionEntries_ = [];
-            this.regressionEntries_ = regressionEntries;
+            inferenceStatsArray.push(inferenceStats);
           }
-
-          this.inferenceStats_ = inferenceStats;
+          this.inferenceStats_ = inferenceStatsArray;
         }
 
-        const temp = this.featureValueThresholds;
-        this.featureValueThresholds = [];
-        temp.sort((a, b) => {
-          if (this.isRegression_(this.modelType)) {
-            return this.getRegressionCount(this.inferenceStats_, b) -
-                this.getRegressionCount(this.inferenceStats_, a);
-          } else if (this.isBinaryClassification_(
-            this.modelType, this.multiClass)) {
-            return this.getBinaryClassificationCount(this.inferenceStats_, b) -
-                this.getBinaryClassificationCount(this.inferenceStats_, a);
-          } else {
-            return this.getMulticlassClassificationCount(
-              this.inferenceStats_, b) - this.getMulticlassClassificationCount(
-                this.inferenceStats_, a);
+        // Run this block if there are faceted stats
+        if (this.featureValueThresholds.length != 0) {
+          // Assigning to tempArray to force polymer to update the array.
+          // Polymer does not recognize updates to elements within the array
+          const tempArray = this.featureValueThresholds;
+          this.featureValueThresholds = [];
+          for (let modelInd = 0; modelInd < this.getNumberOfModels_();
+              modelInd++){
+            const inferenceStats = this.inferenceStats_[modelInd];
+            const featureValueThresholds = tempArray[modelInd];
+            featureValueThresholds.sort((a, b) => {
+              if (this.isRegression_(this.modelType)) {
+                return this.getRegressionCount(inferenceStats, b) -
+                    this.getRegressionCount(inferenceStats, a);
+              } else if (this.isBinaryClassification_(
+                this.modelType, this.multiClass)) {
+                return this.getBinaryClassificationCount(inferenceStats, b) -
+                    this.getBinaryClassificationCount(inferenceStats, a);
+              } else {
+                return this.getMulticlassClassificationCount(
+                  inferenceStats, b) - this.getMulticlassClassificationCount(
+                    inferenceStats, a);
+              }
+            });
           }
-        });
-        this.featureValueThresholds = temp;
-
-        this.plotPr(
-          this.$$('#prchart'), this.inferenceStats_.thresholds,
-          this.overallThreshold, regenInferenceStats);
-
-        for (let i = 0; i < this.featureValueThresholds.length; i++) {
-          const key = this.createCombinedValueString_(
-            this.featureValueThresholds[i].value,
-            this.featureValueThresholds[i].value2);
+          this.featureValueThresholds = tempArray;
+          // All models should have same featureValueThresholds length
+          for (let i = 0; i < this.featureValueThresholds[0].length; i++) {
+            const plotStats = [];
+            const plotThresholds = [];
+            for (let modelInd = 0; modelInd < this.getNumberOfModels_();
+                modelInd++) {
+              const modelThresholds = this.featureValueThresholds[modelInd];
+              const inferenceStats = this.inferenceStats_[modelInd];
+              const key = this.createCombinedValueString_(
+                modelThresholds[i].value,
+                modelThresholds[i].value2);
+              plotStats.push(inferenceStats.faceted[key]);
+              plotThresholds.push(modelThresholds[i].threshold)
+            }
           this.plotPr(
             this.$$('#' + this.getPrChartId(i)),
-            this.inferenceStats_.faceted[key],
-            this.featureValueThresholds[i].threshold,
+            plotStats,
+            plotThresholds,
             regenInferenceStats);
+          }
         }
+        const plotStats = [];
+        const plotThresholds = [];
+        for (let modelInd = 0; modelInd < this.getNumberOfModels_();
+            modelInd++) {
+          plotStats.push(this.inferenceStats_[modelInd].thresholds);
+          plotThresholds.push(this.overallThresholds[modelInd].threshold);
+        }
+        this.plotPr(
+              this.$$('#prchart'), plotStats,
+              plotThresholds, regenInferenceStats);
         this.updateCorrectness_();
       },
 
@@ -2493,36 +2568,45 @@ limitations under the License.
 
       /**
        * Plots a PR purve given data to plot.
+       * thresholdstats and thresholds are arrays, indexed by model number
        */
-      plotPr: function(chart, thresholdStats, threshold,
+      plotPr: function(chart, thresholdStats, thresholds,
                        regenInferenceStats) {
         if (!thresholdStats || !chart) {
           return;
         }
-
-        let currentThresholdData = null;
-        let self = this;
-        const data = thresholdStats.map((thresh, i) => {
-          if (i - threshold * 100 < 0.5) {
-            currentThresholdData = {
+        const visibleCharts = []
+        for (let modelInd = 0; modelInd < thresholdStats.length; modelInd++) {
+          let currentThresholdData = null;
+          const data = thresholdStats[modelInd].map((thresh, i) => {
+            // This finds the furthest point on the line that is below the
+            // current threshold
+            if (i - thresholds[modelInd] * 100 < 0.5) {
+              currentThresholdData = {
+                'step': thresh['FPR'],
+                'scalar': thresh['TPR'],
+                'threshold': i / 100
+              };
+            }
+            return {
               'step': thresh['FPR'],
               'scalar': thresh['TPR'],
               'threshold': i / 100
             };
+          }).reverse();
+          chart.setSeriesData(this.strWithModelIndex_('Threshold set', modelInd),
+            [currentThresholdData]);
+          if (regenInferenceStats) {
+            chart.setSeriesData(this.strWithModelIndex_('ROC', modelInd), data);
+            visibleCharts.push(this.strWithModelIndex_('ROC', modelInd));
+            visibleCharts.push(this.strWithModelIndex_('Threshold set', modelInd));
           }
-          return {
-            'step': thresh['FPR'],
-            'scalar': thresh['TPR'],
-            'threshold': i / 100
-          };
-        }).reverse();
+        }
         if (regenInferenceStats) {
-          chart.setVisibleSeries(['ROC', 'Threshold set']);
-          chart.setSeriesData('ROC', data);
           const valueFormatter = d3.format('.2f');
           chart.xAxisFormatter = d3.format('.2f');
           const percentageFormatter = d3.format(",.1%");
-          chart.tooltipColumns = [
+          const tooltipColumns = [
             {
                 title: 'Threshold',
                 evaluate: function (d) {
@@ -2542,8 +2626,22 @@ limitations under the License.
                 },
             },
           ];
+          // When more than one model is available, make tooltip show an extra
+          // column for model id
+          if (thresholdStats.length > 1){
+            tooltipColumns.push(
+              {
+                title: 'Model',
+                evaluate: function (d) {
+                  const modelId = d.dataset.metadata().name.split(' ');
+                  return modelId[modelId.length - 1];
+                },
+              }
+            );
+          }
+          chart.tooltipColumns = tooltipColumns;
+          chart.setVisibleSeries(visibleCharts);
         }
-        chart.setSeriesData('Threshold set', [currentThresholdData]);
       },
 
       /**
@@ -2575,13 +2673,17 @@ limitations under the License.
       optimizeThresholdClicked_: function() {
         // Find the optimal threshold for all examples, then set all thresholds
         // to that value.
-        const thresholdToSet =
-          this.findOptimalThreshold_(this.inferenceStats_.thresholds);
-        this.overallThreshold = thresholdToSet;
-        if (this.featureValueThresholds) {
-          for (let i = 0; i < this.featureValueThresholds.length; i++) {
-            const thresholdPath = 'featureValueThresholds.' + i + '.threshold';
-            this.set(thresholdPath, thresholdToSet);
+        for (let modelInd = 0; modelInd < this.inferenceStats_.length;
+            modelInd++) {
+          const thresholdToSet =
+            this.findOptimalThreshold_(
+              this.inferenceStats_[modelInd].thresholds);
+          this.overallThresholds[modelInd].threshold = thresholdToSet;
+          if (this.featureValueThresholds) {
+            for (let i = 0; i < this.featureValueThresholds.length; i++) {
+              const thresholdPath = 'featureValueThresholds.' + i + '.threshold';
+              this.set(thresholdPath, thresholdToSet);
+            }
           }
         }
         this.forceUpdateFeatureValueThresholds_();
@@ -2716,22 +2818,31 @@ limitations under the License.
        * Finds the first inference label in the score-sorted list that is
        * non-zero.
        */
-      getClassificationBestNonZero: function(index) {
-        // TODO(tolgab) Generalize this to multiple models
+      getClassificationBestNonZero: function(index, modelIndex) {
+        // TODO(tolgab) Generalize this to multiple models (done?)
         let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIndex][0].length;
+               inferenceIndex][modelIndex].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-              inferenceIndex][0][i].label !== 0) {
+              inferenceIndex][modelIndex][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
-        return this.examplesAndInferences[index].inferences[inferenceIndex][0][
-          indexForNonZeroLabel];
+        return this.examplesAndInferences[index].inferences[
+          inferenceIndex][modelIndex][indexForNonZeroLabel];
+      },
+
+      /**
+       * Gets confusion counts for a single model index modelInd
+       */
+      getConfusionCountsModelIndex: function(inferenceStats, thresholds,
+          modelInd) {
+        return this.getConfusionCounts(inferenceStats[modelInd],
+          thresholds[modelInd].threshold);
       },
 
       /**
@@ -3056,10 +3167,12 @@ limitations under the License.
               item, index, self.selectedBreakdownFeature,
               self.selectedSecondBreakdownFeature);
           } else {
-            item[inferenceValueStr] =
-              self.examplesAndInferences[index].inferences[
-                self.examplesAndInferences[index].inferences.length - 1][0][
-                  0].score;
+            for (let modelInd = 0; modelInd < this.getNumberOfModels_(); modelInd++){
+              item[this.strWithModelIndex_(inferenceValueStr, modelInd)] =
+                self.examplesAndInferences[index].inferences[
+                  self.examplesAndInferences[index].inferences.length - 1][
+                    modelInd][0].score;
+            }
           }
 
           // If there is a label vocab for classification, set the string
@@ -3109,13 +3222,16 @@ limitations under the License.
         const inferenceIdx =
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
-          item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][0][0].label;
+          for (let i = 0; i < this.getNumberOfModels_(); i++){
+            item[this.strWithModelIndex_(inferenceValueStr, i)] =
+            this.examplesAndInferences[index].inferences[inferenceIdx][i][
+              0].label;
+          }
           return;
         }
 
         // Binary classifier case.
-        let threshold = this.overallThreshold;
+        let threshold = this.overallThresholds;
         // If a feature has been selected (string will be non-empty in this
         // case), then get the appropriate threshold for this item's value for
         // that feature. Otherwise the overall threshold will be used.
@@ -3123,34 +3239,19 @@ limitations under the License.
           let key = this.createCombinedValueString_(item[feature1], item[feature2]);
           threshold = this.featureValueThresholdsMap[key].threshold;
         }
-
-        // Find the first inference label in the score-sorted list that is
-        // non-zero.
-        let indexForNonZeroLabel = 0;
-        for (let i = 0;
-             i < this.examplesAndInferences[index].inferences[
-               inferenceIdx][0].length;
-             i++) {
-          if (+this.examplesAndInferences[index].inferences[
-            inferenceIdx][0][i].label !== 0) {
-            indexForNonZeroLabel = i;
-            break;
-          }
-        }
-
-        let n_models = this.examplesAndInferences[index].inferences[
-          inferenceIdx].length;
-        for (let modelNum = 0; modelNum < n_models; modelNum++){
-          item[inferenceScoreStr + (modelNum + 1)] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][
-              modelNum][indexForNonZeroLabel].score;
-          if (this.examplesAndInferences[index].inferences[inferenceIdx][
-            0][indexForNonZeroLabel].score >= threshold) {
-            item[inferenceValueStr] =
-              this.examplesAndInferences[index].inferences[inferenceIdx][0][
-                indexForNonZeroLabel].label;
+        console.log(this.featureValueThresholdsMap)
+        console.log(this.featureValueThresholds)
+        for (let modelNum = 0; modelNum < this.getNumberOfModels_(); modelNum++){
+          const nonZeroClassification =
+            this.getClassificationBestNonZero(index, modelNum);
+          item[this.strWithModelIndex_(inferenceScoreStr, modelNum)] =
+            nonZeroClassification.score;
+          if (nonZeroClassification.score >= threshold[modelNum].threshold) {
+            item[this.strWithModelIndex_(inferenceValueStr, modelNum)] =
+              nonZeroClassification.label;
           } else {
-            item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+            item[this.strWithModelIndex_(inferenceValueStr, modelNum)] =
+              this.defaultInferenceLabel.toString();
           }
         }
       },
@@ -3173,16 +3274,24 @@ limitations under the License.
         }
         for (let i = 0; i < this.examplesAndInferences.length; i++) {
           const item = this.visdata[i];
-          if (this.modelType == 'classification') {
-            item[inferenceCorrectStr] =
-              item[this.selectedLabelFeature] == item[inferenceValueStr]
-                ? "correct" : "incorrect";
-          } else {
-            item[inferenceErrorStr] =
-              item[inferenceValueStr] - item[this.selectedLabelFeature];
-            item[inferenceAbsErrorStr] = Math.abs(item[inferenceErrorStr]);
-            item[inferenceSquaredErrorStr] =
-              item[inferenceErrorStr] * item[inferenceErrorStr];
+          for (let modelInd; modelInd < this.getNumberOfModels_(); modelInd++){
+            if (this.modelType == 'classification') {
+              item[this.strWithModelIndex_(inferenceCorrectStr, modelInd)] =
+                item[this.selectedLabelFeature] ==
+                  item[this.strWithModelIndex_(inferenceValueStr, modelInd)]
+                    ? "correct" : "incorrect";
+            } else {
+              item[this.strWithModelIndex_(inferenceErrorStr, modelInd)] =
+                item[this.strWithModelIndex_(inferenceValueStr, modelInd)] -
+                  item[this.selectedLabelFeature];
+              item[this.strWithModelIndex_(inferenceAbsErrorStr, modelInd)] =
+                Math.abs(
+                  item[this.strWithModelIndex_(inferenceErrorStr, modelInd)]);
+              item[this.strWithModelIndex_(inferenceSquaredErrorStr,
+               modelInd)] =
+                item[this.strWithModelIndex_(inferenceErrorStr, modelInd)] *
+                 item[this.strWithModelIndex_(inferenceErrorStr, modelInd)];
+            }
           }
         }
       },
