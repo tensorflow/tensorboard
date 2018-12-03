@@ -3,25 +3,14 @@ package(
     default_visibility = ["//tensorboard:internal"],
 )
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("@io_bazel_rules_webtesting//web:py.bzl", "py_web_test_suite")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 
 licenses(["notice"])  # Apache 2.0
 
-py_web_test_suite(
+tf_web_test(
     name = "test",
-    srcs = ["test.py"],
-    browsers = ["//tensorboard/functionaltests/browsers:chromium"],
-    timeout = "short",
-    flaky = True,
-    data = [
-        ":test_web_library",
-    ],
-    srcs_version = "PY2AND3",
-    deps = [
-        "@io_bazel_rules_webtesting//testing/web",
-        "//tensorboard/functionaltests:wct_test_driver",
-    ],
+    web_library = ":test_web_library",
+    src = "/tf-storage/test/tests.html",
 )
 
 tf_web_library(
