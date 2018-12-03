@@ -159,7 +159,7 @@ def _assets_dir_to_logdir(assets_dir):
   return assets_dir
 
 
-def _latest_checkpoints_changed(configs, run_path_pairs,logdir=None):
+def _latest_checkpoints_changed(configs, run_path_pairs):
   """Returns true if the latest checkpoint has changed in any of the runs."""
   for run_name, assets_dir in run_path_pairs:
     if run_name not in configs:
@@ -173,11 +173,10 @@ def _latest_checkpoints_changed(configs, run_path_pairs,logdir=None):
       config = configs[run_name]
 
     # See if you can find a checkpoint file in the logdir.
-    if logdir and os.path.abspath(logdir) in assets_dir:
-      logdir = assets_dir
-    else:
+    ckpt_path = _find_latest_checkpoint(assets_dir)
+    if not ckpt_path:
       logdir = _assets_dir_to_logdir(assets_dir)
-    ckpt_path = _find_latest_checkpoint(logdir)
+      ckpt_path = _find_latest_checkpoint(logdir)
 
     if not ckpt_path:
       continue
