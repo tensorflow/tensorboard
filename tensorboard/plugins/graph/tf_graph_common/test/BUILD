@@ -11,7 +11,7 @@ tf_web_test(
     name = "test",
     web_library = ":test_web_library",
     src = "/tf-graph-common/test/index.html",
-);
+)
 
 tf_web_library(
     name = "test_web_library",

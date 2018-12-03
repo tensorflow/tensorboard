@@ -13,7 +13,7 @@ tf_web_test(
     tags = ["manual"],
     web_library = ":test_web_library",
     src = "/vz-projector/test/tests.html",
-);
+)
 
 tf_web_library(
     name = "test_web_library",
