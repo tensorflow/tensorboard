@@ -174,10 +174,10 @@ def _latest_checkpoints_changed(configs, run_path_pairs):
 
     # See if you can find a checkpoint file in the logdir.
     logdir = os.path.abspath(self.logdir)
-      if logdir in assets_dir:
-        logdir = assets_dir
-      else:
-        logdir = _assets_dir_to_logdir(assets_dir)
+    if logdir in assets_dir:
+      logdir = assets_dir
+    else:
+      logdir = _assets_dir_to_logdir(assets_dir)
     ckpt_path = _find_latest_checkpoint(logdir)
 
     if not ckpt_path:
