@@ -1292,14 +1292,16 @@ limitations under the License.
                     </button>
                     <iron-collapse class="no-padding-card" id="collapseperformance" opened="{{openedPerformance}}">
                       <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
-                        <template is="dom-repeat" items="[[featureValueThresholds]]">
+                        <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
                           <div class="feature-breakdown">
-                            <div class="slider-label">[[getPrintableValue_(item)]]</div>
+                            <div class="slider-label">[[getPrintableValue_(featureValueThreshold)]]</div>
                             <div class="flex">
+                              <template is="dom-repeat" items="[[getModelThresholds_(featureValueThreshold)]]">
                               <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
                                             immediate-value="{{item.threshold}}" value="[[item.threshold]]"
                                             on-value-changed="refreshInferencesNoRegen_">
                               </paper-slider>
+                              </template>
                               <div>
                                 <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
@@ -1329,8 +1331,12 @@ limitations under the License.
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                                   </vz-line-chart>
                                 </div>
-                                <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, item.threshold, item)]]"
-                                                    class="conf-matrix">
+                                <div>
+                                  <template is="dom-repeat" items="[[getModelThresholds_(featureValueThreshold)]]", index-as="modelInd">
+                                    <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, modelInd, featureValueThreshold)]]"
+                                                        class="conf-matrix">
+                                  </template>
+                                </div>
                                 </tf-confusion-matrix>
                               </div>
                             </template>
@@ -2222,6 +2228,10 @@ limitations under the License.
         return this.modelName.split(',').length;
       },
 
+      getModelThresholds_: function(featureValueThreshold){
+        return featureValueThreshold.threshold;
+      },
+
       isComputedKeyStr_: function(feature) {
         return this.strStartsWith_(feature, inferenceValueStr)
             || this.strStartsWith_(feature, inferenceLabelStr)
@@ -2277,8 +2287,14 @@ limitations under the License.
                     ? undefined : this.stats[feature1].valueHash[key1].value;
                   const feature2Value = key2 == 'undefined'
                     ? undefined : this.stats[feature2].valueHash[key2].value;
+                  // Deep copy thresholds for each facet
+                  const modelThresholds = []
+                  for (let i = 0; i < this.overallThresholds.length; i++) {
+                    modelThresholds.push(
+                      {threshold: this.overallThresholds[i].threshold});
+                  }
                   const thresh = {value: feature1Value, value2: feature2Value,
-                                  threshold: this.overallThresholds};
+                                  threshold: modelThresholds};
                   thresholds.push(thresh);
                   const mapKey = this.createCombinedValueString_(
                     feature1Value, feature2Value);
@@ -2288,6 +2304,7 @@ limitations under the License.
             }
           }
         }
+        console.log('breakdownfeatureselected', this.overallThresholds);
         this.featureValueThresholds = thresholds;
         this.featureValueThresholdsMap = thresholdsMap;
         this.refreshInferences_(false);
@@ -2489,39 +2506,41 @@ limitations under the License.
           // Polymer does not recognize updates to elements within the array
           const tempArray = this.featureValueThresholds;
           this.featureValueThresholds = [];
-          for (let modelInd = 0; modelInd < this.getNumberOfModels_();
-              modelInd++){
-            const inferenceStats = this.inferenceStats_[modelInd];
-            const featureValueThresholds = tempArray[modelInd];
-            featureValueThresholds.sort((a, b) => {
-              if (this.isRegression_(this.modelType)) {
-                return this.getRegressionCount(inferenceStats, b) -
-                    this.getRegressionCount(inferenceStats, a);
-              } else if (this.isBinaryClassification_(
-                this.modelType, this.multiClass)) {
-                return this.getBinaryClassificationCount(inferenceStats, b) -
-                    this.getBinaryClassificationCount(inferenceStats, a);
-              } else {
-                return this.getMulticlassClassificationCount(
-                  inferenceStats, b) - this.getMulticlassClassificationCount(
-                    inferenceStats, a);
-              }
-            });
-          }
+          // featureValueThresholds are sorted by number of samples per group
+          // so that the groups appear from larger to smaller in GUI
+          // Since group counts are model agnostic we only sort w.r.t. the
+          // statistics of the first model
+          // a, b here are only used to identify facet key string so we don't
+          // have to index by model
+          const inferenceStats = this.inferenceStats_[0];
+          tempArray.sort((a, b) => {
+            if (this.isRegression_(this.modelType)) {
+              return this.getRegressionCount(inferenceStats, b) -
+                  this.getRegressionCount(inferenceStats, a);
+            } else if (this.isBinaryClassification_(
+              this.modelType, this.multiClass)) {
+              return this.getBinaryClassificationCount(inferenceStats, b) -
+                  this.getBinaryClassificationCount(inferenceStats, a);
+            } else {
+              return this.getMulticlassClassificationCount(
+                inferenceStats, b) - this.getMulticlassClassificationCount(
+                  inferenceStats, a);
+            }
+          });
+
           this.featureValueThresholds = tempArray;
-          // All models should have same featureValueThresholds length
-          for (let i = 0; i < this.featureValueThresholds[0].length; i++) {
+          for (let i = 0; i < this.featureValueThresholds.length; i++) {
             const plotStats = [];
             const plotThresholds = [];
             for (let modelInd = 0; modelInd < this.getNumberOfModels_();
                 modelInd++) {
-              const modelThresholds = this.featureValueThresholds[modelInd];
+              const modelThresholds = this.featureValueThresholds[i].threshold;
               const inferenceStats = this.inferenceStats_[modelInd];
               const key = this.createCombinedValueString_(
-                modelThresholds[i].value,
-                modelThresholds[i].value2);
+                this.featureValueThresholds[i].value,
+                this.featureValueThresholds[i].value2);
               plotStats.push(inferenceStats.faceted[key]);
-              plotThresholds.push(modelThresholds[i].threshold)
+              plotThresholds.push(modelThresholds[modelInd].threshold)
             }
           this.plotPr(
             this.$$('#' + this.getPrChartId(i)),
@@ -2673,12 +2692,14 @@ limitations under the License.
       optimizeThresholdClicked_: function() {
         // Find the optimal threshold for all examples, then set all thresholds
         // to that value.
+        console.log("optimizethresholdsclicked")
         for (let modelInd = 0; modelInd < this.inferenceStats_.length;
             modelInd++) {
           const thresholdToSet =
             this.findOptimalThreshold_(
               this.inferenceStats_[modelInd].thresholds);
           this.overallThresholds[modelInd].threshold = thresholdToSet;
+          console.log('optimizeshresholdsclicked', this.overallThresholds)
           if (this.featureValueThresholds) {
             for (let i = 0; i < this.featureValueThresholds.length; i++) {
               const thresholdPath = 'featureValueThresholds.' + i + '.threshold';
@@ -2692,6 +2713,7 @@ limitations under the License.
       optimizeFacetedThresholdsClicked_: function() {
         // For each faceted set of examples, find the optimal threshold and
         // set it.
+        console.log('optimizefaceted')
         const values = Object.keys(this.inferenceStats_.faceted);
         for (let i = 0; i < values.length; i++) {
           const featureValue = values[i];
@@ -2749,6 +2771,7 @@ limitations under the License.
         //     current threshold
         //   Calculate cost for these threshold settings settings across the
         //   facets, and save if the lowest.
+        console.log("getbestthreshold");
         let minCost = Number.POSITIVE_INFINITY;
         let bestThresholds = null;
         const values = Object.keys(this.inferenceStats_.faceted);
@@ -2840,9 +2863,9 @@ limitations under the License.
        * Gets confusion counts for a single model index modelInd
        */
       getConfusionCountsModelIndex: function(inferenceStats, thresholds,
-          modelInd) {
+          modelInd, item) {
         return this.getConfusionCounts(inferenceStats[modelInd],
-          thresholds[modelInd].threshold);
+          thresholds[modelInd].threshold, item);
       },
 
       /**
@@ -2948,11 +2971,14 @@ limitations under the License.
       },
 
       getBinaryClassificationCount: function(classificationStats, facetItem) {
+        // stat[0] because we only need to count one threshold in binary case
         return this.getInferenceStat(classificationStats, facetItem,
           stat => Object.values(stat[0]).reduce((a, b) => a + b), null);
       },
 
       getMulticlassClassificationCount: function(classificationStats, facetItem) {
+        // stat because in multi class case inferenceStats does not have
+        // thresholds
         return this.getInferenceStat(classificationStats, facetItem,
           stat => Object.values(stat).reduce((a, b) => a + b), null);
       },
@@ -3239,8 +3265,9 @@ limitations under the License.
           let key = this.createCombinedValueString_(item[feature1], item[feature2]);
           threshold = this.featureValueThresholdsMap[key].threshold;
         }
-        console.log(this.featureValueThresholdsMap)
-        console.log(this.featureValueThresholds)
+        console.log("setiteminferencevalue", this.featureValueThresholdsMap)
+        console.log("setiteminferencevalue", this.featureValueThresholds)
+
         for (let modelNum = 0; modelNum < this.getNumberOfModels_(); modelNum++){
           const nonZeroClassification =
             this.getClassificationBestNonZero(index, modelNum);
