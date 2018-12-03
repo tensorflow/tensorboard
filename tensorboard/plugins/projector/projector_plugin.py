@@ -173,10 +173,13 @@ def _latest_checkpoints_changed(configs, run_path_pairs):
       config = configs[run_name]
 
     # See if you can find a checkpoint file in the logdir.
-    ckpt_path = _find_latest_checkpoint(assets_dir)
-    if not ckpt_path:
-      logdir = _assets_dir_to_logdir(assets_dir)
-      ckpt_path = _find_latest_checkpoint(logdir)
+    logdir = os.path.abspath(self.logdir)
+      if logdir in assets_dir:
+        logdir = assets_dir
+      else:
+        logdir = _assets_dir_to_logdir(assets_dir)
+    ckpt_path = _find_latest_checkpoint(logdir)
+
     if not ckpt_path:
       continue
     if config.model_checkpoint_path != ckpt_path:
@@ -392,10 +395,13 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
       if not config.model_checkpoint_path:
         # See if you can find a checkpoint file in the logdir.
-        ckpt_path = _find_latest_checkpoint(assets_dir)
-        if not ckpt_path:
+        logdir = os.path.abspath(self.logdir)
+        if logdir in assets_dir:
+          logdir = assets_dir
+        else:
           logdir = _assets_dir_to_logdir(assets_dir)
-          ckpt_path = _find_latest_checkpoint(logdir)
+        ckpt_path = _find_latest_checkpoint(logdir)
+    
         if not ckpt_path and not has_tensor_files:
           continue
         if ckpt_path:
