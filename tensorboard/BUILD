@@ -105,7 +105,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin",
@@ -303,6 +302,7 @@ py_library(
     deps = [
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util",
+        "//tensorboard/util:platform_util",
         "@org_pythonhosted_six",
     ],
 )
