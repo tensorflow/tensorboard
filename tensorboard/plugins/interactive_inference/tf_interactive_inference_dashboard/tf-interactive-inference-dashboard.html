@@ -1332,7 +1332,7 @@ limitations under the License.
                                   </vz-line-chart>
                                 </div>
                                 <div>
-                                  <template is="dom-repeat" items="[[getModelThresholds_(featureValueThreshold)]]", index-as="modelInd">
+                                  <template is="dom-repeat" items="[[featureValueThreshold.threshold]]", index-as="modelInd">
                                     <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, modelInd, featureValueThreshold)]]"
                                                         class="conf-matrix">
                                   </template>
@@ -1346,7 +1346,7 @@ limitations under the License.
                           <div class="feature-breakdown">
                             <div class="slider-label">Threshold for positive classification</div>
                             <div class="flex">
-                              <template is="dom-repeat" items="[[overallThresholds]]" as="overallThreshold">
+                              <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
                                 <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
                                               immediate-value="{{overallThreshold.threshold}}" value="[[overallThreshold.threshold]]"
                                               on-value-changed="refreshInferencesNoRegen_">
@@ -2671,12 +2671,6 @@ limitations under the License.
         }
       },
 
-      forceUpdateFeatureValueThresholds_: function() {
-        const thresholds = this.featureValueThresholds;
-        this.set('featureValueThresholds', []);
-        this.set('featureValueThresholds', thresholds);
-      },
-
       optimizeThresholdClicked_: function() {
         // Find the optimal threshold for all examples, then set all thresholds
         // to that value.
@@ -2695,7 +2689,6 @@ limitations under the License.
             }
           }
         }
-        this.forceUpdateFeatureValueThresholds_();
       },
 
       optimizeFacetedThresholdsClicked_: function() {
@@ -2712,7 +2705,6 @@ limitations under the License.
               '.threshold', thresholdToSet);
           }
         }
-        this.forceUpdateFeatureValueThresholds_();
       },
 
       /**
@@ -2803,7 +2795,6 @@ limitations under the License.
               '.threshold', value);
           }
         }
-        this.forceUpdateFeatureValueThresholds_();
       },
 
       /**
