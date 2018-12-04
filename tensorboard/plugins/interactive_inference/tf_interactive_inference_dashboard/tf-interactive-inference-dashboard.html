@@ -3218,11 +3218,12 @@ limitations under the License.
         this.refreshDive_();
 
         // If inferring from new examples, set the color in facets dive to
-        // inference results. When reinferring from changes, don't override
-        // whatever coloring has been set.
+        // inference results of the first model. When reinferring from changes,
+        // don't override whatever coloring has been set.
         if (newInferencesCalculated) {
           this.$.dive.colorBy =
-            hasInferenceLabels ? inferenceLabelStr : inferenceValueStr;
+            hasInferenceLabels ? this.strWithModelIndex_(inferenceLabelStr, 0)
+              : this.strWithModelIndex_(inferenceValueStr, 0);
         }
         this.updatedExample = false;
       },
