@@ -831,7 +831,7 @@ limitations under the License.
         border-left: 1px solid lightgrey;
       }
     </style>
-    <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
+    <paper-dialog id="inferencesettings" class="inference-settings" opened="true">
       <tf-inference-panel
           inference-address="{{inferenceAddress}}"
           model-name="{{modelName}}"
@@ -857,14 +857,14 @@ limitations under the License.
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
       </div>
     </paper-dialog>
-    <paper-dialog id="deletedialog" modal>
+    <paper-dialog id="deletedialog">
       <p>Are you sure you want to delete the selected example?</p>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
         <paper-button dialog-confirm autofocus on-tap="deleteDatapoint_" class="main-button">Delete</paper-button>
       </div>
     </paper-dialog>
-    <paper-dialog id="distancedialog" modal>
+    <paper-dialog id="distancedialog">
       <h2>Create a distance feature</h2>
       <paper-input value="{{facetDistFeatureName}}" label="Enter feature name" class="datapoint-control-filter-input">
       </paper-input>
@@ -1681,9 +1681,12 @@ limitations under the License.
           value: 0,
           observer: 'sideTabSelectedChanged_'
         },
-        // Boolean for if running in "local" demo mode, meaning this isn't
-        // part of a TensorBoard build and has no backend.
-        local: Boolean,
+        // Boolean for if running in "local" mode, meaning this isn't
+        // part of a TensorBoard build.
+        local: {
+          type: Boolean,
+          observer: 'localChanged_',
+        },
         // Atlas URL for "local" demo mode.
         localAtlasUrl: String,
         // List of features for which we can make partial dep plots.
@@ -1874,6 +1877,16 @@ limitations under the License.
 
       settingsClicked_: function() {
         this.$.inferencesettings.toggle();
+      },
+
+      localChanged_: function() {
+        if (this.local) {
+          this.closeSettings_();
+        }
+      },
+
+      closeSettings_: function() {
+        this.$.inferencesettings.close();
       },
 
       onTabSelect_: function() {
