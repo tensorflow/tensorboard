@@ -4,6 +4,6 @@
 *.pyc
 *.egg-info/
 *.swp
-js/dist/*
+**/js/dist/
 node_modules/
 package-lock.json

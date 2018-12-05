@@ -129,9 +129,10 @@ class WitWidget(widgets.DOMWidget):
         self.generate_sprite()
     
     def json_to_proto(self, json):
-        ex = (tf.train.Example()
+        print self.config.get('are_sequence_examples')
+        ex = (tf.train.SequenceExample()
             if self.config.get('are_sequence_examples')
-            else tf.train.SequenceExample())
+            else tf.train.Example())
         json_format.Parse(json, ex)
         return ex
 
@@ -229,9 +230,9 @@ class WitWidget(widgets.DOMWidget):
         if not self.examples:
             return
         example_to_check = self.json_to_proto(self.examples[0])
-        feature_list = (example_to_check.features.feature
+        feature_list = (example_to_check.context.feature
           if self.config.get('are_sequence_examples')
-          else example_to_check.context.feature)
+          else example_to_check.features.feature)
         if 'image/encoded' in feature_list:
             example_strings = [
                 self.json_to_proto(ex).SerializeToString()

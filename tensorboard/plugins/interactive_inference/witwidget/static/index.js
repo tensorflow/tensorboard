@@ -195,19 +195,12 @@ var WITView = widgets.DOMWidgetView.extend({
         if ('multiclass' in config) {
             this.view_.multiClass = config['multiclass'];
         }
-        if ('model_type' in config) {
-            this.view_.modelType = config['model_type'];
-        }
-        if ('model_type' in config) {
-            this.view_.modelType = config['model_type'];
-        }
     },
     sprite_changed: function() {
         if (!this.view_.updateSprite_) {
             setTimeout(() => this.sprite_changed(), 100);
             return;
         }
-        console.log('sprite changed');
         const spriteUrl = this.model.get('sprite');
         this.view_.hasSprite = true;
         this.view_.localAtlasUrl = spriteUrl;
