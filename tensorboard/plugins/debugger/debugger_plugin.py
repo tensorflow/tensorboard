@@ -34,6 +34,7 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
+from tensorboard.util import tensor_util
 
 # HTTP routes.
 _HEALTH_PILLS_ROUTE = '/health_pills'
@@ -472,7 +473,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
     # Since we seek health pills for a specific step, this function
     # returns 1 health pill per node per step. The wall time is the
     # seconds since the epoch.
-    elements = list(tf.make_ndarray(tensor_proto))
+    elements = list(tensor_util.make_ndarray(tensor_proto))
     return HealthPillEvent(
         wall_time=wall_time,
         step=step,

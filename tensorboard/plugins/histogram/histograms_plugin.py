@@ -31,9 +31,10 @@ from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
-from tensorboard.compat import tf
+from tensorboard.util import tensor_util
 
 
 class HistogramsPlugin(base_plugin.TBPlugin):
@@ -198,7 +199,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             six.moves.xrange(len(tensor_events)), downsample_to)
         indices = sorted(rand_indices)
         tensor_events = [tensor_events[i] for i in indices]
-      events = [[e.wall_time, e.step, tf.make_ndarray(e.tensor_proto).tolist()]
+      events = [[e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto).tolist()]
                 for e in tensor_events]
     return (events, 'application/json')
 

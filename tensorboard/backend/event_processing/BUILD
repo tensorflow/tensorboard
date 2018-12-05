@@ -73,6 +73,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:platform_util",
     ],
 )
 
@@ -119,6 +120,7 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -134,6 +136,7 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -205,6 +208,7 @@ py_test(
     deps = [
         ":db_import_multiplexer",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -217,6 +221,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )

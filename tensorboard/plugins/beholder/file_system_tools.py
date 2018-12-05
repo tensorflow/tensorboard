@@ -18,8 +18,9 @@ from __future__ import print_function
 
 import pickle
 
-import tensorflow as tf
 from google.protobuf import message
+from tensorboard.util import tensor_util
+import tensorflow as tf
 
 
 def write_file(contents, path, mode='wb'):
@@ -37,7 +38,7 @@ def read_tensor_summary(path):
   summary_proto = tf.Summary()
   summary_proto.ParseFromString(summary_string)
   tensor_proto = summary_proto.value[0].tensor
-  array = tf.make_ndarray(tensor_proto)
+  array = tensor_util.make_ndarray(tensor_proto)
 
   return array
 
