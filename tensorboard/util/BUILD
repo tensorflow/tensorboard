@@ -80,6 +80,17 @@ py_library(
 )
 
 py_library(
+    name = "tensor_util",
+    srcs = ["tensor_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
+    ],
+)
+
+py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["test_util.py"],

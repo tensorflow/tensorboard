@@ -74,7 +74,10 @@ py_library(
     srcs = ["file_system_tools.py"],
     data = ["resources"],
     srcs_version = "PY2AND3",
-    deps = ["//tensorboard:expect_tensorflow_installed"],
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_util",
+    ],
 )
 
 py_library(
