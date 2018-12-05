@@ -192,7 +192,7 @@ def pb(name,
 
   encoded_audio = [encoder(a) for a in limited_audio]
   content = np.array([encoded_audio, limited_labels]).transpose()
-  tensor = tensor_manip.make_tensor_proto(content, dtype=tf.string)
+  tensor = tensor_util.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

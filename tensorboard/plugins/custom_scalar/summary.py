@@ -64,7 +64,7 @@ def pb(scalars_layout):
     A summary proto containing the layout.
   """
   assert isinstance(scalars_layout, layout_pb2.Layout)
-  tensor = tensor_manip.make_tensor_proto(
+  tensor = tensor_util.make_tensor_proto(
       scalars_layout.SerializeToString(), dtype=tf.string)
   summary = tf.Summary()
   summary.value.add(tag=metadata.CONFIG_SUMMARY_TAG,

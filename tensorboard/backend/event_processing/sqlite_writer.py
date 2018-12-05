@@ -200,7 +200,7 @@ class SqliteWriter(object):
           # expensive extraction into intermediate ndarray.
           data = self._make_blob(
               tensor_proto.tensor_content or
-              tensor_manip.make_ndarray(tensor_proto).tobytes())
+              tensor_util.make_ndarray(tensor_proto).tobytes())
           tensor_values.append((tag_id, step, wall_time, dtype, shape, data))
       self._db.executemany(
           """

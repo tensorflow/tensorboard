@@ -95,7 +95,7 @@ class LayoutTest(tf.test.TestCase):
     self.assertEqual(1, len(tensor_events))
 
     # Parse the data.
-    string_array = tensor_manip.make_ndarray(tensor_events[0].tensor_proto)
+    string_array = tensor_util.make_ndarray(tensor_events[0].tensor_proto)
     content = np.asscalar(string_array)
     layout_proto_from_disk = layout_pb2.Layout()
     layout_proto_from_disk.ParseFromString(tf.compat.as_bytes(content))

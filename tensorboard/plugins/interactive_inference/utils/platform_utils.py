@@ -188,7 +188,7 @@ def call_servo(examples, serving_bundle):
 
   if serving_bundle.use_predict:
     request.inputs[serving_bundle.predict_input_tensor].CopyFrom(
-        tensor_manip.make_tensor_proto(
+        tensor_util.make_tensor_proto(
             values=[ex.SerializeToString() for ex in examples],
             dtype=types_pb2.DT_STRING))
   else:

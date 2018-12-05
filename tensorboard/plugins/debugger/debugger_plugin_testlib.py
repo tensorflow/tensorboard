@@ -180,7 +180,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     value = event.summary.value.add(
         tag=op_name,
         node_name='%s:%d:DebugNumericSummary' % (op_name, output_slot),
-        tensor=tensor_manip.make_tensor_proto(
+        tensor=tensor_util.make_tensor_proto(
             list_of_values, dtype=tf.float64, shape=[len(list_of_values)]))
     content_proto = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device=device_name, output_slot=output_slot)

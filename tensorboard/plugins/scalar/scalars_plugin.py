@@ -158,7 +158,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       tensor_events = self._multiplexer.Tensors(run, tag)
       values = [(tensor_event.wall_time,
                  tensor_event.step,
-                 tensor_manip.make_ndarray(tensor_event.tensor_proto).item())
+                 tensor_util.make_ndarray(tensor_event.tensor_proto).item())
                 for tensor_event in tensor_events]
 
     if output_format == OutputFormat.CSV:

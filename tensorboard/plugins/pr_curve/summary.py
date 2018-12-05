@@ -467,7 +467,7 @@ def raw_data_pb(
        false_negative_counts,
        precision,
        recall))
-  tensor = tensor_manip.make_tensor_proto(np.float32(data), dtype=tf.float32)
+  tensor = tensor_util.make_tensor_proto(np.float32(data), dtype=tf.float32)
   summary.value.add(tag='%s/pr_curves' % name,
                     metadata=summary_metadata,
                     tensor=tensor)

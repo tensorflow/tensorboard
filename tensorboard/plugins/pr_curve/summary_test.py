@@ -53,7 +53,7 @@ class PrCurveTest(tf.test.TestCase):
     result.MergeFrom(pb)
     for value in result.value:
       if value.HasField('tensor'):
-        new_tensor = tensor_manip.make_tensor_proto(tensor_manip.make_ndarray(value.tensor))
+        new_tensor = tensor_util.make_tensor_proto(tensor_util.make_ndarray(value.tensor))
         value.ClearField('tensor')
         value.tensor.MergeFrom(new_tensor)
     return result
@@ -131,7 +131,7 @@ class PrCurveTest(tf.test.TestCase):
         [1.0, 1.0, 1.0],
         [1.0, 1.0, 1.0],
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_all_true_negatives(self):
@@ -148,7 +148,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0],
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_all_false_positives(self):
@@ -165,7 +165,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0],
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_all_false_negatives(self):
@@ -182,7 +182,7 @@ class PrCurveTest(tf.test.TestCase):
         [1.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_many_values(self):
@@ -199,7 +199,7 @@ class PrCurveTest(tf.test.TestCase):
         [2.0 / 3.0, 1.0, 0.0],
         [1.0, 0.75, 0.0],
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_many_values_with_weights(self):
@@ -217,7 +217,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.375, 1.0, 0.0],
         [1.0, 1.0, 0.0]
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_exhaustive_random_values(self):
@@ -237,7 +237,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.5190476, 0.5225806, 0.5311005, 0.5188679, 0.0],
         [1.0, 0.7431192, 0.5091743, 0.2522936, 0.0]
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_counts_below_1(self):
@@ -259,7 +259,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.4, 1.0, 0.0],
         [1.0, 1.0, 0.0]
     ]
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_raw_data(self):
@@ -318,7 +318,7 @@ class PrCurveTest(tf.test.TestCase):
     self.assertEqual(5, plugin_data.num_thresholds)
 
     # Test the summary contents.
-    values = tensor_manip.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal([
         [75.0, 64.0, 21.0, 5.0, 0.0],  # True positives.
         [150.0, 105.0, 18.0, 0.0, 0.0],  # False positives.

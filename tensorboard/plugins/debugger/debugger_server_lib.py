@@ -132,7 +132,7 @@ class DebuggerDataStreamHandler(
     node_name_and_output_slot = watch_key[
         :-len(constants.DEBUG_NUMERIC_SUMMARY_SUFFIX)]
 
-    shape = tensor_manip.make_ndarray(event.summary.value[0].tensor).shape
+    shape = tensor_util.make_ndarray(event.summary.value[0].tensor).shape
     if (len(shape) != 1 or
         shape[0] < constants.MIN_DEBUG_NUMERIC_SUMMARY_TENSOR_LENGTH):
       tf.logging.warning("Health-pill tensor either lacks a dimension or is "

@@ -78,7 +78,7 @@ class SummaryTest(tf.test.TestCase):
                     display_name=display_name, description=description)
     pb_via_op = self.pb_via_op(op, feed_dict=feed_dict)
     self.assertProtoEquals(pb, pb_via_op)
-    audios = tensor_manip.make_ndarray(pb.value[0].tensor)[:, 0].tolist()
+    audios = tensor_util.make_ndarray(pb.value[0].tensor)[:, 0].tolist()
     invalid_audios = [x for x in audios
                       if not x.startswith(b'RIFF')]
     self.assertFalse(invalid_audios)
@@ -118,7 +118,7 @@ class SummaryTest(tf.test.TestCase):
     audio = np.array([]).reshape(shape).astype(np.float32)
     pb = self.compute_and_check_summary_pb('k488', audio, max_outputs=3)
     self.assertEqual(1, len(pb.value))
-    results = tensor_manip.make_ndarray(pb.value[0].tensor)
+    results = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(results.shape, (0, 2))
 
   def test_audio_count_when_fewer_than_max(self):
@@ -127,7 +127,7 @@ class SummaryTest(tf.test.TestCase):
     pb = self.compute_and_check_summary_pb('k488', self.stereo,
                                            max_outputs=max_outputs)
     self.assertEqual(1, len(pb.value))
-    results = tensor_manip.make_ndarray(pb.value[0].tensor)
+    results = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(results.shape, (max_outputs, 2))
 
   def test_audio_count_when_more_than_max(self):
@@ -135,7 +135,7 @@ class SummaryTest(tf.test.TestCase):
     pb = self.compute_and_check_summary_pb('k488', self.stereo,
                                            max_outputs=max_outputs)
     self.assertEqual(1, len(pb.value))
-    results = tensor_manip.make_ndarray(pb.value[0].tensor)
+    results = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(results.shape, (len(self.stereo), 2))
 
   def test_processes_mono_audio(self):

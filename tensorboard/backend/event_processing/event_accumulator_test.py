@@ -718,11 +718,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     })
 
     scalar_proto = accumulator.Tensors('scalar')[0].tensor_proto
-    scalar = tensor_manip.make_ndarray(scalar_proto)
+    scalar = tensor_util.make_ndarray(scalar_proto)
     vector_proto = accumulator.Tensors('vector')[0].tensor_proto
-    vector = tensor_manip.make_ndarray(vector_proto)
+    vector = tensor_util.make_ndarray(vector_proto)
     string_proto = accumulator.Tensors('string')[0].tensor_proto
-    string = tensor_manip.make_ndarray(string_proto)
+    string = tensor_util.make_ndarray(string_proto)
 
     self.assertTrue(np.array_equal(scalar, 1.0))
     self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
@@ -850,7 +850,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     summary = tf.Summary()
     summary.value.add(
-        tensor=tensor_manip.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
+        tensor=tensor_util.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
         tag='you_are_it',
         metadata=summary_metadata)
     writer = tf.summary.FileWriter(logdir, filename_suffix=nonce)

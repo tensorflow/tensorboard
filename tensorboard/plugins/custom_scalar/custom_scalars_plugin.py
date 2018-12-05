@@ -270,7 +270,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           run, metadata.CONFIG_SUMMARY_TAG)
 
       # This run has a layout. Merge it with the ones currently found.
-      string_array = tensor_manip.make_ndarray(tensor_events[0].tensor_proto)
+      string_array = tensor_util.make_ndarray(tensor_events[0].tensor_proto)
       content = np.asscalar(string_array)
       layout_proto = layout_pb2.Layout()
       layout_proto.ParseFromString(tf.compat.as_bytes(content))

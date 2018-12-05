@@ -354,7 +354,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return self._make_pr_entry(
         event.step,
         event.wall_time,
-        tensor_manip.make_ndarray(event.tensor_proto),
+        tensor_util.make_ndarray(event.tensor_proto),
         thresholds)
 
   def _make_pr_entry(self, step, wall_time, data_array, thresholds):

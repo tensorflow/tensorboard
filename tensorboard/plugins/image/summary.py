@@ -120,7 +120,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   encoded_images = [encoder.encode_png(image) for image in limited_images]
   (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
-  tensor = tensor_manip.make_tensor_proto(content, dtype=tf.string)
+  tensor = tensor_util.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

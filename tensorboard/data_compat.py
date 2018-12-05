@@ -59,7 +59,7 @@ def migrate_value(value):
 
 
 def make_summary(tag, metadata, data):
-    tensor_proto = tensor_manip.make_tensor_proto(data)
+    tensor_proto = tensor_util.make_tensor_proto(data)
     return tf.Summary.Value(tag=tag,
                             metadata=metadata,
                             tensor=tensor_proto)

@@ -56,4 +56,4 @@ def last_metric_eval(multiplexer, session_name, metric_name):
   # TODO(erez): Raise HParamsError if the tensor is not a 0-D real scalar.
   return (last_event.wall_time,
           last_event.step,
-          tensor_manip.make_ndarray(last_event.tensor_proto).item())
+          tensor_util.make_ndarray(last_event.tensor_proto).item())

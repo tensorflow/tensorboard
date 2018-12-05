@@ -107,7 +107,7 @@ class AudioPlugin(base_plugin.TBPlugin):
   def _number_of_samples(self, tensor_proto):
     """Count the number of samples of an audio TensorProto."""
     # We directly inspect the `tensor_shape` of the proto instead of
-    # using the preferred `tensor_manip.make_ndarray(...).shape`, because
+    # using the preferred `tensor_util.make_ndarray(...).shape`, because
     # these protos can contain a large amount of encoded audio data,
     # and we don't want to have to convert them all to numpy arrays
     # just to look at their shape.
@@ -162,7 +162,7 @@ class AudioPlugin(base_plugin.TBPlugin):
     filtered_events = self._filter_by_sample(tensor_events, sample)
     content_type = self._get_mime_type(run, tag)
     for (index, tensor_event) in enumerate(filtered_events):
-      data = tensor_manip.make_ndarray(tensor_event.tensor_proto)
+      data = tensor_util.make_ndarray(tensor_event.tensor_proto)
       label = data[sample, 1]
       response.append({
           'wall_time': tensor_event.wall_time,
@@ -210,7 +210,7 @@ class AudioPlugin(base_plugin.TBPlugin):
     index = int(request.args.get('index'))
     sample = int(request.args.get('sample', 0))
     events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
-    data = tensor_manip.make_ndarray(events[index].tensor_proto)[sample, 0]
+    data = tensor_util.make_ndarray(events[index].tensor_proto)[sample, 0]
     mime_type = self._get_mime_type(run, tag)
     return http_util.Respond(request, data, mime_type)
 

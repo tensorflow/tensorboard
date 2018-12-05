@@ -199,7 +199,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             six.moves.xrange(len(tensor_events)), downsample_to)
         indices = sorted(rand_indices)
         tensor_events = [tensor_events[i] for i in indices]
-      events = [[e.wall_time, e.step, tensor_manip.make_ndarray(e.tensor_proto).tolist()]
+      events = [[e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto).tolist()]
                 for e in tensor_events]
     return (events, 'application/json')
 

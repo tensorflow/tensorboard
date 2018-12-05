@@ -94,7 +94,7 @@ class DebuggerDataServerTest(tf.test.TestCase):
     value = event.summary.value.add(
         tag=node_name,
         node_name="%s:%d:%s" % (node_name, output_slot, debug_op),
-        tensor=tensor_manip.make_tensor_proto(
+        tensor=tensor_util.make_tensor_proto(
             list_of_values, dtype=tf.float64, shape=[len(list_of_values)]))
     plugin_content = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device="/job:localhost/replica:0/task:0/cpu:0", output_slot=output_slot)
@@ -118,8 +118,8 @@ class DebuggerDataServerTest(tf.test.TestCase):
       self.assertEqual(expected_event.summary.value[0].node_name,
                        gotten_event.summary.value[0].node_name)
       self.assertAllClose(
-          tensor_manip.make_ndarray(expected_event.summary.value[0].tensor),
-          tensor_manip.make_ndarray(gotten_event.summary.value[0].tensor))
+          tensor_util.make_ndarray(expected_event.summary.value[0].tensor),
+          tensor_util.make_ndarray(gotten_event.summary.value[0].tensor))
       self.assertEqual(expected_event.summary.value[0].tag,
                        gotten_event.summary.value[0].tag)
 

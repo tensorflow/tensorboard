@@ -185,7 +185,7 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tensor_manip.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tensor_util.make_tensor_proto(buckets, dtype=tf.float64)
 
   if display_name is None:
     display_name = name

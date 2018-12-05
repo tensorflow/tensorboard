@@ -20,7 +20,7 @@ from __future__ import print_function
 from tensorboard.compat import tf
 
 # TODO(stephanwlee): move the implmentation of
-# tensorboard/compat/tensorflow_stubs/tensor_manip.py to here.
+# tensorboard/compat/tensorflow_stubs/tensor_util.py to here.
 def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
   """Create a TensorProto.
 
@@ -67,7 +67,7 @@ def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
   return tf.make_tensor_proto(values, dtype, shape, verify_shape)
 
 # TODO(stephanwlee): move the implmentation of
-# tensorboard/compat/tensorflow_stubs/tensor_manip.py to here.
+# tensorboard/compat/tensorflow_stubs/tensor_util.py to here.
 def make_ndarray(tensor):
   """Create a numpy ndarray from a tensor.
 
