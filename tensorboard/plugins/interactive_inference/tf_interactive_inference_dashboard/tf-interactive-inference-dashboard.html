@@ -475,6 +475,20 @@ limitations under the License.
 
       .roc-holder {
         width: 250px;
+        position: relative;
+      }
+
+      .roc-x-label {
+        position: absolute;
+        bottom: 0;
+        left: 140px;
+      }
+
+      .roc-y-label {
+        position: absolute;
+        left: 0;
+        bottom: 80px;
+        transform: rotate(270deg);
       }
 
       .on-switch-button {
@@ -1157,7 +1171,7 @@ limitations under the License.
                         <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
                           <div class="flex">
                             <paper-input value="{{incorrectPredCostRatio}}"
-                              label="Cost Ratio"
+                              label="Cost Ratio (FP/FN)"
                               type="number" class="threshold-cost-input">
                             </paper-input>
                             <div>
@@ -1324,6 +1338,8 @@ limitations under the License.
                             <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                               <div class="roc-and-conf-matrix">
                                 <div class="roc-holder">
+                                  <div class="roc-x-label">FPR</div>
+                                  <div class="roc-y-label">TPR</div>
                                   <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
@@ -1368,6 +1384,8 @@ limitations under the License.
                           <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="roc-and-conf-matrix">
                               <div class="roc-holder">
+                                <div class="roc-x-label">FPR</div>
+                                <div class="roc-y-label">TPR</div>
                                 <vz-line-chart id="prchart" class="pr-line-chart"
                                     x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
