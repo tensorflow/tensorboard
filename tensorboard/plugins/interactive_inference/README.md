@@ -15,6 +15,9 @@ The purpose of the tool is that give people a simple, intuitive, and powerful
 way to play with a trained ML model on a set of data through a visual interface
 with absolutely no code required.
 
+The tool can be accessed through TensorBoard or as an extension in a Jupyter
+notebook.
+
 ## I don’t want to read this document. Can I just play with a demo?
 
 Fine, here are some demos:
@@ -227,3 +230,12 @@ We imagine WIT to be useful for a wide variety of users.
   model on a dataset. Try it out with your own data.
 * Lay users - Learn about machine learning by interactively playing with
   datasets and models.
+
+## How do I use it in a Jupyter notebook?
+First, install and enable WIT for Jupyter through the following commands:
+> pip install witwidget
+> jupyter nbextension install --py --symlink --sys-prefix witwidget
+> jupyter nbextension enable --py --sys-prefix witwidget
+
+Then, use it as seen at the bottom of the
+[WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb).
