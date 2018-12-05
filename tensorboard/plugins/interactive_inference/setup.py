@@ -142,6 +142,8 @@ setup_args = {
     ],
     'install_requires': [
         'ipywidgets>=7.0.0',
+        'jupyter>=1.0,<2',
+        'tensorflow>=1.12.0',
         'tensorflow-serving-api>=1.12.0'
     ],
     'packages': find_packages(),

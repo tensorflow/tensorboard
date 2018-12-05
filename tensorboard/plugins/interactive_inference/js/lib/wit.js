@@ -53,7 +53,6 @@ var WITView = widgets.DOMWidgetView.extend({
         this.view_.addEventListener('get-eligible-features', e => {
             let i = this.model.get('get_eligible_features') + 1;
             this.model.set('get_eligible_features', i);
-            console.log(this.model.get('get_eligible_features'));
             this.touch();
         });
         this.view_.addEventListener('infer-mutants', e => {
@@ -89,7 +88,6 @@ var WITView = widgets.DOMWidgetView.extend({
         this.view_.partialDepPlotEligibleFeatures = features
     },
     mutant_charts_changed: function() {
-        console.log('mutant charts changed');
         const chartInfo = this.model.get('mutant_charts');
         this.view_.makeChartForFeature_(chartInfo.chartType, this.mutantFeature, chartInfo.data);
     },

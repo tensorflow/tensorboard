@@ -129,7 +129,6 @@ class WitWidget(widgets.DOMWidget):
         self.generate_sprite()
     
     def json_to_proto(self, json):
-        print self.config.get('are_sequence_examples')
         ex = (tf.train.SequenceExample()
             if self.config.get('are_sequence_examples')
             else tf.train.Example())
