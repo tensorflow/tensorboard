@@ -21,7 +21,9 @@ import random
 from six.moves.urllib.parse import urlparse
 import tensorflow as tf
 
-from tensorboard.plugins.interactive_inference.utils import common_utils
+#from tensorboard.plugins.interactive_inference.witwidget import common_utils
+from . import common_utils
+from tensorflow.core.framework import types_pb2
 from tensorflow.core.framework import types_pb2
 from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import predict_pb2

@@ -34,10 +34,10 @@ from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import regression_pb2
 
-from tensorboard.plugins.interactive_inference.utils import common_utils
-from tensorboard.plugins.interactive_inference.utils import inference_utils
-from tensorboard.plugins.interactive_inference.utils import platform_utils
-from tensorboard.plugins.interactive_inference.utils import test_utils
+from tensorboard.plugins.interactive_inference.witwidget import common_utils
+from tensorboard.plugins.interactive_inference.witwidget import inference_utils
+from tensorboard.plugins.interactive_inference.witwidget import platform_utils
+from tensorboard.plugins.interactive_inference.witwidget import test_utils
 
 
 class InferenceUtilsTest(tf.test.TestCase):
