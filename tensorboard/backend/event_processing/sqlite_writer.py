@@ -26,6 +26,7 @@ import time
 import six
 
 from tensorboard.compat import tf
+from tensorboard.util import tensor_util
 
 
 # Struct bundling a tag with its SummaryMetadata and a list of values, each of
@@ -199,7 +200,7 @@ class SqliteWriter(object):
           # expensive extraction into intermediate ndarray.
           data = self._make_blob(
               tensor_proto.tensor_content or
-              tf.make_ndarray(tensor_proto).tobytes())
+              tensor_util.make_ndarray(tensor_proto).tobytes())
           tensor_values.append((tag_id, step, wall_time, dtype, shape, data))
       self._db.executemany(
           """

@@ -24,10 +24,11 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard.backend.event_processing import plugin_event_accumulator as ea
 from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import summary as scalar_summary
-from tensorboard.backend.event_processing import plugin_event_accumulator as ea
+from tensorboard.util import tensor_util
 
 
 class _EventGenerator(object):
@@ -55,7 +56,7 @@ class _EventGenerator(object):
     convenience function to add an event whose contents aren't
     important.
     """
-    tensor = tf.make_tensor_proto(float(value))
+    tensor = tensor_util.make_tensor_proto(float(value))
     event = tf.Event(
         wall_time=wall_time,
         step=step,
@@ -453,11 +454,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     })
 
     scalar_proto = accumulator.Tensors('scalar')[0].tensor_proto
-    scalar = tf.make_ndarray(scalar_proto)
+    scalar = tensor_util.make_ndarray(scalar_proto)
     vector_proto = accumulator.Tensors('vector')[0].tensor_proto
-    vector = tf.make_ndarray(vector_proto)
+    vector = tensor_util.make_ndarray(vector_proto)
     string_proto = accumulator.Tensors('string')[0].tensor_proto
-    string = tf.make_ndarray(string_proto)
+    string = tensor_util.make_ndarray(string_proto)
 
     self.assertTrue(np.array_equal(scalar, 1.0))
     self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
@@ -580,8 +581,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     for i in xrange(30):
       self.assertEqual(i * 5, id_events[i].step)
       self.assertEqual(i * 5, sq_events[i].step)
-      self.assertEqual(i, tf.make_ndarray(id_events[i].tensor_proto).item())
-      self.assertEqual(i * i, tf.make_ndarray(sq_events[i].tensor_proto).item())
+      self.assertEqual(i, tensor_util.make_ndarray(id_events[i].tensor_proto).item())
+      self.assertEqual(i * i, tensor_util.make_ndarray(sq_events[i].tensor_proto).item())
 
     # Write a few more events to test incremental reloading
     for i in xrange(30, 40):
@@ -600,8 +601,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     for i in xrange(40):
       self.assertEqual(i * 5, id_events[i].step)
       self.assertEqual(i * 5, sq_events[i].step)
-      self.assertEqual(i, tf.make_ndarray(id_events[i].tensor_proto).item())
-      self.assertEqual(i * i, tf.make_ndarray(sq_events[i].tensor_proto).item())
+      self.assertEqual(i, tensor_util.make_ndarray(id_events[i].tensor_proto).item())
+      self.assertEqual(i * i, tensor_util.make_ndarray(sq_events[i].tensor_proto).item())
     self.assertProtoEquals(graph.as_graph_def(add_shapes=True), acc.Graph())
     self.assertProtoEquals(meta_graph_def, acc.MetaGraph())
 
@@ -647,7 +648,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     summary = tf.Summary()
     summary.value.add(
-        tensor=tf.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
+        tensor=tensor_util.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
         tag='you_are_it',
         metadata=summary_metadata)
     writer = tf.summary.FileWriter(logdir, filename_suffix=nonce)

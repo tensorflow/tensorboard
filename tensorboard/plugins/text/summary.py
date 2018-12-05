@@ -23,6 +23,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
+from tensorboard.util import tensor_util
 
 
 def op(name,
@@ -91,7 +92,7 @@ def pb(name, data, display_name=None, description=None):
     A `tf.Summary` protobuf object.
   """
   try:
-    tensor = tf.make_tensor_proto(data, dtype=tf.string)
+    tensor = tensor_util.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:
     raise ValueError(e)
 

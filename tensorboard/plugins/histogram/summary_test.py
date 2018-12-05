@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary
+from tensorboard.util import tensor_util
 
 
 class SummaryTest(tf.test.TestCase):
@@ -99,29 +100,29 @@ class SummaryTest(tf.test.TestCase):
 
   def test_empty_input(self):
     pb = self.compute_and_check_summary_pb('nothing_to_see_here', [])
-    buckets = tf.make_ndarray(pb.value[0].tensor)
+    buckets = tensor_util.make_ndarray(pb.value[0].tensor)
     np.testing.assert_allclose(buckets, np.array([]).reshape((0, 3)))
 
   def test_empty_input_of_high_rank(self):
     pb = self.compute_and_check_summary_pb('move_along', [[[], []], [[], []]])
-    buckets = tf.make_ndarray(pb.value[0].tensor)
+    buckets = tensor_util.make_ndarray(pb.value[0].tensor)
     np.testing.assert_allclose(buckets, np.array([]).reshape((0, 3)))
 
   def test_singleton_input(self):
     pb = self.compute_and_check_summary_pb('twelve', [12])
-    buckets = tf.make_ndarray(pb.value[0].tensor)
+    buckets = tensor_util.make_ndarray(pb.value[0].tensor)
     np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 1]]))
 
   def test_input_with_all_same_values(self):
     pb = self.compute_and_check_summary_pb('twelven', [12, 12, 12])
-    buckets = tf.make_ndarray(pb.value[0].tensor)
+    buckets = tensor_util.make_ndarray(pb.value[0].tensor)
     np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 3]]))
 
   def test_normal_input(self):
     bucket_count = 44
     pb = self.compute_and_check_summary_pb(data=self.gaussian.reshape((5, -1)),
                                            bucket_count=bucket_count)
-    buckets = tf.make_ndarray(pb.value[0].tensor)
+    buckets = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(buckets[:, 0].min(), self.gaussian.min())
     self.assertEqual(buckets[:, 1].max(), self.gaussian.max())
     self.assertEqual(buckets[:, 2].sum(), self.gaussian.size)
@@ -142,7 +143,7 @@ class SummaryTest(tf.test.TestCase):
         bucket_count=bucket_count,
         bucket_count_tensor=placeholder,
         feed_dict={placeholder: bucket_count})
-    buckets = tf.make_ndarray(pb.value[0].tensor)
+    buckets = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(buckets.shape, (bucket_count, 3))
 
 if __name__ == '__main__':
