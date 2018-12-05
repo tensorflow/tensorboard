@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities to create TensorProtos."""
+"""Utilities to manipulate TensorProtos."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -20,7 +20,7 @@ from __future__ import print_function
 from tensorboard.compat import tf
 
 # TODO(stephanwlee): move the implmentation of
-# tensorboard/compat/tensorflow_stubs/tensor_manip.pv to here.
+# tensorboard/compat/tensorflow_stubs/tensor_manip.py to here.
 def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
   """Create a TensorProto.
 
@@ -67,7 +67,7 @@ def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
   return tf.make_tensor_proto(values, dtype, shape, verify_shape)
 
 # TODO(stephanwlee): move the implmentation of
-# tensorboard/compat/tensorflow_stubs/tensor_manip.pv to here.
+# tensorboard/compat/tensorflow_stubs/tensor_manip.py to here.
 def make_ndarray(tensor):
   """Create a numpy ndarray from a tensor.
 

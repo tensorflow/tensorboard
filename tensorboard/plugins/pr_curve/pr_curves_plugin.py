@@ -26,7 +26,7 @@ from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import plugin_data_pb2
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):

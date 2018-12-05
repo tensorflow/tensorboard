@@ -23,7 +23,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 def op(name,

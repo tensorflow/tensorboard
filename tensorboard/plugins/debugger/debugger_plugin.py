@@ -34,7 +34,7 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 # HTTP routes.
 _HEALTH_PILLS_ROUTE = '/health_pills'

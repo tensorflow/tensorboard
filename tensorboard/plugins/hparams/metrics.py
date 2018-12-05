@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 def last_metric_eval(multiplexer, session_name, metric_name):

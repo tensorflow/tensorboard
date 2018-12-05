@@ -25,7 +25,7 @@ from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 def migrate_value(value):

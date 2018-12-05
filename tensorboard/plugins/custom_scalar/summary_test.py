@@ -26,7 +26,7 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.custom_scalar import summary
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class LayoutTest(tf.test.TestCase):

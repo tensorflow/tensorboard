@@ -24,7 +24,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class SummaryTest(tf.test.TestCase):

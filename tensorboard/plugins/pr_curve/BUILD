@@ -31,7 +31,7 @@ py_library(
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_manip",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -64,7 +64,7 @@ py_library(
         ":metadata",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:tensor_manip",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -78,7 +78,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_manip",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],

@@ -24,7 +24,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import summary
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class PrCurveTest(tf.test.TestCase):

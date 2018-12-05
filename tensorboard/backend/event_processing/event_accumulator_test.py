@@ -26,7 +26,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
 from tensorboard.plugins.distribution import compressor
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class _EventGenerator(object):

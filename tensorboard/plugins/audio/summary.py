@@ -35,7 +35,7 @@ import tensorflow as tf
 
 from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 def op(name,

@@ -29,7 +29,7 @@ from tensorflow.core.debug import debugger_event_metadata_pb2
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
 from tensorboard.plugins.debugger import numerics_alert
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 # pylint: enable=ungrouped-imports, wrong-import-order
 
 

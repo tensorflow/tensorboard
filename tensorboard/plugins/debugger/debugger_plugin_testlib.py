@@ -33,7 +33,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 from tensorflow.core.debug import debugger_event_metadata_pb2
 # pylint: enable=ungrouped-imports, wrong-import-order
 

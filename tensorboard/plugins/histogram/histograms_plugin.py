@@ -34,7 +34,7 @@ from tensorboard.backend import http_util
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class HistogramsPlugin(base_plugin.TBPlugin):

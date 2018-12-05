@@ -26,7 +26,7 @@ import time
 import six
 
 from tensorboard.compat import tf
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 # Struct bundling a tag with its SummaryMetadata and a list of values, each of

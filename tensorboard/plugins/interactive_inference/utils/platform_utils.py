@@ -20,7 +20,7 @@ from grpc.beta import implementations
 import random
 from six.moves.urllib.parse import urlparse
 import tensorflow as tf
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorflow.core.framework import types_pb2

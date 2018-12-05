@@ -28,7 +28,7 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class MigrateValueTest(tf.test.TestCase):

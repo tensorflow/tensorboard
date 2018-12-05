@@ -28,7 +28,7 @@ import tensorflow as tf
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 def scalar(name, tensor, tag=None, description=None, step=None):

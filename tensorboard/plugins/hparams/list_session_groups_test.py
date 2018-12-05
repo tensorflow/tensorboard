@@ -29,7 +29,7 @@ from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 DATA_TYPE_EXPERIMENT = 'experiment'
 DATA_TYPE_SESSION_START_INFO = 'session_start_info'

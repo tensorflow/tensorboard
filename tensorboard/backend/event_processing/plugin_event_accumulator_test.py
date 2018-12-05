@@ -28,7 +28,7 @@ from tensorboard.backend.event_processing import plugin_event_accumulator as ea
 from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import summary as scalar_summary
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class _EventGenerator(object):

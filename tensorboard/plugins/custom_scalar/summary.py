@@ -24,7 +24,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 def op(scalars_layout, collections=None):
   """Creates a summary that contains a layout.

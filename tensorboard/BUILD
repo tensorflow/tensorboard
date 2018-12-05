@@ -210,7 +210,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
-        "//tensorboard/util:tensor_manip",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -231,7 +231,7 @@ py_test(
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
-        "//tensorboard/util:tensor_manip",
+        "//tensorboard/util:tensor_util",
     ],
 )
 

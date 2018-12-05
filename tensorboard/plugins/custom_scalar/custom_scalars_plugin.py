@@ -39,7 +39,7 @@ from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import scalars_plugin
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 # The name of the property in the response for whether the regex is valid.

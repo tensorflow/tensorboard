@@ -25,7 +25,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class SummaryTest(tf.test.TestCase):

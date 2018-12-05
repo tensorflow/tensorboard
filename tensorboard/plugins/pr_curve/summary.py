@@ -26,7 +26,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 # A value that we use as the minimum value during division of counts to prevent

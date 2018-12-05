@@ -19,7 +19,7 @@ from __future__ import print_function
 import pickle
 
 from google.protobuf import message
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 import tensorflow as tf
 
 

@@ -36,7 +36,7 @@ import tensorflow as tf
 import numpy as np
 
 from tensorboard.plugins.histogram import metadata
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 DEFAULT_BUCKET_COUNT = 30

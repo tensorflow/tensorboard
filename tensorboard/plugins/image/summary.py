@@ -30,7 +30,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.image import metadata
 from tensorboard.util import encoder
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 def op(name,

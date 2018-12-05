@@ -22,7 +22,7 @@ import os.path
 import sqlite3
 
 from tensorboard.backend.event_processing import db_import_multiplexer
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 import tensorflow as tf
 
 

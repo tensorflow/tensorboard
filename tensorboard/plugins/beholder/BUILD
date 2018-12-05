@@ -76,7 +76,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:tensor_manip",
+        "//tensorboard/util:tensor_util",
     ],
 )
 

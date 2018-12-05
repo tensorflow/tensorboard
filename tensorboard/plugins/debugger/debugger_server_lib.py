@@ -37,7 +37,7 @@ from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import events_writer_manager as events_writer_manager_lib
 # pylint: enable=line-too-long
 from tensorboard.plugins.debugger import numerics_alert
-from tensorboard.util import tensor_manip
+from tensorboard.util import tensor_util
 
 
 class DebuggerDataStreamHandler(
