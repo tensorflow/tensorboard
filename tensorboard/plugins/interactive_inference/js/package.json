@@ -2,11 +2,11 @@
   "name": "wit-widget",
   "version": "0.1.0",
   "description": "What-If Tool jupyter widget",
-  "author": "Google AI",
+  "author": "Google LLC",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pair-code/wit-widget.git"
+    "url": "https://github.com/tensorflow/tensorboard.git"
   },
   "keywords": [
     "jupyter",
@@ -20,7 +20,7 @@
     "dist/*.js"
   ],
   "scripts": {
-    "clean": "rimraf dist/",
+    "clean": "rimraf dist/ ../witwidget/static/",
     "prepublish": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
