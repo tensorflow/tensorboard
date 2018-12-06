@@ -434,23 +434,24 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
           model_signatures) = self._parse_request_arguments(request)
 
       # TODO(tolgab) Generalize this to multiple models
-      model_num = 0
-      serving_bundle = inference_utils.ServingBundle(
-          inference_addresses[model_num],
-          model_names[model_num],
-          request.args.get('model_type'),
-          model_versions[model_num],
-          model_signatures[model_num],
-          request.args.get('use_predict') == 'true',
-          request.args.get('predict_input_tensor'),
-          request.args.get('predict_output_tensor'))
+      serving_bundles = []
+      for model_num in xrange(len(inference_addresses)):
+        serving_bundles.append(inference_utils.ServingBundle(
+            inference_addresses[model_num],
+            model_names[model_num],
+            request.args.get('model_type'),
+            model_versions[model_num],
+            model_signatures[model_num],
+            request.args.get('use_predict') == 'true',
+            request.args.get('predict_input_tensor'),
+            request.args.get('predict_output_tensor')))
 
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
           request.args.get('feature_index_pattern'))
       json_mapping = inference_utils.mutant_charts_for_feature(
-          examples, feature_name, serving_bundle, viz_params)
+          examples, feature_name, serving_bundles, viz_params)
       return http_util.Respond(request, json_mapping, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},

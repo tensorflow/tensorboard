@@ -2474,7 +2474,7 @@ limitations under the License.
                   facetedStats.errors.push(inferenceError);
                 }
               }
-
+              // TODO (tolgab) requies changing for multiple models
               const regressionEntries = [];
               regressionEntries.push(
                 this.fillInRegressionStats(inferenceStats.results, 'Total'));
@@ -2828,7 +2828,6 @@ limitations under the License.
        * non-zero.
        */
       getClassificationBestNonZero: function(index, modelIndex) {
-        // TODO(tolgab) Generalize this to multiple models (done?)
         let indexForNonZeroLabel = 0;
         const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
@@ -3173,13 +3172,15 @@ limitations under the License.
           }));
         const self = this;
         let hasInferenceLabels = false;
+        // TODO (tolgab) check if this correctly sets labels when provided
         this.visdata.forEach(function(item, index) {
           if (isClassification) {
             self.setItemInferenceValue(
               item, index, self.selectedBreakdownFeature,
               self.selectedSecondBreakdownFeature);
           } else {
-            for (let modelInd = 0; modelInd < this.getNumberOfModels_(); modelInd++){
+            // TODO (tolgab) needs fixing getnumberofmodels will break this
+            for (let modelInd = 0; modelInd < self.getNumberOfModels_(); modelInd++){
               item[this.strWithModelIndex_(inferenceValueStr, modelInd)] =
                 self.examplesAndInferences[index].inferences[
                   self.examplesAndInferences[index].inferences.length - 1][
@@ -3210,7 +3211,13 @@ limitations under the License.
                 }
               }
             }
-            item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
+            for (let modelInd = 0;
+                   modelInd < self.getNumberOfModels_();
+                   modelInd++) {
+            item[self.strWithModelIndex_(inferenceLabelStr, modelInd)] =
+              self.labelVocab[
+                item[self.strWithModelIndex_(inferenceValueStr, modelInd)]];
+            }
             hasInferenceLabels = true;
           }
         });
@@ -3780,59 +3787,121 @@ limitations under the License.
       },
 
       makeBarChart: function(featureName, data){
-        // categorical data:
-        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
-        //        {"step": ["Married-AF-spouse"], "scalar": 0.153403326869010}]}
+        // array of categorical data objects (keys are labels):
+        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721},
+        //    {"step": ["Married-AF-spouse"], "scalar": 0.153403326869}]},
+        // one object per model
 
-        function convertPoint(point){
+        function convertPoint(point, origKey){
           // point: {"step": ["Divorced"], "scalar": 0.1533520370721817}
           return {
-            x: point.step,
+            x: (point.step ==
+              origKey) ? point.step + ' - original value' : point.step,
             y: point.scalar
           };
         };
 
-        // Make a series for the current value of the feature to show in the
-        // plot.
+        // Overwrite the key for original value so that it reads under the bar
+        let origKey = '';
+        const firstModelValues = data[0];
         if (!this.globalPdPlots) {
           const origValEntry =
-            this.createPdEntryForCurrentValue(featureName, data);
+            this.createPdEntryForCurrentValue(featureName, firstModelValues, 0);
           if (origValEntry) {
-            let indexOfOrigValInData = -1;
-            const origKey = _.keys(data)[0];
-            const origData = data[origKey];
-            for (let i = 0; i < origData.length; i++) {
-              if (origData[i].step == origValEntry.step) {
-                indexOfOrigValInData = i;
-                break;
-              }
-            }
-            if (indexOfOrigValInData != -1) {
-              origData.splice(indexOfOrigValInData, 1);
-            }
-            data[origKey + ' - original value'] = [origValEntry];
+            origKey = origValEntry.step;
           }
         }
 
         // Convert the data into the format expected by vz-bar-chart.
-        const mapped = _.mapValues(data, function(pointsForSeries){
-          return _.map(pointsForSeries, point => convertPoint(point));
+        // Stack models and labels so that each (model,label) is a separate
+        // series
+        self = this;
+        const mapped = {};
+        _.forEach(data, function(modelValues, modelInd){
+            const obj = _.forEach(modelValues,
+              function(pointsForSeries, labelKey){
+                mapped[self.formatChartKey(labelKey, modelInd, data.length)] =
+                  _.map(pointsForSeries, point => convertPoint(point, origKey));
+            });
         });
+
+
+        const toolTipColumns = [
+          {
+              title: 'Inference value',
+              evaluate: d => {
+                const splitLabel =
+                    this.splitChartKey(d.key, data.length);
+                let label = splitLabel.label;
+                if (!isNaN(label) && label.length > 0 && this.labelVocab) {
+                  const index = +label;
+                  if (index < this.labelVocab.length && index >= 0) {
+                    label += ' (' + this.labelVocab[index] + ')';
+                  }
+                }
+                return label;
+              }
+          },
+          {
+              title: 'Feature value',
+              evaluate: d => d.value.x,
+          },
+          {
+              title: 'Score',
+              evaluate: d => d.value.y,
+          },
+        ];
+        // If there is more than 1 model, show model number tooltip
+        if (data.length >= 2){
+          toolTipColumns.push(
+            {
+              title: 'Model',
+              evaluate: d => {
+                const label = this.splitChartKey(d.key, data.length);
+                return label.model;
+              }
+            });
+        }
 
         const chart = document.createElement('vz-bar-chart');
         chart.data = mapped;
+        chart.tooltipColumns = toolTipColumns;
 
         return chart;
       },
 
+      splitChartKey: function (labelKey, numberOfModels){
+          // If there is model key split it, otherwise just return original
+          // label (index i) (model m) -> label (index #), m
+          let keyToChart = labelKey;
+          let modelToChart = '';
+          if (numberOfModels >= 2) {
+            const indexOfModelStr = labelKey.indexOf('(model');
+            keyToChart = labelKey.substring(0, indexOfModelStr);
+            modelToChart =
+              labelKey.substring(indexOfModelStr + 7,
+                labelKey.indexOf(')', indexOfModelStr));
+          }
+          return {'label': keyToChart, 'model': modelToChart};
+      },
+
+      formatChartKey: function(labelKey, modelInd, numberOfModels) {
+          if (numberOfModels == 1){
+            return labelKey;
+          } else {
+            return labelKey + ' (model ' + (modelInd + 1) + ')'
+          }
+      },
+
       makeLineChart: function(featureName, data){
         // numerical data:
-        // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
-        //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
+        // {"0" (model id):
+        //     {"1" (label): [{"step": 19.0, "scalar": 0.09157766401767},
+        //        {"step": 23.444444444444443, "scalar": 0.10299546271562}]}}
 
         const chart = document.createElement('vz-line-chart');
         chart.colorScale = new Plottable.Scales.Color().range(
-          [d3.schemeCategory10[1], d3.schemeCategory10[0]]);
+          d3.schemeCategory10);
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
           vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const formatValueOrNaN = function (x) {
@@ -3841,11 +3910,14 @@ limitations under the License.
         if (this.modelType == 'classification') {
           chart.defaultYRange = [0, 1];
         }
-        chart.tooltipColumns = [
+        const toolTipColumns = [
           {
               title: 'Inference value',
               evaluate: d => {
-                let label = d.dataset.metadata().name;
+                const splitLabel =
+                    this.splitChartKey(d.dataset.metadata().name,
+                      data.length);
+                let label = splitLabel.label;
                 if (!isNaN(label) && label.length > 0 && this.labelVocab) {
                   const index = +label;
                   if (index < this.labelVocab.length && index >= 0) {
@@ -3864,23 +3936,48 @@ limitations under the License.
               evaluate: d => formatValueOrNaN(d.datum.scalar),
           },
         ];
+        // If there is more than 1 model, show model number tooltip
+        if (data.length >= 2){
+          toolTipColumns.push(
+            {
+              title: 'Model',
+              evaluate: d => {
+                const label = this.splitChartKey(d.dataset.metadata().name,
+                  data.length);
+                return label.model;
+              }
+            });
+        }
+        chart.tooltipColumns = toolTipColumns;
 
-        // Make a series for the current value of the feature to show in the
-        // plot.
-        if (!this.globalPdPlots) {
-          const origValEntry =
-            this.createPdEntryForCurrentValue(featureName, data);
-          if (origValEntry) {
-            const origKey = _.keys(data)[0];
-            data[origKey + ' - original value'] = [origValEntry];
+        const allSeries = [];
+        for (let modelInd = 0; modelInd < data.length; modelInd++){
+          const modelData = data[modelInd];
+          const series = _.keys(modelData);
+          series.forEach(label => {
+            const thisLabel = this.formatChartKey(label, modelInd, data.length);
+            chart.setSeriesData(thisLabel, modelData[label]);
+            allSeries.push(thisLabel);
+          });
+          // Make a series for the current value of the feature to show in the
+          // plot.
+          if (!this.globalPdPlots) {
+            const origValEntry =
+              this.createPdEntryForCurrentValue(featureName, modelData,
+                modelInd);
+            if (origValEntry) {
+              const showKey = this.formatChartKey(
+                _.keys(modelData)[0] + ' - original value ', modelInd,
+                  data.length);
+              chart.setSeriesData(showKey, [origValEntry]);
+              allSeries.push(showKey);
+            }
           }
         }
-
-        const series = _.keys(data);
-        chart.setVisibleSeries(series);
-        series.forEach(label => chart.setSeriesData(label, data[label]));
         chart.xAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
         chart.yAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
+        chart.colorScale.domain(allSeries);
+        chart.setVisibleSeries(allSeries);
         return chart;
       },
 
@@ -3888,7 +3985,7 @@ limitations under the License.
        * Helper for making a partial dependence plot entry for the current
        * value for a feature.
        */
-      createPdEntryForCurrentValue: function(featureName, data) {
+      createPdEntryForCurrentValue: function(featureName, data, modelInd) {
         // Extract the class and feature value index from the key of the PD
         // chart data .
         const key = _.keys(data)[0];
@@ -3906,9 +4003,8 @@ limitations under the License.
           origValue = origValue[indexForValue];
         }
 
-        // TODO(tolgab) Generalize this to multiple models
         const inferences = this.selectedExampleAndInference.inferences[
-          this.selectedExampleAndInference.inferences.length - 1][0];
+          this.selectedExampleAndInference.inferences.length - 1][modelInd];
         let origInferenceScore = -1;
         for (let i = 0; i < inferences.length; i++) {
           if (inferences[i].label == classToChart.toString() ||
@@ -3937,7 +4033,7 @@ limitations under the License.
         // Delete spinner
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
-
+        // A separate chart per feature index for features with multiple values
         data.forEach(
           subfeature => this.addChart(chartType, featureName, subfeature));
       },
