@@ -14,7 +14,7 @@ http_archive(
 )
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
-versions.check(minimum_bazel_version = "0.16.0")
+versions.check(minimum_bazel_version = "0.16.1")
 
 http_archive(
     name = "io_bazel_rules_closure",
