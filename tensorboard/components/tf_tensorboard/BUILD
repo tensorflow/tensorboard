@@ -68,14 +68,3 @@ tf_web_library(
         "//tensorboard/plugins/text/tf_text_dashboard",
     ],
 )
-
-tf_web_library(
-    name = "demo",
-    srcs = ["demo.html"],
-    path = "/tf-tensorboard",
-    deps = [
-        ":default_plugins",
-        ":tf_tensorboard",
-        "//tensorboard/demo:demo_data",
-    ],
-)

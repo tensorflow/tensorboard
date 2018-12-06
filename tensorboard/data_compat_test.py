@@ -20,14 +20,15 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard import data_compat
-from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.audio import metadata as audio_metadata
-from tensorboard.plugins.histogram import summary as histogram_summary
+from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.histogram import metadata as histogram_metadata
-from tensorboard.plugins.image import summary as image_summary
+from tensorboard.plugins.histogram import summary as histogram_summary
 from tensorboard.plugins.image import metadata as image_metadata
-from tensorboard.plugins.scalar import summary as scalar_summary
+from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.plugins.scalar import summary as scalar_summary
+from tensorboard.util import tensor_util
 
 
 class MigrateValueTest(tf.test.TestCase):
@@ -68,7 +69,7 @@ class MigrateValueTest(tf.test.TestCase):
         description='')
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    data = tf.make_ndarray(new_value.tensor)
+    data = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual((), data.shape)
     low_precision_value = np.array(0x5f3759df).astype('float32').item()
     self.assertEqual(low_precision_value, data.item())
@@ -87,7 +88,7 @@ class MigrateValueTest(tf.test.TestCase):
         encoding=audio_metadata.Encoding.Value('WAV'))
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    data = tf.make_ndarray(new_value.tensor)
+    data = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual((1, 2), data.shape)
     self.assertEqual(tf.compat.as_bytes(old_value.audio.encoded_audio_string),
                      data[0][0])
@@ -129,7 +130,7 @@ class MigrateValueTest(tf.test.TestCase):
         display_name='mona_lisa/image/0', description='')
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    (width, height, data) = tf.make_ndarray(new_value.tensor)
+    (width, height, data) = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual(b'200', width)
     self.assertEqual(b'400', height)
     self.assertEqual(
@@ -147,7 +148,7 @@ class MigrateValueTest(tf.test.TestCase):
         display_name='important_data', description='')
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    buckets = tf.make_ndarray(new_value.tensor)
+    buckets = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual(old_value.histo.min, buckets[0][0])
     self.assertEqual(old_value.histo.max, buckets[-1][1])
     self.assertEqual(23 * 45, buckets[:, 2].astype(int).sum())

@@ -73,6 +73,22 @@ py_test(
     ],
 )
 
+py_library(
+    name = "platform_util",
+    srcs = ["platform_util.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_library(
+    name = "tensor_util",
+    srcs = ["tensor_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
+    ],
+)
 
 py_library(
     name = "test_util",

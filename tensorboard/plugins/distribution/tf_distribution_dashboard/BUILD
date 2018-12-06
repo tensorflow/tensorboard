@@ -32,17 +32,3 @@ tf_web_library(
         "@org_polymer_paper_styles",
     ],
 )
-
-tf_web_library(
-    name = "demo",
-    srcs = ["index.html"] + glob(["data/**"]),
-    path = "/tf-distribution-dashboard",
-    deps = [
-        ":tf_distribution_dashboard",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_iron_demo_helpers",
-        "@org_polymer_paper_styles",
-    ],
-)

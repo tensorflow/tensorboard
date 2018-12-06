@@ -51,34 +51,35 @@ def tensorboard_workspace():
       name = "org_chromium_chromedriver",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
-          "59e6b1b1656a20334d5731b3c5a7400f92a9c6f5043bb4ab67f1ccf1979ee486": [
-              "https://mirror.bazel.build/chromedriver.storage.googleapis.com/2.26/chromedriver_linux64.zip",
-              "http://chromedriver.storage.googleapis.com/2.26/chromedriver_linux64.zip",
+          "687d2e15c42908e2911344c08a949461b3f20a83017a7a682ef4d002e05b5d46": [
+              "https://mirror.bazel.build/chromedriver.storage.googleapis.com/2.44/chromedriver_linux64.zip",
+              "http://chromedriver.storage.googleapis.com/2.44/chromedriver_linux64.zip",
           ],
       },
       sha256_urls_macos = {
-          "70aae3812941ed94ad8065bb4a9432861d7d4ebacdd93ee47bb2c7c57c7e841e": [
-              "https://mirror.bazel.build/chromedriver.storage.googleapis.com/2.26/chromedriver_mac64.zip",
-              "http://chromedriver.storage.googleapis.com/2.26/chromedriver_mac64.zip",
+          "3fd49c2782a5f93cb48ff2dee021004d9a7fb393798e4c4807b391cedcd30ed9": [
+              "https://mirror.bazel.build/chromedriver.storage.googleapis.com/2.44/chromedriver_mac64.zip",
+              "http://chromedriver.storage.googleapis.com/2.44/chromedriver_mac64.zip",
           ],
       },
       generated_rule_name = "archive",
   )
 
-  # Roughly corresponds to Chrome 55
+  # Last Updated: 2018-11-29
+  # Roughly corresponds to Chrome 70
   filegroup_external(
       name = "org_chromium_chromium",
       licenses = ["restricted"],  # So many licenses
       sha256_urls = {
-          "e3c99954d6acce013174053534b72f47f67f18a0d75f79c794daaa8dd2ae8aaf": [
-              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/423768/chrome-linux.zip",
-              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/423768/chrome-linux.zip",
+          "ac11a4b8c901622cdd6cebbdac7a0dfe20c32f4d287a44ed19368444a2cd159e": [
+              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/582301/chrome-linux.zip",
+              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/582301/chrome-linux.zip",
           ],
       },
       sha256_urls_macos = {
-          "62aeb7a5c6b8a1b7b31400105bf01295bbd45b0627920b8f99f0cc4ca76927ca": [
-              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/423758/chrome-mac.zip",
-              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/423758/chrome-mac.zip",
+          "4ffd70a5d3ce02637550fc0d41d15e4e9de053d5bc55621442652b253fc61665": [
+              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/582236/chrome-mac.zip",
+              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/582236/chrome-mac.zip",
           ],
       },
       generated_rule_name = "archive",

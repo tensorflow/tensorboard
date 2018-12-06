@@ -28,6 +28,7 @@ import tensorflow as tf
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata
+from tensorboard.util import tensor_util
 
 
 def scalar(name, tensor, tag=None, description=None, step=None):
@@ -76,7 +77,7 @@ def scalar_pb(tag, tensor, description=None):
                      % arr.shape)
   if arr.dtype.kind not in ('b', 'i', 'u', 'f'):  # bool, int, uint, float
     raise ValueError('Cast %s to float is not supported' % arr.dtype.name)
-  tensor_proto = tf.make_tensor_proto(arr.astype(np.float32))
+  tensor_proto = tensor_util.make_tensor_proto(arr.astype(np.float32))
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   summary = tf.Summary()
@@ -142,7 +143,7 @@ def pb(name, data, display_name=None, description=None):
                      % data.shape)
   if data.dtype.kind not in ('b', 'i', 'u', 'f'):  # bool, int, uint, float
     raise ValueError('Cast %s to float is not supported' % data.dtype.name)
-  tensor = tf.make_tensor_proto(data.astype(np.float32))
+  tensor = tensor_util.make_tensor_proto(data.astype(np.float32))
 
   if display_name is None:
     display_name = name

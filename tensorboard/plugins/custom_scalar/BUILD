@@ -24,6 +24,7 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -44,6 +45,7 @@ py_library(
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -59,6 +61,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
