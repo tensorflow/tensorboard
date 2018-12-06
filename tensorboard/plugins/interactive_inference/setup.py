@@ -7,6 +7,7 @@ from subprocess import check_call
 import os
 import sys
 import platform
+import subprocess
 
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, 'js')
@@ -23,6 +24,31 @@ log.info('setup.py entered')
 log.info('$PATH=%s' % os.environ['PATH'])
 
 LONG_DESCRIPTION = 'What-If Tool jupyter widget'
+
+class BuildWitHtml(Command):
+    """Build the vulcanized WIT HTML for the Jupypter extension"""
+    description = 'build WIT jupyter HTML for packaging'
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        command = ['bazel', 'build',
+                   'tf_interactive_inference_dashboard:wit_jupyter']
+        subprocess.check_call(command)
+        command = ['mkdir', '-p', 'witwidget/static']
+        subprocess.check_call(command)
+        command = [
+            'cp', '-f',
+            '../../../bazel-genfiles/tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/wit_jupyter.html',
+            'witwidget/static/']
+        subprocess.check_call(command)
+
 
 def js_prerelease(command, strict=False):
     """decorator for building minified js/css prior to another command"""
@@ -149,20 +175,22 @@ setup_args = {
     'packages': find_packages(),
     'zip_safe': False,
     'cmdclass': {
+        'build_wit': BuildWitHtml,
         'build_py': js_prerelease(build_py),
         'egg_info': js_prerelease(egg_info),
         'sdist': js_prerelease(sdist, strict=True),
         'jsdeps': NPM,
     },
 
-    'author': 'Google AI',
+    'author': 'Google LLC',
     'author_email': '',
-    'url': 'https://github.com/pair-code/wit-widget',
+    'url': 'https://github.com/tensorflow/tensorboard/tensorboard/plugins/interactive_inference',
     'keywords': [
         'ipython',
         'jupyter',
         'widgets',
     ],
+    'license': 'Apache 2.0',
     'classifiers': [
         'Development Status :: 4 - Beta',
         'Framework :: IPython',
