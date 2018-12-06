@@ -14,6 +14,8 @@ http_archive(
 )
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
+# Keep this version in sync with the BAZEL environment variable defined
+# in our .travis.yml config.
 versions.check(minimum_bazel_version = "0.16.1")
 
 http_archive(
