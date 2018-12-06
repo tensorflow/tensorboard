@@ -27,12 +27,12 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  - which java || : STOPSHIP
-  - which javac || : STOPSHIP
-  - java -version || : STOPSHIP
-  - javac -version || : STOPSHIP
-  - dpkg -S "$(which java)" || : STOPSHIP
-  - dpkg -S "$(which javac)" || : STOPSHIP
+  - which java || true  # STOPSHIP
+  - which javac || true  # STOPSHIP
+  - java -version || true  # STOPSHIP
+  - javac -version || true  # STOPSHIP
+  - dpkg -S "$(which java)" || true  # STOPSHIP
+  - dpkg -S "$(which javac)" || true  # STOPSHIP
 
   - wget -t 3 -O bazel https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64
   - chmod +x bazel
