@@ -27,13 +27,6 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  - which java || true  # STOPSHIP
-  - which javac || true  # STOPSHIP
-  - java -version || true  # STOPSHIP
-  - javac -version || true  # STOPSHIP
-  - dpkg -S "$(which java)" || true  # STOPSHIP
-  - dpkg -S "$(which javac)" || true  # STOPSHIP
-
   - wget -t 3 -O bazel https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64
   - chmod +x bazel
   - sudo mv bazel /usr/local/bin
@@ -51,9 +44,10 @@ before_install:
   - echo "build --worker_max_instances=2" >>~/.bazelrc
 
   # This is the magic incantation for making protobuf build 2x faster.
-  # Unfortunately, it also breaks the build in Bazel>=0.16.0:
-  # https://github.com/bazelbuild/bazel/issues/5572
-  #- echo "build --distinct_host_configuration=false" >>~/.bazelrc
+  # Unfortunately, it also breaks the build, due to a bug that has
+  # existed since Bazel 0.16.0 and has not been fixed as of Bazel
+  # 0.20.0: <https://github.com/bazelbuild/bazel/issues/5572>
+  # - echo "build --distinct_host_configuration=false" >>~/.bazelrc
 
   # Make Bazel as strict as possible, so TensorBoard will build correctly
   # for users, regardless of their Bazel configuration.
