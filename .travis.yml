@@ -15,7 +15,7 @@ branches:
     - /^\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
-  - BAZEL=0.16.1 TF=NIGHTLY
+  - BAZEL=0.20.0 TF=NIGHTLY
 
 cache:
   directories:
@@ -27,6 +27,13 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
+  - which java || : STOPSHIP
+  - which javac || : STOPSHIP
+  - java -version || : STOPSHIP
+  - javac -version || : STOPSHIP
+  - dpkg -S "$(which java)" || : STOPSHIP
+  - dpkg -S "$(which javac)" || : STOPSHIP
+
   - wget -t 3 -O bazel https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64
   - chmod +x bazel
   - sudo mv bazel /usr/local/bin
