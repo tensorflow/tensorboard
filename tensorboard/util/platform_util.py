@@ -12,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""TensorBoard helper routine for platform.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import unittest
-from tensorboard.functionaltests import wct_test_driver
 
-
-Test = wct_test_driver.create_test_class(
-    "tensorboard/components/vz_sorting/test/test_web_library",
-    "/vz-sorting/test/tests.html")
-
-
-if __name__ == "__main__":
-  unittest.main()
+def readahead_file_path(path, unused_readahead=None):
+  """Readahead files not implemented; simply returns given path."""
+  return path

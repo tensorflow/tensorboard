@@ -33,6 +33,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
+from tensorboard.util import tensor_util
 from tensorflow.core.debug import debugger_event_metadata_pb2
 # pylint: enable=ungrouped-imports, wrong-import-order
 
@@ -179,7 +180,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     value = event.summary.value.add(
         tag=op_name,
         node_name='%s:%d:DebugNumericSummary' % (op_name, output_slot),
-        tensor=tf.make_tensor_proto(
+        tensor=tensor_util.make_tensor_proto(
             list_of_values, dtype=tf.float64, shape=[len(list_of_values)]))
     content_proto = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device=device_name, output_slot=output_slot)

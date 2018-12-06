@@ -105,7 +105,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin",
@@ -211,6 +210,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -231,6 +231,7 @@ py_test(
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -303,6 +304,7 @@ py_library(
     deps = [
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util",
+        "//tensorboard/util:platform_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -315,8 +317,8 @@ py_test(
     deps = [
         ":loader",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
         "//tensorboard/util",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )

@@ -20,11 +20,12 @@ from __future__ import print_function
 
 import numpy as np
 
-from tensorboard.plugins.audio import metadata as audio_metadata
-from tensorboard.plugins.image import metadata as image_metadata
-from tensorboard.plugins.histogram import metadata as histogram_metadata
-from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.compat import tf
+from tensorboard.plugins.audio import metadata as audio_metadata
+from tensorboard.plugins.histogram import metadata as histogram_metadata
+from tensorboard.plugins.image import metadata as image_metadata
+from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.util import tensor_util
 
 
 def migrate_value(value):
@@ -58,7 +59,7 @@ def migrate_value(value):
 
 
 def make_summary(tag, metadata, data):
-    tensor_proto = tf.make_tensor_proto(data)
+    tensor_proto = tensor_util.make_tensor_proto(data)
     return tf.Summary.Value(tag=tag,
                             metadata=metadata,
                             tensor=tensor_proto)
