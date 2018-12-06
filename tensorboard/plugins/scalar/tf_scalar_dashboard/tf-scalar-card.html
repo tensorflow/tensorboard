@@ -40,7 +40,7 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       active="[[active]]"
-      color-scale="[[_getColorScale(multiExperiments)]]"
+      color-scale="[[_getColorScale(multiExperiments, colorScale)]]"
       data-series="[[_getDataSeries(multiExperiments, dataToLoad.*)]]"
       data-to-load="[[dataToLoad]]"
       get-data-load-name="[[_getDataLoadName]]"
@@ -216,6 +216,12 @@ limitations under the License.
         smoothingEnabled: Boolean,
         smoothingWeight: Number,
         tagMetadata: Object,
+        // If specified uses the given colorScale; otherwise, uses a built-in
+        // default. See _getColorScale below for more details.
+        colorScale: {
+          type: Object,
+          value: null,
+        },
         tooltipSortingMethod: String,
 
         // This function is called when data is received from the backend.
@@ -339,6 +345,11 @@ limitations under the License.
             datum.run;
       },
       _getColorScale() {
+        if (this.colorScale !== null) {
+          return this.colorScale;
+        }
+        // If 'colorScale' isn't explicitly specified, use the ones
+        // defined in tf_color_scale.
         return {
           scale: (name) => {
             const [exp, run] = JSON.parse(name);
@@ -347,7 +358,7 @@ limitations under the License.
                 tf_color_scale.runsColorScale(run);
           },
         };
-      },
+      }
   });
 </script>
 </dom-module>
