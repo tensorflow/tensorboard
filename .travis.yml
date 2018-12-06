@@ -45,12 +45,6 @@ before_install:
   - echo "build --local_resources=400,2,1.0" >>~/.bazelrc
   - echo "build --worker_max_instances=2" >>~/.bazelrc
 
-  # This is the magic incantation for making protobuf build 2x faster.
-  # Unfortunately, it also breaks the build, due to a bug that has
-  # existed since Bazel 0.16.0 and has not been fixed as of Bazel
-  # 0.20.0: <https://github.com/bazelbuild/bazel/issues/5572>
-  # - echo "build --distinct_host_configuration=false" >>~/.bazelrc
-
   # Make Bazel as strict as possible, so TensorBoard will build correctly
   # for users, regardless of their Bazel configuration.
   - echo "build --worker_verbose" >>~/.bazelrc
