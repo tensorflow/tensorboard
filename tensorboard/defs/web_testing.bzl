@@ -73,6 +73,7 @@ def tf_web_test(name, web_library, src, **kwargs):
       srcs_version="PY2AND3",
       deps=[
           "@io_bazel_rules_webtesting//testing/web",
+          "@org_pythonhosted_urllib3//:org_pythonhosted_urllib3",
           "//tensorboard/functionaltests:wct_test_driver",
       ],
       **kwargs

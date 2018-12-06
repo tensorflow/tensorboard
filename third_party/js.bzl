@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # TensorBoard external JS dependencies (both infrastructure and frontend libs)
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 
@@ -117,7 +118,7 @@ def tensorboard_js_workspace():
       ]),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
       sha256 = "7a5c785dbcc3ae0daa1fcf4507de6a23bbecdb2bf80460651e4c2b88c1ad7582",
