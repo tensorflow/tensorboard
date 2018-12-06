@@ -53,7 +53,7 @@ before_install:
     rm "${bazel_checksum_file}" &&
     [ -f "${bazel_binary}" ]
   - chmod +x "${bazel_binary}"
-  - sudo mv "${bazel_binary}" /usr/local/bin/
+  - sudo mv "${bazel_binary}" /usr/local/bin/bazel
 
   # Storing build artifacts in this directory helps Travis cache them. This
   # will sometimes cut latency in half, when we're lucky.
