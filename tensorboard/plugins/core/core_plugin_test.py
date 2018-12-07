@@ -36,6 +36,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.util import test_util
 
 
 FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
@@ -341,25 +342,22 @@ class CorePluginTest(tf.test.TestCase):
           events.
     """
     run_path = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(run_path)
+    with test_util.FileWriterCache.get(run_path) as writer:
 
-    # Add a simple graph event.
-    graph_def = tf.GraphDef()
-    node1 = graph_def.node.add()
-    node1.name = 'a'
-    node2 = graph_def.node.add()
-    node2.name = 'b'
-    node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
+      # Add a simple graph event.
+      graph_def = tf.GraphDef()
+      node1 = graph_def.node.add()
+      node1.name = 'a'
+      node2 = graph_def.node.add()
+      node2.name = 'b'
+      node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
 
-    meta_graph_def = tf.MetaGraphDef(graph_def=graph_def)
+      meta_graph_def = tf.MetaGraphDef(graph_def=graph_def)
 
-    if self._only_use_meta_graph:
-      writer.add_meta_graph(meta_graph_def)
-    else:
-      writer.add_graph(graph_def)
-
-    writer.flush()
-    writer.close()
+      if self._only_use_meta_graph:
+        writer.add_meta_graph(meta_graph_def)
+      else:
+        writer.add_graph(graph_def)
 
     # Write data for the run to the database.
     # TODO(nickfelt): Figure out why reseting the graph is necessary.

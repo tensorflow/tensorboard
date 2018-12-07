@@ -29,6 +29,7 @@ from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 class _EventGenerator(object):
@@ -335,7 +336,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testNewStyleScalarSummary(self):
     """Verify processing of tensorboard.plugins.scalar.summary."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
       step = tf.placeholder(tf.float32, shape=[])
@@ -364,7 +365,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testNewStyleAudioSummary(self):
     """Verify processing of tensorboard.plugins.audio.summary."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
       ipt = tf.random_normal(shape=[5, 441, 2])
@@ -398,7 +399,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testNewStyleImageSummary(self):
     """Verify processing of tensorboard.plugins.image.summary."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
       ipt = tf.ones([10, 4, 4, 3], tf.uint8)
@@ -436,7 +437,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testTFSummaryTensor(self):
     """Verify processing of tf.summary.tensor."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
       tf.summary.tensor_summary('scalar', tf.constant(1.0))
@@ -470,7 +471,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                                         steps,
                                         expected_count):
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
+    writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
       summary_metadata = tf.SummaryMetadata(
@@ -542,7 +543,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       tf.gfile.DeleteRecursively(directory)
     tf.gfile.MkDir(directory)
 
-    writer = tf.summary.FileWriter(directory, max_queue=100)
+    writer = test_util.FileWriter(directory, max_queue=100)
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
@@ -614,7 +615,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       tf.gfile.DeleteRecursively(directory)
     tf.gfile.MkDir(directory)
 
-    writer = tf.summary.FileWriter(directory, max_queue=100)
+    writer = test_util.FileWriter(directory, max_queue=100)
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
@@ -651,7 +652,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         tensor=tensor_util.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
         tag='you_are_it',
         metadata=summary_metadata)
-    writer = tf.summary.FileWriter(logdir, filename_suffix=nonce)
+    writer = test_util.FileWriter(logdir, filename_suffix=nonce)
     writer.add_summary(summary.SerializeToString())
     writer.close()
 

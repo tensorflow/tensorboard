@@ -34,9 +34,9 @@ from werkzeug import wrappers
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.audio import summary
 from tensorboard.plugins.audio import audio_plugin
-
+from tensorboard.plugins.audio import summary
+from tensorboard.util import test_util
 
 class AudioPluginTest(tf.test.TestCase):
 
@@ -54,14 +54,13 @@ class AudioPluginTest(tf.test.TestCase):
     tf.summary.audio(name="baz", tensor=placeholder, sample_rate=44100)
     merged_summary_op = tf.summary.merge_all()
     foo_directory = os.path.join(self.log_dir, "foo")
-    writer = tf.summary.FileWriter(foo_directory)
-    writer.add_graph(sess.graph)
-    for step in xrange(2):
-      # The floats (sample data) range from -1 to 1.
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
-          placeholder: numpy.random.rand(42, 22050) * 2 - 1
-      }), global_step=step)
-    writer.close()
+    with test_util.FileWriterCache.get(foo_directory) as writer:
+      writer.add_graph(sess.graph)
+      for step in xrange(2):
+        # The floats (sample data) range from -1 to 1.
+        writer.add_summary(sess.run(merged_summary_op, feed_dict={
+            placeholder: numpy.random.rand(42, 22050) * 2 - 1
+        }), global_step=step)
 
     # Create new-style audio summaries for run "bar".
     tf.reset_default_graph()
@@ -73,18 +72,17 @@ class AudioPluginTest(tf.test.TestCase):
                description="how do you pronounce that, anyway?")
     merged_summary_op = tf.summary.merge_all()
     bar_directory = os.path.join(self.log_dir, "bar")
-    writer = tf.summary.FileWriter(bar_directory)
-    writer.add_graph(sess.graph)
-    for step in xrange(2):
-      # The floats (sample data) range from -1 to 1.
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
-          audio_placeholder: numpy.random.rand(42, 11025, 1) * 2 - 1,
-          labels_placeholder: [
-              tf.compat.as_bytes('step **%s**, sample %s' % (step, sample))
-              for sample in xrange(42)
-          ],
-      }), global_step=step)
-    writer.close()
+    with test_util.FileWriterCache.get(bar_directory) as writer:
+      writer.add_graph(sess.graph)
+      for step in xrange(2):
+        # The floats (sample data) range from -1 to 1.
+        writer.add_summary(sess.run(merged_summary_op, feed_dict={
+            audio_placeholder: numpy.random.rand(42, 11025, 1) * 2 - 1,
+            labels_placeholder: [
+                tf.compat.as_bytes('step **%s**, sample %s' % (step, sample))
+                for sample in xrange(42)
+            ],
+        }), global_step=step)
 
     # Start a server with the plugin.
     multiplexer = event_multiplexer.EventMultiplexer({

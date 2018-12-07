@@ -31,6 +31,7 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.histogram import summary
+from tensorboard.util import test_util
 
 
 class HistogramsPluginTest(tf.test.TestCase):
@@ -85,13 +86,12 @@ class HistogramsPluginTest(tf.test.TestCase):
     summ = tf.summary.merge_all()
 
     subdir = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(subdir)
-    writer.add_graph(sess.graph)
-    for step in xrange(self._STEPS):
-      feed_dict = {placeholder: [1 + step, 2 + step, 3 + step]}
-      s = sess.run(summ, feed_dict=feed_dict)
-      writer.add_summary(s, global_step=step)
-    writer.close()
+    with test_util.FileWriterCache.get(subdir) as writer:
+      writer.add_graph(sess.graph)
+      for step in xrange(self._STEPS):
+        feed_dict = {placeholder: [1 + step, 2 + step, 3 + step]}
+        s = sess.run(summ, feed_dict=feed_dict)
+        writer.add_summary(s, global_step=step)
 
   def test_routes_provided(self):
     """Tests that the plugin offers the correct routes."""

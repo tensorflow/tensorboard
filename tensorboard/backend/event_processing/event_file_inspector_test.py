@@ -23,6 +23,7 @@ import shutil
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_file_inspector as efi
+from tensorboard.util import test_util
 
 
 class EventFileInspectorTest(tf.test.TestCase):
@@ -45,19 +46,18 @@ class EventFileInspectorTest(tf.test.TestCase):
       subdir = os.path.join(self.logdir, subdir_)
       self._MakeDirectoryIfNotExists(subdir)
 
-      sw = tf.summary.FileWriter(subdir)
-      for datum in data:
-        summary = tf.Summary()
-        if 'simple_value' in datum:
-          summary.value.add(tag=datum['tag'],
-                            simple_value=datum['simple_value'])
-          sw.add_summary(summary, global_step=datum['step'])
-        elif 'histo' in datum:
-          summary.value.add(tag=datum['tag'], histo=tf.HistogramProto())
-          sw.add_summary(summary, global_step=datum['step'])
-        elif 'session_log' in datum:
-          sw.add_session_log(datum['session_log'], global_step=datum['step'])
-      sw.close()
+      with test_util.FileWriterCache.get(subdir) as sw:
+        for datum in data:
+          summary = tf.Summary()
+          if 'simple_value' in datum:
+            summary.value.add(tag=datum['tag'],
+                              simple_value=datum['simple_value'])
+            sw.add_summary(summary, global_step=datum['step'])
+          elif 'histo' in datum:
+            summary.value.add(tag=datum['tag'], histo=tf.HistogramProto())
+            sw.add_summary(summary, global_step=datum['step'])
+          elif 'session_log' in datum:
+            sw.add_session_log(datum['session_log'], global_step=datum['step'])
 
   def testEmptyLogdir(self):
     # Nothing was written to logdir
