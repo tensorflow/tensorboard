@@ -30,7 +30,7 @@ import sqlite3
 import threading
 
 import tensorflow as tf
-from tensorboard.compat.proto.event_pb2 import Event as TbEvent
+from tensorboard.compat.proto.event_pb2 import Event as TbEvent, SessionLog as TbSessionLog
 from tensorboard.compat.proto.summary_pb2 import Summary as TbSummary
 from tensorboard.util import util
 
@@ -206,6 +206,14 @@ class FileWriter(tf.summary.FileWriter):
       tf_summary = summary
     super(FileWriter, self).add_summary(tf_summary, global_step)
 
+  def add_session_log(self, session_log, global_step=None):
+    if isinstance(session_log, TbSessionLog):
+      tf_session_log = tf.SessionLog.FromString(session_log.SerializeToString())
+    else:
+      tf.logging.warn('Added TensorFlow session_log proto. '
+                      'Please prefer TensorBoard copy of the proto')
+      tf_session_log = session_log
+    super(FileWriter, self).add_session_log(tf_session_log, global_step)
 
 class FileWriterCache(object):
   """Cache for TensorBoard test file writers.
@@ -231,3 +239,16 @@ class FileWriterCache(object):
         FileWriterCache._cache[logdir] = FileWriter(
             logdir, graph=tf.compat.v1.get_default_graph())
       return FileWriterCache._cache[logdir]
+
+
+def tf_summary_proto_to_tb_summary_proto(summary):
+  """Converts TensorFlow Summary proto to TensorBoard Summary proto.
+
+  TB v1 summary API returns TF Summary proto. To make test for v1 and v2 API
+  congruent, one can use this API to convert result of v1 API to TB Summary
+  proto.
+  """
+  if isinstance(summary, TbSummary):
+    raise TypeError('Expected tf.Summary proto. Got TB Summary instead.')
+
+  return TbSummary.FromString(summary.SerializeToString())

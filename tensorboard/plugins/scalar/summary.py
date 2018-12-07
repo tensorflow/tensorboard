@@ -27,6 +27,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 
+from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
 
@@ -80,7 +81,7 @@ def scalar_pb(tag, tensor, description=None):
   tensor_proto = tensor_util.make_tensor_proto(arr.astype(np.float32))
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  summary = tf.Summary()
+  summary = Summary()
   summary.value.add(tag=tag,
                     metadata=summary_metadata,
                     tensor=tensor_proto)
@@ -143,11 +144,11 @@ def pb(name, data, display_name=None, description=None):
                      % data.shape)
   if data.dtype.kind not in ('b', 'i', 'u', 'f'):  # bool, int, uint, float
     raise ValueError('Cast %s to float is not supported' % data.dtype.name)
-  tensor = tensor_util.make_tensor_proto(data.astype(np.float32))
+  tensor = tf.compat.v1.make_tensor_proto(data.astype(np.float32))
 
   if display_name is None:
     display_name = name
-  summary_metadata = metadata.create_summary_metadata(
+  summary_metadata = metadata.create_summary_metadata_v1(
       display_name=display_name, description=description)
   summary = tf.Summary()
   summary.value.add(tag='%s/scalar_summary' % name,

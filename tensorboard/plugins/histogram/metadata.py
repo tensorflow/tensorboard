@@ -18,8 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.plugins.histogram import plugin_data_pb2
 from tensorboard.compat import tf
+from tensorboard.compat.proto.summary_pb2 import SummaryMetadata
+from tensorboard.plugins.histogram import plugin_data_pb2
 
 
 PLUGIN_NAME = 'histograms'
@@ -30,6 +31,21 @@ PROTO_VERSION = 0
 
 
 def create_summary_metadata(display_name, description):
+  """Create a `SummaryMetadata` proto for histogram plugin data.
+
+  Returns:
+    A `SummaryMetadata` protobuf object.
+  """
+  content = plugin_data_pb2.HistogramPluginData(version=PROTO_VERSION)
+  return SummaryMetadata(
+      display_name=display_name,
+      summary_description=description,
+      plugin_data=SummaryMetadata.PluginData(
+          plugin_name=PLUGIN_NAME,
+          content=content.SerializeToString()))
+
+
+def create_summary_metadata_v1(display_name, description):
   """Create a `tf.SummaryMetadata` proto for histogram plugin data.
 
   Returns:

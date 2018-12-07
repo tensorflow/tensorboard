@@ -22,9 +22,11 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
+from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 class PrCurveTest(tf.test.TestCase):
@@ -37,7 +39,7 @@ class PrCurveTest(tf.test.TestCase):
   def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
       actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = tf.Summary()
+    actual_proto = Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
@@ -49,11 +51,15 @@ class PrCurveTest(tf.test.TestCase):
     normalization ensures a canonical form, and should be used before
     comparing two `Summary`s for equality.
     """
-    result = tf.Summary()
+    result = Summary()
+    if not isinstance(pb, Summary):
+      # pb can come from `pb_via_op` which creates a TB Summary.
+      pb = test_util.tf_summary_proto_to_tb_summary_proto(pb)
     result.MergeFrom(pb)
     for value in result.value:
       if value.HasField('tensor'):
-        new_tensor = tensor_util.make_tensor_proto(tensor_util.make_ndarray(value.tensor))
+        new_tensor = tensor_util.make_tensor_proto(
+            tensor_util.make_ndarray(value.tensor))
         value.ClearField('tensor')
         value.tensor.MergeFrom(new_tensor)
     return result
@@ -338,13 +344,13 @@ class StreamingOpTest(tf.test.TestCase):
 
   def pb_via_op(self, summary_op):
     actual_pbtxt = summary_op.eval()
-    actual_proto = tf.Summary()
+    actual_proto = Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
   def tensor_via_op(self, summary_op):
     actual_pbtxt = summary_op.eval()
-    actual_proto = tf.Summary()
+    actual_proto = Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
@@ -419,7 +425,7 @@ class StreamingOpTest(tf.test.TestCase):
     with self.test_session() as sess:
       sess.run(tf.local_variables_initializer())
       sess.run(update_op)
-      summary_proto = tf.Summary()
+      summary_proto = Summary()
       summary_proto.ParseFromString(sess.run(tf.summary.merge_all()))
 
     tags = [v.tag for v in summary_proto.value]

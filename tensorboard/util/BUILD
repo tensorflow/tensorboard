@@ -98,6 +98,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
@@ -111,5 +112,6 @@ py_library(
         "//tensorboard:db",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )

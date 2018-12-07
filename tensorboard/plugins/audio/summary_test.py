@@ -23,9 +23,11 @@ import numpy as np
 import six
 import tensorflow as tf
 
+from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 class SummaryTest(tf.test.TestCase):
@@ -46,7 +48,7 @@ class SummaryTest(tf.test.TestCase):
   def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
       actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = tf.Summary()
+    actual_proto = Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
@@ -76,6 +78,7 @@ class SummaryTest(tf.test.TestCase):
     pb = summary.pb(name, audio, self.samples_per_second,
                     max_outputs=max_outputs,
                     display_name=display_name, description=description)
+    pb = test_util.tf_summary_proto_to_tb_summary_proto(pb)
     pb_via_op = self.pb_via_op(op, feed_dict=feed_dict)
     self.assertProtoEquals(pb, pb_via_op)
     audios = tensor_util.make_ndarray(pb.value[0].tensor)[:, 0].tolist()

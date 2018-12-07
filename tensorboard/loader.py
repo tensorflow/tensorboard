@@ -37,6 +37,7 @@ import types  # pylint: disable=unused-import
 import six
 
 from tensorboard import db
+from tensorboard.compat.proto.event_pb2 import Event
 from tensorboard.util import platform_util
 from tensorboard.util import util
 import tensorflow as tf
@@ -692,7 +693,7 @@ class EventLogReader(object):
   """Helper class for reading from event log files.
 
   This class is a wrapper around BufferedRecordReader that operates on
-  record files containing tf.Event protocol buffers.
+  record files containing Event protocol buffers.
 
   Fields:
     rowid: An integer primary key in EventLogs table, or 0 if unknown.
@@ -735,16 +736,16 @@ class EventLogReader(object):
     """Reads an event proto from the file.
 
     Returns:
-      A tf.Event or None if no more records exist in the file. Please
+      A Event or None if no more records exist in the file. Please
       note that the file remains open for subsequent reads in case more
       are appended later.
 
-    :rtype: tf.Event
+    :rtype: Event
     """
     record = self._reader.get_next_record()
     if record is None:
       return None
-    event = tf.Event()
+    event = Event()
     event.ParseFromString(record.record)
     self._offset = record.offset
     return event
@@ -845,9 +846,9 @@ class RunReader(object):
     self._index = 0
     self._entombed_progress = 0
     self._saved_events = \
-        collections.deque()  # type: collections.deque[tf.Event]
+        collections.deque()  # type: collections.deque[Event]
     self._prepended_events = \
-        collections.deque()  # type: collections.deque[tf.Event]
+        collections.deque()  # type: collections.deque[Event]
 
   def add_event_log(self, db_conn, log):
     """Adds event log to run loader.
@@ -893,9 +894,9 @@ class RunReader(object):
     return True
 
   def get_next_event(self):
-    """Returns next tf.Event from event logs or None if stalled.
+    """Returns next Event from event logs or None if stalled.
 
-    :rtype: tf.Event
+    :rtype: Event
     """
     event = None
     if self._prepended_events:
@@ -919,7 +920,7 @@ class RunReader(object):
 
     Note: This method sets the mark to the current position.
 
-    :rtype: tf.Event
+    :rtype: Event
     """
     self.mark()
     result = self.get_next_event()

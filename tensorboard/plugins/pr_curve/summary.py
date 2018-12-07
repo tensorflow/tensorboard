@@ -26,7 +26,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
-from tensorboard.util import tensor_util
 
 
 # A value that we use as the minimum value during division of counts to prevent
@@ -455,7 +454,7 @@ def raw_data_pb(
   """
   if display_name is None:
     display_name = name
-  summary_metadata = metadata.create_summary_metadata(
+  summary_metadata = metadata.create_summary_metadata_v1(
       display_name=display_name if display_name is not None else name,
       description=description or '',
       num_thresholds=num_thresholds)
@@ -467,7 +466,7 @@ def raw_data_pb(
        false_negative_counts,
        precision,
        recall))
-  tensor = tensor_util.make_tensor_proto(np.float32(data), dtype=tf.float32)
+  tensor = tf.compat.v1.make_tensor_proto(np.float32(data), dtype=tf.float32)
   summary.value.add(tag='%s/pr_curves' % name,
                     metadata=summary_metadata,
                     tensor=tensor)

@@ -36,7 +36,6 @@ import tensorflow as tf
 import numpy as np
 
 from tensorboard.plugins.histogram import metadata
-from tensorboard.util import tensor_util
 
 
 DEFAULT_BUCKET_COUNT = 30
@@ -185,11 +184,11 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tensor_util.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tf.compat.v1.make_tensor_proto(buckets, dtype=tf.float64)
 
   if display_name is None:
     display_name = name
-  summary_metadata = metadata.create_summary_metadata(
+  summary_metadata = metadata.create_summary_metadata_v1(
       display_name=display_name, description=description)
 
   summary = tf.Summary()

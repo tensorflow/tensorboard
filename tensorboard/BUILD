@@ -206,6 +206,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
@@ -223,6 +224,7 @@ py_test(
         ":data_compat",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/histogram:metadata",
@@ -303,6 +305,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util",
         "//tensorboard/util:platform_util",
         "@org_pythonhosted_six",
@@ -317,6 +320,7 @@ py_test(
     deps = [
         ":loader",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util",
         "//tensorboard/util:test_util",
         "@org_pythonhosted_six",

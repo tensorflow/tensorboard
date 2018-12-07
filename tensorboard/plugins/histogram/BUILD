@@ -57,6 +57,7 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
@@ -70,7 +71,6 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:tensor_util",
     ],
 )
 

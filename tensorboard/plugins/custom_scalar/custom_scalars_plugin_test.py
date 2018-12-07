@@ -105,17 +105,21 @@ class CustomScalarsPluginTest(tf.test.TestCase):
 
     # Generate test data.
     with test_util.FileWriterCache.get(os.path.join(self.logdir, 'foo')) as writer:
-      writer.add_summary(summary.pb(self.foo_layout))
+      proto = test_util.tf_summary_proto_to_tb_summary_proto(summary.pb(self.foo_layout))
+      writer.add_summary(proto)
       for step in range(4):
-        writer.add_summary(scalar_summary.pb('squares', step * step), step)
+        scalar_proto = test_util.tf_summary_proto_to_tb_summary_proto(scalar_summary.pb('squares', step * step))
+        writer.add_summary(scalar_proto, step)
 
     with test_util.FileWriterCache.get(os.path.join(self.logdir, 'bar')) as writer:
       for step in range(3):
-        writer.add_summary(scalar_summary.pb('increments', step + 1), step)
+        scalar_proto = test_util.tf_summary_proto_to_tb_summary_proto(scalar_summary.pb('increments', step + 1))
+        writer.add_summary(scalar_proto, step)
 
     # The '.' run lacks scalar data but has a layout.
     with test_util.FileWriterCache.get(self.logdir) as writer:
-      writer.add_summary(summary.pb(self.logdir_layout))
+      proto = test_util.tf_summary_proto_to_tb_summary_proto(summary.pb(self.logdir_layout))
+      writer.add_summary(proto)
 
     self.plugin = self.createPlugin(self.logdir)
 
@@ -235,7 +239,8 @@ class CustomScalarsPluginTest(tf.test.TestCase):
     # Generate a directory with a layout but no scalars data.
     directory = os.path.join(self.logdir, 'no_scalars')
     with test_util.FileWriterCache.get(directory) as writer:
-      writer.add_summary(summary.pb(self.logdir_layout))
+      proto = test_util.tf_summary_proto_to_tb_summary_proto(summary.pb(self.logdir_layout))
+      writer.add_summary(proto)
 
     local_plugin = self.createPlugin(directory)
     self.assertFalse(local_plugin.is_active())
