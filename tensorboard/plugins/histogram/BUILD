@@ -21,6 +21,7 @@ py_library(
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -68,6 +69,7 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -80,6 +82,7 @@ py_test(
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )

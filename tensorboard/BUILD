@@ -75,10 +75,10 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":util",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/util",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -105,7 +105,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin",
@@ -211,6 +210,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -231,6 +231,7 @@ py_test(
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -240,8 +241,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":util",
         "//tensorboard:expect_sqlite3_installed",
+        "//tensorboard/util",
     ],
 )
 
@@ -253,8 +254,8 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":db",
-        ":test_util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -264,9 +265,9 @@ py_binary(
     srcs = ["encode_png_benchmark.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":util",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util",
         "@org_pythonhosted_six",
     ],
 )
@@ -296,40 +297,14 @@ py_test(
 )
 
 py_library(
-    name = "util",
-    srcs = ["util.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard:expect_numpy_installed",
-        "//tensorboard:tf_contrib_ffmpeg",
-        "//tensorboard/compat:tensorflow",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_test(
-    name = "util_test",
-    size = "small",
-    srcs = ["util_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":test_util",
-        ":util",
-        "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_library(
     name = "loader",
     srcs = ["loader.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util",
+        "//tensorboard/util:platform_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -341,9 +316,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":loader",
-        ":test_util",
-        ":util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -352,19 +327,6 @@ alias(
     name = "summary",
     actual = "//tensorboard/summary",
     visibility = ["//visibility:public"],
-)
-
-py_library(
-    name = "test_util",
-    testonly = 1,
-    srcs = ["test_util.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":db",
-        ":util",
-        "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
 )
 
 py_library(

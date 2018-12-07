@@ -33,8 +33,9 @@ import functools
 import numpy as np
 import tensorflow as tf
 
-from tensorboard import util
+from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
+from tensorboard.util import tensor_util
 
 
 def op(name,
@@ -177,7 +178,7 @@ def pb(name,
 
   if encoding == 'wav':
     encoding = metadata.Encoding.Value('WAV')
-    encoder = functools.partial(util.encode_wav,
+    encoder = functools.partial(encoder_util.encode_wav,
                                 samples_per_second=sample_rate)
   else:
     raise ValueError('Unknown encoding: %r' % encoding)
@@ -191,7 +192,7 @@ def pb(name,
 
   encoded_audio = [encoder(a) for a in limited_audio]
   content = np.array([encoded_audio, limited_labels]).transpose()
-  tensor = tf.make_tensor_proto(content, dtype=tf.string)
+  tensor = tensor_util.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

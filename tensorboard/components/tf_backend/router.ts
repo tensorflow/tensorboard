@@ -17,52 +17,53 @@ namespace tf_backend {
 export interface Router {
   environment: () => string;
   experiments: () => string;
-  isDemoMode: () => boolean;
-  pluginRoute: (pluginName: string, route: string) => string;
+  pluginRoute: (
+    pluginName: string,
+    route: string,
+    params?: URLSearchParams
+  ) => string;
   pluginsListing: () => string;
   runs: () => string;
   runsForExperiment: (id: tf_backend.ExperimentId) => string;
 };
 
+let _router: Router = createRouter();
+
 /**
  * Create a router for communicating with the TensorBoard backend. You
  * can pass this to `setRouter` to make it the global router.
  *
- * @param pathPrefix {string=} The base prefix for data endpoints.
- * @param demoMode {boolean=} Whether to modify urls for filesystem demo usage.
+ * @param dataDir {string=} The base prefix for data endpoints.
  */
-export function createRouter(pathPrefix = 'data', demoMode = false): Router {
-  if (pathPrefix[pathPrefix.length - 1] === '/') {
-    pathPrefix = pathPrefix.slice(0, pathPrefix.length - 1);
+export function createRouter(dataDir = "data"): Router {
+  if (dataDir[dataDir.length - 1] === "/") {
+    dataDir = dataDir.slice(0, dataDir.length - 1);
   }
-  const createPath = demoMode ? createDemoPath : createProdPath;
-  const ext = demoMode ? '.json' : '';
   return {
-    environment: () => createPath(pathPrefix, '/environment', ext),
-    experiments: () => createPath(pathPrefix, '/experiments', ext),
-    isDemoMode: () => demoMode,
-    pluginRoute: (pluginName: string, route: string,
-        params?: URLSearchParams, demoCustomExt = ext): string => {
-
-      return createPath(
-          demoMode ? pathPrefix : pathPrefix + '/plugin',
-          `/${pluginName}${route}`,
-          demoCustomExt,
-          params);
+    environment: () => createDataPath(dataDir, "/environment"),
+    experiments: () => createDataPath(dataDir, "/experiments"),
+    pluginRoute: (
+      pluginName: string,
+      route: string,
+      params?: URLSearchParams
+    ): string => {
+      return createDataPath(
+        dataDir + "/plugin",
+        `/${pluginName}${route}`,
+        params
+      );
     },
-    pluginsListing: () => createPath(pathPrefix, '/plugins_listing', ext),
-    runs: () => createPath(pathPrefix, '/runs', ext),
-    runsForExperiment: id => {
-      return createPath(
-          pathPrefix,
-          '/experiment_runs',
-          ext,
-          createSearchParam({experiment: String(id)}));
+    pluginsListing: () => createDataPath(dataDir, "/plugins_listing"),
+    runs: () => createDataPath(dataDir, "/runs"),
+    runsForExperiment: (id) => {
+      return createDataPath(
+        dataDir,
+        "/experiment_runs",
+        createSearchParam({experiment: String(id)})
+      );
     },
   };
-};
-
-let _router: Router = createRouter();
+}
 
 /**
  * @return {Router} the global router
@@ -86,42 +87,17 @@ export function setRouter(router: Router): void {
   _router = router;
 }
 
-function createProdPath(pathPrefix: string, path: string,
-    ext: string, params?: URLSearchParams): string {
-  const url = new URL(window.location.origin);
-  // Use URL to normalize pathPrefix with leading slash and without.
-  url.pathname = pathPrefix + path;
-  if (params) url.search = params.toString();
-  return url.pathname + url.search;
-}
-
-/**
- * Creates a URL for demo.
- * e.g.,
- * > createDemoPath('a', '/b', '.json', {a: 1})
- * < '/a/b_a_1.json'
- */
-function createDemoPath(pathPrefix: string, path: string,
-    ext: string, params?: URLSearchParams): string {
-
-  // First, parse the path in a safe manner by constructing a URL. We don't
-  // trust the path supplied by consumer.
-  const prefixLessUrl = new URL(`${window.location.origin}/${path}`);
-  let {pathname: normalizedPath} = prefixLessUrl;
-  const encodedQueryParam = params ?
-      params.toString().replace(/[&=%]/g, '_') : '';
-
-  // Strip leading slashes.
-  normalizedPath = normalizedPath.replace(/^\/+/g, '');
-  // Convert slashes to underscores.
-  normalizedPath = normalizedPath.replace(/\//g, '_');
-  // Add query parameter as path if it is present.
-  if (encodedQueryParam) normalizedPath += `_${encodedQueryParam}`;
-  const url = new URL(window.location.origin);
-
-  // All demo data are serialized in JSON format.
-  url.pathname = `${pathPrefix}/${normalizedPath}${ext}`;
-  return url.pathname + url.search;
+function createDataPath(
+  dataDir: string,
+  route: string,
+  params: URLSearchParams = new URLSearchParams()
+): string {
+  let relativePath = dataDir + route;
+  if (String(params)) {
+    const delimiter = route.includes("?") ? "&" : "?";
+    relativePath += delimiter + String(params);
+  }
+  return relativePath;
 }
 
 export function createSearchParam(params: QueryParams = {}): URLSearchParams {

@@ -3763,21 +3763,23 @@ limitations under the License.
        * Handler for resetting an edited datapoint.
        */
       resetDatapoint_: function() {
-        this.selectedExampleAndInference.changed = false;
-        const origExampleJsonString = JSON.stringify(
-          this.selectedExampleAndInference.orig);
-
-        // Force reset of example in example viewer component.
+        // Force reset of example in example viewer component by clearing out
+        // the example and then waiting a frame to set it back to the original
+        // value.
         this.set('selectedExampleAndInference.example', {});
-        requestAnimationFrame(
-          () => this.set('selectedExampleAndInference.example',
-                         JSON.parse(origExampleJsonString)));
 
-        this.updatedExample = true;
-        this.visdata[this.selected[0]] = this.exampleToDataPoint_(
-          this.selectedExampleAndInference.example, this.selected[0]);
-        this.updateExample_(origExampleJsonString, this.selected[0]);
-        this.refreshDive_();
+        requestAnimationFrame(() => {
+          this.selectedExampleAndInference.changed = false;
+          const origExampleJsonString = JSON.stringify(
+            this.selectedExampleAndInference.orig);
+          this.set('selectedExampleAndInference.example',
+                   JSON.parse(origExampleJsonString));
+          this.visdata[this.selected[0]] = this.exampleToDataPoint_(
+            this.selectedExampleAndInference.example, this.selected[0]);
+          this.updatedExample = true;
+          this.updateExample_(origExampleJsonString, this.selected[0]);
+          this.refreshDive_();
+        });
       },
 
       /**

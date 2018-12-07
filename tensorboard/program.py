@@ -39,14 +39,15 @@ import os
 import socket
 import sys
 import threading
+import inspect
 
 from werkzeug import serving
 
-from tensorboard import util
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.util import util
 
 try:
   from absl import flags as absl_flags
@@ -74,6 +75,21 @@ def setup_environment():
   # Content-Length header, or do chunked encoding for streaming.
   serving.WSGIRequestHandler.protocol_version = 'HTTP/1.1'
 
+def get_default_assets_zip_provider():
+  """Opens stock TensorBoard web assets collection.
+
+  Returns:
+    Returns function that returns a newly opened file handle to zip file
+    containing static assets for stock TensorBoard, or None if webfiles.zip
+    could not be found. The value the callback returns must be closed. The
+    paths inside the zip file are considered absolute paths on the web server.
+  """
+  path = os.path.join(os.path.dirname(inspect.getfile(sys._getframe(1))),
+                      'webfiles.zip')
+  if not os.path.exists(path):
+    logger.warning('webfiles.zip static assets not found: %s', path)
+    return None
+  return lambda: open(path, 'rb')
 
 class TensorBoard(object):
   """Class for running TensorBoard.
@@ -106,8 +122,7 @@ class TensorBoard(object):
       from tensorboard import default
       plugins = default.get_plugins()
     if assets_zip_provider is None:
-      from tensorboard import default
-      assets_zip_provider = default.get_assets_zip_provider()
+      assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
       server_class = WerkzeugServer
     def make_loader(plugin):

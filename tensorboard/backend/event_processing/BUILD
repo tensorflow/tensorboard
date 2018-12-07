@@ -73,6 +73,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:platform_util",
     ],
 )
 
@@ -119,6 +120,7 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -134,6 +136,7 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -197,6 +200,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "db_import_multiplexer_test",
+    size = "small",
+    srcs = ["db_import_multiplexer_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":db_import_multiplexer",
+        "//tensorboard:expect_sqlite3_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tensor_util",
+    ],
+)
+
 py_library(
     name = "sqlite_writer",
     srcs = [
@@ -206,6 +222,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )

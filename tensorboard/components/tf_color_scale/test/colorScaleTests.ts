@@ -41,8 +41,8 @@ describe('ColorScale', function() {
   it('Throws an error if string is not in the domain', function() {
     ccs.setDomain(['red', 'yellow', 'green']);
     assert.throws(() => {
-      ccs.getColor('not in domain');
-    }, 'String was not in the domain.');
+      ccs.getColor('WAT');
+    }, 'String WAT was not in the domain.');
   });
 });
 

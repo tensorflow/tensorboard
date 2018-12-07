@@ -21,7 +21,8 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from tensorboard import util
+from tensorboard.util import encoder
+from tensorboard.util import op_evaluator
 from tensorboard.plugins.beholder import colormaps
 
 
@@ -86,7 +87,7 @@ def apply_colormap(image, colormap='magma'):
   return image if cm is None else cm[image]
 
 
-class PNGDecoder(util.PersistentOpEvaluator):
+class PNGDecoder(op_evaluator.PersistentOpEvaluator):
 
   def __init__(self):
     super(PNGDecoder, self).__init__()
@@ -106,7 +107,7 @@ class PNGDecoder(util.PersistentOpEvaluator):
     })
 
 
-class Resizer(util.PersistentOpEvaluator):
+class Resizer(op_evaluator.PersistentOpEvaluator):
 
   def __init__(self):
     super(Resizer, self).__init__()
@@ -144,7 +145,7 @@ def read_image(filename):
 
 def write_image(array, filename):
   with tf.gfile.Open(filename, 'w') as image_file:
-    image_file.write(util.encode_png(array))
+    image_file.write(encoder.encode_png(array))
 
 
 def get_image_relative_to_script(filename):
