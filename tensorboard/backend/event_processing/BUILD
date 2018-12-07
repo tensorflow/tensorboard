@@ -207,6 +207,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":db_import_multiplexer",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tensor_util",
     ],
