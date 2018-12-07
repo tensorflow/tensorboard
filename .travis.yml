@@ -17,7 +17,10 @@ branches:
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # near the top of our WORKSPACE file.
-  - BAZEL=0.16.1 TF=NIGHTLY
+  #
+  # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
+  # bazel-0.20.0-linux-x86_64.sha256
+  - TF=NIGHTLY BAZEL=0.16.1 BAZEL_SHA256SUM=f1a855ca35043cdb360bba96ca51998a6277797c096b3390e787fdee07398959
 
 cache:
   directories:
@@ -29,9 +32,28 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  - wget -t 3 -O bazel https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64
-  - chmod +x bazel
-  - sudo mv bazel /usr/local/bin
+  - |
+    # Download Bazel
+    bazel_binary="$(mktemp)" &&
+    bazel_checksum_file="$(mktemp)" &&
+    printf >"${bazel_checksum_file}" \
+        '%s  %s\n' "${BAZEL_SHA256SUM}" "${bazel_binary}" &&
+    for url in \
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
+        "https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
+    ; do
+      if \
+          wget -t 3 -O "${bazel_binary}" "${url}" &&
+          shasum -a 256 --check "${bazel_checksum_file}"; then
+        break
+      else
+        rm -f "${bazel_binary}"
+      fi
+    done &&
+    rm "${bazel_checksum_file}" &&
+    [ -f "${bazel_binary}" ]
+  - chmod +x "${bazel_binary}"
+  - sudo mv "${bazel_binary}" /usr/local/bin/bazel
 
   # Storing build artifacts in this directory helps Travis cache them. This
   # will sometimes cut latency in half, when we're lucky.
