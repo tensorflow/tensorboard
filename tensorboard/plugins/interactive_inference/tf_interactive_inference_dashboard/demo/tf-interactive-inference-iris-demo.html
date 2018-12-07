@@ -209,7 +209,7 @@ limitations under the License.
               this.$.dash.makeChartForFeature_(
                 isNum ? 'numeric' : 'categorical',
                 e.detail.feature_name,
-                [{'0': results[0]}, {'1': results[1]},{'2': results[2]}]);
+                [[{'0': results[0], '1': results[1], '2': results[2]}]]);
             };
             setTimeout(method, 50);
           })

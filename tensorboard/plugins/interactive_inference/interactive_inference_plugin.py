@@ -433,7 +433,6 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       (inference_addresses, model_names, model_versions,
           model_signatures) = self._parse_request_arguments(request)
 
-      # TODO(tolgab) Generalize this to multiple models
       serving_bundles = []
       for model_num in xrange(len(inference_addresses)):
         serving_bundles.append(inference_utils.ServingBundle(

@@ -267,7 +267,7 @@ limitations under the License.
                 results.push({step: step, scalar: adjustedScore});
               }
               this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
-                  e.detail.feature_name, [{'value': results}]);
+                  e.detail.feature_name, [[{'value': results}]]);
             };
             setTimeout(method, 50);
           });

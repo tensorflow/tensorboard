@@ -48,7 +48,6 @@ limitations under the License.
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="../facets-overview/components/facets-overview/facets-overview.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
-<!-- TODO (tolgab) fix all syntax line wrapping etc. -->
 <!--
   A frontend that displays a set of editable examples and enables inference of those examples,
   visualizing the results.
@@ -1395,19 +1394,23 @@ limitations under the License.
                       </template>
                       <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]">
                         <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_)]]"
-                                                class="conf-matrix">
-                          </tf-confusion-matrix>
+                          <template is="dom-repeat" items="[[inferenceStats_]]" index-as="modelInd">
+                            <tf-confusion-matrix counts="[[getMultiClassConfMatrixModelIndex(inferenceStats_, modelInd)]]"
+                                                  class="conf-matrix">
+                            </tf-confusion-matrix>
+                          </template>
                         </template>
                         <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <template is="dom-repeat" items="[[featureValueThresholds]]">
+                          <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
                             <div class="feature-breakdown">
-                              <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                              <paper-input value="[[getPrintableValue_(featureValueThreshold)]]" readonly=true
                                             class="facet-label" no-label-float=true>
                               </paper-input>
-                              <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, item)]]"
-                                                    class="conf-matrix">
-                              </tf-confusion-matrix>
+                              <template is="dom-repeat" items="[[inferenceStats_]]", index-as="modelInd">
+                                <tf-confusion-matrix counts="[[getMultiClassConfMatrixModelIndex(inferenceStats_, modelInd, featureValueThreshold)]]"
+                                                      class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </template>
                             </div>
                           </template>
                         </template>
@@ -1943,7 +1946,7 @@ limitations under the License.
         this.findClosestCounterfactual_(true);
       },
 
-      // TODO (tolgab) update for model comparison
+      // TODO (tolgab) Update for model comparison
       findClosestCounterfactual_: function(useL2Distance) {
         this.neighborByL2 = useL2Distance;
         const selected = this.selected[0];
@@ -2330,8 +2333,8 @@ limitations under the License.
           return;
         }
         if (regenInferenceStats) {
-          // TODO (tolgab) all inferenceStats are now Array of Objects
           const inferenceStatsArray = [];
+          const regressionEntries = [];
           for (let modelInd = 0; modelInd < this.getNumberOfModels_();
               modelInd++) {
             let inferenceStats = {};
@@ -2474,20 +2477,22 @@ limitations under the License.
                   facetedStats.errors.push(inferenceError);
                 }
               }
-              // TODO (tolgab) requies changing for multiple models
-              const regressionEntries = [];
               regressionEntries.push(
-                this.fillInRegressionStats(inferenceStats.results, 'Total'));
+                this.fillInRegressionStats(inferenceStats.results,
+                  this.formatChartKey('Total', modelInd,
+                    this.getNumberOfModels_())));
               for (let key in inferenceStats.faceted) {
                 regressionEntries.push(
-                  this.fillInRegressionStats(inferenceStats.faceted[key], key));
+                  this.fillInRegressionStats(inferenceStats.faceted[key],
+                    this.formatChartKey(key, modelInd,
+                      this.getNumberOfModels_())));
               }
-              regressionEntries.sort((a, b) => b.count - a.count);
-              this.regressionEntries_ = [];
-              this.regressionEntries_ = regressionEntries;
             }
             inferenceStatsArray.push(inferenceStats);
           }
+          regressionEntries.sort((a, b) => b.count - a.count);
+          this.regressionEntries_ = [];
+          this.regressionEntries_ = regressionEntries;
           this.inferenceStats_ = inferenceStatsArray;
         }
 
@@ -2601,12 +2606,14 @@ limitations under the License.
               'threshold': i / 100
             };
           }).reverse();
-          chart.setSeriesData(this.strWithModelIndex_('Threshold set', modelInd),
+          chart.setSeriesData(
+            this.strWithModelIndex_('Threshold set', modelInd),
             [currentThresholdData]);
           if (regenInferenceStats) {
             chart.setSeriesData(this.strWithModelIndex_('ROC', modelInd), data);
             visibleCharts.push(this.strWithModelIndex_('ROC', modelInd));
-            visibleCharts.push(this.strWithModelIndex_('Threshold set', modelInd));
+            visibleCharts.push(
+              this.strWithModelIndex_('Threshold set', modelInd));
           }
         }
         if (regenInferenceStats) {
@@ -2778,8 +2785,8 @@ limitations under the License.
             }
           }
 
-          // Set all thresholds to the setting with the lowest cost from the above
-          // search.
+          // Set all thresholds to the setting with the lowest cost from the
+          // above search.
           for (let vIdx = 0; vIdx < values.length; vIdx++) {
             this.set('featureValueThresholdsMap.' + values[vIdx] +
               '.threshold.' + modelInd + '.threshold',
@@ -2829,7 +2836,8 @@ limitations under the License.
        */
       getClassificationBestNonZero: function(index, modelIndex) {
         let indexForNonZeroLabel = 0;
-        const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
+        const inferenceIndex =
+          this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
                inferenceIndex][modelIndex].length;
@@ -2851,6 +2859,15 @@ limitations under the License.
           modelInd, item) {
         return this.getConfusionCounts(inferenceStats[modelInd],
           thresholds[modelInd].threshold, item);
+      },
+
+      /**
+       * Gets confusion counts for a single model index modelInd
+       */
+       getMultiClassConfMatrixModelIndex: function(inferenceStats, modelInd,
+          facetItem) {
+        return this.getMultiClassConfMatrix(inferenceStats[modelInd],
+          facetItem);
       },
 
       /**
@@ -2961,7 +2978,8 @@ limitations under the License.
           stat => Object.values(stat[0]).reduce((a, b) => a + b), null);
       },
 
-      getMulticlassClassificationCount: function(classificationStats, facetItem) {
+      getMulticlassClassificationCount: function(classificationStats,
+          facetItem) {
         // stat because in multi class case inferenceStats does not have
         // thresholds
         return this.getInferenceStat(classificationStats, facetItem,
@@ -3134,29 +3152,35 @@ limitations under the License.
         }
         // Create map of example indices to inference results.
         const inferenceMap = {}
-        const isClassification = !!this.inferences.results[0].classificationResult;
+        const isClassification =
+          !!this.inferences.results[0].classificationResult;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
             inferenceMap[this.inferences.indices[i]] = [];
             for (let modelNum = 0; modelNum < this.inferences.results.length;
                  modelNum++){
-              const result = this.inferences.results[modelNum].classificationResult;
+              const result =
+                this.inferences.results[modelNum].classificationResult;
               // For models that don't return any labels for the classes, fill
               // them out with class indicies.
-              for (let j = 0; j < result.classifications[i].classes.length; j++) {
+              for (let j = 0; j < result.classifications[i].classes.length;
+                  j++) {
                 if (result.classifications[i].classes[j].label == '') {
                   result.classifications[i].classes[j].label = j.toString();
                 }
               }
               inferenceMap[this.inferences.indices[i]][modelNum] =
-                  result.classifications[i].classes.sort((a, b) => b.score - a.score);
+                  result.classifications[i].classes.sort(
+                    (a, b) => b.score - a.score);
             }
           } else {
             inferenceMap[this.inferences.indices[i]] = [];
-            // TODO(tolgab) Generalize regression to multiple models
-            const result = this.inferences.results[0].regressionResult;
-            inferenceMap[this.inferences.indices[i]][0] =
+            for (let modelNum = 0; modelNum < this.inferences.results.length;
+                 modelNum++){
+            const result = this.inferences.results[modelNum].regressionResult;
+            inferenceMap[this.inferences.indices[i]][modelNum] =
                 [{label: '', score: result.regressions[i].value}];
+            }
           }
         }
         // Set the inferences in the examplesAndInferences structure, updating
@@ -3172,16 +3196,15 @@ limitations under the License.
           }));
         const self = this;
         let hasInferenceLabels = false;
-        // TODO (tolgab) check if this correctly sets labels when provided
         this.visdata.forEach(function(item, index) {
           if (isClassification) {
             self.setItemInferenceValue(
               item, index, self.selectedBreakdownFeature,
               self.selectedSecondBreakdownFeature);
           } else {
-            // TODO (tolgab) needs fixing getnumberofmodels will break this
-            for (let modelInd = 0; modelInd < self.getNumberOfModels_(); modelInd++){
-              item[this.strWithModelIndex_(inferenceValueStr, modelInd)] =
+            for (let modelInd = 0; modelInd < self.getNumberOfModels_();
+                modelInd++){
+              item[self.strWithModelIndex_(inferenceValueStr, modelInd)] =
                 self.examplesAndInferences[index].inferences[
                   self.examplesAndInferences[index].inferences.length - 1][
                     modelInd][0].score;
@@ -3212,9 +3235,9 @@ limitations under the License.
               }
             }
             for (let modelInd = 0;
-                   modelInd < self.getNumberOfModels_();
-                   modelInd++) {
-            item[self.strWithModelIndex_(inferenceLabelStr, modelInd)] =
+                modelInd < self.getNumberOfModels_();
+                modelInd++) {
+              item[self.strWithModelIndex_(inferenceLabelStr, modelInd)] =
               self.labelVocab[
                 item[self.strWithModelIndex_(inferenceValueStr, modelInd)]];
             }
@@ -3256,10 +3279,12 @@ limitations under the License.
         // case), then get the appropriate threshold for this item's value for
         // that feature. Otherwise the overall threshold will be used.
         if (feature1.length !== 0) {
-          let key = this.createCombinedValueString_(item[feature1], item[feature2]);
+          let key =
+            this.createCombinedValueString_(item[feature1], item[feature2]);
           threshold = this.featureValueThresholdsMap[key].threshold;
         }
-        for (let modelNum = 0; modelNum < this.getNumberOfModels_(); modelNum++){
+        for (let modelNum = 0; modelNum < this.getNumberOfModels_();
+            modelNum++){
           const nonZeroClassification =
             this.getClassificationBestNonZero(index, modelNum);
           item[this.strWithModelIndex_(inferenceScoreStr, modelNum)] =
@@ -3292,7 +3317,8 @@ limitations under the License.
         }
         for (let i = 0; i < this.examplesAndInferences.length; i++) {
           const item = this.visdata[i];
-          for (let modelInd; modelInd < this.getNumberOfModels_(); modelInd++){
+          for (let modelInd = 0; modelInd < this.getNumberOfModels_();
+              modelInd++){
             if (this.modelType == 'classification') {
               item[this.strWithModelIndex_(inferenceCorrectStr, modelInd)] =
                 item[this.selectedLabelFeature] ==
