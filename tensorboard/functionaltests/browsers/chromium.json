@@ -1,10 +1,17 @@
 {
-  "environment": "chrome",
+  "environment": "local",
   "capabilities": {
     "browserName": "chrome",
-    "chromeOptions": {
-      "args": ["--no-sandbox"],
-      "binary": "%CHROME%"
+    "goog:chromeOptions": {
+      "args": ["--headless", "--no-sandbox"],
+      "binary": "%FILE:CHROMIUM%"
+    },
+    "google:wslConfig": {
+      "binary": "%FILE:CHROMEDRIVER%",
+      "port":"%WSLPORT:WSL%",
+      "args": ["--port=%WSLPORT:WSL%"],
+      "status": true,
+      "shutdown": true
     }
   }
 }

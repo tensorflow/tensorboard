@@ -16,8 +16,10 @@
 # Protobuf and six were deliberately left in the top-level workspace, as they
 # are used in TensorFlow as well.
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 def tensorboard_python_workspace():
-  native.new_http_archive(
+  http_archive(
       name = "org_pythonhosted_markdown",
       urls = [
           "https://mirror.bazel.build/pypi.python.org/packages/1d/25/3f6d2cb31ec42ca5bd3bfbea99b63892b735d76e26f20dd2dcc34ffe4f0d/Markdown-2.6.8.tar.gz",
@@ -28,7 +30,20 @@ def tensorboard_python_workspace():
       build_file = str(Label("//third_party:markdown.BUILD")),
   )
 
-  native.new_http_archive(
+  http_archive(
+      name = "org_pythonhosted_urllib3",
+      urls = [
+          "https://mirror.bazel.build/pypi.python.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz",
+          "https://pypi.python.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz",
+          "https://files.pythonhosted.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz",
+
+      ],
+      sha256 = "de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22",
+      strip_prefix = "urllib3-1.24.1/src",
+      build_file = str(Label("//third_party:urllib3.BUILD")),
+  )
+
+  http_archive(
       name = "org_html5lib",
       urls = [
           "https://mirror.bazel.build/github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",
@@ -39,7 +54,7 @@ def tensorboard_python_workspace():
       build_file = str(Label("//third_party:html5lib.BUILD")),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "org_mozilla_bleach",
       urls = [
           "https://mirror.bazel.build/github.com/mozilla/bleach/archive/v1.5.tar.gz",
@@ -50,7 +65,7 @@ def tensorboard_python_workspace():
       build_file = str(Label("//third_party:bleach.BUILD")),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "org_pocoo_werkzeug",
       urls = [
           "https://mirror.bazel.build/pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
@@ -61,7 +76,7 @@ def tensorboard_python_workspace():
       build_file = str(Label("//third_party:werkzeug.BUILD")),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "org_pythonhosted_six",
       urls = [
           "https://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
@@ -72,7 +87,7 @@ def tensorboard_python_workspace():
       build_file = str(Label("//third_party:six.BUILD")),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "org_python_pypi_portpicker",
       urls = [
           "https://mirror.bazel.build/pypi.python.org/packages/96/48/0e1f20fdc0b85cc8722284da3c5b80222ae4036ad73210a97d5362beaa6d/portpicker-1.1.1.tar.gz",
@@ -83,7 +98,7 @@ def tensorboard_python_workspace():
       build_file = str(Label("//third_party:portpicker.BUILD")),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "org_tensorflow_serving_api",
       urls = [
           "https://mirror.bazel.build/files.pythonhosted.org/packages/b5/da/bd60d7b245dbe93f35aded752679124a61bb90154d4698f6f3dba30d75c6/tensorflow_serving_api-1.10.1-py2.py3-none-any.whl",
