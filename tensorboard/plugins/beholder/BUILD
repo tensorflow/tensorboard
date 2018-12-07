@@ -1,7 +1,7 @@
 # Description:
 # TensorBoard plugin for viewing model data as a live video during training.
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
