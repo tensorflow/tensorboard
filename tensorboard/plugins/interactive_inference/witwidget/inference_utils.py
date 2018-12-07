@@ -25,8 +25,6 @@ from six import iteritems
 from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
-#from tensorboard.plugins.interactive_inference.witwidget import common_utils
-#from tensorboard.plugins.interactive_inference.witwidget import platform_utils
 from . import common_utils
 from . import platform_utils
 from tensorflow_serving.apis import classification_pb2
