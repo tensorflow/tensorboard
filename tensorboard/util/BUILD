@@ -99,6 +99,7 @@ py_library(
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 
