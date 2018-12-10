@@ -26,7 +26,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
 from tensorboard.plugins.distribution import compressor
-from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 class _EventGenerator(object):
@@ -126,6 +126,10 @@ class _EventGenerator(object):
   def get_logdir(self):  # pylint: disable=invalid-name
     """Return a temp directory for asset writing."""
     return self._testcase.get_temp_dir()
+
+  def close(self):
+    """Closes the event writer"""
+    # noop
 
 
 class EventAccumulatorTest(tf.test.TestCase):
@@ -628,17 +632,17 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testTFSummaryScalar(self):
     """Verify processing of tf.summary.scalar."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
-    writer.event_writer = event_sink
-    with self.test_session() as sess:
-      ipt = tf.placeholder(tf.float32)
-      tf.summary.scalar('scalar1', ipt)
-      tf.summary.scalar('scalar2', ipt * ipt)
-      merged = tf.summary.merge_all()
-      writer.add_graph(sess.graph)
-      for i in xrange(10):
-        summ = sess.run(merged, feed_dict={ipt: i})
-        writer.add_summary(summ, global_step=i)
+    with test_util.FileWriterCache.get(self.get_temp_dir()) as writer:
+      writer.event_writer = event_sink
+      with self.test_session() as sess:
+        ipt = tf.placeholder(tf.float32)
+        tf.summary.scalar('scalar1', ipt)
+        tf.summary.scalar('scalar2', ipt * ipt)
+        merged = tf.summary.merge_all()
+        writer.add_graph(sess.graph)
+        for i in xrange(10):
+          summ = sess.run(merged, feed_dict={ipt: i})
+          writer.add_summary(summ, global_step=i)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -663,25 +667,25 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testTFSummaryImage(self):
     """Verify processing of tf.summary.image."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
-    writer.event_writer = event_sink
-    with self.test_session() as sess:
-      ipt = tf.ones([10, 4, 4, 3], tf.uint8)
-      # This is an interesting example, because the old tf.image_summary op
-      # would throw an error here, because it would be tag reuse.
-      # Using the tf node name instead allows argument re-use to the image
-      # summary.
-      with tf.name_scope('1'):
-        tf.summary.image('images', ipt, max_outputs=1)
-      with tf.name_scope('2'):
-        tf.summary.image('images', ipt, max_outputs=2)
-      with tf.name_scope('3'):
-        tf.summary.image('images', ipt, max_outputs=3)
-      merged = tf.summary.merge_all()
-      writer.add_graph(sess.graph)
-      for i in xrange(10):
-        summ = sess.run(merged)
-        writer.add_summary(summ, global_step=i)
+    with test_util.FileWriterCache.get(self.get_temp_dir()) as writer:
+      writer.event_writer = event_sink
+      with self.test_session() as sess:
+        ipt = tf.ones([10, 4, 4, 3], tf.uint8)
+        # This is an interesting example, because the old tf.image_summary op
+        # would throw an error here, because it would be tag reuse.
+        # Using the tf node name instead allows argument re-use to the image
+        # summary.
+        with tf.name_scope('1'):
+          tf.summary.image('images', ipt, max_outputs=1)
+        with tf.name_scope('2'):
+          tf.summary.image('images', ipt, max_outputs=2)
+        with tf.name_scope('3'):
+          tf.summary.image('images', ipt, max_outputs=3)
+        merged = tf.summary.merge_all()
+        writer.add_graph(sess.graph)
+        for i in xrange(10):
+          summ = sess.run(merged)
+          writer.add_summary(summ, global_step=i)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -700,15 +704,15 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
   def testTFSummaryTensor(self):
     """Verify processing of tf.summary.tensor."""
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
-    writer = tf.summary.FileWriter(self.get_temp_dir())
-    writer.event_writer = event_sink
-    with self.test_session() as sess:
-      tf.summary.tensor_summary('scalar', tf.constant(1.0))
-      tf.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
-      tf.summary.tensor_summary('string', tf.constant(six.b('foobar')))
-      merged = tf.summary.merge_all()
-      summ = sess.run(merged)
-      writer.add_summary(summ, 0)
+    with test_util.FileWriterCache.get(self.get_temp_dir()) as writer:
+      writer.event_writer = event_sink
+      with self.test_session() as sess:
+        tf.summary.tensor_summary('scalar', tf.constant(1.0))
+        tf.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
+        tf.summary.tensor_summary('string', tf.constant(six.b('foobar')))
+        merged = tf.summary.merge_all()
+        summ = sess.run(merged)
+        writer.add_summary(summ, 0)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -718,11 +722,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     })
 
     scalar_proto = accumulator.Tensors('scalar')[0].tensor_proto
-    scalar = tensor_util.make_ndarray(scalar_proto)
+    scalar = tf.compat.v1.make_ndarray(scalar_proto)
     vector_proto = accumulator.Tensors('vector')[0].tensor_proto
-    vector = tensor_util.make_ndarray(vector_proto)
+    vector = tf.compat.v1.make_ndarray(vector_proto)
     string_proto = accumulator.Tensors('string')[0].tensor_proto
-    string = tensor_util.make_ndarray(string_proto)
+    string = tf.compat.v1.make_ndarray(string_proto)
 
     self.assertTrue(np.array_equal(scalar, 1.0))
     self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
@@ -744,7 +748,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       tf.gfile.DeleteRecursively(directory)
     tf.gfile.MkDir(directory)
 
-    writer = tf.summary.FileWriter(directory, max_queue=100)
+    writer = test_util.FileWriter(directory, max_queue=100)
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
@@ -816,7 +820,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       tf.gfile.DeleteRecursively(directory)
     tf.gfile.MkDir(directory)
 
-    writer = tf.summary.FileWriter(directory, max_queue=100)
+    writer = test_util.FileWriter(directory, max_queue=100)
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
@@ -850,10 +854,10 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     summary = tf.Summary()
     summary.value.add(
-        tensor=tensor_util.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
+        tensor=tf.compat.v1.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
         tag='you_are_it',
         metadata=summary_metadata)
-    writer = tf.summary.FileWriter(logdir, filename_suffix=nonce)
+    writer = test_util.FileWriter(logdir, filename_suffix=nonce)
     writer.add_summary(summary.SerializeToString())
     writer.close()
 

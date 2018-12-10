@@ -36,6 +36,7 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
+from tensorboard.util import test_util
 
 
 class ProjectorAppTest(tf.test.TestCase):
@@ -177,8 +178,8 @@ class ProjectorAppTest(tf.test.TestCase):
   def testEndpointsNoAssets(self):
     g = tf.Graph()
 
-    fw = tf.summary.FileWriter(self.log_dir, graph=g)
-    fw.close()
+    with test_util.FileWriterCache.get(self.log_dir) as writer:
+      writer.add_graph(g)
 
     self._SetupWSGIApp()
     run_json = self._GetJson('/data/plugin/projector/runs')
@@ -265,13 +266,12 @@ class ProjectorAppTest(tf.test.TestCase):
     return json.loads(data.decode('utf-8'))
 
   def _GenerateEventsData(self):
-    fw = tf.summary.FileWriter(self.log_dir)
-    event = tf.Event(
-        wall_time=1,
-        step=1,
-        summary=tf.Summary(value=[tf.Summary.Value(tag='s1', simple_value=0)]))
-    fw.add_event(event)
-    fw.close()
+    with test_util.FileWriterCache.get(self.log_dir) as fw:
+      event = tf.Event(
+          wall_time=1,
+          step=1,
+          summary=tf.Summary(value=[tf.Summary.Value(tag='s1', simple_value=0)]))
+      fw.add_event(event)
 
   def _GenerateProjectorTestData(self):
     config_path = os.path.join(self.log_dir, 'projector_config.pbtxt')

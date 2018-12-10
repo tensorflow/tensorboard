@@ -62,6 +62,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -80,6 +81,7 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:test_util",
     ],
 )
 
