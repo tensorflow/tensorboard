@@ -36,6 +36,7 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import summary
 from tensorboard.plugins.image import images_plugin
+from tensorboard.util import test_util
 
 
 class ImagesPluginTest(tf.test.TestCase):
@@ -54,14 +55,13 @@ class ImagesPluginTest(tf.test.TestCase):
     tf.summary.image(name="baz", tensor=placeholder)
     merged_summary_op = tf.summary.merge_all()
     foo_directory = os.path.join(self.log_dir, "foo")
-    writer = tf.summary.FileWriter(foo_directory)
-    writer.add_graph(sess.graph)
-    for step in xrange(2):
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
-          placeholder: (numpy.random.rand(1, 16, 42, 3) * 255).astype(
-              numpy.uint8)
-      }), global_step=step)
-    writer.close()
+    with test_util.FileWriterCache.get(foo_directory) as writer:
+      writer.add_graph(sess.graph)
+      for step in xrange(2):
+        writer.add_summary(sess.run(merged_summary_op, feed_dict={
+            placeholder: (numpy.random.rand(1, 16, 42, 3) * 255).astype(
+                numpy.uint8)
+        }), global_step=step)
 
     # Create new-style image summaries for run bar.
     tf.reset_default_graph()
@@ -71,14 +71,13 @@ class ImagesPluginTest(tf.test.TestCase):
                description="how do you pronounce that, anyway?")
     merged_summary_op = tf.summary.merge_all()
     bar_directory = os.path.join(self.log_dir, "bar")
-    writer = tf.summary.FileWriter(bar_directory)
-    writer.add_graph(sess.graph)
-    for step in xrange(2):
-      writer.add_summary(sess.run(merged_summary_op, feed_dict={
-          placeholder: (numpy.random.rand(1, 8, 6, 3) * 255).astype(
-              numpy.uint8)
-      }), global_step=step)
-    writer.close()
+    with test_util.FileWriterCache.get(bar_directory) as writer:
+      writer.add_graph(sess.graph)
+      for step in xrange(2):
+        writer.add_summary(sess.run(merged_summary_op, feed_dict={
+            placeholder: (numpy.random.rand(1, 8, 6, 3) * 255).astype(
+                numpy.uint8)
+        }), global_step=step)
 
     # Start a server with the plugin.
     multiplexer = event_multiplexer.EventMultiplexer({

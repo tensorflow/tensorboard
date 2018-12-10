@@ -30,9 +30,11 @@ import sqlite3
 import threading
 
 import tensorflow as tf
+from tensorboard.compat.proto.event_pb2 import Event as TbEvent
+from tensorboard.compat.proto.summary_pb2 import Summary as TbSummary
+from tensorboard.util import util
 
 from tensorboard import db
-from tensorboard.util import util
 
 
 class TestCase(tf.test.TestCase):
@@ -175,3 +177,57 @@ class FakeSleep(object):
     :type seconds: float
     """
     self._clock.advance(seconds)
+
+
+class FileWriter(tf.summary.FileWriter):
+  """FileWriter for test.
+
+  TensorFlow FileWriter uses TensorFlow's Protobuf Python binding which is
+  largely discouraged in TensorBoard. We do not want a TB.Writer but require one
+  for testing in integrational style (writing out event files and use the real
+  event readers).
+  """
+
+  def add_event(self, event):
+    if isinstance(event, TbEvent):
+      tf_event = tf.Event.FromString(event.SerializeToString())
+    else:
+      tf.logging.warn('Added TensorFlow event proto. '
+                      'Please prefer TensorBoard copy of the proto')
+      tf_event = event
+    super(FileWriter, self).add_event(tf_event)
+
+  def add_summary(self, summary, global_step=None):
+    if isinstance(summary, TbSummary):
+      tf_summary = tf.Summary.FromString(summary.SerializeToString())
+    else:
+      tf.logging.warn('Added TensorFlow summary proto. '
+                      'Please prefer TensorBoard copy of the proto')
+      tf_summary = summary
+    super(FileWriter, self).add_summary(tf_summary, global_step)
+
+
+class FileWriterCache(object):
+  """Cache for TensorBoard test file writers.
+  """
+  # Cache, keyed by directory.
+  _cache = {}
+
+  # Lock protecting _FILE_WRITERS.
+  _lock = threading.RLock()
+
+  @staticmethod
+  def get(logdir):
+    """Returns the FileWriter for the specified directory.
+
+    Args:
+      logdir: str, name of the directory.
+
+    Returns:
+      A `FileWriter`.
+    """
+    with FileWriterCache._lock:
+      if logdir not in FileWriterCache._cache:
+        FileWriterCache._cache[logdir] = FileWriter(
+            logdir, graph=tf.compat.v1.get_default_graph())
+      return FileWriterCache._cache[logdir]
