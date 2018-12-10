@@ -133,7 +133,7 @@ class EventMultiplexer(object):
     with self._accumulators_mutex:
       if name not in self._accumulators or self._paths[name] != path:
         if name in self._paths and self._paths[name] != path:
-          # TODO(@dandelionmane) - Make it impossible to overwrite an old path
+          # TODO(@decentralion) - Make it impossible to overwrite an old path
           # with a new path (just give the new path a distinct name)
           tf.logging.warning('Conflict for name %s: old path %s, new path %s',
                              name, self._paths[name], path)
