@@ -207,9 +207,14 @@ class FileWriter(tf.summary.FileWriter):
     super(FileWriter, self).add_summary(tf_summary, global_step)
 
 
-class FileWriterCache(tf.summary.FileWriterCache):
+class FileWriterCache(object):
   """Cache for TensorBoard test file writers.
   """
+  # Cache, keyed by directory.
+  _cache = {}
+
+  # Lock protecting _FILE_WRITERS.
+  _lock = threading.RLock()
 
   @staticmethod
   def get(logdir):
