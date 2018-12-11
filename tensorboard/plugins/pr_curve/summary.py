@@ -454,10 +454,12 @@ def raw_data_pb(
   """
   if display_name is None:
     display_name = name
-  summary_metadata = metadata.create_summary_metadata_v1(
+  summary_metadata = metadata.create_summary_metadata(
       display_name=display_name if display_name is not None else name,
       description=description or '',
       num_thresholds=num_thresholds)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
   summary = tf.Summary()
   data = np.stack(
       (true_positive_counts,
@@ -468,7 +470,7 @@ def raw_data_pb(
        recall))
   tensor = tf.compat.v1.make_tensor_proto(np.float32(data), dtype=tf.float32)
   summary.value.add(tag='%s/pr_curves' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary
 

@@ -195,13 +195,15 @@ def pb(name,
 
   if display_name is None:
     display_name = name
-  summary_metadata = metadata.create_summary_metadata_v1(
+  summary_metadata = metadata.create_summary_metadata(
       display_name=display_name,
       description=description,
       encoding=encoding)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
 
   summary = tf.Summary()
   summary.value.add(tag='%s/audio_summary' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary

@@ -59,27 +59,6 @@ def create_summary_metadata(display_name, description, num_thresholds):
           content=content))
 
 
-def create_summary_metadata_v1(display_name, description, num_thresholds):
-  """Create a `tf.SummaryMetadata` proto for pr_curves plugin data.
-
-  Arguments:
-    display_name: The display name used in TensorBoard.
-    description: The description to show in TensorBoard.
-    num_thresholds: The number of thresholds to use for PR curves.
-
-  Returns:
-    A `tf.SummaryMetadata` protobuf object.
-  """
-  pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
-      version=PROTO_VERSION, num_thresholds=num_thresholds)
-  content = pr_curve_plugin_data.SerializeToString()
-  return tf.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
-                                                content=content))
-
-
 def parse_plugin_metadata(content):
   """Parse summary metadata to a Python object.
 

@@ -45,21 +45,6 @@ def create_summary_metadata(display_name, description):
           content=content.SerializeToString()))
 
 
-def create_summary_metadata_v1(display_name, description):
-  """Create a `tf.SummaryMetadata` proto for histogram plugin data.
-
-  Returns:
-    A `tf.SummaryMetadata` protobuf object.
-  """
-  content = plugin_data_pb2.HistogramPluginData(version=PROTO_VERSION)
-  return tf.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(
-          plugin_name=PLUGIN_NAME,
-          content=content.SerializeToString()))
-
-
 def parse_plugin_metadata(content):
   """Parse summary metadata to a Python object.
 
