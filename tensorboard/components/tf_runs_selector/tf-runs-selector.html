@@ -20,7 +20,6 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-multi-checkbox.html">
 
 <!--
@@ -71,18 +70,19 @@ Properties out:
     </template>
     <style>
       :host {
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
+        min-height: 160px; /* Shows at least 1.5 rows. */
         padding-bottom: 10px;
-        box-sizing: border-box;
       }
       #top-text {
-        width: 100%;
+        box-sizing: border-box;
+        color: var(--paper-grey-800);
         flex-grow: 0;
         flex-shrink: 0;
         padding-right: 16px;
-        box-sizing: border-box;
-        color: var(--paper-grey-800);
+        width: 100%;
       }
       tf-multi-checkbox {
         display: flex;
@@ -90,9 +90,11 @@ Properties out:
         flex-shrink: 1;
       }
       .x-button {
-        font-size: 13px;
         background-color: var(--tb-ui-light-accent);
         color: var(--tb-ui-dark-accent);
+        flex-shrink: 0;
+        font-size: 13px;
+        margin-left: 0;
       }
       #tooltip-help {
         color: var(--paper-grey-800);
@@ -101,11 +103,9 @@ Properties out:
         font-size: 14px;
         margin-bottom: 5px;
       }
-      paper-button {
-        margin-left: 0;
-      }
       #data-location {
         color: var(--tb-ui-dark-accent);
+        flex-shrink: 0;
         font-size: 13px;
         margin: 5px 0 0 0;
         max-width: 288px;

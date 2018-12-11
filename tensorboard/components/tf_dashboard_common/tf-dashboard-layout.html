@@ -24,12 +24,12 @@ Generic layout for a dashboard.
 -->
 <dom-module id="tf-dashboard-layout">
   <template>
-    <div id="sidebar">
+    <div id="sidebar" class="scrollbar">
       <content select=".sidebar"></content>
     </div>
 
-    <div id="center">
-      <content select=".center" class="scollbar"></content>
+    <div id="center" class="scrollbar">
+      <content select=".center"></content>
     </div>
     <style include="scrollbar-style"></style>
     <style>
@@ -37,6 +37,7 @@ Generic layout for a dashboard.
         display: flex;
         flex-direction: row;
         height: 100%;
+        --tf-dashboard-layout-right-gutter-size: 20px;
       }
 
       #sidebar {
@@ -45,6 +46,7 @@ Generic layout for a dashboard.
         max-width: 350px;
         min-width: 270px;
         overflow-y: auto;
+        padding-right: var(--tf-dashboard-layout-right-gutter-size);
         text-overflow: ellipsis;
       }
 
