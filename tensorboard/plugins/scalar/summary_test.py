@@ -28,7 +28,7 @@ import tensorflow as tf
 
 tf.enable_eager_execution()
 
-from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import tensor_util
@@ -97,7 +97,7 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
 
 class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):

@@ -30,8 +30,8 @@ import sqlite3
 import threading
 
 import tensorflow as tf
-from tensorboard.compat.proto.event_pb2 import Event as TbEvent, SessionLog as TbSessionLog
-from tensorboard.compat.proto.summary_pb2 import Summary as TbSummary
+from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import util
 
 from tensorboard import db
@@ -189,7 +189,7 @@ class FileWriter(tf.summary.FileWriter):
   """
 
   def add_event(self, event):
-    if isinstance(event, TbEvent):
+    if isinstance(event, event_pb2.Event):
       tf_event = tf.Event.FromString(event.SerializeToString())
     else:
       tf.logging.warn('Added TensorFlow event proto. '
@@ -198,7 +198,7 @@ class FileWriter(tf.summary.FileWriter):
     super(FileWriter, self).add_event(tf_event)
 
   def add_summary(self, summary, global_step=None):
-    if isinstance(summary, TbSummary):
+    if isinstance(summary, summary_pb2.Summary):
       tf_summary = tf.Summary.FromString(summary.SerializeToString())
     else:
       tf.logging.warn('Added TensorFlow summary proto. '
@@ -207,7 +207,7 @@ class FileWriter(tf.summary.FileWriter):
     super(FileWriter, self).add_summary(tf_summary, global_step)
 
   def add_session_log(self, session_log, global_step=None):
-    if isinstance(session_log, TbSessionLog):
+    if isinstance(session_log, event_pb2.SessionLog):
       tf_session_log = tf.SessionLog.FromString(session_log.SerializeToString())
     else:
       tf.logging.warn('Added TensorFlow session_log proto. '
@@ -248,7 +248,7 @@ def tf_summary_proto_to_tb_summary_proto(summary):
   congruent, one can use this API to convert result of v1 API to TB Summary
   proto.
   """
-  if isinstance(summary, TbSummary):
+  if isinstance(summary, summary_pb2.Summary):
     raise TypeError('Expected tf.Summary proto. Got TB Summary instead.')
 
-  return TbSummary.FromString(summary.SerializeToString())
+  return summary_pb2.Summary.FromString(summary.SerializeToString())

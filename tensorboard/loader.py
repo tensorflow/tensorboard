@@ -37,7 +37,7 @@ import types  # pylint: disable=unused-import
 import six
 
 from tensorboard import db
-from tensorboard.compat.proto.event_pb2 import Event
+from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
 from tensorboard.util import util
 import tensorflow as tf
@@ -745,7 +745,7 @@ class EventLogReader(object):
     record = self._reader.get_next_record()
     if record is None:
       return None
-    event = Event()
+    event = event_pb2.Event()
     event.ParseFromString(record.record)
     self._offset = record.offset
     return event

@@ -23,7 +23,7 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
 from tensorboard.util import tensor_util
@@ -35,7 +35,7 @@ class SummaryTest(tf.test.TestCase):
   def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
       actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = Summary()
+    actual_proto = summary_pb2.Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
@@ -48,8 +48,8 @@ class SummaryTest(tf.test.TestCase):
     normalization ensures a canonical form, and should be used before
     comparing two `Summary`s for equality.
     """
-    result = Summary()
-    if not isinstance(pb, Summary):
+    result = summary_pb2.Summary()
+    if not isinstance(pb, summary_pb2.Summary):
       pb = test_util.tf_summary_proto_to_tb_summary_proto(pb)
     result.MergeFrom(pb)
     for value in result.value:
@@ -66,7 +66,7 @@ class SummaryTest(tf.test.TestCase):
     """Use both `op` and `pb` to get a summary, asserting equality.
 
     Returns:
-      a `Summary` protocol buffer
+      a `summary_pb2.Summary` protocol buffer
     """
     if data_tensor is None:
       data_tensor = tf.constant(data)

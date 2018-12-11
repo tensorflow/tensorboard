@@ -25,8 +25,8 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
-from tensorboard.compat.proto.event_pb2 import Event, SessionLog
-from tensorboard.compat.proto.summary_pb2 import HistogramProto, Summary, SummaryMetadata
+from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.distribution import compressor
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
@@ -51,11 +51,11 @@ class _EventGenerator(object):
       yield self.items.pop(0)
 
   def AddScalar(self, tag, wall_time=0, step=0, value=0):
-    event = Event(
+    event = event_pb2.Event(
         wall_time=wall_time,
         step=step,
-        summary=Summary(
-            value=[Summary.Value(tag=tag, simple_value=value)]))
+        summary=summary_pb2.Summary(
+            value=[summary_pb2.Summary.Value(tag=tag, simple_value=value)]))
     self.AddEvent(event)
 
   def AddHistogram(self,
@@ -69,7 +69,7 @@ class _EventGenerator(object):
                    hsum_squares=5,
                    hbucket_limit=None,
                    hbucket=None):
-    histo = HistogramProto(
+    histo = summary_pb2.HistogramProto(
         min=hmin,
         max=hmax,
         num=hnum,
@@ -77,10 +77,11 @@ class _EventGenerator(object):
         sum_squares=hsum_squares,
         bucket_limit=hbucket_limit,
         bucket=hbucket)
-    event = Event(
+    event = event_pb2.Event(
         wall_time=wall_time,
         step=step,
-        summary=Summary(value=[Summary.Value(tag=tag, histo=histo)]))
+        summary=summary_pb2.Summary(
+            value=[summary_pb2.Summary.Value(tag=tag, histo=histo)]))
     self.AddEvent(event)
 
   def AddImage(self,
@@ -90,12 +91,13 @@ class _EventGenerator(object):
                encoded_image_string=b'imgstr',
                width=150,
                height=100):
-    image = Summary.Image(
+    image = summary_pb2.Summary.Image(
         encoded_image_string=encoded_image_string, width=width, height=height)
-    event = Event(
+    event = event_pb2.Event(
         wall_time=wall_time,
         step=step,
-        summary=Summary(value=[Summary.Value(tag=tag, image=image)]))
+        summary=summary_pb2.Summary(
+            value=[summary_pb2.Summary.Value(tag=tag, image=image)]))
     self.AddEvent(event)
 
   def AddAudio(self,
@@ -106,15 +108,16 @@ class _EventGenerator(object):
                content_type='audio/wav',
                sample_rate=44100,
                length_frames=22050):
-    audio = Summary.Audio(
+    audio = summary_pb2.Summary.Audio(
         encoded_audio_string=encoded_audio_string,
         content_type=content_type,
         sample_rate=sample_rate,
         length_frames=length_frames)
-    event = Event(
+    event = event_pb2.Event(
         wall_time=wall_time,
         step=step,
-        summary=Summary(value=[Summary.Value(tag=tag, audio=audio)]))
+        summary=summary_pb2.Summary(
+            value=[summary_pb2.Summary.Value(tag=tag, audio=audio)]))
     self.AddEvent(event)
 
   def AddEvent(self, event):
@@ -458,7 +461,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
     gen.AddScalar('s1', wall_time=1, step=10, value=20)
-    gen.AddEvent(Event(wall_time=2, step=20, file_version='nots2'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=2, step=20, file_version='nots2'))
     gen.AddScalar('s3', wall_time=3, step=100, value=1)
     gen.AddHistogram('hst1')
     gen.AddImage('im1')
@@ -489,7 +493,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
 
-    gen.AddEvent(Event(wall_time=0, step=0, file_version='brain.Event:1'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalar('s1', wall_time=1, step=100, value=20)
     gen.AddScalar('s1', wall_time=1, step=200, value=20)
     gen.AddScalar('s1', wall_time=1, step=300, value=20)
@@ -510,7 +515,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen, purge_orphaned_data=False)
 
-    gen.AddEvent(Event(wall_time=0, step=0, file_version='brain.Event:1'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalar('s1', wall_time=1, step=100, value=20)
     gen.AddScalar('s1', wall_time=1, step=200, value=20)
     gen.AddScalar('s1', wall_time=1, step=300, value=20)
@@ -542,7 +548,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
 
-    gen.AddEvent(Event(wall_time=0, step=0, file_version='brain.Event:1'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=0, step=0, file_version='brain.Event:1'))
     gen.AddScalar('s1', wall_time=1, step=100, value=20)
     gen.AddScalar('s1', wall_time=1, step=200, value=20)
     gen.AddScalar('s1', wall_time=1, step=300, value=20)
@@ -567,9 +574,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
     gen.AddScalar('s1', wall_time=1, step=100, value=20)
-    ev1 = Event(wall_time=2, step=0, file_version='brain.Event:1')
+    ev1 = event_pb2.Event(wall_time=2, step=0, file_version='brain.Event:1')
     graph_bytes = tf.GraphDef().SerializeToString()
-    ev2 = Event(wall_time=3, step=0, graph_def=graph_bytes)
+    ev2 = event_pb2.Event(wall_time=3, step=0, graph_def=graph_bytes)
     gen.AddEvent(ev1)
     gen.AddEvent(ev2)
     acc.Reload()
@@ -584,7 +591,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     """
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
-    gen.AddEvent(Event(wall_time=0, step=1, file_version='brain.Event:2'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=0, step=1, file_version='brain.Event:2'))
 
     gen.AddScalar('s1', wall_time=1, step=100, value=20)
     gen.AddScalar('s1', wall_time=1, step=200, value=20)
@@ -594,8 +602,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     gen.AddScalar('s2', wall_time=1, step=202, value=20)
     gen.AddScalar('s2', wall_time=1, step=203, value=20)
 
-    slog = SessionLog(status=tf.SessionLog.START)
-    gen.AddEvent(Event(wall_time=2, step=201, session_log=slog))
+    slog = event_pb2.SessionLog(status=event_pb2.SessionLog.START)
+    gen.AddEvent(
+        event_pb2.Event(wall_time=2, step=201, session_log=slog))
     acc.Reload()
     self.assertEqual([x.step for x in acc.Scalars('s1')], [100, 200])
     self.assertEqual([x.step for x in acc.Scalars('s2')], [])
@@ -604,7 +613,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     """Test that FirstEventTimestamp() returns wall_time of the first event."""
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
-    gen.AddEvent(Event(wall_time=10, step=20, file_version='brain.Event:2'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=10, step=20, file_version='brain.Event:2'))
     gen.AddScalar('s1', wall_time=30, step=40, value=20)
     self.assertEqual(acc.FirstEventTimestamp(), 10)
 
@@ -612,7 +622,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     """Test that Reload() means FirstEventTimestamp() won't load events."""
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
-    gen.AddEvent(Event(wall_time=1, step=2, file_version='brain.Event:2'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=1, step=2, file_version='brain.Event:2'))
 
     acc.Reload()
 
@@ -626,7 +637,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     """Test that FirstEventTimestamp() doesn't discard the loaded event."""
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
-    gen.AddEvent(Event(wall_time=1, step=2, file_version='brain.Event:2'))
+    gen.AddEvent(
+        event_pb2.Event(wall_time=1, step=2, file_version='brain.Event:2'))
 
     self.assertEqual(acc.FirstEventTimestamp(), 1)
     acc.Reload()
@@ -742,8 +754,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     """Test accumulator by writing values and then reading them."""
 
     def FakeScalarSummary(tag, value):
-      value = Summary.Value(tag=tag, simple_value=value)
-      summary = Summary(value=[value])
+      value = summary_pb2.Summary.Value(tag=tag, simple_value=value)
+      summary = summary_pb2.Summary(value=[value])
       return summary
 
     directory = os.path.join(self.get_temp_dir(), 'values_dir')
@@ -855,7 +867,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         same file
     """
 
-    summary = Summary()
+    summary = summary_pb2.Summary()
     summary.value.add(
         tensor=tensor_util.make_tensor_proto(['po', 'ta', 'to'], dtype=tf.string),
         tag='you_are_it',
@@ -866,7 +878,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
   def testSummaryMetadata(self):
     logdir = self.get_temp_dir()
-    summary_metadata = SummaryMetadata(
+    summary_metadata = summary_pb2.SummaryMetadata(
         display_name='current tagee', summary_description='no')
     summary_metadata.plugin_data.plugin_name = 'outlet'
     self._writeMetadata(logdir, summary_metadata)
@@ -877,19 +889,19 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
   def testSummaryMetadata_FirstMetadataWins(self):
     logdir = self.get_temp_dir()
-    summary_metadata_1 = SummaryMetadata(
+    summary_metadata_1 = summary_pb2.SummaryMetadata(
         display_name='current tagee',
         summary_description='no',
-        plugin_data=SummaryMetadata.PluginData(plugin_name='outlet',
-                                                  content=b'120v'))
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name='outlet', content=b'120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
-    summary_metadata_2 = SummaryMetadata(
+    summary_metadata_2 = summary_pb2.SummaryMetadata(
         display_name='tagee of the future',
         summary_description='definitely not',
-        plugin_data=SummaryMetadata.PluginData(plugin_name='plug',
-                                                  content=b'110v'))
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name='plug', content=b'110v'))
     self._writeMetadata(logdir, summary_metadata_2, nonce='2')
     acc.Reload()
 
@@ -901,19 +913,19 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     # set of plugins in the `plugin_data` of second is different from
     # that of the first, then the second set should be ignored.
     logdir = self.get_temp_dir()
-    summary_metadata_1 = SummaryMetadata(
+    summary_metadata_1 = summary_pb2.SummaryMetadata(
         display_name='current tagee',
         summary_description='no',
-        plugin_data=SummaryMetadata.PluginData(plugin_name='outlet',
-                                                  content=b'120v'))
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name='outlet', content=b'120v'))
     self._writeMetadata(logdir, summary_metadata_1, nonce='1')
     acc = ea.EventAccumulator(logdir)
     acc.Reload()
-    summary_metadata_2 = SummaryMetadata(
+    summary_metadata_2 = summary_pb2.SummaryMetadata(
         display_name='tagee of the future',
         summary_description='definitely not',
-        plugin_data=SummaryMetadata.PluginData(plugin_name='plug',
-                                                  content=b'110v'))
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name='plug', content=b'110v'))
     self._writeMetadata(logdir, summary_metadata_2, nonce='2')
     acc.Reload()
 

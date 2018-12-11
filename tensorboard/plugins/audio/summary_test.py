@@ -23,7 +23,7 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
@@ -48,7 +48,7 @@ class SummaryTest(tf.test.TestCase):
   def pb_via_op(self, summary_op, feed_dict=None):
     with tf.Session() as sess:
       actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = Summary()
+    actual_proto = summary_pb2.Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 

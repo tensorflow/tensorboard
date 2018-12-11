@@ -21,7 +21,7 @@ from __future__ import print_function
 import numpy as np
 
 from tensorboard.compat import tf
-from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
@@ -61,7 +61,7 @@ def migrate_value(value):
 
 def make_summary(tag, metadata, data):
     tensor_proto = tensor_util.make_tensor_proto(data)
-    return Summary.Value(tag=tag,
+    return summary_pb2.Summary.Value(tag=tag,
                          metadata=metadata,
                          tensor=tensor_proto)
 

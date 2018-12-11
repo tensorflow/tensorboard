@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.plugins.audio import plugin_data_pb2
 from tensorboard.compat import tf
-from tensorboard.compat.proto.summary_pb2 import SummaryMetadata
+from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.audio import plugin_data_pb2
 
 
 PLUGIN_NAME = 'audio'
@@ -41,10 +41,10 @@ def create_summary_metadata(display_name, description, encoding):
   """
   content = plugin_data_pb2.AudioPluginData(
       version=PROTO_VERSION, encoding=encoding)
-  metadata = SummaryMetadata(
+  metadata = summary_pb2.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
-      plugin_data=SummaryMetadata.PluginData(
+      plugin_data=summary_pb2.SummaryMetadata.PluginData(
           plugin_name=PLUGIN_NAME,
           content=content.SerializeToString()))
   return metadata

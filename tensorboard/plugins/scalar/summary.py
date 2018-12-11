@@ -27,7 +27,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 
-from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
 
@@ -61,7 +61,7 @@ def scalar(name, tensor, tag=None, description=None, step=None):
 
 
 def scalar_pb(tag, tensor, description=None):
-  """Create a scalar tf.Summary protobuf.
+  """Create a scalar summary_pb2.Summary protobuf.
 
   Arguments:
     tag: String tag for the summary.
@@ -70,7 +70,7 @@ def scalar_pb(tag, tensor, description=None):
       `str`. Markdown is supported. Defaults to empty.
 
   Returns:
-    A `tf.Summary` protobuf object.
+    A `summary_pb2.Summary` protobuf object.
   """
   arr = np.array(tensor)
   if arr.shape != ():
@@ -81,7 +81,7 @@ def scalar_pb(tag, tensor, description=None):
   tensor_proto = tensor_util.make_tensor_proto(arr.astype(np.float32))
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  summary = Summary()
+  summary = summary_pb2.Summary()
   summary.value.add(tag=tag,
                     metadata=summary_metadata,
                     tensor=tensor_proto)
