@@ -33,7 +33,7 @@ class RawEventFileLoader(object):
     file_path = platform_util.readahead_file_path(file_path)
     tf.logging.debug('Opening a record reader pointing at %s', file_path)
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      self._reader = tf.pywrap_tensorflow.PyRecordReader_New(
+      self._reader = tf.compat.v1.pywrap_tensorflow.PyRecordReader_New(
           tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
     # Store it for logging purposes.
     self._file_path = file_path
