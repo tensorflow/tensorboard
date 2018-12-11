@@ -50,14 +50,19 @@ class RawEventFileLoader(object):
       All event proto bytestrings in the file that have not been yielded yet.
     """
     tf.logging.debug('Loading events from %s', self._file_path)
+
+    # GetNext() expects a status argument on TF <= 1.7.
+    get_next_args = inspect.getargspec(self._reader.GetNext).args  # pylint: disable=deprecated-method
+    # First argument is self
+    legacy_get_next = (len(get_next_args) > 1)
+
     while True:
       try:
-        if not inspect.getargspec(self._reader.GetNext).args[1:]: # pylint: disable=deprecated-method
-          self._reader.GetNext()
-        else:
-          # GetNext() expects a status argument on TF <= 1.7
+        if legacy_get_next:
           with tf.errors.raise_exception_on_not_ok_status() as status:
             self._reader.GetNext(status)
+        else:
+          self._reader.GetNext()
       except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
         tf.logging.debug('Cannot read more events: %s', e)
         # We ignore partial read exceptions, because a record may be truncated.
