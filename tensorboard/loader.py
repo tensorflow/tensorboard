@@ -74,7 +74,7 @@ class RecordReader(object):
     self.path = tf.compat.as_text(path)
     self._offset = start_offset
     self._size = -1
-    self._reader = None  # type: tf.pywrap_tensorflow.PyRecordReader
+    self._reader = None  # type: tf.compat.v1.pywrap_tensorflow.PyRecordReader
     self._is_closed = False
     self._lock = threading.Lock()
 
@@ -145,7 +145,7 @@ class RecordReader(object):
 
   def _open(self):
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      return tf.pywrap_tensorflow.PyRecordReader_New(
+      return tf.compat.v1.pywrap_tensorflow.PyRecordReader_New(
           platform_util.readahead_file_path(tf.compat.as_bytes(self.path)),
           self._offset, tf.compat.as_bytes(''), status)
 
