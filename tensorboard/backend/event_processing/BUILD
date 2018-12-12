@@ -121,6 +121,7 @@ py_test(
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -137,6 +138,7 @@ py_test(
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -210,6 +212,7 @@ py_test(
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -255,5 +258,6 @@ py_test(
     deps = [
         ":event_file_inspector",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
     ],
 )
