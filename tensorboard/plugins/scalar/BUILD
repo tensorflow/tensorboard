@@ -67,6 +67,7 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
     ],
 )
@@ -81,7 +82,9 @@ py_test(
         ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -95,6 +98,7 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 

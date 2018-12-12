@@ -118,6 +118,7 @@ py_library(
 
 py_library(
     name = "debugger_plugin_testlib",
+    testonly = True,
     srcs = ["debugger_plugin_testlib.py"],
     srcs_version = "PY2AND3",
     deps = [
@@ -127,7 +128,6 @@ py_library(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
-        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -236,6 +236,7 @@ py_test(
         ":tensor_store",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
     ],
 )
