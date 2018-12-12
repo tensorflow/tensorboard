@@ -194,14 +194,14 @@ class InferencePluginTest(tf.test.TestCase):
     # A no-op that just passes the example passed to mutant_charts_for_feature
     # back through. This tests that the URL parameters get processed properly
     # within infer_mutants_handler.
-    def pass_through(example, feature_name, serving_bundle, viz_params):
+    def pass_through(example, feature_name, serving_bundles, viz_params):
       return {
           'example': str(example),
           'feature_name': feature_name,
           'serving_bundles': [{
-              'inference_address': serving_bundle.inference_address,
-              'model_name': serving_bundle.model_name,
-              'model_type': serving_bundle.model_type,
+              'inference_address': serving_bundles[0].inference_address,
+              'model_name': serving_bundles[0].model_name,
+              'model_type': serving_bundles[0].model_type,
           }],
           'viz_params': {
               'x_min': viz_params.x_min,
@@ -232,7 +232,7 @@ class InferencePluginTest(tf.test.TestCase):
                      result['serving_bundles'][0]['inference_address'])
     self.assertEqual('/ml/cassandrax/iris_classification',
                      result['serving_bundles'][0]['model_name'])
-    self.assertEqual('classification', result['serving_bundle']['model_type'])
+    self.assertEqual('classification', result['serving_bundles'][0]['model_type'])
     self.assertAlmostEqual(-10, result['viz_params']['x_min'])
     self.assertAlmostEqual(10, result['viz_params']['x_max'])
 
