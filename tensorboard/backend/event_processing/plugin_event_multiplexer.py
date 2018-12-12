@@ -434,7 +434,7 @@ class EventMultiplexer(object):
         the given run.
 
     Returns:
-      A `tf.SummaryMetadata` protobuf.
+      A `SummaryMetadata` protobuf.
     """
     accumulator = self.GetAccumulator(run)
     return accumulator.SummaryMetadata(tag)

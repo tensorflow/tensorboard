@@ -25,6 +25,7 @@ import tensorflow as tf
 
 from tensorboard import db
 from tensorboard import loader
+from tensorboard.compat.proto import event_pb2
 from tensorboard.util import test_util
 from tensorboard.util import util
 
@@ -290,7 +291,7 @@ class EventLogReaderTest(LoaderTestCase):
       self.assertIsNone(log.get_next_event())
 
   def testReadOneEvent(self):
-    event = tf.Event(step=123)
+    event = event_pb2.Event(step=123)
     path = self._save_records('events.out.tfevents.0.localhost',
                               [event.SerializeToString()])
     with self.EventLog(path) as log:
@@ -334,7 +335,7 @@ class RunReaderTest(LoaderTestCase):
 
   def testReadOneEvent(self):
     id_ = db.RUN_ROWID.create(1, 1)
-    event = tf.Event(step=123)
+    event = event_pb2.Event(step=123)
     path = self._save_records('events.out.tfevents.0.localhost',
                               [event.SerializeToString()])
     with self.connect_db() as db_conn:
@@ -346,7 +347,7 @@ class RunReaderTest(LoaderTestCase):
 
   def testProgress(self):
     id_ = db.RUN_ROWID.create(1, 1)
-    event = tf.Event(step=123)
+    event = event_pb2.Event(step=123)
     path = self._save_records('events.out.tfevents.0.localhost',
                               [event.SerializeToString()])
     with self.connect_db() as db_conn:
@@ -361,8 +362,8 @@ class RunReaderTest(LoaderTestCase):
 
   def testMarkReset(self):
     id_ = db.RUN_ROWID.create(1, 1)
-    event1 = tf.Event(step=123)
-    event2 = tf.Event(step=456)
+    event1 = event_pb2.Event(step=123)
+    event2 = event_pb2.Event(step=456)
     path1 = self._save_records('events.out.tfevents.1.localhost',
                                [event1.SerializeToString()])
     path2 = self._save_records('events.out.tfevents.2.localhost',
@@ -384,8 +385,8 @@ class RunReaderTest(LoaderTestCase):
 
   def testMarkReset_acrossFiles(self):
     id_ = db.RUN_ROWID.create(1, 1)
-    event1 = tf.Event(step=123)
-    event2 = tf.Event(step=456)
+    event1 = event_pb2.Event(step=123)
+    event2 = event_pb2.Event(step=456)
     path1 = self._save_records('events.out.tfevents.1.localhost',
                                [event1.SerializeToString()])
     path2 = self._save_records('events.out.tfevents.2.localhost',
@@ -407,8 +408,8 @@ class RunReaderTest(LoaderTestCase):
 
   def testMarkWithShrinkingBatchSize_raisesValueError(self):
     id_ = db.RUN_ROWID.create(1, 1)
-    event1 = tf.Event(step=123)
-    event2 = tf.Event(step=456)
+    event1 = event_pb2.Event(step=123)
+    event2 = event_pb2.Event(step=456)
     path1 = self._save_records('events.out.tfevents.1.localhost',
                                [event1.SerializeToString()])
     path2 = self._save_records('events.out.tfevents.2.localhost',
@@ -429,8 +430,8 @@ class RunReaderTest(LoaderTestCase):
 
   def testRestartProgram_resumesThings(self):
     id_ = db.RUN_ROWID.create(1, 1)
-    event1 = tf.Event(step=123)
-    event2 = tf.Event(step=456)
+    event1 = event_pb2.Event(step=123)
+    event2 = event_pb2.Event(step=456)
     path = self._save_records('events.out.tfevents.1.localhost',
                               [event1.SerializeToString(),
                                event2.SerializeToString()])

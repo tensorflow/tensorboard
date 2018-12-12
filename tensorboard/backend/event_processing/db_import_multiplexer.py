@@ -33,6 +33,7 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import sqlite_writer
 from tensorboard.compat import tf
+from tensorboard.compat.proto import event_pb2
 
 
 class DbImportMultiplexer(object):
@@ -310,7 +311,7 @@ class _SqliteWriterEventSink(_EventSink):
     start = time.time()
     tagged_data = {}
     for event_proto in event_batch.events:
-      event = tf.Event.FromString(event_proto)
+      event = event_pb2.Event.FromString(event_proto)
       self._process_event(event, tagged_data)
     if tagged_data:
       self._writer.write_summaries(

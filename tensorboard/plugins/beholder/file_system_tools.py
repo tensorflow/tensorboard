@@ -19,6 +19,7 @@ from __future__ import print_function
 import pickle
 
 from google.protobuf import message
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import tensor_util
 import tensorflow as tf
 
@@ -35,7 +36,7 @@ def read_tensor_summary(path):
   if not summary_string:
     raise message.DecodeError('Empty summary.')
 
-  summary_proto = tf.Summary()
+  summary_proto = summary_pb2.Summary()
   summary_proto.ParseFromString(summary_string)
   tensor_proto = summary_proto.value[0].tensor
   array = tensor_util.make_ndarray(tensor_proto)

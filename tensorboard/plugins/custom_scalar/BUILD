@@ -45,7 +45,6 @@ py_library(
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:tensor_util",
     ],
 )
 

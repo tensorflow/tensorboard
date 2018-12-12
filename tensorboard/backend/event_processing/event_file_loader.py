@@ -22,6 +22,7 @@ import inspect
 
 from tensorboard.util import platform_util
 from tensorboard.compat import tf
+from tensorboard.compat.proto import event_pb2
 
 
 class RawEventFileLoader(object):
@@ -86,7 +87,7 @@ class EventFileLoader(RawEventFileLoader):
       All events in the file that have not been yielded yet.
     """
     for record in super(EventFileLoader, self).Load():
-      yield tf.Event.FromString(record)
+      yield event_pb2.Event.FromString(record)
 
 
 def main(argv):
