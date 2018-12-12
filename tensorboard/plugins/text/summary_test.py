@@ -50,7 +50,7 @@ class SummaryTest(tf.test.TestCase):
     """
     result = summary_pb2.Summary()
     if not isinstance(pb, summary_pb2.Summary):
-      pb = test_util.tf_summary_proto_to_tb_summary_proto(pb)
+      pb = test_util.ensure_tb_summary_proto(pb)
     result.MergeFrom(pb)
     for value in result.value:
       if value.HasField('tensor'):

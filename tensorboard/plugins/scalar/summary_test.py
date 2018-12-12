@@ -91,7 +91,7 @@ class SummaryBaseTest(object):
 
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return test_util.tf_summary_proto_to_tb_summary_proto(
+    return test_util.ensure_tb_summary_proto(
         summary.pb(*args, **kwargs))
 
 

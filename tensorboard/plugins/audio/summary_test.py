@@ -78,7 +78,7 @@ class SummaryTest(tf.test.TestCase):
     pb = summary.pb(name, audio, self.samples_per_second,
                     max_outputs=max_outputs,
                     display_name=display_name, description=description)
-    pb = test_util.tf_summary_proto_to_tb_summary_proto(pb)
+    pb = test_util.ensure_tb_summary_proto(pb)
     pb_via_op = self.pb_via_op(op, feed_dict=feed_dict)
     self.assertProtoEquals(pb, pb_via_op)
     audios = tensor_util.make_ndarray(pb.value[0].tensor)[:, 0].tolist()

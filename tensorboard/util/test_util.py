@@ -241,14 +241,14 @@ class FileWriterCache(object):
       return FileWriterCache._cache[logdir]
 
 
-def tf_summary_proto_to_tb_summary_proto(summary):
-  """Converts TensorFlow Summary proto to TensorBoard Summary proto.
+def ensure_tb_summary_proto(summary):
+  """Ensures summary is TensorBoard Summary proto.
 
   TB v1 summary API returns TF Summary proto. To make test for v1 and v2 API
   congruent, one can use this API to convert result of v1 API to TB Summary
   proto.
   """
   if isinstance(summary, summary_pb2.Summary):
-    raise TypeError('Expected tf.Summary proto. Got TB Summary instead.')
+    return summary
 
   return summary_pb2.Summary.FromString(summary.SerializeToString())
