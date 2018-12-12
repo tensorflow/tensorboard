@@ -1,7 +1,7 @@
 # Description:
 # TensorBoard plugin for viewing model data as a live video during training.
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -76,6 +76,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
     ],
 )

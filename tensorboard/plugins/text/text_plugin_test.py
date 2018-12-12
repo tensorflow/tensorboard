@@ -30,6 +30,8 @@ from tensorboard import plugin_util
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import text_plugin
+from tensorboard.util import test_util
+
 
 GEMS = ['garnet', 'amethyst', 'pearl', 'steven']
 
@@ -61,29 +63,29 @@ class TextPluginTest(tf.test.TestCase):
     run_names = ['fry', 'leela']
     for run_name in run_names:
       subdir = os.path.join(logdir or self.logdir, run_name)
-      writer = tf.summary.FileWriter(subdir)
-      writer.add_graph(sess.graph)
+      with test_util.FileWriterCache.get(subdir) as writer:
+        writer.add_graph(sess.graph)
 
-      step = 0
-      for gem in GEMS:
-        message = run_name + ' *loves* ' + gem
-        feed_dict = {
-            placeholder: message,
-        }
+        step = 0
+        for gem in GEMS:
+          message = run_name + ' *loves* ' + gem
+          feed_dict = {
+              placeholder: message,
+          }
+          if include_text:
+            summ = sess.run(summary_tensor, feed_dict=feed_dict)
+            writer.add_summary(summ, global_step=step)
+          step += 1
+
+        vector_message = ['one', 'two', 'three', 'four']
         if include_text:
-          summ = sess.run(summary_tensor, feed_dict=feed_dict)
-          writer.add_summary(summ, global_step=step)
-        step += 1
+          summ = sess.run(vector_summary,
+              feed_dict={placeholder: vector_message})
+          writer.add_summary(summ)
 
-      vector_message = ['one', 'two', 'three', 'four']
-      if include_text:
-        summ = sess.run(vector_summary, feed_dict={placeholder: vector_message})
+        summ = sess.run(scalar_summary, feed_dict={placeholder: []})
         writer.add_summary(summ)
 
-      summ = sess.run(scalar_summary, feed_dict={placeholder: []})
-      writer.add_summary(summ)
-
-      writer.close()
 
   def testIndex(self):
     index = self.plugin.index_impl()
@@ -461,12 +463,11 @@ class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):
 
     run_name = 'fry'
     subdir = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(subdir)
-    writer.add_graph(sess.graph)
+    with test_util.FileWriterCache.get(subdir) as writer:
+      writer.add_graph(sess.graph)
 
-    summ = sess.run(plugin_asset_summary)
-    writer.add_summary(summ)
-    writer.close()
+      summ = sess.run(plugin_asset_summary)
+      writer.add_summary(summ)
 
   def testIndex(self):
     index = self.plugin.index_impl()

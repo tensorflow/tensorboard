@@ -23,7 +23,6 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
-from tensorboard.util import tensor_util
 
 
 def op(name,
@@ -92,7 +91,7 @@ def pb(name, data, display_name=None, description=None):
     A `tf.Summary` protobuf object.
   """
   try:
-    tensor = tensor_util.make_tensor_proto(data, dtype=tf.string)
+    tensor = tf.compat.v1.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:
     raise ValueError(e)
 
@@ -100,8 +99,10 @@ def pb(name, data, display_name=None, description=None):
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
   summary = tf.Summary()
   summary.value.add(tag='%s/text_summary' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary

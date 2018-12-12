@@ -29,6 +29,7 @@ from google.protobuf import text_format
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graphs_plugin
+from tensorboard.util import test_util
 
 
 class GraphsPluginTest(tf.test.TestCase):
@@ -62,7 +63,7 @@ class GraphsPluginTest(tf.test.TestCase):
     summary_message = tf.summary.text('summary_message', error_message)
 
     sess = tf.Session()
-    writer = tf.summary.FileWriter(os.path.join(self.logdir, run_name))
+    writer = test_util.FileWriter(os.path.join(self.logdir, run_name))
     if include_graph:
       writer.add_graph(sess.graph)
     options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)

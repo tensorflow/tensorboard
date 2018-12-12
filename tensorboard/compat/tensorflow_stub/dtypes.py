@@ -572,7 +572,9 @@ _NP_TO_TF = frozenset(
         (_np_qint16, qint16),
         (_np_quint16, quint16),
         (_np_qint32, qint32),
-        (_np_bfloat16, bfloat16),
+        # TODO(#1677): _np_bfloat16 is defined as 0. This causes `as_dtype` to
+        # error. Add below back after we fix `TF_bfloat16_type`.
+        # (_np_bfloat16, bfloat16),
     ]
 )
 _TF_TO_NP = {

@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.plugins.scalar import plugin_data_pb2
 from tensorboard.compat import tf
-
+from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.scalar import plugin_data_pb2
 
 PLUGIN_NAME = 'scalars'
 
@@ -29,18 +29,17 @@ PLUGIN_NAME = 'scalars'
 PROTO_VERSION = 0
 
 
-
 def create_summary_metadata(display_name, description):
-  """Create a `tf.SummaryMetadata` proto for scalar plugin data.
+  """Create a `summary_pb2.SummaryMetadata` proto for scalar plugin data.
 
   Returns:
-    A `tf.SummaryMetadata` protobuf object.
+    A `summary_pb2.SummaryMetadata` protobuf object.
   """
   content = plugin_data_pb2.ScalarPluginData(version=PROTO_VERSION)
-  metadata = tf.SummaryMetadata(
+  metadata = summary_pb2.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(
+      plugin_data=summary_pb2.SummaryMetadata.PluginData(
           plugin_name=PLUGIN_NAME,
           content=content.SerializeToString()))
   return metadata

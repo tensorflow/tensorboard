@@ -152,7 +152,7 @@ def ListRecursivelyViaWalking(top):
   Yields:
     A (dir_path, file_paths) tuple for each directory/subdirectory.
   """
-  for dir_path, _, filenames in tf.gfile.Walk(top):
+  for dir_path, _, filenames in tf.gfile.Walk(top, in_order=True):
     yield (dir_path, (os.path.join(dir_path, filename)
                       for filename in filenames))
 

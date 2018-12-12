@@ -20,8 +20,9 @@ from __future__ import print_function
 
 import inspect
 
-from tensorboard.compat import tf
 from tensorboard.util import platform_util
+from tensorboard.compat import tf
+from tensorboard.compat.proto import event_pb2
 
 
 class RawEventFileLoader(object):
@@ -33,7 +34,7 @@ class RawEventFileLoader(object):
     file_path = platform_util.readahead_file_path(file_path)
     tf.logging.debug('Opening a record reader pointing at %s', file_path)
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      self._reader = tf.pywrap_tensorflow.PyRecordReader_New(
+      self._reader = tf.compat.v1.pywrap_tensorflow.PyRecordReader_New(
           tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
     # Store it for logging purposes.
     self._file_path = file_path
@@ -50,14 +51,19 @@ class RawEventFileLoader(object):
       All event proto bytestrings in the file that have not been yielded yet.
     """
     tf.logging.debug('Loading events from %s', self._file_path)
+
+    # GetNext() expects a status argument on TF <= 1.7.
+    get_next_args = inspect.getargspec(self._reader.GetNext).args  # pylint: disable=deprecated-method
+    # First argument is self
+    legacy_get_next = (len(get_next_args) > 1)
+
     while True:
       try:
-        if not inspect.getargspec(self._reader.GetNext).args[1:]: # pylint: disable=deprecated-method
-          self._reader.GetNext()
-        else:
-          # GetNext() expects a status argument on TF <= 1.7
+        if legacy_get_next:
           with tf.errors.raise_exception_on_not_ok_status() as status:
             self._reader.GetNext(status)
+        else:
+          self._reader.GetNext()
       except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
         tf.logging.debug('Cannot read more events: %s', e)
         # We ignore partial read exceptions, because a record may be truncated.
@@ -81,7 +87,7 @@ class EventFileLoader(RawEventFileLoader):
       All events in the file that have not been yielded yet.
     """
     for record in super(EventFileLoader, self).Load():
-      yield tf.Event.FromString(record)
+      yield event_pb2.Event.FromString(record)
 
 
 def main(argv):

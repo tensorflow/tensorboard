@@ -50,6 +50,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -66,7 +67,6 @@ py_library(
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:encoder",
-        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -93,6 +93,7 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 

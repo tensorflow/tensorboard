@@ -33,7 +33,6 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
-from tensorboard.util import tensor_util
 from tensorflow.core.debug import debugger_event_metadata_pb2
 # pylint: enable=ungrouped-imports, wrong-import-order
 
@@ -61,7 +60,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     self.log_dir = self.get_temp_dir()
     file_prefix = tf.compat.as_bytes(
         os.path.join(self.log_dir, 'events.debugger'))
-    writer = tf.pywrap_tensorflow.EventsWriter(file_prefix)
+    writer = tf.compat.v1.pywrap_tensorflow.EventsWriter(file_prefix)
     device_name = '/job:localhost/replica:0/task:0/cpu:0'
     writer.WriteEvent(
         self._CreateEventWithDebugNumericSummary(
@@ -107,7 +106,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     os.mkdir(run_foo_directory)
     file_prefix = tf.compat.as_bytes(
         os.path.join(run_foo_directory, 'events.debugger'))
-    writer = tf.pywrap_tensorflow.EventsWriter(file_prefix)
+    writer = tf.compat.v1.pywrap_tensorflow.EventsWriter(file_prefix)
     writer.WriteEvent(
         self._CreateEventWithDebugNumericSummary(
             device_name=device_name,
@@ -165,6 +164,9 @@ class DebuggerPluginTestBase(tf.test.TestCase):
       self, device_name, op_name, output_slot, wall_time, step, list_of_values):
     """Creates event with a health pill summary.
 
+    Note the debugger plugin only works with TensorFlow and, thus, uses TF
+    protos and TF EventsWriter.
+
     Args:
       device_name: The name of the op's device.
       op_name: The name of the op to which a DebugNumericSummary was attached.
@@ -177,11 +179,12 @@ class DebuggerPluginTestBase(tf.test.TestCase):
       A `tf.Event` with a health pill summary.
     """
     event = tf.Event(step=step, wall_time=wall_time)
+    tensor = tf.compat.v1.make_tensor_proto(
+        list_of_values, dtype=tf.float64, shape=[len(list_of_values)])
     value = event.summary.value.add(
         tag=op_name,
         node_name='%s:%d:DebugNumericSummary' % (op_name, output_slot),
-        tensor=tensor_util.make_tensor_proto(
-            list_of_values, dtype=tf.float64, shape=[len(list_of_values)]))
+        tensor=tensor)
     content_proto = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device=device_name, output_slot=output_slot)
     value.metadata.plugin_data.plugin_name = constants.DEBUGGER_PLUGIN_NAME

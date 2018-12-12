@@ -22,13 +22,15 @@ import os.path
 import sqlite3
 
 from tensorboard.backend.event_processing import db_import_multiplexer
+from tensorboard.compat.proto import event_pb2
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 import tensorflow as tf
 
 
 def add_event(path):
-  with tf.summary.FileWriterCache.get(path) as writer:
-    event = tf.Event()
+  with test_util.FileWriterCache.get(path) as writer:
+    event = event_pb2.Event()
     event.summary.value.add(tag='tag', tensor=tensor_util.make_tensor_proto(1))
     writer.add_event(event)
 

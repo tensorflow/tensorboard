@@ -21,7 +21,6 @@ from __future__ import print_function
 
 import glob
 import os
-import sys
 
 import numpy as np
 import six
@@ -29,9 +28,11 @@ import tensorflow as tf
 
 tf.enable_eager_execution()
 
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 class SummaryBaseTest(object):
 
@@ -90,12 +91,13 @@ class SummaryBaseTest(object):
 
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return summary.pb(*args, **kwargs)
+    return test_util.ensure_tb_summary_proto(
+        summary.pb(*args, **kwargs))
 
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
 
 class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):

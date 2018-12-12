@@ -21,6 +21,7 @@ from __future__ import print_function
 import numpy as np
 
 from tensorboard.compat import tf
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
@@ -38,7 +39,7 @@ def migrate_value(value):
   code need only deal with one data format.
 
   Arguments:
-    value: A `tf.Summary.Value` object. This argument is not modified.
+    value: A `Summary.Value` object. This argument is not modified.
 
   Returns:
     If the `value` is an old-style value for which there is a new-style
@@ -46,8 +47,8 @@ def migrate_value(value):
     value is already new-style or does not yet have a new-style
     equivalent---the value will be returned unchanged.
 
-  :type value: tf.Summary.Value
-  :rtype: tf.Summary.Value
+  :type value: Summary.Value
+  :rtype: Summary.Value
   """
   handler = {
       'histo': _migrate_histogram_value,
@@ -60,9 +61,9 @@ def migrate_value(value):
 
 def make_summary(tag, metadata, data):
     tensor_proto = tensor_util.make_tensor_proto(data)
-    return tf.Summary.Value(tag=tag,
-                            metadata=metadata,
-                            tensor=tensor_proto)
+    return summary_pb2.Summary.Value(tag=tag,
+                         metadata=metadata,
+                         tensor=tensor_proto)
 
 
 def _migrate_histogram_value(value):

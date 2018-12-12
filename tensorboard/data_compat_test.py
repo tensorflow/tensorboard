@@ -20,6 +20,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard import data_compat
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.histogram import metadata as histogram_metadata
@@ -43,7 +44,7 @@ class MigrateValueTest(tf.test.TestCase):
   def _value_from_op(self, op):
     with tf.Session() as sess:
       summary_pbtxt = sess.run(op)
-    summary = tf.Summary()
+    summary = summary_pb2.Summary()
     summary.ParseFromString(summary_pbtxt)
     # There may be multiple values (e.g., for an image summary that emits
     # multiple images in one batch). That's fine; we'll choose any
@@ -101,8 +102,8 @@ class MigrateValueTest(tf.test.TestCase):
     self._assert_noop(value)
 
   def test_fully_populated_tensor(self):
-    metadata = tf.SummaryMetadata(
-        plugin_data=tf.SummaryMetadata.PluginData(
+    metadata = summary_pb2.SummaryMetadata(
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
             plugin_name='font_of_wisdom',
             content=b'adobe_garamond'))
     op = tf.summary.tensor_summary(

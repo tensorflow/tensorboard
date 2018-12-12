@@ -415,7 +415,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     reader = None
     if config.model_checkpoint_path and USING_TF:
       try:
-        reader = tf.pywrap_tensorflow.NewCheckpointReader(
+        reader = tf.compat.v1.pywrap_tensorflow.NewCheckpointReader(
             config.model_checkpoint_path)
       except Exception:  # pylint: disable=broad-except
         tf.logging.warning('Failed reading "%s"', config.model_checkpoint_path)
