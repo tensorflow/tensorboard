@@ -198,11 +198,11 @@ class InferencePluginTest(tf.test.TestCase):
       return {
           'example': str(example),
           'feature_name': feature_name,
-          'serving_bundle': {
+          'serving_bundles': [{
               'inference_address': serving_bundle.inference_address,
               'model_name': serving_bundle.model_name,
               'model_type': serving_bundle.model_type,
-          },
+          }],
           'viz_params': {
               'x_min': viz_params.x_min,
               'x_max': viz_params.x_max
@@ -229,9 +229,9 @@ class InferencePluginTest(tf.test.TestCase):
     self.assertEqual(str([example]), result['example'])
     self.assertEqual('single_int', result['feature_name'])
     self.assertEqual('ml-serving-temp.prediction',
-                     result['serving_bundle']['inference_address'])
+                     result['serving_bundles'][0]['inference_address'])
     self.assertEqual('/ml/cassandrax/iris_classification',
-                     result['serving_bundle']['model_name'])
+                     result['serving_bundles'][0]['model_name'])
     self.assertEqual('classification', result['serving_bundle']['model_type'])
     self.assertAlmostEqual(-10, result['viz_params']['x_min'])
     self.assertAlmostEqual(10, result['viz_params']['x_max'])

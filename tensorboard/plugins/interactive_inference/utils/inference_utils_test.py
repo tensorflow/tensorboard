@@ -222,8 +222,8 @@ class InferenceUtilsTest(tf.test.TestCase):
   def test_mutant_charts_for_feature(self, mock_call_servo,
                                      mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
-    serving_bundle = inference_utils.ServingBundle('', '', 'classification',
-                                                   '', '', False, '', '')
+    serving_bundles = [inference_utils.ServingBundle('', '', 'classification',
+                                                   '', '', False, '', '')]
     num_mutants = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
@@ -235,19 +235,19 @@ class InferenceUtilsTest(tf.test.TestCase):
     mock_call_servo = lambda _, __: None
     mock_make_json_formatted_for_single_chart = lambda _, __: {}
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'repeated_float', serving_bundle, viz_params)
+        [example], 'repeated_float', serving_bundles, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(4, len(charts['data']))
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'repeated_int', serving_bundle, viz_params)
+        [example], 'repeated_int', serving_bundles, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(2, len(charts['data']))
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'single_int', serving_bundle, viz_params)
+        [example], 'single_int', serving_bundles, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(1, len(charts['data']))
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'non_numeric', serving_bundle, viz_params)
+        [example], 'non_numeric', serving_bundles, viz_params)
     self.assertEqual('categorical', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
@@ -256,8 +256,8 @@ class InferenceUtilsTest(tf.test.TestCase):
   def test_mutant_charts_for_feature_with_feature_index_pattern(
       self, mock_call_servo, mock_make_json_formatted_for_single_chart):
     example = self.make_and_write_fake_example()
-    serving_bundle = inference_utils.ServingBundle('', '', 'classification',
-                                                   '', '', False, '', '')
+    serving_bundles = [inference_utils.ServingBundle('', '', 'classification',
+                                                   '', '', False, '', '')]
     num_mutants = 10
     viz_params = inference_utils.VizParams(
         x_min=1,
@@ -269,19 +269,19 @@ class InferenceUtilsTest(tf.test.TestCase):
     mock_call_servo = lambda _, __: None
     mock_make_json_formatted_for_single_chart = lambda _, __: {}
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'repeated_float', serving_bundle, viz_params)
+        [example], 'repeated_float', serving_bundles, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
     # These should return 3 charts even though all fields from the index
     # pattern don't exist for the example.
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'repeated_int', serving_bundle, viz_params)
+        [example], 'repeated_int', serving_bundles, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
     charts = inference_utils.mutant_charts_for_feature(
-        [example], 'single_int', serving_bundle, viz_params)
+        [example], 'single_int', serving_bundles, viz_params)
     self.assertEqual('numeric', charts['chartType'])
     self.assertEqual(3, len(charts['data']))
 
