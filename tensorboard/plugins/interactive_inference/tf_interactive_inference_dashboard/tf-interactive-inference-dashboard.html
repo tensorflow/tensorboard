@@ -221,8 +221,8 @@ limitations under the License.
       }
 
       .pr-line-chart {
-        height: 150px;
-        width: 250px;
+        height: 200px;
+        width: 300px;
         display: inline-block;
       }
 
@@ -466,14 +466,8 @@ limitations under the License.
         border-right: 1px solid lightgrey;
       }
 
-      .roc-and-conf-matrix {
-        display: flex;
-        width: 100%;
-        flex-wrap: wrap;
-      }
-
       .roc-holder {
-        width: 250px;
+        width: 300px;
       }
 
       .on-switch-button {
@@ -1294,104 +1288,105 @@ limitations under the License.
                         <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
                           <div class="feature-breakdown">
                             <div class="slider-label">[[getPrintableValue_(featureValueThreshold)]]</div>
-                            <div class="flex">
+                            <div class="flex-wrap">
                               <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                 <div>
-                                  <div>Model: [[index]]</div>
-                                  <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}" value="[[item.threshold]]"
-                                    on-value-changed="refreshInferencesNoRegen_">
-                                  </paper-slider>
-                                </div>
-                              </template>
-                              <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Exploring Classification Performance</div>
-                                  <div>Use this slider to adjust the classification threshold for this slice. Inference values at or above this threshold
-                                    are considered a positive classification, while inference values below this threshold are considered
-                                    a negative classification.
+                                  <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[index]]</div>
+                                  <div class="flex">
+                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                    </paper-slider>
+                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                    </paper-icon-button>
+                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                      <div class="dialog-title">Exploring Classification Performance</div>
+                                      <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
+                                        above this
+                                        threshold
+                                        are considered a positive classification, while inference values below this threshold are considered
+                                        a negative classification.
+                                      </div>
+                                      <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                        are updated as the classification threshold changes.
+                                      </div>
+                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                        false
+                                        positive rate (FPR) at various classification thresholds. Find out more
+                                        <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                          here
+                                        </a>.
+                                      </div>
+                                    </paper-dialog>
                                   </div>
-                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                    are updated as the classification threshold changes.
-                                  </div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
-                                  </div>
-                                </paper-dialog>
-                              </div>
-                            </div>
-                            <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                              <div class="roc-and-conf-matrix">
-                                <div>
-                                  <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat" index-as="modelInd">
-                                    <div>Model: [[modelInd]]</div>
-                                    <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStat, featureValueThreshold.threshold, modelInd, featureValueThreshold)]]"
-                                      class="conf-matrix">
+                                  <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                    <div>
+                                      <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
+                                        class="conf-matrix">
+                                      </tf-confusion-matrix>
+                                    </div>
                                   </template>
                                 </div>
+                              </template>
+                              <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                                 <div class="roc-holder">
                                   <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                                   </vz-line-chart>
                                 </div>
-                                </tf-confusion-matrix>
-                              </div>
-                            </template>
+                              </template>
+                            </div>
                           </div>
                         </template>
-                        <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedBreakdownFeature)]]">
+                        <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
                           <div class="feature-breakdown">
                             <div class="slider-label">Threshold for positive classification</div>
-                            <div class="flex">
+                            <div class="flex-wrap">
                               <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
-                                <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                              immediate-value="{{overallThreshold.threshold}}" value="[[overallThreshold.threshold]]"
-                                              on-value-changed="refreshInferencesNoRegen_">
-                                </paper-slider>
+                                <div>
+                                  <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[index]]</div>
+                                  <div class="flex">
+                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{overallThreshold.threshold}}"
+                                      value="[[overallThreshold.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                    </paper-slider>
+                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                    </paper-icon-button>
+                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                      <div class="dialog-title">Exploring Classification Performance</div>
+                                      <div>Use this slider to adjust the classification threshold. Inference values at or above this
+                                        threshold
+                                        are considered a positive classification, while inference values below this threshold are considered
+                                        a negative classification.
+                                      </div>
+                                      <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                        are updated as the classification threshold changes.
+                                      </div>
+                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                        false
+                                        positive rate (FPR) at various classification thresholds. Find out more
+                                        <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                          here
+                                        </a>.
+                                      </div>
+                                    </paper-dialog>
+                                  </div>
+                                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                    <div>
+                                      <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
+                                        class="conf-matrix"></tf-confusion-matrix>
+                                      </tf-confusion-matrix>
+                                    </div>
+                                  </template>
+                                </div>
                               </template>
-                              <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Exploring Classification Performance</div>
-                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
-                                    are considered a positive classification, while inference values below this threshold are considered
-                                    a negative classification.
-                                  </div>
-                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                    are updated as the classification threshold changes.
-                                  </div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
-                                  </div>
-                                </paper-dialog>
-                              </div>
+                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                <div class="roc-holder">
+                                  <vz-line-chart id="prchart" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                  </vz-line-chart>
+                                </div>
+                              </template>
                             </div>
                           </div>
-                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                            <div class="roc-and-conf-matrix">
-                              <div class="roc-holder">
-                                <vz-line-chart id="prchart" class="pr-line-chart"
-                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
-                              </div>
-                              <div>
-                                <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat" index-as="modelInd">
-                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStat, overallThresholds, modelInd)]]"
-                                                      class="conf-matrix"></tf-confusion-matrix>
-                                  </tf-confusion-matrix>
-                                </template>
-                              </div>
-                            </div>
-                          </template>
                         </template>
                       </template>
                       <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]">
@@ -2873,7 +2868,7 @@ limitations under the License.
             this.inferenceStats_.length != this.numModels) {
           return this.getConfusionCounts({}, 0.5, item);
         } else {
-          return this.getConfusionCounts(inferenceStats,
+          return this.getConfusionCounts(this.inferenceStats_[modelInd],
             thresholds[modelInd].threshold, item);
         }
       },
@@ -3047,7 +3042,7 @@ limitations under the License.
         return cls;
       },
 
-      shouldShowOverallTresholder_: function(feature) {
+      shouldShowOverallThresholder_: function(feature) {
         return feature.length === 0;
       },
 
@@ -3598,6 +3593,10 @@ limitations under the License.
         this.settingsClicked_();
         this.updateNumberOfModels_();
         this.getExamples_();
+      },
+
+      showModelNumbers_: function() {
+        return this.numModels <= 1;
       },
 
       /**
