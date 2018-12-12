@@ -469,8 +469,7 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
         serving_bundle)
       charts.append(make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto,
-                                                index_to_mutate,
-                                                model_id))
+                                                index_to_mutate))
     return charts
 
   try:
@@ -501,8 +500,7 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
 
 def make_json_formatted_for_single_chart(mutant_features,
                                          inference_result_proto,
-                                         index_to_mutate,
-                                         model_id):
+                                         index_to_mutate):
   """Returns JSON formatted for a single mutant chart.
 
   Args:
@@ -514,8 +512,6 @@ def make_json_formatted_for_single_chart(mutant_features,
       was sent for inference. The length of that field should be the same length
       of mutant_features.
     index_to_mutate: The index of the feature being mutated for this chart.
-    model_id: Index of the model corresponding to inference_results_proto to
-      distinguish between multiple models for model comparison
 
   Returns:
     A JSON-able dict for rendering a single mutant chart, parseable by
