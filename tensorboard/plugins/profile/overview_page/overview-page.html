@@ -105,6 +105,10 @@ You may obtain a copy of the License at
         <paper-card heading="Performance Summary">
           <div class="card-content">
             <p><b>Average step time</b> (lower is better): <b><span class="steptime-average" >[[_steptime_ms_average]] ms</span> </b> <i style="opacity:0.7">(standard deviation = <span>[[_steptime_ms_stddev]]</span> ms)</i></p>
+            <ul hidden$=[[!_infeed_ms_average]]>
+              <li>Average infeed: <span>[[_infeed_ms_average]]</span> ms</li>
+              <li>Average compute: <span>[[_compute_ms_average]]</span> ms</li>
+            </ul>
             <p><b>Host idle time</b> (lower is better): <span>[[_host_idle_time_percent]]</span></p>
             <p><b>TPU idle time</b> (lower is better): <span>[[_device_idle_time_percent]]</p>
             <p><b>Utilization of TPU Matrix Units</b> (higher is better): <span>[[_mxu_utilization_percent]]</span></p>
@@ -206,6 +210,8 @@ You may obtain a copy of the License at
        _mxu_utilization_percent: { type: String },
        _steptime_ms_average: { type: String },
        _steptime_ms_stddev: { type: String },
+       _infeed_ms_average: { type: String, value: '' },
+       _compute_ms_average: { type: String, value: '' },
        _top_ops_heading: { type: String },
        _error_message: { type: String },
        _host_count: { type: String },
@@ -271,6 +277,10 @@ You may obtain a copy of the License at
            inputAnalysisJson.p['steptime_ms_average'];
        this._steptime_ms_stddev =
            inputAnalysisJson.p['steptime_ms_standard_deviation'];
+       this._infeed_ms_average =
+           inputAnalysisJson.p['compute_ms_average'];
+       this._compute_ms_average =
+           inputAnalysisJson.p['infeed_ms_average'];
      },
      /* Displays run time information */
      _showRunEnvironment : function(runEnvironmentJson) {
