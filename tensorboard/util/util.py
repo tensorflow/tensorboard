@@ -35,7 +35,7 @@ from absl import logging as absl_logging
 import six
 
 from tensorboard.compat import tf
-from tensorboard.util import tb_logging as tb_logging
+from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 

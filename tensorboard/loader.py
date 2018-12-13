@@ -38,7 +38,7 @@ import six
 
 from tensorboard import db
 from tensorboard.compat.proto import event_pb2
-from tensorboard.util import tb_logging as tb_logging
+from tensorboard.util import tb_logging
 from tensorboard.util import platform_util
 from tensorboard.util import util
 import tensorflow as tf

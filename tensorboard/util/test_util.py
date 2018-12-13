@@ -22,10 +22,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
+from absl import logging
 import contextlib
 import functools
-import logging
 import os
 import sqlite3
 import threading
@@ -35,7 +34,7 @@ import tensorflow as tf
 from tensorboard import db
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
-from tensorboard.util import tb_logging as tb_logging
+from tensorboard.util import tb_logging
 from tensorboard.util import util
 
 logger = tb_logging.get_logger()
@@ -60,8 +59,8 @@ class TestCase(tf.test.TestCase):
   def setUp(self):
     super(TestCase, self).setUp()
     util.setup_logging()
+    logging.set_verbosity(logging.DEBUG)
     logger.debug('=== %s ===', self._method)
-    logging.getLogger('werkzeug').setLevel(logging.INFO)
     db.TESTING_MODE = True
 
   def tearDown(self):
