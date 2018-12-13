@@ -98,9 +98,6 @@ py_library(
     name = "tb_logging",
     srcs = ["tb_logging.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard:expect_absl_logging_installed",
-    ],
 )
 
 py_library(

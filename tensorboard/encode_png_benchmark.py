@@ -51,6 +51,7 @@ import time
 
 from six.moves import xrange
 
+from absl import logging
 import numpy as np
 import tensorflow as tf
 

@@ -32,7 +32,6 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":debug_graphs_helper",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
         "@org_python_pypi_portpicker",
@@ -70,7 +69,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":tensor_helper",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
@@ -118,7 +116,6 @@ py_library(
     srcs = ["events_writer_manager.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
     ],
@@ -209,7 +206,6 @@ py_library(
         ":constants",
         ":events_writer_manager",
         ":numerics_alert",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
@@ -227,7 +223,6 @@ py_library(
         ":numerics_alert",
         ":tensor_helper",
         ":tensor_store",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
@@ -294,7 +289,6 @@ py_library(
     deps = [
         ":constants",
         ":debugger_server_lib",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
@@ -316,7 +310,6 @@ py_library(
         ":constants",
         ":debug_graphs_helper",
         ":interactive_debugger_server_lib",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",

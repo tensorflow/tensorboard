@@ -7,7 +7,6 @@ py_library(
     srcs = ["interactive_inference_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/interactive_inference/utils:common_utils",

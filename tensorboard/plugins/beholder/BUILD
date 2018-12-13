@@ -21,7 +21,6 @@ py_library(
         ":shared_config",
         ":video_writing",
         ":visualizer",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
@@ -37,7 +36,6 @@ py_library(
         ":file_system_tools",
         ":im_util",
         ":shared_config",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
@@ -79,7 +77,6 @@ py_library(
     data = ["resources"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
@@ -120,7 +117,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":im_util",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/util:tb_logging",
     ],
 )

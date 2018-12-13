@@ -62,7 +62,6 @@ py_library(
     deps = [
         ":http_util",
         "//tensorboard:db",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard/backend/event_processing:db_import_multiplexer",
         "//tensorboard/backend/event_processing:event_accumulator",
