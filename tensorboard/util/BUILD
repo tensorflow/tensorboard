@@ -92,6 +92,17 @@ py_library(
     srcs_version = "PY2AND3",
 )
 
+py_test(
+    name = "platform_util_test",
+    size = "small",
+    srcs = ["platform_util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":platform_util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "tensor_util",
     srcs = ["tensor_util.py"],
