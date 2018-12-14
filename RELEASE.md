@@ -1,3 +1,13 @@
+# Release 1.12.1
+
+The 1.12.1 minor series tracks TensorFlow 1.12.
+
+## Bug fixes
+- #1549 - Run names wrap at all character (PR #1602) - thanks @dgrahn
+- #1610 - Fix Download as PNG for large graph
+- #1684 - Fix bug rendering debugger plugin (PR #1550) - thanks @longouyang
+
+
 # Release 1.12.0
 
 The 1.12 minor series tracks TensorFlow 1.12.
