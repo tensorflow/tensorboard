@@ -39,15 +39,12 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
-def setup_logging(streams=(sys.stderr,)):
+
+# TODO(stephanwlee): Move this to program.py
+def setup_logging():
   """Configures Python logging the way the TensorBoard team likes it.
 
   This should be called exactly once at the beginning of main().
-
-  Args:
-    streams: An iterable of open files. Logs are written to each.
-
-  :type streams: tuple[file]
   """
   # TODO(stephanwlee): Check the flag passed from CLI and set it to WARN only
   # it was not explicitly set

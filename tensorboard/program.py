@@ -34,7 +34,6 @@ from abc import abstractmethod
 import argparse
 from collections import defaultdict
 import errno
-import logging
 import os
 import socket
 import sys
@@ -47,6 +46,7 @@ from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
 from tensorboard.util import util
 
 try:
@@ -57,7 +57,7 @@ except ImportError:
   absl_flags = None
   argparse_flags = argparse
 
-logger = logging.getLogger(__name__)
+logger = tb_logging.get_logger()
 
 
 def setup_environment():
