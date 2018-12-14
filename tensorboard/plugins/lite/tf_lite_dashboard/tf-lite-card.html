@@ -26,7 +26,7 @@ limitations under the License.
 <!--
   Renders precision–recall curves.
 -->
-<dom-module id="tf-toco-command-card">
+<dom-module id="tf-lite-card">
   <template>
     <tf-card-heading
       tag="[[tag]]"
@@ -142,7 +142,7 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: "tf-toco-command-card",
+      is: "tf-lite-card",
       properties: {
         runs: Array,
         tag: String,
@@ -297,7 +297,7 @@ limitations under the License.
             return (run) => {
               const tag = this.tag;
               return tf_backend.addParams(
-                tf_backend.getRouter().pluginRoute('toco_command', '/toco_command'),
+                tf_backend.getRouter().pluginRoute('lite', '/lite'),
                 {tag, run});
             };
           },

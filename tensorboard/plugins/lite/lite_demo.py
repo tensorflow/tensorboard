@@ -35,11 +35,11 @@ import os.path
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard.plugins.toco_command import summary
+from tensorboard.plugins.lite import summary
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string('logdir', '/tmp/toco_command_demo',
+tf.flags.DEFINE_string('logdir', '/tmp/lite_demo',
                        'Directory into which to write TensorBoard data.')
 
 tf.flags.DEFINE_integer('steps', 10,

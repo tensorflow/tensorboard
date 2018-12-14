@@ -25,7 +25,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorboard.plugins.toco_command import metadata
+from tensorboard.plugins.lite import metadata
 
 # A value that we use as the minimum value during division of counts to prevent
 # division by 0. 1.0 does not work: Certain weights could cause counts below 1.
@@ -275,7 +275,7 @@ def streaming_op(name,
         constant `str`. Markdown is supported. Defaults to empty.
 
   Returns:
-    toco_command: A string `Tensor` containing a single value: the
+    lite: A string `Tensor` containing a single value: the
       serialized PR curve Tensor summary. The summary contains a
       float32 `Tensor` of dimension (6, num_thresholds). The first
       dimension (of length 6) is of the order: true positives, false
@@ -327,13 +327,13 @@ def streaming_op(name,
           description,
           collections)
 
-    toco_command = compute_summary(tp, fp, tn, fn, metrics_collections)
+    lite = compute_summary(tp, fp, tn, fn, metrics_collections)
     update_op = tf.group(update_tp, update_fp, update_tn, update_fn)
     if updates_collections:
       for collection in updates_collections:
         tf.add_to_collection(collection, update_op)
 
-    return toco_command, update_op
+    return lite, update_op
 
 def raw_data_op(
     name,
@@ -466,7 +466,7 @@ def raw_data_pb(
        precision,
        recall))
   tensor = tf.make_tensor_proto(np.float32(data), dtype=tf.float32)
-  summary.value.add(tag='%s/toco_command' % name,
+  summary.value.add(tag='%s/lite' % name,
                     metadata=summary_metadata,
                     tensor=tensor)
   return summary
@@ -512,7 +512,7 @@ def _create_tensor_summary(
       tf.cast(recall, tf.float32)])
 
   return tf.summary.tensor_summary(
-      name='toco_command',
+      name='lite',
       tensor=combined_data,
       collections=collections,
       summary_metadata=summary_metadata)

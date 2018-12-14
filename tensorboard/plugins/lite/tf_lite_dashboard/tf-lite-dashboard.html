@@ -17,8 +17,8 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-toco-command-common/tf-toco-command-common.html">
-<link rel="import" href="../tf-toco-command-controls/tf-toco-command-controls.html">
+<link rel="import" href="../tf-lite-common/tf-lite-common.html">
+<link rel="import" href="../tf-lite-controls/tf-lite-controls.html">
 
 <!--
 tf-graph-dashboard displays a graph from a TensorFlow run.
@@ -30,7 +30,7 @@ associated graphs) along with the url generator into tf-graph-board for display.
 If there are multiple runs with graphs, the first run's graph is shown
 by default. The user can select a different run from a dropdown menu.
 -->
-<dom-module id="tf-toco-command-dashboard">
+<dom-module id="tf-lite-dashboard">
 <template>
 <paper-dialog id="error-dialog" with-backdrop></paper-dialog>
 <template is="dom-if" if="[[_datasetsEmpty(_datasets)]]">
@@ -59,7 +59,7 @@ by default. The user can select a different run from a dropdown menu.
 <template is="dom-if" if="[[!_datasetsEmpty(_datasets)]]">
 <tf-dashboard-layout>
 <div class="sidebar">
-  <tf-toco-command-controls id="controls"
+  <tf-lite-controls id="controls"
         devices-for-stats="{{_devicesForStats}}"
         color-by-params="[[_colorByParams]]"
         stats="[[_stats]]"
@@ -72,7 +72,7 @@ by default. The user can select a different run from a dropdown menu.
         selected-node="{{_selectedNode}}"
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
-  ></tf-toco-command-controls>
+  ></tf-lite-controls>
   <tf-graph-loader id="loader"
         datasets="[[_datasets]]"
         selected-dataset="[[_selectedDataset]]"
@@ -99,6 +99,7 @@ by default. The user can select a different run from a dropdown menu.
         are-health-pills-loading="null"
         debugger-numeric-alerts="null"
         node-names-to-health-pills="null"
+        compat-node-title="TF Lite Compatibility"
         all-steps-mode-enabled="false"
         specific-health-pill-step="0"
         health-pill-step-index="0"
@@ -130,7 +131,7 @@ paper-dialog {
 
 <script>
 Polymer({
-  is: 'tf-toco-command-dashboard',
+  is: 'tf-lite-dashboard',
   properties: {
     _datasets: Array,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
@@ -248,7 +249,7 @@ Polymer({
                 {tag: tag, run: runName}),
             })),
         }));
-        this.set('_compatibilityProvider', new tf.toco_command.op.TfLiteCompatibilityProvider(result[2]));
+        this.set('_compatibilityProvider', new tf.lite.op.TfLiteCompatibilityProvider(result[2]));
         this.set('_datasets', datasets);
       });
   },
@@ -287,14 +288,14 @@ Polymer({
   },
   _fetchTfLiteOps() {
     return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('toco_command', '/tflite_supported_ops'));
+        tf_backend.getRouter().pluginRoute('lite', '/tflite_supported_ops'));
   },
 });
 
   tf_tensorboard.registerDashboard({
-    plugin: 'toco_command',
-    elementName: 'tf-toco-command-dashboard',
-    tabName: 'Toco Command',
+    plugin: 'lite',
+    elementName: 'tf-lite-dashboard',
+    tabName: 'TF Lite',
   });
 
   </script>

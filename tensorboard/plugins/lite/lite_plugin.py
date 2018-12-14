@@ -27,13 +27,13 @@ from werkzeug import wrappers
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.toco_command import metadata
-from tensorboard.plugins.toco_command import plugin_data_pb2
-from tensorboard.plugins.toco_command import run_toco_impl
-from tensorboard.plugins.toco_command import suggestion
+from tensorboard.plugins.lite import metadata
+from tensorboard.plugins.lite import plugin_data_pb2
+from tensorboard.plugins.lite import run_toco_impl
+from tensorboard.plugins.lite import suggestion
 
 
-class TocoCommandPlugin(base_plugin.TBPlugin):
+class LitePlugin(base_plugin.TBPlugin):
   """A plugin that serves PR curves for individual classes."""
 
   plugin_name = metadata.PLUGIN_NAME
@@ -49,7 +49,7 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
     self._logdir = context.logdir
 
   @wrappers.Request.application
-  def toco_command_route(self, request):
+  def lite_route(self, request):
     """A route that returns a JSON mapping between runs and PR curve data.
 
     Returns:
@@ -70,13 +70,13 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
 
     try:
       response = http_util.Respond(
-          request, self.toco_command_impl(runs, tag), 'application/json')
+          request, self.lite_impl(runs, tag), 'application/json')
     except ValueError as e:
       return http_util.Respond(request, str(e), 'text/plain', 400)
 
     return response
 
-  def toco_command_impl(self, runs, tag):
+  def lite_impl(self, runs, tag):
     """Creates the JSON object for the PR curves response for a run-tag combo.
 
     Arguments:
@@ -122,7 +122,7 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
           response_mapping[run] = []
         buf = np.frombuffer(data, dtype=tf.DType(dtype).as_numpy_dtype)
         data_array = buf.reshape([int(i) for i in shape.split(',')])
-        plugin_data_proto = plugin_data_pb2.TocoCommandPluginData()
+        plugin_data_proto = plugin_data_pb2.LitePluginData()
         string_buffer = np.frombuffer(plugin_data, dtype=np.dtype('b'))
         plugin_data_proto.ParseFromString(tf.compat.as_bytes(
             string_buffer.tostring()))
@@ -141,8 +141,8 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
 
         content = self._multiplexer.SummaryMetadata(
             run, tag).plugin_data.content
-        toco_command_data = metadata.parse_plugin_metadata(content)
-        thresholds = self._compute_thresholds(toco_command_data.num_thresholds)
+        lite_data = metadata.parse_plugin_metadata(content)
+        thresholds = self._compute_thresholds(lite_data.num_thresholds)
         response_mapping[run] = [
             self._process_tensor_event(e, thresholds) for e in tensor_events]
     return response_mapping
@@ -312,7 +312,7 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
     """
     return {
         '/tags': self.tags_route,
-        '/toco_command': self.toco_command_route,
+        '/lite': self.lite_route,
         '/tflite_supported_ops': self.tflite_supported_ops,
         '/checkpoints': self.list_checkpoints,
         '/run_toco': self.run_toco
@@ -431,8 +431,13 @@ class TocoCommandPlugin(base_plugin.TBPlugin):
 
     try:
       run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
-      result['success'] = ('Convert successfully. TFLite model path is',
-        '<a href="file://{tflite_file}">here</a>'.format(tflite_file=tflite_file))
+      result['success'] = {
+        'type': 'Success',
+        'content': {
+          'message': 'Convert successfully. TF Lite model path is: <br/><span id="generated_path">{tflite_file}</a>'.format(tflite_file=tflite_file),
+          'shell_script': ''
+        }
+      }
     except suggestion.Suggestion as e:
       if 'errors' not in result:
         result['errors'] = []

@@ -8,7 +8,7 @@ from tensorflow.lite.python import lite
 from tensorflow.lite.python import lite_constants
 from tensorflow.lite.toco import toco_flags_pb2 as _toco_flags_pb2
 from tensorflow.lite.toco import types_pb2 as _types_pb2
-from tensorboard.plugins.toco_command import suggestion
+from tensorboard.plugins.lite import suggestion
 
 
 class TFLiteConverterSuggestion(suggestion.Suggestion):

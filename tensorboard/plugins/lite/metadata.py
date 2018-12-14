@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Internal information about the toco_command plugin."""
+"""Internal information about the lite plugin."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorboard.plugins.toco_command import plugin_data_pb2
+from tensorboard.plugins.lite import plugin_data_pb2
 
 
-PLUGIN_NAME = 'toco_command'
+PLUGIN_NAME = 'lite'
 
 # Indices for obtaining various values from the tensor stored in a summary.
 TRUE_POSITIVES_INDEX = 0
@@ -37,7 +37,7 @@ RECALL_INDEX = 5
 PROTO_VERSION = 0
 
 def create_summary_metadata(display_name, description, num_thresholds):
-  """Create a `tf.SummaryMetadata` proto for toco_command plugin data.
+  """Create a `tf.SummaryMetadata` proto for lite plugin data.
 
   Arguments:
     display_name: The display name used in TensorBoard.
@@ -47,9 +47,9 @@ def create_summary_metadata(display_name, description, num_thresholds):
   Returns:
     A `tf.SummaryMetadata` protobuf object.
   """
-  toco_command_plugin_data = plugin_data_pb2.TocoCommandPluginData(
+  lite_plugin_data = plugin_data_pb2.LitePluginData(
       version=PROTO_VERSION, num_thresholds=num_thresholds)
-  content = toco_command_plugin_data.SerializeToString()
+  content = lite_plugin_data.SerializeToString()
   return tf.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
@@ -61,12 +61,12 @@ def parse_plugin_metadata(content):
 
   Arguments:
     content: The `content` field of a `SummaryMetadata` proto
-      corresponding to the toco_command plugin.
+      corresponding to the lite plugin.
 
   Returns:
     A `PrCurvesPlugin` protobuf object.
   """
-  result = plugin_data_pb2.TocoCommandPluginData()
+  result = plugin_data_pb2.LitePluginData()
   # TODO(@jart): Instead of converting to bytes, assert that the input
   # is a bytestring, and raise a ValueError otherwise...but only after
   # converting `PluginData`'s `content` field to have type `bytes`

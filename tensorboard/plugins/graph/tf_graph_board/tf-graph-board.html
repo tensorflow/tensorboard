@@ -157,6 +157,7 @@ paper-progress {
               graph-hierarchy="[[graphHierarchy]]"
               hierarchy-params="[[hierarchyParams]]"
               render-hierarchy="[[renderHierarchy]]"
+              compat-node-title="[[compatNodeTitle]]"
               graph="[[graph]]"
               selected-node="{{selectedNode}}"
               selected-node-include="{{_selectedNodeInclude}}"
@@ -200,6 +201,7 @@ Polymer({
       type: Object,
       notify: true
     },
+    compatNodeTitle: String,
     // Whether debugger data is enabled for this instance of Tensorboard.
     debuggerDataEnabled: Boolean,
     // Whether health pills are currently being loaded.

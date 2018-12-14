@@ -17,7 +17,7 @@ syntax = "proto3";
 
 package tensorboard;
 
-message TocoCommandPluginData {
+message LitePluginData {
   // Version `0` is the only supported version.
   int32 version = 1;
 

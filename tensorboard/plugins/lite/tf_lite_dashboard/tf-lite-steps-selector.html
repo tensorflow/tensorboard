@@ -21,7 +21,7 @@ limitations under the License.
 <!--
   Renders a UI for selecting a step.
 -->
-<dom-module id="tf-toco-command-steps-selector">
+<dom-module id="tf-lite-steps-selector">
   <template>
     <template is="dom-repeat" items="[[_runsWithSliders]]" as="run">
       <div class="run-widget">
@@ -69,7 +69,7 @@ limitations under the License.
   <script>
 
   Polymer({
-    is: "tf-toco-command-steps-selector",
+    is: "tf-lite-steps-selector",
     properties: {
       // A list of selected runs.
       runs: Array,
