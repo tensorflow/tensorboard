@@ -62,15 +62,17 @@ table td {
   padding: 0;
   margin: 0;
 }
-
+.script_wrap {
+  position: relative;
+}
 pre {
   font: 14px/20px Roboto Mono,monospace;
   margin: 16px 0;
   overflow-x: auto;
   padding: 8px;
-  position: relative;
   background: #f7f7f7;
   color: #37474f;
+  white-space: pre;
 }
 
 .allcontrols {
@@ -157,7 +159,7 @@ svg.icon {
 .copy-button {
   position: absolute;
   right:0px;
-  top: 0px;
+  top: 17px;
   padding: 6px;
 }
 .copy-button:hover {
@@ -400,12 +402,6 @@ tf-graph-node-search {
     <paper-button class="button-text" on-click="convert">Convert to TF Lite model
     </paper-button>
   </div>
-  <div class="control-holder" style="padding-bottom: 60px">
-    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="generateCommand" alt="Generate command line">
-    </paper-icon-button>
-    <paper-button class="button-text" on-click="generateCommand">Generate command line
-    </paper-button>
-  </div>
   <div class="legend-holder">
     <paper-icon-button icon="[[_getToggleLegendIcon(_legendOpened)]]" on-click="_toggleLegendOpen" class="toggle-legend-button">
     </paper-icon-button>
@@ -583,16 +579,6 @@ tf-graph-node-search {
     </iron-collapse>
   </div>
 </div>
-<paper-dialog id="command_dialog" with-backdrop>
-    <h2>TFLite Convert Command</h2>
-    <paper-dialog-scrollable>
-        <pre id="command_text">{{convertCommand}}
-        </pre>
-        <a class="copy-button" title="Click to copy the command" on-click="copyCommand">
-          <iron-icon icon="content-copy">
-        </a>
-    </paper-dialog-scrollable>
-</paper-dialog>
 <paper-dialog id="result_dialog" with-backdrop>
     <h2>TfLite Convert Result</h2>
     <paper-dialog-scrollable>
@@ -604,9 +590,19 @@ tf-graph-node-search {
                     <template is="dom-if" if="{{conversionResult}}">
                       <a id="copy_generated_path_button" on-click="copyGeneratedPath" title="Click to copy the path"><iron-icon icon="content-copy"></iron-icon></a>
                     </template>
-                    </div>
+                  </div>
                   <template is="dom-if" if="[[item.content.suggestion]]">
                   <div secondary><{{item.content.suggestion}}</div>
+                  </template>
+
+                  <template is="dom-if" if="{{conversionResult}}">
+                    <div class="script_wrap">
+                      <pre id="command_text">{{item.content.shell_script}}
+                      </pre>
+                      <a class="copy-button" title="Click to copy the command" on-click="copyCommand">
+                        <iron-icon icon="content-copy">
+                      </a>
+                    </div>
                   </template>
                 </paper-item-body>
                 <iron-icon icon="{{conversionResult}}"></iron-icon>
@@ -736,34 +732,10 @@ tf-graph-node-search {
         this._fetchRunToco().then(
           result => {
             this.conversionResult = result.hasOwnProperty('success');
-            this.conversionMessages = this.conversionResult ? [{
-              type: 'Congrats',
-              content: {
-                message: result.success
-              }
-            }] : result.errors;
+            this.conversionMessages = this.conversionResult ? [result.success] : result.errors;
             this.$.result_dialog.open();
           }
         )
-      },
-      generateCommand: function() {
-        const inputs = this.inputNodes.map(x => x.value).join(',');
-        const outputs = this.outputNodes.map(x => x.value).join(',');
-        this._fetchTocoCommand().then(
-          result => {
-            this.convertCommand = result;
-            this.$.command_dialog.open();
-
-          }
-        )
-         = `tflite_convert --graph_def_file=my_frozen_mobilenet.pb
-            --input_format=TENSORFLOW_GRAPHDEF
-            --output_format=TFLITE
-            --output_file=my_mobilenet_v1_1.0_224.tflite
-            --inference_type=FLOAT
-            --input_type=FLOAT
-            --input_arrays=${inputs}
-            --output_arrays=${outputs}`
       },
       getCheckpoints: function() {
         this._fetchCheckpoints().then(result=> {
@@ -808,17 +780,6 @@ tf-graph-node-search {
         return this._requestManager.request(
           tf_backend.getRouter().pluginRoute('lite', '/checkpoints')
         )
-      },
-      _fetchTocoCommand() {
-        return this._requestManager.request(
-          tf_backend.getRouter().pluginRoute('lite', ''), {
-            data: JSON.stringify({
-              input_nodes: inputs,
-              output_nodes: outputs,
-              batch_size: this.batchSize,
-              checkpoint: this.selectedCheckpoint
-            })
-          });
       },
       _showToast(text) {
         this.$.messageToast.setAttribute('text', text);

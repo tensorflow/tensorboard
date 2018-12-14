@@ -4,10 +4,10 @@ import tensorflow as tf
 from google.protobuf import text_format
 from tensorflow.core.framework import graph_pb2
 from tensorflow.python.platform import gfile
-from tensorboard.plugins.toco_command.tflite_convert import run_toco_with_suggestion
-from tensorboard.plugins.toco_command.freeze_graph import freeze_with_suggestion
+from tensorboard.plugins.lite.tflite_convert import run_toco_with_suggestion
+from tensorboard.plugins.lite.freeze_graph import freeze_with_suggestion
 
-from tensorboard.plugins.toco_command.suggestion import Suggestion
+from tensorboard.plugins.lite.suggestion import Suggestion
 
 class ArgsSuggestion(Suggestion):
   def __init__(self, from_exception, stack_trace=None):
@@ -147,4 +147,4 @@ if __name__ == '__main__':
         'checkpoint': 'model_dir/model.ckpt-400'
     }
     script = freeze_and_convert(graph_def_file, "model_dir/test.tflite", options)
-    print script
+    print(script)
