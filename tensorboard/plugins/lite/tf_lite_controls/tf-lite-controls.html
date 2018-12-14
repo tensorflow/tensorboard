@@ -26,7 +26,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 
-<dom-module id="tf-toco-command-controls">
+<dom-module id="tf-lite-controls">
 <template>
 <style>
 :host {
@@ -153,6 +153,15 @@ svg.icon {
   height: 15px;
   margin: 0;
   padding: 0;
+}
+.copy-button {
+  position: absolute;
+  right:0px;
+  top: 0px;
+  padding: 6px;
+}
+.copy-button:hover {
+  background: #ccc;
 }
 
 .gray {
@@ -328,7 +337,7 @@ tf-graph-node-search {
     <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
       <paper-radio-button name="structure">Structure</paper-radio-button>
       <paper-radio-button id="tflite-compatibility-radio-button" name="op_compatibility">
-        TfLite Compatibility
+        TF Lite Compatibility
       </paper-radio-button>
     </paper-radio-group>
   </div>
@@ -338,7 +347,7 @@ tf-graph-node-search {
     <paper-button raised class="text-button upload-button" on-click="addInputNode">Add Selected Node</paper-button>
   </div>
   <div class="control-holder">
-    <paper-listbox id="command-config-input-nodes">
+    <paper-listbox id="command-config-input-nodes" on-selected-changed="changeSelectedNode">
       <template is="dom-repeat" items="[[inputNodes]]">
         <paper-item>
           <paper-item-body>[[item.value]]</paper-item-body>
@@ -357,7 +366,7 @@ tf-graph-node-search {
     </paper-button>
   </div>
   <div class="control-holder">
-    <paper-listbox id="command-config-output-nodes">
+    <paper-listbox id="command-config-output-nodes" on-selected-changed="changeSelectedNode">
         <template is="dom-repeat" items="[[outputNodes]]">
           <paper-item>
             <paper-item-body>[[item.value]]</paper-item-body>
@@ -372,7 +381,7 @@ tf-graph-node-search {
   <h2>Step 3</h2>
   <div class="control-holder">
       <div class="title">Batch size: </div>
-      <paper-input type="number" pattern="[0-9]*" value="[[batchSize]]" auto-validate error-message="numbers only!" no-label-float>
+      <paper-input type="number" min="1" auto-validate value="[[batchSize]]" error-message="Positive numbers only!" no-label-float>
   </div>
   <div class="control-holder">
       <div class="title">Checkpoint: </div>
@@ -386,15 +395,15 @@ tf-graph-node-search {
   </div>
   <h2>Step 4</h2>
   <div class="control-holder">
-    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="convert" alt="Convert to TensorFlow Lite with TOCO">
+    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="convert" alt="Convert to TF Lite model">
     </paper-icon-button>
-    <paper-button class="button-text" on-click="convert">Convert to TensorFlow Lite with TOCO
+    <paper-button class="button-text" on-click="convert">Convert to TF Lite model
     </paper-button>
   </div>
   <div class="control-holder" style="padding-bottom: 60px">
-    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="generateCommand" alt="Generate TOCO Command">
+    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="generateCommand" alt="Generate command line">
     </paper-icon-button>
-    <paper-button class="button-text" on-click="generateCommand">Generate TOCO Command
+    <paper-button class="button-text" on-click="generateCommand">Generate command line
     </paper-button>
   </div>
   <div class="legend-holder">
@@ -575,10 +584,13 @@ tf-graph-node-search {
   </div>
 </div>
 <paper-dialog id="command_dialog" with-backdrop>
-    <h2>TfLite Convert Command</h2>
+    <h2>TFLite Convert Command</h2>
     <paper-dialog-scrollable>
-        <pre>{{convertCommand}}
+        <pre id="command_text">{{convertCommand}}
         </pre>
+        <a class="copy-button" title="Click to copy the command" on-click="copyCommand">
+          <iron-icon icon="content-copy">
+        </a>
     </paper-dialog-scrollable>
 </paper-dialog>
 <paper-dialog id="result_dialog" with-backdrop>
@@ -587,7 +599,12 @@ tf-graph-node-search {
         <template is="dom-repeat" items="[[conversionMessages]]">
             <paper-item>
                 <paper-item-body two-line>
-                  <div>{{item.type}}: <span inner-h-t-m-l="{{item.content.message}}"></span></div>
+                  <div>{{item.type}}:
+                    <span inner-h-t-m-l="{{item.content.message}}"></span>
+                    <template is="dom-if" if="{{conversionResult}}">
+                      <a id="copy_generated_path_button" on-click="copyGeneratedPath" title="Click to copy the path"><iron-icon icon="content-copy"></iron-icon></a>
+                    </template>
+                    </div>
                   <template is="dom-if" if="[[item.content.suggestion]]">
                   <div secondary><{{item.content.suggestion}}</div>
                   </template>
@@ -597,14 +614,14 @@ tf-graph-node-search {
           </template>
     </paper-dialog-scrollable>
 </paper-dialog>
-<paper-toast id="message"></paper-toast>
+<paper-toast id="messageToast" always-on-top></paper-toast>
 </template>
 </dom-module>
 
 <script>
   (function () { // Private scope.
     Polymer({
-      is: 'tf-toco-command-controls',
+      is: 'tf-lite-controls',
       properties: {
         colorBy: {
           type: String,
@@ -680,6 +697,12 @@ tf-graph-node-search {
       ready() {
         this.getCheckpoints();
       },
+      copyCommand: function(){
+        this._copyHtml('command_text');
+      },
+      copyGeneratedPath: function() {
+        this._copyHtml('generated_path');
+      },
       addInputNode: function() {
         if(!this.selectedNode ) {
           this._showToast('Please selected a node in graph first.');
@@ -716,8 +739,8 @@ tf-graph-node-search {
             this.conversionMessages = this.conversionResult ? [{
               type: 'Congrats',
               content: {
-                message: result.success.join(' ')
-               }
+                message: result.success
+              }
             }] : result.errors;
             this.$.result_dialog.open();
           }
@@ -726,7 +749,14 @@ tf-graph-node-search {
       generateCommand: function() {
         const inputs = this.inputNodes.map(x => x.value).join(',');
         const outputs = this.outputNodes.map(x => x.value).join(',');
-        this.convertCommand = `tflite_convert --graph_def_file=my_frozen_mobilenet.pb
+        this._fetchTocoCommand().then(
+          result => {
+            this.convertCommand = result;
+            this.$.command_dialog.open();
+
+          }
+        )
+         = `tflite_convert --graph_def_file=my_frozen_mobilenet.pb
             --input_format=TENSORFLOW_GRAPHDEF
             --output_format=TFLITE
             --output_file=my_mobilenet_v1_1.0_224.tflite
@@ -734,12 +764,15 @@ tf-graph-node-search {
             --input_type=FLOAT
             --input_arrays=${inputs}
             --output_arrays=${outputs}`
-        this.$.command_dialog.open();
       },
       getCheckpoints: function() {
         this._fetchCheckpoints().then(result=> {
           this.checkpoints = result.map(x => { return { value: x } });
         });
+      },
+      changeSelectedNode: function(e) {
+        const nodesList = e.target.id.indexOf("input") >= 0 ? this.inputNodes : this.outputNodes;
+        this.selectedNode = nodesList[e.detail.value].value;
       },
       _formatSelectedNode: function(text) {
         return text ? text : '[none]';
@@ -762,19 +795,42 @@ tf-graph-node-search {
         const inputs = this.inputNodes.map(x => x.value);
         const outputs = this.outputNodes.map(x => x.value);
         return this._requestManager.request(
-            tf_backend.getRouter().pluginRoute('toco_command', '/run_toco'), {
-              data: JSON.stringify({
-                input_nodes: inputs,
-                output_nodes: outputs,
-                batch_size: this.batchSize,
-                checkpoint: this.selectedCheckpoint
-              })
-            });
+          tf_backend.getRouter().pluginRoute('lite', '/run_toco'), {
+            data: JSON.stringify({
+              input_nodes: inputs,
+              output_nodes: outputs,
+              batch_size: this.batchSize,
+              checkpoint: this.selectedCheckpoint
+            })
+          });
       },
       _fetchCheckpoints() {
         return this._requestManager.request(
-          tf_backend.getRouter().pluginRoute('toco_command', '/checkpoints')
+          tf_backend.getRouter().pluginRoute('lite', '/checkpoints')
         )
+      },
+      _fetchTocoCommand() {
+        return this._requestManager.request(
+          tf_backend.getRouter().pluginRoute('lite', ''), {
+            data: JSON.stringify({
+              input_nodes: inputs,
+              output_nodes: outputs,
+              batch_size: this.batchSize,
+              checkpoint: this.selectedCheckpoint
+            })
+          });
+      },
+      _showToast(text) {
+        this.$.messageToast.setAttribute('text', text);
+        this.$.messageToast.open();
+      },
+      _copyHtml(domId) {
+        const copyText = document.getElementById(domId);
+        var range = document.getSelection().getRangeAt(0);
+        range.selectNode(copyText);
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        this._showToast("Copied the text successfully.");
       }
     });
   })(); // Closing private scope.

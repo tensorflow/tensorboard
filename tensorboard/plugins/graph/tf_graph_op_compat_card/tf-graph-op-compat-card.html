@@ -111,7 +111,7 @@ div.op-compat-value {
         on-click="_toggleExpanded"
         class="toggle-button">
       </paper-icon-button>
-      <div class="node-name" id="nodetitle">TPU Compatibility</div>
+      <div class="node-name" id="nodetitle">{{nodeTitle}}</div>
     </div>
     <div secondary>
       <div class="subtitle">
@@ -169,6 +169,7 @@ div.op-compat-value {
       graphHierarchy: Object,
       hierarchyParams: Object,
       renderHierarchy: Object,
+      nodeTitle: String,
       _templateIndex: {
         type: Function,
         computed: '_getTemplateIndex(graphHierarchy)'

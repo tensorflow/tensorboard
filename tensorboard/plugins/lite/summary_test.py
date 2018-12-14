@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+d# -*- coding: utf-8 -*-
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests the op that generates toco_command summaries."""
+"""Tests the op that generates lite summaries."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,14 +22,14 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorboard.plugins.toco_command import metadata
-from tensorboard.plugins.toco_command import summary
+from tensorboard.plugins.lite import metadata
+from tensorboard.plugins.lite import summary
 
 
-class TocoCommandTest(tf.test.TestCase):
+class LiteTest(tf.test.TestCase):
 
   def setUp(self):
-    super(TocoCommandTest, self).setUp()
+    super(LiteTest, self).setUp()
     tf.reset_default_graph()
     np.random.seed(42)
 
@@ -351,11 +351,11 @@ class StreamingOpTest(tf.test.TestCase):
     predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
     labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
 
-    toco_command, update_op = summary.streaming_op(name='toco_command',
+    lite, update_op = summary.streaming_op(name='lite',
                                                predictions=predictions,
                                                labels=labels,
                                                num_thresholds=10)
-    expected_ptoco_command = summary.op(name='toco_command',
+    expected_lite = summary.op(name='lite',
                                    predictions=predictions,
                                    labels=labels,
                                    num_thresholds=10)
@@ -363,27 +363,27 @@ class StreamingOpTest(tf.test.TestCase):
       sess.run(tf.local_variables_initializer())
       sess.run([update_op])
 
-      proto = self.pb_via_op(toco_command)
-      expected_proto = self.pb_via_op(expected_toco_command)
+      proto = self.pb_via_op(lite)
+      expected_proto = self.pb_via_op(expected_lite)
 
       # Need to detect and fix the automatic _1 appended to second namespace.
-      self.assertEqual(proto.value[0].tag, 'toco_command/toco_command')
-      self.assertEqual(expected_proto.value[0].tag, 'toco_command_1/toco_command')
-      expected_proto.value[0].tag = 'toco_command/toco_command'
+      self.assertEqual(proto.value[0].tag, 'lite/lite')
+      self.assertEqual(expected_proto.value[0].tag, 'lite_1/lite')
+      expected_proto.value[0].tag = 'lite/lite'
 
       self.assertProtoEquals(expected_proto, proto)
 
   def test_matches_op_with_updates(self):
     predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
     labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
-    toco_command, update_op = summary.streaming_op(name='toco_command',
+    lite, update_op = summary.streaming_op(name='lite',
                                                predictions=predictions,
                                                labels=labels,
                                                num_thresholds=10)
 
     complete_predictions = tf.tile(predictions, [3])
     complete_labels = tf.tile(labels, [3])
-    expected_toco_command = summary.op(name='toco_command',
+    expected_lite = summary.op(name='lite',
                                    predictions=complete_predictions,
                                    labels=complete_labels,
                                    num_thresholds=10)
@@ -393,13 +393,13 @@ class StreamingOpTest(tf.test.TestCase):
       sess.run([update_op])
       sess.run([update_op])
 
-      proto = self.pb_via_op(toco_command)
-      expected_proto = self.pb_via_op(expected_toco_command)
+      proto = self.pb_via_op(lite)
+      expected_proto = self.pb_via_op(expected_lite)
 
       # Need to detect and fix the automatic _1 appended to second namespace.
-      self.assertEqual(proto.value[0].tag, 'toco_command/toco_command')
-      self.assertEqual(expected_proto.value[0].tag, 'toco_command_1/toco_command')
-      expected_proto.value[0].tag = 'toco_command/toco_command'
+      self.assertEqual(proto.value[0].tag, 'lite/lite')
+      self.assertEqual(expected_proto.value[0].tag, 'lite_1/lite')
+      expected_proto.value[0].tag = 'lite/lite'
 
       self.assertProtoEquals(expected_proto, proto)
 
@@ -411,7 +411,7 @@ class StreamingOpTest(tf.test.TestCase):
     """
     predictions = tf.constant([0.2, 0.4, 0.5, 0.6, 0.8], dtype=tf.float32)
     labels = tf.constant([False, True, True, False, True], dtype=tf.bool)
-    _, update_op = summary.streaming_op(name='toco_command',
+    _, update_op = summary.streaming_op(name='lite',
                                         predictions=predictions,
                                         labels=labels,
                                         num_thresholds=10)
@@ -423,7 +423,7 @@ class StreamingOpTest(tf.test.TestCase):
 
     tags = [v.tag for v in summary_proto.value]
     # Only 1 tag should have been introduced.
-    self.assertEqual(['toco_command/toco_command'], tags)
+    self.assertEqual(['lite/lite'], tags)
 
 
 if __name__ == "__main__":

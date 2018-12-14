@@ -28,8 +28,8 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.toco_command import toco_command_demo
-from tensorboard.plugins.toco_command import toco_command_plugin
+from tensorboard.plugins.lite import lite_demo
+from tensorboard.plugins.lite import lite_plugin
 
 # We use an absolute error instead of a relative one because the expected values
 # are small. The default relative error (rtol) of 1e-7 yields many undesired
@@ -38,14 +38,14 @@ assert_allclose = functools.partial(
     np.testing.assert_allclose, rtol=0, atol=1e-7)
 
 
-class TocoCommandPluginTest(tf.test.TestCase):
+class LitePluginTest(tf.test.TestCase):
 
   def setUp(self):
-    super(TocoCommandPluginTest, self).setUp()
+    super(LitePluginTest, self).setUp()
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
 
     # Generate data.
-    toco_command_demo.run_all(
+    lite_demo.run_all(
         logdir=logdir,
         steps=3,
         thresholds=5,
@@ -57,7 +57,7 @@ class TocoCommandPluginTest(tf.test.TestCase):
     multiplexer.Reload()
 
     context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
-    self.plugin = toco_command_plugin.TocoCommandPlugin(context)
+    self.plugin = lite_plugin.TLitePlugin(context)
 
   def validatePrCurveEntry(
       self,
@@ -115,7 +115,7 @@ class TocoCommandPluginTest(tf.test.TestCase):
     """Tests that the plugin offers the correct routes."""
     routes = self.plugin.get_plugin_apps()
     self.assertIsInstance(routes['/tags'], collections.Callable)
-    self.assertIsInstance(routes['/toco_command'], collections.Callable)
+    self.assertIsInstance(routes['/lite'], collections.Callable)
     self.assertIsInstance(
         routes['/available_time_entries'], collections.Callable)
 
@@ -129,37 +129,37 @@ class TocoCommandPluginTest(tf.test.TestCase):
 
     # Assert that the tags for each run are correct.
     self.assertItemsEqual(
-        ['red/toco_command', 'green/toco_command', 'blue/toco_command'],
+        ['red/lite', 'green/lite', 'blue/lite'],
         list(tags_response['colors'].keys()))
     self.assertItemsEqual(
-        ['red/toco_command', 'green/toco_command', 'blue/toco_command'],
+        ['red/lite', 'green/lite', 'blue/lite'],
         list(tags_response['mask_every_other_prediction'].keys()))
 
     # Verify the data for each run-tag combination.
     self.assertDictEqual({
         'displayName': 'classifying red',
         'description': self.computeCorrectDescription(168),
-    }, tags_response['colors']['red/toco_command'])
+    }, tags_response['colors']['red/lite'])
     self.assertDictEqual({
         'displayName': 'classifying green',
         'description': self.computeCorrectDescription(210),
-    }, tags_response['colors']['green/toco_command'])
+    }, tags_response['colors']['green/lite'])
     self.assertDictEqual({
         'displayName': 'classifying blue',
         'description': self.computeCorrectDescription(252),
-    }, tags_response['colors']['blue/toco_command'])
+    }, tags_response['colors']['blue/lite'])
     self.assertDictEqual({
         'displayName': 'classifying red',
         'description': self.computeCorrectDescription(168),
-    }, tags_response['mask_every_other_prediction']['red/toco_command'])
+    }, tags_response['mask_every_other_prediction']['red/lite'])
     self.assertDictEqual({
         'displayName': 'classifying green',
         'description': self.computeCorrectDescription(210),
-    }, tags_response['mask_every_other_prediction']['green/toco_command'])
+    }, tags_response['mask_every_other_prediction']['green/lite'])
     self.assertDictEqual({
         'displayName': 'classifying blue',
         'description': self.computeCorrectDescription(252),
-    }, tags_response['mask_every_other_prediction']['blue/toco_command'])
+    }, tags_response['mask_every_other_prediction']['blue/lite'])
 
   def testAvailableSteps(self):
     """Tests that runs are mapped to correct available steps."""
@@ -194,16 +194,16 @@ class TocoCommandPluginTest(tf.test.TestCase):
 
   def testPrCurvesDataCorrect(self):
     """Tests that responses for PR curves for run-tag combos are correct."""
-    toco_command_response = self.plugin.toco_command_impl(
-        ['colors', 'mask_every_other_prediction'], 'blue/toco_command')
+    lite_response = self.plugin.lite_impl(
+        ['colors', 'mask_every_other_prediction'], 'blue/lite')
 
     # Assert that the runs are correct.
     self.assertItemsEqual(
         ['colors', 'mask_every_other_prediction'],
-        list(toco_command_response.keys()))
+        list(lite_response.keys()))
 
     # Assert that PR curve data is correct for the colors run.
-    entries = toco_command_response['colors']
+    entries = lite_response['colors']
     self.assertEqual(3, len(entries))
     self.validatePrCurveEntry(
         expected_step=0,
@@ -238,7 +238,7 @@ class TocoCommandPluginTest(tf.test.TestCase):
 
     # Assert that PR curve data is correct for the mask_every_other_prediction
     # run.
-    entries = toco_command_response['mask_every_other_prediction']
+    entries = lite_response['mask_every_other_prediction']
     self.assertEqual(3, len(entries))
     self.validatePrCurveEntry(
         expected_step=0,
@@ -279,11 +279,11 @@ class TocoCommandPluginTest(tf.test.TestCase):
     """
     with six.assertRaisesRegex(
         self, ValueError, r'No PR curves could be found'):
-      self.plugin.toco_command_impl(['colors'], 'non_existent_tag')
+      self.plugin.lite_impl(['colors'], 'non_existent_tag')
 
     with six.assertRaisesRegex(
         self, ValueError, r'No PR curves could be found'):
-      self.plugin.toco_command_impl(['non_existent_run'], 'blue/toco_command')
+      self.plugin.lite_impl(['non_existent_run'], 'blue/lite')
 
   def testPluginIsNotActive(self):
     """Tests that the plugin is inactive when no relevant data exists."""
@@ -293,7 +293,7 @@ class TocoCommandPluginTest(tf.test.TestCase):
     multiplexer.Reload()
     context = base_plugin.TBContext(
         logdir=empty_logdir, multiplexer=multiplexer)
-    plugin = toco_command_plugin.TocoCommandPlugin(context)
+    plugin = lite_plugin.LitePlugin(context)
     self.assertFalse(plugin.is_active())
 
   def testPluginIsActive(self):

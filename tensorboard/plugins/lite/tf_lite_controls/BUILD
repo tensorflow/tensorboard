@@ -6,14 +6,14 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "tf_toco_command_controls",
-    srcs = ["tf-toco-command-controls.html"],
-    path = "/tf-toco-command-controls",
+    name = "tf_lite_controls",
+    srcs = ["tf-lite-controls.html"],
+    path = "/tf-lite-controls",
     deps = [
         "//tensorboard/components/tf_backend:tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/toco_command/tf_toco_command_common",
+        "//tensorboard/plugins/lite/tf_lite_common",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_node_search",
         "@org_polymer_paper_button",
@@ -29,8 +29,8 @@ tf_web_library(
 
 tensorboard_webcomponent_library(
     name = "legacy",
-    srcs = [":tf_toco_command_controls"],
-    destdir = "tf-toco-command-controls",
+    srcs = [":tf_lite_controls"],
+    destdir = "tf-lite-controls",
     deps = [
         "//tensorboard/components/tf_backend:tf_backend",
         "//tensorboard/components/tf_dashboard_common:legacy",

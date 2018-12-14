@@ -56,7 +56,7 @@ from tensorflow.python.tools import saved_model_utils
 from tensorflow.python.training import checkpoint_management
 from tensorflow.python.training import saver as saver_lib
 
-from tensorboard.plugins.toco_command.suggestion import Suggestion
+from tensorboard.plugins.lite.suggestion import Suggestion
 
 
 class FreezeSuggestion(Suggestion):

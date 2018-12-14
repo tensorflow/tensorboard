@@ -18,8 +18,8 @@ py_library(
 )
 
 py_library(
-    name = "toco_command_plugin",
-    srcs = ["toco_command_plugin.py", "run_toco_impl.py", "freeze_graph.py", "tflite_convert.py", "suggestion.py"],
+    name = "lite_plugin",
+    srcs = ["lite_plugin.py", "run_toco_impl.py", "freeze_graph.py", "tflite_convert.py", "suggestion.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
@@ -37,14 +37,14 @@ py_library(
 )
 
 py_test(
-    name = "toco_command_plugin_test",
+    name = "lite_plugin_test",
     size = "medium",  # tf integration test
-    srcs = ["toco_command_plugin_test.py"],
+    srcs = ["lite_plugin_test.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
-        ":toco_command_demo",
-        ":toco_command_plugin",
+        ":lite_demo",
+        ":lite_plugin",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
@@ -88,8 +88,8 @@ tb_proto_library(
 )
 
 py_binary(
-    name = "toco_command_demo",
-    srcs = ["toco_command_demo.py"],
+    name = "lite_demo",
+    srcs = ["lite_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":summary",

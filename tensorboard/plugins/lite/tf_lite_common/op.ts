@@ -1,4 +1,4 @@
-module tf.toco_command.op {
+module tf.lite.op {
   import CompatibilityProvider = tf.graph.op.CompatibilityProvider;
   import OpNode = tf.graph.OpNode;
 
