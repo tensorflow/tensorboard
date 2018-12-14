@@ -23,6 +23,7 @@ import json
 import subprocess
 from os import listdir, path, mkdir
 from werkzeug import wrappers
+import traceback
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
@@ -413,29 +414,36 @@ class LitePlugin(base_plugin.TBPlugin):
     except:
       pass
 
-    tflite_file = path.join(self._logdir, "tflite_output", "model.tflite")
+    try:
+      result = {}
+      tflite_file = path.join(self._logdir, "tflite_output", "model.tflite")
 
-    options = {
-        "input_nodes": ["dnn/input_from_feature_columns/input_layer/concat"],
-        "output_nodes": ["dnn/head/predictions/probabilities"],
-        "batch_size": 1,
-        "checkpoint": ""
-    }
+      options = {
+          "input_nodes": ["dnn/input_from_feature_columns/input_layer/concat"],
+          "output_nodes": ["dnn/head/predictions/probabilities"],
+          "batch_size": 1,
+          "checkpoint": ""
+      }
 
+      options = json.loads(request.form['data'])
+      options['checkpoint'] = path.join(self._logdir, options['checkpoint'])
 
-    options = json.loads(request.form['data'])
+      run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
+      result['success'] = ('Convert successfully. TFLite model path is '
+                           '{tflite_file}'.format(tflite_file=tflite_file))
 
-    options['checkpoint'] = path.join(self._logdir, options['checkpoint'])
-
-    result = {}
+    except Exception as e:
+      if not isinstance(e, suggestion.Suggestion):
+        traceback.print_stack()
+        e = suggestion.Suggestion(e)
 
     try:
-      run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
+      script = run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
       result['success'] = {
         'type': 'Success',
         'content': {
           'message': 'Convert successfully. TF Lite model path is: <br/><span id="generated_path">{tflite_file}</a>'.format(tflite_file=tflite_file),
-          'shell_script': ''
+          'shell_script': script
         }
       }
     except suggestion.Suggestion as e:

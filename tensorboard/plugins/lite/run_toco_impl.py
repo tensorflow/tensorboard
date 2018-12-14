@@ -4,8 +4,18 @@ import tensorflow as tf
 from google.protobuf import text_format
 from tensorflow.core.framework import graph_pb2
 from tensorflow.python.platform import gfile
-from .tflite_convert import run_toco_with_suggestion
-from .freeze_graph import freeze_with_suggestion
+from tensorboard.plugins.toco_command.tflite_convert import run_toco_with_suggestion
+from tensorboard.plugins.toco_command.freeze_graph import freeze_with_suggestion
+
+from tensorboard.plugins.toco_command.suggestion import Suggestion
+
+class ArgsSuggestion(Suggestion):
+  def __init__(self, from_exception, stack_trace=None):
+    Suggestion.__init__(self, from_exception, stack_trace)
+
+  @classmethod
+  def _get_error_map(cls):
+    return {"a Tensor which does not exist": "please check your input_array arguments"}
 
 
 def parse_input_graph_proto(input_graph):
@@ -105,12 +115,26 @@ def make_args(graph_def_file, tflite_file, options):
 
 
 def freeze_and_convert(graph_def_file, tflite_file, options):
-    freeze_args, convert_args = make_args(graph_def_file, tflite_file, options)
+    try:
+      freeze_args, convert_args = make_args(graph_def_file, tflite_file, options)
+    except Exception as e:
+        raise ArgsSuggestion(e)
 
     if freeze_args is not None:
         freeze_with_suggestion(freeze_args)
 
     run_toco_with_suggestion(convert_args)
+
+    script = ''
+    line_continuation = ' \\\n    '
+    if freeze_args is not None:
+        script += 'freeze_graph ' + line_continuation.join(freeze_args)
+
+    script += '\n\n'
+    script += 'tflite_convert ' + line_continuation.join(convert_args)
+    script += '\n'
+
+    return script
 
 
 if __name__ == '__main__':
@@ -122,4 +146,5 @@ if __name__ == '__main__':
         "batch_size": 1,
         'checkpoint': 'model_dir/model.ckpt-400'
     }
-    freeze_and_convert(graph_def_file, "model_dir/test.tflite", options)
+    script = freeze_and_convert(graph_def_file, "model_dir/test.tflite", options)
+    print script

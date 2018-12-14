@@ -1,10 +1,15 @@
+import traceback
+
 class Suggestion(Exception):
     def __init__(self, from_exception, stack_trace=None):
         Exception.__init__(self, str(from_exception))
         self.type = type(from_exception).__name__
         self.error = str(from_exception)
         self.suggestion = self._error_suggestion_map(self.error)
-        self.stack_trace = stack_trace
+        if stack_trace is not None:
+          self.stack_trace = stack_trace
+        else:
+          self.stack_trace = traceback.format_exc()
 
     @classmethod
     def _error_suggestion_map(cls, error):
