@@ -20,8 +20,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# If the V1 summary API is accessible, export it here.
+# If the V1 summary API is accessible, load and re-export it here.
 try:
+  from tensorboard.summary import v1
   from tensorboard.summary.v1 import *
 except ImportError:
   pass
+
+# Load the V2 summary API if accessible.
+try:
+  from tensorboard.summary import v2
+except ImportError:
+  pass
+
+
+del absolute_import, division, print_function

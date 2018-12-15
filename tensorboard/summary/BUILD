@@ -12,6 +12,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":summary_v1",
+        ":summary_v2",
     ],
 )
 
@@ -41,6 +42,9 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/plugins/audio:summary_v2",
+        "//tensorboard/plugins/histogram:summary_v2",
+        "//tensorboard/plugins/image:summary_v2",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/plugins/text:summary_v2",
     ],
