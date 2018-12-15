@@ -28,7 +28,7 @@ from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
 
 
-def scalar(name, data, step=0, description=None):
+def scalar(name, data, step, description=None):
   """Write a scalar summary.
 
   Arguments:
@@ -47,7 +47,8 @@ def scalar(name, data, step=0, description=None):
   from tensorboard.compat import tf_v2 as tf
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(name, values=[data, step]) as (tag, _):
+  with tf.summary.summary_scope(
+      name, 'scalar_summary', values=[data, step]) as (tag, _):
     tf.debugging.assert_scalar(data)
     return tf.summary.write(tag=tag,
                             tensor=tf.cast(data, tf.float32),

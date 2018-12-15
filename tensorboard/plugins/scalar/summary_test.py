@@ -143,6 +143,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
       self.skipTest('v2 summary API not available')
 
   def scalar(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
     writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.scalar(*args, **kwargs)
@@ -169,6 +170,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
     # Hack to extract current scope since there's no direct API for it.
     with tf.name_scope('_') as temp_scope:
       scope = temp_scope.rstrip('/_')

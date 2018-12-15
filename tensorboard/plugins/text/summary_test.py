@@ -131,6 +131,7 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
                                r'Expected binary or unicode string, got 0'):
       self.text('la', np.array(range(42)))
 
+
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def text(self, *args, **kwargs):
     return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
@@ -157,6 +158,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
       self.skipTest('TF v2 summary API not available')
 
   def text(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
     writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.text(*args, **kwargs)
@@ -183,6 +185,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
   def text(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
     # Hack to extract current scope since there's no direct API for it.
     with tf.name_scope('_') as temp_scope:
       scope = temp_scope.rstrip('/_')

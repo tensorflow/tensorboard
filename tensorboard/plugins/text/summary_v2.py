@@ -23,14 +23,14 @@ from tensorboard.plugins.text import metadata
 from tensorboard.util import tensor_util
 
 
-def text(name, data, step=0, description=None):
-  """Emit a text summary.
+def text(name, data, step, description=None):
+  """Write a text summary.
 
   Arguments:
     name: A name for this summary. The summary tag used for TensorBoard will
       be this name prefixed by any active name scopes.
     data: A UTF-8 string tensor value.
-    step: Optional `int64`-castable monotonic step value. Defaults to 0.
+    step: Required `int64`-castable monotonic step value.
     description: Optional long-form description for this summary, as a
       constant `str`. Markdown is supported. Defaults to empty.
 
@@ -42,10 +42,11 @@ def text(name, data, step=0, description=None):
   from tensorboard.compat import tf_v2 as tf
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(name, values=[data, step]) as (tag, _):
+  with tf.summary.summary_scope(
+      name, 'text_summary', values=[data, step]) as (tag, _):
     tf.debugging.assert_type(data, tf.string)
     return tf.summary.write(
-        tag=tag, tensor=data, metadata=summary_metadata, step=step)
+        tag=tag, tensor=data, step=step, metadata=summary_metadata)
 
 
 def text_pb(tag, data, description=None):
