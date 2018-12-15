@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Text summaries and TensorFlow operations to create them.
-A text summary stores a single string value.
-"""
+"""Text summaries and TensorFlow operations to create them."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,6 +21,12 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard.plugins.text import metadata
+from tensorboard.plugins.text import summary_v2
+
+
+# Export V2 versions.
+text = summary_v2.text
+text_pb = summary_v2.text_pb
 
 
 def op(name,
@@ -64,11 +68,11 @@ def op(name,
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
   with tf.name_scope(name):
-    with tf.control_dependencies([tf.assert_type(data, tf.string)]):
-      return tf.summary.tensor_summary(name='text_summary',
-                                       tensor=data,
-                                       collections=collections,
-                                       summary_metadata=summary_metadata)
+    with tf.control_dependencies([tf.compat.v1.assert_type(data, tf.string)]):
+      return tf.compat.v1.summary.tensor_summary(name='text_summary',
+                                                 tensor=data,
+                                                 collections=collections,
+                                                 summary_metadata=summary_metadata)
 
 
 def pb(name, data, display_name=None, description=None):
