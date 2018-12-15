@@ -7,21 +7,39 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
-# This rule provides a TensorFlow API implementation exposed under
-# `tensorboard.compat.tensorflow`. By default this API implementation
-# uses actual TensorFlow if available, and if not falls back to our stub.
+# Compatibility helpers in the `tensorboard.compat` module.
 #
-# Depend on this rule if your code is usable with either real or stub TF.
+# This module provides aliases for importing variations on the TensorFlow APIs.
 #
-# Note that this rule doesn't actually *provide* the TensorFlow dependency; this
-# can be separately expressed using //tensorboard:expect_tensorflow_installed,
-# which is a no-op as written but can be swapped out for a real dependency.
+# `from tensorboard.compat import tf`: this provides the TF API. By default
+# this will try to `import tensorflow` and if it fails, will be undefined. This
+# is useful primarily in combination with the `:tensorflow` rule below.
+#
+# `from tensorboard.compat import tf_v2`: this provides the TF 2.0 API. By
+# default this tries to import the TF 2.0 API from a few places where it may
+# be accessible, and if it fails, will be undefined.
 py_library(
-    name = "tensorflow",
+    name = "compat",
     srcs = ["__init__.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
+)
+
+# This rule ensures that `from tensorboard.compat import tf` will provide a
+# TensorFlow API. By default this API implementation uses actual TensorFlow if
+# available, and if not falls back to a stub implementation.
+#
+# Depend on this rule if your code is usable with either real or stub TF.
+#
+# External only: targets that need real TF should instead depend on the
+# placeholder rule //tensorboard:expect_tensorflow_installed, which is a no-op
+# as written but can be swapped out for a real dependency.
+py_library(
+    name = "tensorflow",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
+        ":compat",
         "//tensorboard/compat/tensorflow_stub",
     ],
 )
