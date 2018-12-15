@@ -707,11 +707,22 @@ export class LineChart {
     // frequency components of the time-series.
     let last = data.length > 0 ? 0 : NaN;
     let numAccum = 0;
+
+    const yValues = data.map((d, i) => this.yValueAccessor(d, i, dataset));
+    // See #786.
+    const isConstant = yValues.every((v) => v == yValues[0]);
     data.forEach((d, i) => {
+<<<<<<< HEAD
       let nextVal = this.yValueAccessor(d, i, dataset);
       if (!Number.isFinite(nextVal)) {
+=======
+      const nextVal = yValues[i];
+      if (isConstant || !_.isFinite(nextVal)) {
+>>>>>>> Check whether values are constant before smooth
         d.smoothed = nextVal;
       } else {
+        // This arithematic causes IEEE 754 floating-point precision error and
+        // cause really janky bounds/chart.
         last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;
         numAccum++;
         // The uncorrected moving average is biased towards the initial value.
