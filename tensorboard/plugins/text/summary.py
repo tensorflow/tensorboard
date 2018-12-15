@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary_v2
@@ -34,7 +34,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create a text summary op.
+  """Create a legacy text summary op.
 
   Text data summarized via this plugin will be visible in the Text Dashboard
   in TensorBoard. The standard TensorBoard Text Dashboard will render markdown
@@ -68,15 +68,15 @@ def op(name,
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
   with tf.name_scope(name):
-    with tf.control_dependencies([tf.compat.v1.assert_type(data, tf.string)]):
-      return tf.compat.v1.summary.tensor_summary(name='text_summary',
-                                                 tensor=data,
-                                                 collections=collections,
-                                                 summary_metadata=summary_metadata)
+    with tf.control_dependencies([tf.assert_type(data, tf.string)]):
+      return tf.summary.tensor_summary(name='text_summary',
+                                       tensor=data,
+                                       collections=collections,
+                                       summary_metadata=summary_metadata)
 
 
 def pb(name, data, display_name=None, description=None):
-  """Create a text summary protobuf.
+  """Create a legacy text summary protobuf.
 
   Arguments:
     name: A name for the generated node. Will also serve as a series name in
@@ -95,7 +95,7 @@ def pb(name, data, display_name=None, description=None):
     A `tf.Summary` protobuf object.
   """
   try:
-    tensor = tf.compat.v1.make_tensor_proto(data, dtype=tf.string)
+    tensor = tf.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:
     raise ValueError(e)
 

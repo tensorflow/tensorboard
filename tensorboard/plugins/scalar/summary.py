@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata
@@ -60,11 +60,11 @@ def op(name,
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
   with tf.name_scope(name):
-    with tf.control_dependencies([tf.compat.v1.assert_scalar(data)]):
-      return tf.compat.v1.summary.tensor_summary(name='scalar_summary',
-                                                 tensor=tf.cast(data, tf.float32),
-                                                 collections=collections,
-                                                 summary_metadata=summary_metadata)
+    with tf.control_dependencies([tf.assert_scalar(data)]):
+      return tf.summary.tensor_summary(name='scalar_summary',
+                                       tensor=tf.cast(data, tf.float32),
+                                       collections=collections,
+                                       summary_metadata=summary_metadata)
 
 
 def pb(name, data, display_name=None, description=None):
@@ -89,7 +89,7 @@ def pb(name, data, display_name=None, description=None):
                      % data.shape)
   if data.dtype.kind not in ('b', 'i', 'u', 'f'):  # bool, int, uint, float
     raise ValueError('Cast %s to float is not supported' % data.dtype.name)
-  tensor = tf.compat.v1.make_tensor_proto(data.astype(np.float32))
+  tensor = tf.make_tensor_proto(data.astype(np.float32))
 
   if display_name is None:
     display_name = name
