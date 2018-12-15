@@ -26,10 +26,15 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from tensorboard.plugins.image import metadata
+from tensorboard.plugins.image import summary_v2
 from tensorboard.util import encoder
+
+
+# Export V2 versions.
+image = summary_v2.image
 
 
 def op(name,
@@ -38,7 +43,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create an image summary op for use in a TensorFlow graph.
+  """Create a legacy image summary op for use in a TensorFlow graph.
 
   Arguments:
     name: A unique name for the generated summary node.
@@ -74,6 +79,10 @@ def op(name,
     encoded_images = tf.map_fn(tf.image.encode_png, limited_images,
                                dtype=tf.string,
                                name='encode_each_image')
+    # Workaround for map_fn returning float dtype for an empty elems input.
+    encoded_images = tf.cond(
+        tf.shape(encoded_images)[0] > 0,
+        lambda: encoded_images, lambda: tf.constant([], tf.string))
     image_shape = tf.shape(images)
     dimensions = tf.stack([tf.as_string(image_shape[2], name='width'),
                            tf.as_string(image_shape[1], name='height')],
@@ -86,7 +95,7 @@ def op(name,
 
 
 def pb(name, images, max_outputs=3, display_name=None, description=None):
-  """Create an image summary protobuf.
+  """Create a legacy image summary protobuf.
 
   This behaves as if you were to create an `op` with the same arguments
   (wrapped with constant tensors where appropriate) and then execute
@@ -114,12 +123,14 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   images = np.array(images).astype(np.uint8)
   if images.ndim != 4:
     raise ValueError('Shape %r must have rank 4' % (images.shape, ))
+  if max_outputs < 0:
+    raise ValueError('Must have max_outputs >= 0, got %r' % max_outputs)
 
   limited_images = images[:max_outputs]
   encoded_images = [encoder.encode_png(image) for image in limited_images]
   (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
-  tensor = tf.compat.v1.make_tensor_proto(content, dtype=tf.string)
+  tensor = tf.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name
