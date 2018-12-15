@@ -20,4 +20,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.summary.v1 import *
+# If the V1 summary API is accessible, export it here.
+try:
+  from tensorboard.summary.v1 import *
+except ImportError:
+  pass

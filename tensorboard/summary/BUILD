@@ -7,8 +7,18 @@ py_library(
     name = "summary",
     srcs = [
         "__init__.py",
+    ],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":summary_v1",
+    ],
+)
+
+py_library(
+    name = "summary_v1",
+    srcs = [
         "v1.py",
-        "v2.py",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -23,6 +33,19 @@ py_library(
     ],
 )
 
+py_library(
+    name = "summary_v2",
+    srcs = [
+        "v2.py",
+    ],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/plugins/scalar:summary_v2",
+        "//tensorboard/plugins/text:summary_v2",
+    ],
+)
+
 py_test(
     name = "summary_test",
     size = "small",
@@ -30,6 +53,8 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
+        ":summary_v1",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
