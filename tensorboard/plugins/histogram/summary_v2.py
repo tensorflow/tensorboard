@@ -111,6 +111,9 @@ def _buckets(data, bucket_count=None):
         bucket_counts = tf.cast(tf.reduce_sum(one_hots, axis=0),
                                 dtype=tf.float64)
         edges = tf.linspace(min_, max_, bucket_count + 1)
+        # Ensure edges[-1] == max_, which TF's linspace implementation does not
+        # do, leaving it subject to the whim of floating point rounding error.
+        edges = tf.concat([edges[:-1], [max_]], 0)
         left_edges = edges[:-1]
         right_edges = edges[1:]
         return tf.transpose(tf.stack(

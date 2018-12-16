@@ -32,7 +32,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 
 from tensorboard.plugins.histogram import metadata
@@ -187,7 +187,7 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tf.compat.v1.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tf.make_tensor_proto(buckets, dtype=tf.float64)
 
   if display_name is None:
     display_name = name
