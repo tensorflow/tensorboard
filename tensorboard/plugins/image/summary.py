@@ -79,10 +79,6 @@ def op(name,
     encoded_images = tf.map_fn(tf.image.encode_png, limited_images,
                                dtype=tf.string,
                                name='encode_each_image')
-    # Workaround for map_fn returning float dtype for an empty elems input.
-    encoded_images = tf.cond(
-        tf.shape(encoded_images)[0] > 0,
-        lambda: encoded_images, lambda: tf.constant([], tf.string))
     image_shape = tf.shape(images)
     dimensions = tf.stack([tf.as_string(image_shape[2], name='width'),
                            tf.as_string(image_shape[1], name='height')],
@@ -123,8 +119,6 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   images = np.array(images).astype(np.uint8)
   if images.ndim != 4:
     raise ValueError('Shape %r must have rank 4' % (images.shape, ))
-  if max_outputs < 0:
-    raise ValueError('Must have max_outputs >= 0, got %r' % max_outputs)
 
   limited_images = images[:max_outputs]
   encoded_images = [encoder.encode_png(image) for image in limited_images]

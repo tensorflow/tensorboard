@@ -70,13 +70,38 @@ class SummaryBaseTest(object):
 
   def test_metadata(self):
     data = np.array(1, np.uint8, ndmin=4)
-    pb = self.image('mona_lisa', data)
+    description = 'By Leonardo da Vinci'
+    pb = self.image('mona_lisa', data, description=description)
     summary_metadata = pb.value[0].metadata
+    self.assertEqual(summary_metadata.summary_description, description)
     plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
     content = summary_metadata.plugin_data.content
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
+
+  def test_png_format_roundtrip(self):
+    images = self._generate_images(c=1)
+    pb = self.image('mona_lisa', images)
+    encoded = pb.value[0].tensor.string_val[2]  # skip width, height
+    self.assertAllEqual(images[0], tf.image.decode_png(encoded))
+
+  def _test_dimensions(self, images):
+    pb = self.image('mona_lisa', images)
+    self.assertEqual(1, len(pb.value))
+    result = pb.value[0].tensor.string_val
+    # Check annotated dimensions.
+    self.assertEqual(tf.compat.as_bytes(str(self.image_width)), result[0])
+    self.assertEqual(tf.compat.as_bytes(str(self.image_height)), result[1])
+    for i, encoded in enumerate(result[2:]):
+      decoded = tf.image.decode_png(encoded)
+      self.assertEqual(images[i].shape, decoded.shape)
+
+  def test_dimensions(self):
+    self._test_dimensions(self._generate_images(c=1))
+    self._test_dimensions(self._generate_images(c=2))
+    self._test_dimensions(self._generate_images(c=3))
+    self._test_dimensions(self._generate_images(c=4))
 
   def test_image_count_zero(self):
     shape = (0, self.image_height, self.image_width, 3)
@@ -112,37 +137,6 @@ class SummaryBaseTest(object):
         self, (ValueError, tf.errors.InvalidArgumentError), '>= 0'):
       self.image('mona_lisa', data, max_outputs=-1)
 
-  def test_floating_point_data(self):
-    # include truncation of values outside [0, 1)
-    pass  # DO NOT SUBMIT
-
-  def test_png_format_roundtrip(self):
-    images = self._generate_images(c=1)
-    pb = self.image('mona_lisa', images)
-    encoded = pb.value[0].tensor.string_val[2]  # skip width, height
-    self.assertAllEqual(images[0], tf.image.decode_png(encoded))
-
-  def _test_dimensions(self, images):
-    pb = self.image('mona_lisa', images)
-    self.assertEqual(1, len(pb.value))
-    result = pb.value[0].tensor.string_val
-    # Check annotated dimensions.
-    self.assertEqual(tf.compat.as_bytes(str(self.image_width)), result[0])
-    self.assertEqual(tf.compat.as_bytes(str(self.image_height)), result[1])
-    for i, encoded in enumerate(result[2:]):
-      decoded = tf.image.decode_png(encoded)
-      self.assertEqual(images[i].shape, decoded.shape)
-
-  def test_dimensions(self):
-    self._test_dimensions(self._generate_images(c=1))
-    self._test_dimensions(self._generate_images(c=2))
-    self._test_dimensions(self._generate_images(c=3))
-    self._test_dimensions(self._generate_images(c=4))
-
-  def test_dimensions_when_not_statically_known(self):
-    # only works w/ graph fn now?
-    pass  # DO NOT SUBMIT
-
   def test_requires_rank_4(self):
     with six.assertRaisesRegex(self, ValueError, 'must have rank 4'):
       self.image('mona_lisa', [[[1], [2]], [[3], [4]]])
@@ -156,6 +150,9 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
     data = np.array(1, np.uint8, ndmin=4)
     self.assertEqual('a/image_summary', self.image('a', data).value[0].tag)
     self.assertEqual('a/b/image_summary', self.image('a/b', data).value[0].tag)
+
+  def test_requires_nonnegative_max_outputs(self):
+    self.skipTest('summary V1 pb does not actually enforce this')
 
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
@@ -175,6 +172,9 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
     with tf.name_scope('scope'):
       self.assertEqual('scope/a/image_summary',
                        self.image('a', data).value[0].tag)
+
+  def test_image_count_zero(self):
+    self.skipTest('fails under eager because map_fn() returns float dtype')
 
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
@@ -209,6 +209,15 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     self.image('a', data, step=333)
     event = self.read_single_event_from_eventfile()
     self.assertEqual(333, event.step)
+
+  def test_floating_point_data(self):
+    data = np.array([-0.01, 0.0, 0.9, 1.0, 1.1]).reshape((1, -1, 1, 1))
+    pb = self.image('mona_lisa', data)
+    encoded = pb.value[0].tensor.string_val[2]  # skip width, height
+    decoded = tf.image.decode_png(encoded).numpy()
+    # Float values outside [0, 1) are truncated, and everything is scaled to the
+    # range [0, 255] with 229 = 0.9 * 255, truncated.
+    self.assertAllEqual([0, 0, 229, 255, 255], list(decoded.flat))
 
 
 if __name__ == '__main__':
