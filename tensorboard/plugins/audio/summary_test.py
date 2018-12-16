@@ -19,9 +19,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import glob
+import os
+
 import numpy as np
 import six
 import tensorflow as tf
+# TODO(nickfelt): get encode_wav() exported in the public API.
+from tensorflow.python.ops import gen_audio_ops
 
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata
@@ -30,85 +35,45 @@ from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 
 
-class SummaryTest(tf.test.TestCase):
+try:
+  from tensorboard.compat import tf_v2
+except ImportError:
+  tf_v2 = None
+
+try:
+  tf.enable_eager_execution()
+except AttributeError:
+  # TF 2.0 doesn't have this symbol because eager is the default.
+  pass
+
+
+class SummaryBaseTest(object):
 
   def setUp(self):
-    super(SummaryTest, self).setUp()
-    tf.reset_default_graph()
+    super(SummaryBaseTest, self).setUp()
+    self.samples_rate = 44100
+    self.audio_count = 1
+    self.num_samples = 20
+    self.num_channels = 2
 
-    self.samples_per_second = 44100
-    self.audio_count = 6
-    stereo_shape = (self.audio_count, -1, 2)
-    space = (np.linspace(0.0, 100.0, self.samples_per_second)
-             .astype(np.float32).reshape(stereo_shape))
-    self.audio_length = space.shape[1]
-    self.stereo = np.sin(space)
-    self.mono = self.stereo.mean(axis=2, keepdims=True)
+  def _generate_audio(self, **kwargs):
+    size = [
+        kwargs.get('k', self.audio_count),
+        kwargs.get('n', self.num_samples),
+        kwargs.get('c', self.num_channels),
+    ]
+    return np.sin(np.linspace(0.0, 100.0, np.prod(size),
+                              dtype=np.float32)).reshape(size)
 
-  def pb_via_op(self, summary_op, feed_dict=None):
-    with tf.Session() as sess:
-      actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = summary_pb2.Summary()
-    actual_proto.ParseFromString(actual_pbtxt)
-    return actual_proto
-
-  def compute_and_check_summary_pb(self,
-                                   name,
-                                   audio,
-                                   max_outputs=3,
-                                   display_name=None,
-                                   description=None,
-                                   audio_tensor=None,
-                                   feed_dict=None):
-    """Use both `op` and `pb` to get a summary, asserting validity.
-
-    "Validity" means that the `op` and `pb` functions must return the
-    same protobufs, and also that each encoded audio value appears to be
-    a valid WAV file. If either of these conditions fails, the test will
-    immediately fail. Otherwise, the valid protobuf will be returned.
-
-    Returns:
-      A `Summary` protocol buffer.
-    """
-    if audio_tensor is None:
-      audio_tensor = tf.constant(audio)
-    op = summary.op(name, audio_tensor, self.samples_per_second,
-                    max_outputs=max_outputs,
-                    display_name=display_name, description=description)
-    pb = summary.pb(name, audio, self.samples_per_second,
-                    max_outputs=max_outputs,
-                    display_name=display_name, description=description)
-    pb = test_util.ensure_tb_summary_proto(pb)
-    pb_via_op = self.pb_via_op(op, feed_dict=feed_dict)
-    self.assertProtoEquals(pb, pb_via_op)
-    audios = tensor_util.make_ndarray(pb.value[0].tensor)[:, 0].tolist()
-    invalid_audios = [x for x in audios
-                      if not x.startswith(b'RIFF')]
-    self.assertFalse(invalid_audios)
-    return pb
+  def audio(self, *args, **kwargs):
+    raise NotImplementedError()
 
   def test_metadata(self):
-    pb = self.compute_and_check_summary_pb('k488', self.stereo)
+    data = np.array(1, np.float32, ndmin=3)
+    description = 'Piano Concerto No. 23 (K488), in **A major.**'
+    pb = self.audio('k488', data, 44100, description=description)
     self.assertEqual(len(pb.value), 1)
-    self.assertEqual(pb.value[0].tag, 'k488/audio_summary')
     summary_metadata = pb.value[0].metadata
-    self.assertEqual(summary_metadata.display_name, 'k488')
-    self.assertEqual(summary_metadata.summary_description, '')
-    plugin_data = summary_metadata.plugin_data
-    self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
-    content = summary_metadata.plugin_data.content
-    parsed = metadata.parse_plugin_metadata(content)
-    self.assertEqual(parsed.encoding, metadata.Encoding.Value('WAV'))
-
-  def test_metadata_with_explicit_name_and_description(self):
-    display_name = 'Piano Concerto No. 23 (K488)'
-    description = 'In **A major.**'
-    pb = self.compute_and_check_summary_pb(
-        'k488', self.stereo, display_name=display_name, description=description)
-    self.assertEqual(len(pb.value), 1)
-    self.assertEqual(pb.value[0].tag, 'k488/audio_summary')
-    summary_metadata = pb.value[0].metadata
-    self.assertEqual(summary_metadata.display_name, display_name)
     self.assertEqual(summary_metadata.summary_description, description)
     plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
@@ -116,50 +81,152 @@ class SummaryTest(tf.test.TestCase):
     parsed = metadata.parse_plugin_metadata(content)
     self.assertEqual(parsed.encoding, metadata.Encoding.Value('WAV'))
 
-  def test_correctly_handles_no_audio(self):
-    shape = (0, self.audio_length, 2)
+  def test_wav_format_roundtrip(self):
+    audio = self._generate_audio(c=1)
+    pb = self.audio('k888', audio, 44100)
+    encoded = tensor_util.make_ndarray(pb.value[0].tensor)
+    decoded, sample_rate = gen_audio_ops.decode_wav(encoded.flat[0])
+    # WAV roundtrip goes from float32 to int16 and back, so expect some
+    # precision loss, but not more than 2 applications of rounding error from
+    # mapping the range [-1.0, 1.0] to 2^16.
+    epsilon = 2 * 2.0 / (2**16)
+    self.assertAllClose(audio[0], decoded, atol=epsilon)
+    self.assertEqual(44100, sample_rate.numpy())
+
+  def _test_dimensions(self, audio):
+    pb = self.audio('k888', audio, 44100)
+    self.assertEqual(1, len(pb.value))
+    results = tensor_util.make_ndarray(pb.value[0].tensor)
+    for i, (encoded, _) in enumerate(results):
+      decoded, _ = gen_audio_ops.decode_wav(encoded)
+      self.assertEqual(audio[i].shape, decoded.shape)
+
+  def test_dimensions(self):
+    # Check mono and stereo.
+    self._test_dimensions(self._generate_audio(c=1))
+    self._test_dimensions(self._generate_audio(c=2))
+
+  def test_audio_count_zero(self):
+    shape = (0, self.num_samples, 2)
     audio = np.array([]).reshape(shape).astype(np.float32)
-    pb = self.compute_and_check_summary_pb('k488', audio, max_outputs=3)
+    pb = self.audio('k488', audio, 44100, max_outputs=3)
     self.assertEqual(1, len(pb.value))
     results = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(results.shape, (0, 2))
 
-  def test_audio_count_when_fewer_than_max(self):
-    max_outputs = len(self.stereo) - 2
-    assert max_outputs > 0, max_outputs
-    pb = self.compute_and_check_summary_pb('k488', self.stereo,
-                                           max_outputs=max_outputs)
+  def test_audio_count_less_than_max_outputs(self):
+    max_outputs = 3
+    data = self._generate_audio(k=(max_outputs - 1))
+    pb = self.audio('k488', data, 44100, max_outputs=max_outputs)
+    self.assertEqual(1, len(pb.value))
+    results = tensor_util.make_ndarray(pb.value[0].tensor)
+    self.assertEqual(results.shape, (len(data), 2))
+
+  def test_audio_count_when_more_than_max(self):
+    max_outputs = 3
+    data = self._generate_audio(k=(max_outputs + 1))
+    pb = self.audio('k488', data, 44100, max_outputs=max_outputs)
     self.assertEqual(1, len(pb.value))
     results = tensor_util.make_ndarray(pb.value[0].tensor)
     self.assertEqual(results.shape, (max_outputs, 2))
 
-  def test_audio_count_when_more_than_max(self):
-    max_outputs = len(self.stereo) + 2
-    pb = self.compute_and_check_summary_pb('k488', self.stereo,
-                                           max_outputs=max_outputs)
-    self.assertEqual(1, len(pb.value))
-    results = tensor_util.make_ndarray(pb.value[0].tensor)
-    self.assertEqual(results.shape, (len(self.stereo), 2))
+  def test_requires_nonnegative_max_outputs(self):
+    data = np.array(1, np.float32, ndmin=3)
+    with six.assertRaisesRegex(
+        self, (ValueError, tf.errors.InvalidArgumentError), '>= 0'):
+      self.audio('k488', data, 44100, max_outputs=-1)
 
-  def test_processes_mono_audio(self):
-    pb = self.compute_and_check_summary_pb('k488', self.mono)
-    self.assertGreater(len(pb.value[0].tensor.string_val), 0)
-
-  def test_requires_rank_3_in_op(self):
+  def test_requires_rank_3(self):
     with six.assertRaisesRegex(self, ValueError, 'must have rank 3'):
-      summary.op('k488', tf.constant([[1, 2, 3], [4, 5, 6]]), 44100)
+      self.audio('k488', np.array([[1]]), 44100)
 
-  def test_requires_rank_3_in_pb(self):
-    with six.assertRaisesRegex(self, ValueError, 'must have rank 3'):
-      summary.pb('k488', np.array([[1, 2, 3], [4, 5, 6]]), 44100)
-
-  def test_requires_wav_in_op(self):
+  def test_requires_wav(self):
+    data = np.array(1, np.float32, ndmin=3)
     with six.assertRaisesRegex(self, ValueError, 'Unknown encoding'):
-      summary.op('k488', self.stereo, 44100, encoding='pptx')
+      self.audio('k488', data, 44100, encoding='pptx')
 
-  def test_requires_wav_in_pb(self):
-    with six.assertRaisesRegex(self, ValueError, 'Unknown encoding'):
-      summary.pb('k488', self.stereo, 44100, encoding='pptx')
+
+class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
+  def setUp(self):
+    super(SummaryV1PbTest, self).setUp()
+    if not hasattr(tf, 'contrib'):
+      self.skipTest('TF contrib ffmpeg API not available')
+
+  def audio(self, *args, **kwargs):
+    return summary.pb(*args, **kwargs)
+
+  def test_tag(self):
+    data = np.array(1, np.float32, ndmin=3)
+    self.assertEqual('a/audio_summary',
+                     self.audio('a', data, 44100).value[0].tag)
+    self.assertEqual('a/b/audio_summary',
+                     self.audio('a/b', data, 44100).value[0].tag)
+
+  def test_requires_nonnegative_max_outputs(self):
+    self.skipTest('summary V1 pb does not actually enforce this')
+
+
+class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
+  def setUp(self):
+    super(SummaryV1OpTest, self).setUp()
+    if not hasattr(tf, 'contrib'):
+      self.skipTest('TF contrib ffmpeg API not available')
+
+  def audio(self, *args, **kwargs):
+    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+
+  def test_tag(self):
+    data = np.array(1, np.float32, ndmin=3)
+    self.assertEqual('a/audio_summary',
+                     self.audio('a', data, 44100).value[0].tag)
+    self.assertEqual('a/b/audio_summary',
+                     self.audio('a/b', data, 44100).value[0].tag)
+
+  def test_scoped_tag(self):
+    data = np.array(1, np.float32, ndmin=3)
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a/audio_summary',
+                       self.audio('a', data, 44100).value[0].tag)
+
+  def test_audio_count_zero(self):
+    self.skipTest('fails under eager because map_fn() returns float dtype')
+
+  def test_requires_nonnegative_max_outputs(self):
+    self.skipTest('summary V1 op does not actually enforce this')
+
+
+class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
+  def setUp(self):
+    super(SummaryV2OpTest, self).setUp()
+    if tf_v2 is None:
+      self.skipTest('TF v2 summary API not available')
+
+  def audio(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
+    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    with writer.as_default():
+      summary.audio(*args, **kwargs)
+    writer.close()
+    return self.read_single_event_from_eventfile().summary
+
+  def read_single_event_from_eventfile(self):
+    event_files = glob.glob(os.path.join(self.get_temp_dir(), '*'))
+    self.assertEqual(len(event_files), 1)
+    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
+    # Expect a boilerplate event for the file_version, then the summary one.
+    self.assertEqual(len(events), 2)
+    return events[1]
+
+  def test_scoped_tag(self):
+    data = np.array(1, np.float32, ndmin=3)
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a', self.audio('a', data, 44100).value[0].tag)
+
+  def test_step(self):
+    data = np.array(1, np.float32, ndmin=3)
+    self.audio('a', data, 44100, step=333)
+    event = self.read_single_event_from_eventfile()
+    self.assertEqual(333, event.step)
 
 
 if __name__ == '__main__':

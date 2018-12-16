@@ -83,6 +83,7 @@ def audio(name,
   with tf.summary.summary_scope(
       name, 'audio_summary', values=inputs) as (tag, _):
     tf.debugging.assert_rank(data, 3)
+    tf.debugging.assert_non_negative(max_outputs)
     limited_audio = data[:max_outputs]
     encode_fn = functools.partial(gen_audio_ops.encode_wav,
                                   sample_rate=sample_rate)
