@@ -32,7 +32,6 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
-from tensorboard.util import test_util
 
 
 try:

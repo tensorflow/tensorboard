@@ -30,7 +30,6 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import tensor_util
-from tensorboard.util import test_util
 
 try:
   from tensorboard.compat import tf_v2
@@ -108,8 +107,7 @@ class SummaryBaseTest(object):
 
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return test_util.ensure_tb_summary_proto(
-        summary.pb(*args, **kwargs))
+    return summary.pb(*args, **kwargs)
 
   def test_tag(self):
     self.assertEqual('a/scalar_summary', self.scalar('a', 1).value[0].tag)
@@ -118,7 +116,7 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     self.assertEqual('a/scalar_summary', self.scalar('a', 1).value[0].tag)
