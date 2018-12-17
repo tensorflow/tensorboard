@@ -159,7 +159,7 @@ svg.icon {
 .copy-button {
   position: absolute;
   right:0px;
-  top: 17px;
+  top: 6px;
   padding: 6px;
 }
 .copy-button:hover {
@@ -586,18 +586,23 @@ tf-graph-node-search {
             <paper-item>
                 <paper-item-body two-line>
                   <div>{{item.type}}:
-                    <span inner-h-t-m-l="{{item.content.message}}"></span>
+                    <pre class="pre">{{item.content.message}}"></pre>
                     <template is="dom-if" if="{{conversionResult}}">
                       <a id="copy_generated_path_button" on-click="copyGeneratedPath" title="Click to copy the path"><iron-icon icon="content-copy"></iron-icon></a>
                     </template>
                   </div>
-                  <template is="dom-if" if="[[item.content.suggestion]]">
-                  <div secondary><{{item.content.suggestion}}</div>
-                  </template>
+                  <div secondary>
+                    <template is="dom-if" if="[[item.content.suggestion]]">
+                      <div><{{item.content.suggestion}}</div>
+                    </template>
+                    <template is="dom-if" if="[[item.content.stack_trace]]">
+                      <pre class="pre" ><{{item.content.stack_trace}}</pre>
+                    </template>
+                  </div>
 
                   <template is="dom-if" if="{{conversionResult}}">
                     <div class="script_wrap">
-                      <pre id="command_text">{{item.content.shell_script}}
+                      <pre class="pre" id="command_text">{{item.content.shell_script}}
                       </pre>
                       <a class="copy-button" title="Click to copy the command" on-click="copyCommand">
                         <iron-icon icon="content-copy">
