@@ -65,7 +65,7 @@ table td {
 .script_wrap {
   position: relative;
 }
-pre {
+.pre {
   font: 14px/20px Roboto Mono,monospace;
   margin: 16px 0;
   overflow-x: auto;
@@ -586,7 +586,7 @@ tf-graph-node-search {
             <paper-item>
                 <paper-item-body two-line>
                   <div>{{item.type}}:
-                    <pre class="pre">{{item.content.message}}"></pre>
+                    <pre class="pre">{{item.content.message}}</pre>
                     <template is="dom-if" if="{{conversionResult}}">
                       <a id="copy_generated_path_button" on-click="copyGeneratedPath" title="Click to copy the path"><iron-icon icon="content-copy"></iron-icon></a>
                     </template>
