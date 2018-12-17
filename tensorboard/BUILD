@@ -275,7 +275,7 @@ py_binary(
     srcs = ["encode_png_benchmark.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":expect_absl_logging_installed",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util",
@@ -314,7 +314,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":expect_absl_logging_installed",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util",
