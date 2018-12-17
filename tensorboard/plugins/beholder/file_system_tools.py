@@ -20,8 +20,11 @@ import pickle
 
 from google.protobuf import message
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 import tensorflow as tf
+
+logger = tb_logging.get_logger()
 
 
 def write_file(contents, path, mode='wb'):
@@ -56,7 +59,7 @@ def read_pickle(path, default=None):
 
   except (IOError, EOFError, ValueError, tf.errors.NotFoundError) as e:
     if not isinstance(e, tf.errors.NotFoundError):
-      tf.logging.error('Error reading pickle value: %s', e)
+      logger.error('Error reading pickle value: %s', e)
     if default is not None:
       result = default
     else:

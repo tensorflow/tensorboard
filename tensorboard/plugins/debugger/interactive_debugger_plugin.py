@@ -32,6 +32,9 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import interactive_debugger_server_lib
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 # HTTP routes.
 _ACK_ROUTE = '/ack'
@@ -179,7 +182,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
     run_key = interactive_debugger_server_lib.RunKey(
         *json.loads(request.args.get('run_key')))
     graph_def = self._debugger_data_server.get_graph(run_key, device_name)
-    tf.logging.debug(
+    logger.debug(
         '_serve_debugger_graph(): device_name = %s, run_key = %s, '
         'type(graph_def) = %s', device_name, run_key, type(graph_def))
     # TODO(cais): Sending text proto may be slow in Python. Investigate whether
@@ -187,7 +190,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
     return http_util.Respond(request, str(graph_def), 'text/x-protobuf')
 
   def _error_response(self, request, error_msg):
-    tf.logging.error(error_msg)
+    logger.error(error_msg)
     return http_util.Respond(
         request, {'error': error_msg}, 'application/json', 400)
 
@@ -232,7 +235,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       output_slot = int(request.args.get('output_slot'))
       debug_op = request.args.get('debug_op')
       state = request.args.get('state')
-      tf.logging.debug('Setting state of %s:%d:%s to: %s' %
+      logger.debug('Setting state of %s:%d:%s to: %s' %
                        (node_name, output_slot, debug_op, state))
       if state == 'disable':
         self._debugger_data_server.request_unwatch(

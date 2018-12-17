@@ -18,16 +18,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import logging
 import contextlib
 import os.path
 import textwrap
 
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
+
 import tensorflow as tf
-
 from tensorboard.plugins.image import summary as image_summary
+from tensorboard.util import tb_logging
 
+logger = tb_logging.get_logger()
 
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/images_demo'
@@ -53,7 +56,7 @@ def image_data(verbose=False):
   global _IMAGE_DATA  # pylint: disable=global-statement
   if _IMAGE_DATA is None:
     if verbose:
-      tf.logging.info("--- Downloading image.")
+      logger.info("--- Downloading image.")
     with contextlib.closing(urllib.request.urlopen(IMAGE_URL)) as infile:
       _IMAGE_DATA = infile.read()
   return _IMAGE_DATA
@@ -113,7 +116,7 @@ def run_box_to_gaussian(logdir, verbose=False):
     verbose: Boolean; whether to log any output.
   """
   if verbose:
-    tf.logging.info('--- Starting run: box_to_gaussian')
+    logger.info('--- Starting run: box_to_gaussian')
 
   tf.reset_default_graph()
   tf.set_random_seed(0)
@@ -174,7 +177,7 @@ def run_box_to_gaussian(logdir, verbose=False):
     writer.add_graph(sess.graph)
     for step in xrange(8):
       if verbose:
-        tf.logging.info('--- box_to_gaussian: step: %s' % step)
+        logger.info('--- box_to_gaussian: step: %s' % step)
         feed_dict = {blur_radius: step}
       run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
       run_metadata = tf.RunMetadata()
@@ -195,7 +198,7 @@ def run_sobel(logdir, verbose=False):
     verbose: Boolean; whether to log any output.
   """
   if verbose:
-    tf.logging.info('--- Starting run: sobel')
+    logger.info('--- Starting run: sobel')
 
   tf.reset_default_graph()
   tf.set_random_seed(0)
@@ -248,7 +251,7 @@ def run_sobel(logdir, verbose=False):
     writer.add_graph(sess.graph)
     for step in xrange(8):
       if verbose:
-        tf.logging.info("--- sobel: step: %s" % step)
+        logger.info("--- sobel: step: %s" % step)
         feed_dict = {kernel_radius: step}
       run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
       run_metadata = tf.RunMetadata()
@@ -271,10 +274,10 @@ def run_all(logdir, verbose=False):
 
 
 def main(unused_argv):
-  tf.logging.set_verbosity(tf.logging.INFO)
-  tf.logging.info('Saving output to %s.' % LOGDIR)
+  logging.set_verbosity(logging.INFO)
+  logger.info('Saving output to %s.' % LOGDIR)
   run_all(LOGDIR, verbose=True)
-  tf.logging.info('Done. Output saved to %s.' % LOGDIR)
+  logger.info('Done. Output saved to %s.' % LOGDIR)
 
 
 if __name__ == '__main__':

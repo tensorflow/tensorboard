@@ -36,8 +36,10 @@ from tensorboard.backend import http_util
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
+logger = tb_logging.get_logger()
 
 # HTTP routes
 TAGS_ROUTE = '/tags'
@@ -264,12 +266,12 @@ class TextPlugin(base_plugin.TBPlugin):
   def _async_index_impl(self):
     """Computes index_impl() asynchronously on a separate thread."""
     start = time.time()
-    tf.logging.info('TextPlugin computing index_impl() in a new thread')
+    logger.info('TextPlugin computing index_impl() in a new thread')
     self._index_cached = self.index_impl()
     self._index_impl_thread = None
     self._index_impl_lock.release()
     elapsed = time.time() - start
-    tf.logging.info(
+    logger.info(
         'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
 
   def index_impl(self):

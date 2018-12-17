@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorboard.plugins.debugger import debug_graphs_helper
+from tensorboard.util import tb_logging
 from tensorflow.python import debug as tf_debug
 from tensorflow.python.debug.lib import grpc_debug_test_server
 
-from tensorboard.plugins.debugger import debug_graphs_helper
+logger = tb_logging.get_logger()
 
 
 class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
@@ -33,7 +35,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
      cls.debug_server
     ) = grpc_debug_test_server.start_server_on_separate_thread(
         dump_to_filesystem=False)
-    tf.logging.info('debug server url: %s', cls.debug_server_url)
+    logger.info('debug server url: %s', cls.debug_server_url)
 
   @classmethod
   def tearDownClass(cls):
