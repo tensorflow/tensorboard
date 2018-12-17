@@ -31,38 +31,27 @@ import tensorboard.summary.v1 as tb_summary_v1
 import tensorboard.summary.v2 as tb_summary_v2
 
 
-STANDARD_PLUGINS = frozenset([
-    'audio',
-    'custom_scalar',
-    'histogram',
-    'image',
-    'pr_curve',
-    'scalar',
-    'text',
-])
-
-
 class SummaryExportsBaseTest(object):
   module = None
+  plugins = None
+  allowed = frozenset()
 
   def test_each_plugin_has_an_export(self):
-    for plugin in STANDARD_PLUGINS:
+    for plugin in self.plugins:
       self.assertIsInstance(getattr(self.module, plugin), collections.Callable)
 
   def test_plugins_export_pb_functions(self):
-    for plugin in STANDARD_PLUGINS:
+    for plugin in self.plugins:
       self.assertIsInstance(
           getattr(self.module, '%s_pb' % plugin), collections.Callable)
 
   def test_all_exports_correspond_to_plugins(self):
     exports = [name for name in dir(self.module) if not name.startswith('_')]
-    allowed = frozenset(
-        ('absolute_import', 'division', 'print_function', 'v1', 'v2'))
     bad_exports = [
         name for name in exports
-        if name not in allowed and not any(
+        if name not in self.allowed and not any(
             name == plugin or name.startswith('%s_' % plugin)
-            for plugin in STANDARD_PLUGINS)
+            for plugin in self.plugins)
     ]
     if bad_exports:
       self.fail(
@@ -76,15 +65,43 @@ class SummaryExportsBaseTest(object):
 
 class SummaryExportsTest(SummaryExportsBaseTest, tf.test.TestCase):
   module = tb_summary
+  allowed = frozenset(('v1', 'v2'))
+  plugins = frozenset([
+    'audio',
+    'custom_scalar',
+    'histogram',
+    'image',
+    'pr_curve',
+    'scalar',
+    'text',
+  ])
 
 
 class SummaryExportsV1Test(SummaryExportsBaseTest, tf.test.TestCase):
   module = tb_summary_v1
+  plugins = frozenset([
+    'audio',
+    'custom_scalar',
+    'histogram',
+    'image',
+    'pr_curve',
+    'scalar',
+    'text',
+  ])
 
 
 class SummaryExportsV2Test(SummaryExportsBaseTest, tf.test.TestCase):
   module = tb_summary_v2
+  plugins = frozenset([
+    'audio',
+    'histogram',
+    'image',
+    'scalar',
+    'text',
+  ])
 
+  def test_plugins_export_pb_functions(self):
+    self.skipTest('V2 summary API _pb functions are not finalized yet')
 
 if __name__ == '__main__':
   tf.test.main()

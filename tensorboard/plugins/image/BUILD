@@ -67,8 +67,24 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:encoder",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/compat",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -94,7 +110,6 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
     ],

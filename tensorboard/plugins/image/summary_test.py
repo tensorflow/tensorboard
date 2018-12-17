@@ -19,6 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import glob
+import os
+
 import numpy as np
 import six
 import tensorflow as tf
@@ -26,140 +29,195 @@ import tensorflow as tf
 from tensorboard.plugins.image import metadata
 from tensorboard.plugins.image import summary
 
+try:
+  from tensorboard import compat
+  tf_v2 = compat.import_tf_v2()
+except ImportError:
+  tf_v2 = None
 
-class SummaryTest(tf.test.TestCase):
+try:
+  tf.enable_eager_execution()
+except AttributeError:
+  # TF 2.0 doesn't have this symbol because eager is the default.
+  pass
+
+
+class SummaryBaseTest(object):
 
   def setUp(self):
-    super(SummaryTest, self).setUp()
-    tf.reset_default_graph()
-
-    self.image_width = 300
-    self.image_height = 75
-    self.image_count = 8
+    super(SummaryBaseTest, self).setUp()
     np.random.seed(0)
-    self.images = self._generate_images(channels=3)
-    self.images_with_alpha = self._generate_images(channels=4)
+    self.image_width = 20
+    self.image_height = 15
+    self.image_count = 1
+    self.image_channels = 3
 
-  def _generate_images(self, channels):
-    size = [self.image_count, self.image_height, self.image_width, channels]
+  def _generate_images(self, **kwargs):
+    size = [
+        kwargs.get('n', self.image_count),
+        kwargs.get('h', self.image_height),
+        kwargs.get('w', self.image_width),
+        kwargs.get('c', self.image_channels),
+    ]
     return np.random.uniform(low=0, high=255, size=size).astype(np.uint8)
 
-  def pb_via_op(self, summary_op, feed_dict=None):
-    with tf.Session() as sess:
-      actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = tf.Summary()
-    actual_proto.ParseFromString(actual_pbtxt)
-    return actual_proto
+  def image(self, *args, **kwargs):
+    raise NotImplementedError()
 
-
-  def compute_and_check_summary_pb(self, name, images, max_outputs=3,
-                                   images_tensor=None, feed_dict=None):
-    """Use both `op` and `pb` to get a summary, asserting equality.
-
-    Returns:
-      a `Summary` protocol buffer
-    """
-    if images_tensor is None:
-      images_tensor = tf.cast(tf.constant(images), tf.uint8)
-    op = summary.op(name, images_tensor, max_outputs=max_outputs)
-    pb = summary.pb(name, images, max_outputs=max_outputs)
-    pb_via_op = self.pb_via_op(op, feed_dict=feed_dict)
-    self.assertProtoEquals(pb, pb_via_op)
-    return pb
+  def test_tag(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    self.assertEqual('a', self.image('a', data).value[0].tag)
+    self.assertEqual('a/b', self.image('a/b', data).value[0].tag)
 
   def test_metadata(self):
-    pb = self.compute_and_check_summary_pb('mona_lisa', self.images)
+    data = np.array(1, np.uint8, ndmin=4)
+    description = 'By Leonardo da Vinci'
+    pb = self.image('mona_lisa', data, description=description)
     summary_metadata = pb.value[0].metadata
+    self.assertEqual(summary_metadata.summary_description, description)
     plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
     content = summary_metadata.plugin_data.content
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
 
-  def test_correctly_handles_no_images(self):
-    shape = (0, self.image_height, self.image_width, 3)
-    images = np.array([]).reshape(shape)
-    pb = self.compute_and_check_summary_pb('mona_lisa', images, max_outputs=3)
+  def test_png_format_roundtrip(self):
+    images = self._generate_images(c=1)
+    pb = self.image('mona_lisa', images)
+    encoded = pb.value[0].tensor.string_val[2]  # skip width, height
+    self.assertAllEqual(images[0], tf.image.decode_png(encoded))
+
+  def _test_dimensions(self, images):
+    pb = self.image('mona_lisa', images)
     self.assertEqual(1, len(pb.value))
     result = pb.value[0].tensor.string_val
-    self.assertEqual(tf.compat.as_bytes(str(self.image_width)), result[0])
-    self.assertEqual(tf.compat.as_bytes(str(self.image_height)), result[1])
-    image_results = result[2:]
-    self.assertEqual(len(image_results), 0)
-
-  def test_image_count_when_fewer_than_max(self):
-    max_outputs = len(self.images) - 3
-    assert max_outputs > 0, max_outputs
-    pb = self.compute_and_check_summary_pb('mona_lisa', self.images,
-                                           max_outputs=max_outputs)
-    self.assertEqual(1, len(pb.value))
-    result = pb.value[0].tensor.string_val
-    image_results = result[2:]  # skip width, height
-    self.assertEqual(len(image_results), max_outputs)
-
-  def test_image_count_when_more_than_max(self):
-    max_outputs = len(self.images) + 3
-    pb = self.compute_and_check_summary_pb('mona_lisa', self.images,
-                                           max_outputs=max_outputs)
-    self.assertEqual(1, len(pb.value))
-    result = pb.value[0].tensor.string_val
-    image_results = result[2:]  # skip width, height
-    self.assertEqual(len(image_results), len(self.images))
-
-  def _test_dimensions(self, alpha=False, static_dimensions=True):
-    if not alpha:
-      images = self.images
-      channel_count = 3
-    else:
-      images = self.images_with_alpha
-      channel_count = 4
-
-    if static_dimensions:
-      images_tensor = tf.constant(images, dtype=tf.uint8)
-      feed_dict = {}
-    else:
-      images_tensor = tf.placeholder(tf.uint8)
-      feed_dict = {images_tensor: images}
-
-    pb = self.compute_and_check_summary_pb('mona_lisa', images,
-                                           images_tensor=images_tensor,
-                                           feed_dict=feed_dict)
-    self.assertEqual(1, len(pb.value))
-    result = pb.value[0].tensor.string_val
-
     # Check annotated dimensions.
     self.assertEqual(tf.compat.as_bytes(str(self.image_width)), result[0])
     self.assertEqual(tf.compat.as_bytes(str(self.image_height)), result[1])
-
-    # Check actual image dimensions.
-    images = result[2:]
-    with tf.Session() as sess:
-      placeholder = tf.placeholder(tf.string)
-      decoder = tf.image.decode_png(placeholder)
-      for image in images:
-        decoded = sess.run(decoder, feed_dict={placeholder: image})
-        self.assertEqual((self.image_height, self.image_width, channel_count),
-                         decoded.shape)
+    for i, encoded in enumerate(result[2:]):
+      decoded = tf.image.decode_png(encoded)
+      self.assertEqual(images[i].shape, decoded.shape)
 
   def test_dimensions(self):
-    self._test_dimensions(alpha=False)
+    self._test_dimensions(self._generate_images(c=1))
+    self._test_dimensions(self._generate_images(c=2))
+    self._test_dimensions(self._generate_images(c=3))
+    self._test_dimensions(self._generate_images(c=4))
 
-  def test_dimensions_with_alpha(self):
-    self._test_dimensions(alpha=True)
+  def test_image_count_zero(self):
+    shape = (0, self.image_height, self.image_width, 3)
+    data = np.array([], np.uint8).reshape(shape)
+    pb = self.image('mona_lisa', data, max_outputs=3)
+    self.assertEqual(1, len(pb.value))
+    result = pb.value[0].tensor.string_val
+    self.assertEqual(tf.compat.as_bytes(str(self.image_width)), result[0])
+    self.assertEqual(tf.compat.as_bytes(str(self.image_height)), result[1])
+    self.assertEqual(2, len(result))
 
-  def test_dimensions_when_not_statically_known(self):
-    self._test_dimensions(alpha=False, static_dimensions=False)
+  def test_image_count_less_than_max_outputs(self):
+    max_outputs = 3
+    data = self._generate_images(n=(max_outputs - 1))
+    pb = self.image('mona_lisa', data, max_outputs=max_outputs)
+    self.assertEqual(1, len(pb.value))
+    result = pb.value[0].tensor.string_val
+    image_results = result[2:]  # skip width, height
+    self.assertEqual(len(data), len(image_results))
 
-  def test_dimensions_with_alpha_when_not_statically_known(self):
-    self._test_dimensions(alpha=True, static_dimensions=False)
+  def test_image_count_more_than_max_outputs(self):
+    max_outputs = 3
+    data = self._generate_images(n=(max_outputs + 1))
+    pb = self.image('mona_lisa', data, max_outputs=max_outputs)
+    self.assertEqual(1, len(pb.value))
+    result = pb.value[0].tensor.string_val
+    image_results = result[2:]  # skip width, height
+    self.assertEqual(max_outputs, len(image_results))
 
-  def test_requires_rank_4_in_op(self):
+  def test_requires_nonnegative_max_outputs(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    with six.assertRaisesRegex(
+        self, (ValueError, tf.errors.InvalidArgumentError), '>= 0'):
+      self.image('mona_lisa', data, max_outputs=-1)
+
+  def test_requires_rank_4(self):
     with six.assertRaisesRegex(self, ValueError, 'must have rank 4'):
-      summary.op('mona_lisa', tf.constant([[1, 2, 3], [4, 5, 6]]))
+      self.image('mona_lisa', [[[1], [2]], [[3], [4]]])
 
-  def test_requires_rank_4_in_pb(self):
-    with six.assertRaisesRegex(self, ValueError, 'must have rank 4'):
-      summary.pb('mona_lisa', np.array([[1, 2, 3], [4, 5, 6]]))
+
+class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
+  def image(self, *args, **kwargs):
+    return summary.pb(*args, **kwargs)
+
+  def test_tag(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    self.assertEqual('a/image_summary', self.image('a', data).value[0].tag)
+    self.assertEqual('a/b/image_summary', self.image('a/b', data).value[0].tag)
+
+  def test_requires_nonnegative_max_outputs(self):
+    self.skipTest('summary V1 pb does not actually enforce this')
+
+
+class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
+  def image(self, *args, **kwargs):
+    args = list(args)
+    # Force first argument to tf.uint8 since the V1 version requires this.
+    args[1] = tf.cast(tf.constant(args[1]), tf.uint8)
+    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+
+  def test_tag(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    self.assertEqual('a/image_summary', self.image('a', data).value[0].tag)
+    self.assertEqual('a/b/image_summary', self.image('a/b', data).value[0].tag)
+
+  def test_scoped_tag(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a/image_summary',
+                       self.image('a', data).value[0].tag)
+
+  def test_image_count_zero(self):
+    self.skipTest('fails under eager because map_fn() returns float dtype')
+
+
+class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
+  def setUp(self):
+    super(SummaryV2OpTest, self).setUp()
+    if tf_v2 is None:
+      self.skipTest('TF v2 summary API not available')
+
+  def image(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
+    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    with writer.as_default():
+      summary.image(*args, **kwargs)
+    writer.close()
+    return self.read_single_event_from_eventfile().summary
+
+  def read_single_event_from_eventfile(self):
+    event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
+    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
+    # Expect a boilerplate event for the file_version, then the summary one.
+    self.assertEqual(len(events), 2)
+    return events[1]
+
+  def test_scoped_tag(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a', self.image('a', data).value[0].tag)
+
+  def test_step(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    self.image('a', data, step=333)
+    event = self.read_single_event_from_eventfile()
+    self.assertEqual(333, event.step)
+
+  def test_floating_point_data(self):
+    data = np.array([-0.01, 0.0, 0.9, 1.0, 1.1]).reshape((1, -1, 1, 1))
+    pb = self.image('mona_lisa', data)
+    encoded = pb.value[0].tensor.string_val[2]  # skip width, height
+    decoded = tf.image.decode_png(encoded).numpy()
+    # Float values outside [0, 1) are truncated, and everything is scaled to the
+    # range [0, 255] with 229 = 0.9 * 255, truncated.
+    self.assertAllEqual([0, 0, 229, 255, 255], list(decoded.flat))
 
 
 if __name__ == '__main__':

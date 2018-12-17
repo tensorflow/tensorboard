@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat import tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.text import plugin_data_pb2
 from tensorboard.util import tb_logging
@@ -55,8 +54,9 @@ def parse_plugin_metadata(content):
   Returns:
     A `TextPluginData` protobuf object.
   """
-  result = plugin_data_pb2.TextPluginData()
-  result.ParseFromString(tf.compat.as_bytes(content))
+  if not isinstance(content, bytes):
+    raise TypeError('Content type must be bytes')
+  result = plugin_data_pb2.TextPluginData.FromString(content)
   if result.version == 0:
     return result
   else:
