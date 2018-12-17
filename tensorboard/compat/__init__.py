@@ -14,15 +14,18 @@
 
 """Compatibility interfaces for TensorBoard.
 
-This module provides aliases for importing variations on the TensorFlow APIs.
+This module provides logic for importing variations on the TensorFlow APIs.
 
-`from tensorboard.compat import tf`: this provides the TF API. By default
-this will try to `import tensorflow` and if it fails, will be undefined. This
-is useful primarily when also depending on //tensorboard/compat:tensorflow.
+The alias `tf` is for the main TF API used by TensorBoard. By default this will
+be the result of `import tensorflow as tf`, or undefined if that fails. This
+can be used in combination with //tensorboard/compat:tensorflow (to fall back to
+a stub TF API implementation if the real one is not available) and
+//tensorboard/compat:no_tensorflow (to use the stub TF API unconditionally).
 
-`from tensorboard.compat import tf_v2`: this provides the TF 2.0 API. By
-default this tries to import the TF 2.0 API from a few places where it may
-be accessible, and if it fails, will be undefined.
+The function `import_tf_v2` provides common logic for importing the TF 2.0 API,
+and returns the root module of the API if found, or else raises ImportError.
+This is a function instead of a direct alias like `tf` in order to provide
+enough indirection to get around circular dependencies.
 """
 
 from __future__ import absolute_import
@@ -44,19 +47,7 @@ if USING_TF:
   except ImportError:
     USING_TF = False
 
-if USING_TF:
-  # If we can use TF, try to provide `tf_v2` as well.
-  # Check if this is TF 2.0 by looking for a known 2.0-only tf.summary symbol.
-  # TODO(nickfelt): determine a cleaner way to do this.
-  if hasattr(tf.summary, 'write'):
-    tf_v2 = tf
-  else:
-    # As a fallback, try `tensorflow.compat.v2` if it's defined.
-    try:
-      from tensorflow.compat import v2 as tf_v2
-    except ImportError:
-      pass
-else:
+if not USING_TF:
   # If we can't use TF, try to provide the stub instead.
   # This will only work if the tensorflow_stub dep is included
   # in the build, via the `tensorboard/compat:tensorflow` target.
@@ -64,3 +55,19 @@ else:
     from tensorboard.compat import tensorflow_stub as tf
   except ImportError:
     pass
+
+
+def import_tf_v2():
+  """Import the TF 2.0 API if possible, or raise an ImportError."""
+  # We must be able to use TF in order to provide the TF 2.0 API.
+  if USING_TF:
+    # Check if this is TF 2.0 by looking for a known 2.0-only tf.summary symbol.
+    # TODO(nickfelt): determine a cleaner way to do this.
+    # DO NOT SUBMIT - replicate to GitHub
+    if hasattr(tf, 'summary') and hasattr(tf.summary, 'write'):
+      return tf
+    else:
+      # As a fallback, try `tensorflow.compat.v2` if it's defined.
+      if hasattr(tf, 'compat') and hasattr(tf.compat, 'v2'):
+        return tf.compat.v2
+  raise ImportError('cannot import tensorflow 2.0 API')

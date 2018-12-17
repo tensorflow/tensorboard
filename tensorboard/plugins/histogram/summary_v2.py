@@ -60,7 +60,8 @@ def histogram(name, data, step, buckets=None, description=None):
     summary writer was available.
   """
   # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf_v2 as tf
+  from tensorboard import compat
+  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   with tf.summary.summary_scope(
@@ -82,7 +83,8 @@ def _buckets(data, bucket_count=None):
     The value of `k` is either `bucket_count` or `1` or `0`.
   """
   # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf_v2 as tf
+  from tensorboard import compat
+  tf = compat.import_tf_v2()
   if bucket_count is None:
     bucket_count = DEFAULT_BUCKET_COUNT
   with tf.name_scope('buckets', values=[data, bucket_count]):

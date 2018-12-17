@@ -22,17 +22,18 @@ from __future__ import print_function
 import glob
 import os
 
+
 import numpy as np
 import six
 import tensorflow as tf
 
-from tensorboard.compat.proto import summary_pb2
+from tensorboard import compat
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
 from tensorboard.util import tensor_util
 
 try:
-  from tensorboard.compat import tf_v2
+  tf_v2 = compat.import_tf_v2()
 except ImportError:
   tf_v2 = None
 
@@ -188,7 +189,7 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
     # Hack to extract current scope since there's no direct API for it.
     with tf.name_scope('_') as temp_scope:
       scope = temp_scope.rstrip('/_')
-    @tf.function
+    @tf_v2.function
     def graph_fn():
       # Recreate the active scope inside the defun since it won't propagate.
       with tf.name_scope(scope):

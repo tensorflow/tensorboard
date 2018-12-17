@@ -30,7 +30,8 @@ from tensorboard.plugins.image import metadata
 from tensorboard.plugins.image import summary
 
 try:
-  from tensorboard.compat import tf_v2
+  from tensorboard import compat
+  tf_v2 = compat.import_tf_v2()
 except ImportError:
   tf_v2 = None
 

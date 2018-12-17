@@ -35,7 +35,8 @@ from tensorboard.util import tensor_util
 
 
 try:
-  from tensorboard.compat import tf_v2
+  from tensorboard import compat
+  tf_v2 = compat.import_tf_v2()
 except ImportError:
   tf_v2 = None
 

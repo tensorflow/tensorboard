@@ -31,7 +31,8 @@ from tensorboard.util import tensor_util
 
 
 try:
-  from tensorboard.compat import tf_v2
+  from tensorboard import compat
+  tf_v2 = compat.import_tf_v2()
 except ImportError:
   tf_v2 = None
 
@@ -193,7 +194,7 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
     # Hack to extract current scope since there's no direct API for it.
     with tf.name_scope('_') as temp_scope:
       scope = temp_scope.rstrip('/_')
-    @tf.function
+    @tf_v2.function
     def graph_fn():
       # Recreate the active scope inside the defun since it won't propagate.
       with tf.name_scope(scope):

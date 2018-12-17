@@ -65,7 +65,8 @@ def audio(name,
     summary writer was available.
   """
   # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf_v2 as tf
+  from tensorboard import compat
+  tf = compat.import_tf_v2()
   # TODO(nickfelt): get encode_wav() exported in the public API.
   from tensorflow.python.ops import gen_audio_ops
 

@@ -56,7 +56,8 @@ def image(name,
     summary writer was available.
   """
   # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf_v2 as tf
+  from tensorboard import compat
+  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   with tf.summary.summary_scope(
