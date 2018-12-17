@@ -350,24 +350,3 @@ py_library(
     srcs = ["lazy.py"],
     srcs_version = "PY2AND3",
 )
-
-# For legacy use only. Do not add new dependencies on this target.
-py_library(
-    name = "util",
-    srcs = [],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/util:__init__",
-    ],
-)
-
-py_test(
-    name = "util_test",
-    size = "small",
-    srcs = ["util_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":util",
-    ],
-)
