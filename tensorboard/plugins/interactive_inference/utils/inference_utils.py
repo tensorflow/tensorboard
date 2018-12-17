@@ -464,7 +464,7 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
         example_protos, original_feature, index_to_mutate, viz_params)
 
     charts = []
-    for model_id, serving_bundle in enumerate(serving_bundles):
+    for serving_bundle in serving_bundles:
       inference_result_proto = platform_utils.call_servo(mutant_examples,
         serving_bundle)
       charts.append(make_json_formatted_for_single_chart(mutant_features,
