@@ -4,19 +4,6 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])  # Needed for internal repo.
 
-# Legacy interface for compatibility. Prefer importing the relevant
-# submodules directly.
-py_library(
-    name = "__init__",
-    srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":encoder",
-        ":op_evaluator",
-        ":util",
-    ],
-)
-
 py_library(
     name = "encoder",
     srcs = ["encoder.py"],
