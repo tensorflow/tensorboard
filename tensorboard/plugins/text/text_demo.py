@@ -18,9 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import logging
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/text_demo'
@@ -120,10 +124,10 @@ def run_all(logdir):
 
 
 def main(unused_argv):
-  tf.logging.set_verbosity(tf.logging.INFO)
-  tf.logging.info('Saving output to %s.' % LOGDIR)
+  logging.set_verbosity(logging.INFO)
+  logger.info('Saving output to %s.' % LOGDIR)
   run_all(LOGDIR)
-  tf.logging.info('Done. Output saved to %s.' % LOGDIR)
+  logger.info('Done. Output saved to %s.' % LOGDIR)
 
 
 if __name__ == '__main__':

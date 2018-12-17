@@ -18,12 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import sys
 
 import six
 
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 class DebuggerPluginLoader(base_plugin.TBLoader):
@@ -110,13 +112,13 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
     if flags.debugger_port > 0:
       interactive_plugin = (
           interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
-      logging.info('Starting Interactive Debugger Plugin at gRPC port %d',
+      logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
                    flags.debugger_data_server_grpc_port)
       interactive_plugin.listen(flags.debugger_port)
       return interactive_plugin
     elif flags.debugger_data_server_grpc_port > 0:
       noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
-      logging.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
+      logger.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
                    flags.debugger_data_server_grpc_port)
       noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
       return noninteractive_plugin

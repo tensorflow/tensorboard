@@ -27,17 +27,19 @@ import functools
 import json
 
 from six.moves import queue
-import tensorflow as tf
-from tensorflow.python import debug as tf_debug
-from tensorflow.core.debug import debug_service_pb2
-from tensorflow.python.debug.lib import debug_data
-from tensorflow.python.debug.lib import grpc_debug_server
 
+import tensorflow as tf
 from tensorboard.plugins.debugger import comm_channel as comm_channel_lib
 from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.plugins.debugger import tensor_helper
 from tensorboard.plugins.debugger import tensor_store as tensor_store_lib
+from tensorboard.util import tb_logging
+from tensorflow.core.debug import debug_service_pb2
+from tensorflow.python import debug as tf_debug
+from tensorflow.python.debug.lib import debug_data
+from tensorflow.python.debug.lib import grpc_debug_server
 
+logger = tb_logging.get_logger()
 
 RunKey = collections.namedtuple(
     'RunKey', ['input_names', 'output_names', 'target_nodes'])
@@ -98,7 +100,7 @@ def _comm_tensor_data(device_name,
     A dict representing the tensor data.
   """
   output_slot = int(output_slot)
-  tf.logging.info(
+  logger.info(
       'Recording tensor value: %s, %d, %s', node_name, output_slot, debug_op)
   tensor_values = None
   if isinstance(tensor_value, debug_data.InconvertibleTensorProto):
@@ -304,9 +306,9 @@ class InteractiveDebuggerDataStreamHandler(
     self._outgoing_channel.put(_comm_metadata(self._run_key, event.wall_time))
 
     # Wait for acknowledgement from client. Blocks until an item is got.
-    tf.logging.info('on_core_metadata_event() waiting for client ack (meta)...')
+    logger.info('on_core_metadata_event() waiting for client ack (meta)...')
     self._incoming_channel.get()
-    tf.logging.info('on_core_metadata_event() client ack received (meta).')
+    logger.info('on_core_metadata_event() client ack received (meta).')
 
     # TODO(cais): If eager mode, this should return something to yield.
 
@@ -351,7 +353,7 @@ class InteractiveDebuggerDataStreamHandler(
       event: The Event proto to be processed.
     """
     if not event.summary.value:
-      tf.logging.info('The summary of the event lacks a value.')
+      logger.info('The summary of the event lacks a value.')
       return None
 
     # The node name property in the event proto is actually a watch key, which
@@ -370,14 +372,14 @@ class InteractiveDebuggerDataStreamHandler(
         device_name, node_name, maybe_base_expanded_node_name, output_slot,
         debug_op, tensor_value, event.wall_time))
 
-    tf.logging.info('on_value_event(): waiting for client ack (tensors)...')
+    logger.info('on_value_event(): waiting for client ack (tensors)...')
     self._incoming_channel.get()
-    tf.logging.info('on_value_event(): client ack received (tensor).')
+    logger.info('on_value_event(): client ack received (tensor).')
 
     # Determine if the particular debug watch key is in the current list of
     # breakpoints. If it is, send an EventReply() to unblock the debug op.
     if self._is_debug_node_in_breakpoints(event.summary.value[0].node_name):
-      tf.logging.info('Sending empty EventReply for breakpoint: %s',
+      logger.info('Sending empty EventReply for breakpoint: %s',
                       event.summary.value[0].node_name)
       # TODO(cais): Support receiving and sending tensor value from front-end.
       return debug_service_pb2.EventReply()

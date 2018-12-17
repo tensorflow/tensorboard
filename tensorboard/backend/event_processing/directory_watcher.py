@@ -22,7 +22,10 @@ import bisect
 
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 class DirectoryWatcher(object):
   """A DirectoryWatcher wraps a loader to load from a sequence of paths.
@@ -112,7 +115,7 @@ class DirectoryWatcher(object):
 
       next_path = self._GetNextPath()
       if not next_path:
-        tf.logging.info('No path found after %s', self._path)
+        logger.info('No path found after %s', self._path)
         # Current path is empty and there are no new paths, so we're done.
         return
 
@@ -135,7 +138,7 @@ class DirectoryWatcher(object):
       for event in self._loader.Load():
         yield event
 
-      tf.logging.info('Directory watcher advancing from %s to %s', self._path,
+      logger.info('Directory watcher advancing from %s to %s', self._path,
                       next_path)
 
       # Advance to the next path and start over.
@@ -180,10 +183,10 @@ class DirectoryWatcher(object):
       try:
         # We're done with the path, so store its size.
         size = tf.gfile.Stat(old_path).length
-        tf.logging.debug('Setting latest size of %s to %d', old_path, size)
+        logger.debug('Setting latest size of %s to %d', old_path, size)
         self._finalized_sizes[old_path] = size
       except tf.errors.OpError as e:
-        tf.logging.error('Unable to get size of %s: %s', old_path, e)
+        logger.error('Unable to get size of %s: %s', old_path, e)
 
     self._path = path
     self._loader = self._loader_factory(path)
@@ -232,10 +235,10 @@ class DirectoryWatcher(object):
     old_size = self._finalized_sizes.get(path, None)
     if size != old_size:
       if old_size is None:
-        tf.logging.error('File %s created after file %s even though it\'s '
+        logger.error('File %s created after file %s even though it\'s '
                          'lexicographically earlier', path, self._path)
       else:
-        tf.logging.error('File %s updated even though the current file is %s',
+        logger.error('File %s updated even though the current file is %s',
                          path, self._path)
       return True
     else:

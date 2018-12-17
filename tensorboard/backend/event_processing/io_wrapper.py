@@ -24,7 +24,10 @@ import re
 import six
 
 from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile('([*?[])')
 
@@ -107,9 +110,9 @@ def ListRecursivelyViaGlobbing(top):
   level = 0
 
   while True:
-    tf.logging.info('GlobAndListFiles: Starting to glob level %d', level)
+    logger.info('GlobAndListFiles: Starting to glob level %d', level)
     glob = tf.gfile.Glob(current_glob_string)
-    tf.logging.info(
+    logger.info(
         'GlobAndListFiles: %d files glob-ed at level %d', len(glob), level)
 
     if not glob:
@@ -184,13 +187,13 @@ def GetLogdirSubdirectories(path):
   if IsGCSPath(path) or IsCnsPath(path):
     # Glob-ing for files can be significantly faster than recursively
     # walking through directories for some file systems.
-    tf.logging.info(
+    logger.info(
         'GetLogdirSubdirectories: Starting to list directories via glob-ing.')
     traversal_method = ListRecursivelyViaGlobbing
   else:
     # For other file systems, the glob-ing based method might be slower because
     # each call to glob could involve performing a recursive walk.
-    tf.logging.info(
+    logger.info(
         'GetLogdirSubdirectories: Starting to list directories via walking.')
     traversal_method = ListRecursivelyViaWalking
 

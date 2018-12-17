@@ -26,8 +26,10 @@ import six
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import io_wrapper
-from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 class EventMultiplexer(object):
   """An `EventMultiplexer` manages access to multiple `EventAccumulator`s.
@@ -83,7 +85,7 @@ class EventMultiplexer(object):
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
     """
-    tf.logging.info('Event Multiplexer initializing.')
+    logger.info('Event Multiplexer initializing.')
     self._accumulators_mutex = threading.Lock()
     self._accumulators = {}
     self._paths = {}
@@ -92,11 +94,11 @@ class EventMultiplexer(object):
                            event_accumulator.DEFAULT_SIZE_GUIDANCE)
     self.purge_orphaned_data = purge_orphaned_data
     if run_path_map is not None:
-      tf.logging.info('Event Multplexer doing initialization load for %s',
+      logger.info('Event Multplexer doing initialization load for %s',
                       run_path_map)
       for (run, path) in six.iteritems(run_path_map):
         self.AddRun(path, run)
-    tf.logging.info('Event Multiplexer done initializing')
+    logger.info('Event Multiplexer done initializing')
 
   def AddRun(self, path, name=None):
     """Add a run to the multiplexer.
@@ -124,9 +126,9 @@ class EventMultiplexer(object):
         if name in self._paths and self._paths[name] != path:
           # TODO(@dandelionmane) - Make it impossible to overwrite an old path
           # with a new path (just give the new path a distinct name)
-          tf.logging.warning('Conflict for name %s: old path %s, new path %s',
+          logger.warn('Conflict for name %s: old path %s, new path %s',
                              name, self._paths[name], path)
-        tf.logging.info('Constructing EventAccumulator for %s', path)
+        logger.info('Constructing EventAccumulator for %s', path)
         accumulator = event_accumulator.EventAccumulator(
             path,
             size_guidance=self._size_guidance,
@@ -165,18 +167,18 @@ class EventMultiplexer(object):
     Returns:
       The `EventMultiplexer`.
     """
-    tf.logging.info('Starting AddRunsFromDirectory: %s', path)
+    logger.info('Starting AddRunsFromDirectory: %s', path)
     for subdir in io_wrapper.GetLogdirSubdirectories(path):
-      tf.logging.info('Adding events from directory %s', subdir)
+      logger.info('Adding events from directory %s', subdir)
       rpath = os.path.relpath(subdir, path)
       subname = os.path.join(name, rpath) if name else rpath
       self.AddRun(subdir, name=subname)
-    tf.logging.info('Done with AddRunsFromDirectory: %s', path)
+    logger.info('Done with AddRunsFromDirectory: %s', path)
     return self
 
   def Reload(self):
     """Call `Reload` on every `EventAccumulator`."""
-    tf.logging.info('Beginning EventMultiplexer.Reload()')
+    logger.info('Beginning EventMultiplexer.Reload()')
     self._reload_called = True
     # Build a list so we're safe even if the list of accumulators is modified
     # even while we're reloading.
@@ -188,15 +190,15 @@ class EventMultiplexer(object):
       try:
         accumulator.Reload()
       except (OSError, IOError) as e:
-        tf.logging.error("Unable to reload accumulator '%s': %s", name, e)
+        logger.error("Unable to reload accumulator '%s': %s", name, e)
       except directory_watcher.DirectoryDeletedError:
         names_to_delete.add(name)
 
     with self._accumulators_mutex:
       for name in names_to_delete:
-        tf.logging.warning("Deleting accumulator '%s'", name)
+        logger.warn("Deleting accumulator '%s'", name)
         del self._accumulators[name]
-    tf.logging.info('Finished with EventMultiplexer.Reload()')
+    logger.info('Finished with EventMultiplexer.Reload()')
     return self
 
   def PluginAssets(self, plugin_name):

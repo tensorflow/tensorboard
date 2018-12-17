@@ -13,6 +13,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -36,6 +37,7 @@ py_library(
     deps = [
         ":io_wrapper",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -75,6 +77,7 @@ py_library(
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:platform_util",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -106,6 +109,7 @@ py_library(
         "//tensorboard:data_compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -158,7 +162,7 @@ py_library(
         ":directory_watcher",
         ":event_accumulator",
         ":io_wrapper",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -202,6 +206,7 @@ py_library(
         "//tensorboard:data_compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -230,6 +235,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],

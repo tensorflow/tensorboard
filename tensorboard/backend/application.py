@@ -49,7 +49,7 @@ from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
-from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
 
 DEFAULT_SIZE_GUIDANCE = {
@@ -74,6 +74,8 @@ PLUGINS_LISTING_ROUTE = '/plugins_listing'
 # name would be confusing, too. To be safe, let's restrict the valid
 # names as follows.
 _VALID_PLUGIN_RE = re.compile(r'^[A-Za-z0-9_.-]+$')
+
+logger = tb_logging.get_logger()
 
 
 def tensor_size_guidance_from_flags(flags):
@@ -127,7 +129,7 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     # DB import mode.
     if db_module != sqlite3:
       raise ValueError('--db_import is only compatible with sqlite DBs')
-    tf.logging.info('Importing logdir into DB at %s', db_uri)
+    logger.info('Importing logdir into DB at %s', db_uri)
     loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
@@ -248,7 +250,7 @@ class TensorBoardWSGI(object):
       except Exception as e:  # pylint: disable=broad-except
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
           raise
-        tf.logging.warning('Plugin %s failed. Exception: %s',
+        logger.warn('Plugin %s failed. Exception: %s',
                            plugin.plugin_name, str(e))
         continue
       for route, app in plugin_apps.items():
@@ -278,7 +280,7 @@ class TensorBoardWSGI(object):
       start = time.time()
       response[plugin.plugin_name] = plugin.is_active()
       elapsed = time.time() - start
-      tf.logging.info(
+      logger.info(
           'Plugin listing: is_active() for %s took %0.3f seconds',
           plugin.plugin_name, elapsed)
     return http_util.Respond(request, response, 'application/json')
@@ -307,7 +309,7 @@ class TensorBoardWSGI(object):
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
     else:
-      tf.logging.warning('path %s not found, sending 404', clean_path)
+      logger.warn('path %s not found, sending 404', clean_path)
       return http_util.Respond(request, 'Not found', 'text/plain', code=404)(
           environ, start_response)
     # pylint: enable=too-many-function-args
@@ -382,20 +384,20 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
   def _reload():
     while True:
       start = time.time()
-      tf.logging.info('TensorBoard reload process beginning')
+      logger.info('TensorBoard reload process beginning')
       for path, name in six.iteritems(path_to_run):
         multiplexer.AddRunsFromDirectory(path, name)
-      tf.logging.info('TensorBoard reload process: Reload the whole Multiplexer')
+      logger.info('TensorBoard reload process: Reload the whole Multiplexer')
       multiplexer.Reload()
       duration = time.time() - start
-      tf.logging.info('TensorBoard done reloading. Load took %0.3f secs', duration)
+      logger.info('TensorBoard done reloading. Load took %0.3f secs', duration)
       if load_interval == 0:
         # Only load the multiplexer once. Do not continuously reload.
         break
       time.sleep(load_interval)
 
   if reload_task == 'process':
-    tf.logging.info('Launching reload in a child process')
+    logger.info('Launching reload in a child process')
     import multiprocessing
     process = multiprocessing.Process(target=_reload, name='Reloader')
     # Best-effort cleanup; on exit, the main TB parent process will attempt to
@@ -403,7 +405,7 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
     process.daemon = True
     process.start()
   elif reload_task in ('thread', 'auto'):
-    tf.logging.info('Launching reload in a daemon thread')
+    logger.info('Launching reload in a daemon thread')
     thread = threading.Thread(target=_reload, name='Reloader')
     # Make this a daemon thread, which won't block TB from exiting.
     thread.daemon = True

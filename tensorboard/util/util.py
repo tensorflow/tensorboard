@@ -31,38 +31,24 @@ import re
 import sys
 import time
 
+from absl import logging as absl_logging
 import six
 
 from tensorboard.compat import tf
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
-def setup_logging(streams=(sys.stderr,)):
+# TODO(stephanwlee): Move this to program.py
+def setup_logging():
   """Configures Python logging the way the TensorBoard team likes it.
 
   This should be called exactly once at the beginning of main().
-
-  Args:
-    streams: An iterable of open files. Logs are written to each.
-
-  :type streams: tuple[file]
   """
-  # NOTE: Adding a level parameter to this method would be a bad idea
-  #       because Python and ABSL disagree on the level numbers.
-  locale.setlocale(locale.LC_ALL, '')
-  tf.logging.set_verbosity(tf.logging.WARN)
-  # TODO(jart): Make the default TensorFlow logger behavior great again.
-  logging.currentframe = _hack_the_main_frame
-  handlers = [LogHandler(s) for s in streams]
-  formatter = LogFormatter()
-  for handler in handlers:
-    handler.setFormatter(formatter)
-  tensorflow_logger = logging.getLogger('tensorflow')
-  tensorflow_logger.handlers = handlers
-  tensorboard_logger = logging.getLogger('tensorboard')
-  tensorboard_logger.handlers = handlers
-  werkzeug_logger = logging.getLogger('werkzeug')
-  werkzeug_logger.setLevel(logging.WARNING)
-  werkzeug_logger.handlers = handlers
+  # TODO(stephanwlee): Check the flag passed from CLI and set it to WARN only
+  # it was not explicitly set
+  absl_logging.set_verbosity(absl_logging.WARN)
 
 
 def closeable(class_):
@@ -109,7 +95,7 @@ def close_all(resources):
       resource.close()
     except Exception as e:  # pylint: disable=broad-except
       if exc_info is not None:
-        tf.logging.error('Suppressing close(%s) failure: %s', resource, e,
+        logger.error('Suppressing close(%s) failure: %s', resource, e,
                          exc_info=exc_info)
       exc_info = sys.exc_info()
   if exc_info is not None:
@@ -163,7 +149,7 @@ class Retrier(object):
         failures += 1
         if failures == self._max_attempts or not self._is_transient(e):
           raise
-        tf.logging.warn('Retrying on transient %s', e)
+        logger.warn('Retrying on transient %s', e)
         self._sleep(2 ** (failures - 1) * Retrier.DELAY)
 
 
@@ -214,7 +200,7 @@ class LogFormatter(logging.Formatter):
     return (super(LogFormatter, self).formatTime(record, datefmt) +
             '.%06d' % (record.created * 1e6 % 1e6))
 
-
+# TODO(stephanwlee): Remove ANSI after removing loader.py
 class Ansi(object):
   """ANSI terminal codes container."""
 
@@ -230,6 +216,7 @@ class Ansi(object):
   CURSOR_SHOW = ESCAPE + '?25h'
 
 
+# TODO(stephanwlee): Remove LogHandler after removing loader.py
 class LogHandler(logging.StreamHandler):
   """Log handler that supports ANSI colors and ephemeral records.
 
@@ -348,24 +335,3 @@ class LogHandler(logging.StreamHandler):
       # want to take UTF-8 or color codes into consideration.
       text = Ansi.ESCAPE_PATTERN.sub('', tf.compat.as_text(self._ephemeral))
       self._stream.write('\r' + ' ' * len(text) + '\r')
-
-
-def _hack_the_main_frame():
-  """Returns caller frame and skips over tf_logging.
-
-  This works around a bug in TensorFlow's open source logging module
-  where the Python logging module attributes log entries to the
-  delegate functions in tf_logging.py.
-  """
-  if hasattr(sys, '_getframe'):
-    frame = sys._getframe(3)
-  else:
-    try:
-      raise Exception
-    except Exception:  # pylint: disable=broad-except
-      frame = sys.exc_info()[2].tb_frame.f_back
-  if (frame is not None and
-      hasattr(frame.f_back, 'f_code') and
-      'tf_logging.py' in frame.f_back.f_code.co_filename):
-    return frame.f_back
-  return frame

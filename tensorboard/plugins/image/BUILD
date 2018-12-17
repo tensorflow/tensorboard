@@ -32,7 +32,9 @@ py_binary(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -94,6 +96,7 @@ py_library(
         ":protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
     ],
 )
 

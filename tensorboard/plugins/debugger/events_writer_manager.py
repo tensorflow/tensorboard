@@ -27,7 +27,9 @@ import threading
 import time
 
 import tensorflow as tf
+from tensorboard.util import tb_logging
 
+logger = tb_logging.get_logger()
 
 # Files containing debugger-related events should start with this string.
 DEBUGGER_EVENTS_FILE_STARTING_TEXT = "events.debugger"
@@ -144,7 +146,7 @@ class EventsWriterManager(object):
           self._events_writer = self._create_events_writer(
               self._events_directory)
     except IOError as err:
-      tf.logging.error(
+      logger.error(
           "Writing to %s failed: %s", self.get_current_file_name(), err)
     self._lock.release()
 
@@ -194,18 +196,18 @@ class EventsWriterManager(object):
         try:
           tf.gfile.Remove(file_path)
           total_size -= file_size
-          tf.logging.info(
+          logger.info(
               "Deleted %s because events files take up over %d bytes",
               file_path, self.total_file_size_cap_bytes)
         except IOError as err:
-          tf.logging.error("Deleting %s failed: %s", file_path, err)
+          logger.error("Deleting %s failed: %s", file_path, err)
 
     # We increment this index because each events writer must differ in prefix.
     self._events_file_count += 1
     file_path = "%s.%d.%d" % (
         os.path.join(directory, DEBUGGER_EVENTS_FILE_STARTING_TEXT),
         time.time(), self._events_file_count)
-    tf.logging.info("Creating events file %s", file_path)
+    logger.info("Creating events file %s", file_path)
     return tf.compat.v1.pywrap_tensorflow.EventsWriter(tf.compat.as_bytes(file_path))
 
   def _fetch_events_files_on_disk(self):

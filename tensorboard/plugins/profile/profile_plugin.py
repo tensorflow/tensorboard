@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import os
 from werkzeug import wrappers
 
@@ -31,6 +30,9 @@ from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -186,7 +188,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
           if len(files) >= 1:
             run_to_tools[run].append(tool)
         except tf.errors.OpError as e:
-          logging.warning("Cannot read asset directory: %s, OpError %s",
+          logger.warn("Cannot read asset directory: %s, OpError %s",
                           run_dir, e)
       if 'trace_viewer@' in run_to_tools[run]:
         # streaming trace viewer always override normal trace viewer.
@@ -239,14 +241,14 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return hosts
     run_dir = self._run_dir(run)
     if not run_dir:
-      logging.warning("Cannot find asset directory: %s", run_dir)
+      logger.warn("Cannot find asset directory: %s", run_dir)
       return hosts
     tool_pattern = '*' + TOOLS[tool]
     try:
       files = tf.gfile.Glob(os.path.join(run_dir, tool_pattern))
       hosts = [os.path.basename(f).replace(TOOLS[tool], '') for f in files]
     except tf.errors.OpError as e:
-      logging.warning("Cannot read asset directory: %s, OpError %s",
+      logger.warn("Cannot read asset directory: %s, OpError %s",
                       run_dir, e)
     return hosts
 
@@ -304,9 +306,9 @@ class ProfilePlugin(base_plugin.TBPlugin):
       with tf.gfile.Open(asset_path, 'rb') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning('Asset path %s not found', asset_path)
+      logger.warn('Asset path %s not found', asset_path)
     except tf.errors.OpError as e:
-      logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
+      logger.warn("Couldn't read asset path: %s, OpError %s", asset_path, e)
 
     if raw_data is None:
       return None

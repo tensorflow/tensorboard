@@ -31,6 +31,9 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.beholder import file_system_tools
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder import shared_config
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 DEFAULT_INFO = [{
     'name': 'Waiting for data...',
@@ -84,7 +87,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
             config_filename)
       return True
     except tf.errors.PermissionDeniedError as e:
-      tf.logging.warning(
+      logger.warn(
           'Unable to write Beholder config, controls will be disabled: %s', e)
       return False
 
