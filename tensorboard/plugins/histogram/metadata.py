@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat import tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import plugin_data_pb2
 
@@ -55,16 +54,13 @@ def parse_plugin_metadata(content):
   Returns:
     A `HistogramPluginData` protobuf object.
   """
-  if content == '{}' or content == b'{}':
+  if not isinstance(content, bytes):
+    raise TypeError('Content type must be bytes')
+  if content == b'{}':
     # Old-style JSON format. Equivalent to an all-default proto.
     return plugin_data_pb2.HistogramPluginData()
   else:
-    result = plugin_data_pb2.HistogramPluginData()
-    # TODO(@jart): Instead of converting to bytes, assert that the input
-    # is a bytestring, and raise a ValueError otherwise...but only after
-    # converting `PluginData`'s `content` field to have type `bytes`
-    # instead of `string`.
-    result.ParseFromString(tf.compat.as_bytes(content))
+    result = plugin_data_pb2.HistogramPluginData.FromString(content)
     if result.version == 0:
       return result
     else:

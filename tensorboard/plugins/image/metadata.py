@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat import tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.image import plugin_data_pb2
 
@@ -56,12 +55,9 @@ def parse_plugin_metadata(content):
   Returns:
     An `ImagePluginData` protobuf object.
   """
-  result = plugin_data_pb2.ImagePluginData()
-  # TODO(@jart): Instead of converting to bytes, assert that the input
-  # is a bytestring, and raise a ValueError otherwise...but only after
-  # converting `PluginData`'s `content` field to have type `bytes`
-  # instead of `string`.
-  result.ParseFromString(tf.compat.as_bytes(content))
+  if not isinstance(content, bytes):
+    raise TypeError('Content type must be bytes')
+  result = plugin_data_pb2.ImagePluginData.FromString(content)
   if result.version == 0:
     return result
   else:

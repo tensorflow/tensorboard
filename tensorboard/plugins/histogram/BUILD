@@ -56,7 +56,6 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
